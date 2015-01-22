@@ -1,5 +1,7 @@
 DROP TYPE IF EXISTS Registrering, AktoerTypeKode, Virkning CASCADE;
 
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 CREATE TYPE LivscyklusKode AS ENUM (
   'Opstaaet',
   'Importeret',
@@ -9,7 +11,7 @@ CREATE TYPE LivscyklusKode AS ENUM (
 );
 
 CREATE TYPE Registrering AS (
-  FraTidspunkt TIMESTAMPTZ,
+  TimePeriod TSTZRANGE,
   LivscyklusKode LivscyklusKode,
   BrugerRef UUID
 );
