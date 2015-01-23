@@ -1,5 +1,5 @@
-CREATE FUNCTION ACTUAL_STATE_CREATE(Attributter BrugerEgenskaber, Tilstande
-BrugerTilstand)
+CREATE OR REPLACE FUNCTION ACTUAL_STATE_CREATE(Attributter BrugerEgenskaber,
+ Tilstande BrugerTilstand)
   RETURNS
   Bruger AS $$
 DECLARE
@@ -13,6 +13,6 @@ BEGIN
       (brugerUUID, ROW(TSTZRANGE(now(), "infinity", "[]"),
                    'Opstaaet', null)) RETURNING ID as brugerRegistreringID;
     INSERT INTO BrugerEgenskaber (BrugerRegistreringID, Virkning, BrugervendtNoegle, Brugernavn, Brugertype)
-      VALUES BrugerEgenskaber;
+      VALUES (Attributter.*);
 END;
 $$ LANGUAGE plpgsql;
