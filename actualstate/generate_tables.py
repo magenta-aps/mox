@@ -40,6 +40,12 @@ CREATE TABLE ${table}Registrering  (
   Registrering Registrering
 );
 
+CREATE TYPE ${table}EgenskaberType AS (
+  Virkning Virkning,
+  BrugervendtNoegle TEXT,
+  ${properties}
+);
+
 CREATE TABLE ${table}Egenskaber (
   ID BIGSERIAL NOT NULL PRIMARY KEY,
   ${table}RegistreringID INTEGER REFERENCES ${table}Registrering(ID),
@@ -51,6 +57,11 @@ CREATE TABLE ${table}Egenskaber (
 CREATE TYPE ${table}GyldighedStatus AS ENUM (
   'Aktiv',
   'Inaktiv'
+);
+
+CREATE TYPE ${table}TilstandType AS (
+  Virkning Virkning,
+  Status ${table}GyldighedStatus
 );
 
 CREATE TABLE ${table}Tilstand(
