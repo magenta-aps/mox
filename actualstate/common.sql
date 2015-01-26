@@ -1,4 +1,4 @@
-DROP TYPE IF EXISTS Registrering, AktoerTypeKode, Virkning CASCADE;
+DROP TYPE IF EXISTS Registrering, AktoerTypeKode, Virkning RESTRICT;
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
