@@ -82,10 +82,6 @@ CREATE TABLE ${table}${relation}Relation(
 );
 """)
 
-# Print out common tables
-with open('common.sql') as f:
-    print f.read()
-
 for table, obj in tables.iteritems():
     print template.substitute({
         'table': table,

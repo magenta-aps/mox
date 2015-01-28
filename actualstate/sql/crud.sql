@@ -44,33 +44,33 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Example call to create a user
-SELECT ACTUAL_STATE_CREATE_BRUGER(
-  ARRAY[
-  -- BrugerEgenskaberType
-    ROW (
-  --   Virkning
-      ROW (
-        tstzrange(now(), 'infinity', '[]'),
-        uuid_generate_v4(),
-        'Bruger',
-        'Note'
-      )::Virkning,
-      'BrugervendtNoegle', 'Brugernavn', 'Brugertype'
-    )::BrugerEgenskaberType
-  ],
-  ARRAY[
---     BrugerTilstandType
-    ROW (
---     Virkning
-      ROW (
-        tstzrange(now(), 'infinity', '[]'),
-        uuid_generate_v4(),
-        'Bruger',
-        'Note'
-      )::Virkning,
---       Status
-      'Aktiv'
-    )::BrugerTilstandType
-  ]
-);
+
+CREATE OR REPLACE FUNCTION ACTUAL_STATE_READ_BRUGER(
+    ID UUID,
+    VirkningPeriod TSTZRANGE,
+    RegistreringPeriod TSTZRANGE,
+    filteredAttributesRef REFCURSOR
+)
+  RETURNS SETOF REFCURSOR AS $$
+DECLARE
+  inputID UUID := ID;
+  result BrugerRegistrering;
+BEGIN
+  -- Get the whole registrering which overlaps with the registrering (system)
+  -- time period.
+  SELECT * FROM BrugerRegistrering
+    JOIN Bruger ON Bruger.ID = BrugerRegistrering.BrugerID
+  WHERE Bruger.ID = inputID AND
+        -- && operator means ranges overlap
+        (BrugerRegistrering.Registrering).TimePeriod && RegistreringPeriod
+    -- We only want the first result
+    LIMIT 1
+  INTO result;
+
+  -- Filter the registrering by the virkning (application) time period
+  OPEN filteredAttributesRef FOR SELECT * FROM brugeregenskaber
+  WHERE brugeregenskaber.brugerregistreringid = result.id AND
+        (brugeregenskaber.virkning).TimePeriod && VirkningPeriod;
+  RETURN;
+END;
+$$ LANGUAGE plpgsql;
