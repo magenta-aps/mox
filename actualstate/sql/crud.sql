@@ -1,6 +1,7 @@
 CREATE OR REPLACE FUNCTION ACTUAL_STATE_CREATE_BRUGER(
     Attributter BrugerEgenskaberType[],
     Tilstande BrugerTilstandType[]
+--   TODO: Accept relations
 )
   RETURNS Bruger AS $$
 DECLARE
@@ -49,7 +50,8 @@ CREATE OR REPLACE FUNCTION ACTUAL_STATE_READ_BRUGER(
     ID UUID,
     VirkningPeriod TSTZRANGE,
     RegistreringPeriod TSTZRANGE,
-    filteredAttributesRef REFCURSOR
+    filteredAttributesRef REFCURSOR,
+    filteredStatesRef REFCURSOR
 )
   RETURNS SETOF REFCURSOR AS $$
 DECLARE
@@ -67,10 +69,16 @@ BEGIN
     LIMIT 1
   INTO result;
 
-  -- Filter the registrering by the virkning (application) time period
+  -- Filter the attributes' registrering by the virkning (application) time
+  -- period
   OPEN filteredAttributesRef FOR SELECT * FROM brugeregenskaber
-  WHERE brugeregenskaber.brugerregistreringid = result.id AND
-        (brugeregenskaber.virkning).TimePeriod && VirkningPeriod;
+  WHERE brugerregistreringid = result.id AND
+        (virkning).TimePeriod && VirkningPeriod;
+
+  ---
+  OPEN filteredStatesRef FOR SELECT * FROM brugertilstand
+  WHERE brugerregistreringid = result.id AND
+        (virkning).TimePeriod && VirkningPeriod;
   RETURN;
 END;
 $$ LANGUAGE plpgsql;

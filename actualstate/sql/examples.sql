@@ -8,7 +8,7 @@ BEGIN
     ARRAY[
       ROW (
         ROW (
-          tstzrange('2015-01-01', '2015-01-10', '[)'),
+          '[2015-01-01, 2015-01-10)'::TSTZRANGE,
           uuid_generate_v4(),
           'Bruger',
           'Note'
@@ -17,7 +17,7 @@ BEGIN
       )::BrugerEgenskaberType,
       ROW (
         ROW (
-          tstzrange('2015-01-10', '2015-01-20', '[)'),
+          '[2015-01-10, 2015-01-20)'::TSTZRANGE,
           uuid_generate_v4(),
           'Bruger',
           'Note2'
@@ -26,7 +26,7 @@ BEGIN
       )::BrugerEgenskaberType,
       ROW (
         ROW (
-          tstzrange('2015-01-20', 'infinity', '[]'),
+          '[2015-01-20, infinity)'::TSTZRANGE,
           uuid_generate_v4(),
           'Bruger',
           'Note3'
@@ -35,32 +35,47 @@ BEGIN
       )::BrugerEgenskaberType
     ],
     ARRAY[
-  --     BrugerTilstandType
       ROW (
-  --     Virkning
-        ROW (
-          tstzrange(now(), 'infinity', '[]'),
+        ROW ('[2015-01-01, 2015-01-10)'::TSTZRANGE,
           uuid_generate_v4(),
           'Bruger',
           'Note'
         )::Virkning,
-  --       Status
+        'Aktiv'
+      )::BrugerTilstandType,
+      ROW (
+        ROW ('[2015-01-10, 2015-01-20)'::TSTZRANGE,
+          uuid_generate_v4(),
+          'Bruger',
+          'Note'
+        )::Virkning,
+        'Inaktiv'
+      )::BrugerTilstandType,
+      ROW (
+        ROW ('[2015-01-20, infinity)'::TSTZRANGE,
+          uuid_generate_v4(),
+          'Bruger',
+          'Note'
+        )::Virkning,
         'Aktiv'
       )::BrugerTilstandType
     ]
   ) INTO brugerId;
 
-  PERFORM actual_state_read_bruger(brugerId,
-                                         -- Virkning period
-                                         TSTZRANGE('2015-01-01',
-                                                   '2015-01-15', '[]'),
-                                         -- Registrering period
-                                         TSTZRANGE(now(), 'infinity', '[]'),
-                                         -- Cursor name
-                                         'attributesCursor');
+  PERFORM actual_state_read_bruger(
+      brugerId,
+      -- Virkning period
+      '[2015-01-01, 2015-01-15]'::TSTZRANGE,
+      -- Registrering period
+      TSTZRANGE(now(), 'infinity', '[]'),
+      -- Cursor name
+      'attributesCursor',
+      'statesCursor'
+  );
 END
 $$;
 
 FETCH ALL IN "attributesCursor";
+FETCH ALL IN "statesCursor";
 
 COMMIT;
