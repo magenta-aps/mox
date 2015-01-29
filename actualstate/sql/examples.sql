@@ -26,7 +26,7 @@ BEGIN
       )::BrugerEgenskaberType,
       ROW (
         ROW (
-          tstzrange('2015-01-20', 'infinity', '(]'),
+          tstzrange('2015-01-20', 'infinity', '[]'),
           uuid_generate_v4(),
           'Bruger',
           'Note3'

@@ -37,7 +37,10 @@ CREATE TABLE ${table} (
 CREATE TABLE ${table}Registrering  (
   ID BIGSERIAL PRIMARY KEY,
   ${table}ID UUID REFERENCES ${table}(ID),
-  Registrering Registrering
+  Registrering Registrering,
+  -- Exclude overlapping Registrering time periods for the same 'actor' type.
+  EXCLUDE USING gist (uuid_to_text(${table}ID) WITH =,
+    composite_type_to_time_range(Registrering) WITH &&)
 );
 
 CREATE TYPE ${table}EgenskaberType AS (
@@ -51,6 +54,9 @@ CREATE TABLE ${table}Egenskaber (
   ${table}RegistreringID INTEGER REFERENCES ${table}Registrering(ID),
   Virkning Virkning,
   BrugervendtNoegle TEXT,
+  -- Exclude overlapping Virkning time periods within the same registrering
+  EXCLUDE USING gist (${table}RegistreringID WITH =,
+    composite_type_to_time_range(Virkning) WITH &&),
   ${properties}
 );
 
@@ -68,7 +74,10 @@ CREATE TABLE ${table}Tilstand(
   ID BIGSERIAL NOT NULL PRIMARY KEY,
   ${table}RegistreringID INTEGER REFERENCES ${table}Registrering(ID),
   Virkning Virkning,
-  Status ${table}GyldighedStatus
+  Status ${table}GyldighedStatus,
+  -- Exclude overlapping Virkning time periods within the same registrering
+  EXCLUDE USING gist (${table}RegistreringID WITH =,
+    composite_type_to_time_range(Virkning) WITH &&)
 );
 """)
 
@@ -78,7 +87,14 @@ CREATE TABLE ${table}${relation}Relation(
   ID BIGSERIAL NOT NULL PRIMARY KEY,
   ${table}RegistreringID INTEGER REFERENCES ${table}Registrering(ID),
   Relation UUID,
-  Virkning Virkning
+  Virkning Virkning,
+  -- Exclude overlapping Virkning time periods within the same registrering
+  -- and same relation UUID. We assume here that, for example, a user cannot
+  -- have multiple entries of the same address during overlapping
+  -- application time periods
+  EXCLUDE USING gist (uuid_to_text(Relation) WITH =,
+    ${table}RegistreringID WITH =,
+    composite_type_to_time_range(Virkning) WITH &&)
 );
 """)
 
