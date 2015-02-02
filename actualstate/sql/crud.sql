@@ -12,11 +12,11 @@ BEGIN
     brugerUUID := uuid_generate_v4();
 --   Create Bruger
     INSERT INTO Bruger (ID) VALUES(brugerUUID);
---   Create Registrering starting from now until infinity
+--   Create Registrering
 --   TODO: Insert Note into registrering?
-    INSERT INTO BrugerRegistrering (BrugerID, Registrering) VALUES
-      (brugerUUID, ROW(TSTZRANGE(now(), 'infinity', '[]'),
-                   'Opstaaet', null)) RETURNING ID INTO brugerRegistreringID;
+    brugerRegistreringID := ACTUAL_STATE_NEW_REGISTRATION_BRUGER(
+        brugerUUID, 'Opstaaet', NULL
+    );
 --   Loop through attributes and add them to the registration
   DECLARE
     attr BrugerEgenskaberType;
