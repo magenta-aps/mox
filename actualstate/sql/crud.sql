@@ -88,13 +88,13 @@ CREATE OR REPLACE FUNCTION ACTUAL_STATE_NEW_REGISTRATION_BRUGER(
   BrugerRef UUID
 ) RETURNS BIGINT AS $$
 DECLARE
-  registreringTime TIMESTAMPTZ := now();
+  registreringTime TIMESTAMPTZ := transaction_timestamp();
   brugerRegistreringID BIGINT;
 BEGIN
 -- Update previous Registrering's time range to end now, exclusive
-  UPDATE BrugerRegistrering SET Registrering.TimePeriod = TSTZRANGE(
-      lower((Registrering).TimePeriod), registreringTime, '[)')
-  WHERE BrugerID = inputID;
+  UPDATE BrugerRegistrering SET Registrering.TimePeriod =
+  TSTZRANGE(LOWER((Registrering).TimePeriod), registreringTime)
+  WHERE BrugerID = inputID AND upper((Registrering).TimePeriod) = 'infinity';
 --   Create Registrering starting from now until infinity
   INSERT INTO BrugerRegistrering (BrugerID, Registrering) VALUES (
     inputID,
