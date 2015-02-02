@@ -198,3 +198,21 @@ BEGIN
   RETURN result;
 END;
 $$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION ACTUAL_STATE_PASSIVE_BRUGER(
+  inputID UUID
+)
+  RETURNS BrugerRegistrering AS $$
+DECLARE
+  brugerRegistreringID BIGINT;
+  result BrugerRegistrering;
+BEGIN
+  brugerRegistreringID := ACTUAL_STATE_NEW_REGISTRATION_BRUGER(
+      inputID, 'Passiveret', NULL, doCopy := TRUE
+  );
+
+  SELECT * FROM BrugerRegistrering WHERE ID = brugerRegistreringID INTO result;
+  RETURN result;
+END;
+$$ LANGUAGE plpgsql;
