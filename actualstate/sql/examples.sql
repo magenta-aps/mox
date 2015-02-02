@@ -138,3 +138,7 @@ BEGIN;
 COMMIT;
 
 SELECT * FROM BrugerRegistrering;
+
+SELECT ACTUAL_STATE_DELETE_BRUGER((SELECT ID FROM Bruger LIMIT 1));
+
+SELECT * FROM brugeregenskaber;

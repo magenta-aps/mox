@@ -85,24 +85,61 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION ACTUAL_STATE_NEW_REGISTRATION_BRUGER(
   inputID UUID,
   LivscyklusKode LivscyklusKode,
-  BrugerRef UUID
+  BrugerRef UUID,
+  doCopy BOOLEAN DEFAULT FALSE
 ) RETURNS BIGINT AS $$
 DECLARE
-  registreringTime TIMESTAMPTZ := transaction_timestamp();
-  brugerRegistreringID BIGINT;
+  registreringTime        TIMESTAMPTZ := transaction_timestamp();
+  newRegistreringID       BIGINT;
+  oldBrugerRegistreringID BIGINT;
 BEGIN
 -- Update previous Registrering's time range to end now, exclusive
-  UPDATE BrugerRegistrering SET Registrering.TimePeriod =
-  TSTZRANGE(LOWER((Registrering).TimePeriod), registreringTime)
-  WHERE BrugerID = inputID AND upper((Registrering).TimePeriod) = 'infinity';
+  UPDATE BrugerRegistrering
+    SET Registrering.TimePeriod =
+      TSTZRANGE(LOWER((Registrering).TimePeriod), registreringTime)
+    WHERE BrugerID = inputID AND upper((Registrering).TimePeriod) = 'infinity'
+    RETURNING ID INTO oldBrugerRegistreringID;
 --   Create Registrering starting from now until infinity
   INSERT INTO BrugerRegistrering (BrugerID, Registrering) VALUES (
     inputID,
-    ROW(TSTZRANGE(registreringTime, 'infinity', '[]'), LivscyklusKode, BrugerRef)
-  ) RETURNING ID INTO brugerRegistreringID;
-  RETURN brugerRegistreringID;
+    ROW (TSTZRANGE(registreringTime, 'infinity',
+                   '[]'), LivscyklusKode, BrugerRef)
+  )
+  RETURNING ID
+    INTO newRegistreringID;
+
+  IF doCopy
+  THEN
+    DECLARE
+      r RECORD;
+    BEGIN
+      FOR r in SELECT virkning, brugervendtnoegle, brugernavn, brugertype
+               FROM brugeregenskaber WHERE brugerregistreringid =
+                                           oldBrugerRegistreringID
+      LOOP
+        INSERT INTO BrugerEgenskaber (BrugerRegistreringID, Virkning, BrugervendtNoegle, Brugernavn, Brugertype)
+        VALUES (newRegistreringID, r.Virkning, r.BrugervendtNoegle,
+                r.Brugernavn, r.Brugertype);
+      END LOOP;
+    END;
+
+    DECLARE
+      r RECORD;
+    BEGIN
+      FOR r in SELECT virkning, status
+               FROM brugertilstand WHERE brugerregistreringid =
+                                           oldBrugerRegistreringID
+      LOOP
+        INSERT INTO BrugerTilstand (BrugerRegistreringID, Virkning, Status)
+        VALUES (newRegistreringID, r.Virkning, r.Status);
+      END LOOP;
+    END;
+  END IF;
+
+  RETURN newRegistreringID;
 END;
 $$ LANGUAGE plpgsql;
+
 
 CREATE OR REPLACE FUNCTION ACTUAL_STATE_UPDATE_BRUGER(
   inputID UUID,
@@ -139,6 +176,23 @@ BEGIN
       VALUES (brugerRegistreringID, state.Virkning, state.Status);
     END LOOP;
   END;
+
+  SELECT * FROM BrugerRegistrering WHERE ID = brugerRegistreringID INTO result;
+  RETURN result;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION ACTUAL_STATE_DELETE_BRUGER(
+  inputID UUID
+)
+  RETURNS BrugerRegistrering AS $$
+DECLARE
+  brugerRegistreringID BIGINT;
+  result BrugerRegistrering;
+BEGIN
+  brugerRegistreringID := ACTUAL_STATE_NEW_REGISTRATION_BRUGER(
+      inputID, 'Slettet', NULL, doCopy := TRUE
+  );
 
   SELECT * FROM BrugerRegistrering WHERE ID = brugerRegistreringID INTO result;
   RETURN result;
