@@ -5,27 +5,30 @@ CREATE OR REPLACE FUNCTION ACTUAL_STATE_CREATE_BRUGER(
 )
   RETURNS Bruger AS $$
 DECLARE
-  brugerUUID uuid;
-  brugerRegistreringID BIGINT;
-  result Bruger;
+  brugerUUID           uuid;
+  result               Bruger;
+  registreringResult   BrugerRegistrering;
 BEGIN
-    brugerUUID := uuid_generate_v4();
+  brugerUUID := uuid_generate_v4();
+
 --   Create Bruger
-    INSERT INTO Bruger (ID) VALUES(brugerUUID);
+  INSERT INTO Bruger (ID) VALUES (brugerUUID) RETURNING * INTO result;
+
 --   Create Registrering
 --   TODO: Insert Note into registrering?
-    brugerRegistreringID := ACTUAL_STATE_NEW_REGISTRATION_BRUGER(
-        brugerUUID, 'Opstaaet', NULL
-    );
+  registreringResult := _ACTUAL_STATE_NEW_REGISTRATION_BRUGER(
+      brugerUUID, 'Opstaaet', NULL
+  );
+
 --   Loop through attributes and add them to the registration
   DECLARE
     attr BrugerEgenskaberType;
   BEGIN
-  FOREACH attr in ARRAY Attributter
+    FOREACH attr in ARRAY Attributter
     LOOP
       INSERT INTO BrugerEgenskaber (BrugerRegistreringID, Virkning, BrugervendtNoegle, Brugernavn, Brugertype)
-    VALUES (brugerRegistreringID, attr.Virkning, attr.BrugervendtNoegle,
-            attr.Brugernavn, attr.Brugertype);
+      VALUES (registreringResult.ID, attr.Virkning, attr.BrugervendtNoegle,
+              attr.Brugernavn, attr.Brugertype);
     END LOOP;
   END;
 
@@ -36,11 +39,9 @@ BEGIN
     FOREACH state in ARRAY Tilstande
     LOOP
       INSERT INTO BrugerTilstand (BrugerRegistreringID, Virkning, Status)
-      VALUES (brugerRegistreringID, state.Virkning, state.Status);
+      VALUES (registreringResult.ID, state.Virkning, state.Status);
     END LOOP;
   END;
-
-  SELECT * FROM Bruger WHERE ID = brugerUUID INTO result;
   RETURN result;
 END;
 $$ LANGUAGE plpgsql;
@@ -82,14 +83,15 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION ACTUAL_STATE_NEW_REGISTRATION_BRUGER(
+CREATE OR REPLACE FUNCTION _ACTUAL_STATE_NEW_REGISTRATION_BRUGER(
   inputID UUID,
   LivscyklusKode LivscyklusKode,
   BrugerRef UUID,
   doCopy BOOLEAN DEFAULT FALSE
-) RETURNS BIGINT AS $$
+) RETURNS BrugerRegistrering AS $$
 DECLARE
   registreringTime        TIMESTAMPTZ := transaction_timestamp();
+  result                  BrugerRegistrering;
   newRegistreringID       BIGINT;
   oldBrugerRegistreringID BIGINT;
 BEGIN
@@ -105,8 +107,9 @@ BEGIN
     ROW (TSTZRANGE(registreringTime, 'infinity',
                    '[]'), LivscyklusKode, BrugerRef)
   )
-  RETURNING ID
-    INTO newRegistreringID;
+  RETURNING * INTO result;
+
+  newRegistreringID := result.ID;
 
   IF doCopy
   THEN
@@ -136,7 +139,7 @@ BEGIN
     END;
   END IF;
 
-  RETURN newRegistreringID;
+  RETURN result;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -148,10 +151,9 @@ CREATE OR REPLACE FUNCTION ACTUAL_STATE_UPDATE_BRUGER(
 )
   RETURNS BrugerRegistrering AS $$
 DECLARE
-  brugerRegistreringID BIGINT;
-  result BrugerRegistrering;
+  result               BrugerRegistrering;
 BEGIN
-  brugerRegistreringID := ACTUAL_STATE_NEW_REGISTRATION_BRUGER(
+  result := _ACTUAL_STATE_NEW_REGISTRATION_BRUGER(
       inputID, 'Rettet', NULL
   );
 --   Loop through attributes and add them to the registration
@@ -161,7 +163,7 @@ BEGIN
     FOREACH attr in ARRAY Attributter
     LOOP
       INSERT INTO BrugerEgenskaber (BrugerRegistreringID, Virkning, BrugervendtNoegle, Brugernavn, Brugertype)
-      VALUES (brugerRegistreringID, attr.Virkning, attr.BrugervendtNoegle,
+      VALUES (result.ID, attr.Virkning, attr.BrugervendtNoegle,
               attr.Brugernavn, attr.Brugertype);
     END LOOP;
   END;
@@ -173,46 +175,35 @@ BEGIN
     FOREACH state in ARRAY Tilstande
     LOOP
       INSERT INTO BrugerTilstand (BrugerRegistreringID, Virkning, Status)
-      VALUES (brugerRegistreringID, state.Virkning, state.Status);
+      VALUES (result.ID, state.Virkning, state.Status);
     END LOOP;
   END;
 
-  SELECT * FROM BrugerRegistrering WHERE ID = brugerRegistreringID INTO result;
   RETURN result;
 END;
 $$ LANGUAGE plpgsql;
+
 
 CREATE OR REPLACE FUNCTION ACTUAL_STATE_DELETE_BRUGER(
   inputID UUID
 )
   RETURNS BrugerRegistrering AS $$
-DECLARE
-  brugerRegistreringID BIGINT;
-  result BrugerRegistrering;
 BEGIN
-  brugerRegistreringID := ACTUAL_STATE_NEW_REGISTRATION_BRUGER(
+  RETURN _ACTUAL_STATE_NEW_REGISTRATION_BRUGER(
       inputID, 'Slettet', NULL, doCopy := TRUE
   );
-
-  SELECT * FROM BrugerRegistrering WHERE ID = brugerRegistreringID INTO result;
-  RETURN result;
 END;
 $$ LANGUAGE plpgsql;
+
 
 
 CREATE OR REPLACE FUNCTION ACTUAL_STATE_PASSIVE_BRUGER(
   inputID UUID
 )
   RETURNS BrugerRegistrering AS $$
-DECLARE
-  brugerRegistreringID BIGINT;
-  result BrugerRegistrering;
 BEGIN
-  brugerRegistreringID := ACTUAL_STATE_NEW_REGISTRATION_BRUGER(
+  RETURN _ACTUAL_STATE_NEW_REGISTRATION_BRUGER(
       inputID, 'Passiveret', NULL, doCopy := TRUE
   );
-
-  SELECT * FROM BrugerRegistrering WHERE ID = brugerRegistreringID INTO result;
-  RETURN result;
 END;
 $$ LANGUAGE plpgsql;
