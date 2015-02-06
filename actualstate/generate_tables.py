@@ -1,3 +1,4 @@
+# encoding: utf-8
 #!/usr/bin/env python
 
 from string import Template
@@ -19,14 +20,27 @@ tables = {
             Organisationsnavn TEXT""",
 
         'relations': ['Adresser', 'Ansatte', 'Branche',
-                      'Myndighed', 'Myndighedstype', 'Opgaver', 'Overordnet' 'Produktionsenhed', 'Skatteenhed',
+                      'Myndighed', 'Myndighedstype', 'Opgaver', 'Overordnet',
+                      'Produktionsenhed', 'Skatteenhed',
                       'Tilhoerer', 'TilknyttedeBruger'
                       'TilknyttedeEnheder', 'TilknyttedeFunktioner',
                       'TilknyttedeInteressefaellesskab',
                       'TilknyttedeOrganisationer', 'TilknyttedePersoner',
                       'TilknyttedeItSystemer',
                       'Virksomhed', 'Virksomhedstype'],
-        }
+        },
+    'Interessefællesskab': {
+        'properties': """
+            Interessefællesskabsnavn TEXT,
+            Interessefællesskabstype TEXT""",
+        'relations': ['Adresser', 'Branche', 'Interessefællesskabstype',
+                      'Opgaver', 'Overordnet', 'Tilhører',
+                      'TilknyttedeBrugere', 'TilknyttedeEnheder',
+                      'TilknyttedeFunktioner',
+                      'TilknyttedeInteressefællesskaber',
+                      'TilknyttedeOrganisationer', 'TilknyttedePersoner',
+                      'TilknyttedeItSystemer'],
+    }
 }
 
 template = Template("""
