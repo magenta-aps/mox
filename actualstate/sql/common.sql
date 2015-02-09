@@ -1,5 +1,3 @@
-DROP TYPE IF EXISTS RegistreringsType, AktoerTypeKode, Virkning RESTRICT;
-
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "btree_gist";
 
@@ -36,6 +34,22 @@ CREATE TYPE Virkning AS (
 CREATE TYPE GyldighedsStatus AS ENUM (
   'Aktiv',
   'Inaktiv'
+);
+
+CREATE TYPE EgenskabsType AS (
+  Name TEXT,
+  Value TEXT
+);
+
+CREATE TYPE EgenskaberType AS (
+  Properties EgenskabsType[],
+  Virkning Virkning,
+  BrugervendtNoegle TEXT
+);
+
+CREATE TYPE TilstandsType AS (
+  Virkning Virkning,
+  Status GyldighedsStatus
 );
 
 -- Just returns the 'TimePeriod' field of the type passed in.
