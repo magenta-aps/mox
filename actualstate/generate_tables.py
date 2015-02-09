@@ -44,72 +44,54 @@ tables = {
 }
 
 template = Template("""
-CREATE TABLE ${table} (
-  ID UUID NOT NULL PRIMARY KEY
-);
+CREATE TABLE ${table} (PRIMARY KEY (ID)) INHERITS (Objekt);
 
 CREATE TABLE ${table}Registrering  (
-  ID BIGSERIAL PRIMARY KEY,
-  ${table}ID UUID REFERENCES ${table}(ID),
-  Registrering Registrering,
+  PRIMARY KEY (ID),
+  FOREIGN KEY (ObjektID) REFERENCES ${table} (ID),
   -- Exclude overlapping Registrering time periods for the same 'actor' type.
-  EXCLUDE USING gist (uuid_to_text(${table}ID) WITH =,
-    composite_type_to_time_range(Registrering) WITH &&)
-);
+  EXCLUDE USING gist (uuid_to_text(ObjektID) WITH =,
+    TimePeriod WITH &&)
+) INHERITS (Registrering);
 
-CREATE TYPE ${table}EgenskaberType AS (
-  Virkning Virkning,
-  BrugervendtNoegle TEXT,
-  ${properties}
-);
 
 CREATE TABLE ${table}Egenskaber (
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  ${table}RegistreringID INTEGER REFERENCES ${table}Registrering(ID),
-  Virkning Virkning,
-  BrugervendtNoegle TEXT,
-  -- Exclude overlapping Virkning time periods within the same registrering
-  EXCLUDE USING gist (${table}RegistreringID WITH =,
-    composite_type_to_time_range(Virkning) WITH &&),
-  ${properties}
-);
+    PRIMARY KEY(ID),
+    FOREIGN KEY (RegistreringsID) REFERENCES ${table}Registrering (ID),
+    -- Exclude overlapping Virkning time periods within the same registrering
+    EXCLUDE USING gist (RegistreringsID WITH =,
+    composite_type_to_time_range(Virkning) WITH &&)
+) INHERITS (Egenskaber);
 
-CREATE TYPE ${table}GyldighedStatus AS ENUM (
-  'Aktiv',
-  'Inaktiv'
-);
 
-CREATE TYPE ${table}TilstandType AS (
-  Virkning Virkning,
-  Status ${table}GyldighedStatus
-);
+CREATE TABLE ${table}Egenskab (
+    PRIMARY KEY (ID),
+    FOREIGN KEY (EgenskaberID) REFERENCES ${table}Egenskaber (ID)
+) INHERITS (Egenskab);
+
 
 CREATE TABLE ${table}Tilstand(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  ${table}RegistreringID INTEGER REFERENCES ${table}Registrering(ID),
-  Virkning Virkning,
-  Status ${table}GyldighedStatus,
+    PRIMARY KEY (ID),
+    FOREIGN KEY (RegistreringsID) REFERENCES ${table}Registrering(ID),
   -- Exclude overlapping Virkning time periods within the same registrering
-  EXCLUDE USING gist (${table}RegistreringID WITH =,
+  EXCLUDE USING gist (RegistreringsID WITH =,
     composite_type_to_time_range(Virkning) WITH &&)
-);
-""")
+) INHERITS (Tilstand);
 
+CREATE TABLE ${table}RelationsListe(
+    PRIMARY KEY (ID),
+    FOREIGN KEY (RegistreringsID) REFERENCES ${table}Registrering(ID)
+) INHERITS (RelationsListe);
 
-relation_template = Template("""
-CREATE TABLE ${table}${relation}Relation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  ${table}RegistreringID INTEGER REFERENCES ${table}Registrering(ID),
-  Relation UUID,
-  Virkning Virkning,
-  -- Exclude overlapping Virkning time periods within the same registrering
-  -- and same relation UUID. We assume here that, for example, a user cannot
-  -- have multiple entries of the same address during overlapping
-  -- application time periods
-  EXCLUDE USING gist (uuid_to_text(Relation) WITH =,
-    ${table}RegistreringID WITH =,
-    composite_type_to_time_range(Virkning) WITH &&)
-);
+CREATE TABLE ${table}Relation(
+    PRIMARY KEY (ID),
+    FOREIGN KEY (RelationsListeID) REFERENCES ${table}RelationsListe(ID),
+    -- have multiple entries of the same address during overlapping
+    -- application time periods
+    EXCLUDE USING gist (uuid_to_text(Relation) WITH =,
+      RelationsListeID WITH =,
+      composite_type_to_time_range(Virkning) WITH &&)
+) INHERITS (Relation);
 """)
 
 for table, obj in tables.iteritems():
@@ -118,9 +100,3 @@ for table, obj in tables.iteritems():
         'properties': obj['properties'],
     })
 
-    # Each relation for each type gets its own table
-    for relation in obj['relations']:
-        print relation_template.substitute({
-            'table': table,
-            'relation': relation
-        })

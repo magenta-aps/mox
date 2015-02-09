@@ -1,4 +1,4 @@
-DROP TYPE IF EXISTS Registrering, AktoerTypeKode, Virkning RESTRICT;
+DROP TYPE IF EXISTS RegistreringsType, AktoerTypeKode, Virkning RESTRICT;
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "btree_gist";
@@ -11,7 +11,7 @@ CREATE TYPE LivscyklusKode AS ENUM (
   'Rettet'
 );
 
-CREATE TYPE Registrering AS (
+CREATE TYPE RegistreringsType AS (
   TimePeriod TSTZRANGE,
   LivscyklusKode LivscyklusKode,
   BrugerRef UUID
@@ -31,6 +31,11 @@ CREATE TYPE Virkning AS (
   AktoerRef UUID,
   AktoerTypeKode AktoerTypeKode,
   NoteTekst TEXT
+);
+
+CREATE TYPE GyldighedsStatus AS ENUM (
+  'Aktiv',
+  'Inaktiv'
 );
 
 -- Just returns the 'TimePeriod' field of the type passed in.
