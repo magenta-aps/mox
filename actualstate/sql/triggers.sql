@@ -3,6 +3,7 @@ CREATE OR REPLACE FUNCTION registrering_insert_trigger()
   RETURNS TRIGGER AS $$
 DECLARE
   tableName REGCLASS;
+  result RECORD;
 BEGIN
 --   Get the name of the table that the object references
   SELECT tableoid
@@ -12,7 +13,7 @@ BEGIN
 
   EXECUTE 'INSERT INTO ' || tableName || 'Registrering VALUES ($1.*)'
   USING NEW;
-  RETURN NEW;
+  RETURN NULL;
 END;
 $$
 LANGUAGE plpgsql;
@@ -20,7 +21,6 @@ LANGUAGE plpgsql;
 CREATE TRIGGER registrering_insert_trigger
 BEFORE INSERT ON registrering
 FOR EACH ROW EXECUTE PROCEDURE registrering_insert_trigger();
-
 
 -- Egenskaber
 CREATE OR REPLACE FUNCTION egenskaber_insert_trigger()
@@ -36,7 +36,7 @@ BEGIN
   INTO tableName;
   EXECUTE 'INSERT INTO ' || tableName || 'Egenskaber VALUES ($1.*)'
   USING NEW;
-  RETURN NEW;
+  RETURN NULL;
 END;
 $$
 LANGUAGE plpgsql;
@@ -54,13 +54,12 @@ DECLARE
 BEGIN
 --   Get the name of the table that the object references
   SELECT o.tableoid
-  FROM objekt o, registrering r, egenskaber e
-  WHERE r.ObjektID = o.ID AND r.ID = e.RegistreringsID
-        AND e.ID = NEW.EgenskaberID
+  FROM objekt o JOIN registrering r ON r.ObjektID = o.ID JOIN
+  egenskaber e ON r.ID = e.RegistreringsID WHERE e.ID = NEW.EgenskaberID
   INTO tableName;
   EXECUTE 'INSERT INTO ' || tableName || 'Egenskab VALUES ($1.*)'
   USING NEW;
-  RETURN NEW;
+  RETURN NULL;
 END;
 $$
 LANGUAGE plpgsql;
@@ -83,7 +82,7 @@ BEGIN
   INTO tableName;
   EXECUTE 'INSERT INTO ' || tableName || 'Tilstand VALUES ($1.*)'
   USING NEW;
-  RETURN NEW;
+  RETURN NULL;
 END;
 $$
 LANGUAGE plpgsql;
@@ -106,7 +105,7 @@ BEGIN
   INTO tableName;
   EXECUTE 'INSERT INTO ' || tableName || 'RelationsListe VALUES ($1.*)'
   USING NEW;
-  RETURN NEW;
+  RETURN NULL;
 END;
 $$
 LANGUAGE plpgsql;
@@ -130,7 +129,7 @@ BEGIN
   INTO tableName;
   EXECUTE 'INSERT INTO ' || tableName || 'Relation VALUES ($1.*)'
   USING NEW;
-  RETURN NEW;
+  RETURN NULL;
 END;
 $$
 LANGUAGE plpgsql;
