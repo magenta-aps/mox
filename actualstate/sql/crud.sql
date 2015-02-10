@@ -104,21 +104,21 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION _ACTUAL_STATE_NEW_REGISTRATION(
   inputID UUID,
   LivscyklusKode LivscyklusKode,
-  BrugerRef UUID
---   doCopyOld BOOLEAN DEFAULT FALSE
+  BrugerRef UUID,
+  doCopy BOOLEAN DEFAULT FALSE
 ) RETURNS Registrering AS $$
 DECLARE
   registreringTime        TIMESTAMPTZ := transaction_timestamp();
   result                  Registrering;
-  newRegistreringID       BIGINT;
-  oldBrugerRegistreringID BIGINT;
+  newRegistreringsID       BIGINT;
+  oldRegistreringsID BIGINT;
 BEGIN
 -- Update previous Registrering's time range to end now, exclusive
   UPDATE Registrering
     SET TimePeriod =
       TSTZRANGE(lower(TimePeriod), registreringTime)
     WHERE ObjektID = inputID AND upper(TimePeriod) = 'infinity'
-    RETURNING ID INTO oldBrugerRegistreringID;
+    RETURNING ID INTO oldRegistreringsID;
 --   Create Registrering starting from now until infinity
   INSERT INTO Registrering (ObjektID, TimePeriod, Livscykluskode, BrugerRef)
   VALUES (
@@ -128,35 +128,45 @@ BEGIN
 
   SELECT * FROM Registrering WHERE ID = lastval() INTO result;
 
-  newRegistreringID := result.ID;
---
---   IF doCopyOld
---   THEN
---     DECLARE
---       r RECORD;
---     BEGIN
---       FOR r in SELECT virkning, brugervendtnoegle, brugernavn, brugertype
---                FROM brugeregenskaber WHERE brugerregistreringid =
---                                            oldBrugerRegistreringID
---       LOOP
---         INSERT INTO BrugerEgenskaber (BrugerRegistreringID, Virkning, BrugervendtNoegle, Brugernavn, Brugertype)
---         VALUES (newRegistreringID, r.Virkning, r.BrugervendtNoegle,
---                 r.Brugernavn, r.Brugertype);
---       END LOOP;
---     END;
---
---     DECLARE
---       r RECORD;
---     BEGIN
---       FOR r in SELECT virkning, status
---                FROM brugertilstand WHERE brugerregistreringid =
---                                            oldBrugerRegistreringID
---       LOOP
---         INSERT INTO BrugerTilstand (BrugerRegistreringID, Virkning, Status)
---         VALUES (newRegistreringID, r.Virkning, r.Status);
---       END LOOP;
---     END;
---   END IF;
+  newRegistreringsID := result.ID;
+
+  IF doCopy
+  THEN
+    DECLARE
+      r Egenskaber;
+      newEgenskaberID BIGINT;
+      s Egenskab;
+    BEGIN
+      FOR r in SELECT * FROM Egenskaber WHERE RegistreringsID =
+                                              oldRegistreringsID
+      LOOP
+        INSERT INTO Egenskaber (RegistreringsID, Virkning, BrugervendtNoegle)
+        VALUES (newRegistreringsID, r.Virkning, r.BrugervendtNoegle);
+
+        newEgenskaberID := lastval();
+
+        FOR s in SELECT * FROM Egenskab e1
+          JOIN Egenskaber e2 ON e1.EgenskaberID = e2.ID WHERE
+          e2.RegistreringsID = oldRegistreringsID
+        LOOP
+          INSERT INTO Egenskab (EgenskaberID, Name, Value) VALUES
+            (newEgenskaberID, s.Name, s.Value);
+        END LOOP;
+
+      END LOOP;
+    END;
+
+    DECLARE
+      r RECORD;
+    BEGIN
+      FOR r in SELECT Virkning, Status
+               FROM Tilstand WHERE RegistreringsID = oldRegistreringsID
+      LOOP
+        INSERT INTO Tilstand (RegistreringsID, Virkning, Status)
+        VALUES (newRegistreringsID, r.Virkning, r.Status);
+      END LOOP;
+    END;
+  END IF;
 
   RETURN result;
 END;
@@ -221,33 +231,40 @@ BEGIN
       inputID, 'Rettet', NULL
   );
 
+--   TODO: Assumes that the params contains the complete new registrering, not
+--   just changed values. We probably need to copy the existing ones and
+--   then update any changed ones.
   PERFORM _ACTUAL_STATE_COPY_INTO_REGISTRATION(result.ID, Attributter, Tilstande);
 
   RETURN result;
 END;
 $$ LANGUAGE plpgsql;
---
---
--- CREATE OR REPLACE FUNCTION ACTUAL_STATE_DELETE_BRUGER(
---   inputID UUID
--- )
---   RETURNS BrugerRegistrering AS $$
--- BEGIN
---   RETURN _ACTUAL_STATE_NEW_REGISTRATION(
---       inputID, 'Slettet', NULL, doCopy := TRUE
---   );
--- END;
--- $$ LANGUAGE plpgsql;
---
---
---
--- CREATE OR REPLACE FUNCTION ACTUAL_STATE_PASSIVE_BRUGER(
---   inputID UUID
--- )
---   RETURNS BrugerRegistrering AS $$
--- BEGIN
---   RETURN _ACTUAL_STATE_NEW_REGISTRATION(
---       inputID, 'Passiveret', NULL, doCopy := TRUE
---   );
--- END;
--- $$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION ACTUAL_STATE_DELETE(
+  ObjektType REGCLASS,
+  inputID UUID
+)
+  RETURNS Registrering AS $$
+DECLARE
+  result Registrering;
+BEGIN
+  RETURN _ACTUAL_STATE_NEW_REGISTRATION(
+      inputID, 'Slettet', NULL, doCopy := TRUE
+  );
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE FUNCTION ACTUAL_STATE_PASSIVE(
+  ObjektType REGCLASS,
+  inputID UUID
+)
+  RETURNS Registrering AS $$
+BEGIN
+  RETURN _ACTUAL_STATE_NEW_REGISTRATION(
+      inputID, 'Passiveret', NULL, doCopy := TRUE
+  );
+END;
+$$ LANGUAGE plpgsql;

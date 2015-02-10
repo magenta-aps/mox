@@ -196,11 +196,11 @@ BEGIN;
   FETCH ALL FROM "attributesCursor";
   FETCH ALL FROM "statesCursor";
 COMMIT;
---
--- SELECT * FROM BrugerRegistrering;
---
--- SELECT ACTUAL_STATE_DELETE_BRUGER((SELECT ID FROM Bruger LIMIT 1));
---
--- SELECT ACTUAL_STATE_PASSIVE_BRUGER((SELECT ID FROM Bruger LIMIT 1));
---
--- SELECT * FROM brugeregenskaber;
+
+SELECT * FROM BrugerRegistrering;
+
+SELECT ACTUAL_STATE_DELETE('Bruger', (SELECT ID FROM Bruger LIMIT 1));
+
+SELECT ACTUAL_STATE_PASSIVE('Bruger', (SELECT ID FROM Bruger LIMIT 1));
+
+SELECT * FROM BrugerEgenskaber;
