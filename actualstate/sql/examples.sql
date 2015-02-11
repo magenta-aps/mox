@@ -75,7 +75,7 @@ SELECT ID FROM ACTUAL_STATE_CREATE(
         'Bruger',
         'Note'
       )::Virkning,
-      'Inaktiv'
+      'Aktiv'
     )::TilstandsType,
     ROW (
       ROW ('[2015-01-20, infinity)'::TSTZRANGE,
@@ -204,3 +204,5 @@ SELECT ACTUAL_STATE_DELETE('Bruger', (SELECT ID FROM Bruger LIMIT 1));
 SELECT ACTUAL_STATE_PASSIVE('Bruger', (SELECT ID FROM Bruger LIMIT 1));
 
 SELECT * FROM BrugerEgenskaber;
+
+SELECT * FROM BrugerTilstand;

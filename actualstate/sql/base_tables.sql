@@ -49,6 +49,8 @@ CREATE TABLE Tilstand(
   --  composite_type_to_time_range(Virkning) WITH &&)
 );
 
+CREATE VIEW TilstandUpdateView AS SELECT * FROM Tilstand;
+
 CREATE TABLE RelationsListe(
     ID BIGSERIAL NOT NULL PRIMARY KEY,
     RegistreringsID BIGINT, -- must reference appropriate registration
