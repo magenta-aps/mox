@@ -271,55 +271,104 @@ CREATE OR REPLACE FUNCTION ACTUAL_STATE_UPDATE(
   RETURNS Registrering AS $$
 DECLARE
   result Registrering;
+  newRegistreringID BIGINT;
 BEGIN
   result := _ACTUAL_STATE_NEW_REGISTRATION(
       inputID, 'Rettet', NULL, doCopy := TRUE
   );
 
---   Loop through attributes and update them in the registration
-  DECLARE
-    attr EgenskaberType;
-    existingEgenskaberID BIGINT;
-  BEGIN
-    FOREACH attr in ARRAY Attributter
-    LOOP
-      RAISE INFO 'New registreringsId %', (result.ID);
---      Get the existing EgenskaberID
-      SELECT ID FROM Egenskaber
-        WHERE RegistreringsID = result.ID AND Virkning = attr.Virkning
-        INTO existingEgenskaberID;
+  newRegistreringID := result.ID;
 
-      RAISE NOTICE 'Updating existing egenskaberID %', existingEgenskaberID;
+--   Loop through attributes and add them to the registration
+--   DECLARE
+--     attr EgenskaberType;
+--     egenskaberID BIGINT;
+--   BEGIN
+--     FOREACH attr in ARRAY Attributter
+--     LOOP
+--       INSERT INTO Egenskaber (RegistreringsID, Virkning, BrugervendtNoegle)
+--       VALUES (newRegistreringID, attr.Virkning, attr.BrugervendtNoegle);
+--
+--       egenskaberID := lastval();
+--
+--       DECLARE
+--         prop EgenskabsType;
+--       BEGIN
+--         FOREACH prop in ARRAY attr.Properties
+--         LOOP
+--           INSERT INTO Egenskab (EgenskaberID, Name, Value)
+--           VALUES (egenskaberID, prop.Name, prop.Value);
+--         END LOOP;
+--       END;
+--     END LOOP;
+--   END;
 
---       Update the BrugervendtNoegle
-      UPDATE Egenskaber SET BrugervendtNoegle = attr.BrugervendtNoegle
-        WHERE ID = existingEgenskaberID;
-
-      RAISE NOTICE 'Set BrugervendtNoegle to %', (attr.BrugervendtNoegle);
-
-      DECLARE
-        prop EgenskabsType;
-      BEGIN
---        Update each property
-        FOREACH prop in ARRAY attr.Properties
-        LOOP
-          UPDATE Egenskab SET Value = prop.Value
-            WHERE EgenskaberID = existingEgenskaberID AND Name = prop.Name;
-        END LOOP;
-      END;
-    END LOOP;
-  END;
-
---   Loop through states and update them in the registration
+--   Loop through states and add them to the registration
   DECLARE
     state TilstandsType;
   BEGIN
     FOREACH state in ARRAY Tilstande
     LOOP
-      UPDATE Tilstand SET Status = state.Status
-        WHERE RegistreringsID = result.ID AND Virkning = state.Virkning;
+      INSERT INTO TilstandUpdateView (RegistreringsID, Virkning, Status)
+      VALUES (newRegistreringID, state.Virkning, state.Status);
     END LOOP;
   END;
+
+--   Eliminate overlapping old values
+--   Loop through attributes and update them in the registration
+--   DECLARE
+--     attr EgenskaberType;
+--     existingEgenskaberID BIGINT;
+--   BEGIN
+--     FOREACH attr in ARRAY Attributter
+--     LOOP
+-- --   Case 1: New range fully contains old range
+--       DECLARE
+--         r Egenskaber;
+--         newEgenskaberID BIGINT;
+--         s Egenskab;
+--       BEGIN
+--         FOR r in SELECT * FROM Egenskaber
+--       WHERE RegistreringsID = oldRegistreringsID
+--             AND attr.Virkning @> Virkning;
+--
+--
+-- --      Get the existing EgenskaberID
+--       SELECT ID FROM Egenskaber
+--         WHERE RegistreringsID = result.ID AND Virkning = attr.Virkning
+--         INTO existingEgenskaberID;
+--
+--       RAISE NOTICE 'Updating existing egenskaberID %', existingEgenskaberID;
+--
+-- --       Update the BrugervendtNoegle
+--       UPDATE Egenskaber SET BrugervendtNoegle = attr.BrugervendtNoegle
+--         WHERE ID = existingEgenskaberID;
+--
+--       RAISE NOTICE 'Set BrugervendtNoegle to %', (attr.BrugervendtNoegle);
+--
+-- --       DECLARE
+-- --         prop EgenskabsType;
+-- --       BEGIN
+-- -- --        Update each property
+-- --         FOREACH prop in ARRAY attr.Properties
+-- --         LOOP
+-- --           UPDATE Egenskab SET Value = prop.Value
+-- --             WHERE EgenskaberID = existingEgenskaberID AND Name = prop.Name;
+-- --         END LOOP;
+-- --       END;
+--     END LOOP;
+--   END;
+-- --
+-- -- --   Loop through states and update them in the registration
+-- --   DECLARE
+-- --     state TilstandsType;
+-- --   BEGIN
+-- --     FOREACH state in ARRAY Tilstande
+-- --     LOOP
+-- --       UPDATE Tilstand SET Status = state.Status
+-- --         WHERE RegistreringsID = result.ID AND Virkning = state.Virkning;
+-- --     END LOOP;
+-- --   END;
 
   RETURN result;
 END;

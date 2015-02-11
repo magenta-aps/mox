@@ -91,6 +91,110 @@ CREATE TRIGGER tilstand_insert_trigger
 BEFORE INSERT ON tilstand
 FOR EACH ROW EXECUTE PROCEDURE tilstand_insert_trigger();
 
+-- Tilstand view
+CREATE OR REPLACE FUNCTION tilstand_update_view_insert_trigger()
+  RETURNS TRIGGER AS $$
+DECLARE
+  tableName REGCLASS;
+  a RECORD;
+BEGIN
+
+--     Input
+--     | A |
+--   |   B   |
+-------------------
+--   |   B   |  Result
+--     Delete old entries which are fully contained by the new range
+    DELETE FROM Tilstand WHERE
+      RegistreringsID = NEW.RegistreringsID
+      AND (NEW.Virkning).TimePeriod @>
+          (Virkning).TimePeriod;
+
+--     Input
+--         |  A  |
+--   |   B   |
+-------------------
+--   |   B   | A |  Result
+--     The old entry's lower bound is contained within the new range
+--     Update the old entry's lower bound
+    UPDATE Tilstand SET Virkning.TimePeriod =
+      TSTZRANGE(UPPER((NEW.Virkning).TimePeriod), UPPER((Virkning).TimePeriod),
+                '[)')
+    WHERE
+      RegistreringsID = NEW.RegistreringsID
+        AND (NEW.Virkning).TimePeriod @> LOWER((Virkning).TimePeriod);
+
+--     Input
+--   |  A  |
+--       |   B   |
+-------------------
+--   | A |   B   |  Result
+--     The old entry's upper bound is contained within the new range
+--     Update the old entry's upper bound
+    UPDATE Tilstand SET Virkning.TimePeriod =
+      TSTZRANGE(LOWER((Virkning).TimePeriod), LOWER((NEW.Virkning).TimePeriod),
+                '[)')
+    WHERE
+      RegistreringsID = NEW.RegistreringsID
+        AND (NEW.Virkning).TimePeriod @> UPPER((Virkning).TimePeriod);
+
+--       Input
+--   |     A     |
+--       | B |
+-------------------
+--   | A'| B |A''|  Result
+--     The new range is completely contained by the old range
+--   Store and delete the old A
+--   Insert the lower old entry to become A'
+--   Insert two upper old entry to become A''
+  DECLARE
+    old RECORD;
+  BEGIN
+    SELECT * FROM Tilstand WHERE RegistreringsID = NEW.RegistreringsID
+      AND (NEW.Virkning).TimePeriod <@ (Virkning).TimePeriod INTO old;
+
+    IF old IS NOT NULL THEN
+      DELETE FROM Tilstand WHERE ID = old.ID;
+
+      INSERT INTO Tilstand (RegistreringsID, Virkning, Status)
+        VALUES (NEW.RegistreringsID,
+                ROW(
+                  TSTZRANGE(
+                      LOWER((old.Virkning).TimePeriod),
+                      LOWER((NEW.Virkning).TimePeriod)
+                  ),
+                  (old.Virkning).AktoerRef,
+                  (old.Virkning).AktoertypeKode,
+                  (old.Virkning).NoteTekst
+                )::Virkning
+          , old.Status);
+
+      INSERT INTO Tilstand (RegistreringsID, Virkning, Status)
+        VALUES (NEW.RegistreringsID,
+                ROW(
+                  TSTZRANGE(
+                      UPPER((NEW.Virkning).TimePeriod),
+                      UPPER((old.Virkning).TimePeriod)
+                  ),
+                  (old.Virkning).AktoerRef,
+                  (old.Virkning).AktoertypeKode,
+                  (old.Virkning).NoteTekst
+                )::Virkning
+          , old.Status);
+    END IF;
+  END;
+
+  NEW.ID := nextval('tilstand_id_seq');
+  INSERT INTO Tilstand VALUES (NEW.*);
+  RETURN NEW;
+END;
+$$
+LANGUAGE plpgsql;
+
+CREATE TRIGGER tilstand_update_view_insert_trigger
+INSTEAD OF INSERT ON TilstandUpdateView
+FOR EACH ROW EXECUTE PROCEDURE tilstand_update_view_insert_trigger();
+
 -- RelationsListe
 CREATE OR REPLACE FUNCTION relationsliste_insert_trigger()
   RETURNS TRIGGER AS $$
