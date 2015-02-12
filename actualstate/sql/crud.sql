@@ -23,40 +23,8 @@ BEGIN
   );
 
 
---   Loop through attributes and add them to the registration
-  DECLARE
-    attr EgenskaberType;
-    egenskaberID BIGINT;
-  BEGIN
-    FOREACH attr in ARRAY Attributter
-    LOOP
-      INSERT INTO Egenskaber (RegistreringsID, Virkning, BrugervendtNoegle)
-      VALUES (registreringResult.ID, attr.Virkning, attr.BrugervendtNoegle);
-
-      egenskaberID := lastval();
-
-      DECLARE
-        prop EgenskabsType;
-      BEGIN
-        FOREACH prop in ARRAY attr.Properties
-        LOOP
-          INSERT INTO Egenskab (EgenskaberID, Name, Value)
-          VALUES (egenskaberID, prop.Name, prop.Value);
-        END LOOP;
-      END;
-    END LOOP;
-  END;
-
---   Loop through states and add them to the registration
-  DECLARE
-    state TilstandsType;
-  BEGIN
-    FOREACH state in ARRAY Tilstande
-    LOOP
-      INSERT INTO Tilstand (RegistreringsID, Virkning, Status)
-      VALUES (registreringResult.ID, state.Virkning, state.Status);
-    END LOOP;
-  END;
+  PERFORM _ACTUAL_STATE_COPY_INTO_REGISTRATION(registreringResult.ID,
+                                               Attributter, Tilstande);
   RETURN result;
 END;
 $$ LANGUAGE plpgsql;
