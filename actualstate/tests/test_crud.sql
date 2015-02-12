@@ -138,7 +138,26 @@ BEGIN
     'Note'
     )::Virkning,
     'BrugervendtNoegle'
-  )::EgenskaberType
+    )::EgenskaberType,
+    ROW (
+      ARRAY[
+        ROW(
+        'Brugernavn',
+        'BrugernavnA'
+      )::EgenskabsType,
+        ROW(
+        'Brugertype',
+        'BrugertypeA'
+      )::EgenskabsType
+      ],
+      ROW (
+      '[2015-02-01, 2015-02-10)'::TSTZRANGE,
+      uuid_generate_v4(),
+      'Bruger',
+      'Note'
+      )::Virkning,
+      'BrugervendtNoegleA'
+    )::EgenskaberType
   ],
   ARRAY[
     ROW (
@@ -190,7 +209,46 @@ BEGIN
       -- Example call to update a user.
     SELECT * FROM ACTUAL_STATE_UPDATE(
         brugerID,
-      ARRAY[]::EgenskaberType[],
+      ARRAY[
+        ROW (
+          ARRAY[
+            ROW(
+            'Brugernavn',
+            'Brugernavnupdated'
+          )::EgenskabsType,
+            ROW(
+            'Brugertype',
+            'Brugertypeupdated'
+          )::EgenskabsType
+          ],
+          ROW (
+          '[2015-01-01, 2015-01-10)'::TSTZRANGE,
+          uuid_generate_v4(),
+          'Bruger',
+          'Note'
+          )::Virkning,
+          'BrugervendtNoegleupdated'
+        )::EgenskaberType,
+       ROW (
+          ARRAY[
+            ROW(
+            'Brugernavn',
+            'BrugernavnAupdated'
+          )::EgenskabsType,
+            ROW(
+            'Brugertype',
+            'BrugertypeAupdated'
+          )::EgenskabsType
+          ],
+          ROW (
+          '[2015-01-15, 2015-02-05)'::TSTZRANGE,
+          uuid_generate_v4(),
+          'Bruger',
+          'Note'
+          )::Virkning,
+          'BrugervendtNoegleupdated'
+        )::EgenskaberType
+      ],
       ARRAY[
         ROW (
           ROW ('[2014-11-01, 2014-12-20)'::TSTZRANGE,
@@ -227,9 +285,40 @@ BEGIN
       ]
     ) INTO reg;
     DECLARE
-      result BOOLEAN;
+      result TEXT;
     BEGIN
-        RETURN NEXT ok((SELECT COUNT(*) = 1 FROM Tilstand
+
+--       Test egenskaber
+      RETURN NEXT (SELECT is (e1.Value, 'Brugernavnupdated',
+                              'New property value inserted') FROM Egenskab e1
+        JOIN Egenskaber e2 ON e1.EgenskaberID = e2.ID
+      WHERE e2.RegistreringsID = reg.ID
+            AND (e2.Virkning).TimePeriod = '[2015-01-01, 2015-01-10)'::TSTZRANGE
+            AND e1.Name = 'Brugernavn');
+
+      RETURN NEXT (SELECT is (e1.Value, 'BrugernavnAupdated',
+                              'New property value inserted') FROM Egenskab e1
+        JOIN Egenskaber e2 ON e1.EgenskaberID = e2.ID
+      WHERE e2.RegistreringsID = reg.ID
+            AND (e2.Virkning).TimePeriod = '[2015-01-15, 2015-02-05)'::TSTZRANGE
+            AND e1.Name = 'Brugernavn');
+
+      RETURN NEXT (SELECT is (e1.Value, 'BrugernavnA',
+                              'Old property value''s range is altered') FROM Egenskab e1
+        JOIN Egenskaber e2 ON e1.EgenskaberID = e2.ID
+      WHERE e2.RegistreringsID = reg.ID
+            AND (e2.Virkning).TimePeriod = '[2015-02-05, 2015-02-10)'::TSTZRANGE
+            AND e1.Name = 'Brugernavn');
+
+      RETURN NEXT ok ((SELECT COUNT(e1.*) = 0 FROM Egenskab e1
+                     JOIN Egenskaber e2 ON e1.EgenskaberID = e2.ID
+                   WHERE e2.RegistreringsID = reg.ID
+                         AND e1.Name = 'Brugernavn'
+                         AND e1.Value = 'Brugernavn'), 'Old property value is deleted');
+
+--       Test tilstand
+
+      RETURN NEXT ok((SELECT COUNT(*) = 1 FROM Tilstand
         WHERE RegistreringsID = reg.ID
               AND (Virkning).TimePeriod = '[2014-11-01, 2014-12-20)'::TSTZRANGE
                      AND (Virkning).Notetekst = 'Note2'),
@@ -281,7 +370,7 @@ $$ LANGUAGE plpgsql;
 
 
 
-SELECT plan(11);
+SELECT plan(15);
 
 SELECT * FROM do_tap('test'::name);
 

@@ -147,7 +147,7 @@ BEGIN
 
         FOR s in SELECT * FROM Egenskab e1
           JOIN Egenskaber e2 ON e1.EgenskaberID = e2.ID WHERE
-          e2.RegistreringsID = oldRegistreringsID
+          e2.ID = r.ID
         LOOP
           INSERT INTO Egenskab (EgenskaberID, Name, Value) VALUES
             (newEgenskaberID, s.Name, s.Value);
@@ -280,28 +280,32 @@ BEGIN
   newRegistreringID := result.ID;
 
 --   Loop through attributes and add them to the registration
---   DECLARE
---     attr EgenskaberType;
---     egenskaberID BIGINT;
---   BEGIN
---     FOREACH attr in ARRAY Attributter
---     LOOP
---       INSERT INTO Egenskaber (RegistreringsID, Virkning, BrugervendtNoegle)
---       VALUES (newRegistreringID, attr.Virkning, attr.BrugervendtNoegle);
---
+  DECLARE
+    attr EgenskaberType;
+    newEgenskaberID BIGINT;
+  BEGIN
+    FOREACH attr in ARRAY Attributter
+    LOOP
+      INSERT INTO EgenskaberUpdateView (RegistreringsID, Virkning, BrugervendtNoegle)
+      VALUES (newRegistreringID, attr.Virkning, attr.BrugervendtNoegle)
+      RETURNING ID INTO newEgenskaberID;
 --       egenskaberID := lastval();
---
---       DECLARE
---         prop EgenskabsType;
---       BEGIN
---         FOREACH prop in ARRAY attr.Properties
---         LOOP
---           INSERT INTO Egenskab (EgenskaberID, Name, Value)
---           VALUES (egenskaberID, prop.Name, prop.Value);
---         END LOOP;
---       END;
---     END LOOP;
---   END;
+
+      DECLARE
+        prop EgenskabsType;
+      BEGIN
+        FOREACH prop in ARRAY attr.Properties
+        LOOP
+          UPDATE Egenskab SET Value = prop.Value
+            WHERE EgenskaberID = newEgenskaberID AND Name = prop.Name;
+          IF NOT FOUND THEN
+            INSERT INTO Egenskab (EgenskaberID, Name, Value)
+            VALUES (newEgenskaberID, prop.Name, prop.Value);
+          END IF;
+        END LOOP;
+      END;
+    END LOOP;
+  END;
 
 --   Loop through states and add them to the registration
   DECLARE
@@ -313,62 +317,6 @@ BEGIN
       VALUES (newRegistreringID, state.Virkning, state.Status);
     END LOOP;
   END;
-
---   Eliminate overlapping old values
---   Loop through attributes and update them in the registration
---   DECLARE
---     attr EgenskaberType;
---     existingEgenskaberID BIGINT;
---   BEGIN
---     FOREACH attr in ARRAY Attributter
---     LOOP
--- --   Case 1: New range fully contains old range
---       DECLARE
---         r Egenskaber;
---         newEgenskaberID BIGINT;
---         s Egenskab;
---       BEGIN
---         FOR r in SELECT * FROM Egenskaber
---       WHERE RegistreringsID = oldRegistreringsID
---             AND attr.Virkning @> Virkning;
---
---
--- --      Get the existing EgenskaberID
---       SELECT ID FROM Egenskaber
---         WHERE RegistreringsID = result.ID AND Virkning = attr.Virkning
---         INTO existingEgenskaberID;
---
---       RAISE NOTICE 'Updating existing egenskaberID %', existingEgenskaberID;
---
--- --       Update the BrugervendtNoegle
---       UPDATE Egenskaber SET BrugervendtNoegle = attr.BrugervendtNoegle
---         WHERE ID = existingEgenskaberID;
---
---       RAISE NOTICE 'Set BrugervendtNoegle to %', (attr.BrugervendtNoegle);
---
--- --       DECLARE
--- --         prop EgenskabsType;
--- --       BEGIN
--- -- --        Update each property
--- --         FOREACH prop in ARRAY attr.Properties
--- --         LOOP
--- --           UPDATE Egenskab SET Value = prop.Value
--- --             WHERE EgenskaberID = existingEgenskaberID AND Name = prop.Name;
--- --         END LOOP;
--- --       END;
---     END LOOP;
---   END;
--- --
--- -- --   Loop through states and update them in the registration
--- --   DECLARE
--- --     state TilstandsType;
--- --   BEGIN
--- --     FOREACH state in ARRAY Tilstande
--- --     LOOP
--- --       UPDATE Tilstand SET Status = state.Status
--- --         WHERE RegistreringsID = result.ID AND Virkning = state.Virkning;
--- --     END LOOP;
--- --   END;
 
   RETURN result;
 END;

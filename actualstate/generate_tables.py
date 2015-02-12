@@ -66,7 +66,8 @@ CREATE TABLE ${table}Egenskaber (
 
 CREATE TABLE ${table}Egenskab (
     PRIMARY KEY (ID),
-    FOREIGN KEY (EgenskaberID) REFERENCES ${table}Egenskaber (ID)
+    FOREIGN KEY (EgenskaberID) REFERENCES ${table}Egenskaber (ID) ON DELETE CASCADE,
+    UNIQUE (EgenskaberID, Name)
 ) INHERITS (Egenskab);
 
 
