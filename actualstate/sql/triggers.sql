@@ -149,38 +149,50 @@ BEGIN
 --   Insert two upper old entry to become A''
   DECLARE
     old RECORD;
+    newLeftRange TSTZRANGE;
+    newRightRange TSTZRANGE;
   BEGIN
-    SELECT * FROM Tilstand WHERE RegistreringsID = NEW.RegistreringsID
-      AND (NEW.Virkning).TimePeriod <@ (Virkning).TimePeriod INTO old;
+    DELETE FROM Tilstand WHERE
+      RegistreringsID = NEW.RegistreringsID
+      AND (NEW.Virkning).TimePeriod <@ (Virkning).TimePeriod
+    RETURNING * INTO old;
 
     IF old IS NOT NULL THEN
-      DELETE FROM Tilstand WHERE ID = old.ID;
+      newLeftRange := TSTZRANGE(
+          LOWER((old.Virkning).TimePeriod),
+          LOWER((NEW.Virkning).TimePeriod)
+      );
 
-      INSERT INTO Tilstand (RegistreringsID, Virkning, Status)
-        VALUES (NEW.RegistreringsID,
-                ROW(
-                  TSTZRANGE(
-                      LOWER((old.Virkning).TimePeriod),
-                      LOWER((NEW.Virkning).TimePeriod)
-                  ),
-                  (old.Virkning).AktoerRef,
-                  (old.Virkning).AktoertypeKode,
-                  (old.Virkning).NoteTekst
-                )::Virkning
-          , old.Status);
+--       Don't insert an empty range
+      IF newLeftRange != 'empty' THEN
+        INSERT INTO Tilstand (RegistreringsID, Virkning, Status)
+          VALUES (NEW.RegistreringsID,
+                  ROW(
+                    newLeftRange,
+                    (old.Virkning).AktoerRef,
+                    (old.Virkning).AktoertypeKode,
+                    (old.Virkning).NoteTekst
+                  )::Virkning
+            , old.Status);
+      END IF;
 
-      INSERT INTO Tilstand (RegistreringsID, Virkning, Status)
-        VALUES (NEW.RegistreringsID,
-                ROW(
-                  TSTZRANGE(
-                      UPPER((NEW.Virkning).TimePeriod),
-                      UPPER((old.Virkning).TimePeriod)
-                  ),
-                  (old.Virkning).AktoerRef,
-                  (old.Virkning).AktoertypeKode,
-                  (old.Virkning).NoteTekst
-                )::Virkning
-          , old.Status);
+      newRightRange := TSTZRANGE(
+          UPPER((NEW.Virkning).TimePeriod),
+          UPPER((old.Virkning).TimePeriod)
+      );
+
+--       Don't insert an empty range
+      IF newRightRange != 'empty' THEN
+        INSERT INTO Tilstand (RegistreringsID, Virkning, Status)
+          VALUES (NEW.RegistreringsID,
+                  ROW(
+                    newRightRange,
+                    (old.Virkning).AktoerRef,
+                    (old.Virkning).AktoertypeKode,
+                    (old.Virkning).NoteTekst
+                  )::Virkning
+            , old.Status);
+      END IF;
     END IF;
   END;
 

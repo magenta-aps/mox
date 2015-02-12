@@ -142,6 +142,14 @@ BEGIN
   ],
   ARRAY[
     ROW (
+      ROW ('[2014-12-01, 2014-12-15)'::TSTZRANGE,
+        uuid_generate_v4(),
+        'Bruger',
+        'Note'
+      )::Virkning,
+      'Aktiv'
+    )::TilstandsType,
+    ROW (
       ROW ('[2015-01-01, 2015-01-10)'::TSTZRANGE,
         uuid_generate_v4(),
         'Bruger',
@@ -158,7 +166,15 @@ BEGIN
       'Aktiv'
     )::TilstandsType,
     ROW (
-      ROW ('[2015-01-20, infinity)'::TSTZRANGE,
+      ROW ('[2015-01-20, 2015-01-30)'::TSTZRANGE,
+        uuid_generate_v4(),
+        'Bruger',
+        'Note'
+      )::Virkning,
+      'Aktiv'
+    )::TilstandsType,
+    ROW (
+      ROW ('[2015-01-30, infinity)'::TSTZRANGE,
         uuid_generate_v4(),
         'Bruger',
         'Note'
@@ -177,10 +193,18 @@ BEGIN
       ARRAY[]::EgenskaberType[],
       ARRAY[
         ROW (
-          ROW ('[2015-01-01, 2015-01-05)'::TSTZRANGE,
+          ROW ('[2014-11-01, 2014-12-20)'::TSTZRANGE,
             uuid_generate_v4(),
             'Bruger',
-            'Note'
+            'Note2'
+          )::Virkning,
+          'Aktiv'
+        )::TilstandsType,
+        ROW (
+          ROW ('[2015-01-03, 2015-01-05)'::TSTZRANGE,
+            uuid_generate_v4(),
+            'Bruger',
+            'Note2'
           )::Virkning,
           'Aktiv'
         )::TilstandsType,
@@ -193,10 +217,10 @@ BEGIN
           'Inaktiv'
         )::TilstandsType,
         ROW (
-          ROW ('[2015-01-30, infinity)'::TSTZRANGE,
+          ROW ('[2015-01-25, 2015-02-10)'::TSTZRANGE,
             uuid_generate_v4(),
             'Bruger',
-            'Note'
+            'Note2'
           )::Virkning,
           'Aktiv'
         )::TilstandsType
@@ -205,16 +229,50 @@ BEGIN
     DECLARE
       result BOOLEAN;
     BEGIN
+        RETURN NEXT ok((SELECT COUNT(*) = 1 FROM Tilstand
+        WHERE RegistreringsID = reg.ID
+              AND (Virkning).TimePeriod = '[2014-11-01, 2014-12-20)'::TSTZRANGE
+                     AND (Virkning).Notetekst = 'Note2'),
+                     'New tilstand completely contains and replaces old');
+      RETURN NEXT ok((SELECT COUNT(*) = 1 FROM Tilstand
+        WHERE RegistreringsID = reg.ID
+              AND (Virkning).TimePeriod = '[2015-01-01, 2015-01-03)'::TSTZRANGE
+                     AND (Virkning).Notetekst = 'Note'),
+                     'Split old tilstand lower');
+      RETURN NEXT ok((SELECT COUNT(*) = 1 FROM Tilstand
+        WHERE RegistreringsID = reg.ID
+              AND (Virkning).TimePeriod = '[2015-01-03, 2015-01-05)'::TSTZRANGE
+                     AND (Virkning).Notetekst = 'Note2'),
+                     'New tilstand inserted in middle');
+      RETURN NEXT ok((SELECT COUNT(*) = 1 FROM Tilstand
+        WHERE RegistreringsID = reg.ID
+              AND (Virkning).TimePeriod = '[2015-01-05, 2015-01-10)'::TSTZRANGE
+                     AND (Virkning).Notetekst = 'Note'),
+                     'Split old tilstand upper');
       RETURN NEXT ok((SELECT COUNT(*) = 1 FROM Tilstand
         WHERE RegistreringsID = reg.ID
               AND (Virkning).TimePeriod = '[2015-01-10, 2015-01-20)'::TSTZRANGE
                      AND Status = 'Inaktiv'),
-                     'Updated Bruger Tilstand got changed');
+                     'New tilstand replaced old tilstand with exact same
+                     range');
       RETURN NEXT ok((SELECT COUNT(*) = 1 FROM Tilstand
       WHERE RegistreringsID = reg.ID
-            AND (Virkning).TimePeriod = '[2015-01-05, 2015-01-10)'::TSTZRANGE
-                     AND Status = 'Aktiv'),
-                     'Updated Bruger Tilstand''s old status'' range got changed');
+            AND (Virkning).TimePeriod = '[2015-01-20, 2015-01-25)'::TSTZRANGE
+                     AND (Virkning).Notetekst = 'Note'),
+                     'Old upper bound changed when new overlaps to the right');
+      RETURN NEXT ok((SELECT COUNT(*) = 1 FROM Tilstand
+      WHERE RegistreringsID = reg.ID
+            AND (Virkning).TimePeriod = '[2015-01-25, 2015-02-10)'::TSTZRANGE
+                     AND (Virkning).Notetekst = 'Note2'),
+                     'New tilstand inserted between two overlapping old');
+      RETURN NEXT ok((SELECT COUNT(*) = 1 FROM Tilstand
+      WHERE RegistreringsID = reg.ID
+            AND (Virkning).TimePeriod = '[2015-02-10, infinity)'::TSTZRANGE
+                     AND (Virkning).Notetekst = 'Note'),
+                     'Old lower bound changed when new overlaps to the left');
+      RETURN NEXT ok((SELECT COUNT(*) = 0 FROM Tilstand
+      WHERE (Virkning).TimePeriod = 'empty'),
+                     'There should be no empty Virkning TimePeriods');
     END;
 --     Check that the properties got replaced
   END;
@@ -223,7 +281,7 @@ $$ LANGUAGE plpgsql;
 
 
 
-SELECT plan(4);
+SELECT plan(11);
 
 SELECT * FROM do_tap('test'::name);
 
