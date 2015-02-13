@@ -347,6 +347,120 @@ BEFORE INSERT ON relationsliste
 FOR EACH ROW EXECUTE PROCEDURE relationsliste_insert_trigger();
 
 
+-- RelationsListeUpdateView
+CREATE OR REPLACE FUNCTION relationsliste_update_view_insert_trigger()
+  RETURNS TRIGGER AS $$
+BEGIN
+
+--     Input
+--     | A |
+--   |   B   |
+-------------------
+--   |   B   |  Result
+--     Delete old entries which are fully contained by the new range
+    DELETE FROM RelationsListe WHERE
+      RegistreringsID = NEW.RegistreringsID
+      AND (NEW.Virkning).TimePeriod @>
+          (Virkning).TimePeriod;
+
+--     Input
+--         |  A  |
+--   |   B   |
+-------------------
+--   |   B   | A |  Result
+--     The old entry's lower bound is contained within the new range
+--     Update the old entry's lower bound
+    UPDATE RelationsListe SET Virkning.TimePeriod =
+      TSTZRANGE(UPPER((NEW.Virkning).TimePeriod), UPPER((Virkning).TimePeriod),
+                '[)')
+    WHERE
+      RegistreringsID = NEW.RegistreringsID
+        AND (NEW.Virkning).TimePeriod @> LOWER((Virkning).TimePeriod);
+
+--     Input
+--   |  A  |
+--       |   B   |
+-------------------
+--   | A |   B   |  Result
+--     The old entry's upper bound is contained within the new range
+--     Update the old entry's upper bound
+    UPDATE RelationsListe SET Virkning.TimePeriod =
+      TSTZRANGE(LOWER((Virkning).TimePeriod), LOWER((NEW.Virkning).TimePeriod),
+                '[)')
+    WHERE
+      RegistreringsID = NEW.RegistreringsID
+        AND (NEW.Virkning).TimePeriod @> UPPER((Virkning).TimePeriod);
+
+--       Input
+--   |     A     |
+--       | B |
+-------------------
+--   | A'| B |A''|  Result
+--     The new range is completely contained by the old range
+--   Store and delete the old A
+--   Insert the lower old entry to become A'
+--   Insert two upper old entry to become A''
+  DECLARE
+    old RECORD;
+    newLeftRange TSTZRANGE;
+    newRightRange TSTZRANGE;
+  BEGIN
+    DELETE FROM RelationsListe WHERE
+      RegistreringsID = NEW.RegistreringsID
+      AND (NEW.Virkning).TimePeriod <@ (Virkning).TimePeriod
+    RETURNING * INTO old;
+
+    IF old IS NOT NULL THEN
+      newLeftRange := TSTZRANGE(
+          LOWER((old.Virkning).TimePeriod),
+          LOWER((NEW.Virkning).TimePeriod)
+      );
+
+--       Don't insert an empty range
+      IF newLeftRange != 'empty' THEN
+        INSERT INTO RelationsListe (RegistreringsID, Virkning, BrugervendtNoegle)
+          VALUES (NEW.RegistreringsID,
+                  ROW(
+                    newLeftRange,
+                    (old.Virkning).AktoerRef,
+                    (old.Virkning).AktoertypeKode,
+                    (old.Virkning).NoteTekst
+                  )::Virkning
+            , old.BrugervendtNoegle);
+      END IF;
+
+      newRightRange := TSTZRANGE(
+          UPPER((NEW.Virkning).TimePeriod),
+          UPPER((old.Virkning).TimePeriod)
+      );
+
+--       Don't insert an empty range
+      IF newRightRange != 'empty' THEN
+        INSERT INTO RelationsListe (RegistreringsID, Virkning, BrugervendtNoegle)
+          VALUES (NEW.RegistreringsID,
+                  ROW(
+                    newRightRange,
+                    (old.Virkning).AktoerRef,
+                    (old.Virkning).AktoertypeKode,
+                    (old.Virkning).NoteTekst
+                  )::Virkning
+            , old.BrugervendtNoegle);
+      END IF;
+    END IF;
+  END;
+
+  NEW.ID := nextval('relationsliste_id_seq');
+  INSERT INTO RelationsListe VALUES (NEW.*);
+  RETURN NEW;
+END;
+$$
+LANGUAGE plpgsql;
+
+CREATE TRIGGER relationsliste_update_view_insert_trigger
+INSTEAD OF INSERT ON RelationsListeUpdateView
+FOR EACH ROW EXECUTE PROCEDURE relationsliste_update_view_insert_trigger();
+
+
 -- Relation
 CREATE OR REPLACE FUNCTION relation_insert_trigger()
   RETURNS TRIGGER AS $$

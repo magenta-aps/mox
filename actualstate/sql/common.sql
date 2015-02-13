@@ -52,6 +52,17 @@ CREATE TYPE TilstandsType AS (
   Status GyldighedsStatus
 );
 
+CREATE TYPE RelationsType AS (
+  Virkning Virkning,
+  Relation UUID
+);
+
+CREATE TYPE RelationsListeType AS (
+  Name TEXT,
+  Relations RelationsType[]
+);
+
+
 -- Just returns the 'TimePeriod' field of the type passed in.
 -- Used to work around limitations of PostgreSQL's exclusion constraints.
 CREATE OR REPLACE FUNCTION composite_type_to_time_range(ANYELEMENT) RETURNS

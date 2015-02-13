@@ -13,101 +13,122 @@ CREATE FUNCTION test.test_create_bruger () RETURNS SETOF TEXT AS $$
 DECLARE
   brugerID UUID;
 BEGIN
-  SELECT ID FROM ACTUAL_STATE_CREATE(
-  'Bruger',
-  ARRAY[
-    ROW (
-      ARRAY[
-        ROW(
+  SELECT ID
+  FROM ACTUAL_STATE_CREATE(
+      'Bruger',
+      ARRAY [
+        ROW (
+        ARRAY [
+          ROW (
           'Brugernavn',
           'Brugernavn'
-        )::EgenskabsType,
-        ROW(
+        ) :: EgenskabsType,
+          ROW (
           'Brugertype',
           'Brugertype'
-        )::EgenskabsType
-      ],
-      ROW (
-        '[2015-01-01, 2015-01-10)'::TSTZRANGE,
+        ) :: EgenskabsType
+        ],
+        ROW (
+        '[2015-01-01, 2015-01-10)' :: TSTZRANGE,
         uuid_generate_v4(),
         'Bruger',
         'Note'
-      )::Virkning,
-      'BrugervendtNoegle'
-    )::EgenskaberType,
-    ROW (
-      ARRAY[
-        ROW(
+        ) :: Virkning,
+        'BrugervendtNoegle'
+      ) :: EgenskaberType,
+        ROW (
+        ARRAY [
+          ROW (
           'Brugernavn',
           'Brugernavn2'
-        )::EgenskabsType,
-        ROW(
+        ) :: EgenskabsType,
+          ROW (
           'Brugertype',
           'Brugertype2'
-        )::EgenskabsType
-      ],
-      ROW (
-        '[2015-01-10, 2015-01-20)'::TSTZRANGE,
+        ) :: EgenskabsType
+        ],
+        ROW (
+        '[2015-01-10, 2015-01-20)' :: TSTZRANGE,
         uuid_generate_v4(),
         'Bruger',
         'Note2'
-      )::Virkning,
-     'BrugervendtNoegle2'
-    )::EgenskaberType,
-    ROW (
-      ARRAY[
-        ROW(
+        ) :: Virkning,
+        'BrugervendtNoegle2'
+      ) :: EgenskaberType,
+        ROW (
+        ARRAY [
+          ROW (
           'Brugernavn',
           'Brugernavn3'
-        )::EgenskabsType,
-        ROW(
+        ) :: EgenskabsType,
+          ROW (
           'Brugertype',
           'Brugertype3'
-        )::EgenskabsType
-      ],
-      ROW (
-        '[2015-01-20, infinity)'::TSTZRANGE,
+        ) :: EgenskabsType
+        ],
+        ROW (
+        '[2015-01-20, infinity)' :: TSTZRANGE,
         uuid_generate_v4(),
         'Bruger',
         'Note3'
-      )::Virkning,
-      'BrugervendtNoegle3'
-    )::EgenskaberType
-  ],
-  ARRAY[
-    ROW (
-      ROW ('[2015-01-01, 2015-01-10)'::TSTZRANGE,
+        ) :: Virkning,
+        'BrugervendtNoegle3'
+      ) :: EgenskaberType
+      ],
+      ARRAY [
+        ROW (
+        ROW ('[2015-01-01, 2015-01-10)' :: TSTZRANGE,
         uuid_generate_v4(),
         'Bruger',
         'Note'
-      )::Virkning,
-      'Aktiv'
-    )::TilstandsType,
-    ROW (
-      ROW ('[2015-01-10, 2015-01-20)'::TSTZRANGE,
+        ) :: Virkning,
+        'Aktiv'
+      ) :: TilstandsType,
+        ROW (
+        ROW ('[2015-01-10, 2015-01-20)' :: TSTZRANGE,
         uuid_generate_v4(),
         'Bruger',
         'Note'
-      )::Virkning,
-      'Aktiv'
-    )::TilstandsType,
-    ROW (
-      ROW ('[2015-01-20, infinity)'::TSTZRANGE,
+        ) :: Virkning,
+        'Aktiv'
+      ) :: TilstandsType,
+        ROW (
+        ROW ('[2015-01-20, infinity)' :: TSTZRANGE,
         uuid_generate_v4(),
         'Bruger',
         'Note'
-      )::Virkning,
-      'Aktiv'
-    )::TilstandsType
-  ]
-  ) INTO brugerID;
+        ) :: Virkning,
+        'Aktiv'
+      ) :: TilstandsType
+      ],
+      ARRAY [
+        ROW (
+          'Adresser',
+          ARRAY[
+            ROW(
+              ROW ('[2015-01-20, infinity)' :: TSTZRANGE,
+                uuid_generate_v4(),
+                'Bruger',
+                'Note'
+                ) :: Virkning,
+              uuid_generate_v4()
+          )::RelationsType
+          ]
+        ) :: RelationsListeType
+      ]
+  )
+  INTO brugerID;
 
   DECLARE
     result BOOLEAN;
   BEGIN
-    RETURN NEXT ok((SELECT COUNT(*) = 1 FROM Bruger WHERE ID = brugerID),
+    RETURN NEXT ok((SELECT COUNT(*) = 1
+                    FROM Bruger
+                    WHERE ID = brugerID),
                    'One Bruger is inserted into Bruger table');
-    RETURN NEXT ok((SELECT COUNT(*) = 0 FROM ONLY Objekt WHERE ID = brugerID),
+    RETURN NEXT ok((SELECT COUNT(*) = 0
+                    FROM ONLY Objekt
+                    WHERE ID = brugerID),
                    'No Bruger is inserted directly into Objekt table');
   END;
 END;
@@ -116,6 +137,8 @@ $$ LANGUAGE plpgsql;
 CREATE FUNCTION test.test_update_bruger () RETURNS SETOF TEXT AS $$
 DECLARE
   brugerID UUID;
+  oldRelUUID UUID = uuid_generate_v4();
+  newRelUUID UUID = uuid_generate_v4();
 BEGIN
   SELECT ID FROM ACTUAL_STATE_CREATE(
   'Bruger',
@@ -200,6 +223,21 @@ BEGIN
       )::Virkning,
       'Aktiv'
     )::TilstandsType
+  ],
+  ARRAY [
+    ROW (
+    'Adresser',
+    ARRAY[
+      ROW(
+      ROW ('[2015-01-20, infinity)' :: TSTZRANGE,
+      uuid_generate_v4(),
+      'Bruger',
+      'Note'
+      ) :: Virkning,
+      oldRelUUID
+    )::RelationsType
+    ]
+  ) :: RelationsListeType
   ]
   ) INTO brugerID;
 
@@ -282,8 +320,41 @@ BEGIN
           )::Virkning,
           'Aktiv'
         )::TilstandsType
+      ],
+      ARRAY [
+        ROW (
+        'Adresser',
+        ARRAY[
+          ROW(
+          ROW ('[2015-01-20, infinity)' :: TSTZRANGE,
+          uuid_generate_v4(),
+          'Bruger',
+          'Note'
+          ) :: Virkning,
+          newRelUUID
+        )::RelationsType
+        ]
+      ) :: RelationsListeType
       ]
     ) INTO reg;
+
+
+--     Test Relationer
+
+--     RETURN NEXT (SELECT is (r1.Relation, newRelUUID,
+--                             'New relation value inserted') FROM Relation r1
+--       JOIN RelationsListe r2 ON r1.RelationsListeID = r2.ID
+--                  WHERE r2.RegistreringsID = reg.ID
+--                        AND (r1.Virkning).TimePeriod = '[2015-01-20, infinity)' :: TSTZRANGE
+--                        AND r2.Name = 'Adresse');
+
+    RETURN NEXT is((SELECT r1.Relation FROM Relation r1
+      JOIN RelationsListe r2 ON r1.RelationsListeID = r2.ID
+                 WHERE r2.RegistreringsID = reg.ID
+                       AND (r1.Virkning).TimePeriod = '[2015-01-20, infinity)' :: TSTZRANGE
+                       AND r2.Name = 'Adresse'),
+                 newRelUUID,
+                 'Relation replaced with new value');
 
 
 --       Test egenskaber
@@ -360,13 +431,14 @@ BEGIN
     RETURN NEXT ok((SELECT COUNT(*) = 0 FROM Tilstand
     WHERE (Virkning).TimePeriod = 'empty'),
                    'There should be no empty Virkning TimePeriods');
+
   END;
 END;
 $$ LANGUAGE plpgsql;
 
 
 
-SELECT plan(15);
+SELECT plan(16);
 
 SELECT * FROM do_tap('test'::name);
 

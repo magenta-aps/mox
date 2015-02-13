@@ -81,7 +81,8 @@ CREATE TABLE ${table}Tilstand(
 
 CREATE TABLE ${table}RelationsListe(
     PRIMARY KEY (ID),
-    FOREIGN KEY (RegistreringsID) REFERENCES ${table}Registrering(ID)
+    FOREIGN KEY (RegistreringsID) REFERENCES ${table}Registrering(ID),
+    UNIQUE (RegistreringsID, Name)
 ) INHERITS (RelationsListe);
 
 CREATE TABLE ${table}Relation(

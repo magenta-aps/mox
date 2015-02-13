@@ -1,8 +1,8 @@
 CREATE OR REPLACE FUNCTION ACTUAL_STATE_CREATE(
     ObjektType REGCLASS,
     Attributter EgenskaberType[],
-    Tilstande TilstandsType[]
---   TODO: Accept relations
+    Tilstande TilstandsType[],
+    Relationer RelationsListeType[] = ARRAY[]::RelationsListeType[]
 )
   RETURNS Objekt AS $$
 DECLARE
@@ -22,9 +22,8 @@ BEGIN
       objektUUID, 'Opstaaet', NULL
   );
 
-
   PERFORM _ACTUAL_STATE_COPY_INTO_REGISTRATION(registreringResult.ID,
-                                               Attributter, Tilstande);
+                                               Attributter, Tilstande, Relationer);
   RETURN result;
 END;
 $$ LANGUAGE plpgsql;
@@ -134,6 +133,30 @@ BEGIN
         VALUES (newRegistreringsID, r.Virkning, r.Status);
       END LOOP;
     END;
+
+    DECLARE
+      relList RelationsListe;
+      newRelationsListeID BIGINT;
+      rel Relation;
+    BEGIN
+      FOR relList in SELECT * FROM RelationsListe WHERE RegistreringsID =
+                                              oldRegistreringsID
+      LOOP
+        INSERT INTO RelationsListe (RegistreringsID, Name)
+        VALUES (newRegistreringsID, relList.Name);
+
+        newRelationsListeID := lastval();
+
+        FOR rel in SELECT * FROM Relation r1
+          JOIN RelationsListe r2 ON r1.RelationsListeID = r2.ID WHERE
+          r2.ID = relList.ID
+        LOOP
+          INSERT INTO Relation (RelationsListeID, Virkning, Relation) VALUES
+            (newRelationsListeID, rel.Virkning, rel.relation);
+        END LOOP;
+
+      END LOOP;
+    END;
   END IF;
 
   RETURN result;
@@ -144,7 +167,8 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION _ACTUAL_STATE_COPY_INTO_REGISTRATION(
   inputRegistreringsID BIGINT,
   Attributter EgenskaberType[],
-  Tilstande TilstandsType[]
+  Tilstande TilstandsType[],
+  Relationer RelationsListeType[]
 )
   RETURNS VOID AS $$
 DECLARE
@@ -183,58 +207,39 @@ BEGIN
       VALUES (inputRegistreringsID, state.Virkning, state.Status);
     END LOOP;
   END;
-END;
-$$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION _ACTUAL_STATE_COPY_INTO_REGISTRATION(
-  inputRegistreringsID BIGINT,
-  Attributter EgenskaberType[],
-  Tilstande TilstandsType[]
-)
-  RETURNS VOID AS $$
-DECLARE
-BEGIN
---   Loop through attributes and add them to the registration
+--   Loop through relations and add them to the registration
   DECLARE
-    attr EgenskaberType;
-    egenskaberID BIGINT;
+    relationList RelationsListeType;
+    relationsListeID BIGINT;
   BEGIN
-    FOREACH attr in ARRAY Attributter
+    FOREACH relationList in ARRAY Relationer
     LOOP
-      INSERT INTO Egenskaber (RegistreringsID, Virkning, BrugervendtNoegle)
-      VALUES (inputRegistreringsID, attr.Virkning, attr.BrugervendtNoegle);
+      INSERT INTO RelationsListe (RegistreringsID, Name)
+      VALUES (inputRegistreringsID, relationList.Name);
 
-      egenskaberID := lastval();
+      relationsListeID := lastval();
 
       DECLARE
-        prop EgenskabsType;
+        rel RelationsType;
       BEGIN
-        FOREACH prop in ARRAY attr.Properties
+        FOREACH rel in ARRAY relationList.Relations
         LOOP
-          INSERT INTO Egenskab (EgenskaberID, Name, Value)
-          VALUES (egenskaberID, prop.Name, prop.Value);
+          INSERT INTO Relation (RelationsListeID, Virkning, Relation)
+          VALUES (relationsListeID, rel.Virkning, rel.Relation);
         END LOOP;
       END;
     END LOOP;
   END;
-
---   Loop through states and add them to the registration
-  DECLARE
-    state TilstandsType;
-  BEGIN
-    FOREACH state in ARRAY Tilstande
-    LOOP
-      INSERT INTO Tilstand (RegistreringsID, Virkning, Status)
-      VALUES (inputRegistreringsID, state.Virkning, state.Status);
-    END LOOP;
-  END;
 END;
 $$ LANGUAGE plpgsql;
+
 
 CREATE OR REPLACE FUNCTION ACTUAL_STATE_UPDATE(
   inputID UUID,
   Attributter EgenskaberType[],
-  Tilstande TilstandsType[]
+  Tilstande TilstandsType[],
+  Relationer RelationsListeType[]
 )
   RETURNS Registrering AS $$
 DECLARE
@@ -254,19 +259,22 @@ BEGIN
   BEGIN
     FOREACH attr in ARRAY Attributter
     LOOP
+--  Insert into our view which has a trigger which handles updating ranges
+--  if the new values overlap the old
       INSERT INTO EgenskaberUpdateView (RegistreringsID, Virkning, BrugervendtNoegle)
       VALUES (newRegistreringID, attr.Virkning, attr.BrugervendtNoegle)
       RETURNING ID INTO newEgenskaberID;
---       egenskaberID := lastval();
 
       DECLARE
         prop EgenskabsType;
       BEGIN
         FOREACH prop in ARRAY attr.Properties
         LOOP
+--           Update existing properties if we can
           UPDATE Egenskab SET Value = prop.Value
             WHERE EgenskaberID = newEgenskaberID AND Name = prop.Name;
           IF NOT FOUND THEN
+--             If we didn't update anything, we have to insert new properties
             INSERT INTO Egenskab (EgenskaberID, Name, Value)
             VALUES (newEgenskaberID, prop.Name, prop.Value);
           END IF;
@@ -281,8 +289,37 @@ BEGIN
   BEGIN
     FOREACH state in ARRAY Tilstande
     LOOP
+--  Insert into our view which has a trigger which handles updating ranges
+--  if the new values overlap the old
       INSERT INTO TilstandUpdateView (RegistreringsID, Virkning, Status)
       VALUES (newRegistreringID, state.Virkning, state.Status);
+    END LOOP;
+  END;
+
+--   Loop through relations and add them to the registration
+  DECLARE
+    relationList RelationsListeType;
+    relationsListeID BIGINT;
+  BEGIN
+    FOREACH relationList in ARRAY Relationer
+    LOOP
+--  Insert into our view which has a trigger which handles updating ranges
+--  if the new values overlap the old
+      INSERT INTO RelationsListe (RegistreringsID, Name)
+      VALUES (newRegistreringID, relationList.Name);
+
+      relationsListeID := lastval();
+
+      DECLARE
+        rel RelationsType;
+      BEGIN
+        FOREACH rel in ARRAY relationList.Relations
+        LOOP
+          INSERT INTO RelationsUpdateView (RelationsListeID, Virkning,
+                                           Relation)
+          VALUES (relationsListeID, rel.Virkning, rel.Relation);
+        END LOOP;
+      END;
     END LOOP;
   END;
 
