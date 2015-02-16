@@ -21,43 +21,62 @@ CREATE TABLE Registrering  (
 );
 
 
-CREATE TABLE Egenskab (
+CREATE TABLE ATTRIBUT (
     ID BIGSERIAL NOT NULL PRIMARY KEY,
-    EgenskaberID BIGINT, -- must reference property set (Egenskaber) for object
-    Name TEXT,
-    Value TEXT
-);
-
-CREATE TABLE Egenskaber (
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  RegistreringsID BIGINT, -- must reference registration for object and period
-  Virkning Virkning,
-  BrugervendtNoegle TEXT
-  -- TBD on subclass:
-  -- Exclude overlapping Virkning time periods within the same registrering
-
-);
-
-CREATE TABLE Tilstand(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  RegistreringsID BIGINT, -- must reference registration
-  Virkning Virkning,
-  Status GyldighedsStatus
+    AttributterID BIGINT,  -- must reference Attributter for derived class
+    Virkning Virkning
   -- TBD on subclass:
   -- Exclude overlapping Virkning time periods within the same registrering
   -- EXCLUDE USING gist (${table}RegistreringID WITH =,
   --  composite_type_to_time_range(Virkning) WITH &&)
 );
 
-CREATE TABLE RelationsListe(
+CREATE TABLE AttributFelt (
+    ID BIGSERIAL NOT NULL PRIMARY KEY,
+    AttributID BIGINT, -- must reference property set (Egenskaber) for object
+    Name TEXT,
+    Value TEXT
+);
+
+CREATE TABLE Attributter (
+  ID BIGSERIAL NOT NULL PRIMARY KEY,
+  RegistreringsID BIGINT, -- must reference registration for object and period
+  Name TEXT
+
+);
+
+CREATE TABLE Tilstande (
+  ID BIGSERIAL NOT NULL PRIMARY KEY,
+  RegistreringsID BIGINT, -- must reference registration for object and period
+  Name TEXT
+);
+
+CREATE TABLE Tilstand(
+  ID BIGSERIAL NOT NULL PRIMARY KEY,
+  RegistreringsID BIGINT, -- must reference registration
+  Virkning Virkning,
+  Status TEXT
+  -- TBD on subclass:
+  -- Exclude overlapping Virkning time periods within the same registrering
+  -- EXCLUDE USING gist (${table}RegistreringID WITH =,
+  --  composite_type_to_time_range(Virkning) WITH &&)
+);
+
+CREATE TABLE Relationer(
     ID BIGSERIAL NOT NULL PRIMARY KEY,
     RegistreringsID BIGINT, -- must reference appropriate registration
     Name TEXT
 );
 
+
 CREATE TABLE Relation(
+    ID BIGSERIAL NOT NULL PRIMARY KEY,
+    RelationerID BIGINT, 
+    Virkning Virkning
+);
+
+CREATE TABLE Reference(
     ID BIGSERIAL NOT NULL PRIMARY KEY, 
-    RelationsListeID BIGINT, -- References relationsliste
-    Virkning Virkning,
-    Relation UUID
+    RelationID BIGINT, -- References relation
+    ReferenceID UUID
 );
