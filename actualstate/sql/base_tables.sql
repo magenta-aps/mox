@@ -34,21 +34,21 @@ CREATE TABLE Attribut (
 CREATE TABLE AttributFelt (
     ID BIGSERIAL NOT NULL PRIMARY KEY,
     AttributID BIGINT, -- must reference property set (Egenskaber) for object
-    Name TEXT,
+    Name TEXT NOT NULL,
     Value TEXT
 );
 
 CREATE TABLE Attributter (
   ID BIGSERIAL NOT NULL PRIMARY KEY,
   RegistreringsID BIGINT, -- must reference registration for object and period
-  Name TEXT
+  Name TEXT NOT NULL
 
 );
 
 CREATE TABLE Tilstande (
   ID BIGSERIAL NOT NULL PRIMARY KEY,
   RegistreringsID BIGINT, -- must reference registration for object and period
-  Name TEXT
+  Name TEXT NOT NULL
 );
 
 CREATE TABLE Tilstand(
@@ -65,7 +65,7 @@ CREATE TABLE Tilstand(
 CREATE TABLE Relationer(
     ID BIGSERIAL NOT NULL PRIMARY KEY,
     RegistreringsID BIGINT, -- must reference appropriate registration
-    Name TEXT
+    Name TEXT NOT NULL
 );
 
 
