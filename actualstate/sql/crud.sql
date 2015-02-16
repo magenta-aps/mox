@@ -130,7 +130,7 @@ BEGIN
             JOIN Attributter a2 ON a1.AttributterID = a2.ID WHERE
             a2.ID = r.ID
           LOOP
-            INSERT INTO Attribut (AttributID, Name, Value) VALUES
+            INSERT INTO AttributFelt (AttributID, Name, Value) VALUES
               (newAttributID, t.Name, t.Value);
           END LOOP;
         END LOOP;
