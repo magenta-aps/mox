@@ -169,9 +169,11 @@ DECLARE
 BEGIN
 --   Get the name of the table that the object references
   SELECT o.tableoid
-  FROM objekt o, registrering r, Relationer relr, Relation rel
-  WHERE r.ObjektID = o.ID AND r.ID = relr.RegistreringsID
-        AND rel.ID = rel.RelationerID AND rel.ID = NEW.RelationID
+  FROM objekt o
+    JOIN registrering r ON r.ObjektID = o.id
+    JOIN Relationer relr ON relr.RegistreringsID = r.id
+    JOIN Relation rel ON rel.RelationerID = relr.ID
+  WHERE rel.ID = NEW.RelationID
   INTO tableName;
   EXECUTE 'INSERT INTO ' || tableName || 'Reference VALUES ($1.*)'
   USING NEW;

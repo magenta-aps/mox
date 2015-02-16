@@ -383,32 +383,40 @@ BEGIN
     END LOOP;
   END;
 
--- --   Loop through relations and add them to the registration
---   DECLARE
---     relationList RelationsListeType;
---     relationsListeID BIGINT;
---   BEGIN
---     FOREACH relationList in ARRAY Relationer
---     LOOP
--- --  Insert into our view which has a trigger which handles updating ranges
--- --  if the new values overlap the old
---       INSERT INTO RelationsListe (RegistreringsID, Name)
---       VALUES (newRegistreringID, relationList.Name);
---
---       relationsListeID := lastval();
---
---       DECLARE
---         rel RelationsType;
---       BEGIN
---         FOREACH rel in ARRAY relationList.Relations
---         LOOP
---           INSERT INTO RelationsUpdateView (RelationsListeID, Virkning,
---                                            Relation)
---           VALUES (relationsListeID, rel.Virkning, rel.Relation);
---         END LOOP;
---       END;
---     END LOOP;
---   END;
+--   Loop through relations and add them to the registration
+  DECLARE
+    rels RelationerType;
+    newRelationerID BIGINT;
+  BEGIN
+    FOREACH rels in ARRAY Relationer
+    LOOP
+      SELECT ID FROM Relationer
+      WHERE RegistreringsID = newRegistreringID
+            AND Name = rels.Name INTO newRelationerID;
+      IF newRelationerID IS NULL THEN
+        INSERT INTO Tilstande (RegistreringsID, Name)
+        VALUES (newRegistreringID, rels.Name);
+        newRelationerID := lastval();
+      END IF;
+
+      DECLARE
+        rel RelationType;
+        newRelationID BIGINT;
+      BEGIN
+        FOREACH rel in ARRAY rels.Relationer
+        LOOP
+          INSERT INTO RelationUpdateView (RelationerID, Virkning)
+          VALUES (newRelationerID, rel.Virkning);
+
+          newRelationID := lastval();
+
+          INSERT INTO Reference (RelationID, ReferenceID)
+            SELECT newRelationID, * FROM UNNEST(rel.ReferenceIDer);
+        END LOOP;
+      END;
+    END LOOP;
+  END;
+
 
   RETURN result;
 END;
