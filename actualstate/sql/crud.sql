@@ -216,23 +216,36 @@ DECLARE
 BEGIN
 --   Loop through attributes and add them to the registration
   DECLARE
-    attr EgenskaberType;
-    egenskaberID BIGINT;
+    attrs AttributterType;
+    newAttributterID BIGINT;
   BEGIN
-    FOREACH attr in ARRAY Attributter
+    FOREACH attrs in ARRAY Attributter
     LOOP
-      INSERT INTO Egenskaber (RegistreringsID, Virkning, BrugervendtNoegle)
-      VALUES (inputRegistreringsID, attr.Virkning, attr.BrugervendtNoegle);
+      INSERT INTO Attributter (RegistreringsID, Name)
+      VALUES (inputRegistreringsID, attrs.Name);
 
-      egenskaberID := lastval();
+      newAttributterID := lastval();
 
       DECLARE
-        prop EgenskabsType;
+        attr AttributType;
+        newAttributID BIGINT;
       BEGIN
-        FOREACH prop in ARRAY attr.Properties
+        FOREACH attr in ARRAY attrs.Attributter
         LOOP
-          INSERT INTO Egenskab (EgenskaberID, Name, Value)
-          VALUES (egenskaberID, prop.Name, prop.Value);
+          INSERT INTO Attribut (AttributterID, Virkning)
+          VALUES (newAttributterID, attr.Virkning);
+
+          newAttributID = lastval();
+
+          DECLARE
+            felt AttributFeltType;
+          BEGIN
+            FOREACH felt in ARRAY attr.AttributFelter
+            LOOP
+              INSERT INTO AttributFelt (AttributID, Name, Value)
+              VALUES (newAttributID, felt.Name, felt.Value);
+            END LOOP;
+          END;
         END LOOP;
       END;
     END LOOP;
@@ -240,34 +253,53 @@ BEGIN
 
 --   Loop through states and add them to the registration
   DECLARE
-    state TilstandsType;
+    states TilstandeType;
+    newTilstandeID BIGINT;
   BEGIN
-    FOREACH state in ARRAY Tilstande
+    FOREACH states in ARRAY Tilstande
     LOOP
-      INSERT INTO Tilstand (RegistreringsID, Virkning, Status)
-      VALUES (inputRegistreringsID, state.Virkning, state.Status);
+      INSERT INTO Tilstande (RegistreringsID, Name)
+      VALUES (inputRegistreringsID, states.Name);
+
+      newTilstandeID := lastval();
+
+      DECLARE
+        state TilstandType;
+      BEGIN
+        FOREACH state in ARRAY states.Tilstande
+        LOOP
+          INSERT INTO Tilstand (TilstandeID, Virkning, Status)
+          VALUES (newTilstandeID, state.Virkning, state.Status);
+        END LOOP;
+      END;
     END LOOP;
   END;
 
 --   Loop through relations and add them to the registration
   DECLARE
-    relationList RelationsListeType;
-    relationsListeID BIGINT;
+    rels RelationerType;
+    newRelationerID BIGINT;
   BEGIN
-    FOREACH relationList in ARRAY Relationer
+    FOREACH rels in ARRAY Relationer
     LOOP
-      INSERT INTO RelationsListe (RegistreringsID, Name)
-      VALUES (inputRegistreringsID, relationList.Name);
+      INSERT INTO Relationer (RegistreringsID, Name)
+      VALUES (inputRegistreringsID, rels.Name);
 
-      relationsListeID := lastval();
+      newRelationerID := lastval();
 
       DECLARE
-        rel RelationsType;
+        rel RelationType;
+        newRelationID BIGINT;
       BEGIN
-        FOREACH rel in ARRAY relationList.Relations
+        FOREACH rel in ARRAY rels.Relationer
         LOOP
-          INSERT INTO Relation (RelationsListeID, Virkning, Relation)
-          VALUES (relationsListeID, rel.Virkning, rel.Relation);
+          INSERT INTO Relation (RelationerID, Virkning)
+          VALUES (newRelationerID, rel.Virkning);
+
+          newRelationID := lastval();
+
+          INSERT INTO Reference (RelationID, ReferenceID)
+          SELECT newRelationID, * FROM UNNEST(rel.ReferenceIDer);
         END LOOP;
       END;
     END LOOP;
@@ -278,9 +310,9 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION ACTUAL_STATE_UPDATE(
   inputID UUID,
-  Attributter EgenskaberType[],
-  Tilstande TilstandsType[],
-  Relationer RelationsListeType[]
+  Attributter AttributterType[],
+  Tilstande TilstandeType[],
+  Relationer RelationerType[]
 )
   RETURNS Registrering AS $$
 DECLARE
