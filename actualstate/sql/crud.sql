@@ -325,15 +325,29 @@ BEGIN
 
   newRegistreringID := result.ID;
 
--- --   Loop through attributes and add them to the registration
---   DECLARE
---     attr EgenskaberType;
---     newEgenskaberID BIGINT;
---   BEGIN
---     FOREACH attr in ARRAY Attributter
+--   Loop through attributes and add them to the registration
+
+    DECLARE
+      attr AttributType;
+      newEgenskaberID BIGINT;
+      attrID BIGINT;
+    BEGIN
+      FOREACH attr in ARRAY Attributter
+      
+          IF NOT EXISTS (SELECT 1 from Attributter where Name = attr.name) THEN
+            INSERT INTO Attributter (RegistreringsID, Name) VALUES 
+                (newRegistreringID, Name);
+          SELECT ID from Attributter WHERE Name = attr.name INTO attrID;
+
+          
+    -- The Attributter are now expected to be an array of Atttribut, 
+    -- which have a Virkning and are pointed to by a number of AttributFelter.
+    -- Since this is an update operation, we expect the Attribut in question
+    -- (e.g. Egenskaber or EngelskOversaettelse) to exist already, OTOH this
+    -- should not be a requirement
 --     LOOP
 -- --  Insert into our view which has a trigger which handles updating ranges
--- --  if the new values overlap the old
+-- --  if the new values overlap the 
 --       INSERT INTO EgenskaberUpdateView (RegistreringsID, Virkning, BrugervendtNoegle)
 --       VALUES (newRegistreringID, attr.Virkning, attr.BrugervendtNoegle)
 --       RETURNING ID INTO newEgenskaberID;
