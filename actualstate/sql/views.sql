@@ -254,7 +254,7 @@ BEGIN
 --   |   B   |  Result
 --     Delete old entries which are fully contained by the new range
     DELETE FROM Relation WHERE
-      RelationerID = NEW.RelationerID 
+      RelationerID = NEW.RelationerID
       AND (NEW.Virkning).TimePeriod @>
           (Virkning).TimePeriod;
 
@@ -279,7 +279,7 @@ BEGIN
 --   | A |   B   |  Result
 --     The old entry's upper bound is contained within the new range
 --     Update the old entry's upper bound
-    UPDATE Tilstand SET Virkning.TimePeriod =
+    UPDATE Relation SET Virkning.TimePeriod =
       TSTZRANGE(LOWER((Virkning).TimePeriod), LOWER((NEW.Virkning).TimePeriod),
                 '[)')
     WHERE
@@ -300,7 +300,7 @@ BEGIN
     newLeftRange TSTZRANGE;
     newRightRange TSTZRANGE;
   BEGIN
-    DELETE FROM Tilstand WHERE
+    DELETE FROM Relation WHERE
       RelationerID = NEW.RelationerID 
       AND (NEW.Virkning).TimePeriod <@ (Virkning).TimePeriod
     RETURNING * INTO old;
@@ -313,7 +313,7 @@ BEGIN
 
 --       Don't insert an empty range
       IF newLeftRange != 'empty' THEN
-        INSERT INTO Tilstand (RelationerID, Virkning)
+        INSERT INTO Relation (RelationerID, Virkning)
           VALUES (NEW.RelationerID,
                   ROW(
                     newLeftRange,
@@ -330,7 +330,7 @@ BEGIN
 
 --       Don't insert an empty range
       IF newRightRange != 'empty' THEN
-        INSERT INTO Tilstand (RelationerID, Virkning)
+        INSERT INTO Relation (RelationerID, Virkning)
           VALUES (NEW.RelationerID,
                   ROW(
                     newRightRange,
@@ -343,7 +343,7 @@ BEGIN
   END;
 
   NEW.ID := nextval('relation_id_seq');
-  INSERT INTO Tilstand VALUES (NEW.*);
+  INSERT INTO Relation VALUES (NEW.*);
   RETURN NEW;
 END;
 $$

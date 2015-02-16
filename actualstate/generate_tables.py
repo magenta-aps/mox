@@ -115,7 +115,7 @@ CREATE TABLE ${table}Relation(
 
 CREATE TABLE ${table}Reference (
     PRIMARY KEY (ID),
-    FOREIGN KEY (RelationID) REFERENCES ${table}Relation(ID),
+    FOREIGN KEY (RelationID) REFERENCES ${table}Relation(ID) ON DELETE CASCADE,
     -- No duplicates within the same relation!
     UNIQUE (ReferenceID, RelationID)
 ) INHERITS (Reference);
