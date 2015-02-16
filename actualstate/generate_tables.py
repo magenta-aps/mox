@@ -85,7 +85,7 @@ CREATE TABLE ${table}Tilstande (
     PRIMARY KEY(ID),
     FOREIGN KEY (RegistreringsID) REFERENCES ${table}Registrering (ID),
     UNIQUE (RegistreringsID, Name)
-) INHERTIS (Tilstande);
+) INHERITS (Tilstande);
 
 
 CREATE TABLE ${table}Tilstand (
