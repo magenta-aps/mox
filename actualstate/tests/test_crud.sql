@@ -127,8 +127,8 @@ $$ LANGUAGE plpgsql;
 CREATE FUNCTION test.test_update_bruger () RETURNS SETOF TEXT AS $$
 DECLARE
   brugerID UUID;
-  oldRelUUID UUID = uuid_generate_v4();
-  newRelUUID UUID = uuid_generate_v4();
+  oldRelUUID UUID[] = ARRAY[uuid_generate_v4(), uuid_generate_v4()];
+  newRelUUID UUID[] = ARRAY[uuid_generate_v4(), uuid_generate_v4()];
 BEGIN
   SELECT ID FROM ACTUAL_STATE_CREATE(
       'Bruger',
@@ -221,7 +221,7 @@ BEGIN
           'Bruger',
           'Note'
           ) :: Virkning,
-          ARRAY [oldRelUUID]
+          oldRelUUID
         ) :: RelationType
         ]
       ) :: RelationerType
@@ -316,7 +316,7 @@ BEGIN
             'Bruger',
             'Note'
             ) :: Virkning,
-            ARRAY [newRelUUID]
+            newRelUUID
           ) :: RelationType
           ]
         ) :: RelationerType
@@ -326,33 +326,15 @@ BEGIN
 
 --     Test Relationer
 
---     RETURN NEXT (SELECT is (r1.Relation, newRelUUID,
---                             'New relation value inserted') FROM Relation r1
---       JOIN RelationsListe r2 ON r1.RelationsListeID = r2.ID
---                  WHERE r2.RegistreringsID = reg.ID
---                        AND (r1.Virkning).TimePeriod = '[2015-01-20, infinity)' :: TSTZRANGE
---                        AND r2.Name = 'Adresse');
-
-
-    RAISE INFO 'OLD REFERENCE ID % ; NEW %', oldRelUUID, newRelUUID;
     PREPARE "rel_test" AS SELECT rf.ReferenceID FROM Reference rf
       JOIN Relation r1 ON r1.ID = rf.RelationID
       JOIN Relationer r2 ON r2.ID = r1.RelationerID
-    WHERE r2.RegistreringsID = 3
+    WHERE r2.RegistreringsID = $1
           AND (r1.Virkning).TimePeriod = '[2015-01-20, infinity)' :: TSTZRANGE
           AND r2.Name = 'Adresser';
     RETURN NEXT results_eq('EXECUTE rel_test(' || reg.ID || ')',
-                   ARRAY[newRelUUID],
+                   newRelUUID,
                    'Relation replaced with new value');
-
-
---     RETURN NEXT is((SELECT r1.Relation FROM Relation r1
---       JOIN Relationer r2 ON r1.RelationerID = r2.ID
---                  WHERE r2.RegistreringsID = reg.ID
---                        AND (r1.Virkning).TimePeriod = '[2015-01-20, infinity)' :: TSTZRANGE
---                        AND r2.Name = 'Adresser'),
---                  newRelUUID,
---                  'Relation replaced with new value');
 
 
 --       Test egenskaber
