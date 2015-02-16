@@ -1,8 +1,8 @@
 CREATE OR REPLACE FUNCTION ACTUAL_STATE_CREATE(
     ObjektType REGCLASS,
-    Attributter EgenskaberType[],
-    Tilstande TilstandsType[],
-    Relationer RelationsListeType[] = ARRAY[]::RelationsListeType[]
+    Attributter AttributterType[],
+    Tilstande TilstandeType[],
+    Relationer RelationerType[] = ARRAY[]::RelationerType[]
 )
   RETURNS Objekt AS $$
 DECLARE
@@ -27,7 +27,7 @@ BEGIN
   RETURN result;
 END;
 $$ LANGUAGE plpgsql;
---
+
 CREATE OR REPLACE FUNCTION ACTUAL_STATE_READ(
     ObjektType REGCLASS,
     ID UUID,
@@ -100,61 +100,102 @@ BEGIN
   IF doCopy
   THEN
     DECLARE
-      r Egenskaber;
-      newEgenskaberID BIGINT;
-      s Egenskab;
+      r Attributter;
+      newAttributterID BIGINT;
+
+      s Attribut;
+      newAttributID BIGINT;
+
+      t AttributFelt;
     BEGIN
-      FOR r in SELECT * FROM Egenskaber WHERE RegistreringsID =
+      FOR r in SELECT * FROM Attributter WHERE RegistreringsID =
                                               oldRegistreringsID
       LOOP
-        INSERT INTO Egenskaber (RegistreringsID, Virkning, BrugervendtNoegle)
-        VALUES (newRegistreringsID, r.Virkning, r.BrugervendtNoegle);
+        INSERT INTO Attributter (RegistreringsID, Name)
+        VALUES (newRegistreringsID, r.Name);
 
-        newEgenskaberID := lastval();
+        newAttributterID := lastval();
 
-        FOR s in SELECT * FROM Egenskab e1
-          JOIN Egenskaber e2 ON e1.EgenskaberID = e2.ID WHERE
-          e2.ID = r.ID
+        FOR s in SELECT * FROM Attribut a1
+          JOIN Attributter a2 ON a1.AttributterID = a2.ID WHERE
+          a2.ID = r.ID
         LOOP
-          INSERT INTO Egenskab (EgenskaberID, Name, Value) VALUES
-            (newEgenskaberID, s.Name, s.Value);
+          INSERT INTO Attribut (AttributterID, Virkning) VALUES
+            (newAttributterID, s.Virkning);
+
+          newAttributID := lastval();
+
+          FOR t in SELECT * FROM AttributFelt af
+            JOIN Attribut a1 ON af.AttributID = a1.ID
+            JOIN Attributter a2 ON a1.AttributterID = a2.ID WHERE
+            a2.ID = r.ID
+          LOOP
+            INSERT INTO Attribut (AttributID, Name, Value) VALUES
+              (newAttributID, t.Name, t.Value);
+          END LOOP;
         END LOOP;
 
       END LOOP;
     END;
 
     DECLARE
-      r RECORD;
+      r Tilstande;
+      newTilstandeID BIGINT;
+      s Tilstand;
     BEGIN
-      FOR r in SELECT Virkning, Status
-               FROM Tilstand WHERE RegistreringsID = oldRegistreringsID
+      FOR r in SELECT *
+               FROM Tilstande WHERE RegistreringsID = oldRegistreringsID
       LOOP
-        INSERT INTO Tilstand (RegistreringsID, Virkning, Status)
-        VALUES (newRegistreringsID, r.Virkning, r.Status);
+        INSERT INTO Tilstande (RegistreringsID, Name)
+        VALUES (newRegistreringsID, r.Name);
+
+        newTilstandeID := lastval();
+
+        FOR s in SELECT *
+                 FROM Tilstand t1 JOIN Tilstande t2 ON t1.TilstandeID = t2.ID
+                 WHERE t2.RegistreringsID = oldRegistreringsID
+        LOOP
+          INSERT INTO Tilstand (TilstandeID, Virkning, Status)
+          VALUES (newTilstandeID, s.Virkning, s.Status);
+        END LOOP;
       END LOOP;
     END;
 
     DECLARE
-      relList RelationsListe;
-      newRelationsListeID BIGINT;
+      rels Relationer;
+      newRelationerID BIGINT;
+
       rel Relation;
+      newRelationID BIGINT;
+
+      ref Reference;
     BEGIN
-      FOR relList in SELECT * FROM RelationsListe WHERE RegistreringsID =
+      FOR rels in SELECT * FROM Relationer WHERE RegistreringsID =
                                               oldRegistreringsID
       LOOP
-        INSERT INTO RelationsListe (RegistreringsID, Name)
-        VALUES (newRegistreringsID, relList.Name);
+        INSERT INTO Relationer (RegistreringsID, Name)
+        VALUES (newRegistreringsID, rels.Name);
 
-        newRelationsListeID := lastval();
+        newRelationerID := lastval();
 
         FOR rel in SELECT * FROM Relation r1
-          JOIN RelationsListe r2 ON r1.RelationsListeID = r2.ID WHERE
-          r2.ID = relList.ID
+          JOIN Relationer r2 ON r1.RelationerID = r2.ID
+          WHERE r2.ID = rels.ID
         LOOP
-          INSERT INTO Relation (RelationsListeID, Virkning, Relation) VALUES
-            (newRelationsListeID, rel.Virkning, rel.relation);
-        END LOOP;
+          INSERT INTO Relation (RelationerID, Virkning) VALUES
+            (newRelationerID, rel.Virkning);
 
+          newRelationID := lastval();
+
+          FOR ref in SELECT * FROM Reference rf
+            JOIN Relation r1 ON rf.RelationID = r1.ID
+            JOIN Relationer r2 ON r1.RelationerID = r2.ID
+            WHERE r2.ID = rels.ID
+          LOOP
+            INSERT INTO Reference (RelationID, ReferenceID) VALUES
+              (newRelationID, ref.ReferenceID);
+          END LOOP;
+        END LOOP;
       END LOOP;
     END;
   END IF;
@@ -166,9 +207,9 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION _ACTUAL_STATE_COPY_INTO_REGISTRATION(
   inputRegistreringsID BIGINT,
-  Attributter EgenskaberType[],
-  Tilstande TilstandsType[],
-  Relationer RelationsListeType[]
+  Attributter AttributterType[],
+  Tilstande TilstandeType[],
+  Relationer RelationerType[]
 )
   RETURNS VOID AS $$
 DECLARE
@@ -252,76 +293,90 @@ BEGIN
 
   newRegistreringID := result.ID;
 
---   Loop through attributes and add them to the registration
-  DECLARE
-    attr EgenskaberType;
-    newEgenskaberID BIGINT;
-  BEGIN
-    FOREACH attr in ARRAY Attributter
-    LOOP
---  Insert into our view which has a trigger which handles updating ranges
---  if the new values overlap the old
-      INSERT INTO EgenskaberUpdateView (RegistreringsID, Virkning, BrugervendtNoegle)
-      VALUES (newRegistreringID, attr.Virkning, attr.BrugervendtNoegle)
-      RETURNING ID INTO newEgenskaberID;
-
-      DECLARE
-        prop EgenskabsType;
-      BEGIN
-        FOREACH prop in ARRAY attr.Properties
-        LOOP
---           Update existing properties if we can
-          UPDATE Egenskab SET Value = prop.Value
-            WHERE EgenskaberID = newEgenskaberID AND Name = prop.Name;
-          IF NOT FOUND THEN
---             If we didn't update anything, we have to insert new properties
-            INSERT INTO Egenskab (EgenskaberID, Name, Value)
-            VALUES (newEgenskaberID, prop.Name, prop.Value);
-          END IF;
-        END LOOP;
-      END;
-    END LOOP;
-  END;
+-- --   Loop through attributes and add them to the registration
+--   DECLARE
+--     attr EgenskaberType;
+--     newEgenskaberID BIGINT;
+--   BEGIN
+--     FOREACH attr in ARRAY Attributter
+--     LOOP
+-- --  Insert into our view which has a trigger which handles updating ranges
+-- --  if the new values overlap the old
+--       INSERT INTO EgenskaberUpdateView (RegistreringsID, Virkning, BrugervendtNoegle)
+--       VALUES (newRegistreringID, attr.Virkning, attr.BrugervendtNoegle)
+--       RETURNING ID INTO newEgenskaberID;
+--
+--       DECLARE
+--         prop EgenskabsType;
+--       BEGIN
+--         FOREACH prop in ARRAY attr.Properties
+--         LOOP
+-- --           Update existing properties if we can
+--           UPDATE Egenskab SET Value = prop.Value
+--             WHERE EgenskaberID = newEgenskaberID AND Name = prop.Name;
+--           IF NOT FOUND THEN
+-- --             If we didn't update anything, we have to insert new properties
+--             INSERT INTO Egenskab (EgenskaberID, Name, Value)
+--             VALUES (newEgenskaberID, prop.Name, prop.Value);
+--           END IF;
+--         END LOOP;
+--       END;
+--     END LOOP;
+--   END;
 
 --   Loop through states and add them to the registration
   DECLARE
-    state TilstandsType;
+    states TilstandeType;
+    newTilstandeID BIGINT;
+    state TilstandType;
   BEGIN
-    FOREACH state in ARRAY Tilstande
+    FOREACH states in ARRAY Tilstande
     LOOP
+      SELECT ID FROM Tilstande
+        WHERE RegistreringsID = newRegistreringID
+              AND Name = states.Name INTO newTilstandeID;
+      IF newTilstandeID IS NULL THEN
+        INSERT INTO Tilstande (RegistreringsID, Name)
+          VALUES (newRegistreringID, states.Name);
+        newTilstandeID := lastval();
+      END IF;
+
+      FOREACH state in ARRAY states.Tilstande
+      LOOP
 --  Insert into our view which has a trigger which handles updating ranges
 --  if the new values overlap the old
-      INSERT INTO TilstandUpdateView (RegistreringsID, Virkning, Status)
-      VALUES (newRegistreringID, state.Virkning, state.Status);
+        INSERT INTO TilstandUpdateView (TilstandeID, Virkning, Status)
+        VALUES (newTilstandeID, state.Virkning, state.Status);
+      END LOOP;
     END LOOP;
   END;
 
---   Loop through relations and add them to the registration
-  DECLARE
-    relationList RelationsListeType;
-    relationsListeID BIGINT;
-  BEGIN
-    FOREACH relationList in ARRAY Relationer
-    LOOP
---  Insert into our view which has a trigger which handles updating ranges
---  if the new values overlap the old
-      INSERT INTO RelationsListe (RegistreringsID, Name)
-      VALUES (newRegistreringID, relationList.Name);
-
-      relationsListeID := lastval();
-
-      DECLARE
-        rel RelationsType;
-      BEGIN
-        FOREACH rel in ARRAY relationList.Relations
-        LOOP
-          INSERT INTO RelationsUpdateView (RelationsListeID, Virkning,
-                                           Relation)
-          VALUES (relationsListeID, rel.Virkning, rel.Relation);
-        END LOOP;
-      END;
-    END LOOP;
-  END;
+-- --   Loop through relations and add them to the registration
+--   DECLARE
+--     relationList RelationsListeType;
+--     relationsListeID BIGINT;
+--   BEGIN
+--     FOREACH relationList in ARRAY Relationer
+--     LOOP
+-- --  Insert into our view which has a trigger which handles updating ranges
+-- --  if the new values overlap the old
+--       INSERT INTO RelationsListe (RegistreringsID, Name)
+--       VALUES (newRegistreringID, relationList.Name);
+--
+--       relationsListeID := lastval();
+--
+--       DECLARE
+--         rel RelationsType;
+--       BEGIN
+--         FOREACH rel in ARRAY relationList.Relations
+--         LOOP
+--           INSERT INTO RelationsUpdateView (RelationsListeID, Virkning,
+--                                            Relation)
+--           VALUES (relationsListeID, rel.Virkning, rel.Relation);
+--         END LOOP;
+--       END;
+--     END LOOP;
+--   END;
 
   RETURN result;
 END;
