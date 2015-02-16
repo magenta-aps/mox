@@ -121,6 +121,7 @@ CREATE VIEW RelationUpdateView AS SELECT * FROM Relation;
 
 
 -- Tilstand view
+
 CREATE OR REPLACE FUNCTION tilstand_update_view_insert_trigger()
   RETURNS TRIGGER AS $$
 DECLARE
@@ -135,7 +136,7 @@ BEGIN
 --   |   B   |  Result
 --     Delete old entries which are fully contained by the new range
     DELETE FROM Tilstand WHERE
-      RegistreringsID = NEW.RegistreringsID
+      TilstandeID = NEW.TilstandeID
       AND (NEW.Virkning).TimePeriod @>
           (Virkning).TimePeriod;
 
@@ -150,7 +151,7 @@ BEGIN
       TSTZRANGE(UPPER((NEW.Virkning).TimePeriod), UPPER((Virkning).TimePeriod),
                 '[)')
     WHERE
-      RegistreringsID = NEW.RegistreringsID
+      TilstandeID = NEW.TilstandeID
         AND (NEW.Virkning).TimePeriod @> LOWER((Virkning).TimePeriod);
 
 --     Input
@@ -164,7 +165,7 @@ BEGIN
       TSTZRANGE(LOWER((Virkning).TimePeriod), LOWER((NEW.Virkning).TimePeriod),
                 '[)')
     WHERE
-      RegistreringsID = NEW.RegistreringsID
+      TilstandeID = NEW.TilstandeID
         AND (NEW.Virkning).TimePeriod @> UPPER((Virkning).TimePeriod);
 
 --       Input
@@ -182,7 +183,7 @@ BEGIN
     newRightRange TSTZRANGE;
   BEGIN
     DELETE FROM Tilstand WHERE
-      RegistreringsID = NEW.RegistreringsID
+      TilstandeID = NEW.TilstandeID
       AND (NEW.Virkning).TimePeriod <@ (Virkning).TimePeriod
     RETURNING * INTO old;
 
@@ -194,8 +195,8 @@ BEGIN
 
 --       Don't insert an empty range
       IF newLeftRange != 'empty' THEN
-        INSERT INTO Tilstand (RegistreringsID, Virkning, Status)
-          VALUES (NEW.RegistreringsID,
+        INSERT INTO Tilstand (TilstandeID, Virkning, Status)
+          VALUES (NEW.TilstandeID,
                   ROW(
                     newLeftRange,
                     (old.Virkning).AktoerRef,
@@ -212,8 +213,8 @@ BEGIN
 
 --       Don't insert an empty range
       IF newRightRange != 'empty' THEN
-        INSERT INTO Tilstand (RegistreringsID, Virkning, Status)
-          VALUES (NEW.RegistreringsID,
+        INSERT INTO Tilstand (TilstandeID, Virkning, Status)
+          VALUES (NEW.TilstandeID,
                   ROW(
                     newRightRange,
                     (old.Virkning).AktoerRef,
@@ -235,6 +236,122 @@ LANGUAGE plpgsql;
 CREATE TRIGGER tilstand_update_view_insert_trigger
 INSTEAD OF INSERT ON TilstandUpdateView
 FOR EACH ROW EXECUTE PROCEDURE tilstand_update_view_insert_trigger();
+
+
+-- Relation view
+
+CREATE OR REPLACE FUNCTION relation_update_view_insert_trigger()
+  RETURNS TRIGGER AS $$
+DECLARE
+  tableName REGCLASS;
+  a RECORD;
+BEGIN
+
+--     Input
+--     | A |
+--   |   B   |
+-------------------
+--   |   B   |  Result
+--     Delete old entries which are fully contained by the new range
+    DELETE FROM Relation WHERE
+      RelationerID = NEW.RelationerID 
+      AND (NEW.Virkning).TimePeriod @>
+          (Virkning).TimePeriod;
+
+--     Input
+--         |  A  |
+--   |   B   |
+-------------------
+--   |   B   | A |  Result
+--     The old entry's lower bound is contained within the new range
+--     Update the old entry's lower bound
+    UPDATE Relation SET Virkning.TimePeriod =
+      TSTZRANGE(UPPER((NEW.Virkning).TimePeriod), UPPER((Virkning).TimePeriod),
+                '[)')
+    WHERE
+      RelationerID = NEW.RelationerID 
+        AND (NEW.Virkning).TimePeriod @> LOWER((Virkning).TimePeriod);
+
+--     Input
+--   |  A  |
+--       |   B   |
+-------------------
+--   | A |   B   |  Result
+--     The old entry's upper bound is contained within the new range
+--     Update the old entry's upper bound
+    UPDATE Tilstand SET Virkning.TimePeriod =
+      TSTZRANGE(LOWER((Virkning).TimePeriod), LOWER((NEW.Virkning).TimePeriod),
+                '[)')
+    WHERE
+      RelationerID = NEW.RelationerID 
+        AND (NEW.Virkning).TimePeriod @> UPPER((Virkning).TimePeriod);
+
+--       Input
+--   |     A     |
+--       | B |
+-------------------
+--   | A'| B |A''|  Result
+--     The new range is completely contained by the old range
+--   Store and delete the old A
+--   Insert the lower old entry to become A'
+--   Insert two upper old entry to become A''
+  DECLARE
+    old RECORD;
+    newLeftRange TSTZRANGE;
+    newRightRange TSTZRANGE;
+  BEGIN
+    DELETE FROM Tilstand WHERE
+      RelationerID = NEW.RelationerID 
+      AND (NEW.Virkning).TimePeriod <@ (Virkning).TimePeriod
+    RETURNING * INTO old;
+
+    IF old IS NOT NULL THEN
+      newLeftRange := TSTZRANGE(
+          LOWER((old.Virkning).TimePeriod),
+          LOWER((NEW.Virkning).TimePeriod)
+      );
+
+--       Don't insert an empty range
+      IF newLeftRange != 'empty' THEN
+        INSERT INTO Tilstand (RelationerID, Virkning)
+          VALUES (NEW.RelationerID,
+                  ROW(
+                    newLeftRange,
+                    (old.Virkning).AktoerRef,
+                    (old.Virkning).AktoertypeKode,
+                    (old.Virkning).NoteTekst
+                  )::Virkning);
+      END IF;
+
+      newRightRange := TSTZRANGE(
+          UPPER((NEW.Virkning).TimePeriod),
+          UPPER((old.Virkning).TimePeriod)
+      );
+
+--       Don't insert an empty range
+      IF newRightRange != 'empty' THEN
+        INSERT INTO Tilstand (RelationerID, Virkning)
+          VALUES (NEW.RelationerID,
+                  ROW(
+                    newRightRange,
+                    (old.Virkning).AktoerRef,
+                    (old.Virkning).AktoertypeKode,
+                    (old.Virkning).NoteTekst
+                  )::Virkning);
+      END IF;
+    END IF;
+  END;
+
+  NEW.ID := nextval('relation_id_seq');
+  INSERT INTO Tilstand VALUES (NEW.*);
+  RETURN NEW;
+END;
+$$
+LANGUAGE plpgsql;
+
+CREATE TRIGGER relation_update_view_insert_trigger
+INSTEAD OF INSERT ON RelationUpdateView
+FOR EACH ROW EXECUTE PROCEDURE relation_update_view_insert_trigger();
 
 
 
