@@ -61,6 +61,7 @@ CREATE TABLE ${table}Registrering  (
 CREATE TABLE ${table}Attributter (
     PRIMARY KEY(ID),
     FOREIGN KEY (RegistreringsID) REFERENCES ${table}Registrering (ID),
+    UNIQUE (RegistreringsID, Name)
 ) INHERITS (Attributter);
 
 
@@ -82,7 +83,8 @@ CREATE TABLE ${table}AttributFelt (
 
 CREATE TABLE ${table}Tilstande (
     PRIMARY KEY(ID),
-    FOREIGN KEY (RegistreringsID) REFERENCES ${table}Registrering (ID)
+    FOREIGN KEY (RegistreringsID) REFERENCES ${table}Registrering (ID),
+    UNIQUE (RegistreringsID, Name)
 ) INHERTIS (Tilstande);
 
 
@@ -97,7 +99,8 @@ CREATE TABLE ${table}Tilstand (
 
 CREATE TABLE ${table}Relationer(
     PRIMARY KEY(ID),
-    FOREIGN KEY (RegistreringsID) REFERENCES ${table}Registrering (ID)
+    FOREIGN KEY (RegistreringsID) REFERENCES ${table}Registrering (ID),
+    UNIQUE (RegistreringsID, Name)
 ) INHERITS (Relationer);
     
 
