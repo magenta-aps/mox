@@ -21,7 +21,7 @@ CREATE TABLE Registrering  (
 );
 
 
-CREATE TABLE ATTRIBUT (
+CREATE TABLE Attribut (
     ID BIGSERIAL NOT NULL PRIMARY KEY,
     AttributterID BIGINT,  -- must reference Attributter for derived class
     Virkning Virkning
@@ -53,7 +53,7 @@ CREATE TABLE Tilstande (
 
 CREATE TABLE Tilstand(
   ID BIGSERIAL NOT NULL PRIMARY KEY,
-  RegistreringsID BIGINT, -- must reference registration
+  TilstandeID BIGINT, -- must reference Tilstande
   Virkning Virkning,
   Status TEXT
   -- TBD on subclass:
