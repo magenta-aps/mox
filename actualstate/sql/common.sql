@@ -31,35 +31,40 @@ CREATE TYPE Virkning AS (
   NoteTekst TEXT
 );
 
-CREATE TYPE GyldighedsStatus AS ENUM (
-  'Aktiv',
-  'Inaktiv'
-);
-
-CREATE TYPE EgenskabsType AS (
+CREATE TYPE AttributFeltType AS (
   Name TEXT,
   Value TEXT
 );
 
-CREATE TYPE EgenskaberType AS (
-  Properties EgenskabsType[],
-  Virkning Virkning,
-  BrugervendtNoegle TEXT
+CREATE TYPE AttributType AS (
+  AttributFelter AttributFeltType[],
+  Virkning Virkning
 );
 
-CREATE TYPE TilstandsType AS (
-  Virkning Virkning,
-  Status GyldighedsStatus
-);
-
-CREATE TYPE RelationsType AS (
-  Virkning Virkning,
-  Relation UUID
-);
-
-CREATE TYPE RelationsListeType AS (
+CREATE TYPE AttributterType AS (
   Name TEXT,
-  Relations RelationsType[]
+  Attributter AttributType[]
+);
+
+CREATE TYPE TilstandType AS (
+  Virkning Virkning,
+  Status TEXT
+);
+
+CREATE TYPE TilstandeType AS (
+  Name TEXT,
+  Tilstande TilstandType[]
+);
+
+
+CREATE TYPE RelationType AS (
+  Virkning Virkning,
+  ReferenceIDer UUID[]
+);
+
+CREATE TYPE RelationerType AS (
+  Name TEXT,
+  Relationer RelationType[]
 );
 
 
