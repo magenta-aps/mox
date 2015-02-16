@@ -308,6 +308,24 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+CREATE OR REPLACE FUNCTION _ACTUAL_STATE_MERGE_ATTRS(
+  inputAttributID BIGINT,
+  felter AttributFeltType[]
+) RETURNS VOID AS $$
+DECLARE
+  attrFelt AttributFeltType;
+BEGIN
+  FOREACH attrFelt IN ARRAY felter LOOP
+    UPDATE AttributFelt SET Value = attrFelt.Value
+    WHERE Name = attrFelt.Name;
+    IF NOT FOUND THEN
+      INSERT INTO AttributFelt (AttributID, Name, Value)
+      VALUES (inputAttributID, attrFelt.Name, attrFelt.Value);
+    END IF;
+  END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE OR REPLACE FUNCTION ACTUAL_STATE_UPDATE(
   inputID UUID,
   Attributter AttributterType[],
@@ -328,16 +346,63 @@ BEGIN
 --   Loop through attributes and add them to the registration
 
     DECLARE
-      attr AttributType;
-      newEgenskaberID BIGINT;
-      attrID BIGINT;
+      attrs AttributterType;
+      attributterID BIGINT;
     BEGIN
-      FOREACH attr in ARRAY Attributter
-      
-          IF NOT EXISTS (SELECT 1 from Attributter where Name = attr.name) THEN
-            INSERT INTO Attributter (RegistreringsID, Name) VALUES 
-                (newRegistreringID, Name);
-          SELECT ID from Attributter WHERE Name = attr.name INTO attrID;
+      FOREACH attrs in ARRAY Attributter
+      LOOP
+        SELECT ID from Attributter WHERE Name = attr.name INTO attributterID;
+        IF attributterID IS NULL THEN
+          INSERT INTO Attributter (RegistreringsID, Name) VALUES
+              (newRegistreringID, Name);
+          attributterID := lastval();
+        END IF;
+
+        FOREACH attr in ARRAY attrs.Attributter
+        LOOP
+          DECLARE
+            oldAttr Attribut;
+          BEGIN
+--             Loop through all old attribut that overlap new
+            FOR oldAttr IN SELECT * FROM Attribut
+              WHERE (Virkning).TimePeriod && (attr.Virkning).TimePeriod
+            LOOP
+--               If new range is contained in old range
+              IF (attr.Virkning).TimePeriod @> (oldAttr.Virkning).TimePeriod
+              THEN
+--                 Merge new into old
+                PERFORM _ACTUAL_STATE_COPY_ATTRS(oldAttr.ID, attr.AttributFelter);
+              ELSE
+                IF LOWER((attr.Virkning).TimePeriod) @>
+                   (oldAttr.Virkning).TimePeriod
+                THEN
+--                   Update the old bounds
+                  UPDATE Attribut SET Virkning.TimePeriod =
+                  TSTZRANGE(LOWER((Virkning).TimePeriod),
+                            LOWER((attr.Virkning).TimePeriod))
+                    WHERE ID = oldAttr.ID;
+
+                  INSERT INTO Attribut (AttributerID, Virkning) VALUES
+                    (oldAttr.AttributterID, ROW(
+                      TSTZRANGE(
+                        LOWER((attr.Virkning).TimePeriod),
+                        MIN(ARRAY[UPPER((attr.Virkning).TimePeriod),
+                            UPPER((oldAttr.Virkning).TimePeriod)])
+                      ), (attr.Virkning).AktoerRef,
+                      (attr.Virkning).AktoerTypeKode,
+                      (attr.Virkning).NoteTekst
+                    )::Virkning);
+
+                  PERFORM _ACTUAL_STATE_COPY_ATTRS(lastval(), attr.AttributFelter);
+                END IF;
+              END IF;
+            END LOOP;
+          END;
+
+        END LOOP;
+      END LOOP;
+    END;
+
 
           
     -- The Attributter are now expected to be an array of Atttribut, 
