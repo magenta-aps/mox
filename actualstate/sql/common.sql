@@ -76,3 +76,7 @@ CREATE OR REPLACE FUNCTION composite_type_to_time_range(ANYELEMENT) RETURNS
 -- Used to make GiST indexes on UUID type
 -- Treats UUID as TEXT
 CREATE OR REPLACE FUNCTION uuid_to_text(UUID) RETURNS TEXT AS 'SELECT $1::TEXT' LANGUAGE sql IMMUTABLE;
+
+-- Shorthand for accessing Virkning time period for
+-- Attribut/Tilstand/Relation tables
+CREATE OR REPLACE FUNCTION period(ANYELEMENT) RETURNS TSTZRANGE AS 'SELECT ($1.Virkning).TimePeriod' LANGUAGE sql IMMUTABLE;

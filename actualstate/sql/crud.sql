@@ -347,93 +347,81 @@ BEGIN
 
     DECLARE
       attrs AttributterType;
-      attributterID BIGINT;
+      newAttributterID BIGINT;
+      attr AttributType;
     BEGIN
       FOREACH attrs in ARRAY Attributter
       LOOP
-        SELECT ID from Attributter WHERE Name = attr.name INTO attributterID;
-        IF attributterID IS NULL THEN
+        SELECT ID from Attributter
+        WHERE Name = attrs.Name AND RegistreringsID = newRegistreringID
+        INTO newAttributterID;
+        IF newAttributterID IS NULL THEN
           INSERT INTO Attributter (RegistreringsID, Name) VALUES
               (newRegistreringID, Name);
-          attributterID := lastval();
+          newAttributterID := lastval();
         END IF;
 
         FOREACH attr in ARRAY attrs.Attributter
         LOOP
           DECLARE
-            oldAttr Attribut;
+            r RECORD;
+            lastPeriod TSTZRANGE := NULL;
+            insertPeriods TSTZRANGE[];
           BEGIN
---             Loop through all old attribut that overlap new
-            FOR oldAttr IN SELECT * FROM Attribut
-              WHERE (Virkning).TimePeriod && (attr.Virkning).TimePeriod
-            LOOP
---               If new range is contained in old range
-              IF (attr.Virkning).TimePeriod @> (oldAttr.Virkning).TimePeriod
-              THEN
---                 Merge new into old
-                PERFORM _ACTUAL_STATE_COPY_ATTRS(oldAttr.ID, attr.AttributFelter);
+            RAISE NOTICE 'Adding attr %', attr;
+            FOR r IN
+              WITH cte(r) AS (SELECT (attr.Virkning).TimePeriod)
+              SELECT * FROM (
+                SELECT t.period * tstzrange(NULL, lower(c.r), '(]') - c.r AS period,
+                       FALSE AS merge FROM Attribut t, cte c
+                  WHERE t.period && c.r AND t.AttributterID = newAttributterID
+                UNION ALL
+                SELECT t.period * c.r AS period,
+                       TRUE AS merge FROM Attribut t, cte c
+                  WHERE t.period && c.r AND t.AttributterID = newAttributterID
+                UNION ALL
+                SELECT t.period * tstzrange(upper(c.r), NULL, '[)') - c.r AS period,
+                       FALSE AS merge FROM Attribut t, cte c
+                  WHERE t.period && c.r AND t.AttributterID = newAttributterID
+              ) sub WHERE period <> 'empty' ORDER BY period LOOP
+              RAISE NOTICE 'New range %', r;
+
+              IF r.merge THEN
+--                 DO merge
               ELSE
-                IF LOWER((attr.Virkning).TimePeriod) @>
-                   (oldAttr.Virkning).TimePeriod
-                THEN
---                   Update the old bounds
-                  UPDATE Attribut SET Virkning.TimePeriod =
-                  TSTZRANGE(LOWER((Virkning).TimePeriod),
-                            LOWER((attr.Virkning).TimePeriod))
-                    WHERE ID = oldAttr.ID;
-
-                  INSERT INTO Attribut (AttributerID, Virkning) VALUES
-                    (oldAttr.AttributterID, ROW(
-                      TSTZRANGE(
-                        LOWER((attr.Virkning).TimePeriod),
-                        MIN(ARRAY[UPPER((attr.Virkning).TimePeriod),
-                            UPPER((oldAttr.Virkning).TimePeriod)])
-                      ), (attr.Virkning).AktoerRef,
-                      (attr.Virkning).AktoerTypeKode,
-                      (attr.Virkning).NoteTekst
-                    )::Virkning);
-
-                  PERFORM _ACTUAL_STATE_COPY_ATTRS(lastval(), attr.AttributFelter);
-                END IF;
+--                 Copy old values
               END IF;
-            END LOOP;
-          END;
 
+--               If this is the first range being looped through AND
+--                 the new range is lower than the old
+              IF lastPeriod IS NULL AND LOWER((attr.Virkning).TimePeriod) <
+                                        LOWER(r.period) THEN
+                insertPeriods = insertPeriods || TSTZRANGE(
+                    LOWER((attr.Virkning).TimePeriod), lower(r.period), '[]');
+--               If the last period is NOT adjacent to this period
+              ELSEIF NOT r.period -|- lastPeriod THEN
+--                 Add the period in between (the hole) to our array
+--                 TODO: Correct inclusivity of bounds
+                insertPeriods = insertPeriods || TSTZRANGE(
+                    upper(lastPeriod), lower(r.period), '[]');
+              END IF;
+              lastPeriod := r.period;
+            END LOOP;
+
+--             If the new range extends past the last range, add the period
+--               that extends after
+            IF lastPeriod IS NOT NULL AND UPPER((attr.Virkning).TimePeriod)
+                                          > UPPER(lastPeriod) THEN
+              insertPeriods = insertPeriods || TSTZRANGE(
+                  UPPER(lastPeriod), UPPER((attr.Virkning).TimePeriod), '[]');
+            END IF;
+
+--             TODO: Insert new values into holes based on insertPeriods array
+            RAISE NOTICE 'Insert new periods %', insertPeriods;
+          END;
         END LOOP;
       END LOOP;
     END;
-
-
-          
-    -- The Attributter are now expected to be an array of Atttribut, 
-    -- which have a Virkning and are pointed to by a number of AttributFelter.
-    -- Since this is an update operation, we expect the Attribut in question
-    -- (e.g. Egenskaber or EngelskOversaettelse) to exist already, OTOH this
-    -- should not be a requirement
---     LOOP
--- --  Insert into our view which has a trigger which handles updating ranges
--- --  if the new values overlap the 
---       INSERT INTO EgenskaberUpdateView (RegistreringsID, Virkning, BrugervendtNoegle)
---       VALUES (newRegistreringID, attr.Virkning, attr.BrugervendtNoegle)
---       RETURNING ID INTO newEgenskaberID;
---
---       DECLARE
---         prop EgenskabsType;
---       BEGIN
---         FOREACH prop in ARRAY attr.Properties
---         LOOP
--- --           Update existing properties if we can
---           UPDATE Egenskab SET Value = prop.Value
---             WHERE EgenskaberID = newEgenskaberID AND Name = prop.Name;
---           IF NOT FOUND THEN
--- --             If we didn't update anything, we have to insert new properties
---             INSERT INTO Egenskab (EgenskaberID, Name, Value)
---             VALUES (newEgenskaberID, prop.Name, prop.Value);
---           END IF;
---         END LOOP;
---       END;
---     END LOOP;
---   END;
 
 --   Loop through states and add them to the registration
   DECLARE
