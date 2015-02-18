@@ -431,19 +431,23 @@ BEGIN
         BEGIN
           RAISE NOTICE 'Adding attr %', attr;
           FOR r IN
-            WITH cte(r) AS (SELECT (attr.Virkning).TimePeriod)
+            WITH cte(r) AS (SELECT (attr.Virkning).TimePeriod),
+            t AS (SELECT (Virkning).TimePeriod AS period FROM Attribut at
+                JOIN Attributter att ON at.AttributterID = att.ID,
+                cte c
+                WHERE att.RegistreringsID = oldRegistreringID
+                      AND att.Name = attrs.Name
+                      AND at.period && c.r
+              )
             SELECT * FROM (
               SELECT t.period * tstzrange(NULL, lower(c.r), '(]') - c.r AS period,
-                     FALSE AS merge FROM Attribut t, cte c
-                WHERE t.period && c.r AND t.AttributterID = newAttributterID
+                     FALSE AS merge FROM t, cte c
               UNION ALL
               SELECT t.period * c.r AS period,
-                     TRUE AS merge FROM Attribut t, cte c
-                WHERE t.period && c.r AND t.AttributterID = newAttributterID
+                     TRUE AS merge FROM t, cte c
               UNION ALL
               SELECT t.period * tstzrange(upper(c.r), NULL, '[)') - c.r AS period,
-                     FALSE AS merge FROM Attribut t, cte c
-                WHERE t.period && c.r AND t.AttributterID = newAttributterID
+                     FALSE AS merge FROM t, cte c
             ) sub WHERE period <> 'empty' ORDER BY period LOOP
             RAISE NOTICE 'New range %', r;
 
