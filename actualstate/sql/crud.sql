@@ -476,8 +476,8 @@ BEGIN
         DECLARE
           r RECORD;
           lastPeriod TSTZRANGE := NULL;
-          insertPeriods TSTZRANGE[];
-          overlappingAttrIDs BIGINT[];
+          insertPeriods TSTZRANGE[] = ARRAY[]::TSTZRANGE[];
+          overlappingAttrIDs BIGINT[] = ARRAY[]::BIGINT[];
         BEGIN
           FOR r IN
             WITH cte(r) AS (SELECT (attr.Virkning).TimePeriod),
