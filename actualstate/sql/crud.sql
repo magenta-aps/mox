@@ -554,8 +554,30 @@ BEGIN
                             TSTZRANGE(upper(lastPeriod), NULL, '[)') - lastPeriod;
           END IF;
 
---             TODO: Insert new values into holes based on insertPeriods array
-          RAISE NOTICE 'Insert new periods %', insertPeriods;
+--           Insert new values into holes based on insertPeriods array
+          DECLARE
+            section TSTZRANGE;
+            newAttributID BIGINT;
+            BEGIN
+            FOREACH section IN ARRAY insertPeriods LOOP
+              INSERT INTO Attribut (AttributterID, Virkning) VALUES
+                (newAttributterID,
+                 ROW(
+                  section,
+                   (attr.Virkning).AktoerRef,
+                   (attr.Virkning).AktoertypeKode,
+                   (attr.Virkning).NoteTekst
+                 )::Virkning
+                );
+
+              newAttributID := lastval();
+
+              INSERT INTO AttributFelt (AttributID, Name, Value)
+              WITH newFields(Name, Value) AS
+                (SELECT f.Name, f.Value FROM UNNEST(attr.AttributFelter) AS f)
+                SELECT newAttributID, Name, Value FROM newFields;
+            END LOOP;
+          END;
 
 --           TODO: Insert non-overlapping old values
         END;
