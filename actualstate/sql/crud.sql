@@ -394,8 +394,6 @@ DECLARE
   newAttributID BIGINT;
   oldVirkning Virkning;
 BEGIN
-  RAISE NOTICE 'COPY ATTR FROM %', oldAttributID;
-
   INSERT INTO Attribut (AttributterID, Virkning)
   SELECT newAttributterID,
     ROW(
@@ -479,8 +477,8 @@ BEGIN
           r RECORD;
           lastPeriod TSTZRANGE := NULL;
           insertPeriods TSTZRANGE[];
+          overlappingAttrIDs BIGINT[];
         BEGIN
-          RAISE NOTICE 'Adding attr %', attr;
           FOR r IN
             WITH cte(r) AS (SELECT (attr.Virkning).TimePeriod),
             t AS (SELECT (Virkning).TimePeriod AS period, at.ID AS attrID FROM
@@ -508,14 +506,14 @@ BEGIN
               FROM t, cte c
             ) sub WHERE period <> 'empty' ORDER BY period LOOP
 
+            overlappingAttrIDs = overlappingAttrIDs || r.attrID;
+
             IF r.merge THEN
 --                 DO merge into new Attribut based on old (r.attrID)
-              RAISE NOTICE 'Merge % into %', attr, r.period;
               PERFORM _ACTUAL_STATE_MERGE_ATTR(newAttributterID,
                                                 r.period,
                                                 attr, r.attrID);
             ELSE
-              RAISE NOTICE 'Copy OLD attr %', r.period;
 --                 Copy old values from r.attrID into new Attribut
               PERFORM _ACTUAL_STATE_COPY_ATTR(newAttributterID,
                                               r.period,
@@ -579,7 +577,31 @@ BEGIN
             END LOOP;
           END;
 
---           TODO: Insert non-overlapping old values
+--           Insert non-overlapping old values
+          DECLARE
+            oldAttr Attribut;
+            newAttributID BIGINT;
+          BEGIN
+--             Loop through each non-overlapping old value
+            FOR oldAttr IN SELECT at.* FROM Attribut at
+                    JOIN Attributter att ON at.AttributteRID = att.ID
+                  WHERE att.RegistreringsID =
+                      oldRegistreringID AND att.Name = attrs.Name
+                    AND NOT at.ID IN (SELECT UNNEST(overlappingAttrIDs)) LOOP
+
+--               Copy the old Virkning and associate with new attributterID
+              INSERT INTO Attribut (AttributterID, Virkning) VALUES
+                (newAttributterID, oldAttr.Virkning);
+
+              newAttributID := lastval();
+
+--               Copy the old fields into the new
+              INSERT INTO AttributFelt (AttributID, Name, Value)
+                SELECT newAttributID, Name, Value FROM AttributFelt af
+                  JOIN Attribut at ON af.AttributID = at.ID
+                WHERE at.ID = oldAttr.ID;
+            END LOOP;
+          END;
         END;
       END LOOP;
     END LOOP;
