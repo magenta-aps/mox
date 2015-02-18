@@ -394,17 +394,17 @@ DECLARE
   newAttributID BIGINT;
   oldVirkning Virkning;
 BEGIN
-  SELECT Virkning FROM Attribut WHERE ID = oldAttributID INTO oldVirkning;
+  RAISE NOTICE 'COPY ATTR FROM %', oldAttributID;
 
-  INSERT INTO Attribut (AttributterID, Virkning) VALUES
-    (newAttributterID,
-     ROW(
-       newPeriod,
-       (oldVirkning).AktoerRef,
-       (oldVirkning).AktoertypeKode,
-       (oldVirkning).NoteTekst
-     )::Virkning
-  );
+  INSERT INTO Attribut (AttributterID, Virkning)
+  SELECT newAttributterID,
+    ROW(
+      newPeriod,
+      (a.Virkning).AktoerRef,
+      (a.Virkning).AktoertypeKode,
+      (a.Virkning).NoteTekst
+    )::Virkning
+  FROM Attribut a WHERE a.ID = oldAttributID;
 
   newAttributID := lastval();
 
@@ -507,7 +507,6 @@ BEGIN
                      t.attrID AS attrID
               FROM t, cte c
             ) sub WHERE period <> 'empty' ORDER BY period LOOP
-            RAISE NOTICE 'New range %', r;
 
             IF r.merge THEN
 --                 DO merge into new Attribut based on old (r.attrID)
@@ -516,6 +515,7 @@ BEGIN
                                                 r.period,
                                                 attr, r.attrID);
             ELSE
+              RAISE NOTICE 'Copy OLD attr %', r.period;
 --                 Copy old values from r.attrID into new Attribut
               PERFORM _ACTUAL_STATE_COPY_ATTR(newAttributterID,
                                               r.period,

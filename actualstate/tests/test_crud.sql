@@ -257,7 +257,7 @@ BEGIN
               ROW ('Brugernavn', 'BrugernavnAupdated'),
               ROW ('Brugertype', 'BrugertypeAupdated')
             ] :: AttributFeltType [],
-            ROW ('[2014-12-01, 2015-02-25)' :: TSTZRANGE,
+            ROW ('[2015-01-05, 2015-01-15)' :: TSTZRANGE,
             uuid_generate_v4(),
             'Bruger',
             'Note'
