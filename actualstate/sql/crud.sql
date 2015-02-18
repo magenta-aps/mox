@@ -345,22 +345,73 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
-CREATE OR REPLACE FUNCTION _ACTUAL_STATE_MERGE_ATTRS(
-  inputAttributID BIGINT,
-  felter AttributFeltType[]
+-- Merges the attributter contained in inputAttributID into a new Attribut
+CREATE OR REPLACE FUNCTION _ACTUAL_STATE_MERGE_ATTR(
+  newAttributterID BIGINT,
+  newPeriod TSTZRANGE,
+  inputAttribut AttributType,
+  oldAttributID BIGINT
 ) RETURNS VOID AS $$
 DECLARE
   attrFelt AttributFeltType;
+  newAttributID BIGINT;
 BEGIN
-  FOREACH attrFelt IN ARRAY felter LOOP
-    UPDATE AttributFelt SET Value = attrFelt.Value
-    WHERE Name = attrFelt.Name;
-    IF NOT FOUND THEN
-      INSERT INTO AttributFelt (AttributID, Name, Value)
-      VALUES (inputAttributID, attrFelt.Name, attrFelt.Value);
-    END IF;
-  END LOOP;
+  INSERT INTO Attribut (AttributterID, Virkning) VALUES
+    (newAttributterID,
+     ROW(
+       newPeriod,
+       (inputAttribut.Virkning).AktoerRef,
+       (inputAttribut.Virkning).AktoertypeKode,
+       (inputAttribut.Virkning).NoteTekst
+     )::Virkning
+    );
+
+  newAttributID := lastval();
+
+  INSERT INTO AttributFelt (AttributID, Name, Value)
+  WITH newFields(Name, Value) AS
+        (SELECT f.Name, f.Value FROM UNNEST(inputAttribut.AttributFelter) AS f),
+       oldFields AS (SELECT Name, Value FROM AttributFelt af JOIN Attribut at
+                     ON af.AttributID = at.ID
+                     WHERE at.ID = oldAttributID)
+  SELECT newAttributID, Name, Value FROM newFields
+  UNION
+  SELECT newAttributID, Name, Value FROM oldFields WHERE (
+    NOT Name IN (SELECT Name FROM newFields)
+  );
+END;
+$$ LANGUAGE plpgsql;
+
+-- Copies the attribut contained in oldAttributID into a new Attribut with
+-- new period and newAttributterID
+CREATE OR REPLACE FUNCTION _ACTUAL_STATE_COPY_ATTR(
+  newAttributterID BIGINT,
+  newPeriod TSTZRANGE,
+  oldAttributID BIGINT
+) RETURNS VOID AS $$
+DECLARE
+  attrFelt AttributFeltType;
+  newAttributID BIGINT;
+  oldVirkning Virkning;
+BEGIN
+  SELECT Virkning FROM Attribut WHERE ID = oldAttributID INTO oldVirkning;
+
+  INSERT INTO Attribut (AttributterID, Virkning) VALUES
+    (newAttributterID,
+     ROW(
+       newPeriod,
+       (oldVirkning).AktoerRef,
+       (oldVirkning).AktoertypeKode,
+       (oldVirkning).NoteTekst
+     )::Virkning
+  );
+
+  newAttributID := lastval();
+
+  INSERT INTO AttributFelt (AttributID, Name, Value)
+    SELECT newAttributID, Name, Value FROM AttributFelt af JOIN Attribut at
+        ON af.AttributID = at.ID
+    WHERE at.ID = oldAttributID;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -432,7 +483,8 @@ BEGIN
           RAISE NOTICE 'Adding attr %', attr;
           FOR r IN
             WITH cte(r) AS (SELECT (attr.Virkning).TimePeriod),
-            t AS (SELECT (Virkning).TimePeriod AS period FROM Attribut at
+            t AS (SELECT (Virkning).TimePeriod AS period, at.ID AS attrID FROM
+                Attribut at
                 JOIN Attributter att ON at.AttributterID = att.ID,
                 cte c
                 WHERE att.RegistreringsID = oldRegistreringID
@@ -441,20 +493,33 @@ BEGIN
               )
             SELECT * FROM (
               SELECT t.period * tstzrange(NULL, lower(c.r), '(]') - c.r AS period,
-                     FALSE AS merge FROM t, cte c
+                     FALSE AS merge,
+                     t.attrID AS attrID
+              FROM t, cte c
               UNION ALL
               SELECT t.period * c.r AS period,
-                     TRUE AS merge FROM t, cte c
+                     TRUE AS merge,
+                     t.attrID AS attrID
+              FROM t, cte c
               UNION ALL
               SELECT t.period * tstzrange(upper(c.r), NULL, '[)') - c.r AS period,
-                     FALSE AS merge FROM t, cte c
+                     FALSE AS merge,
+                     t.attrID AS attrID
+              FROM t, cte c
             ) sub WHERE period <> 'empty' ORDER BY period LOOP
             RAISE NOTICE 'New range %', r;
 
             IF r.merge THEN
---                 DO merge
+--                 DO merge into new Attribut based on old (r.attrID)
+              RAISE NOTICE 'Merge % into %', attr, r.period;
+              PERFORM _ACTUAL_STATE_MERGE_ATTR(newAttributterID,
+                                                r.period,
+                                                attr, r.attrID);
             ELSE
---                 Copy old values
+--                 Copy old values from r.attrID into new Attribut
+              PERFORM _ACTUAL_STATE_COPY_ATTR(newAttributterID,
+                                              r.period,
+                                              r.attrID);
             END IF;
 
 --               If this is the first range being looped through AND
