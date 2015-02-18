@@ -461,14 +461,21 @@ BEGIN
 --                 the new range is lower than the old
             IF lastPeriod IS NULL AND LOWER((attr.Virkning).TimePeriod) <
                                       LOWER(r.period) THEN
-              insertPeriods = insertPeriods || TSTZRANGE(
-                  LOWER((attr.Virkning).TimePeriod), lower(r.period), '[]');
+--               Add the first new range to our array
+              insertPeriods = insertPeriods ||
+                              (attr.Virkning).TimePeriod *
+                              TSTZRANGE(NULL, lower(r.period), '(]') - r.period;
 --               If the last period is NOT adjacent to this period
             ELSEIF NOT r.period -|- lastPeriod THEN
 --                 Add the period in between (the hole) to our array
---                 TODO: Correct inclusivity of bounds
               insertPeriods = insertPeriods || TSTZRANGE(
-                  upper(lastPeriod), lower(r.period), '[]');
+                  upper(lastPeriod), lower(r.period),
+--                       The bounds are the complement of the original bounds
+                      concat(
+                        CASE WHEN upper_inc(lastPeriod) THEN '(' ELSE '[' END,
+                        CASE WHEN lower_inc(r.period) THEN ')' ELSE ']' END
+                      )
+              );
             END IF;
             lastPeriod := r.period;
           END LOOP;
@@ -477,12 +484,15 @@ BEGIN
 --               that extends after
           IF lastPeriod IS NOT NULL AND UPPER((attr.Virkning).TimePeriod)
                                         > UPPER(lastPeriod) THEN
-            insertPeriods = insertPeriods || TSTZRANGE(
-                UPPER(lastPeriod), UPPER((attr.Virkning).TimePeriod), '[]');
+            insertPeriods = insertPeriods ||
+                            (attr.Virkning).TimePeriod *
+                            TSTZRANGE(upper(lastPeriod), NULL, '[)') - lastPeriod;
           END IF;
 
 --             TODO: Insert new values into holes based on insertPeriods array
           RAISE NOTICE 'Insert new periods %', insertPeriods;
+
+--           TODO: Insert non-overlapping old values
         END;
       END LOOP;
     END LOOP;

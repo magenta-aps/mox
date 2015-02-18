@@ -239,25 +239,25 @@ BEGIN
           ROW (
           'Egenskab',
           ARRAY [
-            ROW (
-            ARRAY [
-              ROW ('BrugervendtNoegle', 'BrugervendtNoegleupdated'),
-              ROW ('Brugernavn', 'Brugernavnupdated'),
-              ROW ('Brugertype', 'Brugertypeupdated')
-            ] :: AttributFeltType [],
-            ROW ('[2015-01-01, 2015-01-10)' :: TSTZRANGE,
-            uuid_generate_v4(),
-            'Bruger',
-            'Note'
-            ) :: Virkning
-          ) :: AttributType,
+--             ROW (
+--             ARRAY [
+--               ROW ('BrugervendtNoegle', 'BrugervendtNoegleupdated'),
+--               ROW ('Brugernavn', 'Brugernavnupdated'),
+--               ROW ('Brugertype', 'Brugertypeupdated')
+--             ] :: AttributFeltType [],
+--             ROW ('[2015-01-01, 2015-01-10)' :: TSTZRANGE,
+--             uuid_generate_v4(),
+--             'Bruger',
+--             'Note'
+--             ) :: Virkning
+--           ) :: AttributType,
             ROW (
             ARRAY [
               ROW ('BrugervendtNoegle', 'BrugervendtNoegleAupdated'),
               ROW ('Brugernavn', 'BrugernavnAupdated'),
               ROW ('Brugertype', 'BrugertypeAupdated')
             ] :: AttributFeltType [],
-            ROW ('[2015-01-15, 2015-02-05)' :: TSTZRANGE,
+            ROW ('[2014-12-01, 2015-02-25)' :: TSTZRANGE,
             uuid_generate_v4(),
             'Bruger',
             'Note'
