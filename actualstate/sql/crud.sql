@@ -68,6 +68,141 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION _ACTUAL_STATE_COPY_ATTRIBUTTER(
+  oldRegistreringsID BIGINT,
+  newRegistreringsID BIGINT
+) RETURNS VOID AS $$
+DECLARE
+  r Attributter;
+  newAttributterID BIGINT;
+
+  s Attribut;
+  newAttributID BIGINT;
+
+  t AttributFelt;
+BEGIN
+  FOR r in SELECT * FROM Attributter WHERE RegistreringsID =
+                                           oldRegistreringsID
+  LOOP
+    INSERT INTO Attributter (RegistreringsID, Name)
+    VALUES (newRegistreringsID, r.Name);
+
+    newAttributterID := lastval();
+
+    FOR s in SELECT * FROM Attribut a1
+      JOIN Attributter a2 ON a1.AttributterID = a2.ID WHERE
+      a2.ID = r.ID
+    LOOP
+      INSERT INTO Attribut (AttributterID, Virkning) VALUES
+        (newAttributterID, s.Virkning);
+
+      newAttributID := lastval();
+
+      FOR t in SELECT * FROM AttributFelt af
+        JOIN Attribut a1 ON af.AttributID = a1.ID
+        JOIN Attributter a2 ON a1.AttributterID = a2.ID WHERE
+        a2.ID = r.ID
+      LOOP
+        INSERT INTO AttributFelt (AttributID, Name, Value) VALUES
+          (newAttributID, t.Name, t.Value);
+      END LOOP;
+    END LOOP;
+
+  END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION _ACTUAL_STATE_COPY_TILSTANDE(
+  oldRegistreringsID BIGINT,
+  newRegistreringsID BIGINT
+) RETURNS VOID AS $$
+DECLARE
+  r Tilstande;
+  newTilstandeID BIGINT;
+  s Tilstand;
+BEGIN
+  FOR r in SELECT *
+           FROM Tilstande WHERE RegistreringsID = oldRegistreringsID
+  LOOP
+    INSERT INTO Tilstande (RegistreringsID, Name)
+    VALUES (newRegistreringsID, r.Name);
+
+    newTilstandeID := lastval();
+
+    FOR s in SELECT *
+             FROM Tilstand t1 JOIN Tilstande t2 ON t1.TilstandeID = t2.ID
+             WHERE t2.RegistreringsID = oldRegistreringsID
+    LOOP
+      INSERT INTO Tilstand (TilstandeID, Virkning, Status)
+      VALUES (newTilstandeID, s.Virkning, s.Status);
+    END LOOP;
+  END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION _ACTUAL_STATE_COPY_RELATIONER(
+  oldRegistreringsID BIGINT,
+  newRegistreringsID BIGINT
+) RETURNS VOID AS $$
+DECLARE
+  rels Relationer;
+  newRelationerID BIGINT;
+
+  rel Relation;
+  newRelationID BIGINT;
+
+  ref Reference;
+BEGIN
+  FOR rels in SELECT * FROM Relationer WHERE RegistreringsID =
+                                             oldRegistreringsID
+  LOOP
+    INSERT INTO Relationer (RegistreringsID, Name)
+    VALUES (newRegistreringsID, rels.Name);
+
+    newRelationerID := lastval();
+
+    FOR rel in SELECT * FROM Relation r1
+      JOIN Relationer r2 ON r1.RelationerID = r2.ID
+    WHERE r2.ID = rels.ID
+    LOOP
+      INSERT INTO Relation (RelationerID, Virkning) VALUES
+        (newRelationerID, rel.Virkning);
+
+      newRelationID := lastval();
+
+      FOR ref in SELECT * FROM Reference rf
+        JOIN Relation r1 ON rf.RelationID = r1.ID
+        JOIN Relationer r2 ON r1.RelationerID = r2.ID
+      WHERE r2.ID = rels.ID
+      LOOP
+        INSERT INTO Reference (RelationID, ReferenceID) VALUES
+          (newRelationID, ref.ReferenceID);
+      END LOOP;
+    END LOOP;
+  END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION _ACTUAL_STATE_COPY_REGISTRERING(
+  oldRegistreringsID BIGINT,
+  newRegistreringsID BIGINT
+) RETURNS VOID AS $$
+BEGIN
+  PERFORM _ACTUAL_STATE_COPY_ATTRIBUTTER(oldRegistreringsID,
+                                         newRegistreringsID);
+
+  PERFORM _ACTUAL_STATE_COPY_TILSTANDE(oldRegistreringsID,
+                                       newRegistreringsID);
+
+  PERFORM _ACTUAL_STATE_COPY_RELATIONER(oldRegistreringsID,
+                                        newRegistreringsID);
+END;
+$$ LANGUAGE plpgsql;
+
+-- Creates a new registrering and optionally copies the data (attributter,
+-- tilstande, relationer) from the previous registrering into the new one.
+-- The upper bounds of the previous registrering are set to be the lower
+-- bounds of the new one.
 CREATE OR REPLACE FUNCTION _ACTUAL_STATE_NEW_REGISTRATION(
   inputID UUID,
   LivscyklusKode LivscyklusKode,
@@ -75,7 +210,7 @@ CREATE OR REPLACE FUNCTION _ACTUAL_STATE_NEW_REGISTRATION(
   doCopy BOOLEAN DEFAULT FALSE
 ) RETURNS Registrering AS $$
 DECLARE
-  registreringTime        TIMESTAMPTZ := transaction_timestamp();
+  registreringTime        TIMESTAMPTZ := clock_timestamp();
   result                  Registrering;
   newRegistreringsID       BIGINT;
   oldRegistreringsID BIGINT;
@@ -99,105 +234,8 @@ BEGIN
 
   IF doCopy
   THEN
-    DECLARE
-      r Attributter;
-      newAttributterID BIGINT;
-
-      s Attribut;
-      newAttributID BIGINT;
-
-      t AttributFelt;
-    BEGIN
-      FOR r in SELECT * FROM Attributter WHERE RegistreringsID =
-                                              oldRegistreringsID
-      LOOP
-        INSERT INTO Attributter (RegistreringsID, Name)
-        VALUES (newRegistreringsID, r.Name);
-
-        newAttributterID := lastval();
-
-        FOR s in SELECT * FROM Attribut a1
-          JOIN Attributter a2 ON a1.AttributterID = a2.ID WHERE
-          a2.ID = r.ID
-        LOOP
-          INSERT INTO Attribut (AttributterID, Virkning) VALUES
-            (newAttributterID, s.Virkning);
-
-          newAttributID := lastval();
-
-          FOR t in SELECT * FROM AttributFelt af
-            JOIN Attribut a1 ON af.AttributID = a1.ID
-            JOIN Attributter a2 ON a1.AttributterID = a2.ID WHERE
-            a2.ID = r.ID
-          LOOP
-            INSERT INTO AttributFelt (AttributID, Name, Value) VALUES
-              (newAttributID, t.Name, t.Value);
-          END LOOP;
-        END LOOP;
-
-      END LOOP;
-    END;
-
-    DECLARE
-      r Tilstande;
-      newTilstandeID BIGINT;
-      s Tilstand;
-    BEGIN
-      FOR r in SELECT *
-               FROM Tilstande WHERE RegistreringsID = oldRegistreringsID
-      LOOP
-        INSERT INTO Tilstande (RegistreringsID, Name)
-        VALUES (newRegistreringsID, r.Name);
-
-        newTilstandeID := lastval();
-
-        FOR s in SELECT *
-                 FROM Tilstand t1 JOIN Tilstande t2 ON t1.TilstandeID = t2.ID
-                 WHERE t2.RegistreringsID = oldRegistreringsID
-        LOOP
-          INSERT INTO Tilstand (TilstandeID, Virkning, Status)
-          VALUES (newTilstandeID, s.Virkning, s.Status);
-        END LOOP;
-      END LOOP;
-    END;
-
-    DECLARE
-      rels Relationer;
-      newRelationerID BIGINT;
-
-      rel Relation;
-      newRelationID BIGINT;
-
-      ref Reference;
-    BEGIN
-      FOR rels in SELECT * FROM Relationer WHERE RegistreringsID =
-                                              oldRegistreringsID
-      LOOP
-        INSERT INTO Relationer (RegistreringsID, Name)
-        VALUES (newRegistreringsID, rels.Name);
-
-        newRelationerID := lastval();
-
-        FOR rel in SELECT * FROM Relation r1
-          JOIN Relationer r2 ON r1.RelationerID = r2.ID
-          WHERE r2.ID = rels.ID
-        LOOP
-          INSERT INTO Relation (RelationerID, Virkning) VALUES
-            (newRelationerID, rel.Virkning);
-
-          newRelationID := lastval();
-
-          FOR ref in SELECT * FROM Reference rf
-            JOIN Relation r1 ON rf.RelationID = r1.ID
-            JOIN Relationer r2 ON r1.RelationerID = r2.ID
-            WHERE r2.ID = rels.ID
-          LOOP
-            INSERT INTO Reference (RelationID, ReferenceID) VALUES
-              (newRelationID, ref.ReferenceID);
-          END LOOP;
-        END LOOP;
-      END LOOP;
-    END;
+    PERFORM _ACTUAL_STATE_COPY_REGISTRERING(oldRegistreringsID,
+                                            newRegistreringsID);
   END IF;
 
   RETURN result;
@@ -326,6 +364,13 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Returns the registrering immediately previous to the one given
+CREATE OR REPLACE FUNCTION _ACTUAL_STATE_GET_PREV_REGISTRERING(Registrering)
+  RETURNS Registrering AS
+  'SELECT * FROM Registrering WHERE
+    ObjektID = $1.ObjektID AND UPPER(TimePeriod) = LOWER($1.TimePeriod)'
+LANGUAGE sql IMMUTABLE;
+
 CREATE OR REPLACE FUNCTION ACTUAL_STATE_UPDATE(
   inputID UUID,
   Attributter AttributterType[],
@@ -335,93 +380,110 @@ CREATE OR REPLACE FUNCTION ACTUAL_STATE_UPDATE(
   RETURNS Registrering AS $$
 DECLARE
   result Registrering;
+  oldRegistreringID BIGINT;
   newRegistreringID BIGINT;
+  abc RECORd;
 BEGIN
   result := _ACTUAL_STATE_NEW_REGISTRATION(
-      inputID, 'Rettet', NULL, doCopy := TRUE
+      inputID, 'Rettet', NULL
   );
 
   newRegistreringID := result.ID;
 
+  SELECT ID FROM _ACTUAL_STATE_GET_PREV_REGISTRERING(result) INTO
+    oldRegistreringID;
+
+--   Copy Tilstande and Relationer
+--   NOTE: Attributter are not copied directly and are handled differently
+  PERFORM _ACTUAL_STATE_COPY_TILSTANDE(oldRegistreringID,
+                                       newRegistreringID);
+  PERFORM _ACTUAL_STATE_COPY_RELATIONER(oldRegistreringID,
+                                        newRegistreringID);
+
 --   Loop through attributes and add them to the registration
+  DECLARE
+    attrs AttributterType;
+    newAttributterID BIGINT;
+    attr AttributType;
+  BEGIN
+--     Copy the old attributter into the new registrering
+    INSERT INTO Attributter (RegistreringsID, Name)
+      SELECT newRegistreringId, Name FROM Attributter WHERE RegistreringsID =
+                                                              oldRegistreringID;
 
-    DECLARE
-      attrs AttributterType;
-      newAttributterID BIGINT;
-      attr AttributType;
-    BEGIN
-      FOREACH attrs in ARRAY Attributter
+--     Loop through each new attributter
+    FOREACH attrs in ARRAY Attributter
+    LOOP
+      SELECT ID from Attributter
+      WHERE RegistreringsID = oldRegistreringID AND Name = attrs.Name
+      INTO newAttributterID;
+      IF newAttributterID IS NULL THEN
+        INSERT INTO Attributter (RegistreringsID, Name) VALUES
+            (newRegistreringID, attrs.Name);
+        newAttributterID := lastval();
+      END IF;
+
+      FOREACH attr in ARRAY attrs.Attributter
       LOOP
-        SELECT ID from Attributter
-        WHERE Name = attrs.Name AND RegistreringsID = newRegistreringID
-        INTO newAttributterID;
-        IF newAttributterID IS NULL THEN
-          INSERT INTO Attributter (RegistreringsID, Name) VALUES
-              (newRegistreringID, Name);
-          newAttributterID := lastval();
-        END IF;
+        DECLARE
+          r RECORD;
+          lastPeriod TSTZRANGE := NULL;
+          insertPeriods TSTZRANGE[];
+        BEGIN
+          RAISE NOTICE 'Adding attr %', attr;
+          FOR r IN
+            WITH cte(r) AS (SELECT (attr.Virkning).TimePeriod)
+            SELECT * FROM (
+              SELECT t.period * tstzrange(NULL, lower(c.r), '(]') - c.r AS period,
+                     FALSE AS merge FROM Attribut t, cte c
+                WHERE t.period && c.r AND t.AttributterID = newAttributterID
+              UNION ALL
+              SELECT t.period * c.r AS period,
+                     TRUE AS merge FROM Attribut t, cte c
+                WHERE t.period && c.r AND t.AttributterID = newAttributterID
+              UNION ALL
+              SELECT t.period * tstzrange(upper(c.r), NULL, '[)') - c.r AS period,
+                     FALSE AS merge FROM Attribut t, cte c
+                WHERE t.period && c.r AND t.AttributterID = newAttributterID
+            ) sub WHERE period <> 'empty' ORDER BY period LOOP
+            RAISE NOTICE 'New range %', r;
 
-        FOREACH attr in ARRAY attrs.Attributter
-        LOOP
-          DECLARE
-            r RECORD;
-            lastPeriod TSTZRANGE := NULL;
-            insertPeriods TSTZRANGE[];
-          BEGIN
-            RAISE NOTICE 'Adding attr %', attr;
-            FOR r IN
-              WITH cte(r) AS (SELECT (attr.Virkning).TimePeriod)
-              SELECT * FROM (
-                SELECT t.period * tstzrange(NULL, lower(c.r), '(]') - c.r AS period,
-                       FALSE AS merge FROM Attribut t, cte c
-                  WHERE t.period && c.r AND t.AttributterID = newAttributterID
-                UNION ALL
-                SELECT t.period * c.r AS period,
-                       TRUE AS merge FROM Attribut t, cte c
-                  WHERE t.period && c.r AND t.AttributterID = newAttributterID
-                UNION ALL
-                SELECT t.period * tstzrange(upper(c.r), NULL, '[)') - c.r AS period,
-                       FALSE AS merge FROM Attribut t, cte c
-                  WHERE t.period && c.r AND t.AttributterID = newAttributterID
-              ) sub WHERE period <> 'empty' ORDER BY period LOOP
-              RAISE NOTICE 'New range %', r;
-
-              IF r.merge THEN
+            IF r.merge THEN
 --                 DO merge
-              ELSE
+            ELSE
 --                 Copy old values
-              END IF;
+            END IF;
 
 --               If this is the first range being looped through AND
 --                 the new range is lower than the old
-              IF lastPeriod IS NULL AND LOWER((attr.Virkning).TimePeriod) <
-                                        LOWER(r.period) THEN
-                insertPeriods = insertPeriods || TSTZRANGE(
-                    LOWER((attr.Virkning).TimePeriod), lower(r.period), '[]');
+            IF lastPeriod IS NULL AND LOWER((attr.Virkning).TimePeriod) <
+                                      LOWER(r.period) THEN
+              insertPeriods = insertPeriods || TSTZRANGE(
+                  LOWER((attr.Virkning).TimePeriod), lower(r.period), '[]');
 --               If the last period is NOT adjacent to this period
-              ELSEIF NOT r.period -|- lastPeriod THEN
+            ELSEIF NOT r.period -|- lastPeriod THEN
 --                 Add the period in between (the hole) to our array
 --                 TODO: Correct inclusivity of bounds
-                insertPeriods = insertPeriods || TSTZRANGE(
-                    upper(lastPeriod), lower(r.period), '[]');
-              END IF;
-              lastPeriod := r.period;
-            END LOOP;
+              insertPeriods = insertPeriods || TSTZRANGE(
+                  upper(lastPeriod), lower(r.period), '[]');
+            END IF;
+            lastPeriod := r.period;
+          END LOOP;
 
 --             If the new range extends past the last range, add the period
 --               that extends after
-            IF lastPeriod IS NOT NULL AND UPPER((attr.Virkning).TimePeriod)
-                                          > UPPER(lastPeriod) THEN
-              insertPeriods = insertPeriods || TSTZRANGE(
-                  UPPER(lastPeriod), UPPER((attr.Virkning).TimePeriod), '[]');
-            END IF;
+          IF lastPeriod IS NOT NULL AND UPPER((attr.Virkning).TimePeriod)
+                                        > UPPER(lastPeriod) THEN
+            insertPeriods = insertPeriods || TSTZRANGE(
+                UPPER(lastPeriod), UPPER((attr.Virkning).TimePeriod), '[]');
+          END IF;
 
 --             TODO: Insert new values into holes based on insertPeriods array
-            RAISE NOTICE 'Insert new periods %', insertPeriods;
-          END;
-        END LOOP;
+          RAISE NOTICE 'Insert new periods %', insertPeriods;
+        END;
       END LOOP;
-    END;
+    END LOOP;
+  END;
 
 --   Loop through states and add them to the registration
   DECLARE
@@ -483,7 +545,6 @@ BEGIN
       END;
     END LOOP;
   END;
-
 
   RETURN result;
 END;
