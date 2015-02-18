@@ -382,7 +382,6 @@ DECLARE
   result Registrering;
   oldRegistreringID BIGINT;
   newRegistreringID BIGINT;
-  abc RECORd;
 BEGIN
   result := _ACTUAL_STATE_NEW_REGISTRATION(
       inputID, 'Rettet', NULL
@@ -409,13 +408,13 @@ BEGIN
 --     Copy the old attributter into the new registrering
     INSERT INTO Attributter (RegistreringsID, Name)
       SELECT newRegistreringId, Name FROM Attributter WHERE RegistreringsID =
-                                                              oldRegistreringID;
+                                                            oldRegistreringID;
 
 --     Loop through each new attributter
     FOREACH attrs in ARRAY Attributter
     LOOP
       SELECT ID from Attributter
-      WHERE RegistreringsID = oldRegistreringID AND Name = attrs.Name
+      WHERE RegistreringsID = newRegistreringID AND Name = attrs.Name
       INTO newAttributterID;
       IF newAttributterID IS NULL THEN
         INSERT INTO Attributter (RegistreringsID, Name) VALUES
