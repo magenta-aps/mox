@@ -356,6 +356,8 @@ DECLARE
   attrFelt AttributFeltType;
   newAttributID BIGINT;
 BEGIN
+  IF isempty(newPeriod) THEN RETURN; END IF;
+
   INSERT INTO Attribut (AttributterID, Virkning) VALUES
     (newAttributterID,
      ROW(
@@ -394,6 +396,8 @@ DECLARE
   newAttributID BIGINT;
   oldVirkning Virkning;
 BEGIN
+  IF isempty(newPeriod) THEN RETURN; END IF;
+
   INSERT INTO Attribut (AttributterID, Virkning)
   SELECT newAttributterID,
     ROW(
@@ -424,6 +428,8 @@ DECLARE
   attrFelt AttributFeltType;
   newAttributID BIGINT;
 BEGIN
+  IF isempty(newPeriod) THEN RETURN; END IF;
+
   INSERT INTO Attribut (AttributterID, Virkning) VALUES
     (newAttributterID,
      ROW(
