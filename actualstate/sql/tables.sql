@@ -1,312 +1,222 @@
-DROP TYPE IF EXISTS Registrering, AktoerTypeKode, Virkning CASCADE;
 
-CREATE TYPE LivscyklusKode AS ENUM (
-  'Opstaaet',
-  'Importeret',
-  'Passiveret',
-  'Slettet',
-  'Rettet'
-);
+CREATE TABLE Interessefaellesskab (PRIMARY KEY (ID)) INHERITS (Objekt);
 
-CREATE TYPE Registrering AS (
-  TimePeriod TSTZRANGE,
-  LivscyklusKode LivscyklusKode,
-  BrugerRef UUID
-);
-
-CREATE TYPE AktoerTypeKode AS ENUM (
-  'Organisation',
-  'OrganisationEnhed',
-  'OrganisationFunktion',
-  'Bruger',
-  'ItSystem',
-  'Interessefaellesskab'
-);
-
-CREATE TYPE Virkning AS (
-  TimePeriod TSTZRANGE,
-  AktoerRef UUID,
-  AktoerTypeKode AktoerTypeKode,
-  NoteTekst TEXT
-);
+CREATE TABLE InteressefaellesskabRegistrering  (
+  PRIMARY KEY (ID),
+  FOREIGN KEY (ObjektID) REFERENCES Interessefaellesskab (ID),
+  -- Exclude overlapping Registrering time periods for the same 'actor' type.
+  EXCLUDE USING gist (uuid_to_text(ObjektID) WITH =,
+    TimePeriod WITH &&)
+) INHERITS (Registrering);
 
 
-CREATE TABLE Organisation (
-  ID UUID NOT NULL PRIMARY KEY
-);
+CREATE TABLE InteressefaellesskabAttributter (
+    PRIMARY KEY(ID),
+    FOREIGN KEY (RegistreringsID) REFERENCES InteressefaellesskabRegistrering (ID),
+    UNIQUE (RegistreringsID, Name)
+) INHERITS (Attributter);
+
+
+CREATE TABLE InteressefaellesskabAttribut (
+    PRIMARY KEY(ID),
+    FOREIGN KEY (AttributterID) REFERENCES InteressefaellesskabAttributter (ID),
+    -- Exclude overlapping Virkning time periods within the same Attributter
+    EXCLUDE USING gist (AttributterID WITH =,
+    composite_type_to_time_range(Virkning) WITH &&)
+) INHERITS (Attribut);
+
+
+CREATE TABLE InteressefaellesskabAttributFelt (
+    PRIMARY KEY(ID),
+    FOREIGN KEY (AttributID) REFERENCES InteressefaellesskabAttribut (ID),
+    UNIQUE (AttributID, Name)
+) INHERITS (AttributFelt);
+
+
+CREATE TABLE InteressefaellesskabTilstande (
+    PRIMARY KEY(ID),
+    FOREIGN KEY (RegistreringsID) REFERENCES InteressefaellesskabRegistrering (ID),
+    UNIQUE (RegistreringsID, Name)
+) INHERITS (Tilstande);
+
+
+CREATE TABLE InteressefaellesskabTilstand (
+    PRIMARY KEY(ID),
+    FOREIGN KEY (TilstandeID) REFERENCES InteressefaellesskabTilstande (ID),
+    -- Exclude overlapping Virkning time periods within the same Tilstand
+    EXCLUDE USING gist (TilstandeID WITH =,
+    composite_type_to_time_range(Virkning) WITH &&)
+) INHERITS (Tilstand);
+
+
+CREATE TABLE InteressefaellesskabRelationer(
+    PRIMARY KEY(ID),
+    FOREIGN KEY (RegistreringsID) REFERENCES InteressefaellesskabRegistrering (ID),
+    UNIQUE (RegistreringsID, Name)
+) INHERITS (Relationer);
+    
+
+CREATE TABLE InteressefaellesskabRelation(
+    PRIMARY KEY (ID),
+    FOREIGN KEY (RelationerID) REFERENCES InteressefaellesskabRelationer(ID),
+    -- Exclude overlapping Virkning time periods within the same Relation
+    EXCLUDE USING gist (RelationerID WITH =,
+      composite_type_to_time_range(Virkning) WITH &&)
+) INHERITS (Relation);
+
+
+CREATE TABLE InteressefaellesskabReference (
+    PRIMARY KEY (ID),
+    FOREIGN KEY (RelationID) REFERENCES InteressefaellesskabRelation(ID) ON DELETE CASCADE,
+    -- No duplicates within the same relation!
+    UNIQUE (ReferenceID, RelationID)
+) INHERITS (Reference);
+
+
+CREATE TABLE Organisation (PRIMARY KEY (ID)) INHERITS (Objekt);
 
 CREATE TABLE OrganisationRegistrering  (
-  ID BIGSERIAL PRIMARY KEY,
-  OrganisationID UUID REFERENCES Organisation(ID),
-  Registrering Registrering
-);
-
-CREATE TABLE OrganisationEgenskaber (
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  OrganisationRegistreringID INTEGER REFERENCES OrganisationRegistrering(ID),
-  Virkning Virkning,
-  BrugervendtNoegle TEXT,
-  
-            Organisationsnavn TEXT
-);
-
-CREATE TYPE OrganisationGyldighedStatus AS ENUM (
-  'Aktiv',
-  'Inaktiv'
-);
-
-CREATE TABLE OrganisationTilstand(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  OrganisationRegistreringID INTEGER REFERENCES OrganisationRegistrering(ID),
-  Virkning Virkning,
-  Status OrganisationGyldighedStatus
-);
+  PRIMARY KEY (ID),
+  FOREIGN KEY (ObjektID) REFERENCES Organisation (ID),
+  -- Exclude overlapping Registrering time periods for the same 'actor' type.
+  EXCLUDE USING gist (uuid_to_text(ObjektID) WITH =,
+    TimePeriod WITH &&)
+) INHERITS (Registrering);
 
 
-CREATE TABLE OrganisationAdresserRelation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  OrganisationRegistreringID INTEGER REFERENCES OrganisationRegistrering(ID),
-  Relation UUID,
-  Virkning Virkning
-);
+CREATE TABLE OrganisationAttributter (
+    PRIMARY KEY(ID),
+    FOREIGN KEY (RegistreringsID) REFERENCES OrganisationRegistrering (ID),
+    UNIQUE (RegistreringsID, Name)
+) INHERITS (Attributter);
 
 
-CREATE TABLE OrganisationAnsatteRelation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  OrganisationRegistreringID INTEGER REFERENCES OrganisationRegistrering(ID),
-  Relation UUID,
-  Virkning Virkning
-);
+CREATE TABLE OrganisationAttribut (
+    PRIMARY KEY(ID),
+    FOREIGN KEY (AttributterID) REFERENCES OrganisationAttributter (ID),
+    -- Exclude overlapping Virkning time periods within the same Attributter
+    EXCLUDE USING gist (AttributterID WITH =,
+    composite_type_to_time_range(Virkning) WITH &&)
+) INHERITS (Attribut);
 
 
-CREATE TABLE OrganisationBrancheRelation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  OrganisationRegistreringID INTEGER REFERENCES OrganisationRegistrering(ID),
-  Relation UUID,
-  Virkning Virkning
-);
+CREATE TABLE OrganisationAttributFelt (
+    PRIMARY KEY(ID),
+    FOREIGN KEY (AttributID) REFERENCES OrganisationAttribut (ID),
+    UNIQUE (AttributID, Name)
+) INHERITS (AttributFelt);
 
 
-CREATE TABLE OrganisationMyndighedRelation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  OrganisationRegistreringID INTEGER REFERENCES OrganisationRegistrering(ID),
-  Relation UUID,
-  Virkning Virkning
-);
+CREATE TABLE OrganisationTilstande (
+    PRIMARY KEY(ID),
+    FOREIGN KEY (RegistreringsID) REFERENCES OrganisationRegistrering (ID),
+    UNIQUE (RegistreringsID, Name)
+) INHERITS (Tilstande);
 
 
-CREATE TABLE OrganisationMyndighedstypeRelation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  OrganisationRegistreringID INTEGER REFERENCES OrganisationRegistrering(ID),
-  Relation UUID,
-  Virkning Virkning
-);
+CREATE TABLE OrganisationTilstand (
+    PRIMARY KEY(ID),
+    FOREIGN KEY (TilstandeID) REFERENCES OrganisationTilstande (ID),
+    -- Exclude overlapping Virkning time periods within the same Tilstand
+    EXCLUDE USING gist (TilstandeID WITH =,
+    composite_type_to_time_range(Virkning) WITH &&)
+) INHERITS (Tilstand);
 
 
-CREATE TABLE OrganisationOpgaverRelation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  OrganisationRegistreringID INTEGER REFERENCES OrganisationRegistrering(ID),
-  Relation UUID,
-  Virkning Virkning
-);
+CREATE TABLE OrganisationRelationer(
+    PRIMARY KEY(ID),
+    FOREIGN KEY (RegistreringsID) REFERENCES OrganisationRegistrering (ID),
+    UNIQUE (RegistreringsID, Name)
+) INHERITS (Relationer);
+    
+
+CREATE TABLE OrganisationRelation(
+    PRIMARY KEY (ID),
+    FOREIGN KEY (RelationerID) REFERENCES OrganisationRelationer(ID),
+    -- Exclude overlapping Virkning time periods within the same Relation
+    EXCLUDE USING gist (RelationerID WITH =,
+      composite_type_to_time_range(Virkning) WITH &&)
+) INHERITS (Relation);
 
 
-CREATE TABLE OrganisationOverordnetProduktionsenhedRelation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  OrganisationRegistreringID INTEGER REFERENCES OrganisationRegistrering(ID),
-  Relation UUID,
-  Virkning Virkning
-);
+CREATE TABLE OrganisationReference (
+    PRIMARY KEY (ID),
+    FOREIGN KEY (RelationID) REFERENCES OrganisationRelation(ID) ON DELETE CASCADE,
+    -- No duplicates within the same relation!
+    UNIQUE (ReferenceID, RelationID)
+) INHERITS (Reference);
 
 
-CREATE TABLE OrganisationSkatteenhedRelation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  OrganisationRegistreringID INTEGER REFERENCES OrganisationRegistrering(ID),
-  Relation UUID,
-  Virkning Virkning
-);
-
-
-CREATE TABLE OrganisationTilhoererRelation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  OrganisationRegistreringID INTEGER REFERENCES OrganisationRegistrering(ID),
-  Relation UUID,
-  Virkning Virkning
-);
-
-
-CREATE TABLE OrganisationTilknyttedeBrugerTilknyttedeEnhederRelation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  OrganisationRegistreringID INTEGER REFERENCES OrganisationRegistrering(ID),
-  Relation UUID,
-  Virkning Virkning
-);
-
-
-CREATE TABLE OrganisationTilknyttedeFunktionerRelation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  OrganisationRegistreringID INTEGER REFERENCES OrganisationRegistrering(ID),
-  Relation UUID,
-  Virkning Virkning
-);
-
-
-CREATE TABLE OrganisationTilknyttedeInteressefaellesskabRelation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  OrganisationRegistreringID INTEGER REFERENCES OrganisationRegistrering(ID),
-  Relation UUID,
-  Virkning Virkning
-);
-
-
-CREATE TABLE OrganisationTilknyttedeOrganisationerRelation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  OrganisationRegistreringID INTEGER REFERENCES OrganisationRegistrering(ID),
-  Relation UUID,
-  Virkning Virkning
-);
-
-
-CREATE TABLE OrganisationTilknyttedePersonerRelation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  OrganisationRegistreringID INTEGER REFERENCES OrganisationRegistrering(ID),
-  Relation UUID,
-  Virkning Virkning
-);
-
-
-CREATE TABLE OrganisationTilknyttedeItSystemerRelation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  OrganisationRegistreringID INTEGER REFERENCES OrganisationRegistrering(ID),
-  Relation UUID,
-  Virkning Virkning
-);
-
-
-CREATE TABLE OrganisationVirksomhedRelation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  OrganisationRegistreringID INTEGER REFERENCES OrganisationRegistrering(ID),
-  Relation UUID,
-  Virkning Virkning
-);
-
-
-CREATE TABLE OrganisationVirksomhedstypeRelation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  OrganisationRegistreringID INTEGER REFERENCES OrganisationRegistrering(ID),
-  Relation UUID,
-  Virkning Virkning
-);
-
-
-CREATE TABLE Bruger (
-  ID UUID NOT NULL PRIMARY KEY
-);
+CREATE TABLE Bruger (PRIMARY KEY (ID)) INHERITS (Objekt);
 
 CREATE TABLE BrugerRegistrering  (
-  ID BIGSERIAL PRIMARY KEY,
-  BrugerID UUID REFERENCES Bruger(ID),
-  Registrering Registrering
-);
-
-CREATE TABLE BrugerEgenskaber (
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  BrugerRegistreringID INTEGER REFERENCES BrugerRegistrering(ID),
-  Virkning Virkning,
-  BrugervendtNoegle TEXT,
-  
-            Brugernavn TEXT,
-            Brugertype TEXT
-);
-
-CREATE TYPE BrugerGyldighedStatus AS ENUM (
-  'Aktiv',
-  'Inaktiv'
-);
-
-CREATE TABLE BrugerTilstand(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  BrugerRegistreringID INTEGER REFERENCES BrugerRegistrering(ID),
-  Virkning Virkning,
-  Status BrugerGyldighedStatus
-);
+  PRIMARY KEY (ID),
+  FOREIGN KEY (ObjektID) REFERENCES Bruger (ID),
+  -- Exclude overlapping Registrering time periods for the same 'actor' type.
+  EXCLUDE USING gist (uuid_to_text(ObjektID) WITH =,
+    TimePeriod WITH &&)
+) INHERITS (Registrering);
 
 
-CREATE TABLE BrugerAdresserRelation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  BrugerRegistreringID INTEGER REFERENCES BrugerRegistrering(ID),
-  Relation UUID,
-  Virkning Virkning
-);
+CREATE TABLE BrugerAttributter (
+    PRIMARY KEY(ID),
+    FOREIGN KEY (RegistreringsID) REFERENCES BrugerRegistrering (ID),
+    UNIQUE (RegistreringsID, Name)
+) INHERITS (Attributter);
 
 
-CREATE TABLE BrugerBrugertyperRelation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  BrugerRegistreringID INTEGER REFERENCES BrugerRegistrering(ID),
-  Relation UUID,
-  Virkning Virkning
-);
+CREATE TABLE BrugerAttribut (
+    PRIMARY KEY(ID),
+    FOREIGN KEY (AttributterID) REFERENCES BrugerAttributter (ID),
+    -- Exclude overlapping Virkning time periods within the same Attributter
+    EXCLUDE USING gist (AttributterID WITH =,
+    composite_type_to_time_range(Virkning) WITH &&)
+) INHERITS (Attribut);
 
 
-CREATE TABLE BrugerOpgaverRelation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  BrugerRegistreringID INTEGER REFERENCES BrugerRegistrering(ID),
-  Relation UUID,
-  Virkning Virkning
-);
+CREATE TABLE BrugerAttributFelt (
+    PRIMARY KEY(ID),
+    FOREIGN KEY (AttributID) REFERENCES BrugerAttribut (ID),
+    UNIQUE (AttributID, Name)
+) INHERITS (AttributFelt);
 
 
-CREATE TABLE BrugerTilhoererRelation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  BrugerRegistreringID INTEGER REFERENCES BrugerRegistrering(ID),
-  Relation UUID,
-  Virkning Virkning
-);
+CREATE TABLE BrugerTilstande (
+    PRIMARY KEY(ID),
+    FOREIGN KEY (RegistreringsID) REFERENCES BrugerRegistrering (ID),
+    UNIQUE (RegistreringsID, Name)
+) INHERITS (Tilstande);
 
 
-CREATE TABLE BrugerTilknyttedeEnhederRelation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  BrugerRegistreringID INTEGER REFERENCES BrugerRegistrering(ID),
-  Relation UUID,
-  Virkning Virkning
-);
+CREATE TABLE BrugerTilstand (
+    PRIMARY KEY(ID),
+    FOREIGN KEY (TilstandeID) REFERENCES BrugerTilstande (ID),
+    -- Exclude overlapping Virkning time periods within the same Tilstand
+    EXCLUDE USING gist (TilstandeID WITH =,
+    composite_type_to_time_range(Virkning) WITH &&)
+) INHERITS (Tilstand);
 
 
-CREATE TABLE BrugerTilknyttedeFunktionerRelation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  BrugerRegistreringID INTEGER REFERENCES BrugerRegistrering(ID),
-  Relation UUID,
-  Virkning Virkning
-);
+CREATE TABLE BrugerRelationer(
+    PRIMARY KEY(ID),
+    FOREIGN KEY (RegistreringsID) REFERENCES BrugerRegistrering (ID),
+    UNIQUE (RegistreringsID, Name)
+) INHERITS (Relationer);
+    
+
+CREATE TABLE BrugerRelation(
+    PRIMARY KEY (ID),
+    FOREIGN KEY (RelationerID) REFERENCES BrugerRelationer(ID),
+    -- Exclude overlapping Virkning time periods within the same Relation
+    EXCLUDE USING gist (RelationerID WITH =,
+      composite_type_to_time_range(Virkning) WITH &&)
+) INHERITS (Relation);
 
 
-CREATE TABLE BrugerTilknyttedeInteressefaellesskabRelation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  BrugerRegistreringID INTEGER REFERENCES BrugerRegistrering(ID),
-  Relation UUID,
-  Virkning Virkning
-);
+CREATE TABLE BrugerReference (
+    PRIMARY KEY (ID),
+    FOREIGN KEY (RelationID) REFERENCES BrugerRelation(ID) ON DELETE CASCADE,
+    -- No duplicates within the same relation!
+    UNIQUE (ReferenceID, RelationID)
+) INHERITS (Reference);
 
-
-CREATE TABLE BrugerTilknyttedeOrganisationerRelation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  BrugerRegistreringID INTEGER REFERENCES BrugerRegistrering(ID),
-  Relation UUID,
-  Virkning Virkning
-);
-
-
-CREATE TABLE BrugerTilknyttedePersonerRelation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  BrugerRegistreringID INTEGER REFERENCES BrugerRegistrering(ID),
-  Relation UUID,
-  Virkning Virkning
-);
-
-
-CREATE TABLE BrugerTilknyttedeItSystemerRelation(
-  ID BIGSERIAL NOT NULL PRIMARY KEY,
-  BrugerRegistreringID INTEGER REFERENCES BrugerRegistrering(ID),
-  Relation UUID,
-  Virkning Virkning
-);
