@@ -582,9 +582,9 @@ BEGIN
 --             RAISE INFO 'openOld %', r;
           END IF;
 
-          RAISE INFO 'inOld %, inNew %, openOld %, openNew %, closeOld %,
-          closeNew % ... %',
-          inOld, inNew, openOld, openNew, closeOld, closeNew, r;
+--           RAISE INFO 'inOld %, inNew %, openOld %, openNew %, closeOld %,
+--           closeNew % ... %',
+--           inOld, inNew, openOld, openNew, closeOld, closeNew, r;
 
 ---------------------------------------------------------------------------
 --           Handling opening ranges
