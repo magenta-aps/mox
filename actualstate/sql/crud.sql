@@ -558,7 +558,6 @@ BEGIN
                             FROM new n
           ) sub ORDER BY bound, isOpen,
             (CASE WHEN isOpen THEN inc ELSE NOT inc END) LOOP
-          RAISE NOTICE 'Record %', r.newAttr;
 
           inOld := oldAttrID IS NOT NULL;
           inNew := newAttribut.Virkning IS NOT NULL;
@@ -571,23 +570,29 @@ BEGIN
 
           IF openNew THEN
             newAttribut := r.newAttr;
+--             RAISE INFO 'openNew %', r;
           ELSEIF openOld THEN
             oldAttrID := r.attrID;
+--             RAISE INFO 'openOld %', r;
           END IF;
+
+          RAISE INFO 'inOld %, inNew %, openOld %, openNew %, closeOld %,
+          closeNew % ... %',
+          inOld, inNew, openOld, openNew, closeOld, closeNew, r;
 
 ---------------------------------------------------------------------------
 --           Handling opening ranges
 ---------------------------------------------------------------------------
           IF openNew AND inOld THEN
 --             Close old
---             Copy old values from r.attrID into new Attribut
+--             Copy old values from last old attrID into new Attribut
             PERFORM _ACTUAL_STATE_COPY_OLD_ATTR(
                 newAttributterID,
                 TSTZRANGE(lastBound,
                           r.bound,
                           '[)'
                 ),
-                r.attrID);
+                oldAttrID);
           ELSEIF openOld AND inNew THEN
 --             Close new
 --             Copy new values from newAttribut into new Attribut
@@ -613,9 +618,7 @@ BEGIN
                 ),
                 newAttribut,
                 oldAttrID);
-          END IF;
-
-          IF closeNew AND NOT inOld THEN
+          ELSEIF closeNew AND NOT inOld THEN
             PERFORM _ACTUAL_STATE_COPY_NEW_ATTR(
                 newAttributterID,
                 TSTZRANGE(lastBound,
@@ -631,6 +634,13 @@ BEGIN
                           '[)'
                 ),
                 r.attrID);
+          END IF;
+
+          IF closeNew THEN
+            newAttribut := NULL;
+          END IF;
+          IF closeOld THEN
+            oldAttrID := NULL;
           END IF;
 
           lastBound := r.bound;
