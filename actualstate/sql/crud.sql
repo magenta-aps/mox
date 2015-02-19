@@ -384,7 +384,7 @@ $$ LANGUAGE plpgsql;
 
 -- Copies the attribut contained in oldAttributID into a new Attribut with
 -- new period and newAttributterID
-CREATE OR REPLACE FUNCTION _ACTUAL_STATE_COPY_ATTR(
+CREATE OR REPLACE FUNCTION _ACTUAL_STATE_COPY_OLD_ATTR(
   newAttributterID BIGINT,
   newPeriod TSTZRANGE,
   oldAttributID BIGINT
@@ -410,6 +410,36 @@ BEGIN
     SELECT newAttributID, Name, Value FROM AttributFelt af JOIN Attribut at
         ON af.AttributID = at.ID
     WHERE at.ID = oldAttributID;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Copies the new inputAttribut into the new period with the given
+-- attributterID
+CREATE OR REPLACE FUNCTION _ACTUAL_STATE_COPY_NEW_ATTR(
+  newAttributterID BIGINT,
+  newPeriod TSTZRANGE,
+  inputAttribut AttributType
+) RETURNS VOID AS $$
+DECLARE
+  attrFelt AttributFeltType;
+  newAttributID BIGINT;
+BEGIN
+  INSERT INTO Attribut (AttributterID, Virkning) VALUES
+    (newAttributterID,
+     ROW(
+     newPeriod,
+     (inputAttribut.Virkning).AktoerRef,
+     (inputAttribut.Virkning).AktoertypeKode,
+     (inputAttribut.Virkning).NoteTekst
+     )::Virkning
+  );
+
+  newAttributID := lastval();
+
+  INSERT INTO AttributFelt (AttributID, Name, Value)
+    WITH newFields(Name, Value) AS
+      (SELECT f.Name, f.Value FROM UNNEST(inputAttribut.AttributFelter) AS f)
+    SELECT newAttributID, Name, Value FROM newFields;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -471,139 +501,142 @@ BEGIN
         newAttributterID := lastval();
       END IF;
 
-      FOREACH attr in ARRAY attrs.Attributter
-      LOOP
-        DECLARE
-          r RECORD;
-          lastPeriod TSTZRANGE := NULL;
-          insertPeriods TSTZRANGE[] = ARRAY[]::TSTZRANGE[];
-          overlappingAttrIDs BIGINT[] = ARRAY[]::BIGINT[];
-        BEGIN
-          FOR r IN
-            WITH cte(r) AS (SELECT (attr.Virkning).TimePeriod),
-            t AS (SELECT (Virkning).TimePeriod AS period, at.ID AS attrID FROM
-                Attribut at
-                JOIN Attributter att ON at.AttributterID = att.ID,
-                cte c
-                WHERE att.RegistreringsID = oldRegistreringID
-                      AND att.Name = attrs.Name
-                      AND at.period && c.r
-              )
-            SELECT * FROM (
-              SELECT t.period * tstzrange(NULL, lower(c.r), '(]') - c.r AS period,
-                     FALSE AS merge,
-                     t.attrID AS attrID
-              FROM t, cte c
-              UNION ALL
-              SELECT t.period * c.r AS period,
-                     TRUE AS merge,
-                     t.attrID AS attrID
-              FROM t, cte c
-              UNION ALL
-              SELECT t.period * tstzrange(upper(c.r), NULL, '[)') - c.r AS period,
-                     FALSE AS merge,
-                     t.attrID AS attrID
-              FROM t, cte c
-            ) sub WHERE period <> 'empty' ORDER BY period LOOP
+      DECLARE
+        r RECORD;
+        lastBound TIMESTAMPTZ := NULL;
+        lastBoundInc BOOLEAN := NULL;
+        oldAttrID BIGINT := NULL;
+        newAttribut AttributType;
 
-            overlappingAttrIDs = overlappingAttrIDs || r.attrID;
+        inOld BOOLEAN := FALSE;
+        inNew BOOLEAN := FALSE;
+        openOld BOOLEAN := FALSE;
+        openNew BOOLEAN := FALSE;
+        closeOld BOOLEAN := FALSE;
+        closeNew BOOLEAN := FALSE;
+      BEGIN
+--         Loop through each bound (new and old) in order from left to right
+        FOR r IN
+          WITH old AS (SELECT (Virkning).TimePeriod AS period, at.ID as attrID FROM
+            Attribut at JOIN Attributter att ON at.AttributterID = att.ID
+            WHERE att.RegistreringsID = oldRegistreringID
+                AND att.Name = attrs.Name
+          ),
+          new AS (SELECT (a.Virkning).TimePeriod AS period, a AS attr
+                  FROM UNNEST(attrs.Attributter) AS a)
+          SELECT * FROM (
+                          SELECT LOWER(o.period) AS bound,
+                                 LOWER_INC(o.period) as inc,
+                                 TRUE as isOpen,
+                                 o.attrID AS attrID,
+                                 ROW(NULL, NULL)::AttributType as newAttr
+--                                  o.period AS period
+                            FROM old o
+                          UNION ALL
+                          SELECT UPPER(o.period) AS bound,
+                                 UPPER_INC(o.period) as inc,
+                                 FALSE as isOpen,
+                                 o.attrID AS attrID,
+                                 ROW(NULL, NULL)::AttributType as newAttr
+--                                  o.period AS period
+                          FROM old o
+                          UNION ALL
+                          SELECT LOWER(n.period) AS bound,
+                                   LOWER_INC(n.period) as inc,
+                                   TRUE as isOpen,
+                                   NULL AS attrID,
+                                   n.attr as newAttr
+--                                    (n.Virkning).TimePeriod AS period
+                            FROM new n
+                          UNION ALL
+                          SELECT UPPER(n.period) AS bound,
+                                 UPPER_INC(n.period) as inc,
+                                 FALSE as isOpen,
+                                 NULL AS attrID,
+                                 n.attr as newAttr
+--                                  (n.Virkning).TimePeriod AS period
+                            FROM new n
+          ) sub ORDER BY bound, isOpen,
+            (CASE WHEN isOpen THEN inc ELSE NOT inc END) LOOP
+          RAISE NOTICE 'Record %', r.newAttr;
 
-            IF r.merge THEN
---                 DO merge into new Attribut based on old (r.attrID)
-              PERFORM _ACTUAL_STATE_MERGE_ATTR(newAttributterID,
-                                                r.period,
-                                                attr, r.attrID);
-            ELSE
---                 Copy old values from r.attrID into new Attribut
-              PERFORM _ACTUAL_STATE_COPY_ATTR(newAttributterID,
-                                              r.period,
-                                              r.attrID);
-            END IF;
+          inOld := oldAttrID IS NOT NULL;
+          inNew := newAttribut.Virkning IS NOT NULL;
 
---               If this is the first range being looped through AND
---                 the new range is lower than the old
-            IF lastPeriod IS NULL AND LOWER((attr.Virkning).TimePeriod) <
-                                      LOWER(r.period) THEN
---               Add the first new range to our array
-              insertPeriods = insertPeriods ||
-                              (attr.Virkning).TimePeriod *
-                              TSTZRANGE(NULL, lower(r.period), '(]') - r.period;
---               If the last period is NOT adjacent to this period
-            ELSEIF NOT r.period -|- lastPeriod THEN
---                 Add the period in between (the hole) to our array
-              insertPeriods = insertPeriods || TSTZRANGE(
-                  upper(lastPeriod), lower(r.period),
---                       The bounds are the complement of the original bounds
-                      concat(
-                        CASE WHEN upper_inc(lastPeriod) THEN '(' ELSE '[' END,
-                        CASE WHEN lower_inc(r.period) THEN ')' ELSE ']' END
-                      )
-              );
-            END IF;
-            lastPeriod := r.period;
-          END LOOP;
+          openOld := r.isOpen AND r.attrID IS NOT NULL;
+          openNew := r.isOpen AND (r.newAttr).Virkning IS NOT NULL;
 
---             If the new range extends past the last range, add the period
---               that extends after
-          IF lastPeriod IS NOT NULL AND UPPER((attr.Virkning).TimePeriod)
-                                        > UPPER(lastPeriod) THEN
-            insertPeriods = insertPeriods ||
-                            (attr.Virkning).TimePeriod *
-                            TSTZRANGE(upper(lastPeriod), NULL, '[)') - lastPeriod;
+          closeOld := NOT r.isOpen AND r.attrID IS NOT NULL;
+          closeNew := NOT r.isOpen AND (r.newAttr).Virkning IS NOT NULL;
+
+          IF openNew THEN
+            newAttribut := r.newAttr;
+          ELSEIF openOld THEN
+            oldAttrID := r.attrID;
           END IF;
 
---           Insert new values into holes based on insertPeriods array
-          DECLARE
-            section TSTZRANGE;
-            newAttributID BIGINT;
-            BEGIN
-            FOREACH section IN ARRAY insertPeriods LOOP
-              INSERT INTO Attribut (AttributterID, Virkning) VALUES
-                (newAttributterID,
-                 ROW(
-                  section,
-                   (attr.Virkning).AktoerRef,
-                   (attr.Virkning).AktoertypeKode,
-                   (attr.Virkning).NoteTekst
-                 )::Virkning
-                );
+---------------------------------------------------------------------------
+--           Handling opening ranges
+---------------------------------------------------------------------------
+          IF openNew AND inOld THEN
+--             Close old
+--             Copy old values from r.attrID into new Attribut
+            PERFORM _ACTUAL_STATE_COPY_OLD_ATTR(
+                newAttributterID,
+                TSTZRANGE(lastBound,
+                          r.bound,
+                          '[)'
+                ),
+                r.attrID);
+          ELSEIF openOld AND inNew THEN
+--             Close new
+--             Copy new values from newAttribut into new Attribut
+            PERFORM _ACTUAL_STATE_COPY_NEW_ATTR(
+                newAttributterID,
+                TSTZRANGE(lastBound,
+                          r.bound,
+                          '[)'
+                ),
+                newAttribut);
+          END IF;
 
-              newAttributID := lastval();
+---------------------------------------------------------------------------
+--           Handling closing ranges
+---------------------------------------------------------------------------
+          IF (closeNew AND inOld) OR (closeOld AND inNew) THEN
+--             Merge
+            PERFORM _ACTUAL_STATE_MERGE_ATTR(
+                newAttributterID,
+                TSTZRANGE(lastBound,
+                          r.bound,
+                          '[)'
+                ),
+                newAttribut,
+                oldAttrID);
+          END IF;
 
-              INSERT INTO AttributFelt (AttributID, Name, Value)
-              WITH newFields(Name, Value) AS
-                (SELECT f.Name, f.Value FROM UNNEST(attr.AttributFelter) AS f)
-                SELECT newAttributID, Name, Value FROM newFields;
-            END LOOP;
-          END;
+          IF closeNew AND NOT inOld THEN
+            PERFORM _ACTUAL_STATE_COPY_NEW_ATTR(
+                newAttributterID,
+                TSTZRANGE(lastBound,
+                          r.bound,
+                          '[)'
+                ),
+                newAttribut);
+          ELSEIF closeOld AND NOT inNew THEN
+            PERFORM _ACTUAL_STATE_COPY_OLD_ATTR(
+                newAttributterID,
+                TSTZRANGE(lastBound,
+                          r.bound,
+                          '[)'
+                ),
+                r.attrID);
+          END IF;
 
---           Insert non-overlapping old values
-          DECLARE
-            oldAttr Attribut;
-            newAttributID BIGINT;
-          BEGIN
---             Loop through each non-overlapping old value
-            FOR oldAttr IN SELECT at.* FROM Attribut at
-                    JOIN Attributter att ON at.AttributteRID = att.ID
-                  WHERE att.RegistreringsID =
-                      oldRegistreringID AND att.Name = attrs.Name
-                    AND NOT at.ID IN (SELECT UNNEST(overlappingAttrIDs)) LOOP
-
---               Copy the old Virkning and associate with new attributterID
-              INSERT INTO Attribut (AttributterID, Virkning) VALUES
-                (newAttributterID, oldAttr.Virkning);
-
-              newAttributID := lastval();
-
---               Copy the old fields into the new
-              INSERT INTO AttributFelt (AttributID, Name, Value)
-                SELECT newAttributID, Name, Value FROM AttributFelt af
-                  JOIN Attribut at ON af.AttributID = at.ID
-                WHERE at.ID = oldAttr.ID;
-            END LOOP;
-          END;
-        END;
-      END LOOP;
+          lastBound := r.bound;
+          lastBoundInc := r.inc;
+        END LOOP;
+      END;
     END LOOP;
   END;
 
