@@ -15,7 +15,8 @@ CREATE TABLE Registrering  (
   ObjektID UUID, -- Must reference Objekt for specific class
   TimePeriod TSTZRANGE,
   LivscyklusKode LivscyklusKode,
-  BrugerRef UUID
+  BrugerRef UUID,
+  Note TEXT
   -- TBD on subclass:
   -- Exclude overlapping Registrering time periods for the same 'actor' type.
 );

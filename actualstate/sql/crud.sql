@@ -2,7 +2,8 @@ CREATE OR REPLACE FUNCTION ACTUAL_STATE_CREATE(
     ObjektType REGCLASS,
     Attributter AttributterType[],
     Tilstande TilstandeType[],
-    Relationer RelationerType[] = ARRAY[]::RelationerType[]
+    Relationer RelationerType[] = ARRAY[]::RelationerType[],
+    Note TEXT DEFAULT ''
 )
   RETURNS Objekt AS $$
 DECLARE
@@ -19,7 +20,7 @@ BEGIN
 --   Create Registrering
 --   TODO: Insert Note into registrering?
   registreringResult := _ACTUAL_STATE_NEW_REGISTRATION(
-      objektUUID, 'Opstaaet', NULL
+      objektUUID, 'Opstaaet', NULL, Note
   );
 
   PERFORM _ACTUAL_STATE_COPY_INTO_REGISTRATION(registreringResult.ID,
@@ -207,7 +208,8 @@ CREATE OR REPLACE FUNCTION _ACTUAL_STATE_NEW_REGISTRATION(
   inputID UUID,
   LivscyklusKode LivscyklusKode,
   BrugerRef UUID,
-  doCopy BOOLEAN DEFAULT FALSE
+  doCopy BOOLEAN DEFAULT FALSE,
+  Note TEXT DEFAULT ''
 ) RETURNS Registrering AS $$
 DECLARE
   registreringTime        TIMESTAMPTZ := clock_timestamp();
@@ -222,10 +224,12 @@ BEGIN
     WHERE ObjektID = inputID AND upper(TimePeriod) = 'infinity'
     RETURNING ID INTO oldRegistreringsID;
 --   Create Registrering starting from now until infinity
-  INSERT INTO Registrering (ObjektID, TimePeriod, Livscykluskode, BrugerRef)
+  INSERT INTO Registrering (ObjektID, TimePeriod, Livscykluskode, BrugerRef,
+                            Note)
   VALUES (
     inputID,
-    TSTZRANGE(registreringTime, 'infinity', '[]'), LivscyklusKode, BrugerRef
+    TSTZRANGE(registreringTime, 'infinity', '[]'), LivscyklusKode, BrugerRef,
+              Note
   );
 
   SELECT * FROM Registrering WHERE ID = lastval() INTO result;
@@ -460,7 +464,8 @@ CREATE OR REPLACE FUNCTION ACTUAL_STATE_UPDATE(
   inputID UUID,
   Attributter AttributterType[],
   Tilstande TilstandeType[],
-  Relationer RelationerType[]
+  Relationer RelationerType[],
+  Note TEXT DEFAULT ''
 )
   RETURNS Registrering AS $$
 DECLARE
@@ -469,7 +474,7 @@ DECLARE
   newRegistreringID BIGINT;
 BEGIN
   result := _ACTUAL_STATE_NEW_REGISTRATION(
-      inputID, 'Rettet', NULL
+      inputID, 'Rettet', NULL, Note
   );
 
   newRegistreringID := result.ID;
@@ -724,14 +729,15 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION ACTUAL_STATE_DELETE(
   ObjektType REGCLASS,
-  inputID UUID
+  inputID UUID,
+  Note TEXT DEFAULT ''
 )
   RETURNS Registrering AS $$
 DECLARE
   result Registrering;
 BEGIN
   RETURN _ACTUAL_STATE_NEW_REGISTRATION(
-      inputID, 'Slettet', NULL, doCopy := TRUE
+      inputID, 'Slettet', NULL, doCopy := TRUE, Note
   );
 END;
 $$ LANGUAGE plpgsql;
@@ -740,12 +746,13 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION ACTUAL_STATE_PASSIVE(
   ObjektType REGCLASS,
-  inputID UUID
+  inputID UUID,
+  Note TEXT DEFAULT ''
 )
   RETURNS Registrering AS $$
 BEGIN
   RETURN _ACTUAL_STATE_NEW_REGISTRATION(
-      inputID, 'Passiveret', NULL, doCopy := TRUE
+      inputID, 'Passiveret', NULL, doCopy := TRUE, Note
   );
 END;
 $$ LANGUAGE plpgsql;
