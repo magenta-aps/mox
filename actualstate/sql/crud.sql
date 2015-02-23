@@ -20,7 +20,7 @@ BEGIN
 --   Create Registrering
 --   TODO: Insert Note into registrering?
   registreringResult := _ACTUAL_STATE_NEW_REGISTRATION(
-      objektUUID, 'Opstaaet', NULL, Note
+      objektUUID, 'Opstaaet', NULL, FALSE, Note
   );
 
   PERFORM _ACTUAL_STATE_COPY_INTO_REGISTRATION(registreringResult.ID,
@@ -474,7 +474,7 @@ DECLARE
   newRegistreringID BIGINT;
 BEGIN
   result := _ACTUAL_STATE_NEW_REGISTRATION(
-      inputID, 'Rettet', NULL, Note
+      inputID, 'Rettet', NULL, FALSE, Note
   );
 
   newRegistreringID := result.ID;
