@@ -744,7 +744,7 @@ DECLARE
   result Registrering;
 BEGIN
   RETURN _ACTUAL_STATE_NEW_REGISTRATION(
-      inputID, 'Slettet', NULL, doCopy := TRUE, Note
+      inputID, 'Slettet', NULL, doCopy := TRUE, Note := Note
   );
 END;
 $$ LANGUAGE plpgsql;
@@ -759,7 +759,7 @@ CREATE OR REPLACE FUNCTION ACTUAL_STATE_PASSIVE(
   RETURNS Registrering AS $$
 BEGIN
   RETURN _ACTUAL_STATE_NEW_REGISTRATION(
-      inputID, 'Passiveret', NULL, doCopy := TRUE, Note
+      inputID, 'Passiveret', NULL, doCopy := TRUE, Note := Note
   );
 END;
 $$ LANGUAGE plpgsql;
