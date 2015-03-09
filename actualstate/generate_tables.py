@@ -17,9 +17,37 @@ tables = {
         'states': {'Gyldighed': ['Aktiv', 'Inaktiv'] },
         'relations': ['Adresser', 'Brugertyper', 'Opgaver', 'Tilhoerer',
                       'TilknyttedeEnheder', 'TilknyttedeFunktioner',
-                      'TilknyttedeInteressefaellesskab',
+                      'TilknyttedeInteressefaellesskaber',
                       'TilknyttedeOrganisationer', 'TilknyttedePersoner',
                       'TilknyttedeItSystemer'],
+    },
+    'Interessefaellesskab': {
+        'attributes': {
+            'Egenskaber': ['BrugervendtNoegle', 'Interessefaellesskabsnavn',
+                           'Interessefaellesskabstype'],
+        },
+        'states': {'Gyldighed': ['Aktiv', 'Inaktiv'] },
+        'relations': ['Adresser', 'Branche', 'Interessefaellesskabstype',
+                      'Opgaver', 'Overordnet', 'Tilhoerer',
+                      'TilknyttedeBrugere', 'TilknyttedeEnheder',
+                      'TilknyttedeFunktioner',
+                      'TilknyttedeInteressefaellesskaber',
+                      'TilknyttedeOrganisationer', 'TilknyttedePersoner',
+                      'TilknyttedeItSystemer'],
+    },
+    'ItSystem': {
+        'attributes': {
+            'Egenskaber': ['BrugervendtNoegle', 'ItSystemNavn', 
+                           'ItSystemType', 'KonfigurationReference'],
+        },
+        'states': {'Gyldighed': ['Aktiv', 'Inaktiv'] },
+        'relations': ['Tilhoerer', 'TilknyttedeOrganisationer',
+                      'TilknyttedeEnheder', 'TilknyttedeFunktioner',
+                      'TilknyttedeBrugere',
+                      'TilknyttedeInteressefaellesskaber',
+                      'TilknyttedeItSystemer', 'TilknyttedePersoner',
+                      'Systemtyper', 'Opgaver', 'Adresser'],
+
     },
     'Organisation': {
         'attributes': {
@@ -35,21 +63,32 @@ tables = {
                       'TilknyttedeOrganisationer', 'TilknyttedePersoner',
                       'TilknyttedeItSystemer',
                       'Virksomhed', 'Virksomhedstype'],
-        },
-    'Interessefaellesskab': {
+    },
+    'OrganisationEnhed': {
         'attributes': {
-            'Egenskaber': ['BrugervendtNoegle', 'Interessefællesskabsnavn',
-                           'Interessefællesskabstype'],
+            'Egenskaber': ['BrugervendtNoegle', 'Enhedsnavn'],
         },
         'states': {'Gyldighed': ['Aktiv', 'Inaktiv'] },
-        'relations': ['Adresser', 'Branche', 'Interessefællesskabstype',
-                      'Opgaver', 'Overordnet', 'Tilhører',
-                      'TilknyttedeBrugere', 'TilknyttedeEnheder',
-                      'TilknyttedeFunktioner',
-                      'TilknyttedeInteressefællesskaber',
+        'relations': ['Adresser', 'Ansatte', 'Branche', 'Enhedstype',
+                      'Opgaver', 'Overordnet', 'Produktionsenhed',
+                      'Skatteenhed', 'Tilhoerer', 'TilknyttedeBrugere',
+                      'TilknyttedeEnheder', 'TilknyttedeFunktioner',
+                      'TilknyttedeInteressefaellesskaber',
                       'TilknyttedeOrganisationer', 'TilknyttedePersoner',
                       'TilknyttedeItSystemer'],
-    }
+    },
+    'OrganisationFunktion': {
+        'attributes': {
+            'BrugervendtNoegle', 
+            'Funktionsnavn'
+        },
+        'states': {'Gyldighed': ['Aktiv', 'Inaktiv'] },
+        'relations': [
+            'Adresser', 'Opgaver', 'OrganisatoriskFunktionstype',
+            'TilknyttedeBrugere', 'TilknyttedeEnheder',
+            'TilknyttedeOrganisationer', 'TilknyttedeItSystemer',
+            'TilknyttedeInteressefaellesskaber', 'TilknyttedePersoner'],
+        },
 }
 
 template = Template("""
