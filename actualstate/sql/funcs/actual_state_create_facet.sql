@@ -13,11 +13,13 @@ $$
 DECLARE
   facet_uuid  uuid;
   facet_registrering_id bigint;
-  facet_egenskab FacetEgenskaberType;
-  facet_publiceret FacetPubliceretType;
-  facet_relation_liste FacetRelationListeType;
-  facet_relation_liste_id bigint;
-  facet_relation FacetRelationerType;
+  facet_attr_egenskab FacetAttrEgenskaberType;
+  facet_tils_publiceret FacetTilsPubliceretType;
+  facet_rel_ansvarlig  FacetRelAnsvarligType;
+  facet_rel_ejer FacetRelEjerType;
+  facet_rel_facettilhoer FacetRelFacettilhoerType;
+  facet_rel_redaktoerer FacetRelRedaktoererType;
+
 BEGIN
 
 --This might genenerate a non unique value. Use uuid_generate_v5() (see comment below)
@@ -30,24 +32,36 @@ SELECT
       facet_uuid
 ;
 
+
+/*********************************/
+--Insert new registrering
+
 facet_registrering_id:=nextval('facet_registrering_id_seq');
 
 INSERT INTO facet_registrering (
-        id,
-          facet_id,
-            registrering
+      id,
+        facet_id,
+          timeperiod,
+              livscykluskode,
+                brugerref,
+                  note
         )
 SELECT
       facet_registrering_id,
         facet_uuid,
-          registrering.registrering 
+          registrering.timeperiod,
+            registrering.livscykluskode,
+              registrering.brugerref,
+                registrering.note
 ;
 
+/*********************************/
+--Insert attributes
 
-FOREACH facet_egenskab IN ARRAY registrering.egenskaber
+FOREACH facet_attr_egenskab IN ARRAY registrering.attrEgenskaber
 LOOP
 
-INSERT INTO facet_egenskaber (
+INSERT INTO facet_attr_egenskaber (
   brugervendt_noegle,
     facetbeskrivelse,
       facetplan,
@@ -59,68 +73,117 @@ INSERT INTO facet_egenskaber (
                   facet_registrering_id
 )
 SELECT
-  facet_egenskab.brugervendt_noegle,
-    facet_egenskab.facetbeskrivelse,
-      facet_egenskab.facetplan,
-        facet_egenskab.facetopbygning,
-          facet_egenskab.facetophavsret,
-            facet_egenskab.facetsupplement,
-              facet_egenskab.retskilde,
-                facet_egenskab.virkning,
+  facet_attr_egenskab.brugervendt_noegle,
+    facet_attr_egenskab.facetbeskrivelse,
+      facet_attr_egenskab.facetplan,
+        facet_attr_egenskab.facetopbygning,
+          facet_attr_egenskab.facetophavsret,
+            facet_attr_egenskab.facetsupplement,
+              facet_attr_egenskab.retskilde,
+                facet_attr_egenskab.virkning,
                    facet_registrering_id
 ;
 
 END LOOP;
 
-FOREACH facet_publiceret IN ARRAY registrering.publiceretStatuser
+/*********************************/
+--Insert states (tilstande)
+
+FOREACH facet_tils_publiceret IN ARRAY registrering.tilsPubliceretStatus
 LOOP
 
-INSERT INTO facet_publiceret (
+INSERT INTO facet_tils_publiceret (
   virkning,
     publiceret_status,
       facet_registrering_id
 )
 SELECT
-  facet_publiceret.virkning,
-    facet_publiceret.publiceret_status,
+  facet_tils_publiceret.virkning,
+    facet_tils_publiceret.publiceret_status,
       facet_registrering_id;
 
 END LOOP;
 
+/*********************************/
+--Insert relations
 
-FOREACH facet_relation_liste IN ARRAY registrering.relationLister
-LOOP
+/*************/
+--ansvarlig
 
-  facet_relation_liste_id:=nextval('facet_relation_liste_id_seq');
-
-  INSERT INTO facet_relation_liste (
-    id,
-      facet_registrering_id,
-        virkning
-  ) 
-  SELECT 
-    facet_relation_liste_id,
-      facet_registrering_id,
-       facet_relation_liste.virkning
-  ;
-
-  FOREACH facet_relation IN ARRAY facet_relation_liste.relationer
+  FOREACH facet_rel_ansvarlig IN ARRAY registrering.relAnsvarlig
   LOOP
 
-    INSERT INTO facet_relationer (
-    rel_type,
-      rel_maal,
-        facet_relation_liste_id
+    INSERT INTO facet_rel_ansvarlig (
+      facet_registrering_id,
+       virkning,
+        rel_maal
     )
     SELECT
-      facet_relation.relType,
-        facet_relation.relMaal,
-          facet_relation_liste_id
+      facet_registrering_id,
+        facet_rel_ansvarlig.virkning,
+          facet_rel_ansvarlig.relMaal
   ;
 
   END LOOP;
 
-END LOOP;
+  /*************/
+--ejer
+
+  FOREACH facet_rel_ejer IN ARRAY registrering.relEjer
+  LOOP
+
+    INSERT INTO facet_rel_ejer (
+      facet_registrering_id,
+       virkning,
+        rel_maal
+    )
+    SELECT
+      facet_registrering_id,
+        facet_rel_ejer.virkning,
+          facet_rel_ejer.relMaal
+  ;
+
+  END LOOP;
+
+
+/*************/
+--facettilhoer
+
+  FOREACH facet_rel_facettilhoer IN ARRAY registrering.relFacettilhoer
+  LOOP
+
+    INSERT INTO facet_rel_facettilhoer (
+      facet_registrering_id,
+       virkning,
+        rel_maal
+    )
+    SELECT
+      facet_registrering_id,
+        facet_rel_facettilhoer.virkning,
+          facet_rel_facettilhoer.relMaal
+  ;
+
+  END LOOP;
+
+  /*************/
+--redaktoerer
+
+  FOREACH facet_rel_redaktoerer IN ARRAY registrering.relRedaktoerer
+  LOOP
+
+    INSERT INTO facet_rel_redaktoerer (
+      facet_registrering_id,
+       virkning,
+        rel_maal
+    )
+    SELECT
+      facet_registrering_id,
+        facet_rel_redaktoerer.virkning,
+          facet_rel_redaktoerer.relMaal
+  ;
+
+  END LOOP;
+
 
 
 RETURN facet_uuid;
