@@ -1,4 +1,4 @@
-﻿-- Table: facet_registrering
+-- Table: facet_registrering
 
 -- DROP TABLE facet_registrering;
 
@@ -35,3 +35,12 @@ WITH (
 ALTER TABLE facet_registrering
   OWNER TO mox;
 
+
+--create custom type sans db-ids to be able to do "clean" function signatures for "the outside world".
+CREATE TYPE FacetRegistreringType AS
+(
+registrering RegistreringBasis,
+relationLister FacetRelationListeType[],
+publiceretStatuser FacetPubliceretType[],
+egenskaber FacetEgenskaberType[]
+);

@@ -22,8 +22,8 @@ ALTER TABLE facet_relationer_id_seq
 CREATE TABLE facet_relationer
 (
    id bigint NOT NULL DEFAULT nextval('facet_relationer_id_seq'::regclass),
-   facet_relation_type FacetRelationType NOT NULL,
-   facet_relation uuid NOT NULL,
+   rel_type FacetRelationType NOT NULL,
+   rel_maal uuid NOT NULL,
    facet_relation_liste_id bigint NOT NULL,
 CONSTRAINT facet_relationer_pkey PRIMARY KEY (id),
  CONSTRAINT facet_relationer_forkey_facet_relation_liste  FOREIGN KEY (facet_relation_liste_id) REFERENCES facet_relation_liste (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION
@@ -37,8 +37,8 @@ ALTER TABLE facet_relation_liste
 --create custom type sans db-ids to be able to do "clean" function signatures for "the outside world".
 CREATE TYPE FacetRelationerType AS
 (
-   facetRelationType FacetRelationType,
-   facetRelation uuid 
+   relType FacetRelationType,
+   relMaal uuid 
 )
 
 

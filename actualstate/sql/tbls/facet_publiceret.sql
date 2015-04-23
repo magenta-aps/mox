@@ -27,6 +27,7 @@ CREATE TABLE facet_publiceret
   virkning Virkning  NOT NULL,
   publiceret_status FacetPubliceretStatus NOT NULL, 
   facet_registrering_id bigint not null,
+  CONSTRAINT facet_publiceret_pkey PRIMARY KEY (id),
   CONSTRAINT facet_publiceret_forkey_facetregistrering  FOREIGN KEY (facet_registrering_id) REFERENCES facet_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
   CONSTRAINT facet_publiceret_exclude_virkning_overlap EXCLUDE USING gist (facet_registrering_id WITH =, composite_type_to_time_range(virkning) WITH &&)
 )
