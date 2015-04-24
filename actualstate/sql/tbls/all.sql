@@ -252,7 +252,8 @@ CREATE TABLE facet_rel_ansvarlig
   virkning Virkning not null,
   rel_maal uuid NOT NULL,
  CONSTRAINT facet_rel_ansvarlig_forkey_facetregistrering  FOREIGN KEY (facet_registrering_id) REFERENCES facet_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
- CONSTRAINT facet_rel_ansvarlig_pkey PRIMARY KEY (id)
+ CONSTRAINT facet_rel_ansvarlig_pkey PRIMARY KEY (id),
+ CONSTRAINT facet_rel_ansvarlig_no_virkning_overlap EXCLUDE USING gist (facet_registrering_id WITH =, composite_type_to_time_range(virkning) WITH &&) -- no overlapping virkning 
 );
 
 
@@ -278,7 +279,8 @@ CREATE TABLE facet_rel_ejer
   virkning Virkning not null,
   rel_maal uuid NOT NULL,
  CONSTRAINT facet_rel_ejer_forkey_facetregistrering  FOREIGN KEY (facet_registrering_id) REFERENCES facet_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
- CONSTRAINT facet_rel_ejer_pkey PRIMARY KEY (id)
+ CONSTRAINT facet_rel_ejer_pkey PRIMARY KEY (id),
+ CONSTRAINT facet_rel_ejer_no_virkning_overlap EXCLUDE USING gist (facet_registrering_id WITH =, composite_type_to_time_range(virkning) WITH &&) -- no overlapping virkning 
 );
 
 
@@ -304,7 +306,8 @@ CREATE TABLE facet_rel_facettilhoer
   virkning Virkning not null,
   rel_maal uuid NOT NULL,
  CONSTRAINT facet_rel_facettilhoer_forkey_facetregistrering  FOREIGN KEY (facet_registrering_id) REFERENCES facet_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
- CONSTRAINT facet_rel_facettilhoer_pkey PRIMARY KEY (id)
+ CONSTRAINT facet_rel_facettilhoer_pkey PRIMARY KEY (id),
+ CONSTRAINT facet_rel_facettilhoer_no_virkning_overlap EXCLUDE USING gist (facet_registrering_id WITH =, composite_type_to_time_range(virkning) WITH &&) -- no overlapping virkning 
 );
 
 
