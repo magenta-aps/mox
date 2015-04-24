@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 CREATE OR REPLACE FUNCTION actual_state_create_facet(
-  registrering FacetRegistreringType
+  facet_registrering FacetRegistreringType
 	)
   RETURNS uuid AS 
 $$
@@ -41,18 +41,17 @@ facet_registrering_id:=nextval('facet_registrering_id_seq');
 INSERT INTO facet_registrering (
       id,
         facet_id,
-          timeperiod,
-              livscykluskode,
-                brugerref,
-                  note
+          registrering
         )
 SELECT
       facet_registrering_id,
         facet_uuid,
-          registrering.timeperiod,
-            registrering.livscykluskode,
-              registrering.brugerref,
-                registrering.note
+          ROW (
+            (facet_registrering.registrering).timeperiod,
+            (facet_registrering.registrering).livscykluskode,
+            (facet_registrering.registrering).brugerref,
+            (facet_registrering.registrering).note
+              ):: RegistreringBase
 ;
 
 /*********************************/
@@ -61,14 +60,14 @@ SELECT
 
 /************/
 --Verification
-IF array_length(registrering.attrEgenskaber, 1)<1 THEN
+IF array_length(facet_registrering.attrEgenskaber, 1)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [facet]. Oprettelse afbrydes.';
 END IF;
 
 
 
 
-FOREACH facet_attr_egenskab IN ARRAY registrering.attrEgenskaber
+FOREACH facet_attr_egenskab IN ARRAY facet_registrering.attrEgenskaber
 LOOP
 
 INSERT INTO facet_attr_egenskaber (
@@ -101,12 +100,12 @@ END LOOP;
 
 
 --Verification
-IF array_length(registrering.tilsPubliceretStatus, 1)<1 THEN
+IF array_length(facet_registrering.tilsPubliceretStatus, 1)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [publiceretStatus] for facet. Oprettelse afbrydes.';
 END IF;
 
 
-FOREACH facet_tils_publiceret IN ARRAY registrering.tilsPubliceretStatus
+FOREACH facet_tils_publiceret IN ARRAY facet_registrering.tilsPubliceretStatus
 LOOP
 
 INSERT INTO facet_tils_publiceret (
@@ -127,7 +126,7 @@ END LOOP;
 /*************/
 --ansvarlig
 
-  FOREACH facet_rel_ansvarlig IN ARRAY registrering.relAnsvarlig
+  FOREACH facet_rel_ansvarlig IN ARRAY facet_registrering.relAnsvarlig
   LOOP
 
     INSERT INTO facet_rel_ansvarlig (
@@ -146,7 +145,7 @@ END LOOP;
   /*************/
 --ejer
 
-  FOREACH facet_rel_ejer IN ARRAY registrering.relEjer
+  FOREACH facet_rel_ejer IN ARRAY facet_registrering.relEjer
   LOOP
 
     INSERT INTO facet_rel_ejer (
@@ -166,7 +165,7 @@ END LOOP;
 /*************/
 --facettilhoer
 
-  FOREACH facet_rel_facettilhoer IN ARRAY registrering.relFacettilhoer
+  FOREACH facet_rel_facettilhoer IN ARRAY facet_registrering.relFacettilhoer
   LOOP
 
     INSERT INTO facet_rel_facettilhoer (
@@ -185,7 +184,7 @@ END LOOP;
   /*************/
 --redaktoerer
 
-  FOREACH facet_rel_redaktoerer IN ARRAY registrering.relRedaktoerer
+  FOREACH facet_rel_redaktoerer IN ARRAY facet_registrering.relRedaktoerer
   LOOP
 
     INSERT INTO facet_rel_redaktoerer (

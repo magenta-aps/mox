@@ -1,6 +1,8 @@
 
 
 /*
+DROP FUNCTION actual_state_create_facet (registrering FacetRegistreringType);
+  
 
 
 DROP TABLE facet_attr_egenskaber ;
@@ -20,8 +22,11 @@ DROP SEQUENCE facet_rel_facettilhoer_id_seq ;
 DROP SEQUENCE facet_rel_redaktoerer_id_seq ;
 DROP SEQUENCE facet_registrering_id_seq ;
 
+
+
 DROP TYPE Facettype;
 DROP TYPE FacetRegistreringType ;
+DROP TYPE registreringbase;
 DROP TYPE FacetAttrEgenskaberType ;
 DROP TYPE FacetTilsPubliceretType ;
 DROP TYPE FacetTilsPubliceretStatus ;
@@ -30,8 +35,8 @@ DROP TYPE FacetRelEjerType ;
 DROP TYPE FacetRelFacettilhoerType ;
 DROP TYPE FacetRelRedaktoererType ;
 
-
 */
+
 
 
 
@@ -82,12 +87,17 @@ CREATE TYPE FacetRelRedaktoererType AS (
 );
 
 
-CREATE TYPE FacetRegistreringType AS
+CREATE TYPE RegistreringBase AS --should be renamed to Registrering, when the old 'Registrering'-type is replaced
 (
 timeperiod tstzrange,
 livscykluskode livscykluskode,
 brugerref uuid,
-note text,
+note text
+);
+
+CREATE TYPE FacetRegistreringType AS
+(
+registrering RegistreringBase,
 tilsPubliceretStatus FacetTilsPubliceretType[],
 attrEgenskaber FacetAttrEgenskaberType[],
 relAnsvarlig FacetRelAnsvarligType[],
@@ -133,16 +143,13 @@ CREATE TABLE facet_registrering
 (
  id bigint NOT NULL DEFAULT nextval('facet_registrering_id_seq'::regclass),
  facet_id uuid,
- timeperiod tstzrange,
- livscykluskode livscykluskode,
- brugerref uuid,
- note text,
+ registrering RegistreringBase,
   CONSTRAINT facet_registrering_pkey PRIMARY KEY (id),
   CONSTRAINT facet_registrering_facet_fkey FOREIGN KEY (facet_id)
       REFERENCES facet (id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE NO ACTION,
   CONSTRAINT facet_registrering_uuid_to_text_timeperiod_excl EXCLUDE 
-  USING gist (uuid_to_text(facet_id) WITH =, timeperiod WITH &&)
+  USING gist (uuid_to_text(facet_id) WITH =, composite_type_to_time_range(registrering) WITH &&)
 )
 WITH (
   OIDS=FALSE
