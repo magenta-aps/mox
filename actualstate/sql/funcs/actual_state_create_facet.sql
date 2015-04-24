@@ -58,6 +58,16 @@ SELECT
 /*********************************/
 --Insert attributes
 
+
+/************/
+--Verification
+IF array_length(registrering.attrEgenskaber, 1)<1 THEN
+  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [facet]. Oprettelse afbrydes.';
+END IF;
+
+
+
+
 FOREACH facet_attr_egenskab IN ARRAY registrering.attrEgenskaber
 LOOP
 
@@ -88,6 +98,13 @@ END LOOP;
 
 /*********************************/
 --Insert states (tilstande)
+
+
+--Verification
+IF array_length(registrering.tilsPubliceretStatus, 1)<1 THEN
+  RAISE EXCEPTION 'Savner påkraevet tilstand [publiceretStatus] for facet. Oprettelse afbrydes.';
+END IF;
+
 
 FOREACH facet_tils_publiceret IN ARRAY registrering.tilsPubliceretStatus
 LOOP
