@@ -4,9 +4,11 @@ create or replace function subtract_tstzrange(rangeA tstzrange , rangeB tstzrang
 returns tstzrange[] as
 $$
 DECLARE
-    result tstzrange[2];
+    result tstzrange[];
     str_tzrange1_inc_excl text;
     str_tzrange2_inc_excl text;
+    result_non_cont_part_a tstzrange;
+    result_non_cont_part_b tstzrange;
 BEGIN
 
 
@@ -51,18 +53,29 @@ if rangeA && rangeB then
                         str_tzrange2_inc_excl:= str_tzrange2_inc_excl || ')';
                     end if;
                         
-                        result[1]:=tstzrange(lower(rangeA),lower(rangeB),str_tzrange1_inc_excl);
-                        result[2]:=tstzrange(upper(rangeB),upper(rangeA),str_tzrange2_inc_excl);
+
+                    result_non_cont_part_a :=tstzrange(lower(rangeA),lower(rangeB),str_tzrange1_inc_excl);
+                    result_non_cont_part_b :=tstzrange(upper(rangeB),upper(rangeA),str_tzrange2_inc_excl);
+
+                    if not isempty(result_non_cont_part_a) then
+                        result:=array_append(result,result_non_cont_part_a);
+                    end if;
+                    
+                    if  not isempty(result_non_cont_part_b) then
+                        result:=array_append(result,result_non_cont_part_b);
+                    end if;    
                         
                     else
-                    result[1]:= rangeA-rangeB;
-
+                        if (not isempty(rangeA-rangeB)) then
+                            result[1]:= rangeA-rangeB;
+                        end if;
                 end if; 
 
 else
     result[1]:=rangeA;
 
 end if;
+
 
 return result;
 
