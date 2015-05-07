@@ -1,25 +1,22 @@
 
 
 /*
-DROP FUNCTION actual_state_create_facet (registrering FacetRegistreringType);
-  
-
+DROP FUNCTION actual_state_create_facet(facet_registrering FacetRegistreringType);
+DROP FUNCTION actual_state_update_facet(facet_uuid uuid,brugerref uuid,note text,livscykluskode Livscykluskode,attrEgenskaber FacetAttrEgenskaberType[],tilsPubliceretStatus FacetTilsPubliceretType[],relationer FacetRelationType[]);
+DROP FUNCTION _actual_state_create_facet_registrering(facet_uuid uuid,livscykluskode Livscykluskode, brugerref uuid, note text);
+DROP FUNCTION _actual_state_get_prev_facet_registrering(facet_registrering);
 
 DROP TABLE facet_attr_egenskaber ;
 DROP TABLE facet_tils_publiceret ;
-DROP TABLE facet_rel_ansvarlig ;
-DROP TABLE facet_rel_ejer ;
-DROP TABLE facet_rel_facettilhoer ;
-DROP TABLE facet_rel_redaktoerer ;
-DROP TABLE facet_registrering ;
+DROP TABLE facet_relation ;
+DROP TABLE facet_registrering;
 DROP TABLE facet ;
+
+DROP FUNCTION _actual_state_convert_facet_relation_kode_to_txt(FacetRelationKode);
 
 DROP SEQUENCE facet_attr_egenskaber_id_seq ;
 DROP SEQUENCE facet_tils_publiceret_id_seq ;
-DROP SEQUENCE facet_rel_ansvarlig_id_seq ;
-DROP SEQUENCE facet_rel_ejer_id_seq ;
-DROP SEQUENCE facet_rel_facettilhoer_id_seq ;
-DROP SEQUENCE facet_rel_redaktoerer_id_seq ;
+DROP SEQUENCE facet_relation_id_seq ;
 DROP SEQUENCE facet_registrering_id_seq ;
 
 
@@ -30,17 +27,22 @@ DROP TYPE registreringbase;
 DROP TYPE FacetAttrEgenskaberType ;
 DROP TYPE FacetTilsPubliceretType ;
 DROP TYPE FacetTilsPubliceretStatus ;
-DROP TYPE FacetRelAnsvarligType ;
-DROP TYPE FacetRelEjerType ;
-DROP TYPE FacetRelFacettilhoerType ;
-DROP TYPE FacetRelRedaktoererType ;
+DROP TYPE FacetRelationType ;
+DROP TYPE Facetrelationkode;
+*/
+
+/*
+The order to create functions in:
+_actual_state_get_prev_facet_registrering
+_actual_state_create_facet_registrering
+_actual_state_create_facet
+_actual_state_update_facet
 
 */
 
 
 
-
-CREATE TYPE FacetTilsPubliceretStatus AS ENUM ('Publiceret', 'IkkePubliceret');
+CREATE TYPE FacetTilsPubliceretStatus AS ENUM ('','Publiceret', 'IkkePubliceret'); --'' means undefined (which is needed to clear previous defined value in an already registered virksnings-periode)
 
 
 CREATE TYPE FacetTilsPubliceretType AS (
@@ -62,29 +64,14 @@ CREATE TYPE FacetAttrEgenskaberType AS (
    virkning Virkning
 );
 
+CREATE TYPE FacetRelationKode AS ENUM ('Ejer', 'Ansvarlig','Facettilhoer','Redaktoer');  
 
-CREATE TYPE FacetRelAnsvarligType AS (
+CREATE TYPE FacetRelationType AS (
+  relation_navn FacetRelationKode,
   virkning Virkning,
   relMaal uuid 
 )
 ;
-
-CREATE TYPE FacetRelEjerType AS (
-  virkning Virkning,
-  relMaal uuid 
-)
-;
-
-
-CREATE TYPE FacetRelFacettilhoerType AS (
-  virkning Virkning,
-  relMaal uuid 
-);
-
-CREATE TYPE FacetRelRedaktoererType AS (
-  virkning Virkning,
-  relMaal uuid 
-);
 
 
 CREATE TYPE RegistreringBase AS --should be renamed to Registrering, when the old 'Registrering'-type is replaced
@@ -100,10 +87,7 @@ CREATE TYPE FacetRegistreringType AS
 registrering RegistreringBase,
 tilsPubliceretStatus FacetTilsPubliceretType[],
 attrEgenskaber FacetAttrEgenskaberType[],
-relAnsvarlig FacetRelAnsvarligType[],
-relEjer FacetRelEjerType[],
-relFacettilhoer FacetRelFacettilhoerType[],
-relRedaktoerer FacetRelRedaktoererType[]
+relationer FacetRelationType[]
 );
 
 CREATE TYPE FacetType AS
@@ -112,7 +96,16 @@ CREATE TYPE FacetType AS
   registrering FacetRegistreringType
 );  
 
+/******************** FUNCTIONS (NEEDED FOR TABLE/INDEX-DEFS) DEFS ***********************************/
 
+CREATE or replace FUNCTION _actual_state_convert_facet_relation_kode_to_txt (
+  FacetRelationKode
+    ) 
+RETURNS TEXT 
+LANGUAGE sql STRICT IMMUTABLE 
+AS $$
+        SELECT $1::text;
+   $$;
 
 /******************** TBLS DEFS ***********************************/
 
@@ -142,8 +135,8 @@ ALTER TABLE facet_registrering_id_seq
 CREATE TABLE facet_registrering
 (
  id bigint NOT NULL DEFAULT nextval('facet_registrering_id_seq'::regclass),
- facet_id uuid,
- registrering RegistreringBase,
+ facet_id uuid NOT NULL ,
+ registrering RegistreringBase NOT NULL CHECK( not isempty((registrering).timeperiod) ),
   CONSTRAINT facet_registrering_pkey PRIMARY KEY (id),
   CONSTRAINT facet_registrering_facet_fkey FOREIGN KEY (facet_id)
       REFERENCES facet (id) MATCH SIMPLE
@@ -182,7 +175,7 @@ CREATE TABLE facet_attr_egenskaber
    facetophavsret text null,
    facetsupplement text null,
    retskilde text null,
-   virkning Virkning not null,
+   virkning Virkning not null CHECK( not isempty((virkning).TimePeriod) ),
    facet_registrering_id bigint not null,
 CONSTRAINT facet_attr_egenskaber_pkey PRIMARY KEY (id),
 CONSTRAINT facet_attr_egenskaber_forkey_facetregistrering  FOREIGN KEY (facet_registrering_id) REFERENCES facet_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
@@ -216,7 +209,7 @@ ALTER TABLE facet_tils_publiceret_id_seq
 CREATE TABLE facet_tils_publiceret
 (
   id bigint NOT NULL DEFAULT nextval('facet_tils_publiceret_id_seq'::regclass),
-  virkning Virkning  NOT NULL,
+  virkning Virkning  NOT NULL CHECK( not isempty((virkning).TimePeriod) ),
   publiceret_status FacetTilsPubliceretStatus NOT NULL, 
   facet_registrering_id bigint not null,
   CONSTRAINT facet_tils_publiceret_pkey PRIMARY KEY (id),
@@ -234,109 +227,28 @@ ALTER TABLE facet_tils_publiceret
 
 /****************************************************************************************************/
 
-CREATE SEQUENCE facet_rel_ansvarlig_id_seq
+CREATE SEQUENCE facet_relation_id_seq
   INCREMENT 1
   MINVALUE 1
   MAXVALUE 9223372036854775807
   START 1
   CACHE 1;
-ALTER TABLE facet_rel_ansvarlig_id_seq
+ALTER TABLE facet_relation_id_seq
   OWNER TO mox;
 
 
-
-CREATE TABLE facet_rel_ansvarlig
+CREATE TABLE facet_relation
 (
-  id bigint NOT NULL DEFAULT nextval('facet_rel_ansvarlig_id_seq'::regclass),
+  id bigint NOT NULL DEFAULT nextval('facet_relation_id_seq'::regclass),
   facet_registrering_id bigint not null,
-  virkning Virkning not null,
-  rel_maal uuid NOT NULL,
- CONSTRAINT facet_rel_ansvarlig_forkey_facetregistrering  FOREIGN KEY (facet_registrering_id) REFERENCES facet_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
- CONSTRAINT facet_rel_ansvarlig_pkey PRIMARY KEY (id),
- CONSTRAINT facet_rel_ansvarlig_no_virkning_overlap EXCLUDE USING gist (facet_registrering_id WITH =, composite_type_to_time_range(virkning) WITH &&) -- no overlapping virkning 
+  virkning Virkning not null CHECK( not isempty((virkning).TimePeriod) ),
+  rel_maal uuid NULL, --we have to allow null values (for now at least), as it is needed to be able to clear/overrule previous registered relations.
+  rel_type FacetRelationKode not null,
+ CONSTRAINT facet_relation_forkey_facetregistrering  FOREIGN KEY (facet_registrering_id) REFERENCES facet_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
+ CONSTRAINT facet_relation_pkey PRIMARY KEY (id),
+ CONSTRAINT facet_relation_no_virkning_overlap EXCLUDE USING gist (facet_registrering_id WITH =, _actual_state_convert_facet_relation_kode_to_txt(rel_type) WITH =, composite_type_to_time_range(virkning) WITH &&) WHERE  (rel_type<>('Redaktoer'::FacetRelationKode ))-- no overlapping virkning except for 0..n --relations
 );
 
-
-
-
-/****************************************************************************************************/
-
-CREATE SEQUENCE facet_rel_ejer_id_seq
-  INCREMENT 1
-  MINVALUE 1
-  MAXVALUE 9223372036854775807
-  START 1
-  CACHE 1;
-ALTER TABLE facet_rel_ejer_id_seq
-  OWNER TO mox;
-
-
-
-CREATE TABLE facet_rel_ejer
-(
-  id bigint NOT NULL DEFAULT nextval('facet_rel_ejer_id_seq'::regclass),
-  facet_registrering_id bigint not null,
-  virkning Virkning not null,
-  rel_maal uuid NOT NULL,
- CONSTRAINT facet_rel_ejer_forkey_facetregistrering  FOREIGN KEY (facet_registrering_id) REFERENCES facet_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
- CONSTRAINT facet_rel_ejer_pkey PRIMARY KEY (id),
- CONSTRAINT facet_rel_ejer_no_virkning_overlap EXCLUDE USING gist (facet_registrering_id WITH =, composite_type_to_time_range(virkning) WITH &&) -- no overlapping virkning 
-);
-
-
-
-
-/****************************************************************************************************/
-
-CREATE SEQUENCE facet_rel_facettilhoer_id_seq
-  INCREMENT 1
-  MINVALUE 1
-  MAXVALUE 9223372036854775807
-  START 1
-  CACHE 1;
-ALTER TABLE facet_rel_facettilhoer_id_seq
-  OWNER TO mox;
-
-
-
-CREATE TABLE facet_rel_facettilhoer
-(
-  id bigint NOT NULL DEFAULT nextval('facet_rel_facettilhoer_id_seq'::regclass),
-  facet_registrering_id bigint not null,
-  virkning Virkning not null,
-  rel_maal uuid NOT NULL,
- CONSTRAINT facet_rel_facettilhoer_forkey_facetregistrering  FOREIGN KEY (facet_registrering_id) REFERENCES facet_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
- CONSTRAINT facet_rel_facettilhoer_pkey PRIMARY KEY (id),
- CONSTRAINT facet_rel_facettilhoer_no_virkning_overlap EXCLUDE USING gist (facet_registrering_id WITH =, composite_type_to_time_range(virkning) WITH &&) -- no overlapping virkning 
-);
-
-
-
-
-
-/****************************************************************************************************/
-
-
-CREATE SEQUENCE facet_rel_redaktoerer_id_seq
-  INCREMENT 1
-  MINVALUE 1
-  MAXVALUE 9223372036854775807
-  START 1
-  CACHE 1;
-ALTER TABLE facet_rel_redaktoerer_id_seq
-  OWNER TO mox;
-
-
-
-CREATE TABLE facet_rel_redaktoerer
-(
-  id bigint NOT NULL DEFAULT nextval('facet_rel_redaktoerer_id_seq'::regclass),
-  facet_registrering_id bigint not null,
-  virkning Virkning not null,
-  rel_maal uuid NOT NULL,
- CONSTRAINT facet_rel_redaktoerer_forkey_facetregistrering  FOREIGN KEY (facet_registrering_id) REFERENCES facet_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
- CONSTRAINT facet_rel_redaktoerer_pkey PRIMARY KEY (id)
-);
 
 
 

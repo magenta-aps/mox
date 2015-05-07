@@ -15,10 +15,7 @@ DECLARE
   facet_registrering_id bigint;
   facet_attr_egenskab FacetAttrEgenskaberType;
   facet_tils_publiceret FacetTilsPubliceretType;
-  facet_rel_ansvarlig  FacetRelAnsvarligType;
-  facet_rel_ejer FacetRelEjerType;
-  facet_rel_facettilhoer FacetRelFacettilhoerType;
-  facet_rel_redaktoerer FacetRelRedaktoererType;
+  facet_relationer FacetRelationType;
 
 BEGIN
 
@@ -123,83 +120,20 @@ END LOOP;
 /*********************************/
 --Insert relations
 
-/*************/
---ansvarlig
-
-  FOREACH facet_rel_ansvarlig IN ARRAY facet_registrering.relAnsvarlig
-  LOOP
-
-    INSERT INTO facet_rel_ansvarlig (
+    INSERT INTO facet_relation (
       facet_registrering_id,
        virkning,
-        rel_maal
+        rel_maal,
+          rel_type
+
     )
     SELECT
       facet_registrering_id,
-        facet_rel_ansvarlig.virkning,
-          facet_rel_ansvarlig.relMaal
+        a.virkning,
+          a.relMaal,
+            a.rel_type
+    FROM unnest(facet_registrering.relationer) a
   ;
-
-  END LOOP;
-
-  /*************/
---ejer
-
-  FOREACH facet_rel_ejer IN ARRAY facet_registrering.relEjer
-  LOOP
-
-    INSERT INTO facet_rel_ejer (
-      facet_registrering_id,
-       virkning,
-        rel_maal
-    )
-    SELECT
-      facet_registrering_id,
-        facet_rel_ejer.virkning,
-          facet_rel_ejer.relMaal
-  ;
-
-  END LOOP;
-
-
-/*************/
---facettilhoer
-
-  FOREACH facet_rel_facettilhoer IN ARRAY facet_registrering.relFacettilhoer
-  LOOP
-
-    INSERT INTO facet_rel_facettilhoer (
-      facet_registrering_id,
-       virkning,
-        rel_maal
-    )
-    SELECT
-      facet_registrering_id,
-        facet_rel_facettilhoer.virkning,
-          facet_rel_facettilhoer.relMaal
-  ;
-
-  END LOOP;
-
-  /*************/
---redaktoerer
-
-  FOREACH facet_rel_redaktoerer IN ARRAY facet_registrering.relRedaktoerer
-  LOOP
-
-    INSERT INTO facet_rel_redaktoerer (
-      facet_registrering_id,
-       virkning,
-        rel_maal
-    )
-    SELECT
-      facet_registrering_id,
-        facet_rel_redaktoerer.virkning,
-          facet_rel_redaktoerer.relMaal
-  ;
-
-  END LOOP;
-
 
 
 RETURN facet_uuid;

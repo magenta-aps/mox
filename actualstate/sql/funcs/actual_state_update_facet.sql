@@ -19,17 +19,15 @@ CREATE OR REPLACE FUNCTION actual_state_update_facet(
   livscykluskode Livscykluskode,          
   attrEgenskaber FacetAttrEgenskaberType[],
   tilsPubliceretStatus FacetTilsPubliceretType[],
-  relAnsvarlig FacetRelAnsvarligType[],
-  relEjer FacetRelEjerType[],
-  relFacettilhoer FacetRelFacettilhoerType[],
-  relRedaktoerer FacetRelRedaktoererType[]
+  relationer FacetRelationType[]
 	)
-  RETURNS uuid AS --TODO
+  RETURNS bigint AS --TODO
 $$
 DECLARE
   new_facet_registrering facet_registrering;
   prev_facet_registrering facet_registrering;
-  facet_rel_ansvarlig FacetRelAnsvarligType;
+  facet_relation_obj FacetRelationType;
+  facet_relation_navn text;
 BEGIN
 
 --create a new registrering
@@ -39,7 +37,7 @@ prev_facet_registrering := _actual_state_get_prev_facet_registrering(new_facet_r
 
 --handle relationer (relations)
 
--- 0..1 relations 
+
 
 --ansvarlig
 
@@ -48,18 +46,20 @@ prev_facet_registrering := _actual_state_get_prev_facet_registrering(new_facet_r
 
 --Ad 1)
 
-  FOREACH facet_rel_ansvarlig IN ARRAY relAnsvarlig
+  FOREACH facet_relation_obj IN ARRAY relationer
   LOOP
 
-    INSERT INTO facet_rel_ansvarlig (
+    INSERT INTO facet_relation (
       facet_registrering_id,
-       virkning,
-        rel_maal
+        virkning,
+          rel_maal,
+            rel_type
     )
     SELECT
       new_facet_registrering.id,
-        facet_rel_ansvarlig.virkning,
-          facet_rel_ansvarlig.relMaal
+        facet_relation_obj.virkning,
+          facet_relation_obj.relMaal,
+            facet_relation_obj.relation_navn
   ;
 
   END LOOP;
@@ -67,35 +67,81 @@ prev_facet_registrering := _actual_state_get_prev_facet_registrering(new_facet_r
 
 --Ad 2)
 
-  INSERT INTO facet_rel_ansvarlig (
+/**********************/
+-- 0..1 relations 
+
+FOREACH facet_relation_navn in array ARRAY['Ejer'::FacetRelationKode, 'Ansvarlig'::FacetRelationKode,'Facettilhoer'::FacetRelationKode]
+LOOP
+
+  INSERT INTO facet_relation (
       facet_registrering_id,
         virkning,
-          rel_maal
+          rel_maal,
+            rel_type
     )
   SELECT 
       new_facet_registrering.id, 
         ROW(
           c.tz_range_leftover,
-          (a.virkning).AktoerRef,
-          (a.virkning).AktoerTypeKode,
-          (a.virkning).NoteTekst
-          ) :: virkning,
-          a.rel_maal
+            (a.virkning).AktoerRef,
+            (a.virkning).AktoerTypeKode,
+            (a.virkning).NoteTekst
+        ) :: virkning,
+          a.rel_maal,
+            a.rel_type
   FROM
   (
     --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to subtract_tstzrange_arr on the relations of the previous registrering 
     SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
-    FROM facet_rel_ansvarlig b
-    WHERE b.facet_registrering_id=new_facet_registrering.id
+    FROM facet_relation b
+    WHERE 
+          b.facet_registrering_id=new_facet_registrering.id
+          and
+          b.rel_type=facet_relation_navn
   ) d
-  JOIN facet_rel_ansvarlig a ON true
+  JOIN facet_relation a ON true
   JOIN unnest(subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
   WHERE a.facet_registrering_id=prev_facet_registrering.id 
+        and a.rel_type=facet_relation_navn 
   ;
+END LOOP;
 
---TODO: Do the other relations
+/**********************/
+-- 0..n relations
+
+--The question regarding how the api-consumer is to specify the deletion of 0..n relation already registered is not answered.
+--The following options presents itself:
+--a) In this special case, the api-consumer has to specify the full set of the 0..n relation, when updating 
+-- ref: ("Hvis indholdet i en liste af elementer rettes, skal hele den nye liste af elementer med i ObjektRet - p27 "Generelle egenskaber for serviceinterfaces på sags- og dokumentområdet")
+
+--Assuming option 'a' above is selected, we only have to check if there are any of the relations with the given name present in the new registration, otherwise copy the ones from the previous registration
 
 
+FOREACH facet_relation_navn in array ARRAY['Redaktoer'::FacetRelationKode]
+LOOP
+
+  IF NOT EXISTS  (SELECT 1 FROM facet_relation WHERE facet_registrering_id=new_facet_registrering.id and rel_type=facet_relation_navn) THEN
+
+    INSERT INTO facet_relation (
+          facet_registrering_id,
+            virkning,
+              rel_maal,
+                rel_type
+        )
+    SELECT 
+          new_facet_registrering.id,
+            virkning,
+              rel_maal,
+                rel_type
+    FROM facet_relation
+    WHERE facet_registrering_id=prev_facet_registrering.id 
+    and a.rel_type=facet_relation_navn 
+    ;
+
+  END IF;
+            
+END LOOP;
+/**********************/
 --TODO: handle tilstande (states)
 
 --TODO: handle attributter (attributes)
@@ -105,8 +151,7 @@ prev_facet_registrering := _actual_state_get_prev_facet_registrering(new_facet_r
 
 
 
-
-
+return new_facet_registrering.id;
 
 
 
