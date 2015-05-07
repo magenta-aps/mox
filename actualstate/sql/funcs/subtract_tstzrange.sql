@@ -28,7 +28,7 @@ if rangeA && rangeB then
                                 and upper_inc(rangeB) 
                                 and not upper_inc(rangeA)   
                             )
-                    then
+                then
                     if lower_inc(rangeA) then
                         str_tzrange1_inc_excl:='[';
                         else
@@ -65,7 +65,7 @@ if rangeA && rangeB then
                         result:=array_append(result,result_non_cont_part_b);
                     end if;    
                         
-                    else
+                else
                         if (not isempty(rangeA-rangeB)) then
                             result[1]:= rangeA-rangeB;
                         end if;
