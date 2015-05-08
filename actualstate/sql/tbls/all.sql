@@ -93,7 +93,7 @@ relationer FacetRelationType[]
 CREATE TYPE FacetType AS
 (
   id uuid,
-  registrering FacetRegistreringType
+  registrering FacetRegistreringType[]
 );  
 
 /******************** FUNCTIONS (NEEDED FOR TABLE/INDEX-DEFS) DEFS ***********************************/
