@@ -6,8 +6,8 @@ CREATE OR REPLACE FUNCTION actual_state_list_facet(facet_uuids uuid[],
 
 	SELECT
 	ROW(
-	a3.facet_id,
-	array_agg(
+		a3.facet_id,
+		array_agg(
 			ROW (
 				a3.registrering,
 				a3.FacetTilsPubliceretArr,
