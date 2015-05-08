@@ -5,110 +5,82 @@ CREATE OR REPLACE FUNCTION actual_state_list_facet(facet_uuids uuid[],
   $BODY$
 
 	SELECT
-		ROW(
-		f.facet_id,
-		array_agg(
-				ROW (
-					f.registrering,
-					f.FacetTilsPubliceretArr,
-					f.FacetAttrEgenskaberArr,
-					f.FacetRelationTypeArr
-				)::FacetRegistreringType		
-			) 
-		):: FacetType
+	ROW(
+	a3.facet_id,
+	array_agg(
+			ROW (
+				a3.registrering,
+				a3.FacetTilsPubliceretArr,
+				a3.FacetAttrEgenskaberArr,
+				a3.FacetRelationTypeArr
+			)::FacetRegistreringType		
+		) 
+	):: FacetType
 	FROM
 	(
-
-			SELECT
-				h.*,
-				array_agg(
-					ROW (
-  						e.rel_type,
-  						e.virkning,
-  						e.rel_maal 
-						):: FacetRelationType
-					) FacetRelationTypeArr
+		SELECT
+		a2.*,
+		array_agg(
+			ROW (
+					b2.rel_type,
+					b2.virkning,
+					b2.rel_maal 
+				):: FacetRelationType
+		) FacetRelationTypeArr
+		FROM
+		(
+			SELECT 	
+			a1.*,
+			array_agg(
+				ROW (
+				 	b1.virkning, 
+					b1.publiceret_status
+				)::FacetTilsPubliceretType
+			) FacetTilsPubliceretArr
 			FROM
-
-				(
-					SELECT 	g.*,
-							array_agg(
-								ROW (
-									 	d.virkning, 
-    									d.publiceret_status
-									)::FacetTilsPubliceretType
-								) FacetTilsPubliceretArr
-					FROM
-					(
-						SELECT
-						a.id facet_id,
-						b.id facet_registrering_id,
-						b.registrering,
-						array_agg(
-							ROW(
-						 		c.brugervendt_noegle,
-						   		c.facetbeskrivelse,
-						   		c.facetplan,
-						  		c.facetopbygning,
-						   		c.facetophavsret,
-						   		c.facetsupplement,
-						   		c.retskilde,
-						   		c.virkning 
-								)::FacetAttrEgenskaberType
-						) FacetAttrEgenskaberArr
-						FROM
-						facet a
-						JOIN facet_registrering b on b.facet_id=a.id
-						LEFT JOIN facet_attr_egenskaber c on c.facet_registrering_id=b.id 
-									AND 
-									(
-										--filter on virkning_tstzrange if given
-										(virkning_tstzrange is null or isempty(virkning_tstzrange))
-										or
-									 	(c.virkning).TimePeriod && virkning_tstzrange
-									)			
-						WHERE a.id = ANY (facet_uuids)
-						--filter on registrering_tstzrange
-						AND 
-							(
-								((registrering_tstzrange is null or isempty(registrering_tstzrange)) and upper_inf((b.registrering).timeperiod))
-							OR
-								registrering_tstzrange && (b.registrering).timeperiod
-							)
-						group by --we need to group at this level, to get the number of rows down to 1 each facet id * facet registrations
-						a.id,
-						b.id,b.registrering
-					) as g 		
-				LEFT JOIN facet_tils_publiceret d on d.facet_registrering_id=g.facet_registrering_id
-					AND
-					(
-						--filter on virkning_tstzrange if given
-						(virkning_tstzrange is null or isempty(virkning_tstzrange))
-						or
-					 	(d.virkning).TimePeriod && virkning_tstzrange
-					)
-				group by --we need to group at this level, to get the number of rows down to 1 each facet id * facet registrations
-				g.facet_id, 
-				g.facet_registrering_id, 
-				g.registrering, 
-				g.FacetAttrEgenskaberArr
-			) as h
-		LEFT JOIN facet_relation e on e.facet_registrering_id=h.facet_registrering_id
-					AND
-					(
-						--filter on virkning_tstzrange if given
-						(virkning_tstzrange is null or isempty(virkning_tstzrange))
-						or
-					 	(e.virkning).TimePeriod && virkning_tstzrange
-					)
-		group by
-		h.facet_id, 
-		h.facet_registrering_id, 
-		h.registrering, 
-		h.FacetAttrEgenskaberArr,			
-		h.FacetTilsPubliceretArr
-	) as f
-	group by f.facet_id
+			(
+				SELECT
+				a.id facet_id,
+				b.id facet_registrering_id,
+				b.registrering,
+				array_agg(
+					ROW(
+				 		c.brugervendt_noegle,
+				   		c.facetbeskrivelse,
+				   		c.facetplan,
+				  		c.facetopbygning,
+				   		c.facetophavsret,
+				   		c.facetsupplement,
+				   		c.retskilde,
+				   		c.virkning 
+						)::FacetAttrEgenskaberType
+				) FacetAttrEgenskaberArr
+				FROM		facet a
+				JOIN 		facet_registrering b 	ON b.facet_id=a.id
+				LEFT JOIN 	facet_attr_egenskaber c ON c.facet_registrering_id=b.id AND ((virkning_tstzrange is null OR isempty(virkning_tstzrange)) OR (c.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
+				WHERE a.id = ANY (facet_uuids) AND (((registrering_tstzrange is null OR isempty(registrering_tstzrange)) AND upper_inf((b.registrering).timeperiod)) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
+				GROUP BY 
+				a.id,
+				b.id,
+				b.registrering
+			) as a1 		
+			LEFT JOIN facet_tils_publiceret b1 ON b1.facet_registrering_id=a1.facet_registrering_id AND ((virkning_tstzrange is null OR isempty(virkning_tstzrange)) OR (b1.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given
+			GROUP BY 
+			a1.facet_id, 
+			a1.facet_registrering_id, 
+			a1.registrering, 
+			a1.FacetAttrEgenskaberArr
+		) as a2
+	LEFT JOIN facet_relation b2 ON b2.facet_registrering_id=a2.facet_registrering_id AND ((virkning_tstzrange is null OR isempty(virkning_tstzrange)) OR (b2.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given
+	GROUP BY
+	a2.facet_id, 
+	a2.facet_registrering_id, 
+	a2.registrering, 
+	a2.FacetAttrEgenskaberArr,			
+	a2.FacetTilsPubliceretArr
+	) as a3
+	GROUP BY 
+	a3.facet_id
 
 
 $BODY$

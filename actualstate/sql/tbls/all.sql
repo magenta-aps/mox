@@ -1,10 +1,13 @@
 
 
 /*
+
+DROP FUNCTION actual_state_list_facet(uuid[],tstzrange,tstzrange);
 DROP FUNCTION actual_state_create_facet(facet_registrering FacetRegistreringType);
 DROP FUNCTION actual_state_update_facet(facet_uuid uuid,brugerref uuid,note text,livscykluskode Livscykluskode,attrEgenskaber FacetAttrEgenskaberType[],tilsPubliceretStatus FacetTilsPubliceretType[],relationer FacetRelationType[]);
 DROP FUNCTION _actual_state_create_facet_registrering(facet_uuid uuid,livscykluskode Livscykluskode, brugerref uuid, note text);
 DROP FUNCTION _actual_state_get_prev_facet_registrering(facet_registrering);
+
 
 DROP TABLE facet_attr_egenskaber ;
 DROP TABLE facet_tils_publiceret ;
@@ -35,8 +38,9 @@ DROP TYPE Facetrelationkode;
 The order to create functions in:
 _actual_state_get_prev_facet_registrering
 _actual_state_create_facet_registrering
-_actual_state_create_facet
-_actual_state_update_facet
+actual_state_create_facet
+actual_state_update_facet
+actual_state_list_facet()
 
 */
 
@@ -67,7 +71,7 @@ CREATE TYPE FacetAttrEgenskaberType AS (
 CREATE TYPE FacetRelationKode AS ENUM ('Ejer', 'Ansvarlig','Facettilhoer','Redaktoer');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _actual_state_convert_facet_relation_kode_to_txt is invoked.
 
 CREATE TYPE FacetRelationType AS (
-  relation_navn FacetRelationKode,
+  relType FacetRelationKode,
   virkning Virkning,
   relMaal uuid 
 )
