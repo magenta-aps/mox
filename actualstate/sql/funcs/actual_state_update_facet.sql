@@ -38,16 +38,10 @@ prev_facet_registrering := _actual_state_get_prev_facet_registrering(new_facet_r
 --handle relationer (relations)
 
 
-
---ansvarlig
-
 --1) Insert relations given as part of this update
---2) Merge relations of previous relations, taking overlapping virknings into consideration (using function subtract_tstzrange)
+--2) Insert relations of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
 
 --Ad 1)
-
-  FOREACH facet_relation_obj IN ARRAY relationer
-  LOOP
 
     INSERT INTO facet_relation (
       facet_registrering_id,
@@ -57,12 +51,11 @@ prev_facet_registrering := _actual_state_get_prev_facet_registrering(new_facet_r
     )
     SELECT
       new_facet_registrering.id,
-        facet_relation_obj.virkning,
-          facet_relation_obj.relMaal,
-            facet_relation_obj.relation_navn
+        a.facet_relation_obj.virkning,
+          a.facet_relation_obj.relMaal,
+            a.facet_relation_obj.relation_navn
+    FROM unnest(relationer) as a(facet_relation_obj) 
   ;
-
-  END LOOP;
 
 
 --Ad 2)
@@ -142,7 +135,59 @@ LOOP
             
 END LOOP;
 /**********************/
---TODO: handle tilstande (states)
+-- handle tilstande (states)
+
+--1) Insert tilstande/states given as part of this update
+--2) Insert tilstande/states of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
+
+
+--facet_tils_publiceret
+
+--Ad 1)
+
+INSERT INTO facet_tils_publiceret (
+        virkning,
+          publiceret_status,
+            facet_registrering_id
+) 
+SELECT
+        (a.facet_tils_publiceret_obj).virkning,
+          (a.facet_tils_publiceret_obj).publiceret_status,
+            new_facet_registrering.id
+FROM
+unnest(tilsPubliceretStatus) as a(facet_tils_publiceret_obj)
+;
+ 
+
+--Ad 2
+
+INSERT INTO facet_tils_publiceret (
+        virkning,
+          publiceret_status,
+            facet_registrering_id
+)
+SELECT 
+        ROW(
+          c.tz_range_leftover,
+            (a.virkning).AktoerRef,
+            (a.virkning).AktoerTypeKode,
+            (a.virkning).NoteTekst
+        ) :: virkning,
+          a.publiceret_status,
+            new_facet_registrering.id
+FROM
+(
+ --build an array of the timeperiod of the virkning of the facet_tils_publiceret of the new registrering to pass to subtract_tstzrange_arr on the facet_tils_publiceret of the previous registrering 
+    SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
+    FROM facet_tils_publiceret b
+    WHERE 
+          b.facet_registrering_id=new_facet_registrering.id
+) d
+  JOIN facet_tils_publiceret a ON true  
+  JOIN unnest(subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
+  WHERE a.facet_registrering_id=prev_facet_registrering.id     
+;
+
 
 --TODO: handle attributter (attributes)
 

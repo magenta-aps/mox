@@ -64,7 +64,7 @@ CREATE TYPE FacetAttrEgenskaberType AS (
    virkning Virkning
 );
 
-CREATE TYPE FacetRelationKode AS ENUM ('Ejer', 'Ansvarlig','Facettilhoer','Redaktoer');  
+CREATE TYPE FacetRelationKode AS ENUM ('Ejer', 'Ansvarlig','Facettilhoer','Redaktoer');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _actual_state_convert_facet_relation_kode_to_txt is invoked.
 
 CREATE TYPE FacetRelationType AS (
   relation_navn FacetRelationKode,
