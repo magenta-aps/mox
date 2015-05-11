@@ -107,12 +107,12 @@ LOOP
 
 INSERT INTO facet_tils_publiceret (
   virkning,
-    publiceret_status,
+    status,
       facet_registrering_id
 )
 SELECT
   facet_tils_publiceret.virkning,
-    facet_tils_publiceret.publiceret_status,
+    facet_tils_publiceret.status,
       facet_registrering_id;
 
 END LOOP;

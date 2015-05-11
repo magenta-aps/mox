@@ -34,7 +34,7 @@ CREATE OR REPLACE FUNCTION actual_state_list_facet(facet_uuids uuid[],
 			array_agg(
 				ROW (
 				 	b1.virkning, 
-					b1.publiceret_status
+					b1.status
 				)::FacetTilsPubliceretType
 			) FacetTilsPubliceretArr
 			FROM

@@ -10,6 +10,7 @@
 --Please notice that is it the responsibility of the invoker of this function to compare the resulting facet_registration (including the entire hierarchy)
 --to the previous one, and abort the transaction if the two registrations are identical. (This is to comply with the stipulated behavior in 'Specifikation_af_generelle_egenskaber - til OIOkomiteen.pdf')
 
+--Also notice, that the given array of FacetAttrEgenskaberType must be consistent regarding virkning (although the allowance of null-values might make it possible to construct 'logically consistent'-arrays of objects with overlapping virknings)
 
 
 CREATE OR REPLACE FUNCTION actual_state_update_facet(
@@ -21,7 +22,7 @@ CREATE OR REPLACE FUNCTION actual_state_update_facet(
   tilsPubliceretStatus FacetTilsPubliceretType[],
   relationer FacetRelationType[]
 	)
-  RETURNS bigint AS --TODO
+  RETURNS bigint AS 
 $$
 DECLARE
   new_facet_registrering facet_registrering;
@@ -148,12 +149,12 @@ END LOOP;
 
 INSERT INTO facet_tils_publiceret (
         virkning,
-          publiceret_status,
+          status,
             facet_registrering_id
 ) 
 SELECT
         (a.facet_tils_publiceret_obj).virkning,
-          (a.facet_tils_publiceret_obj).publiceret_status,
+          (a.facet_tils_publiceret_obj).status,
             new_facet_registrering.id
 FROM
 unnest(tilsPubliceretStatus) as a(facet_tils_publiceret_obj)
@@ -164,7 +165,7 @@ unnest(tilsPubliceretStatus) as a(facet_tils_publiceret_obj)
 
 INSERT INTO facet_tils_publiceret (
         virkning,
-          publiceret_status,
+          status,
             facet_registrering_id
 )
 SELECT 
@@ -174,7 +175,7 @@ SELECT
             (a.virkning).AktoerTypeKode,
             (a.virkning).NoteTekst
         ) :: virkning,
-          a.publiceret_status,
+          a.status,
             new_facet_registrering.id
 FROM
 (

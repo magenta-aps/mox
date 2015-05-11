@@ -51,7 +51,7 @@ CREATE TYPE FacetTilsPubliceretStatus AS ENUM ('','Publiceret', 'IkkePubliceret'
 
 CREATE TYPE FacetTilsPubliceretType AS (
     virkning Virkning,
-    publiceret_status FacetTilsPubliceretStatus 
+    status FacetTilsPubliceretStatus 
 )
 ;
 
@@ -214,7 +214,7 @@ CREATE TABLE facet_tils_publiceret
 (
   id bigint NOT NULL DEFAULT nextval('facet_tils_publiceret_id_seq'::regclass),
   virkning Virkning  NOT NULL CHECK( not isempty((virkning).TimePeriod) ),
-  publiceret_status FacetTilsPubliceretStatus NOT NULL, 
+  status FacetTilsPubliceretStatus NOT NULL, 
   facet_registrering_id bigint not null,
   CONSTRAINT facet_tils_publiceret_pkey PRIMARY KEY (id),
   CONSTRAINT facet_tils_publiceret_forkey_facetregistrering  FOREIGN KEY (facet_registrering_id) REFERENCES facet_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
