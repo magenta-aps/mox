@@ -58,7 +58,7 @@ CREATE OR REPLACE FUNCTION actual_state_list_facet(facet_uuids uuid[],
 				FROM		facet a
 				JOIN 		facet_registrering b 	ON b.facet_id=a.id
 				LEFT JOIN 	facet_attr_egenskaber c ON c.facet_registrering_id=b.id AND ((virkning_tstzrange is null OR isempty(virkning_tstzrange)) OR (c.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
-				WHERE a.id = ANY (facet_uuids) AND (((registrering_tstzrange is null OR isempty(registrering_tstzrange)) AND upper_inf((b.registrering).timeperiod)) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
+				WHERE a.id = ANY (facet_uuids) AND (((registrering_tstzrange is null OR isempty(registrering_tstzrange)) AND upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
 				GROUP BY 
 				a.id,
 				b.id,

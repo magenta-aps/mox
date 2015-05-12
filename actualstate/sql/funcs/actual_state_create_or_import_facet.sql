@@ -50,7 +50,7 @@ SELECT
       facet_registrering_id,
         facet_uuid,
           ROW (
-            (facet_registrering.registrering).timeperiod,
+            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
             (facet_registrering.registrering).livscykluskode,
             (facet_registrering.registrering).brugerref,
             (facet_registrering.registrering).note
@@ -137,7 +137,7 @@ END LOOP;
       facet_registrering_id,
         a.virkning,
           a.relMaal,
-            a.rel_type
+            a.relType
     FROM unnest(facet_registrering.relationer) a
   ;
 

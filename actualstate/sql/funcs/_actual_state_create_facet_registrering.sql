@@ -32,7 +32,7 @@ UPDATE facet_registrering
             ')'
         ))
     WHERE facet_id = facet_uuid 
-    AND upper((registrering).timeperiod) = 'infinity'
+    AND upper(registrering.timeperiod)='infinity'::TIMESTAMPTZ
     AND _actual_state_valid_registrering_livscyklus_transition((registrering).livscykluskode,livscykluskode)  --we'll only limit the scope of the old registrering, if we're dealing with a valid transition. Faliure to move, will result in a constraint violation. A more explicit check on the validity of the state change should be considered.     
 
 ;
@@ -41,7 +41,7 @@ UPDATE facet_registrering
 facet_registrering_id :=  nextval('facet_registrering_id_seq'::regclass);
 
  registreringObj := ROW (
-      TSTZRANGE(registreringTime,'infinity','[)'),
+      TSTZRANGE(registreringTime,'infinity'::TIMESTAMPTZ,'[)'),
       livscykluskode,
       brugerref,
       note
