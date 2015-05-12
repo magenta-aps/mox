@@ -20,6 +20,10 @@ DECLARE
 	uuidRedaktoer1 uuid :=uuid_generate_v4();
 	uuidRedaktoer2 uuid :=uuid_generate_v4();
 	uuidRegistrering uuid :=uuid_generate_v4();
+	actual_publiceret_virk virkning;
+	actual_publiceret_status FacetTilsPubliceretStatus;
+	actual_publiceret FacetTilsPubliceretType;
+	actual_relationer FacetRelationType[];
 
 
 BEGIN
@@ -152,7 +156,51 @@ RETURN NEXT ok(upper(actual_registrering.timeperiod)='infinity'::timestamp with 
 RETURN NEXT ok(lower(actual_registrering.timeperiod) <clock_timestamp(),'registrering timeperiod before now');
 RETURN NEXT ok(lower(actual_registrering.timeperiod) > clock_timestamp() - 3 * interval '1 second',' registrering timeperiod later than 3 secs' );
 
---TODO: Continue here!
+SELECT
+	 	(a.virkning).* into actual_publiceret_virk
+FROM facet_tils_publiceret a 
+JOIN facet_registrering as b on a.facet_registrering_id=b.id
+WHERE b.facet_id=new_uuid
+;
+
+SELECT
+	 	a.status into actual_publiceret_status
+FROM facet_tils_publiceret a 
+JOIN facet_registrering as b on a.facet_registrering_id=b.id
+WHERE b.facet_id=new_uuid
+;
+
+actual_publiceret:=ROW(
+	actual_publiceret_virk,
+	actual_publiceret_status
+)::FacetTilsPubliceretType ;
+
+
+RETURN NEXT is(actual_publiceret.virkning,facetPubliceret.virkning,'publiceret virkning');
+RETURN NEXT is(actual_publiceret.status,facetPubliceret.status,'publicaret status');
+
+SELECT
+array_agg(
+			ROW (
+					a.rel_type,
+					a.virkning,
+					a.rel_maal 
+				):: FacetRelationType
+		) into actual_relationer
+FROM facet_relation a
+JOIN facet_registrering as b on a.facet_registrering_id=b.id
+WHERE b.facet_id=new_uuid
+;
+
+RETURN NEXT is(
+	actual_relationer,
+	ARRAY[facetRelAnsvarlig,facetRelRedaktoer1,facetRelRedaktoer2]
+,'relations present');
+
+
+
+
+
 
 
 END;
