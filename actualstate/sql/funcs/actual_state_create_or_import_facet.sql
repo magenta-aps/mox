@@ -5,13 +5,13 @@
 -- License, v. 2.0. If a copy of the MPL was not distributed with this
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-CREATE OR REPLACE FUNCTION actual_state_create_facet(
-  facet_registrering FacetRegistreringType
+CREATE OR REPLACE FUNCTION actual_state_create_or_import_facet(
+  facet_registrering FacetRegistreringType,
+  facet_uuid uuid DEFAULT uuid_generate_v4() --This might genenerate a non unique value. Use uuid_generate_v5(). Consider using uuid_generate_v5() and namespace(s). Consider generating using sequences which generates input to hash, with a namespace part and a id part.
 	)
   RETURNS uuid AS 
 $$
 DECLARE
-  facet_uuid  uuid;
   facet_registrering_id bigint;
   facet_attr_egenskab FacetAttrEgenskaberType;
   facet_tils_publiceret FacetTilsPubliceretType;
@@ -19,8 +19,14 @@ DECLARE
 
 BEGIN
 
---This might genenerate a non unique value. Use uuid_generate_v5() (see comment below)
-facet_uuid := uuid_generate_v4(); --TODO Consider using uuid_generate_v5() and namespace(s). Consider generating using sequences which generates input to hash, with a namespace part and a id part
+IF EXISTS (SELECT id from facet WHERE id=facet_uuid) THEN
+  RAISE EXCEPTION 'Error creating or importing facet with uuid [%]. If you did not supply the uuid when invoking actual_state_create_or_import_facet (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might occur, albeit very very rarely.',facet_uuid;
+END IF;
+
+IF  (facet_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (facet_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
+  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking actual_state_create_or_import_facet.',(facet_registrering.registrering).livscykluskode;
+END IF;
+
 
 
 INSERT INTO 

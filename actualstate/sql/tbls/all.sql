@@ -1,15 +1,27 @@
 
 
 /*
-
+DROP FUNCTION actual_state_search_facet(integer,integer,uuid,facetregistreringtype);
+DROP FUNCTION actual_state_read_facet(uuid,tstzrange,tstzrange);
 DROP FUNCTION actual_state_list_facet(uuid[],tstzrange,tstzrange);
-DROP FUNCTION actual_state_create_facet(facet_registrering FacetRegistreringType);
+DROP FUNCTION actual_state_create_or_import_facet(FacetRegistreringType,uuid);
+
 DROP FUNCTION actual_state_update_facet(facet_uuid uuid,brugerref uuid,note text,livscykluskode Livscykluskode,attrEgenskaber FacetAttrEgenskaberType[],tilsPubliceretStatus FacetTilsPubliceretType[],relationer FacetRelationType[]);
 DROP FUNCTION _actual_state_create_facet_registrering(facet_uuid uuid,livscykluskode Livscykluskode, brugerref uuid, note text);
 DROP FUNCTION _actual_state_get_prev_facet_registrering(facet_registrering);
 
 
-DROP TABLE facet_attr_egenskaber ;
+
+DROP INDEX facet_relation_idx_rel_maal;
+DROP INDEX facet_tils_publiceret_idx_status;
+DROP INDEX facet_attr_egenskaber_idx_brugervendt_retskilde;
+DROP INDEX facet_attr_egenskaber_idx_brugervendt_facetsupplement;
+DROP INDEX facet_attr_egenskaber_idx_brugervendt_facetopbygning;
+DROP INDEX facet_attr_egenskaber_idx_brugervendt_facetplan;
+DROP INDEX facet_attr_egenskaber_idx_brugervendt_facetbeskrivelse;
+DROP INDEX facet_attr_egenskaber_idx_brugervendt_noegle;
+
+DROP TABLE facet_attr_egenskaber;
 DROP TABLE facet_tils_publiceret ;
 DROP TABLE facet_relation ;
 DROP TABLE facet_registrering;
@@ -38,7 +50,7 @@ DROP TYPE Facetrelationkode;
 The order to create functions in:
 _actual_state_get_prev_facet_registrering
 _actual_state_create_facet_registrering
-actual_state_create_facet
+actual_state_create_or_import_facet
 actual_state_update_facet
 actual_state_list_facet()
 
@@ -191,7 +203,37 @@ WITH (
 ALTER TABLE facet_attr_egenskaber
   OWNER TO mox;
 
+CREATE INDEX facet_attr_egenskaber_idx_brugervendt_noegle
+  ON facet_attr_egenskaber
+  USING btree
+  (brugervendt_noegle);
 
+CREATE INDEX facet_attr_egenskaber_idx_brugervendt_facetbeskrivelse
+  ON facet_attr_egenskaber
+  USING btree
+  (facetbeskrivelse);
+
+CREATE INDEX facet_attr_egenskaber_idx_brugervendt_facetplan
+  ON facet_attr_egenskaber
+  USING btree
+  (facetplan);
+  
+CREATE INDEX facet_attr_egenskaber_idx_brugervendt_facetopbygning
+  ON facet_attr_egenskaber
+  USING btree
+  (facetopbygning);
+  
+
+CREATE INDEX facet_attr_egenskaber_idx_brugervendt_facetsupplement
+  ON facet_attr_egenskaber
+  USING btree
+  (facetsupplement);
+
+CREATE INDEX facet_attr_egenskaber_idx_brugervendt_retskilde
+  ON facet_attr_egenskaber
+  USING btree
+  (retskilde);
+  
 
 /****************************************************************************************************/
 
@@ -227,6 +269,11 @@ WITH (
 ALTER TABLE facet_tils_publiceret
   OWNER TO mox;
 
+CREATE INDEX facet_tils_publiceret_idx_status
+  ON facet_tils_publiceret
+  USING btree
+  (status);
+  
 
 
 /****************************************************************************************************/
@@ -253,7 +300,10 @@ CREATE TABLE facet_relation
  CONSTRAINT facet_relation_no_virkning_overlap EXCLUDE USING gist (facet_registrering_id WITH =, _actual_state_convert_facet_relation_kode_to_txt(rel_type) WITH =, composite_type_to_time_range(virkning) WITH &&) WHERE  (rel_type<>('Redaktoer'::FacetRelationKode ))-- no overlapping virkning except for 0..n --relations
 );
 
-
+CREATE INDEX facet_relation_idx_rel_maal
+  ON facet_relation
+  USING btree
+  (rel_type, rel_maal);
 
 
 
