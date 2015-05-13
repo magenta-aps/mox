@@ -24,15 +24,15 @@ BEGIN
 
 --limit the scope of the current unlimited registrering
 
-UPDATE facet_registrering
-    SET registrering.timeperiod =
+UPDATE facet_registrering as a
+    SET (registrering).timeperiod =
       TSTZRANGE(lower((registrering).timeperiod), registreringTime, 
     concat(
             CASE WHEN lower_inc((registrering).timeperiod) THEN '[' ELSE '(' END,
             ')'
         ))
     WHERE facet_id = facet_uuid 
-    AND upper(registrering.timeperiod)='infinity'::TIMESTAMPTZ
+    AND upper((registrering).timeperiod)='infinity'::TIMESTAMPTZ
     AND _actual_state_valid_registrering_livscyklus_transition((registrering).livscykluskode,livscykluskode)  --we'll only limit the scope of the old registrering, if we're dealing with a valid transition. Faliure to move, will result in a constraint violation. A more explicit check on the validity of the state change should be considered.     
 
 ;

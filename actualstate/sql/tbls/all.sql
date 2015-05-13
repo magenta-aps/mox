@@ -184,7 +184,7 @@ ALTER TABLE facet_attr_egenskaber_id_seq
 CREATE TABLE facet_attr_egenskaber
 (
    id bigint NOT NULL DEFAULT nextval('facet_attr_egenskaber_id_seq'::regclass),
-   brugervendt_noegle text not null,
+   brugervendt_noegle text null,
    facetbeskrivelse text null,
    facetplan text null,
    facetopbygning text null,

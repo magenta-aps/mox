@@ -27,7 +27,7 @@ $$
 DECLARE
   new_facet_registrering facet_registrering;
   prev_facet_registrering facet_registrering;
-  facet_relation_navn text;
+  facet_relation_navn FacetRelationKode;
   attrEgenskaberObj FacetAttrEgenskaberType;
 
 BEGIN
@@ -45,6 +45,8 @@ prev_facet_registrering := _actual_state_get_prev_facet_registrering(new_facet_r
 
 --Ad 1)
 
+
+
     INSERT INTO facet_relation (
       facet_registrering_id,
         virkning,
@@ -53,13 +55,13 @@ prev_facet_registrering := _actual_state_get_prev_facet_registrering(new_facet_r
     )
     SELECT
       new_facet_registrering.id,
-        a.facet_relation_obj.virkning,
-          a.facet_relation_obj.relMaal,
-            a.facet_relation_obj.relation_navn
-    FROM unnest(relationer) as a(facet_relation_obj) 
+        a.virkning,
+          a.relMaal,
+            a.relType
+    FROM unnest(relationer) as a
   ;
 
-
+ 
 --Ad 2)
 
 /**********************/
@@ -130,7 +132,7 @@ LOOP
                 rel_type
     FROM facet_relation
     WHERE facet_registrering_id=prev_facet_registrering.id 
-    and a.rel_type=facet_relation_navn 
+    and rel_type=facet_relation_navn 
     ;
 
   END IF;
@@ -153,11 +155,11 @@ INSERT INTO facet_tils_publiceret (
             facet_registrering_id
 ) 
 SELECT
-        (a.facet_tils_publiceret_obj).virkning,
-          (a.facet_tils_publiceret_obj).status,
+        a.virkning,
+          a.status,
             new_facet_registrering.id
 FROM
-unnest(tilsPubliceretStatus) as a(facet_tils_publiceret_obj)
+unnest(tilsPubliceretStatus) as a
 ;
  
 
@@ -197,17 +199,17 @@ FROM
 
 
 --Generate and insert any merged objects, if any fields are null in attrEgenskaberObj
-FOREACH attrEgenskaberObj in array relationer
+FOREACH attrEgenskaberObj in array attrEgenskaber
 LOOP
 
 --To avoid needless fragmentation we'll check for presence of null values in the fields - and if none are present, we'll skip the merging operations
-IF attrEgenskaberObj.brugervendtNoegle is null 
-  OR attrEgenskaberObj.facetbeskrivelse is null 
-    OR attrEgenskaberObj.facetplan is null
-      OR attrEgenskaberObj.facetopbygning  is null
-        OR attrEgenskaberObj.facetophavsret is null
-          OR attrEgenskaberObj.facetsupplement is null
-            OR attrEgenskaberObj.retskilde is null 
+IF (attrEgenskaberObj).brugervendt_noegle is null 
+  OR (attrEgenskaberObj).facetbeskrivelse is null 
+    OR (attrEgenskaberObj).facetplan is null
+      OR (attrEgenskaberObj).facetopbygning  is null
+        OR (attrEgenskaberObj).facetophavsret is null
+          OR (attrEgenskaberObj).facetsupplement is null
+            OR (attrEgenskaberObj).retskilde is null 
 THEN
 
 INSERT INTO
@@ -224,7 +226,7 @@ facet_attr_egenskaber
                   facet_registrering_id
 )
 SELECT
-  coalesce(attrEgenskaberObj.brugervendtNoegle,a.brugervendt_noegle),
+  coalesce(attrEgenskaberObj.brugervendt_noegle,a.brugervendt_noegle),
     coalesce(attrEgenskaberObj.facetbeskrivelse,a.facetbeskrivelse),
       coalesce(attrEgenskaberObj.facetplan,a.facetplan),
         coalesce(attrEgenskaberObj.facetopbygning,a.facetopbygning),
@@ -233,9 +235,9 @@ SELECT
               coalesce(attrEgenskaberObj.retskilde,a.retskilde),
                 ROW (
                     (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
-                    attrEgenskaberObj.AktoerRef,
-                    attrEgenskaberObj.AktoerTypeKode,
-                    attrEgenskaberObj.NoteTekst
+                    (attrEgenskaberObj.virkning).AktoerRef,
+                    (attrEgenskaberObj.virkning).AktoerTypeKode,
+                    (attrEgenskaberObj.virkning).NoteTekst
                 )::Virkning,
                   new_facet_registrering.id
 FROM facet_attr_egenskaber a
@@ -260,7 +262,7 @@ facet_attr_egenskaber
                   facet_registrering_id
 )
 SELECT
-  attrEgenskaberObj.brugervendtNoegle,
+  attrEgenskaberObj.brugervendt_noegle,
     attrEgenskaberObj.facetbeskrivelse,
       attrEgenskaberObj.facetplan,
         attrEgenskaberObj.facetopbygning,
@@ -269,9 +271,9 @@ SELECT
               attrEgenskaberObj.retskilde,
                 ROW (
                      b.tz_range_leftover,
-                    attrEgenskaberObj.AktoerRef,
-                    attrEgenskaberObj.AktoerTypeKode,
-                    attrEgenskaberObj.NoteTekst
+                    (attrEgenskaberObj.virkning).AktoerRef,
+                    (attrEgenskaberObj.virkning).AktoerTypeKode,
+                    (attrEgenskaberObj.virkning).NoteTekst
                 )::Virkning,
                   new_facet_registrering.id
 FROM
