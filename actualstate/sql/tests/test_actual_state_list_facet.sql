@@ -196,32 +196,46 @@ expected_facets1:= ARRAY[
 		ROW(
 			new_uuid,
 			ARRAY[
-				registrering
+					ROW(
+						ROW(
+							(((actual_facets1[1]).registrering[1]).registrering).timeperiod, --this is cheating, but helps the comparison efforts below. (The timeperiod is set during creation/initialization )
+							(registrering.registrering).livscykluskode,
+							(registrering.registrering).brugerref,
+							(registrering.registrering).note 
+							)::RegistreringBase
+						,registrering.tilsPubliceretStatus
+						,registrering.attrEgenskaber
+						,registrering.relationer
+					)::FacetRegistreringType
 				]::FacetRegistreringType[]
 			)::FacetType
 		,
 	ROW(
 			new_uuid2,
-			ARRAY[registrering2]::FacetRegistreringType[]
+			ARRAY[
+					ROW(
+						ROW(
+							(((actual_facets1[2]).registrering[1]).registrering).timeperiod, --this is cheating, but helps the comparison efforts below. (The timeperiod is set during creation/initialization )
+							(registrering2.registrering).livscykluskode,
+							(registrering2.registrering).brugerref,
+							(registrering2.registrering).note 
+							)::RegistreringBase
+						,registrering2.tilsPubliceretStatus
+						,registrering2.attrEgenskaber
+						,registrering2.relationer
+					)::FacetRegistreringType
+			]::FacetRegistreringType[]
 			)::FacetType
 	]::FacetType[];
 
-
-
---RAISE NOTICE 'test 20:%',((((expected_facets1[1]).registrering)[1]).registrering).timeperiod;
-
--- TODO: to help the comparison efforts, we'll try to overrule the timeperiod of the registrations.
-
 select array_agg(a.* order by a.id) from unnest(expected_facets1) as a into expected_facets1;
-
---raise notice 'actual_facets1:%',actual_facets1;
---raise notice 'expected_facets1:%',expected_facets1;
 
 RETURN NEXT is(
 	actual_facets1,
 	expected_facets1,	
 	'list test 1');
 
+--TODO: Add tests for different scenarios
 
 
 END;
