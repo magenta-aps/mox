@@ -8,10 +8,10 @@
 
 
 CREATE OR REPLACE FUNCTION actual_state_search_facet(
-	maxResults int,
 	firstResult int,--TOOD ??
 	facet_uuid uuid,
-	registrering FacetRegistreringType
+	registrering FacetRegistreringType,
+	maxResults int = 2147483647
 	)
   RETURNS uuid[] AS 
 $$
@@ -94,7 +94,7 @@ END IF;
 
 --/****************************//
 --filter on attr - egenskaber
-IF array_length(facet_candidates)>0 OR NOT facet_candidates_is_initialized THEN
+IF (array_length(facet_candidates,1)>0 OR NOT facet_candidates_is_initialized) AND registrering IS NOT NULL AND  registrering.attrEgenskaber IS NOT NULL THEN
 	FOREACH attrEgenskaberTypeObj IN ARRAY registrering.attrEgenskaber
 	LOOP
 		to_be_applyed_filter_uuids:=array(
@@ -165,7 +165,7 @@ END IF;
 
 --/****************************//
 --filter on states -- publiceret
-IF array_length(facet_candidates)>0 OR NOT facet_candidates_is_initialized THEN
+IF (array_length(facet_candidates,1)>0 OR NOT facet_candidates_is_initialized) AND registrering IS NOT NULL AND registrering.tilsPubliceretStatus IS NOT NULL THEN
 	FOREACH tilsPubliceretStatusTypeObj IN ARRAY registrering.tilsPubliceretStatus
 	LOOP
 		to_be_applyed_filter_uuids:=array(
@@ -205,7 +205,7 @@ END IF;
 --/****************************//
 --filter on relations
 
-IF array_length(facet_candidates)>0 OR NOT facet_candidates_is_initialized THEN
+IF (array_length(facet_candidates,1)>0 OR NOT facet_candidates_is_initialized) AND registrering IS NOT NULL AND registrering.relationer IS NOT NULL THEN
 	FOREACH relationTypeObj IN ARRAY registrering.relationer
 	LOOP
 		to_be_applyed_filter_uuids:=array(
@@ -244,19 +244,22 @@ IF array_length(facet_candidates)>0 OR NOT facet_candidates_is_initialized THEN
 	END LOOP;
 END IF;
 
-
 --/**********************//
-IF maxResults IS NOT NULL THEN
+
+
+IF NOT facet_candidates_is_initialized THEN
+	--No filters applied!
+	facet_candidates:=array(
+		SELECT id FROM facet a LIMIT maxResults
+	);
+ELSE
 	facet_candidates:=array(
 		SELECT id FROM unnest(facet_candidates) as a(id) LIMIT maxResults
-	);
+		);
 END IF;
 
 
-
 return facet_candidates;
-
---TODO: Test and verify!
 
 
 END;

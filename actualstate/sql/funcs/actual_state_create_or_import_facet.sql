@@ -69,35 +69,35 @@ END IF;
 
 
 
+IF facet_registrering.attrEgenskaber IS NOT NULL THEN
+  FOREACH facet_attr_egenskab IN ARRAY facet_registrering.attrEgenskaber
+  LOOP
 
-FOREACH facet_attr_egenskab IN ARRAY facet_registrering.attrEgenskaber
-LOOP
+  INSERT INTO facet_attr_egenskaber (
+    brugervendt_noegle,
+      facetbeskrivelse,
+        facetplan,
+          facetopbygning,
+            facetophavsret,
+              facetsupplement,
+                retskilde,
+                  virkning,
+                    facet_registrering_id
+  )
+  SELECT
+    facet_attr_egenskab.brugervendt_noegle,
+      facet_attr_egenskab.facetbeskrivelse,
+        facet_attr_egenskab.facetplan,
+          facet_attr_egenskab.facetopbygning,
+            facet_attr_egenskab.facetophavsret,
+              facet_attr_egenskab.facetsupplement,
+                facet_attr_egenskab.retskilde,
+                  facet_attr_egenskab.virkning,
+                     facet_registrering_id
+  ;
 
-INSERT INTO facet_attr_egenskaber (
-  brugervendt_noegle,
-    facetbeskrivelse,
-      facetplan,
-        facetopbygning,
-          facetophavsret,
-            facetsupplement,
-              retskilde,
-                virkning,
-                  facet_registrering_id
-)
-SELECT
-  facet_attr_egenskab.brugervendt_noegle,
-    facet_attr_egenskab.facetbeskrivelse,
-      facet_attr_egenskab.facetplan,
-        facet_attr_egenskab.facetopbygning,
-          facet_attr_egenskab.facetophavsret,
-            facet_attr_egenskab.facetsupplement,
-              facet_attr_egenskab.retskilde,
-                facet_attr_egenskab.virkning,
-                   facet_registrering_id
-;
-
-END LOOP;
-
+  END LOOP;
+END IF;
 /*********************************/
 --Insert states (tilstande)
 
@@ -107,22 +107,22 @@ IF array_length(facet_registrering.tilsPubliceretStatus, 1)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [publiceretStatus] for facet. Oprettelse afbrydes.';
 END IF;
 
+IF facet_registrering.tilsPubliceretStatus IS NOT NULL THEN
+  FOREACH facet_tils_publiceret IN ARRAY facet_registrering.tilsPubliceretStatus
+  LOOP
 
-FOREACH facet_tils_publiceret IN ARRAY facet_registrering.tilsPubliceretStatus
-LOOP
+  INSERT INTO facet_tils_publiceret (
+    virkning,
+      status,
+        facet_registrering_id
+  )
+  SELECT
+    facet_tils_publiceret.virkning,
+      facet_tils_publiceret.status,
+        facet_registrering_id;
 
-INSERT INTO facet_tils_publiceret (
-  virkning,
-    status,
-      facet_registrering_id
-)
-SELECT
-  facet_tils_publiceret.virkning,
-    facet_tils_publiceret.status,
-      facet_registrering_id;
-
-END LOOP;
-
+  END LOOP;
+END IF;
 /*********************************/
 --Insert relations
 

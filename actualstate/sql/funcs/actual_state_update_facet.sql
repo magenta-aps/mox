@@ -199,96 +199,19 @@ FROM
 
 
 --Generate and insert any merged objects, if any fields are null in attrEgenskaberObj
-FOREACH attrEgenskaberObj in array attrEgenskaber
-LOOP
+IF attrEgenskaber IS NOT null THEN
+  FOREACH attrEgenskaberObj in array attrEgenskaber
+  LOOP
 
---To avoid needless fragmentation we'll check for presence of null values in the fields - and if none are present, we'll skip the merging operations
-IF (attrEgenskaberObj).brugervendt_noegle is null 
-  OR (attrEgenskaberObj).facetbeskrivelse is null 
-    OR (attrEgenskaberObj).facetplan is null
-      OR (attrEgenskaberObj).facetopbygning  is null
-        OR (attrEgenskaberObj).facetophavsret is null
-          OR (attrEgenskaberObj).facetsupplement is null
-            OR (attrEgenskaberObj).retskilde is null 
-THEN
-
-INSERT INTO
-facet_attr_egenskaber
-(
-  brugervendt_noegle,
-    facetbeskrivelse,
-      facetplan,
-        facetopbygning,
-          facetophavsret,
-            facetsupplement,
-              retskilde,
-                virkning,
-                  facet_registrering_id
-)
-SELECT
-  coalesce(attrEgenskaberObj.brugervendt_noegle,a.brugervendt_noegle),
-    coalesce(attrEgenskaberObj.facetbeskrivelse,a.facetbeskrivelse),
-      coalesce(attrEgenskaberObj.facetplan,a.facetplan),
-        coalesce(attrEgenskaberObj.facetopbygning,a.facetopbygning),
-          coalesce(attrEgenskaberObj.facetophavsret,a.facetophavsret),
-            coalesce(attrEgenskaberObj.facetsupplement,a.facetsupplement),
-              coalesce(attrEgenskaberObj.retskilde,a.retskilde),
-                ROW (
-                    (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
-                    (attrEgenskaberObj.virkning).AktoerRef,
-                    (attrEgenskaberObj.virkning).AktoerTypeKode,
-                    (attrEgenskaberObj.virkning).NoteTekst
-                )::Virkning,
-                  new_facet_registrering.id
-FROM facet_attr_egenskaber a
-WHERE
-  a.facet_registrering_id=prev_facet_registrering.id 
-  and (a.virkning).TimePeriod && (attrEgenskaberObj.virkning).TimePeriod
-;
-
---For any periods within the virkning of the attrEgenskaberObj, that is NOT covered by any "merged" rows inserted above, generate and insert rows
-
-INSERT INTO
-facet_attr_egenskaber
-(
-  brugervendt_noegle,
-    facetbeskrivelse,
-      facetplan,
-        facetopbygning,
-          facetophavsret,
-            facetsupplement,
-              retskilde,
-                virkning,
-                  facet_registrering_id
-)
-SELECT
-  attrEgenskaberObj.brugervendt_noegle,
-    attrEgenskaberObj.facetbeskrivelse,
-      attrEgenskaberObj.facetplan,
-        attrEgenskaberObj.facetopbygning,
-          attrEgenskaberObj.facetophavsret,
-            attrEgenskaberObj.facetsupplement,
-              attrEgenskaberObj.retskilde,
-                ROW (
-                     b.tz_range_leftover,
-                    (attrEgenskaberObj.virkning).AktoerRef,
-                    (attrEgenskaberObj.virkning).AktoerTypeKode,
-                    (attrEgenskaberObj.virkning).NoteTekst
-                )::Virkning,
-                  new_facet_registrering.id
-FROM
-(
---build an array of the timeperiod of the virkning of the facet_attr_egenskaber of the new registrering to pass to subtract_tstzrange_arr 
-    SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
-    FROM facet_attr_egenskaber b
-    WHERE 
-     b.facet_registrering_id=new_facet_registrering.id
-) as a
-JOIN unnest(subtract_tstzrange_arr((attrEgenskaberObj.virkning).TimePeriod,a.tzranges_of_new_reg)) as b(tz_range_leftover) on true
-;
-
-ELSE
-  --insert attrEgenskaberObj raw (if there were no null-valued fields) 
+  --To avoid needless fragmentation we'll check for presence of null values in the fields - and if none are present, we'll skip the merging operations
+  IF (attrEgenskaberObj).brugervendt_noegle is null 
+    OR (attrEgenskaberObj).facetbeskrivelse is null 
+      OR (attrEgenskaberObj).facetplan is null
+        OR (attrEgenskaberObj).facetopbygning  is null
+          OR (attrEgenskaberObj).facetophavsret is null
+            OR (attrEgenskaberObj).facetsupplement is null
+              OR (attrEgenskaberObj).retskilde is null 
+  THEN
 
   INSERT INTO
   facet_attr_egenskaber
@@ -303,21 +226,100 @@ ELSE
                   virkning,
                     facet_registrering_id
   )
-  VALUES (
-    attrEgenskaberObj.brugervendtNoegle,
+  SELECT
+    coalesce(attrEgenskaberObj.brugervendt_noegle,a.brugervendt_noegle),
+      coalesce(attrEgenskaberObj.facetbeskrivelse,a.facetbeskrivelse),
+        coalesce(attrEgenskaberObj.facetplan,a.facetplan),
+          coalesce(attrEgenskaberObj.facetopbygning,a.facetopbygning),
+            coalesce(attrEgenskaberObj.facetophavsret,a.facetophavsret),
+              coalesce(attrEgenskaberObj.facetsupplement,a.facetsupplement),
+                coalesce(attrEgenskaberObj.retskilde,a.retskilde),
+                  ROW (
+                      (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
+                      (attrEgenskaberObj.virkning).AktoerRef,
+                      (attrEgenskaberObj.virkning).AktoerTypeKode,
+                      (attrEgenskaberObj.virkning).NoteTekst
+                  )::Virkning,
+                    new_facet_registrering.id
+  FROM facet_attr_egenskaber a
+  WHERE
+    a.facet_registrering_id=prev_facet_registrering.id 
+    and (a.virkning).TimePeriod && (attrEgenskaberObj.virkning).TimePeriod
+  ;
+
+  --For any periods within the virkning of the attrEgenskaberObj, that is NOT covered by any "merged" rows inserted above, generate and insert rows
+
+  INSERT INTO
+  facet_attr_egenskaber
+  (
+    brugervendt_noegle,
+      facetbeskrivelse,
+        facetplan,
+          facetopbygning,
+            facetophavsret,
+              facetsupplement,
+                retskilde,
+                  virkning,
+                    facet_registrering_id
+  )
+  SELECT
+    attrEgenskaberObj.brugervendt_noegle,
       attrEgenskaberObj.facetbeskrivelse,
         attrEgenskaberObj.facetplan,
           attrEgenskaberObj.facetopbygning,
             attrEgenskaberObj.facetophavsret,
               attrEgenskaberObj.facetsupplement,
                 attrEgenskaberObj.retskilde,
-                  attrEgenskaberObj.virkning,
+                  ROW (
+                       b.tz_range_leftover,
+                      (attrEgenskaberObj.virkning).AktoerRef,
+                      (attrEgenskaberObj.virkning).AktoerTypeKode,
+                      (attrEgenskaberObj.virkning).NoteTekst
+                  )::Virkning,
                     new_facet_registrering.id
-  );
+  FROM
+  (
+  --build an array of the timeperiod of the virkning of the facet_attr_egenskaber of the new registrering to pass to subtract_tstzrange_arr 
+      SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
+      FROM facet_attr_egenskaber b
+      WHERE 
+       b.facet_registrering_id=new_facet_registrering.id
+  ) as a
+  JOIN unnest(subtract_tstzrange_arr((attrEgenskaberObj.virkning).TimePeriod,a.tzranges_of_new_reg)) as b(tz_range_leftover) on true
+  ;
 
+  ELSE
+    --insert attrEgenskaberObj raw (if there were no null-valued fields) 
+
+    INSERT INTO
+    facet_attr_egenskaber
+    (
+      brugervendt_noegle,
+        facetbeskrivelse,
+          facetplan,
+            facetopbygning,
+              facetophavsret,
+                facetsupplement,
+                  retskilde,
+                    virkning,
+                      facet_registrering_id
+    )
+    VALUES (
+      attrEgenskaberObj.brugervendtNoegle,
+        attrEgenskaberObj.facetbeskrivelse,
+          attrEgenskaberObj.facetplan,
+            attrEgenskaberObj.facetopbygning,
+              attrEgenskaberObj.facetophavsret,
+                attrEgenskaberObj.facetsupplement,
+                  attrEgenskaberObj.retskilde,
+                    attrEgenskaberObj.virkning,
+                      new_facet_registrering.id
+    );
+
+  END IF;
+
+  END LOOP;
 END IF;
-
-END LOOP;
 
 --Handle egenskaber of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
 

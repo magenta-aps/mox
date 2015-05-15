@@ -12,17 +12,19 @@ BEGIN
 
 result[1]:=rangeA;
 
-FOREACH rangeB in array rangeArr
-LOOP
-	temp_result:=result;
-	result:='{}';
-
-	FOREACH rangeA_leftover in array temp_result
+IF rangeArr IS NOT NULL THEN
+	FOREACH rangeB in array rangeArr
 	LOOP
-		result:=array_cat(result, subtract_tstzrange(rangeA_leftover,rangeB) );
-	END LOOP;
+		temp_result:=result;
+		result:='{}';
 
-END LOOP;
+		FOREACH rangeA_leftover in array temp_result
+		LOOP
+			result:=array_cat(result, subtract_tstzrange(rangeA_leftover,rangeB) );
+		END LOOP;
+
+	END LOOP;
+END IF;
 
 return result;
 
