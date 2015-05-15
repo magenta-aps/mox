@@ -146,9 +146,6 @@ where facet_id=new_uuid
 ;
 
 
---raise notice 'actual_registrering % ',actual_registrering;
---raise notice 'actual_registrering upper_inf % ',upper_inf(actual_registrering.timeperiod);
-
 RETURN NEXT is(actual_registrering.livscykluskode,(registrering.registrering).livscykluskode,'registrering livscykluskode');
 RETURN NEXT is(actual_registrering.brugerref,(registrering.registrering).brugerref,'registrering brugerref');
 RETURN NEXT is(actual_registrering.note,(registrering.registrering).note,'registrering note');

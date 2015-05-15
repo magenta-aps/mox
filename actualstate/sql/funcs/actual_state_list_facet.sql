@@ -13,7 +13,8 @@ CREATE OR REPLACE FUNCTION actual_state_list_facet(facet_uuids uuid[],
 				a3.FacetTilsPubliceretArr,
 				a3.FacetAttrEgenskaberArr,
 				a3.FacetRelationTypeArr
-			)::FacetRegistreringType		
+			)::FacetRegistreringType
+			order by a3.facet_registrering_id		
 		) 
 	):: FacetType
 	FROM
@@ -26,6 +27,7 @@ CREATE OR REPLACE FUNCTION actual_state_list_facet(facet_uuids uuid[],
 					b2.virkning,
 					b2.rel_maal 
 				):: FacetRelationType
+			order by b2.id
 		) FacetRelationTypeArr
 		FROM
 		(
@@ -36,6 +38,7 @@ CREATE OR REPLACE FUNCTION actual_state_list_facet(facet_uuids uuid[],
 				 	b1.virkning, 
 					b1.status
 				)::FacetTilsPubliceretType
+				order by b1.id
 			) FacetTilsPubliceretArr
 			FROM
 			(
@@ -54,6 +57,7 @@ CREATE OR REPLACE FUNCTION actual_state_list_facet(facet_uuids uuid[],
 				   		c.retskilde,
 				   		c.virkning 
 						)::FacetAttrEgenskaberType
+					order by c.id
 				) FacetAttrEgenskaberArr
 				FROM		facet a
 				JOIN 		facet_registrering b 	ON b.facet_id=a.id
@@ -81,7 +85,7 @@ CREATE OR REPLACE FUNCTION actual_state_list_facet(facet_uuids uuid[],
 	) as a3
 	GROUP BY 
 	a3.facet_id
-
+	order by facet_id
 
 $BODY$
 LANGUAGE sql STABLE
