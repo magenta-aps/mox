@@ -1,3 +1,10 @@
+-- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Contact: info@magenta.dk.
+--
+-- This Source Code Form is subject to the terms of the Mozilla Public
+-- License, v. 2.0. If a copy of the MPL was not distributed with this
+-- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 --SELECT * FROM runtests('test'::name);
 CREATE OR REPLACE FUNCTION test.test_actual_state_create_or_import_facet()
 RETURNS SETOF TEXT LANGUAGE plpgsql AS 
@@ -24,7 +31,8 @@ DECLARE
 	actual_publiceret_status FacetTilsPubliceretStatus;
 	actual_publiceret FacetTilsPubliceretType;
 	actual_relationer FacetRelationType[];
-
+	uuid_to_import uuid :=uuid_generate_v4();
+	uuid_returned_from_import uuid;
 
 BEGIN
 
@@ -194,8 +202,26 @@ RETURN NEXT is(
 	ARRAY[facetRelAnsvarlig,facetRelRedaktoer1,facetRelRedaktoer2]
 ,'relations present');
 
+--****************************
+--test an import operation
+uuid_returned_from_import:=actual_state_create_or_import_facet(registrering,uuid_to_import);
 
+RETURN NEXT is(
+	uuid_returned_from_import,
+	uuid_to_import,
+	'import returns uuid'
+	);
 
+RETURN NEXT is(
+	ARRAY(
+		SELECT
+			id
+		FROM
+		facet
+		where id=uuid_to_import
+		),
+	ARRAY[uuid_to_import]::uuid[]
+,'import creates new facet.');
 
 
 
