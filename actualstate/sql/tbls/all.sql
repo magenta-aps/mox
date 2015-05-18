@@ -48,11 +48,17 @@ DROP TYPE Facetrelationkode;
 
 /*
 The order to create functions in:
+
+subtract_tstzrange
+subtract_tstzrange_arr
 _actual_state_get_prev_facet_registrering
 _actual_state_create_facet_registrering
+_actual_state_valid_registrering_livscyklus_transition
 actual_state_create_or_import_facet
 actual_state_update_facet
-actual_state_list_facet()
+actual_state_list_facet
+actual_state_read_facet
+actual_state_search_facet
 
 */
 
