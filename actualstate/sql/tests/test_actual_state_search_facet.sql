@@ -38,8 +38,10 @@ DECLARE
 	virkRedaktoer1_B Virkning;
 	virkRedaktoer2_B Virkning;
 	virkPubliceret_B Virkning;
+	virkpubliceret2_b Virkning;
 	facetEgenskab_B FacetAttrEgenskaberType;
 	facetPubliceret_B FacetTilsPubliceretType;
+	facetPubliceret_C FacetTilsPubliceretType;
 	facetRelAnsvarlig_B FacetRelationType;
 	facetRelRedaktoer1_B FacetRelationType;
 	facetRelRedaktoer2_B FacetRelationType;
@@ -209,6 +211,14 @@ virkPubliceret_B := ROW (
 ) :: Virkning
 ;
 
+virkPubliceret2_B := ROW (
+	'[2014-05-18, 2015-05-18)' :: TSTZRANGE,
+          uuid_generate_v4(),
+          'Bruger',
+          'NoteEx143'
+) :: Virkning
+;
+
 
 facetRelAnsvarlig_B := ROW (
 	'Ansvarlig'::FacetRelationKode,
@@ -241,6 +251,12 @@ virkPubliceret_B,
 ):: FacetPubliceretType
 ;
 
+facetPubliceret_C := ROW (
+virkPubliceret2_B,
+'IkkePubliceret'
+):: FacetPubliceretType
+;
+
 
 facetEgenskab_B := ROW (
 'brugervendt_noegle_text2',
@@ -263,7 +279,7 @@ registrering_B := ROW (
 	uuidregistrering_B,
 	'Test Note 5') :: registreringBase
 	,
-ARRAY[facetPubliceret_B]::FacetTilsPubliceretType[],
+ARRAY[facetPubliceret_B,facetPubliceret_C]::FacetTilsPubliceretType[],
 ARRAY[facetEgenskab_B]::FacetAttrEgenskaberType[],
 ARRAY[facetRelAnsvarlig_B,facetRelRedaktoer1_B,facetRelRedaktoer2_B]
 ) :: FacetRegistreringType
@@ -273,6 +289,8 @@ new_uuid_B := actual_state_create_or_import_facet(registrering_B);
 
 
 --***********************************
+
+
 search_result1 :=actual_state_search_facet(
 	null,--TOOD ??
 	new_uuid_A,
@@ -300,7 +318,8 @@ ARRAY[new_uuid_A,new_uuid_B]::uuid[],
 
 
 --***********************************
-/*
+--search on facets that has had the state not published at any point in time
+
 search_registrering_3 := ROW (
 	ROW (
 	NULL,
@@ -309,14 +328,38 @@ search_registrering_3 := ROW (
 	NULL) :: registreringBase
 	,
 	ARRAY[
-
-	]
-,--ARRAY[facetPubliceret_B]::FacetTilsPubliceretType[],
+			ROW(
+				  ROW(
+				  	null,null,null,null
+				  	)::virkning 
+				  ,'IkkePubliceret'::FacetTilsPubliceretStatus
+				):: FacetTilsPubliceretType
+	],--ARRAY[facetPubliceret_B]::FacetTilsPubliceretType[],
 null,--ARRAY[facetEgenskab_B]::FacetAttrEgenskaberType[],
 null--ARRAY[facetRelAnsvarlig_B,facetRelRedaktoer1_B,facetRelRedaktoer2_B]
-
 ):: FacetRegistreringType;
-*/
+
+--raise notice 'search_registrering_3,%',search_registrering_3;
+
+search_result3 :=actual_state_search_facet(
+	null,--TOOD ??
+	null,
+	search_registrering_3 --registrering_A Facetregistrering_AType
+	);
+
+--raise notice 'search for IkkePubliceret returned:%',search_result3;
+
+RETURN NEXT is(
+search_result3,
+ARRAY[new_uuid_B]::uuid[],
+'search state FacetTilsPubliceretStatus IkkePubliceret'
+);
+
+--search on facets that were published on 18-05-2015
+--search on facets that had state 'ikkepubliceret' on 30-06-2015 
+
+
+
 
 
 
