@@ -54,8 +54,14 @@ DECLARE
 	search_result1 uuid[];
 	search_result2 uuid[];
 	search_result3 uuid[];
+	search_result4 uuid[];
+	search_result5 uuid[];
+	search_result6 uuid[];
 
 	search_registrering_3 FacetRegistreringType;
+	search_registrering_4 FacetRegistreringType;
+	search_registrering_5 FacetRegistreringType;
+	search_registrering_6 FacetRegistreringType;
 
 BEGIN
 
@@ -355,8 +361,118 @@ ARRAY[new_uuid_B]::uuid[],
 'search state FacetTilsPubliceretStatus IkkePubliceret'
 );
 
+--***********************************
 --search on facets that were published on 18-05-2015
---search on facets that had state 'ikkepubliceret' on 30-06-2015 
+search_registrering_4 := ROW (
+	ROW (
+	NULL,
+	NULL,
+	NULL,
+	NULL) :: registreringBase
+	,
+	ARRAY[
+			ROW(
+				  ROW(
+				  	'[2015-05-18, 2015-05-19]' :: TSTZRANGE,
+				  	null,null,null
+				  	)::virkning 
+				  ,'Publiceret'::FacetTilsPubliceretStatus
+				):: FacetTilsPubliceretType
+	],--ARRAY[facetPubliceret_B]::FacetTilsPubliceretType[],
+null,--ARRAY[facetEgenskab_B]::FacetAttrEgenskaberType[],
+null--ARRAY[facetRelAnsvarlig_B,facetRelRedaktoer1_B,facetRelRedaktoer2_B]
+):: FacetRegistreringType;
+
+
+
+search_result4 :=actual_state_search_facet(
+	null,--TOOD ??
+	null,
+	search_registrering_4 --registrering_A Facetregistrering_AType
+	);
+
+RETURN NEXT is(
+search_result4,
+ARRAY[new_uuid_A,new_uuid_B]::uuid[],
+'search state FacetTilsPubliceretStatus Publiceret on 18-05-2015 - 19-05-2015'
+);
+
+
+--***********************************
+--search on facets that had state 'ikkepubliceret' on 30-06-2015 30-07-2015
+search_registrering_5 := ROW (
+	ROW (
+	NULL,
+	NULL,
+	NULL,
+	NULL) :: registreringBase
+	,
+	ARRAY[
+			ROW(
+				  ROW(
+				  	'[2015-06-30, 2015-07-30]' :: TSTZRANGE,
+				  	null,null,null
+				  	)::virkning 
+				  ,'IkkePubliceret'::FacetTilsPubliceretStatus
+				):: FacetTilsPubliceretType
+	],--ARRAY[facetPubliceret_B]::FacetTilsPubliceretType[],
+null,--ARRAY[facetEgenskab_B]::FacetAttrEgenskaberType[],
+null--ARRAY[facetRelAnsvarlig_B,facetRelRedaktoer1_B,facetRelRedaktoer2_B]
+):: FacetRegistreringType;
+
+
+
+search_result5 :=actual_state_search_facet(
+	null,--TOOD ??
+	null,
+	search_registrering_5 --registrering_A Facetregistrering_AType
+	);
+
+RETURN NEXT is(
+search_result5,
+ARRAY[]::uuid[],
+'search state FacetTilsPubliceretStatus ikkepubliceret on 30-06-2015 30-07-2015'
+);
+
+--***********************************
+--search on facets with specific aktoerref and state publiceret
+search_registrering_6 := ROW (
+	ROW (
+	NULL,
+	NULL,
+	NULL,
+	NULL) :: registreringBase
+	,
+	ARRAY[
+			ROW(
+				  ROW(
+				  	'[2015-05-18, 2015-05-19]' :: TSTZRANGE,
+				  	(virkPubliceret_B).AktoerRef,
+				  	null,null
+				  	)::virkning 
+				  ,'Publiceret'::FacetTilsPubliceretStatus
+				):: FacetTilsPubliceretType
+	],--ARRAY[facetPubliceret_B]::FacetTilsPubliceretType[],
+null,--ARRAY[facetEgenskab_B]::FacetAttrEgenskaberType[],
+null--ARRAY[facetRelAnsvarlig_B,facetRelRedaktoer1_B,facetRelRedaktoer2_B]
+):: FacetRegistreringType;
+
+search_result6 :=actual_state_search_facet(
+	null,--TOOD ??
+	null,
+	search_registrering_6 --registrering_A Facetregistrering_AType
+	);
+
+RETURN NEXT is(
+search_result6,
+ARRAY[new_uuid_B]::uuid[],
+'search on facets with specific aktoerref and state publiceret'
+);
+
+
+
+
+
 
 
 
