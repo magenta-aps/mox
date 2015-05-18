@@ -152,7 +152,7 @@ CREATE TABLE facet_registrering
 (
  id bigint NOT NULL DEFAULT nextval('facet_registrering_id_seq'::regclass),
  facet_id uuid NOT NULL ,
- registrering RegistreringBase NOT NULL CHECK( not isempty((registrering).timeperiod) ),
+ registrering RegistreringBase NOT NULL CHECK( (registrering).TimePeriod IS NOT NULL AND not isempty((registrering).timeperiod) ),
   CONSTRAINT facet_registrering_pkey PRIMARY KEY (id),
   CONSTRAINT facet_registrering_facet_fkey FOREIGN KEY (facet_id)
       REFERENCES facet (id) MATCH SIMPLE
@@ -191,7 +191,7 @@ CREATE TABLE facet_attr_egenskaber
    facetophavsret text null,
    facetsupplement text null,
    retskilde text null,
-   virkning Virkning not null CHECK( not isempty((virkning).TimePeriod) ),
+   virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
    facet_registrering_id bigint not null,
 CONSTRAINT facet_attr_egenskaber_pkey PRIMARY KEY (id),
 CONSTRAINT facet_attr_egenskaber_forkey_facetregistrering  FOREIGN KEY (facet_registrering_id) REFERENCES facet_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
@@ -255,7 +255,7 @@ ALTER TABLE facet_tils_publiceret_id_seq
 CREATE TABLE facet_tils_publiceret
 (
   id bigint NOT NULL DEFAULT nextval('facet_tils_publiceret_id_seq'::regclass),
-  virkning Virkning  NOT NULL CHECK( not isempty((virkning).TimePeriod) ),
+  virkning Virkning  NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
   status FacetTilsPubliceretStatus NOT NULL, 
   facet_registrering_id bigint not null,
   CONSTRAINT facet_tils_publiceret_pkey PRIMARY KEY (id),
@@ -292,7 +292,7 @@ CREATE TABLE facet_relation
 (
   id bigint NOT NULL DEFAULT nextval('facet_relation_id_seq'::regclass),
   facet_registrering_id bigint not null,
-  virkning Virkning not null CHECK( not isempty((virkning).TimePeriod) ),
+  virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
   rel_maal uuid NULL, --we have to allow null values (for now at least), as it is needed to be able to clear/overrule previous registered relations.
   rel_type FacetRelationKode not null,
  CONSTRAINT facet_relation_forkey_facetregistrering  FOREIGN KEY (facet_registrering_id) REFERENCES facet_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
