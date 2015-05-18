@@ -166,6 +166,23 @@ WITH (
 ALTER TABLE facet_registrering
   OWNER TO mox;
 
+CREATE INDEX facet_registrering_idx_livscykluskode
+  ON facet_registrering
+  USING btree
+  (((registrering).livscykluskode));
+
+CREATE INDEX facet_registrering_idx_brugerref
+  ON facet_registrering
+  USING btree
+  (((registrering).brugerref));
+
+CREATE INDEX facet_registrering_idx_note
+  ON facet_registrering
+  USING btree
+  (((registrering).note));
+
+
+
 /****************************************************************************************************/
 
 
@@ -208,32 +225,47 @@ CREATE INDEX facet_attr_egenskaber_idx_brugervendt_noegle
   USING btree
   (brugervendt_noegle);
 
-CREATE INDEX facet_attr_egenskaber_idx_brugervendt_facetbeskrivelse
+CREATE INDEX facet_attr_egenskaber_idx_facetbeskrivelse
   ON facet_attr_egenskaber
   USING btree
   (facetbeskrivelse);
 
-CREATE INDEX facet_attr_egenskaber_idx_brugervendt_facetplan
+CREATE INDEX facet_attr_egenskaber_idx_facetplan
   ON facet_attr_egenskaber
   USING btree
   (facetplan);
   
-CREATE INDEX facet_attr_egenskaber_idx_brugervendt_facetopbygning
+CREATE INDEX facet_attr_egenskaber_idx_facetopbygning
   ON facet_attr_egenskaber
   USING btree
   (facetopbygning);
   
 
-CREATE INDEX facet_attr_egenskaber_idx_brugervendt_facetsupplement
+CREATE INDEX facet_attr_egenskaber_idx_facetsupplement
   ON facet_attr_egenskaber
   USING btree
   (facetsupplement);
 
-CREATE INDEX facet_attr_egenskaber_idx_brugervendt_retskilde
+CREATE INDEX facet_attr_egenskaber_idx_retskilde
   ON facet_attr_egenskaber
   USING btree
   (retskilde);
   
+CREATE INDEX facet_attr_egenskaber_idx_virkning_aktoerref
+  ON facet_attr_egenskaber
+  USING btree
+  (((virkning).aktoerref));
+
+CREATE INDEX facet_attr_egenskaber_idx_virkning_aktoertypekode
+  ON facet_attr_egenskaber
+  USING btree
+  (((virkning).aktoertypekode));
+
+CREATE INDEX facet_attr_egenskaber_idx_virkning_notetekst
+  ON facet_attr_egenskaber
+  USING btree
+  (((virkning).notetekst));
+
 
 /****************************************************************************************************/
 
@@ -275,6 +307,21 @@ CREATE INDEX facet_tils_publiceret_idx_status
   (status);
   
 
+CREATE INDEX facet_tils_publiceret_idx_virkning_aktoerref
+  ON facet_tils_publiceret
+  USING btree
+  (((virkning).aktoerref));
+
+CREATE INDEX facet_tils_publiceret_idx_virkning_aktoertypekode
+  ON facet_tils_publiceret
+  USING btree
+  (((virkning).aktoertypekode));
+
+CREATE INDEX facet_tils_publiceret_idx_virkning_notetekst
+  ON facet_tils_publiceret
+  USING btree
+  (((virkning).notetekst));
+
 
 /****************************************************************************************************/
 
@@ -305,7 +352,19 @@ CREATE INDEX facet_relation_idx_rel_maal
   USING btree
   (rel_type, rel_maal);
 
+CREATE INDEX facet_relation_idx_virkning_aktoerref
+  ON facet_relation
+  USING btree
+  (((virkning).aktoerref));
 
+CREATE INDEX facet_relation_idx_virkning_aktoertypekode
+  ON facet_relation
+  USING btree
+  (((virkning).aktoertypekode));
 
+CREATE INDEX facet_relation_idx_virkning_notetekst
+  ON facet_relation
+  USING btree
+  (((virkning).notetekst));
 
 
