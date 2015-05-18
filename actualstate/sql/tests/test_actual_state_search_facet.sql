@@ -51,7 +51,10 @@ DECLARE
 
 	search_result1 uuid[];
 	search_result2 uuid[];
-	
+	search_result3 uuid[];
+
+	search_registrering_3 FacetRegistreringType;
+
 BEGIN
 
 
@@ -86,6 +89,15 @@ virkRedaktoer2_A :=	ROW (
           'Bruger',
           'NoteEx4'
           ) :: Virkning
+;
+
+
+virkPubliceret_A := ROW (
+	'[2015-05-18, infinity)' :: TSTZRANGE,
+          uuid_generate_v4(),
+          'Bruger',
+          'NoteEx10'
+) :: Virkning
 ;
 
 
@@ -157,7 +169,7 @@ new_uuid_A := actual_state_create_or_import_facet(registrering_A);
 
 
 virkEgenskaber_B :=	ROW (
-	'[2015-05-12, infinity)' :: TSTZRANGE,
+	'[2015-04-12, infinity)' :: TSTZRANGE,
           uuid_generate_v4(),
           'Bruger',
           'NoteEx1'
@@ -165,7 +177,7 @@ virkEgenskaber_B :=	ROW (
 ;
 
 virkAnsvarlig_B :=	ROW (
-	'[2015-05-11, infinity)' :: TSTZRANGE,
+	'[2015-04-11, infinity)' :: TSTZRANGE,
           uuid_generate_v4(),
           'Bruger',
           'NoteEx2'
@@ -173,7 +185,7 @@ virkAnsvarlig_B :=	ROW (
 ;
 
 virkRedaktoer1_B :=	ROW (
-	'[2015-05-10, infinity)' :: TSTZRANGE,
+	'[2015-04-10, infinity)' :: TSTZRANGE,
           uuid_generate_v4(),
           'Bruger',
           'NoteEx3'
@@ -182,13 +194,20 @@ virkRedaktoer1_B :=	ROW (
 
 
 virkRedaktoer2_B :=	ROW (
-	'[2015-05-10, 2016-05-10)' :: TSTZRANGE,
+	'[2015-04-10, 2016-05-10)' :: TSTZRANGE,
           uuid_generate_v4(),
           'Bruger',
           'NoteEx4'
           ) :: Virkning
 ;
 
+virkPubliceret_B := ROW (
+	'[2015-05-18, infinity)' :: TSTZRANGE,
+          uuid_generate_v4(),
+          'Bruger',
+          'NoteEx10'
+) :: Virkning
+;
 
 
 facetRelAnsvarlig_B := ROW (
@@ -280,7 +299,24 @@ ARRAY[new_uuid_A,new_uuid_B]::uuid[],
 );
 
 
+--***********************************
+/*
+search_registrering_3 := ROW (
+	ROW (
+	NULL,
+	NULL,
+	NULL,
+	NULL) :: registreringBase
+	,
+	ARRAY[
 
+	]
+,--ARRAY[facetPubliceret_B]::FacetTilsPubliceretType[],
+null,--ARRAY[facetEgenskab_B]::FacetAttrEgenskaberType[],
+null--ARRAY[facetRelAnsvarlig_B,facetRelRedaktoer1_B,facetRelRedaktoer2_B]
+
+):: FacetRegistreringType;
+*/
 
 
 

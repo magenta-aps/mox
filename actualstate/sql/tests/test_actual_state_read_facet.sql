@@ -66,6 +66,13 @@ virkRedaktoer2 :=	ROW (
           ) :: Virkning
 ;
 
+virkPubliceret := ROW (
+	'[2015-05-18, infinity)' :: TSTZRANGE,
+          uuid_generate_v4(),
+          'Bruger',
+          'NoteEx10'
+) :: Virkning
+;
 
 
 facetRelAnsvarlig := ROW (
