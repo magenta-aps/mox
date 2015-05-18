@@ -104,9 +104,31 @@ IF (array_length(facet_candidates,1)>0 OR NOT facet_candidates_is_initialized) A
 		JOIN facet_registrering b on a.registrering_id=b.id
 		WHERE
 			(
-				(attrEgenskaberTypeObj.virkning IS NULL OR isempty((attrEgenskaberTypeObj.virkning).TimePeriod))
+				attrEgenskaberTypeObj.virkning IS NULL
 				OR
-				((attrEgenskaberTypeObj.virkning).TimePeriod) && (a.virkning).TimePeriod
+				(
+					(
+						(
+					 		(attrEgenskaberTypeObj.virkning).TimePeriod IS NULL OR isempty((attrEgenskaberTypeObj.virkning).TimePeriod)
+						)
+						OR
+						(
+							(attrEgenskaberTypeObj.virkning).TimePeriod && (a.virkning).TimePeriod
+						)
+					)
+					AND
+					(
+							(attrEgenskaberTypeObj.virkning).AktoerRef IS NULL OR (attrEgenskaberTypeObj.virkning).AktoerRef=(a.virkning).AktoerRef
+					)
+					AND
+					(
+							(attrEgenskaberTypeObj.virkning).AktoerTypeKode IS NULL OR (attrEgenskaberTypeObj.virkning).AktoerTypeKode=(a.virkning).AktoerTypeKode
+					)
+					AND
+					(
+							(attrEgenskaberTypeObj.virkning).NoteTekst IS NULL OR (attrEgenskaberTypeObj.virkning).NoteTekst=(a.virkning).NoteTekst
+					)
+				)
 			)
 			AND
 			(
@@ -175,9 +197,31 @@ IF (array_length(facet_candidates,1)>0 OR NOT facet_candidates_is_initialized) A
 		JOIN facet_registrering b on a.registrering_id=b.id
 		WHERE
 			(
-				(tilsPubliceretStatusTypeObj.virkning IS NULL OR isempty((tilsPubliceretStatusTypeObj.virkning).TimePeriod))
+				tilsPubliceretStatusTypeObj.virkning IS NULL
 				OR
-				((tilsPubliceretStatusTypeObj.virkning).TimePeriod) && (a.virkning).TimePeriod
+				(
+					(
+						(
+					 		(tilsPubliceretStatusTypeObj.virkning).TimePeriod IS NULL OR isempty((tilsPubliceretStatusTypeObj.virkning).TimePeriod)
+						)
+						OR
+						(
+							(tilsPubliceretStatusTypeObj.virkning).TimePeriod && (a.virkning).TimePeriod
+						)
+					)
+					AND
+					(
+							(tilsPubliceretStatusTypeObj.virkning).AktoerRef IS NULL OR (tilsPubliceretStatusTypeObj.virkning).AktoerRef=(a.virkning).AktoerRef
+					)
+					AND
+					(
+							(tilsPubliceretStatusTypeObj.virkning).AktoerTypeKode IS NULL OR (tilsPubliceretStatusTypeObj.virkning).AktoerTypeKode=(a.virkning).AktoerTypeKode
+					)
+					AND
+					(
+							(tilsPubliceretStatusTypeObj.virkning).NoteTekst IS NULL OR (tilsPubliceretStatusTypeObj.virkning).NoteTekst=(a.virkning).NoteTekst
+					)
+				)
 			)
 			AND
 			(
@@ -215,9 +259,31 @@ IF (array_length(facet_candidates,1)>0 OR NOT facet_candidates_is_initialized) A
 		JOIN facet_registrering b on a.registrering_id=b.id
 		WHERE
 			(
-				(relationTypeObj.virkning IS NULL OR isempty((relationTypeObj.virkning).TimePeriod))
+				relationTypeObj.virkning IS NULL
 				OR
-				((relationTypeObj.virkning).TimePeriod) && (a.virkning).TimePeriod
+				(
+					(
+						(
+					 		(relationTypeObj.virkning).TimePeriod IS NULL OR isempty((relationTypeObj.virkning).TimePeriod)
+						)
+						OR
+						(
+							(relationTypeObj.virkning).TimePeriod && (a.virkning).TimePeriod
+						)
+					)
+					AND
+					(
+							(relationTypeObj.virkning).AktoerRef IS NULL OR (relationTypeObj.virkning).AktoerRef=(a.virkning).AktoerRef
+					)
+					AND
+					(
+							(relationTypeObj.virkning).AktoerTypeKode IS NULL OR (relationTypeObj.virkning).AktoerTypeKode=(a.virkning).AktoerTypeKode
+					)
+					AND
+					(
+							(relationTypeObj.virkning).NoteTekst IS NULL OR (relationTypeObj.virkning).NoteTekst=(a.virkning).NoteTekst
+					)
+				)
 			)
 			AND
 			(	
