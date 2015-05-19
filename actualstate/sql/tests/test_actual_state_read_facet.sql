@@ -103,7 +103,7 @@ facetRelRedaktoer2 := ROW (
 facetPubliceret := ROW (
 virkPubliceret,
 'Publiceret'
-):: FacetPubliceretType
+):: FacetTilsPubliceretType
 ;
 
 

@@ -25,7 +25,7 @@ BEGIN
 --limit the scope of the current unlimited registrering
 
 UPDATE facet_registrering as a
-    SET (registrering).timeperiod =
+    SET registrering.timeperiod =
       TSTZRANGE(lower((registrering).timeperiod), registreringTime, 
     concat(
             CASE WHEN lower_inc((registrering).timeperiod) THEN '[' ELSE '(' END,

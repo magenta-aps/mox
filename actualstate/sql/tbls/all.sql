@@ -64,6 +64,10 @@ actual_state_search_facet
 
 
 
+
+
+/***************************************/
+
 CREATE TYPE FacetTilsPubliceretStatus AS ENUM ('','Publiceret', 'IkkePubliceret'); --'' means undefined (which is needed to clear previous defined value in an already registered virksnings-periode)
 
 
@@ -94,15 +98,6 @@ CREATE TYPE FacetRelationType AS (
   relMaal uuid 
 )
 ;
-
-
-CREATE TYPE RegistreringBase AS --should be renamed to Registrering, when the old 'Registrering'-type is replaced
-(
-timeperiod tstzrange,
-livscykluskode livscykluskode,
-brugerref uuid,
-note text
-);
 
 CREATE TYPE FacetRegistreringType AS
 (
