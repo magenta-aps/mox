@@ -3,6 +3,7 @@
 from flask import jsonify, request
 
 from oio_rest import OIORestObject
+import db
 
 # Just a helper during debug
 j = lambda t: jsonify(help_text=t)
@@ -48,7 +49,8 @@ class Facet(OIORestObject):
         attributes = request.json["Attributter"]
         states = request.json["Tilstande"]
         relations = request.json["Relationer"]
-        print relations
+        db.create_facet(note, attributes, states, relations)
+        # TODO: Return properly, when this is implemented.
         return j("Ny facet: {0}".format(request.json)), 201
 
     @staticmethod
