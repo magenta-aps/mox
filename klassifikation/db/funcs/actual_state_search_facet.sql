@@ -318,13 +318,13 @@ ELSE
 				(	
 					relationTypeObj.relType IS NULL
 					OR
-					relationTypeObj.relType = a.relType
+					relationTypeObj.relType = a.rel_type
 				)
 				AND
 				(
 					relationTypeObj.relMaal IS NULL
 					OR
-					relationTypeObj.relMaal = a.relMaal	
+					relationTypeObj.relMaal = a.rel_maal	
 				)
 	);
 			
