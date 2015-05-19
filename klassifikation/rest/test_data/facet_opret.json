@@ -1,0 +1,67 @@
+{ 
+    "Note": "Ny facet",
+    "Attributter": { 
+        "FacetEgenskaber": { 
+            "BrugervendtNøgle": "ORGFUNK", 
+            "Facetbeskrivelse": "Organisatorisk funktion", 
+            "Facetplan": "XYZ", 
+            "Facetopbygning": "Hierarkisk", 
+            "FacetOphavsret": "Magenta", 
+            "Facetsupplement": "Ja", 
+            "Retskilde": "Ingen", 
+            "Virkning": { 
+                "From": "2014-05-19 12:02:32", 
+                "To": "infinity", 
+                "AktørRef": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                "AktørTypeKode": "Bruger", 
+                "NoteTekst": "Nothing to see here!" 
+            } 
+        } 
+    }, 
+    "Tilstande": { 
+        "FacetPubliceret": { 
+            "FacetPubliceretStatus": "Publiceret", 
+            "Virkning": { 
+                "From": "2014-05-19 12:02:32", 
+                "To": "infinity", 
+                "AktørRef": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                "AktørTypeKode": "Bruger", 
+                "NoteTekst": "Nothing to see here!" 
+            } 
+        } 
+    },
+    "Relationer": { 
+        "Ansvarlig": { 
+            "uuid": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+            "Virkning": { 
+                "From": "2014-05-19 12:02:32", 
+                "To": "infinity", 
+                "AktørRef": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                "AktørTypeKode": "Bruger", 
+                "NoteTekst": "Nothing to see here!" 
+            } 
+        }, "Redaktører": [ 
+        { 
+            "uuid": "ef2713ee-1a38-4c23-8fcb-3c4331262194", 
+            "Virkning": { 
+                "From": "2014-05-19 12:02:32", 
+                "To": "infinity", 
+                "AktørRef": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                "AktørTypeKode": "Bruger", 
+                "NoteTekst": "Nothing to see here!" 
+            } 
+        }, 
+            { 
+                "uuid": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                "Virkning": { 
+                    "From": "2015-05-19 12:02:32", 
+                    "To": "infinity", 
+                    "AktørRef": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                    "AktørTypeKode": "Bruger", 
+                    "NoteTekst": "Nothing to see here!" 
+                } 
+            } 
+        ] 
+    } 
+}
+
