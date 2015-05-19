@@ -7,7 +7,7 @@ sudo -u postgres psql -d mox -f tbls/dbserver_prep.sql
 psql -d mox -U mox -c "CREATE SCHEMA test AUTHORIZATION mox "
 psql -d mox -U mox -f tbls/common_types.sql
 psql -d mox -U mox -f funcs/index_helper_funcs.sql
-psql -d mox -U mox -f tbls/all.sql
+psql -d mox -U mox -f tbls/facet.sql
 psql -d mox -U mox -f funcs/subtract_tstzrange.sql
 psql -d mox -U mox -f funcs/subtract_tstzrange_arr.sql
 psql -d mox -U mox -f funcs/_actual_state_get_prev_facet_registrering.sql
