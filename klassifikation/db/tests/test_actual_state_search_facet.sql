@@ -79,12 +79,14 @@ DECLARE
 	search_result5 uuid[];
 	search_result6 uuid[];
 	search_result7 uuid[];
+	search_result8 uuid[];
 
 	search_registrering_3 FacetRegistreringType;
 	search_registrering_4 FacetRegistreringType;
 	search_registrering_5 FacetRegistreringType;
 	search_registrering_6 FacetRegistreringType;
 	search_registrering_7 FacetRegistreringType;
+	search_registrering_8 FacetRegistreringType;
 
 BEGIN
 
@@ -608,7 +610,7 @@ new_uuid_C := actual_state_create_or_import_facet(registrering_C);
 --*******************
 --Do a test, that filters on publiceretStatus, egenskaber and relationer
 
---search on facets that were published on 18-05-2015
+
 search_registrering_7 := ROW (
 	ROW (
 	NULL,
@@ -667,7 +669,52 @@ ARRAY[new_uuid_C]::uuid[],
 );
 
 
+--*******************
+--Do a test, that filters on publiceretStatus, egenskaber and relationer
 
+
+search_registrering_8 := ROW (
+	ROW (
+	NULL,
+	NULL,
+	NULL,
+	NULL) :: registreringBase
+	,
+	ARRAY[
+			ROW(
+				  ROW(
+				  	'[2015-05-18, 2015-05-19]' :: TSTZRANGE,
+				  	null,null,null
+				  	)::virkning 
+				  ,'Publiceret'::FacetTilsPubliceretStatus
+				):: FacetTilsPubliceretType
+	],--ARRAY[facetPubliceret_B]::FacetTilsPubliceretType[],
+ARRAY[]::FacetAttrEgenskaberType[],
+ARRAY[
+	ROW (
+	'Redaktoer'::FacetRelationKode,
+		ROW(
+				'[2013-05-01, 2015-04-11]' :: TSTZRANGE,
+				 null,null,null
+			)::virkning ,
+			null
+	) :: FacetRelationType
+]
+):: FacetRegistreringType;
+
+
+
+search_result8 :=actual_state_search_facet(
+	null,--TOOD ??
+	null,
+	search_registrering_8 --registrering_A Facetregistrering_AType
+	);
+
+RETURN NEXT is(
+search_result8,
+ARRAY[new_uuid_B,new_uuid_C]::uuid[],
+'search state publiceretStatus and relationer combined'
+);
 
 
 
