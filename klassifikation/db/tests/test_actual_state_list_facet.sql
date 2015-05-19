@@ -135,13 +135,13 @@ facetRelRedaktoer2 := ROW (
 facetPubliceret := ROW (
 virkPubliceret,
 'Publiceret'
-):: FacetPubliceretType
+):: FacetTilsPubliceretType
 ;
 
 facetPubliceretB := ROW (
 virkPubliceretB,
 'IkkePubliceret'
-):: FacetPubliceretType
+):: FacetTilsPubliceretType
 ;
 
 facetEgenskabA := ROW (

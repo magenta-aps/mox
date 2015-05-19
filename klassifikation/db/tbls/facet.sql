@@ -48,15 +48,25 @@ DROP TYPE Facetrelationkode;
 
 /*
 The order to create functions in:
+
+subtract_tstzrange
+subtract_tstzrange_arr
 _actual_state_get_prev_facet_registrering
 _actual_state_create_facet_registrering
+_actual_state_valid_registrering_livscyklus_transition
 actual_state_create_or_import_facet
 actual_state_update_facet
-actual_state_list_facet()
+actual_state_list_facet
+actual_state_read_facet
+actual_state_search_facet
 
 */
 
 
+
+
+
+/***************************************/
 
 CREATE TYPE FacetTilsPubliceretStatus AS ENUM ('','Publiceret', 'IkkePubliceret'); --'' means undefined (which is needed to clear previous defined value in an already registered virksnings-periode)
 
@@ -88,15 +98,6 @@ CREATE TYPE FacetRelationType AS (
   relMaal uuid 
 )
 ;
-
-
-CREATE TYPE RegistreringBase AS --should be renamed to Registrering, when the old 'Registrering'-type is replaced
-(
-timeperiod tstzrange,
-livscykluskode livscykluskode,
-brugerref uuid,
-note text
-);
 
 CREATE TYPE FacetRegistreringType AS
 (
@@ -152,7 +153,7 @@ CREATE TABLE facet_registrering
 (
  id bigint NOT NULL DEFAULT nextval('facet_registrering_id_seq'::regclass),
  facet_id uuid NOT NULL ,
- registrering RegistreringBase NOT NULL CHECK( not isempty((registrering).timeperiod) ),
+ registrering RegistreringBase NOT NULL CHECK( (registrering).TimePeriod IS NOT NULL AND not isempty((registrering).timeperiod) ),
   CONSTRAINT facet_registrering_pkey PRIMARY KEY (id),
   CONSTRAINT facet_registrering_facet_fkey FOREIGN KEY (facet_id)
       REFERENCES facet (id) MATCH SIMPLE
@@ -165,6 +166,23 @@ WITH (
 );
 ALTER TABLE facet_registrering
   OWNER TO mox;
+
+CREATE INDEX facet_registrering_idx_livscykluskode
+  ON facet_registrering
+  USING btree
+  (((registrering).livscykluskode));
+
+CREATE INDEX facet_registrering_idx_brugerref
+  ON facet_registrering
+  USING btree
+  (((registrering).brugerref));
+
+CREATE INDEX facet_registrering_idx_note
+  ON facet_registrering
+  USING btree
+  (((registrering).note));
+
+
 
 /****************************************************************************************************/
 
@@ -191,7 +209,7 @@ CREATE TABLE facet_attr_egenskaber
    facetophavsret text null,
    facetsupplement text null,
    retskilde text null,
-   virkning Virkning not null CHECK( not isempty((virkning).TimePeriod) ),
+   virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
    facet_registrering_id bigint not null,
 CONSTRAINT facet_attr_egenskaber_pkey PRIMARY KEY (id),
 CONSTRAINT facet_attr_egenskaber_forkey_facetregistrering  FOREIGN KEY (facet_registrering_id) REFERENCES facet_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
@@ -208,32 +226,47 @@ CREATE INDEX facet_attr_egenskaber_idx_brugervendt_noegle
   USING btree
   (brugervendt_noegle);
 
-CREATE INDEX facet_attr_egenskaber_idx_brugervendt_facetbeskrivelse
+CREATE INDEX facet_attr_egenskaber_idx_facetbeskrivelse
   ON facet_attr_egenskaber
   USING btree
   (facetbeskrivelse);
 
-CREATE INDEX facet_attr_egenskaber_idx_brugervendt_facetplan
+CREATE INDEX facet_attr_egenskaber_idx_facetplan
   ON facet_attr_egenskaber
   USING btree
   (facetplan);
   
-CREATE INDEX facet_attr_egenskaber_idx_brugervendt_facetopbygning
+CREATE INDEX facet_attr_egenskaber_idx_facetopbygning
   ON facet_attr_egenskaber
   USING btree
   (facetopbygning);
   
 
-CREATE INDEX facet_attr_egenskaber_idx_brugervendt_facetsupplement
+CREATE INDEX facet_attr_egenskaber_idx_facetsupplement
   ON facet_attr_egenskaber
   USING btree
   (facetsupplement);
 
-CREATE INDEX facet_attr_egenskaber_idx_brugervendt_retskilde
+CREATE INDEX facet_attr_egenskaber_idx_retskilde
   ON facet_attr_egenskaber
   USING btree
   (retskilde);
   
+CREATE INDEX facet_attr_egenskaber_idx_virkning_aktoerref
+  ON facet_attr_egenskaber
+  USING btree
+  (((virkning).aktoerref));
+
+CREATE INDEX facet_attr_egenskaber_idx_virkning_aktoertypekode
+  ON facet_attr_egenskaber
+  USING btree
+  (((virkning).aktoertypekode));
+
+CREATE INDEX facet_attr_egenskaber_idx_virkning_notetekst
+  ON facet_attr_egenskaber
+  USING btree
+  (((virkning).notetekst));
+
 
 /****************************************************************************************************/
 
@@ -255,7 +288,7 @@ ALTER TABLE facet_tils_publiceret_id_seq
 CREATE TABLE facet_tils_publiceret
 (
   id bigint NOT NULL DEFAULT nextval('facet_tils_publiceret_id_seq'::regclass),
-  virkning Virkning  NOT NULL CHECK( not isempty((virkning).TimePeriod) ),
+  virkning Virkning  NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
   status FacetTilsPubliceretStatus NOT NULL, 
   facet_registrering_id bigint not null,
   CONSTRAINT facet_tils_publiceret_pkey PRIMARY KEY (id),
@@ -275,6 +308,21 @@ CREATE INDEX facet_tils_publiceret_idx_status
   (status);
   
 
+CREATE INDEX facet_tils_publiceret_idx_virkning_aktoerref
+  ON facet_tils_publiceret
+  USING btree
+  (((virkning).aktoerref));
+
+CREATE INDEX facet_tils_publiceret_idx_virkning_aktoertypekode
+  ON facet_tils_publiceret
+  USING btree
+  (((virkning).aktoertypekode));
+
+CREATE INDEX facet_tils_publiceret_idx_virkning_notetekst
+  ON facet_tils_publiceret
+  USING btree
+  (((virkning).notetekst));
+
 
 /****************************************************************************************************/
 
@@ -292,7 +340,7 @@ CREATE TABLE facet_relation
 (
   id bigint NOT NULL DEFAULT nextval('facet_relation_id_seq'::regclass),
   facet_registrering_id bigint not null,
-  virkning Virkning not null CHECK( not isempty((virkning).TimePeriod) ),
+  virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
   rel_maal uuid NULL, --we have to allow null values (for now at least), as it is needed to be able to clear/overrule previous registered relations.
   rel_type FacetRelationKode not null,
  CONSTRAINT facet_relation_forkey_facetregistrering  FOREIGN KEY (facet_registrering_id) REFERENCES facet_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
@@ -305,7 +353,19 @@ CREATE INDEX facet_relation_idx_rel_maal
   USING btree
   (rel_type, rel_maal);
 
+CREATE INDEX facet_relation_idx_virkning_aktoerref
+  ON facet_relation
+  USING btree
+  (((virkning).aktoerref));
 
+CREATE INDEX facet_relation_idx_virkning_aktoertypekode
+  ON facet_relation
+  USING btree
+  (((virkning).aktoertypekode));
 
+CREATE INDEX facet_relation_idx_virkning_notetekst
+  ON facet_relation
+  USING btree
+  (((virkning).notetekst));
 
 
