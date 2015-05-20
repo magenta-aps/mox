@@ -1,6 +1,6 @@
 { 
 "oio_type" : "facet", 
-"egenskaber" : ["brugervendtnoegle", "beskrivelse","opbygning","ophavsret","plan","supplement","retskilde"],
+"attributter": { "egenskaber" : ["brugervendtnoegle", "beskrivelse","opbygning","ophavsret","plan","supplement","retskilde"] },
 "tilstande" : {
 			"publiceret":["Publiceret","IkkePubliceret"]
 		},
