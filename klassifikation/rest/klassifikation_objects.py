@@ -45,13 +45,14 @@ class Facet(OIORestObject):
         """
         if not request.json:
             abort(400)
+        print "JSON", request.json
         note = request.json["Note"]
         attributes = request.json["Attributter"]
         states = request.json["Tilstande"]
         relations = request.json["Relationer"]
-        db.create_facet(note, attributes, states, relations)
+        result = db.create_facet(note, attributes, states, relations)
         # TODO: Return properly, when this is implemented.
-        return j("Ny facet: {0}".format(request.json)), 201
+        return j(u"Ny facet: {0}".format(result)), 201
 
     @staticmethod
     def delete_object(uuid):

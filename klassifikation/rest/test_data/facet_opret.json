@@ -1,53 +1,60 @@
 { 
     "Note": "Ny facet",
     "Attributter": { 
-        "FacetEgenskaber": { 
-            "BrugervendtNøgle": "ORGFUNK", 
-            "Facetbeskrivelse": "Organisatorisk funktion", 
-            "Facetplan": "XYZ", 
-            "Facetopbygning": "Hierarkisk", 
-            "FacetOphavsret": "Magenta", 
-            "Facetsupplement": "Ja", 
-            "Retskilde": "Ingen", 
-            "Virkning": { 
+        "FacetEgenskaber": [ 
+            [
+            "ORGFUNK", 
+            "Organisatorisk funktion", 
+            "XYZ", 
+            "Hierarkisk", 
+            "Magenta", 
+            "Ja", 
+            "Ingen", 
+            { 
                 "From": "2014-05-19 12:02:32", 
                 "To": "infinity", 
-                "AktørRef": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
-                "AktørTypeKode": "Bruger", 
+                "AktoerRef": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                "AktoerTypeKode": "Bruger", 
                 "NoteTekst": "Nothing to see here!" 
             } 
-        } 
+            ]
+        ] 
     }, 
     "Tilstande": { 
-        "FacetPubliceret": { 
+        "FacetPubliceret": [{ 
             "FacetPubliceretStatus": "Publiceret", 
             "Virkning": { 
                 "From": "2014-05-19 12:02:32", 
                 "To": "infinity", 
-                "AktørRef": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
-                "AktørTypeKode": "Bruger", 
+                "AktoerRef": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                "AktoerTypeKode": "Bruger", 
                 "NoteTekst": "Nothing to see here!" 
             } 
-        } 
+        }
+        ] 
     },
     "Relationer": { 
-        "Ansvarlig": { 
+        "Ansvarlig": [
+        { 
             "uuid": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
             "Virkning": { 
                 "From": "2014-05-19 12:02:32", 
                 "To": "infinity", 
-                "AktørRef": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
-                "AktørTypeKode": "Bruger", 
+                "AktoerRef": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                "AktoerTypeKode": "Bruger", 
                 "NoteTekst": "Nothing to see here!" 
-            } 
-        }, "Redaktører": [ 
+            
+            }
+        }
+        ],
+   "Redaktoer": [ 
         { 
             "uuid": "ef2713ee-1a38-4c23-8fcb-3c4331262194", 
             "Virkning": { 
                 "From": "2014-05-19 12:02:32", 
                 "To": "infinity", 
-                "AktørRef": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
-                "AktørTypeKode": "Bruger", 
+                "AktoerRef": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                "AktoerTypeKode": "Bruger", 
                 "NoteTekst": "Nothing to see here!" 
             } 
         }, 
@@ -56,12 +63,12 @@
                 "Virkning": { 
                     "From": "2015-05-19 12:02:32", 
                     "To": "infinity", 
-                    "AktørRef": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
-                    "AktørTypeKode": "Bruger", 
+                    "AktoerRef": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                    "AktoerTypeKode": "Bruger", 
                     "NoteTekst": "Nothing to see here!" 
                 } 
             } 
         ] 
     } 
-}
 
+}
