@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: {{script_name}}
+NOTICE: This file is auto-generated using the script: {{script_signature}}
 */
 {% block body %}
 {% endblock %}

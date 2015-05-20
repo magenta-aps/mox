@@ -2,7 +2,7 @@
 "oio_type" : "facet", 
 "egenskaber" : ["brugervendtnoegle", "beskrivelse","opbygning","ophavsret","plan","supplement","retskilde"],
 "tilstande" : {
-			"PubliceretStatus":["Publiceret","IkkePubliceret"]
+			"publiceret":["Publiceret","IkkePubliceret"]
 		},
 "relationer_nul_til_en" : ["ansvarlig","ejer","facettilhoerer"],
 "relationer_nul_til_mange" : ["redaktoerer"]
