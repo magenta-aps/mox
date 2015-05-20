@@ -1,4 +1,11 @@
-
+{% extends "basis.jinja.sql" %}
+-- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Contact: info@magenta.dk.
+--
+-- This Source Code Form is subject to the terms of the Mozilla Public
+-- License, v. 2.0. If a copy of the MPL was not distributed with this
+-- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+{% block body %}
 /******************** FUNCTIONS (NEEDED FOR TABLE/INDEX-DEFS) DEFS ***********************************/
 
 CREATE or replace FUNCTION _actual_state_convert_{{oio_type}}_relation_kode_to_txt (
@@ -223,3 +230,4 @@ CREATE INDEX {{oio_type}}_relation_idx_virkning_notetekst
   USING btree
   (((virkning).notetekst));
 
+{% endblock %}
