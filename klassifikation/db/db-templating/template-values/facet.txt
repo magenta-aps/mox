@@ -1,8 +1,13 @@
 { 
 "oio_type" : "facet", 
-"attributter": { "egenskaber" : ["brugervendtnoegle", "beskrivelse","opbygning","ophavsret","plan","supplement","retskilde"] },
+"attributter": { "egenskaber" : ["brugervendtnoegle", "beskrivelse","opbygning","ophavsret","plan","supplement","retskilde"]
+			#	,"lokaludvidelse" : ["aarhus1_field","aarhus2_field"]
+			#	,"lokaludvidelse2" : ["aarhus1_state10","aarhus2_state11"]
+				 },
 "tilstande" : {
 			"publiceret":["Publiceret","IkkePubliceret"]
+			# ,"skole1" : ["aarhus1_state","aarhus2_state"]
+			# ,"sygehus2" : ["aarhus1_state4","aarhus5_state"]
 		},
 "relationer_nul_til_en" : ["ansvarlig","ejer","facettilhoerer"],
 "relationer_nul_til_mange" : ["redaktoerer"]

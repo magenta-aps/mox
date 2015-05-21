@@ -108,7 +108,7 @@ virkPubliceretB:=	ROW (
 
 
 facetRelAnsvarlig := ROW (
-	'Ansvarlig'::FacetRelationKode,
+	'ansvarlig'::FacetRelationKode,
 		virkAnsvarlig,
 	uuidAnsvarlig
 ) :: FacetRelationType
@@ -116,7 +116,7 @@ facetRelAnsvarlig := ROW (
 
 
 facetRelRedaktoer1 := ROW (
-	'Redaktoer'::FacetRelationKode,
+	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer1,
 	uuidRedaktoer1
 ) :: FacetRelationType
@@ -125,7 +125,7 @@ facetRelRedaktoer1 := ROW (
 
 
 facetRelRedaktoer2 := ROW (
-	'Redaktoer'::FacetRelationKode,
+	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer2,
 	uuidRedaktoer2
 ) :: FacetRelationType
@@ -226,7 +226,7 @@ expected_facets1:= ARRAY[
 							(registrering.registrering).brugerref,
 							(registrering.registrering).note 
 							)::RegistreringBase
-						,registrering.tilsPubliceretStatus
+						,registrering.tilsPubliceret
 						,registrering.attrEgenskaber
 						,registrering.relationer
 					)::FacetRegistreringType
@@ -243,7 +243,7 @@ expected_facets1:= ARRAY[
 							(registrering2.registrering).brugerref,
 							(registrering2.registrering).note 
 							)::RegistreringBase
-						,registrering2.tilsPubliceretStatus
+						,registrering2.tilsPubliceret
 						,registrering2.attrEgenskaber
 						,registrering2.relationer
 					)::FacetRegistreringType

@@ -17,10 +17,12 @@ CREATE TYPE {{oio_type|title}}Tils{{tilstand|title}}Type AS (
 ;
 {% endfor %}
 
-{%for attribut , attribut_fields in attributter.iteritems() %}
+{%-for attribut , attribut_fields in attributter.iteritems() %}
 CREATE TYPE {{oio_type|title}}Attr{{attribut|title}}Type AS (
-{% for field in attribut_fields %}{{field}} text,
- {% endfor %}virkning Virkning
+{%- for field in attribut_fields %}
+{{field}} text,
+ {%- endfor %}
+ virkning Virkning
 );
 {% endfor %}
 
@@ -35,9 +37,11 @@ CREATE TYPE {{oio_type|title}}RelationType AS (
 
 CREATE TYPE {{oio_type|title}}RegistreringType AS
 (
-registrering RegistreringBase,{% for tilstand, tilstand_values in tilstande.iteritems() %}
+registrering RegistreringBase,
+{%- for tilstand, tilstand_values in tilstande.iteritems() %}
 tils{{tilstand|title}} {{oio_type|title}}Tils{{tilstand|title}}Type[],{% endfor %}
-attrEgenskaber {{oio_type|title}}AttrEgenskaberType[],
+{%-for attribut , attribut_fields in attributter.iteritems() %}
+attr{{attribut|title}} {{oio_type|title}}Attr{{attribut|title}}Type[],{% endfor %}
 relationer {{oio_type|title}}RelationType[]
 );
 
