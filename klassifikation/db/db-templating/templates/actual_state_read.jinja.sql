@@ -15,7 +15,6 @@ SELECT
 *
 FROM actual_state_list_{{oio_type}}(ARRAY[{{oio_type}}_uuid],registrering_tstzrange,virkning_tstzrange)
 LIMIT 1
---TODO: Verify and test!
  	$BODY$
 LANGUAGE sql STABLE
 ;
