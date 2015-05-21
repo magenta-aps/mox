@@ -49,7 +49,12 @@ class OIORestObject(object):
         class_url = u"{0}/{1}/{2}".format(base_url,
                                           hierarchy,
                                           cls.__name__.lower())
-        object_url = u"{0}/<uuid>".format(class_url)
+        uuid_regex = (
+            "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}" + 
+            "-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+        )
+        object_url = u'{0}/<regex("{1}"):uuid>'.format(class_url,
+                uuid_regex)
 
         flask.add_url_rule(class_url, u'_'.join([cls.__name__, 'get_objects']),
                          cls.get_objects, methods=['GET'])

@@ -6,9 +6,9 @@ SELECT * from actual_state_create_or_import_facet(
             '{{ life_cycle_code }}' :: Livscykluskode,
             '{{ user_ref }}', 
             '{{ note }}'
-    ) :: RegistreringBase,
-    {% for s, state_periods in states.iteritems() -%}
-    ARRAY[
+            ) :: RegistreringBase,
+        {% for s, state_periods in states.iteritems() -%}
+        ARRAY[
         {% for state_value in state_periods -%}
         ROW(
             ROW(
@@ -20,24 +20,24 @@ SELECT * from actual_state_create_or_import_facet(
             '{{ state_value.FacetPubliceretStatus }}'
         ),
         {% endfor -%}
-    ] :: {{ s }}TilsType[],
-    {% endfor -%}
-    {% for a, attribute_periods in attributes.iteritems() -%}
-    ARRAY[
+        ] :: {{ s }}TilsType[],
+        {% endfor -%}
+        {% for a, attribute_periods in attributes.iteritems() -%}
+        ARRAY[
         {% for attribute_value in attribute_periods -%}
         ROW({% for value in attribute_value -%}
             {% if loop.last -%}
             ROW(
                 '[{{ value.From }}, {{ value.To }})',
-                '{{ value.AktoerRef }}',
-                '{{ value.AktoerTypeKode }}',
-                '{{ value.NoteTekst }}'
-                ) :: Virkning
+            '{{ value.AktoerRef }}',
+            '{{ value.AktoerTypeKode }}',
+            '{{ value.NoteTekst }}'
+        ) :: Virkning
             {% else -%}
             {% if value != None -%}
             '{{ value }}',
             {% else -%}
-            null,
+            NULL,
             {% endif -%}
             {% endif -%}
             {% endfor -%}
@@ -61,4 +61,7 @@ SELECT * from actual_state_create_or_import_facet(
     {% endfor -%}
     {% endfor -%}
     ] :: FacetRelationType[]
+    ) :: FacetRegistreringType{% if uuid != None %},
+    '{{uuid}}' :: uuid
+    {% endif -%}
 );

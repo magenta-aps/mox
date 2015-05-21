@@ -27,7 +27,7 @@ class Facet(OIORestObject):
         """
         READ a facet, return as JSON.
         """
-        return j("Hent {0} fra databasen og returnér som JSON".format(uuid))
+        return j("Hent {0} fra databasen og returner som JSON".format(uuid))
 
     @staticmethod
     def put_object(uuid):
@@ -36,7 +36,26 @@ class Facet(OIORestObject):
         """
         if not request.json:
             abort(400)
-        return j("Opdater {0}, fortæl om det lykkedes.".format(uuid)), 200
+        if not db.facet_exists(uuid):
+            "Do import."
+            note = request.json["Note"]
+            attributes = request.json["Attributter"]
+            states = request.json["Tilstande"]
+            relations = request.json["Relationer"]
+            result = db.create_or_import_facet(note, attributes, states,
+                    relations, uuid)
+
+            return j(u"Importeret facet: {0}".format(uuid)), 200
+        else:
+            "Edit or passivate."
+            if (request.json.get('livscyklus', '').lower() == 'passiv'):
+                # Passivate
+                db.passivate_facet(request.json.get('Note', ''), uuid)
+                return j(u"Passiveret: {0}".format(uuid)), 200
+            else:
+                # Edit/change
+                pass
+        return j(u"Forkerte parametre!"), 405
 
     @staticmethod
     def create_object():
@@ -50,7 +69,7 @@ class Facet(OIORestObject):
         attributes = request.json["Attributter"]
         states = request.json["Tilstande"]
         relations = request.json["Relationer"]
-        result = db.create_facet(note, attributes, states, relations)
+        result = db.create_or_import_facet(note, attributes, states, relations)
         # TODO: Return properly, when this is implemented.
         return j(u"Ny facet: {0}".format(result)), 201
 

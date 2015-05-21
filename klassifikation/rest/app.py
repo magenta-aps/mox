@@ -6,8 +6,17 @@ import settings
 
 from oio_rest import OIOStandardHierarchy, OIORestObject
 from klassifikation_objects import Facet, Klasse, Klassifikation
+from werkzeug.routing import BaseConverter
 
 app = Flask(__name__)
+
+class RegexConverter(BaseConverter):
+    def __init__(self, url_map, *items):
+        super(RegexConverter, self).__init__(url_map)
+        self.regex = items[0]
+
+
+app.url_map.converters['regex'] = RegexConverter
 
 # This is basically what comes after '/' after the domain name and port.
 
