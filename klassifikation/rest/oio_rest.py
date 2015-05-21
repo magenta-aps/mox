@@ -2,13 +2,13 @@
 
 class OIOStandardHierarchy(object):
     """Implement API for entire hierarchy."""
-    
+
     _classes = []
 
     @classmethod
     def setup_api(cls, flask, base_url):
         """Set up API for the classes included in the hierarchy.
-        
+
         Note that version number etc. may have to be added to the URL."""
         for c in cls._classes:
             c.create_api(cls._name, flask, base_url)
@@ -50,20 +50,22 @@ class OIORestObject(object):
                                           hierarchy,
                                           cls.__name__.lower())
         uuid_regex = (
-            "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}" + 
+            "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}" +
             "-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
         )
-        object_url = u'{0}/<regex("{1}"):uuid>'.format(class_url,
-                uuid_regex)
+        object_url = u'{0}/<regex("{1}"):uuid>'.format(
+            class_url,
+            uuid_regex
+        )
 
         flask.add_url_rule(class_url, u'_'.join([cls.__name__, 'get_objects']),
-                         cls.get_objects, methods=['GET'])
+                           cls.get_objects, methods=['GET'])
 
         flask.add_url_rule(object_url, u'_'.join([cls.__name__, 'get_object']),
-                         cls.get_object, methods=['GET'])
+                           cls.get_object, methods=['GET'])
 
         flask.add_url_rule(object_url, u'_'.join([cls.__name__, 'put_object']),
-                         cls.put_object, methods=['PUT'])
+                           cls.put_object, methods=['PUT'])
 
         flask.add_url_rule(
             class_url, u'_'.join([cls.__name__, 'create_object']),
@@ -74,4 +76,3 @@ class OIORestObject(object):
             object_url, u'_'.join([cls.__name__, 'delete_object']),
             cls.get_object, methods=['DELETE']
         )
-

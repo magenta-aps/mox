@@ -5,8 +5,9 @@ from flask import jsonify, request
 from oio_rest import OIORestObject
 import db
 
+
 # Just a helper during debug
-j = lambda t: jsonify(help_text=t)
+def j(t): return jsonify(output=t)
 
 
 class Facet(OIORestObject):
@@ -43,7 +44,7 @@ class Facet(OIORestObject):
             states = request.json["Tilstande"]
             relations = request.json["Relationer"]
             result = db.create_or_import_facet(note, attributes, states,
-                    relations, uuid)
+                                               relations, uuid)
 
             return j(u"Importeret facet: {0}".format(uuid)), 200
         else:
@@ -163,4 +164,3 @@ class Klassifikation(OIORestObject):
     def delete_object(uuid):
         # TODO: Delete klassifikation
         return j("Slettet!"), 200
-

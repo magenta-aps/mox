@@ -10,6 +10,7 @@ from werkzeug.routing import BaseConverter
 
 app = Flask(__name__)
 
+
 class RegexConverter(BaseConverter):
     def __init__(self, url_map, *items):
         super(RegexConverter, self).__init__(url_map)
@@ -37,10 +38,10 @@ def sitemap():
         if "GET" in rule.methods:
             links.append(str(rule))
             print rule
-    return jsonify({ "site-map": links})
+    return jsonify({"site-map": links})
 
 if __name__ == '__main__':
 
     KlassifikationsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
-    
+
     app.run(debug=True)
