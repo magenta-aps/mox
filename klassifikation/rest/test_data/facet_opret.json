@@ -2,22 +2,21 @@
     "Note": "Ny facet",
     "Attributter": { 
         "FacetEgenskaber": [ 
-            [
-            "ORGFUNK", 
-            "Organisatorisk funktion", 
-            "XYZ", 
-            "Hierarkisk", 
-            "Magenta", 
-            "Ja", 
-            "Ingen", 
-            { 
+            {
+            "brugervendtnoegle": "ORGFUNK", 
+            "facetbeskrivelse": "Organisatorisk funktion", 
+            "facetplan": "XYZ", 
+            "facetopbygning": "Hierarkisk", 
+            "facetophavsret": "Magenta", 
+            "facetsupplement": "Ja", 
+            "virkning": { 
                 "From": "2014-05-19 12:02:32", 
                 "To": "infinity", 
                 "AktoerRef": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
                 "AktoerTypeKode": "Bruger", 
                 "NoteTekst": "Nothing to see here!" 
             } 
-            ]
+            }
         ] 
     }, 
     "Tilstande": { 

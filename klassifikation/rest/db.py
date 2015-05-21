@@ -9,6 +9,20 @@ def get_authenticated_user():
     return "615957e8-4aa1-4319-a787-f1f7ad6b5e2c"
 
 
+def get_field_names(type):
+    """Return the field names from the PostgreSQL type in question.
+
+    TODO: Ask PostgreSQL for the list of fields for the type in question. For
+    the time being, just return the names of the fields for "FacetEgenskaber".
+    """
+    if type == "FacetEgenskaberAttrType":
+        return ['brugervendtnoegle', 'facetbeskrivelse', 'facetplan',
+        'facetopbygning', 'facetophavsret', 'facetsupplement', 'retskilde',
+        'virkning']
+    else:
+        raise NotImplemented
+
+
 class Livscyklus(Enum):
     OPSTAAET = 'Opstaaet'
     IMPORTERET = 'Importeret'
@@ -29,9 +43,23 @@ def create_facet(note, attributes, states, relations):
     life_cycle_code = Livscyklus.OPSTAAET.value
     user_ref = get_authenticated_user()
 
+    # Convert attributes from JSON dictionary to simple list
+    # in correct order.
+    for attr_name in attributes:
+        current_attr_periods = attributes[attr_name]
+        converted_attr_periods = []
+        for attr_period in current_attr_periods:
+            current_attr_type = '{0}AttrType'.format(attr_name)
+            field_names = get_field_names(current_attr_type)
+            attr_value_list = [
+                    attr_period[f] if f in attr_period else None for f in field_names 
+            ]
+            converted_attr_periods.append(attr_value_list)
+        attributes[attr_name] = converted_attr_periods
+
     with open('templates/sql/create_facet.sql', 'r') as f:
-        data = f.read()
-    sql_template = Template(data)
+        sql_raw = f.read()
+    sql_template = Template(sql_raw)
     sql = sql_template.render(
             life_cycle_code=life_cycle_code,
             user_ref=user_ref,

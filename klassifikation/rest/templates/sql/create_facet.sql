@@ -34,7 +34,11 @@ SELECT * from actual_state_create_or_import_facet(
                 '{{ value.NoteTekst }}'
                 ) :: Virkning
             {% else -%}
+            {% if value != None -%}
             '{{ value }}',
+            {% else -%}
+            null,
+            {% endif -%}
             {% endif -%}
             {% endfor -%}
         )
