@@ -4,6 +4,7 @@ from settings import DATABASE_STRUCTURE as db_struct
 
 _attribute_fields = {}
 
+
 def get_attribute_fields(attribute_name):
     """Return the field names from the PostgreSQL type in question.
 
@@ -23,6 +24,7 @@ def get_attribute_fields(attribute_name):
 
 _attribute_names = {}
 
+
 def get_attribute_names(class_name):
     "Return the list of all recognized attributes for this class."
     if len(_attribute_names) == 0:
@@ -35,6 +37,7 @@ def get_attribute_names(class_name):
 
 _state_names = {}
 
+
 def get_state_names(class_name):
     "Return the list of all recognized attributes for this class."
     if len(_state_names) == 0:
@@ -43,4 +46,3 @@ def get_state_names(class_name):
                 c + a.capitalize() for a in db_struct[c]['tilstande']
             ]
     return _state_names[class_name]
-

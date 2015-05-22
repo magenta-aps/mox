@@ -15,3 +15,20 @@
 
 curl -H "Content-Type: application/json" -X POST -d "$(cat test_data/facet_opret.json)" http://127.0.0.1:5000/klassifikation/facet
 
+# Now, import a new facet
+# - Suppose no object with this ID exists.
+curl -H "Content-Type: application/json" -X PUT -d "$(cat test_data/facet_opret.json)" http://127.0.0.1:5000/klassifikation/facet/5da36f77-f8d3-4bfd-b313-cc38e2d667fd
+
+# Passivate a facet - suppose the object exists.
+
+curl -H "Content-Type: application/json" -X PUT -d "$(cat test_data/facet_passiv.json)" http://127.0.0.1:5000/klassifikation/facet/5da36f77-f8d3-4bfd-b313-cc38e2d667fe
+
+# Update a facet
+
+curl -H "Content-Type: application/json" -X PUT -d "$(cat test_data/facet_opdater.json)" http://127.0.0.1:5000/klassifikation/facet/5da36f77-f8d3-4bfd-b313-cc38e2d667fe
+
+# NOTE: The difference between import and update&passive hinges on
+# whether the object with the given UUID exists or not.
+#
+# The difference between update and passive hinges on whether a life
+# cycle code is supplied directly in the input or not.

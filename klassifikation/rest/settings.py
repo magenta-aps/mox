@@ -7,18 +7,17 @@ DB_PASSWORD = 'mox'
 
 DATABASE_STRUCTURE = {
 
-    "Facet": { 
-        "attributter": { 
-            "egenskaber" : [
+    "Facet": {
+        "attributter": {
+            "egenskaber": [
                 "brugervendtnoegle", "beskrivelse", "opbygning", "ophavsret",
-                "plan","supplement","retskilde"
+                "plan", "supplement", "retskilde"
             ]
         },
-        "tilstande" : {
+        "tilstande": {
             "publiceret": ["Publiceret", "IkkePubliceret"]
         },
-        "relationer_nul_til_en" : ["ansvarlig","ejer","facettilhoerer"],
-        "relationer_nul_til_mange" : ["redaktoerer"]
+        "relationer_nul_til_en": ["ansvarlig", "ejer", "facettilhoerer"],
+        "relationer_nul_til_mange": ["redaktoerer"]
     },
 }
-

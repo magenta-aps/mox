@@ -15,6 +15,7 @@ def get_authenticated_user():
     """Return hardcoded UUID until we get real authentication in place."""
     return "615957e8-4aa1-4319-a787-f1f7ad6b5e2c"
 
+
 def convert_attributes(attributes):
     "Convert attributes from dictionary to list in correct order."
     for attr_name in attributes:
@@ -42,9 +43,10 @@ class Livscyklus(Enum):
 """
     GENERAL SQL GENERATION.
 
-    All of these functions generate SQL and should maybe be factored to a
-    separate "sql.py" module.
+    All of these functions generate bits of SQL to use in complete statements.
+    At some point, we might want to factor them to an "sql_helpers.py" module.
 """
+
 
 def sql_state_array(state, periods):
     """Return an SQL array of type <state>TilsType."""
@@ -144,16 +146,8 @@ def passivate_facet(note, uuid):
 
     user_ref = get_authenticated_user()
     life_cycle_code = Livscyklus.PASSIVERET.value
-    sql_raw = """
-    SELECT * FROM actual_state_update_facet(
-        '{{ uuid }}',
-        '{{ user_ref }}',
-        '{{ note }}',
-        '{{ life_cycle_code }}',
-        null,
-        null,
-        null);
-    """
+    with open('templates/sql/passivate_facet.sql', 'r') as f:
+        sql_raw = f.read()
     sql_template = Template(sql_raw)
     sql = sql_template.render(
             uuid=uuid,

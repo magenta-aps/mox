@@ -79,7 +79,7 @@ class Facet(OIORestObject):
         relations = request.json["Relationer"]
         result = db.create_or_import_facet(note, attributes, states, relations)
         # TODO: Return properly, when this is implemented.
-        return j(u"Ny facet: {0}".format(result)), 201
+        return j(u"Ny facet oprettet!"), 201
 
     @staticmethod
     def delete_object(uuid):
