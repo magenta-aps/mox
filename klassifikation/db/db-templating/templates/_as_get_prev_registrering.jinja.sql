@@ -7,7 +7,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 {% block body %}
 
-CREATE OR REPLACE FUNCTION _actual_state_get_prev_{{oio_type}}_registrering({{oio_type}}_registrering)
+CREATE OR REPLACE FUNCTION _as_get_prev_{{oio_type}}_registrering({{oio_type}}_registrering)
   RETURNS {{oio_type}}_registrering AS
   $BODY$
   SELECT  * FROM {{oio_type}}_registrering as a WHERE

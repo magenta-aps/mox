@@ -7,7 +7,7 @@
 
 
 --SELECT * FROM runtests('test'::name);
-CREATE OR REPLACE FUNCTION test.test_actual_state_read_facet()
+CREATE OR REPLACE FUNCTION test.test_as_read_facet()
 RETURNS SETOF TEXT LANGUAGE plpgsql AS 
 $$
 DECLARE 
@@ -76,7 +76,7 @@ virkPubliceret := ROW (
 
 
 facetRelAnsvarlig := ROW (
-	'Ansvarlig'::FacetRelationKode,
+	'ansvarlig'::FacetRelationKode,
 		virkAnsvarlig,
 	uuidAnsvarlig
 ) :: FacetRelationType
@@ -84,7 +84,7 @@ facetRelAnsvarlig := ROW (
 
 
 facetRelRedaktoer1 := ROW (
-	'Redaktoer'::FacetRelationKode,
+	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer1,
 	uuidRedaktoer1
 ) :: FacetRelationType
@@ -93,7 +93,7 @@ facetRelRedaktoer1 := ROW (
 
 
 facetRelRedaktoer2 := ROW (
-	'Redaktoer'::FacetRelationKode,
+	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer2,
 	uuidRedaktoer2
 ) :: FacetRelationType
@@ -134,9 +134,9 @@ ARRAY[facetRelAnsvarlig,facetRelRedaktoer1,facetRelRedaktoer2]
 ) :: FacetRegistreringType
 ;
 
-new_uuid := actual_state_create_or_import_facet(registrering);
+new_uuid := as_create_or_import_facet(registrering);
 
-read_facet1 := actual_state_read_facet(new_uuid,
+read_facet1 := as_read_facet(new_uuid,
 	null, --registrering_tstzrange
 	null --virkning_tstzrange
 	);
@@ -152,7 +152,7 @@ expected_facet1 :=
 								(registrering.registrering).brugerref,
 								(registrering.registrering).note 
 								)::RegistreringBase
-							,registrering.tilsPubliceretStatus
+							,registrering.tilsPubliceret
 							,registrering.attrEgenskaber
 							,registrering.relationer
 						)::FacetRegistreringType

@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 --SELECT * FROM runtests('test'::name);
-CREATE OR REPLACE FUNCTION test.test_actual_state_update_facet()
+CREATE OR REPLACE FUNCTION test.test_as_update_facet()
 RETURNS SETOF TEXT LANGUAGE plpgsql AS 
 $$
 DECLARE 
@@ -106,7 +106,7 @@ virkPubliceretB:=	ROW (
 
 
 facetRelAnsvarlig := ROW (
-	'Ansvarlig'::FacetRelationKode,
+	'ansvarlig'::FacetRelationKode,
 		virkAnsvarlig,
 	uuidAnsvarlig
 ) :: FacetRelationType
@@ -114,7 +114,7 @@ facetRelAnsvarlig := ROW (
 
 
 facetRelRedaktoer1 := ROW (
-	'Redaktoer'::FacetRelationKode,
+	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer1,
 	uuidRedaktoer1
 ) :: FacetRelationType
@@ -123,7 +123,7 @@ facetRelRedaktoer1 := ROW (
 
 
 facetRelRedaktoer2 := ROW (
-	'Redaktoer'::FacetRelationKode,
+	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer2,
 	uuidRedaktoer2
 ) :: FacetRelationType
@@ -180,7 +180,7 @@ ARRAY[facetRelAnsvarlig,facetRelRedaktoer1,facetRelRedaktoer2]
 ) :: FacetRegistreringType
 ;
 
-new_uuid := actual_state_create_or_import_facet(registrering);
+new_uuid := as_create_or_import_facet(registrering);
 
 --***************************************
 --Update the facet created above
@@ -237,13 +237,13 @@ virkPubliceretC:=	ROW (
 
 facetPubliceretC := ROW (
 virkPubliceretC,
-''::FacetTilsPubliceretStatus
+''::FacetTilsPubliceret
 ):: FacetTilsPubliceretType
 ;
 
 
 
-update_reg_id:=actual_state_update_facet(
+update_reg_id:=as_update_facet(
   new_uuid, uuid_generate_v4(),'Test update'::text,
   'Rettet'::Livscykluskode,          
   array[facetEgenskabC,facetEgenskabD]::FacetAttrEgenskaberType[],
@@ -275,7 +275,7 @@ SELECT
 array_agg(
 			ROW (
 					a.virkning,
-					a.status
+					a.publiceret
 				):: FacetTilsPubliceretType
 		) into actual_publiceret
 FROM facet_tils_publiceret a
@@ -296,7 +296,7 @@ ARRAY[
 				,(facetPubliceret.virkning).AktoerTypeKode
 				,(facetPubliceret.virkning).NoteTekst
 			) :: Virkning
-		,facetPubliceret.status
+		,facetPubliceret.publiceret
 		)::FacetTilsPubliceretType,
 	ROW(
 		ROW (
@@ -305,10 +305,10 @@ ARRAY[
 				,(facetPubliceretB.virkning).AktoerTypeKode
 				,(facetPubliceretB.virkning).NoteTekst
 			) :: Virkning
-		,facetPubliceretB.status
+		,facetPubliceretB.publiceret
 		)::FacetTilsPubliceretType
 ]::FacetTilsPubliceretType[]
-,'publiceret status updated');
+,'publiceret value updated');
 
 
 RETURN NEXT set_eq( 'SELECT

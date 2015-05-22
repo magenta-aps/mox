@@ -1,6 +1,6 @@
 #!/bin/bash
 oiotypes=( facet klassifikation )
-templates=( actual_state_update  actual_state_create_or_import _actual_state_create_registrering _actual_state_get_prev_registrering actual_state_list actual_state_read actual_state_search actual_state_update dbtyper-specific tbls-specific )
+templates=( dbtyper-specific tbls-specific _as_get_prev_registrering _as_create_registrering as_update  as_create_or_import  as_list as_read as_search )
 
 
 for oiotype in "${oiotypes[@]}"

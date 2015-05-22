@@ -7,7 +7,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 {% block body %}
 
-CREATE OR REPLACE FUNCTION _actual_state_create_{{oio_type}}_registrering(
+CREATE OR REPLACE FUNCTION _as_create_{{oio_type}}_registrering(
   {{oio_type}}_uuid uuid,
   livscykluskode Livscykluskode, 
   brugerref uuid, 
@@ -33,7 +33,7 @@ UPDATE {{oio_type}}_registrering as a
         ))
     WHERE {{oio_type}}_id = {{oio_type}}_uuid 
     AND upper((registrering).timeperiod)='infinity'::TIMESTAMPTZ
-    AND _actual_state_valid_registrering_livscyklus_transition((registrering).livscykluskode,livscykluskode)  --we'll only limit the scope of the old registrering, if we're dealing with a valid transition. Faliure to move, will result in a constraint violation. A more explicit check on the validity of the state change should be considered.     
+    AND _as_valid_registrering_livscyklus_transition((registrering).livscykluskode,livscykluskode)  --we'll only limit the scope of the old registrering, if we're dealing with a valid transition. Faliure to move, will result in a constraint violation. A more explicit check on the validity of the state change should be considered.     
 
 ;
 --create a new {{oio_type}} registrering

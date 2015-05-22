@@ -7,7 +7,7 @@
 
 
 --SELECT * FROM runtests('test'::name);
-CREATE OR REPLACE FUNCTION test.test_actual_state_search_facet()
+CREATE OR REPLACE FUNCTION test.test_as_search_facet()
 RETURNS SETOF TEXT LANGUAGE plpgsql AS 
 $$
 DECLARE 
@@ -136,7 +136,7 @@ virkPubliceret_A := ROW (
 
 
 facetRelAnsvarlig_A := ROW (
-	'Ansvarlig'::FacetRelationKode,
+	'ansvarlig'::FacetRelationKode,
 		virkAnsvarlig_A,
 	uuidAnsvarlig_A
 ) :: FacetRelationType
@@ -144,7 +144,7 @@ facetRelAnsvarlig_A := ROW (
 
 
 facetRelRedaktoer1_A := ROW (
-	'Redaktoer'::FacetRelationKode,
+	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer1_A,
 	uuidRedaktoer1_A
 ) :: FacetRelationType
@@ -153,7 +153,7 @@ facetRelRedaktoer1_A := ROW (
 
 
 facetRelRedaktoer2_A := ROW (
-	'Redaktoer'::FacetRelationKode,
+	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer2_A,
 	uuidRedaktoer2_A
 ) :: FacetRelationType
@@ -194,7 +194,7 @@ ARRAY[facetRelAnsvarlig_A,facetRelRedaktoer1_A,facetRelRedaktoer2_A]
 ) :: FacetRegistreringType
 ;
 
-new_uuid_A := actual_state_create_or_import_facet(registrering_A);
+new_uuid_A := as_create_or_import_facet(registrering_A);
 
 
 
@@ -252,7 +252,7 @@ virkPubliceret2_B := ROW (
 
 
 facetRelAnsvarlig_B := ROW (
-	'Ansvarlig'::FacetRelationKode,
+	'ansvarlig'::FacetRelationKode,
 		virkAnsvarlig_B,
 	uuidAnsvarlig_B
 ) :: FacetRelationType
@@ -260,7 +260,7 @@ facetRelAnsvarlig_B := ROW (
 
 
 facetRelRedaktoer1_B := ROW (
-	'Redaktoer'::FacetRelationKode,
+	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer1_B,
 	uuidRedaktoer1_B
 ) :: FacetRelationType
@@ -269,7 +269,7 @@ facetRelRedaktoer1_B := ROW (
 
 
 facetRelRedaktoer2_B := ROW (
-	'Redaktoer'::FacetRelationKode,
+	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer2_B,
 	uuidRedaktoer2_B
 ) :: FacetRelationType
@@ -316,13 +316,13 @@ ARRAY[facetRelAnsvarlig_B,facetRelRedaktoer1_B,facetRelRedaktoer2_B]
 ) :: FacetRegistreringType
 ;
 
-new_uuid_B := actual_state_create_or_import_facet(registrering_B);
+new_uuid_B := as_create_or_import_facet(registrering_B);
 
 
 --***********************************
 
 
-search_result1 :=actual_state_search_facet(
+search_result1 :=as_search_facet(
 	null,--TOOD ??
 	new_uuid_A,
 	null--registrering_A Facetregistrering_AType
@@ -335,7 +335,7 @@ ARRAY[new_uuid_A]::uuid[],
 );
 
 
-search_result2 :=actual_state_search_facet(
+search_result2 :=as_search_facet(
 	null,--TOOD ??
 	null,
 	null--registrering_A Facetregistrering_AType
@@ -363,7 +363,7 @@ search_registrering_3 := ROW (
 				  ROW(
 				  	null,null,null,null
 				  	)::virkning 
-				  ,'IkkePubliceret'::FacetTilsPubliceretStatus
+				  ,'IkkePubliceret'::FacetTilsPubliceret
 				):: FacetTilsPubliceretType
 	],--ARRAY[facetPubliceret_B]::FacetTilsPubliceretType[],
 null,--ARRAY[facetEgenskab_B]::FacetAttrEgenskaberType[],
@@ -372,7 +372,7 @@ null--ARRAY[facetRelAnsvarlig_B,facetRelRedaktoer1_B,facetRelRedaktoer2_B]
 
 --raise notice 'search_registrering_3,%',search_registrering_3;
 
-search_result3 :=actual_state_search_facet(
+search_result3 :=as_search_facet(
 	null,--TOOD ??
 	null,
 	search_registrering_3 --registrering_A Facetregistrering_AType
@@ -383,7 +383,7 @@ search_result3 :=actual_state_search_facet(
 RETURN NEXT is(
 search_result3,
 ARRAY[new_uuid_B]::uuid[],
-'search state FacetTilsPubliceretStatus IkkePubliceret'
+'search state FacetTilsPubliceret IkkePubliceret'
 );
 
 --***********************************
@@ -401,7 +401,7 @@ search_registrering_4 := ROW (
 				  	'[2015-05-18, 2015-05-19]' :: TSTZRANGE,
 				  	null,null,null
 				  	)::virkning 
-				  ,'Publiceret'::FacetTilsPubliceretStatus
+				  ,'Publiceret'::FacetTilsPubliceret
 				):: FacetTilsPubliceretType
 	],--ARRAY[facetPubliceret_B]::FacetTilsPubliceretType[],
 null,--ARRAY[facetEgenskab_B]::FacetAttrEgenskaberType[],
@@ -410,7 +410,7 @@ null--ARRAY[facetRelAnsvarlig_B,facetRelRedaktoer1_B,facetRelRedaktoer2_B]
 
 
 
-search_result4 :=actual_state_search_facet(
+search_result4 :=as_search_facet(
 	null,--TOOD ??
 	null,
 	search_registrering_4 --registrering_A Facetregistrering_AType
@@ -419,7 +419,7 @@ search_result4 :=actual_state_search_facet(
 RETURN NEXT is(
 search_result4,
 ARRAY[new_uuid_A,new_uuid_B]::uuid[],
-'search state FacetTilsPubliceretStatus Publiceret on 18-05-2015 - 19-05-2015'
+'search state FacetTilsPubliceret Publiceret on 18-05-2015 - 19-05-2015'
 );
 
 
@@ -438,7 +438,7 @@ search_registrering_5 := ROW (
 				  	'[2015-06-30, 2015-07-30]' :: TSTZRANGE,
 				  	null,null,null
 				  	)::virkning 
-				  ,'IkkePubliceret'::FacetTilsPubliceretStatus
+				  ,'IkkePubliceret'::FacetTilsPubliceret
 				):: FacetTilsPubliceretType
 	],--ARRAY[facetPubliceret_B]::FacetTilsPubliceretType[],
 null,--ARRAY[facetEgenskab_B]::FacetAttrEgenskaberType[],
@@ -447,7 +447,7 @@ null--ARRAY[facetRelAnsvarlig_B,facetRelRedaktoer1_B,facetRelRedaktoer2_B]
 
 
 
-search_result5 :=actual_state_search_facet(
+search_result5 :=as_search_facet(
 	null,--TOOD ??
 	null,
 	search_registrering_5 --registrering_A Facetregistrering_AType
@@ -456,7 +456,7 @@ search_result5 :=actual_state_search_facet(
 RETURN NEXT is(
 search_result5,
 ARRAY[]::uuid[],
-'search state FacetTilsPubliceretStatus ikkepubliceret on 30-06-2015 30-07-2015'
+'search state FacetTilsPubliceret ikkepubliceret on 30-06-2015 30-07-2015'
 );
 
 --***********************************
@@ -475,14 +475,14 @@ search_registrering_6 := ROW (
 				  	(virkPubliceret_B).AktoerRef,
 				  	null,null
 				  	)::virkning 
-				  ,'Publiceret'::FacetTilsPubliceretStatus
+				  ,'Publiceret'::FacetTilsPubliceret
 				):: FacetTilsPubliceretType
 	],--ARRAY[facetPubliceret_B]::FacetTilsPubliceretType[],
 null,--ARRAY[facetEgenskab_B]::FacetAttrEgenskaberType[],
 null--ARRAY[facetRelAnsvarlig_B,facetRelRedaktoer1_B,facetRelRedaktoer2_B]
 ):: FacetRegistreringType;
 
-search_result6 :=actual_state_search_facet(
+search_result6 :=as_search_facet(
 	null,--TOOD ??
 	null,
 	search_registrering_6 --registrering_A Facetregistrering_AType
@@ -549,7 +549,7 @@ virkPubliceret2_C := ROW (
 
 
 facetRelAnsvarlig_C := ROW (
-	'Ansvarlig'::FacetRelationKode,
+	'ansvarlig'::FacetRelationKode,
 		virkAnsvarlig_C,
 	uuidAnsvarlig_C
 ) :: FacetRelationType
@@ -557,7 +557,7 @@ facetRelAnsvarlig_C := ROW (
 
 
 facetRelRedaktoer1_C := ROW (
-	'Redaktoer'::FacetRelationKode,
+	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer1_C,
 	uuidRedaktoer1_C
 ) :: FacetRelationType
@@ -605,7 +605,7 @@ ARRAY[facetRelAnsvarlig_C,facetRelRedaktoer1_C]
 ) :: FacetRegistreringType
 ;
 
-new_uuid_C := actual_state_create_or_import_facet(registrering_C);
+new_uuid_C := as_create_or_import_facet(registrering_C);
 
 --*******************
 --Do a test, that filters on publiceretStatus, egenskaber and relationer
@@ -624,7 +624,7 @@ search_registrering_7 := ROW (
 				  	'[2015-05-18, 2015-05-19]' :: TSTZRANGE,
 				  	null,null,null
 				  	)::virkning 
-				  ,'Publiceret'::FacetTilsPubliceretStatus
+				  ,'Publiceret'::FacetTilsPubliceret
 				):: FacetTilsPubliceretType
 	],--ARRAY[facetPubliceret_B]::FacetTilsPubliceretType[],
 ARRAY[
@@ -644,7 +644,7 @@ ARRAY[
 ]::FacetAttrEgenskaberType[],
 ARRAY[
 	ROW (
-	'Redaktoer'::FacetRelationKode,
+	'redaktoerer'::FacetRelationKode,
 		ROW(
 				'[2013-05-01, 2015-04-11]' :: TSTZRANGE,
 				 null,null,null
@@ -656,7 +656,7 @@ ARRAY[
 
 
 
-search_result7 :=actual_state_search_facet(
+search_result7 :=as_search_facet(
 	null,--TOOD ??
 	null,
 	search_registrering_7 --registrering_A Facetregistrering_AType
@@ -686,13 +686,13 @@ search_registrering_8 := ROW (
 				  	'[2015-05-18, 2015-05-19]' :: TSTZRANGE,
 				  	null,null,null
 				  	)::virkning 
-				  ,'Publiceret'::FacetTilsPubliceretStatus
+				  ,'Publiceret'::FacetTilsPubliceret
 				):: FacetTilsPubliceretType
 	],--ARRAY[facetPubliceret_B]::FacetTilsPubliceretType[],
 ARRAY[]::FacetAttrEgenskaberType[],
 ARRAY[
 	ROW (
-	'Redaktoer'::FacetRelationKode,
+	'redaktoerer'::FacetRelationKode,
 		ROW(
 				'[2013-05-01, 2015-04-11]' :: TSTZRANGE,
 				 null,null,null
@@ -703,8 +703,8 @@ ARRAY[
 ):: FacetRegistreringType;
 
 
-
-search_result8 :=actual_state_search_facet(
+--TODO: Can fail due to ordering in array
+search_result8 :=as_search_facet(
 	null,--TOOD ??
 	null,
 	search_registrering_8 --registrering_A Facetregistrering_AType

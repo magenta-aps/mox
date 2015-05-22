@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 --SELECT * FROM runtests('test'::name);
-CREATE OR REPLACE FUNCTION test.test_actual_state_list_facet()
+CREATE OR REPLACE FUNCTION test.test_as_list_facet()
 RETURNS SETOF TEXT LANGUAGE plpgsql AS 
 $$
 DECLARE 
@@ -196,10 +196,10 @@ ARRAY[facetRelRedaktoer1]
 ;
 
 
-new_uuid := actual_state_create_or_import_facet(registrering);
-new_uuid2 := actual_state_create_or_import_facet(registrering2);
+new_uuid := as_create_or_import_facet(registrering);
+new_uuid2 := as_create_or_import_facet(registrering2);
 
-select array_agg(a.* order by a.id) from actual_state_list_facet(array[new_uuid,new_uuid2]::uuid[],null,null) as a     into actual_facets1;
+select array_agg(a.* order by a.id) from as_list_facet(array[new_uuid,new_uuid2]::uuid[],null,null) as a     into actual_facets1;
 
 
 select 

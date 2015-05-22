@@ -7,7 +7,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 {% block body %}
 
-CREATE OR REPLACE FUNCTION actual_state_search_{{oio_type}}(
+CREATE OR REPLACE FUNCTION as_search_{{oio_type}}(
 	firstResult int,--TOOD ??
 	{{oio_type}}_uuid uuid,
 	registreringObj {{oio_type|title}}RegistreringType,
@@ -45,7 +45,7 @@ END IF;
 --filter on registration
 
 IF registreringObj IS NULL OR (registreringObj).registrering IS NULL THEN
-	--RAISE DEBUG 'actual_state_search_{{oio_type}}: skipping filtration on registrering';
+	--RAISE DEBUG 'as_search_{{oio_type}}: skipping filtration on registrering';
 ELSE
 	IF
 	(
@@ -113,7 +113,7 @@ END IF;
 --Filtration on attribute: {{attribut|title}}
 --/**********************************************************//
 IF registreringObj IS NULL OR (registreringObj).attr{{attribut|title}} IS NULL THEN
-	--RAISE DEBUG 'actual_state_search_{{oio_type}}: skipping filtration on attr{{attribut|title}}';
+	--RAISE DEBUG 'as_search_{{oio_type}}: skipping filtration on attr{{attribut|title}}';
 ELSE
 	IF (array_length({{oio_type}}_candidates,1)>0 OR NOT {{oio_type}}_candidates_is_initialized) THEN
 		FOREACH attr{{attribut|title}}TypeObj IN ARRAY registreringObj.attr{{attribut|title}}
@@ -188,7 +188,7 @@ END IF;
 --Filtration on state: {{tilstand|title}}
 --/**********************************************************//
 IF registreringObj IS NULL OR (registreringObj).tils{{tilstand|title}} IS NULL THEN
-	--RAISE DEBUG 'actual_state_search_{{oio_type}}: skipping filtration on tils{{tilstand|title}}';
+	--RAISE DEBUG 'as_search_{{oio_type}}: skipping filtration on tils{{tilstand|title}}';
 ELSE
 	IF (array_length({{oio_type}}_candidates,1)>0 OR {{oio_type}}_candidates_is_initialized IS FALSE ) THEN --AND (IS NOT NULL THEN
 
@@ -263,7 +263,7 @@ END IF;
 
 
 IF registreringObj IS NULL OR (registreringObj).relationer IS NULL THEN
-	--RAISE DEBUG 'actual_state_search_{{oio_type}}: skipping filtration on relationer';
+	--RAISE DEBUG 'as_search_{{oio_type}}: skipping filtration on relationer';
 ELSE
 	IF (array_length({{oio_type}}_candidates,1)>0 OR NOT {{oio_type}}_candidates_is_initialized) AND registreringObj IS NOT NULL AND (registreringObj).relationer IS NOT NULL THEN
 		FOREACH relationTypeObj IN ARRAY registreringObj.relationer

@@ -26,7 +26,7 @@ CREATE TYPE {{oio_type|title}}Attr{{attribut|title}}Type AS (
 );
 {% endfor %}
 
-CREATE TYPE {{oio_type|title}}RelationKode AS ENUM  ({% for relation in relationer_nul_til_en|list + relationer_nul_til_mange|list %}'{{relation}}'{% if not loop.last %},{% endif %}{% endfor %});  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _actual_state_convert_{{oio_type}}_relation_kode_to_txt is invoked.
+CREATE TYPE {{oio_type|title}}RelationKode AS ENUM  ({% for relation in relationer_nul_til_en|list + relationer_nul_til_mange|list %}'{{relation}}'{% if not loop.last %},{% endif %}{% endfor %});  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_{{oio_type}}_relation_kode_to_txt is invoked.
 
 CREATE TYPE {{oio_type|title}}RelationType AS (
   relType {{oio_type|title}}RelationKode,

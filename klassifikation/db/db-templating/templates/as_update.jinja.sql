@@ -13,7 +13,7 @@
 
 --Also notice, that the given array of {{oio_type|title}}Attr...Type must be consistent regarding virkning (although the allowance of null-values might make it possible to construct 'logically consistent'-arrays of objects with overlapping virknings)
 
-CREATE OR REPLACE FUNCTION actual_state_update_{{oio_type}}(
+CREATE OR REPLACE FUNCTION as_update_{{oio_type}}(
   {{oio_type}}_uuid uuid,
   brugerref uuid,
   note text,
@@ -38,8 +38,8 @@ BEGIN
 
 --create a new registrering
 
-new_{{oio_type}}_registrering := _actual_state_create_{{oio_type}}_registrering({{oio_type}}_uuid,livscykluskode, brugerref, note);
-prev_{{oio_type}}_registrering := _actual_state_get_prev_{{oio_type}}_registrering(new_{{oio_type}}_registrering);
+new_{{oio_type}}_registrering := _as_create_{{oio_type}}_registrering({{oio_type}}_uuid,livscykluskode, brugerref, note);
+prev_{{oio_type}}_registrering := _as_get_prev_{{oio_type}}_registrering(new_{{oio_type}}_registrering);
 
 --handle relationer (relations)
 

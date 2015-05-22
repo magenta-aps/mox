@@ -6,7 +6,7 @@
 -- License, v. 2.0. If a copy of the MPL was not distributed with this
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 {% block body %}
-CREATE OR REPLACE FUNCTION actual_state_list_{{oio_type}}({{oio_type}}_uuids uuid[],
+CREATE OR REPLACE FUNCTION as_list_{{oio_type}}({{oio_type}}_uuids uuid[],
   registrering_tstzrange tstzrange,
   virkning_tstzrange tstzrange)
   RETURNS setof {{oio_type|title}}Type AS
