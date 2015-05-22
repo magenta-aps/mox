@@ -20,8 +20,17 @@ DATABASE_STRUCTURE = {
         "relationer_nul_til_en" : ["ansvarlig","ejer","facettilhoerer"],
         "relationer_nul_til_mange" : ["redaktoerer"]
     },
-    "Klasse": {
-
+    "Klassifikation": {
+         "attributter": { 
+                    "egenskaber" : [
+                        "brugervendtnoegle", "beskrivelse", "kaldenavn", "ophavsret",
+                    ]
+                },
+                "tilstande" : {
+                    "publiceret": ["Publiceret", "IkkePubliceret"]
+                },
+                "relationer_nul_til_en" : ["ansvarlig","ejer"],
+                "relationer_nul_til_mange" : []
     }
 
 }
