@@ -38,14 +38,14 @@ class Facet(OIORestObject):
         if not request.json:
             abort(400)
         if not db.facet_exists(uuid):
-            "Do import."
+            # Do import.
             note = request.json["Note"]
             attributes = request.json["Attributter"]
             states = request.json["Tilstande"]
             relations = request.json["Relationer"]
             result = db.create_or_import_facet(note, attributes, states,
                                                relations, uuid)
-
+            # TODO: When connected to DB, use result properly.
             return j(u"Importeret facet: {0}".format(uuid)), 200
         else:
             "Edit or passivate."
@@ -55,7 +55,12 @@ class Facet(OIORestObject):
                 return j(u"Passiveret: {0}".format(uuid)), 200
             else:
                 # Edit/change
-                pass
+                note = request.json["Note"]
+                attributes = request.json["Attributter"]
+                states = request.json["Tilstande"]
+                relations = request.json["Relationer"]
+                result = db.update_facet(note, attributes,
+                                         states, relations, uuid)
         return j(u"Forkerte parametre!"), 405
 
     @staticmethod
