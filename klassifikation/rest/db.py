@@ -3,6 +3,9 @@ from enum import Enum
 import psycopg2
 from jinja2 import Template
 
+from db_helpers import get_attribute_fields, get_attribute_names
+from db_helpers import get_state_names
+
 """
     GENERAL FUNCTION AND CLASS DEFINITIONS
 """
@@ -12,29 +15,13 @@ def get_authenticated_user():
     """Return hardcoded UUID until we get real authentication in place."""
     return "615957e8-4aa1-4319-a787-f1f7ad6b5e2c"
 
-
-def get_field_names(type):
-    """Return the field names from the PostgreSQL type in question.
-
-    TODO: Ask PostgreSQL for the list of fields for the type in question. For
-    the time being, just return the names of the fields for "FacetEgenskaber".
-    """
-    if type == "FacetEgenskaberAttrType":
-        return ['brugervendtnoegle', 'facetbeskrivelse', 'facetplan',
-                'facetopbygning', 'facetophavsret', 'facetsupplement',
-                'retskilde', 'virkning']
-    else:
-        raise NotImplemented
-
-
 def convert_attributes(attributes):
     "Convert attributes from dictionary to list in correct order."
     for attr_name in attributes:
         current_attr_periods = attributes[attr_name]
         converted_attr_periods = []
         for attr_period in current_attr_periods:
-            current_attr_type = '{0}AttrType'.format(attr_name)
-            field_names = get_field_names(current_attr_type)
+            field_names = get_attribute_fields(attr_name)
             attr_value_list = [
                 attr_period[f] if f in attr_period else None
                 for f in field_names
@@ -89,13 +76,15 @@ def sql_relations_array(class_name, relations):
 def sql_convert_registration(states, attributes, relations, class_name):
     """Convert input JSON to the SQL arrays we need."""
     sql_states = []
-    for s, periods in states.iteritems():
+    for s in get_state_names(class_name):
+        periods = states[s] if s in states else []
         sql_states.append(
             sql_state_array(s, periods)
         )
 
     sql_attributes = []
-    for a, periods in attributes.iteritems():
+    for a in get_attribute_names(class_name):
+        periods = attributes[a] if a in attributes else []
         sql_attributes.append(
             sql_attribute_array(a, periods)
         )
@@ -182,8 +171,10 @@ def update_facet(note, attributes, states, relations, uuid=None):
     user_ref = get_authenticated_user()
 
     attributes = convert_attributes(attributes)
+    (
+        sql_states, sql_attributes, sql_relations
+    ) = sql_convert_registration(states, attributes, relations, 'Facet')
 
-    
     with open('templates/sql/update_facet.sql', 'r') as f:
         sql_raw = f.read()
     sql_template = Template(sql_raw)

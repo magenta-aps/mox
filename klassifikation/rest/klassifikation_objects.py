@@ -37,12 +37,14 @@ class Facet(OIORestObject):
         """
         if not request.json:
             abort(400)
+        # Get most common parameters if available.
+        note = request.json.get("Note", "")
+        attributes = request.json.get("Attributter", {})
+        states = request.json.get("Tilstande", {})
+        relations = request.json.get("Relationer", {})
+
         if not db.facet_exists(uuid):
             # Do import.
-            note = request.json["Note"]
-            attributes = request.json["Attributter"]
-            states = request.json["Tilstande"]
-            relations = request.json["Relationer"]
             result = db.create_or_import_facet(note, attributes, states,
                                                relations, uuid)
             # TODO: When connected to DB, use result properly.
@@ -55,12 +57,9 @@ class Facet(OIORestObject):
                 return j(u"Passiveret: {0}".format(uuid)), 200
             else:
                 # Edit/change
-                note = request.json["Note"]
-                attributes = request.json["Attributter"]
-                states = request.json["Tilstande"]
-                relations = request.json["Relationer"]
                 result = db.update_facet(note, attributes,
                                          states, relations, uuid)
+                return j(u"Opdateret: {0}".format(uuid)), 200
         return j(u"Forkerte parametre!"), 405
 
     @staticmethod
@@ -70,7 +69,10 @@ class Facet(OIORestObject):
         """
         if not request.json:
             abort(400)
-        print "JSON", request.json
+        note = request.json.get("Note", "")
+        attributes = request.json.get("Attributter", {})
+        states = request.json.get("Tilstande", {})
+        relations = request.json.get("Relationer", {})
         note = request.json["Note"]
         attributes = request.json["Attributter"]
         states = request.json["Tilstande"]

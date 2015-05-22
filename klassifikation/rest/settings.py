@@ -20,9 +20,5 @@ DATABASE_STRUCTURE = {
         "relationer_nul_til_en" : ["ansvarlig","ejer","facettilhoerer"],
         "relationer_nul_til_mange" : ["redaktoerer"]
     },
-    "Klasse": {
-
-    }
-
 }
 
