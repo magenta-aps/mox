@@ -9,8 +9,8 @@ sudo -u postgres psql -c "ALTER database mox SET search_path TO actual_state,pub
 psql -d mox -U mox -c "CREATE SCHEMA test AUTHORIZATION mox "
 psql -d mox -U mox -f tbls/common_types.sql
 psql -d mox -U mox -f funcs/index_helper_funcs.sql
-psql -d mox -U mox -f funcs/subtract_tstzrange.sql
-psql -d mox -U mox -f funcs/subtract_tstzrange_arr.sql
+psql -d mox -U mox -f funcs/_subtract_tstzrange.sql
+psql -d mox -U mox -f funcs/_subtract_tstzrange_arr.sql
 psql -d mox -U mox -f funcs/_as_valid_registrering_livscyklus_transition.sql
 
 cd ./db-templating/
