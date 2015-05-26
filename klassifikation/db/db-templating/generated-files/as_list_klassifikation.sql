@@ -6,10 +6,10 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py klassifikation actual_state_list.jinja.sql
+NOTICE: This file is auto-generated using the script: apply-template.py klassifikation as_list.jinja.sql
 */
 
-CREATE OR REPLACE FUNCTION actual_state_list_klassifikation(klassifikation_uuids uuid[],
+CREATE OR REPLACE FUNCTION as_list_klassifikation(klassifikation_uuids uuid[],
   registrering_tstzrange tstzrange,
   virkning_tstzrange tstzrange)
   RETURNS setof KlassifikationType AS
@@ -56,7 +56,7 @@ FROM
 					ROW(
 						b.virkning,
 						b.publiceret
-						) ::KlassifikationTilsPubliceretType
+						) ::KlassifikationPubliceretTilsType
 					order by b.id
 				) KlassifikationTilsPubliceretArr		
 			FROM
@@ -72,7 +72,7 @@ FROM
 					 		b.kaldenavn,
 					 		b.ophavsret,
 					   		b.virkning 
-							)::KlassifikationAttrEgenskaberType
+							)::KlassifikationEgenskaberAttrType
 						order by b.id
 					) KlassifikationAttrEgenskaberArr 
 					FROM

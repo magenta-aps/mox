@@ -6,10 +6,10 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py klassifikation actual_state_create_or_import.jinja.sql
+NOTICE: This file is auto-generated using the script: apply-template.py klassifikation as_create_or_import.jinja.sql
 */
 
-CREATE OR REPLACE FUNCTION actual_state_create_or_import_klassifikation(
+CREATE OR REPLACE FUNCTION as_create_or_import_klassifikation(
   klassifikation_registrering KlassifikationRegistreringType,
   klassifikation_uuid uuid DEFAULT uuid_generate_v4() --This might genenerate a non unique value. Use uuid_generate_v5(). Consider using uuid_generate_v5() and namespace(s). Consider generating using sequences which generates input to hash, with a namespace part and a id part.
 	)
@@ -17,20 +17,20 @@ CREATE OR REPLACE FUNCTION actual_state_create_or_import_klassifikation(
 $$
 DECLARE
   klassifikation_registrering_id bigint;
-  klassifikation_attr_egenskaber_obj klassifikationAttrEgenskaberType;
+  klassifikation_attr_egenskaber_obj klassifikationEgenskaberAttrType;
   
-  klassifikation_tils_publiceret_obj klassifikationTilsPubliceretType;
+  klassifikation_tils_publiceret_obj klassifikationPubliceretTilsType;
   
   klassifikation_relationer KlassifikationRelationType;
 
 BEGIN
 
 IF EXISTS (SELECT id from klassifikation WHERE id=klassifikation_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing klassifikation with uuid [%]. If you did not supply the uuid when invoking actual_state_create_or_import_klassifikation (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might occur, albeit very very rarely.',klassifikation_uuid;
+  RAISE EXCEPTION 'Error creating or importing klassifikation with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_klassifikation (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might occur, albeit very very rarely.',klassifikation_uuid;
 END IF;
 
 IF  (klassifikation_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (klassifikation_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking actual_state_create_or_import_klassifikation.',(klassifikation_registrering.registrering).livscykluskode;
+  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_klassifikation.',(klassifikation_registrering.registrering).livscykluskode;
 END IF;
 
 

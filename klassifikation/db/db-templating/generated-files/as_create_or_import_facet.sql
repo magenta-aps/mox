@@ -6,10 +6,10 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py facet actual_state_create_or_import.jinja.sql
+NOTICE: This file is auto-generated using the script: apply-template.py facet as_create_or_import.jinja.sql
 */
 
-CREATE OR REPLACE FUNCTION actual_state_create_or_import_facet(
+CREATE OR REPLACE FUNCTION as_create_or_import_facet(
   facet_registrering FacetRegistreringType,
   facet_uuid uuid DEFAULT uuid_generate_v4() --This might genenerate a non unique value. Use uuid_generate_v5(). Consider using uuid_generate_v5() and namespace(s). Consider generating using sequences which generates input to hash, with a namespace part and a id part.
 	)
@@ -17,20 +17,20 @@ CREATE OR REPLACE FUNCTION actual_state_create_or_import_facet(
 $$
 DECLARE
   facet_registrering_id bigint;
-  facet_attr_egenskaber_obj facetAttrEgenskaberType;
+  facet_attr_egenskaber_obj facetEgenskaberAttrType;
   
-  facet_tils_publiceret_obj facetTilsPubliceretType;
+  facet_tils_publiceret_obj facetPubliceretTilsType;
   
   facet_relationer FacetRelationType;
 
 BEGIN
 
 IF EXISTS (SELECT id from facet WHERE id=facet_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing facet with uuid [%]. If you did not supply the uuid when invoking actual_state_create_or_import_facet (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might occur, albeit very very rarely.',facet_uuid;
+  RAISE EXCEPTION 'Error creating or importing facet with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_facet (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might occur, albeit very very rarely.',facet_uuid;
 END IF;
 
 IF  (facet_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (facet_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking actual_state_create_or_import_facet.',(facet_registrering.registrering).livscykluskode;
+  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_facet.',(facet_registrering.registrering).livscykluskode;
 END IF;
 
 

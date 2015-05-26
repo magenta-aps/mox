@@ -6,46 +6,46 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py facet actual_state_search.jinja.sql
+NOTICE: This file is auto-generated using the script: apply-template.py klassifikation as_search.jinja.sql
 */
 
 
-CREATE OR REPLACE FUNCTION actual_state_search_facet(
+CREATE OR REPLACE FUNCTION as_search_klassifikation(
 	firstResult int,--TOOD ??
-	facet_uuid uuid,
-	registreringObj FacetRegistreringType,
+	klassifikation_uuid uuid,
+	registreringObj KlassifikationRegistreringType,
 	maxResults int = 2147483647
 	)
   RETURNS uuid[] AS 
 $$
 DECLARE
-	facet_candidates uuid[];
-	facet_candidates_is_initialized boolean;
+	klassifikation_candidates uuid[];
+	klassifikation_candidates_is_initialized boolean;
 	to_be_applyed_filter_uuids uuid[]; 
-	attrEgenskaberTypeObj FacetAttrEgenskaberType;
+	attrEgenskaberTypeObj KlassifikationEgenskaberAttrType;
 	
-  	tilsPubliceretTypeObj FacetTilsPubliceretType;
-	relationTypeObj FacetRelationType;
+  	tilsPubliceretTypeObj KlassifikationPubliceretTilsType;
+	relationTypeObj KlassifikationRelationType;
 BEGIN
 
 --RAISE DEBUG 'step 0:registreringObj:%',registreringObj;
 
-facet_candidates_is_initialized := false;
+klassifikation_candidates_is_initialized := false;
 
 
-IF facet_uuid is not NULL THEN
-	facet_candidates:= ARRAY[facet_uuid];
-	facet_candidates_is_initialized:=true;
+IF klassifikation_uuid is not NULL THEN
+	klassifikation_candidates:= ARRAY[klassifikation_uuid];
+	klassifikation_candidates_is_initialized:=true;
 END IF;
 
 
---RAISE DEBUG 'facet_candidates_is_initialized step 1:%',facet_candidates_is_initialized;
---RAISE DEBUG 'facet_candidates step 1:%',facet_candidates;
+--RAISE DEBUG 'klassifikation_candidates_is_initialized step 1:%',klassifikation_candidates_is_initialized;
+--RAISE DEBUG 'klassifikation_candidates step 1:%',klassifikation_candidates;
 --/****************************//
 --filter on registration
 
 IF registreringObj IS NULL OR (registreringObj).registrering IS NULL THEN
-	--RAISE DEBUG 'actual_state_search_facet: skipping filtration on registrering';
+	--RAISE DEBUG 'as_search_klassifikation: skipping filtration on registrering';
 ELSE
 	IF
 	(
@@ -60,9 +60,9 @@ ELSE
 
 		to_be_applyed_filter_uuids:=array(
 		SELECT 
-			facet_uuid
+			klassifikation_uuid
 		FROM
-			facet_registrering b
+			klassifikation_registrering b
 		WHERE
 			(
 				(
@@ -92,18 +92,18 @@ ELSE
 		);
 
 
-		IF facet_candidates_is_initialized THEN
-			facet_candidates:= array(SELECT id from unnest(facet_candidates) as a(id) INTERSECT SELECT id from unnest(to_be_applyed_filter_uuids) as b(id) );
+		IF klassifikation_candidates_is_initialized THEN
+			klassifikation_candidates:= array(SELECT id from unnest(klassifikation_candidates) as a(id) INTERSECT SELECT id from unnest(to_be_applyed_filter_uuids) as b(id) );
 		ELSE
-			facet_candidates:=to_be_applyed_filter_uuids;
-			facet_candidates_is_initialized:=true;
+			klassifikation_candidates:=to_be_applyed_filter_uuids;
+			klassifikation_candidates_is_initialized:=true;
 		END IF;
 
 	END IF;
 END IF;
 
---RAISE NOTICE 'facet_candidates_is_initialized step 2:%',facet_candidates_is_initialized;
---RAISE NOTICE 'facet_candidates step 2:%',facet_candidates;
+--RAISE NOTICE 'klassifikation_candidates_is_initialized step 2:%',klassifikation_candidates_is_initialized;
+--RAISE NOTICE 'klassifikation_candidates step 2:%',klassifikation_candidates;
 
 --/****************************//
 --filter on attributes 
@@ -111,16 +111,16 @@ END IF;
 --Filtration on attribute: Egenskaber
 --/**********************************************************//
 IF registreringObj IS NULL OR (registreringObj).attrEgenskaber IS NULL THEN
-	--RAISE DEBUG 'actual_state_search_facet: skipping filtration on attrEgenskaber';
+	--RAISE DEBUG 'as_search_klassifikation: skipping filtration on attrEgenskaber';
 ELSE
-	IF (array_length(facet_candidates,1)>0 OR NOT facet_candidates_is_initialized) THEN
+	IF (array_length(klassifikation_candidates,1)>0 OR NOT klassifikation_candidates_is_initialized) THEN
 		FOREACH attrEgenskaberTypeObj IN ARRAY registreringObj.attrEgenskaber
 		LOOP
 			to_be_applyed_filter_uuids:=array(
 			SELECT
-			b.facet_id 
-			FROM  facet_attr_egenskaber a
-			JOIN facet_registrering b on a.facet_registrering_id=b.id
+			b.klassifikation_id 
+			FROM  klassifikation_attr_egenskaber a
+			JOIN klassifikation_registrering b on a.klassifikation_registrering_id=b.id
 			WHERE
 				(
 					attrEgenskaberTypeObj.virkning IS NULL
@@ -163,9 +163,9 @@ ELSE
 				)
 				AND
 				(
-					attrEgenskaberTypeObj.opbygning IS NULL
+					attrEgenskaberTypeObj.kaldenavn IS NULL
 					OR
-					attrEgenskaberTypeObj.opbygning = a.opbygning
+					attrEgenskaberTypeObj.kaldenavn = a.kaldenavn
 				)
 				AND
 				(
@@ -173,39 +173,21 @@ ELSE
 					OR
 					attrEgenskaberTypeObj.ophavsret = a.ophavsret
 				)
-				AND
-				(
-					attrEgenskaberTypeObj.plan IS NULL
-					OR
-					attrEgenskaberTypeObj.plan = a.plan
-				)
-				AND
-				(
-					attrEgenskaberTypeObj.supplement IS NULL
-					OR
-					attrEgenskaberTypeObj.supplement = a.supplement
-				)
-				AND
-				(
-					attrEgenskaberTypeObj.retskilde IS NULL
-					OR
-					attrEgenskaberTypeObj.retskilde = a.retskilde
-				)
 			);
 			
 
-			IF facet_candidates_is_initialized THEN
-				facet_candidates:= array(SELECT id from unnest(facet_candidates) as a(id) INTERSECT SELECT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
+			IF klassifikation_candidates_is_initialized THEN
+				klassifikation_candidates:= array(SELECT id from unnest(klassifikation_candidates) as a(id) INTERSECT SELECT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
 			ELSE
-				facet_candidates:=to_be_applyed_filter_uuids;
-				facet_candidates_is_initialized:=true;
+				klassifikation_candidates:=to_be_applyed_filter_uuids;
+				klassifikation_candidates_is_initialized:=true;
 			END IF;
 
 		END LOOP;
 	END IF;
 END IF;
---RAISE DEBUG 'facet_candidates_is_initialized step 3:%',facet_candidates_is_initialized;
---RAISE DEBUG 'facet_candidates step 3:%',facet_candidates;
+--RAISE DEBUG 'klassifikation_candidates_is_initialized step 3:%',klassifikation_candidates_is_initialized;
+--RAISE DEBUG 'klassifikation_candidates step 3:%',klassifikation_candidates;
 
 --/****************************//
 
@@ -218,17 +200,17 @@ END IF;
 --Filtration on state: Publiceret
 --/**********************************************************//
 IF registreringObj IS NULL OR (registreringObj).tilsPubliceret IS NULL THEN
-	--RAISE DEBUG 'actual_state_search_facet: skipping filtration on tilsPubliceret';
+	--RAISE DEBUG 'as_search_klassifikation: skipping filtration on tilsPubliceret';
 ELSE
-	IF (array_length(facet_candidates,1)>0 OR facet_candidates_is_initialized IS FALSE ) THEN --AND (IS NOT NULL THEN
+	IF (array_length(klassifikation_candidates,1)>0 OR klassifikation_candidates_is_initialized IS FALSE ) THEN --AND (IS NOT NULL THEN
 
 		FOREACH tilsPubliceretTypeObj IN ARRAY registreringObj.tilsPubliceret
 		LOOP
 			to_be_applyed_filter_uuids:=array(
 			SELECT
-			b.facet_id 
-			FROM  facet_tils_publiceret a
-			JOIN facet_registrering b on a.facet_registrering_id=b.id
+			b.klassifikation_id 
+			FROM  klassifikation_tils_publiceret a
+			JOIN klassifikation_registrering b on a.klassifikation_registrering_id=b.id
 			WHERE
 				(
 					tilsPubliceretTypeObj.virkning IS NULL
@@ -266,11 +248,11 @@ ELSE
 	);
 			
 
-			IF facet_candidates_is_initialized THEN
-				facet_candidates:= array(SELECT id from unnest(facet_candidates) as a(id) INTERSECT SELECT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
+			IF klassifikation_candidates_is_initialized THEN
+				klassifikation_candidates:= array(SELECT id from unnest(klassifikation_candidates) as a(id) INTERSECT SELECT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
 			ELSE
-				facet_candidates:=to_be_applyed_filter_uuids;
-				facet_candidates_is_initialized:=true;
+				klassifikation_candidates:=to_be_applyed_filter_uuids;
+				klassifikation_candidates_is_initialized:=true;
 			END IF;
 
 		END LOOP;
@@ -278,12 +260,12 @@ ELSE
 END IF;
 
 /*
---relationer FacetRelationType[]
+--relationer KlassifikationRelationType[]
 */
 
 
---RAISE DEBUG 'facet_candidates_is_initialized step 4:%',facet_candidates_is_initialized;
---RAISE DEBUG 'facet_candidates step 4:%',facet_candidates;
+--RAISE DEBUG 'klassifikation_candidates_is_initialized step 4:%',klassifikation_candidates_is_initialized;
+--RAISE DEBUG 'klassifikation_candidates step 4:%',klassifikation_candidates;
 
 --/**********************************************************//
 --Filtration on relations
@@ -291,16 +273,16 @@ END IF;
 
 
 IF registreringObj IS NULL OR (registreringObj).relationer IS NULL THEN
-	--RAISE DEBUG 'actual_state_search_facet: skipping filtration on relationer';
+	--RAISE DEBUG 'as_search_klassifikation: skipping filtration on relationer';
 ELSE
-	IF (array_length(facet_candidates,1)>0 OR NOT facet_candidates_is_initialized) AND registreringObj IS NOT NULL AND (registreringObj).relationer IS NOT NULL THEN
+	IF (array_length(klassifikation_candidates,1)>0 OR NOT klassifikation_candidates_is_initialized) AND registreringObj IS NOT NULL AND (registreringObj).relationer IS NOT NULL THEN
 		FOREACH relationTypeObj IN ARRAY registreringObj.relationer
 		LOOP
 			to_be_applyed_filter_uuids:=array(
 			SELECT
-			b.facet_id 
-			FROM  facet_relation a
-			JOIN facet_registrering b on a.facet_registrering_id=b.id
+			b.klassifikation_id 
+			FROM  klassifikation_relation a
+			JOIN klassifikation_registrering b on a.klassifikation_registrering_id=b.id
 			WHERE
 				(
 					relationTypeObj.virkning IS NULL
@@ -344,11 +326,11 @@ ELSE
 	);
 			
 
-			IF facet_candidates_is_initialized THEN
-				facet_candidates:= array(SELECT id from unnest(facet_candidates) as a(id) INTERSECT SELECT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
+			IF klassifikation_candidates_is_initialized THEN
+				klassifikation_candidates:= array(SELECT id from unnest(klassifikation_candidates) as a(id) INTERSECT SELECT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
 			ELSE
-				facet_candidates:=to_be_applyed_filter_uuids;
-				facet_candidates_is_initialized:=true;
+				klassifikation_candidates:=to_be_applyed_filter_uuids;
+				klassifikation_candidates_is_initialized:=true;
 			END IF;
 
 		END LOOP;
@@ -356,26 +338,26 @@ ELSE
 END IF;
 --/**********************//
 
---RAISE DEBUG 'facet_candidates_is_initialized step 5:%',facet_candidates_is_initialized;
---RAISE DEBUG 'facet_candidates step 5:%',facet_candidates;
+--RAISE DEBUG 'klassifikation_candidates_is_initialized step 5:%',klassifikation_candidates_is_initialized;
+--RAISE DEBUG 'klassifikation_candidates step 5:%',klassifikation_candidates;
 
 
-IF NOT facet_candidates_is_initialized THEN
+IF NOT klassifikation_candidates_is_initialized THEN
 	--No filters applied!
-	facet_candidates:=array(
-		SELECT id FROM facet a LIMIT maxResults
+	klassifikation_candidates:=array(
+		SELECT id FROM klassifikation a LIMIT maxResults
 	);
 ELSE
-	facet_candidates:=array(
-		SELECT id FROM unnest(facet_candidates) as a(id) LIMIT maxResults
+	klassifikation_candidates:=array(
+		SELECT id FROM unnest(klassifikation_candidates) as a(id) LIMIT maxResults
 		);
 END IF;
 
---RAISE DEBUG 'facet_candidates_is_initialized step 6:%',facet_candidates_is_initialized;
---RAISE DEBUG 'facet_candidates step 6:%',facet_candidates;
+--RAISE DEBUG 'klassifikation_candidates_is_initialized step 6:%',klassifikation_candidates_is_initialized;
+--RAISE DEBUG 'klassifikation_candidates step 6:%',klassifikation_candidates;
 
 
-return facet_candidates;
+return klassifikation_candidates;
 
 
 END;

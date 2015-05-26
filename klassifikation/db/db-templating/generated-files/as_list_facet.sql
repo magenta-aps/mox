@@ -6,10 +6,10 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py facet actual_state_list.jinja.sql
+NOTICE: This file is auto-generated using the script: apply-template.py facet as_list.jinja.sql
 */
 
-CREATE OR REPLACE FUNCTION actual_state_list_facet(facet_uuids uuid[],
+CREATE OR REPLACE FUNCTION as_list_facet(facet_uuids uuid[],
   registrering_tstzrange tstzrange,
   virkning_tstzrange tstzrange)
   RETURNS setof FacetType AS
@@ -56,7 +56,7 @@ FROM
 					ROW(
 						b.virkning,
 						b.publiceret
-						) ::FacetTilsPubliceretType
+						) ::FacetPubliceretTilsType
 					order by b.id
 				) FacetTilsPubliceretArr		
 			FROM
@@ -75,7 +75,7 @@ FROM
 					 		b.supplement,
 					 		b.retskilde,
 					   		b.virkning 
-							)::FacetAttrEgenskaberType
+							)::FacetEgenskaberAttrType
 						order by b.id
 					) FacetAttrEgenskaberArr 
 					FROM

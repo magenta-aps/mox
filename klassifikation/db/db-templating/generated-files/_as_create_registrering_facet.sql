@@ -6,11 +6,11 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py facet _actual_state_create_registrering.jinja.sql
+NOTICE: This file is auto-generated using the script: apply-template.py facet _as_create_registrering.jinja.sql
 */
 
 
-CREATE OR REPLACE FUNCTION _actual_state_create_facet_registrering(
+CREATE OR REPLACE FUNCTION _as_create_facet_registrering(
   facet_uuid uuid,
   livscykluskode Livscykluskode, 
   brugerref uuid, 
@@ -36,7 +36,7 @@ UPDATE facet_registrering as a
         ))
     WHERE facet_id = facet_uuid 
     AND upper((registrering).timeperiod)='infinity'::TIMESTAMPTZ
-    AND _actual_state_valid_registrering_livscyklus_transition((registrering).livscykluskode,livscykluskode)  --we'll only limit the scope of the old registrering, if we're dealing with a valid transition. Faliure to move, will result in a constraint violation. A more explicit check on the validity of the state change should be considered.     
+    AND _as_valid_registrering_livscyklus_transition((registrering).livscykluskode,livscykluskode)  --we'll only limit the scope of the old registrering, if we're dealing with a valid transition. Faliure to move, will result in a constraint violation. A more explicit check on the validity of the state change should be considered.     
 
 ;
 --create a new facet registrering

@@ -11,7 +11,7 @@ NOTICE: This file is auto-generated using the script: apply-template.py facet tb
 
 /******************** FUNCTIONS (NEEDED FOR TABLE/INDEX-DEFS) DEFS ***********************************/
 
-CREATE or replace FUNCTION _actual_state_convert_facet_relation_kode_to_txt (
+CREATE or replace FUNCTION _as_convert_facet_relation_kode_to_txt (
   FacetRelationKode
     ) 
 RETURNS TEXT 
@@ -195,7 +195,7 @@ CREATE TABLE facet_tils_publiceret
 (
   id bigint NOT NULL DEFAULT nextval('facet_tils_publiceret_id_seq'::regclass),
   virkning Virkning  NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
-  publiceret FacetTilsPubliceret NOT NULL, 
+  publiceret FacetPubliceretTils NOT NULL, 
   facet_registrering_id bigint not null,
   CONSTRAINT facet_tils_publiceret_pkey PRIMARY KEY (id),
   CONSTRAINT facet_tils_publiceret_forkey_facetregistrering  FOREIGN KEY (facet_registrering_id) REFERENCES facet_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
@@ -252,7 +252,7 @@ CREATE TABLE facet_relation
   rel_type FacetRelationKode not null,
  CONSTRAINT facet_relation_forkey_facetregistrering  FOREIGN KEY (facet_registrering_id) REFERENCES facet_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
  CONSTRAINT facet_relation_pkey PRIMARY KEY (id),
- CONSTRAINT facet_relation_no_virkning_overlap EXCLUDE USING gist (facet_registrering_id WITH =, _actual_state_convert_facet_relation_kode_to_txt(rel_type) WITH =, composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('redaktoerer'::FacetRelationKode )) -- no overlapping virkning except for 0..n --relations
+ CONSTRAINT facet_relation_no_virkning_overlap EXCLUDE USING gist (facet_registrering_id WITH =, _as_convert_facet_relation_kode_to_txt(rel_type) WITH =, composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('redaktoerer'::FacetRelationKode )) -- no overlapping virkning except for 0..n --relations
 );
 
 CREATE INDEX facet_relation_idx_rel_maal

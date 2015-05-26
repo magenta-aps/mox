@@ -11,7 +11,7 @@ NOTICE: This file is auto-generated using the script: apply-template.py klassifi
 
 /******************** FUNCTIONS (NEEDED FOR TABLE/INDEX-DEFS) DEFS ***********************************/
 
-CREATE or replace FUNCTION _actual_state_convert_klassifikation_relation_kode_to_txt (
+CREATE or replace FUNCTION _as_convert_klassifikation_relation_kode_to_txt (
   KlassifikationRelationKode
     ) 
 RETURNS TEXT 
@@ -174,7 +174,7 @@ CREATE TABLE klassifikation_tils_publiceret
 (
   id bigint NOT NULL DEFAULT nextval('klassifikation_tils_publiceret_id_seq'::regclass),
   virkning Virkning  NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
-  publiceret KlassifikationTilsPubliceret NOT NULL, 
+  publiceret KlassifikationPubliceretTils NOT NULL, 
   klassifikation_registrering_id bigint not null,
   CONSTRAINT klassifikation_tils_publiceret_pkey PRIMARY KEY (id),
   CONSTRAINT klassifikation_tils_publiceret_forkey_klassifikationregistrering  FOREIGN KEY (klassifikation_registrering_id) REFERENCES klassifikation_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
@@ -231,7 +231,7 @@ CREATE TABLE klassifikation_relation
   rel_type KlassifikationRelationKode not null,
  CONSTRAINT klassifikation_relation_forkey_klassifikationregistrering  FOREIGN KEY (klassifikation_registrering_id) REFERENCES klassifikation_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
  CONSTRAINT klassifikation_relation_pkey PRIMARY KEY (id),
- CONSTRAINT klassifikation_relation_no_virkning_overlap EXCLUDE USING gist (klassifikation_registrering_id WITH =, _actual_state_convert_klassifikation_relation_kode_to_txt(rel_type) WITH =, composite_type_to_time_range(virkning) WITH &&) -- no overlapping virkning except for 0..n --relations
+ CONSTRAINT klassifikation_relation_no_virkning_overlap EXCLUDE USING gist (klassifikation_registrering_id WITH =, _as_convert_klassifikation_relation_kode_to_txt(rel_type) WITH =, composite_type_to_time_range(virkning) WITH &&) -- no overlapping virkning except for 0..n --relations
 );
 
 CREATE INDEX klassifikation_relation_idx_rel_maal
