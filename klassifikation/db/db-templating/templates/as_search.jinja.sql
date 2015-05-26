@@ -20,10 +20,10 @@ DECLARE
 	{{oio_type}}_candidates_is_initialized boolean;
 	to_be_applyed_filter_uuids uuid[];
 	{%-for attribut , attribut_fields in attributter.iteritems() %} 
-	attr{{attribut|title}}TypeObj {{oio_type|title}}Attr{{attribut|title}}Type;
+	attr{{attribut|title}}TypeObj {{oio_type|title}}{{attribut|title}}AttrType;
 	{%- endfor %}
 	{% for tilstand, tilstand_values in tilstande.iteritems() %}
-  	tils{{tilstand|title}}TypeObj {{oio_type|title}}Tils{{tilstand|title}}Type;
+  	tils{{tilstand|title}}TypeObj {{oio_type|title}}{{tilstand|title}}TilsType;
   	{%- endfor %}
 	relationTypeObj {{oio_type|title}}RelationType;
 BEGIN

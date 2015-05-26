@@ -150,7 +150,7 @@ CREATE TABLE {{oio_type}}_tils_{{tilstand}}
 (
   id bigint NOT NULL DEFAULT nextval('{{oio_type}}_tils_{{tilstand}}_id_seq'::regclass),
   virkning Virkning  NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
-  {{tilstand}} {{oio_type|title}}Tils{{tilstand|title}} NOT NULL, 
+  {{tilstand}} {{oio_type|title}}{{tilstand|title}}Tils NOT NULL, 
   {{oio_type}}_registrering_id bigint not null,
   CONSTRAINT {{oio_type}}_tils_{{tilstand}}_pkey PRIMARY KEY (id),
   CONSTRAINT {{oio_type}}_tils_{{tilstand}}_forkey_{{oio_type}}registrering  FOREIGN KEY ({{oio_type}}_registrering_id) REFERENCES {{oio_type}}_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,

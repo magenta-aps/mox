@@ -19,8 +19,8 @@ DECLARE
 	virkRedaktoer1_A Virkning;
 	virkRedaktoer2_A Virkning;
 	virkPubliceret_A Virkning;
-	facetEgenskab_A FacetAttrEgenskaberType;
-	facetPubliceret_A FacetTilsPubliceretType;
+	facetEgenskab_A FacetEgenskaberAttrType;
+	facetPubliceret_A FacetPubliceretTilsType;
 	facetRelAnsvarlig_A FacetRelationType;
 	facetRelRedaktoer1_A FacetRelationType;
 	facetRelRedaktoer2_A FacetRelationType;
@@ -39,9 +39,9 @@ DECLARE
 	virkRedaktoer2_B Virkning;
 	virkPubliceret_B Virkning;
 	virkpubliceret2_b Virkning;
-	facetEgenskab_B FacetAttrEgenskaberType;
-	facetPubliceret_B FacetTilsPubliceretType;
-	facetPubliceret_B2 FacetTilsPubliceretType;
+	facetEgenskab_B FacetEgenskaberAttrType;
+	facetPubliceret_B FacetPubliceretTilsType;
+	facetPubliceret_B2 FacetPubliceretTilsType;
 	facetRelAnsvarlig_B FacetRelationType;
 	facetRelRedaktoer1_B FacetRelationType;
 	facetRelRedaktoer2_B FacetRelationType;
@@ -60,9 +60,9 @@ DECLARE
 	virkRedaktoer2_C Virkning;
 	virkPubliceret_C Virkning;
 	virkpubliceret2_C Virkning;
-	facetEgenskab_C FacetAttrEgenskaberType;
-	facetPubliceret_C FacetTilsPubliceretType;
-	facetPubliceret_C2 FacetTilsPubliceretType;
+	facetEgenskab_C FacetEgenskaberAttrType;
+	facetPubliceret_C FacetPubliceretTilsType;
+	facetPubliceret_C2 FacetPubliceretTilsType;
 	facetRelAnsvarlig_C FacetRelationType;
 	facetRelRedaktoer1_C FacetRelationType;
 	facetRelRedaktoer2_C FacetRelationType;
@@ -164,7 +164,7 @@ facetRelRedaktoer2_A := ROW (
 facetPubliceret_A := ROW (
 virkPubliceret_A,
 'Publiceret'
-):: FacetTilsPubliceretType
+):: FacetPubliceretTilsType
 ;
 
 
@@ -177,7 +177,7 @@ facetEgenskab_A := ROW (
    'facetsupplement_text1',
    'retskilde_text1',
    virkEgenskaber_A
-) :: FacetAttrEgenskaberType
+) :: FacetEgenskaberAttrType
 ;
 
 
@@ -189,8 +189,8 @@ registrering_A := ROW (
 	uuidregistrering_A,
 	'Test Note 4') :: registreringBase
 	,
-ARRAY[facetPubliceret_A]::FacetTilsPubliceretType[],
-ARRAY[facetEgenskab_A]::FacetAttrEgenskaberType[],
+ARRAY[facetPubliceret_A]::FacetPubliceretTilsType[],
+ARRAY[facetEgenskab_A]::FacetEgenskaberAttrType[],
 ARRAY[facetRelAnsvarlig_A,facetRelRedaktoer1_A,facetRelRedaktoer2_A]
 ) :: FacetRegistreringType
 ;
@@ -280,13 +280,13 @@ facetRelRedaktoer2_B := ROW (
 facetPubliceret_B := ROW (
 virkPubliceret_B,
 'Publiceret'
-):: FacetTilsPubliceretType
+):: FacetPubliceretTilsType
 ;
 
 facetPubliceret_B2 := ROW (
 virkPubliceret2_B,
 'IkkePubliceret'
-):: FacetTilsPubliceretType
+):: FacetPubliceretTilsType
 ;
 
 
@@ -299,7 +299,7 @@ facetEgenskab_B := ROW (
    'facetsupplement_text2',
    'retskilde_text2',
    virkEgenskaber_B
-) :: FacetAttrEgenskaberType
+) :: FacetEgenskaberAttrType
 ;
 
 
@@ -311,8 +311,8 @@ registrering_B := ROW (
 	uuidregistrering_B,
 	'Test Note 5') :: registreringBase
 	,
-ARRAY[facetPubliceret_B,facetPubliceret_B2]::FacetTilsPubliceretType[],
-ARRAY[facetEgenskab_B]::FacetAttrEgenskaberType[],
+ARRAY[facetPubliceret_B,facetPubliceret_B2]::FacetPubliceretTilsType[],
+ARRAY[facetEgenskab_B]::FacetEgenskaberAttrType[],
 ARRAY[facetRelAnsvarlig_B,facetRelRedaktoer1_B,facetRelRedaktoer2_B]
 ) :: FacetRegistreringType
 ;
@@ -364,10 +364,10 @@ search_registrering_3 := ROW (
 				  ROW(
 				  	null,null,null,null
 				  	)::virkning 
-				  ,'IkkePubliceret'::FacetTilsPubliceret
-				):: FacetTilsPubliceretType
-	],--ARRAY[facetPubliceret_B]::FacetTilsPubliceretType[],
-null,--ARRAY[facetEgenskab_B]::FacetAttrEgenskaberType[],
+				  ,'IkkePubliceret'::FacetPubliceretTils
+				):: FacetPubliceretTilsType
+	],--ARRAY[facetPubliceret_B]::FacetPubliceretTilsType[],
+null,--ARRAY[facetEgenskab_B]::FacetEgenskaberAttrType[],
 null--ARRAY[facetRelAnsvarlig_B,facetRelRedaktoer1_B,facetRelRedaktoer2_B]
 ):: FacetRegistreringType;
 
@@ -384,7 +384,7 @@ search_result3 :=as_search_facet(
 RETURN NEXT is(
 search_result3,
 ARRAY[new_uuid_B]::uuid[],
-'search state FacetTilsPubliceret IkkePubliceret'
+'search state FacetPubliceretTils IkkePubliceret'
 );
 
 --***********************************
@@ -402,10 +402,10 @@ search_registrering_4 := ROW (
 				  	'[2015-05-18, 2015-05-19]' :: TSTZRANGE,
 				  	null,null,null
 				  	)::virkning 
-				  ,'Publiceret'::FacetTilsPubliceret
-				):: FacetTilsPubliceretType
-	],--ARRAY[facetPubliceret_B]::FacetTilsPubliceretType[],
-null,--ARRAY[facetEgenskab_B]::FacetAttrEgenskaberType[],
+				  ,'Publiceret'::FacetPubliceretTils
+				):: FacetPubliceretTilsType
+	],--ARRAY[facetPubliceret_B]::FacetPubliceretTilsType[],
+null,--ARRAY[facetEgenskab_B]::FacetEgenskaberAttrType[],
 null--ARRAY[facetRelAnsvarlig_B,facetRelRedaktoer1_B,facetRelRedaktoer2_B]
 ):: FacetRegistreringType;
 
@@ -420,7 +420,7 @@ search_result4 :=as_search_facet(
 RETURN NEXT is(
 search_result4,
 ARRAY[new_uuid_A,new_uuid_B]::uuid[],
-'search state FacetTilsPubliceret Publiceret on 18-05-2015 - 19-05-2015'
+'search state FacetPubliceretTils Publiceret on 18-05-2015 - 19-05-2015'
 );
 
 
@@ -439,10 +439,10 @@ search_registrering_5 := ROW (
 				  	'[2015-06-30, 2015-07-30]' :: TSTZRANGE,
 				  	null,null,null
 				  	)::virkning 
-				  ,'IkkePubliceret'::FacetTilsPubliceret
-				):: FacetTilsPubliceretType
-	],--ARRAY[facetPubliceret_B]::FacetTilsPubliceretType[],
-null,--ARRAY[facetEgenskab_B]::FacetAttrEgenskaberType[],
+				  ,'IkkePubliceret'::FacetPubliceretTils
+				):: FacetPubliceretTilsType
+	],--ARRAY[facetPubliceret_B]::FacetPubliceretTilsType[],
+null,--ARRAY[facetEgenskab_B]::FacetEgenskaberAttrType[],
 null--ARRAY[facetRelAnsvarlig_B,facetRelRedaktoer1_B,facetRelRedaktoer2_B]
 ):: FacetRegistreringType;
 
@@ -457,7 +457,7 @@ search_result5 :=as_search_facet(
 RETURN NEXT is(
 search_result5,
 ARRAY[]::uuid[],
-'search state FacetTilsPubliceret ikkepubliceret on 30-06-2015 30-07-2015'
+'search state FacetPubliceretTils ikkepubliceret on 30-06-2015 30-07-2015'
 );
 
 --***********************************
@@ -476,10 +476,10 @@ search_registrering_6 := ROW (
 				  	(virkPubliceret_B).AktoerRef,
 				  	null,null
 				  	)::virkning 
-				  ,'Publiceret'::FacetTilsPubliceret
-				):: FacetTilsPubliceretType
-	],--ARRAY[facetPubliceret_B]::FacetTilsPubliceretType[],
-null,--ARRAY[facetEgenskab_B]::FacetAttrEgenskaberType[],
+				  ,'Publiceret'::FacetPubliceretTils
+				):: FacetPubliceretTilsType
+	],--ARRAY[facetPubliceret_B]::FacetPubliceretTilsType[],
+null,--ARRAY[facetEgenskab_B]::FacetEgenskaberAttrType[],
 null--ARRAY[facetRelAnsvarlig_B,facetRelRedaktoer1_B,facetRelRedaktoer2_B]
 ):: FacetRegistreringType;
 
@@ -569,13 +569,13 @@ facetRelRedaktoer1_C := ROW (
 facetPubliceret_C := ROW (
 virkPubliceret_C,
 'Publiceret'
-):: FacetTilsPubliceretType
+):: FacetPubliceretTilsType
 ;
 
 facetPubliceret_C2 := ROW (
 virkPubliceret2_C,
 'IkkePubliceret'
-):: FacetTilsPubliceretType
+):: FacetPubliceretTilsType
 ;
 
 
@@ -588,7 +588,7 @@ facetEgenskab_C := ROW (
    'facetsupplement_text3',
    'retskilde_text3',
    virkEgenskaber_C
-) :: FacetAttrEgenskaberType
+) :: FacetEgenskaberAttrType
 ;
 
 
@@ -600,8 +600,8 @@ registrering_C := ROW (
 	uuidregistrering_C,
 	'Test Note 993') :: registreringBase
 	,
-ARRAY[facetPubliceret_C,facetPubliceret_C2]::FacetTilsPubliceretType[],
-ARRAY[facetEgenskab_C]::FacetAttrEgenskaberType[],
+ARRAY[facetPubliceret_C,facetPubliceret_C2]::FacetPubliceretTilsType[],
+ARRAY[facetEgenskab_C]::FacetEgenskaberAttrType[],
 ARRAY[facetRelAnsvarlig_C,facetRelRedaktoer1_C]
 ) :: FacetRegistreringType
 ;
@@ -625,9 +625,9 @@ search_registrering_7 := ROW (
 				  	'[2015-05-18, 2015-05-19]' :: TSTZRANGE,
 				  	null,null,null
 				  	)::virkning 
-				  ,'Publiceret'::FacetTilsPubliceret
-				):: FacetTilsPubliceretType
-	],--ARRAY[facetPubliceret_B]::FacetTilsPubliceretType[],
+				  ,'Publiceret'::FacetPubliceretTils
+				):: FacetPubliceretTilsType
+	],--ARRAY[facetPubliceret_B]::FacetPubliceretTilsType[],
 ARRAY[
 	ROW(
 		NULL,
@@ -641,8 +641,8 @@ ARRAY[
 				  	'[2015-01-01, 2015-02-01]' :: TSTZRANGE,
 				  	null,null,null
 				  	)::virkning 
-		)::FacetAttrEgenskaberType
-]::FacetAttrEgenskaberType[],
+		)::FacetEgenskaberAttrType
+]::FacetEgenskaberAttrType[],
 ARRAY[
 	ROW (
 	'redaktoerer'::FacetRelationKode,
@@ -687,10 +687,10 @@ search_registrering_8 := ROW (
 				  	'[2015-05-18, 2015-05-19]' :: TSTZRANGE,
 				  	null,null,null
 				  	)::virkning 
-				  ,'Publiceret'::FacetTilsPubliceret
-				):: FacetTilsPubliceretType
-	],--ARRAY[facetPubliceret_B]::FacetTilsPubliceretType[],
-ARRAY[]::FacetAttrEgenskaberType[],
+				  ,'Publiceret'::FacetPubliceretTils
+				):: FacetPubliceretTilsType
+	],--ARRAY[facetPubliceret_B]::FacetPubliceretTilsType[],
+ARRAY[]::FacetEgenskaberAttrType[],
 ARRAY[
 	ROW (
 	'redaktoerer'::FacetRelationKode,

@@ -14,9 +14,9 @@ CREATE OR REPLACE FUNCTION as_create_or_import_{{oio_type}}(
 $$
 DECLARE
   {{oio_type}}_registrering_id bigint;
-  {%for attribut , attribut_fields in attributter.iteritems() %}{{oio_type}}_attr_{{attribut}}_obj {{oio_type}}Attr{{attribut|title}}Type;
+  {%for attribut , attribut_fields in attributter.iteritems() %}{{oio_type}}_attr_{{attribut}}_obj {{oio_type}}{{attribut|title}}AttrType;
   {% endfor %}
-  {% for tilstand, tilstand_values in tilstande.iteritems() %}{{oio_type}}_tils_{{tilstand}}_obj {{oio_type}}Tils{{tilstand|title}}Type;
+  {% for tilstand, tilstand_values in tilstande.iteritems() %}{{oio_type}}_tils_{{tilstand}}_obj {{oio_type}}{{tilstand|title}}TilsType;
   {% endfor %}
   {{oio_type}}_relationer {{oio_type|title}}RelationType;
 

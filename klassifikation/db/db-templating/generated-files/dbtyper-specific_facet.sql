@@ -11,15 +11,15 @@ NOTICE: This file is auto-generated using the script: apply-template.py facet db
 
 --create custom type sans db-ids to be able to do "clean" function signatures "for the outside world".
 
-CREATE TYPE FacetTilsPubliceret AS ENUM ('Publiceret','IkkePubliceret',''); --'' means undefined (which is needed to clear previous defined tilstand_values in an already registered virksnings-periode)
+CREATE TYPE FacetPubliceretTils AS ENUM ('Publiceret','IkkePubliceret',''); --'' means undefined (which is needed to clear previous defined tilstand_values in an already registered virksnings-periode)
 
-CREATE TYPE FacetTilsPubliceretType AS (
+CREATE TYPE FacetPubliceretTilsType AS (
     virkning Virkning,
-    publiceret FacetTilsPubliceret
+    publiceret FacetPubliceretTils
 )
 ;
 
-CREATE TYPE FacetAttrEgenskaberType AS (
+CREATE TYPE FacetEgenskaberAttrType AS (
 brugervendtnoegle text,
 beskrivelse text,
 opbygning text,
@@ -31,7 +31,7 @@ retskilde text,
 );
 
 
-CREATE TYPE FacetRelationKode AS ENUM  ('ansvarlig','ejer','facettilhoerer','redaktoerer');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _actual_state_convert_facet_relation_kode_to_txt is invoked.
+CREATE TYPE FacetRelationKode AS ENUM  ('ansvarlig','ejer','facettilhoerer','redaktoerer');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_facet_relation_kode_to_txt is invoked.
 
 CREATE TYPE FacetRelationType AS (
   relType FacetRelationKode,
@@ -43,8 +43,8 @@ CREATE TYPE FacetRelationType AS (
 CREATE TYPE FacetRegistreringType AS
 (
 registrering RegistreringBase,
-tilsPubliceret FacetTilsPubliceretType[],
-attrEgenskaber FacetAttrEgenskaberType[],
+tilsPubliceret FacetPubliceretTilsType[],
+attrEgenskaber FacetEgenskaberAttrType[],
 relationer FacetRelationType[]
 );
 

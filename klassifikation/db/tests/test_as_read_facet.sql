@@ -19,8 +19,8 @@ DECLARE
 	virkRedaktoer1 Virkning;
 	virkRedaktoer2 Virkning;
 	virkPubliceret Virkning;
-	facetEgenskab FacetAttrEgenskaberType;
-	facetPubliceret FacetTilsPubliceretType;
+	facetEgenskab FacetEgenskaberAttrType;
+	facetPubliceret FacetPubliceretTilsType;
 	facetRelAnsvarlig FacetRelationType;
 	facetRelRedaktoer1 FacetRelationType;
 	facetRelRedaktoer2 FacetRelationType;
@@ -103,7 +103,7 @@ facetRelRedaktoer2 := ROW (
 facetPubliceret := ROW (
 virkPubliceret,
 'Publiceret'
-):: FacetTilsPubliceretType
+):: FacetPubliceretTilsType
 ;
 
 
@@ -116,7 +116,7 @@ facetEgenskab := ROW (
    'facetsupplement_text1',
    'retskilde_text1',
    virkEgenskaber
-) :: FacetAttrEgenskaberType
+) :: FacetEgenskaberAttrType
 ;
 
 
@@ -128,8 +128,8 @@ registrering := ROW (
 	uuidRegistrering,
 	'Test Note 4') :: RegistreringBase
 	,
-ARRAY[facetPubliceret]::FacetTilsPubliceretType[],
-ARRAY[facetEgenskab]::FacetAttrEgenskaberType[],
+ARRAY[facetPubliceret]::FacetPubliceretTilsType[],
+ARRAY[facetEgenskab]::FacetEgenskaberAttrType[],
 ARRAY[facetRelAnsvarlig,facetRelRedaktoer1,facetRelRedaktoer2]
 ) :: FacetRegistreringType
 ;

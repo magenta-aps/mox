@@ -23,13 +23,13 @@ DECLARE
 	virkPubliceret Virkning;
 	virkPubliceretB Virkning;
 	virkPubliceretC Virkning;
-	facetEgenskabA FacetAttrEgenskaberType;
-	facetEgenskabB FacetAttrEgenskaberType;
-	facetEgenskabC FacetAttrEgenskaberType;
-	facetEgenskabD FacetAttrEgenskaberType;
-	facetPubliceret FacetTilsPubliceretType;
-	facetPubliceretB FacetTilsPubliceretType;
-	facetPubliceretC FacetTilsPubliceretType;
+	facetEgenskabA FacetEgenskaberAttrType;
+	facetEgenskabB FacetEgenskaberAttrType;
+	facetEgenskabC FacetEgenskaberAttrType;
+	facetEgenskabD FacetEgenskaberAttrType;
+	facetPubliceret FacetPubliceretTilsType;
+	facetPubliceretB FacetPubliceretTilsType;
+	facetPubliceretC FacetPubliceretTilsType;
 	facetRelAnsvarlig FacetRelationType;
 	facetRelRedaktoer1 FacetRelationType;
 	facetRelRedaktoer2 FacetRelationType;
@@ -39,8 +39,8 @@ DECLARE
 	uuidRegistrering uuid :=uuid_generate_v4();
 	update_reg_id bigint;
 	actual_relationer FacetRelationType[];
-	actual_publiceret FacetTilsPubliceretType[];
-	actual_egenskaber FacetAttrEgenskaberType[];
+	actual_publiceret FacetPubliceretTilsType[];
+	actual_egenskaber FacetEgenskaberAttrType[];
 BEGIN
 
 
@@ -133,13 +133,13 @@ facetRelRedaktoer2 := ROW (
 facetPubliceret := ROW (
 virkPubliceret,
 'Publiceret'
-):: FacetTilsPubliceretType
+):: FacetPubliceretTilsType
 ;
 
 facetPubliceretB := ROW (
 virkPubliceretB,
 'IkkePubliceret'
-):: FacetTilsPubliceretType
+):: FacetPubliceretTilsType
 ;
 
 facetEgenskabA := ROW (
@@ -151,7 +151,7 @@ facetEgenskabA := ROW (
    'facetsupplement_A',
    NULL,--'retskilde_text1',
    virkEgenskaber
-) :: FacetAttrEgenskaberType
+) :: FacetEgenskaberAttrType
 ;
 
 facetEgenskabB := ROW (
@@ -163,7 +163,7 @@ facetEgenskabB := ROW (
    'facetsupplement_B',
    NULL, --restkilde
    virkEgenskaberB
-) :: FacetAttrEgenskaberType
+) :: FacetEgenskaberAttrType
 ;
 
 
@@ -174,8 +174,8 @@ registrering := ROW (
 	uuidRegistrering,
 	'Test Note 4') :: RegistreringBase
 	,
-ARRAY[facetPubliceret,facetPubliceretB]::FacetTilsPubliceretType[],
-ARRAY[facetEgenskabA,facetEgenskabB]::FacetAttrEgenskaberType[],
+ARRAY[facetPubliceret,facetPubliceretB]::FacetPubliceretTilsType[],
+ARRAY[facetEgenskabA,facetEgenskabB]::FacetEgenskaberAttrType[],
 ARRAY[facetRelAnsvarlig,facetRelRedaktoer1,facetRelRedaktoer2]
 ) :: FacetRegistreringType
 ;
@@ -210,7 +210,7 @@ facetEgenskabC := ROW (
    'facetsupplement_C',
    'retskilde_C',
    virkEgenskaberC
-) :: FacetAttrEgenskaberType
+) :: FacetEgenskaberAttrType
 ;
 
 facetEgenskabD := ROW (
@@ -222,7 +222,7 @@ facetEgenskabD := ROW (
    'facetsupplement_D',
    NULL, --restkilde
    virkEgenskaberD
-) :: FacetAttrEgenskaberType
+) :: FacetEgenskaberAttrType
 ;
 
 virkPubliceretC:=	ROW (
@@ -237,8 +237,8 @@ virkPubliceretC:=	ROW (
 
 facetPubliceretC := ROW (
 virkPubliceretC,
-''::FacetTilsPubliceret
-):: FacetTilsPubliceretType
+''::FacetPubliceretTils
+):: FacetPubliceretTilsType
 ;
 
 
@@ -246,8 +246,8 @@ virkPubliceretC,
 update_reg_id:=as_update_facet(
   new_uuid, uuid_generate_v4(),'Test update'::text,
   'Rettet'::Livscykluskode,          
-  array[facetEgenskabC,facetEgenskabD]::FacetAttrEgenskaberType[],
-  array[facetPubliceretC]::FacetTilsPubliceretType[],
+  array[facetEgenskabC,facetEgenskabD]::FacetEgenskaberAttrType[],
+  array[facetPubliceretC]::FacetPubliceretTilsType[],
   array[facetRelAnsvarlig]::FacetRelationType[]
 	);
 
@@ -276,7 +276,7 @@ array_agg(
 			ROW (
 					a.virkning,
 					a.publiceret
-				):: FacetTilsPubliceretType
+				):: FacetPubliceretTilsType
 		) into actual_publiceret
 FROM facet_tils_publiceret a
 JOIN facet_registrering as b on a.facet_registrering_id=b.id
@@ -297,7 +297,7 @@ ARRAY[
 				,(facetPubliceret.virkning).NoteTekst
 			) :: Virkning
 		,facetPubliceret.publiceret
-		)::FacetTilsPubliceretType,
+		)::FacetPubliceretTilsType,
 	ROW(
 		ROW (
 				TSTZRANGE('2014-05-13','2015-01-01','[)')
@@ -306,8 +306,8 @@ ARRAY[
 				,(facetPubliceretB.virkning).NoteTekst
 			) :: Virkning
 		,facetPubliceretB.publiceret
-		)::FacetTilsPubliceretType
-]::FacetTilsPubliceretType[]
+		)::FacetPubliceretTilsType
+]::FacetPubliceretTilsType[]
 ,'publiceret value updated');
 
 
@@ -322,7 +322,7 @@ RETURN NEXT set_eq( 'SELECT
    					a.supplement,
    					a.retskilde,
 					a.virkning
-				):: FacetAttrEgenskaberType
+				):: FacetEgenskaberAttrType
 		
 FROM  facet_attr_egenskaber a
 JOIN facet_registrering as b on a.facet_registrering_id=b.id
@@ -343,7 +343,7 @@ ARRAY[
 						(facetEgenskabD.virkning).AktoerTypeKode,
 						(facetEgenskabD.virkning).NoteTekst
 						)::virkning
-			) ::FacetAttrEgenskaberType
+			) ::FacetEgenskaberAttrType
 		,
 		ROW(
 			facetEgenskabD.brugervendtnoegle,
@@ -359,7 +359,7 @@ ARRAY[
 						(facetEgenskabD.virkning).AktoerTypeKode,
 						(facetEgenskabD.virkning).NoteTekst
 						)::virkning
-		)::FacetAttrEgenskaberType
+		)::FacetEgenskaberAttrType
 		,
 		ROW(
 			facetEgenskabB.brugervendtnoegle,
@@ -375,7 +375,7 @@ ARRAY[
 						(facetEgenskabB.virkning).AktoerTypeKode,
 						(facetEgenskabB.virkning).NoteTekst
 						)::virkning
-			)::FacetAttrEgenskaberType
+			)::FacetEgenskaberAttrType
 		,
 		ROW(
 			facetEgenskabC.brugervendtnoegle,
@@ -391,7 +391,7 @@ ARRAY[
 						(facetEgenskabC.virkning).AktoerTypeKode,
 						(facetEgenskabC.virkning).NoteTekst
 						)::virkning
-			)::FacetAttrEgenskaberType
+			)::FacetEgenskaberAttrType
 		,
 		ROW(
 			facetEgenskabA.brugervendtnoegle, --notice
@@ -407,9 +407,9 @@ ARRAY[
 						(facetEgenskabC.virkning).AktoerTypeKode,
 						(facetEgenskabC.virkning).NoteTekst
 						)::virkning
-			)::FacetAttrEgenskaberType
+			)::FacetEgenskaberAttrType
 
-	]::FacetAttrEgenskaberType[]
+	]::FacetEgenskaberAttrType[]
     ,    'egenskaber updated' );
 
 

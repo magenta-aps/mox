@@ -24,13 +24,13 @@ DECLARE
 	virkPubliceret Virkning;
 	virkPubliceretB Virkning;
 	virkPubliceretC Virkning;
-	facetEgenskabA FacetAttrEgenskaberType;
-	facetEgenskabB FacetAttrEgenskaberType;
-	facetEgenskabC FacetAttrEgenskaberType;
-	facetEgenskabD FacetAttrEgenskaberType;
-	facetPubliceret FacetTilsPubliceretType;
-	facetPubliceretB FacetTilsPubliceretType;
-	facetPubliceretC FacetTilsPubliceretType;
+	facetEgenskabA FacetEgenskaberAttrType;
+	facetEgenskabB FacetEgenskaberAttrType;
+	facetEgenskabC FacetEgenskaberAttrType;
+	facetEgenskabD FacetEgenskaberAttrType;
+	facetPubliceret FacetPubliceretTilsType;
+	facetPubliceretB FacetPubliceretTilsType;
+	facetPubliceretC FacetPubliceretTilsType;
 	facetRelAnsvarlig FacetRelationType;
 	facetRelRedaktoer1 FacetRelationType;
 	facetRelRedaktoer2 FacetRelationType;
@@ -135,13 +135,13 @@ facetRelRedaktoer2 := ROW (
 facetPubliceret := ROW (
 virkPubliceret,
 'Publiceret'
-):: FacetTilsPubliceretType
+):: FacetPubliceretTilsType
 ;
 
 facetPubliceretB := ROW (
 virkPubliceretB,
 'IkkePubliceret'
-):: FacetTilsPubliceretType
+):: FacetPubliceretTilsType
 ;
 
 facetEgenskabA := ROW (
@@ -153,7 +153,7 @@ facetEgenskabA := ROW (
    'facetsupplement_A',
    NULL,--'retskilde_text1',
    virkEgenskaber
-) :: FacetAttrEgenskaberType
+) :: FacetEgenskaberAttrType
 ;
 
 facetEgenskabB := ROW (
@@ -165,7 +165,7 @@ facetEgenskabB := ROW (
    'facetsupplement_B',
    NULL, --restkilde
    virkEgenskaberB
-) :: FacetAttrEgenskaberType
+) :: FacetEgenskaberAttrType
 ;
 
 
@@ -176,8 +176,8 @@ registrering := ROW (
 	uuidRegistrering,
 	'Test Note 4') :: RegistreringBase
 	,
-ARRAY[facetPubliceret,facetPubliceretB]::FacetTilsPubliceretType[],
-ARRAY[facetEgenskabA,facetEgenskabB]::FacetAttrEgenskaberType[],
+ARRAY[facetPubliceret,facetPubliceretB]::FacetPubliceretTilsType[],
+ARRAY[facetEgenskabA,facetEgenskabB]::FacetEgenskaberAttrType[],
 ARRAY[facetRelAnsvarlig,facetRelRedaktoer1,facetRelRedaktoer2]
 ) :: FacetRegistreringType
 ;
@@ -189,8 +189,8 @@ registrering2 := ROW (
 	uuidRegistrering,
 	'Test Note 27') :: RegistreringBase
 	,
-ARRAY[facetPubliceretB]::FacetTilsPubliceretType[],
-ARRAY[facetEgenskabB]::FacetAttrEgenskaberType[],
+ARRAY[facetPubliceretB]::FacetPubliceretTilsType[],
+ARRAY[facetEgenskabB]::FacetEgenskaberAttrType[],
 ARRAY[facetRelRedaktoer1]
 ) :: FacetRegistreringType
 ;

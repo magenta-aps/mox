@@ -62,7 +62,7 @@ FROM
 					ROW(
 						b.virkning,
 						b.{{tilstand}}
-						) ::{{oio_type|title}}Tils{{tilstand|title}}Type
+						) ::{{oio_type|title}}{{tilstand|title}}TilsType
 					order by b.id
 				) {{oio_type|title}}Tils{{tilstand|title}}Arr		
 			FROM
@@ -82,7 +82,7 @@ FROM
 					 		b.{{field}},
 							{%- endfor %}
 					   		b.virkning 
-							)::{{oio_type|title}}Attr{{attribut|title}}Type
+							)::{{oio_type|title}}{{attribut|title}}AttrType
 						order by b.id
 					) {{oio_type|title}}Attr{{attribut|title}}Arr 
 					FROM

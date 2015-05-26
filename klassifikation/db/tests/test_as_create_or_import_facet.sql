@@ -18,8 +18,8 @@ DECLARE
 	virkRedaktoer1 Virkning;
 	virkRedaktoer2 Virkning;
 	virkPubliceret Virkning;
-	facetEgenskab FacetAttrEgenskaberType;
-	facetPubliceret FacetTilsPubliceretType;
+	facetEgenskab FacetEgenskaberAttrType;
+	facetPubliceret FacetPubliceretTilsType;
 	facetRelAnsvarlig FacetRelationType;
 	facetRelRedaktoer1 FacetRelationType;
 	facetRelRedaktoer2 FacetRelationType;
@@ -28,8 +28,8 @@ DECLARE
 	uuidRedaktoer2 uuid :=uuid_generate_v4();
 	uuidRegistrering uuid :=uuid_generate_v4();
 	actual_publiceret_virk virkning;
-	actual_publiceret_value FacetTilsPubliceret;
-	actual_publiceret FacetTilsPubliceretType;
+	actual_publiceret_value FacetPubliceretTils;
+	actual_publiceret FacetPubliceretTilsType;
 	actual_relationer FacetRelationType[];
 	uuid_to_import uuid :=uuid_generate_v4();
 	uuid_returned_from_import uuid;
@@ -106,7 +106,7 @@ facetRelRedaktoer2 := ROW (
 facetPubliceret := ROW (
 virkPubliceret,
 'Publiceret'
-):: FacetTilsPubliceretType
+):: FacetPubliceretTilsType
 ;
 
 
@@ -119,7 +119,7 @@ facetEgenskab := ROW (
    'facetsupplement_text1',
    'retskilde_text1',
    virkEgenskaber
-) :: FacetAttrEgenskaberType
+) :: FacetEgenskaberAttrType
 ;
 
 
@@ -131,8 +131,8 @@ registrering := ROW (
 	uuidRegistrering,
 	'Test Note 4') :: RegistreringBase
 	,
-ARRAY[facetPubliceret]::FacetTilsPubliceretType[],
-ARRAY[facetEgenskab]::FacetAttrEgenskaberType[],
+ARRAY[facetPubliceret]::FacetPubliceretTilsType[],
+ARRAY[facetEgenskab]::FacetEgenskaberAttrType[],
 ARRAY[facetRelAnsvarlig,facetRelRedaktoer1,facetRelRedaktoer2]
 ) :: FacetRegistreringType
 ;
@@ -184,7 +184,7 @@ WHERE b.facet_id=new_uuid
 actual_publiceret:=ROW(
 	actual_publiceret_virk,
 	actual_publiceret_value
-)::FacetTilsPubliceretType ;
+)::FacetPubliceretTilsType ;
 
 
 RETURN NEXT is(actual_publiceret.virkning,facetPubliceret.virkning,'publiceret virkning');

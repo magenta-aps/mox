@@ -19,10 +19,10 @@ CREATE OR REPLACE FUNCTION as_update_{{oio_type}}(
   note text,
   livscykluskode Livscykluskode,
   {%-for attribut , attribut_fields in attributter.iteritems() %}           
-  attr{{attribut|title}} {{oio_type|title}}Attr{{attribut|title}}Type[],
+  attr{{attribut|title}} {{oio_type|title}}{{attribut|title}}AttrType[],
   {%- endfor %}
   {%- for tilstand, tilstand_values in tilstande.iteritems() %}
-  tils{{tilstand|title}} {{oio_type|title}}Tils{{tilstand|title}}Type[],
+  tils{{tilstand|title}} {{oio_type|title}}{{tilstand|title}}TilsType[],
   {%- endfor %}
   relationer {{oio_type|title}}RelationType[]
 	)
@@ -33,7 +33,7 @@ DECLARE
   prev_{{oio_type}}_registrering {{oio_type}}_registrering;
   {{oio_type}}_relation_navn {{oio_type|title}}RelationKode;
   {%- for attribut , attribut_fields in attributter.iteritems() %}
-  attr{{attribut|title}}Obj {{oio_type|title}}Attr{{attribut|title}}Type;{%- endfor %}
+  attr{{attribut|title}}Obj {{oio_type|title}}{{attribut|title}}AttrType;{%- endfor %}
 BEGIN
 
 --create a new registrering

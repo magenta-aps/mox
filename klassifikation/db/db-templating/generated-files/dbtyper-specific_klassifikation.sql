@@ -11,15 +11,15 @@ NOTICE: This file is auto-generated using the script: apply-template.py klassifi
 
 --create custom type sans db-ids to be able to do "clean" function signatures "for the outside world".
 
-CREATE TYPE KlassifikationTilsPubliceret AS ENUM ('Publiceret','IkkePubliceret',''); --'' means undefined (which is needed to clear previous defined tilstand_values in an already registered virksnings-periode)
+CREATE TYPE KlassifikationPubliceretTils AS ENUM ('Publiceret','IkkePubliceret',''); --'' means undefined (which is needed to clear previous defined tilstand_values in an already registered virksnings-periode)
 
-CREATE TYPE KlassifikationTilsPubliceretType AS (
+CREATE TYPE KlassifikationPubliceretTilsType AS (
     virkning Virkning,
-    publiceret KlassifikationTilsPubliceret
+    publiceret KlassifikationPubliceretTils
 )
 ;
 
-CREATE TYPE KlassifikationAttrEgenskaberType AS (
+CREATE TYPE KlassifikationEgenskaberAttrType AS (
 brugervendtnoegle text,
 beskrivelse text,
 kaldenavn text,
@@ -28,7 +28,7 @@ ophavsret text,
 );
 
 
-CREATE TYPE KlassifikationRelationKode AS ENUM  ('ansvarlig','ejer');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _actual_state_convert_klassifikation_relation_kode_to_txt is invoked.
+CREATE TYPE KlassifikationRelationKode AS ENUM  ('ansvarlig','ejer');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_klassifikation_relation_kode_to_txt is invoked.
 
 CREATE TYPE KlassifikationRelationType AS (
   relType KlassifikationRelationKode,
@@ -40,8 +40,8 @@ CREATE TYPE KlassifikationRelationType AS (
 CREATE TYPE KlassifikationRegistreringType AS
 (
 registrering RegistreringBase,
-tilsPubliceret KlassifikationTilsPubliceretType[],
-attrEgenskaber KlassifikationAttrEgenskaberType[],
+tilsPubliceret KlassifikationPubliceretTilsType[],
+attrEgenskaber KlassifikationEgenskaberAttrType[],
 relationer KlassifikationRelationType[]
 );
 
