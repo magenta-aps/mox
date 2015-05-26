@@ -1,0 +1,72 @@
+*** ../generated-files/tbls-specific_klasse.sql	2015-05-26 14:15:22.567730283 +0200
+--- ../patches/tbls-specific_klasse_basis.sql	2015-05-26 15:24:17.247936203 +0200
+***************
+*** 6,12 ****
+  -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+  
+  /*
+! NOTICE: This file is auto-generated using the script: apply-template.py klasse tbls-specific.jinja.sql
+  */
+  
+  /******************** FUNCTIONS (NEEDED FOR TABLE/INDEX-DEFS) DEFS ***********************************/
+--- 6,12 ----
+  -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+  
+  /*
+! NOTICE: This file is auto-generated using the script: apply-template.py klasse tbls-specific.jinja.sql AND applying a patch (tbls-specific_klasse.sql.diff)
+  */
+  
+  /******************** FUNCTIONS (NEEDED FOR TABLE/INDEX-DEFS) DEFS ***********************************/
+***************
+*** 176,181 ****
+--- 176,225 ----
+    USING btree
+    (((virkning).notetekst));
+  
++ /**********************************************/
++ 
++ CREATE SEQUENCE klasse_attr_egenskaber_soegeord_id_seq
++   INCREMENT 1
++   MINVALUE 1
++   MAXVALUE 9223372036854775807
++   START 1
++   CACHE 1;
++ ALTER TABLE klasse_attr_egenskaber_soegeord_id_seq
++   OWNER TO mox;
++ 
++ 
++ CREATE TABLE klasse_attr_egenskaber_soegeord
++ (
++   id bigint NOT NULL DEFAULT nextval('klasse_attr_egenskaber_soegeord_id_seq'::regclass),
++     soegeordidentifikator text null,
++     beskrivelse text null,
++     soegeordskategori text null,
++     klasse_attr_egenskaber_id bigint not null,
++ CONSTRAINT klasse_attr_egenskaber_soegeord_pkey PRIMARY KEY (id),
++ CONSTRAINT klasse_attr_egenskaber_soegeord_forkey_klasse_attr_egenskaber  FOREIGN KEY (klasse_attr_egenskaber_id) REFERENCES klasse_attr_egenskaber (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
++ )
++ WITH (
++   OIDS=FALSE
++ );
++ ALTER TABLE klasse_attr_egenskaber_soegeord
++   OWNER TO mox;
++ 
++ 
++ CREATE INDEX klasse_attr_egenskaber_soegeord_idx_soegeordidentifikator
++   ON klasse_attr_egenskaber_soegeord
++   USING btree
++   (soegeordidentifikator);
++ 
++ 
++ CREATE INDEX klasse_attr_egenskaber_soegeord_idx_beskrivelse
++   ON klasse_attr_egenskaber_soegeord
++   USING btree
++   (beskrivelse);
++ 
++ CREATE INDEX klasse_attr_egenskaber_soegeord_idx_soegeordskategori
++   ON klasse_attr_egenskaber_soegeord
++   USING btree
++   (soegeordskategori);
+  
+  /****************************************************************************************************/
+  
