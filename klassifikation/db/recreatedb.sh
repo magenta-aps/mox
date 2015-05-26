@@ -4,8 +4,9 @@ sudo -u postgres dropdb mox
 sudo -u postgres createdb mox
 sudo -u postgres psql -c "GRANT ALL ON DATABASE mox TO mox"
 sudo -u postgres psql -d mox -f tbls/dbserver_prep.sql
-psql -d mox -U mox -c "CREATE SCHEMA test AUTHORIZATION mox "
 psql -d mox -U mox -c "CREATE SCHEMA actual_state AUTHORIZATION mox "
+sudo -u postgres psql -c "ALTER database mox SET search_path TO actual_state,public;"
+psql -d mox -U mox -c "CREATE SCHEMA test AUTHORIZATION mox "
 psql -d mox -U mox -f tbls/common_types.sql
 psql -d mox -U mox -f funcs/index_helper_funcs.sql
 psql -d mox -U mox -f funcs/subtract_tstzrange.sql

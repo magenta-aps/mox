@@ -8,7 +8,7 @@
 {% block body %}
 CREATE OR REPLACE FUNCTION as_create_or_import_{{oio_type}}(
   {{oio_type}}_registrering {{oio_type|title}}RegistreringType,
-  {{oio_type}}_uuid uuid DEFAULT uuid_generate_v4() --This might genenerate a non unique value. Use uuid_generate_v5(). Consider using uuid_generate_v5() and namespace(s). Consider generating using sequences which generates input to hash, with a namespace part and a id part.
+  {{oio_type}}_uuid uuid DEFAULT public.uuid_generate_v4() --This might genenerate a non unique value. Use uuid_generate_v5(). Consider using uuid_generate_v5() and namespace(s). Consider generating using sequences which generates input to hash, with a namespace part and a id part.
 	)
   RETURNS uuid AS 
 $$

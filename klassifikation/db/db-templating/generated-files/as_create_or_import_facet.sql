@@ -11,7 +11,7 @@ NOTICE: This file is auto-generated using the script: apply-template.py facet as
 
 CREATE OR REPLACE FUNCTION as_create_or_import_facet(
   facet_registrering FacetRegistreringType,
-  facet_uuid uuid DEFAULT uuid_generate_v4() --This might genenerate a non unique value. Use uuid_generate_v5(). Consider using uuid_generate_v5() and namespace(s). Consider generating using sequences which generates input to hash, with a namespace part and a id part.
+  facet_uuid uuid DEFAULT public.uuid_generate_v4() --This might genenerate a non unique value. Use uuid_generate_v5(). Consider using uuid_generate_v5() and namespace(s). Consider generating using sequences which generates input to hash, with a namespace part and a id part.
 	)
   RETURNS uuid AS 
 $$
