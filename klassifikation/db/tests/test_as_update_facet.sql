@@ -145,9 +145,9 @@ virkPubliceretB,
 facetEgenskabA := ROW (
 'brugervendt_noegle_A',
    'facetbeskrivelse_A',
-   'facetplan_A',
    'facetopbygning_A',
-   'facetophavsret_A',
+	'facetophavsret_A',
+   'facetplan_A',
    'facetsupplement_A',
    NULL,--'retskilde_text1',
    virkEgenskaber
@@ -157,9 +157,9 @@ facetEgenskabA := ROW (
 facetEgenskabB := ROW (
 'brugervendt_noegle_B',
    'facetbeskrivelse_B',
-   'facetplan_B',
    'facetopbygning_B',
-   'facetophavsret_B',
+	'facetophavsret_B',
+   'facetplan_B',
    'facetsupplement_B',
    NULL, --restkilde
    virkEgenskaberB
@@ -204,9 +204,9 @@ virkEgenskaberD :=	ROW (
 facetEgenskabC := ROW (
    NULL,--'brugervendt_noegle_text1',
    NULL, --'facetbeskrivelse_text1',
-   'facetplan_C',
    NULL,--'facetopbygning_text1',
-   'facetophavsret_C',
+	'facetophavsret_C',
+   'facetplan_C',
    'facetsupplement_C',
    'retskilde_C',
    virkEgenskaberC
@@ -216,9 +216,9 @@ facetEgenskabC := ROW (
 facetEgenskabD := ROW (
 'brugervendt_noegle_D',
    'facetbeskrivelse_D',
-   NULL,-- 'facetplan_D',
    'facetopbygning_D',
    'facetophavsret_D',
+   NULL,-- 'facetplan_D',
    'facetsupplement_D',
    NULL, --restkilde
    virkEgenskaberD
@@ -314,12 +314,12 @@ ARRAY[
 RETURN NEXT set_eq( 'SELECT
 
 			ROW (
-					a.brugervendt_noegle,
-   					a.facetbeskrivelse,
-   					a.facetplan,
-   					a.facetopbygning,
-   					a.facetophavsret,
-   					a.facetsupplement,
+					a.brugervendtnoegle,
+					a.beskrivelse,
+					a.opbygning,
+					a.ophavsret,
+   					a.plan,
+   					a.supplement,
    					a.retskilde,
 					a.virkning
 				):: FacetAttrEgenskaberType
@@ -330,12 +330,12 @@ WHERE b.id=' || update_reg_id::text
 ,   
 ARRAY[
 		ROW(
-				facetEgenskabD.brugervendt_noegle,
-   				facetEgenskabD.facetbeskrivelse,
-   				NULL, --facetEgenskabD.facetplan,
-   				facetEgenskabD.facetopbygning,
-   				facetEgenskabD.facetophavsret,
-   				facetEgenskabD.facetsupplement,
+				facetEgenskabD.brugervendtnoegle,
+   				facetEgenskabD.beskrivelse,
+   				facetEgenskabD.opbygning,
+   				facetEgenskabD.ophavsret,
+   				NULL, --facetEgenskabD.plan,
+   				facetEgenskabD.supplement,
    				facetEgenskabD.retskilde,
 					ROW(
 						TSTZRANGE('2013-06-30','2014-05-13','[)'),
@@ -346,12 +346,12 @@ ARRAY[
 			) ::FacetAttrEgenskaberType
 		,
 		ROW(
-			facetEgenskabD.brugervendt_noegle,
-   				facetEgenskabD.facetbeskrivelse,
-   				facetEgenskabB.facetplan, --NOTICE
-   				facetEgenskabD.facetopbygning,
-   				facetEgenskabD.facetophavsret,
-   				facetEgenskabD.facetsupplement,
+			facetEgenskabD.brugervendtnoegle,
+   				facetEgenskabD.beskrivelse,
+   				facetEgenskabD.opbygning,
+   				facetEgenskabD.ophavsret,
+   				facetEgenskabB.plan, --NOTICE
+   				facetEgenskabD.supplement,
    				NULL, --notice
    				ROW(
 						TSTZRANGE('2014-05-13','2014-06-01','[)'),
@@ -362,12 +362,12 @@ ARRAY[
 		)::FacetAttrEgenskaberType
 		,
 		ROW(
-			facetEgenskabB.brugervendt_noegle,
-   				facetEgenskabB.facetbeskrivelse,
-   				facetEgenskabB.facetplan,
-   				facetEgenskabB.facetopbygning,
-   				facetEgenskabB.facetophavsret,
-   				facetEgenskabB.facetsupplement,
+			facetEgenskabB.brugervendtnoegle,
+   				facetEgenskabB.beskrivelse,
+   				facetEgenskabB.opbygning,
+   				facetEgenskabB.ophavsret,
+   				facetEgenskabB.plan,
+   				facetEgenskabB.supplement,
    				facetEgenskabB.retskilde,
 					ROW(
 						TSTZRANGE('2014-06-01','2015-01-01','[)'),
@@ -378,12 +378,12 @@ ARRAY[
 			)::FacetAttrEgenskaberType
 		,
 		ROW(
-			facetEgenskabC.brugervendt_noegle,
-   				facetEgenskabC.facetbeskrivelse,
-   				facetEgenskabC.facetplan,
-   				facetEgenskabC.facetopbygning,
-   				facetEgenskabC.facetophavsret,
-   				facetEgenskabC.facetsupplement,
+			facetEgenskabC.brugervendtnoegle,
+   				facetEgenskabC.beskrivelse,
+   				facetEgenskabC.opbygning,
+   				facetEgenskabC.ophavsret,
+   				facetEgenskabC.plan,
+   				facetEgenskabC.supplement,
    				facetEgenskabC.retskilde,
 					ROW(
 						TSTZRANGE('2015-01-13','2015-05-12','[)'),
@@ -394,12 +394,12 @@ ARRAY[
 			)::FacetAttrEgenskaberType
 		,
 		ROW(
-			facetEgenskabA.brugervendt_noegle, --notice
-   				facetEgenskabA.facetbeskrivelse, --notice
-   				facetEgenskabC.facetplan,
-   				facetEgenskabA.facetopbygning, --notice
-   				facetEgenskabC.facetophavsret,
-   				facetEgenskabC.facetsupplement,
+			facetEgenskabA.brugervendtnoegle, --notice
+   				facetEgenskabA.beskrivelse, --notice
+   				facetEgenskabA.opbygning, --notice
+   				facetEgenskabC.ophavsret,
+   				facetEgenskabC.plan,
+   				facetEgenskabC.supplement,
    				facetEgenskabC.retskilde,
 					ROW(
 						TSTZRANGE('2015-05-12','infinity','[)'),
