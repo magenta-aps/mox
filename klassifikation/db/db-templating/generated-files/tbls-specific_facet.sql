@@ -54,8 +54,8 @@ CREATE TABLE facet_registrering
   CONSTRAINT facet_registrering_facet_fkey FOREIGN KEY (facet_id)
       REFERENCES facet (id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE NO ACTION,
-  CONSTRAINT facet_registrering_uuid_to_text_timeperiod_excl EXCLUDE 
-  USING gist (uuid_to_text(facet_id) WITH =, composite_type_to_time_range(registrering) WITH &&)
+  CONSTRAINT facet_registrering__uuid_to_text_timeperiod_excl EXCLUDE 
+  USING gist (_uuid_to_text(facet_id) WITH =, _composite_type_to_time_range(registrering) WITH &&)
 )
 WITH (
   OIDS=FALSE
@@ -109,7 +109,7 @@ CREATE TABLE facet_attr_egenskaber
   facet_registrering_id bigint not null,
 CONSTRAINT facet_attr_egenskaber_pkey PRIMARY KEY (id),
 CONSTRAINT facet_attr_egenskaber_forkey_facetregistrering  FOREIGN KEY (facet_registrering_id) REFERENCES facet_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
-CONSTRAINT facet_attr_egenskaber_exclude_virkning_overlap EXCLUDE USING gist (facet_registrering_id WITH =, composite_type_to_time_range(virkning) WITH &&)
+CONSTRAINT facet_attr_egenskaber_exclude_virkning_overlap EXCLUDE USING gist (facet_registrering_id WITH =, _composite_type_to_time_range(virkning) WITH &&)
 )
 WITH (
   OIDS=FALSE
@@ -199,7 +199,7 @@ CREATE TABLE facet_tils_publiceret
   facet_registrering_id bigint not null,
   CONSTRAINT facet_tils_publiceret_pkey PRIMARY KEY (id),
   CONSTRAINT facet_tils_publiceret_forkey_facetregistrering  FOREIGN KEY (facet_registrering_id) REFERENCES facet_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
-  CONSTRAINT facet_tils_publiceret_exclude_virkning_overlap EXCLUDE USING gist (facet_registrering_id WITH =, composite_type_to_time_range(virkning) WITH &&)
+  CONSTRAINT facet_tils_publiceret_exclude_virkning_overlap EXCLUDE USING gist (facet_registrering_id WITH =, _composite_type_to_time_range(virkning) WITH &&)
 )
  
 WITH (
@@ -252,7 +252,7 @@ CREATE TABLE facet_relation
   rel_type FacetRelationKode not null,
  CONSTRAINT facet_relation_forkey_facetregistrering  FOREIGN KEY (facet_registrering_id) REFERENCES facet_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
  CONSTRAINT facet_relation_pkey PRIMARY KEY (id),
- CONSTRAINT facet_relation_no_virkning_overlap EXCLUDE USING gist (facet_registrering_id WITH =, _as_convert_facet_relation_kode_to_txt(rel_type) WITH =, composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('redaktoerer'::FacetRelationKode )) -- no overlapping virkning except for 0..n --relations
+ CONSTRAINT facet_relation_no_virkning_overlap EXCLUDE USING gist (facet_registrering_id WITH =, _as_convert_facet_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('redaktoerer'::FacetRelationKode )) -- no overlapping virkning except for 0..n --relations
 );
 
 CREATE INDEX facet_relation_idx_rel_maal

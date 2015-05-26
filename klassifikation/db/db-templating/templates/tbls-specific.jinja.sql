@@ -51,8 +51,8 @@ CREATE TABLE {{oio_type}}_registrering
   CONSTRAINT {{oio_type}}_registrering_{{oio_type}}_fkey FOREIGN KEY ({{oio_type}}_id)
       REFERENCES {{oio_type}} (id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE NO ACTION,
-  CONSTRAINT {{oio_type}}_registrering_uuid_to_text_timeperiod_excl EXCLUDE 
-  USING gist (uuid_to_text({{oio_type}}_id) WITH =, composite_type_to_time_range(registrering) WITH &&)
+  CONSTRAINT {{oio_type}}_registrering__uuid_to_text_timeperiod_excl EXCLUDE 
+  USING gist (_uuid_to_text({{oio_type}}_id) WITH =, _composite_type_to_time_range(registrering) WITH &&)
 )
 WITH (
   OIDS=FALSE
@@ -100,7 +100,7 @@ CREATE TABLE {{oio_type}}_attr_{{attribut}}
   {{oio_type}}_registrering_id bigint not null,
 CONSTRAINT {{oio_type}}_attr_{{attribut}}_pkey PRIMARY KEY (id),
 CONSTRAINT {{oio_type}}_attr_{{attribut}}_forkey_{{oio_type}}registrering  FOREIGN KEY ({{oio_type}}_registrering_id) REFERENCES {{oio_type}}_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
-CONSTRAINT {{oio_type}}_attr_{{attribut}}_exclude_virkning_overlap EXCLUDE USING gist ({{oio_type}}_registrering_id WITH =, composite_type_to_time_range(virkning) WITH &&)
+CONSTRAINT {{oio_type}}_attr_{{attribut}}_exclude_virkning_overlap EXCLUDE USING gist ({{oio_type}}_registrering_id WITH =, _composite_type_to_time_range(virkning) WITH &&)
 )
 WITH (
   OIDS=FALSE
@@ -154,7 +154,7 @@ CREATE TABLE {{oio_type}}_tils_{{tilstand}}
   {{oio_type}}_registrering_id bigint not null,
   CONSTRAINT {{oio_type}}_tils_{{tilstand}}_pkey PRIMARY KEY (id),
   CONSTRAINT {{oio_type}}_tils_{{tilstand}}_forkey_{{oio_type}}registrering  FOREIGN KEY ({{oio_type}}_registrering_id) REFERENCES {{oio_type}}_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
-  CONSTRAINT {{oio_type}}_tils_{{tilstand}}_exclude_virkning_overlap EXCLUDE USING gist ({{oio_type}}_registrering_id WITH =, composite_type_to_time_range(virkning) WITH &&)
+  CONSTRAINT {{oio_type}}_tils_{{tilstand}}_exclude_virkning_overlap EXCLUDE USING gist ({{oio_type}}_registrering_id WITH =, _composite_type_to_time_range(virkning) WITH &&)
 )
  
 WITH (
@@ -207,7 +207,7 @@ CREATE TABLE {{oio_type}}_relation
   rel_type {{oio_type|title}}RelationKode not null,
  CONSTRAINT {{oio_type}}_relation_forkey_{{oio_type}}registrering  FOREIGN KEY ({{oio_type}}_registrering_id) REFERENCES {{oio_type}}_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
  CONSTRAINT {{oio_type}}_relation_pkey PRIMARY KEY (id),
- CONSTRAINT {{oio_type}}_relation_no_virkning_overlap EXCLUDE USING gist ({{oio_type}}_registrering_id WITH =, _as_convert_{{oio_type}}_relation_kode_to_txt(rel_type) WITH =, composite_type_to_time_range(virkning) WITH &&) {% if relationer_nul_til_mange %} WHERE ({% for nul_til_mange_rel in relationer_nul_til_mange %} rel_type<>('{{nul_til_mange_rel}}'::{{oio_type|title}}RelationKode ){% if not loop.last %} AND{% endif %}{% endfor %}) {% endif %}-- no overlapping virkning except for 0..n --relations
+ CONSTRAINT {{oio_type}}_relation_no_virkning_overlap EXCLUDE USING gist ({{oio_type}}_registrering_id WITH =, _as_convert_{{oio_type}}_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&) {% if relationer_nul_til_mange %} WHERE ({% for nul_til_mange_rel in relationer_nul_til_mange %} rel_type<>('{{nul_til_mange_rel}}'::{{oio_type|title}}RelationKode ){% if not loop.last %} AND{% endif %}{% endfor %}) {% endif %}-- no overlapping virkning except for 0..n --relations
 );
 
 CREATE INDEX {{oio_type}}_relation_idx_rel_maal

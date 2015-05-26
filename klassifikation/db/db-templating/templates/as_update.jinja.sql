@@ -92,7 +92,7 @@ LOOP
             a.rel_type
   FROM
   (
-    --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to subtract_tstzrange_arr on the relations of the previous registrering 
+    --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to _subtract_tstzrange_arr on the relations of the previous registrering 
     SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
     FROM {{oio_type}}_relation b
     WHERE 
@@ -101,7 +101,7 @@ LOOP
           b.rel_type={{oio_type}}_relation_navn
   ) d
   JOIN {{oio_type}}_relation a ON true
-  JOIN unnest(subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
+  JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
   WHERE a.{{oio_type}}_registrering_id=prev_{{oio_type}}_registrering.id 
         and a.rel_type={{oio_type}}_relation_navn 
   ;
@@ -188,14 +188,14 @@ SELECT
             new_{{oio_type}}_registrering.id
 FROM
 (
- --build an array of the timeperiod of the virkning of the {{oio_type}}_tils_{{tilstand}} of the new registrering to pass to subtract_tstzrange_arr on the {{oio_type}}_tils_{{tilstand}} of the previous registrering 
+ --build an array of the timeperiod of the virkning of the {{oio_type}}_tils_{{tilstand}} of the new registrering to pass to _subtract_tstzrange_arr on the {{oio_type}}_tils_{{tilstand}} of the previous registrering 
     SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
     FROM {{oio_type}}_tils_{{tilstand}} b
     WHERE 
           b.{{oio_type}}_registrering_id=new_{{oio_type}}_registrering.id
 ) d
   JOIN {{oio_type}}_tils_{{tilstand}} a ON true  
-  JOIN unnest(subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
+  JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
   WHERE a.{{oio_type}}_registrering_id=prev_{{oio_type}}_registrering.id     
 ;
 
@@ -263,13 +263,13 @@ IF attr{{attribut|title}} IS NOT null THEN
     new_{{oio_type}}_registrering.id
   FROM
   (
-  --build an array of the timeperiod of the virkning of the {{oio_type}}_attr_{{attribut}} of the new registrering to pass to subtract_tstzrange_arr 
+  --build an array of the timeperiod of the virkning of the {{oio_type}}_attr_{{attribut}} of the new registrering to pass to _subtract_tstzrange_arr 
       SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
       FROM {{oio_type}}_attr_{{attribut}} b
       WHERE 
        b.{{oio_type}}_registrering_id=new_{{oio_type}}_registrering.id
   ) as a
-  JOIN unnest(subtract_tstzrange_arr((attr{{attribut|title}}Obj.virkning).TimePeriod,a.tzranges_of_new_reg)) as b(tz_range_leftover) on true
+  JOIN unnest(_subtract_tstzrange_arr((attr{{attribut|title}}Obj.virkning).TimePeriod,a.tzranges_of_new_reg)) as b(tz_range_leftover) on true
   ;
 
   ELSE
@@ -315,14 +315,14 @@ SELECT
 	 new_{{oio_type}}_registrering.id
 FROM
 (
- --build an array of the timeperiod of the virkning of the {{oio_type}}_attr_{{attribut}} of the new registrering to pass to subtract_tstzrange_arr on the {{oio_type}}_attr_{{attribut}} of the previous registrering 
+ --build an array of the timeperiod of the virkning of the {{oio_type}}_attr_{{attribut}} of the new registrering to pass to _subtract_tstzrange_arr on the {{oio_type}}_attr_{{attribut}} of the previous registrering 
     SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
     FROM {{oio_type}}_attr_{{attribut}} b
     WHERE 
           b.{{oio_type}}_registrering_id=new_{{oio_type}}_registrering.id
 ) d
   JOIN {{oio_type}}_attr_{{attribut}} a ON true  
-  JOIN unnest(subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
+  JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
   WHERE a.{{oio_type}}_registrering_id=prev_{{oio_type}}_registrering.id     
 ;
 

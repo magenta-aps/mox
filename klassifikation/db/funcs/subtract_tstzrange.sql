@@ -1,6 +1,6 @@
 
 --Subtract the second tstzrange from the first tstzrange given. 
-create or replace function subtract_tstzrange(rangeA tstzrange , rangeB tstzrange )
+create or replace function _subtract_tstzrange(rangeA tstzrange , rangeB tstzrange )
 returns tstzrange[] as
 $$
 DECLARE

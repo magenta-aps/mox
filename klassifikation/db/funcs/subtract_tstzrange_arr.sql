@@ -1,6 +1,6 @@
 
 --Subtract all of the tstzranges in the array from the first tstzrange given. 
-create or replace function subtract_tstzrange_arr(rangeA tstzrange , rangeArr tstzrange[] )
+create or replace function _subtract_tstzrange_arr(rangeA tstzrange , rangeArr tstzrange[] )
 returns tstzrange[] as
 $$
 DECLARE 
@@ -20,7 +20,7 @@ IF rangeArr IS NOT NULL THEN
 
 		FOREACH rangeA_leftover in array temp_result
 		LOOP
-			result:=array_cat(result, subtract_tstzrange(rangeA_leftover,rangeB) );
+			result:=array_cat(result, _subtract_tstzrange(rangeA_leftover,rangeB) );
 		END LOOP;
 
 	END LOOP;
