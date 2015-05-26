@@ -1,5 +1,5 @@
 
-SELECT * from actual_state_update_{{ class_name|lower }}(
+SELECT * from as_update_{{ class_name|lower }}(
     '{{ uuid }}' :: uuid,
     '{{ user_ref }}' :: uuid,
     '{{ note }}',

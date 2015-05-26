@@ -2,12 +2,7 @@
 
 from flask import jsonify, request
 
-from oio_rest import OIORestObject
-import db
-
-
-# Just a helper during debug
-def j(t): return jsonify(output=t)
+from oio_rest import OIORestObject, OIOStandardHierarchy
 
 
 class Facet(OIORestObject):
@@ -29,3 +24,10 @@ class Klassifikation(OIORestObject):
     Implement a Klassifikation  - manage access to database from the API.
     """
     pass
+
+
+class KlassifikationsHierarki(OIOStandardHierarchy):
+    """Implement the Klassifikation Standard."""
+
+    _name = "Klassifikation"
+    _classes = [Facet, Klasse, Klassifikation]

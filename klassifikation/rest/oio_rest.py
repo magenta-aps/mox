@@ -39,10 +39,10 @@ class OIORestObject(object):
         attributes = request.json.get("Attributter", {})
         states = request.json.get("Tilstande", {})
         relations = request.json.get("Relationer", {})
-        result = db.create_or_import_object(cls.__name__, note, attributes,
-                                            states, relations)
+        uuid = db.create_or_import_object(cls.__name__, note, attributes,
+                                          states, relations)
         # TODO: Return properly, when this is implemented.
-        return j(u"Ny {0} oprettet.".format(cls.__name__)), 201
+        return jsonify({"uuid": uuid}), 201
 
     @classmethod
     def get_objects(cls):

@@ -22,15 +22,16 @@ DATABASE_STRUCTURE = {
     },
 
     "Klassifikation": {
-         "attributter": { 
-                    "egenskaber" : [
-                        "brugervendtnoegle", "beskrivelse", "kaldenavn", "ophavsret",
+         "attributter": {
+                    "egenskaber": [
+                        "brugervendtnoegle", "beskrivelse", "kaldenavn",
+                        "ophavsret",
                     ]
                 },
-                "tilstande" : {
+         "tilstande": {
                     "publiceret": ["Publiceret", "IkkePubliceret"]
-                },
-                "relationer_nul_til_en" : ["ansvarlig","ejer"],
-                "relationer_nul_til_mange" : []
+         },
+         "relationer_nul_til_en": ["ansvarlig", "ejer"],
+         "relationer_nul_til_mange": []
     }
 }

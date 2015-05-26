@@ -1,5 +1,5 @@
 
-SELECT * from actual_state_create_or_import_{{ class_name|lower }}(
+SELECT * from as_create_or_import_{{ class_name|lower }}(
     ROW (
         ROW ( 
             NULL, 
