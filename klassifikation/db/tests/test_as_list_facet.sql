@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 --SELECT * FROM runtests('test'::name);
-CREATE OR REPLACE FUNCTION test.test_actual_state_list_facet()
+CREATE OR REPLACE FUNCTION test.test_as_list_facet()
 RETURNS SETOF TEXT LANGUAGE plpgsql AS 
 $$
 DECLARE 
@@ -24,13 +24,13 @@ DECLARE
 	virkPubliceret Virkning;
 	virkPubliceretB Virkning;
 	virkPubliceretC Virkning;
-	facetEgenskabA FacetAttrEgenskaberType;
-	facetEgenskabB FacetAttrEgenskaberType;
-	facetEgenskabC FacetAttrEgenskaberType;
-	facetEgenskabD FacetAttrEgenskaberType;
-	facetPubliceret FacetTilsPubliceretType;
-	facetPubliceretB FacetTilsPubliceretType;
-	facetPubliceretC FacetTilsPubliceretType;
+	facetEgenskabA FacetEgenskaberAttrType;
+	facetEgenskabB FacetEgenskaberAttrType;
+	facetEgenskabC FacetEgenskaberAttrType;
+	facetEgenskabD FacetEgenskaberAttrType;
+	facetPubliceret FacetPubliceretTilsType;
+	facetPubliceretB FacetPubliceretTilsType;
+	facetPubliceretC FacetPubliceretTilsType;
 	facetRelAnsvarlig FacetRelationType;
 	facetRelRedaktoer1 FacetRelationType;
 	facetRelRedaktoer2 FacetRelationType;
@@ -108,7 +108,7 @@ virkPubliceretB:=	ROW (
 
 
 facetRelAnsvarlig := ROW (
-	'Ansvarlig'::FacetRelationKode,
+	'ansvarlig'::FacetRelationKode,
 		virkAnsvarlig,
 	uuidAnsvarlig
 ) :: FacetRelationType
@@ -116,7 +116,7 @@ facetRelAnsvarlig := ROW (
 
 
 facetRelRedaktoer1 := ROW (
-	'Redaktoer'::FacetRelationKode,
+	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer1,
 	uuidRedaktoer1
 ) :: FacetRelationType
@@ -125,7 +125,7 @@ facetRelRedaktoer1 := ROW (
 
 
 facetRelRedaktoer2 := ROW (
-	'Redaktoer'::FacetRelationKode,
+	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer2,
 	uuidRedaktoer2
 ) :: FacetRelationType
@@ -135,13 +135,13 @@ facetRelRedaktoer2 := ROW (
 facetPubliceret := ROW (
 virkPubliceret,
 'Publiceret'
-):: FacetTilsPubliceretType
+):: FacetPubliceretTilsType
 ;
 
 facetPubliceretB := ROW (
 virkPubliceretB,
 'IkkePubliceret'
-):: FacetTilsPubliceretType
+):: FacetPubliceretTilsType
 ;
 
 facetEgenskabA := ROW (
@@ -153,7 +153,7 @@ facetEgenskabA := ROW (
    'facetsupplement_A',
    NULL,--'retskilde_text1',
    virkEgenskaber
-) :: FacetAttrEgenskaberType
+) :: FacetEgenskaberAttrType
 ;
 
 facetEgenskabB := ROW (
@@ -165,7 +165,7 @@ facetEgenskabB := ROW (
    'facetsupplement_B',
    NULL, --restkilde
    virkEgenskaberB
-) :: FacetAttrEgenskaberType
+) :: FacetEgenskaberAttrType
 ;
 
 
@@ -176,8 +176,8 @@ registrering := ROW (
 	uuidRegistrering,
 	'Test Note 4') :: RegistreringBase
 	,
-ARRAY[facetPubliceret,facetPubliceretB]::FacetTilsPubliceretType[],
-ARRAY[facetEgenskabA,facetEgenskabB]::FacetAttrEgenskaberType[],
+ARRAY[facetPubliceret,facetPubliceretB]::FacetPubliceretTilsType[],
+ARRAY[facetEgenskabA,facetEgenskabB]::FacetEgenskaberAttrType[],
 ARRAY[facetRelAnsvarlig,facetRelRedaktoer1,facetRelRedaktoer2]
 ) :: FacetRegistreringType
 ;
@@ -189,17 +189,17 @@ registrering2 := ROW (
 	uuidRegistrering,
 	'Test Note 27') :: RegistreringBase
 	,
-ARRAY[facetPubliceretB]::FacetTilsPubliceretType[],
-ARRAY[facetEgenskabB]::FacetAttrEgenskaberType[],
+ARRAY[facetPubliceretB]::FacetPubliceretTilsType[],
+ARRAY[facetEgenskabB]::FacetEgenskaberAttrType[],
 ARRAY[facetRelRedaktoer1]
 ) :: FacetRegistreringType
 ;
 
 
-new_uuid := actual_state_create_or_import_facet(registrering);
-new_uuid2 := actual_state_create_or_import_facet(registrering2);
+new_uuid := as_create_or_import_facet(registrering);
+new_uuid2 := as_create_or_import_facet(registrering2);
 
-select array_agg(a.* order by a.id) from actual_state_list_facet(array[new_uuid,new_uuid2]::uuid[],null,null) as a     into actual_facets1;
+select array_agg(a.* order by a.id) from as_list_facet(array[new_uuid,new_uuid2]::uuid[],null,null) as a     into actual_facets1;
 
 
 select 
@@ -226,7 +226,7 @@ expected_facets1:= ARRAY[
 							(registrering.registrering).brugerref,
 							(registrering.registrering).note 
 							)::RegistreringBase
-						,registrering.tilsPubliceretStatus
+						,registrering.tilsPubliceret
 						,registrering.attrEgenskaber
 						,registrering.relationer
 					)::FacetRegistreringType
@@ -243,7 +243,7 @@ expected_facets1:= ARRAY[
 							(registrering2.registrering).brugerref,
 							(registrering2.registrering).note 
 							)::RegistreringBase
-						,registrering2.tilsPubliceretStatus
+						,registrering2.tilsPubliceret
 						,registrering2.attrEgenskaber
 						,registrering2.relationer
 					)::FacetRegistreringType

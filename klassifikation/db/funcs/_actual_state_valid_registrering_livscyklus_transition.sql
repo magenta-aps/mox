@@ -7,7 +7,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-CREATE OR REPLACE FUNCTION _actual_state_valid_registrering_livscyklus_transition (
+CREATE OR REPLACE FUNCTION _as_valid_registrering_livscyklus_transition (
   current_reg_livscykluskode Livscykluskode, 
   new_reg_livscykluskode Livscykluskode)
 RETURNS

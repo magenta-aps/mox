@@ -36,37 +36,44 @@ CREATE OR REPLACE FUNCTION actual_state_list_facet(facet_uuids uuid[],
 			array_agg(
 				ROW (
 				 	b1.virkning, 
-					b1.status
+					b1.publiceret
 				)::FacetTilsPubliceretType
 				order by b1.id
 			) FacetTilsPubliceretArr
 			FROM
 			(
 				SELECT
-				a.id facet_id,
-				b.id facet_registrering_id,
-				b.registrering,
+				a.facet_id,
+				a.facet_registrering_id,
+				a.registrering,
 				array_agg(
 					ROW(
-				 		c.brugervendt_noegle,
-				   		c.facetbeskrivelse,
-				   		c.facetplan,
-				  		c.facetopbygning,
-				   		c.facetophavsret,
-				   		c.facetsupplement,
-				   		c.retskilde,
-				   		c.virkning 
+				 		b.brugervendtnoegle,
+				   		b.beskrivelse,
+				   		b.opbygning,
+				  		b.ophavsret,
+				   		b.plan,
+				   		b.supplement,
+				   		b.retskilde,
+				   		b.virkning 
 						)::FacetAttrEgenskaberType
-					order by c.id
-				) FacetAttrEgenskaberArr
-				FROM		facet a
-				JOIN 		facet_registrering b 	ON b.facet_id=a.id
-				LEFT JOIN 	facet_attr_egenskaber c ON c.facet_registrering_id=b.id AND ((virkning_tstzrange is null OR isempty(virkning_tstzrange)) OR (c.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
-				WHERE a.id = ANY (facet_uuids) AND (((registrering_tstzrange is null OR isempty(registrering_tstzrange)) AND upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
+					order by b.id
+				) FacetAttrEgenskaberArr 
+				FROM
+					(
+						SELECT
+						a.id facet_id,
+						b.id facet_registrering_id,
+						b.registrering			
+						FROM		facet a
+						JOIN 		facet_registrering b 	ON b.facet_id=a.id
+						WHERE a.id = ANY (facet_uuids) AND (((registrering_tstzrange is null OR isempty(registrering_tstzrange)) AND upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
+					) as a 
+				LEFT JOIN 	facet_attr_egenskaber b ON b.facet_registrering_id=a.facet_registrering_id AND ((virkning_tstzrange is null OR isempty(virkning_tstzrange)) OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
 				GROUP BY 
-				a.id,
-				b.id,
-				b.registrering
+				a.facet_id,
+				a.facet_registrering_id,
+				a.registrering
 			) as a1 		
 			LEFT JOIN facet_tils_publiceret b1 ON b1.facet_registrering_id=a1.facet_registrering_id AND ((virkning_tstzrange is null OR isempty(virkning_tstzrange)) OR (b1.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given
 			GROUP BY 

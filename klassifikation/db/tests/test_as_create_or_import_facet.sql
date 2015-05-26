@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 --SELECT * FROM runtests('test'::name);
-CREATE OR REPLACE FUNCTION test.test_actual_state_create_or_import_facet()
+CREATE OR REPLACE FUNCTION test.test_as_create_or_import_facet()
 RETURNS SETOF TEXT LANGUAGE plpgsql AS 
 $$
 DECLARE 
@@ -18,8 +18,8 @@ DECLARE
 	virkRedaktoer1 Virkning;
 	virkRedaktoer2 Virkning;
 	virkPubliceret Virkning;
-	facetEgenskab FacetAttrEgenskaberType;
-	facetPubliceret FacetTilsPubliceretType;
+	facetEgenskab FacetEgenskaberAttrType;
+	facetPubliceret FacetPubliceretTilsType;
 	facetRelAnsvarlig FacetRelationType;
 	facetRelRedaktoer1 FacetRelationType;
 	facetRelRedaktoer2 FacetRelationType;
@@ -28,8 +28,8 @@ DECLARE
 	uuidRedaktoer2 uuid :=uuid_generate_v4();
 	uuidRegistrering uuid :=uuid_generate_v4();
 	actual_publiceret_virk virkning;
-	actual_publiceret_status FacetTilsPubliceretStatus;
-	actual_publiceret FacetTilsPubliceretType;
+	actual_publiceret_value FacetPubliceretTils;
+	actual_publiceret FacetPubliceretTilsType;
 	actual_relationer FacetRelationType[];
 	uuid_to_import uuid :=uuid_generate_v4();
 	uuid_returned_from_import uuid;
@@ -79,7 +79,7 @@ virkPubliceret := ROW (
 ;
 
 facetRelAnsvarlig := ROW (
-	'Ansvarlig'::FacetRelationKode,
+	'ansvarlig'::FacetRelationKode,
 		virkAnsvarlig,
 	uuidAnsvarlig
 ) :: FacetRelationType
@@ -87,7 +87,7 @@ facetRelAnsvarlig := ROW (
 
 
 facetRelRedaktoer1 := ROW (
-	'Redaktoer'::FacetRelationKode,
+	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer1,
 	uuidRedaktoer1
 ) :: FacetRelationType
@@ -96,7 +96,7 @@ facetRelRedaktoer1 := ROW (
 
 
 facetRelRedaktoer2 := ROW (
-	'Redaktoer'::FacetRelationKode,
+	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer2,
 	uuidRedaktoer2
 ) :: FacetRelationType
@@ -106,7 +106,7 @@ facetRelRedaktoer2 := ROW (
 facetPubliceret := ROW (
 virkPubliceret,
 'Publiceret'
-):: FacetTilsPubliceretType
+):: FacetPubliceretTilsType
 ;
 
 
@@ -119,7 +119,7 @@ facetEgenskab := ROW (
    'facetsupplement_text1',
    'retskilde_text1',
    virkEgenskaber
-) :: FacetAttrEgenskaberType
+) :: FacetEgenskaberAttrType
 ;
 
 
@@ -131,14 +131,14 @@ registrering := ROW (
 	uuidRegistrering,
 	'Test Note 4') :: RegistreringBase
 	,
-ARRAY[facetPubliceret]::FacetTilsPubliceretType[],
-ARRAY[facetEgenskab]::FacetAttrEgenskaberType[],
+ARRAY[facetPubliceret]::FacetPubliceretTilsType[],
+ARRAY[facetEgenskab]::FacetEgenskaberAttrType[],
 ARRAY[facetRelAnsvarlig,facetRelRedaktoer1,facetRelRedaktoer2]
 ) :: FacetRegistreringType
 ;
 
 
-new_uuid := actual_state_create_or_import_facet(registrering);
+new_uuid := as_create_or_import_facet(registrering);
 
 RETURN NEXT is(
 	ARRAY(
@@ -175,7 +175,7 @@ WHERE b.facet_id=new_uuid
 ;
 
 SELECT
-	 	a.status into actual_publiceret_status
+	 	a.publiceret into actual_publiceret_value
 FROM facet_tils_publiceret a 
 JOIN facet_registrering as b on a.facet_registrering_id=b.id
 WHERE b.facet_id=new_uuid
@@ -183,12 +183,12 @@ WHERE b.facet_id=new_uuid
 
 actual_publiceret:=ROW(
 	actual_publiceret_virk,
-	actual_publiceret_status
-)::FacetTilsPubliceretType ;
+	actual_publiceret_value
+)::FacetPubliceretTilsType ;
 
 
 RETURN NEXT is(actual_publiceret.virkning,facetPubliceret.virkning,'publiceret virkning');
-RETURN NEXT is(actual_publiceret.status,facetPubliceret.status,'publicaret status');
+RETURN NEXT is(actual_publiceret.publiceret,facetPubliceret.publiceret,'publiceret value');
 
 SELECT
 array_agg(
@@ -210,7 +210,7 @@ RETURN NEXT is(
 
 --****************************
 --test an import operation
-uuid_returned_from_import:=actual_state_create_or_import_facet(registrering,uuid_to_import);
+uuid_returned_from_import:=as_create_or_import_facet(registrering,uuid_to_import);
 
 RETURN NEXT is(
 	uuid_returned_from_import,
