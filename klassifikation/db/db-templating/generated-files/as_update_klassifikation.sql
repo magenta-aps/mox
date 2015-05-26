@@ -90,7 +90,7 @@ LOOP
             a.rel_type
   FROM
   (
-    --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to subtract_tstzrange_arr on the relations of the previous registrering 
+    --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to _subtract_tstzrange_arr on the relations of the previous registrering 
     SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
     FROM klassifikation_relation b
     WHERE 
@@ -99,7 +99,7 @@ LOOP
           b.rel_type=klassifikation_relation_navn
   ) d
   JOIN klassifikation_relation a ON true
-  JOIN unnest(subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
+  JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
   WHERE a.klassifikation_registrering_id=prev_klassifikation_registrering.id 
         and a.rel_type=klassifikation_relation_navn 
   ;
@@ -184,14 +184,14 @@ SELECT
             new_klassifikation_registrering.id
 FROM
 (
- --build an array of the timeperiod of the virkning of the klassifikation_tils_publiceret of the new registrering to pass to subtract_tstzrange_arr on the klassifikation_tils_publiceret of the previous registrering 
+ --build an array of the timeperiod of the virkning of the klassifikation_tils_publiceret of the new registrering to pass to _subtract_tstzrange_arr on the klassifikation_tils_publiceret of the previous registrering 
     SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
     FROM klassifikation_tils_publiceret b
     WHERE 
           b.klassifikation_registrering_id=new_klassifikation_registrering.id
 ) d
   JOIN klassifikation_tils_publiceret a ON true  
-  JOIN unnest(subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
+  JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
   WHERE a.klassifikation_registrering_id=prev_klassifikation_registrering.id     
 ;
 
@@ -263,13 +263,13 @@ IF attrEgenskaber IS NOT null THEN
     new_klassifikation_registrering.id
   FROM
   (
-  --build an array of the timeperiod of the virkning of the klassifikation_attr_egenskaber of the new registrering to pass to subtract_tstzrange_arr 
+  --build an array of the timeperiod of the virkning of the klassifikation_attr_egenskaber of the new registrering to pass to _subtract_tstzrange_arr 
       SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
       FROM klassifikation_attr_egenskaber b
       WHERE 
        b.klassifikation_registrering_id=new_klassifikation_registrering.id
   ) as a
-  JOIN unnest(subtract_tstzrange_arr((attrEgenskaberObj.virkning).TimePeriod,a.tzranges_of_new_reg)) as b(tz_range_leftover) on true
+  JOIN unnest(_subtract_tstzrange_arr((attrEgenskaberObj.virkning).TimePeriod,a.tzranges_of_new_reg)) as b(tz_range_leftover) on true
   ;
 
   ELSE
@@ -317,14 +317,14 @@ SELECT
 	 new_klassifikation_registrering.id
 FROM
 (
- --build an array of the timeperiod of the virkning of the klassifikation_attr_egenskaber of the new registrering to pass to subtract_tstzrange_arr on the klassifikation_attr_egenskaber of the previous registrering 
+ --build an array of the timeperiod of the virkning of the klassifikation_attr_egenskaber of the new registrering to pass to _subtract_tstzrange_arr on the klassifikation_attr_egenskaber of the previous registrering 
     SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
     FROM klassifikation_attr_egenskaber b
     WHERE 
           b.klassifikation_registrering_id=new_klassifikation_registrering.id
 ) d
   JOIN klassifikation_attr_egenskaber a ON true  
-  JOIN unnest(subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
+  JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
   WHERE a.klassifikation_registrering_id=prev_klassifikation_registrering.id     
 ;
 

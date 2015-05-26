@@ -90,7 +90,7 @@ LOOP
             a.rel_type
   FROM
   (
-    --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to subtract_tstzrange_arr on the relations of the previous registrering 
+    --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to _subtract_tstzrange_arr on the relations of the previous registrering 
     SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
     FROM facet_relation b
     WHERE 
@@ -99,7 +99,7 @@ LOOP
           b.rel_type=facet_relation_navn
   ) d
   JOIN facet_relation a ON true
-  JOIN unnest(subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
+  JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
   WHERE a.facet_registrering_id=prev_facet_registrering.id 
         and a.rel_type=facet_relation_navn 
   ;
@@ -184,14 +184,14 @@ SELECT
             new_facet_registrering.id
 FROM
 (
- --build an array of the timeperiod of the virkning of the facet_tils_publiceret of the new registrering to pass to subtract_tstzrange_arr on the facet_tils_publiceret of the previous registrering 
+ --build an array of the timeperiod of the virkning of the facet_tils_publiceret of the new registrering to pass to _subtract_tstzrange_arr on the facet_tils_publiceret of the previous registrering 
     SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
     FROM facet_tils_publiceret b
     WHERE 
           b.facet_registrering_id=new_facet_registrering.id
 ) d
   JOIN facet_tils_publiceret a ON true  
-  JOIN unnest(subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
+  JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
   WHERE a.facet_registrering_id=prev_facet_registrering.id     
 ;
 
@@ -272,13 +272,13 @@ IF attrEgenskaber IS NOT null THEN
     new_facet_registrering.id
   FROM
   (
-  --build an array of the timeperiod of the virkning of the facet_attr_egenskaber of the new registrering to pass to subtract_tstzrange_arr 
+  --build an array of the timeperiod of the virkning of the facet_attr_egenskaber of the new registrering to pass to _subtract_tstzrange_arr 
       SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
       FROM facet_attr_egenskaber b
       WHERE 
        b.facet_registrering_id=new_facet_registrering.id
   ) as a
-  JOIN unnest(subtract_tstzrange_arr((attrEgenskaberObj.virkning).TimePeriod,a.tzranges_of_new_reg)) as b(tz_range_leftover) on true
+  JOIN unnest(_subtract_tstzrange_arr((attrEgenskaberObj.virkning).TimePeriod,a.tzranges_of_new_reg)) as b(tz_range_leftover) on true
   ;
 
   ELSE
@@ -332,14 +332,14 @@ SELECT
 	 new_facet_registrering.id
 FROM
 (
- --build an array of the timeperiod of the virkning of the facet_attr_egenskaber of the new registrering to pass to subtract_tstzrange_arr on the facet_attr_egenskaber of the previous registrering 
+ --build an array of the timeperiod of the virkning of the facet_attr_egenskaber of the new registrering to pass to _subtract_tstzrange_arr on the facet_attr_egenskaber of the previous registrering 
     SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
     FROM facet_attr_egenskaber b
     WHERE 
           b.facet_registrering_id=new_facet_registrering.id
 ) d
   JOIN facet_attr_egenskaber a ON true  
-  JOIN unnest(subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
+  JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
   WHERE a.facet_registrering_id=prev_facet_registrering.id     
 ;
 
