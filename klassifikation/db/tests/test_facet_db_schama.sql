@@ -27,15 +27,15 @@ BEGIN
 	RETURN NEXT col_is_fk('facet_tils_publiceret','facet_registrering_id');
 	RETURN NEXT col_is_fk('facet_relation','facet_registrering_id');
 
-	RETURN NEXT has_column( 'facet_attr_egenskaber',   'brugervendt_noegle' );
-	RETURN NEXT has_column( 'facet_attr_egenskaber',   'facetbeskrivelse' );
-	RETURN NEXT has_column( 'facet_attr_egenskaber',   'facetplan' );
-	RETURN NEXT has_column( 'facet_attr_egenskaber',   'facetopbygning');
-	RETURN NEXT has_column( 'facet_attr_egenskaber',   'facetophavsret');
-	RETURN NEXT has_column( 'facet_attr_egenskaber',   'facetsupplement');
+	RETURN NEXT has_column( 'facet_attr_egenskaber',   'brugervendtnoegle' );
+	RETURN NEXT has_column( 'facet_attr_egenskaber',   'beskrivelse' );
+	RETURN NEXT has_column( 'facet_attr_egenskaber',   'plan' );
+	RETURN NEXT has_column( 'facet_attr_egenskaber',   'opbygning');
+	RETURN NEXT has_column( 'facet_attr_egenskaber',   'ophavsret');
+	RETURN NEXT has_column( 'facet_attr_egenskaber',   'supplement');
 	RETURN NEXT has_column( 'facet_attr_egenskaber',   'retskilde');
 
-	RETURN NEXT has_column( 'facet_tils_publiceret',   'status');
+	RETURN NEXT has_column( 'facet_tils_publiceret',   'publiceret');
 
 	RETURN NEXT has_column( 'facet_relation',   'rel_maal');
 	RETURN NEXT has_column( 'facet_relation',   'rel_type');

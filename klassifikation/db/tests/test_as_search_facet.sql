@@ -80,6 +80,7 @@ DECLARE
 	search_result6 uuid[];
 	search_result7 uuid[];
 	search_result8 uuid[];
+	expected_result8 uuid[];
 
 	search_registrering_3 FacetRegistreringType;
 	search_registrering_4 FacetRegistreringType;
@@ -710,12 +711,17 @@ search_result8 :=as_search_facet(
 	search_registrering_8 --registrering_A Facetregistrering_AType
 	);
 
+expected_result8:=ARRAY[new_uuid_B,new_uuid_C]::uuid[];
+
+RETURN NEXT ok(expected_result8 @> search_result8 and search_result8 @>expected_result8 and array_length(expected_result8,1)=array_length(search_result8,1), 'search state publiceretStatus and relationer combined');
+
+/*
 RETURN NEXT is(
 search_result8,
-ARRAY[new_uuid_B,new_uuid_C]::uuid[],
+,
 'search state publiceretStatus and relationer combined'
 );
-
+*/
 
 
 
