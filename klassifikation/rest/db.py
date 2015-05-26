@@ -48,12 +48,13 @@ class Livscyklus(Enum):
 """
 
 
-def sql_state_array(state, periods):
+def sql_state_array(state, periods, class_name):
     """Return an SQL array of type <state>TilsType."""
     with open('templates/sql/state_array.sql', 'r') as f:
         raw_sql = f.read()
     t = Template(raw_sql)
-    sql = t.render(state_name=state, state_periods=periods)
+    sql = t.render(class_name=class_name, state_name=state,
+                   state_periods=periods)
     return sql
 
 
@@ -81,7 +82,7 @@ def sql_convert_registration(states, attributes, relations, class_name):
     for s in get_state_names(class_name):
         periods = states[s] if s in states else []
         sql_states.append(
-            sql_state_array(s, periods)
+            sql_state_array(s, periods, class_name)
         )
 
     sql_attributes = []
@@ -97,22 +98,23 @@ def sql_convert_registration(states, attributes, relations, class_name):
 
 
 """
-    FACET RELATED FUNCTIONS
+    GENRAL OBJECT RELATED FUNCTIONS
 """
 
 
-def facet_exists(uuid):
-    """Check if a facet with this UUID exists already."""
+def object_exists(class_name, uuid):
+    """Check if an object with this class name and UUID exists already."""
     # TODO: Implement this!
     non_existing_uuids = ["5da36f77-f8d3-4bfd-b313-cc38e2d667fd"]
     return uuid not in non_existing_uuids
 
 
-def create_or_import_facet(note, attributes, states, relations, uuid=None):
-    """Create a new facet by calling the stored procedure.
+def create_or_import_object(class_name, note, attributes, states, relations,
+                            uuid=None):
+    """Create a new object by calling the corresponding stored procedure.
 
-    Create a new facet by calling actual_state_create_or_import_facet. It is
-    necessary to map the parameters to our custom PostgreSQL data types.
+    Create a new object by calling actual_state_create_or_import_{class_name}.
+    It is necessary to map the parameters to our custom PostgreSQL data types.
     """
 
     # Data from the BaseRegistration.
@@ -124,11 +126,12 @@ def create_or_import_facet(note, attributes, states, relations, uuid=None):
     attributes = convert_attributes(attributes)
     (
         sql_states, sql_attributes, sql_relations
-    ) = sql_convert_registration(states, attributes, relations, 'Facet')
-    with open('templates/sql/create_facet.sql', 'r') as f:
+    ) = sql_convert_registration(states, attributes, relations, class_name)
+    with open('templates/sql/create_object.sql', 'r') as f:
         sql_raw = f.read()
     sql_template = Template(sql_raw)
     sql = sql_template.render(
+            class_name=class_name,
             uuid=uuid,
             life_cycle_code=life_cycle_code,
             user_ref=user_ref,
@@ -141,15 +144,16 @@ def create_or_import_facet(note, attributes, states, relations, uuid=None):
     return sql
 
 
-def passivate_facet(note, uuid):
-    """Passivate facet by calling the stored procedure."""
+def passivate_object(class_name, note, uuid):
+    """Passivate object by calling the stored procedure."""
 
     user_ref = get_authenticated_user()
     life_cycle_code = Livscyklus.PASSIVERET.value
-    with open('templates/sql/passivate_facet.sql', 'r') as f:
+    with open('templates/sql/passivate_object.sql', 'r') as f:
         sql_raw = f.read()
     sql_template = Template(sql_raw)
     sql = sql_template.render(
+            class_name=class_name,
             uuid=uuid,
             life_cycle_code=life_cycle_code,
             user_ref=user_ref,
@@ -159,20 +163,21 @@ def passivate_facet(note, uuid):
     return sql
 
 
-def update_facet(note, attributes, states, relations, uuid=None):
-    """Update facet with the partial data supplied."""
+def update_object(class_name, note, attributes, states, relations, uuid=None):
+    """Update object with the partial data supplied."""
     life_cycle_code = Livscyklus.RETTET.value
     user_ref = get_authenticated_user()
 
     attributes = convert_attributes(attributes)
     (
         sql_states, sql_attributes, sql_relations
-    ) = sql_convert_registration(states, attributes, relations, 'Facet')
+    ) = sql_convert_registration(states, attributes, relations, class_name)
 
-    with open('templates/sql/update_facet.sql', 'r') as f:
+    with open('templates/sql/update_object.sql', 'r') as f:
         sql_raw = f.read()
     sql_template = Template(sql_raw)
     sql = sql_template.render(
+            class_name=class_name,
             uuid=uuid,
             life_cycle_code=life_cycle_code,
             user_ref=user_ref,

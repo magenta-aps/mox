@@ -1,5 +1,5 @@
 
-SELECT * from actual_state_create_or_import_facet(
+SELECT * from actual_state_create_or_import_{{ class_name|lower }}(
     ROW (
         ROW ( 
             NULL, 
@@ -17,7 +17,7 @@ SELECT * from actual_state_create_or_import_facet(
         {% endfor %}
         -- relations
         {{ relations }}
-    ) :: FacetRegistreringType{% if uuid != None %},
+    ) :: {{ class_name }}RegistreringType{% if uuid != None %},
     '{{uuid}}' :: uuid
     {% endif -%}
 );

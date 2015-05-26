@@ -7,7 +7,7 @@
                 '{{ state_value.Virkning.AktoerTypeKode }}',
                 '{{ state_value.Virkning.NoteTekst }}'
             ) :: Virkning,
-            '{{ state_value.FacetPubliceretStatus }}'
+            '{{ state_value.PubliceretStatus }}'
         ){% if not loop.last %},{% endif %}
         {% endfor -%}
         ] :: {{ state_name }}TilsType[]

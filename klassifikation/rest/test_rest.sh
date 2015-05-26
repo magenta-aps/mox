@@ -32,3 +32,4 @@ curl -H "Content-Type: application/json" -X PUT -d "$(cat test_data/facet_opdate
 #
 # The difference between update and passive hinges on whether a life
 # cycle code is supplied directly in the input or not.
+

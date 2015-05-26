@@ -1,5 +1,6 @@
     ARRAY[
     {% for r, relation_periods in relations.iteritems() -%}
+    {% set outer_loop = loop %}
     {% for rel in relation_periods -%}
     ROW(
         '{{ r }}' :: {{ class_name }}RelationKode,
@@ -10,7 +11,7 @@
              '{{ rel.Virkning.NoteTekst }}'
             ) :: Virkning,
         '{{ rel.uuid }}'
-    ){% if not loop.last %},{% endif %}
+    ){% if not (outer_loop.last and loop.last) -%},{% endif -%}
     {% endfor -%}
     {% endfor -%}
     ] :: {{ class_name }}RelationType[]

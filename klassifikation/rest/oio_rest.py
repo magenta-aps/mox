@@ -1,4 +1,11 @@
 
+from flask import jsonify, request
+import db
+
+
+# Just a helper during debug
+def j(t): return jsonify(output=t)
+
 
 class OIOStandardHierarchy(object):
     """Implement API for entire hierarchy."""
@@ -21,25 +28,77 @@ class OIORestObject(object):
     This class is intended to be subclassed, but not to be initialized.
     """
 
-    @staticmethod
-    def get_objects():
-        raise NotImplementedError
+    @classmethod
+    def create_object(cls):
+        """
+        CREATE object, generate new UUID.
+        """
+        if not request.json:
+            abort(400)
+        note = request.json.get("Note", "")
+        attributes = request.json.get("Attributter", {})
+        states = request.json.get("Tilstande", {})
+        relations = request.json.get("Relationer", {})
+        result = db.create_or_import_object(cls.__name__, note, attributes,
+                                            states, relations)
+        # TODO: Return properly, when this is implemented.
+        return j(u"Ny {0} oprettet.".format(cls.__name__)), 201
 
-    @staticmethod
-    def get_object(uuid):
-        raise NotImplementedError
+    @classmethod
+    def get_objects(cls):
+        """
+        LIST or SEARCH facets, depending on parameters.
+        """
+        # TODO: Implement this.
+        return j("Her kommer en liste af facetter!")
 
-    @staticmethod
-    def put_object(uuid):
-        raise NotImplementedError
+    @classmethod
+    def get_object(cls, uuid):
+        """
+        READ a facet, return as JSON.
+        """
+        return j("Hent {0} fra databasen og returner som JSON".format(uuid))
 
-    @staticmethod
-    def create_object():
-        raise NotImplementedError
+    @classmethod
+    def put_object(cls, uuid):
+        """
+        UPDATE, IMPORT or PASSIVIZE an  object.
+        """
+        if not request.json:
+            abort(400)
+        # Get most common parameters if available.
+        note = request.json.get("Note", "")
+        attributes = request.json.get("Attributter", {})
+        states = request.json.get("Tilstande", {})
+        relations = request.json.get("Relationer", {})
 
-    @staticmethod
+        if not db.object_exists(cls.__name__, uuid):
+            # Do import.
+            result = db.create_or_import_object(cls.__name__, note, attributes,
+                                                states, relations, uuid)
+            # TODO: When connected to DB, use result properly.
+            return j(u"Importeret {0}: {1}".format(cls.__name__, uuid)), 200
+        else:
+            "Edit or passivate."
+            if (request.json.get('livscyklus', '').lower() == 'passiv'):
+                # Passivate
+                db.passivate_object(
+                        cls.__name__, request.json.get('Note', ''), uuid
+                )
+                return j(
+                            u"Passiveret {0}: {1}".format(cls.__name__, uuid)
+                        ), 200
+            else:
+                # Edit/change
+                result = db.update_object(cls.__name__, note, attributes,
+                                          states, relations, uuid)
+                return j(u"Opdateret {0}: {1}".format(cls.__name__, uuid)), 200
+        return j(u"Forkerte parametre!"), 405
+
+    @classmethod
     def delete_object(uuid):
-        raise NotImplementedError
+        # TODO: Delete facet
+        return j("Slettet!"), 200
 
     @classmethod
     def create_api(cls, hierarchy, flask, base_url):
