@@ -1,7 +1,9 @@
-*** ../generated-files/tbls-specific_klasse.sql	2015-05-26 14:15:22.567730283 +0200
---- ../patches/tbls-specific_klasse_basis.sql	2015-05-26 15:24:17.247936203 +0200
+*** ../generated-files/tbls-specific_klasse.sql	2015-05-27 09:48:22.010174880 +0200
+--- ../patches/tbls-specific_klasse.sql.org	2015-05-27 09:45:43.790167000 +0200
 ***************
-*** 6,12 ****
+*** 4,14 ****
+  -- This Source Code Form is subject to the terms of the Mozilla Public
+  -- License, v. 2.0. If a copy of the MPL was not distributed with this
   -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
   
   /*
@@ -9,7 +11,11 @@
   */
   
   /******************** FUNCTIONS (NEEDED FOR TABLE/INDEX-DEFS) DEFS ***********************************/
---- 6,12 ----
+  
+  CREATE or replace FUNCTION _as_convert_klasse_relation_kode_to_txt (
+--- 4,14 ----
+  -- This Source Code Form is subject to the terms of the Mozilla Public
+  -- License, v. 2.0. If a copy of the MPL was not distributed with this
   -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
   
   /*
@@ -17,9 +23,13 @@
   */
   
   /******************** FUNCTIONS (NEEDED FOR TABLE/INDEX-DEFS) DEFS ***********************************/
+  
+  CREATE or replace FUNCTION _as_convert_klasse_relation_kode_to_txt (
 ***************
-*** 176,181 ****
---- 176,225 ----
+*** 174,183 ****
+--- 174,227 ----
+  CREATE INDEX klasse_attr_egenskaber_idx_virkning_notetekst
+    ON klasse_attr_egenskaber
     USING btree
     (((virkning).notetekst));
   
@@ -43,7 +53,7 @@
 +     soegeordskategori text null,
 +     klasse_attr_egenskaber_id bigint not null,
 + CONSTRAINT klasse_attr_egenskaber_soegeord_pkey PRIMARY KEY (id),
-+ CONSTRAINT klasse_attr_egenskaber_soegeord_forkey_klasse_attr_egenskaber  FOREIGN KEY (klasse_attr_egenskaber_id) REFERENCES klasse_attr_egenskaber (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
++ CONSTRAINT klasse_attr_egenskaber_soegeord_forkey_klasse_attr_egenskaber  FOREIGN KEY (klasse_attr_egenskaber_id) REFERENCES klasse_attr_egenskaber (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION
 + )
 + WITH (
 +   OIDS=FALSE
@@ -69,4 +79,6 @@
 +   (soegeordskategori);
   
   /****************************************************************************************************/
+  
+  
   
