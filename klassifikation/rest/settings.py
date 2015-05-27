@@ -33,7 +33,7 @@ DATABASE_STRUCTURE = {
                 "relationer_nul_til_en" : ["ansvarlig","ejer"],
                 "relationer_nul_til_mange" : []
     },
-
+#Please notice, that the db templating code for klasse, is changed by patches, that is applied to handle the special case of 'soegeord' in the 'egenskaber'-attribute.
     "Klasse": {
         "attributter": {
             "egenskaber": [
