@@ -21,6 +21,7 @@ cd ./generated-files/
 patch -i ../patches/dbtyper-specific_klasse.sql.diff
 patch -i ../patches/tbls-specific_klasse.sql.diff
 patch -i ../patches/as_create_or_import_klasse.sql.diff
+patch -i ../patches/as_list_klasse.sql.diff
 
 #TODO: Continue here
 cd ..
