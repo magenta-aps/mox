@@ -1,0 +1,136 @@
+*** ../generated-files/as_search_klasse.sql	2015-05-27 10:36:57.022320056 +0200
+--- ../patches/as_search_klasse.org.sql	2015-05-27 11:57:54.118561954 +0200
+***************
+*** 24,33 ****
+--- 24,35 ----
+  	to_be_applyed_filter_uuids uuid[]; 
+  	attrEgenskaberTypeObj KlasseEgenskaberAttrType;
+  	
+    	tilsPubliceretTypeObj KlassePubliceretTilsType;
+  	relationTypeObj KlasseRelationType;
++ 	manipulatedAttrEgenskaberArr KlasseEgenskaberAttrType[]:='{}';
++ 	soegeordObj KlasseSoegeordType;
+  BEGIN
+  
+  --RAISE DEBUG 'step 0:registreringObj:%',registreringObj;
+  
+  klasse_candidates_is_initialized := false;
+***************
+*** 111,128 ****
+  --Filtration on attribute: Egenskaber
+  --/**********************************************************//
+  IF registreringObj IS NULL OR (registreringObj).attrEgenskaber IS NULL THEN
+  	--RAISE DEBUG 'as_search_klasse: skipping filtration on attrEgenskaber';
+  ELSE
+  	IF (array_length(klasse_candidates,1)>0 OR NOT klasse_candidates_is_initialized) THEN
+! 		FOREACH attrEgenskaberTypeObj IN ARRAY registreringObj.attrEgenskaber
+  		LOOP
+  			to_be_applyed_filter_uuids:=array(
+  			SELECT
+  			b.klasse_id 
+  			FROM  klasse_attr_egenskaber a
+  			JOIN klasse_registrering b on a.klasse_registrering_id=b.id
+  			WHERE
+  				(
+  					attrEgenskaberTypeObj.virkning IS NULL
+  					OR
+  					(
+--- 113,160 ----
+  --Filtration on attribute: Egenskaber
+  --/**********************************************************//
+  IF registreringObj IS NULL OR (registreringObj).attrEgenskaber IS NULL THEN
+  	--RAISE DEBUG 'as_search_klasse: skipping filtration on attrEgenskaber';
+  ELSE
++ 
++ --To help facilitate the comparrison efforts (while diverging at a minimum form the templated db-kode, 
++ --we'll manipulate the attrEgenskaber array so to make sure that every object only has 1 sogeord element - duplicating the parent elements in attrEgenskaber as needed  )
++ 
++ FOREACH attrEgenskaberTypeObj IN ARRAY registreringObj.attrEgenskaber
++ LOOP
++ 	IF  (attrEgenskaberTypeObj).soegeord IS NULL OR array_length((attrEgenskaberTypeObj).soegeord,1)<2 THEN
++ 	manipulatedAttrEgenskaberArr:=array_append(manipulatedAttrEgenskaberArr,attrEgenskaberTypeObj); --The element only has 0 or 1 soegeord element, så no manipulations is needed.
++ 	ELSE
++ 		FOREACH soegeordObj IN ARRAY (attrEgenskaberTypeObj).soegeord
++ 		LOOP
++ 			manipulatedAttrEgenskaberArr:=array_append(manipulatedAttrEgenskaberArr,
++ 				ROW (
++ 					attrEgenskaberTypeObj.brugervendtnoegle,
++ 					attrEgenskaberTypeObj.beskrivelse,
++ 					attrEgenskaberTypeObj.eksempel,
++ 					attrEgenskaberTypeObj.omfang,
++ 					attrEgenskaberTypeObj.titel,
++ 					attrEgenskaberTypeObj.retskilde,
++ 					attrEgenskaberTypeObj.aendringsnotat,
++ 					ARRAY[soegeordObj]::KlasseSoegeordType[], --NOTICE: Only 1 element in array
++ 					attrEgenskaberTypeObj.virkning
++ 					)::KlasseEgenskaberAttrType
++ 				);
++ 		END LOOP;
++ 	END IF;
++ END LOOP;
++ 
++ 
+  	IF (array_length(klasse_candidates,1)>0 OR NOT klasse_candidates_is_initialized) THEN
+! 		FOREACH attrEgenskaberTypeObj IN ARRAY manipulatedAttrEgenskaberArr
+  		LOOP
+  			to_be_applyed_filter_uuids:=array(
+  			SELECT
+  			b.klasse_id 
+  			FROM  klasse_attr_egenskaber a
+  			JOIN klasse_registrering b on a.klasse_registrering_id=b.id
++ 			LEFT JOIN klasse_attr_egenskaber_soegeord c on a.id=c.klasse_attr_egenskaber_id
+  			WHERE
+  				(
+  					attrEgenskaberTypeObj.virkning IS NULL
+  					OR
+  					(
+***************
+*** 189,199 ****
+  				(
+  					attrEgenskaberTypeObj.aendringsnotat IS NULL
+  					OR
+  					attrEgenskaberTypeObj.aendringsnotat = a.aendringsnotat
+  				)
+! 			);
+  			
+  
+  			IF klasse_candidates_is_initialized THEN
+  				klasse_candidates:= array(SELECT id from unnest(klasse_candidates) as a(id) INTERSECT SELECT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
+  			ELSE
+--- 221,256 ----
+  				(
+  					attrEgenskaberTypeObj.aendringsnotat IS NULL
+  					OR
+  					attrEgenskaberTypeObj.aendringsnotat = a.aendringsnotat
+  				)
+! 				AND
+! 				(
+! 					(attrEgenskaberTypeObj.soegeord IS NULL OR array_length(attrEgenskaberTypeObj.soegeord,1)=0)
+! 					OR
+! 					(
+! 						(
+! 							(attrEgenskaberTypeObj.soegeord[1]).soegeordidentifikator IS NULL
+! 							OR
+! 							(attrEgenskaberTypeObj.soegeord[1]).soegeordidentifikator = c.soegeordidentifikator
+! 						)
+! 						AND
+! 						(
+! 							(attrEgenskaberTypeObj.soegeord[1]).beskrivelse IS NULL
+! 							OR
+! 							(attrEgenskaberTypeObj.soegeord[1]).beskrivelse = c.beskrivelse
+! 						)		
+! 						AND
+! 						(
+! 							(attrEgenskaberTypeObj.soegeord[1]).soegeordskategori IS NULL
+! 							OR
+! 							(attrEgenskaberTypeObj.soegeord[1]).soegeordskategori = c.soegeordskategori
+! 						)
+! 					)
+! 				)
+! 		);
+! 		
+  			
+  
+  			IF klasse_candidates_is_initialized THEN
+  				klasse_candidates:= array(SELECT id from unnest(klasse_candidates) as a(id) INTERSECT SELECT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
+  			ELSE
