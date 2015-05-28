@@ -1,5 +1,5 @@
-*** ../generated-files/as_update_klasse.sql	2015-05-28 10:23:03.968723863 +0200
---- ../patches/as_update_klasse.org.sql	2015-05-28 10:13:04.560734597 +0200
+*** ../generated-files/as_update_klasse.sql	2015-05-28 15:20:59.424403748 +0200
+--- ../patches/as_update_klasse.org.sql	2015-05-28 15:17:06.196407924 +0200
 ***************
 *** 30,39 ****
 --- 30,41 ----
@@ -80,7 +80,7 @@
       attrEgenskaberObj.eksempel, 
       attrEgenskaberObj.omfang, 
       attrEgenskaberObj.titel, 
---- 246,283 ----
+--- 246,284 ----
       new_klasse_registrering.id
     FROM klasse_attr_egenskaber a
     WHERE
@@ -100,6 +100,7 @@
 ! LEFT JOIN unnest(attrEgenskaberObj.soegeord) as b(soegeordidentifikator,beskrivelse,soegeordskategori) on attrEgenskaberObj.soegeord IS NOT NULL
 ! LEFT JOIN klasse_attr_egenskaber as b2 on attrEgenskaberObj.soegeord IS NULL and b2.klasse_registrering_id=prev_klasse_registrering.id and (b2.virkning).TimePeriod @> a.merged_timeperiod --Please notice, that this will max hit exactly one row - the row that the new id was merged with
 ! LEFT JOIN klasse_attr_egenskaber_soegeord as c on attrEgenskaberObj.soegeord IS NULL AND c.klasse_attr_egenskaber_id = b2.id
+! WHERE (attrEgenskaberObj.soegeord IS NULL) OR (array_length(attrEgenskaberObj.soegeord,1)>0 )
 ! ;
   
     --For any periods within the virkning of the attrEgenskaberObj, that is NOT covered by any "merged" rows inserted above, generate and insert rows
@@ -168,7 +169,7 @@
         a.eksempel,
         a.omfang,
         a.titel,
---- 297,380 ----
+--- 298,381 ----
         FROM klasse_attr_egenskaber b
         WHERE 
          b.klasse_registrering_id=new_klasse_registrering.id
@@ -266,7 +267,7 @@
   
   return new_klasse_registrering.id;
   
---- 395,415 ----
+--- 396,416 ----
       WHERE 
             b.klasse_registrering_id=new_klasse_registrering.id
   ) d
@@ -298,4 +299,4 @@
 - 
 - 
 - 
---- 417,421 ----
+--- 418,422 ----
