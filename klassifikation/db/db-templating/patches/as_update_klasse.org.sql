@@ -248,7 +248,7 @@ WITH inserted_merged_attr_egenskaber AS (
   WHERE
     a.klasse_registrering_id=prev_klasse_registrering.id 
     and (a.virkning).TimePeriod && (attrEgenskaberObj.virkning).TimePeriod
-    RETURNING id new_id,a.id merged_with_id 
+    RETURNING id new_id,(virkning).TimePeriod merged_timeperiod
 )
 INSERT INTO 
 klasse_attr_egenskaber_soegeord 
@@ -260,7 +260,8 @@ SELECT
   a.new_id
 FROM inserted_merged_attr_egenskaber a
 LEFT JOIN unnest(attrEgenskaberObj.soegeord) as b(soegeordidentifikator,beskrivelse,soegeordskategori) on attrEgenskaberObj.soegeord IS NOT NULL
-LEFT JOIN klasse_attr_egenskaber_soegeord as c on attrEgenskaberObj.soegeord IS NULL AND c.klasse_attr_egenskaber_id = a.merged_with_id
+LEFT JOIN klasse_attr_egenskaber as b2 on attrEgenskaberObj.soegeord IS NULL and b2.klasse_registrering_id=prev_klasse_registrering.id and (b2.virkning).TimePeriod @> a.merged_timeperiod --Please notice, that this will max hit exactly one row - the row that the new id was merged with
+LEFT JOIN klasse_attr_egenskaber_soegeord as c on attrEgenskaberObj.soegeord IS NULL AND c.klasse_attr_egenskaber_id = b2.id
 ;
 
   --For any periods within the virkning of the attrEgenskaberObj, that is NOT covered by any "merged" rows inserted above, generate and insert rows
@@ -364,7 +365,6 @@ END IF;
 --Handle egenskaber of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
 
 
-
 WITH copied_attr_egenskaber AS (
 INSERT INTO klasse_attr_egenskaber (
     id,brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat
@@ -398,7 +398,7 @@ FROM
   JOIN klasse_attr_egenskaber a ON true  
   JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
   WHERE a.klasse_registrering_id=prev_klasse_registrering.id 
-  RETURNING id new_id,a.id based_on_id
+  RETURNING id new_id,(virkning).TimePeriod  
 )
 INSERT INTO 
 klasse_attr_egenskaber_soegeord 
@@ -406,7 +406,8 @@ klasse_attr_egenskaber_soegeord
 SELECT
 b.soegeordidentifikator,b.beskrivelse,b.soegeordskategori,a.new_id
 FROM copied_attr_egenskaber a
-JOIN klasse_attr_egenskaber_soegeord b on a.based_on_id=b.klasse_attr_egenskaber_id   
+JOIN klasse_attr_egenskaber a2 on a2.klasse_registrering_id=prev_klasse_registrering.id and (a2.virkning).TimePeriod @> a.TimePeriod --this will hit exactly one row - that is, the row that we copied. 
+JOIN klasse_attr_egenskaber_soegeord b on a2.id=b.klasse_attr_egenskaber_id   
 ;
 
 

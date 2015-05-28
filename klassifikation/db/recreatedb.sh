@@ -46,11 +46,13 @@ cd ..
 
 #Test functions
 
+#Facet
 psql -d mox -U mox -f tests/test_facet_db_schama.sql
 psql -d mox -U mox -f tests/test_as_create_or_import_facet.sql
 psql -d mox -U mox -f tests/test_as_list_facet.sql
 psql -d mox -U mox -f tests/test_as_read_facet.sql
 psql -d mox -U mox -f tests/test_as_search_facet.sql
 psql -d mox -U mox -f tests/test_as_update_facet.sql
-
+#Klasse
+psql -d mox -U mox -f tests/test_as_update_klasse.sql
 

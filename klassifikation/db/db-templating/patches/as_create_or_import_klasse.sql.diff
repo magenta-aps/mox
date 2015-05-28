@@ -1,5 +1,5 @@
-*** ../generated-files/as_create_or_import_klasse.sql	2015-05-27 09:31:56.186125783 +0200
---- ../patches/as_create_or_import_klasse.sql	2015-05-27 09:33:43.410131123 +0200
+*** ../generated-files/as_create_or_import_klasse.sql	2015-05-28 09:24:40.484786604 +0200
+--- ../patches/as_create_or_import_klasse.org.sql	2015-05-28 09:19:43.016791931 +0200
 ***************
 *** 4,14 ****
   -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -52,14 +52,13 @@
     RAISE EXCEPTION 'Error creating or importing klasse with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_klasse (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might occur, albeit very very rarely.',klasse_uuid;
   END IF;
 ***************
-*** 74,90 ****
-   
+*** 75,90 ****
   IF array_length(klasse_registrering.attrEgenskaber, 1)<1 THEN
     RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [klasse]. Oprettelse afbrydes.';
   END IF;
   
-! 
   
+- 
   IF klasse_registrering.attrEgenskaber IS NOT NULL THEN
     FOREACH klasse_attr_egenskaber_obj IN ARRAY klasse_registrering.attrEgenskaber
     LOOP
@@ -70,18 +69,18 @@
       eksempel,
       omfang,
       titel,
---- 75,92 ----
-   
+--- 76,93 ----
   IF array_length(klasse_registrering.attrEgenskaber, 1)<1 THEN
     RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [klasse]. Oprettelse afbrydes.';
   END IF;
   
-! klasse_attr_egenskaber_id:=nextval('klasse_attr_egenskaber_id_seq');
   
   IF klasse_registrering.attrEgenskaber IS NOT NULL THEN
     FOREACH klasse_attr_egenskaber_obj IN ARRAY klasse_registrering.attrEgenskaber
     LOOP
   
++ klasse_attr_egenskaber_id:=nextval('klasse_attr_egenskaber_id_seq');
++ 
     INSERT INTO klasse_attr_egenskaber (
 +     id,
       brugervendtnoegle,
@@ -91,7 +90,7 @@
       titel,
 ***************
 *** 92,101 ****
---- 94,104 ----
+--- 95,105 ----
       aendringsnotat,
       virkning,
       klasse_registrering_id
@@ -105,7 +104,7 @@
       klasse_attr_egenskaber_obj.titel,
 ***************
 *** 103,112 ****
---- 106,136 ----
+--- 107,137 ----
       klasse_attr_egenskaber_obj.aendringsnotat,
       klasse_attr_egenskaber_obj.virkning,
       klasse_registrering_id
@@ -113,8 +112,8 @@
   
 + /************/
 + --Insert Soegeord
-+   IF (klasse_registrering.attrEgenskaber).soegeord IS NOT NULL THEN
-+     FOREACH klasse_attr_egenskaber_soegeord_obj IN ARRAY (klasse_registrering.attrEgenskaber).soegeord 
++   IF klasse_attr_egenskaber_obj.soegeord IS NOT NULL THEN
++     FOREACH klasse_attr_egenskaber_soegeord_obj IN ARRAY klasse_attr_egenskaber_obj.soegeord
 +       LOOP
 + 
 +       INSERT INTO klasse_attr_egenskaber_soegeord (

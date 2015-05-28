@@ -1,5 +1,5 @@
-*** ../generated-files/as_update_klasse.sql	2015-05-27 12:01:12.298571824 +0200
---- ../patches/as_update_klasse.org.sql	2015-05-27 15:11:57.735141841 +0200
+*** ../generated-files/as_update_klasse.sql	2015-05-28 10:23:03.968723863 +0200
+--- ../patches/as_update_klasse.org.sql	2015-05-28 10:13:04.560734597 +0200
 ***************
 *** 30,39 ****
 --- 30,41 ----
@@ -80,13 +80,13 @@
       attrEgenskaberObj.eksempel, 
       attrEgenskaberObj.omfang, 
       attrEgenskaberObj.titel, 
---- 246,282 ----
+--- 246,283 ----
       new_klasse_registrering.id
     FROM klasse_attr_egenskaber a
     WHERE
       a.klasse_registrering_id=prev_klasse_registrering.id 
       and (a.virkning).TimePeriod && (attrEgenskaberObj.virkning).TimePeriod
-!     RETURNING id new_id,a.id merged_with_id 
+!     RETURNING id new_id,(virkning).TimePeriod merged_timeperiod
 ! )
 ! INSERT INTO 
 ! klasse_attr_egenskaber_soegeord 
@@ -98,7 +98,8 @@
 !   a.new_id
 ! FROM inserted_merged_attr_egenskaber a
 ! LEFT JOIN unnest(attrEgenskaberObj.soegeord) as b(soegeordidentifikator,beskrivelse,soegeordskategori) on attrEgenskaberObj.soegeord IS NOT NULL
-! LEFT JOIN klasse_attr_egenskaber_soegeord as c on attrEgenskaberObj.soegeord IS NULL AND c.klasse_attr_egenskaber_id = a.merged_with_id
+! LEFT JOIN klasse_attr_egenskaber as b2 on attrEgenskaberObj.soegeord IS NULL and b2.klasse_registrering_id=prev_klasse_registrering.id and (b2.virkning).TimePeriod @> a.merged_timeperiod --Please notice, that this will max hit exactly one row - the row that the new id was merged with
+! LEFT JOIN klasse_attr_egenskaber_soegeord as c on attrEgenskaberObj.soegeord IS NULL AND c.klasse_attr_egenskaber_id = b2.id
 ! ;
   
     --For any periods within the virkning of the attrEgenskaberObj, that is NOT covered by any "merged" rows inserted above, generate and insert rows
@@ -167,7 +168,7 @@
         a.eksempel,
         a.omfang,
         a.titel,
---- 296,380 ----
+--- 297,380 ----
         FROM klasse_attr_egenskaber b
         WHERE 
          b.klasse_registrering_id=new_klasse_registrering.id
@@ -239,7 +240,6 @@
   --Handle egenskaber of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
   
 + 
-+ 
 + WITH copied_attr_egenskaber AS (
   INSERT INTO klasse_attr_egenskaber (
 !     id,brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat
@@ -266,14 +266,14 @@
   
   return new_klasse_registrering.id;
   
---- 395,414 ----
+--- 395,415 ----
       WHERE 
             b.klasse_registrering_id=new_klasse_registrering.id
   ) d
     JOIN klasse_attr_egenskaber a ON true  
     JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
 !   WHERE a.klasse_registrering_id=prev_klasse_registrering.id 
-!   RETURNING id new_id,a.id based_on_id
+!   RETURNING id new_id,(virkning).TimePeriod  
 ! )
 ! INSERT INTO 
 ! klasse_attr_egenskaber_soegeord 
@@ -281,7 +281,8 @@
 ! SELECT
 ! b.soegeordidentifikator,b.beskrivelse,b.soegeordskategori,a.new_id
 ! FROM copied_attr_egenskaber a
-! JOIN klasse_attr_egenskaber_soegeord b on a.based_on_id=b.klasse_attr_egenskaber_id   
+! JOIN klasse_attr_egenskaber a2 on a2.klasse_registrering_id=prev_klasse_registrering.id and (a2.virkning).TimePeriod @> a.TimePeriod --this will hit exactly one row - that is, the row that we copied. 
+! JOIN klasse_attr_egenskaber_soegeord b on a2.id=b.klasse_attr_egenskaber_id   
   ;
   
   
@@ -297,4 +298,4 @@
 - 
 - 
 - 
---- 416,420 ----
+--- 417,421 ----
