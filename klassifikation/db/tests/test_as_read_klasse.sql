@@ -6,12 +6,14 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 --SELECT * FROM runtests('test'::name);
-CREATE OR REPLACE FUNCTION test.test_as_update_klasse()
+CREATE OR REPLACE FUNCTION test.test_as_read_klasse()
 RETURNS SETOF TEXT LANGUAGE plpgsql AS 
 $$
 DECLARE 
 	new_uuid uuid;
 	registrering KlasseRegistreringType;
+	new_uuid2 uuid;
+	registrering2 KlasseRegistreringType;
 	actual_registrering RegistreringBase;
 	virkEgenskaber Virkning;
 	virkEgenskaberB Virkning;
@@ -57,6 +59,10 @@ DECLARE
 	klasseEgenskabE_Soegeord3 KlasseSoegeordType;
 	klasseEgenskabE_Soegeord4 KlasseSoegeordType;
 	klasseEgenskabE_Soegeord5 KlasseSoegeordType;
+	read_klasse1 KlasseType;
+	expected_klasse1 KlasseType;
+	read_klasse2 KlasseType;
+	expected_klasse2 KlasseType;
 	--tempResSoegeord KlasseSoegeordTypeWID[];
 	--tempResEgenskaberAttr KlasseEgenskaberAttrTypeWID[];
 	
@@ -279,8 +285,22 @@ ARRAY[klasseRelAnsvarlig,klasseRelRedaktoer1,klasseRelRedaktoer2]
 
 new_uuid := as_create_or_import_klasse(registrering);
 
---***************************************
---Update the klasse created above
+
+registrering := ROW (
+	ROW (
+	NULL,
+	'Opstaaet'::Livscykluskode,
+	uuidRegistrering,
+	'Test Note 54') :: RegistreringBase
+	,
+ARRAY[klassePubliceret,klassePubliceretB]::KlassePubliceretTilsType[],
+ARRAY[klasseEgenskabA,klasseEgenskabB]::KlasseEgenskaberAttrType[],
+ARRAY[klasseRelAnsvarlig,klasseRelRedaktoer1,klasseRelRedaktoer2]
+) :: KlasseRegistreringType
+;
+
+new_uuid := as_create_or_import_klasse(registrering);
+
 
 virkEgenskaberC :=	ROW (
 	'[2015-01-13, infinity)' :: TSTZRANGE,
@@ -362,268 +382,99 @@ virkPubliceretC,
 ;
 
 
-
-update_reg_id:=as_update_klasse(
-  new_uuid, uuid_generate_v4(),'Test update'::text,
-  'Rettet'::Livscykluskode,          
+registrering2 := ROW (
+	ROW (
+	NULL,
+	'Opstaaet'::Livscykluskode,
+	uuidRegistrering,
+	'Test Note 5') :: RegistreringBase
+	,
+array[klassePubliceretC]::KlassePubliceretTilsType[],
   array[klasseEgenskabC,klasseEgenskabD,klasseEgenskabE]::KlasseEgenskaberAttrType[],
-  array[klassePubliceretC]::KlassePubliceretTilsType[],
   array[klasseRelAnsvarlig]::KlasseRelationType[]
+) :: KlasseRegistreringType
+;
+
+new_uuid2 := as_create_or_import_klasse(registrering2);
+
+
+read_Klasse1 := as_read_Klasse(new_uuid,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
 	);
 
-
-SELECT
-array_agg(
-			ROW (
-					a.rel_type,
-					a.virkning,
-					a.rel_maal 
-				):: KlasseRelationType
-		) into actual_relationer
-FROM klasse_relation a
-JOIN klasse_registrering as b on a.klasse_registrering_id=b.id
-WHERE b.id=update_reg_id
+expected_Klasse1 :=
+				ROW(
+					new_uuid,
+					ARRAY[
+						ROW(
+							ROW(
+								((read_Klasse1.registrering[1]).registrering).timeperiod, --this is cheating, but helps the comparison efforts below. (The timeperiod is set during creation/initialization )
+								(registrering.registrering).livscykluskode,
+								(registrering.registrering).brugerref,
+								(registrering.registrering).note 
+								)::RegistreringBase
+							,registrering.tilsPubliceret
+							,registrering.attrEgenskaber
+							,registrering.relationer
+						)::KlasseRegistreringType
+					]::KlasseRegistreringType[]
+			)::KlasseType
 ;
 
 RETURN NEXT is(
-	actual_relationer,
-	ARRAY[klasseRelAnsvarlig,klasseRelRedaktoer1,klasseRelRedaktoer2]
-,'relations carried over'); --ok, if all relations are present.
+read_Klasse1,
+expected_Klasse1,
+'simple search test 2'
+);
 
 
-SELECT
-array_agg(
-			ROW (
-					a.virkning,
-					a.publiceret
-				):: KlassePubliceretTilsType
-		) into actual_publiceret
-FROM klasse_tils_publiceret a
-JOIN klasse_registrering as b on a.klasse_registrering_id=b.id
-WHERE b.id=update_reg_id
+read_Klasse2 := as_read_Klasse(new_uuid2,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
+	);
+
+expected_Klasse2 :=
+				ROW(
+					new_uuid2,
+					ARRAY[
+						ROW(
+							ROW(
+								((read_Klasse2.registrering[1]).registrering).timeperiod, --this is cheating, but helps the comparison efforts below. (The timeperiod is set during creation/initialization )
+								(registrering2.registrering).livscykluskode,
+								(registrering2.registrering).brugerref,
+								(registrering2.registrering).note 
+								)::RegistreringBase
+							,registrering2.tilsPubliceret
+							,array[
+							ROW(
+							klasseEgenskabC.brugervendtnoegle,
+							klasseEgenskabC.beskrivelse,
+							klasseEgenskabC.eksempel,
+							klasseEgenskabC.omfang,
+							klasseEgenskabC.titel,
+							klasseEgenskabC.retskilde,
+							klasseEgenskabC.aendringsnotat,
+							NULL, --notice: empty array for soegeord get read as null
+ 							klasseEgenskabC.virkning 
+							)::KlasseEgenskaberAttrType
+							,klasseEgenskabD,klasseEgenskabE]::KlasseEgenskaberAttrType[]
+							,registrering2.relationer
+						)::KlasseRegistreringType
+					]::KlasseRegistreringType[]
+			)::KlasseType
 ;
 
-
+--RAISE NOTICE 'read_Klasse2_json:%',to_json(read_Klasse2);
+--RAISE NOTICE 'expected_Klasse2_json:%',to_json(expected_Klasse2);
 
 RETURN NEXT is(
-	actual_publiceret,
-ARRAY[
-	klassePubliceretC,
-	ROW(
-		ROW (
-				TSTZRANGE('2015-05-01','infinity','()')
-				,(klassePubliceret.virkning).AktoerRef
-				,(klassePubliceret.virkning).AktoerTypeKode
-				,(klassePubliceret.virkning).NoteTekst
-			) :: Virkning
-		,klassePubliceret.publiceret
-		)::KlassePubliceretTilsType,
-	ROW(
-		ROW (
-				TSTZRANGE('2014-05-13','2015-01-01','[)')
-				,(klassePubliceretB.virkning).AktoerRef
-				,(klassePubliceretB.virkning).AktoerTypeKode
-				,(klassePubliceretB.virkning).NoteTekst
-			) :: Virkning
-		,klassePubliceretB.publiceret
-		)::KlassePubliceretTilsType
-]::KlassePubliceretTilsType[]
-,'publiceret value updated');
-
-/*
-select array_agg(
-   						ROW(
-   							c.id,
-   							c.soegeordidentifikator,
-   							c.beskrivelse,
-   							c.soegeordskategori,
-   							c.klasse_attr_egenskaber_id
-   							)::KlasseSoegeordTypeWID
-						
-						order by c.id
-   						) into tempResSoegeord
-from klasse_attr_egenskaber_soegeord c
-;
+read_Klasse2,
+expected_Klasse2,
+'simple search test 2'
+);
 
 
-select array_agg( 
-ROW(
-	a.id ,
-a.brugervendtnoegle ,
-a.beskrivelse ,
-a.eksempel ,
-a.omfang ,
-a.titel ,
-a.retskilde ,
-a.aendringsnotat ,
-null,
- a.virkning,
- a.klasse_registrering_id
-)::KlasseEgenskaberAttrTypeWID
-	) into tempResEgenskaberAttr
-from klasse_attr_egenskaber a
-;
-
-#raise notice 'tempResEgenskaberAttr:%',to_json(tempResEgenskaberAttr);
-#raise notice 'tempResSoegeord:%',to_json(tempResSoegeord);
-*/
-
-
-RETURN NEXT set_eq( 'SELECT
-
-			ROW (
-					a.brugervendtnoegle,
-					a.beskrivelse,
-					a.eksempel,
-					a.omfang,
-   					a.titel,
-   					a.retskilde,
-   					a.aendringsnotat,
-   					array_agg(
-   						CASE WHEN c.id IS NULL THEN NULL
-   						ELSE
-   						ROW(
-   							c.soegeordidentifikator,
-   							c.beskrivelse,
-   							c.soegeordskategori
-   							)::KlasseSoegeordType
-						END
-						order by c.id
-   						),
-					a.virkning
-				):: KlasseEgenskaberAttrType
-		
-FROM  klasse_attr_egenskaber a
-JOIN klasse_registrering as b on a.klasse_registrering_id=b.id
-LEFT JOIN klasse_attr_egenskaber_soegeord c on c.klasse_attr_egenskaber_id=a.id
-WHERE b.id=' || update_reg_id::text || '
-GROUP BY a.id,a.brugervendtnoegle,a.beskrivelse,a.eksempel,a.omfang,a.titel,a.retskilde,a.aendringsnotat,a.virkning
-order by (a.virkning).TimePeriod
-'
-,   
-ARRAY[
-		ROW(
-				klasseEgenskabD.brugervendtnoegle,
-   				klasseEgenskabD.beskrivelse,
-   				klasseEgenskabD.eksempel,
-   				klasseEgenskabD.omfang,
-   				NULL, --klasseEgenskabD.titel,
-   				klasseEgenskabD.retskilde,
-   				klasseEgenskabD.aendringsnotat,
-   				  ARRAY[NULL]::KlasseSoegeordType[], --soegeord --please notice that this should really be NULL, but because of the form of the query above, it will return an array with a null element.
-					ROW(
-						TSTZRANGE('2013-06-30','2014-05-13','[)'),
-						(klasseEgenskabD.virkning).AktoerRef,
-						(klasseEgenskabD.virkning).AktoerTypeKode,
-						(klasseEgenskabD.virkning).NoteTekst
-						)::virkning
-			) ::KlasseEgenskaberAttrType
-		,
-		ROW(
-			klasseEgenskabD.brugervendtnoegle,
-   				klasseEgenskabD.beskrivelse,
-   				klasseEgenskabD.eksempel,
-   				klasseEgenskabD.omfang,
-   				klasseEgenskabB.titel, --NOTICE
-   				klasseEgenskabD.retskilde,
-   				NULL, --notice
-   				  ARRAY[klasseEgenskabB_Soegeord1,klasseEgenskabB_Soegeord2,klasseEgenskabB_Soegeord3,klasseEgenskabB_Soegeord4]::KlasseSoegeordType[], --soegeord
-   				ROW(
-						TSTZRANGE('2014-05-13','2014-06-01','[)'),
-						(klasseEgenskabD.virkning).AktoerRef,
-						(klasseEgenskabD.virkning).AktoerTypeKode,
-						(klasseEgenskabD.virkning).NoteTekst
-						)::virkning
-		)::KlasseEgenskaberAttrType
-		,
-		ROW(
-			klasseEgenskabB.brugervendtnoegle,
-   				klasseEgenskabB.beskrivelse,
-   				klasseEgenskabB.eksempel,
-   				klasseEgenskabB.omfang,
-   				klasseEgenskabB.titel,
-   				klasseEgenskabB.retskilde,
-   				klasseEgenskabB.aendringsnotat,
-   				 ARRAY[klasseEgenskabB_Soegeord1,klasseEgenskabB_Soegeord2,klasseEgenskabB_Soegeord3,klasseEgenskabB_Soegeord4]::KlasseSoegeordType[], --soegeord
-					ROW(
-						TSTZRANGE('2014-06-01','2014-08-01','[)'),
-						(klasseEgenskabB.virkning).AktoerRef,
-						(klasseEgenskabB.virkning).AktoerTypeKode,
-						(klasseEgenskabB.virkning).NoteTekst
-						)::virkning
-			)::KlasseEgenskaberAttrType
-		,
-		ROW(
-			klasseEgenskabE.brugervendtnoegle,
-   				klasseEgenskabE.beskrivelse,
-   				klasseEgenskabE.eksempel,
-   				klasseEgenskabE.omfang,
-   				klasseEgenskabE.titel,
-   				klasseEgenskabE.retskilde,
-   				klasseEgenskabB.aendringsnotat, --NOTICE
-   				 ARRAY[klasseEgenskabE_Soegeord1,klasseEgenskabE_Soegeord2,klasseEgenskabE_Soegeord3,klasseEgenskabE_Soegeord4,klasseEgenskabE_Soegeord5]::KlasseSoegeordType[], --soegeord
-					ROW(
-						TSTZRANGE('2014-08-01', '2014-10-20','[)'),
-						(klasseEgenskabE.virkning).AktoerRef,
-						(klasseEgenskabE.virkning).AktoerTypeKode,
-						(klasseEgenskabE.virkning).NoteTekst
-						)::virkning
-			)::KlasseEgenskaberAttrType
-		,
-		ROW(
-			klasseEgenskabB.brugervendtnoegle,
-   				klasseEgenskabB.beskrivelse,
-   				klasseEgenskabB.eksempel,
-   				klasseEgenskabB.omfang,
-   				klasseEgenskabB.titel,
-   				klasseEgenskabB.retskilde,
-   				klasseEgenskabB.aendringsnotat,
-   				 ARRAY[klasseEgenskabB_Soegeord1,klasseEgenskabB_Soegeord2,klasseEgenskabB_Soegeord3,klasseEgenskabB_Soegeord4]::KlasseSoegeordType[], --soegeord
-					ROW(
-						TSTZRANGE('2014-10-20','2015-01-01','[)'),
-						(klasseEgenskabB.virkning).AktoerRef,
-						(klasseEgenskabB.virkning).AktoerTypeKode,
-						(klasseEgenskabB.virkning).NoteTekst
-						)::virkning
-			)::KlasseEgenskaberAttrType
-		,
-
-		ROW(
-			klasseEgenskabC.brugervendtnoegle,
-   				klasseEgenskabC.beskrivelse,
-   				klasseEgenskabC.eksempel,
-   				klasseEgenskabC.omfang,
-   				klasseEgenskabC.titel,
-   				klasseEgenskabC.retskilde,
-   				klasseEgenskabC.aendringsnotat,
-   				 ARRAY[NULL]::KlasseSoegeordType[], --soegeord --please notice that this should really be NULL, but because of the form of the query above, it will return an array with a null element.
-					ROW(
-						TSTZRANGE('2015-01-13','2015-05-12','[)'),
-						(klasseEgenskabC.virkning).AktoerRef,
-						(klasseEgenskabC.virkning).AktoerTypeKode,
-						(klasseEgenskabC.virkning).NoteTekst
-						)::virkning
-			)::KlasseEgenskaberAttrType
-		,
-		ROW(
-			klasseEgenskabA.brugervendtnoegle, --notice
-   				klasseEgenskabA.beskrivelse, --notice
-   				klasseEgenskabA.eksempel, --notice
-   				klasseEgenskabC.omfang,
-   				klasseEgenskabC.titel,
-   				klasseEgenskabC.retskilde,
-   				klasseEgenskabC.aendringsnotat,
-   				  ARRAY[NULL]::KlasseSoegeordType[], --soegeord
-					ROW(
-						TSTZRANGE('2015-05-12','infinity','[)'),
-						(klasseEgenskabC.virkning).AktoerRef,
-						(klasseEgenskabC.virkning).AktoerTypeKode,
-						(klasseEgenskabC.virkning).NoteTekst
-						)::virkning
-			)::KlasseEgenskaberAttrType
-
-	]::KlasseEgenskaberAttrType[]
-    ,    'egenskaber updated' );
 
 
 

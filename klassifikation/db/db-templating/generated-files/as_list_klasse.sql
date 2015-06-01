@@ -36,14 +36,19 @@ FROM
 	a.registrering,
 	a.KlasseAttrEgenskaberArr,
 	a.KlasseTilsPubliceretArr,
-	array_agg(
+	_remove_nulls_in_array(array_agg(
+		CASE
+		WHEN b.id is not null THEN
 		ROW (
 				b.rel_type,
 				b.virkning,
 				b.rel_maal 
 			):: KlasseRelationType
+		ELSE
+		NULL
+		END
 		order by b.id
-	) KlasseRelationArr
+	)) KlasseRelationArr
 	FROM
 	(
 			SELECT
@@ -51,34 +56,43 @@ FROM
 			a.klasse_registrering_id,
 			a.registrering,
 			a.KlasseAttrEgenskaberArr,
-			array_agg
+			_remove_nulls_in_array(array_agg
 				(
+					CASE
+					WHEN b.id is not null THEN 
 					ROW(
 						b.virkning,
 						b.publiceret
 						) ::KlassePubliceretTilsType
+					ELSE NULL
+					END
 					order by b.id
-				) KlasseTilsPubliceretArr		
+				)) KlasseTilsPubliceretArr		
 			FROM
 			(
 				SELECT
 				a.klasse_id,
 				a.klasse_registrering_id,
 				a.registrering,
-				array_agg(
-					ROW(
-				 		a.brugervendtnoegle,
-				 		a.beskrivelse,
-				 		a.eksempel,
-				 		a.omfang,
-				 		a.titel,
-				 		a.retskilde,
-				 		a.aendringsnotat,
-				 		a.KlasseAttrEgenskaberSoegeordTypeArr,
-				   		a.virkning 
+					_remove_nulls_in_array(array_agg(
+						CASE 
+						WHEN a.attr_id is not null THEN
+						ROW(
+					 		a.brugervendtnoegle,
+					 		a.beskrivelse,
+					 		a.eksempel,
+					 		a.omfang,
+					 		a.titel,
+					 		a.retskilde,
+					 		a.aendringsnotat,
+					 		a.KlasseAttrEgenskaberSoegeordTypeArr,
+					   		a.virkning 
 						)::KlasseEgenskaberAttrType
+						ELSE
+						NULL
+						END
 					order by a.attr_id
-				) KlasseAttrEgenskaberArr 
+				)) KlasseAttrEgenskaberArr 
 				FROM		
 				(
 						SELECT
@@ -94,15 +108,20 @@ FROM
 						b.retskilde,
 						b.aendringsnotat,
 						b.virkning,	
-						array_agg(
+						_remove_nulls_in_array_and_null_empty_array(array_agg(
+							CASE 
+							WHEN c.id is not null THEN
 							ROW(
 						 		c.soegeordidentifikator,
 						 		c.beskrivelse,
 						 		c.soegeordskategori 
-								)::KlasseSoegeordType
-							order by c.id
-						) KlasseAttrEgenskaberSoegeordTypeArr
-						FROM
+							)::KlasseSoegeordType
+						ELSE
+						NULL
+						END
+						order by c.id
+					)) KlasseAttrEgenskaberSoegeordTypeArr 
+					FROM
 						(
 								SELECT
 								a.id klasse_id,

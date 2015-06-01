@@ -36,14 +36,19 @@ FROM
 	a.registrering,
 	a.KlassifikationAttrEgenskaberArr,
 	a.KlassifikationTilsPubliceretArr,
-	array_agg(
+	_remove_nulls_in_array(array_agg(
+		CASE
+		WHEN b.id is not null THEN
 		ROW (
 				b.rel_type,
 				b.virkning,
 				b.rel_maal 
 			):: KlassifikationRelationType
+		ELSE
+		NULL
+		END
 		order by b.id
-	) KlassifikationRelationArr
+	)) KlassifikationRelationArr
 	FROM
 	(
 			SELECT
@@ -51,21 +56,27 @@ FROM
 			a.klassifikation_registrering_id,
 			a.registrering,
 			a.KlassifikationAttrEgenskaberArr,
-			array_agg
+			_remove_nulls_in_array(array_agg
 				(
+					CASE
+					WHEN b.id is not null THEN 
 					ROW(
 						b.virkning,
 						b.publiceret
 						) ::KlassifikationPubliceretTilsType
+					ELSE NULL
+					END
 					order by b.id
-				) KlassifikationTilsPubliceretArr		
+				)) KlassifikationTilsPubliceretArr		
 			FROM
 			(
 					SELECT
 					a.klassifikation_id,
 					a.klassifikation_registrering_id,
 					a.registrering,
-					array_agg(
+					_remove_nulls_in_array(array_agg(
+						CASE 
+						WHEN b.id is not null THEN
 						ROW(
 					 		b.brugervendtnoegle,
 					 		b.beskrivelse,
@@ -73,8 +84,11 @@ FROM
 					 		b.ophavsret,
 					   		b.virkning 
 							)::KlassifikationEgenskaberAttrType
+						ELSE
+						NULL
+						END
 						order by b.id
-					) KlassifikationAttrEgenskaberArr 
+					)) KlassifikationAttrEgenskaberArr 
 					FROM
 					(
 					SELECT

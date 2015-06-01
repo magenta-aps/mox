@@ -36,14 +36,19 @@ FROM
 	a.registrering,
 	a.FacetAttrEgenskaberArr,
 	a.FacetTilsPubliceretArr,
-	array_agg(
+	_remove_nulls_in_array(array_agg(
+		CASE
+		WHEN b.id is not null THEN
 		ROW (
 				b.rel_type,
 				b.virkning,
 				b.rel_maal 
 			):: FacetRelationType
+		ELSE
+		NULL
+		END
 		order by b.id
-	) FacetRelationArr
+	)) FacetRelationArr
 	FROM
 	(
 			SELECT
@@ -51,21 +56,27 @@ FROM
 			a.facet_registrering_id,
 			a.registrering,
 			a.FacetAttrEgenskaberArr,
-			array_agg
+			_remove_nulls_in_array(array_agg
 				(
+					CASE
+					WHEN b.id is not null THEN 
 					ROW(
 						b.virkning,
 						b.publiceret
 						) ::FacetPubliceretTilsType
+					ELSE NULL
+					END
 					order by b.id
-				) FacetTilsPubliceretArr		
+				)) FacetTilsPubliceretArr		
 			FROM
 			(
 					SELECT
 					a.facet_id,
 					a.facet_registrering_id,
 					a.registrering,
-					array_agg(
+					_remove_nulls_in_array(array_agg(
+						CASE 
+						WHEN b.id is not null THEN
 						ROW(
 					 		b.brugervendtnoegle,
 					 		b.beskrivelse,
@@ -76,8 +87,11 @@ FROM
 					 		b.retskilde,
 					   		b.virkning 
 							)::FacetEgenskaberAttrType
+						ELSE
+						NULL
+						END
 						order by b.id
-					) FacetAttrEgenskaberArr 
+					)) FacetAttrEgenskaberArr 
 					FROM
 					(
 					SELECT

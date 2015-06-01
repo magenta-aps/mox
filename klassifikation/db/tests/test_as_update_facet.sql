@@ -413,11 +413,6 @@ ARRAY[
     ,    'egenskaber updated' );
 
 
---TODO: Add tests for different scenarios
-
-
-
-
 
 END;
 $$;

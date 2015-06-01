@@ -1,0 +1,41 @@
+*** ../generated-files/_remove_nulls_in_array_klasse.sql	2015-06-01 15:33:43.178455350 +0200
+--- ../patches/_remove_nulls_in_array_klasse.org.sql	2015-06-01 15:45:21.278490117 +0200
+***************
+*** 97,102 ****
+--- 97,132 ----
+   
+   $$ LANGUAGE plpgsql IMMUTABLE
+  ;
+  
+  
++ CREATE OR REPLACE FUNCTION _remove_nulls_in_array_and_null_empty_array(inputArr KlasseSoegeordType[])
++   RETURNS KlasseSoegeordType[] AS
++   $$
++   DECLARE result KlasseSoegeordType[];
++   DECLARE element KlasseSoegeordType;
++   BEGIN
++ 
++  IF inputArr IS NOT NULL THEN
++     FOREACH element IN ARRAY  inputArr
++     LOOP
++       IF element IS NULL THEN
++      -- RAISE DEBUG 'Skipping element';
++       ELSE
++       result:=array_append(result,element);
++       END IF;
++     END LOOP;
++   ELSE
++     return null;  
++   END IF;
++ 
++   IF array_length(result,1)=0 THEN
++     RETURN NULL;
++   ELSE
++     RETURN result;
++   END IF;
++ 
++   END;
++  
++  $$ LANGUAGE plpgsql IMMUTABLE
++ ;
+  

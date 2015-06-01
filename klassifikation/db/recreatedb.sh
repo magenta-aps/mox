@@ -24,12 +24,12 @@ patch -i ../patches/as_create_or_import_klasse.sql.diff
 patch -i ../patches/as_list_klasse.sql.diff
 patch -i ../patches/as_search_klasse.sql.diff
 patch -i ../patches/as_update_klasse.sql.diff
+patch -i ../patches/_remove_nulls_in_array_klasse.sql.diff
 
-#TODO: Continue here
 cd ..
 
 oiotypes=( facet klassifikation klasse )
-templates=( dbtyper-specific tbls-specific _as_get_prev_registrering _as_create_registrering as_update  as_create_or_import  as_list as_read as_search  )
+templates=( dbtyper-specific tbls-specific _remove_nulls_in_array _as_get_prev_registrering _as_create_registrering as_update  as_create_or_import  as_list as_read as_search  )
 
 
 for oiotype in "${oiotypes[@]}"
@@ -55,4 +55,4 @@ psql -d mox -U mox -f tests/test_as_search_facet.sql
 psql -d mox -U mox -f tests/test_as_update_facet.sql
 #Klasse
 psql -d mox -U mox -f tests/test_as_update_klasse.sql
-
+psql -d mox -U mox -f tests/test_as_read_klasse.sql

@@ -37,14 +37,19 @@ FROM
 	a.{{oio_type|title}}Attr{{attribut_inner_loop|title}}Arr,{%- endfor %}
 	{%-for tilstand_inner_loop , tilstand_values_inner_loop in tilstande.iteritems() %}
 	a.{{oio_type|title}}Tils{{tilstand_inner_loop|title}}Arr,{%- endfor %}
-	array_agg(
+	_remove_nulls_in_array(array_agg(
+		CASE
+		WHEN b.id is not null THEN
 		ROW (
 				b.rel_type,
 				b.virkning,
 				b.rel_maal 
 			):: {{oio_type|title}}RelationType
+		ELSE
+		NULL
+		END
 		order by b.id
-	) {{oio_type|title}}RelationArr
+	)) {{oio_type|title}}RelationArr
 	FROM
 	(
 			{%-for tilstand , tilstand_values in tilstande.iteritems() %}{%- set outer_loop = loop %}
@@ -57,14 +62,18 @@ FROM
 			{%-for tilstand_inner_loop , tilstand_values_inner_loop in tilstande.iteritems() %}
 			{%- if loop.index>outer_loop.index  %}
 			a.{{oio_type|title}}Tils{{tilstand_inner_loop|title}}Arr,{%- endif %}{%- endfor %}
-			array_agg
+			_remove_nulls_in_array(array_agg
 				(
+					CASE
+					WHEN b.id is not null THEN 
 					ROW(
 						b.virkning,
 						b.{{tilstand}}
 						) ::{{oio_type|title}}{{tilstand|title}}TilsType
+					ELSE NULL
+					END
 					order by b.id
-				) {{oio_type|title}}Tils{{tilstand|title}}Arr		
+				)) {{oio_type|title}}Tils{{tilstand|title}}Arr		
 			FROM
 			(
 			{%- endfor %}	
@@ -76,15 +85,20 @@ FROM
 					{%-for attribut_inner_loop , attribut_fields_inner_loop in attributter.iteritems() %}
 						{%- if loop.index>outer_loop.index  %}
 					a.{{oio_type|title}}Attr{{attribut_inner_loop|title}}Arr,{%- endif %}{%- endfor %}
-					array_agg(
+					_remove_nulls_in_array(array_agg(
+						CASE 
+						WHEN b.id is not null THEN
 						ROW(
 							{%-for field in attribut_fields %}
 					 		b.{{field}},
 							{%- endfor %}
 					   		b.virkning 
 							)::{{oio_type|title}}{{attribut|title}}AttrType
+						ELSE
+						NULL
+						END
 						order by b.id
-					) {{oio_type|title}}Attr{{attribut|title}}Arr 
+					)) {{oio_type|title}}Attr{{attribut|title}}Arr 
 					FROM
 					(
 				{%- endfor %}

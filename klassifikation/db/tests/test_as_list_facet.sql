@@ -253,8 +253,8 @@ expected_facets1:= ARRAY[
 
 select array_agg(a.* order by a.id) from unnest(expected_facets1) as a into expected_facets1;
 
---raise notice 'expected_facets1:%',expected_facets1;
---raise notice 'actual_facets1:%',actual_facets1;
+--raise notice 'expected_facets1:%',to_json(expected_facets1);
+--raise notice 'actual_facets1:%',to_json(actual_facets1);
 
 
 RETURN NEXT is(

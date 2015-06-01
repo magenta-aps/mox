@@ -1,18 +1,20 @@
-*** ../generated-files/as_list_klasse.sql	2015-05-27 10:02:04.186215827 +0200
---- ../patches/as_list_klasse.sql.org	2015-05-27 10:28:40.622295334 +0200
+*** ../generated-files/as_list_klasse.sql	2015-06-01 15:55:16.062519739 +0200
+--- ../patches/as_list_klasse.org.sql	2015-06-01 15:49:47.182503360 +0200
 ***************
-*** 59,100 ****
-  						) ::KlassePubliceretTilsType
+*** 68,114 ****
+  					END
   					order by b.id
-  				) KlasseTilsPubliceretArr		
+  				)) KlasseTilsPubliceretArr		
   			FROM
   			(
 ! 					SELECT
 ! 					a.klasse_id,
 ! 					a.klasse_registrering_id,
 ! 					a.registrering,
-! 					array_agg(
-! 						ROW(
+  					_remove_nulls_in_array(array_agg(
+  						CASE 
+! 						WHEN b.id is not null THEN
+  						ROW(
 ! 					 		b.brugervendtnoegle,
 ! 					 		b.beskrivelse,
 ! 					 		b.eksempel,
@@ -22,9 +24,12 @@
 ! 					 		b.aendringsnotat,
 ! 					   		b.virkning 
 ! 							)::KlasseEgenskaberAttrType
+  						ELSE
+  						NULL
+  						END
 ! 						order by b.id
-! 					) KlasseAttrEgenskaberArr 
-! 					FROM
+! 					)) KlasseAttrEgenskaberArr 
+  					FROM
 ! 					(
 ! 					SELECT
 ! 					a.id klasse_id,
@@ -44,30 +49,35 @@
   			GROUP BY 
   			a.klasse_id,
   			a.klasse_registrering_id,
---- 59,139 ----
-  						) ::KlassePubliceretTilsType
+--- 68,158 ----
+  					END
   					order by b.id
-  				) KlasseTilsPubliceretArr		
+  				)) KlasseTilsPubliceretArr		
   			FROM
   			(
 ! 				SELECT
 ! 				a.klasse_id,
 ! 				a.klasse_registrering_id,
 ! 				a.registrering,
-! 				array_agg(
-! 					ROW(
-! 				 		a.brugervendtnoegle,
-! 				 		a.beskrivelse,
-! 				 		a.eksempel,
-! 				 		a.omfang,
-! 				 		a.titel,
-! 				 		a.retskilde,
-! 				 		a.aendringsnotat,
-! 				 		a.KlasseAttrEgenskaberSoegeordTypeArr,
-! 				   		a.virkning 
+  					_remove_nulls_in_array(array_agg(
+  						CASE 
+! 						WHEN a.attr_id is not null THEN
+  						ROW(
+! 					 		a.brugervendtnoegle,
+! 					 		a.beskrivelse,
+! 					 		a.eksempel,
+! 					 		a.omfang,
+! 					 		a.titel,
+! 					 		a.retskilde,
+! 					 		a.aendringsnotat,
+! 					 		a.KlasseAttrEgenskaberSoegeordTypeArr,
+! 					   		a.virkning 
 ! 						)::KlasseEgenskaberAttrType
+  						ELSE
+  						NULL
+  						END
 ! 					order by a.attr_id
-! 				) KlasseAttrEgenskaberArr 
+! 				)) KlasseAttrEgenskaberArr 
 ! 				FROM		
 ! 				(
 ! 						SELECT
@@ -83,15 +93,20 @@
 ! 						b.retskilde,
 ! 						b.aendringsnotat,
 ! 						b.virkning,	
-! 						array_agg(
+! 						_remove_nulls_in_array_and_null_empty_array(array_agg(
+! 							CASE 
+! 							WHEN c.id is not null THEN
 ! 							ROW(
 ! 						 		c.soegeordidentifikator,
 ! 						 		c.beskrivelse,
 ! 						 		c.soegeordskategori 
-! 								)::KlasseSoegeordType
-! 							order by c.id
-! 						) KlasseAttrEgenskaberSoegeordTypeArr
-! 						FROM
+! 							)::KlasseSoegeordType
+! 						ELSE
+! 						NULL
+! 						END
+! 						order by c.id
+! 					)) KlasseAttrEgenskaberSoegeordTypeArr 
+  					FROM
 ! 						(
 ! 								SELECT
 ! 								a.id klasse_id,
