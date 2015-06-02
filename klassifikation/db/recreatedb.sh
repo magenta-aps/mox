@@ -56,3 +56,4 @@ psql -d mox -U mox -f tests/test_as_update_facet.sql
 #Klasse
 psql -d mox -U mox -f tests/test_as_update_klasse.sql
 psql -d mox -U mox -f tests/test_as_read_klasse.sql
+psql -d mox -U mox -f tests/test_as_list_klasse.sql
