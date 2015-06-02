@@ -3,12 +3,20 @@ from enum import Enum
 import psycopg2
 from jinja2 import Template
 
+from settings import DATABASE, DB_USER
 from db_helpers import get_attribute_fields, get_attribute_names
 from db_helpers import get_state_names
 
 """
     GENERAL FUNCTION AND CLASS DEFINITIONS
 """
+
+
+def get_connection():
+    """Handle all intricacies of connecting to Postgres."""
+    connection = psycopg2.connect("dbname={0} user={1}".format(DATABASE,
+                                                               DB_USER))
+    return connection
 
 
 def get_authenticated_user():
@@ -140,8 +148,12 @@ def create_or_import_object(class_name, note, attributes, states, relations,
             attributes=sql_attributes,
             relations=sql_relations)
     # TODO: Call Postgres! Return OK or not accordingly
-    print sql
-    return sql
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    output = cursor.fetchone()
+    print output
+    return output[0]
 
 
 def passivate_object(class_name, note, uuid):

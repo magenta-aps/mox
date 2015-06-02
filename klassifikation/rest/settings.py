@@ -22,16 +22,18 @@ DATABASE_STRUCTURE = {
     },
 
     "Klassifikation": {
-         "attributter": { 
-                    "egenskaber" : [
-                        "brugervendtnoegle", "beskrivelse", "kaldenavn", "ophavsret",
+         "attributter": {
+                    "egenskaber": [
+                        "brugervendtnoegle", "beskrivelse", "kaldenavn",
+                        "ophavsret",
                     ]
                 },
-                "tilstande" : {
+         "tilstande": {
                     "publiceret": ["Publiceret", "IkkePubliceret"]
+
                 },
-                "relationer_nul_til_en" : ["ansvarlig","ejer"],
-                "relationer_nul_til_mange" : []
+        "relationer_nul_til_en" : ["ansvarlig","ejer"],
+        "relationer_nul_til_mange" : []
     },
 #Please notice, that the db templating code for klasse, is changed by patches, that is applied to handle the special case of 'soegeord' in the 'egenskaber'-attribute.
     "Klasse": {
@@ -47,5 +49,6 @@ DATABASE_STRUCTURE = {
         "relationer_nul_til_en": ["ejer","ansvarlig", "overordnetklasse","facet"],
         "relationer_nul_til_mange": ["redaktoerer","sideordnede","mapninger","tilfoejelser","erstatter","lovligekombinationer"]
     }
+        
 
 }

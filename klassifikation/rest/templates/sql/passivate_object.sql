@@ -1,4 +1,4 @@
-    SELECT * FROM actual_state_update_{{ class_name | lower }}(
+    SELECT * FROM as_update_{{ class_name | lower }}(
         '{{ uuid }}',
         '{{ user_ref }}',
         '{{ note }}',
