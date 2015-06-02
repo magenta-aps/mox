@@ -451,18 +451,11 @@ expected_Klasse2 :=
 
 
 
---raise notice 'expected_klasses1:%',to_json(expected_klasses1);
---raise notice 'actual_klasses1:%',to_json(actual_klasses1);
-/*
-(klasse_uuids uuid[],
-  registrering_tstzrange tstzrange,
-  virkning_tstzrange tstzrange)
-*/
 
 select array_agg(a.* order by a.id) from as_list_klasse(array[new_uuid]::uuid[],null,null) as a     into actual_klasses_1;
 
-RAISE NOTICE 'actual_klasses_1:%',to_json(actual_klasses_1);
-RAISE NOTICE 'expected_Klasse1_arr_json:%',to_json(ARRAY[expected_Klasse1]);
+--RAISE NOTICE 'actual_klasses_1:%',to_json(actual_klasses_1);
+--RAISE NOTICE 'expected_Klasse1_arr_json:%',to_json(ARRAY[expected_Klasse1]);
 
 
 

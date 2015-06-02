@@ -704,7 +704,7 @@ ARRAY[
 ):: FacetRegistreringType;
 
 
---TODO: Can fail due to ordering in array
+
 search_result8 :=as_search_facet(
 	null,--TOOD ??
 	null,
