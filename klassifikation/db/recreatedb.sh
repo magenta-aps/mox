@@ -1,17 +1,19 @@
 #!/bin/bash
-#Requires that a local mox user exist for peer auth against postgresql
-sudo -u postgres dropdb mox
-sudo -u postgres createdb mox
-sudo -u postgres psql -c "GRANT ALL ON DATABASE mox TO mox"
-sudo -u postgres psql -d mox -f basis/dbserver_prep.sql
-psql -d mox -U mox -c "CREATE SCHEMA actual_state AUTHORIZATION mox "
-sudo -u postgres psql -c "ALTER database mox SET search_path TO actual_state,public;"
-psql -d mox -U mox -c "CREATE SCHEMA test AUTHORIZATION mox "
-psql -d mox -U mox -f basis/common_types.sql
-psql -d mox -U mox -f funcs/_index_helper_funcs.sql
-psql -d mox -U mox -f funcs/_subtract_tstzrange.sql
-psql -d mox -U mox -f funcs/_subtract_tstzrange_arr.sql
-psql -d mox -U mox -f funcs/_as_valid_registrering_livscyklus_transition.sql
+
+source ./config.sh
+
+sudo -u postgres dropdb $MOX_DB
+sudo -u postgres createdb $MOX_DB
+sudo -u postgres psql -c "GRANT ALL ON DATABASE $MOX_DB TO $MOX_USER"
+sudo -u postgres psql -d $MOX_DB -f basis/dbserver_prep.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -c "CREATE SCHEMA actual_state AUTHORIZATION $MOX_USER "
+sudo -u postgres psql -c "ALTER database $MOX_DB SET search_path TO actual_state,public;"
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -c "CREATE SCHEMA test AUTHORIZATION $MOX_USER "
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f basis/common_types.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_index_helper_funcs.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_subtract_tstzrange.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_subtract_tstzrange_arr.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_as_valid_registrering_livscyklus_transition.sql
 
 cd ./db-templating/
 ./generate-sql-tbls-types-funcs-for-oiotype.sh
@@ -36,7 +38,7 @@ for oiotype in "${oiotypes[@]}"
 do
 	for template in "${templates[@]}"
 	do
-		psql -d mox -U mox -f ./generated-files/${template}_${oiotype}.sql
+		sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f ./generated-files/${template}_${oiotype}.sql
 	done	
 done
 
@@ -47,14 +49,14 @@ cd ..
 #Test functions
 
 #Facet
-psql -d mox -U mox -f tests/test_facet_db_schama.sql
-psql -d mox -U mox -f tests/test_as_create_or_import_facet.sql
-psql -d mox -U mox -f tests/test_as_list_facet.sql
-psql -d mox -U mox -f tests/test_as_read_facet.sql
-psql -d mox -U mox -f tests/test_as_search_facet.sql
-psql -d mox -U mox -f tests/test_as_update_facet.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_facet_db_schama.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_create_or_import_facet.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_list_facet.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_read_facet.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_search_facet.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_update_facet.sql
 #Klasse
-psql -d mox -U mox -f tests/test_as_update_klasse.sql
-psql -d mox -U mox -f tests/test_as_read_klasse.sql
-psql -d mox -U mox -f tests/test_as_list_klasse.sql
-psql -d mox -U mox -f tests/test_as_search_klasse.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_update_klasse.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_read_klasse.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_list_klasse.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_search_klasse.sql
