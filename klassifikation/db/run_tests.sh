@@ -1,3 +1,6 @@
-#!/bin/sh
-#Requires that a local mox user exist for peer auth against postgresql
-psql -d mox -U mox -c "SELECT * FROM runtests('test'::name);"
+#!/bin/bash
+
+source ./config.sh
+
+# Tests must be run as a super user, e.g. the default "postgres" super user.
+sudo -u postgres psql -d $MOX_DB -U postgres -c "SELECT * FROM runtests ('test'::name);"

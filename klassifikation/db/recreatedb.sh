@@ -1,7 +1,6 @@
 #!/bin/bash
 
-MOX_USER="mox"
-MOX_DB="mox"
+source ./config.sh
 
 sudo -u postgres dropdb $MOX_DB
 sudo -u postgres createdb $MOX_DB
