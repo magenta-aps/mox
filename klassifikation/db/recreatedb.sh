@@ -20,13 +20,13 @@ cd ./db-templating/
 
 #Apply patches 
 cd ./generated-files/
-patch -i ../patches/dbtyper-specific_klasse.sql.diff
-patch -i ../patches/tbls-specific_klasse.sql.diff
-patch -i ../patches/as_create_or_import_klasse.sql.diff
-patch -i ../patches/as_list_klasse.sql.diff
-patch -i ../patches/as_search_klasse.sql.diff
-patch -i ../patches/as_update_klasse.sql.diff
-patch -i ../patches/_remove_nulls_in_array_klasse.sql.diff
+patch --fuzz=3 -i  ../patches/dbtyper-specific_klasse.sql.diff
+patch --fuzz=3 -i  ../patches/tbls-specific_klasse.sql.diff
+patch --fuzz=3 -i  ../patches/as_create_or_import_klasse.sql.diff
+patch --fuzz=3 -i  ../patches/as_list_klasse.sql.diff
+patch --fuzz=3 -i  ../patches/as_search_klasse.sql.diff
+patch --fuzz=3 -i  ../patches/as_update_klasse.sql.diff
+patch --fuzz=3 -i  ../patches/_remove_nulls_in_array_klasse.sql.diff
 
 cd ..
 
