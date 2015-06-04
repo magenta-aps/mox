@@ -2,3 +2,8 @@ To install, run install.sh
 
 Then, activate the virtualenv by running:
   source python-env/bin/activate
+
+To run, run:
+  python app.py
+
+Then, go to http://localhost:5000/site-map to see a map of all available URLs
