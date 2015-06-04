@@ -1,0 +1,4 @@
+To install, run install.sh
+
+Then, activate the virtualenv by running:
+  source python-env/bin/activate
