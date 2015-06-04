@@ -382,7 +382,8 @@ new_uuid_B := as_create_or_import_klasse(registrering_B);
 search_result1 :=as_search_klasse(
 	null,--TOOD ??
 	new_uuid_A,
-	null--registrering_A Klasseregistrering_AType
+	null,--registrering_A Klasseregistrering_AType
+	null--virkningSoeg
 	);
 
 RETURN NEXT is(
@@ -395,7 +396,8 @@ ARRAY[new_uuid_A]::uuid[],
 search_result2 :=as_search_klasse(
 	null,--TOOD ??
 	null,
-	null--registrering_A Klasseregistrering_AType
+	null,--registrering_A Klasseregistrering_AType
+	null--virkningSoeg
 	);
 
 RETURN NEXT is(
@@ -433,6 +435,7 @@ search_result3 :=as_search_klasse(
 	null,--TOOD ??
 	null,
 	search_registrering_3 --registrering_A Klasseregistrering_AType
+	,null--virkningSoeg
 	);
 
 --raise notice 'search for IkkePubliceret returned:%',search_result3;
@@ -471,6 +474,7 @@ search_result4 :=as_search_klasse(
 	null,--TOOD ??
 	null,
 	search_registrering_4 --registrering_A Klasseregistrering_AType
+	,null--virkningSoeg
 	);
 
 RETURN NEXT is(
@@ -508,6 +512,7 @@ search_result5 :=as_search_klasse(
 	null,--TOOD ??
 	null,
 	search_registrering_5 --registrering_A Klasseregistrering_AType
+	,null--virkningSoeg
 	);
 
 RETURN NEXT is(
@@ -543,6 +548,7 @@ search_result6 :=as_search_klasse(
 	null,--TOOD ??
 	null,
 	search_registrering_6 --registrering_A Klasseregistrering_AType
+	,null--virkningSoeg
 	);
 
 RETURN NEXT is(
@@ -720,6 +726,7 @@ search_result7 :=as_search_klasse(
 	null,--TOOD ??
 	null,
 	search_registrering_7 --registrering_A Klasseregistrering_AType
+	,null--virkningSoeg
 	);
 
 RETURN NEXT is(
@@ -767,6 +774,7 @@ search_result8 :=as_search_klasse(
 	null,--TOOD ??
 	null,
 	search_registrering_8 --registrering_A Klasseregistrering_AType
+	,null--virkningSoeg
 	);
 
 expected_result8:=ARRAY[new_uuid_B,new_uuid_C]::uuid[];
@@ -821,6 +829,7 @@ search_result9 :=as_search_klasse(
 	null,--TOOD ??
 	null,
 	search_registrering_9 --registrering_A Klasseregistrering_AType
+	,null--virkningSoeg
 	);
 
 expected_result9:=ARRAY[new_uuid_A,new_uuid_B]::uuid[];
@@ -875,6 +884,7 @@ search_result10 :=as_search_klasse(
 	null,--TOOD ??
 	null,
 	search_registrering_10 --registrering_A Klasseregistrering_AType
+	,null--virkningSoeg
 	);
 
 expected_result10:=ARRAY[new_uuid_B]::uuid[];
@@ -929,6 +939,7 @@ search_result11 :=as_search_klasse(
 	null,--TOOD ??
 	null,
 	search_registrering_11 --registrering_A Klasseregistrering_AType
+	,null--virkningSoeg
 	);
 
 expected_result11:=ARRAY[]::uuid[];
@@ -985,6 +996,7 @@ search_result12 :=as_search_klasse(
 	null,--TOOD ??
 	null,
 	search_registrering_12 --registrering_A Klasseregistrering_AType
+	,null--virkningSoeg
 	);
 
 expected_result12:=ARRAY[new_uuid_A,new_uuid_B,new_uuid_C]::uuid[];

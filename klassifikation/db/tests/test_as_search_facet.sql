@@ -326,7 +326,8 @@ new_uuid_B := as_create_or_import_facet(registrering_B);
 search_result1 :=as_search_facet(
 	null,--TOOD ??
 	new_uuid_A,
-	null--registrering_A Facetregistrering_AType
+	null,--registrering_A Facetregistrering_AType
+	null--virkningSoeg
 	);
 
 RETURN NEXT is(
@@ -339,7 +340,8 @@ ARRAY[new_uuid_A]::uuid[],
 search_result2 :=as_search_facet(
 	null,--TOOD ??
 	null,
-	null--registrering_A Facetregistrering_AType
+	null,--registrering_A Facetregistrering_AType
+	null--virkningSoeg
 	);
 
 RETURN NEXT is(
@@ -376,7 +378,8 @@ null--ARRAY[facetRelAnsvarlig_B,facetRelRedaktoer1_B,facetRelRedaktoer2_B]
 search_result3 :=as_search_facet(
 	null,--TOOD ??
 	null,
-	search_registrering_3 --registrering_A Facetregistrering_AType
+	search_registrering_3, --registrering_A Facetregistrering_AType
+	null--virkningSoeg
 	);
 
 --raise notice 'search for IkkePubliceret returned:%',search_result3;
@@ -414,7 +417,8 @@ null--ARRAY[facetRelAnsvarlig_B,facetRelRedaktoer1_B,facetRelRedaktoer2_B]
 search_result4 :=as_search_facet(
 	null,--TOOD ??
 	null,
-	search_registrering_4 --registrering_A Facetregistrering_AType
+	search_registrering_4, --registrering_A Facetregistrering_AType
+	null--virkningSoeg
 	);
 
 RETURN NEXT is(
@@ -451,7 +455,8 @@ null--ARRAY[facetRelAnsvarlig_B,facetRelRedaktoer1_B,facetRelRedaktoer2_B]
 search_result5 :=as_search_facet(
 	null,--TOOD ??
 	null,
-	search_registrering_5 --registrering_A Facetregistrering_AType
+	search_registrering_5, --registrering_A Facetregistrering_AType
+	null--virkningSoeg
 	);
 
 RETURN NEXT is(
@@ -486,7 +491,8 @@ null--ARRAY[facetRelAnsvarlig_B,facetRelRedaktoer1_B,facetRelRedaktoer2_B]
 search_result6 :=as_search_facet(
 	null,--TOOD ??
 	null,
-	search_registrering_6 --registrering_A Facetregistrering_AType
+	search_registrering_6, --registrering_A Facetregistrering_AType
+	null--virkningSoeg
 	);
 
 RETURN NEXT is(
@@ -660,7 +666,8 @@ ARRAY[
 search_result7 :=as_search_facet(
 	null,--TOOD ??
 	null,
-	search_registrering_7 --registrering_A Facetregistrering_AType
+	search_registrering_7, --registrering_A Facetregistrering_AType
+	null--virkningSoeg
 	);
 
 RETURN NEXT is(
@@ -708,7 +715,8 @@ ARRAY[
 search_result8 :=as_search_facet(
 	null,--TOOD ??
 	null,
-	search_registrering_8 --registrering_A Facetregistrering_AType
+	search_registrering_8, --registrering_A Facetregistrering_AType
+	null--virkningSoeg
 	);
 
 expected_result8:=ARRAY[new_uuid_B,new_uuid_C]::uuid[];

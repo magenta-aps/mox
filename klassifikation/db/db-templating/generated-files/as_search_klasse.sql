@@ -14,6 +14,7 @@ CREATE OR REPLACE FUNCTION as_search_klasse(
 	firstResult int,--TOOD ??
 	klasse_uuid uuid,
 	registreringObj KlasseRegistreringType,
+	virkningSoeg TSTZRANGE,
 	maxResults int = 2147483647
 	)
   RETURNS uuid[] AS 
@@ -51,7 +52,7 @@ IF registreringObj IS NULL OR (registreringObj).registrering IS NULL THEN
 ELSE
 	IF
 	(
-		(registreringObj.registrering).timeperiod IS NOT NULL AND NOT isempty((registreringObj.registrering).timeperiod)  
+		(registreringObj.registrering).timeperiod IS NOT NULL  
 		OR
 		(registreringObj.registrering).livscykluskode IS NOT NULL
 		OR
@@ -67,9 +68,7 @@ ELSE
 			klasse_registrering b
 		WHERE
 			(
-				(
-					(registreringObj.registrering).timeperiod IS NULL OR isempty((registreringObj.registrering).timeperiod)
-				)
+				(registreringObj.registrering).timeperiod IS NULL 
 				OR
 				(registreringObj.registrering).timeperiod && (b.registrering).timeperiod
 			)
@@ -155,30 +154,42 @@ END LOOP;
 			LEFT JOIN klasse_attr_egenskaber_soegeord c on a.id=c.klasse_attr_egenskaber_id
 			WHERE
 				(
-					attrEgenskaberTypeObj.virkning IS NULL
+					(
+						attrEgenskaberTypeObj.virkning IS NULL 
+						OR
+						(
+							(
+								(
+							 		(attrEgenskaberTypeObj.virkning).TimePeriod IS NULL
+								)
+								OR
+								(
+									(attrEgenskaberTypeObj.virkning).TimePeriod && (a.virkning).TimePeriod
+								)
+							)
+							AND
+							(
+									(attrEgenskaberTypeObj.virkning).AktoerRef IS NULL OR (attrEgenskaberTypeObj.virkning).AktoerRef=(a.virkning).AktoerRef
+							)
+							AND
+							(
+									(attrEgenskaberTypeObj.virkning).AktoerTypeKode IS NULL OR (attrEgenskaberTypeObj.virkning).AktoerTypeKode=(a.virkning).AktoerTypeKode
+							)
+							AND
+							(
+									(attrEgenskaberTypeObj.virkning).NoteTekst IS NULL OR (attrEgenskaberTypeObj.virkning).NoteTekst=(a.virkning).NoteTekst
+							)
+						)
+					)
+				)
+				AND
+				(
+					(NOT (attrEgenskaberTypeObj.virkning IS NULL OR (attrEgenskaberTypeObj.virkning).TimePeriod IS NULL)) --we have already filtered on virkning above
 					OR
 					(
-						(
-							(
-						 		(attrEgenskaberTypeObj.virkning).TimePeriod IS NULL OR isempty((attrEgenskaberTypeObj.virkning).TimePeriod)
-							)
-							OR
-							(
-								(attrEgenskaberTypeObj.virkning).TimePeriod && (a.virkning).TimePeriod
-							)
-						)
-						AND
-						(
-								(attrEgenskaberTypeObj.virkning).AktoerRef IS NULL OR (attrEgenskaberTypeObj.virkning).AktoerRef=(a.virkning).AktoerRef
-						)
-						AND
-						(
-								(attrEgenskaberTypeObj.virkning).AktoerTypeKode IS NULL OR (attrEgenskaberTypeObj.virkning).AktoerTypeKode=(a.virkning).AktoerTypeKode
-						)
-						AND
-						(
-								(attrEgenskaberTypeObj.virkning).NoteTekst IS NULL OR (attrEgenskaberTypeObj.virkning).NoteTekst=(a.virkning).NoteTekst
-						)
+						virkningSoeg IS NULL
+						OR
+						virkningSoeg && (a.virkning).TimePeriod
 					)
 				)
 				AND
@@ -292,13 +303,9 @@ ELSE
 					OR
 					(
 						(
-							(
-						 		(tilsPubliceretTypeObj.virkning).TimePeriod IS NULL OR isempty((tilsPubliceretTypeObj.virkning).TimePeriod)
-							)
+					 		(tilsPubliceretTypeObj.virkning).TimePeriod IS NULL 
 							OR
-							(
-								(tilsPubliceretTypeObj.virkning).TimePeriod && (a.virkning).TimePeriod
-							)
+							(tilsPubliceretTypeObj.virkning).TimePeriod && (a.virkning).TimePeriod
 						)
 						AND
 						(
@@ -312,6 +319,16 @@ ELSE
 						(
 								(tilsPubliceretTypeObj.virkning).NoteTekst IS NULL OR (tilsPubliceretTypeObj.virkning).NoteTekst=(a.virkning).NoteTekst
 						)
+					)
+				)
+				AND
+				(
+					(NOT (tilsPubliceretTypeObj.virkning) IS NULL OR (tilsPubliceretTypeObj.virkning).TimePeriod IS NULL) --we have already filtered on virkning above
+					OR
+					(
+						virkningSoeg IS NULL
+						OR
+						virkningSoeg && (a.virkning).TimePeriod
 					)
 				)
 				AND
@@ -364,13 +381,9 @@ ELSE
 					OR
 					(
 						(
-							(
-						 		(relationTypeObj.virkning).TimePeriod IS NULL OR isempty((relationTypeObj.virkning).TimePeriod)
-							)
+						 	(relationTypeObj.virkning).TimePeriod IS NULL 
 							OR
-							(
-								(relationTypeObj.virkning).TimePeriod && (a.virkning).TimePeriod
-							)
+							(relationTypeObj.virkning).TimePeriod && (a.virkning).TimePeriod
 						)
 						AND
 						(
@@ -384,6 +397,16 @@ ELSE
 						(
 								(relationTypeObj.virkning).NoteTekst IS NULL OR (relationTypeObj.virkning).NoteTekst=(a.virkning).NoteTekst
 						)
+					)
+				)
+				AND
+				(
+					(NOT (relationTypeObj.virkning IS NULL OR (relationTypeObj.virkning).TimePeriod IS NULL)) --we have already filtered on virkning above
+					OR
+					(
+						virkningSoeg IS NULL
+						OR
+						virkningSoeg && (a.virkning).TimePeriod
 					)
 				)
 				AND
