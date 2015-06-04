@@ -115,7 +115,7 @@ END IF;
 IF registreringObj IS NULL OR (registreringObj).attr{{attribut|title}} IS NULL THEN
 	--RAISE DEBUG 'as_search_{{oio_type}}: skipping filtration on attr{{attribut|title}}';
 ELSE
-	IF (array_length({{oio_type}}_candidates,1)>0 OR NOT {{oio_type}}_candidates_is_initialized) THEN
+	IF (coalesce(array_length({{oio_type}}_candidates,1),0)>0 OR NOT {{oio_type}}_candidates_is_initialized) THEN
 		FOREACH attr{{attribut|title}}TypeObj IN ARRAY registreringObj.attr{{attribut|title}}
 		LOOP
 			to_be_applyed_filter_uuids:=array(
@@ -190,7 +190,7 @@ END IF;
 IF registreringObj IS NULL OR (registreringObj).tils{{tilstand|title}} IS NULL THEN
 	--RAISE DEBUG 'as_search_{{oio_type}}: skipping filtration on tils{{tilstand|title}}';
 ELSE
-	IF (array_length({{oio_type}}_candidates,1)>0 OR {{oio_type}}_candidates_is_initialized IS FALSE ) THEN 
+	IF (coalesce(array_length({{oio_type}}_candidates,1),0)>0 OR {{oio_type}}_candidates_is_initialized IS FALSE ) THEN 
 
 		FOREACH tils{{tilstand|title}}TypeObj IN ARRAY registreringObj.tils{{tilstand|title}}
 		LOOP
@@ -265,7 +265,7 @@ END IF;
 IF registreringObj IS NULL OR (registreringObj).relationer IS NULL THEN
 	--RAISE DEBUG 'as_search_{{oio_type}}: skipping filtration on relationer';
 ELSE
-	IF (array_length({{oio_type}}_candidates,1)>0 OR NOT {{oio_type}}_candidates_is_initialized) AND (registreringObj).relationer IS NOT NULL THEN
+	IF (coalesce(array_length({{oio_type}}_candidates,1),0)>0 OR NOT {{oio_type}}_candidates_is_initialized) AND (registreringObj).relationer IS NOT NULL THEN
 		FOREACH relationTypeObj IN ARRAY registreringObj.relationer
 		LOOP
 			to_be_applyed_filter_uuids:=array(

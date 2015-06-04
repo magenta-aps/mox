@@ -69,7 +69,7 @@ SELECT
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
  {%for attribut , attribut_fields in attributter.iteritems() %}
-IF array_length({{oio_type}}_registrering.attr{{attribut|title}}, 1)<1 THEN
+IF coalesce(array_length({{oio_type}}_registrering.attr{{attribut|title}}, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet attribut [{{attribut}}] for [{{oio_type}}]. Oprettelse afbrydes.';
 END IF;
 
@@ -99,7 +99,7 @@ END IF;
 {% for tilstand, tilstand_values in tilstande.iteritems() %}
 --Verification
 --For now all declared states are mandatory.
-IF array_length({{oio_type}}_registrering.tils{{tilstand|title}}, 1)<1 THEN
+IF coalesce(array_length({{oio_type}}_registrering.tils{{tilstand|title}}, 1),0)<1  THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [{{tilstand}}] for {{oio_type}}. Oprettelse afbrydes.';
 END IF;
 

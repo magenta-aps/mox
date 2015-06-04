@@ -72,7 +72,7 @@ SELECT
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
  
-IF array_length(facet_registrering.attrEgenskaber, 1)<1 THEN
+IF coalesce(array_length(facet_registrering.attrEgenskaber, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [facet]. Oprettelse afbrydes.';
 END IF;
 
@@ -114,7 +114,7 @@ END IF;
 
 --Verification
 --For now all declared states are mandatory.
-IF array_length(facet_registrering.tilsPubliceret, 1)<1 THEN
+IF coalesce(array_length(facet_registrering.tilsPubliceret, 1),0)<1  THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [publiceret] for facet. Oprettelse afbrydes.';
 END IF;
 

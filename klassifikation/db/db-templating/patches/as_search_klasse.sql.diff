@@ -1,5 +1,5 @@
-*** ../generated-files/as_search_klasse.sql	2015-05-27 10:36:57.022320056 +0200
---- ../patches/as_search_klasse.org.sql	2015-05-27 11:57:54.118561954 +0200
+*** ../generated-files/as_search_klasse.sql	2015-06-04 11:28:30.550715720 +0200
+--- ../patches/as_search_klasse.sql.org	2015-06-04 11:27:11.918711443 +0200
 ***************
 *** 24,33 ****
 --- 24,35 ----
@@ -22,7 +22,7 @@
   IF registreringObj IS NULL OR (registreringObj).attrEgenskaber IS NULL THEN
   	--RAISE DEBUG 'as_search_klasse: skipping filtration on attrEgenskaber';
   ELSE
-  	IF (array_length(klasse_candidates,1)>0 OR NOT klasse_candidates_is_initialized) THEN
+  	IF (coalesce(array_length(klasse_candidates,1),0)>0 OR NOT klasse_candidates_is_initialized) THEN
 ! 		FOREACH attrEgenskaberTypeObj IN ARRAY registreringObj.attrEgenskaber
   		LOOP
   			to_be_applyed_filter_uuids:=array(
@@ -47,7 +47,7 @@
 + 
 + FOREACH attrEgenskaberTypeObj IN ARRAY registreringObj.attrEgenskaber
 + LOOP
-+ 	IF  (attrEgenskaberTypeObj).soegeord IS NULL OR array_length((attrEgenskaberTypeObj).soegeord,1)<2 THEN
++ 	IF  (attrEgenskaberTypeObj).soegeord IS NULL OR coalesce(array_length((attrEgenskaberTypeObj).soegeord,1),0)<2 THEN
 + 	manipulatedAttrEgenskaberArr:=array_append(manipulatedAttrEgenskaberArr,attrEgenskaberTypeObj); --The element only has 0 or 1 soegeord element, så no manipulations is needed.
 + 	ELSE
 + 		FOREACH soegeordObj IN ARRAY (attrEgenskaberTypeObj).soegeord
@@ -70,7 +70,7 @@
 + END LOOP;
 + 
 + 
-  	IF (array_length(klasse_candidates,1)>0 OR NOT klasse_candidates_is_initialized) THEN
+  	IF (coalesce(array_length(klasse_candidates,1),0)>0 OR NOT klasse_candidates_is_initialized) THEN
 ! 		FOREACH attrEgenskaberTypeObj IN ARRAY manipulatedAttrEgenskaberArr
   		LOOP
   			to_be_applyed_filter_uuids:=array(

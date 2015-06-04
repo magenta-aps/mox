@@ -121,7 +121,7 @@ ELSE
 
 FOREACH attrEgenskaberTypeObj IN ARRAY registreringObj.attrEgenskaber
 LOOP
-	IF  (attrEgenskaberTypeObj).soegeord IS NULL OR array_length((attrEgenskaberTypeObj).soegeord,1)<2 THEN
+	IF  (attrEgenskaberTypeObj).soegeord IS NULL OR coalesce(array_length((attrEgenskaberTypeObj).soegeord,1),0)<2 THEN
 	manipulatedAttrEgenskaberArr:=array_append(manipulatedAttrEgenskaberArr,attrEgenskaberTypeObj); --The element only has 0 or 1 soegeord element, så no manipulations is needed.
 	ELSE
 		FOREACH soegeordObj IN ARRAY (attrEgenskaberTypeObj).soegeord
@@ -144,7 +144,7 @@ LOOP
 END LOOP;
 
 
-	IF (array_length(klasse_candidates,1)>0 OR NOT klasse_candidates_is_initialized) THEN
+	IF (coalesce(array_length(klasse_candidates,1),0)>0 OR NOT klasse_candidates_is_initialized) THEN
 		FOREACH attrEgenskaberTypeObj IN ARRAY manipulatedAttrEgenskaberArr
 		LOOP
 			to_be_applyed_filter_uuids:=array(
@@ -277,7 +277,7 @@ END IF;
 IF registreringObj IS NULL OR (registreringObj).tilsPubliceret IS NULL THEN
 	--RAISE DEBUG 'as_search_klasse: skipping filtration on tilsPubliceret';
 ELSE
-	IF (array_length(klasse_candidates,1)>0 OR klasse_candidates_is_initialized IS FALSE ) THEN --AND (IS NOT NULL THEN
+	IF (coalesce(array_length(klasse_candidates,1),0)>0 OR klasse_candidates_is_initialized IS FALSE ) THEN 
 
 		FOREACH tilsPubliceretTypeObj IN ARRAY registreringObj.tilsPubliceret
 		LOOP
@@ -350,7 +350,7 @@ END IF;
 IF registreringObj IS NULL OR (registreringObj).relationer IS NULL THEN
 	--RAISE DEBUG 'as_search_klasse: skipping filtration on relationer';
 ELSE
-	IF (array_length(klasse_candidates,1)>0 OR NOT klasse_candidates_is_initialized) AND registreringObj IS NOT NULL AND (registreringObj).relationer IS NOT NULL THEN
+	IF (coalesce(array_length(klasse_candidates,1),0)>0 OR NOT klasse_candidates_is_initialized) AND (registreringObj).relationer IS NOT NULL THEN
 		FOREACH relationTypeObj IN ARRAY registreringObj.relationer
 		LOOP
 			to_be_applyed_filter_uuids:=array(
