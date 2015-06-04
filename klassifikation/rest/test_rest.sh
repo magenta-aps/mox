@@ -13,7 +13,8 @@
 
 # First, create a new facet.
 
-curl -H "Content-Type: application/json" -X POST -d "$(cat test_data/facet_opret.json)" http://127.0.0.1:5000/klassifikation/facet
+result=$(curl -H "Content-Type: application/json" -X POST -d "$(cat test_data/facet_opret.json)" http://127.0.0.1:5000/klassifikation/facet)
+uuid=$(expr "$result" : '.*"uuid": "\([^"]*\)"')
 
 # Now, import a new facet
 # - Suppose no object with this ID exists.
@@ -32,4 +33,9 @@ curl -H "Content-Type: application/json" -X PUT -d "$(cat test_data/facet_opdate
 #
 # The difference between update and passive hinges on whether a life
 # cycle code is supplied directly in the input or not.
+
+
+# List facets
+
+curl -H "Content-Type: application/json" -X GET http://127.0.0.1:5000/klassifikation/facet?uuid=$uuid
 

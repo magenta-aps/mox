@@ -1,6 +1,7 @@
 from enum import Enum
 
 import psycopg2
+from psycopg2.extras import DateTimeTZRange
 from jinja2 import Template
 
 from settings import DATABASE, DB_USER
@@ -16,6 +17,7 @@ def get_connection():
     """Handle all intricacies of connecting to Postgres."""
     connection = psycopg2.connect("dbname={0} user={1}".format(DATABASE,
                                                                DB_USER))
+    connection.autocommit = True
     return connection
 
 
@@ -34,7 +36,7 @@ def convert_attributes(attributes):
             attr_value_list = [
                 attr_period[f] if f in attr_period else None
                 for f in field_names
-            ]
+                ]
             converted_attr_periods.append(attr_value_list)
         attributes[attr_name] = converted_attr_periods
     return attributes
@@ -139,14 +141,14 @@ def create_or_import_object(class_name, note, attributes, states, relations,
         sql_raw = f.read()
     sql_template = Template(sql_raw)
     sql = sql_template.render(
-            class_name=class_name,
-            uuid=uuid,
-            life_cycle_code=life_cycle_code,
-            user_ref=user_ref,
-            note=note,
-            states=sql_states,
-            attributes=sql_attributes,
-            relations=sql_relations)
+        class_name=class_name,
+        uuid=uuid,
+        life_cycle_code=life_cycle_code,
+        user_ref=user_ref,
+        note=note,
+        states=sql_states,
+        attributes=sql_attributes,
+        relations=sql_relations)
     # TODO: Call Postgres! Return OK or not accordingly
     conn = get_connection()
     cursor = conn.cursor()
@@ -165,11 +167,11 @@ def passivate_object(class_name, note, uuid):
         sql_raw = f.read()
     sql_template = Template(sql_raw)
     sql = sql_template.render(
-            class_name=class_name,
-            uuid=uuid,
-            life_cycle_code=life_cycle_code,
-            user_ref=user_ref,
-            note=note)
+        class_name=class_name,
+        uuid=uuid,
+        life_cycle_code=life_cycle_code,
+        user_ref=user_ref,
+        note=note)
     # TODO: Call PostgreSQL
     print sql
     return sql
@@ -189,14 +191,40 @@ def update_object(class_name, note, attributes, states, relations, uuid=None):
         sql_raw = f.read()
     sql_template = Template(sql_raw)
     sql = sql_template.render(
-            class_name=class_name,
-            uuid=uuid,
-            life_cycle_code=life_cycle_code,
-            user_ref=user_ref,
-            note=note,
-            states=sql_states,
-            attributes=sql_attributes,
-            relations=sql_relations)
+        class_name=class_name,
+        uuid=uuid,
+        life_cycle_code=life_cycle_code,
+        user_ref=user_ref,
+        note=note,
+        states=sql_states,
+        attributes=sql_attributes,
+        relations=sql_relations)
     # TODO: Call Postgres! Return OK or not accordingly
     print sql
     return sql
+
+
+def list_objects(class_name, uuid, virkning_fra, virkning_til,
+                 registreret_fra, registreret_til):
+    """List objects with the given uuids, optionally filtering by the given
+    virkning and registering periods."""
+
+    assert isinstance(uuid, list)
+
+    with open('templates/sql/list_objects.sql', 'r') as f:
+        sql_raw = f.read()
+    sql_template = Template(sql_raw)
+    sql = sql_template.render(
+        class_name=class_name
+    )
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(sql, {
+        'uuid': uuid,
+        'registrering_tstzrange': DateTimeTZRange(registreret_fra,
+                                                  registreret_til),
+        'virkning_tstzrange': DateTimeTZRange(virkning_fra, virkning_til)
+    })
+    output = cursor.fetchone()
+    return output

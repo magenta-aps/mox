@@ -49,8 +49,29 @@ class OIORestObject(object):
         """
         LIST or SEARCH facets, depending on parameters.
         """
-        # TODO: Implement this.
-        return j("Her kommer en liste af facetter!")
+        virkning_fra = request.args.get('virkningFra', None)
+        virkning_til = request.args.get('virkningTil', None)
+        registreret_fra = request.args.get('registreretFra', None)
+        registreret_til = request.args.get('registreretTil', None)
+
+        # TODO: Implement search
+
+        uuid = request.args.get('uuid', None)
+        if uuid is None:
+            # This is not allowed, but we let the DB layer throw an exception
+            uuid = []
+        else:
+            uuid = uuid.split(',')
+
+        results = db.list_objects(cls.__name__, uuid, virkning_fra,
+                                 virkning_til, registreret_fra,
+                                 registreret_til)
+        if results is None:
+            results = []
+        # TODO: Return JSON object key should be based on class name,
+        # e.g. {"Facetter": [..]}, not {"results": [..]}
+        # TODO: Include Return value
+        return jsonify({'results': results})
 
     @classmethod
     def get_object(cls, uuid):
