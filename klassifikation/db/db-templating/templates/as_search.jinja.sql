@@ -60,7 +60,7 @@ ELSE
 	) THEN
 
 		to_be_applyed_filter_uuids:=array(
-		SELECT 
+		SELECT DISTINCT
 			{{oio_type}}_uuid
 		FROM
 			{{oio_type}}_registrering b
@@ -92,7 +92,7 @@ ELSE
 
 
 		IF {{oio_type}}_candidates_is_initialized THEN
-			{{oio_type}}_candidates:= array(SELECT id from unnest({{oio_type}}_candidates) as a(id) INTERSECT SELECT id from unnest(to_be_applyed_filter_uuids) as b(id) );
+			{{oio_type}}_candidates:= array(SELECT DISTINCT id from unnest({{oio_type}}_candidates) as a(id) INTERSECT SELECT DISTINCT id from unnest(to_be_applyed_filter_uuids) as b(id) );
 		ELSE
 			{{oio_type}}_candidates:=to_be_applyed_filter_uuids;
 			{{oio_type}}_candidates_is_initialized:=true;
@@ -118,7 +118,7 @@ ELSE
 		FOREACH attr{{attribut|title}}TypeObj IN ARRAY registreringObj.attr{{attribut|title}}
 		LOOP
 			to_be_applyed_filter_uuids:=array(
-			SELECT
+			SELECT DISTINCT
 			b.{{oio_type}}_id 
 			FROM  {{oio_type}}_attr_{{attribut}} a
 			JOIN {{oio_type}}_registrering b on a.{{oio_type}}_registrering_id=b.id
@@ -174,7 +174,7 @@ ELSE
 			
 
 			IF {{oio_type}}_candidates_is_initialized THEN
-				{{oio_type}}_candidates:= array(SELECT id from unnest({{oio_type}}_candidates) as a(id) INTERSECT SELECT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
+				{{oio_type}}_candidates:= array(SELECT DISTINCT id from unnest({{oio_type}}_candidates) as a(id) INTERSECT SELECT DISTINCT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
 			ELSE
 				{{oio_type}}_candidates:=to_be_applyed_filter_uuids;
 				{{oio_type}}_candidates_is_initialized:=true;
@@ -206,7 +206,7 @@ ELSE
 		FOREACH tils{{tilstand|title}}TypeObj IN ARRAY registreringObj.tils{{tilstand|title}}
 		LOOP
 			to_be_applyed_filter_uuids:=array(
-			SELECT
+			SELECT DISTINCT
 			b.{{oio_type}}_id 
 			FROM  {{oio_type}}_tils_{{tilstand}} a
 			JOIN {{oio_type}}_registrering b on a.{{oio_type}}_registrering_id=b.id
@@ -254,7 +254,7 @@ ELSE
 			
 
 			IF {{oio_type}}_candidates_is_initialized THEN
-				{{oio_type}}_candidates:= array(SELECT id from unnest({{oio_type}}_candidates) as a(id) INTERSECT SELECT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
+				{{oio_type}}_candidates:= array(SELECT DISTINCT id from unnest({{oio_type}}_candidates) as a(id) INTERSECT SELECT DISTINCT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
 			ELSE
 				{{oio_type}}_candidates:=to_be_applyed_filter_uuids;
 				{{oio_type}}_candidates_is_initialized:=true;
@@ -286,7 +286,7 @@ ELSE
 		FOREACH relationTypeObj IN ARRAY registreringObj.relationer
 		LOOP
 			to_be_applyed_filter_uuids:=array(
-			SELECT
+			SELECT DISTINCT
 			b.{{oio_type}}_id 
 			FROM  {{oio_type}}_relation a
 			JOIN {{oio_type}}_registrering b on a.{{oio_type}}_registrering_id=b.id
@@ -340,7 +340,7 @@ ELSE
 			
 
 			IF {{oio_type}}_candidates_is_initialized THEN
-				{{oio_type}}_candidates:= array(SELECT id from unnest({{oio_type}}_candidates) as a(id) INTERSECT SELECT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
+				{{oio_type}}_candidates:= array(SELECT DISTINCT id from unnest({{oio_type}}_candidates) as a(id) INTERSECT SELECT DISTINCT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
 			ELSE
 				{{oio_type}}_candidates:=to_be_applyed_filter_uuids;
 				{{oio_type}}_candidates_is_initialized:=true;
@@ -358,11 +358,11 @@ END IF;
 IF NOT {{oio_type}}_candidates_is_initialized THEN
 	--No filters applied!
 	{{oio_type}}_candidates:=array(
-		SELECT id FROM {{oio_type}} a LIMIT maxResults
+		SELECT DISTINCT id FROM {{oio_type}} a LIMIT maxResults
 	);
 ELSE
 	{{oio_type}}_candidates:=array(
-		SELECT id FROM unnest({{oio_type}}_candidates) as a(id) LIMIT maxResults
+		SELECT DISTINCT id FROM unnest({{oio_type}}_candidates) as a(id) LIMIT maxResults
 		);
 END IF;
 

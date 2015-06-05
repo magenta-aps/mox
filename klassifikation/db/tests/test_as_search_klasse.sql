@@ -88,12 +88,18 @@ DECLARE
 	search_result10 uuid[];
 	search_result11 uuid[];
 	search_result12 uuid[];
+	search_result13 uuid[];
+	search_result14 uuid[];
 
+	expected_result2 uuid[];
+	expected_result4 uuid[];
 	expected_result8 uuid[];
 	expected_result9 uuid[];
 	expected_result10 uuid[];
 	expected_result11 uuid[];
 	expected_result12 uuid[];
+	expected_result13 uuid[];
+	expected_result14 uuid[];
 
 	search_registrering_3 KlasseRegistreringType;
 	search_registrering_4 KlasseRegistreringType;
@@ -105,6 +111,8 @@ DECLARE
 	search_registrering_10 KlasseRegistreringType;
 	search_registrering_11 KlasseRegistreringType;
 	search_registrering_12 KlasseRegistreringType;
+	search_registrering_13 KlasseRegistreringType;
+	search_registrering_14 KlasseRegistreringType;
 
 BEGIN
 
@@ -400,11 +408,11 @@ search_result2 :=as_search_klasse(
 	null--virkningSoeg
 	);
 
-RETURN NEXT is(
-search_result2,
-ARRAY[new_uuid_A,new_uuid_B]::uuid[],
-'search null params'
-);
+expected_result2:=ARRAY[new_uuid_A,new_uuid_B]::uuid[];
+
+
+RETURN NEXT ok(expected_result2 @> search_result2 and search_result2 @>expected_result2 and array_length(expected_result2,1)=array_length(search_result2,1), 'search null params');
+
 
 
 --***********************************
@@ -477,11 +485,10 @@ search_result4 :=as_search_klasse(
 	,null--virkningSoeg
 	);
 
-RETURN NEXT is(
-search_result4,
-ARRAY[new_uuid_A,new_uuid_B]::uuid[],
-'search state KlassePubliceretTils Publiceret on 18-05-2015 - 19-05-2015'
-);
+expected_result4=ARRAY[new_uuid_A,new_uuid_B]::uuid[];
+
+
+RETURN NEXT ok(expected_result4 @> search_result4 and search_result4 @>expected_result4 and array_length(expected_result4,1)=array_length(search_result4,1), 'search state KlassePubliceretTils Publiceret on 18-05-2015 - 19-05-2015');
 
 
 --***********************************
@@ -1004,9 +1011,99 @@ expected_result12:=ARRAY[new_uuid_A,new_uuid_B,new_uuid_C]::uuid[];
 RETURN NEXT ok(expected_result12 @> search_result12 and search_result12 @>expected_result12 and array_length(expected_result12,1)=array_length(search_result12,1), 'search state publiceretStatus and common egenskab');
 
 
---Do a test, that filters on soegeord (3)
 
 
+---*******************
+--Test global virksøg 1
+
+
+search_registrering_13 := ROW (
+	ROW (
+	NULL,
+	NULL,
+	NULL,
+	NULL) :: registreringBase
+	,
+	null,--ARRAY[klassePubliceret_B]::KlassePubliceretTilsType[],
+ARRAY[
+
+ROW(
+		NULL, --brugervendtnoegle
+   		NULL, --beskrivelse
+        'eksempel_faelles', --eksempel
+   		NULL, --omfang
+   		NULL, --titel
+   		NULL,
+   		NULL, --aendringsnotat
+   		NULL, --soegeord
+   			null
+		)::KlasseEgenskaberAttrType
+
+
+]::KlasseEgenskaberAttrType[],
+null
+):: KlasseRegistreringType;
+
+
+search_result13 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	search_registrering_13, --registrering_A Klasseregistrering_AType
+	'[2014-10-01, 2014-10-20]' :: TSTZRANGE --virkningSoeg
+	);
+
+
+
+expected_result13:=ARRAY[new_uuid_C]::uuid[];
+
+RETURN NEXT ok(expected_result13 @> search_result13 and search_result13 @>expected_result13 and array_length(expected_result13,1)=array_length(search_result13,1), 'Test global virksøg 1');
+
+
+--Test global virksøg 2
+
+
+search_registrering_14 := ROW (
+	ROW (
+	NULL,
+	NULL,
+	NULL,
+	NULL) :: registreringBase
+	,
+	null,--ARRAY[klassePubliceret_B]::KlassePubliceretTilsType[],
+ARRAY[
+
+ROW(
+		NULL, --brugervendtnoegle
+   		NULL, --beskrivelse
+        'eksempel_faelles', --eksempel
+   		NULL, --omfang
+   		NULL, --titel
+   		NULL,
+   		NULL, --aendringsnotat
+   		NULL, --soegeord
+   			null
+		)::KlasseEgenskaberAttrType
+
+
+]::KlasseEgenskaberAttrType[],
+null
+):: KlasseRegistreringType;
+
+
+search_result14 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	search_registrering_14, --registrering_A Klasseregistrering_AType
+	'[2014-10-01, 2015-04-12]' :: TSTZRANGE --virkningSoeg
+	);
+
+raise notice 'Test global virksøg 2:search_result14: %',to_json(search_result14);
+
+expected_result14:=ARRAY[new_uuid_C,new_uuid_B]::uuid[];
+
+raise notice 'Test global virksøg 2:expected_result14: %',to_json(expected_result14);
+
+RETURN NEXT ok(expected_result14 @> search_result14 and search_result14 @>expected_result14 and array_length(expected_result14,1)=array_length(search_result14,1), 'Test global virksøg 2');
 
 
 

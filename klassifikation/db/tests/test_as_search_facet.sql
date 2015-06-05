@@ -80,7 +80,11 @@ DECLARE
 	search_result6 uuid[];
 	search_result7 uuid[];
 	search_result8 uuid[];
+
+	expected_result2 uuid[];
+	expected_result4 uuid[];
 	expected_result8 uuid[];
+	
 
 	search_registrering_3 FacetRegistreringType;
 	search_registrering_4 FacetRegistreringType;
@@ -344,11 +348,9 @@ search_result2 :=as_search_facet(
 	null--virkningSoeg
 	);
 
-RETURN NEXT is(
-search_result2,
-ARRAY[new_uuid_A,new_uuid_B]::uuid[],
-'search null params'
-);
+expected_result2:=ARRAY[new_uuid_A,new_uuid_B]::uuid[];
+
+RETURN NEXT ok(expected_result2 @> search_result2 and search_result2 @>expected_result2 and array_length(expected_result2,1)=array_length(search_result2,1), 'search null params');
 
 
 --***********************************
@@ -421,11 +423,11 @@ search_result4 :=as_search_facet(
 	null--virkningSoeg
 	);
 
-RETURN NEXT is(
-search_result4,
-ARRAY[new_uuid_A,new_uuid_B]::uuid[],
-'search state FacetPubliceretTils Publiceret on 18-05-2015 - 19-05-2015'
-);
+
+
+expected_result4:=ARRAY[new_uuid_A,new_uuid_B]::uuid[];
+
+RETURN NEXT ok(expected_result4 @> search_result4 and search_result4 @>expected_result4 and array_length(expected_result4,1)=array_length(search_result4,1), 'search on facets that were published on 18-05-2015');
 
 
 --***********************************

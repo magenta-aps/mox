@@ -60,7 +60,7 @@ ELSE
 	) THEN
 
 		to_be_applyed_filter_uuids:=array(
-		SELECT 
+		SELECT DISTINCT
 			facet_uuid
 		FROM
 			facet_registrering b
@@ -92,7 +92,7 @@ ELSE
 
 
 		IF facet_candidates_is_initialized THEN
-			facet_candidates:= array(SELECT id from unnest(facet_candidates) as a(id) INTERSECT SELECT id from unnest(to_be_applyed_filter_uuids) as b(id) );
+			facet_candidates:= array(SELECT DISTINCT id from unnest(facet_candidates) as a(id) INTERSECT SELECT DISTINCT id from unnest(to_be_applyed_filter_uuids) as b(id) );
 		ELSE
 			facet_candidates:=to_be_applyed_filter_uuids;
 			facet_candidates_is_initialized:=true;
@@ -116,7 +116,7 @@ ELSE
 		FOREACH attrEgenskaberTypeObj IN ARRAY registreringObj.attrEgenskaber
 		LOOP
 			to_be_applyed_filter_uuids:=array(
-			SELECT
+			SELECT DISTINCT
 			b.facet_id 
 			FROM  facet_attr_egenskaber a
 			JOIN facet_registrering b on a.facet_registrering_id=b.id
@@ -206,7 +206,7 @@ ELSE
 			
 
 			IF facet_candidates_is_initialized THEN
-				facet_candidates:= array(SELECT id from unnest(facet_candidates) as a(id) INTERSECT SELECT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
+				facet_candidates:= array(SELECT DISTINCT id from unnest(facet_candidates) as a(id) INTERSECT SELECT DISTINCT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
 			ELSE
 				facet_candidates:=to_be_applyed_filter_uuids;
 				facet_candidates_is_initialized:=true;
@@ -236,7 +236,7 @@ ELSE
 		FOREACH tilsPubliceretTypeObj IN ARRAY registreringObj.tilsPubliceret
 		LOOP
 			to_be_applyed_filter_uuids:=array(
-			SELECT
+			SELECT DISTINCT
 			b.facet_id 
 			FROM  facet_tils_publiceret a
 			JOIN facet_registrering b on a.facet_registrering_id=b.id
@@ -284,7 +284,7 @@ ELSE
 			
 
 			IF facet_candidates_is_initialized THEN
-				facet_candidates:= array(SELECT id from unnest(facet_candidates) as a(id) INTERSECT SELECT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
+				facet_candidates:= array(SELECT DISTINCT id from unnest(facet_candidates) as a(id) INTERSECT SELECT DISTINCT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
 			ELSE
 				facet_candidates:=to_be_applyed_filter_uuids;
 				facet_candidates_is_initialized:=true;
@@ -314,7 +314,7 @@ ELSE
 		FOREACH relationTypeObj IN ARRAY registreringObj.relationer
 		LOOP
 			to_be_applyed_filter_uuids:=array(
-			SELECT
+			SELECT DISTINCT
 			b.facet_id 
 			FROM  facet_relation a
 			JOIN facet_registrering b on a.facet_registrering_id=b.id
@@ -368,7 +368,7 @@ ELSE
 			
 
 			IF facet_candidates_is_initialized THEN
-				facet_candidates:= array(SELECT id from unnest(facet_candidates) as a(id) INTERSECT SELECT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
+				facet_candidates:= array(SELECT DISTINCT id from unnest(facet_candidates) as a(id) INTERSECT SELECT DISTINCT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
 			ELSE
 				facet_candidates:=to_be_applyed_filter_uuids;
 				facet_candidates_is_initialized:=true;
@@ -386,11 +386,11 @@ END IF;
 IF NOT facet_candidates_is_initialized THEN
 	--No filters applied!
 	facet_candidates:=array(
-		SELECT id FROM facet a LIMIT maxResults
+		SELECT DISTINCT id FROM facet a LIMIT maxResults
 	);
 ELSE
 	facet_candidates:=array(
-		SELECT id FROM unnest(facet_candidates) as a(id) LIMIT maxResults
+		SELECT DISTINCT id FROM unnest(facet_candidates) as a(id) LIMIT maxResults
 		);
 END IF;
 
