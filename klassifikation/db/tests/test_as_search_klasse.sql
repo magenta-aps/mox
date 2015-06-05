@@ -90,6 +90,9 @@ DECLARE
 	search_result12 uuid[];
 	search_result13 uuid[];
 	search_result14 uuid[];
+	search_result15 uuid[];
+	search_result16 uuid[];
+	search_result17 uuid[];
 
 	expected_result2 uuid[];
 	expected_result4 uuid[];
@@ -100,6 +103,9 @@ DECLARE
 	expected_result12 uuid[];
 	expected_result13 uuid[];
 	expected_result14 uuid[];
+	expected_result15 uuid[];
+	expected_result16 uuid[];
+	expected_result17 uuid[];
 
 	search_registrering_3 KlasseRegistreringType;
 	search_registrering_4 KlasseRegistreringType;
@@ -113,6 +119,9 @@ DECLARE
 	search_registrering_12 KlasseRegistreringType;
 	search_registrering_13 KlasseRegistreringType;
 	search_registrering_14 KlasseRegistreringType;
+	search_registrering_15 KlasseRegistreringType;
+	search_registrering_16 KlasseRegistreringType;
+	search_registrering_17 KlasseRegistreringType;
 
 BEGIN
 
@@ -951,7 +960,7 @@ search_result11 :=as_search_klasse(
 
 expected_result11:=ARRAY[]::uuid[];
 
-raise notice 'search_result11:%, length:%',search_result11,array_length(search_result11,1);
+--raise notice 'search_result11:%, length:%',search_result11,array_length(search_result11,1);
 
 RETURN NEXT ok(coalesce(array_length(search_result11, 1), 0)=0 , 'search state publiceretStatus and soegeord combined 3');
 
@@ -1097,20 +1106,145 @@ search_result14 :=as_search_klasse(
 	'[2014-10-01, 2015-04-12]' :: TSTZRANGE --virkningSoeg
 	);
 
-raise notice 'Test global virksøg 2:search_result14: %',to_json(search_result14);
-
 expected_result14:=ARRAY[new_uuid_C,new_uuid_B]::uuid[];
-
-raise notice 'Test global virksøg 2:expected_result14: %',to_json(expected_result14);
 
 RETURN NEXT ok(expected_result14 @> search_result14 and search_result14 @>expected_result14 and array_length(expected_result14,1)=array_length(search_result14,1), 'Test global virksøg 2');
 
 
+--**************************************************
+--Test global virksøg 3
 
 
+search_registrering_15 := ROW (
+	ROW (
+	NULL,
+	NULL,
+	NULL,
+	NULL) :: registreringBase
+	,
+	null,--ARRAY[klassePubliceret_B]::KlassePubliceretTilsType[],
+ARRAY[
+
+ROW(
+		NULL, --brugervendtnoegle
+   		NULL, --beskrivelse
+        'eksempel_faelles', --eksempel
+   		NULL, --omfang
+   		NULL, --titel
+   		NULL,
+   		NULL, --aendringsnotat
+   		NULL, --soegeord
+   			ROW(
+				  	'[2014-12-20, 2014-12-23]' :: TSTZRANGE,
+				  	null,null,null
+				  	)::virkning
+		)::KlasseEgenskaberAttrType
 
 
+]::KlasseEgenskaberAttrType[],
+null
+):: KlasseRegistreringType;
 
+
+search_result15 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	search_registrering_15, --registrering_A Klasseregistrering_AType
+	'[2014-10-01, 2015-04-12]' :: TSTZRANGE --virkningSoeg --NOTICE: Should we overruled by more specific virkning supplied above
+	);
+
+expected_result15:=ARRAY[new_uuid_C]::uuid[];
+
+--raise notice 'Test global virksøg 3:search_result15:%',to_json(search_result15);
+
+--raise notice 'Test global virksøg 3:expected_result15:%',to_json(expected_result15);
+
+RETURN NEXT ok(expected_result15 @> search_result15 and search_result15 @>expected_result15 and array_length(expected_result15,1)=array_length(search_result15,1), 'Test global virksøg 3');
+
+
+--**************************************************
+--Test global virksøg 4
+
+
+--***********************************
+search_registrering_16 := ROW (
+	ROW (
+	NULL,
+	NULL,
+	NULL,
+	NULL) :: registreringBase
+	,
+	ARRAY[
+			ROW(
+				  ROW(
+				  	'[2015-03-18, 2015-04-19]' :: TSTZRANGE,
+				  	null,null,null
+				  	)::virkning 
+				  ,'Publiceret'::KlassePubliceretTils
+				):: KlassePubliceretTilsType
+	],--ARRAY[klassePubliceret_B]::KlassePubliceretTilsType[],
+null,--ARRAY[klasseEgenskab_B]::KlasseEgenskaberAttrType[],
+null--ARRAY[klasseRelAnsvarlig_B,klasseRelRedaktoer1_B,klasseRelRedaktoer2_B]
+):: KlasseRegistreringType;
+
+
+search_result16 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	search_registrering_16 --registrering_A Klasseregistrering_AType
+	,'[2015-01-01, 2015-05-19]' :: TSTZRANGE --virkningSoeg --ATTENTION: Should be overruled by the more specific virkning above
+	);
+
+expected_result16=ARRAY[new_uuid_C]::uuid[];
+
+--raise notice 'Test global virksøg 5:search_result16:%',to_json(search_result16);
+
+--raise notice 'Test global virksøg 5:expected_result16:%',to_json(expected_result16);
+
+RETURN NEXT ok(expected_result16 @> search_result16 and search_result16 @>expected_result16 and array_length(expected_result16,1)=array_length(search_result16,1), 'Test global virksøg 4');
+
+--Test global virksøg 5
+
+
+--***********************************
+search_registrering_17 := ROW (
+	ROW (
+	NULL,
+	NULL,
+	NULL,
+	NULL) :: registreringBase
+	,
+	ARRAY[
+			ROW(
+				  NULL--virkning 
+				  ,'Publiceret'::KlassePubliceretTils
+				):: KlassePubliceretTilsType
+	],--ARRAY[klassePubliceret_B]::KlassePubliceretTilsType[],
+null,--ARRAY[klasseEgenskab_B]::KlasseEgenskaberAttrType[],
+null--ARRAY[klasseRelAnsvarlig_B,klasseRelRedaktoer1_B,klasseRelRedaktoer2_B]
+):: KlasseRegistreringType;
+
+
+search_result17 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	search_registrering_17 --registrering_A Klasseregistrering_AType
+	,'[2015-01-01, 2015-02-19]' :: TSTZRANGE --virkningSoeg 
+	);
+
+expected_result17=ARRAY[new_uuid_C]::uuid[];
+
+/*
+raise notice 'Test global virksøg 5:search_result17:%',to_json(search_result17);
+
+raise notice 'Test global virksøg 5:expected_result17:%',to_json(expected_result17);
+
+raise notice 'Test global virksøg 5:A:%',to_json(registrering_A);
+raise notice 'Test global virksøg 5:B:%',to_json(registrering_B);
+raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
+*/
+
+RETURN NEXT ok(expected_result17 @> search_result17 and search_result17 @>expected_result17 and array_length(expected_result17,1)=array_length(search_result17,1), 'Test global virksøg 5');
 
 
 

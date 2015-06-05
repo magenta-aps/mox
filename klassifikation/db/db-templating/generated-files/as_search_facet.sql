@@ -266,7 +266,7 @@ ELSE
 				)
 				AND
 				(
-					(NOT (tilsPubliceretTypeObj.virkning) IS NULL OR (tilsPubliceretTypeObj.virkning).TimePeriod IS NULL) --we have already filtered on virkning above
+					(NOT ((tilsPubliceretTypeObj.virkning) IS NULL OR (tilsPubliceretTypeObj.virkning).TimePeriod IS NULL)) --we have already filtered on virkning above
 					OR
 					(
 						virkningSoeg IS NULL

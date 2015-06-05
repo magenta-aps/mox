@@ -236,7 +236,7 @@ ELSE
 				)
 				AND
 				(
-					(NOT (tils{{tilstand|title}}TypeObj.virkning) IS NULL OR (tils{{tilstand|title}}TypeObj.virkning).TimePeriod IS NULL) --we have already filtered on virkning above
+					(NOT ((tils{{tilstand|title}}TypeObj.virkning) IS NULL OR (tils{{tilstand|title}}TypeObj.virkning).TimePeriod IS NULL)) --we have already filtered on virkning above
 					OR
 					(
 						virkningSoeg IS NULL
