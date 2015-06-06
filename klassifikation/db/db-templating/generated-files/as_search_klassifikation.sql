@@ -22,7 +22,7 @@ $$
 DECLARE
 	klassifikation_candidates uuid[];
 	klassifikation_candidates_is_initialized boolean;
-	to_be_applyed_filter_uuids uuid[]; 
+	--to_be_applyed_filter_uuids uuid[]; 
 	attrEgenskaberTypeObj KlassifikationEgenskaberAttrType;
 	
   	tilsPubliceretTypeObj KlassifikationPubliceretTilsType;
@@ -33,7 +33,6 @@ BEGIN
 
 klassifikation_candidates_is_initialized := false;
 
-
 IF klassifikation_uuid is not NULL THEN
 	klassifikation_candidates:= ARRAY[klassifikation_uuid];
 	klassifikation_candidates_is_initialized:=true;
@@ -43,63 +42,7 @@ END IF;
 --RAISE DEBUG 'klassifikation_candidates_is_initialized step 1:%',klassifikation_candidates_is_initialized;
 --RAISE DEBUG 'klassifikation_candidates step 1:%',klassifikation_candidates;
 --/****************************//
---filter on registration
 
-IF registreringObj IS NULL OR (registreringObj).registrering IS NULL THEN
-	--RAISE DEBUG 'as_search_klassifikation: skipping filtration on registrering';
-ELSE
-	IF
-	(
-		(registreringObj.registrering).timeperiod IS NOT NULL  
-		OR
-		(registreringObj.registrering).livscykluskode IS NOT NULL
-		OR
-		(registreringObj.registrering).brugerref IS NOT NULL
-		OR
-		(registreringObj.registrering).note IS NOT NULL
-	) THEN
-
-		to_be_applyed_filter_uuids:=array(
-		SELECT DISTINCT
-			klassifikation_uuid
-		FROM
-			klassifikation_registrering b
-		WHERE
-			(
-				(registreringObj.registrering).timeperiod IS NULL 
-				OR
-				(registreringObj.registrering).timeperiod && (b.registrering).timeperiod
-			)
-			AND
-			(
-				(registreringObj.registrering).livscykluskode IS NULL 
-				OR
-				(registreringObj.registrering).livscykluskode = (b.registrering).livscykluskode 		
-			) 
-			AND
-			(
-				(registreringObj.registrering).brugerref IS NULL
-				OR
-				(registreringObj.registrering).brugerref = (b.registrering).brugerref
-			)
-			AND
-			(
-				(registreringObj.registrering).note IS NULL
-				OR
-				(registreringObj.registrering).note = (b.registrering).note
-			)
-		);
-
-
-		IF klassifikation_candidates_is_initialized THEN
-			klassifikation_candidates:= array(SELECT DISTINCT id from unnest(klassifikation_candidates) as a(id) INTERSECT SELECT DISTINCT id from unnest(to_be_applyed_filter_uuids) as b(id) );
-		ELSE
-			klassifikation_candidates:=to_be_applyed_filter_uuids;
-			klassifikation_candidates_is_initialized:=true;
-		END IF;
-
-	END IF;
-END IF;
 
 --RAISE NOTICE 'klassifikation_candidates_is_initialized step 2:%',klassifikation_candidates_is_initialized;
 --RAISE NOTICE 'klassifikation_candidates step 2:%',klassifikation_candidates;
@@ -115,7 +58,7 @@ ELSE
 	IF (coalesce(array_length(klassifikation_candidates,1),0)>0 OR NOT klassifikation_candidates_is_initialized) THEN
 		FOREACH attrEgenskaberTypeObj IN ARRAY registreringObj.attrEgenskaber
 		LOOP
-			to_be_applyed_filter_uuids:=array(
+			klassifikation_candidates:=array(
 			SELECT DISTINCT
 			b.klassifikation_id 
 			FROM  klassifikation_attr_egenskaber a
@@ -184,15 +127,44 @@ ELSE
 					OR
 					attrEgenskaberTypeObj.ophavsret = a.ophavsret
 				)
+				AND
+							(
+				(registreringObj.registrering) IS NULL 
+				OR
+				(
+					(
+						(registreringObj.registrering).timeperiod IS NULL 
+						OR
+						(registreringObj.registrering).timeperiod && (b.registrering).timeperiod
+					)
+					AND
+					(
+						(registreringObj.registrering).livscykluskode IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode = (b.registrering).livscykluskode 		
+					) 
+					AND
+					(
+						(registreringObj.registrering).brugerref IS NULL
+						OR
+						(registreringObj.registrering).brugerref = (b.registrering).brugerref
+					)
+					AND
+					(
+						(registreringObj.registrering).note IS NULL
+						OR
+						(registreringObj.registrering).note = (b.registrering).note
+					)
+			)
+		)
+		AND
+		( (NOT klassifikation_candidates_is_initialized) OR b.klassifikation_id = ANY (klassifikation_candidates) )
+
 			);
 			
 
-			IF klassifikation_candidates_is_initialized THEN
-				klassifikation_candidates:= array(SELECT DISTINCT id from unnest(klassifikation_candidates) as a(id) INTERSECT SELECT DISTINCT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
-			ELSE
-				klassifikation_candidates:=to_be_applyed_filter_uuids;
-				klassifikation_candidates_is_initialized:=true;
-			END IF;
+			klassifikation_candidates_is_initialized:=true;
+			
 
 		END LOOP;
 	END IF;
@@ -217,7 +189,7 @@ ELSE
 
 		FOREACH tilsPubliceretTypeObj IN ARRAY registreringObj.tilsPubliceret
 		LOOP
-			to_be_applyed_filter_uuids:=array(
+			klassifikation_candidates:=array(
 			SELECT DISTINCT
 			b.klassifikation_id 
 			FROM  klassifikation_tils_publiceret a
@@ -262,15 +234,44 @@ ELSE
 					OR
 					tilsPubliceretTypeObj.publiceret = a.publiceret
 				)
+				AND
+							(
+				(registreringObj.registrering) IS NULL 
+				OR
+				(
+					(
+						(registreringObj.registrering).timeperiod IS NULL 
+						OR
+						(registreringObj.registrering).timeperiod && (b.registrering).timeperiod
+					)
+					AND
+					(
+						(registreringObj.registrering).livscykluskode IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode = (b.registrering).livscykluskode 		
+					) 
+					AND
+					(
+						(registreringObj.registrering).brugerref IS NULL
+						OR
+						(registreringObj.registrering).brugerref = (b.registrering).brugerref
+					)
+					AND
+					(
+						(registreringObj.registrering).note IS NULL
+						OR
+						(registreringObj.registrering).note = (b.registrering).note
+					)
+			)
+		)
+		AND
+		( (NOT klassifikation_candidates_is_initialized) OR b.klassifikation_id = ANY (klassifikation_candidates) )
+
 	);
 			
 
-			IF klassifikation_candidates_is_initialized THEN
-				klassifikation_candidates:= array(SELECT DISTINCT id from unnest(klassifikation_candidates) as a(id) INTERSECT SELECT DISTINCT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
-			ELSE
-				klassifikation_candidates:=to_be_applyed_filter_uuids;
-				klassifikation_candidates_is_initialized:=true;
-			END IF;
+			klassifikation_candidates_is_initialized:=true;
+			
 
 		END LOOP;
 	END IF;
@@ -295,7 +296,7 @@ ELSE
 	IF (coalesce(array_length(klassifikation_candidates,1),0)>0 OR NOT klassifikation_candidates_is_initialized) AND (registreringObj).relationer IS NOT NULL THEN
 		FOREACH relationTypeObj IN ARRAY registreringObj.relationer
 		LOOP
-			to_be_applyed_filter_uuids:=array(
+			klassifikation_candidates:=array(
 			SELECT DISTINCT
 			b.klassifikation_id 
 			FROM  klassifikation_relation a
@@ -346,15 +347,43 @@ ELSE
 					OR
 					relationTypeObj.relMaal = a.rel_maal	
 				)
+				AND
+							(
+				(registreringObj.registrering) IS NULL 
+				OR
+				(
+					(
+						(registreringObj.registrering).timeperiod IS NULL 
+						OR
+						(registreringObj.registrering).timeperiod && (b.registrering).timeperiod
+					)
+					AND
+					(
+						(registreringObj.registrering).livscykluskode IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode = (b.registrering).livscykluskode 		
+					) 
+					AND
+					(
+						(registreringObj.registrering).brugerref IS NULL
+						OR
+						(registreringObj.registrering).brugerref = (b.registrering).brugerref
+					)
+					AND
+					(
+						(registreringObj.registrering).note IS NULL
+						OR
+						(registreringObj.registrering).note = (b.registrering).note
+					)
+			)
+		)
+		AND
+		( (NOT klassifikation_candidates_is_initialized) OR b.klassifikation_id = ANY (klassifikation_candidates) )
+
 	);
 			
-
-			IF klassifikation_candidates_is_initialized THEN
-				klassifikation_candidates:= array(SELECT DISTINCT id from unnest(klassifikation_candidates) as a(id) INTERSECT SELECT DISTINCT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
-			ELSE
-				klassifikation_candidates:=to_be_applyed_filter_uuids;
-				klassifikation_candidates_is_initialized:=true;
-			END IF;
+			klassifikation_candidates_is_initialized:=true;
+			
 
 		END LOOP;
 	END IF;
@@ -363,6 +392,55 @@ END IF;
 
 --RAISE DEBUG 'klassifikation_candidates_is_initialized step 5:%',klassifikation_candidates_is_initialized;
 --RAISE DEBUG 'klassifikation_candidates step 5:%',klassifikation_candidates;
+
+IF registreringObj IS NULL THEN
+	--RAISE DEBUG 'registreringObj IS NULL';
+ELSE
+	IF NOT klassifikation_candidates_is_initialized THEN 
+		klassifikation_candidates:=array(
+		SELECT DISTINCT
+			klassifikation_id
+		FROM
+			klassifikation_registrering b
+		WHERE
+					(
+				(registreringObj.registrering) IS NULL 
+				OR
+				(
+					(
+						(registreringObj.registrering).timeperiod IS NULL 
+						OR
+						(registreringObj.registrering).timeperiod && (b.registrering).timeperiod
+					)
+					AND
+					(
+						(registreringObj.registrering).livscykluskode IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode = (b.registrering).livscykluskode 		
+					) 
+					AND
+					(
+						(registreringObj.registrering).brugerref IS NULL
+						OR
+						(registreringObj.registrering).brugerref = (b.registrering).brugerref
+					)
+					AND
+					(
+						(registreringObj.registrering).note IS NULL
+						OR
+						(registreringObj.registrering).note = (b.registrering).note
+					)
+			)
+		)
+		AND
+		( (NOT klassifikation_candidates_is_initialized) OR b.klassifikation_id = ANY (klassifikation_candidates) )
+
+		)
+		;
+
+		klassifikation_candidates_is_initialized:=true;
+	END IF;
+END IF;
 
 
 IF NOT klassifikation_candidates_is_initialized THEN

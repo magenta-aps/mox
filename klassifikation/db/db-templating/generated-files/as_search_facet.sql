@@ -22,7 +22,7 @@ $$
 DECLARE
 	facet_candidates uuid[];
 	facet_candidates_is_initialized boolean;
-	to_be_applyed_filter_uuids uuid[]; 
+	--to_be_applyed_filter_uuids uuid[]; 
 	attrEgenskaberTypeObj FacetEgenskaberAttrType;
 	
   	tilsPubliceretTypeObj FacetPubliceretTilsType;
@@ -33,7 +33,6 @@ BEGIN
 
 facet_candidates_is_initialized := false;
 
-
 IF facet_uuid is not NULL THEN
 	facet_candidates:= ARRAY[facet_uuid];
 	facet_candidates_is_initialized:=true;
@@ -43,63 +42,7 @@ END IF;
 --RAISE DEBUG 'facet_candidates_is_initialized step 1:%',facet_candidates_is_initialized;
 --RAISE DEBUG 'facet_candidates step 1:%',facet_candidates;
 --/****************************//
---filter on registration
 
-IF registreringObj IS NULL OR (registreringObj).registrering IS NULL THEN
-	--RAISE DEBUG 'as_search_facet: skipping filtration on registrering';
-ELSE
-	IF
-	(
-		(registreringObj.registrering).timeperiod IS NOT NULL  
-		OR
-		(registreringObj.registrering).livscykluskode IS NOT NULL
-		OR
-		(registreringObj.registrering).brugerref IS NOT NULL
-		OR
-		(registreringObj.registrering).note IS NOT NULL
-	) THEN
-
-		to_be_applyed_filter_uuids:=array(
-		SELECT DISTINCT
-			facet_uuid
-		FROM
-			facet_registrering b
-		WHERE
-			(
-				(registreringObj.registrering).timeperiod IS NULL 
-				OR
-				(registreringObj.registrering).timeperiod && (b.registrering).timeperiod
-			)
-			AND
-			(
-				(registreringObj.registrering).livscykluskode IS NULL 
-				OR
-				(registreringObj.registrering).livscykluskode = (b.registrering).livscykluskode 		
-			) 
-			AND
-			(
-				(registreringObj.registrering).brugerref IS NULL
-				OR
-				(registreringObj.registrering).brugerref = (b.registrering).brugerref
-			)
-			AND
-			(
-				(registreringObj.registrering).note IS NULL
-				OR
-				(registreringObj.registrering).note = (b.registrering).note
-			)
-		);
-
-
-		IF facet_candidates_is_initialized THEN
-			facet_candidates:= array(SELECT DISTINCT id from unnest(facet_candidates) as a(id) INTERSECT SELECT DISTINCT id from unnest(to_be_applyed_filter_uuids) as b(id) );
-		ELSE
-			facet_candidates:=to_be_applyed_filter_uuids;
-			facet_candidates_is_initialized:=true;
-		END IF;
-
-	END IF;
-END IF;
 
 --RAISE NOTICE 'facet_candidates_is_initialized step 2:%',facet_candidates_is_initialized;
 --RAISE NOTICE 'facet_candidates step 2:%',facet_candidates;
@@ -115,7 +58,7 @@ ELSE
 	IF (coalesce(array_length(facet_candidates,1),0)>0 OR NOT facet_candidates_is_initialized) THEN
 		FOREACH attrEgenskaberTypeObj IN ARRAY registreringObj.attrEgenskaber
 		LOOP
-			to_be_applyed_filter_uuids:=array(
+			facet_candidates:=array(
 			SELECT DISTINCT
 			b.facet_id 
 			FROM  facet_attr_egenskaber a
@@ -202,15 +145,44 @@ ELSE
 					OR
 					attrEgenskaberTypeObj.retskilde = a.retskilde
 				)
+				AND
+							(
+				(registreringObj.registrering) IS NULL 
+				OR
+				(
+					(
+						(registreringObj.registrering).timeperiod IS NULL 
+						OR
+						(registreringObj.registrering).timeperiod && (b.registrering).timeperiod
+					)
+					AND
+					(
+						(registreringObj.registrering).livscykluskode IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode = (b.registrering).livscykluskode 		
+					) 
+					AND
+					(
+						(registreringObj.registrering).brugerref IS NULL
+						OR
+						(registreringObj.registrering).brugerref = (b.registrering).brugerref
+					)
+					AND
+					(
+						(registreringObj.registrering).note IS NULL
+						OR
+						(registreringObj.registrering).note = (b.registrering).note
+					)
+			)
+		)
+		AND
+		( (NOT facet_candidates_is_initialized) OR b.facet_id = ANY (facet_candidates) )
+
 			);
 			
 
-			IF facet_candidates_is_initialized THEN
-				facet_candidates:= array(SELECT DISTINCT id from unnest(facet_candidates) as a(id) INTERSECT SELECT DISTINCT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
-			ELSE
-				facet_candidates:=to_be_applyed_filter_uuids;
-				facet_candidates_is_initialized:=true;
-			END IF;
+			facet_candidates_is_initialized:=true;
+			
 
 		END LOOP;
 	END IF;
@@ -235,7 +207,7 @@ ELSE
 
 		FOREACH tilsPubliceretTypeObj IN ARRAY registreringObj.tilsPubliceret
 		LOOP
-			to_be_applyed_filter_uuids:=array(
+			facet_candidates:=array(
 			SELECT DISTINCT
 			b.facet_id 
 			FROM  facet_tils_publiceret a
@@ -280,15 +252,44 @@ ELSE
 					OR
 					tilsPubliceretTypeObj.publiceret = a.publiceret
 				)
+				AND
+							(
+				(registreringObj.registrering) IS NULL 
+				OR
+				(
+					(
+						(registreringObj.registrering).timeperiod IS NULL 
+						OR
+						(registreringObj.registrering).timeperiod && (b.registrering).timeperiod
+					)
+					AND
+					(
+						(registreringObj.registrering).livscykluskode IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode = (b.registrering).livscykluskode 		
+					) 
+					AND
+					(
+						(registreringObj.registrering).brugerref IS NULL
+						OR
+						(registreringObj.registrering).brugerref = (b.registrering).brugerref
+					)
+					AND
+					(
+						(registreringObj.registrering).note IS NULL
+						OR
+						(registreringObj.registrering).note = (b.registrering).note
+					)
+			)
+		)
+		AND
+		( (NOT facet_candidates_is_initialized) OR b.facet_id = ANY (facet_candidates) )
+
 	);
 			
 
-			IF facet_candidates_is_initialized THEN
-				facet_candidates:= array(SELECT DISTINCT id from unnest(facet_candidates) as a(id) INTERSECT SELECT DISTINCT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
-			ELSE
-				facet_candidates:=to_be_applyed_filter_uuids;
-				facet_candidates_is_initialized:=true;
-			END IF;
+			facet_candidates_is_initialized:=true;
+			
 
 		END LOOP;
 	END IF;
@@ -313,7 +314,7 @@ ELSE
 	IF (coalesce(array_length(facet_candidates,1),0)>0 OR NOT facet_candidates_is_initialized) AND (registreringObj).relationer IS NOT NULL THEN
 		FOREACH relationTypeObj IN ARRAY registreringObj.relationer
 		LOOP
-			to_be_applyed_filter_uuids:=array(
+			facet_candidates:=array(
 			SELECT DISTINCT
 			b.facet_id 
 			FROM  facet_relation a
@@ -364,15 +365,43 @@ ELSE
 					OR
 					relationTypeObj.relMaal = a.rel_maal	
 				)
+				AND
+							(
+				(registreringObj.registrering) IS NULL 
+				OR
+				(
+					(
+						(registreringObj.registrering).timeperiod IS NULL 
+						OR
+						(registreringObj.registrering).timeperiod && (b.registrering).timeperiod
+					)
+					AND
+					(
+						(registreringObj.registrering).livscykluskode IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode = (b.registrering).livscykluskode 		
+					) 
+					AND
+					(
+						(registreringObj.registrering).brugerref IS NULL
+						OR
+						(registreringObj.registrering).brugerref = (b.registrering).brugerref
+					)
+					AND
+					(
+						(registreringObj.registrering).note IS NULL
+						OR
+						(registreringObj.registrering).note = (b.registrering).note
+					)
+			)
+		)
+		AND
+		( (NOT facet_candidates_is_initialized) OR b.facet_id = ANY (facet_candidates) )
+
 	);
 			
-
-			IF facet_candidates_is_initialized THEN
-				facet_candidates:= array(SELECT DISTINCT id from unnest(facet_candidates) as a(id) INTERSECT SELECT DISTINCT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
-			ELSE
-				facet_candidates:=to_be_applyed_filter_uuids;
-				facet_candidates_is_initialized:=true;
-			END IF;
+			facet_candidates_is_initialized:=true;
+			
 
 		END LOOP;
 	END IF;
@@ -381,6 +410,55 @@ END IF;
 
 --RAISE DEBUG 'facet_candidates_is_initialized step 5:%',facet_candidates_is_initialized;
 --RAISE DEBUG 'facet_candidates step 5:%',facet_candidates;
+
+IF registreringObj IS NULL THEN
+	--RAISE DEBUG 'registreringObj IS NULL';
+ELSE
+	IF NOT facet_candidates_is_initialized THEN 
+		facet_candidates:=array(
+		SELECT DISTINCT
+			facet_id
+		FROM
+			facet_registrering b
+		WHERE
+					(
+				(registreringObj.registrering) IS NULL 
+				OR
+				(
+					(
+						(registreringObj.registrering).timeperiod IS NULL 
+						OR
+						(registreringObj.registrering).timeperiod && (b.registrering).timeperiod
+					)
+					AND
+					(
+						(registreringObj.registrering).livscykluskode IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode = (b.registrering).livscykluskode 		
+					) 
+					AND
+					(
+						(registreringObj.registrering).brugerref IS NULL
+						OR
+						(registreringObj.registrering).brugerref = (b.registrering).brugerref
+					)
+					AND
+					(
+						(registreringObj.registrering).note IS NULL
+						OR
+						(registreringObj.registrering).note = (b.registrering).note
+					)
+			)
+		)
+		AND
+		( (NOT facet_candidates_is_initialized) OR b.facet_id = ANY (facet_candidates) )
+
+		)
+		;
+
+		facet_candidates_is_initialized:=true;
+	END IF;
+END IF;
 
 
 IF NOT facet_candidates_is_initialized THEN

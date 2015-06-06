@@ -19,7 +19,7 @@ $$
 DECLARE
 	{{oio_type}}_candidates uuid[];
 	{{oio_type}}_candidates_is_initialized boolean;
-	to_be_applyed_filter_uuids uuid[];
+	--to_be_applyed_filter_uuids uuid[];
 	{%-for attribut , attribut_fields in attributter.iteritems() %} 
 	attr{{attribut|title}}TypeObj {{oio_type|title}}{{attribut|title}}AttrType;
 	{%- endfor %}
@@ -33,7 +33,6 @@ BEGIN
 
 {{oio_type}}_candidates_is_initialized := false;
 
-
 IF {{oio_type}}_uuid is not NULL THEN
 	{{oio_type}}_candidates:= ARRAY[{{oio_type}}_uuid];
 	{{oio_type}}_candidates_is_initialized:=true;
@@ -43,63 +42,7 @@ END IF;
 --RAISE DEBUG '{{oio_type}}_candidates_is_initialized step 1:%',{{oio_type}}_candidates_is_initialized;
 --RAISE DEBUG '{{oio_type}}_candidates step 1:%',{{oio_type}}_candidates;
 --/****************************//
---filter on registration
 
-IF registreringObj IS NULL OR (registreringObj).registrering IS NULL THEN
-	--RAISE DEBUG 'as_search_{{oio_type}}: skipping filtration on registrering';
-ELSE
-	IF
-	(
-		(registreringObj.registrering).timeperiod IS NOT NULL  
-		OR
-		(registreringObj.registrering).livscykluskode IS NOT NULL
-		OR
-		(registreringObj.registrering).brugerref IS NOT NULL
-		OR
-		(registreringObj.registrering).note IS NOT NULL
-	) THEN
-
-		to_be_applyed_filter_uuids:=array(
-		SELECT DISTINCT
-			{{oio_type}}_uuid
-		FROM
-			{{oio_type}}_registrering b
-		WHERE
-			(
-				(registreringObj.registrering).timeperiod IS NULL 
-				OR
-				(registreringObj.registrering).timeperiod && (b.registrering).timeperiod
-			)
-			AND
-			(
-				(registreringObj.registrering).livscykluskode IS NULL 
-				OR
-				(registreringObj.registrering).livscykluskode = (b.registrering).livscykluskode 		
-			) 
-			AND
-			(
-				(registreringObj.registrering).brugerref IS NULL
-				OR
-				(registreringObj.registrering).brugerref = (b.registrering).brugerref
-			)
-			AND
-			(
-				(registreringObj.registrering).note IS NULL
-				OR
-				(registreringObj.registrering).note = (b.registrering).note
-			)
-		);
-
-
-		IF {{oio_type}}_candidates_is_initialized THEN
-			{{oio_type}}_candidates:= array(SELECT DISTINCT id from unnest({{oio_type}}_candidates) as a(id) INTERSECT SELECT DISTINCT id from unnest(to_be_applyed_filter_uuids) as b(id) );
-		ELSE
-			{{oio_type}}_candidates:=to_be_applyed_filter_uuids;
-			{{oio_type}}_candidates_is_initialized:=true;
-		END IF;
-
-	END IF;
-END IF;
 
 --RAISE NOTICE '{{oio_type}}_candidates_is_initialized step 2:%',{{oio_type}}_candidates_is_initialized;
 --RAISE NOTICE '{{oio_type}}_candidates step 2:%',{{oio_type}}_candidates;
@@ -117,7 +60,7 @@ ELSE
 	IF (coalesce(array_length({{oio_type}}_candidates,1),0)>0 OR NOT {{oio_type}}_candidates_is_initialized) THEN
 		FOREACH attr{{attribut|title}}TypeObj IN ARRAY registreringObj.attr{{attribut|title}}
 		LOOP
-			to_be_applyed_filter_uuids:=array(
+			{{oio_type}}_candidates:=array(
 			SELECT DISTINCT
 			b.{{oio_type}}_id 
 			FROM  {{oio_type}}_attr_{{attribut}} a
@@ -170,15 +113,13 @@ ELSE
 					attr{{attribut|title}}TypeObj.{{attribut_field}} = a.{{attribut_field}}
 				)
 				{%- endfor %}
+				AND
+				{% include 'as_search_mixin_filter_reg.jinja.sql' %}
 			);
 			
 
-			IF {{oio_type}}_candidates_is_initialized THEN
-				{{oio_type}}_candidates:= array(SELECT DISTINCT id from unnest({{oio_type}}_candidates) as a(id) INTERSECT SELECT DISTINCT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
-			ELSE
-				{{oio_type}}_candidates:=to_be_applyed_filter_uuids;
-				{{oio_type}}_candidates_is_initialized:=true;
-			END IF;
+			{{oio_type}}_candidates_is_initialized:=true;
+			
 
 		END LOOP;
 	END IF;
@@ -205,7 +146,7 @@ ELSE
 
 		FOREACH tils{{tilstand|title}}TypeObj IN ARRAY registreringObj.tils{{tilstand|title}}
 		LOOP
-			to_be_applyed_filter_uuids:=array(
+			{{oio_type}}_candidates:=array(
 			SELECT DISTINCT
 			b.{{oio_type}}_id 
 			FROM  {{oio_type}}_tils_{{tilstand}} a
@@ -250,15 +191,13 @@ ELSE
 					OR
 					tils{{tilstand|title}}TypeObj.{{tilstand}} = a.{{tilstand}}
 				)
+				AND
+				{% include 'as_search_mixin_filter_reg.jinja.sql' %}
 	);
 			
 
-			IF {{oio_type}}_candidates_is_initialized THEN
-				{{oio_type}}_candidates:= array(SELECT DISTINCT id from unnest({{oio_type}}_candidates) as a(id) INTERSECT SELECT DISTINCT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
-			ELSE
-				{{oio_type}}_candidates:=to_be_applyed_filter_uuids;
-				{{oio_type}}_candidates_is_initialized:=true;
-			END IF;
+			{{oio_type}}_candidates_is_initialized:=true;
+			
 
 		END LOOP;
 	END IF;
@@ -285,7 +224,7 @@ ELSE
 	IF (coalesce(array_length({{oio_type}}_candidates,1),0)>0 OR NOT {{oio_type}}_candidates_is_initialized) AND (registreringObj).relationer IS NOT NULL THEN
 		FOREACH relationTypeObj IN ARRAY registreringObj.relationer
 		LOOP
-			to_be_applyed_filter_uuids:=array(
+			{{oio_type}}_candidates:=array(
 			SELECT DISTINCT
 			b.{{oio_type}}_id 
 			FROM  {{oio_type}}_relation a
@@ -336,15 +275,12 @@ ELSE
 					OR
 					relationTypeObj.relMaal = a.rel_maal	
 				)
+				AND
+				{% include 'as_search_mixin_filter_reg.jinja.sql' %}
 	);
 			
-
-			IF {{oio_type}}_candidates_is_initialized THEN
-				{{oio_type}}_candidates:= array(SELECT DISTINCT id from unnest({{oio_type}}_candidates) as a(id) INTERSECT SELECT DISTINCT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
-			ELSE
-				{{oio_type}}_candidates:=to_be_applyed_filter_uuids;
-				{{oio_type}}_candidates_is_initialized:=true;
-			END IF;
+			{{oio_type}}_candidates_is_initialized:=true;
+			
 
 		END LOOP;
 	END IF;
@@ -353,6 +289,24 @@ END IF;
 
 --RAISE DEBUG '{{oio_type}}_candidates_is_initialized step 5:%',{{oio_type}}_candidates_is_initialized;
 --RAISE DEBUG '{{oio_type}}_candidates step 5:%',{{oio_type}}_candidates;
+
+IF registreringObj IS NULL THEN
+	--RAISE DEBUG 'registreringObj IS NULL';
+ELSE
+	IF NOT {{oio_type}}_candidates_is_initialized THEN 
+		{{oio_type}}_candidates:=array(
+		SELECT DISTINCT
+			{{oio_type}}_id
+		FROM
+			{{oio_type}}_registrering b
+		WHERE
+		{% include 'as_search_mixin_filter_reg.jinja.sql' %}
+		)
+		;
+
+		{{oio_type}}_candidates_is_initialized:=true;
+	END IF;
+END IF;
 
 
 IF NOT {{oio_type}}_candidates_is_initialized THEN

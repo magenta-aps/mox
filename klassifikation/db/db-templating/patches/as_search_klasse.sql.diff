@@ -1,9 +1,9 @@
-*** ../generated-files/as_search_klasse.sql	2015-06-05 13:18:03.678818025 +0200
---- ../patches/as_search_klasse.sql.org	2015-06-05 13:14:35.570821752 +0200
+*** ../generated-files/as_search_klasse.sql	2015-06-06 20:37:00.142625571 +0200
+--- ../patches/as_search_klasse.sql.org	2015-06-06 20:35:06.540069152 +0200
 ***************
-*** 25,34 ****
---- 25,36 ----
-  	to_be_applyed_filter_uuids uuid[]; 
+*** 25,40 ****
+--- 25,43 ----
+  	--to_be_applyed_filter_uuids uuid[]; 
   	attrEgenskaberTypeObj KlasseEgenskaberAttrType;
   	
     	tilsPubliceretTypeObj KlassePubliceretTilsType;
@@ -15,8 +15,15 @@
   --RAISE DEBUG 'step 0:registreringObj:%',registreringObj;
   
   klasse_candidates_is_initialized := false;
+  
++ 
+  IF klasse_uuid is not NULL THEN
+  	klasse_candidates:= ARRAY[klasse_uuid];
+  	klasse_candidates_is_initialized:=true;
+  END IF;
+  
 ***************
-*** 110,132 ****
+*** 53,75 ****
   --Filtration on attribute: Egenskaber
   --/**********************************************************//
   IF registreringObj IS NULL OR (registreringObj).attrEgenskaber IS NULL THEN
@@ -25,7 +32,7 @@
   	IF (coalesce(array_length(klasse_candidates,1),0)>0 OR NOT klasse_candidates_is_initialized) THEN
 ! 		FOREACH attrEgenskaberTypeObj IN ARRAY registreringObj.attrEgenskaber
   		LOOP
-  			to_be_applyed_filter_uuids:=array(
+  			klasse_candidates:=array(
   			SELECT DISTINCT
   			b.klasse_id 
   			FROM  klasse_attr_egenskaber a
@@ -40,7 +47,7 @@
   								(
   							 		(attrEgenskaberTypeObj.virkning).TimePeriod IS NULL
   								)
---- 112,164 ----
+--- 56,108 ----
   --Filtration on attribute: Egenskaber
   --/**********************************************************//
   IF registreringObj IS NULL OR (registreringObj).attrEgenskaber IS NULL THEN
@@ -78,7 +85,7 @@
   	IF (coalesce(array_length(klasse_candidates,1),0)>0 OR NOT klasse_candidates_is_initialized) THEN
 ! 		FOREACH attrEgenskaberTypeObj IN ARRAY manipulatedAttrEgenskaberArr
   		LOOP
-  			to_be_applyed_filter_uuids:=array(
+  			klasse_candidates:=array(
   			SELECT DISTINCT
   			b.klasse_id 
   			FROM  klasse_attr_egenskaber a
@@ -95,25 +102,24 @@
   							 		(attrEgenskaberTypeObj.virkning).TimePeriod IS NULL
   								)
 ***************
-*** 200,210 ****
-  				(
+*** 144,154 ****
   					attrEgenskaberTypeObj.aendringsnotat IS NULL
   					OR
   					attrEgenskaberTypeObj.aendringsnotat = a.aendringsnotat
   				)
-! 			);
-  			
-  
-  			IF klasse_candidates_is_initialized THEN
-  				klasse_candidates:= array(SELECT DISTINCT id from unnest(klasse_candidates) as a(id) INTERSECT SELECT DISTINCT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
-  			ELSE
---- 232,267 ----
+  				AND
+! 							(
+  				(registreringObj.registrering) IS NULL 
+  				OR
   				(
+  					(
+  						(registreringObj.registrering).timeperiod IS NULL 
+--- 177,211 ----
   					attrEgenskaberTypeObj.aendringsnotat IS NULL
   					OR
   					attrEgenskaberTypeObj.aendringsnotat = a.aendringsnotat
   				)
-! 				AND
+  				AND
 ! 				(
 ! 					(attrEgenskaberTypeObj.soegeord IS NULL OR array_length(attrEgenskaberTypeObj.soegeord,1)=0)
 ! 					OR
@@ -137,10 +143,24 @@
 ! 						)
 ! 					)
 ! 				)
-! 		);
-! 		
+! 				AND
+! 				(
+  				(registreringObj.registrering) IS NULL 
+  				OR
+  				(
+  					(
+  						(registreringObj.registrering).timeperiod IS NULL 
+***************
+*** 177,186 ****
+--- 234,244 ----
+  		)
+  		AND
+  		( (NOT klasse_candidates_is_initialized) OR b.klasse_id = ANY (klasse_candidates) )
+  
+  			);
++ 		
   			
   
-  			IF klasse_candidates_is_initialized THEN
-  				klasse_candidates:= array(SELECT DISTINCT id from unnest(klasse_candidates) as a(id) INTERSECT SELECT DISTINCT b.id from unnest(to_be_applyed_filter_uuids) as b(id) );
-  			ELSE
+  			klasse_candidates_is_initialized:=true;
+  			
+  
