@@ -1,13 +1,13 @@
-*** ../generated-files/as_search_klasse.sql	2015-06-06 20:37:00.142625571 +0200
---- ../patches/as_search_klasse.sql.org	2015-06-06 20:35:06.540069152 +0200
+*** ../generated-files/as_search_klasse.sql	2015-06-09 10:47:44.294157200 +0200
+--- ../patches/as_search_klasse.sql.org	2015-06-09 10:47:38.870156930 +0200
 ***************
-*** 25,40 ****
---- 25,43 ----
-  	--to_be_applyed_filter_uuids uuid[]; 
-  	attrEgenskaberTypeObj KlasseEgenskaberAttrType;
+*** 29,38 ****
+--- 29,40 ----
   	
     	tilsPubliceretTypeObj KlassePubliceretTilsType;
   	relationTypeObj KlasseRelationType;
+  	anyAttrValue text;
+  	anyRelUuid uuid;
 + 	manipulatedAttrEgenskaberArr KlasseEgenskaberAttrType[]:='{}';
 + 	soegeordObj KlasseSoegeordType;
   BEGIN
@@ -15,15 +15,8 @@
   --RAISE DEBUG 'step 0:registreringObj:%',registreringObj;
   
   klasse_candidates_is_initialized := false;
-  
-+ 
-  IF klasse_uuid is not NULL THEN
-  	klasse_candidates:= ARRAY[klasse_uuid];
-  	klasse_candidates_is_initialized:=true;
-  END IF;
-  
 ***************
-*** 53,75 ****
+*** 57,79 ****
   --Filtration on attribute: Egenskaber
   --/**********************************************************//
   IF registreringObj IS NULL OR (registreringObj).attrEgenskaber IS NULL THEN
@@ -47,7 +40,7 @@
   								(
   							 		(attrEgenskaberTypeObj.virkning).TimePeriod IS NULL
   								)
---- 56,108 ----
+--- 59,111 ----
   --Filtration on attribute: Egenskaber
   --/**********************************************************//
   IF registreringObj IS NULL OR (registreringObj).attrEgenskaber IS NULL THEN
@@ -102,65 +95,73 @@
   							 		(attrEgenskaberTypeObj.virkning).TimePeriod IS NULL
   								)
 ***************
-*** 144,154 ****
+*** 148,158 ****
+--- 180,214 ----
   					attrEgenskaberTypeObj.aendringsnotat IS NULL
   					OR
-  					attrEgenskaberTypeObj.aendringsnotat = a.aendringsnotat
+  					a.aendringsnotat ILIKE attrEgenskaberTypeObj.aendringsnotat --case insensitive
   				)
   				AND
-! 							(
-  				(registreringObj.registrering) IS NULL 
-  				OR
-  				(
-  					(
-  						(registreringObj.registrering).timeperiod IS NULL 
---- 177,211 ----
-  					attrEgenskaberTypeObj.aendringsnotat IS NULL
-  					OR
-  					attrEgenskaberTypeObj.aendringsnotat = a.aendringsnotat
-  				)
-  				AND
-! 				(
-! 					(attrEgenskaberTypeObj.soegeord IS NULL OR array_length(attrEgenskaberTypeObj.soegeord,1)=0)
-! 					OR
-! 					(
-! 						(
-! 							(attrEgenskaberTypeObj.soegeord[1]).soegeordidentifikator IS NULL
-! 							OR
-! 							(attrEgenskaberTypeObj.soegeord[1]).soegeordidentifikator = c.soegeordidentifikator
-! 						)
-! 						AND
-! 						(
-! 							(attrEgenskaberTypeObj.soegeord[1]).beskrivelse IS NULL
-! 							OR
-! 							(attrEgenskaberTypeObj.soegeord[1]).beskrivelse = c.beskrivelse
-! 						)		
-! 						AND
-! 						(
-! 							(attrEgenskaberTypeObj.soegeord[1]).soegeordskategori IS NULL
-! 							OR
-! 							(attrEgenskaberTypeObj.soegeord[1]).soegeordskategori = c.soegeordskategori
-! 						)
-! 					)
-! 				)
-! 				AND
-! 				(
++ 				(
++ 					(attrEgenskaberTypeObj.soegeord IS NULL OR array_length(attrEgenskaberTypeObj.soegeord,1)=0)
++ 					OR
++ 					(
++ 						(
++ 							(attrEgenskaberTypeObj.soegeord[1]).soegeordidentifikator IS NULL
++ 							OR
++ 							c.soegeordidentifikator ILIKE (attrEgenskaberTypeObj.soegeord[1]).soegeordidentifikator  
++ 						)
++ 						AND
+  						(
++ 							(attrEgenskaberTypeObj.soegeord[1]).beskrivelse IS NULL
++ 							OR
++ 							c.beskrivelse ILIKE (attrEgenskaberTypeObj.soegeord[1]).beskrivelse  
++ 						)		
++ 						AND
++ 						(
++ 							(attrEgenskaberTypeObj.soegeord[1]).soegeordskategori IS NULL
++ 							OR
++ 							c.soegeordskategori ILIKE (attrEgenskaberTypeObj.soegeord[1]).soegeordskategori  
++ 						)
++ 					)
++ 				)
++ 				AND
++ 				(
   				(registreringObj.registrering) IS NULL 
   				OR
   				(
   					(
   						(registreringObj.registrering).timeperiod IS NULL 
 ***************
-*** 177,186 ****
---- 234,244 ----
-  		)
-  		AND
-  		( (NOT klasse_candidates_is_initialized) OR b.klasse_id = ANY (klasse_candidates) )
+*** 205,214 ****
+--- 261,271 ----
   
-  			);
-+ 		
-  			
-  
-  			klasse_candidates_is_initialized:=true;
-  			
-  
+  			SELECT DISTINCT
+  			b.klasse_id 
+  			FROM  klasse_attr_egenskaber a
+  			JOIN klasse_registrering b on a.klasse_registrering_id=b.id
++ 			LEFT JOIN klasse_attr_egenskaber_soegeord c on a.id=c.klasse_attr_egenskaber_id
+  			WHERE
+  			(
+  				a.brugervendtnoegle ILIKE anyAttrValue
+  				OR
+  				a.beskrivelse ILIKE anyAttrValue
+***************
+*** 220,229 ****
+--- 277,292 ----
+  				a.titel ILIKE anyAttrValue
+  				OR
+  				a.retskilde ILIKE anyAttrValue
+  				OR
+  				a.aendringsnotat ILIKE anyAttrValue
++ 				OR 
++ 				c.soegeordidentifikator ILIKE anyAttrValue
++ 				OR 
++ 				c.beskrivelse ILIKE anyAttrValue
++ 				OR
++ 				c.soegeordskategori ILIKE anyAttrValue
+  			)
+  			AND
+  			(
+  				virkningSoeg IS NULL
+  				OR

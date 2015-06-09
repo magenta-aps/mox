@@ -14,8 +14,10 @@ CREATE OR REPLACE FUNCTION as_search_facet(
 	firstResult int,--TOOD ??
 	facet_uuid uuid,
 	registreringObj FacetRegistreringType,
-	virkningSoeg TSTZRANGE,
-	maxResults int = 2147483647
+	virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+	maxResults int = 2147483647,
+	anyAttrValueArr text[] = '{}'::text[],
+	anyRelUuidArr	uuid[] = '{}'::uuid[]
 	)
   RETURNS uuid[] AS 
 $$
@@ -27,6 +29,8 @@ DECLARE
 	
   	tilsPubliceretTypeObj FacetPubliceretTilsType;
 	relationTypeObj FacetRelationType;
+	anyAttrValue text;
+	anyRelUuid uuid;
 BEGIN
 
 --RAISE DEBUG 'step 0:registreringObj:%',registreringObj;
@@ -88,7 +92,7 @@ ELSE
 							)
 							AND
 							(
-									(attrEgenskaberTypeObj.virkning).NoteTekst IS NULL OR (attrEgenskaberTypeObj.virkning).NoteTekst=(a.virkning).NoteTekst
+									(attrEgenskaberTypeObj.virkning).NoteTekst IS NULL OR  (a.virkning).NoteTekst ILIKE (attrEgenskaberTypeObj.virkning).NoteTekst  
 							)
 						)
 					)
@@ -107,46 +111,46 @@ ELSE
 				(
 					attrEgenskaberTypeObj.brugervendtnoegle IS NULL
 					OR
-					attrEgenskaberTypeObj.brugervendtnoegle = a.brugervendtnoegle
+					a.brugervendtnoegle ILIKE attrEgenskaberTypeObj.brugervendtnoegle --case insensitive
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.beskrivelse IS NULL
 					OR
-					attrEgenskaberTypeObj.beskrivelse = a.beskrivelse
+					a.beskrivelse ILIKE attrEgenskaberTypeObj.beskrivelse --case insensitive
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.opbygning IS NULL
 					OR
-					attrEgenskaberTypeObj.opbygning = a.opbygning
+					a.opbygning ILIKE attrEgenskaberTypeObj.opbygning --case insensitive
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.ophavsret IS NULL
 					OR
-					attrEgenskaberTypeObj.ophavsret = a.ophavsret
+					a.ophavsret ILIKE attrEgenskaberTypeObj.ophavsret --case insensitive
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.plan IS NULL
 					OR
-					attrEgenskaberTypeObj.plan = a.plan
+					a.plan ILIKE attrEgenskaberTypeObj.plan --case insensitive
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.supplement IS NULL
 					OR
-					attrEgenskaberTypeObj.supplement = a.supplement
+					a.supplement ILIKE attrEgenskaberTypeObj.supplement --case insensitive
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.retskilde IS NULL
 					OR
-					attrEgenskaberTypeObj.retskilde = a.retskilde
+					a.retskilde ILIKE attrEgenskaberTypeObj.retskilde --case insensitive
 				)
 				AND
-							(
+						(
 				(registreringObj.registrering) IS NULL 
 				OR
 				(
@@ -171,7 +175,7 @@ ELSE
 					(
 						(registreringObj.registrering).note IS NULL
 						OR
-						(registreringObj.registrering).note = (b.registrering).note
+						(b.registrering).note ILIKE (registreringObj.registrering).note
 					)
 			)
 		)
@@ -190,10 +194,85 @@ END IF;
 --RAISE DEBUG 'facet_candidates_is_initialized step 3:%',facet_candidates_is_initialized;
 --RAISE DEBUG 'facet_candidates step 3:%',facet_candidates;
 
---/****************************//
+--/**********************************************************//
+--Filtration on anyAttrValueArr
+--/**********************************************************//
+IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
+
+	FOREACH anyAttrValue IN ARRAY anyAttrValueArr
+	LOOP
+		facet_candidates:=array( 
+
+			SELECT DISTINCT
+			b.facet_id 
+			FROM  facet_attr_egenskaber a
+			JOIN facet_registrering b on a.facet_registrering_id=b.id
+			WHERE
+			(
+				a.brugervendtnoegle ILIKE anyAttrValue
+				OR
+				a.beskrivelse ILIKE anyAttrValue
+				OR
+				a.opbygning ILIKE anyAttrValue
+				OR
+				a.ophavsret ILIKE anyAttrValue
+				OR
+				a.plan ILIKE anyAttrValue
+				OR
+				a.supplement ILIKE anyAttrValue
+				OR
+				a.retskilde ILIKE anyAttrValue
+			)
+			AND
+			(
+				virkningSoeg IS NULL
+				OR
+				virkningSoeg && (a.virkning).TimePeriod
+			)
+			AND
+					(
+				(registreringObj.registrering) IS NULL 
+				OR
+				(
+					(
+						(registreringObj.registrering).timeperiod IS NULL 
+						OR
+						(registreringObj.registrering).timeperiod && (b.registrering).timeperiod
+					)
+					AND
+					(
+						(registreringObj.registrering).livscykluskode IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode = (b.registrering).livscykluskode 		
+					) 
+					AND
+					(
+						(registreringObj.registrering).brugerref IS NULL
+						OR
+						(registreringObj.registrering).brugerref = (b.registrering).brugerref
+					)
+					AND
+					(
+						(registreringObj.registrering).note IS NULL
+						OR
+						(b.registrering).note ILIKE (registreringObj.registrering).note
+					)
+			)
+		)
+		AND
+		( (NOT facet_candidates_is_initialized) OR b.facet_id = ANY (facet_candidates) )
 
 
---filter on states -- publiceret
+		);
+
+	facet_candidates_is_initialized:=true;
+
+	END LOOP;
+
+END IF;
+
+
+
 --RAISE DEBUG 'registrering,%',registreringObj;
 
 
@@ -253,7 +332,7 @@ ELSE
 					tilsPubliceretTypeObj.publiceret = a.publiceret
 				)
 				AND
-							(
+						(
 				(registreringObj.registrering) IS NULL 
 				OR
 				(
@@ -278,7 +357,7 @@ ELSE
 					(
 						(registreringObj.registrering).note IS NULL
 						OR
-						(registreringObj.registrering).note = (b.registrering).note
+						(b.registrering).note ILIKE (registreringObj.registrering).note
 					)
 			)
 		)
@@ -366,7 +445,7 @@ ELSE
 					relationTypeObj.relMaal = a.rel_maal	
 				)
 				AND
-							(
+						(
 				(registreringObj.registrering) IS NULL 
 				OR
 				(
@@ -391,7 +470,7 @@ ELSE
 					(
 						(registreringObj.registrering).note IS NULL
 						OR
-						(registreringObj.registrering).note = (b.registrering).note
+						(b.registrering).note ILIKE (registreringObj.registrering).note
 					)
 			)
 		)
@@ -421,7 +500,7 @@ ELSE
 		FROM
 			facet_registrering b
 		WHERE
-					(
+				(
 				(registreringObj.registrering) IS NULL 
 				OR
 				(
@@ -446,7 +525,7 @@ ELSE
 					(
 						(registreringObj.registrering).note IS NULL
 						OR
-						(registreringObj.registrering).note = (b.registrering).note
+						(b.registrering).note ILIKE (registreringObj.registrering).note
 					)
 			)
 		)

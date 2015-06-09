@@ -11,8 +11,10 @@ CREATE OR REPLACE FUNCTION as_search_{{oio_type}}(
 	firstResult int,--TOOD ??
 	{{oio_type}}_uuid uuid,
 	registreringObj {{oio_type|title}}RegistreringType,
-	virkningSoeg TSTZRANGE,
-	maxResults int = 2147483647
+	virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+	maxResults int = 2147483647,
+	anyAttrValueArr text[] = '{}'::text[],
+	anyRelUuidArr	uuid[] = '{}'::uuid[]
 	)
   RETURNS uuid[] AS 
 $$
@@ -27,6 +29,8 @@ DECLARE
   	tils{{tilstand|title}}TypeObj {{oio_type|title}}{{tilstand|title}}TilsType;
   	{%- endfor %}
 	relationTypeObj {{oio_type|title}}RelationType;
+	anyAttrValue text;
+	anyRelUuid uuid;
 BEGIN
 
 --RAISE DEBUG 'step 0:registreringObj:%',registreringObj;
@@ -90,7 +94,7 @@ ELSE
 							)
 							AND
 							(
-									(attr{{attribut|title}}TypeObj.virkning).NoteTekst IS NULL OR (attr{{attribut|title}}TypeObj.virkning).NoteTekst=(a.virkning).NoteTekst
+									(attr{{attribut|title}}TypeObj.virkning).NoteTekst IS NULL OR  (a.virkning).NoteTekst ILIKE (attr{{attribut|title}}TypeObj.virkning).NoteTekst  
 							)
 						)
 					)
@@ -110,7 +114,7 @@ ELSE
 				(
 					attr{{attribut|title}}TypeObj.{{attribut_field}} IS NULL
 					OR
-					attr{{attribut|title}}TypeObj.{{attribut_field}} = a.{{attribut_field}}
+					a.{{attribut_field}} ILIKE attr{{attribut|title}}TypeObj.{{attribut_field}} --case insensitive
 				)
 				{%- endfor %}
 				AND
@@ -125,14 +129,62 @@ ELSE
 	END IF;
 END IF;
 
+
+
+
+
 {%- endfor %}
 --RAISE DEBUG '{{oio_type}}_candidates_is_initialized step 3:%',{{oio_type}}_candidates_is_initialized;
 --RAISE DEBUG '{{oio_type}}_candidates step 3:%',{{oio_type}}_candidates;
 
---/****************************//
+--/**********************************************************//
+--Filtration on anyAttrValueArr
+--/**********************************************************//
+IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
+
+	FOREACH anyAttrValue IN ARRAY anyAttrValueArr
+	LOOP
+		{{oio_type}}_candidates:=array(
+
+			{%-for attribut , attribut_fields in attributter.iteritems() %} 
+
+			SELECT DISTINCT
+			b.{{oio_type}}_id 
+			FROM  {{oio_type}}_attr_{{attribut}} a
+			JOIN {{oio_type}}_registrering b on a.{{oio_type}}_registrering_id=b.id
+			WHERE
+			(
+				{%- for attribut_field in attribut_fields %}
+				a.{{attribut_field}} ILIKE anyAttrValue  
+				{%- if (not loop.last)%}
+				OR
+				{%- endif %}
+				{%- endfor %}
+			)
+			AND
+			(
+				virkningSoeg IS NULL
+				OR
+				virkningSoeg && (a.virkning).TimePeriod
+			)
+			AND
+			{% include 'as_search_mixin_filter_reg.jinja.sql' %}
+
+			{%- if (not loop.last)%}
+			UNION
+			{%- endif %}
+			{%- endfor %}
+
+		);
+
+	{{oio_type}}_candidates_is_initialized:=true;
+
+	END LOOP;
+
+END IF;
 
 
---filter on states -- publiceret
+
 --RAISE DEBUG 'registrering,%',registreringObj;
 
 {% for tilstand, tilstand_values in tilstande.iteritems() %}

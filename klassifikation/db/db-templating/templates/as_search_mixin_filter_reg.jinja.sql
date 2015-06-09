@@ -1,4 +1,4 @@
-			(
+		(
 				(registreringObj.registrering) IS NULL 
 				OR
 				(
@@ -23,7 +23,7 @@
 					(
 						(registreringObj.registrering).note IS NULL
 						OR
-						(registreringObj.registrering).note = (b.registrering).note
+						(b.registrering).note ILIKE (registreringObj.registrering).note
 					)
 			)
 		)

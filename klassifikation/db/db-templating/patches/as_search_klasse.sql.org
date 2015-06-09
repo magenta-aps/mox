@@ -14,8 +14,10 @@ CREATE OR REPLACE FUNCTION as_search_klasse(
 	firstResult int,--TOOD ??
 	klasse_uuid uuid,
 	registreringObj KlasseRegistreringType,
-	virkningSoeg TSTZRANGE,
-	maxResults int = 2147483647
+	virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+	maxResults int = 2147483647,
+	anyAttrValueArr text[] = '{}'::text[],
+	anyRelUuidArr	uuid[] = '{}'::uuid[]
 	)
   RETURNS uuid[] AS 
 $$
@@ -27,6 +29,8 @@ DECLARE
 	
   	tilsPubliceretTypeObj KlassePubliceretTilsType;
 	relationTypeObj KlasseRelationType;
+	anyAttrValue text;
+	anyRelUuid uuid;
 	manipulatedAttrEgenskaberArr KlasseEgenskaberAttrType[]:='{}';
 	soegeordObj KlasseSoegeordType;
 BEGIN
@@ -34,7 +38,6 @@ BEGIN
 --RAISE DEBUG 'step 0:registreringObj:%',registreringObj;
 
 klasse_candidates_is_initialized := false;
-
 
 IF klasse_uuid is not NULL THEN
 	klasse_candidates:= ARRAY[klasse_uuid];
@@ -121,7 +124,7 @@ END LOOP;
 							)
 							AND
 							(
-									(attrEgenskaberTypeObj.virkning).NoteTekst IS NULL OR (attrEgenskaberTypeObj.virkning).NoteTekst=(a.virkning).NoteTekst
+									(attrEgenskaberTypeObj.virkning).NoteTekst IS NULL OR  (a.virkning).NoteTekst ILIKE (attrEgenskaberTypeObj.virkning).NoteTekst  
 							)
 						)
 					)
@@ -140,43 +143,43 @@ END LOOP;
 				(
 					attrEgenskaberTypeObj.brugervendtnoegle IS NULL
 					OR
-					attrEgenskaberTypeObj.brugervendtnoegle = a.brugervendtnoegle
+					a.brugervendtnoegle ILIKE attrEgenskaberTypeObj.brugervendtnoegle --case insensitive
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.beskrivelse IS NULL
 					OR
-					attrEgenskaberTypeObj.beskrivelse = a.beskrivelse
+					a.beskrivelse ILIKE attrEgenskaberTypeObj.beskrivelse --case insensitive
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.eksempel IS NULL
 					OR
-					attrEgenskaberTypeObj.eksempel = a.eksempel
+					a.eksempel ILIKE attrEgenskaberTypeObj.eksempel --case insensitive
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.omfang IS NULL
 					OR
-					attrEgenskaberTypeObj.omfang = a.omfang
+					a.omfang ILIKE attrEgenskaberTypeObj.omfang --case insensitive
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.titel IS NULL
 					OR
-					attrEgenskaberTypeObj.titel = a.titel
+					a.titel ILIKE attrEgenskaberTypeObj.titel --case insensitive
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.retskilde IS NULL
 					OR
-					attrEgenskaberTypeObj.retskilde = a.retskilde
+					a.retskilde ILIKE attrEgenskaberTypeObj.retskilde --case insensitive
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.aendringsnotat IS NULL
 					OR
-					attrEgenskaberTypeObj.aendringsnotat = a.aendringsnotat
+					a.aendringsnotat ILIKE attrEgenskaberTypeObj.aendringsnotat --case insensitive
 				)
 				AND
 				(
@@ -186,19 +189,19 @@ END LOOP;
 						(
 							(attrEgenskaberTypeObj.soegeord[1]).soegeordidentifikator IS NULL
 							OR
-							(attrEgenskaberTypeObj.soegeord[1]).soegeordidentifikator = c.soegeordidentifikator
+							c.soegeordidentifikator ILIKE (attrEgenskaberTypeObj.soegeord[1]).soegeordidentifikator  
 						)
 						AND
 						(
 							(attrEgenskaberTypeObj.soegeord[1]).beskrivelse IS NULL
 							OR
-							(attrEgenskaberTypeObj.soegeord[1]).beskrivelse = c.beskrivelse
+							c.beskrivelse ILIKE (attrEgenskaberTypeObj.soegeord[1]).beskrivelse  
 						)		
 						AND
 						(
 							(attrEgenskaberTypeObj.soegeord[1]).soegeordskategori IS NULL
 							OR
-							(attrEgenskaberTypeObj.soegeord[1]).soegeordskategori = c.soegeordskategori
+							c.soegeordskategori ILIKE (attrEgenskaberTypeObj.soegeord[1]).soegeordskategori  
 						)
 					)
 				)
@@ -228,7 +231,7 @@ END LOOP;
 					(
 						(registreringObj.registrering).note IS NULL
 						OR
-						(registreringObj.registrering).note = (b.registrering).note
+						(b.registrering).note ILIKE (registreringObj.registrering).note
 					)
 			)
 		)
@@ -236,7 +239,6 @@ END LOOP;
 		( (NOT klasse_candidates_is_initialized) OR b.klasse_id = ANY (klasse_candidates) )
 
 			);
-		
 			
 
 			klasse_candidates_is_initialized:=true;
@@ -248,10 +250,93 @@ END IF;
 --RAISE DEBUG 'klasse_candidates_is_initialized step 3:%',klasse_candidates_is_initialized;
 --RAISE DEBUG 'klasse_candidates step 3:%',klasse_candidates;
 
---/****************************//
+--/**********************************************************//
+--Filtration on anyAttrValueArr
+--/**********************************************************//
+IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
+
+	FOREACH anyAttrValue IN ARRAY anyAttrValueArr
+	LOOP
+		klasse_candidates:=array( 
+
+			SELECT DISTINCT
+			b.klasse_id 
+			FROM  klasse_attr_egenskaber a
+			JOIN klasse_registrering b on a.klasse_registrering_id=b.id
+			LEFT JOIN klasse_attr_egenskaber_soegeord c on a.id=c.klasse_attr_egenskaber_id
+			WHERE
+			(
+				a.brugervendtnoegle ILIKE anyAttrValue
+				OR
+				a.beskrivelse ILIKE anyAttrValue
+				OR
+				a.eksempel ILIKE anyAttrValue
+				OR
+				a.omfang ILIKE anyAttrValue
+				OR
+				a.titel ILIKE anyAttrValue
+				OR
+				a.retskilde ILIKE anyAttrValue
+				OR
+				a.aendringsnotat ILIKE anyAttrValue
+				OR 
+				c.soegeordidentifikator ILIKE anyAttrValue
+				OR 
+				c.beskrivelse ILIKE anyAttrValue
+				OR
+				c.soegeordskategori ILIKE anyAttrValue
+			)
+			AND
+			(
+				virkningSoeg IS NULL
+				OR
+				virkningSoeg && (a.virkning).TimePeriod
+			)
+			AND
+					(
+				(registreringObj.registrering) IS NULL 
+				OR
+				(
+					(
+						(registreringObj.registrering).timeperiod IS NULL 
+						OR
+						(registreringObj.registrering).timeperiod && (b.registrering).timeperiod
+					)
+					AND
+					(
+						(registreringObj.registrering).livscykluskode IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode = (b.registrering).livscykluskode 		
+					) 
+					AND
+					(
+						(registreringObj.registrering).brugerref IS NULL
+						OR
+						(registreringObj.registrering).brugerref = (b.registrering).brugerref
+					)
+					AND
+					(
+						(registreringObj.registrering).note IS NULL
+						OR
+						(b.registrering).note ILIKE (registreringObj.registrering).note
+					)
+			)
+		)
+		AND
+		( (NOT klasse_candidates_is_initialized) OR b.klasse_id = ANY (klasse_candidates) )
 
 
---filter on states -- publiceret
+
+		);
+
+	klasse_candidates_is_initialized:=true;
+
+	END LOOP;
+
+END IF;
+
+
+
 --RAISE DEBUG 'registrering,%',registreringObj;
 
 
@@ -311,7 +396,7 @@ ELSE
 					tilsPubliceretTypeObj.publiceret = a.publiceret
 				)
 				AND
-							(
+						(
 				(registreringObj.registrering) IS NULL 
 				OR
 				(
@@ -336,7 +421,7 @@ ELSE
 					(
 						(registreringObj.registrering).note IS NULL
 						OR
-						(registreringObj.registrering).note = (b.registrering).note
+						(b.registrering).note ILIKE (registreringObj.registrering).note
 					)
 			)
 		)
@@ -424,7 +509,7 @@ ELSE
 					relationTypeObj.relMaal = a.rel_maal	
 				)
 				AND
-							(
+						(
 				(registreringObj.registrering) IS NULL 
 				OR
 				(
@@ -449,7 +534,7 @@ ELSE
 					(
 						(registreringObj.registrering).note IS NULL
 						OR
-						(registreringObj.registrering).note = (b.registrering).note
+						(b.registrering).note ILIKE (registreringObj.registrering).note
 					)
 			)
 		)
@@ -479,7 +564,7 @@ ELSE
 		FROM
 			klasse_registrering b
 		WHERE
-					(
+				(
 				(registreringObj.registrering) IS NULL 
 				OR
 				(
@@ -504,7 +589,7 @@ ELSE
 					(
 						(registreringObj.registrering).note IS NULL
 						OR
-						(registreringObj.registrering).note = (b.registrering).note
+						(b.registrering).note ILIKE (registreringObj.registrering).note
 					)
 			)
 		)
