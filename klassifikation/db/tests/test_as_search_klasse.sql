@@ -24,9 +24,11 @@ DECLARE
 	klasseRelAnsvarlig_A KlasseRelationType;
 	klasseRelRedaktoer1_A KlasseRelationType;
 	klasseRelRedaktoer2_A KlasseRelationType;
+	klasseRelSideordnede3_A KlasseRelationType;
 	uuidAnsvarlig_A uuid :=uuid_generate_v4();
 	uuidRedaktoer1_A uuid :=uuid_generate_v4();
 	uuidRedaktoer2_A uuid :=uuid_generate_v4();
+
 	uuidregistrering_A uuid :=uuid_generate_v4();
 	klasseEgenskabA_Soegeord1 KlasseSoegeordType;
 	klasseEgenskabA_Soegeord2 KlasseSoegeordType;
@@ -46,6 +48,7 @@ DECLARE
 	klasseRelAnsvarlig_B KlasseRelationType;
 	klasseRelRedaktoer1_B KlasseRelationType;
 	klasseRelRedaktoer2_B KlasseRelationType;
+	klasseRelSideordnede3_B KlasseRelationType;
 	uuidAnsvarlig_B uuid :=uuid_generate_v4();
 	uuidRedaktoer1_B uuid :=uuid_generate_v4();
 	uuidRedaktoer2_B uuid :=uuid_generate_v4();
@@ -54,6 +57,11 @@ DECLARE
 	klasseEgenskabB_Soegeord2 KlasseSoegeordType;
 	klasseEgenskabB_Soegeord3 KlasseSoegeordType;
 	klasseEgenskabB_Soegeord4 KlasseSoegeordType;
+
+
+	uuidSideordnede_AB uuid :=uuid_generate_v4();
+	virkSideordnede_AB_A Virkning;
+	virkSideordnede_AB_B Virkning;
 
 	new_uuid_C uuid;
 	registrering_C KlasseRegistreringType;
@@ -108,6 +116,13 @@ DECLARE
 	search_result30 uuid[];
 	search_result31 uuid[];
 	search_result32 uuid[];
+	search_result33 uuid[];
+	search_result34 uuid[];
+	search_result35 uuid[];
+	search_result36 uuid[];
+	search_result37 uuid[];
+	search_result38 uuid[];
+	search_result39 uuid[];
 
 	expected_result2 uuid[];
 	expected_result4 uuid[];
@@ -136,6 +151,13 @@ DECLARE
 	expected_result30 uuid[];
 	expected_result31 uuid[];
 	expected_result32 uuid[];
+	expected_result33 uuid[];
+	expected_result34 uuid[];
+	expected_result35 uuid[];
+	expected_result36 uuid[];
+	expected_result37 uuid[];
+	expected_result38 uuid[];
+	expected_result39 uuid[];
 
 	search_registrering_3 KlasseRegistreringType;
 	search_registrering_4 KlasseRegistreringType;
@@ -167,6 +189,13 @@ DECLARE
 	search_registrering_30 KlasseRegistreringType;
 	search_registrering_31 KlasseRegistreringType;
 	search_registrering_32 KlasseRegistreringType;
+	search_registrering_33 KlasseRegistreringType;
+	search_registrering_34 KlasseRegistreringType;
+	search_registrering_35 KlasseRegistreringType;
+	search_registrering_36 KlasseRegistreringType;
+	search_registrering_37 KlasseRegistreringType;
+	search_registrering_38 KlasseRegistreringType;
+	search_registrering_39 KlasseRegistreringType;
 BEGIN
 
 
@@ -212,7 +241,13 @@ virkPubliceret_A := ROW (
 ) :: Virkning
 ;
 
-
+virkSideordnede_AB_A := ROW (
+	'[2015-03-20, infinity)' :: TSTZRANGE,
+          uuid_generate_v4(),
+          'Bruger',
+          'NoteEx10'
+) :: Virkning
+;
 
 klasseRelAnsvarlig_A := ROW (
 	'ansvarlig'::KlasseRelationKode,
@@ -235,6 +270,13 @@ klasseRelRedaktoer2_A := ROW (
 	'redaktoerer'::KlasseRelationKode,
 		virkRedaktoer2_A,
 	uuidRedaktoer2_A
+) :: KlasseRelationType
+;
+
+klasseRelSideordnede3_A := ROW (
+	'sideordnede'::KlasseRelationKode,
+		virkSideordnede_AB_A,
+	uuidSideordnede_AB
 ) :: KlasseRelationType
 ;
 
@@ -281,7 +323,7 @@ registrering_A := ROW (
 	,
 ARRAY[klassePubliceret_A]::KlassePubliceretTilsType[],
 ARRAY[klasseEgenskab_A]::KlasseEgenskaberAttrType[],
-ARRAY[klasseRelAnsvarlig_A,klasseRelRedaktoer1_A,klasseRelRedaktoer2_A]
+ARRAY[klasseRelAnsvarlig_A,klasseRelRedaktoer1_A,klasseRelRedaktoer2_A,klasseRelSideordnede3_A]
 ) :: KlasseRegistreringType
 ;
 
@@ -325,6 +367,14 @@ virkRedaktoer2_B :=	ROW (
           ) :: Virkning
 ;
 
+virkSideordnede_AB_B := ROW (
+	'[2014-01-20, infinity)' :: TSTZRANGE,
+          uuid_generate_v4(),
+          'Bruger',
+          'NoteEx11'
+) :: Virkning
+;
+
 virkPubliceret_B := ROW (
 	'[2015-05-18, infinity)' :: TSTZRANGE,
           uuid_generate_v4(),
@@ -363,6 +413,13 @@ klasseRelRedaktoer2_B := ROW (
 	'redaktoerer'::KlasseRelationKode,
 		virkRedaktoer2_B,
 	uuidRedaktoer2_B
+) :: KlasseRelationType
+;
+
+klasseRelSideordnede3_B := ROW (
+	'sideordnede'::KlasseRelationKode,
+		virkSideordnede_AB_B,
+	uuidSideordnede_AB
 ) :: KlasseRelationType
 ;
 
@@ -430,7 +487,7 @@ registrering_B := ROW (
 	,
 ARRAY[klassePubliceret_B,klassePubliceret_B2]::KlassePubliceretTilsType[],
 ARRAY[klasseEgenskab_B]::KlasseEgenskaberAttrType[],
-ARRAY[klasseRelAnsvarlig_B,klasseRelRedaktoer1_B,klasseRelRedaktoer2_B]
+ARRAY[klasseRelAnsvarlig_B,klasseRelRedaktoer1_B,klasseRelRedaktoer2_B,klasseRelSideordnede3_B]
 ) :: KlasseRegistreringType
 ;
 
@@ -1709,7 +1766,7 @@ raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
 RETURN NEXT ok(expected_result25 @> search_result25 and search_result25 @>expected_result25 and array_length(expected_result25,1)=array_length(search_result25,1), 'wildcard search attr 1');
 
 --******************************
---wildcard search attr 2
+--vilkaarligAttr search attr 2
 
 search_registrering_26 := ROW (
 	ROW (
@@ -1767,10 +1824,10 @@ raise notice 'Test global virksøg 5:B:%',to_json(registrering_B);
 raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
 */
 
-RETURN NEXT ok(expected_result26 @> search_result26 and search_result26 @>expected_result26 and array_length(expected_result26,1)=array_length(search_result26,1), 'wildcard search attr 2');
+RETURN NEXT ok(expected_result26 @> search_result26 and search_result26 @>expected_result26 and array_length(expected_result26,1)=array_length(search_result26,1), 'vilkaarligAttr search attr 2');
 
 --******************************
---wildcard search attr 3
+--vilkaarligAttr search attr 3
 
 search_registrering_27 := ROW (
 	ROW (
@@ -1819,19 +1876,19 @@ search_result27 :=as_search_klasse(
 	);
 
 /*
-raise notice 'wildcard search attr 3:%',to_json(search_result27);
+raise notice 'vilkaarligAttr search attr 3:%',to_json(search_result27);
 
-raise notice 'wildcard search attr 3:%',to_json(expected_result27);
+raise notice 'vilkaarligAttr search attr 3:%',to_json(expected_result27);
 
 raise notice 'Test global virksøg 5:A:%',to_json(registrering_A);
 raise notice 'Test global virksøg 5:B:%',to_json(registrering_B);
 raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
 */
 
-RETURN NEXT ok(coalesce(array_length(search_result27,1),0)=coalesce(array_length(expected_result27,1),0), 'wildcard search attr 3');
+RETURN NEXT ok(coalesce(array_length(search_result27,1),0)=coalesce(array_length(expected_result27,1),0), 'vilkaarligAttr search attr 3');
 
 --******************************
---wildcard search attr 4
+--vilkaarligAttr search attr 4
 
 expected_result28:=ARRAY[new_uuid_C]::uuid[];
 
@@ -1845,19 +1902,19 @@ search_result28 :=as_search_klasse(
 	);
 
 /*
-raise notice 'wildcard search attr 3:%',to_json(search_result28);
+raise notice 'vilkaarligAttr search attr 3:%',to_json(search_result28);
 
-raise notice 'wildcard search attr 3:%',to_json(expected_result28);
+raise notice 'vilkaarligAttr search attr 3:%',to_json(expected_result28);
 
 raise notice 'Test global virksøg 5:A:%',to_json(registrering_A);
 raise notice 'Test global virksøg 5:B:%',to_json(registrering_B);
 raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
 */
 
-RETURN NEXT ok(expected_result28 @> search_result28 and search_result28 @>expected_result28 and array_length(expected_result28,1)=array_length(search_result28,1), 'wildcard search attr 4');
+RETURN NEXT ok(expected_result28 @> search_result28 and search_result28 @>expected_result28 and array_length(expected_result28,1)=array_length(search_result28,1), 'vilkaarligAttr search attr 4');
 
 --******************************
---wildcard search attr 5
+--vilkaarligAttr search attr 5
 expected_result29:=ARRAY[new_uuid_A,new_uuid_B]::uuid[];
 
 search_result29 :=as_search_klasse(
@@ -1870,19 +1927,19 @@ search_result29 :=as_search_klasse(
 	);
 
 /*
-raise notice 'wildcard search attr 3:%',to_json(search_result29);
+raise notice 'vilkaarligAttr search attr 3:%',to_json(search_result29);
 
-raise notice 'wildcard search attr 3:%',to_json(expected_result29);
+raise notice 'vilkaarligAttr search attr 3:%',to_json(expected_result29);
 
 raise notice 'Test global virksøg 5:A:%',to_json(registrering_A);
 raise notice 'Test global virksøg 5:B:%',to_json(registrering_B);
 raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
 */
 
-RETURN NEXT ok(expected_result29 @> search_result29 and search_result29 @>expected_result29 and array_length(expected_result29,1)=array_length(search_result29,1), 'wildcard search attr 5');
+RETURN NEXT ok(expected_result29 @> search_result29 and search_result29 @>expected_result29 and array_length(expected_result29,1)=array_length(search_result29,1), 'vilkaarligAttr search attr 5');
 
 --******************************
---wildcard search attr 6
+--vilkaarligAttr search attr 6
 expected_result29:=ARRAY[new_uuid_A]::uuid[];
 
 search_result29 :=as_search_klasse(
@@ -1895,20 +1952,20 @@ search_result29 :=as_search_klasse(
 	);
 
 /*
-raise notice 'wildcard search attr 3:%',to_json(search_result29);
+raise notice 'vilkaarligAttr search attr 3:%',to_json(search_result29);
 
-raise notice 'wildcard search attr 3:%',to_json(expected_result29);
+raise notice 'vilkaarligAttr search attr 3:%',to_json(expected_result29);
 
 raise notice 'Test global virksøg 5:A:%',to_json(registrering_A);
 raise notice 'Test global virksøg 5:B:%',to_json(registrering_B);
 raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
 */
 
-RETURN NEXT ok(expected_result29 @> search_result29 and search_result29 @>expected_result29 and array_length(expected_result29,1)=array_length(search_result29,1), 'wildcard search attr 6');
+RETURN NEXT ok(expected_result29 @> search_result29 and search_result29 @>expected_result29 and array_length(expected_result29,1)=array_length(search_result29,1), 'vilkaarligAttr search attr 6');
 
 
 --******************************
---wildcard search attr 7
+--vilkaarligAttr search attr 7
 expected_result30:=ARRAY[new_uuid_B]::uuid[];
 
 search_result30 :=as_search_klasse(
@@ -1921,19 +1978,19 @@ search_result30 :=as_search_klasse(
 	);
 
 /*
-raise notice 'wildcard search attr 3:%',to_json(search_result30);
+raise notice 'vilkaarligAttr search attr 3:%',to_json(search_result30);
 
-raise notice 'wildcard search attr 3:%',to_json(expected_result30);
+raise notice 'vilkaarligAttr search attr 3:%',to_json(expected_result30);
 
 raise notice 'Test global virksøg 5:A:%',to_json(registrering_A);
 raise notice 'Test global virksøg 5:B:%',to_json(registrering_B);
 raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
 */
 
-RETURN NEXT ok(expected_result30 @> search_result30 and search_result30 @>expected_result30 and array_length(expected_result30,1)=array_length(search_result30,1), 'wildcard search attr 7');
+RETURN NEXT ok(expected_result30 @> search_result30 and search_result30 @>expected_result30 and array_length(expected_result30,1)=array_length(search_result30,1), 'vilkaarligAttr search attr 7');
 
 --******************************
---wildcard search attr 8
+--vilkaarligAttr search attr 8
 expected_result31:=ARRAY[new_uuid_B,new_uuid_A]::uuid[];
 
 search_result31 :=as_search_klasse(
@@ -1946,19 +2003,19 @@ search_result31 :=as_search_klasse(
 	);
 
 /*
-raise notice 'wildcard search attr 3:%',to_json(search_result31);
+raise notice 'vilkaarligAttr search attr 3:%',to_json(search_result31);
 
-raise notice 'wildcard search attr 3:%',to_json(expected_result31);
+raise notice 'vilkaarligAttr search attr 3:%',to_json(expected_result31);
 
 raise notice 'Test global virksøg 5:A:%',to_json(registrering_A);
 raise notice 'Test global virksøg 5:B:%',to_json(registrering_B);
 raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
 */
 
-RETURN NEXT ok(expected_result31 @> search_result31 and search_result31 @>expected_result31 and array_length(expected_result31,1)=array_length(search_result31,1), 'wildcard search attr 8');
+RETURN NEXT ok(expected_result31 @> search_result31 and search_result31 @>expected_result31 and array_length(expected_result31,1)=array_length(search_result31,1), 'vilkaarligAttr search attr 8');
 
 --******************************
---wildcard search attr 9
+--vilkaarligAttr search attr 9
 
 expected_result32:=ARRAY[new_uuid_C]::uuid[];
 
@@ -1971,17 +2028,199 @@ search_result32 :=as_search_klasse(
 	ARRAY['eksempel_faelles']::text[]
 	);
 /*
-raise notice 'wildcard search attr 3:%',to_json(search_result32);
+raise notice 'vilkaarligAttr search attr 3:%',to_json(search_result32);
 
-raise notice 'wildcard search attr 3:%',to_json(expected_result32);
+raise notice 'vilkaarligAttr search attr 3:%',to_json(expected_result32);
 
 raise notice 'Test global virksøg 5:A:%',to_json(registrering_A);
 raise notice 'Test global virksøg 5:B:%',to_json(registrering_B);
 raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
 */
 
-RETURN NEXT ok(expected_result32 @> search_result32 and search_result32 @>expected_result32 and array_length(expected_result32,1)=array_length(search_result32,1), 'wildcard search attr 9');
+RETURN NEXT ok(expected_result32 @> search_result32 and search_result32 @>expected_result32 and array_length(expected_result32,1)=array_length(search_result32,1), 'vilkaarligAttr search attr 9');
 
+--******************************
+--vilkaarligRel search attr 1
+
+expected_result33:=ARRAY[new_uuid_B]::uuid[];
+
+search_result33 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	null, --registrering_A Klasseregistrering_AType
+	null, --virkningSoeg,
+	null,
+	null,
+	ARRAY[uuidRedaktoer2_B]::uuid[]
+	);
+/*
+raise notice 'vilkaarligAttr search attr 3:%',to_json(search_result33);
+
+raise notice 'vilkaarligAttr search attr 3:%',to_json(expected_result33);
+
+raise notice 'Test global virksøg 5:A:%',to_json(registrering_A);
+raise notice 'Test global virksøg 5:B:%',to_json(registrering_B);
+raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
+*/
+
+RETURN NEXT ok(expected_result33 @> search_result33 and search_result33 @>expected_result33 and array_length(expected_result33,1)=array_length(search_result33,1), 'vilkaarligRel search 1');
+
+--******************************
+--vilkaarligRel search attr 2
+
+expected_result34:=ARRAY[new_uuid_A]::uuid[];
+
+search_result34 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	null, --registrering_A Klasseregistrering_AType
+	null, --virkningSoeg,
+	null,
+	null,
+	ARRAY[uuidRedaktoer2_A,uuidAnsvarlig_A]::uuid[]
+	);
+/*
+raise notice 'vilkaarligAttr search attr 3:%',to_json(search_result34);
+
+raise notice 'vilkaarligAttr search attr 3:%',to_json(expected_result34);
+
+raise notice 'Test global virksøg 5:A:%',to_json(registrering_A);
+raise notice 'Test global virksøg 5:B:%',to_json(registrering_B);
+raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
+*/
+
+RETURN NEXT ok(expected_result34 @> search_result34 and search_result34 @>expected_result34 and array_length(expected_result34,1)=array_length(search_result34,1), 'vilkaarligRel search 2');
+
+--******************************
+--vilkaarligRel search attr 3
+
+expected_result35:=ARRAY[]::uuid[];
+
+search_result35 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	null, --registrering_A Klasseregistrering_AType
+	null, --virkningSoeg,
+	null,
+	null,
+	ARRAY[uuidRedaktoer2_A,uuidAnsvarlig_C]::uuid[]
+	);
+/*
+raise notice 'vilkaarligAttr search attr 3:%',to_json(search_result35);
+
+raise notice 'vilkaarligAttr search attr 3:%',to_json(expected_result35);
+
+raise notice 'Test global virksøg 5:A:%',to_json(registrering_A);
+raise notice 'Test global virksøg 5:B:%',to_json(registrering_B);
+raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
+*/
+
+RETURN NEXT ok(coalesce(array_length(expected_result35,1),0)=coalesce(array_length(search_result35,1),0), 'vilkaarligRel search 3');
+
+--******************************
+--vilkaarligRel search attr 4
+
+expected_result36:=ARRAY[new_uuid_B]::uuid[];
+
+search_result36 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	null, --registrering_A Klasseregistrering_AType
+	TSTZRANGE(current_timestamp,current_timestamp,'[]'), --virkningSoeg,
+	null,
+	ARRAY['eksempel_faelles']::text[],
+	ARRAY[uuidAnsvarlig_B]::uuid[]
+	);
+/*
+raise notice 'vilkaarligAttr search attr 3:%',to_json(search_result36);
+
+raise notice 'vilkaarligAttr search attr 3:%',to_json(expected_result36);
+
+raise notice 'Test global virksøg 5:A:%',to_json(registrering_A);
+raise notice 'Test global virksøg 5:B:%',to_json(registrering_B);
+raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
+*/
+
+RETURN NEXT ok(expected_result36 @> search_result36 and search_result36 @>expected_result36 and array_length(expected_result36,1)=array_length(search_result36,1), 'vilkaarligRel search 4');
+
+
+--******************************
+--vilkaarligRel search attr 5
+
+expected_result37:=ARRAY[]::uuid[];
+
+search_result37 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	null, --registrering_A Klasseregistrering_AType
+	null, --virkningSoeg,
+	null,
+	ARRAY['brugervendt_noegle_C'],
+	ARRAY[uuidAnsvarlig_A]::uuid[]
+	);
+/*
+raise notice 'vilkaarligAttr search attr 3:%',to_json(search_result37);
+
+raise notice 'vilkaarligAttr search attr 3:%',to_json(expected_result37);
+
+raise notice 'Test global virksøg 5:A:%',to_json(registrering_A);
+raise notice 'Test global virksøg 5:B:%',to_json(registrering_B);
+raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
+*/
+
+RETURN NEXT ok(coalesce(array_length(expected_result37,1),0)=coalesce(array_length(search_result37,1),0), 'vilkaarligRel search 5');
+
+--******************************
+--vilkaarligRel search attr 6
+
+expected_result38:=ARRAY[new_uuid_B,new_uuid_A]::uuid[];
+
+search_result38 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	null, --registrering_A Klasseregistrering_AType
+	TSTZRANGE(current_timestamp,current_timestamp,'[]'), --virkningSoeg,
+	null,
+	null,
+	ARRAY[uuidSideordnede_AB]::uuid[]
+	);
+/*
+raise notice 'vilkaarligAttr search attr 3:%',to_json(search_result38);
+
+raise notice 'vilkaarligAttr search attr 3:%',to_json(expected_result38);
+
+raise notice 'Test global virksøg 5:A:%',to_json(registrering_A);
+raise notice 'Test global virksøg 5:B:%',to_json(registrering_B);
+raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
+*/
+
+RETURN NEXT ok(expected_result38 @> search_result38 and search_result38 @>expected_result38 and array_length(expected_result38,1)=array_length(search_result38,1), 'vilkaarligRel search 6');
+
+--******************************
+--vilkaarligRel search attr 7
+
+expected_result39:=ARRAY[new_uuid_B]::uuid[];
+
+search_result39 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	null, --registrering_A Klasseregistrering_AType
+	TSTZRANGE('2014-02-27','2014-03-30','[]'), --virkningSoeg,
+	null,
+	null,
+	ARRAY[uuidSideordnede_AB]::uuid[]
+	);
+/*
+raise notice 'vilkaarligAttr search attr 3:%',to_json(search_result39);
+
+raise notice 'vilkaarligAttr search attr 3:%',to_json(expected_result39);
+
+raise notice 'Test global virksøg 5:A:%',to_json(registrering_A);
+raise notice 'Test global virksøg 5:B:%',to_json(registrering_B);
+raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
+*/
+
+RETURN NEXT ok(expected_result39 @> search_result39 and search_result39 @>expected_result39 and array_length(expected_result39,1)=array_length(search_result39,1), 'vilkaarligRel search 7');
 
 
 

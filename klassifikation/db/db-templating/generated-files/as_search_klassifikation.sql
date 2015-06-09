@@ -463,6 +463,65 @@ ELSE
 END IF;
 --/**********************//
 
+IF coalesce(array_length(anyRelUuidArr ,1),0)>0 THEN
+
+	FOREACH anyRelUuid IN ARRAY anyRelUuidArr
+	LOOP
+		klassifikation_candidates:=array(
+			SELECT DISTINCT
+			b.klassifikation_id 
+			FROM  klassifikation_relation a
+			JOIN klassifikation_registrering b on a.klassifikation_registrering_id=b.id
+			WHERE
+			anyRelUuid = a.rel_maal
+			AND
+			(
+				virkningSoeg IS NULL
+				OR
+				virkningSoeg && (a.virkning).TimePeriod
+			)
+			AND
+					(
+				(registreringObj.registrering) IS NULL 
+				OR
+				(
+					(
+						(registreringObj.registrering).timeperiod IS NULL 
+						OR
+						(registreringObj.registrering).timeperiod && (b.registrering).timeperiod
+					)
+					AND
+					(
+						(registreringObj.registrering).livscykluskode IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode = (b.registrering).livscykluskode 		
+					) 
+					AND
+					(
+						(registreringObj.registrering).brugerref IS NULL
+						OR
+						(registreringObj.registrering).brugerref = (b.registrering).brugerref
+					)
+					AND
+					(
+						(registreringObj.registrering).note IS NULL
+						OR
+						(b.registrering).note ILIKE (registreringObj.registrering).note
+					)
+			)
+		)
+		AND
+		( (NOT klassifikation_candidates_is_initialized) OR b.klassifikation_id = ANY (klassifikation_candidates) )
+
+
+			);
+
+	klassifikation_candidates_is_initialized:=true;
+	END LOOP;
+END IF;
+
+--/**********************//
+
 --RAISE DEBUG 'klassifikation_candidates_is_initialized step 5:%',klassifikation_candidates_is_initialized;
 --RAISE DEBUG 'klassifikation_candidates step 5:%',klassifikation_candidates;
 

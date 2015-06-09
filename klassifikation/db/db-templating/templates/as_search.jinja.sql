@@ -339,6 +339,34 @@ ELSE
 END IF;
 --/**********************//
 
+IF coalesce(array_length(anyRelUuidArr ,1),0)>0 THEN
+
+	FOREACH anyRelUuid IN ARRAY anyRelUuidArr
+	LOOP
+		{{oio_type}}_candidates:=array(
+			SELECT DISTINCT
+			b.{{oio_type}}_id 
+			FROM  {{oio_type}}_relation a
+			JOIN {{oio_type}}_registrering b on a.{{oio_type}}_registrering_id=b.id
+			WHERE
+			anyRelUuid = a.rel_maal
+			AND
+			(
+				virkningSoeg IS NULL
+				OR
+				virkningSoeg && (a.virkning).TimePeriod
+			)
+			AND
+			{% include 'as_search_mixin_filter_reg.jinja.sql' %}
+
+			);
+
+	{{oio_type}}_candidates_is_initialized:=true;
+	END LOOP;
+END IF;
+
+--/**********************//
+
 --RAISE DEBUG '{{oio_type}}_candidates_is_initialized step 5:%',{{oio_type}}_candidates_is_initialized;
 --RAISE DEBUG '{{oio_type}}_candidates step 5:%',{{oio_type}}_candidates;
 

@@ -1,5 +1,5 @@
-*** ../generated-files/as_search_klasse.sql	2015-06-09 10:47:44.294157200 +0200
---- ../patches/as_search_klasse.sql.org	2015-06-09 10:47:38.870156930 +0200
+*** ../generated-files/as_search_klasse.sql	2015-06-09 15:09:19.914938889 +0200
+--- ../patches/as_search_klasse.sql.org	2015-06-09 15:13:00.286949864 +0200
 ***************
 *** 29,38 ****
 --- 29,40 ----

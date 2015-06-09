@@ -487,6 +487,65 @@ ELSE
 END IF;
 --/**********************//
 
+IF coalesce(array_length(anyRelUuidArr ,1),0)>0 THEN
+
+	FOREACH anyRelUuid IN ARRAY anyRelUuidArr
+	LOOP
+		facet_candidates:=array(
+			SELECT DISTINCT
+			b.facet_id 
+			FROM  facet_relation a
+			JOIN facet_registrering b on a.facet_registrering_id=b.id
+			WHERE
+			anyRelUuid = a.rel_maal
+			AND
+			(
+				virkningSoeg IS NULL
+				OR
+				virkningSoeg && (a.virkning).TimePeriod
+			)
+			AND
+					(
+				(registreringObj.registrering) IS NULL 
+				OR
+				(
+					(
+						(registreringObj.registrering).timeperiod IS NULL 
+						OR
+						(registreringObj.registrering).timeperiod && (b.registrering).timeperiod
+					)
+					AND
+					(
+						(registreringObj.registrering).livscykluskode IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode = (b.registrering).livscykluskode 		
+					) 
+					AND
+					(
+						(registreringObj.registrering).brugerref IS NULL
+						OR
+						(registreringObj.registrering).brugerref = (b.registrering).brugerref
+					)
+					AND
+					(
+						(registreringObj.registrering).note IS NULL
+						OR
+						(b.registrering).note ILIKE (registreringObj.registrering).note
+					)
+			)
+		)
+		AND
+		( (NOT facet_candidates_is_initialized) OR b.facet_id = ANY (facet_candidates) )
+
+
+			);
+
+	facet_candidates_is_initialized:=true;
+	END LOOP;
+END IF;
+
+--/**********************//
+
 --RAISE DEBUG 'facet_candidates_is_initialized step 5:%',facet_candidates_is_initialized;
 --RAISE DEBUG 'facet_candidates step 5:%',facet_candidates;
 
