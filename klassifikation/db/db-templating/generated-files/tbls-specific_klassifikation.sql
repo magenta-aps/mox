@@ -78,6 +78,11 @@ CREATE INDEX klassifikation_registrering_idx_note
   USING btree
   (((registrering).note));
 
+CREATE INDEX klassifikation_registrering_pat_note
+  ON klassifikation_registrering
+  USING  gin
+  (((registrering).note) gin_trgm_ops);
+
 
 
 /****************************************************************************************************/
@@ -120,24 +125,49 @@ CREATE INDEX klassifikation_attr_egenskaber_idx_brugervendtnoegle
   ON klassifikation_attr_egenskaber
   USING btree
   (brugervendtnoegle);
+
+CREATE INDEX klassifikation_attr_egenskaber_pat_brugervendtnoegle
+  ON klassifikation_attr_egenskaber
+  USING gin
+  (brugervendtnoegle gin_trgm_ops);
+
  
 
 CREATE INDEX klassifikation_attr_egenskaber_idx_beskrivelse
   ON klassifikation_attr_egenskaber
   USING btree
   (beskrivelse);
+
+CREATE INDEX klassifikation_attr_egenskaber_pat_beskrivelse
+  ON klassifikation_attr_egenskaber
+  USING gin
+  (beskrivelse gin_trgm_ops);
+
  
 
 CREATE INDEX klassifikation_attr_egenskaber_idx_kaldenavn
   ON klassifikation_attr_egenskaber
   USING btree
   (kaldenavn);
+
+CREATE INDEX klassifikation_attr_egenskaber_pat_kaldenavn
+  ON klassifikation_attr_egenskaber
+  USING gin
+  (kaldenavn gin_trgm_ops);
+
  
 
 CREATE INDEX klassifikation_attr_egenskaber_idx_ophavsret
   ON klassifikation_attr_egenskaber
   USING btree
   (ophavsret);
+
+CREATE INDEX klassifikation_attr_egenskaber_pat_ophavsret
+  ON klassifikation_attr_egenskaber
+  USING gin
+  (ophavsret gin_trgm_ops);
+
+
 
 
 CREATE INDEX klassifikation_attr_egenskaber_idx_virkning_aktoerref
@@ -154,6 +184,12 @@ CREATE INDEX klassifikation_attr_egenskaber_idx_virkning_notetekst
   ON klassifikation_attr_egenskaber
   USING btree
   (((virkning).notetekst));
+
+CREATE INDEX klassifikation_attr_egenskaber_pat_virkning_notetekst
+  ON klassifikation_attr_egenskaber
+  USING gin
+  (((virkning).notetekst) gin_trgm_ops);
+
 
 
 /****************************************************************************************************/
@@ -208,6 +244,11 @@ CREATE INDEX klassifikation_tils_publiceret_idx_virkning_notetekst
   USING btree
   (((virkning).notetekst));
 
+CREATE INDEX klassifikation_tils_publiceret_pat_virkning_notetekst
+  ON klassifikation_tils_publiceret
+  USING gin
+  (((virkning).notetekst) gin_trgm_ops);
+
   
 
 /****************************************************************************************************/
@@ -253,6 +294,12 @@ CREATE INDEX klassifikation_relation_idx_virkning_notetekst
   ON klassifikation_relation
   USING btree
   (((virkning).notetekst));
+
+CREATE INDEX klassifikation_relation_pat_virkning_notetekst
+  ON klassifikation_relation
+  USING gin
+  (((virkning).notetekst) gin_trgm_ops);
+
 
 
 

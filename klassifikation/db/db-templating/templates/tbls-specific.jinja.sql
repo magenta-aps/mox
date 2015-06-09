@@ -75,6 +75,11 @@ CREATE INDEX {{oio_type}}_registrering_idx_note
   USING btree
   (((registrering).note));
 
+CREATE INDEX {{oio_type}}_registrering_pat_note
+  ON {{oio_type}}_registrering
+  USING  gin
+  (((registrering).note) gin_trgm_ops);
+
 
 
 /****************************************************************************************************/
@@ -114,7 +119,14 @@ CREATE INDEX {{oio_type}}_attr_{{attribut}}_idx_{{field}}
   ON {{oio_type}}_attr_{{attribut}}
   USING btree
   ({{field}});
+
+CREATE INDEX {{oio_type}}_attr_{{attribut}}_pat_{{field}}
+  ON {{oio_type}}_attr_{{attribut}}
+  USING gin
+  ({{field}} gin_trgm_ops);
+
 {% endfor %}
+
 
 CREATE INDEX {{oio_type}}_attr_{{attribut}}_idx_virkning_aktoerref
   ON {{oio_type}}_attr_{{attribut}}
@@ -130,6 +142,12 @@ CREATE INDEX {{oio_type}}_attr_{{attribut}}_idx_virkning_notetekst
   ON {{oio_type}}_attr_{{attribut}}
   USING btree
   (((virkning).notetekst));
+
+CREATE INDEX {{oio_type}}_attr_{{attribut}}_pat_virkning_notetekst
+  ON {{oio_type}}_attr_{{attribut}}
+  USING gin
+  (((virkning).notetekst) gin_trgm_ops);
+
 
 {% endfor %}
 /****************************************************************************************************/
@@ -184,6 +202,11 @@ CREATE INDEX {{oio_type}}_tils_{{tilstand}}_idx_virkning_notetekst
   USING btree
   (((virkning).notetekst));
 
+CREATE INDEX {{oio_type}}_tils_{{tilstand}}_pat_virkning_notetekst
+  ON {{oio_type}}_tils_{{tilstand}}
+  USING gin
+  (((virkning).notetekst) gin_trgm_ops);
+
   {% endfor %}
 
 /****************************************************************************************************/
@@ -229,5 +252,11 @@ CREATE INDEX {{oio_type}}_relation_idx_virkning_notetekst
   ON {{oio_type}}_relation
   USING btree
   (((virkning).notetekst));
+
+CREATE INDEX {{oio_type}}_relation_pat_virkning_notetekst
+  ON {{oio_type}}_relation
+  USING gin
+  (((virkning).notetekst) gin_trgm_ops);
+
 
 {% endblock %}

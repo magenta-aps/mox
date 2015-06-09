@@ -78,6 +78,11 @@ CREATE INDEX klasse_registrering_idx_note
   USING btree
   (((registrering).note));
 
+CREATE INDEX klasse_registrering_pat_note
+  ON klasse_registrering
+  USING  gin
+  (((registrering).note) gin_trgm_ops);
+
 
 
 /****************************************************************************************************/
@@ -123,42 +128,85 @@ CREATE INDEX klasse_attr_egenskaber_idx_brugervendtnoegle
   ON klasse_attr_egenskaber
   USING btree
   (brugervendtnoegle);
+
+CREATE INDEX klasse_attr_egenskaber_pat_brugervendtnoegle
+  ON klasse_attr_egenskaber
+  USING gin
+  (brugervendtnoegle gin_trgm_ops);
+
  
 
 CREATE INDEX klasse_attr_egenskaber_idx_beskrivelse
   ON klasse_attr_egenskaber
   USING btree
   (beskrivelse);
+
+CREATE INDEX klasse_attr_egenskaber_pat_beskrivelse
+  ON klasse_attr_egenskaber
+  USING gin
+  (beskrivelse gin_trgm_ops);
+
  
 
 CREATE INDEX klasse_attr_egenskaber_idx_eksempel
   ON klasse_attr_egenskaber
   USING btree
   (eksempel);
+
+CREATE INDEX klasse_attr_egenskaber_pat_eksempel
+  ON klasse_attr_egenskaber
+  USING gin
+  (eksempel gin_trgm_ops);
+
  
 
 CREATE INDEX klasse_attr_egenskaber_idx_omfang
   ON klasse_attr_egenskaber
   USING btree
   (omfang);
+
+CREATE INDEX klasse_attr_egenskaber_pat_omfang
+  ON klasse_attr_egenskaber
+  USING gin
+  (omfang gin_trgm_ops);
+
  
 
 CREATE INDEX klasse_attr_egenskaber_idx_titel
   ON klasse_attr_egenskaber
   USING btree
   (titel);
+
+CREATE INDEX klasse_attr_egenskaber_pat_titel
+  ON klasse_attr_egenskaber
+  USING gin
+  (titel gin_trgm_ops);
+
  
 
 CREATE INDEX klasse_attr_egenskaber_idx_retskilde
   ON klasse_attr_egenskaber
   USING btree
   (retskilde);
+
+CREATE INDEX klasse_attr_egenskaber_pat_retskilde
+  ON klasse_attr_egenskaber
+  USING gin
+  (retskilde gin_trgm_ops);
+
  
 
 CREATE INDEX klasse_attr_egenskaber_idx_aendringsnotat
   ON klasse_attr_egenskaber
   USING btree
   (aendringsnotat);
+
+CREATE INDEX klasse_attr_egenskaber_pat_aendringsnotat
+  ON klasse_attr_egenskaber
+  USING gin
+  (aendringsnotat gin_trgm_ops);
+
+
 
 
 CREATE INDEX klasse_attr_egenskaber_idx_virkning_aktoerref
@@ -175,6 +223,11 @@ CREATE INDEX klasse_attr_egenskaber_idx_virkning_notetekst
   ON klasse_attr_egenskaber
   USING btree
   (((virkning).notetekst));
+
+CREATE INDEX klasse_attr_egenskaber_pat_virkning_notetekst
+  ON klasse_attr_egenskaber
+  USING gin
+  (((virkning).notetekst) gin_trgm_ops);
 
 /**********************************************/
 
@@ -210,16 +263,30 @@ CREATE INDEX klasse_attr_egenskaber_soegeord_idx_soegeordidentifikator
   USING btree
   (soegeordidentifikator);
 
+CREATE INDEX klasse_attr_egenskaber_soegeord_pat_soegeordidentifikator
+  ON klasse_attr_egenskaber_soegeord
+  USING gin
+  (soegeordidentifikator gin_trgm_ops);
 
 CREATE INDEX klasse_attr_egenskaber_soegeord_idx_beskrivelse
   ON klasse_attr_egenskaber_soegeord
   USING btree
   (beskrivelse);
 
+CREATE INDEX klasse_attr_egenskaber_soegeord_pat_beskrivelse
+  ON klasse_attr_egenskaber_soegeord
+  USING gin
+  (beskrivelse gin_trgm_ops);
+
 CREATE INDEX klasse_attr_egenskaber_soegeord_idx_soegeordskategori
   ON klasse_attr_egenskaber_soegeord
   USING btree
   (soegeordskategori);
+
+CREATE INDEX klasse_attr_egenskaber_soegeord_pat_soegeordskategori
+  ON klasse_attr_egenskaber_soegeord
+  USING gin
+  (soegeordskategori gin_trgm_ops);
 
 /****************************************************************************************************/
 
@@ -273,6 +340,11 @@ CREATE INDEX klasse_tils_publiceret_idx_virkning_notetekst
   USING btree
   (((virkning).notetekst));
 
+CREATE INDEX klasse_tils_publiceret_pat_virkning_notetekst
+  ON klasse_tils_publiceret
+  USING gin
+  (((virkning).notetekst) gin_trgm_ops);
+
   
 
 /****************************************************************************************************/
@@ -318,6 +390,12 @@ CREATE INDEX klasse_relation_idx_virkning_notetekst
   ON klasse_relation
   USING btree
   (((virkning).notetekst));
+
+CREATE INDEX klasse_relation_pat_virkning_notetekst
+  ON klasse_relation
+  USING gin
+  (((virkning).notetekst) gin_trgm_ops);
+
 
 
 

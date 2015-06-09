@@ -78,6 +78,11 @@ CREATE INDEX facet_registrering_idx_note
   USING btree
   (((registrering).note));
 
+CREATE INDEX facet_registrering_pat_note
+  ON facet_registrering
+  USING  gin
+  (((registrering).note) gin_trgm_ops);
+
 
 
 /****************************************************************************************************/
@@ -123,42 +128,85 @@ CREATE INDEX facet_attr_egenskaber_idx_brugervendtnoegle
   ON facet_attr_egenskaber
   USING btree
   (brugervendtnoegle);
+
+CREATE INDEX facet_attr_egenskaber_pat_brugervendtnoegle
+  ON facet_attr_egenskaber
+  USING gin
+  (brugervendtnoegle gin_trgm_ops);
+
  
 
 CREATE INDEX facet_attr_egenskaber_idx_beskrivelse
   ON facet_attr_egenskaber
   USING btree
   (beskrivelse);
+
+CREATE INDEX facet_attr_egenskaber_pat_beskrivelse
+  ON facet_attr_egenskaber
+  USING gin
+  (beskrivelse gin_trgm_ops);
+
  
 
 CREATE INDEX facet_attr_egenskaber_idx_opbygning
   ON facet_attr_egenskaber
   USING btree
   (opbygning);
+
+CREATE INDEX facet_attr_egenskaber_pat_opbygning
+  ON facet_attr_egenskaber
+  USING gin
+  (opbygning gin_trgm_ops);
+
  
 
 CREATE INDEX facet_attr_egenskaber_idx_ophavsret
   ON facet_attr_egenskaber
   USING btree
   (ophavsret);
+
+CREATE INDEX facet_attr_egenskaber_pat_ophavsret
+  ON facet_attr_egenskaber
+  USING gin
+  (ophavsret gin_trgm_ops);
+
  
 
 CREATE INDEX facet_attr_egenskaber_idx_plan
   ON facet_attr_egenskaber
   USING btree
   (plan);
+
+CREATE INDEX facet_attr_egenskaber_pat_plan
+  ON facet_attr_egenskaber
+  USING gin
+  (plan gin_trgm_ops);
+
  
 
 CREATE INDEX facet_attr_egenskaber_idx_supplement
   ON facet_attr_egenskaber
   USING btree
   (supplement);
+
+CREATE INDEX facet_attr_egenskaber_pat_supplement
+  ON facet_attr_egenskaber
+  USING gin
+  (supplement gin_trgm_ops);
+
  
 
 CREATE INDEX facet_attr_egenskaber_idx_retskilde
   ON facet_attr_egenskaber
   USING btree
   (retskilde);
+
+CREATE INDEX facet_attr_egenskaber_pat_retskilde
+  ON facet_attr_egenskaber
+  USING gin
+  (retskilde gin_trgm_ops);
+
+
 
 
 CREATE INDEX facet_attr_egenskaber_idx_virkning_aktoerref
@@ -175,6 +223,12 @@ CREATE INDEX facet_attr_egenskaber_idx_virkning_notetekst
   ON facet_attr_egenskaber
   USING btree
   (((virkning).notetekst));
+
+CREATE INDEX facet_attr_egenskaber_pat_virkning_notetekst
+  ON facet_attr_egenskaber
+  USING gin
+  (((virkning).notetekst) gin_trgm_ops);
+
 
 
 /****************************************************************************************************/
@@ -229,6 +283,11 @@ CREATE INDEX facet_tils_publiceret_idx_virkning_notetekst
   USING btree
   (((virkning).notetekst));
 
+CREATE INDEX facet_tils_publiceret_pat_virkning_notetekst
+  ON facet_tils_publiceret
+  USING gin
+  (((virkning).notetekst) gin_trgm_ops);
+
   
 
 /****************************************************************************************************/
@@ -274,6 +333,12 @@ CREATE INDEX facet_relation_idx_virkning_notetekst
   ON facet_relation
   USING btree
   (((virkning).notetekst));
+
+CREATE INDEX facet_relation_pat_virkning_notetekst
+  ON facet_relation
+  USING gin
+  (((virkning).notetekst) gin_trgm_ops);
+
 
 
 
