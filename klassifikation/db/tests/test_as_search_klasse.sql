@@ -100,6 +100,14 @@ DECLARE
 	search_result22 uuid[];
 	search_result23 uuid[];
 	search_result24 uuid[];
+	search_result25 uuid[];
+	search_result26 uuid[];
+	search_result27 uuid[];
+	search_result28 uuid[];
+	search_result29 uuid[];
+	search_result30 uuid[];
+	search_result31 uuid[];
+	search_result32 uuid[];
 
 	expected_result2 uuid[];
 	expected_result4 uuid[];
@@ -120,6 +128,14 @@ DECLARE
 	expected_result22 uuid[];
 	expected_result23 uuid[];
 	expected_result24 uuid[];
+	expected_result25 uuid[];
+	expected_result26 uuid[];
+	expected_result27 uuid[];
+	expected_result28 uuid[];
+	expected_result29 uuid[];
+	expected_result30 uuid[];
+	expected_result31 uuid[];
+	expected_result32 uuid[];
 
 	search_registrering_3 KlasseRegistreringType;
 	search_registrering_4 KlasseRegistreringType;
@@ -143,7 +159,14 @@ DECLARE
 	search_registrering_22 KlasseRegistreringType;
 	search_registrering_23 KlasseRegistreringType;
 	search_registrering_24 KlasseRegistreringType;
-
+	search_registrering_25 KlasseRegistreringType;
+	search_registrering_26 KlasseRegistreringType;
+	search_registrering_27 KlasseRegistreringType;
+	search_registrering_28 KlasseRegistreringType;
+	search_registrering_29 KlasseRegistreringType;
+	search_registrering_30 KlasseRegistreringType;
+	search_registrering_31 KlasseRegistreringType;
+	search_registrering_32 KlasseRegistreringType;
 BEGIN
 
 
@@ -239,7 +262,7 @@ klasseEgenskab_A := ROW (
 'brugervendt_noegle_A',
    'klassebeskrivelse_A',
    'eksempel_faelles',
-	'omfang_A',
+	'omfang_AB',
    'titel_A',
    'retskilde_A',
    NULL,--'aendringsnotat_text1',
@@ -388,7 +411,7 @@ klasseEgenskab_B := ROW (
 'brugervendt_noegle_B',
    'klassebeskrivelse_B',
    'eksempel_faelles',
-	'omfang_B',
+	'omfang_AB',
    'titel_B',
    'retskilde_B',
    NULL, --aendringsnotat
@@ -1446,7 +1469,7 @@ RETURN NEXT ok( coalesce(array_length(expected_result21,1),0)=coalesce(array_len
 
 
 --******************************
---Test multiple tilstande ŕequirements 
+--Test multiple tilstande requirements 
 
 
 search_registrering_22 := ROW (
@@ -1500,11 +1523,11 @@ raise notice 'Test global virksøg 5:B:%',to_json(registrering_B);
 raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
 */
 
-RETURN NEXT ok(expected_result22 @> search_result22 and search_result22 @>expected_result22 and array_length(expected_result22,1)=array_length(search_result22,1), 'Test multiple tilstande ŕequirements');
+RETURN NEXT ok(expected_result22 @> search_result22 and search_result22 @>expected_result22 and array_length(expected_result22,1)=array_length(search_result22,1), 'Test multiple tilstande requirements');
 
 
 --******************************
---Test multiple attribute ŕequirements 
+--Test multiple attribute requirements 
 
 
 
@@ -1570,7 +1593,7 @@ raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
 RETURN NEXT ok(expected_result23 @> search_result23 and search_result23 @>expected_result23 and array_length(expected_result23,1)=array_length(search_result23,1), 'Test multiple attribute requirements');
 
 --******************************
---Test multiple relations ŕequirements 
+--Test multiple relations requirements 
 
 
 search_registrering_24 := ROW (
@@ -1624,8 +1647,340 @@ raise notice 'Test global virksøg 5:B:%',to_json(registrering_B);
 raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
 */
 
-RETURN NEXT ok(expected_result24 @> search_result24 and search_result24 @>expected_result24 and array_length(expected_result24,1)=array_length(search_result24,1), 'Test multiple relations ŕequirements');
+RETURN NEXT ok(expected_result24 @> search_result24 and search_result24 @>expected_result24 and array_length(expected_result24,1)=array_length(search_result24,1), 'Test multiple relations requirements');
 
+--******************************
+--wildcard search attr 1
+
+search_registrering_25 := ROW (
+	ROW (
+	NULL,
+	NULL,
+	NULL,
+	NULL) :: registreringBase
+	,
+	null,--ARRAY[klassePubliceret_B]::KlassePubliceretTilsType[],
+	ARRAY[
+	ROW(
+		NULL, --brugervendtnoegle
+   		NULL, --beskrivelse
+        NULL, --eksempel
+   		'omfang\_A%', --omfang AB
+   		NULL, --titel
+   		NULL,
+   		NULL, --aendringsnotat
+   		NULL, --soegeord
+   			null
+		)::KlasseEgenskaberAttrType
+	],
+	null --ARRAY[] relations
+):: KlasseRegistreringType;
+
+
+/*
+firstResult int,--TOOD ??
+	{{oio_type}}_uuid uuid,
+	registreringObj {{oio_type|title}}RegistreringType,
+	virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+	maxResults int = 2147483647,
+	anyAttrValueArr text[] = '{}'::text[],
+	anyRelUuidArr	uuid[] = '{}'::uuid[]
+*/
+
+expected_result25:=ARRAY[new_uuid_A,new_uuid_B]::uuid[];
+
+search_result25 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	search_registrering_25, --registrering_A Klasseregistrering_AType
+	null
+	);
+
+/*
+raise notice 'Test global virksøg 5:search_result25:%',to_json(search_result25);
+
+raise notice 'Test global virksøg 5:expected_result25:%',to_json(expected_result25);
+
+raise notice 'Test global virksøg 5:A:%',to_json(registrering_A);
+raise notice 'Test global virksøg 5:B:%',to_json(registrering_B);
+raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
+*/
+
+RETURN NEXT ok(expected_result25 @> search_result25 and search_result25 @>expected_result25 and array_length(expected_result25,1)=array_length(search_result25,1), 'wildcard search attr 1');
+
+--******************************
+--wildcard search attr 2
+
+search_registrering_26 := ROW (
+	ROW (
+	NULL,
+	NULL,
+	NULL,
+	NULL) :: registreringBase
+	,
+	null,--ARRAY[klassePubliceret_B]::KlassePubliceretTilsType[],
+	ARRAY[
+	ROW(
+		NULL, --brugervendtnoegle
+   		NULL, --beskrivelse
+        'eksempel_faelles', --eksempel
+   		NULL, --omfang AB
+   		NULL, --titel
+   		NULL,
+   		NULL, --aendringsnotat
+   		NULL, --soegeord
+   			null
+		)::KlasseEgenskaberAttrType
+	],
+	null --ARRAY[] relations
+):: KlasseRegistreringType;
+
+
+/*
+firstResult int,--TOOD ??
+	{{oio_type}}_uuid uuid,
+	registreringObj {{oio_type|title}}RegistreringType,
+	virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+	maxResults int = 2147483647,
+	anyAttrValueArr text[] = '{}'::text[],
+	anyRelUuidArr	uuid[] = '{}'::uuid[]
+*/
+
+expected_result26:=ARRAY[new_uuid_B]::uuid[];
+
+search_result26 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	search_registrering_26, --registrering_A Klasseregistrering_AType
+	TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+	null,
+	ARRAY['brugervendt_noegle_B']::text[]
+	);
+
+/*
+raise notice 'Test global virksøg 5:search_result26:%',to_json(search_result26);
+
+raise notice 'Test global virksøg 5:expected_result26:%',to_json(expected_result26);
+
+raise notice 'Test global virksøg 5:A:%',to_json(registrering_A);
+raise notice 'Test global virksøg 5:B:%',to_json(registrering_B);
+raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
+*/
+
+RETURN NEXT ok(expected_result26 @> search_result26 and search_result26 @>expected_result26 and array_length(expected_result26,1)=array_length(search_result26,1), 'wildcard search attr 2');
+
+--******************************
+--wildcard search attr 3
+
+search_registrering_27 := ROW (
+	ROW (
+	NULL,
+	NULL,
+	NULL,
+	NULL) :: registreringBase
+	,
+	null,--ARRAY[klassePubliceret_B]::KlassePubliceretTilsType[],
+	ARRAY[
+	ROW(
+		NULL, --brugervendtnoegle
+   		NULL, --beskrivelse
+        NULL, --eksempel
+   		'omfang\_AB', --omfang AB
+   		NULL, --titel
+   		NULL,
+   		NULL, --aendringsnotat
+   		NULL, --soegeord
+   			null
+		)::KlasseEgenskaberAttrType
+	],
+	null --ARRAY[] relations
+):: KlasseRegistreringType;
+
+
+/*
+firstResult int,--TOOD ??
+	{{oio_type}}_uuid uuid,
+	registreringObj {{oio_type|title}}RegistreringType,
+	virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+	maxResults int = 2147483647,
+	anyAttrValueArr text[] = '{}'::text[],
+	anyRelUuidArr	uuid[] = '{}'::uuid[]
+*/
+
+expected_result27:=ARRAY[]::uuid[];
+
+search_result27 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	search_registrering_27, --registrering_A Klasseregistrering_AType
+	TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+	null,
+	ARRAY['brugervendt_noegle_C']::text[]
+	);
+
+/*
+raise notice 'wildcard search attr 3:%',to_json(search_result27);
+
+raise notice 'wildcard search attr 3:%',to_json(expected_result27);
+
+raise notice 'Test global virksøg 5:A:%',to_json(registrering_A);
+raise notice 'Test global virksøg 5:B:%',to_json(registrering_B);
+raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
+*/
+
+RETURN NEXT ok(coalesce(array_length(search_result27,1),0)=coalesce(array_length(expected_result27,1),0), 'wildcard search attr 3');
+
+--******************************
+--wildcard search attr 4
+
+expected_result28:=ARRAY[new_uuid_C]::uuid[];
+
+search_result28 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	null, --registrering_A Klasseregistrering_AType
+	TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+	null,
+	ARRAY['brugervendt_noegle_C']::text[]
+	);
+
+/*
+raise notice 'wildcard search attr 3:%',to_json(search_result28);
+
+raise notice 'wildcard search attr 3:%',to_json(expected_result28);
+
+raise notice 'Test global virksøg 5:A:%',to_json(registrering_A);
+raise notice 'Test global virksøg 5:B:%',to_json(registrering_B);
+raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
+*/
+
+RETURN NEXT ok(expected_result28 @> search_result28 and search_result28 @>expected_result28 and array_length(expected_result28,1)=array_length(search_result28,1), 'wildcard search attr 4');
+
+--******************************
+--wildcard search attr 5
+expected_result29:=ARRAY[new_uuid_A,new_uuid_B]::uuid[];
+
+search_result29 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	null, --registrering_A Klasseregistrering_AType
+	TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+	null,
+	ARRAY['omfang\_AB']::text[]
+	);
+
+/*
+raise notice 'wildcard search attr 3:%',to_json(search_result29);
+
+raise notice 'wildcard search attr 3:%',to_json(expected_result29);
+
+raise notice 'Test global virksøg 5:A:%',to_json(registrering_A);
+raise notice 'Test global virksøg 5:B:%',to_json(registrering_B);
+raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
+*/
+
+RETURN NEXT ok(expected_result29 @> search_result29 and search_result29 @>expected_result29 and array_length(expected_result29,1)=array_length(search_result29,1), 'wildcard search attr 5');
+
+--******************************
+--wildcard search attr 6
+expected_result29:=ARRAY[new_uuid_A]::uuid[];
+
+search_result29 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	null, --registrering_A Klasseregistrering_AType
+	TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+	null,
+	ARRAY['omfang\_AB','titel_A']::text[]
+	);
+
+/*
+raise notice 'wildcard search attr 3:%',to_json(search_result29);
+
+raise notice 'wildcard search attr 3:%',to_json(expected_result29);
+
+raise notice 'Test global virksøg 5:A:%',to_json(registrering_A);
+raise notice 'Test global virksøg 5:B:%',to_json(registrering_B);
+raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
+*/
+
+RETURN NEXT ok(expected_result29 @> search_result29 and search_result29 @>expected_result29 and array_length(expected_result29,1)=array_length(search_result29,1), 'wildcard search attr 6');
+
+
+--******************************
+--wildcard search attr 7
+expected_result30:=ARRAY[new_uuid_B]::uuid[];
+
+search_result30 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	null, --registrering_A Klasseregistrering_AType
+	TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+	null,
+	ARRAY['omfang\_AB','beskrivelse_klasseEgenskabB_Soegeord4']::text[]
+	);
+
+/*
+raise notice 'wildcard search attr 3:%',to_json(search_result30);
+
+raise notice 'wildcard search attr 3:%',to_json(expected_result30);
+
+raise notice 'Test global virksøg 5:A:%',to_json(registrering_A);
+raise notice 'Test global virksøg 5:B:%',to_json(registrering_B);
+raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
+*/
+
+RETURN NEXT ok(expected_result30 @> search_result30 and search_result30 @>expected_result30 and array_length(expected_result30,1)=array_length(search_result30,1), 'wildcard search attr 7');
+
+--******************************
+--wildcard search attr 8
+expected_result31:=ARRAY[new_uuid_B,new_uuid_A]::uuid[];
+
+search_result31 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	null, --registrering_A Klasseregistrering_AType
+	TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+	null,
+	ARRAY['omfang\_A%']::text[]
+	);
+
+/*
+raise notice 'wildcard search attr 3:%',to_json(search_result31);
+
+raise notice 'wildcard search attr 3:%',to_json(expected_result31);
+
+raise notice 'Test global virksøg 5:A:%',to_json(registrering_A);
+raise notice 'Test global virksøg 5:B:%',to_json(registrering_B);
+raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
+*/
+
+RETURN NEXT ok(expected_result31 @> search_result31 and search_result31 @>expected_result31 and array_length(expected_result31,1)=array_length(search_result31,1), 'wildcard search attr 8');
+
+--******************************
+--wildcard search attr 9
+
+expected_result32:=ARRAY[new_uuid_C]::uuid[];
+
+search_result32 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	null, --registrering_A Klasseregistrering_AType
+	'[2014-10-01, 2014-10-20]' :: TSTZRANGE, --virkningSoeg,
+	null,
+	ARRAY['eksempel_faelles']::text[]
+	);
+/*
+raise notice 'wildcard search attr 3:%',to_json(search_result32);
+
+raise notice 'wildcard search attr 3:%',to_json(expected_result32);
+
+raise notice 'Test global virksøg 5:A:%',to_json(registrering_A);
+raise notice 'Test global virksøg 5:B:%',to_json(registrering_B);
+raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
+*/
+
+RETURN NEXT ok(expected_result32 @> search_result32 and search_result32 @>expected_result32 and array_length(expected_result32,1)=array_length(search_result32,1), 'wildcard search attr 9');
 
 
 
