@@ -23,7 +23,8 @@ CREATE OR REPLACE FUNCTION as_update_klassifikation(
   livscykluskode Livscykluskode,           
   attrEgenskaber KlassifikationEgenskaberAttrType[],
   tilsPubliceret KlassifikationPubliceretTilsType[],
-  relationer KlassifikationRelationType[]
+  relationer KlassifikationRelationType[],
+  lostUpdatePreventionTZ TIMESTAMPTZ = null
 	)
   RETURNS bigint AS 
 $$
@@ -36,8 +37,18 @@ BEGIN
 
 --create a new registrering
 
+IF NOT EXISTS (select a.id from klassifikation a join klassifikation_registrering b on b.klassifikation_id=a.id  where a.id=klassifikation_uuid) THEN
+   RAISE EXCEPTION 'Unable to update klassifikation with uuid [%], being unable to any previous registrations.',klassifikation_uuid;
+END IF;
+
 new_klassifikation_registrering := _as_create_klassifikation_registrering(klassifikation_uuid,livscykluskode, brugerref, note);
 prev_klassifikation_registrering := _as_get_prev_klassifikation_registrering(new_klassifikation_registrering);
+
+IF lostUpdatePreventionTZ IS NOT NULL THEN
+  IF NOT (LOWER((prev_klassifikation_registrering.registrering).timeperiod)=lostUpdatePreventionTZ) THEN
+    RAISE EXCEPTION 'Unable to update klassifikation with uuid [%], as the klassifikation seems to have been updated since latest read by client (the given lostUpdatePreventionTZ [%] does not match the timesamp of latest registration [%]).',klassifikation_uuid,lostUpdatePreventionTZ,LOWER((prev_klassifikation_registrering.registrering).timeperiod);
+  END IF;   
+END IF;
 
 --handle relationer (relations)
 
@@ -327,6 +338,8 @@ FROM
   JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
   WHERE a.klassifikation_registrering_id=prev_klassifikation_registrering.id     
 ;
+
+
 
 
 return new_klassifikation_registrering.id;

@@ -23,7 +23,8 @@ CREATE OR REPLACE FUNCTION as_update_klasse(
   livscykluskode Livscykluskode,           
   attrEgenskaber KlasseEgenskaberAttrType[],
   tilsPubliceret KlassePubliceretTilsType[],
-  relationer KlasseRelationType[]
+  relationer KlasseRelationType[],
+  lostUpdatePreventionTZ TIMESTAMPTZ = null
 	)
   RETURNS bigint AS 
 $$
@@ -38,8 +39,18 @@ BEGIN
 
 --create a new registrering
 
+IF NOT EXISTS (select a.id from klasse a join klasse_registrering b on b.klasse_id=a.id  where a.id=klasse_uuid) THEN
+   RAISE EXCEPTION 'Unable to update klasse with uuid [%], being unable to any previous registrations.',klasse_uuid;
+END IF;
+
 new_klasse_registrering := _as_create_klasse_registrering(klasse_uuid,livscykluskode, brugerref, note);
 prev_klasse_registrering := _as_get_prev_klasse_registrering(new_klasse_registrering);
+
+IF lostUpdatePreventionTZ IS NOT NULL THEN
+  IF NOT (LOWER((prev_klasse_registrering.registrering).timeperiod)=lostUpdatePreventionTZ) THEN
+    RAISE EXCEPTION 'Unable to update klasse with uuid [%], as the klasse seems to have been updated since latest read by client (the given lostUpdatePreventionTZ [%] does not match the timesamp of latest registration [%]).',klasse_uuid,lostUpdatePreventionTZ,LOWER((prev_klasse_registrering.registrering).timeperiod);
+  END IF;   
+END IF;
 
 --handle relationer (relations)
 
@@ -410,6 +421,8 @@ FROM copied_attr_egenskaber a
 JOIN klasse_attr_egenskaber a2 on a2.klasse_registrering_id=prev_klasse_registrering.id and (a2.virkning).TimePeriod @> a.TimePeriod --this will hit exactly one row - that is, the row that we copied. 
 JOIN klasse_attr_egenskaber_soegeord b on a2.id=b.klasse_attr_egenskaber_id   
 ;
+
+
 
 
 return new_klasse_registrering.id;

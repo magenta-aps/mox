@@ -57,10 +57,28 @@ DECLARE
 	klasseEgenskabE_Soegeord3 KlasseSoegeordType;
 	klasseEgenskabE_Soegeord4 KlasseSoegeordType;
 	klasseEgenskabE_Soegeord5 KlasseSoegeordType;
+
+	klasse_read1 KlasseType;
+	klasse_read2 KlasseType;
+	sqlStr1 text;
+	sqlStr2 text;
+	expected_exception_txt1 text;
+	expected_exception_txt2 text;
 	--tempResSoegeord KlasseSoegeordTypeWID[];
 	--tempResEgenskaberAttr KlasseEgenskaberAttrTypeWID[];
-	
+	extraUuid uuid:=uuid_generate_v4();
 BEGIN
+
+--------------------------------------------------------------------
+
+sqlStr2:='SELECT as_update_klasse(''' || extraUuid ||'''::uuid,uuid_generate_v4(), ''Test update''::text,''Rettet''::Livscykluskode,null,null,null,''-infinity''::TIMESTAMPTZ)';
+expected_exception_txt2:='Unable to update klasse with uuid ['|| extraUuid ||'], being unable to any previous registrations.';
+
+--raise notice 'debug:sqlStr2:%',sqlStr2;
+RETURN NEXT throws_ok(sqlStr2,expected_exception_txt2);
+
+
+
 
 
 virkEgenskaber :=	ROW (
@@ -279,6 +297,8 @@ ARRAY[klasseRelAnsvarlig,klasseRelRedaktoer1,klasseRelRedaktoer2]
 
 new_uuid := as_create_or_import_klasse(registrering);
 
+klasse_read2:=as_read_Klasse(new_uuid,null,null);
+
 --***************************************
 --Update the klasse created above
 
@@ -369,6 +389,7 @@ update_reg_id:=as_update_klasse(
   array[klasseEgenskabC,klasseEgenskabD,klasseEgenskabE]::KlasseEgenskaberAttrType[],
   array[klassePubliceretC]::KlassePubliceretTilsType[],
   array[klasseRelAnsvarlig]::KlasseRelationType[]
+  ,lower(((klasse_read2.registrering[1]).registrering).TimePeriod)
 	);
 
 
@@ -625,7 +646,17 @@ ARRAY[
 	]::KlasseEgenskaberAttrType[]
     ,    'egenskaber updated' );
 
+--------------------------------------------------------------------
 
+klasse_read1:=as_read_Klasse(new_uuid,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
+	);
+sqlStr1:='SELECT as_update_klasse(''' || new_uuid || '''::uuid,uuid_generate_v4(), ''Test update''::text,''Rettet''::Livscykluskode,null,null,null,''-infinity''::TIMESTAMPTZ)';
+expected_exception_txt1:='Unable to update klasse with uuid [' || new_uuid || '], as the klasse seems to have been updated since latest read by client (the given lostUpdatePreventionTZ [-infinity] does not match the timesamp of latest registration [' || lower(((klasse_read1.registrering[1]).registrering).TimePeriod) || ']).';
+
+--raise notice 'debug:sqlStr1:%',sqlStr1;
+RETURN NEXT throws_ok(sqlStr1,expected_exception_txt1);
 
 
 END;

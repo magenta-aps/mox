@@ -24,7 +24,8 @@ CREATE OR REPLACE FUNCTION as_update_{{oio_type}}(
   {%- for tilstand, tilstand_values in tilstande.iteritems() %}
   tils{{tilstand|title}} {{oio_type|title}}{{tilstand|title}}TilsType[],
   {%- endfor %}
-  relationer {{oio_type|title}}RelationType[]
+  relationer {{oio_type|title}}RelationType[],
+  lostUpdatePreventionTZ TIMESTAMPTZ = null
 	)
   RETURNS bigint AS 
 $$
@@ -38,8 +39,18 @@ BEGIN
 
 --create a new registrering
 
+IF NOT EXISTS (select a.id from {{oio_type}} a join {{oio_type}}_registrering b on b.{{oio_type}}_id=a.id  where a.id={{oio_type}}_uuid) THEN
+   RAISE EXCEPTION 'Unable to update {{oio_type}} with uuid [%], being unable to any previous registrations.',{{oio_type}}_uuid;
+END IF;
+
 new_{{oio_type}}_registrering := _as_create_{{oio_type}}_registrering({{oio_type}}_uuid,livscykluskode, brugerref, note);
 prev_{{oio_type}}_registrering := _as_get_prev_{{oio_type}}_registrering(new_{{oio_type}}_registrering);
+
+IF lostUpdatePreventionTZ IS NOT NULL THEN
+  IF NOT (LOWER((prev_{{oio_type}}_registrering.registrering).timeperiod)=lostUpdatePreventionTZ) THEN
+    RAISE EXCEPTION 'Unable to update {{oio_type}} with uuid [%], as the {{oio_type}} seems to have been updated since latest read by client (the given lostUpdatePreventionTZ [%] does not match the timesamp of latest registration [%]).',{{oio_type}}_uuid,lostUpdatePreventionTZ,LOWER((prev_{{oio_type}}_registrering.registrering).timeperiod);
+  END IF;   
+END IF;
 
 --handle relationer (relations)
 
@@ -327,6 +338,8 @@ FROM
 ;
 
 {%- endfor %}
+
+
 
 
 return new_{{oio_type}}_registrering.id;
