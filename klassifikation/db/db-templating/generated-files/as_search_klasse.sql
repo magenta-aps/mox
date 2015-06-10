@@ -42,6 +42,51 @@ klasse_candidates_is_initialized := false;
 IF klasse_uuid is not NULL THEN
 	klasse_candidates:= ARRAY[klasse_uuid];
 	klasse_candidates_is_initialized:=true;
+	IF registreringObj IS NULL THEN
+	--RAISE DEBUG 'no registreringObj'
+	ELSE	
+		klasse_candidates:=array(
+				SELECT DISTINCT
+				b.klasse_id 
+				FROM
+				klasse a
+				JOIN klasse_registrering b on b.klasse_id=a.id
+				WHERE
+						(
+				(registreringObj.registrering) IS NULL 
+				OR
+				(
+					(
+						(registreringObj.registrering).timeperiod IS NULL 
+						OR
+						(registreringObj.registrering).timeperiod && (b.registrering).timeperiod
+					)
+					AND
+					(
+						(registreringObj.registrering).livscykluskode IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode = (b.registrering).livscykluskode 		
+					) 
+					AND
+					(
+						(registreringObj.registrering).brugerref IS NULL
+						OR
+						(registreringObj.registrering).brugerref = (b.registrering).brugerref
+					)
+					AND
+					(
+						(registreringObj.registrering).note IS NULL
+						OR
+						(b.registrering).note ILIKE (registreringObj.registrering).note
+					)
+			)
+		)
+		AND
+		( (NOT klasse_candidates_is_initialized) OR b.klasse_id = ANY (klasse_candidates) )
+
+		);		
+	END IF;
+	
 END IF;
 
 

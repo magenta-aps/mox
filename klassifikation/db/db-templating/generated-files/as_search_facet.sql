@@ -40,6 +40,51 @@ facet_candidates_is_initialized := false;
 IF facet_uuid is not NULL THEN
 	facet_candidates:= ARRAY[facet_uuid];
 	facet_candidates_is_initialized:=true;
+	IF registreringObj IS NULL THEN
+	--RAISE DEBUG 'no registreringObj'
+	ELSE	
+		facet_candidates:=array(
+				SELECT DISTINCT
+				b.facet_id 
+				FROM
+				facet a
+				JOIN facet_registrering b on b.facet_id=a.id
+				WHERE
+						(
+				(registreringObj.registrering) IS NULL 
+				OR
+				(
+					(
+						(registreringObj.registrering).timeperiod IS NULL 
+						OR
+						(registreringObj.registrering).timeperiod && (b.registrering).timeperiod
+					)
+					AND
+					(
+						(registreringObj.registrering).livscykluskode IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode = (b.registrering).livscykluskode 		
+					) 
+					AND
+					(
+						(registreringObj.registrering).brugerref IS NULL
+						OR
+						(registreringObj.registrering).brugerref = (b.registrering).brugerref
+					)
+					AND
+					(
+						(registreringObj.registrering).note IS NULL
+						OR
+						(b.registrering).note ILIKE (registreringObj.registrering).note
+					)
+			)
+		)
+		AND
+		( (NOT facet_candidates_is_initialized) OR b.facet_id = ANY (facet_candidates) )
+
+		);		
+	END IF;
+	
 END IF;
 
 
