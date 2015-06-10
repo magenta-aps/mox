@@ -85,6 +85,7 @@ DECLARE
 
 
 	search_result1 uuid[];
+	search_result1A uuid[];
 	search_result2 uuid[];
 	search_result3 uuid[];
 	search_result4 uuid[];
@@ -500,14 +501,49 @@ new_uuid_B := as_create_or_import_klasse(registrering_B);
 search_result1 :=as_search_klasse(
 	null,--TOOD ??
 	new_uuid_A,
-	null,--registrering_A Klasseregistrering_AType
-	null--virkningSoeg
+	ROW (
+		ROW(
+			TSTZRANGE(current_timestamp,clock_timestamp(),'[]')
+			--TSTZRANGE('2014-01-01','2015-01-01','[]')
+			,null--Livscykluskode
+			,null --uuid
+			,null --test note
+			)::registreringBase
+		,null --KlassePubliceretTilsType
+		,null --KlasseEgenskaberAttrType
+		,null --relationer
+		)::KlasseRegistreringType
+	,null--virkningSoeg
 	);
 
 RETURN NEXT is(
 search_result1,
 ARRAY[new_uuid_A]::uuid[],
 'simple search on single uuid'
+);
+
+
+search_result1A :=as_search_klasse(
+	null,--TOOD ??
+	new_uuid_A,
+	ROW (
+		ROW(
+			TSTZRANGE('2014-01-01','2015-01-01','[]')
+			,null--Livscykluskode
+			,null --uuid
+			,null --test note
+			)::registreringBase
+		,null --KlassePubliceretTilsType
+		,null --KlasseEgenskaberAttrType
+		,null --relationer
+		)::KlasseRegistreringType
+	,null--virkningSoeg
+	);
+
+RETURN NEXT is(
+search_result1A,
+ARRAY[]::uuid[],
+'simple search on single uuid, with irrelevant system reg time.'
 );
 
 
@@ -2221,6 +2257,11 @@ raise notice 'Test global virksøg 5:C:%',to_json(registrering_C);
 */
 
 RETURN NEXT ok(expected_result39 @> search_result39 and search_result39 @>expected_result39 and array_length(expected_result39,1)=array_length(search_result39,1), 'vilkaarligRel search 7');
+
+
+
+-------------------------------------------------------------------------
+
 
 
 

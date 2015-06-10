@@ -40,6 +40,20 @@ BEGIN
 IF {{oio_type}}_uuid is not NULL THEN
 	{{oio_type}}_candidates:= ARRAY[{{oio_type}}_uuid];
 	{{oio_type}}_candidates_is_initialized:=true;
+	IF registreringObj IS NULL THEN
+	--RAISE DEBUG 'no registreringObj'
+	ELSE	
+		{{oio_type}}_candidates:=array(
+				SELECT DISTINCT
+				b.{{oio_type}}_id 
+				FROM
+				{{oio_type}} a
+				JOIN {{oio_type}}_registrering b on b.{{oio_type}}_id=a.id
+				WHERE
+				{% include 'as_search_mixin_filter_reg.jinja.sql' %}
+		);		
+	END IF;
+	
 END IF;
 
 
