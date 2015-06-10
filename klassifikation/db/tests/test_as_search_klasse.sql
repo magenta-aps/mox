@@ -29,7 +29,7 @@ DECLARE
 	uuidRedaktoer1_A uuid :=uuid_generate_v4();
 	uuidRedaktoer2_A uuid :=uuid_generate_v4();
 
-	uuidregistrering_A uuid :=uuid_generate_v4();
+	uuidregistrering_AB uuid :=uuid_generate_v4();
 	klasseEgenskabA_Soegeord1 KlasseSoegeordType;
 	klasseEgenskabA_Soegeord2 KlasseSoegeordType;
 
@@ -52,7 +52,7 @@ DECLARE
 	uuidAnsvarlig_B uuid :=uuid_generate_v4();
 	uuidRedaktoer1_B uuid :=uuid_generate_v4();
 	uuidRedaktoer2_B uuid :=uuid_generate_v4();
-	uuidregistrering_B uuid :=uuid_generate_v4();
+	
 	klasseEgenskabB_Soegeord1 KlasseSoegeordType;
 	klasseEgenskabB_Soegeord2 KlasseSoegeordType;
 	klasseEgenskabB_Soegeord3 KlasseSoegeordType;
@@ -87,7 +87,9 @@ DECLARE
 	search_result1 uuid[];
 	search_result1A uuid[];
 	search_result2 uuid[];
+	search_result2A uuid[];
 	search_result3 uuid[];
+	search_result3A uuid[];
 	search_result4 uuid[];
 	search_result5 uuid[];
 	search_result6 uuid[];
@@ -124,8 +126,20 @@ DECLARE
 	search_result37 uuid[];
 	search_result38 uuid[];
 	search_result39 uuid[];
+	search_result40 uuid[];
+	search_result41 uuid[];
+	search_result42 uuid[];
+	search_result43 uuid[];
+	search_result44 uuid[];
+	search_result45 uuid[];
+	search_result46 uuid[];
+	search_result47 uuid[];
+	search_result48 uuid[];
+	search_result49 uuid[];
 
 	expected_result2 uuid[];
+	expected_result2A uuid[];
+	expected_result3A uuid[];
 	expected_result4 uuid[];
 	expected_result8 uuid[];
 	expected_result9 uuid[];
@@ -159,8 +173,20 @@ DECLARE
 	expected_result37 uuid[];
 	expected_result38 uuid[];
 	expected_result39 uuid[];
+	expected_result40 uuid[];
+	expected_result41 uuid[];
+	expected_result42 uuid[];
+	expected_result43 uuid[];
+	expected_result44 uuid[];
+	expected_result45 uuid[];
+	expected_result46 uuid[];
+	expected_result47 uuid[];
+	expected_result48 uuid[];
+	expected_result49 uuid[];
+
 
 	search_registrering_3 KlasseRegistreringType;
+	search_registrering_3A KlasseRegistreringType;
 	search_registrering_4 KlasseRegistreringType;
 	search_registrering_5 KlasseRegistreringType;
 	search_registrering_6 KlasseRegistreringType;
@@ -197,6 +223,17 @@ DECLARE
 	search_registrering_37 KlasseRegistreringType;
 	search_registrering_38 KlasseRegistreringType;
 	search_registrering_39 KlasseRegistreringType;
+	search_registrering_40 KlasseRegistreringType;
+	search_registrering_41 KlasseRegistreringType;
+	search_registrering_42 KlasseRegistreringType;
+	search_registrering_43 KlasseRegistreringType;
+	search_registrering_44 KlasseRegistreringType;
+	search_registrering_45 KlasseRegistreringType;
+	search_registrering_46 KlasseRegistreringType;
+	search_registrering_47 KlasseRegistreringType;
+	search_registrering_48 KlasseRegistreringType;
+	search_registrering_49 KlasseRegistreringType;
+
 BEGIN
 
 
@@ -319,7 +356,7 @@ registrering_A := ROW (
 	ROW (
 	NULL,
 	'Opstaaet'::Livscykluskode,
-	uuidregistrering_A,
+	uuidregistrering_AB,
 	'Test Note 4') :: registreringBase
 	,
 ARRAY[klassePubliceret_A]::KlassePubliceretTilsType[],
@@ -483,7 +520,7 @@ registrering_B := ROW (
 	ROW (
 	NULL,
 	'Opstaaet'::Livscykluskode,
-	uuidregistrering_B,
+	uuidregistrering_AB,
 	'Test Note 5') :: registreringBase
 	,
 ARRAY[klassePubliceret_B,klassePubliceret_B2]::KlassePubliceretTilsType[],
@@ -546,6 +583,7 @@ ARRAY[]::uuid[],
 'simple search on single uuid, with irrelevant system reg time.'
 );
 
+--***********************************
 
 search_result2 :=as_search_klasse(
 	null,--TOOD ??
@@ -562,11 +600,26 @@ RETURN NEXT ok(expected_result2 @> search_result2 and search_result2 @>expected_
 
 
 --***********************************
+search_result2A :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	ROW(ROW (TSTZRANGE('2014-01-01','2014-01-01','[]'),NULL,NULL,NULL) :: registreringBase,NULL,NULL,NULL):: KlasseRegistreringType
+	,null--virkningSoeg
+	);
+
+expected_result2A:=ARRAY[]::uuid[];
+
+
+RETURN NEXT ok(coalesce(array_length(expected_result2A,1),0)=coalesce(array_length(search_result2A,1),0), 'search null params, except for system reg. time');
+
+
+--***********************************
+
 --search on klasses that has had the state not published at any point in time
 
 search_registrering_3 := ROW (
 	ROW (
-	NULL,
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
 	NULL,
 	NULL,
 	NULL) :: registreringBase
@@ -601,10 +654,49 @@ ARRAY[new_uuid_B]::uuid[],
 );
 
 --***********************************
+--search on klasses that has had the state not published at any point in time (but with "invalid" system.reg time )
+
+search_registrering_3A := ROW (
+	ROW (
+	TSTZRANGE('2014-01-01','2014-12-31','[]'),
+	NULL,
+	NULL,
+	NULL) :: registreringBase
+	,
+	ARRAY[
+			ROW(
+				  ROW(
+				  	null,null,null,null
+				  	)::virkning 
+				  ,'IkkePubliceret'::KlassePubliceretTils
+				):: KlassePubliceretTilsType
+	],--ARRAY[klassePubliceret_B]::KlassePubliceretTilsType[],
+null,--ARRAY[klasseEgenskab_B]::KlasseEgenskaberAttrType[],
+null--ARRAY[klasseRelAnsvarlig_B,klasseRelRedaktoer1_B,klasseRelRedaktoer2_B]
+):: KlasseRegistreringType;
+
+--raise notice 'search_registrering_3A,%',search_registrering_3A;
+
+search_result3A :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	search_registrering_3A --registrering_A Klasseregistrering_AType
+	,null--virkningSoeg
+	);
+
+--raise notice 'search for IkkePubliceret returned:%',search_result3A;
+
+RETURN NEXT is(
+search_result3A,
+ARRAY[]::uuid[],
+'search state KlassePubliceretTils IkkePubliceret, system.reg time'
+);
+
+--***********************************
 --search on klasses that were published on 18-05-2015
 search_registrering_4 := ROW (
 	ROW (
-	NULL,
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
 	NULL,
 	NULL,
 	NULL) :: registreringBase
@@ -641,7 +733,7 @@ RETURN NEXT ok(expected_result4 @> search_result4 and search_result4 @>expected_
 --search on klasses that had state 'ikkepubliceret' on 30-06-2015 30-07-2015
 search_registrering_5 := ROW (
 	ROW (
-	NULL,
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
 	NULL,
 	NULL,
 	NULL) :: registreringBase
@@ -678,7 +770,7 @@ ARRAY[]::uuid[],
 --search on klasses with specific aktoerref and state publiceret
 search_registrering_6 := ROW (
 	ROW (
-	NULL,
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
 	NULL,
 	NULL,
 	NULL) :: registreringBase
@@ -831,7 +923,7 @@ new_uuid_C := as_create_or_import_klasse(registrering_C);
 
 search_registrering_7 := ROW (
 	ROW (
-	NULL,
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
 	NULL,
 	NULL,
 	NULL) :: registreringBase
@@ -895,7 +987,7 @@ ARRAY[new_uuid_C]::uuid[],
 
 search_registrering_8 := ROW (
 	ROW (
-	NULL,
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
 	NULL,
 	NULL,
 	NULL) :: registreringBase
@@ -941,7 +1033,7 @@ RETURN NEXT ok(expected_result8 @> search_result8 and search_result8 @>expected_
 
 search_registrering_9 := ROW (
 	ROW (
-	NULL,
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
 	NULL,
 	NULL,
 	NULL) :: registreringBase
@@ -996,7 +1088,7 @@ RETURN NEXT ok(expected_result9 @> search_result9 and search_result9 @>expected_
 
 search_registrering_10 := ROW (
 	ROW (
-	NULL,
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
 	NULL,
 	NULL,
 	NULL) :: registreringBase
@@ -1051,7 +1143,7 @@ RETURN NEXT ok(expected_result10 @> search_result10 and search_result10 @>expect
 
 search_registrering_11 := ROW (
 	ROW (
-	NULL,
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
 	NULL,
 	NULL,
 	NULL) :: registreringBase
@@ -1108,7 +1200,7 @@ RETURN NEXT ok(coalesce(array_length(search_result11, 1), 0)=0 , 'search state p
 
 search_registrering_12 := ROW (
 	ROW (
-	NULL,
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
 	NULL,
 	NULL,
 	NULL) :: registreringBase
@@ -1165,7 +1257,7 @@ RETURN NEXT ok(expected_result12 @> search_result12 and search_result12 @>expect
 
 search_registrering_13 := ROW (
 	ROW (
-	NULL,
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
 	NULL,
 	NULL,
 	NULL) :: registreringBase
@@ -1210,7 +1302,7 @@ RETURN NEXT ok(expected_result13 @> search_result13 and search_result13 @>expect
 
 search_registrering_14 := ROW (
 	ROW (
-	NULL,
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
 	NULL,
 	NULL,
 	NULL) :: registreringBase
@@ -1254,7 +1346,7 @@ RETURN NEXT ok(expected_result14 @> search_result14 and search_result14 @>expect
 
 search_registrering_15 := ROW (
 	ROW (
-	NULL,
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
 	NULL,
 	NULL,
 	NULL) :: registreringBase
@@ -1306,7 +1398,7 @@ RETURN NEXT ok(expected_result15 @> search_result15 and search_result15 @>expect
 --***********************************
 search_registrering_16 := ROW (
 	ROW (
-	NULL,
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
 	NULL,
 	NULL,
 	NULL) :: registreringBase
@@ -1345,7 +1437,7 @@ RETURN NEXT ok(expected_result16 @> search_result16 and search_result16 @>expect
 --Test global virksøg 5
 search_registrering_17 := ROW (
 	ROW (
-	NULL,
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
 	NULL,
 	NULL,
 	NULL) :: registreringBase
@@ -1387,7 +1479,7 @@ RETURN NEXT ok(expected_result17 @> search_result17 and search_result17 @>expect
 
 search_registrering_18 := ROW (
 	ROW (
-	NULL,
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
 	NULL,
 	NULL,
 	NULL) :: registreringBase
@@ -1428,7 +1520,7 @@ RETURN NEXT ok(expected_result18 @> search_result18 and search_result18 @>expect
 
 search_registrering_19 := ROW (
 	ROW (
-	NULL,
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
 	NULL,
 	NULL,
 	NULL) :: registreringBase
@@ -1475,7 +1567,7 @@ RETURN NEXT ok(expected_result19 @> search_result19 and search_result19 @>expect
 
 search_registrering_20 := ROW (
 	ROW (
-	NULL,
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
 	NULL,
 	NULL,
 	NULL) :: registreringBase
@@ -1521,7 +1613,7 @@ RETURN NEXT ok(expected_result20 @> search_result20 and search_result20 @>expect
 
 search_registrering_21 := ROW (
 	ROW (
-	NULL,
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
 	NULL,
 	NULL,
 	NULL) :: registreringBase
@@ -1567,7 +1659,7 @@ RETURN NEXT ok( coalesce(array_length(expected_result21,1),0)=coalesce(array_len
 
 search_registrering_22 := ROW (
 	ROW (
-	NULL,
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
 	NULL,
 	NULL,
 	NULL) :: registreringBase
@@ -1626,7 +1718,7 @@ RETURN NEXT ok(expected_result22 @> search_result22 and search_result22 @>expect
 
 search_registrering_23 := ROW (
 	ROW (
-	NULL,
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
 	NULL,
 	NULL,
 	NULL) :: registreringBase
@@ -1691,7 +1783,7 @@ RETURN NEXT ok(expected_result23 @> search_result23 and search_result23 @>expect
 
 search_registrering_24 := ROW (
 	ROW (
-	NULL,
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
 	NULL,
 	NULL,
 	NULL) :: registreringBase
@@ -1747,7 +1839,7 @@ RETURN NEXT ok(expected_result24 @> search_result24 and search_result24 @>expect
 
 search_registrering_25 := ROW (
 	ROW (
-	NULL,
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
 	NULL,
 	NULL,
 	NULL) :: registreringBase
@@ -1806,7 +1898,7 @@ RETURN NEXT ok(expected_result25 @> search_result25 and search_result25 @>expect
 
 search_registrering_26 := ROW (
 	ROW (
-	NULL,
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
 	NULL,
 	NULL,
 	NULL) :: registreringBase
@@ -1867,7 +1959,7 @@ RETURN NEXT ok(expected_result26 @> search_result26 and search_result26 @>expect
 
 search_registrering_27 := ROW (
 	ROW (
-	NULL,
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
 	NULL,
 	NULL,
 	NULL) :: registreringBase
@@ -1931,8 +2023,8 @@ expected_result28:=ARRAY[new_uuid_C]::uuid[];
 search_result28 :=as_search_klasse(
 	null,--TOOD ??
 	null,
-	null, --registrering_A Klasseregistrering_AType
-	TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+	ROW(ROW (TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),NULL,NULL,NULL) :: registreringBase,NULL,NULL,NULL):: KlasseRegistreringType
+	,TSTZRANGE(current_timestamp,current_timestamp,'[]'),
 	null,
 	ARRAY['brugervendt_noegle_C']::text[]
 	);
@@ -1956,8 +2048,8 @@ expected_result29:=ARRAY[new_uuid_A,new_uuid_B]::uuid[];
 search_result29 :=as_search_klasse(
 	null,--TOOD ??
 	null,
-	null, --registrering_A Klasseregistrering_AType
-	TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+	ROW(ROW (TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),NULL,NULL,NULL) :: registreringBase,NULL,NULL,NULL):: KlasseRegistreringType
+	,TSTZRANGE(current_timestamp,current_timestamp,'[]'),
 	null,
 	ARRAY['omfang\_AB']::text[]
 	);
@@ -1981,8 +2073,8 @@ expected_result29:=ARRAY[new_uuid_A]::uuid[];
 search_result29 :=as_search_klasse(
 	null,--TOOD ??
 	null,
-	null, --registrering_A Klasseregistrering_AType
-	TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+	ROW(ROW (TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),NULL,NULL,NULL) :: registreringBase,NULL,NULL,NULL):: KlasseRegistreringType
+	,TSTZRANGE(current_timestamp,current_timestamp,'[]'),
 	null,
 	ARRAY['omfang\_AB','titel_A']::text[]
 	);
@@ -2007,8 +2099,8 @@ expected_result30:=ARRAY[new_uuid_B]::uuid[];
 search_result30 :=as_search_klasse(
 	null,--TOOD ??
 	null,
-	null, --registrering_A Klasseregistrering_AType
-	TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+	ROW(ROW (TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),NULL,NULL,NULL) :: registreringBase,NULL,NULL,NULL):: KlasseRegistreringType
+	,TSTZRANGE(current_timestamp,current_timestamp,'[]'),
 	null,
 	ARRAY['omfang\_AB','beskrivelse_klasseEgenskabB_Soegeord4']::text[]
 	);
@@ -2032,8 +2124,8 @@ expected_result31:=ARRAY[new_uuid_B,new_uuid_A]::uuid[];
 search_result31 :=as_search_klasse(
 	null,--TOOD ??
 	null,
-	null, --registrering_A Klasseregistrering_AType
-	TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+	ROW(ROW (TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),NULL,NULL,NULL) :: registreringBase,NULL,NULL,NULL):: KlasseRegistreringType
+	,TSTZRANGE(current_timestamp,current_timestamp,'[]'),
 	null,
 	ARRAY['omfang\_A%']::text[]
 	);
@@ -2058,8 +2150,8 @@ expected_result32:=ARRAY[new_uuid_C]::uuid[];
 search_result32 :=as_search_klasse(
 	null,--TOOD ??
 	null,
-	null, --registrering_A Klasseregistrering_AType
-	'[2014-10-01, 2014-10-20]' :: TSTZRANGE, --virkningSoeg,
+	ROW(ROW (TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),NULL,NULL,NULL) :: registreringBase,NULL,NULL,NULL):: KlasseRegistreringType
+	,'[2014-10-01, 2014-10-20]' :: TSTZRANGE, --virkningSoeg,
 	null,
 	ARRAY['eksempel_faelles']::text[]
 	);
@@ -2083,8 +2175,8 @@ expected_result33:=ARRAY[new_uuid_B]::uuid[];
 search_result33 :=as_search_klasse(
 	null,--TOOD ??
 	null,
-	null, --registrering_A Klasseregistrering_AType
-	null, --virkningSoeg,
+	ROW(ROW (TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),NULL,NULL,NULL) :: registreringBase,NULL,NULL,NULL):: KlasseRegistreringType
+	,null, --virkningSoeg,
 	null,
 	null,
 	ARRAY[uuidRedaktoer2_B]::uuid[]
@@ -2109,8 +2201,8 @@ expected_result34:=ARRAY[new_uuid_A]::uuid[];
 search_result34 :=as_search_klasse(
 	null,--TOOD ??
 	null,
-	null, --registrering_A Klasseregistrering_AType
-	null, --virkningSoeg,
+	ROW(ROW (TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),NULL,NULL,NULL) :: registreringBase,NULL,NULL,NULL):: KlasseRegistreringType
+	,null, --virkningSoeg,
 	null,
 	null,
 	ARRAY[uuidRedaktoer2_A,uuidAnsvarlig_A]::uuid[]
@@ -2135,8 +2227,8 @@ expected_result35:=ARRAY[]::uuid[];
 search_result35 :=as_search_klasse(
 	null,--TOOD ??
 	null,
-	null, --registrering_A Klasseregistrering_AType
-	null, --virkningSoeg,
+	ROW(ROW (TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),NULL,NULL,NULL) :: registreringBase,NULL,NULL,NULL):: KlasseRegistreringType
+	,null, --virkningSoeg,
 	null,
 	null,
 	ARRAY[uuidRedaktoer2_A,uuidAnsvarlig_C]::uuid[]
@@ -2161,8 +2253,8 @@ expected_result36:=ARRAY[new_uuid_B]::uuid[];
 search_result36 :=as_search_klasse(
 	null,--TOOD ??
 	null,
-	null, --registrering_A Klasseregistrering_AType
-	TSTZRANGE(current_timestamp,current_timestamp,'[]'), --virkningSoeg,
+	ROW(ROW (TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),NULL,NULL,NULL) :: registreringBase,NULL,NULL,NULL):: KlasseRegistreringType
+	,TSTZRANGE(current_timestamp,current_timestamp,'[]'), --virkningSoeg,
 	null,
 	ARRAY['eksempel_faelles']::text[],
 	ARRAY[uuidAnsvarlig_B]::uuid[]
@@ -2188,8 +2280,8 @@ expected_result37:=ARRAY[]::uuid[];
 search_result37 :=as_search_klasse(
 	null,--TOOD ??
 	null,
-	null, --registrering_A Klasseregistrering_AType
-	null, --virkningSoeg,
+	ROW(ROW (TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),NULL,NULL,NULL) :: registreringBase,NULL,NULL,NULL):: KlasseRegistreringType
+	,null, --virkningSoeg,
 	null,
 	ARRAY['brugervendt_noegle_C'],
 	ARRAY[uuidAnsvarlig_A]::uuid[]
@@ -2214,8 +2306,8 @@ expected_result38:=ARRAY[new_uuid_B,new_uuid_A]::uuid[];
 search_result38 :=as_search_klasse(
 	null,--TOOD ??
 	null,
-	null, --registrering_A Klasseregistrering_AType
-	TSTZRANGE(current_timestamp,current_timestamp,'[]'), --virkningSoeg,
+	ROW(ROW (TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),NULL,NULL,NULL) :: registreringBase,NULL,NULL,NULL):: KlasseRegistreringType
+	,TSTZRANGE(current_timestamp,current_timestamp,'[]'), --virkningSoeg,
 	null,
 	null,
 	ARRAY[uuidSideordnede_AB]::uuid[]
@@ -2240,8 +2332,8 @@ expected_result39:=ARRAY[new_uuid_B]::uuid[];
 search_result39 :=as_search_klasse(
 	null,--TOOD ??
 	null,
-	null, --registrering_A Klasseregistrering_AType
-	TSTZRANGE('2014-02-27','2014-03-30','[]'), --virkningSoeg,
+	ROW(ROW (TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),NULL,NULL,NULL) :: registreringBase,NULL,NULL,NULL):: KlasseRegistreringType
+	,TSTZRANGE('2014-02-27','2014-03-30','[]'), --virkningSoeg,
 	null,
 	null,
 	ARRAY[uuidSideordnede_AB]::uuid[]
@@ -2261,8 +2353,249 @@ RETURN NEXT ok(expected_result39 @> search_result39 and search_result39 @>expect
 
 
 -------------------------------------------------------------------------
+--we'll update system reg time of reg of klasse C to help facilitate tests
+update
+	klasse_registrering a
+SET 
+registrering=ROW (
+	TSTZRANGE('2014-01-01','2014-12-31','[]'),
+	'Opstaaet'::Livscykluskode,
+	uuidregistrering_C,
+	'Test Note 1000') :: registreringBase
+where
+a.klasse_id=new_uuid_C
+;
+-------------------------------------------------------------------------
+--egenskab isoleret
+
+search_registrering_40 := ROW (
+	ROW (
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
+	NULL,
+	NULL,
+	NULL) :: registreringBase,
+	null,--ARRAY[klassePubliceret_B]::KlassePubliceretTilsType[],
+ARRAY[
+ROW(
+		NULL, --brugervendtnoegle
+   		NULL, --beskrivelse
+        'eksempel_faelles', --eksempel
+   		NULL, --omfang
+   		NULL, --titel
+   		NULL,
+   		NULL, --aendringsnotat
+   		NULL, --soegeord
+   		NULL
+		)::KlasseEgenskaberAttrType
+]::KlasseEgenskaberAttrType[],
+null
+):: KlasseRegistreringType;
 
 
+search_result40 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	search_registrering_40 --registrering_A Klasseregistrering_AType
+	,null--virkningSoeg
+	);
+
+expected_result40:=ARRAY[new_uuid_A,new_uuid_B]::uuid[];
+
+--raise notice 'expected_result40:%',to_json(expected_result40);
+
+--raise notice 'search_result40:%',to_json(search_result40);
+
+RETURN NEXT ok(expected_result40 @> search_result40 and search_result40 @>expected_result40 and array_length(expected_result40,1)=array_length(search_result40,1), 'search egenskab isolated, system reg filter');
+
+-------------------------------------------------------------------------
+--egenskab isolated - system reg time
+
+
+search_registrering_41 := ROW (
+	ROW (
+	TSTZRANGE('2014-01-01','2014-12-31','[]'),
+	NULL,
+	NULL,
+	NULL) :: registreringBase,
+	null,--ARRAY[klassePubliceret_B]::KlassePubliceretTilsType[],
+ARRAY[
+ROW(
+		NULL, --brugervendtnoegle
+   		NULL, --beskrivelse
+        'eksempel_faelles', --eksempel
+   		NULL, --omfang
+   		NULL, --titel
+   		NULL,
+   		NULL, --aendringsnotat
+   		NULL, --soegeord
+   		NULL
+		)::KlasseEgenskaberAttrType
+]::KlasseEgenskaberAttrType[],
+null
+):: KlasseRegistreringType;
+
+
+search_result41 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	search_registrering_41 --registrering_A Klasseregistrering_AType
+	,null--virkningSoeg
+	);
+
+expected_result41:=ARRAY[new_uuid_C]::uuid[];
+
+RETURN NEXT ok(expected_result41 @> search_result41 and search_result41 @>expected_result41 and array_length(expected_result41,1)=array_length(search_result41,1), 'search egenskab isolated, system reg time.');
+
+-------------------------------------------------------------------------
+--search on klasses that has had the state  published at any point in time (system reg. filtration)
+
+search_registrering_42 := ROW (
+	ROW (
+	TSTZRANGE('2014-01-01','2014-12-31','[]'),
+	NULL,
+	NULL,
+	NULL) :: registreringBase
+	,
+	ARRAY[
+			ROW(
+				  ROW(
+				  	null,null,null,null
+				  	)::virkning 
+				  ,'Publiceret'::KlassePubliceretTils
+				):: KlassePubliceretTilsType
+	],--ARRAY[klassePubliceret_B]::KlassePubliceretTilsType[],
+null,--ARRAY[klasseEgenskab_B]::KlasseEgenskaberAttrType[],
+null--ARRAY[klasseRelAnsvarlig_B,klasseRelRedaktoer1_B,klasseRelRedaktoer2_B]
+):: KlasseRegistreringType;
+
+search_result42 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	search_registrering_42 --registrering_A Klasseregistrering_AType
+	,null--virkningSoeg
+	);
+
+
+RETURN NEXT is(
+search_result42,
+ARRAY[new_uuid_C]::uuid[],
+'search state KlassePubliceretTils Publiceret, system reg filter'
+);
+
+-------------------------------------------------------------------------
+search_registrering_43 := ROW (
+	ROW (
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
+	NULL,
+	NULL,
+	NULL) :: registreringBase
+	,
+	null,--ARRAY[klassePubliceret_B]::KlassePubliceretTilsType[],
+	null,
+ARRAY[
+	ROW (
+	'redaktoerer'::KlasseRelationKode,
+		ROW(
+				  	'[2015-05-10, 2015-07-30]' :: TSTZRANGE,
+				  	null,null,null
+				  	)::virkning, 
+			null
+	) :: KlasseRelationType,
+	ROW (
+	'redaktoerer'::KlasseRelationKode,
+		ROW(
+				  	'[2015-04-20, 2015-04-20]' :: TSTZRANGE,
+				  	null,null,null
+				  	)::virkning, 
+			null
+	) :: KlasseRelationType
+]
+):: KlasseRegistreringType;
+
+
+expected_result43:=ARRAY[new_uuid_B]::uuid[];
+
+search_result43 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	search_registrering_43 --registrering_A Klasseregistrering_AType
+	,null
+	);
+
+
+RETURN NEXT ok(expected_result43 @> search_result43 and search_result43 @>expected_result43 and array_length(expected_result43,1)=array_length(search_result43,1), 'search relationer isolated, system reg time.');
+
+-------------------------------------------------------------------------
+search_registrering_44 := ROW (
+	ROW (
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
+	NULL,
+	NULL,
+	NULL) :: registreringBase
+	,
+	null,--ARRAY[klassePubliceret_B]::KlassePubliceretTilsType[],
+	null,
+ARRAY[
+	ROW (
+	'redaktoerer'::KlasseRelationKode,
+		ROW(
+				  	'[2015-05-10, 2015-07-30]' :: TSTZRANGE,
+				  	null,null,null
+				  	)::virkning, 
+			null
+	) :: KlasseRelationType,
+	ROW (
+	'redaktoerer'::KlasseRelationKode,
+		ROW(
+				  	'[2015-04-20, 2015-04-20]' :: TSTZRANGE,
+				  	null,null,null
+				  	)::virkning, 
+			null
+	) :: KlasseRelationType
+]
+):: KlasseRegistreringType;
+
+
+expected_result44:=ARRAY[new_uuid_B]::uuid[];
+
+search_result44 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	search_registrering_44 --registrering_A Klasseregistrering_AType
+	,null
+	);
+
+
+RETURN NEXT ok(expected_result44 @> search_result44 and search_result44 @>expected_result44 and array_length(expected_result44,1)=array_length(search_result44,1), 'search relationer isolated, system reg time.');
+
+-------------------------------------------------------------------------
+
+search_registrering_45 := ROW (
+	ROW (
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
+	NULL,
+	uuidregistrering_AB,
+	NULL) :: registreringBase
+	,
+	null,--ARRAY[klassePubliceret_B]::KlassePubliceretTilsType[],
+	null,
+	NULL
+	):: KlasseRegistreringType;
+
+
+expected_result45:=ARRAY[new_uuid_B,new_uuid_A]::uuid[];
+
+search_result45 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	search_registrering_45 --registrering_A Klasseregistrering_AType
+	,null
+	);
+
+
+RETURN NEXT ok(expected_result45 @> search_result45 and search_result45 @>expected_result45 and array_length(expected_result45,1)=array_length(search_result45,1), 'search aktorref isolated.');
+
+-------------------------------------------------------------------------
 
 
 END;
