@@ -1,5 +1,5 @@
-*** ../generated-files/as_update_klasse.sql	2015-06-11 15:07:00.479079692 +0200
---- ../patches/as_update_klasse.org.sql	2015-06-11 15:03:15.447083722 +0200
+*** ../generated-files/as_update_klasse.sql	2015-06-11 16:48:04.298971101 +0200
+--- ../patches/as_update_klasse.org.sql	2015-06-11 16:47:34.202971640 +0200
 ***************
 *** 35,44 ****
 --- 35,46 ----
@@ -80,7 +80,7 @@
       attrEgenskaberObj.eksempel, 
       attrEgenskaberObj.omfang, 
       attrEgenskaberObj.titel, 
---- 275,313 ----
+--- 275,321 ----
       new_klasse_registrering.id
     FROM klasse_attr_egenskaber a
     WHERE
@@ -100,7 +100,15 @@
 ! LEFT JOIN unnest(attrEgenskaberObj.soegeord) as b(soegeordidentifikator,beskrivelse,soegeordskategori) on attrEgenskaberObj.soegeord IS NOT NULL
 ! LEFT JOIN klasse_attr_egenskaber as b2 on attrEgenskaberObj.soegeord IS NULL and b2.klasse_registrering_id=prev_klasse_registrering.id and (b2.virkning).TimePeriod @> a.merged_timeperiod --Please notice, that this will max hit exactly one row - the row that the new id was merged with
 ! LEFT JOIN klasse_attr_egenskaber_soegeord as c on attrEgenskaberObj.soegeord IS NULL AND c.klasse_attr_egenskaber_id = b2.id
-! WHERE (attrEgenskaberObj.soegeord IS NULL) OR (array_length(attrEgenskaberObj.soegeord,1)>0 )
+! WHERE 
+!   (
+!     (attrEgenskaberObj.soegeord IS NULL and c.id is not null) --there is sogeord of merged egenskab
+!     or
+!     coalesce(array_length(attrEgenskaberObj.soegeord,1),0)>0   --soegeord is defined in array 
+!   )
+!   and
+!   (NOT (attrEgenskaberObj.soegeord IS NOT NULL AND array_length(attrEgenskaberObj.soegeord,1)=0)) --if the array is empty, no sogeord should be inserted  
+! 
 ! ;
   
     --For any periods within the virkning of the attrEgenskaberObj, that is NOT covered by any "merged" rows inserted above, generate and insert rows
@@ -155,7 +163,7 @@
   
     END LOOP;
   END IF;
---- 327,393 ----
+--- 335,401 ----
         FROM klasse_attr_egenskaber b
         WHERE 
          b.klasse_registrering_id=new_klasse_registrering.id
@@ -241,7 +249,7 @@
         a.eksempel,
         a.omfang,
         a.titel,
---- 397,415 ----
+--- 405,423 ----
   --raise debug 'Skipping handling of egenskaber of previous registration as an empty array was explicit given.';  
   ELSE 
   
@@ -274,7 +282,7 @@
   END IF;
   
   
---- 430,450 ----
+--- 438,458 ----
       WHERE 
             b.klasse_registrering_id=new_klasse_registrering.id
   ) d

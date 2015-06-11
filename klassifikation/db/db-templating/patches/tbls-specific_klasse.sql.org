@@ -250,6 +250,7 @@ CREATE TABLE klasse_attr_egenskaber_soegeord
     klasse_attr_egenskaber_id bigint not null,
 CONSTRAINT klasse_attr_egenskaber_soegeord_pkey PRIMARY KEY (id),
 CONSTRAINT klasse_attr_egenskaber_soegeord_forkey_klasse_attr_egenskaber  FOREIGN KEY (klasse_attr_egenskaber_id) REFERENCES klasse_attr_egenskaber (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION
+,CONSTRAINT klasse_attr_egenskaber_soegeord_chk_not_all_null CHECK (NOT  (soegeordidentifikator IS NULL AND beskrivelse IS NULL AND soegeordskategori IS NULL))
 )
 WITH (
   OIDS=FALSE
