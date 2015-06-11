@@ -30,6 +30,10 @@ CREATE OR REPLACE FUNCTION as_update_{{oio_type}}(
   RETURNS bigint AS 
 $$
 DECLARE
+  read_new_{{oio_type}} {{oio_type|title}}Type;
+  read_prev_{{oio_type}} {{oio_type|title}}Type;
+  read_new_{{oio_type}}_reg {{oio_type|title}}RegistreringType;
+  read_prev_{{oio_type}}_reg {{oio_type|title}}RegistreringType;
   new_{{oio_type}}_registrering {{oio_type}}_registrering;
   prev_{{oio_type}}_registrering {{oio_type}}_registrering;
   {{oio_type}}_relation_navn {{oio_type|title}}RelationKode;
@@ -340,6 +344,53 @@ FROM
 {%- endfor %}
 
 
+/******************************************************************/
+--If the new registrering is identical to the previous one, we need to throw an exception to abort the transaction. 
+
+read_new_{{oio_type}}:=as_read_{{oio_type}}({{oio_type}}_uuid, (new_{{oio_type}}_registrering.registrering).timeperiod,null);
+read_prev_{{oio_type}}:=as_read_{{oio_type}}({{oio_type}}_uuid, (prev_{{oio_type}}_registrering.registrering).timeperiod ,null);
+ 
+ /*
+read_new_{{oio_type}}_reg {{oio_type}}RegistreringType;
+read_prev_{{oio_type}}_reg {{oio_type}}RegistreringType;
+*/
+
+--the ordering in as_list (called by as_read) ensures that the latest registration is returned at index pos 1
+
+/*
+--TODO
+IF NOT (read_new_{{oio_type}}.registrering[1].registrering=new_{{oio_type}}_registrering AND read_prev_{{oio_type}}.registrering[1].registrering=prev_{{oio_type}}_registrering) THEN
+  RAISE EXCEPTION 'Error updating {{oio_type}} with id [%]: The ordering of as_list_{{oio_type}} should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].  ',{{oio_type}}_uuid,to_json(new_{{oio_type}}_registrering),to_json(read_new_{{oio_type}}.registrering[1].registrering),to_json(prev_{{oio_type}}_registrering),to_json(prev_new_{{oio_type}}.registrering[1].registrering);
+END IF;
+ */
+ --we'll ignore the registreringBase part in the comparrison - except for the livcykluskode
+
+read_new_{{oio_type}}_reg:=ROW(
+ROW(null,(read_new_{{oio_type}}.registrering[1].registrering).livscykluskode,null,null)::registreringBase,
+{%- for tilstand, tilstand_values in tilstande.iteritems() %}
+(read_new_{{oio_type}}.registrering[1]).tils{{tilstand|title}} ,{% endfor %}
+{%-for attribut , attribut_fields in attributter.iteritems() %}
+(read_new_{{oio_type}}.registrering[1]).attr{{attribut|title}} ,{% endfor %}
+relationer 
+)::{{oio_type}}RegistreringType
+;
+
+read_prev_{{oio_type}}_reg:=ROW(
+ROW(null,(read_prev_{{oio_type}}.registrering[1].registrering).livscykluskode,null,null)::registreringBase,
+{%- for tilstand, tilstand_values in tilstande.iteritems() %}
+(read_prev_{{oio_type}}.registrering[1]).tils{{tilstand|title}} ,{% endfor %}
+{%-for attribut , attribut_fields in attributter.iteritems() %}
+(read_prev_{{oio_type}}.registrering[1]).attr{{attribut|title}} ,{% endfor %}
+relationer 
+)::{{oio_type}}RegistreringType
+;
+
+
+IF read_prev_{{oio_type}}_reg=read_new_{{oio_type}}_reg THEN
+  RAISE EXCEPTION 'Aborted updating {{oio_type}} with id [%] as the given data, does not give raise to a new registration. Aborted reg:[%], previous reg:[%]',{{oio_type}}_uuid,to_json(read_new_{{oio_type}}_reg),to_json(read_prev_{{oio_type}}_reg) USING ERRCODE = 22000;
+END IF;
+
+/******************************************************************/
 
 
 return new_{{oio_type}}_registrering.id;

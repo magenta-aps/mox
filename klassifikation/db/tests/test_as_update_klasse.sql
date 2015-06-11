@@ -60,6 +60,8 @@ DECLARE
 
 	klasse_read1 KlasseType;
 	klasse_read2 KlasseType;
+	klasse_read3 KlasseType;
+	klasse_read4 KlasseType;
 	sqlStr1 text;
 	sqlStr2 text;
 	expected_exception_txt1 text;
@@ -657,6 +659,67 @@ expected_exception_txt1:='Unable to update klasse with uuid [' || new_uuid || ']
 
 --raise notice 'debug:sqlStr1:%',sqlStr1;
 RETURN NEXT throws_ok(sqlStr1,expected_exception_txt1);
+
+--------------------------------------------------------------------
+
+BEGIN
+
+	update_reg_id:=as_update_klasse(
+	  new_uuid, uuid_generate_v4(),'Test update'::text,
+	  'Rettet'::Livscykluskode,          
+	  array[klasseEgenskabC,klasseEgenskabD,klasseEgenskabE]::KlasseEgenskaberAttrType[],
+	  array[klassePubliceretC]::KlassePubliceretTilsType[],
+	  array[klasseRelAnsvarlig]::KlasseRelationType[]
+	  ,lower(((klasse_read1.registrering[1]).registrering).TimePeriod)
+		);
+
+	RETURN NEXT ok(false,'test as_update_klasse - NO exception was triggered by updating klasse with no new data.'); 
+
+	EXCEPTION WHEN data_exception THEN
+			RETURN NEXT ok(true,'test as_update_klasse - caught exception, triggered by updating klasse with no new data.'); 
+	
+END;
+
+
+--------------------------------------------------------------------
+
+update_reg_id:=as_update_klasse(
+	  new_uuid, uuid_generate_v4(),'Test update'::text,
+	  'Passiveret'::Livscykluskode,          
+	  array[klasseEgenskabC,klasseEgenskabD,klasseEgenskabE]::KlasseEgenskaberAttrType[],
+	  array[klassePubliceretC]::KlassePubliceretTilsType[],
+	  array[klasseRelAnsvarlig]::KlasseRelationType[]
+	  ,lower(((klasse_read1.registrering[1]).registrering).TimePeriod)
+		);
+
+klasse_read3:=as_read_Klasse(new_uuid,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
+	);
+
+	RETURN NEXT ok(((klasse_read3.registrering[1]).registrering).livscykluskode='Passiveret'::Livscykluskode,'test as_update_klasse - update if livscykluskode is only change.');
+
+--------------------------------------------------------------------
+
+--Test if null values are enough to trigger update
+
+BEGIN
+
+update_reg_id:=as_update_klasse(
+	  new_uuid, uuid_generate_v4(),'Test update'::text,
+	  'Opstaaet'::Livscykluskode,          
+	  array[klasseEgenskabC,klasseEgenskabD,klasseEgenskabE]::KlasseEgenskaberAttrType[],
+	  array[klassePubliceretC]::KlassePubliceretTilsType[],
+	  array[klasseRelAnsvarlig]::KlasseRelationType[]
+	  ,lower(((klasse_read3.registrering[1]).registrering).TimePeriod)
+		);
+	
+	RETURN NEXT ok(false,'test as_update_klasse - NO exception was triggered by updating klasse with new livscykluskode, causing an invalid transition.'); 
+
+	EXCEPTION WHEN data_exception THEN
+			RETURN NEXT ok(true,'test as_update_klasse - caught exception was triggered by updating klasse with new livscykluskode, causing an invalid transition.'); 
+
+END;
 
 
 END;

@@ -29,6 +29,10 @@ CREATE OR REPLACE FUNCTION as_update_klassifikation(
   RETURNS bigint AS 
 $$
 DECLARE
+  read_new_klassifikation KlassifikationType;
+  read_prev_klassifikation KlassifikationType;
+  read_new_klassifikation_reg KlassifikationRegistreringType;
+  read_prev_klassifikation_reg KlassifikationRegistreringType;
   new_klassifikation_registrering klassifikation_registrering;
   prev_klassifikation_registrering klassifikation_registrering;
   klassifikation_relation_navn KlassifikationRelationKode;
@@ -340,6 +344,49 @@ FROM
 ;
 
 
+/******************************************************************/
+--If the new registrering is identical to the previous one, we need to throw an exception to abort the transaction. 
+
+read_new_klassifikation:=as_read_klassifikation(klassifikation_uuid, (new_klassifikation_registrering.registrering).timeperiod,null);
+read_prev_klassifikation:=as_read_klassifikation(klassifikation_uuid, (prev_klassifikation_registrering.registrering).timeperiod ,null);
+ 
+ /*
+read_new_klassifikation_reg klassifikationRegistreringType;
+read_prev_klassifikation_reg klassifikationRegistreringType;
+*/
+
+--the ordering in as_list (called by as_read) ensures that the latest registration is returned at index pos 1
+
+/*
+--TODO
+IF NOT (read_new_klassifikation.registrering[1].registrering=new_klassifikation_registrering AND read_prev_klassifikation.registrering[1].registrering=prev_klassifikation_registrering) THEN
+  RAISE EXCEPTION 'Error updating klassifikation with id [%]: The ordering of as_list_klassifikation should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].  ',klassifikation_uuid,to_json(new_klassifikation_registrering),to_json(read_new_klassifikation.registrering[1].registrering),to_json(prev_klassifikation_registrering),to_json(prev_new_klassifikation.registrering[1].registrering);
+END IF;
+ */
+ --we'll ignore the registreringBase part in the comparrison - except for the livcykluskode
+
+read_new_klassifikation_reg:=ROW(
+ROW(null,(read_new_klassifikation.registrering[1].registrering).livscykluskode,null,null)::registreringBase,
+(read_new_klassifikation.registrering[1]).tilsPubliceret ,
+(read_new_klassifikation.registrering[1]).attrEgenskaber ,
+relationer 
+)::klassifikationRegistreringType
+;
+
+read_prev_klassifikation_reg:=ROW(
+ROW(null,(read_prev_klassifikation.registrering[1].registrering).livscykluskode,null,null)::registreringBase,
+(read_prev_klassifikation.registrering[1]).tilsPubliceret ,
+(read_prev_klassifikation.registrering[1]).attrEgenskaber ,
+relationer 
+)::klassifikationRegistreringType
+;
+
+
+IF read_prev_klassifikation_reg=read_new_klassifikation_reg THEN
+  RAISE EXCEPTION 'Aborted updating klassifikation with id [%] as the given data, does not give raise to a new registration. Aborted reg:[%], previous reg:[%]',klassifikation_uuid,to_json(read_new_klassifikation_reg),to_json(read_prev_klassifikation_reg) USING ERRCODE = 22000;
+END IF;
+
+/******************************************************************/
 
 
 return new_klassifikation_registrering.id;

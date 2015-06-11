@@ -21,6 +21,7 @@ $$
 DECLARE
 registreringTime        TIMESTAMPTZ := clock_timestamp();
 registreringObj RegistreringBase;
+rows_affected int;
 klassifikation_registrering_id bigint;
 klassifikation_registrering klassifikation_registrering;
 BEGIN
@@ -39,6 +40,14 @@ UPDATE klassifikation_registrering as a
     AND _as_valid_registrering_livscyklus_transition((registrering).livscykluskode,livscykluskode)  --we'll only limit the scope of the old registrering, if we're dealing with a valid transition. Faliure to move, will result in a constraint violation. A more explicit check on the validity of the state change should be considered.     
 
 ;
+
+
+GET DIAGNOSTICS rows_affected = ROW_COUNT;
+
+IF rows_affected=0 THEN
+  RAISE EXCEPTION 'Error updating klassifikation with uuid [%], Invalid [livscyklus] transition to [%]',klassifikation_uuid,livscykluskode USING ERRCODE = 22000;
+END IF;
+
 --create a new klassifikation registrering
  
 klassifikation_registrering_id :=  nextval('klassifikation_registrering_id_seq'::regclass);

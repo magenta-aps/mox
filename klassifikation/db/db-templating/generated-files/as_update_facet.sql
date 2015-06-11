@@ -29,6 +29,10 @@ CREATE OR REPLACE FUNCTION as_update_facet(
   RETURNS bigint AS 
 $$
 DECLARE
+  read_new_facet FacetType;
+  read_prev_facet FacetType;
+  read_new_facet_reg FacetRegistreringType;
+  read_prev_facet_reg FacetRegistreringType;
   new_facet_registrering facet_registrering;
   prev_facet_registrering facet_registrering;
   facet_relation_navn FacetRelationKode;
@@ -355,6 +359,49 @@ FROM
 ;
 
 
+/******************************************************************/
+--If the new registrering is identical to the previous one, we need to throw an exception to abort the transaction. 
+
+read_new_facet:=as_read_facet(facet_uuid, (new_facet_registrering.registrering).timeperiod,null);
+read_prev_facet:=as_read_facet(facet_uuid, (prev_facet_registrering.registrering).timeperiod ,null);
+ 
+ /*
+read_new_facet_reg facetRegistreringType;
+read_prev_facet_reg facetRegistreringType;
+*/
+
+--the ordering in as_list (called by as_read) ensures that the latest registration is returned at index pos 1
+
+/*
+--TODO
+IF NOT (read_new_facet.registrering[1].registrering=new_facet_registrering AND read_prev_facet.registrering[1].registrering=prev_facet_registrering) THEN
+  RAISE EXCEPTION 'Error updating facet with id [%]: The ordering of as_list_facet should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].  ',facet_uuid,to_json(new_facet_registrering),to_json(read_new_facet.registrering[1].registrering),to_json(prev_facet_registrering),to_json(prev_new_facet.registrering[1].registrering);
+END IF;
+ */
+ --we'll ignore the registreringBase part in the comparrison - except for the livcykluskode
+
+read_new_facet_reg:=ROW(
+ROW(null,(read_new_facet.registrering[1].registrering).livscykluskode,null,null)::registreringBase,
+(read_new_facet.registrering[1]).tilsPubliceret ,
+(read_new_facet.registrering[1]).attrEgenskaber ,
+relationer 
+)::facetRegistreringType
+;
+
+read_prev_facet_reg:=ROW(
+ROW(null,(read_prev_facet.registrering[1].registrering).livscykluskode,null,null)::registreringBase,
+(read_prev_facet.registrering[1]).tilsPubliceret ,
+(read_prev_facet.registrering[1]).attrEgenskaber ,
+relationer 
+)::facetRegistreringType
+;
+
+
+IF read_prev_facet_reg=read_new_facet_reg THEN
+  RAISE EXCEPTION 'Aborted updating facet with id [%] as the given data, does not give raise to a new registration. Aborted reg:[%], previous reg:[%]',facet_uuid,to_json(read_new_facet_reg),to_json(read_prev_facet_reg) USING ERRCODE = 22000;
+END IF;
+
+/******************************************************************/
 
 
 return new_facet_registrering.id;

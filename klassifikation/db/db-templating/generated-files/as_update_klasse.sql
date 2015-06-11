@@ -29,6 +29,10 @@ CREATE OR REPLACE FUNCTION as_update_klasse(
   RETURNS bigint AS 
 $$
 DECLARE
+  read_new_klasse KlasseType;
+  read_prev_klasse KlasseType;
+  read_new_klasse_reg KlasseRegistreringType;
+  read_prev_klasse_reg KlasseRegistreringType;
   new_klasse_registrering klasse_registrering;
   prev_klasse_registrering klasse_registrering;
   klasse_relation_navn KlasseRelationKode;
@@ -423,6 +427,49 @@ JOIN klasse_attr_egenskaber_soegeord b on a2.id=b.klasse_attr_egenskaber_id
 ;
 
 
+/******************************************************************/
+--If the new registrering is identical to the previous one, we need to throw an exception to abort the transaction. 
+
+read_new_klasse:=as_read_klasse(klasse_uuid, (new_klasse_registrering.registrering).timeperiod,null);
+read_prev_klasse:=as_read_klasse(klasse_uuid, (prev_klasse_registrering.registrering).timeperiod ,null);
+ 
+ /*
+read_new_klasse_reg klasseRegistreringType;
+read_prev_klasse_reg klasseRegistreringType;
+*/
+
+--the ordering in as_list (called by as_read) ensures that the latest registration is returned at index pos 1
+
+/*
+--TODO
+IF NOT (read_new_klasse.registrering[1].registrering=new_klasse_registrering AND read_prev_klasse.registrering[1].registrering=prev_klasse_registrering) THEN
+  RAISE EXCEPTION 'Error updating klasse with id [%]: The ordering of as_list_klasse should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].  ',klasse_uuid,to_json(new_klasse_registrering),to_json(read_new_klasse.registrering[1].registrering),to_json(prev_klasse_registrering),to_json(prev_new_klasse.registrering[1].registrering);
+END IF;
+ */
+ --we'll ignore the registreringBase part in the comparrison - except for the livcykluskode
+
+read_new_klasse_reg:=ROW(
+ROW(null,(read_new_klasse.registrering[1].registrering).livscykluskode,null,null)::registreringBase,
+(read_new_klasse.registrering[1]).tilsPubliceret ,
+(read_new_klasse.registrering[1]).attrEgenskaber ,
+relationer 
+)::klasseRegistreringType
+;
+
+read_prev_klasse_reg:=ROW(
+ROW(null,(read_prev_klasse.registrering[1].registrering).livscykluskode,null,null)::registreringBase,
+(read_prev_klasse.registrering[1]).tilsPubliceret ,
+(read_prev_klasse.registrering[1]).attrEgenskaber ,
+relationer 
+)::klasseRegistreringType
+;
+
+
+IF read_prev_klasse_reg=read_new_klasse_reg THEN
+  RAISE EXCEPTION 'Aborted updating klasse with id [%] as the given data, does not give raise to a new registration. Aborted reg:[%], previous reg:[%]',klasse_uuid,to_json(read_new_klasse_reg),to_json(read_prev_klasse_reg) USING ERRCODE = 22000;
+END IF;
+
+/******************************************************************/
 
 
 return new_klasse_registrering.id;
