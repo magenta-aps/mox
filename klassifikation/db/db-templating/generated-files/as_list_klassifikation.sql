@@ -25,7 +25,7 @@ ROW(
 			a.KlassifikationAttrEgenskaberArr,
 			a.KlassifikationRelationArr
 		)::KlassifikationRegistreringType
-		order by a.klassifikation_registrering_id		
+		order by upper((a.registrering).TimePeriod) DESC		
 	) 
 ):: KlassifikationType
 FROM
@@ -47,7 +47,7 @@ FROM
 		ELSE
 		NULL
 		END
-		order by b.id
+		order by b.rel_maal,b.rel_type,b.virkning
 	)) KlassifikationRelationArr
 	FROM
 	(
@@ -66,7 +66,7 @@ FROM
 						) ::KlassifikationPubliceretTilsType
 					ELSE NULL
 					END
-					order by b.id
+					order by b.publiceret,b.virkning
 				)) KlassifikationTilsPubliceretArr		
 			FROM
 			(
@@ -87,7 +87,7 @@ FROM
 						ELSE
 						NULL
 						END
-						order by b.id
+						order by b.brugervendtnoegle,b.beskrivelse,b.kaldenavn,b.ophavsret,b.virkning
 					)) KlassifikationAttrEgenskaberArr 
 					FROM
 					(

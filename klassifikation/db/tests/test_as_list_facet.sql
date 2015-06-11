@@ -34,10 +34,10 @@ DECLARE
 	facetRelAnsvarlig FacetRelationType;
 	facetRelRedaktoer1 FacetRelationType;
 	facetRelRedaktoer2 FacetRelationType;
-	uuidAnsvarlig uuid :=uuid_generate_v4();
-	uuidRedaktoer1 uuid :=uuid_generate_v4();
-	uuidRedaktoer2 uuid :=uuid_generate_v4();
-	uuidRegistrering uuid :=uuid_generate_v4();
+	uuidAnsvarlig uuid :='e8477d45-a525-4b71-b0fa-eb25bb3c4b23'::uuid;
+	uuidRedaktoer1 uuid :='55c3dc9c-60f2-4543-8971-7d1db40c4864'::uuid;
+	uuidRedaktoer2 uuid :='c721b26d-daca-461a-a4ca-ec072f9ab9a7'::uuid;
+	uuidRegistrering uuid :='107244b5-f00c-4679-a97a-b436176f05d5'::uuid;
 	actual_facets1 FacetType[];
 	expected_facets1 FacetType[];
 	override_timeperiod1 TSTZRANGE;
@@ -48,7 +48,7 @@ BEGIN
 
 virkEgenskaber :=	ROW (
 	'[2015-05-12, infinity)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          'ed4dc687-59e3-4b79-8f14-0f60a0145901'::uuid,
           'Bruger',
           'NoteEx1'
           ) :: Virkning
@@ -56,7 +56,7 @@ virkEgenskaber :=	ROW (
 
 virkEgenskaberB :=	ROW (
 	'[2014-05-13, 2015-01-01)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          '48fcbc8b-4c72-4466-9dcc-0451f57b5b52'::uuid,
           'Bruger',
           'NoteEx7'
           ) :: Virkning
@@ -65,7 +65,7 @@ virkEgenskaberB :=	ROW (
 
 virkAnsvarlig :=	ROW (
 	'[2015-05-11, infinity)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          '7ac7ba19-8d41-427d-9353-907f2b09c011'::uuid,
           'Bruger',
           'NoteEx2'
           ) :: Virkning
@@ -73,7 +73,7 @@ virkAnsvarlig :=	ROW (
 
 virkRedaktoer1 :=	ROW (
 	'[2015-05-10, infinity)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          '6892a667-63d9-4ecd-ada1-173f4d7d0c3e'::uuid,
           'Bruger',
           'NoteEx3'
           ) :: Virkning
@@ -82,7 +82,7 @@ virkRedaktoer1 :=	ROW (
 
 virkRedaktoer2 :=	ROW (
 	'[2015-05-10, 2016-05-10)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          'df93d345-e332-47f3-81f2-25a4bb6ae39e'::uuid,
           'Bruger',
           'NoteEx4'
           ) :: Virkning
@@ -91,7 +91,7 @@ virkRedaktoer2 :=	ROW (
 
 virkPubliceret:=	ROW (
 	'[2015-05-01, infinity)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          'e6a1beb5-0c7e-4299-984a-64aa3963aa4a'::uuid,
           'Bruger',
           'NoteEx8'
           ) :: Virkning
@@ -99,7 +99,7 @@ virkPubliceret:=	ROW (
 
 virkPubliceretB:=	ROW (
 	'[2014-05-13, 2015-05-01)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          '42fbf12c-da1c-4f2e-8ee7-995a4b3dd6cf'::uuid,
           'Bruger',
           'NoteEx9'
           ) :: Virkning
@@ -178,7 +178,7 @@ registrering := ROW (
 	,
 ARRAY[facetPubliceret,facetPubliceretB]::FacetPubliceretTilsType[],
 ARRAY[facetEgenskabA,facetEgenskabB]::FacetEgenskaberAttrType[],
-ARRAY[facetRelAnsvarlig,facetRelRedaktoer1,facetRelRedaktoer2]
+ARRAY[facetRelRedaktoer1,facetRelRedaktoer2,facetRelAnsvarlig]
 ) :: FacetRegistreringType
 ;
 
@@ -253,8 +253,8 @@ expected_facets1:= ARRAY[
 
 select array_agg(a.* order by a.id) from unnest(expected_facets1) as a into expected_facets1;
 
---raise notice 'expected_facets1:%',to_json(expected_facets1);
---raise notice 'actual_facets1:%',to_json(actual_facets1);
+--raise notice 'list facet expected_facets1:%',to_json(expected_facets1);
+--raise notice 'list facet actual_facets1:%',to_json(actual_facets1);
 
 
 RETURN NEXT is(

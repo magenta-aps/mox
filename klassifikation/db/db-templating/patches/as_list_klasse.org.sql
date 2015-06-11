@@ -25,7 +25,7 @@ ROW(
 			a.KlasseAttrEgenskaberArr,
 			a.KlasseRelationArr
 		)::KlasseRegistreringType
-		order by a.klasse_registrering_id		
+		order by upper((a.registrering).TimePeriod) DESC		
 	) 
 ):: KlasseType
 FROM
@@ -47,7 +47,7 @@ FROM
 		ELSE
 		NULL
 		END
-		order by b.id
+		order by b.rel_maal,b.rel_type,b.virkning
 	)) KlasseRelationArr
 	FROM
 	(
@@ -66,7 +66,7 @@ FROM
 						) ::KlassePubliceretTilsType
 					ELSE NULL
 					END
-					order by b.id
+					order by b.publiceret,b.virkning
 				)) KlasseTilsPubliceretArr		
 			FROM
 			(
@@ -91,7 +91,7 @@ FROM
 						ELSE
 						NULL
 						END
-					order by a.attr_id
+					order by  a.brugervendtnoegle,a.beskrivelse,a.eksempel,a.omfang,a.titel,a.retskilde,a.aendringsnotat,a.virkning,a.KlasseAttrEgenskaberSoegeordTypeArr
 				)) KlasseAttrEgenskaberArr 
 				FROM		
 				(
@@ -119,7 +119,7 @@ FROM
 						ELSE
 						NULL
 						END
-						order by c.id
+						order by c.soegeordidentifikator,c.beskrivelse,c.soegeordskategori
 					)) KlasseAttrEgenskaberSoegeordTypeArr 
 					FROM
 						(

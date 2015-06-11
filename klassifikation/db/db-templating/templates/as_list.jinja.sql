@@ -24,7 +24,7 @@ ROW(
 			a.{{oio_type|title}}Attr{{attribut_inner_loop|title}}Arr,{%- endfor %}
 			a.{{oio_type|title}}RelationArr
 		)::{{oio_type|title}}RegistreringType
-		order by a.{{oio_type}}_registrering_id		
+		order by upper((a.registrering).TimePeriod) DESC		
 	) 
 ):: {{oio_type|title}}Type
 FROM
@@ -48,7 +48,7 @@ FROM
 		ELSE
 		NULL
 		END
-		order by b.id
+		order by b.rel_maal,b.rel_type,b.virkning
 	)) {{oio_type|title}}RelationArr
 	FROM
 	(
@@ -72,7 +72,7 @@ FROM
 						) ::{{oio_type|title}}{{tilstand|title}}TilsType
 					ELSE NULL
 					END
-					order by b.id
+					order by b.{{tilstand}},b.virkning
 				)) {{oio_type|title}}Tils{{tilstand|title}}Arr		
 			FROM
 			(
@@ -97,7 +97,7 @@ FROM
 						ELSE
 						NULL
 						END
-						order by b.id
+						order by b.{{attribut_fields|join(',b.')}},b.virkning
 					)) {{oio_type|title}}Attr{{attribut|title}}Arr 
 					FROM
 					(

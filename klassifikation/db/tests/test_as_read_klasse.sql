@@ -37,10 +37,10 @@ DECLARE
 	klasseRelAnsvarlig KlasseRelationType;
 	klasseRelRedaktoer1 KlasseRelationType;
 	klasseRelRedaktoer2 KlasseRelationType;
-	uuidAnsvarlig uuid :=uuid_generate_v4();
-	uuidRedaktoer1 uuid :=uuid_generate_v4();
-	uuidRedaktoer2 uuid :=uuid_generate_v4();
-	uuidRegistrering uuid :=uuid_generate_v4();
+	uuidAnsvarlig uuid :='21899b1a-afce-466a-8054-b8268789038b'::uuid;
+	uuidRedaktoer1 uuid :='ed97bd42-427b-4f06-a321-de9ba9453dbd'::uuid;
+	uuidRedaktoer2 uuid :='e16ed1ea-176a-45ae-99dc-b27d7849e9c9'::uuid;
+	uuidRegistrering uuid :='4e5a2388-f620-4279-839c-ec59dd18d0e7'::uuid;
 	update_reg_id bigint;
 	actual_relationer KlasseRelationType[];
 	actual_publiceret KlassePubliceretTilsType[];
@@ -71,7 +71,7 @@ BEGIN
 
 virkEgenskaber :=	ROW (
 	'[2015-05-12, infinity)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          '09adacb1-b183-4939-a1ab-a4a3f612bcdb'::uuid,
           'Bruger',
           'NoteEx1'
           ) :: Virkning
@@ -79,7 +79,7 @@ virkEgenskaber :=	ROW (
 
 virkEgenskaberB :=	ROW (
 	'[2014-05-13, 2015-01-01)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          '5b3469ab-1f70-4861-8ecf-74fb5975ec2b'::uuid,
           'Bruger',
           'NoteEx7'
           ) :: Virkning
@@ -88,7 +88,7 @@ virkEgenskaberB :=	ROW (
 
 virkAnsvarlig :=	ROW (
 	'[2015-05-11, infinity)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          '6fedbb57-7dda-415e-856a-ce6ae9402c8a'::uuid,
           'Bruger',
           'NoteEx2'
           ) :: Virkning
@@ -96,7 +96,7 @@ virkAnsvarlig :=	ROW (
 
 virkRedaktoer1 :=	ROW (
 	'[2015-05-10, infinity)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          '3f9dd4e2-2155-4301-8078-a4c68e8ffe5a'::uuid,
           'Bruger',
           'NoteEx3'
           ) :: Virkning
@@ -105,7 +105,7 @@ virkRedaktoer1 :=	ROW (
 
 virkRedaktoer2 :=	ROW (
 	'[2015-05-10, 2016-05-10)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          '6f544174-856a-408d-86e5-b26f257e3c8f'::uuid,
           'Bruger',
           'NoteEx4'
           ) :: Virkning
@@ -114,7 +114,7 @@ virkRedaktoer2 :=	ROW (
 
 virkPubliceret:=	ROW (
 	'[2015-05-01, infinity)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          '3f9dd4e2-2155-4301-8076-a4c68e8ffe5a'::uuid,
           'Bruger',
           'NoteEx8'
           ) :: Virkning
@@ -122,7 +122,7 @@ virkPubliceret:=	ROW (
 
 virkPubliceretB:=	ROW (
 	'[2014-05-13, 2015-05-01)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          'dac7ae9c-8aa2-4bfa-962b-6fd6354e55f1'::uuid,
           'Bruger',
           'NoteEx9'
           ) :: Virkning
@@ -279,7 +279,7 @@ registrering := ROW (
 	,
 ARRAY[klassePubliceret,klassePubliceretB]::KlassePubliceretTilsType[],
 ARRAY[klasseEgenskabA,klasseEgenskabB]::KlasseEgenskaberAttrType[],
-ARRAY[klasseRelAnsvarlig,klasseRelRedaktoer1,klasseRelRedaktoer2]
+ARRAY[klasseRelAnsvarlig,klasseRelRedaktoer2,klasseRelRedaktoer1]
 ) :: KlasseRegistreringType
 ;
 
@@ -295,7 +295,7 @@ registrering := ROW (
 	,
 ARRAY[klassePubliceret,klassePubliceretB]::KlassePubliceretTilsType[],
 ARRAY[klasseEgenskabA,klasseEgenskabB]::KlasseEgenskaberAttrType[],
-ARRAY[klasseRelAnsvarlig,klasseRelRedaktoer1,klasseRelRedaktoer2]
+ARRAY[klasseRelAnsvarlig,klasseRelRedaktoer2,klasseRelRedaktoer1]
 ) :: KlasseRegistreringType
 ;
 
@@ -304,7 +304,7 @@ new_uuid := as_create_or_import_klasse(registrering);
 
 virkEgenskaberC :=	ROW (
 	'[2015-01-13, infinity)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          '99e031a2-d84e-4431-b3cd-a7e632a385f0'::uuid,
           'Bruger',
           'NoteEx20'
           ) :: Virkning
@@ -312,7 +312,7 @@ virkEgenskaberC :=	ROW (
 
 virkEgenskaberD :=	ROW (
 	'[2013-06-30, 2014-06-01)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          '86308373-4ef2-41a2-a276-95697567b536'::uuid,
           'Bruger',
           'NoteEx7'
           ) :: Virkning
@@ -320,7 +320,7 @@ virkEgenskaberD :=	ROW (
 
 virkEgenskaberE:=	ROW (
 	'[2014-08-01, 2014-10-20)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          '951cabb7-8d5c-46ec-906a-17d9cc916e77'::uuid,
           'Bruger',
           'NoteEx20'
           ) :: Virkning
@@ -367,7 +367,7 @@ klasseEgenskabE := ROW (
 
 virkPubliceretC:=	ROW (
 	'[2015-01-01, 2015-05-01]' :: TSTZRANGE,
-          uuid_generate_v4(),
+          '7f9dd4e2-2155-4301-8076-a4c68e8ffe5c'::uuid,
           'Bruger',
           'NoteEx10'
           ) :: Virkning
@@ -422,10 +422,13 @@ expected_Klasse1 :=
 			)::KlasseType
 ;
 
+--RAISE NOTICE 'expected_Klasse1_json:%',to_json(expected_Klasse1);
+--RAISE NOTICE 'read_Klasse1:%',to_json(read_Klasse1);
+
 RETURN NEXT is(
 read_Klasse1,
 expected_Klasse1,
-'simple search test 2'
+'simple search test 1'
 );
 
 
@@ -446,7 +449,7 @@ expected_Klasse2 :=
 								(registrering2.registrering).note 
 								)::RegistreringBase
 							,registrering2.tilsPubliceret
-							,array[
+							,array[klasseEgenskabD,klasseEgenskabE,
 							ROW(
 							klasseEgenskabC.brugervendtnoegle,
 							klasseEgenskabC.beskrivelse,
@@ -458,7 +461,7 @@ expected_Klasse2 :=
 							NULL, --notice: empty array for soegeord get read as null
  							klasseEgenskabC.virkning 
 							)::KlasseEgenskaberAttrType
-							,klasseEgenskabD,klasseEgenskabE]::KlasseEgenskaberAttrType[]
+							]::KlasseEgenskaberAttrType[]
 							,registrering2.relationer
 						)::KlasseRegistreringType
 					]::KlasseRegistreringType[]
@@ -471,7 +474,7 @@ expected_Klasse2 :=
 RETURN NEXT is(
 read_Klasse2,
 expected_Klasse2,
-'simple search test 2'
+'simple search test 3'
 );
 
 

@@ -24,10 +24,10 @@ DECLARE
 	facetRelAnsvarlig FacetRelationType;
 	facetRelRedaktoer1 FacetRelationType;
 	facetRelRedaktoer2 FacetRelationType;
-	uuidAnsvarlig uuid :=uuid_generate_v4();
-	uuidRedaktoer1 uuid :=uuid_generate_v4();
-	uuidRedaktoer2 uuid :=uuid_generate_v4();
-	uuidRegistrering uuid :=uuid_generate_v4();
+	uuidAnsvarlig uuid :='bf0a1162-69f0-4242-b217-e2d29e06d13a'::uuid;
+	uuidRedaktoer1 uuid :='180c0ab2-4210-4b91-94b8-2eff23d3cf10'::uuid;
+	uuidRedaktoer2 uuid :='8cbe2b05-34b2-4147-a917-35ed36813e55'::uuid;
+	uuidRegistrering uuid :='7ed5e259-78b2-4921-9e4b-d54380be343b'::uuid;
 	read_facet1 FacetType;
 	expected_facet1 FacetType;
 BEGIN
@@ -35,7 +35,7 @@ BEGIN
 
 virkEgenskaber :=	ROW (
 	'[2015-05-12, infinity)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          '342d9380-56af-4624-a014-7166fb3bbe8e'::uuid,
           'Bruger',
           'NoteEx1'
           ) :: Virkning
@@ -43,7 +43,7 @@ virkEgenskaber :=	ROW (
 
 virkAnsvarlig :=	ROW (
 	'[2015-05-11, infinity)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          '26eba752-87fa-4a4a-baed-005f24a13301'::uuid,
           'Bruger',
           'NoteEx2'
           ) :: Virkning
@@ -51,7 +51,7 @@ virkAnsvarlig :=	ROW (
 
 virkRedaktoer1 :=	ROW (
 	'[2015-05-10, infinity)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          'fbf707e2-3fe6-43e8-8033-2ca5a24698cd'::uuid,
           'Bruger',
           'NoteEx3'
           ) :: Virkning
@@ -60,7 +60,7 @@ virkRedaktoer1 :=	ROW (
 
 virkRedaktoer2 :=	ROW (
 	'[2015-05-10, 2016-05-10)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          'b1bf237a-ce19-48d9-a20d-b50562f56938'::uuid,
           'Bruger',
           'NoteEx4'
           ) :: Virkning
@@ -68,7 +68,7 @@ virkRedaktoer2 :=	ROW (
 
 virkPubliceret := ROW (
 	'[2015-05-18, infinity)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          'b3fbc404-5c94-43f5-aacf-372ab1401967'::uuid,
           'Bruger',
           'NoteEx10'
 ) :: Virkning
@@ -130,7 +130,7 @@ registrering := ROW (
 	,
 ARRAY[facetPubliceret]::FacetPubliceretTilsType[],
 ARRAY[facetEgenskab]::FacetEgenskaberAttrType[],
-ARRAY[facetRelAnsvarlig,facetRelRedaktoer1,facetRelRedaktoer2]
+ARRAY[facetRelRedaktoer1,facetRelRedaktoer2,facetRelAnsvarlig]
 ) :: FacetRegistreringType
 ;
 
@@ -166,6 +166,9 @@ expected_facet1,
 'simple search test 1'
 );
 
+
+--RAISE NOTICE 'read_facet1_json:%',to_json(read_facet1);
+--RAISE NOTICE 'expected_facet1_json:%',to_json(expected_facet1);
 
 --TODO Test for different scenarios
 

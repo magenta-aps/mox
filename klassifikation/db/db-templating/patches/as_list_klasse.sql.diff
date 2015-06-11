@@ -1,9 +1,9 @@
-*** ../generated-files/as_list_klasse.sql	2015-06-01 15:55:16.062519739 +0200
---- ../patches/as_list_klasse.org.sql	2015-06-01 15:49:47.182503360 +0200
+*** ../generated-files/as_list_klasse.sql	2015-06-10 16:06:27.372624904 +0200
+--- ../patches/as_list_klasse.org.sql	2015-06-10 16:06:07.808625254 +0200
 ***************
 *** 68,114 ****
   					END
-  					order by b.id
+  					order by b.publiceret,b.virkning
   				)) KlasseTilsPubliceretArr		
   			FROM
   			(
@@ -27,7 +27,7 @@
   						ELSE
   						NULL
   						END
-! 						order by b.id
+! 						order by b.brugervendtnoegle,b.beskrivelse,b.eksempel,b.omfang,b.titel,b.retskilde,b.aendringsnotat,b.virkning
 ! 					)) KlasseAttrEgenskaberArr 
   					FROM
 ! 					(
@@ -51,7 +51,7 @@
   			a.klasse_registrering_id,
 --- 68,158 ----
   					END
-  					order by b.id
+  					order by b.publiceret,b.virkning
   				)) KlasseTilsPubliceretArr		
   			FROM
   			(
@@ -76,7 +76,7 @@
   						ELSE
   						NULL
   						END
-! 					order by a.attr_id
+! 					order by  a.brugervendtnoegle,a.beskrivelse,a.eksempel,a.omfang,a.titel,a.retskilde,a.aendringsnotat,a.virkning,a.KlasseAttrEgenskaberSoegeordTypeArr
 ! 				)) KlasseAttrEgenskaberArr 
 ! 				FROM		
 ! 				(
@@ -104,7 +104,7 @@
 ! 						ELSE
 ! 						NULL
 ! 						END
-! 						order by c.id
+! 						order by c.soegeordidentifikator,c.beskrivelse,c.soegeordskategori
 ! 					)) KlasseAttrEgenskaberSoegeordTypeArr 
   					FROM
 ! 						(

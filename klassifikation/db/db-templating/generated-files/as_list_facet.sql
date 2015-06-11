@@ -25,7 +25,7 @@ ROW(
 			a.FacetAttrEgenskaberArr,
 			a.FacetRelationArr
 		)::FacetRegistreringType
-		order by a.facet_registrering_id		
+		order by upper((a.registrering).TimePeriod) DESC		
 	) 
 ):: FacetType
 FROM
@@ -47,7 +47,7 @@ FROM
 		ELSE
 		NULL
 		END
-		order by b.id
+		order by b.rel_maal,b.rel_type,b.virkning
 	)) FacetRelationArr
 	FROM
 	(
@@ -66,7 +66,7 @@ FROM
 						) ::FacetPubliceretTilsType
 					ELSE NULL
 					END
-					order by b.id
+					order by b.publiceret,b.virkning
 				)) FacetTilsPubliceretArr		
 			FROM
 			(
@@ -90,7 +90,7 @@ FROM
 						ELSE
 						NULL
 						END
-						order by b.id
+						order by b.brugervendtnoegle,b.beskrivelse,b.opbygning,b.ophavsret,b.plan,b.supplement,b.retskilde,b.virkning
 					)) FacetAttrEgenskaberArr 
 					FROM
 					(
