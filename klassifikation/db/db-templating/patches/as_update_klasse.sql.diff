@@ -1,9 +1,9 @@
-*** ../generated-files/as_update_klasse.sql	2015-05-28 15:20:59.424403748 +0200
---- ../patches/as_update_klasse.org.sql	2015-05-28 15:17:06.196407924 +0200
+*** ../generated-files/as_update_klasse.sql	2015-06-11 15:07:00.479079692 +0200
+--- ../patches/as_update_klasse.org.sql	2015-06-11 15:03:15.447083722 +0200
 ***************
-*** 30,39 ****
---- 30,41 ----
-  DECLARE
+*** 35,44 ****
+--- 35,46 ----
+    read_prev_klasse_reg KlasseRegistreringType;
     new_klasse_registrering klasse_registrering;
     prev_klasse_registrering klasse_registrering;
     klasse_relation_navn KlasseRelationKode;
@@ -14,9 +14,9 @@
   
   --create a new registrering
   
-  new_klasse_registrering := _as_create_klasse_registrering(klasse_uuid,livscykluskode, brugerref, note);
+  IF NOT EXISTS (select a.id from klasse a join klasse_registrering b on b.klasse_id=a.id  where a.id=klasse_uuid) THEN
 ***************
-*** 216,233 ****
+*** 245,262 ****
      (attrEgenskaberObj).titel is null OR 
      (attrEgenskaberObj).retskilde is null OR 
      (attrEgenskaberObj).aendringsnotat is null 
@@ -35,7 +35,7 @@
       coalesce(attrEgenskaberObj.eksempel,a.eksempel), 
       coalesce(attrEgenskaberObj.omfang,a.omfang), 
       coalesce(attrEgenskaberObj.titel,a.titel), 
---- 218,237 ----
+--- 247,266 ----
      (attrEgenskaberObj).titel is null OR 
      (attrEgenskaberObj).retskilde is null OR 
      (attrEgenskaberObj).aendringsnotat is null 
@@ -57,7 +57,7 @@
       coalesce(attrEgenskaberObj.omfang,a.omfang), 
       coalesce(attrEgenskaberObj.titel,a.titel), 
 ***************
-*** 242,263 ****
+*** 271,292 ****
       new_klasse_registrering.id
     FROM klasse_attr_egenskaber a
     WHERE
@@ -80,7 +80,7 @@
       attrEgenskaberObj.eksempel, 
       attrEgenskaberObj.omfang, 
       attrEgenskaberObj.titel, 
---- 246,284 ----
+--- 275,313 ----
       new_klasse_registrering.id
     FROM klasse_attr_egenskaber a
     WHERE
@@ -121,7 +121,7 @@
       attrEgenskaberObj.omfang, 
       attrEgenskaberObj.titel, 
 ***************
-*** 277,323 ****
+*** 306,338 ****
         FROM klasse_attr_egenskaber b
         WHERE 
          b.klasse_registrering_id=new_klasse_registrering.id
@@ -155,21 +155,7 @@
   
     END LOOP;
   END IF;
-  
-  --Handle egenskaber of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
-  
-  INSERT INTO klasse_attr_egenskaber (
-!     brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat
-      ,virkning
-      ,klasse_registrering_id
-  )
-  SELECT
-        a.brugervendtnoegle,
-        a.beskrivelse,
-        a.eksempel,
-        a.omfang,
-        a.titel,
---- 298,381 ----
+--- 327,393 ----
         FROM klasse_attr_egenskaber b
         WHERE 
          b.klasse_registrering_id=new_klasse_registrering.id
@@ -237,6 +223,27 @@
   
     END LOOP;
   END IF;
+***************
+*** 342,357 ****
+  --raise debug 'Skipping handling of egenskaber of previous registration as an empty array was explicit given.';  
+  ELSE 
+  
+  --Handle egenskaber of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
+  
+  INSERT INTO klasse_attr_egenskaber (
+!     brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat
+      ,virkning
+      ,klasse_registrering_id
+  )
+  SELECT
+        a.brugervendtnoegle,
+        a.beskrivelse,
+        a.eksempel,
+        a.omfang,
+        a.titel,
+--- 397,415 ----
+  --raise debug 'Skipping handling of egenskaber of previous registration as an empty array was explicit given.';  
+  ELSE 
   
   --Handle egenskaber of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
   
@@ -255,7 +262,7 @@
         a.omfang,
         a.titel,
 ***************
-*** 338,348 ****
+*** 372,382 ****
       WHERE 
             b.klasse_registrering_id=new_klasse_registrering.id
   ) d
@@ -264,10 +271,10 @@
 !   WHERE a.klasse_registrering_id=prev_klasse_registrering.id     
   ;
   
+  END IF;
   
-  return new_klasse_registrering.id;
   
---- 396,416 ----
+--- 430,450 ----
       WHERE 
             b.klasse_registrering_id=new_klasse_registrering.id
   ) d
@@ -286,17 +293,6 @@
 ! JOIN klasse_attr_egenskaber_soegeord b on a2.id=b.klasse_attr_egenskaber_id   
   ;
   
-  
-  return new_klasse_registrering.id;
-  
-***************
-*** 350,357 ****
-  
-  END;
-  $$ LANGUAGE plpgsql VOLATILE;
+  END IF;
   
   
-- 
-- 
-- 
---- 418,422 ----

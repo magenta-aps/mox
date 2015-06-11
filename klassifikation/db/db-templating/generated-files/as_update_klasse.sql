@@ -56,161 +56,175 @@ IF lostUpdatePreventionTZ IS NOT NULL THEN
   END IF;   
 END IF;
 
+
+
+
 --handle relationer (relations)
 
+IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
+--raise debug 'Skipping relations, as it is explicit set to empty array';
+ELSE
 
---1) Insert relations given as part of this update
---2) Insert relations of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
+  --1) Insert relations given as part of this update
+  --2) Insert relations of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
 
---Ad 1)
-
-
-
-    INSERT INTO klasse_relation (
-      klasse_registrering_id,
-        virkning,
-          rel_maal,
-            rel_type
-    )
-    SELECT
-      new_klasse_registrering.id,
-        a.virkning,
-          a.relMaal,
-            a.relType
-    FROM unnest(relationer) as a
-  ;
-
- 
---Ad 2)
-
-/**********************/
--- 0..1 relations 
-
-FOREACH klasse_relation_navn in array  ARRAY['ejer'::KlasseRelationKode,'ansvarlig'::KlasseRelationKode,'overordnetklasse'::KlasseRelationKode,'facet'::KlasseRelationKode]
-LOOP
-
-  INSERT INTO klasse_relation (
-      klasse_registrering_id,
-        virkning,
-          rel_maal,
-            rel_type
-    )
-  SELECT 
-      new_klasse_registrering.id, 
-        ROW(
-          c.tz_range_leftover,
-            (a.virkning).AktoerRef,
-            (a.virkning).AktoerTypeKode,
-            (a.virkning).NoteTekst
-        ) :: virkning,
-          a.rel_maal,
-            a.rel_type
-  FROM
-  (
-    --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to _subtract_tstzrange_arr on the relations of the previous registrering 
-    SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
-    FROM klasse_relation b
-    WHERE 
-          b.klasse_registrering_id=new_klasse_registrering.id
-          and
-          b.rel_type=klasse_relation_navn
-  ) d
-  JOIN klasse_relation a ON true
-  JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
-  WHERE a.klasse_registrering_id=prev_klasse_registrering.id 
-        and a.rel_type=klasse_relation_navn 
-  ;
-END LOOP;
-
-/**********************/
--- 0..n relations
-
---The question regarding how the api-consumer is to specify the deletion of 0..n relation already registered is not answered.
---The following options presents itself:
---a) In this special case, the api-consumer has to specify the full set of the 0..n relation, when updating 
--- ref: ("Hvis indholdet i en liste af elementer rettes, skal hele den nye liste af elementer med i ObjektRet - p27 "Generelle egenskaber for serviceinterfaces på sags- og dokumentområdet")
-
---Assuming option 'a' above is selected, we only have to check if there are any of the relations with the given name present in the new registration, otherwise copy the ones from the previous registration
+  --Ad 1)
 
 
-FOREACH klasse_relation_navn in array ARRAY['redaktoerer'::KlasseRelationKode,'sideordnede'::KlasseRelationKode,'mapninger'::KlasseRelationKode,'tilfoejelser'::KlasseRelationKode,'erstatter'::KlasseRelationKode,'lovligekombinationer'::KlasseRelationKode]
-LOOP
 
-  IF NOT EXISTS  (SELECT 1 FROM klasse_relation WHERE klasse_registrering_id=new_klasse_registrering.id and rel_type=klasse_relation_navn) THEN
-
-    INSERT INTO klasse_relation (
-          klasse_registrering_id,
-            virkning,
-              rel_maal,
-                rel_type
-        )
-    SELECT 
-          new_klasse_registrering.id,
-            virkning,
-              rel_maal,
-                rel_type
-    FROM klasse_relation
-    WHERE klasse_registrering_id=prev_klasse_registrering.id 
-    and rel_type=klasse_relation_navn 
+      INSERT INTO klasse_relation (
+        klasse_registrering_id,
+          virkning,
+            rel_maal,
+              rel_type
+      )
+      SELECT
+        new_klasse_registrering.id,
+          a.virkning,
+            a.relMaal,
+              a.relType
+      FROM unnest(relationer) as a
     ;
 
-  END IF;
-            
-END LOOP;
+   
+  --Ad 2)
+
+  /**********************/
+  -- 0..1 relations 
+   
+
+  FOREACH klasse_relation_navn in array  ARRAY['ejer'::KlasseRelationKode,'ansvarlig'::KlasseRelationKode,'overordnetklasse'::KlasseRelationKode,'facet'::KlasseRelationKode]
+  LOOP
+
+    INSERT INTO klasse_relation (
+        klasse_registrering_id,
+          virkning,
+            rel_maal,
+              rel_type
+      )
+    SELECT 
+        new_klasse_registrering.id, 
+          ROW(
+            c.tz_range_leftover,
+              (a.virkning).AktoerRef,
+              (a.virkning).AktoerTypeKode,
+              (a.virkning).NoteTekst
+          ) :: virkning,
+            a.rel_maal,
+              a.rel_type
+    FROM
+    (
+      --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to _subtract_tstzrange_arr on the relations of the previous registrering 
+      SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
+      FROM klasse_relation b
+      WHERE 
+            b.klasse_registrering_id=new_klasse_registrering.id
+            and
+            b.rel_type=klasse_relation_navn
+    ) d
+    JOIN klasse_relation a ON true
+    JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
+    WHERE a.klasse_registrering_id=prev_klasse_registrering.id 
+          and a.rel_type=klasse_relation_navn 
+    ;
+  END LOOP;
+
+  /**********************/
+  -- 0..n relations
+
+  --The question regarding how the api-consumer is to specify the deletion of 0..n relation already registered is not answered.
+  --The following options presents itself:
+  --a) In this special case, the api-consumer has to specify the full set of the 0..n relation, when updating 
+  -- ref: ("Hvis indholdet i en liste af elementer rettes, skal hele den nye liste af elementer med i ObjektRet - p27 "Generelle egenskaber for serviceinterfaces på sags- og dokumentområdet")
+
+  --Assuming option 'a' above is selected, we only have to check if there are any of the relations with the given name present in the new registration, otherwise copy the ones from the previous registration
+
+
+  FOREACH klasse_relation_navn in array ARRAY['redaktoerer'::KlasseRelationKode,'sideordnede'::KlasseRelationKode,'mapninger'::KlasseRelationKode,'tilfoejelser'::KlasseRelationKode,'erstatter'::KlasseRelationKode,'lovligekombinationer'::KlasseRelationKode]
+  LOOP
+
+    IF NOT EXISTS  (SELECT 1 FROM klasse_relation WHERE klasse_registrering_id=new_klasse_registrering.id and rel_type=klasse_relation_navn) THEN
+
+      INSERT INTO klasse_relation (
+            klasse_registrering_id,
+              virkning,
+                rel_maal,
+                  rel_type
+          )
+      SELECT 
+            new_klasse_registrering.id,
+              virkning,
+                rel_maal,
+                  rel_type
+      FROM klasse_relation
+      WHERE klasse_registrering_id=prev_klasse_registrering.id 
+      and rel_type=klasse_relation_navn 
+      ;
+
+    END IF;
+              
+  END LOOP;
+
+END IF;
 /**********************/
 -- handle tilstande (states)
 
---1) Insert tilstande/states given as part of this update
---2) Insert tilstande/states of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
+IF tilsPubliceret IS NOT NULL AND coalesce(array_length(tilsPubliceret,1),0)=0 THEN
+--raise debug 'Skipping [Publiceret] as it is explicit set to empty array';
+ELSE
+  --1) Insert tilstande/states given as part of this update
+  --2) Insert tilstande/states of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
 
-/********************************************/
---klasse_tils_publiceret
-/********************************************/
+  /********************************************/
+  --klasse_tils_publiceret
+  /********************************************/
 
---Ad 1)
+  --Ad 1)
 
-INSERT INTO klasse_tils_publiceret (
-        virkning,
-          publiceret,
-            klasse_registrering_id
-) 
-SELECT
-        a.virkning,
-          a.publiceret,
-            new_klasse_registrering.id
-FROM
-unnest(tilsPubliceret) as a
-;
- 
+  INSERT INTO klasse_tils_publiceret (
+          virkning,
+            publiceret,
+              klasse_registrering_id
+  ) 
+  SELECT
+          a.virkning,
+            a.publiceret,
+              new_klasse_registrering.id
+  FROM
+  unnest(tilsPubliceret) as a
+  ;
+   
 
---Ad 2
+  --Ad 2
 
-INSERT INTO klasse_tils_publiceret (
-        virkning,
-          publiceret,
-            klasse_registrering_id
-)
-SELECT 
-        ROW(
-          c.tz_range_leftover,
-            (a.virkning).AktoerRef,
-            (a.virkning).AktoerTypeKode,
-            (a.virkning).NoteTekst
-        ) :: virkning,
-          a.publiceret,
-            new_klasse_registrering.id
-FROM
-(
- --build an array of the timeperiod of the virkning of the klasse_tils_publiceret of the new registrering to pass to _subtract_tstzrange_arr on the klasse_tils_publiceret of the previous registrering 
-    SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
-    FROM klasse_tils_publiceret b
-    WHERE 
-          b.klasse_registrering_id=new_klasse_registrering.id
-) d
-  JOIN klasse_tils_publiceret a ON true  
-  JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
-  WHERE a.klasse_registrering_id=prev_klasse_registrering.id     
-;
+  INSERT INTO klasse_tils_publiceret (
+          virkning,
+            publiceret,
+              klasse_registrering_id
+  )
+  SELECT 
+          ROW(
+            c.tz_range_leftover,
+              (a.virkning).AktoerRef,
+              (a.virkning).AktoerTypeKode,
+              (a.virkning).NoteTekst
+          ) :: virkning,
+            a.publiceret,
+              new_klasse_registrering.id
+  FROM
+  (
+   --build an array of the timeperiod of the virkning of the klasse_tils_publiceret of the new registrering to pass to _subtract_tstzrange_arr on the klasse_tils_publiceret of the previous registrering 
+      SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
+      FROM klasse_tils_publiceret b
+      WHERE 
+            b.klasse_registrering_id=new_klasse_registrering.id
+  ) d
+    JOIN klasse_tils_publiceret a ON true  
+    JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
+    WHERE a.klasse_registrering_id=prev_klasse_registrering.id     
+  ;
+
+END IF;
 
 
 /**********************/
@@ -378,6 +392,11 @@ JOIN inserted_attr_egenskaber b on true
   END LOOP;
 END IF;
 
+
+IF attrEgenskaber IS NOT NULL AND coalesce(array_length(attrEgenskaber,1),0)=0 THEN
+--raise debug 'Skipping handling of egenskaber of previous registration as an empty array was explicit given.';  
+ELSE 
+
 --Handle egenskaber of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
 
 
@@ -426,6 +445,8 @@ JOIN klasse_attr_egenskaber a2 on a2.klasse_registrering_id=prev_klasse_registre
 JOIN klasse_attr_egenskaber_soegeord b on a2.id=b.klasse_attr_egenskaber_id   
 ;
 
+END IF;
+
 
 /******************************************************************/
 --If the new registrering is identical to the previous one, we need to throw an exception to abort the transaction. 
@@ -433,19 +454,12 @@ JOIN klasse_attr_egenskaber_soegeord b on a2.id=b.klasse_attr_egenskaber_id
 read_new_klasse:=as_read_klasse(klasse_uuid, (new_klasse_registrering.registrering).timeperiod,null);
 read_prev_klasse:=as_read_klasse(klasse_uuid, (prev_klasse_registrering.registrering).timeperiod ,null);
  
- /*
-read_new_klasse_reg klasseRegistreringType;
-read_prev_klasse_reg klasseRegistreringType;
-*/
-
 --the ordering in as_list (called by as_read) ensures that the latest registration is returned at index pos 1
 
-/*
---TODO
-IF NOT (read_new_klasse.registrering[1].registrering=new_klasse_registrering AND read_prev_klasse.registrering[1].registrering=prev_klasse_registrering) THEN
-  RAISE EXCEPTION 'Error updating klasse with id [%]: The ordering of as_list_klasse should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].  ',klasse_uuid,to_json(new_klasse_registrering),to_json(read_new_klasse.registrering[1].registrering),to_json(prev_klasse_registrering),to_json(prev_new_klasse.registrering[1].registrering);
+IF NOT (lower((read_new_klasse.registrering[1].registrering).TimePeriod)=lower((new_klasse_registrering.registrering).TimePeriod) AND lower((read_prev_klasse.registrering[1].registrering).TimePeriod)=lower((prev_klasse_registrering.registrering).TimePeriod)) THEN
+  RAISE EXCEPTION 'Error updating klasse with id [%]: The ordering of as_list_klasse should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].',klasse_uuid,to_json(new_klasse_registrering),to_json(read_new_klasse.registrering[1].registrering),to_json(prev_klasse_registrering),to_json(prev_new_klasse.registrering[1].registrering);
 END IF;
- */
+ 
  --we'll ignore the registreringBase part in the comparrison - except for the livcykluskode
 
 read_new_klasse_reg:=ROW(
@@ -478,5 +492,8 @@ return new_klasse_registrering.id;
 
 END;
 $$ LANGUAGE plpgsql VOLATILE;
+
+
+
 
 

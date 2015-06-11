@@ -56,163 +56,177 @@ IF lostUpdatePreventionTZ IS NOT NULL THEN
   END IF;   
 END IF;
 
+
+
+
 --handle relationer (relations)
 
+IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
+--raise debug 'Skipping relations, as it is explicit set to empty array';
+ELSE
 
---1) Insert relations given as part of this update
---2) Insert relations of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
+  --1) Insert relations given as part of this update
+  --2) Insert relations of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
 
---Ad 1)
-
-
-
-    INSERT INTO {{oio_type}}_relation (
-      {{oio_type}}_registrering_id,
-        virkning,
-          rel_maal,
-            rel_type
-    )
-    SELECT
-      new_{{oio_type}}_registrering.id,
-        a.virkning,
-          a.relMaal,
-            a.relType
-    FROM unnest(relationer) as a
-  ;
-
- 
---Ad 2)
-
-/**********************/
--- 0..1 relations 
-
-FOREACH {{oio_type}}_relation_navn in array  ARRAY[{%-for relkode in relationer_nul_til_en  %}'{{relkode}}'::{{oio_type|title}}RelationKode{% if not loop.last%},{% endif %}{% endfor %}]
-LOOP
-
-  INSERT INTO {{oio_type}}_relation (
-      {{oio_type}}_registrering_id,
-        virkning,
-          rel_maal,
-            rel_type
-    )
-  SELECT 
-      new_{{oio_type}}_registrering.id, 
-        ROW(
-          c.tz_range_leftover,
-            (a.virkning).AktoerRef,
-            (a.virkning).AktoerTypeKode,
-            (a.virkning).NoteTekst
-        ) :: virkning,
-          a.rel_maal,
-            a.rel_type
-  FROM
-  (
-    --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to _subtract_tstzrange_arr on the relations of the previous registrering 
-    SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
-    FROM {{oio_type}}_relation b
-    WHERE 
-          b.{{oio_type}}_registrering_id=new_{{oio_type}}_registrering.id
-          and
-          b.rel_type={{oio_type}}_relation_navn
-  ) d
-  JOIN {{oio_type}}_relation a ON true
-  JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
-  WHERE a.{{oio_type}}_registrering_id=prev_{{oio_type}}_registrering.id 
-        and a.rel_type={{oio_type}}_relation_navn 
-  ;
-END LOOP;
-
-/**********************/
--- 0..n relations
-
---The question regarding how the api-consumer is to specify the deletion of 0..n relation already registered is not answered.
---The following options presents itself:
---a) In this special case, the api-consumer has to specify the full set of the 0..n relation, when updating 
--- ref: ("Hvis indholdet i en liste af elementer rettes, skal hele den nye liste af elementer med i ObjektRet - p27 "Generelle egenskaber for serviceinterfaces på sags- og dokumentområdet")
-
---Assuming option 'a' above is selected, we only have to check if there are any of the relations with the given name present in the new registration, otherwise copy the ones from the previous registration
+  --Ad 1)
 
 
-FOREACH {{oio_type}}_relation_navn in array ARRAY[{%-for relkode in relationer_nul_til_mange  %}'{{relkode}}'::{{oio_type|title}}RelationKode{% if not loop.last%},{% endif %}{% endfor %}]
-LOOP
 
-  IF NOT EXISTS  (SELECT 1 FROM {{oio_type}}_relation WHERE {{oio_type}}_registrering_id=new_{{oio_type}}_registrering.id and rel_type={{oio_type}}_relation_navn) THEN
-
-    INSERT INTO {{oio_type}}_relation (
-          {{oio_type}}_registrering_id,
-            virkning,
-              rel_maal,
-                rel_type
-        )
-    SELECT 
-          new_{{oio_type}}_registrering.id,
-            virkning,
-              rel_maal,
-                rel_type
-    FROM {{oio_type}}_relation
-    WHERE {{oio_type}}_registrering_id=prev_{{oio_type}}_registrering.id 
-    and rel_type={{oio_type}}_relation_navn 
+      INSERT INTO {{oio_type}}_relation (
+        {{oio_type}}_registrering_id,
+          virkning,
+            rel_maal,
+              rel_type
+      )
+      SELECT
+        new_{{oio_type}}_registrering.id,
+          a.virkning,
+            a.relMaal,
+              a.relType
+      FROM unnest(relationer) as a
     ;
 
-  END IF;
-            
-END LOOP;
+   
+  --Ad 2)
+
+  /**********************/
+  -- 0..1 relations 
+   
+
+  FOREACH {{oio_type}}_relation_navn in array  ARRAY[{%-for relkode in relationer_nul_til_en  %}'{{relkode}}'::{{oio_type|title}}RelationKode{% if not loop.last%},{% endif %}{% endfor %}]
+  LOOP
+
+    INSERT INTO {{oio_type}}_relation (
+        {{oio_type}}_registrering_id,
+          virkning,
+            rel_maal,
+              rel_type
+      )
+    SELECT 
+        new_{{oio_type}}_registrering.id, 
+          ROW(
+            c.tz_range_leftover,
+              (a.virkning).AktoerRef,
+              (a.virkning).AktoerTypeKode,
+              (a.virkning).NoteTekst
+          ) :: virkning,
+            a.rel_maal,
+              a.rel_type
+    FROM
+    (
+      --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to _subtract_tstzrange_arr on the relations of the previous registrering 
+      SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
+      FROM {{oio_type}}_relation b
+      WHERE 
+            b.{{oio_type}}_registrering_id=new_{{oio_type}}_registrering.id
+            and
+            b.rel_type={{oio_type}}_relation_navn
+    ) d
+    JOIN {{oio_type}}_relation a ON true
+    JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
+    WHERE a.{{oio_type}}_registrering_id=prev_{{oio_type}}_registrering.id 
+          and a.rel_type={{oio_type}}_relation_navn 
+    ;
+  END LOOP;
+
+  /**********************/
+  -- 0..n relations
+
+  --The question regarding how the api-consumer is to specify the deletion of 0..n relation already registered is not answered.
+  --The following options presents itself:
+  --a) In this special case, the api-consumer has to specify the full set of the 0..n relation, when updating 
+  -- ref: ("Hvis indholdet i en liste af elementer rettes, skal hele den nye liste af elementer med i ObjektRet - p27 "Generelle egenskaber for serviceinterfaces på sags- og dokumentområdet")
+
+  --Assuming option 'a' above is selected, we only have to check if there are any of the relations with the given name present in the new registration, otherwise copy the ones from the previous registration
+
+
+  FOREACH {{oio_type}}_relation_navn in array ARRAY[{%-for relkode in relationer_nul_til_mange  %}'{{relkode}}'::{{oio_type|title}}RelationKode{% if not loop.last%},{% endif %}{% endfor %}]
+  LOOP
+
+    IF NOT EXISTS  (SELECT 1 FROM {{oio_type}}_relation WHERE {{oio_type}}_registrering_id=new_{{oio_type}}_registrering.id and rel_type={{oio_type}}_relation_navn) THEN
+
+      INSERT INTO {{oio_type}}_relation (
+            {{oio_type}}_registrering_id,
+              virkning,
+                rel_maal,
+                  rel_type
+          )
+      SELECT 
+            new_{{oio_type}}_registrering.id,
+              virkning,
+                rel_maal,
+                  rel_type
+      FROM {{oio_type}}_relation
+      WHERE {{oio_type}}_registrering_id=prev_{{oio_type}}_registrering.id 
+      and rel_type={{oio_type}}_relation_navn 
+      ;
+
+    END IF;
+              
+  END LOOP;
+
+END IF;
 /**********************/
 -- handle tilstande (states)
 
 {%- for tilstand, tilstand_values in tilstande.iteritems() %}
 
---1) Insert tilstande/states given as part of this update
---2) Insert tilstande/states of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
+IF tils{{tilstand|title}} IS NOT NULL AND coalesce(array_length(tils{{tilstand|title}},1),0)=0 THEN
+--raise debug 'Skipping [{{tilstand|title}}] as it is explicit set to empty array';
+ELSE
+  --1) Insert tilstande/states given as part of this update
+  --2) Insert tilstande/states of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
 
-/********************************************/
---{{oio_type}}_tils_{{tilstand}}
-/********************************************/
+  /********************************************/
+  --{{oio_type}}_tils_{{tilstand}}
+  /********************************************/
 
---Ad 1)
+  --Ad 1)
 
-INSERT INTO {{oio_type}}_tils_{{tilstand}} (
-        virkning,
-          {{tilstand}},
-            {{oio_type}}_registrering_id
-) 
-SELECT
-        a.virkning,
-          a.{{tilstand}},
-            new_{{oio_type}}_registrering.id
-FROM
-unnest(tils{{tilstand|title}}) as a
-;
- 
+  INSERT INTO {{oio_type}}_tils_{{tilstand}} (
+          virkning,
+            {{tilstand}},
+              {{oio_type}}_registrering_id
+  ) 
+  SELECT
+          a.virkning,
+            a.{{tilstand}},
+              new_{{oio_type}}_registrering.id
+  FROM
+  unnest(tils{{tilstand|title}}) as a
+  ;
+   
 
---Ad 2
+  --Ad 2
 
-INSERT INTO {{oio_type}}_tils_{{tilstand}} (
-        virkning,
-          {{tilstand}},
-            {{oio_type}}_registrering_id
-)
-SELECT 
-        ROW(
-          c.tz_range_leftover,
-            (a.virkning).AktoerRef,
-            (a.virkning).AktoerTypeKode,
-            (a.virkning).NoteTekst
-        ) :: virkning,
-          a.{{tilstand}},
-            new_{{oio_type}}_registrering.id
-FROM
-(
- --build an array of the timeperiod of the virkning of the {{oio_type}}_tils_{{tilstand}} of the new registrering to pass to _subtract_tstzrange_arr on the {{oio_type}}_tils_{{tilstand}} of the previous registrering 
-    SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
-    FROM {{oio_type}}_tils_{{tilstand}} b
-    WHERE 
-          b.{{oio_type}}_registrering_id=new_{{oio_type}}_registrering.id
-) d
-  JOIN {{oio_type}}_tils_{{tilstand}} a ON true  
-  JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
-  WHERE a.{{oio_type}}_registrering_id=prev_{{oio_type}}_registrering.id     
-;
+  INSERT INTO {{oio_type}}_tils_{{tilstand}} (
+          virkning,
+            {{tilstand}},
+              {{oio_type}}_registrering_id
+  )
+  SELECT 
+          ROW(
+            c.tz_range_leftover,
+              (a.virkning).AktoerRef,
+              (a.virkning).AktoerTypeKode,
+              (a.virkning).NoteTekst
+          ) :: virkning,
+            a.{{tilstand}},
+              new_{{oio_type}}_registrering.id
+  FROM
+  (
+   --build an array of the timeperiod of the virkning of the {{oio_type}}_tils_{{tilstand}} of the new registrering to pass to _subtract_tstzrange_arr on the {{oio_type}}_tils_{{tilstand}} of the previous registrering 
+      SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
+      FROM {{oio_type}}_tils_{{tilstand}} b
+      WHERE 
+            b.{{oio_type}}_registrering_id=new_{{oio_type}}_registrering.id
+  ) d
+    JOIN {{oio_type}}_tils_{{tilstand}} a ON true  
+    JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
+    WHERE a.{{oio_type}}_registrering_id=prev_{{oio_type}}_registrering.id     
+  ;
+
+END IF;
 
 {% endfor %}
 /**********************/
@@ -310,6 +324,11 @@ IF attr{{attribut|title}} IS NOT null THEN
   END LOOP;
 END IF;
 
+
+IF attr{{attribut|title}} IS NOT NULL AND coalesce(array_length(attr{{attribut|title}},1),0)=0 THEN
+--raise debug 'Skipping handling of {{attribut}} of previous registration as an empty array was explicit given.';  
+ELSE 
+
 --Handle {{attribut}} of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
 
 INSERT INTO {{oio_type}}_attr_{{attribut}} (
@@ -341,6 +360,8 @@ FROM
   WHERE a.{{oio_type}}_registrering_id=prev_{{oio_type}}_registrering.id     
 ;
 
+END IF;
+
 {%- endfor %}
 
 
@@ -350,19 +371,12 @@ FROM
 read_new_{{oio_type}}:=as_read_{{oio_type}}({{oio_type}}_uuid, (new_{{oio_type}}_registrering.registrering).timeperiod,null);
 read_prev_{{oio_type}}:=as_read_{{oio_type}}({{oio_type}}_uuid, (prev_{{oio_type}}_registrering.registrering).timeperiod ,null);
  
- /*
-read_new_{{oio_type}}_reg {{oio_type}}RegistreringType;
-read_prev_{{oio_type}}_reg {{oio_type}}RegistreringType;
-*/
-
 --the ordering in as_list (called by as_read) ensures that the latest registration is returned at index pos 1
 
-/*
---TODO
-IF NOT (read_new_{{oio_type}}.registrering[1].registrering=new_{{oio_type}}_registrering AND read_prev_{{oio_type}}.registrering[1].registrering=prev_{{oio_type}}_registrering) THEN
-  RAISE EXCEPTION 'Error updating {{oio_type}} with id [%]: The ordering of as_list_{{oio_type}} should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].  ',{{oio_type}}_uuid,to_json(new_{{oio_type}}_registrering),to_json(read_new_{{oio_type}}.registrering[1].registrering),to_json(prev_{{oio_type}}_registrering),to_json(prev_new_{{oio_type}}.registrering[1].registrering);
+IF NOT (lower((read_new_{{oio_type}}.registrering[1].registrering).TimePeriod)=lower((new_{{oio_type}}_registrering.registrering).TimePeriod) AND lower((read_prev_{{oio_type}}.registrering[1].registrering).TimePeriod)=lower((prev_{{oio_type}}_registrering.registrering).TimePeriod)) THEN
+  RAISE EXCEPTION 'Error updating {{oio_type}} with id [%]: The ordering of as_list_{{oio_type}} should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].',{{oio_type}}_uuid,to_json(new_{{oio_type}}_registrering),to_json(read_new_{{oio_type}}.registrering[1].registrering),to_json(prev_{{oio_type}}_registrering),to_json(prev_new_{{oio_type}}.registrering[1].registrering);
 END IF;
- */
+ 
  --we'll ignore the registreringBase part in the comparrison - except for the livcykluskode
 
 read_new_{{oio_type}}_reg:=ROW(
