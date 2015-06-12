@@ -20,9 +20,9 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr {{oio_type|title}}{{t
  IF inputArr IS NOT NULL THEN
     FOREACH element IN ARRAY  inputArr
     LOOP
-      IF element IS NULL THEN
+      IF element IS NULL OR (( element.{{tilstand}} IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
      -- RAISE DEBUG 'Skipping element';
-      ELSE
+      ELSE 
       result:=array_append(result,element);
       END IF;
     END LOOP;
@@ -51,7 +51,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr {{oio_type|title}}{{a
   IF inputArr IS NOT NULL THEN
     FOREACH element IN ARRAY  inputArr
     LOOP
-      IF element IS NULL THEN
+      IF element IS NULL OR (( element.{{attribut_fields|join(' IS NULL AND element.')}} IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
     --  RAISE DEBUG 'Skipping element';
       ELSE
       result:=array_append(result,element);
@@ -81,7 +81,7 @@ $$
    IF inputArr IS NOT NULL THEN
     FOREACH element IN ARRAY  inputArr
     LOOP
-      IF element IS NULL THEN
+      IF element IS NULL OR ( element.relType IS NULL AND element.relMaal IS NULL AND element.virkning IS NULL  ) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
       --RAISE DEBUG 'Skipping element';
       ELSE
       result:=array_append(result,element);
@@ -100,3 +100,4 @@ $$
 
 {% endblock %}
 
+ 

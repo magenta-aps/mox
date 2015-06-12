@@ -428,7 +428,7 @@ expected_Klasse1 :=
 RETURN NEXT is(
 read_Klasse1,
 expected_Klasse1,
-'simple search test 1'
+'simple read klasse test 1'
 );
 
 
@@ -458,7 +458,7 @@ expected_Klasse2 :=
 							klasseEgenskabC.titel,
 							klasseEgenskabC.retskilde,
 							klasseEgenskabC.aendringsnotat,
-							NULL, --notice: empty array for soegeord get read as null
+							null, --array[]::KlasseSoegeordType[], empty array is read as null
  							klasseEgenskabC.virkning 
 							)::KlasseEgenskaberAttrType
 							]::KlasseEgenskaberAttrType[]
@@ -474,7 +474,7 @@ expected_Klasse2 :=
 RETURN NEXT is(
 read_Klasse2,
 expected_Klasse2,
-'simple search test 3'
+'simple read klasse test 2'
 );
 
 

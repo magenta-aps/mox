@@ -35,10 +35,10 @@ DECLARE
 	klasseRelAnsvarlig KlasseRelationType;
 	klasseRelRedaktoer1 KlasseRelationType;
 	klasseRelRedaktoer2 KlasseRelationType;
-	uuidAnsvarlig uuid :=uuid_generate_v4();
-	uuidRedaktoer1 uuid :=uuid_generate_v4();
-	uuidRedaktoer2 uuid :=uuid_generate_v4();
-	uuidRegistrering uuid :=uuid_generate_v4();
+	uuidAnsvarlig uuid :='ee2616de-91b3-4f7d-8c2d-7e592dbba494'::uuid;
+	uuidRedaktoer1 uuid :='de08d17d-8b4c-4d7c-a369-ef8a9e4ac32f'::uuid;
+	uuidRedaktoer2 uuid :='daac7580-3073-429d-a0a7-f5eabf0c35d8'::uuid;
+	uuidRegistrering uuid :='0cc293df-fa20-414d-8403-d2a95656d93f'::uuid;
 	update_reg_id bigint;
 	actual_relationer KlasseRelationType[];
 	actual_publiceret KlassePubliceretTilsType[];
@@ -69,12 +69,12 @@ DECLARE
 	expected_exception_txt2 text;
 	--tempResSoegeord KlasseSoegeordTypeWID[];
 	--tempResEgenskaberAttr KlasseEgenskaberAttrTypeWID[];
-	extraUuid uuid:=uuid_generate_v4();
+	extraUuid uuid:='0e0c250c-8f00-4f8d-850e-5abf8e62012e'::uuid;
 BEGIN
 
 --------------------------------------------------------------------
 
-sqlStr2:='SELECT as_update_klasse(''' || extraUuid ||'''::uuid,uuid_generate_v4(), ''Test update''::text,''Rettet''::Livscykluskode,null,null,null,''-infinity''::TIMESTAMPTZ)';
+sqlStr2:='SELECT as_update_klasse(''' || extraUuid ||'''::uuid,''2ac63602-6c0a-4531-8a09-ab7633f6dacd''::uuid, ''Test update''::text,''Rettet''::Livscykluskode,null,null,null,''-infinity''::TIMESTAMPTZ)';
 expected_exception_txt2:='Unable to update klasse with uuid ['|| extraUuid ||'], being unable to any previous registrations.';
 
 --raise notice 'debug:sqlStr2:%',sqlStr2;
@@ -86,7 +86,7 @@ RETURN NEXT throws_ok(sqlStr2,expected_exception_txt2);
 
 virkEgenskaber :=	ROW (
 	'[2015-05-12, infinity)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          '930d5f6f-221d-43d4-af08-b96c9b3821af'::uuid,
           'Bruger',
           'NoteEx1'
           ) :: Virkning
@@ -94,7 +94,7 @@ virkEgenskaber :=	ROW (
 
 virkEgenskaberB :=	ROW (
 	'[2014-05-13, 2015-01-01)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          'cbe8142b-bafc-4aaf-89b6-4e90b9e08907'::uuid,
           'Bruger',
           'NoteEx7'
           ) :: Virkning
@@ -103,7 +103,7 @@ virkEgenskaberB :=	ROW (
 
 virkAnsvarlig :=	ROW (
 	'[2015-05-11, infinity)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          'b0ba2a98-2c2e-4628-b030-e39e25c8166a'::uuid,
           'Bruger',
           'NoteEx2'
           ) :: Virkning
@@ -111,7 +111,7 @@ virkAnsvarlig :=	ROW (
 
 virkRedaktoer1 :=	ROW (
 	'[2015-05-10, infinity)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          '65e2fc1f-268f-4c40-bec8-1ba6da4efb1e'::uuid,
           'Bruger',
           'NoteEx3'
           ) :: Virkning
@@ -120,7 +120,7 @@ virkRedaktoer1 :=	ROW (
 
 virkRedaktoer2 :=	ROW (
 	'[2015-05-10, 2016-05-10)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          '6cf27f28-8c4a-4fc6-bb6a-6b05322ed67a'::uuid,
           'Bruger',
           'NoteEx4'
           ) :: Virkning
@@ -129,7 +129,7 @@ virkRedaktoer2 :=	ROW (
 
 virkPubliceret:=	ROW (
 	'[2015-05-01, infinity)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          '5df2b2c0-c75b-4e33-aa76-9be94cfcf13c'::uuid,
           'Bruger',
           'NoteEx8'
           ) :: Virkning
@@ -137,7 +137,7 @@ virkPubliceret:=	ROW (
 
 virkPubliceretB:=	ROW (
 	'[2014-05-13, 2015-05-01)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          '2d0d23ea-cf5a-41b9-82e1-219b06c17d9f'::uuid,
           'Bruger',
           'NoteEx9'
           ) :: Virkning
@@ -307,7 +307,7 @@ klasse_read2:=as_read_Klasse(new_uuid,null,null);
 
 virkEgenskaberC :=	ROW (
 	'[2015-01-13, infinity)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          '7f7405f8-f56c-430c-8ff0-b8c648d1d9f5'::uuid,
           'Bruger',
           'NoteEx20'
           ) :: Virkning
@@ -315,7 +315,7 @@ virkEgenskaberC :=	ROW (
 
 virkEgenskaberD :=	ROW (
 	'[2013-06-30, 2014-06-01)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          '880e7705-205a-4457-926b-1289632826e1'::uuid,
           'Bruger',
           'NoteEx7'
           ) :: Virkning
@@ -323,7 +323,7 @@ virkEgenskaberD :=	ROW (
 
 virkEgenskaberE:=	ROW (
 	'[2014-08-01, 2014-10-20)' :: TSTZRANGE,
-          uuid_generate_v4(),
+          '28f44306-e157-426d-9a1a-2e536ef5a369'::uuid,
           'Bruger',
           'NoteEx20'
           ) :: Virkning
@@ -370,7 +370,7 @@ klasseEgenskabE := ROW (
 
 virkPubliceretC:=	ROW (
 	'[2015-01-01, 2015-05-01]' :: TSTZRANGE,
-          uuid_generate_v4(),
+          'cb011ad8-7cf3-406e-a351-faede8d740d4'::uuid,
           'Bruger',
           'NoteEx10'
           ) :: Virkning
@@ -387,7 +387,7 @@ virkPubliceretC,
 
 
 update_reg_id:=as_update_klasse(
-  new_uuid, uuid_generate_v4(),'Test update'::text,
+  new_uuid, '8762a443-2f60-49c1-bd8e-ecfdef91d48a'::uuid,'Test update'::text,
   'Rettet'::Livscykluskode,          
   array[klasseEgenskabC,klasseEgenskabD,klasseEgenskabE]::KlasseEgenskaberAttrType[],
   array[klassePubliceretC]::KlassePubliceretTilsType[],
@@ -655,7 +655,8 @@ klasse_read1:=as_read_Klasse(new_uuid,
 	null, --registrering_tstzrange
 	null --virkning_tstzrange
 	);
-sqlStr1:='SELECT as_update_klasse(''' || new_uuid || '''::uuid,uuid_generate_v4(), ''Test update''::text,''Rettet''::Livscykluskode,null,null,null,''-infinity''::TIMESTAMPTZ)';
+sqlStr1:='SELECT as_update_klasse(''' || new_uuid || '''::uuid,''b0b79809-b225-4b93-80c7-d18372e7ce18''::uuid, ''Test update''::text,''Rettet''::Livscykluskode,null,null,null,''-infinity''::TIMESTAMPTZ)';
+
 expected_exception_txt1:='Unable to update klasse with uuid [' || new_uuid || '], as the klasse seems to have been updated since latest read by client (the given lostUpdatePreventionTZ [-infinity] does not match the timesamp of latest registration [' || lower(((klasse_read1.registrering[1]).registrering).TimePeriod) || ']).';
 
 --raise notice 'debug:sqlStr1:%',sqlStr1;
@@ -666,7 +667,7 @@ RETURN NEXT throws_ok(sqlStr1,expected_exception_txt1);
 BEGIN
 
 	update_reg_id:=as_update_klasse(
-	  new_uuid, uuid_generate_v4(),'Test update'::text,
+	  new_uuid, '8af07c7a-d8f0-439f-af3d-0dbb8b25652f'::uuid,'Test update'::text,
 	  'Rettet'::Livscykluskode,          
 	  array[klasseEgenskabC,klasseEgenskabD,klasseEgenskabE]::KlasseEgenskaberAttrType[],
 	  array[klassePubliceretC]::KlassePubliceretTilsType[],
@@ -685,7 +686,7 @@ END;
 --------------------------------------------------------------------
 
 update_reg_id:=as_update_klasse(
-	  new_uuid, uuid_generate_v4(),'Test update'::text,
+	  new_uuid, 'dc5b848d-da66-45ff-895e-37ea12c7ff5c'::uuid,'Test update'::text,
 	  'Passiveret'::Livscykluskode,          
 	  array[klasseEgenskabC,klasseEgenskabD,klasseEgenskabE]::KlasseEgenskaberAttrType[],
 	  array[klassePubliceretC]::KlassePubliceretTilsType[],
@@ -705,7 +706,7 @@ klasse_read3:=as_read_Klasse(new_uuid,
 BEGIN
 
 update_reg_id:=as_update_klasse(
-	  new_uuid, uuid_generate_v4(),'Test update'::text,
+	  new_uuid, '7518d4d2-5523-47cc-9a15-f5f5db072bc3'::uuid,'Test update'::text,
 	  'Opstaaet'::Livscykluskode,          
 	  array[klasseEgenskabC,klasseEgenskabD,klasseEgenskabE]::KlasseEgenskaberAttrType[],
 	  array[klassePubliceretC]::KlassePubliceretTilsType[],
@@ -723,7 +724,7 @@ END;
 
 --bring livscykluscode back to 'Rettet'
 update_reg_id:=as_update_klasse(
-	  new_uuid, uuid_generate_v4(),'Test update'::text,
+	  new_uuid, '1847ccbc-de05-401f-a7a8-736a4bc8e301'::uuid,'Test update'::text,
 	  'Rettet'::Livscykluskode,          
 	  array[klasseEgenskabC,klasseEgenskabD,klasseEgenskabE]::KlasseEgenskaberAttrType[],
 	  array[klassePubliceretC]::KlassePubliceretTilsType[],
@@ -741,7 +742,7 @@ klasse_read4:=as_read_Klasse(new_uuid,
 --Test clearing egenskaber
 
 update_reg_id:=as_update_klasse(
-	  new_uuid, uuid_generate_v4(),'Test update'::text,
+	  new_uuid, 'cd7473d3-5ffd-4971-81cb-90b91dfe17fb'::uuid,'Test update'::text,
 	  'Rettet'::Livscykluskode,          
 	  array[]::KlasseEgenskaberAttrType[],--klasse_read4.registrering[1].attrEgenskaber,
 	  klasse_read4.registrering[1].tilsPubliceret,

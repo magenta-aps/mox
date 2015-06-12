@@ -23,9 +23,9 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr KlassePubliceretTilsT
  IF inputArr IS NOT NULL THEN
     FOREACH element IN ARRAY  inputArr
     LOOP
-      IF element IS NULL THEN
+      IF element IS NULL OR (( element.publiceret IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
      -- RAISE DEBUG 'Skipping element';
-      ELSE
+      ELSE 
       result:=array_append(result,element);
       END IF;
     END LOOP;
@@ -51,7 +51,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr KlasseEgenskaberAttrT
   IF inputArr IS NOT NULL THEN
     FOREACH element IN ARRAY  inputArr
     LOOP
-      IF element IS NULL THEN
+      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.beskrivelse IS NULL AND element.eksempel IS NULL AND element.omfang IS NULL AND element.titel IS NULL AND element.retskilde IS NULL AND element.aendringsnotat IS NULL ) AND element.virkning IS NULL AND element.soegeord IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
     --  RAISE DEBUG 'Skipping element';
       ELSE
       result:=array_append(result,element);
@@ -81,7 +81,7 @@ $$
    IF inputArr IS NOT NULL THEN
     FOREACH element IN ARRAY  inputArr
     LOOP
-      IF element IS NULL THEN
+      IF element IS NULL OR ( element.relType IS NULL AND element.relMaal IS NULL AND element.virkning IS NULL  ) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
       --RAISE DEBUG 'Skipping element';
       ELSE
       result:=array_append(result,element);
@@ -109,7 +109,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array_and_null_empty_array(inputArr 
  IF inputArr IS NOT NULL THEN
     FOREACH element IN ARRAY  inputArr
     LOOP
-      IF element IS NULL THEN
+      IF element IS NULL OR (element.soegeordidentifikator IS NULL AND element.beskrivelse IS NULL AND element.soegeordskategori IS NULL ) THEN
      -- RAISE DEBUG 'Skipping element';
       ELSE
       result:=array_append(result,element);
