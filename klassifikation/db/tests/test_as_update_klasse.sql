@@ -63,6 +63,12 @@ DECLARE
 	klasse_read3 KlasseType;
 	klasse_read4 KlasseType;
 	klasse_read5 KlasseType;
+	klasse_read6 KlasseType;
+	klasse_read7 KlasseType;
+	klasse_read8 KlasseType;
+	klasse_read9 KlasseType;
+	klasse_read10 KlasseType;
+
 	sqlStr1 text;
 	sqlStr2 text;
 	expected_exception_txt1 text;
@@ -739,15 +745,39 @@ klasse_read4:=as_read_Klasse(new_uuid,
 	);
 
 
+--Test null egenskaber array will not trigger update
+BEGIN
+
+update_reg_id:=as_update_klasse(
+	  new_uuid, 'cd7473d3-6ffd-4971-81cb-90b91dfe17fb'::uuid,'Test update'::text,
+	  'Rettet'::Livscykluskode,          
+	  null,--klasse_read4.registrering[1].attrEgenskaber,
+	  klasse_read4.registrering[1].tilsPubliceret,
+	  klasse_read4.registrering[1].relationer
+	  ,lower(((klasse_read4.registrering[1]).registrering).TimePeriod)
+		);
+	
+		RETURN NEXT ok(false,'Test null egenskaber array will not trigger update#1');
+	EXCEPTION WHEN data_exception THEN
+		RETURN NEXT ok(true,'Test null egenskaber array will not trigger update #1');
+END;
+
+klasse_read6:=as_read_Klasse(new_uuid,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
+	);
+
+RETURN NEXT ok(((klasse_read4.registrering[1]).registrering).TimePeriod=((klasse_read6.registrering[1]).registrering).TimePeriod,'Test null egenskaber array will not trigger update #2');
+
 --Test clearing egenskaber
 
 update_reg_id:=as_update_klasse(
 	  new_uuid, 'cd7473d3-5ffd-4971-81cb-90b91dfe17fb'::uuid,'Test update'::text,
 	  'Rettet'::Livscykluskode,          
 	  array[]::KlasseEgenskaberAttrType[],--klasse_read4.registrering[1].attrEgenskaber,
-	  klasse_read4.registrering[1].tilsPubliceret,
-	  klasse_read4.registrering[1].relationer
-	  ,lower(((klasse_read4.registrering[1]).registrering).TimePeriod)
+	  klasse_read6.registrering[1].tilsPubliceret,
+	  klasse_read6.registrering[1].relationer
+	  ,lower(((klasse_read6.registrering[1]).registrering).TimePeriod)
 		);
 
 klasse_read5:=as_read_Klasse(new_uuid,
@@ -755,18 +785,69 @@ klasse_read5:=as_read_Klasse(new_uuid,
 	null --virkning_tstzrange
 	);
 
-RETURN NEXT ok(lower(((klasse_read5.registrering[1]).registrering).TimePeriod)<>lower(((klasse_read4.registrering[1]).registrering).TimePeriod),'Test if clearing egenskaber works.');
-RETURN NEXT ok( coalesce(array_length((klasse_read5.registrering[1]).attrEgenskaber,1),0)=0,'Test if clearing egenskaber works.');
+RETURN NEXT ok(lower(((klasse_read5.registrering[1]).registrering).TimePeriod)<>lower(((klasse_read4.registrering[1]).registrering).TimePeriod),'Test if clearing egenskaber works.#1');
+RETURN NEXT ok( coalesce(array_length((klasse_read5.registrering[1]).attrEgenskaber,1),0)=0,'Test if clearing egenskaber works.#2');
 
-raise notice 'klasse_read5:%',to_json(klasse_read5);
+-------------------------------------------
+
+--Test null tilstand publiceret array will not trigger update
+BEGIN
+
+update_reg_id:=as_update_klasse(
+	  new_uuid, 'cd7473d3-6ffd-4971-81cb-90b91dfe17fb'::uuid,'Test update'::text,
+	  'Rettet'::Livscykluskode,          
+	  klasse_read5.registrering[1].attrEgenskaber,
+	  null,--klasse_read4.registrering[1].tilsPubliceret,
+	  klasse_read5.registrering[1].relationer
+	  ,lower(((klasse_read5.registrering[1]).registrering).TimePeriod)
+		);
+	
+		RETURN NEXT ok(false,'Test null tilstand publiceret array will not trigger update #1');
+	EXCEPTION WHEN data_exception THEN
+		RETURN NEXT ok(true,'Test null tilstand publiceret array will not trigger update #1');
+END;
 
 
---TODO: Test if nulling a value is enough to trigger update
+klasse_read7:=as_read_Klasse(new_uuid,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
+	);
+
+RETURN NEXT ok(((klasse_read7.registrering[1]).registrering).TimePeriod=((klasse_read5.registrering[1]).registrering).TimePeriod,'Test null tilstand publiceret array will not trigger update #2');
+
+
+--Test clearing tilstand publiceret
+raise notice 'debug klasse_read7:%',to_json(klasse_read7);
+RETURN NEXT ok( coalesce(array_length((klasse_read7.registrering[1]).tilsPubliceret,1),0)=3,'Test if clearing tilstand publiceret  works.#0');
+
+update_reg_id:=as_update_klasse(
+	  new_uuid, 'cd7473d3-6ffd-4971-81cb-90b91dfe17fb'::uuid,'Test update'::text,
+	  'Rettet'::Livscykluskode,          
+	  klasse_read7.registrering[1].attrEgenskaber,
+	  array[]::KlassePubliceretTilsType[],--klasse_read4.registrering[1].tilsPubliceret,
+	  klasse_read7.registrering[1].relationer
+	  ,lower(((klasse_read7.registrering[1]).registrering).TimePeriod)
+		);
+
+klasse_read8:=as_read_Klasse(new_uuid,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
+	);
+
+
+RETURN NEXT ok(((klasse_read7.registrering[1]).registrering).TimePeriod<>((klasse_read8.registrering[1]).registrering).TimePeriod,'Test if clearing tilstand publiceret works.#1');
+RETURN NEXT ok( coalesce(array_length((klasse_read8.registrering[1]).tilsPubliceret,1),0)=0,'Test if clearing tilstand publiceret  works.#2');
+
+
+
+
+
+
 
 
 /*
 BEGIN
---Test if null values are matched (and update is not triggered)
+
 update_reg_id:=as_update_klasse(
 	  new_uuid, uuid_generate_v4(),'Test update'::text,
 	  'Rettet'::Livscykluskode,          
@@ -793,6 +874,8 @@ RETURN NEXT ok(false,'test as_update_klasse - Test if null values are matched (a
 	EXCEPTION WHEN data_exception THEN
 			RETURN NEXT ok(true,'test as_update_klasse - Test if null values are matched (and update is not triggered).'); 
 
+
+--TODO: Test if nulling a value is enough to trigger update
 
 END;
 */
