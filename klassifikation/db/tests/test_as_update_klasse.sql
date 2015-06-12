@@ -68,6 +68,7 @@ DECLARE
 	klasse_read8 KlasseType;
 	klasse_read9 KlasseType;
 	klasse_read10 KlasseType;
+	klasse_read11 KlasseType;
 
 	sqlStr1 text;
 	sqlStr2 text;
@@ -817,7 +818,7 @@ RETURN NEXT ok(((klasse_read7.registrering[1]).registrering).TimePeriod=((klasse
 
 
 --Test clearing tilstand publiceret
-raise notice 'debug klasse_read7:%',to_json(klasse_read7);
+--raise notice 'debug klasse_read7:%',to_json(klasse_read7);
 RETURN NEXT ok( coalesce(array_length((klasse_read7.registrering[1]).tilsPubliceret,1),0)=3,'Test if clearing tilstand publiceret  works.#0');
 
 update_reg_id:=as_update_klasse(
@@ -838,7 +839,74 @@ klasse_read8:=as_read_Klasse(new_uuid,
 RETURN NEXT ok(((klasse_read7.registrering[1]).registrering).TimePeriod<>((klasse_read8.registrering[1]).registrering).TimePeriod,'Test if clearing tilstand publiceret works.#1');
 RETURN NEXT ok( coalesce(array_length((klasse_read8.registrering[1]).tilsPubliceret,1),0)=0,'Test if clearing tilstand publiceret  works.#2');
 
+-------------------------------------------
 
+--restore "some" tilstande
+update_reg_id:=as_update_klasse(
+	  new_uuid, '1847ccbc-de05-401f-a7a8-736a4bc8e301'::uuid,'Test update'::text,
+	  'Rettet'::Livscykluskode,          
+	  array[klasseEgenskabC,klasseEgenskabD,klasseEgenskabE]::KlasseEgenskaberAttrType[],
+	  array[klassePubliceretC]::KlassePubliceretTilsType[],
+	  array[klasseRelAnsvarlig]::KlasseRelationType[]
+	  ,lower(((klasse_read8.registrering[1]).registrering).TimePeriod)
+		);
+
+
+klasse_read9:=as_read_Klasse(new_uuid,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
+	);
+
+
+-------------------------------------------
+
+--Test null relationer array will not trigger update
+BEGIN
+
+update_reg_id:=as_update_klasse(
+	  new_uuid, 'cd7473d3-6ffd-4971-81cb-90b91dfe17fb'::uuid,'Test update'::text,
+	  'Rettet'::Livscykluskode,          
+	  klasse_read9.registrering[1].attrEgenskaber,
+	  klasse_read9.registrering[1].tilsPubliceret,
+	  null--klasse_read8.registrering[1].relationer
+	  ,lower(((klasse_read9.registrering[1]).registrering).TimePeriod)
+		);
+	
+		RETURN NEXT ok(false,'Test null relationer array will not trigger update #1');
+	EXCEPTION WHEN data_exception THEN
+		RETURN NEXT ok(true,'Test null relationer array will not trigger update #1');
+END;
+
+
+klasse_read10:=as_read_Klasse(new_uuid,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
+	);
+
+RETURN NEXT ok(((klasse_read10.registrering[1]).registrering).TimePeriod=((klasse_read9.registrering[1]).registrering).TimePeriod,'Test null relationer array will not trigger update #2');
+
+
+--Test clearing relationer
+--raise notice 'debug klasse_read10:%',to_json(klasse_read10);
+RETURN NEXT ok( coalesce(array_length((klasse_read10.registrering[1]).relationer,1),0)=3,'Test if clearing relationer  works.#0');
+
+update_reg_id:=as_update_klasse(
+	  new_uuid, 'cd7473d3-6ffd-4971-81cb-90b91dfe17fb'::uuid,'Test update 25'::text,
+	  'Rettet'::Livscykluskode,          
+	  klasse_read10.registrering[1].attrEgenskaber,
+	  klasse_read10.registrering[1].tilsPubliceret,
+	  array[]::KlasseRelationType[] --klasse_read10.registrering[1].relationer
+	  ,lower(((klasse_read10.registrering[1]).registrering).TimePeriod)
+		);
+
+klasse_read11:=as_read_Klasse(new_uuid,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
+	);
+
+
+RETURN NEXT ok(((klasse_read10.registrering[1]).registrering).TimePeriod<>((klasse_read11.registrering[1]).registrering).TimePeriod,'Test if clearing relationer works.#1');
+RETURN NEXT ok( coalesce(array_length((klasse_read11.registrering[1]).relationer,1),0)=0,'Test if clearing relationer  works.#2');
 
 
 

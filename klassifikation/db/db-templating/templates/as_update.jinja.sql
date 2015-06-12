@@ -62,7 +62,7 @@ END IF;
 --handle relationer (relations)
 
 IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
---raise debug 'Skipping relations, as it is explicit set to empty array';
+--raise notice 'Skipping relations, as it is explicit set to empty array. Update note [%]',note;
 ELSE
 
   --1) Insert relations given as part of this update
@@ -385,7 +385,7 @@ ROW(null,(read_new_{{oio_type}}.registrering[1].registrering).livscykluskode,nul
 (read_new_{{oio_type}}.registrering[1]).tils{{tilstand|title}} ,{% endfor %}
 {%-for attribut , attribut_fields in attributter.iteritems() %}
 (read_new_{{oio_type}}.registrering[1]).attr{{attribut|title}} ,{% endfor %}
-relationer 
+(read_new_{{oio_type}}.registrering[1]).relationer 
 )::{{oio_type}}RegistreringType
 ;
 
@@ -395,12 +395,14 @@ ROW(null,(read_prev_{{oio_type}}.registrering[1].registrering).livscykluskode,nu
 (read_prev_{{oio_type}}.registrering[1]).tils{{tilstand|title}} ,{% endfor %}
 {%-for attribut , attribut_fields in attributter.iteritems() %}
 (read_prev_{{oio_type}}.registrering[1]).attr{{attribut|title}} ,{% endfor %}
-relationer 
+(read_prev_{{oio_type}}.registrering[1]).relationer 
 )::{{oio_type}}RegistreringType
 ;
 
 
 IF read_prev_{{oio_type}}_reg=read_new_{{oio_type}}_reg THEN
+  --RAISE NOTICE 'Note[%]. Aborted reg:%',note,to_json(read_new_{{oio_type}}_reg);
+  --RAISE NOTICE 'Note[%]. Previous reg:%',note,to_json(read_prev_{{oio_type}}_reg);
   RAISE EXCEPTION 'Aborted updating {{oio_type}} with id [%] as the given data, does not give raise to a new registration. Aborted reg:[%], previous reg:[%]',{{oio_type}}_uuid,to_json(read_new_{{oio_type}}_reg),to_json(read_prev_{{oio_type}}_reg) USING ERRCODE = 22000;
 END IF;
 
