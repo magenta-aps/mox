@@ -69,6 +69,10 @@ DECLARE
 	klasse_read9 KlasseType;
 	klasse_read10 KlasseType;
 	klasse_read11 KlasseType;
+	klasse_read12 KlasseType;
+	klasse_read13 KlasseType;
+	klasse_read14 KlasseType;
+	klasse_read15 KlasseType;
 
 	sqlStr1 text;
 	sqlStr2 text;
@@ -891,7 +895,7 @@ RETURN NEXT ok(((klasse_read10.registrering[1]).registrering).TimePeriod=((klass
 RETURN NEXT ok( coalesce(array_length((klasse_read10.registrering[1]).relationer,1),0)=3,'Test if clearing relationer  works.#0');
 
 update_reg_id:=as_update_klasse(
-	  new_uuid, 'cd7473d3-6ffd-4971-81cb-90b91dfe17fb'::uuid,'Test update 25'::text,
+	  new_uuid, 'cd7473d3-6ffd-4971-81cb-90b91dfe17fb'::uuid,'Test if clearing relationer works'::text,
 	  'Rettet'::Livscykluskode,          
 	  klasse_read10.registrering[1].attrEgenskaber,
 	  klasse_read10.registrering[1].tilsPubliceret,
@@ -908,12 +912,25 @@ klasse_read11:=as_read_Klasse(new_uuid,
 RETURN NEXT ok(((klasse_read10.registrering[1]).registrering).TimePeriod<>((klasse_read11.registrering[1]).registrering).TimePeriod,'Test if clearing relationer works.#1');
 RETURN NEXT ok( coalesce(array_length((klasse_read11.registrering[1]).relationer,1),0)=0,'Test if clearing relationer  works.#2');
 
+-----------------------------------
+--restore "a" relation
+update_reg_id:=as_update_klasse(
+	  new_uuid, '1847ccbc-de05-401f-a7a8-736a4bc8e301'::uuid,'Restore relation'::text,
+	  'Rettet'::Livscykluskode,          
+	  array[klasseEgenskabC,klasseEgenskabD,klasseEgenskabE]::KlasseEgenskaberAttrType[],
+	  array[klassePubliceretC]::KlassePubliceretTilsType[],
+	  array[klasseRelAnsvarlig]::KlasseRelationType[]
+	  ,lower(((klasse_read11.registrering[1]).registrering).TimePeriod)
+		);
+klasse_read12:=as_read_Klasse(new_uuid,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
+	);
 
 
+-----------------------------------
+--test that nulling a single field will not trigger an update
 
-
-
-/*
 BEGIN
 
 update_reg_id:=as_update_klasse(
@@ -924,7 +941,7 @@ update_reg_id:=as_update_klasse(
 		   NULL,--'brugervendt_noegle_text1',
 		   NULL, --'klassebeskrivelse_text1',
 		   NULL,--'eksempel_text1',
-		   NULL, --	'omfang_C',
+		   NULL, --NOTICE!!	'omfang_C', 
 		   'titel_C',
 		   'retskilde_C',
 		   'aendringsnotat_C',
@@ -934,22 +951,97 @@ update_reg_id:=as_update_klasse(
 	  ,klasseEgenskabD,klasseEgenskabE]::KlasseEgenskaberAttrType[],
 	  array[klassePubliceretC]::KlassePubliceretTilsType[],
 	  array[klasseRelAnsvarlig]::KlasseRelationType[]
-	  ,lower(((klasse_read5.registrering[1]).registrering).TimePeriod)
+	  ,lower(((klasse_read12.registrering[1]).registrering).TimePeriod)
 		);
 
-RETURN NEXT ok(false,'test as_update_klasse - Test if null values are matched (and update is not triggered)'); 
+RETURN NEXT ok(false,'test as_update_klasse - Test that nulling a single attr egenskab field will not trigger an update #1'); 
 
 	EXCEPTION WHEN data_exception THEN
-			RETURN NEXT ok(true,'test as_update_klasse - Test if null values are matched (and update is not triggered).'); 
-
+			RETURN NEXT ok(true,'test as_update_klasse - Test that nulling a single attr egenskab field will not trigger an update #1.'); 
 
 --TODO: Test if nulling a value is enough to trigger update
 
+klasse_read13:=as_read_Klasse(new_uuid,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
+	);
+
+
+RETURN NEXT ok(((klasse_read13.registrering[1]).registrering).TimePeriod=((klasse_read12.registrering[1]).registrering).TimePeriod,'Test that nulling a single attr egenskab field will not trigger an update #2');
+
+
 END;
-*/
+
 --------------------------------------------------------------------
+--test that giving a previously null field a value will trigger an update
 
 
+update_reg_id:=as_update_klasse(
+	  new_uuid, uuid_generate_v4(),'Test update'::text,
+	  'Rettet'::Livscykluskode,          
+	  array[
+	  ROW(
+		   NULL,--'brugervendt_noegle_text1',
+		   NULL, --'klassebeskrivelse_text1',
+		   'eksempel_textC_new', --NOTICE--'eksempel_text1',
+		   'omfang_C', -- 'omfang_C', 
+		   'titel_C',
+		   'retskilde_C',
+		   'aendringsnotat_C',
+		   ARRAY[]::KlasseSoegeordType[], --soegeord
+		   virkEgenskaberC
+	  )::KlasseEgenskaberAttrType
+	  ,klasseEgenskabD,klasseEgenskabE]::KlasseEgenskaberAttrType[],
+	  array[klassePubliceretC]::KlassePubliceretTilsType[],
+	  array[klasseRelAnsvarlig]::KlasseRelationType[]
+	  ,lower(((klasse_read13.registrering[1]).registrering).TimePeriod)
+		);
+
+klasse_read14:=as_read_Klasse(new_uuid,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
+	);
+
+--raise notice 'debug klasse_read13:%',to_json(klasse_read13);
+--raise notice 'debug klasse_read14:%',to_json(klasse_read14);
+
+RETURN NEXT ok((klasse_read14.registrering[1]).attrEgenskaber[3].eksempel='eksempel_textC_new','Test that giving a previously null field a value will trigger an update');
+
+
+--------------------------------------------------------------------
+--test that giving field a blank will trigger an update
+
+
+update_reg_id:=as_update_klasse(
+	  new_uuid, uuid_generate_v4(),'Test update'::text,
+	  'Rettet'::Livscykluskode,          
+	  array[
+	  ROW(
+		   NULL,--'brugervendt_noegle_text1',
+		   NULL, --'klassebeskrivelse_text1',
+		   '', --NOTICE--'eksempel_text1',
+		   'omfang_C', -- 'omfang_C', 
+		   'titel_C',
+		   'retskilde_C',
+		   'aendringsnotat_C',
+		   ARRAY[]::KlasseSoegeordType[], --soegeord
+		   virkEgenskaberC
+	  )::KlasseEgenskaberAttrType
+	  ,klasseEgenskabD,klasseEgenskabE]::KlasseEgenskaberAttrType[],
+	  array[klassePubliceretC]::KlassePubliceretTilsType[],
+	  array[klasseRelAnsvarlig]::KlasseRelationType[]
+	  ,lower(((klasse_read14.registrering[1]).registrering).TimePeriod)
+		);
+
+klasse_read15:=as_read_Klasse(new_uuid,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
+	);
+
+--raise notice 'debug klasse_read13:%',to_json(klasse_read13);
+--raise notice 'debug klasse_read14:%',to_json(klasse_read14);
+
+RETURN NEXT ok((klasse_read15.registrering[1]).attrEgenskaber[3].eksempel='','Test that giving field a blank will trigger an update');
 
 
 
