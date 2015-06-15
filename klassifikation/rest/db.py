@@ -114,9 +114,13 @@ def sql_convert_registration(states, attributes, relations, class_name):
 
 def object_exists(class_name, uuid):
     """Check if an object with this class name and UUID exists already."""
-    # TODO: Implement this!
-    non_existing_uuids = ["5da36f77-f8d3-4bfd-b313-cc38e2d667fd"]
-    return uuid not in non_existing_uuids
+    sql = "select (%s IN (SELECT DISTINCT facet_id from facet_registrering))"
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(sql, (uuid,))
+    result = cursor.fetchone()[0]
+    
+    return result
 
 
 def create_or_import_object(class_name, note, attributes, states, relations,
@@ -149,7 +153,7 @@ def create_or_import_object(class_name, note, attributes, states, relations,
         states=sql_states,
         attributes=sql_attributes,
         relations=sql_relations)
-    # TODO: Call Postgres! Return OK or not accordingly
+    # Call Postgres! Return OK or not accordingly
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute(sql)
@@ -158,12 +162,15 @@ def create_or_import_object(class_name, note, attributes, states, relations,
     return output[0]
 
 
-def passivate_object(class_name, note, uuid):
-    """Passivate object by calling the stored procedure."""
+def delete_object(class_name, note, uuid):
+    """Delete object by using the stored procedure.
+    
+    Deleting is the same as updating with the life cycle code "Slettet".
+    """
 
     user_ref = get_authenticated_user()
-    life_cycle_code = Livscyklus.PASSIVERET.value
-    with open('templates/sql/passivate_object.sql', 'r') as f:
+    life_cycle_code = Livscyklus.SLETTET.value
+    with open('templates/sql/passivate_or_delete_object.sql', 'r') as f:
         sql_raw = f.read()
     sql_template = Template(sql_raw)
     sql = sql_template.render(
@@ -171,10 +178,38 @@ def passivate_object(class_name, note, uuid):
         uuid=uuid,
         life_cycle_code=life_cycle_code,
         user_ref=user_ref,
-        note=note)
-    # TODO: Call PostgreSQL
-    print sql
-    return sql
+        note=note
+    )
+    # Call Postgres! Return OK or not accordingly
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    output = cursor.fetchone()
+    print output
+    return output[0]
+
+def passivate_object(class_name, note, uuid):
+    """Passivate object by calling the stored procedure."""
+
+    user_ref = get_authenticated_user()
+    life_cycle_code = Livscyklus.PASSIVERET.value
+    with open('templates/sql/passivate_or_delete_object.sql', 'r') as f:
+        sql_raw = f.read()
+    sql_template = Template(sql_raw)
+    sql = sql_template.render(
+        class_name=class_name,
+        uuid=uuid,
+        life_cycle_code=life_cycle_code,
+        user_ref=user_ref,
+        note=note
+    )
+    # Call PostgreSQL
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    output = cursor.fetchone()
+    print output
+    return output[0]
 
 
 def update_object(class_name, note, attributes, states, relations, uuid=None):
@@ -199,9 +234,17 @@ def update_object(class_name, note, attributes, states, relations, uuid=None):
         states=sql_states,
         attributes=sql_attributes,
         relations=sql_relations)
-    # TODO: Call Postgres! Return OK or not accordingly
-    print sql
-    return sql
+    # Call PostgreSQL
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(sql)
+        output = cursor.fetchone()
+        print output
+    except psycopg2.DataError:
+        # Thrown when no changes
+        pass
+    return uuid
 
 
 def list_objects(class_name, uuid, virkning_fra, virkning_til,

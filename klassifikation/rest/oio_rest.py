@@ -41,8 +41,7 @@ class OIORestObject(object):
         relations = request.json.get("Relationer", {})
         uuid = db.create_or_import_object(cls.__name__, note, attributes,
                                           states, relations)
-        # TODO: Return properly, when this is implemented.
-        return jsonify({"uuid": uuid}), 201
+        return jsonify({'uuid': uuid}), 201
 
     @classmethod
     def get_objects(cls):
@@ -104,7 +103,7 @@ class OIORestObject(object):
             if (request.json.get('livscyklus', '').lower() == 'passiv'):
                 # Passivate
                 db.passivate_object(
-                        cls.__name__, request.json.get('Note', ''), uuid
+                        cls.__name__, note, uuid
                 )
                 return j(
                             u"Passiveret {0}: {1}".format(cls.__name__, uuid)
@@ -117,9 +116,14 @@ class OIORestObject(object):
         return j(u"Forkerte parametre!"), 405
 
     @classmethod
-    def delete_object(uuid):
-        # TODO: Delete facet
-        return j("Slettet!"), 200
+    def delete_object(cls, uuid):
+        # Delete facet
+        #import pdb; pdb.set_trace()
+        note = request.json.get("Note", "")
+        class_name = cls.__name__
+        result = db.delete_object(class_name, note, uuid)
+
+        return j("Slettet {0}: {1}".format(class_name, uuid)), 200
 
     @classmethod
     def create_api(cls, hierarchy, flask, base_url):
@@ -154,5 +158,5 @@ class OIORestObject(object):
 
         flask.add_url_rule(
             object_url, u'_'.join([cls.__name__, 'delete_object']),
-            cls.get_object, methods=['DELETE']
+            cls.delete_object, methods=['DELETE']
         )
