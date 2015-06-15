@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #Usage E.g: ./apply-template.py facet dbtyper-specific.jinja.sql
 
 import jinja2
