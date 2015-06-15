@@ -1052,6 +1052,74 @@ klasse_read15:=as_read_Klasse(new_uuid,
 RETURN NEXT ok((klasse_read15.registrering[1]).attrEgenskaber[3].eksempel='','Test that giving field a blank will trigger an update');
 
 
+--------------------------------------------------------------------
+
+
+
+virkEgenskaber :=	ROW (
+	'[2014-05-12, 2015-05-13]' :: TSTZRANGE,
+          '930d5f6f-221d-43d4-af08-b96c9b3821af'::uuid,
+          'Bruger',
+          'NoteEx1'
+          ) :: Virkning
+;
+
+virkEgenskaberB :=	ROW (
+	'[2015-05-13, infinity)' :: TSTZRANGE,
+          'cbe8142b-bafc-4aaf-89b6-4e90b9e08907'::uuid,
+          'Bruger',
+          'NoteEx7'
+          ) :: Virkning
+;
+
+
+klasseEgenskabA := ROW (
+'brugervendt_noegle_A',
+   'klassebeskrivelse_A',
+   'eksempel_A',
+	'omfang_A',
+   'titel_A',
+   'retskilde_A',
+   NULL,--'aendringsnotat_text1',
+   ARRAY[klasseEgenskabA_Soegeord1,klasseEgenskabA_Soegeord2]::KlasseSoegeordType[], 
+   virkEgenskaber
+) :: KlasseEgenskaberAttrType
+;
+
+
+klasseEgenskabB := ROW (
+'brugervendt_noegle_B',
+   'klassebeskrivelse_B',
+   'eksempel_B',
+	'omfang_B',
+   'titel_B',
+   'retskilde_B',
+   NULL, --aendringsnotat
+    ARRAY[klasseEgenskabB_Soegeord1,klasseEgenskabB_Soegeord2,klasseEgenskabB_Soegeord3,klasseEgenskabB_Soegeord4]::KlasseSoegeordType[], --soegeord
+   virkEgenskaberB
+) :: KlasseEgenskaberAttrType
+;
+
+
+BEGIN
+
+update_reg_id:=as_update_klasse(
+	  new_uuid, '7518d4d2-5523-47cc-9a15-f5f5db072bc3'::uuid,'Test update 89'::text,
+	  'Rettet'::Livscykluskode,          
+	  array[klasseEgenskabA,klasseEgenskabB]::KlasseEgenskaberAttrType[],
+	  array[klassePubliceretC]::KlassePubliceretTilsType[],
+	  array[klasseRelAnsvarlig]::KlasseRelationType[]
+	  ,lower(((klasse_read15.registrering[1]).registrering).TimePeriod)
+		);
+	
+	RETURN NEXT ok(false,'test as_update_klasse - NO exception was triggered by updating klasse with egenskaber with overlapping virkning.'); 
+
+	EXCEPTION WHEN data_exception THEN
+			RETURN NEXT ok(true,'test as_update_klasse - caught exception triggered by updating klasse with egenskaber with overlapping virkning.'); 
+
+END;
+
+
 
 END;
 $$;

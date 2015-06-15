@@ -62,7 +62,7 @@ END IF;
 --handle relationer (relations)
 
 IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
---raise debug 'Skipping relations, as it is explicit set to empty array';
+--raise notice 'Skipping relations, as it is explicit set to empty array. Update note [%]',note;
 ELSE
 
   --1) Insert relations given as part of this update
@@ -236,6 +236,23 @@ END IF;
 
 --Generate and insert any merged objects, if any fields are null in attrKlasseObj
 IF attrEgenskaber IS NOT null THEN
+
+  --Input validation: 
+  --Verify that there is no overlap in virkning in the array given
+
+  IF EXISTS (
+  SELECT
+  a.*
+  FROM unnest(attrEgenskaber) a
+  JOIN  unnest(attrEgenskaber) b on (a.virkning).TimePeriod && (b.virkning).TimePeriod
+  GROUP BY a.brugervendtnoegle,a.beskrivelse,a.eksempel,a.omfang,a.titel,a.retskilde,a.aendringsnotat, a.virkning, a.soegeord
+  HAVING COUNT(*)>1
+  ) THEN
+  RAISE EXCEPTION 'Unable to update {{oio_type}} with uuid [%], as the {{oio_type}} have overlapping virknings in the given {{attribut}} array :%',{{oio_type}}_uuid,to_json(attr{{attribut|title}})  USING ERRCODE = 22000;
+
+  END IF;
+
+
   FOREACH attrEgenskaberObj in array attrEgenskaber
   LOOP
 
@@ -474,7 +491,7 @@ read_new_klasse_reg:=ROW(
 ROW(null,(read_new_klasse.registrering[1].registrering).livscykluskode,null,null)::registreringBase,
 (read_new_klasse.registrering[1]).tilsPubliceret ,
 (read_new_klasse.registrering[1]).attrEgenskaber ,
-relationer 
+(read_new_klasse.registrering[1]).relationer 
 )::klasseRegistreringType
 ;
 
@@ -482,12 +499,14 @@ read_prev_klasse_reg:=ROW(
 ROW(null,(read_prev_klasse.registrering[1].registrering).livscykluskode,null,null)::registreringBase,
 (read_prev_klasse.registrering[1]).tilsPubliceret ,
 (read_prev_klasse.registrering[1]).attrEgenskaber ,
-relationer 
+(read_prev_klasse.registrering[1]).relationer 
 )::klasseRegistreringType
 ;
 
 
 IF read_prev_klasse_reg=read_new_klasse_reg THEN
+  --RAISE NOTICE 'Note[%]. Aborted reg:%',note,to_json(read_new_klasse_reg);
+  --RAISE NOTICE 'Note[%]. Previous reg:%',note,to_json(read_prev_klasse_reg);
   RAISE EXCEPTION 'Aborted updating klasse with id [%] as the given data, does not give raise to a new registration. Aborted reg:[%], previous reg:[%]',klasse_uuid,to_json(read_new_klasse_reg),to_json(read_prev_klasse_reg) USING ERRCODE = 22000;
 END IF;
 
