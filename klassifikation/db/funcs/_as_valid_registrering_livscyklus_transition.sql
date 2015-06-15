@@ -27,14 +27,14 @@ CASE current_reg_livscykluskode
 	WHEN OPSTAAET THEN
 		CASE new_reg_livscykluskode
 			WHEN IMPORTERET THEN return false;
-			WHEN OPSTAAET THEN return true;
+			WHEN OPSTAAET THEN return false;
 			WHEN PASSIVERET THEN return true;
 			WHEN SLETTET THEN return true;
 			WHEN RETTET THEN return true;
 		END CASE;
 	WHEN IMPORTERET THEN
 		CASE new_reg_livscykluskode
-			WHEN IMPORTERET THEN return true;
+			WHEN IMPORTERET THEN return false;
 			WHEN OPSTAAET THEN return false;
 			WHEN PASSIVERET  THEN return true;
 			WHEN SLETTET THEN return true;
@@ -44,9 +44,9 @@ CASE current_reg_livscykluskode
 		CASE new_reg_livscykluskode
 			WHEN IMPORTERET THEN return true;
 			WHEN OPSTAAET THEN return false;
-			WHEN PASSIVERET  THEN return true;
+			WHEN PASSIVERET  THEN return false;
 			WHEN SLETTET THEN return true;
-			WHEN RETTET THEN return true; --TODO Verify
+			WHEN RETTET THEN return false; 
 		END CASE;
 	WHEN SLETTET THEN return false; 
 	WHEN RETTET THEN
