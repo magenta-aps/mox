@@ -34,7 +34,7 @@ class OIORestObject(object):
         CREATE object, generate new UUID.
         """
         if not request.json:
-            abort(400)
+            return jsonify({'uuid': None}), 400
         note = request.json.get("Note", "")
         attributes = request.json.get("Attributter", {})
         states = request.json.get("Tilstande", {})
@@ -85,7 +85,7 @@ class OIORestObject(object):
         UPDATE, IMPORT or PASSIVIZE an  object.
         """
         if not request.json:
-            abort(400)
+            return jsonify({'uuid': None}), 400
         # Get most common parameters if available.
         note = request.json.get("Note", "")
         attributes = request.json.get("Attributter", {})

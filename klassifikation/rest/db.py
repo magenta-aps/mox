@@ -2,15 +2,32 @@ from enum import Enum
 
 import psycopg2
 from psycopg2.extras import DateTimeTZRange
+from psycopg2.extensions import adapt as psyco_adapt
+
 from jinja2 import Template
+from jinja2 import Environment, FileSystemLoader
 
 from settings import DATABASE, DB_USER
 from db_helpers import get_attribute_fields, get_attribute_names
 from db_helpers import get_state_names
 
 """
+    Jinja2 Environment
+"""
+
+jinja_env = Environment(loader=FileSystemLoader('./templates/sql'))
+
+def adapt(value):
+    # return psyco_adapt(value)
+    # Damn you, character encoding!
+    return str(psyco_adapt(value.encode('utf-8'))).decode('utf-8')
+
+jinja_env.filters['adapt'] = adapt
+
+"""
     GENERAL FUNCTION AND CLASS DEFINITIONS
 """
+
 
 
 def get_connection():
@@ -60,9 +77,7 @@ class Livscyklus(Enum):
 
 def sql_state_array(state, periods, class_name):
     """Return an SQL array of type <state>TilsType."""
-    with open('templates/sql/state_array.sql', 'r') as f:
-        raw_sql = f.read()
-    t = Template(raw_sql)
+    t = jinja_env.get_template('state_array.sql')
     sql = t.render(class_name=class_name, state_name=state,
                    state_periods=periods)
     return sql
@@ -70,18 +85,14 @@ def sql_state_array(state, periods, class_name):
 
 def sql_attribute_array(attribute, periods):
     """Return an SQL array of type <attribute>AttrType[]."""
-    with open('templates/sql/attribute_array.sql', 'r') as f:
-        raw_sql = f.read()
-    t = Template(raw_sql)
+    t = jinja_env.get_template('attribute_array.sql')
     sql = t.render(attribute_name=attribute, attribute_periods=periods)
     return sql
 
 
 def sql_relations_array(class_name, relations):
     """Return an SQL array of type <class_name>RelationType[]."""
-    with open('templates/sql/relations_array.sql', 'r') as f:
-        raw_sql = f.read()
-    t = Template(raw_sql)
+    t = jinja_env.get_template('relations_array.sql')
     sql = t.render(class_name=class_name, relations=relations)
     return sql
 
@@ -141,9 +152,7 @@ def create_or_import_object(class_name, note, attributes, states, relations,
     (
         sql_states, sql_attributes, sql_relations
     ) = sql_convert_registration(states, attributes, relations, class_name)
-    with open('templates/sql/create_object.sql', 'r') as f:
-        sql_raw = f.read()
-    sql_template = Template(sql_raw)
+    sql_template = jinja_env.get_template('create_object.sql')
     sql = sql_template.render(
         class_name=class_name,
         uuid=uuid,
@@ -170,9 +179,7 @@ def delete_object(class_name, note, uuid):
 
     user_ref = get_authenticated_user()
     life_cycle_code = Livscyklus.SLETTET.value
-    with open('templates/sql/passivate_or_delete_object.sql', 'r') as f:
-        sql_raw = f.read()
-    sql_template = Template(sql_raw)
+    sql_template = jinja_env.get_template('passivate_or_delete_object.sql')
     sql = sql_template.render(
         class_name=class_name,
         uuid=uuid,
@@ -193,9 +200,7 @@ def passivate_object(class_name, note, uuid):
 
     user_ref = get_authenticated_user()
     life_cycle_code = Livscyklus.PASSIVERET.value
-    with open('templates/sql/passivate_or_delete_object.sql', 'r') as f:
-        sql_raw = f.read()
-    sql_template = Template(sql_raw)
+    sql_template = jinja_env.get_template('passivate_or_delete_object.sql')
     sql = sql_template.render(
         class_name=class_name,
         uuid=uuid,
@@ -222,9 +227,7 @@ def update_object(class_name, note, attributes, states, relations, uuid=None):
         sql_states, sql_attributes, sql_relations
     ) = sql_convert_registration(states, attributes, relations, class_name)
 
-    with open('templates/sql/update_object.sql', 'r') as f:
-        sql_raw = f.read()
-    sql_template = Template(sql_raw)
+    sql_template = jinja_env.get_template('update_object.sql')
     sql = sql_template.render(
         class_name=class_name,
         uuid=uuid,
@@ -254,9 +257,7 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
 
     assert isinstance(uuid, list)
 
-    with open('templates/sql/list_objects.sql', 'r') as f:
-        sql_raw = f.read()
-    sql_template = Template(sql_raw)
+    sql_template = jinja_env.get_template('list_objects.sql')
     sql = sql_template.render(
         class_name=class_name
     )

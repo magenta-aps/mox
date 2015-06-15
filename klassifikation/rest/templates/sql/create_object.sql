@@ -3,9 +3,9 @@ SELECT * from as_create_or_import_{{ class_name|lower }}(
     ROW (
         ROW ( 
             NULL, 
-            '{{ life_cycle_code }}' :: Livscykluskode,
-            '{{ user_ref }}', 
-            '{{ note }}'
+            {{ life_cycle_code|adapt }} :: Livscykluskode,
+            {{ user_ref|adapt }}, 
+            {{ note|adapt }}
             ) :: RegistreringBase,
         -- states
         {% for state_array in states -%}

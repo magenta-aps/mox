@@ -4,13 +4,13 @@
             {% if loop.last -%}
             ROW(
                 '[{{ value.From }}, {{ value.To }})',
-            '{{ value.AktoerRef }}',
-            '{{ value.AktoerTypeKode }}',
-            '{{ value.NoteTekst }}'
+            {{ value.AktoerRef|adapt }},
+            {{ value.AktoerTypeKode|adapt }},
+            {{ value.NoteTekst|adapt }}
         ) :: Virkning
             {% else -%}
             {% if value != None -%}
-            '{{ value }}',
+            {{ value|adapt }},
             {% else -%}
             NULL,
             {% endif -%}

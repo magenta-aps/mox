@@ -15,18 +15,23 @@
 
 result=$(curl -H "Content-Type: application/json" -X POST -d "$(cat test_data/facet_opret.json)" http://127.0.0.1:5000/klassifikation/facet)
 uuid=$(expr "$result" : '.*"uuid": "\([^"]*\)"')
-
+echo "Oprettet facet: $uuid"
 # Now, import a new facet
 # - Suppose no object with this ID exists.
-curl -H "Content-Type: application/json" -X PUT -d "$(cat test_data/facet_opret.json)" http://127.0.0.1:5000/klassifikation/facet/5da36f77-f8d3-4bfd-b313-cc38e2d667fd
+import_uuid=$(uuidgen)
 
-# Passivate a facet - suppose the object exists.
+curl -sH "Content-Type: application/json" -X PUT -d "$(cat test_data/facet_opret.json)" http://127.0.0.1:5000/klassifikation/facet/$import_uuid 
+# Update the facet
 
-curl -H "Content-Type: application/json" -X PUT -d "$(cat test_data/facet_passiv.json)" http://127.0.0.1:5000/klassifikation/facet/5da36f77-f8d3-4bfd-b313-cc38e2d667fe
+curl -sH "Content-Type: application/json" -X PUT -d "$(cat test_data/facet_opdater.json)" http://127.0.0.1:5000/klassifikation/facet/$uuid
 
-# Update a facet
+# Passivate the facet. 
 
-curl -H "Content-Type: application/json" -X PUT -d "$(cat test_data/facet_opdater.json)" http://127.0.0.1:5000/klassifikation/facet/5da36f77-f8d3-4bfd-b313-cc38e2d667fe
+curl -sH "Content-Type: application/json" -X PUT -d "$(cat test_data/facet_passiv.json)" http://127.0.0.1:5000/klassifikation/facet/$uuid
+
+# Delete the facet. 
+
+curl -sH "Content-Type: application/json" -X DELETE -d "$(cat test_data/facet_slet.json)" http://127.0.0.1:5000/klassifikation/facet/$uuid
 
 # NOTE: The difference between import and update&passive hinges on
 # whether the object with the given UUID exists or not.
@@ -37,5 +42,5 @@ curl -H "Content-Type: application/json" -X PUT -d "$(cat test_data/facet_opdate
 
 # List facets
 
-curl -H "Content-Type: application/json" -X GET http://127.0.0.1:5000/klassifikation/facet?uuid=$uuid
+curl -sH "Content-Type: application/json" -X GET http://127.0.0.1:5000/klassifikation/facet?uuid=$uuid > /tmp/listoutput
 

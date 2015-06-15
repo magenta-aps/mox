@@ -1,9 +1,9 @@
 
 SELECT * from as_update_{{ class_name|lower }}(
-    '{{ uuid }}' :: uuid,
-    '{{ user_ref }}' :: uuid,
-    '{{ note }}',
-    '{{ life_cycle_code }}' ::livscykluskode,
+    {{ uuid|adapt }} :: uuid,
+    {{ user_ref|adapt }} :: uuid,
+    {{ note|adapt }},
+    {{ life_cycle_code|adapt }} ::livscykluskode,
     -- attributes
     {% for attribute_array in attributes -%}
     {{ attribute_array }},
