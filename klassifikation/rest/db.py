@@ -17,6 +17,7 @@ from db_helpers import get_state_names
 
 jinja_env = Environment(loader=FileSystemLoader('./templates/sql'))
 
+
 def adapt(value):
     # return psyco_adapt(value)
     # Damn you, character encoding!
@@ -27,7 +28,6 @@ jinja_env.filters['adapt'] = adapt
 """
     GENERAL FUNCTION AND CLASS DEFINITIONS
 """
-
 
 
 def get_connection():
@@ -130,7 +130,7 @@ def object_exists(class_name, uuid):
     cursor = conn.cursor()
     cursor.execute(sql, (uuid,))
     result = cursor.fetchone()[0]
-    
+
     return result
 
 
@@ -173,7 +173,7 @@ def create_or_import_object(class_name, note, attributes, states, relations,
 
 def delete_object(class_name, note, uuid):
     """Delete object by using the stored procedure.
-    
+
     Deleting is the same as updating with the life cycle code "Slettet".
     """
 
@@ -194,6 +194,7 @@ def delete_object(class_name, note, uuid):
     output = cursor.fetchone()
     print output
     return output[0]
+
 
 def passivate_object(class_name, note, uuid):
     """Passivate object by calling the stored procedure."""

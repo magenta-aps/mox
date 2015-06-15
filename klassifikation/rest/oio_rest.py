@@ -4,7 +4,8 @@ import db
 
 
 # Just a helper during debug
-def j(t): return jsonify(output=t)
+def j(t):
+    return jsonify(output=t)
 
 
 class OIOStandardHierarchy(object):
@@ -63,8 +64,8 @@ class OIORestObject(object):
             uuid = uuid.split(',')
 
         results = db.list_objects(cls.__name__, uuid, virkning_fra,
-                                 virkning_til, registreret_fra,
-                                 registreret_til)
+                                  virkning_til, registreret_fra,
+                                  registreret_til)
         if results is None:
             results = []
         # TODO: Return JSON object key should be based on class name,
@@ -103,11 +104,11 @@ class OIORestObject(object):
             if (request.json.get('livscyklus', '').lower() == 'passiv'):
                 # Passivate
                 db.passivate_object(
-                        cls.__name__, note, uuid
+                    cls.__name__, note, uuid
                 )
                 return j(
-                            u"Passiveret {0}: {1}".format(cls.__name__, uuid)
-                        ), 200
+                    u"Passiveret {0}: {1}".format(cls.__name__, uuid)
+                ), 200
             else:
                 # Edit/change
                 result = db.update_object(cls.__name__, note, attributes,
