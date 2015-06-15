@@ -108,7 +108,7 @@ FROM
 						b.retskilde,
 						b.aendringsnotat,
 						b.virkning,	
-						_remove_nulls_in_array_and_null_empty_array(array_agg(
+						_remove_nulls_in_array(array_agg(
 							CASE 
 							WHEN c.id is not null THEN
 							ROW(

@@ -236,6 +236,23 @@ END IF;
 
 --Generate and insert any merged objects, if any fields are null in attrKlasseObj
 IF attrEgenskaber IS NOT null THEN
+
+  --Input validation: 
+  --Verify that there is no overlap in virkning in the array given
+
+  IF EXISTS (
+  SELECT
+  a.*
+  FROM unnest(attrEgenskaber) a
+  JOIN  unnest(attrEgenskaber) b on (a.virkning).TimePeriod && (b.virkning).TimePeriod
+  GROUP BY a.brugervendtnoegle,a.beskrivelse,a.eksempel,a.omfang,a.titel,a.retskilde,a.aendringsnotat, a.virkning, a.soegeord
+  HAVING COUNT(*)>1
+  ) THEN
+  RAISE EXCEPTION 'Unable to update klasse with uuid [%], as the klasse have overlapping virknings in the given egenskaber array :%',klasse_uuid,to_json(attrEgenskaber)  USING ERRCODE = 22000;
+
+  END IF;
+
+
   FOREACH attrEgenskaberObj in array attrEgenskaber
   LOOP
 

@@ -234,6 +234,23 @@ END IF;
 
 --Generate and insert any merged objects, if any fields are null in attrFacetObj
 IF attrEgenskaber IS NOT null THEN
+
+  --Input validation: 
+  --Verify that there is no overlap in virkning in the array given
+
+  IF EXISTS (
+  SELECT
+  a.*
+  FROM unnest(attrEgenskaber) a
+  JOIN  unnest(attrEgenskaber) b on (a.virkning).TimePeriod && (b.virkning).TimePeriod
+  GROUP BY a.brugervendtnoegle,a.beskrivelse,a.opbygning,a.ophavsret,a.plan,a.supplement,a.retskilde, a.virkning
+  HAVING COUNT(*)>1
+  ) THEN
+  RAISE EXCEPTION 'Unable to update facet with uuid [%], as the facet have overlapping virknings in the given egenskaber array :%',facet_uuid,to_json(attrEgenskaber)  USING ERRCODE = 22000;
+
+  END IF;
+
+
   FOREACH attrEgenskaberObj in array attrEgenskaber
   LOOP
 

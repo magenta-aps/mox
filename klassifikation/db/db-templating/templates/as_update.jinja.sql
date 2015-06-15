@@ -240,6 +240,23 @@ END IF;
 
 --Generate and insert any merged objects, if any fields are null in attr{{oio_type|title}}Obj
 IF attr{{attribut|title}} IS NOT null THEN
+
+  --Input validation: 
+  --Verify that there is no overlap in virkning in the array given
+
+  IF EXISTS (
+  SELECT
+  a.*
+  FROM unnest(attr{{attribut|title}}) a
+  JOIN  unnest(attr{{attribut|title}}) b on (a.virkning).TimePeriod && (b.virkning).TimePeriod
+  GROUP BY a.{{attribut_fields|join(',a.')}}, a.virkning
+  HAVING COUNT(*)>1
+  ) THEN
+  RAISE EXCEPTION 'Unable to update {{oio_type}} with uuid [%], as the {{oio_type}} have overlapping virknings in the given {{attribut}} array :%',{{oio_type}}_uuid,to_json(attr{{attribut|title}})  USING ERRCODE = 22000;
+
+  END IF;
+
+
   FOREACH attr{{attribut|title}}Obj in array attr{{attribut|title}}
   LOOP
 
