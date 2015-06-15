@@ -33,7 +33,7 @@
   ;
   
   
-+ CREATE OR REPLACE FUNCTION _remove_nulls_in_array_and_null_empty_array(inputArr KlasseSoegeordType[])
++ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr KlasseSoegeordType[])
 +   RETURNS KlasseSoegeordType[] AS
 +   $$
 +   DECLARE result KlasseSoegeordType[];

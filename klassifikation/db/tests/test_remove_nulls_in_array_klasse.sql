@@ -11,8 +11,6 @@ RETURNS SETOF TEXT LANGUAGE plpgsql AS
 $$
 DECLARE 
 
-
-soegeordArr	KlasseSoegeordType[];
 relationerArr	KlasseRelationType[];
 relationerArr2	KlasseRelationType[];
 relationerArr3	KlasseRelationType[];
@@ -40,6 +38,16 @@ resultegenskaberArr2	KlasseegenskaberAttrType[];
 resultegenskaberArr3	KlasseegenskaberAttrType[];
 resultegenskaberArr4	KlasseegenskaberAttrType[];
 resultegenskaberArr5	KlasseegenskaberAttrType[];
+soegeordArr	KlasseSoegeordType[];
+soegeordArr2	KlasseSoegeordType[];
+soegeordArr3	KlasseSoegeordType[];
+soegeordArr4	KlasseSoegeordType[];
+resultsoegeordArr	KlasseSoegeordType[];
+resultsoegeordArr2	KlasseSoegeordType[];
+resultsoegeordArr3	KlasseSoegeordType[];
+resultsoegeordArr4	KlasseSoegeordType[];
+resultsoegeordArr5	KlasseSoegeordType[];
+
 BEGIN
 
 relationerArr:=array_append(relationerArr,
@@ -397,7 +405,102 @@ RETURN NEXT is(_remove_nulls_in_array(resultegenskaberArr5),null,'Test that null
 ------------------------------------------------------------
 
 
---TODO: Added similar tests for the other types
+
+
+soegeordArr:=array_append(soegeordArr,
+ROW(
+'soegeordidentifikator_klasseEgenskabE_Soegeord2',
+'beskrivelse_klasseEgenskabE_Soegeord2',
+'soegeordskategori_klasseEgenskabE_Soegeord2'
+)::KlasseSoegeordType
+);
+
+
+soegeordArr:=array_append(soegeordArr,
+ROW(
+'soegeordidentifikator_klasseEgenskabE_Soegeord1',
+'beskrivelse_klasseEgenskabE_Soegeord1',
+'soegeordskategori_klasseEgenskabE_Soegeord1'
+)::KlasseSoegeordType
+);
+
+soegeordArr:=array_append(soegeordArr,
+ROW(
+'soegeordidentifikator_klasseEgenskabE_Soegeord3',
+'beskrivelse_klasseEgenskabE_Soegeord3',
+'soegeordskategori_klasseEgenskabE_Soegeord3'
+)::KlasseSoegeordType
+);
+
+soegeordArr:=array_append(soegeordArr,
+ROW(
+'soegeordidentifikator_klasseEgenskabE_Soegeord5',
+'beskrivelse_klasseEgenskabE_Soegeord5',
+'soegeordskategori_klasseEgenskabE_Soegeord5'
+)::KlasseSoegeordType
+);
+
+soegeordArr:=array_append(soegeordArr,
+ROW(
+'soegeordidentifikator_klasseEgenskabE_Soegeord4',
+'beskrivelse_klasseEgenskabE_Soegeord4',
+'soegeordskategori_klasseEgenskabE_Soegeord4'
+)::KlasseSoegeordType
+);
+soegeordArr:=array_append(soegeordArr,
+ROW(
+'soegeordidentifikator_klasseEgenskabE_Soegeord6',
+'beskrivelse_klasseEgenskabE_Soegeord6',
+'soegeordskategori_klasseEgenskabE_Soegeord6'
+)::KlasseSoegeordType
+);
+
+
+IF NOT coalesce(array_length(soegeordArr,1),0)=6 THEN
+	RAISE EXCEPTION 'Test soegeord assumption 1 failed. # soegeord';
+END IF;
+
+resultsoegeordArr:=_remove_nulls_in_array(soegeordArr);
+
+RETURN NEXT is(soegeordArr,resultsoegeordArr,'Test if non null elements and order is preserved # soegeord');
+
+
+soegeordArr2:=array_append(soegeordArr,null);
+soegeordArr2:=array_append(soegeordArr2,null);
+soegeordArr2:=array_prepend(null,soegeordArr2);
+soegeordArr2:=array_prepend(null,soegeordArr2);
+
+IF NOT coalesce(array_length(soegeordArr2,1),0)=10 THEN
+	RAISE EXCEPTION 'Test soegeord assumption 2 failed. # soegeord';
+END IF;
+
+resultsoegeordArr2:=_remove_nulls_in_array(soegeordArr2);
+
+RETURN NEXT is(resultsoegeordArr2,soegeordArr,'Test if null values are removed # soegeord');
+
+soegeordArr3:=array_append(soegeordArr,
+	 ROW (
+		null
+		,null
+		,null	
+	) :: KlasseSoegeordType
+);
+
+IF NOT coalesce(array_length(soegeordArr3,1),0)=7 THEN
+	RAISE EXCEPTION 'Test assumption 3 failed. # soegeord';
+END IF;
+
+resultsoegeordArr3:=_remove_nulls_in_array(soegeordArr3);
+
+RETURN NEXT is(resultsoegeordArr3,soegeordArr,'Test if element with only null values are removed # soegeord');
+
+resultsoegeordArr4:='{}'::KlasseSoegeordType[];
+
+RETURN NEXT is(_remove_nulls_in_array(resultsoegeordArr4),null,'Test that empty arrays, gets converted to null # soegeord');
+
+resultsoegeordArr5:=null;
+
+RETURN NEXT is(_remove_nulls_in_array(resultsoegeordArr5),null,'Test that null arrays stays null # soegeord');
 
 
 
