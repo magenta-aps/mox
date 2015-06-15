@@ -11,7 +11,7 @@ NOTICE: This file is auto-generated using the script: apply-template.py klasse a
 
 CREATE OR REPLACE FUNCTION as_create_or_import_klasse(
   klasse_registrering KlasseRegistreringType,
-  klasse_uuid uuid DEFAULT public.uuid_generate_v4() --This might genenerate a non unique value. Use uuid_generate_v5(). Consider using uuid_generate_v5() and namespace(s). Consider generating using sequences which generates input to hash, with a namespace part and a id part.
+  klasse_uuid uuid DEFAULT NULL
 	)
   RETURNS uuid AS 
 $$
@@ -26,8 +26,16 @@ DECLARE
   klasse_attr_egenskaber_soegeord_obj KlasseSoegeordType;
 BEGIN
 
+IF klasse_uuid IS NULL THEN
+    LOOP
+    klasse_uuid:=uuid_generate_v4();
+    EXIT WHEN NOT EXISTS (SELECT id from klasse WHERE id=klasse_uuid); 
+    END LOOP;
+END IF;
+
+
 IF EXISTS (SELECT id from klasse WHERE id=klasse_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing klasse with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_klasse (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might occur, albeit very very rarely.',klasse_uuid;
+  RAISE EXCEPTION 'Error creating or importing klasse with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_klasse (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',klasse_uuid;
 END IF;
 
 IF  (klasse_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (klasse_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
