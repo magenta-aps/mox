@@ -8,7 +8,7 @@
 {% block body %}
 CREATE OR REPLACE FUNCTION as_create_or_import_{{oio_type}}(
   {{oio_type}}_registrering {{oio_type|title}}RegistreringType,
-  {{oio_type}}_uuid uuid DEFAULT public.uuid_generate_v4() --This might genenerate a non unique value. Use uuid_generate_v5(). Consider using uuid_generate_v5() and namespace(s). Consider generating using sequences which generates input to hash, with a namespace part and a id part.
+  {{oio_type}}_uuid uuid DEFAULT NULL
 	)
   RETURNS uuid AS 
 $$
@@ -22,8 +22,16 @@ DECLARE
 
 BEGIN
 
+IF {{oio_type}}_uuid IS NULL THEN
+    LOOP
+    {{oio_type}}_uuid:=uuid_generate_v4();
+    EXIT WHEN NOT EXISTS (SELECT id from {{oio_type}} WHERE id={{oio_type}}_uuid); 
+    END LOOP;
+END IF;
+
+
 IF EXISTS (SELECT id from {{oio_type}} WHERE id={{oio_type}}_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing {{oio_type}} with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_{{oio_type}} (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might occur, albeit very very rarely.',{{oio_type}}_uuid;
+  RAISE EXCEPTION 'Error creating or importing {{oio_type}} with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_{{oio_type}} (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',{{oio_type}}_uuid;
 END IF;
 
 IF  ({{oio_type}}_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and ({{oio_type}}_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
