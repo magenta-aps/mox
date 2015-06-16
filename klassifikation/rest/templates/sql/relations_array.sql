@@ -5,10 +5,10 @@
     ROW(
         {{ r|adapt }} :: {{ class_name }}RelationKode,
         ROW(
-            '[{{ rel.Virkning.From }}, {{ rel.Virkning.To }})',
-             {{ rel.Virkning.AktoerRef|adapt }},
-             {{ rel.Virkning.AktoerTypeKode|adapt }},
-             {{ rel.Virkning.NoteTekst|adapt }}
+            '[{{ rel.virkning.from }}, {{ rel.virkning.to }})',
+             {{ rel.virkning.aktoerref|adapt }},
+             {{ rel.virkning.aktoertypekode|adapt }},
+             {{ rel.virkning.notetekst|adapt }}
             ) :: Virkning,
         {{ rel.uuid|adapt }}
     ){% if not (outer_loop.last and loop.last) -%},{% endif -%}

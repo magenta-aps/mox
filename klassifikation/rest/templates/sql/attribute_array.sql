@@ -3,10 +3,10 @@
         ROW({% for value in attribute_value -%}
             {% if loop.last -%}
             ROW(
-                '[{{ value.From }}, {{ value.To }})',
-            {{ value.AktoerRef|adapt }},
-            {{ value.AktoerTypeKode|adapt }},
-            {{ value.NoteTekst|adapt }}
+                '[{{ value.from }}, {{ value.to }})',
+            {{ value.aktoerref|adapt }},
+            {{ value.aktoertypekode|adapt }},
+            {{ value.notetekst|adapt }}
         ) :: Virkning
             {% else -%}
             {% if value != None -%}

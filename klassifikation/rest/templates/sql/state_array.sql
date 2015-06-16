@@ -2,12 +2,12 @@
         {% for state_value in state_periods -%}
         ROW(
             ROW(
-                '[{{ state_value.Virkning.From }}, {{ state_value.Virkning.To }})',
-                {{ state_value.Virkning.AktoerRef|adapt }},
-                {{ state_value.Virkning.AktoerTypeKode|adapt }},
-                {{ state_value.Virkning.NoteTekst|adapt }}
+                '[{{ state_value.virkning.from }}, {{ state_value.virkning.to }})',
+                {{ state_value.virkning.aktoerref|adapt }},
+                {{ state_value.virkning.aktoertypekode|adapt }},
+                {{ state_value.virkning.notetekst|adapt }}
             ) :: Virkning,
-            {{ state_value.PubliceretStatus|adapt }}
+            {{ state_value.publiceretstatus|adapt }}
         ){% if not loop.last %},{% endif %}
         {% endfor -%}
         ] :: {{ state_name }}TilsType[]

@@ -5,11 +5,11 @@
             {
             "beskrivelse": "Blib båt Organisatorisk funktion", 
             "virkning": { 
-                "From": "2014-05-22 12:02:32", 
-                "To": "infinity", 
-                "AktoerRef": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
-                "AktoerTypeKode": "Bruger", 
-                "NoteTekst": "Nothing to see here!" 
+                "from": "2014-05-22 12:02:32", 
+                "to": "infinity", 
+                "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                "aktoertypekode": "Bruger", 
+                "notetekst": "Nothing to see here!" 
             } 
             }
         ] 

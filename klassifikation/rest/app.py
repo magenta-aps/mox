@@ -30,8 +30,9 @@ def sitemap():
 if __name__ == '__main__':
 
     from settings import BASE_URL
-    from klassifikation_objects import KlassifikationsHierarki
+    from klassifikation import KlassifikationsHierarki
+    from organisation import OrganisationsHierarki
 
     KlassifikationsHierarki.setup_api(base_url=BASE_URL, flask=app)
-
+    OrganisationsHierarki.setup_api(base_url=BASE_URL, flask=app)
     app.run(debug=True)

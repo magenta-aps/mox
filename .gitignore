@@ -1,4 +1,5 @@
 *.pyc
 .env
 *.swp
+*/db/db-templating/generated-files
 

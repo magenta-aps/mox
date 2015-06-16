@@ -8,8 +8,6 @@ _attribute_fields = {}
 def get_attribute_fields(attribute_name):
     """Return the field names from the PostgreSQL type in question.
 
-    TODO: Ask PostgreSQL for the list of fields for the type in question. For
-    the time being, just return the names of the fields for "FacetEgenskaber".
     """
 
     if len(_attribute_fields) == 0:
@@ -17,9 +15,9 @@ def get_attribute_fields(attribute_name):
         for c in db_struct:
             for a in db_struct[c]["attributter"]:
                 _attribute_fields[
-                    c + a.capitalize()
+                    c + a
                 ] = db_struct[c]["attributter"][a] + ['virkning']
-    return _attribute_fields[attribute_name]
+    return _attribute_fields[attribute_name.lower()]
 
 
 _attribute_names = {}
@@ -30,9 +28,9 @@ def get_attribute_names(class_name):
     if len(_attribute_names) == 0:
         for c in db_struct:
             _attribute_names[c] = [
-                c + a.capitalize() for a in db_struct[c]['attributter']
+                c + a for a in db_struct[c]['attributter']
             ]
-    return _attribute_names[class_name]
+    return _attribute_names[class_name.lower()]
 
 
 _state_names = {}
@@ -43,6 +41,6 @@ def get_state_names(class_name):
     if len(_state_names) == 0:
         for c in db_struct:
             _state_names[c] = [
-                c + a.capitalize() for a in db_struct[c]['tilstande']
+                c + a for a in db_struct[c]['tilstande']
             ]
-    return _state_names[class_name]
+    return _state_names[class_name.lower()]

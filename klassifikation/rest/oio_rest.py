@@ -36,10 +36,10 @@ class OIORestObject(object):
         """
         if not request.json:
             return jsonify({'uuid': None}), 400
-        note = request.json.get("Note", "")
-        attributes = request.json.get("Attributter", {})
-        states = request.json.get("Tilstande", {})
-        relations = request.json.get("Relationer", {})
+        note = request.json.get("note", "")
+        attributes = request.json.get("attributter", {})
+        states = request.json.get("tilstande", {})
+        relations = request.json.get("relationer", {})
         uuid = db.create_or_import_object(cls.__name__, note, attributes,
                                           states, relations)
         return jsonify({'uuid': uuid}), 201
@@ -88,10 +88,10 @@ class OIORestObject(object):
         if not request.json:
             return jsonify({'uuid': None}), 400
         # Get most common parameters if available.
-        note = request.json.get("Note", "")
-        attributes = request.json.get("Attributter", {})
-        states = request.json.get("Tilstande", {})
-        relations = request.json.get("Relationer", {})
+        note = request.json.get("note", "")
+        attributes = request.json.get("attributter", {})
+        states = request.json.get("tilstande", {})
+        relations = request.json.get("relationer", {})
 
         if not db.object_exists(cls.__name__, uuid):
             # Do import.
