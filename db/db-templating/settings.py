@@ -1,1 +1,1 @@
-../../rest/settings.py
+../../oio_rest/oio_rest/settings.py
