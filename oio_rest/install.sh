@@ -25,19 +25,4 @@ fi
 
 source $VIRTUALENV/bin/activate
 
-PYTHON_PACKAGES=$(cat "$DIR/doc/PYTHON_DEPENDENCIES")
-
-for  package in "${PYTHON_PACKAGES[@]}"
-do
-    pip install $package
-
-    RETVAL=$?
-    if [ $RETVAL -ne 0 ]; then
-        echo "" 1>&2
-        echo "ERROR: Unable to install Python package <$package>." 1>&2
-        echo -n "Please check your network connection. " 1>&2
-        echo "A remote server may be down - please retry later. " 1>&2
-        echo "" 1>&2
-        exit -1
-    fi
-done
+python ./setup.py develop

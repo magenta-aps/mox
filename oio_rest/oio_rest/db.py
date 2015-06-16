@@ -1,5 +1,6 @@
 from enum import Enum
 
+import os
 import psycopg2
 from psycopg2.extras import DateTimeTZRange
 from psycopg2.extensions import adapt as psyco_adapt
@@ -15,8 +16,11 @@ from db_helpers import get_state_names
     Jinja2 Environment
 """
 
-jinja_env = Environment(loader=FileSystemLoader('./templates/sql'))
+current_directory = os.path.dirname(os.path.realpath(__file__))
 
+jinja_env = Environment(loader=FileSystemLoader(
+    os.path.join(current_directory, 'templates', 'sql')
+))
 
 def adapt(value):
     # return psyco_adapt(value)

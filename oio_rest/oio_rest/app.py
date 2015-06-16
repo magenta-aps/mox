@@ -27,8 +27,8 @@ def sitemap():
             print rule
     return jsonify({"site-map": links})
 
-if __name__ == '__main__':
 
+def main():
     from settings import BASE_URL
     from klassifikation import KlassifikationsHierarki
     from organisation import OrganisationsHierarki
@@ -36,3 +36,8 @@ if __name__ == '__main__':
     KlassifikationsHierarki.setup_api(base_url=BASE_URL, flask=app)
     OrganisationsHierarki.setup_api(base_url=BASE_URL, flask=app)
     app.run(debug=True)
+
+
+if __name__ == '__main__':
+    main()
+
