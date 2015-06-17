@@ -10,7 +10,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from settings import DATABASE, DB_USER
 from db_helpers import get_attribute_fields, get_attribute_names
-from db_helpers import get_state_names
+from db_helpers import get_state_names, Soegeord
 
 """
     Jinja2 Environment
@@ -22,10 +22,18 @@ jinja_env = Environment(loader=FileSystemLoader(
     os.path.join(current_directory, 'templates', 'sql')
 ))
 
+
 def adapt(value):
     # return psyco_adapt(value)
     # Damn you, character encoding!
-    return str(psyco_adapt(value.encode('utf-8'))).decode('utf-8')
+    if isinstance(value, list):
+        return psyco_adapt(map(adapt, value))
+    elif isinstance(value, basestring):
+        value = value.encode('utf-8')
+        return str(psyco_adapt(value)).decode('utf-8')
+    else:
+        # Charset of complex types is handled on constituents
+        return psyco_adapt(value)
 
 jinja_env.filters['adapt'] = adapt
 
@@ -47,6 +55,16 @@ def get_authenticated_user():
     return "615957e8-4aa1-4319-a787-f1f7ad6b5e2c"
 
 
+def convert(attribute_field_name, attribute_field_value):
+    # For simple types that can be adapted by standard psycopg2 adapters, just
+    # pass on. For complex types like "Soegeord" with specialized adapters,
+    # convert to the class for which the adapter is registered.
+    if attribute_field_name == "soegeord":
+        return [Soegeord(*ord) for ord in attribute_field_value]
+    else:
+        return attribute_field_value
+
+
 def convert_attributes(attributes):
     "Convert attributes from dictionary to list in correct order."
     for attr_name in attributes:
@@ -55,7 +73,7 @@ def convert_attributes(attributes):
         for attr_period in current_attr_periods:
             field_names = get_attribute_fields(attr_name)
             attr_value_list = [
-                attr_period[f] if f in attr_period else None
+                convert(f, attr_period[f]) if f in attr_period else None
                 for f in field_names
                 ]
             converted_attr_periods.append(attr_value_list)
@@ -166,6 +184,7 @@ def create_or_import_object(class_name, note, attributes, states, relations,
         states=sql_states,
         attributes=sql_attributes,
         relations=sql_relations)
+    print sql
     # Call Postgres! Return OK or not accordingly
     conn = get_connection()
     cursor = conn.cursor()
