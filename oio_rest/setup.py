@@ -35,7 +35,7 @@ OIOXML standard for the exchange of public administration documents.""",
       entry_points={
       # -*- Entry points: -*-
           'console_scripts': [
-              'oio_rest = oio_rest.app:main',
+              'oio_api = oio_rest.app:main',
           ],
       }
      )
