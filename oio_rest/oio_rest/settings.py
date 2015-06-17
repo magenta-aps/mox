@@ -5,6 +5,7 @@ DATABASE = 'mox'
 DB_USER = 'mox'
 DB_PASSWORD = 'mox'
 
+# This specifies the database structure
 DATABASE_STRUCTURE = {
 
     "facet": {
@@ -102,6 +103,11 @@ DATABASE_STRUCTURE = {
                 "brugervendtnoegle", "itsystemnavn", "itsystemtype",
                 "konfigurationreference"]
         },
+        "attributter_type_override": {
+            "egenskaber": {
+                "konfigurationreference": "text[]"
+            }
+        },
         "tilstande": {
             "gyldighed": ["Aktiv", "Inaktiv"]
         },
@@ -170,4 +176,12 @@ DATABASE_STRUCTURE = {
         ]
     }
 
+}
+
+REAL_DB_STRUCTURE = DATABASE_STRUCTURE
+REAL_DB_STRUCTURE["klasse"]["attributter"]["egenskaber"].append("soegeord")
+REAL_DB_STRUCTURE["klasse"]["attributter_type_override"] = {
+    "egenskaber": {
+        "soegeord": "soegeord"
+    }
 }

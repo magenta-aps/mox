@@ -14,7 +14,7 @@ sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_index_helper_funcs.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_subtract_tstzrange.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_subtract_tstzrange_arr.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_as_valid_registrering_livscyklus_transition.sql
-
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_as_search_match_array.sql
 cd ./db-templating/
 ./generate-sql-tbls-types-funcs-for-oiotype.sh
 
@@ -47,6 +47,7 @@ done
 cd ..
 
 #Test functions
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_remove_nulls_in_array_klasse.sql
 
 #Facet
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_facet_db_schama.sql
@@ -55,9 +56,10 @@ sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_list_facet.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_read_facet.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_search_facet.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_update_facet.sql
-#Klasse
+#Klasse (BUT testing template-generated code through klasse)
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_update_klasse.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_read_klasse.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_list_klasse.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_search_klasse.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_remove_nulls_in_array_klasse.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_search_match_array.sql
