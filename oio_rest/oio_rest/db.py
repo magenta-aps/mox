@@ -31,6 +31,9 @@ def adapt(value):
     elif isinstance(value, basestring):
         value = value.encode('utf-8')
         return str(psyco_adapt(value)).decode('utf-8')
+    elif isinstance(value, Soegeord):
+        # There's a bug in the handling of None, hence ...
+        return psyco_adapt(value)
     else:
         # Charset of complex types is handled on constituents
         return psyco_adapt(value).getquoted()
@@ -80,6 +83,7 @@ def convert_attributes(attributes):
                 ]
             converted_attr_periods.append(attr_value_list)
         attributes[attr_name] = converted_attr_periods
+    print attributes
     return attributes
 
 
@@ -102,6 +106,7 @@ class Livscyklus(Enum):
 def sql_state_array(state, periods, class_name):
     """Return an SQL array of type <state>TilsType."""
     t = jinja_env.get_template('state_array.sql')
+    print periods
     sql = t.render(class_name=class_name, state_name=state,
                    state_periods=periods)
     return sql
@@ -141,9 +146,12 @@ def sql_convert_registration(states, attributes, relations, class_name):
 
     return (sql_states, sql_attributes, sql_relations)
 
+
 def sql_get_registration(class_name, life_cycle_code,
                          user_ref, note, registration_tuple):
-    """Return a an SQL registrering object of type <class_name>RegistreringType[].
+    """
+    Return a an SQL registrering object of type
+    <class_name>RegistreringType[].
     Expects a tuple returned from sql_convert_registration.
     """
     sql_template = jinja_env.get_template('registration.sql')
@@ -205,6 +213,7 @@ def create_or_import_object(class_name, note, attributes, states, relations,
     # Call Postgres! Return OK or not accordingly
     conn = get_connection()
     cursor = conn.cursor()
+    print sql
     cursor.execute(sql)
     output = cursor.fetchone()
     print output
@@ -338,8 +347,10 @@ def search_objects(class_name, uuid, registration, virkning_fra, virkning_til,
     attributes = convert_attributes(attributes)
     sql_registration = sql_get_registration(class_name, life_cycle_code,
                                             user_ref, note,
-                                            sql_convert_registration(states, attributes,
-                                                                     relations, class_name))
+                                            sql_convert_registration(
+                                                states, attributes, relations,
+                                                class_name
+                                            ))
 
     sql_template = jinja_env.get_template('search_objects.sql')
     sql = sql_template.render(
@@ -359,4 +370,3 @@ def search_objects(class_name, uuid, registration, virkning_fra, virkning_til,
     })
     output = cursor.fetchone()
     return output
-

@@ -23,6 +23,7 @@ class OIOStandardHierarchy(object):
         for c in cls._classes:
             c.create_api(cls._name, flask, base_url)
 
+
 class OIORestObject(object):
     """
     Implement an OIO object - manage access to database layer for this object.
@@ -63,7 +64,8 @@ class OIORestObject(object):
             uuid_param = None
 
             # Convert arguments to lowercase
-            args = {k.lower(): request.args.getlist(k) for k in request.args.keys()}
+            args = {k.lower(): request.args.getlist(k) for
+                    k in request.args.keys()}
 
             first_result = request.args.get('foersteresultat', None, type=int)
             max_results = request.args.get('maximalantalresultater', None,
@@ -108,9 +110,9 @@ class OIORestObject(object):
 
             # TODO: Accept registreringFra, registreringTil, lifecyclecode,
             # notetekst, aktoerref
-            results = db.search_objects(cls.__name__,  uuid_param, registration,
-                                        virkning_fra, virkning_til,
-                                        any_attr_value_arr,
+            results = db.search_objects(cls.__name__,  uuid_param,
+                                        registration, virkning_fra,
+                                        virkning_til, any_attr_value_arr,
                                         any_rel_uuid_arr, first_result,
                                         max_results)
 

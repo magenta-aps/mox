@@ -46,10 +46,10 @@ curl -sH "Content-Type: application/json" -X GET http://127.0.0.1:5000/klassifik
 
 # Search
 
-curl -sH "Content-Type: application/json" -X GET "http://127.0.0.1:5000/klassifikation/facet?redaktoerer=ddc99abd-c1b0-48c2-aef7-74fea841adae&redaktoerer=ef2713ee-1a38-4c23-8fcb-3c4331262194&publiceretstatus=Publiceret&brugervendtnoegle=ORGFUNK&plan=XYZ"
+curl -sH "Content-Type: application/json" -X GET "http://127.0.0.1:5000/klassifikation/facet?redaktoerer=ddc99abd-c1b0-48c2-aef7-74fea841adae&redaktoerer=ef2713ee-1a38-4c23-8fcb-3c4331262194&status=Publiceret&brugervendtnoegle=ORGFUNK&plan=XYZ"
 
-curl -sH "Content-Type: application/json" -X GET "http://127.0.0.1:5000/klassifikation/facet?redaktoerer=ddc99abd-c1b0-48c2-aef7-74fea841adae&redaktoerer=ef2713ee-1a38-4c23-8fcb-3c4331262194&publiceretstatus=Publiceret&brugervendtnoegle=ORGFUNK&plan=XYZ&virkningFra=2000-01-01&virkningTil=2005-01-01"
+curl -sH "Content-Type: application/json" -X GET "http://127.0.0.1:5000/klassifikation/facet?redaktoerer=ddc99abd-c1b0-48c2-aef7-74fea841adae&redaktoerer=ef2713ee-1a38-4c23-8fcb-3c4331262194&status=Publiceret&brugervendtnoegle=ORGFUNK&plan=XYZ&virkningFra=2000-01-01&virkningTil=2005-01-01"
 
-curl -sH "Content-Type: application/json" -X GET "http://127.0.0.1:5000/klassifikation/facet?redaktoerer=ddc99abd-c1b0-48c2-aef7-74fea841adae&redaktoerer=ef2713ee-1a38-4c23-8fcb-3c4331262194&publiceretstatus=Publiceret&brugervendtnoegle=ORGFUNK&plan=XYZ&virkningFra=2016-01-01&virkningTil=2018-01-01"
+curl -sH "Content-Type: application/json" -X GET "http://127.0.0.1:5000/klassifikation/facet?redaktoerer=ddc99abd-c1b0-48c2-aef7-74fea841adae&redaktoerer=ef2713ee-1a38-4c23-8fcb-3c4331262194&status=Publiceret&brugervendtnoegle=ORGFUNK&plan=XYZ&virkningFra=2016-01-01&virkningTil=2018-01-01"
 
 

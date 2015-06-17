@@ -12,7 +12,7 @@
             NULL
             {% endif -%}
             :: Virkning,
-            {{ state_value.publiceretstatus|adapt }}
+            {{ state_value.status|adapt }}
         ){% if not loop.last %},{% endif %}
         {% endfor -%}
         ] :: {{ state_name }}TilsType[]

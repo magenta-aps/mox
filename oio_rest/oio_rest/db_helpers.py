@@ -59,7 +59,6 @@ def get_state_names(class_name):
     return _state_names[class_name.lower()]
 
 
-
 def get_state_field(class_name, state_name):
     """Return the name of the state field for the given state.
     This usually follows the convention of appending 'status' to the end.
@@ -67,6 +66,7 @@ def get_state_field(class_name, state_name):
     return state_name.lstrip(class_name.lower()) + 'status'
 
 _relation_names = {}
+
 
 def get_relation_names(class_name):
     "Return the list of all recognized relations for this class."
