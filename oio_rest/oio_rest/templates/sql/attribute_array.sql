@@ -2,12 +2,17 @@
         {% for attribute_value in attribute_periods -%}
         ROW({% for value in attribute_value -%}
             {% if loop.last -%}
+            {% if value -%}
             ROW(
                 '[{{ value.from }}, {{ value.to }})',
             {{ value.aktoerref|adapt }},
             {{ value.aktoertypekode|adapt }},
             {{ value.notetekst|adapt }}
-        ) :: Virkning
+            )
+         {% else -%}
+            NULL
+            {% endif -%}
+         :: Virkning
             {% else -%}
             {% if value != None -%}
             {{ value|adapt }},

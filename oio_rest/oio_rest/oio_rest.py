@@ -1,6 +1,8 @@
-
 from flask import jsonify, request
+
 import db
+from db_helpers import get_attribute_names, get_attribute_fields, \
+    get_state_names, get_relation_names, get_state_field
 
 
 # Just a helper during debug
@@ -20,7 +22,6 @@ class OIOStandardHierarchy(object):
         Note that version number etc. may have to be added to the URL."""
         for c in cls._classes:
             c.create_api(cls._name, flask, base_url)
-
 
 class OIORestObject(object):
     """
@@ -54,18 +55,70 @@ class OIORestObject(object):
         registreret_fra = request.args.get('registreretFra', None)
         registreret_til = request.args.get('registreretTil', None)
 
-        # TODO: Implement search
+        uuid_param = request.args.get('uuid', None)
+        if uuid_param is None:
+            # Assume the search operation
+            # Later on, we should support searches which filter on uuids as
+            # well
+            uuid_param = None
 
-        uuid = request.args.get('uuid', None)
-        if uuid is None:
-            # This is not allowed, but we let the DB layer throw an exception
-            uuid = []
+            # Convert arguments to lowercase
+            args = {k.lower(): request.args.getlist(k) for k in request.args.keys()}
+
+            first_result = request.args.get('foersteresultat', None, type=int)
+            max_results = request.args.get('maximalantalresultater', None,
+                                           type=int)
+
+            # TODO: Test these parameters
+            any_attr_value_arr = request.args.getlist('vilkaarligAttr', None)
+            any_rel_uuid_arr = request.args.getlist('vilkaarligRel', None)
+
+            # Fill out a registration object based on the query arguments
+            registration = {}
+            for f in args:
+                attr = registration.setdefault('attributter', {})
+                for attr_name in get_attribute_names(cls.__name__):
+                    if f in get_attribute_fields(attr_name):
+                        for attr_value in args[f]:
+                            attr_period = {'virkning': None, f: attr_value}
+                            attr.setdefault(attr_name, []).append(attr_period)
+
+                state = registration.setdefault('tilstande', {})
+                for state_name in get_state_names(cls.__name__):
+                    state_field_name = get_state_field(cls.__name__,
+                                                       state_name)
+
+                    state_periods = state.setdefault(state_name, [])
+                    if f == state_field_name:
+                        for state_value in args[f]:
+                            state_periods.append({
+                                state_field_name: state_value,
+                                'virkning': None
+                            })
+
+                relation = registration.setdefault('relationer', {})
+                if f in get_relation_names(cls.__name__):
+                    relation[f] = []
+                    # Support multiple relation references at a time
+                    for rel in args[f]:
+                        relation[f].append({
+                            'uuid': rel,
+                            'virkning': None
+                        })
+
+            # TODO: Accept registreringFra, registreringTil, lifecyclecode,
+            # notetekst, aktoerref
+            results = db.search_objects(cls.__name__,  uuid_param, registration,
+                                        virkning_fra, virkning_til,
+                                        any_attr_value_arr,
+                                        any_rel_uuid_arr, first_result,
+                                        max_results)
+
         else:
-            uuid = uuid.split(',')
-
-        results = db.list_objects(cls.__name__, uuid, virkning_fra,
-                                  virkning_til, registreret_fra,
-                                  registreret_til)
+            uuid_param = request.args.getlist('uuid', None)
+            results = db.list_objects(cls.__name__, uuid_param, virkning_fra,
+                                      virkning_til, registreret_fra,
+                                      registreret_til)
         if results is None:
             results = []
         # TODO: Return JSON object key should be based on class name,

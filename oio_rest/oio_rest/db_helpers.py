@@ -16,7 +16,7 @@ def get_attribute_fields(attribute_name):
             for a in db_struct[c]["attributter"]:
                 _attribute_fields[
                     c + a
-                ] = db_struct[c]["attributter"][a] + ['virkning']
+                    ] = db_struct[c]["attributter"][a] + ['virkning']
     return _attribute_fields[attribute_name.lower()]
 
 
@@ -37,10 +37,30 @@ _state_names = {}
 
 
 def get_state_names(class_name):
-    "Return the list of all recognized attributes for this class."
+    "Return the list of all recognized states for this class."
     if len(_state_names) == 0:
         for c in db_struct:
             _state_names[c] = [
                 c + a for a in db_struct[c]['tilstande']
-            ]
+                ]
     return _state_names[class_name.lower()]
+
+
+
+def get_state_field(class_name, state_name):
+    """Return the name of the state field for the given state.
+    This usually follows the convention of appending 'status' to the end.
+    """
+    return state_name.lstrip(class_name.lower()) + 'status'
+
+_relation_names = {}
+
+def get_relation_names(class_name):
+    "Return the list of all recognized relations for this class."
+    if len(_relation_names) == 0:
+        for c in db_struct:
+            _relation_names[c] = [
+                a for a in db_struct[c]['relationer_nul_til_en']
+                + [b for b in db_struct[c]['relationer_nul_til_mange']]
+                ]
+    return _relation_names[class_name.lower()]
