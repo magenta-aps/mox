@@ -149,7 +149,8 @@ def sql_convert_registration(states, attributes, relations, class_name):
 
 def object_exists(class_name, uuid):
     """Check if an object with this class name and UUID exists already."""
-    sql = "select (%s IN (SELECT DISTINCT facet_id from facet_registrering))"
+    sql = ("select (%s IN (SELECT DISTINCT " + class_name +
+           "_id from " + class_name + "_registrering))")
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute(sql, (uuid,))

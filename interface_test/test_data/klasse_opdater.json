@@ -1,0 +1,17 @@
+{ 
+    "note": "Opdater klasse",
+    "attributter": { 
+        "klasseegenskaber": [ 
+            {
+            "soegeord": [["hej", "med", "dig"]],
+            "virkning": { 
+                "from": "2014-05-22 12:02:32", 
+                "to": "infinity", 
+                "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                "aktoertypekode": "Bruger", 
+                "notetekst": "Opdatere søgeord." 
+            } 
+            }
+        ] 
+    } 
+}

@@ -20,28 +20,13 @@ echo "Oprettet klasse: $uuid"
 # - Suppose no object with this ID exists.
 import_uuid=$(uuidgen)
 
-exit
-curl -sH "Content-Type: application/json" -X PUT -d "$(cat test_data/facet_opret.json)" http://127.0.0.1:5000/klassifikation/facet/$import_uuid 
-# Update the facet
+#exit
 
-curl -sH "Content-Type: application/json" -X PUT -d "$(cat test_data/facet_opdater.json)" http://127.0.0.1:5000/klassifikation/facet/$uuid
-
-# Passivate the facet. 
-
-curl -sH "Content-Type: application/json" -X PUT -d "$(cat test_data/facet_passiv.json)" http://127.0.0.1:5000/klassifikation/facet/$uuid
-
-# Delete the facet. 
-
-curl -sH "Content-Type: application/json" -X DELETE -d "$(cat test_data/facet_slet.json)" http://127.0.0.1:5000/klassifikation/facet/$uuid
-
-# NOTE: The difference between import and update&passive hinges on
-# whether the object with the given UUID exists or not.
-#
-# The difference between update and passive hinges on whether a life
-# cycle code is supplied directly in the input or not.
+curl -sH "Content-Type: application/json" -X PUT -d "$(cat test_data/klasse_opdater.json)" http://127.0.0.1:5000/klassifikation/klasse/$uuid
 
 
-# List facets
 
-curl -sH "Content-Type: application/json" -X GET http://127.0.0.1:5000/klassifikation/facet?uuid=$uuid > /tmp/listoutput
+# List klasser
+
+curl -sH "Content-Type: application/json" -X GET http://127.0.0.1:5000/klassifikation/klasse?uuid=$uuid 
 
