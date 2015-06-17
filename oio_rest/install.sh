@@ -26,3 +26,7 @@ fi
 source $VIRTUALENV/bin/activate
 
 python ./setup.py develop
+
+ln -s $VIRTUALENV/bin/oio_api
+
+ echo "Run ./oio_api to test API"
