@@ -10,7 +10,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from settings import DATABASE, DB_USER
 from db_helpers import get_attribute_fields, get_attribute_names
-from db_helpers import get_state_names, Soegeord
+from db_helpers import get_field_type, get_state_names, Soegeord
 
 """
     Jinja2 Environment
@@ -55,11 +55,11 @@ def get_authenticated_user():
     return "615957e8-4aa1-4319-a787-f1f7ad6b5e2c"
 
 
-def convert(attribute_field_name, attribute_field_value):
+def convert(attribute_name, attribute_field_name, attribute_field_value):
     # For simple types that can be adapted by standard psycopg2 adapters, just
     # pass on. For complex types like "Soegeord" with specialized adapters,
     # convert to the class for which the adapter is registered.
-    if attribute_field_name == "soegeord":
+    if get_field_type(attribute_name, attribute_field_name) == "soegeord":
         return [Soegeord(*ord) for ord in attribute_field_value]
     else:
         return attribute_field_value
@@ -73,7 +73,9 @@ def convert_attributes(attributes):
         for attr_period in current_attr_periods:
             field_names = get_attribute_fields(attr_name)
             attr_value_list = [
-                convert(f, attr_period[f]) if f in attr_period else None
+                convert(
+                    attr_name, f, attr_period[f]
+                ) if f in attr_period else None
                 for f in field_names
                 ]
             converted_attr_periods.append(attr_value_list)

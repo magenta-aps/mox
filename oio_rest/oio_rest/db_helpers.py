@@ -24,6 +24,15 @@ def get_attribute_fields(attribute_name):
     return _attribute_fields[attribute_name.lower()]
 
 
+def get_field_type(attribute_name, field_name):
+    for c in db_struct:
+        if "attributter_type_override" in db_struct[c]:
+            for a, fs in db_struct[c]["attributter_type_override"].items():
+                if attribute_name == c + a:
+                    if field_name in fs:
+                        return fs[field_name]
+    return "text"
+
 _attribute_names = {}
 
 
