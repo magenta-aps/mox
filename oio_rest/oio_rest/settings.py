@@ -102,6 +102,11 @@ DATABASE_STRUCTURE = {
                 "brugervendtnoegle", "itsystemnavn", "itsystemtype",
                 "konfigurationreference"]
         },
+        "attributter_type_override":{
+            "egenskaber": {
+                "konfigurationreference":"text[]"
+            }
+        },
         "tilstande": {
             "gyldighed": ["Aktiv", "Inaktiv"]
         },
