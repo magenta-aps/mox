@@ -22,21 +22,11 @@ jinja_env = Environment(loader=FileSystemLoader(
     os.path.join(current_directory, 'templates', 'sql')
 ))
 
-
 def adapt(value):
-    # return psyco_adapt(value)
-    # Damn you, character encoding!
-    if isinstance(value, list):
-        return psyco_adapt(map(adapt, value))
-    elif isinstance(value, basestring):
-        value = value.encode('utf-8')
-        return str(psyco_adapt(value)).decode('utf-8')
-    elif isinstance(value, Soegeord):
-        # There's a bug in the handling of None, hence ...
-        return psyco_adapt(value)
-    else:
-        # Charset of complex types is handled on constituents
-        return psyco_adapt(value).getquoted()
+    adapter = psyco_adapt(value)
+    if hasattr(adapter, 'prepare'):
+        adapter.prepare(adapt_connection)
+    return unicode(adapter.getquoted(), adapt_connection.encoding)
 
 jinja_env.filters['adapt'] = adapt
 
@@ -52,6 +42,7 @@ def get_connection():
     connection.autocommit = True
     return connection
 
+adapt_connection = get_connection()
 
 def get_authenticated_user():
     """Return hardcoded UUID until we get real authentication in place."""

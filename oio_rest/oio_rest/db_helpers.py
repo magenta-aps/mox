@@ -1,4 +1,6 @@
 """"Encapsulate details about the database structure."""
+from collections import namedtuple
+import psycopg2
 
 from psycopg2.extensions import adapt as psyco_adapt, ISQLQuote
 from psycopg2.extensions import register_adapter as psyco_register_adapter
@@ -81,34 +83,32 @@ def get_relation_names(class_name):
 
 # Helper classers for adapting special types
 
-class Soegeord(object):
-    def __init__(self, i=None, d=None, c=None):
-        self.identifier = i
-        self.description = d
-        self.category = c
+Soegeord = namedtuple('KlasseSoegeordType', 'identifier description category')
 
-
-class SoegeordAdapter(object):
-
-    def __init__(self, soegeord):
-        self._soegeord = soegeord
+class NamedTupleAdapter(object):
+    """Adapt namedtuples, while performing a cast to the tuple's classname."""
+    def __init__(self, tuple_obj):
+        self._tuple_obj = tuple_obj
 
     def __conform__(self, proto):
         if proto is ISQLQuote:
             return self
 
+    def prepare(self, conn):
+        self._conn = conn
+
     def getquoted(self):
-        values = map(psyco_adapt, [
-            self._soegeord.identifier,
-            self._soegeord.description,
-            self._soegeord.category
-        ])
+        def prepare_and_adapt(x):
+            x = psyco_adapt(x)
+            x.prepare(self._conn)
+            return x
+        values = map(prepare_and_adapt, self._tuple_obj)
         values = [v.getquoted() for v in values]
-        sql = 'ROW(' + ','.join(values) + ') :: KlasseSoegeordType'
-        print values
+        sql = 'ROW(' + ','.join(values) + ') :: ' + \
+              self._tuple_obj.__class__.__name__
         return sql
 
     def __str__(self):
         return self.getquoted()
 
-psyco_register_adapter(Soegeord, SoegeordAdapter)
+psyco_register_adapter(Soegeord, NamedTupleAdapter)

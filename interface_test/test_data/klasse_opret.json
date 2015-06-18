@@ -10,8 +10,8 @@
             "omfang": "Magenta", 
             "retskilde": "Ja", 
             "soegeord": [
-                ["Magenta", "Vores firma", "info" ],
-                [ "KL", "Vores kunde", "info" ]
+                ["Magentaø", "Vores firma", "info" ],
+                [ "KL", "æVores kunde", "info" ]
             ],
             "virkning": { 
                 "from": "2014-05-19 12:02:32", 
