@@ -80,6 +80,42 @@ IF organisationenhed_uuid is not NULL THEN
 			)
 		)
 		AND
+		(
+			(
+				((b.registrering).livscykluskode <> 'Slettet'::Livscykluskode )
+				AND
+					(
+						(registreringObj.registrering) IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode IS NULL 
+					)
+			)
+			OR
+			(
+				(NOT ((registreringObj.registrering) IS NULL))
+				AND
+				(registreringObj.registrering).livscykluskode IS NOT NULL 
+			)
+		)
+		AND
+		(
+			(
+			  (
+			  	(registreringObj.registrering) IS NULL
+			  	OR
+			  	(registreringObj.registrering).timeperiod IS NULL
+			  )
+			  AND
+			  upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ
+			)  	
+		OR
+			(
+				(NOT ((registreringObj.registrering) IS NULL))
+				AND
+				((registreringObj.registrering).timeperiod IS NOT NULL)
+			)
+		)
+		AND
 		( (NOT organisationenhed_candidates_is_initialized) OR b.organisationenhed_id = ANY (organisationenhed_candidates) )
 
 		);		
@@ -195,6 +231,42 @@ ELSE
 			)
 		)
 		AND
+		(
+			(
+				((b.registrering).livscykluskode <> 'Slettet'::Livscykluskode )
+				AND
+					(
+						(registreringObj.registrering) IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode IS NULL 
+					)
+			)
+			OR
+			(
+				(NOT ((registreringObj.registrering) IS NULL))
+				AND
+				(registreringObj.registrering).livscykluskode IS NOT NULL 
+			)
+		)
+		AND
+		(
+			(
+			  (
+			  	(registreringObj.registrering) IS NULL
+			  	OR
+			  	(registreringObj.registrering).timeperiod IS NULL
+			  )
+			  AND
+			  upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ
+			)  	
+		OR
+			(
+				(NOT ((registreringObj.registrering) IS NULL))
+				AND
+				((registreringObj.registrering).timeperiod IS NOT NULL)
+			)
+		)
+		AND
 		( (NOT organisationenhed_candidates_is_initialized) OR b.organisationenhed_id = ANY (organisationenhed_candidates) )
 
 			);
@@ -262,6 +334,42 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 						OR
 						(b.registrering).note ILIKE (registreringObj.registrering).note
 					)
+			)
+		)
+		AND
+		(
+			(
+				((b.registrering).livscykluskode <> 'Slettet'::Livscykluskode )
+				AND
+					(
+						(registreringObj.registrering) IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode IS NULL 
+					)
+			)
+			OR
+			(
+				(NOT ((registreringObj.registrering) IS NULL))
+				AND
+				(registreringObj.registrering).livscykluskode IS NOT NULL 
+			)
+		)
+		AND
+		(
+			(
+			  (
+			  	(registreringObj.registrering) IS NULL
+			  	OR
+			  	(registreringObj.registrering).timeperiod IS NULL
+			  )
+			  AND
+			  upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ
+			)  	
+		OR
+			(
+				(NOT ((registreringObj.registrering) IS NULL))
+				AND
+				((registreringObj.registrering).timeperiod IS NOT NULL)
 			)
 		)
 		AND
@@ -364,6 +472,42 @@ ELSE
 						OR
 						(b.registrering).note ILIKE (registreringObj.registrering).note
 					)
+			)
+		)
+		AND
+		(
+			(
+				((b.registrering).livscykluskode <> 'Slettet'::Livscykluskode )
+				AND
+					(
+						(registreringObj.registrering) IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode IS NULL 
+					)
+			)
+			OR
+			(
+				(NOT ((registreringObj.registrering) IS NULL))
+				AND
+				(registreringObj.registrering).livscykluskode IS NOT NULL 
+			)
+		)
+		AND
+		(
+			(
+			  (
+			  	(registreringObj.registrering) IS NULL
+			  	OR
+			  	(registreringObj.registrering).timeperiod IS NULL
+			  )
+			  AND
+			  upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ
+			)  	
+		OR
+			(
+				(NOT ((registreringObj.registrering) IS NULL))
+				AND
+				((registreringObj.registrering).timeperiod IS NOT NULL)
 			)
 		)
 		AND
@@ -480,6 +624,42 @@ ELSE
 			)
 		)
 		AND
+		(
+			(
+				((b.registrering).livscykluskode <> 'Slettet'::Livscykluskode )
+				AND
+					(
+						(registreringObj.registrering) IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode IS NULL 
+					)
+			)
+			OR
+			(
+				(NOT ((registreringObj.registrering) IS NULL))
+				AND
+				(registreringObj.registrering).livscykluskode IS NOT NULL 
+			)
+		)
+		AND
+		(
+			(
+			  (
+			  	(registreringObj.registrering) IS NULL
+			  	OR
+			  	(registreringObj.registrering).timeperiod IS NULL
+			  )
+			  AND
+			  upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ
+			)  	
+		OR
+			(
+				(NOT ((registreringObj.registrering) IS NULL))
+				AND
+				((registreringObj.registrering).timeperiod IS NOT NULL)
+			)
+		)
+		AND
 		( (NOT organisationenhed_candidates_is_initialized) OR b.organisationenhed_id = ANY (organisationenhed_candidates) )
 
 	);
@@ -540,6 +720,42 @@ IF coalesce(array_length(anyRelUuidArr ,1),0)>0 THEN
 			)
 		)
 		AND
+		(
+			(
+				((b.registrering).livscykluskode <> 'Slettet'::Livscykluskode )
+				AND
+					(
+						(registreringObj.registrering) IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode IS NULL 
+					)
+			)
+			OR
+			(
+				(NOT ((registreringObj.registrering) IS NULL))
+				AND
+				(registreringObj.registrering).livscykluskode IS NOT NULL 
+			)
+		)
+		AND
+		(
+			(
+			  (
+			  	(registreringObj.registrering) IS NULL
+			  	OR
+			  	(registreringObj.registrering).timeperiod IS NULL
+			  )
+			  AND
+			  upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ
+			)  	
+		OR
+			(
+				(NOT ((registreringObj.registrering) IS NULL))
+				AND
+				((registreringObj.registrering).timeperiod IS NOT NULL)
+			)
+		)
+		AND
 		( (NOT organisationenhed_candidates_is_initialized) OR b.organisationenhed_id = ANY (organisationenhed_candidates) )
 
 
@@ -591,6 +807,42 @@ ELSE
 						OR
 						(b.registrering).note ILIKE (registreringObj.registrering).note
 					)
+			)
+		)
+		AND
+		(
+			(
+				((b.registrering).livscykluskode <> 'Slettet'::Livscykluskode )
+				AND
+					(
+						(registreringObj.registrering) IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode IS NULL 
+					)
+			)
+			OR
+			(
+				(NOT ((registreringObj.registrering) IS NULL))
+				AND
+				(registreringObj.registrering).livscykluskode IS NOT NULL 
+			)
+		)
+		AND
+		(
+			(
+			  (
+			  	(registreringObj.registrering) IS NULL
+			  	OR
+			  	(registreringObj.registrering).timeperiod IS NULL
+			  )
+			  AND
+			  upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ
+			)  	
+		OR
+			(
+				(NOT ((registreringObj.registrering) IS NULL))
+				AND
+				((registreringObj.registrering).timeperiod IS NOT NULL)
 			)
 		)
 		AND

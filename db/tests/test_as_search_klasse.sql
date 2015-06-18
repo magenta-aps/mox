@@ -137,6 +137,8 @@ DECLARE
 	search_result48 uuid[];
 	search_result49 uuid[];
 
+	search_result200 uuid[];
+
 	expected_result2 uuid[];
 	expected_result2A uuid[];
 	expected_result3A uuid[];
@@ -184,6 +186,7 @@ DECLARE
 	expected_result48 uuid[];
 	expected_result49 uuid[];
 
+	expected_result200 uuid[];
 
 	search_registrering_3 KlasseRegistreringType;
 	search_registrering_3A KlasseRegistreringType;
@@ -234,6 +237,13 @@ DECLARE
 	search_registrering_48 KlasseRegistreringType;
 	search_registrering_49 KlasseRegistreringType;
 
+	search_registrering_200 KlasseRegistreringType;
+
+	update_reg_id bigint;
+	rows_affected int;
+	read_Klasse1 KlasseType;
+	read_Klasse2 KlasseType;
+	read_Klasse3 KlasseType;
 BEGIN
 
 
@@ -2596,6 +2606,110 @@ search_result45 :=as_search_klasse(
 RETURN NEXT ok(expected_result45 @> search_result45 and search_result45 @>expected_result45 and array_length(expected_result45,1)=array_length(search_result45,1), 'search aktorref isolated.');
 
 -------------------------------------------------------------------------
+
+--we'll update system reg time of reg of klasse C BACK to normal to help facilitate tests
+/*
+update
+	klasse_registrering a
+SET 
+registrering=ROW (
+	TSTZRANGE('2014-01-01','infinity','[)'),
+	'Opstaaet'::Livscykluskode,
+	uuidregistrering_C,
+	'Test Note 1000') :: registreringBase
+where
+a.klasse_id=new_uuid_C
+;
+
+--GET DIAGNOSTICS rows_affected = ROW_COUNT;
+--raise notice 'rows_affected:%',rows_affected;
+*/
+
+/*
+read_Klasse1 := as_read_Klasse(new_uuid_A,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
+	);
+
+read_Klasse2 := as_read_Klasse(new_uuid_B,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
+	);
+
+
+read_Klasse3 := as_read_Klasse(new_uuid_C,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
+	);
+
+raise notice 'read_Klasse1:%',to_json(read_Klasse1);
+raise notice 'read_Klasse2:%',to_json(read_Klasse2);
+raise notice 'read_Klasse3:%',to_json(read_Klasse3);
+*/
+
+update_reg_id:=as_update_klasse(
+  new_uuid_B, '8762a443-2f60-49c1-bd8e-ecfdef91d48a'::uuid,'Test update'::text,
+  'Slettet'::Livscykluskode,          
+ registrering_B.attrEgenskaber,
+  registrering_B.tilsPubliceret,
+  registrering_B.relationer
+  ,null
+	);
+
+/*
+read_Klasse2 := as_read_Klasse(new_uuid_B,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
+	);
+*/
+--raise notice 'read_Klasse2 - post update:%',to_json(read_Klasse2);
+
+search_registrering_200 := ROW (
+	/*
+	ROW (
+	TSTZRANGE(current_timestamp,clock_timestamp(),'[]'),
+	NULL,
+	NULL,
+	NULL) :: registreringBase
+*/
+	null
+	,null--ARRAY[klassePubliceret_B]::KlassePubliceretTilsType[],
+	,ARRAY[
+ ROW (
+	null--'brugervendt_noegle_C',
+   ,null--'klassebeskrivelse_C',
+   ,'eksempel_faelles'
+	,null--'omfang_C',
+   ,null--'titel_C',
+   ,null --'retskilde_C'
+   ,null--'aendringsnotat_C', --aendringsnotat
+    ,NULL --soegeord
+   ,NULL
+) :: KlasseEgenskaberAttrType
+	]
+	,
+	NULL
+	):: KlasseRegistreringType;
+
+
+expected_result200:=ARRAY[new_uuid_A]::uuid[];
+
+search_result200 :=as_search_klasse(
+	null,--TOOD ??
+	null,
+	search_registrering_200 --registrering_A Klasseregistrering_AType
+	,null
+	);
+
+--raise notice 'expected_result200:%',to_json(expected_result200);
+
+--raise notice 'search_result200:%',to_json(search_result200);
+
+RETURN NEXT ok(expected_result200 @> search_result200 and search_result200 @>expected_result200 and array_length(expected_result200,1)=array_length(search_result200,1), 'test if search does not included Livscykluskode [slettet] pr default.');
+
+
+
+
 
 
 END;
