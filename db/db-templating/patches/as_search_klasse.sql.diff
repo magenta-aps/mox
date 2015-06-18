@@ -1,5 +1,5 @@
-*** ../generated-files/as_search_klasse.sql	2015-06-09 15:09:19.914938889 +0200
---- ../patches/as_search_klasse.sql.org	2015-06-09 15:13:00.286949864 +0200
+*** ../generated-files/as_search_klasse.sql	2015-06-17 14:23:35.168518519 +0200
+--- ../patches/as_search_klasse.sql.org	2015-06-17 14:00:53.140450686 +0200
 ***************
 *** 29,38 ****
 --- 29,40 ----
@@ -16,7 +16,7 @@
   
   klasse_candidates_is_initialized := false;
 ***************
-*** 57,79 ****
+*** 102,124 ****
   --Filtration on attribute: Egenskaber
   --/**********************************************************//
   IF registreringObj IS NULL OR (registreringObj).attrEgenskaber IS NULL THEN
@@ -40,7 +40,7 @@
   								(
   							 		(attrEgenskaberTypeObj.virkning).TimePeriod IS NULL
   								)
---- 59,111 ----
+--- 104,156 ----
   --Filtration on attribute: Egenskaber
   --/**********************************************************//
   IF registreringObj IS NULL OR (registreringObj).attrEgenskaber IS NULL THEN
@@ -95,11 +95,11 @@
   							 		(attrEgenskaberTypeObj.virkning).TimePeriod IS NULL
   								)
 ***************
-*** 148,158 ****
---- 180,214 ----
+*** 193,203 ****
+--- 225,259 ----
   					attrEgenskaberTypeObj.aendringsnotat IS NULL
-  					OR
-  					a.aendringsnotat ILIKE attrEgenskaberTypeObj.aendringsnotat --case insensitive
+  					OR 
+  					a.aendringsnotat ILIKE attrEgenskaberTypeObj.aendringsnotat --case insensitive 
   				)
   				AND
 + 				(
@@ -133,8 +133,8 @@
   					(
   						(registreringObj.registrering).timeperiod IS NULL 
 ***************
-*** 205,214 ****
---- 261,271 ----
+*** 250,259 ****
+--- 306,316 ----
   
   			SELECT DISTINCT
   			b.klasse_id 
@@ -147,8 +147,8 @@
   				OR
   				a.beskrivelse ILIKE anyAttrValue
 ***************
-*** 220,229 ****
---- 277,292 ----
+*** 265,274 ****
+--- 322,337 ----
   				a.titel ILIKE anyAttrValue
   				OR
   				a.retskilde ILIKE anyAttrValue

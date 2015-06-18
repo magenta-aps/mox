@@ -155,26 +155,26 @@ ELSE
 				AND
 				(
 					attrEgenskaberTypeObj.brugervendtnoegle IS NULL
-					OR
-					a.brugervendtnoegle ILIKE attrEgenskaberTypeObj.brugervendtnoegle --case insensitive
+					OR 
+					a.brugervendtnoegle ILIKE attrEgenskaberTypeObj.brugervendtnoegle --case insensitive 
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.beskrivelse IS NULL
-					OR
-					a.beskrivelse ILIKE attrEgenskaberTypeObj.beskrivelse --case insensitive
+					OR 
+					a.beskrivelse ILIKE attrEgenskaberTypeObj.beskrivelse --case insensitive 
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.kaldenavn IS NULL
-					OR
-					a.kaldenavn ILIKE attrEgenskaberTypeObj.kaldenavn --case insensitive
+					OR 
+					a.kaldenavn ILIKE attrEgenskaberTypeObj.kaldenavn --case insensitive 
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.ophavsret IS NULL
-					OR
-					a.ophavsret ILIKE attrEgenskaberTypeObj.ophavsret --case insensitive
+					OR 
+					a.ophavsret ILIKE attrEgenskaberTypeObj.ophavsret --case insensitive 
 				)
 				AND
 						(

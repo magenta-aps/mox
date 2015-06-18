@@ -100,8 +100,10 @@ ALTER TABLE {{oio_type}}_attr_{{attribut}}_id_seq
 CREATE TABLE {{oio_type}}_attr_{{attribut}}
 (
   id bigint NOT NULL DEFAULT nextval('{{oio_type}}_attr_{{attribut}}_id_seq'::regclass),
-   {% for field in attribut_fields %} {{field}} text null,
-   {% endfor %} virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
+   {%- for field in attribut_fields %} 
+   {{field}} {%- if  attributter_type_override is defined and attributter_type_override[attribut] is defined and attributter_type_override[attribut][field] is defined %} {{attributter_type_override[attribut][field]}} {%- else %} text {%- endif %} null,
+   {%- endfor %} 
+   virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
   {{oio_type}}_registrering_id bigint not null,
 CONSTRAINT {{oio_type}}_attr_{{attribut}}_pkey PRIMARY KEY (id),
 CONSTRAINT {{oio_type}}_attr_{{attribut}}_forkey_{{oio_type}}registrering  FOREIGN KEY ({{oio_type}}_registrering_id) REFERENCES {{oio_type}}_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
@@ -115,15 +117,33 @@ ALTER TABLE {{oio_type}}_attr_{{attribut}}
 
 {% for field in attribut_fields %} 
 
+
+ {%- if  attributter_type_override is defined and attributter_type_override[attribut] is defined and attributter_type_override[attribut][field] is defined %} 
+{%-if attributter_type_override[attribut][field] == "text[]" %}
+  CREATE INDEX {{oio_type}}_attr_{{attribut}}_pat_{{field}}
+  ON {{oio_type}}_attr_{{attribut}}
+  USING gin
+  ({{field}} _text_ops);
+{%- else %} 
+
 CREATE INDEX {{oio_type}}_attr_{{attribut}}_idx_{{field}}
   ON {{oio_type}}_attr_{{attribut}}
   USING btree
   ({{field}});
 
+{%- endif %} 
+{%- else %} 
 CREATE INDEX {{oio_type}}_attr_{{attribut}}_pat_{{field}}
   ON {{oio_type}}_attr_{{attribut}}
   USING gin
   ({{field}} gin_trgm_ops);
+
+CREATE INDEX {{oio_type}}_attr_{{attribut}}_idx_{{field}}
+  ON {{oio_type}}_attr_{{attribut}}
+  USING btree
+  ({{field}});
+
+{%- endif %} 
 
 {% endfor %}
 
