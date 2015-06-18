@@ -9,7 +9,6 @@ from db_helpers import get_attribute_names, get_attribute_fields, \
 def j(t):
     return jsonify(output=t)
 
-
 class OIOStandardHierarchy(object):
     """Implement API for entire hierarchy."""
 
@@ -22,7 +21,6 @@ class OIOStandardHierarchy(object):
         Note that version number etc. may have to be added to the URL."""
         for c in cls._classes:
             c.create_api(cls._name, flask, base_url)
-
 
 class OIORestObject(object):
     """
@@ -51,37 +49,44 @@ class OIORestObject(object):
         """
         LIST or SEARCH facets, depending on parameters.
         """
-        virkning_fra = request.args.get('virkningFra', None)
-        virkning_til = request.args.get('virkningTil', None)
-        registreret_fra = request.args.get('registreretFra', None)
-        registreret_til = request.args.get('registreretTil', None)
+        # Convert arguments to lowercase, getting them as lists
+        list_args = {k.lower(): request.args.getlist(k)
+                     for k in request.args.keys()}
+        args = {k.lower(): request.args.get(k)
+                for k in request.args.keys()}
 
-        uuid_param = request.args.get('uuid', None)
+        virkning_fra = args.get('virkningfra', None)
+        virkning_til = args.get('virkningtil', None)
+        registreret_fra = args.get('registreretfra', None)
+        registreret_til = args.get('registrerettil', None)
+
+        uuid_param = list_args.get('uuid', None)
         if uuid_param is None:
             # Assume the search operation
             # Later on, we should support searches which filter on uuids as
             # well
             uuid_param = None
 
-            # Convert arguments to lowercase
-            args = {k.lower(): request.args.getlist(k) for
-                    k in request.args.keys()}
+            first_result = args.get('foersteresultat', None)
+            if first_result is not None:
+                first_result = int(first_result)
+            max_results = args.get('maximalantalresultater', None)
+            if max_results is not None:
+                max_results = int(max_results)
 
-            first_result = request.args.get('foersteresultat', None, type=int)
-            max_results = request.args.get('maximalantalresultater', None,
-                                           type=int)
-
-            # TODO: Test these parameters
-            any_attr_value_arr = request.args.getlist('vilkaarligAttr', None)
-            any_rel_uuid_arr = request.args.getlist('vilkaarligRel', None)
+            any_attr_value_arr = list_args.get('vilkaarligattr', None)
+            any_rel_uuid_arr = list_args.get('vilkaarligrel', None)
+            life_cycle_code = args.get('livscykluskode', None)
+            user_ref = args.get('brugerref', None)
+            note = args.get('notetekst', None)
 
             # Fill out a registration object based on the query arguments
             registration = {}
-            for f in args:
+            for f in list_args:
                 attr = registration.setdefault('attributter', {})
                 for attr_name in get_attribute_names(cls.__name__):
                     if f in get_attribute_fields(attr_name):
-                        for attr_value in args[f]:
+                        for attr_value in list_args[f]:
                             attr_period = {'virkning': None, f: attr_value}
                             attr.setdefault(attr_name, []).append(attr_period)
 
@@ -92,7 +97,7 @@ class OIORestObject(object):
 
                     state_periods = state.setdefault(state_name, [])
                     if f == state_field_name:
-                        for state_value in args[f]:
+                        for state_value in list_args[f]:
                             state_periods.append({
                                 state_field_name: state_value,
                                 'virkning': None
@@ -102,22 +107,23 @@ class OIORestObject(object):
                 if f in get_relation_names(cls.__name__):
                     relation[f] = []
                     # Support multiple relation references at a time
-                    for rel in args[f]:
+                    for rel in list_args[f]:
                         relation[f].append({
                             'uuid': rel,
                             'virkning': None
                         })
 
-            # TODO: Accept registreringFra, registreringTil, lifecyclecode,
-            # notetekst, aktoerref
-            results = db.search_objects(cls.__name__,  uuid_param,
-                                        registration, virkning_fra,
-                                        virkning_til, any_attr_value_arr,
+            results = db.search_objects(cls.__name__,  uuid_param, registration,
+                                        virkning_fra, virkning_til,
+                                        registreret_fra, registreret_til,
+                                        life_cycle_code,
+                                        user_ref, note,
+                                        any_attr_value_arr,
                                         any_rel_uuid_arr, first_result,
                                         max_results)
 
         else:
-            uuid_param = request.args.getlist('uuid', None)
+            uuid_param = list_args.get('uuid', None)
             results = db.list_objects(cls.__name__, uuid_param, virkning_fra,
                                       virkning_til, registreret_fra,
                                       registreret_til)

@@ -5,8 +5,8 @@
             {
             "brugervendtnoegle": "OIO_REST", 
             "itsystemnavn": "OIOXML REST API", 
-            "itsystemtype": "Kommunalt system", 
-            "konfigurationreference": ["Ja", "Nej", "Ved ikke"], 
+            "itsystemtype": "Kommunalt sysæøtem", 
+            "konfigurationreference": ["Jåa", "Neæj", "Ved ikkeø"], 
             "virkning": { 
                 "from": "2014-05-19 12:02:32", 
                 "to": "infinity", 

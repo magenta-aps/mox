@@ -22,21 +22,11 @@ jinja_env = Environment(loader=FileSystemLoader(
     os.path.join(current_directory, 'templates', 'sql')
 ))
 
-
 def adapt(value):
-    # return psyco_adapt(value)
-    # Damn you, character encoding!
-    if isinstance(value, list):
-        return psyco_adapt(map(adapt, value))
-    elif isinstance(value, basestring):
-        value = value.encode('utf-8')
-        return str(psyco_adapt(value)).decode('utf-8')
-    elif isinstance(value, Soegeord):
-        # There's a bug in the handling of None, hence ...
-        return psyco_adapt(value)
-    else:
-        # Charset of complex types is handled on constituents
-        return psyco_adapt(value).getquoted()
+    adapter = psyco_adapt(value)
+    if hasattr(adapter, 'prepare'):
+        adapter.prepare(adapt_connection)
+    return unicode(adapter.getquoted(), adapt_connection.encoding)
 
 jinja_env.filters['adapt'] = adapt
 
@@ -52,6 +42,7 @@ def get_connection():
     connection.autocommit = True
     return connection
 
+adapt_connection = get_connection()
 
 def get_authenticated_user():
     """Return hardcoded UUID until we get real authentication in place."""
@@ -147,7 +138,7 @@ def sql_convert_registration(states, attributes, relations, class_name):
     return (sql_states, sql_attributes, sql_relations)
 
 
-def sql_get_registration(class_name, life_cycle_code,
+def sql_get_registration(class_name, time_period, life_cycle_code,
                          user_ref, note, registration_tuple):
     """
     Return a an SQL registrering object of type
@@ -157,6 +148,7 @@ def sql_get_registration(class_name, life_cycle_code,
     sql_template = jinja_env.get_template('registration.sql')
     sql = sql_template.render(
         class_name=class_name,
+        time_period=time_period,
         life_cycle_code=life_cycle_code,
         user_ref=user_ref,
         note=note,
@@ -199,7 +191,7 @@ def create_or_import_object(class_name, note, attributes, states, relations,
     attributes = convert_attributes(attributes)
     registration = sql_convert_registration(states, attributes, relations,
                                             class_name)
-    sql_registration = sql_get_registration(class_name, life_cycle_code,
+    sql_registration = sql_get_registration(class_name, None, life_cycle_code,
                                             user_ref, note, registration)
 
     sql_template = jinja_env.get_template('create_object.sql')
@@ -324,7 +316,10 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
     return output
 
 
-def search_objects(class_name, uuid, registration, virkning_fra, virkning_til,
+def search_objects(class_name, uuid, registration,
+                   virkning_fra = None, virkning_til = None,
+                   registreret_fra = None, registreret_til = None,
+                   life_cycle_code = None, user_ref = None, note = None,
                    any_attr_value_arr=None, any_rel_uuid_arr=None,
                    first_result=0, max_results=2147483647):
 
@@ -335,24 +330,33 @@ def search_objects(class_name, uuid, registration, virkning_fra, virkning_til,
     if uuid is not None:
         assert isinstance(uuid, basestring)
 
-    # TODO: Accept these as parameters to the search?
-    life_cycle_code = None
-    user_ref = None
-    note = None
-
     (attributes, states, relations) = (registration.get('attributter', None),
                                        registration.get('tilstande', None),
                                        registration.get('relationer', None))
 
     attributes = convert_attributes(attributes)
-    sql_registration = sql_get_registration(class_name, life_cycle_code,
-                                            user_ref, note,
-                                            sql_convert_registration(
-                                                states, attributes, relations,
-                                                class_name
-                                            ))
+
+    time_period = None
+    if registreret_fra is not None or registreret_til is not None:
+        time_period = DateTimeTZRange(registreret_fra, registreret_til)
+
+    sql_registration = sql_get_registration(
+        class_name,
+        time_period,
+        life_cycle_code,
+        user_ref, note,
+        sql_convert_registration(
+            states, attributes, relations,
+            class_name
+        )
+    )
 
     sql_template = jinja_env.get_template('search_objects.sql')
+
+    virkning_soeg = None
+    if virkning_fra is not None or virkning_til is not None:
+        virkning_soeg = DateTimeTZRange(virkning_fra, virkning_til)
+
     sql = sql_template.render(
         first_result=first_result,
         uuid=uuid,
@@ -360,13 +364,12 @@ def search_objects(class_name, uuid, registration, virkning_fra, virkning_til,
         registration=sql_registration,
         any_attr_value_arr=any_attr_value_arr,
         any_rel_uuid_arr=any_rel_uuid_arr,
-        max_results=max_results
+        max_results=max_results,
+        virkning_soeg=virkning_soeg
     )
 
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute(sql, {
-        'virkning_soeg': DateTimeTZRange(virkning_fra, virkning_til)
-    })
+    cursor.execute(sql)
     output = cursor.fetchone()
     return output
