@@ -56,3 +56,5 @@ curl -sH "Content-Type: application/json" -X GET "http://127.0.0.1:5000/klassifi
 
 curl -sH "Content-Type: application/json" -X GET "http://127.0.0.1:5000/klassifikation/facet?vilkaarligAttr=%funktion"
 
+curl -sH "Content-Type: application/json" -X GET "http://127.0.0.1:5000/klassifikation/facet?vilkaarligRel=ddc99abd-c1b0-48c2-aef7-74fea841adae"
+
