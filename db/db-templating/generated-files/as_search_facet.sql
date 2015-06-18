@@ -155,44 +155,44 @@ ELSE
 				AND
 				(
 					attrEgenskaberTypeObj.brugervendtnoegle IS NULL
-					OR
-					a.brugervendtnoegle ILIKE attrEgenskaberTypeObj.brugervendtnoegle --case insensitive
+					OR 
+					a.brugervendtnoegle ILIKE attrEgenskaberTypeObj.brugervendtnoegle --case insensitive 
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.beskrivelse IS NULL
-					OR
-					a.beskrivelse ILIKE attrEgenskaberTypeObj.beskrivelse --case insensitive
+					OR 
+					a.beskrivelse ILIKE attrEgenskaberTypeObj.beskrivelse --case insensitive 
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.opbygning IS NULL
-					OR
-					a.opbygning ILIKE attrEgenskaberTypeObj.opbygning --case insensitive
+					OR 
+					a.opbygning ILIKE attrEgenskaberTypeObj.opbygning --case insensitive 
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.ophavsret IS NULL
-					OR
-					a.ophavsret ILIKE attrEgenskaberTypeObj.ophavsret --case insensitive
+					OR 
+					a.ophavsret ILIKE attrEgenskaberTypeObj.ophavsret --case insensitive 
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.plan IS NULL
-					OR
-					a.plan ILIKE attrEgenskaberTypeObj.plan --case insensitive
+					OR 
+					a.plan ILIKE attrEgenskaberTypeObj.plan --case insensitive 
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.supplement IS NULL
-					OR
-					a.supplement ILIKE attrEgenskaberTypeObj.supplement --case insensitive
+					OR 
+					a.supplement ILIKE attrEgenskaberTypeObj.supplement --case insensitive 
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.retskilde IS NULL
-					OR
-					a.retskilde ILIKE attrEgenskaberTypeObj.retskilde --case insensitive
+					OR 
+					a.retskilde ILIKE attrEgenskaberTypeObj.retskilde --case insensitive 
 				)
 				AND
 						(

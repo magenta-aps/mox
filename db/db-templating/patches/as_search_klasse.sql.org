@@ -42,6 +42,51 @@ klasse_candidates_is_initialized := false;
 IF klasse_uuid is not NULL THEN
 	klasse_candidates:= ARRAY[klasse_uuid];
 	klasse_candidates_is_initialized:=true;
+	IF registreringObj IS NULL THEN
+	--RAISE DEBUG 'no registreringObj'
+	ELSE	
+		klasse_candidates:=array(
+				SELECT DISTINCT
+				b.klasse_id 
+				FROM
+				klasse a
+				JOIN klasse_registrering b on b.klasse_id=a.id
+				WHERE
+						(
+				(registreringObj.registrering) IS NULL 
+				OR
+				(
+					(
+						(registreringObj.registrering).timeperiod IS NULL 
+						OR
+						(registreringObj.registrering).timeperiod && (b.registrering).timeperiod
+					)
+					AND
+					(
+						(registreringObj.registrering).livscykluskode IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode = (b.registrering).livscykluskode 		
+					) 
+					AND
+					(
+						(registreringObj.registrering).brugerref IS NULL
+						OR
+						(registreringObj.registrering).brugerref = (b.registrering).brugerref
+					)
+					AND
+					(
+						(registreringObj.registrering).note IS NULL
+						OR
+						(b.registrering).note ILIKE (registreringObj.registrering).note
+					)
+			)
+		)
+		AND
+		( (NOT klasse_candidates_is_initialized) OR b.klasse_id = ANY (klasse_candidates) )
+
+		);		
+	END IF;
+	
 END IF;
 
 
@@ -142,44 +187,44 @@ END LOOP;
 				AND
 				(
 					attrEgenskaberTypeObj.brugervendtnoegle IS NULL
-					OR
-					a.brugervendtnoegle ILIKE attrEgenskaberTypeObj.brugervendtnoegle --case insensitive
+					OR 
+					a.brugervendtnoegle ILIKE attrEgenskaberTypeObj.brugervendtnoegle --case insensitive 
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.beskrivelse IS NULL
-					OR
-					a.beskrivelse ILIKE attrEgenskaberTypeObj.beskrivelse --case insensitive
+					OR 
+					a.beskrivelse ILIKE attrEgenskaberTypeObj.beskrivelse --case insensitive 
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.eksempel IS NULL
-					OR
-					a.eksempel ILIKE attrEgenskaberTypeObj.eksempel --case insensitive
+					OR 
+					a.eksempel ILIKE attrEgenskaberTypeObj.eksempel --case insensitive 
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.omfang IS NULL
-					OR
-					a.omfang ILIKE attrEgenskaberTypeObj.omfang --case insensitive
+					OR 
+					a.omfang ILIKE attrEgenskaberTypeObj.omfang --case insensitive 
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.titel IS NULL
-					OR
-					a.titel ILIKE attrEgenskaberTypeObj.titel --case insensitive
+					OR 
+					a.titel ILIKE attrEgenskaberTypeObj.titel --case insensitive 
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.retskilde IS NULL
-					OR
-					a.retskilde ILIKE attrEgenskaberTypeObj.retskilde --case insensitive
+					OR 
+					a.retskilde ILIKE attrEgenskaberTypeObj.retskilde --case insensitive 
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.aendringsnotat IS NULL
-					OR
-					a.aendringsnotat ILIKE attrEgenskaberTypeObj.aendringsnotat --case insensitive
+					OR 
+					a.aendringsnotat ILIKE attrEgenskaberTypeObj.aendringsnotat --case insensitive 
 				)
 				AND
 				(

@@ -102,12 +102,12 @@ ALTER TABLE klassifikation_attr_egenskaber_id_seq
 
 CREATE TABLE klassifikation_attr_egenskaber
 (
-  id bigint NOT NULL DEFAULT nextval('klassifikation_attr_egenskaber_id_seq'::regclass),
-    brugervendtnoegle text null,
-    beskrivelse text null,
-    kaldenavn text null,
-    ophavsret text null,
-    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
+  id bigint NOT NULL DEFAULT nextval('klassifikation_attr_egenskaber_id_seq'::regclass), 
+   brugervendtnoegle text null, 
+   beskrivelse text null, 
+   kaldenavn text null, 
+   ophavsret text null, 
+   virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
   klassifikation_registrering_id bigint not null,
 CONSTRAINT klassifikation_attr_egenskaber_pkey PRIMARY KEY (id),
 CONSTRAINT klassifikation_attr_egenskaber_forkey_klassifikationregistrering  FOREIGN KEY (klassifikation_registrering_id) REFERENCES klassifikation_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
@@ -120,52 +120,48 @@ ALTER TABLE klassifikation_attr_egenskaber
   OWNER TO mox;
 
  
-
-CREATE INDEX klassifikation_attr_egenskaber_idx_brugervendtnoegle
-  ON klassifikation_attr_egenskaber
-  USING btree
-  (brugervendtnoegle);
-
 CREATE INDEX klassifikation_attr_egenskaber_pat_brugervendtnoegle
   ON klassifikation_attr_egenskaber
   USING gin
   (brugervendtnoegle gin_trgm_ops);
 
- 
-
-CREATE INDEX klassifikation_attr_egenskaber_idx_beskrivelse
+CREATE INDEX klassifikation_attr_egenskaber_idx_brugervendtnoegle
   ON klassifikation_attr_egenskaber
   USING btree
-  (beskrivelse);
+  (brugervendtnoegle); 
 
+ 
 CREATE INDEX klassifikation_attr_egenskaber_pat_beskrivelse
   ON klassifikation_attr_egenskaber
   USING gin
   (beskrivelse gin_trgm_ops);
 
- 
-
-CREATE INDEX klassifikation_attr_egenskaber_idx_kaldenavn
+CREATE INDEX klassifikation_attr_egenskaber_idx_beskrivelse
   ON klassifikation_attr_egenskaber
   USING btree
-  (kaldenavn);
+  (beskrivelse); 
 
+ 
 CREATE INDEX klassifikation_attr_egenskaber_pat_kaldenavn
   ON klassifikation_attr_egenskaber
   USING gin
   (kaldenavn gin_trgm_ops);
 
- 
-
-CREATE INDEX klassifikation_attr_egenskaber_idx_ophavsret
+CREATE INDEX klassifikation_attr_egenskaber_idx_kaldenavn
   ON klassifikation_attr_egenskaber
   USING btree
-  (ophavsret);
+  (kaldenavn); 
 
+ 
 CREATE INDEX klassifikation_attr_egenskaber_pat_ophavsret
   ON klassifikation_attr_egenskaber
   USING gin
   (ophavsret gin_trgm_ops);
+
+CREATE INDEX klassifikation_attr_egenskaber_idx_ophavsret
+  ON klassifikation_attr_egenskaber
+  USING btree
+  (ophavsret); 
 
 
 

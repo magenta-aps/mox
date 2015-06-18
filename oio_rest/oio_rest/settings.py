@@ -1,3 +1,4 @@
+from copy import deepcopy
 
 BASE_URL = ''
 
@@ -178,7 +179,8 @@ DATABASE_STRUCTURE = {
 
 }
 
-REAL_DB_STRUCTURE = DATABASE_STRUCTURE.copy()
+
+REAL_DB_STRUCTURE = deepcopy(DATABASE_STRUCTURE)
 REAL_DB_STRUCTURE["klasse"]["attributter"]["egenskaber"].append("soegeord")
 REAL_DB_STRUCTURE["klasse"]["attributter_type_override"] = {
     "egenskaber": {

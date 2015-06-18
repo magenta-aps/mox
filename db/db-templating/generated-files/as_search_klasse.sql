@@ -187,44 +187,44 @@ END LOOP;
 				AND
 				(
 					attrEgenskaberTypeObj.brugervendtnoegle IS NULL
-					OR
-					a.brugervendtnoegle ILIKE attrEgenskaberTypeObj.brugervendtnoegle --case insensitive
+					OR 
+					a.brugervendtnoegle ILIKE attrEgenskaberTypeObj.brugervendtnoegle --case insensitive 
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.beskrivelse IS NULL
-					OR
-					a.beskrivelse ILIKE attrEgenskaberTypeObj.beskrivelse --case insensitive
+					OR 
+					a.beskrivelse ILIKE attrEgenskaberTypeObj.beskrivelse --case insensitive 
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.eksempel IS NULL
-					OR
-					a.eksempel ILIKE attrEgenskaberTypeObj.eksempel --case insensitive
+					OR 
+					a.eksempel ILIKE attrEgenskaberTypeObj.eksempel --case insensitive 
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.omfang IS NULL
-					OR
-					a.omfang ILIKE attrEgenskaberTypeObj.omfang --case insensitive
+					OR 
+					a.omfang ILIKE attrEgenskaberTypeObj.omfang --case insensitive 
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.titel IS NULL
-					OR
-					a.titel ILIKE attrEgenskaberTypeObj.titel --case insensitive
+					OR 
+					a.titel ILIKE attrEgenskaberTypeObj.titel --case insensitive 
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.retskilde IS NULL
-					OR
-					a.retskilde ILIKE attrEgenskaberTypeObj.retskilde --case insensitive
+					OR 
+					a.retskilde ILIKE attrEgenskaberTypeObj.retskilde --case insensitive 
 				)
 				AND
 				(
 					attrEgenskaberTypeObj.aendringsnotat IS NULL
-					OR
-					a.aendringsnotat ILIKE attrEgenskaberTypeObj.aendringsnotat --case insensitive
+					OR 
+					a.aendringsnotat ILIKE attrEgenskaberTypeObj.aendringsnotat --case insensitive 
 				)
 				AND
 				(

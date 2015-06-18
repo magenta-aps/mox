@@ -102,15 +102,15 @@ ALTER TABLE facet_attr_egenskaber_id_seq
 
 CREATE TABLE facet_attr_egenskaber
 (
-  id bigint NOT NULL DEFAULT nextval('facet_attr_egenskaber_id_seq'::regclass),
-    brugervendtnoegle text null,
-    beskrivelse text null,
-    opbygning text null,
-    ophavsret text null,
-    plan text null,
-    supplement text null,
-    retskilde text null,
-    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
+  id bigint NOT NULL DEFAULT nextval('facet_attr_egenskaber_id_seq'::regclass), 
+   brugervendtnoegle text null, 
+   beskrivelse text null, 
+   opbygning text null, 
+   ophavsret text null, 
+   plan text null, 
+   supplement text null, 
+   retskilde text null, 
+   virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
   facet_registrering_id bigint not null,
 CONSTRAINT facet_attr_egenskaber_pkey PRIMARY KEY (id),
 CONSTRAINT facet_attr_egenskaber_forkey_facetregistrering  FOREIGN KEY (facet_registrering_id) REFERENCES facet_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
@@ -123,88 +123,81 @@ ALTER TABLE facet_attr_egenskaber
   OWNER TO mox;
 
  
-
-CREATE INDEX facet_attr_egenskaber_idx_brugervendtnoegle
-  ON facet_attr_egenskaber
-  USING btree
-  (brugervendtnoegle);
-
 CREATE INDEX facet_attr_egenskaber_pat_brugervendtnoegle
   ON facet_attr_egenskaber
   USING gin
   (brugervendtnoegle gin_trgm_ops);
 
- 
-
-CREATE INDEX facet_attr_egenskaber_idx_beskrivelse
+CREATE INDEX facet_attr_egenskaber_idx_brugervendtnoegle
   ON facet_attr_egenskaber
   USING btree
-  (beskrivelse);
+  (brugervendtnoegle); 
 
+ 
 CREATE INDEX facet_attr_egenskaber_pat_beskrivelse
   ON facet_attr_egenskaber
   USING gin
   (beskrivelse gin_trgm_ops);
 
- 
-
-CREATE INDEX facet_attr_egenskaber_idx_opbygning
+CREATE INDEX facet_attr_egenskaber_idx_beskrivelse
   ON facet_attr_egenskaber
   USING btree
-  (opbygning);
+  (beskrivelse); 
 
+ 
 CREATE INDEX facet_attr_egenskaber_pat_opbygning
   ON facet_attr_egenskaber
   USING gin
   (opbygning gin_trgm_ops);
 
- 
-
-CREATE INDEX facet_attr_egenskaber_idx_ophavsret
+CREATE INDEX facet_attr_egenskaber_idx_opbygning
   ON facet_attr_egenskaber
   USING btree
-  (ophavsret);
+  (opbygning); 
 
+ 
 CREATE INDEX facet_attr_egenskaber_pat_ophavsret
   ON facet_attr_egenskaber
   USING gin
   (ophavsret gin_trgm_ops);
 
- 
-
-CREATE INDEX facet_attr_egenskaber_idx_plan
+CREATE INDEX facet_attr_egenskaber_idx_ophavsret
   ON facet_attr_egenskaber
   USING btree
-  (plan);
+  (ophavsret); 
 
+ 
 CREATE INDEX facet_attr_egenskaber_pat_plan
   ON facet_attr_egenskaber
   USING gin
   (plan gin_trgm_ops);
 
- 
-
-CREATE INDEX facet_attr_egenskaber_idx_supplement
+CREATE INDEX facet_attr_egenskaber_idx_plan
   ON facet_attr_egenskaber
   USING btree
-  (supplement);
+  (plan); 
 
+ 
 CREATE INDEX facet_attr_egenskaber_pat_supplement
   ON facet_attr_egenskaber
   USING gin
   (supplement gin_trgm_ops);
 
- 
-
-CREATE INDEX facet_attr_egenskaber_idx_retskilde
+CREATE INDEX facet_attr_egenskaber_idx_supplement
   ON facet_attr_egenskaber
   USING btree
-  (retskilde);
+  (supplement); 
 
+ 
 CREATE INDEX facet_attr_egenskaber_pat_retskilde
   ON facet_attr_egenskaber
   USING gin
   (retskilde gin_trgm_ops);
+
+CREATE INDEX facet_attr_egenskaber_idx_retskilde
+  ON facet_attr_egenskaber
+  USING btree
+  (retskilde); 
 
 
 

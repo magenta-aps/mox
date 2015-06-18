@@ -20,7 +20,12 @@ CREATE TYPE {{oio_type|title}}{{tilstand|title}}TilsType AS (
 {%-for attribut , attribut_fields in attributter.iteritems() %}
 CREATE TYPE {{oio_type|title}}{{attribut|title}}AttrType AS (
 {%- for field in attribut_fields %}
+{%- if  attributter_type_override is defined and attributter_type_override[attribut] is defined and attributter_type_override[attribut][field] is defined %} 
+{{field}} {{attributter_type_override[attribut][field]}}, 
+{%- else %}
 {{field}} text,
+{%-endif %}
+
  {%- endfor %}
  virkning Virkning
 );

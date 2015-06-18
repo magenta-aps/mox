@@ -102,15 +102,15 @@ ALTER TABLE klasse_attr_egenskaber_id_seq
 
 CREATE TABLE klasse_attr_egenskaber
 (
-  id bigint NOT NULL DEFAULT nextval('klasse_attr_egenskaber_id_seq'::regclass),
-    brugervendtnoegle text null,
-    beskrivelse text null,
-    eksempel text null,
-    omfang text null,
-    titel text null,
-    retskilde text null,
-    aendringsnotat text null,
-    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
+  id bigint NOT NULL DEFAULT nextval('klasse_attr_egenskaber_id_seq'::regclass), 
+   brugervendtnoegle text null, 
+   beskrivelse text null, 
+   eksempel text null, 
+   omfang text null, 
+   titel text null, 
+   retskilde text null, 
+   aendringsnotat text null, 
+   virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
   klasse_registrering_id bigint not null,
 CONSTRAINT klasse_attr_egenskaber_pkey PRIMARY KEY (id),
 CONSTRAINT klasse_attr_egenskaber_forkey_klasseregistrering  FOREIGN KEY (klasse_registrering_id) REFERENCES klasse_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
@@ -123,88 +123,81 @@ ALTER TABLE klasse_attr_egenskaber
   OWNER TO mox;
 
  
-
-CREATE INDEX klasse_attr_egenskaber_idx_brugervendtnoegle
-  ON klasse_attr_egenskaber
-  USING btree
-  (brugervendtnoegle);
-
 CREATE INDEX klasse_attr_egenskaber_pat_brugervendtnoegle
   ON klasse_attr_egenskaber
   USING gin
   (brugervendtnoegle gin_trgm_ops);
 
- 
-
-CREATE INDEX klasse_attr_egenskaber_idx_beskrivelse
+CREATE INDEX klasse_attr_egenskaber_idx_brugervendtnoegle
   ON klasse_attr_egenskaber
   USING btree
-  (beskrivelse);
+  (brugervendtnoegle); 
 
+ 
 CREATE INDEX klasse_attr_egenskaber_pat_beskrivelse
   ON klasse_attr_egenskaber
   USING gin
   (beskrivelse gin_trgm_ops);
 
- 
-
-CREATE INDEX klasse_attr_egenskaber_idx_eksempel
+CREATE INDEX klasse_attr_egenskaber_idx_beskrivelse
   ON klasse_attr_egenskaber
   USING btree
-  (eksempel);
+  (beskrivelse); 
 
+ 
 CREATE INDEX klasse_attr_egenskaber_pat_eksempel
   ON klasse_attr_egenskaber
   USING gin
   (eksempel gin_trgm_ops);
 
- 
-
-CREATE INDEX klasse_attr_egenskaber_idx_omfang
+CREATE INDEX klasse_attr_egenskaber_idx_eksempel
   ON klasse_attr_egenskaber
   USING btree
-  (omfang);
+  (eksempel); 
 
+ 
 CREATE INDEX klasse_attr_egenskaber_pat_omfang
   ON klasse_attr_egenskaber
   USING gin
   (omfang gin_trgm_ops);
 
- 
-
-CREATE INDEX klasse_attr_egenskaber_idx_titel
+CREATE INDEX klasse_attr_egenskaber_idx_omfang
   ON klasse_attr_egenskaber
   USING btree
-  (titel);
+  (omfang); 
 
+ 
 CREATE INDEX klasse_attr_egenskaber_pat_titel
   ON klasse_attr_egenskaber
   USING gin
   (titel gin_trgm_ops);
 
- 
-
-CREATE INDEX klasse_attr_egenskaber_idx_retskilde
+CREATE INDEX klasse_attr_egenskaber_idx_titel
   ON klasse_attr_egenskaber
   USING btree
-  (retskilde);
+  (titel); 
 
+ 
 CREATE INDEX klasse_attr_egenskaber_pat_retskilde
   ON klasse_attr_egenskaber
   USING gin
   (retskilde gin_trgm_ops);
 
- 
-
-CREATE INDEX klasse_attr_egenskaber_idx_aendringsnotat
+CREATE INDEX klasse_attr_egenskaber_idx_retskilde
   ON klasse_attr_egenskaber
   USING btree
-  (aendringsnotat);
+  (retskilde); 
 
+ 
 CREATE INDEX klasse_attr_egenskaber_pat_aendringsnotat
   ON klasse_attr_egenskaber
   USING gin
   (aendringsnotat gin_trgm_ops);
+
+CREATE INDEX klasse_attr_egenskaber_idx_aendringsnotat
+  ON klasse_attr_egenskaber
+  USING btree
+  (aendringsnotat); 
 
 
 
