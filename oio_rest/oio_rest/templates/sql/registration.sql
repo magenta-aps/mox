@@ -1,6 +1,6 @@
     ROW (
         ROW ( 
-            NULL, 
+            {{ time_period|adapt }},
             {{ life_cycle_code|adapt }} :: Livscykluskode,
             {{ user_ref|adapt }}, 
             {{ note|adapt }}
