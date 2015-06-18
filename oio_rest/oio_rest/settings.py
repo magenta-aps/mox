@@ -104,9 +104,9 @@ DATABASE_STRUCTURE = {
                 "brugervendtnoegle", "itsystemnavn", "itsystemtype",
                 "konfigurationreference"]
         },
-        "attributter_type_override":{
+        "attributter_type_override": {
             "egenskaber": {
-                "konfigurationreference":"text[]"
+                "konfigurationreference": "text[]"
             }
         },
         "tilstande": {
@@ -179,5 +179,11 @@ DATABASE_STRUCTURE = {
 
 }
 
+
 REAL_DB_STRUCTURE = deepcopy(DATABASE_STRUCTURE)
 REAL_DB_STRUCTURE["klasse"]["attributter"]["egenskaber"].append("soegeord")
+REAL_DB_STRUCTURE["klasse"]["attributter_type_override"] = {
+    "egenskaber": {
+        "soegeord": "soegeord"
+    }
+}

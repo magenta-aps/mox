@@ -11,7 +11,7 @@ connection = pika.BlockingConnection(
         'moxing.dk',
         credentials=pika.credentials.PlainCredentials(
             'Carsten Agger',
-            'MOXmeCrzy.56'
+            'xyzxyzxyz'
         )
     )
 )

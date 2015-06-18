@@ -10,7 +10,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from settings import DATABASE, DB_USER
 from db_helpers import get_attribute_fields, get_attribute_names
-from db_helpers import get_state_names, Soegeord
+from db_helpers import get_field_type, get_state_names, Soegeord
 
 """
     Jinja2 Environment
@@ -31,9 +31,12 @@ def adapt(value):
     elif isinstance(value, basestring):
         value = value.encode('utf-8')
         return str(psyco_adapt(value)).decode('utf-8')
+    elif isinstance(value, Soegeord):
+        # There's a bug in the handling of None, hence ...
+        return psyco_adapt(value)
     else:
         # Charset of complex types is handled on constituents
-        return psyco_adapt(value)
+        return psyco_adapt(value).getquoted()
 
 jinja_env.filters['adapt'] = adapt
 
@@ -55,11 +58,11 @@ def get_authenticated_user():
     return "615957e8-4aa1-4319-a787-f1f7ad6b5e2c"
 
 
-def convert(attribute_field_name, attribute_field_value):
+def convert(attribute_name, attribute_field_name, attribute_field_value):
     # For simple types that can be adapted by standard psycopg2 adapters, just
     # pass on. For complex types like "Soegeord" with specialized adapters,
     # convert to the class for which the adapter is registered.
-    if attribute_field_name == "soegeord":
+    if get_field_type(attribute_name, attribute_field_name) == "soegeord":
         return [Soegeord(*ord) for ord in attribute_field_value]
     else:
         return attribute_field_value
@@ -73,11 +76,14 @@ def convert_attributes(attributes):
         for attr_period in current_attr_periods:
             field_names = get_attribute_fields(attr_name)
             attr_value_list = [
-                convert(f, attr_period[f]) if f in attr_period else None
+                convert(
+                    attr_name, f, attr_period[f]
+                ) if f in attr_period else None
                 for f in field_names
                 ]
             converted_attr_periods.append(attr_value_list)
         attributes[attr_name] = converted_attr_periods
+    print attributes
     return attributes
 
 
@@ -100,6 +106,7 @@ class Livscyklus(Enum):
 def sql_state_array(state, periods, class_name):
     """Return an SQL array of type <state>TilsType."""
     t = jinja_env.get_template('state_array.sql')
+    print periods
     sql = t.render(class_name=class_name, state_name=state,
                    state_periods=periods)
     return sql
@@ -140,6 +147,24 @@ def sql_convert_registration(states, attributes, relations, class_name):
     return (sql_states, sql_attributes, sql_relations)
 
 
+def sql_get_registration(class_name, life_cycle_code,
+                         user_ref, note, registration_tuple):
+    """
+    Return a an SQL registrering object of type
+    <class_name>RegistreringType[].
+    Expects a tuple returned from sql_convert_registration.
+    """
+    sql_template = jinja_env.get_template('registration.sql')
+    sql = sql_template.render(
+        class_name=class_name,
+        life_cycle_code=life_cycle_code,
+        user_ref=user_ref,
+        note=note,
+        states=registration_tuple[0],
+        attributes=registration_tuple[1],
+        relations=registration_tuple[2])
+    return sql
+
 """
     GENRAL OBJECT RELATED FUNCTIONS
 """
@@ -147,7 +172,8 @@ def sql_convert_registration(states, attributes, relations, class_name):
 
 def object_exists(class_name, uuid):
     """Check if an object with this class name and UUID exists already."""
-    sql = "select (%s IN (SELECT DISTINCT facet_id from facet_registrering))"
+    sql = ("select (%s IN (SELECT DISTINCT " + class_name +
+           "_id from " + class_name + "_registrering))")
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute(sql, (uuid,))
@@ -171,9 +197,11 @@ def create_or_import_object(class_name, note, attributes, states, relations,
     user_ref = get_authenticated_user()
 
     attributes = convert_attributes(attributes)
-    (
-        sql_states, sql_attributes, sql_relations
-    ) = sql_convert_registration(states, attributes, relations, class_name)
+    registration = sql_convert_registration(states, attributes, relations,
+                                            class_name)
+    sql_registration = sql_get_registration(class_name, life_cycle_code,
+                                            user_ref, note, registration)
+
     sql_template = jinja_env.get_template('create_object.sql')
     sql = sql_template.render(
         class_name=class_name,
@@ -181,13 +209,11 @@ def create_or_import_object(class_name, note, attributes, states, relations,
         life_cycle_code=life_cycle_code,
         user_ref=user_ref,
         note=note,
-        states=sql_states,
-        attributes=sql_attributes,
-        relations=sql_relations)
-    print sql
+        registration=sql_registration)
     # Call Postgres! Return OK or not accordingly
     conn = get_connection()
     cursor = conn.cursor()
+    print sql
     cursor.execute(sql)
     output = cursor.fetchone()
     print output
@@ -293,6 +319,54 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
         'registrering_tstzrange': DateTimeTZRange(registreret_fra,
                                                   registreret_til),
         'virkning_tstzrange': DateTimeTZRange(virkning_fra, virkning_til)
+    })
+    output = cursor.fetchone()
+    return output
+
+
+def search_objects(class_name, uuid, registration, virkning_fra, virkning_til,
+                   any_attr_value_arr=None, any_rel_uuid_arr=None,
+                   first_result=0, max_results=2147483647):
+
+    if not any_attr_value_arr:
+        any_attr_value_arr = []
+    if not any_rel_uuid_arr:
+        any_rel_uuid_arr = []
+    if uuid is not None:
+        assert isinstance(uuid, basestring)
+
+    # TODO: Accept these as parameters to the search?
+    life_cycle_code = None
+    user_ref = None
+    note = None
+
+    (attributes, states, relations) = (registration.get('attributter', None),
+                                       registration.get('tilstande', None),
+                                       registration.get('relationer', None))
+
+    attributes = convert_attributes(attributes)
+    sql_registration = sql_get_registration(class_name, life_cycle_code,
+                                            user_ref, note,
+                                            sql_convert_registration(
+                                                states, attributes, relations,
+                                                class_name
+                                            ))
+
+    sql_template = jinja_env.get_template('search_objects.sql')
+    sql = sql_template.render(
+        first_result=first_result,
+        uuid=uuid,
+        class_name=class_name,
+        registration=sql_registration,
+        any_attr_value_arr=any_attr_value_arr,
+        any_rel_uuid_arr=any_rel_uuid_arr,
+        max_results=max_results
+    )
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(sql, {
+        'virkning_soeg': DateTimeTZRange(virkning_fra, virkning_til)
     })
     output = cursor.fetchone()
     return output

@@ -1,7 +1,6 @@
 *.pyc
 .env
 *.swp
-db/db-templating/generated-files
 *.egg-info
 python-env
 oio_rest/oio_api

@@ -25,7 +25,7 @@
     }, 
     "tilstande": { 
         "klassepubliceret": [{ 
-            "publiceretstatus": "Publiceret", 
+            "status": "Publiceret", 
             "virkning": { 
                 "from": "2014-05-19 12:02:32", 
                 "to": "infinity", 
