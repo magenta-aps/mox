@@ -146,6 +146,7 @@ FROM
 	{%-for tilstand_inner_loop , tilstand_values_inner_loop in tilstande_revorder.iteritems() %}
 	a.{{oio_type|title}}Tils{{tilstand_inner_loop|title}}Arr{%- if (not loop.last)%},{%- endif%}{%- endfor %}
 ) as a
+WHERE a.{{oio_type}}_id IS NOT NULL
 GROUP BY 
 a.{{oio_type}}_id
 order by a.{{oio_type}}_id

@@ -120,6 +120,7 @@ FROM
 	a.ItsystemAttrEgenskaberArr,
 	a.ItsystemTilsGyldighedArr
 ) as a
+WHERE a.itsystem_id IS NOT NULL
 GROUP BY 
 a.itsystem_id
 order by a.itsystem_id

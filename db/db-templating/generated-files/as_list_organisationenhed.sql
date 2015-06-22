@@ -118,6 +118,7 @@ FROM
 	a.OrganisationenhedAttrEgenskaberArr,
 	a.OrganisationenhedTilsGyldighedArr
 ) as a
+WHERE a.organisationenhed_id IS NOT NULL
 GROUP BY 
 a.organisationenhed_id
 order by a.organisationenhed_id

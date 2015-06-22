@@ -119,6 +119,7 @@ FROM
 	a.BrugerAttrEgenskaberArr,
 	a.BrugerTilsGyldighedArr
 ) as a
+WHERE a.bruger_id IS NOT NULL
 GROUP BY 
 a.bruger_id
 order by a.bruger_id

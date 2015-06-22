@@ -123,6 +123,7 @@ FROM
 	a.FacetAttrEgenskaberArr,
 	a.FacetTilsPubliceretArr
 ) as a
+WHERE a.facet_id IS NOT NULL
 GROUP BY 
 a.facet_id
 order by a.facet_id

@@ -120,6 +120,7 @@ FROM
 	a.KlassifikationAttrEgenskaberArr,
 	a.KlassifikationTilsPubliceretArr
 ) as a
+WHERE a.klassifikation_id IS NOT NULL
 GROUP BY 
 a.klassifikation_id
 order by a.klassifikation_id

@@ -119,6 +119,7 @@ FROM
 	a.InteressefaellesskabAttrEgenskaberArr,
 	a.InteressefaellesskabTilsGyldighedArr
 ) as a
+WHERE a.interessefaellesskab_id IS NOT NULL
 GROUP BY 
 a.interessefaellesskab_id
 order by a.interessefaellesskab_id

@@ -167,6 +167,7 @@ FROM
 	a.KlasseAttrEgenskaberArr,
 	a.KlasseTilsPubliceretArr
 ) as a
+WHERE a.klasse_id IS NOT NULL
 GROUP BY 
 a.klasse_id
 order by a.klasse_id
