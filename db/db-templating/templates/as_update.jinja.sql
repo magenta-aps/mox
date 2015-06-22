@@ -165,6 +165,15 @@ ELSE
               
   END LOOP;
 
+
+/**********************/
+--Remove any "cleared"/"deleted" relations
+DELETE FROM {{oio_type}}_relation
+WHERE 
+{{oio_type}}_registrering_id=new_{{oio_type}}_registrering.id
+AND rel_maal IS NULL
+;
+
 END IF;
 /**********************/
 -- handle tilstande (states)
@@ -225,6 +234,15 @@ ELSE
     JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
     WHERE a.{{oio_type}}_registrering_id=prev_{{oio_type}}_registrering.id     
   ;
+
+
+/**********************/
+--Remove any "cleared"/"deleted" tilstande
+DELETE FROM {{oio_type}}_tils_{{tilstand}}
+WHERE 
+{{oio_type}}_registrering_id=new_{{oio_type}}_registrering.id
+AND {{tilstand}} = ''::{{oio_type|title}}{{tilstand|title}}Tils
+;
 
 END IF;
 
@@ -377,7 +395,17 @@ FROM
   WHERE a.{{oio_type}}_registrering_id=prev_{{oio_type}}_registrering.id     
 ;
 
+
+
+--Remove any "cleared"/"deleted" attributes
+DELETE FROM {{oio_type}}_attr_{{attribut}} a
+WHERE 
+a.{{oio_type}}_registrering_id=new_{{oio_type}}_registrering.id
+AND {%-for fieldname in attribut_fields %} (a.{{fieldname}} IS NULL OR a.{{fieldname}}=''){%- if (not loop.last) %} AND {%- endif %}{%- endfor %}
+;
+
 END IF;
+
 
 {%- endfor %}
 

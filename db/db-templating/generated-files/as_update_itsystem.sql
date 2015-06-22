@@ -163,6 +163,15 @@ ELSE
               
   END LOOP;
 
+
+/**********************/
+--Remove any "cleared"/"deleted" relations
+DELETE FROM itsystem_relation
+WHERE 
+itsystem_registrering_id=new_itsystem_registrering.id
+AND rel_maal IS NULL
+;
+
 END IF;
 /**********************/
 -- handle tilstande (states)
@@ -221,6 +230,15 @@ ELSE
     JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
     WHERE a.itsystem_registrering_id=prev_itsystem_registrering.id     
   ;
+
+
+/**********************/
+--Remove any "cleared"/"deleted" tilstande
+DELETE FROM itsystem_tils_gyldighed
+WHERE 
+itsystem_registrering_id=new_itsystem_registrering.id
+AND gyldighed = ''::ItsystemGyldighedTils
+;
 
 END IF;
 
@@ -377,6 +395,15 @@ FROM
   JOIN itsystem_attr_egenskaber a ON true  
   JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
   WHERE a.itsystem_registrering_id=prev_itsystem_registrering.id     
+;
+
+
+
+--Remove any "cleared"/"deleted" attributes
+DELETE FROM itsystem_attr_egenskaber a
+WHERE 
+a.itsystem_registrering_id=new_itsystem_registrering.id
+AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') AND (a.itsystemnavn IS NULL OR a.itsystemnavn='') AND (a.itsystemtype IS NULL OR a.itsystemtype='') AND (a.konfigurationreference IS NULL OR a.konfigurationreference='')
 ;
 
 END IF;

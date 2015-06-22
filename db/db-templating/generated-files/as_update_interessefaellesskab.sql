@@ -163,6 +163,15 @@ ELSE
               
   END LOOP;
 
+
+/**********************/
+--Remove any "cleared"/"deleted" relations
+DELETE FROM interessefaellesskab_relation
+WHERE 
+interessefaellesskab_registrering_id=new_interessefaellesskab_registrering.id
+AND rel_maal IS NULL
+;
+
 END IF;
 /**********************/
 -- handle tilstande (states)
@@ -221,6 +230,15 @@ ELSE
     JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
     WHERE a.interessefaellesskab_registrering_id=prev_interessefaellesskab_registrering.id     
   ;
+
+
+/**********************/
+--Remove any "cleared"/"deleted" tilstande
+DELETE FROM interessefaellesskab_tils_gyldighed
+WHERE 
+interessefaellesskab_registrering_id=new_interessefaellesskab_registrering.id
+AND gyldighed = ''::InteressefaellesskabGyldighedTils
+;
 
 END IF;
 
@@ -372,6 +390,15 @@ FROM
   JOIN interessefaellesskab_attr_egenskaber a ON true  
   JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
   WHERE a.interessefaellesskab_registrering_id=prev_interessefaellesskab_registrering.id     
+;
+
+
+
+--Remove any "cleared"/"deleted" attributes
+DELETE FROM interessefaellesskab_attr_egenskaber a
+WHERE 
+a.interessefaellesskab_registrering_id=new_interessefaellesskab_registrering.id
+AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') AND (a.interessefaellesskabsnavn IS NULL OR a.interessefaellesskabsnavn='') AND (a.interessefaellesskabstype IS NULL OR a.interessefaellesskabstype='')
 ;
 
 END IF;

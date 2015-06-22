@@ -163,6 +163,15 @@ ELSE
               
   END LOOP;
 
+
+/**********************/
+--Remove any "cleared"/"deleted" relations
+DELETE FROM organisation_relation
+WHERE 
+organisation_registrering_id=new_organisation_registrering.id
+AND rel_maal IS NULL
+;
+
 END IF;
 /**********************/
 -- handle tilstande (states)
@@ -221,6 +230,15 @@ ELSE
     JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
     WHERE a.organisation_registrering_id=prev_organisation_registrering.id     
   ;
+
+
+/**********************/
+--Remove any "cleared"/"deleted" tilstande
+DELETE FROM organisation_tils_gyldighed
+WHERE 
+organisation_registrering_id=new_organisation_registrering.id
+AND gyldighed = ''::OrganisationGyldighedTils
+;
 
 END IF;
 
@@ -367,6 +385,15 @@ FROM
   JOIN organisation_attr_egenskaber a ON true  
   JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
   WHERE a.organisation_registrering_id=prev_organisation_registrering.id     
+;
+
+
+
+--Remove any "cleared"/"deleted" attributes
+DELETE FROM organisation_attr_egenskaber a
+WHERE 
+a.organisation_registrering_id=new_organisation_registrering.id
+AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') AND (a.organisationsnavn IS NULL OR a.organisationsnavn='')
 ;
 
 END IF;

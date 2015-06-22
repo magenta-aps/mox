@@ -163,6 +163,15 @@ ELSE
               
   END LOOP;
 
+
+/**********************/
+--Remove any "cleared"/"deleted" relations
+DELETE FROM facet_relation
+WHERE 
+facet_registrering_id=new_facet_registrering.id
+AND rel_maal IS NULL
+;
+
 END IF;
 /**********************/
 -- handle tilstande (states)
@@ -221,6 +230,15 @@ ELSE
     JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
     WHERE a.facet_registrering_id=prev_facet_registrering.id     
   ;
+
+
+/**********************/
+--Remove any "cleared"/"deleted" tilstande
+DELETE FROM facet_tils_publiceret
+WHERE 
+facet_registrering_id=new_facet_registrering.id
+AND publiceret = ''::FacetPubliceretTils
+;
 
 END IF;
 
@@ -392,6 +410,15 @@ FROM
   JOIN facet_attr_egenskaber a ON true  
   JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
   WHERE a.facet_registrering_id=prev_facet_registrering.id     
+;
+
+
+
+--Remove any "cleared"/"deleted" attributes
+DELETE FROM facet_attr_egenskaber a
+WHERE 
+a.facet_registrering_id=new_facet_registrering.id
+AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') AND (a.beskrivelse IS NULL OR a.beskrivelse='') AND (a.opbygning IS NULL OR a.opbygning='') AND (a.ophavsret IS NULL OR a.ophavsret='') AND (a.plan IS NULL OR a.plan='') AND (a.supplement IS NULL OR a.supplement='') AND (a.retskilde IS NULL OR a.retskilde='')
 ;
 
 END IF;

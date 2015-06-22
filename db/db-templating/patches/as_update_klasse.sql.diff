@@ -1,5 +1,5 @@
-*** ../generated-files/as_update_klasse.sql	2015-06-15 14:28:09.826873308 +0200
---- ../patches/as_update_klasse.org.sql	2015-06-15 14:31:25.786883068 +0200
+*** ../generated-files/as_update_klasse.sql	2015-06-22 10:56:40.013928269 +0200
+--- ../patches/as_update_klasse.org.sql	2015-06-22 11:22:01.542004046 +0200
 ***************
 *** 35,44 ****
 --- 35,46 ----
@@ -16,7 +16,7 @@
   
   IF NOT EXISTS (select a.id from klasse a join klasse_registrering b on b.klasse_id=a.id  where a.id=klasse_uuid) THEN
 ***************
-*** 241,251 ****
+*** 259,269 ****
     IF EXISTS (
     SELECT
     a.*
@@ -28,7 +28,7 @@
     RAISE EXCEPTION 'Unable to update klasse with uuid [%], as the klasse have overlapping virknings in the given egenskaber array :%',klasse_uuid,to_json(attrEgenskaber)  USING ERRCODE = 22000;
   
     END IF;
---- 243,253 ----
+--- 261,271 ----
     IF EXISTS (
     SELECT
     a.*
@@ -41,7 +41,7 @@
   
     END IF;
 ***************
-*** 262,279 ****
+*** 280,297 ****
      (attrEgenskaberObj).titel is null OR 
      (attrEgenskaberObj).retskilde is null OR 
      (attrEgenskaberObj).aendringsnotat is null 
@@ -60,7 +60,7 @@
       coalesce(attrEgenskaberObj.eksempel,a.eksempel), 
       coalesce(attrEgenskaberObj.omfang,a.omfang), 
       coalesce(attrEgenskaberObj.titel,a.titel), 
---- 264,283 ----
+--- 282,301 ----
      (attrEgenskaberObj).titel is null OR 
      (attrEgenskaberObj).retskilde is null OR 
      (attrEgenskaberObj).aendringsnotat is null 
@@ -82,7 +82,7 @@
       coalesce(attrEgenskaberObj.omfang,a.omfang), 
       coalesce(attrEgenskaberObj.titel,a.titel), 
 ***************
-*** 288,309 ****
+*** 306,327 ****
       new_klasse_registrering.id
     FROM klasse_attr_egenskaber a
     WHERE
@@ -105,7 +105,7 @@
       attrEgenskaberObj.eksempel, 
       attrEgenskaberObj.omfang, 
       attrEgenskaberObj.titel, 
---- 292,338 ----
+--- 310,356 ----
       new_klasse_registrering.id
     FROM klasse_attr_egenskaber a
     WHERE
@@ -154,7 +154,7 @@
       attrEgenskaberObj.omfang, 
       attrEgenskaberObj.titel, 
 ***************
-*** 323,355 ****
+*** 341,373 ****
         FROM klasse_attr_egenskaber b
         WHERE 
          b.klasse_registrering_id=new_klasse_registrering.id
@@ -188,7 +188,7 @@
   
     END LOOP;
   END IF;
---- 352,418 ----
+--- 370,436 ----
         FROM klasse_attr_egenskaber b
         WHERE 
          b.klasse_registrering_id=new_klasse_registrering.id
@@ -257,7 +257,7 @@
     END LOOP;
   END IF;
 ***************
-*** 359,374 ****
+*** 377,392 ****
   --raise debug 'Skipping handling of egenskaber of previous registration as an empty array was explicit given.';  
   ELSE 
   
@@ -274,7 +274,7 @@
         a.eksempel,
         a.omfang,
         a.titel,
---- 422,440 ----
+--- 440,458 ----
   --raise debug 'Skipping handling of egenskaber of previous registration as an empty array was explicit given.';  
   ELSE 
   
@@ -295,7 +295,7 @@
         a.omfang,
         a.titel,
 ***************
-*** 389,399 ****
+*** 407,428 ****
       WHERE 
             b.klasse_registrering_id=new_klasse_registrering.id
   ) d
@@ -304,10 +304,21 @@
 !   WHERE a.klasse_registrering_id=prev_klasse_registrering.id     
   ;
   
+- 
+- 
+  --Remove any "cleared"/"deleted" attributes
+  DELETE FROM klasse_attr_egenskaber a
+  WHERE 
+  a.klasse_registrering_id=new_klasse_registrering.id
+  AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') AND (a.beskrivelse IS NULL OR a.beskrivelse='') AND (a.eksempel IS NULL OR a.eksempel='') AND (a.omfang IS NULL OR a.omfang='') AND (a.titel IS NULL OR a.titel='') AND (a.retskilde IS NULL OR a.retskilde='') AND (a.aendringsnotat IS NULL OR a.aendringsnotat='')
+  ;
+  
   END IF;
   
   
---- 455,475 ----
+  /******************************************************************/
+  --If the new registrering is identical to the previous one, we need to throw an exception to abort the transaction. 
+--- 473,504 ----
       WHERE 
             b.klasse_registrering_id=new_klasse_registrering.id
   ) d
@@ -326,6 +337,17 @@
 ! JOIN klasse_attr_egenskaber_soegeord b on a2.id=b.klasse_attr_egenskaber_id   
   ;
   
+  --Remove any "cleared"/"deleted" attributes
+  DELETE FROM klasse_attr_egenskaber a
+  WHERE 
+  a.klasse_registrering_id=new_klasse_registrering.id
+  AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') AND (a.beskrivelse IS NULL OR a.beskrivelse='') AND (a.eksempel IS NULL OR a.eksempel='') AND (a.omfang IS NULL OR a.omfang='') AND (a.titel IS NULL OR a.titel='') AND (a.retskilde IS NULL OR a.retskilde='') AND (a.aendringsnotat IS NULL OR a.aendringsnotat='')
++ AND a.id NOT IN (SELECT b.klasse_attr_egenskaber_id FROM klasse_attr_egenskaber_soegeord b)
+  ;
+  
++ 
   END IF;
   
   
+  /******************************************************************/
+  --If the new registrering is identical to the previous one, we need to throw an exception to abort the transaction. 
