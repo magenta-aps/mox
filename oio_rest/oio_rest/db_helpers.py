@@ -85,6 +85,7 @@ def get_relation_names(class_name):
 
 Soegeord = namedtuple('KlasseSoegeordType', 'identifier description category')
 
+
 class NamedTupleAdapter(object):
     """Adapt namedtuples, while performing a cast to the tuple's classname."""
     def __init__(self, tuple_obj):
