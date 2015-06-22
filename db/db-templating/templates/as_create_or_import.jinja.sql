@@ -148,17 +148,19 @@ END IF;
     INSERT INTO {{oio_type}}_relation (
       {{oio_type}}_registrering_id,
       virkning,
-      rel_maal,
+      rel_maal_uuid,
+      rel_maal_urn,
       rel_type
 
     )
     SELECT
       {{oio_type}}_registrering_id,
       a.virkning,
-      a.relMaal,
+      a.relMaalUuid,
+      a.relMaalUrn,
       a.relType
     FROM unnest({{oio_type}}_registrering.relationer) a
-    WHERE a.relMaal IS NOT NULL
+    WHERE (a.relMaalUuid IS NOT NULL OR (a.relMaalUrn IS NOT NULL AND a.relMaalUrn<>'') )
   ;
 
 

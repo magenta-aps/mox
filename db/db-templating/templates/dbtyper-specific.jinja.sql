@@ -36,7 +36,8 @@ CREATE TYPE {{oio_type|title}}RelationKode AS ENUM  ({% for relation in relation
 CREATE TYPE {{oio_type|title}}RelationType AS (
   relType {{oio_type|title}}RelationKode,
   virkning Virkning,
-  relMaal uuid 
+  relMaalUuid uuid,
+  relMaalUrn  text 
 )
 ;
 

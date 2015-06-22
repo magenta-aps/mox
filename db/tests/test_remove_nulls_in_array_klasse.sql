@@ -59,7 +59,8 @@ relationerArr:=array_append(relationerArr,
           'Bruger',
           'NoteEx2'
           ) :: Virkning,
-	  'cbe8142b-bafc-4aaf-89b6-4e90b9e08907'::uuid
+	  'cbe8142b-bafc-4aaf-89b6-4e90b9e08907'::uuid,
+	  null
 ) :: KlasseRelationType
 )
 ;
@@ -73,7 +74,8 @@ relationerArr:=array_append(relationerArr,
           'Bruger',
           'NoteEx3'
           ) :: Virkning,
-	  'fbe8142b-bafc-4aaf-89b6-4e90b9e08908'::uuid
+	  'fbe8142b-bafc-4aaf-89b6-4e90b9e08908'::uuid,
+	  null
 ) :: KlasseRelationType
 )
 ;
@@ -87,7 +89,8 @@ relationerArr:=array_append(relationerArr,
           'Bruger',
           'NoteEx10'
           ) :: Virkning,
-	  'ebe8142b-bafc-4aaf-89b6-4e90b9e08909'::uuid
+	  'ebe8142b-bafc-4aaf-89b6-4e90b9e08909'::uuid,
+	  null
 ) :: KlasseRelationType
 )
 ;
@@ -101,7 +104,8 @@ relationerArr:=array_append(relationerArr,
           'Bruger',
           'NoteEx11'
           ) :: Virkning,
-	  'cee8142b-bafc-4aaf-89b6-4e90b9e08900'::uuid
+	  'cee8142b-bafc-4aaf-89b6-4e90b9e08900'::uuid,
+	  null
 ) :: KlasseRelationType
 )
 ;
@@ -115,7 +119,8 @@ relationerArr:=array_append(relationerArr,
           'Bruger',
           'NoteEx30'
           ) :: Virkning,
-	  '3ee8142b-bafc-4aaf-89b6-4e90b9e08908'::uuid
+	  '3ee8142b-bafc-4aaf-89b6-4e90b9e08908'::uuid,
+	  null
 ) :: KlasseRelationType
 )
 ;
@@ -154,6 +159,7 @@ relationerArr3:=array_append(relationerArr,
 	          'NoteEx30'
 	          ) :: Virkning,*/
 		,null--  '3ee8142b-bafc-4aaf-89b6-4e90b9e08908'::uuid
+		,null
 	) :: KlasseRelationType	
 );
 

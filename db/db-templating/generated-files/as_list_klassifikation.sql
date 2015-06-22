@@ -42,12 +42,13 @@ FROM
 		ROW (
 				b.rel_type,
 				b.virkning,
-				b.rel_maal 
+				b.rel_maal_uuid,
+				b.rel_maal_urn 
 			):: KlassifikationRelationType
 		ELSE
 		NULL
 		END
-		order by b.rel_maal,b.rel_type,b.virkning
+		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.virkning
 	)) KlassifikationRelationArr
 	FROM
 	(

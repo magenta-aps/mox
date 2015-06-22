@@ -153,17 +153,19 @@ END IF;
     INSERT INTO bruger_relation (
       bruger_registrering_id,
       virkning,
-      rel_maal,
+      rel_maal_uuid,
+      rel_maal_urn,
       rel_type
 
     )
     SELECT
       bruger_registrering_id,
       a.virkning,
-      a.relMaal,
+      a.relMaalUuid,
+      a.relMaalUrn,
       a.relType
     FROM unnest(bruger_registrering.relationer) a
-    WHERE a.relMaal IS NOT NULL
+    WHERE (a.relMaalUuid IS NOT NULL OR (a.relMaalUrn IS NOT NULL AND a.relMaalUrn<>'') )
   ;
 
 

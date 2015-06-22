@@ -259,17 +259,34 @@ CREATE TABLE itsystem_relation
   id bigint NOT NULL DEFAULT nextval('itsystem_relation_id_seq'::regclass),
   itsystem_registrering_id bigint not null,
   virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
-  rel_maal uuid NULL, --we have to allow null values (for now at least), as it is needed to be able to clear/overrule previous registered relations.
+  rel_maal_uuid uuid NULL, --we have to allow null values (for now at least), as it is needed to be able to clear/overrule previous registered relations.
+  rel_maal_urn text null,
   rel_type ItsystemRelationKode not null,
  CONSTRAINT itsystem_relation_forkey_itsystemregistrering  FOREIGN KEY (itsystem_registrering_id) REFERENCES itsystem_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
  CONSTRAINT itsystem_relation_pkey PRIMARY KEY (id),
- CONSTRAINT itsystem_relation_no_virkning_overlap EXCLUDE USING gist (itsystem_registrering_id WITH =, _as_convert_itsystem_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('tilknyttedeorganisationer'::ItsystemRelationKode ) AND rel_type<>('tilknyttedeenheder'::ItsystemRelationKode ) AND rel_type<>('tilknyttedefunktioner'::ItsystemRelationKode ) AND rel_type<>('tilknyttedebrugere'::ItsystemRelationKode ) AND rel_type<>('tilknyttedeinteressefaellesskaber'::ItsystemRelationKode ) AND rel_type<>('tilknyttedeitsystemer'::ItsystemRelationKode ) AND rel_type<>('tilknyttedepersoner'::ItsystemRelationKode ) AND rel_type<>('systemtyper'::ItsystemRelationKode ) AND rel_type<>('opgaver'::ItsystemRelationKode ) AND rel_type<>('adresser'::ItsystemRelationKode )) -- no overlapping virkning except for 0..n --relations
+ CONSTRAINT itsystem_relation_no_virkning_overlap EXCLUDE USING gist (itsystem_registrering_id WITH =, _as_convert_itsystem_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('tilknyttedeorganisationer'::ItsystemRelationKode ) AND rel_type<>('tilknyttedeenheder'::ItsystemRelationKode ) AND rel_type<>('tilknyttedefunktioner'::ItsystemRelationKode ) AND rel_type<>('tilknyttedebrugere'::ItsystemRelationKode ) AND rel_type<>('tilknyttedeinteressefaellesskaber'::ItsystemRelationKode ) AND rel_type<>('tilknyttedeitsystemer'::ItsystemRelationKode ) AND rel_type<>('tilknyttedepersoner'::ItsystemRelationKode ) AND rel_type<>('systemtyper'::ItsystemRelationKode ) AND rel_type<>('opgaver'::ItsystemRelationKode ) AND rel_type<>('adresser'::ItsystemRelationKode )) ,-- no overlapping virkning except for 0..n --relations
+ CONSTRAINT itsystem_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
 );
 
-CREATE INDEX itsystem_relation_idx_rel_maal
+CREATE INDEX itsystem_relation_idx_rel_maal_uuid
   ON itsystem_relation
   USING btree
-  (rel_type, rel_maal);
+  (rel_type, rel_maal_uuid);
+
+CREATE INDEX itsystem_relation_idx_rel_maal_uuid_isolated
+  ON itsystem_relation
+  USING btree
+  (rel_maal_uuid);
+
+CREATE INDEX itsystem_relation_idx_rel_maal_urn_isolated
+  ON itsystem_relation
+  USING btree
+  (rel_maal_urn);
+
+CREATE INDEX itsystem_relation_idx_rel_maal_urn
+  ON itsystem_relation
+  USING btree
+  (rel_type, rel_maal_urn);
 
 CREATE INDEX itsystem_relation_idx_virkning_aktoerref
   ON itsystem_relation

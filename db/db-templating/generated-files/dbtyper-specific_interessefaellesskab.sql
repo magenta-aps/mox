@@ -32,7 +32,8 @@ CREATE TYPE InteressefaellesskabRelationKode AS ENUM  ('branche','interessefaell
 CREATE TYPE InteressefaellesskabRelationType AS (
   relType InteressefaellesskabRelationKode,
   virkning Virkning,
-  relMaal uuid 
+  relMaalUuid uuid,
+  relMaalUrn  text 
 )
 ;
 

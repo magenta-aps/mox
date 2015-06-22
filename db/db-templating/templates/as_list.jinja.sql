@@ -43,12 +43,13 @@ FROM
 		ROW (
 				b.rel_type,
 				b.virkning,
-				b.rel_maal 
+				b.rel_maal_uuid,
+				b.rel_maal_urn 
 			):: {{oio_type|title}}RelationType
 		ELSE
 		NULL
 		END
-		order by b.rel_maal,b.rel_type,b.virkning
+		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.virkning
 	)) {{oio_type|title}}RelationArr
 	FROM
 	(

@@ -37,7 +37,8 @@ BEGIN
 
 	RETURN NEXT has_column( 'facet_tils_publiceret',   'publiceret');
 
-	RETURN NEXT has_column( 'facet_relation',   'rel_maal');
+	RETURN NEXT has_column( 'facet_relation',   'rel_maal_uuid');
+	RETURN NEXT has_column( 'facet_relation',   'rel_maal_urn');
 	RETURN NEXT has_column( 'facet_relation',   'rel_type');
 
 

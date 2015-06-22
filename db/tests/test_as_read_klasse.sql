@@ -133,7 +133,8 @@ virkPubliceretB:=	ROW (
 klasseRelAnsvarlig := ROW (
 	'ansvarlig'::KlasseRelationKode,
 		virkAnsvarlig,
-	uuidAnsvarlig
+	uuidAnsvarlig,
+	null
 ) :: KlasseRelationType
 ;
 
@@ -141,7 +142,8 @@ klasseRelAnsvarlig := ROW (
 klasseRelRedaktoer1 := ROW (
 	'redaktoerer'::KlasseRelationKode,
 		virkRedaktoer1,
-	uuidRedaktoer1
+	uuidRedaktoer1,
+	null
 ) :: KlasseRelationType
 ;
 
@@ -150,7 +152,8 @@ klasseRelRedaktoer1 := ROW (
 klasseRelRedaktoer2 := ROW (
 	'redaktoerer'::KlasseRelationKode,
 		virkRedaktoer2,
-	uuidRedaktoer2
+	uuidRedaktoer2,
+	null
 ) :: KlasseRelationType
 ;
 

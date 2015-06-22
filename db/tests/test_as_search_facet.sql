@@ -143,7 +143,8 @@ virkPubliceret_A := ROW (
 facetRelAnsvarlig_A := ROW (
 	'ansvarlig'::FacetRelationKode,
 		virkAnsvarlig_A,
-	uuidAnsvarlig_A
+	uuidAnsvarlig_A,
+	null
 ) :: FacetRelationType
 ;
 
@@ -151,7 +152,8 @@ facetRelAnsvarlig_A := ROW (
 facetRelRedaktoer1_A := ROW (
 	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer1_A,
-	uuidRedaktoer1_A
+	uuidRedaktoer1_A,
+	null
 ) :: FacetRelationType
 ;
 
@@ -160,7 +162,8 @@ facetRelRedaktoer1_A := ROW (
 facetRelRedaktoer2_A := ROW (
 	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer2_A,
-	uuidRedaktoer2_A
+	uuidRedaktoer2_A,
+	null
 ) :: FacetRelationType
 ;
 
@@ -259,7 +262,8 @@ virkPubliceret2_B := ROW (
 facetRelAnsvarlig_B := ROW (
 	'ansvarlig'::FacetRelationKode,
 		virkAnsvarlig_B,
-	uuidAnsvarlig_B
+	uuidAnsvarlig_B,
+	null
 ) :: FacetRelationType
 ;
 
@@ -267,7 +271,8 @@ facetRelAnsvarlig_B := ROW (
 facetRelRedaktoer1_B := ROW (
 	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer1_B,
-	uuidRedaktoer1_B
+	uuidRedaktoer1_B,
+	null
 ) :: FacetRelationType
 ;
 
@@ -276,7 +281,8 @@ facetRelRedaktoer1_B := ROW (
 facetRelRedaktoer2_B := ROW (
 	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer2_B,
-	uuidRedaktoer2_B
+	uuidRedaktoer2_B,
+	null
 ) :: FacetRelationType
 ;
 
@@ -560,7 +566,8 @@ virkPubliceret2_C := ROW (
 facetRelAnsvarlig_C := ROW (
 	'ansvarlig'::FacetRelationKode,
 		virkAnsvarlig_C,
-	uuidAnsvarlig_C
+	uuidAnsvarlig_C,
+	null
 ) :: FacetRelationType
 ;
 
@@ -568,7 +575,8 @@ facetRelAnsvarlig_C := ROW (
 facetRelRedaktoer1_C := ROW (
 	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer1_C,
-	uuidRedaktoer1_C
+	uuidRedaktoer1_C,
+	null
 ) :: FacetRelationType
 ;
 
@@ -658,6 +666,7 @@ ARRAY[
 				'[2013-05-01, 2015-04-11]' :: TSTZRANGE,
 				 null,null,null
 			)::virkning ,
+			null,
 			null
 	) :: FacetRelationType
 ]
@@ -707,6 +716,7 @@ ARRAY[
 				'[2013-05-01, 2015-04-11]' :: TSTZRANGE,
 				 null,null,null
 			)::virkning ,
+			null,
 			null
 	) :: FacetRelationType
 ]

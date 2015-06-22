@@ -17,7 +17,8 @@ CREATE OR REPLACE FUNCTION as_search_organisation(
 	virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
 	maxResults int = 2147483647,
 	anyAttrValueArr text[] = '{}'::text[],
-	anyRelUuidArr	uuid[] = '{}'::uuid[]
+	anyRelUuidArr	uuid[] = '{}'::uuid[],
+	anyRelUrnArr text[] = '{}'::text[]
 	)
   RETURNS uuid[] AS 
 $$
@@ -31,6 +32,7 @@ DECLARE
 	relationTypeObj OrganisationRelationType;
 	anyAttrValue text;
 	anyRelUuid uuid;
+	anyRelUrn text;
 BEGIN
 
 --RAISE DEBUG 'step 0:registreringObj:%',registreringObj;
@@ -589,9 +591,15 @@ ELSE
 				)
 				AND
 				(
-					relationTypeObj.relMaal IS NULL
+					relationTypeObj.relMaalUuid IS NULL
 					OR
-					relationTypeObj.relMaal = a.rel_maal	
+					relationTypeObj.relMaalUuid = a.rel_maal_uuid	
+				)
+				AND
+				(
+					relationTypeObj.relMaalUrn IS NULL
+					OR
+					relationTypeObj.relMaalUrn = a.rel_maal_urn
 				)
 				AND
 						(
@@ -682,7 +690,7 @@ IF coalesce(array_length(anyRelUuidArr ,1),0)>0 THEN
 			FROM  organisation_relation a
 			JOIN organisation_registrering b on a.organisation_registrering_id=b.id
 			WHERE
-			anyRelUuid = a.rel_maal
+			anyRelUuid = a.rel_maal_uuid
 			AND
 			(
 				virkningSoeg IS NULL
@@ -766,6 +774,102 @@ IF coalesce(array_length(anyRelUuidArr ,1),0)>0 THEN
 END IF;
 
 --/**********************//
+
+IF coalesce(array_length(anyRelUrnArr ,1),0)>0 THEN
+
+	FOREACH anyRelUrn IN ARRAY anyRelUrnArr
+	LOOP
+		organisation_candidates:=array(
+			SELECT DISTINCT
+			b.organisation_id 
+			FROM  organisation_relation a
+			JOIN organisation_registrering b on a.organisation_registrering_id=b.id
+			WHERE
+			anyRelUrn = a.rel_maal_urn
+			AND
+			(
+				virkningSoeg IS NULL
+				OR
+				virkningSoeg && (a.virkning).TimePeriod
+			)
+			AND
+					(
+				(registreringObj.registrering) IS NULL 
+				OR
+				(
+					(
+						(registreringObj.registrering).timeperiod IS NULL 
+						OR
+						(registreringObj.registrering).timeperiod && (b.registrering).timeperiod
+					)
+					AND
+					(
+						(registreringObj.registrering).livscykluskode IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode = (b.registrering).livscykluskode 		
+					) 
+					AND
+					(
+						(registreringObj.registrering).brugerref IS NULL
+						OR
+						(registreringObj.registrering).brugerref = (b.registrering).brugerref
+					)
+					AND
+					(
+						(registreringObj.registrering).note IS NULL
+						OR
+						(b.registrering).note ILIKE (registreringObj.registrering).note
+					)
+			)
+		)
+		AND
+		(
+			(
+				((b.registrering).livscykluskode <> 'Slettet'::Livscykluskode )
+				AND
+					(
+						(registreringObj.registrering) IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode IS NULL 
+					)
+			)
+			OR
+			(
+				(NOT ((registreringObj.registrering) IS NULL))
+				AND
+				(registreringObj.registrering).livscykluskode IS NOT NULL 
+			)
+		)
+		AND
+		(
+			(
+			  (
+			  	(registreringObj.registrering) IS NULL
+			  	OR
+			  	(registreringObj.registrering).timeperiod IS NULL
+			  )
+			  AND
+			  upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ
+			)  	
+		OR
+			(
+				(NOT ((registreringObj.registrering) IS NULL))
+				AND
+				((registreringObj.registrering).timeperiod IS NOT NULL)
+			)
+		)
+		AND
+		( (NOT organisation_candidates_is_initialized) OR b.organisation_id = ANY (organisation_candidates) )
+
+
+			);
+
+	organisation_candidates_is_initialized:=true;
+	END LOOP;
+END IF;
+
+--/**********************//
+
 
 --RAISE DEBUG 'organisation_candidates_is_initialized step 5:%',organisation_candidates_is_initialized;
 --RAISE DEBUG 'organisation_candidates step 5:%',organisation_candidates;

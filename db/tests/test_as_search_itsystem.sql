@@ -93,7 +93,8 @@ virkGyldighedA := ROW (
 itsystemRelAnsvarligA := ROW (
 	'tilhoerer'::ItsystemRelationKode,
 		virkAnsvarligA,
-	uuidAnsvarligA
+	uuidAnsvarligA,
+	null
 ) :: ItsystemRelationType
 ;
 
@@ -101,7 +102,8 @@ itsystemRelAnsvarligA := ROW (
 itsystemRelOrganisationer1A := ROW (
 	'tilknyttedeorganisationer'::ItsystemRelationKode,
 		virkOrganisationer1A,
-	uuidOrganisationer1A
+	uuidOrganisationer1A,
+	null
 ) :: ItsystemRelationType
 ;
 
@@ -110,7 +112,8 @@ itsystemRelOrganisationer1A := ROW (
 itsystemRelOrganisationer2A := ROW (
 	'tilknyttedeorganisationer'::ItsystemRelationKode,
 		virkOrganisationer2A,
-	uuidOrganisationer2A
+	uuidOrganisationer2A,
+	null
 ) :: ItsystemRelationType
 ;
 

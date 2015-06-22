@@ -358,17 +358,34 @@ CREATE TABLE klasse_relation
   id bigint NOT NULL DEFAULT nextval('klasse_relation_id_seq'::regclass),
   klasse_registrering_id bigint not null,
   virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
-  rel_maal uuid NULL, --we have to allow null values (for now at least), as it is needed to be able to clear/overrule previous registered relations.
+  rel_maal_uuid uuid NULL, --we have to allow null values (for now at least), as it is needed to be able to clear/overrule previous registered relations.
+  rel_maal_urn text null,
   rel_type KlasseRelationKode not null,
  CONSTRAINT klasse_relation_forkey_klasseregistrering  FOREIGN KEY (klasse_registrering_id) REFERENCES klasse_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
  CONSTRAINT klasse_relation_pkey PRIMARY KEY (id),
- CONSTRAINT klasse_relation_no_virkning_overlap EXCLUDE USING gist (klasse_registrering_id WITH =, _as_convert_klasse_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('redaktoerer'::KlasseRelationKode ) AND rel_type<>('sideordnede'::KlasseRelationKode ) AND rel_type<>('mapninger'::KlasseRelationKode ) AND rel_type<>('tilfoejelser'::KlasseRelationKode ) AND rel_type<>('erstatter'::KlasseRelationKode ) AND rel_type<>('lovligekombinationer'::KlasseRelationKode )) -- no overlapping virkning except for 0..n --relations
+ CONSTRAINT klasse_relation_no_virkning_overlap EXCLUDE USING gist (klasse_registrering_id WITH =, _as_convert_klasse_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('redaktoerer'::KlasseRelationKode ) AND rel_type<>('sideordnede'::KlasseRelationKode ) AND rel_type<>('mapninger'::KlasseRelationKode ) AND rel_type<>('tilfoejelser'::KlasseRelationKode ) AND rel_type<>('erstatter'::KlasseRelationKode ) AND rel_type<>('lovligekombinationer'::KlasseRelationKode )) ,-- no overlapping virkning except for 0..n --relations
+ CONSTRAINT klasse_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
 );
 
-CREATE INDEX klasse_relation_idx_rel_maal
+CREATE INDEX klasse_relation_idx_rel_maal_uuid
   ON klasse_relation
   USING btree
-  (rel_type, rel_maal);
+  (rel_type, rel_maal_uuid);
+
+CREATE INDEX klasse_relation_idx_rel_maal_uuid_isolated
+  ON klasse_relation
+  USING btree
+  (rel_maal_uuid);
+
+CREATE INDEX klasse_relation_idx_rel_maal_urn_isolated
+  ON klasse_relation
+  USING btree
+  (rel_maal_urn);
+
+CREATE INDEX klasse_relation_idx_rel_maal_urn
+  ON klasse_relation
+  USING btree
+  (rel_type, rel_maal_urn);
 
 CREATE INDEX klasse_relation_idx_virkning_aktoerref
   ON klasse_relation

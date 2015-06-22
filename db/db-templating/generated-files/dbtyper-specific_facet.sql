@@ -36,7 +36,8 @@ CREATE TYPE FacetRelationKode AS ENUM  ('ansvarlig','ejer','facettilhoerer','red
 CREATE TYPE FacetRelationType AS (
   relType FacetRelationKode,
   virkning Virkning,
-  relMaal uuid 
+  relMaalUuid uuid,
+  relMaalUrn  text 
 )
 ;
 

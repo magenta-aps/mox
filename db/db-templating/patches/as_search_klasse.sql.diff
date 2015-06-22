@@ -1,13 +1,13 @@
-*** ../generated-files/as_search_klasse.sql	2015-06-17 14:23:35.168518519 +0200
---- ../patches/as_search_klasse.sql.org	2015-06-17 14:00:53.140450686 +0200
+*** ../generated-files/as_search_klasse.sql	2015-06-22 15:46:23.170794003 +0200
+--- ../patches/as_search_klasse.sql.org	2015-06-22 16:01:40.450839686 +0200
 ***************
-*** 29,38 ****
---- 29,40 ----
-  	
+*** 31,40 ****
+--- 31,42 ----
     	tilsPubliceretTypeObj KlassePubliceretTilsType;
   	relationTypeObj KlasseRelationType;
   	anyAttrValue text;
   	anyRelUuid uuid;
+  	anyRelUrn text;
 + 	manipulatedAttrEgenskaberArr KlasseEgenskaberAttrType[]:='{}';
 + 	soegeordObj KlasseSoegeordType;
   BEGIN
@@ -16,7 +16,7 @@
   
   klasse_candidates_is_initialized := false;
 ***************
-*** 102,124 ****
+*** 140,162 ****
   --Filtration on attribute: Egenskaber
   --/**********************************************************//
   IF registreringObj IS NULL OR (registreringObj).attrEgenskaber IS NULL THEN
@@ -40,7 +40,7 @@
   								(
   							 		(attrEgenskaberTypeObj.virkning).TimePeriod IS NULL
   								)
---- 104,156 ----
+--- 142,194 ----
   --Filtration on attribute: Egenskaber
   --/**********************************************************//
   IF registreringObj IS NULL OR (registreringObj).attrEgenskaber IS NULL THEN
@@ -95,8 +95,8 @@
   							 		(attrEgenskaberTypeObj.virkning).TimePeriod IS NULL
   								)
 ***************
-*** 193,203 ****
---- 225,259 ----
+*** 231,241 ****
+--- 263,297 ----
   					attrEgenskaberTypeObj.aendringsnotat IS NULL
   					OR 
   					a.aendringsnotat ILIKE attrEgenskaberTypeObj.aendringsnotat --case insensitive 
@@ -133,8 +133,8 @@
   					(
   						(registreringObj.registrering).timeperiod IS NULL 
 ***************
-*** 250,259 ****
---- 306,316 ----
+*** 324,333 ****
+--- 380,390 ----
   
   			SELECT DISTINCT
   			b.klasse_id 
@@ -147,8 +147,8 @@
   				OR
   				a.beskrivelse ILIKE anyAttrValue
 ***************
-*** 265,274 ****
---- 322,337 ----
+*** 339,348 ****
+--- 396,411 ----
   				a.titel ILIKE anyAttrValue
   				OR
   				a.retskilde ILIKE anyAttrValue

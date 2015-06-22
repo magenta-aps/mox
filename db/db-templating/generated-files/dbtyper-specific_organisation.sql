@@ -31,7 +31,8 @@ CREATE TYPE OrganisationRelationKode AS ENUM  ('branche','myndighed','myndigheds
 CREATE TYPE OrganisationRelationType AS (
   relType OrganisationRelationKode,
   virkning Virkning,
-  relMaal uuid 
+  relMaalUuid uuid,
+  relMaalUrn  text 
 )
 ;
 

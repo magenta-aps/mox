@@ -75,14 +75,16 @@ ELSE
       INSERT INTO klasse_relation (
         klasse_registrering_id,
           virkning,
-            rel_maal,
-              rel_type
+            rel_maal_uuid,
+              rel_maal_urn,
+                rel_type
       )
       SELECT
         new_klasse_registrering.id,
           a.virkning,
-            a.relMaal,
-              a.relType
+            a.relMaalUuid,
+              a.relMaalUrn,
+                a.relType
       FROM unnest(relationer) as a
     ;
 
@@ -99,8 +101,9 @@ ELSE
     INSERT INTO klasse_relation (
         klasse_registrering_id,
           virkning,
-            rel_maal,
-              rel_type
+            rel_maal_uuid,
+              rel_maal_urn,
+                rel_type
       )
     SELECT 
         new_klasse_registrering.id, 
@@ -110,8 +113,9 @@ ELSE
               (a.virkning).AktoerTypeKode,
               (a.virkning).NoteTekst
           ) :: virkning,
-            a.rel_maal,
-              a.rel_type
+            a.rel_maal_uuid,
+              a.rel_maal_urn,
+                a.rel_type
     FROM
     (
       --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to _subtract_tstzrange_arr on the relations of the previous registrering 
@@ -132,12 +136,7 @@ ELSE
   /**********************/
   -- 0..n relations
 
-  --The question regarding how the api-consumer is to specify the deletion of 0..n relation already registered is not answered.
-  --The following options presents itself:
-  --a) In this special case, the api-consumer has to specify the full set of the 0..n relation, when updating 
-  -- ref: ("Hvis indholdet i en liste af elementer rettes, skal hele den nye liste af elementer med i ObjektRet - p27 "Generelle egenskaber for serviceinterfaces på sags- og dokumentområdet")
-
-  --Assuming option 'a' above is selected, we only have to check if there are any of the relations with the given name present in the new registration, otherwise copy the ones from the previous registration
+  --We only have to check if there are any of the relations with the given name present in the new registration, otherwise copy the ones from the previous registration
 
 
   FOREACH klasse_relation_navn in array ARRAY['redaktoerer'::KlasseRelationKode,'sideordnede'::KlasseRelationKode,'mapninger'::KlasseRelationKode,'tilfoejelser'::KlasseRelationKode,'erstatter'::KlasseRelationKode,'lovligekombinationer'::KlasseRelationKode]
@@ -148,13 +147,15 @@ ELSE
       INSERT INTO klasse_relation (
             klasse_registrering_id,
               virkning,
-                rel_maal,
-                  rel_type
+                rel_maal_uuid,
+                  rel_maal_urn,
+                    rel_type
           )
       SELECT 
             new_klasse_registrering.id,
               virkning,
-                rel_maal,
+                rel_maal_uuid,
+                  rel_maal_urn,
                   rel_type
       FROM klasse_relation
       WHERE klasse_registrering_id=prev_klasse_registrering.id 
@@ -171,7 +172,7 @@ ELSE
 DELETE FROM klasse_relation
 WHERE 
 klasse_registrering_id=new_klasse_registrering.id
-AND rel_maal IS NULL
+AND (rel_maal_uuid IS NULL AND (rel_maal_urn IS NULL OR rel_maal_urn=''))
 ;
 
 END IF;

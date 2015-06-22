@@ -264,17 +264,34 @@ CREATE TABLE klassifikation_relation
   id bigint NOT NULL DEFAULT nextval('klassifikation_relation_id_seq'::regclass),
   klassifikation_registrering_id bigint not null,
   virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
-  rel_maal uuid NULL, --we have to allow null values (for now at least), as it is needed to be able to clear/overrule previous registered relations.
+  rel_maal_uuid uuid NULL, --we have to allow null values (for now at least), as it is needed to be able to clear/overrule previous registered relations.
+  rel_maal_urn text null,
   rel_type KlassifikationRelationKode not null,
  CONSTRAINT klassifikation_relation_forkey_klassifikationregistrering  FOREIGN KEY (klassifikation_registrering_id) REFERENCES klassifikation_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
  CONSTRAINT klassifikation_relation_pkey PRIMARY KEY (id),
- CONSTRAINT klassifikation_relation_no_virkning_overlap EXCLUDE USING gist (klassifikation_registrering_id WITH =, _as_convert_klassifikation_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&) -- no overlapping virkning except for 0..n --relations
+ CONSTRAINT klassifikation_relation_no_virkning_overlap EXCLUDE USING gist (klassifikation_registrering_id WITH =, _as_convert_klassifikation_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&) ,-- no overlapping virkning except for 0..n --relations
+ CONSTRAINT klassifikation_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
 );
 
-CREATE INDEX klassifikation_relation_idx_rel_maal
+CREATE INDEX klassifikation_relation_idx_rel_maal_uuid
   ON klassifikation_relation
   USING btree
-  (rel_type, rel_maal);
+  (rel_type, rel_maal_uuid);
+
+CREATE INDEX klassifikation_relation_idx_rel_maal_uuid_isolated
+  ON klassifikation_relation
+  USING btree
+  (rel_maal_uuid);
+
+CREATE INDEX klassifikation_relation_idx_rel_maal_urn_isolated
+  ON klassifikation_relation
+  USING btree
+  (rel_maal_urn);
+
+CREATE INDEX klassifikation_relation_idx_rel_maal_urn
+  ON klassifikation_relation
+  USING btree
+  (rel_type, rel_maal_urn);
 
 CREATE INDEX klassifikation_relation_idx_virkning_aktoerref
   ON klassifikation_relation

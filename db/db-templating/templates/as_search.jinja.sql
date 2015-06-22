@@ -14,7 +14,8 @@ CREATE OR REPLACE FUNCTION as_search_{{oio_type}}(
 	virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
 	maxResults int = 2147483647,
 	anyAttrValueArr text[] = '{}'::text[],
-	anyRelUuidArr	uuid[] = '{}'::uuid[]
+	anyRelUuidArr	uuid[] = '{}'::uuid[],
+	anyRelUrnArr text[] = '{}'::text[]
 	)
   RETURNS uuid[] AS 
 $$
@@ -31,6 +32,7 @@ DECLARE
 	relationTypeObj {{oio_type|title}}RelationType;
 	anyAttrValue text;
 	anyRelUuid uuid;
+	anyRelUrn text;
 BEGIN
 
 --RAISE DEBUG 'step 0:registreringObj:%',registreringObj;
@@ -353,9 +355,15 @@ ELSE
 				)
 				AND
 				(
-					relationTypeObj.relMaal IS NULL
+					relationTypeObj.relMaalUuid IS NULL
 					OR
-					relationTypeObj.relMaal = a.rel_maal	
+					relationTypeObj.relMaalUuid = a.rel_maal_uuid	
+				)
+				AND
+				(
+					relationTypeObj.relMaalUrn IS NULL
+					OR
+					relationTypeObj.relMaalUrn = a.rel_maal_urn
 				)
 				AND
 				{% include 'as_search_mixin_filter_reg.jinja.sql' %}
@@ -379,7 +387,7 @@ IF coalesce(array_length(anyRelUuidArr ,1),0)>0 THEN
 			FROM  {{oio_type}}_relation a
 			JOIN {{oio_type}}_registrering b on a.{{oio_type}}_registrering_id=b.id
 			WHERE
-			anyRelUuid = a.rel_maal
+			anyRelUuid = a.rel_maal_uuid
 			AND
 			(
 				virkningSoeg IS NULL
@@ -396,6 +404,35 @@ IF coalesce(array_length(anyRelUuidArr ,1),0)>0 THEN
 END IF;
 
 --/**********************//
+
+IF coalesce(array_length(anyRelUrnArr ,1),0)>0 THEN
+
+	FOREACH anyRelUrn IN ARRAY anyRelUrnArr
+	LOOP
+		{{oio_type}}_candidates:=array(
+			SELECT DISTINCT
+			b.{{oio_type}}_id 
+			FROM  {{oio_type}}_relation a
+			JOIN {{oio_type}}_registrering b on a.{{oio_type}}_registrering_id=b.id
+			WHERE
+			anyRelUrn = a.rel_maal_urn
+			AND
+			(
+				virkningSoeg IS NULL
+				OR
+				virkningSoeg && (a.virkning).TimePeriod
+			)
+			AND
+			{% include 'as_search_mixin_filter_reg.jinja.sql' %}
+
+			);
+
+	{{oio_type}}_candidates_is_initialized:=true;
+	END LOOP;
+END IF;
+
+--/**********************//
+
 
 --RAISE DEBUG '{{oio_type}}_candidates_is_initialized step 5:%',{{oio_type}}_candidates_is_initialized;
 --RAISE DEBUG '{{oio_type}}_candidates step 5:%',{{oio_type}}_candidates;

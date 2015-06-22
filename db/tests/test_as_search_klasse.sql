@@ -300,7 +300,8 @@ virkSideordnede_AB_A := ROW (
 klasseRelAnsvarlig_A := ROW (
 	'ansvarlig'::KlasseRelationKode,
 		virkAnsvarlig_A,
-	uuidAnsvarlig_A
+	uuidAnsvarlig_A,
+	null
 ) :: KlasseRelationType
 ;
 
@@ -308,7 +309,8 @@ klasseRelAnsvarlig_A := ROW (
 klasseRelRedaktoer1_A := ROW (
 	'redaktoerer'::KlasseRelationKode,
 		virkRedaktoer1_A,
-	uuidRedaktoer1_A
+	uuidRedaktoer1_A,
+	null
 ) :: KlasseRelationType
 ;
 
@@ -317,14 +319,16 @@ klasseRelRedaktoer1_A := ROW (
 klasseRelRedaktoer2_A := ROW (
 	'redaktoerer'::KlasseRelationKode,
 		virkRedaktoer2_A,
-	uuidRedaktoer2_A
+	uuidRedaktoer2_A,
+	null
 ) :: KlasseRelationType
 ;
 
 klasseRelSideordnede3_A := ROW (
 	'sideordnede'::KlasseRelationKode,
 		virkSideordnede_AB_A,
-	uuidSideordnede_AB
+	uuidSideordnede_AB,
+	null
 ) :: KlasseRelationType
 ;
 
@@ -443,7 +447,8 @@ virkPubliceret2_B := ROW (
 klasseRelAnsvarlig_B := ROW (
 	'ansvarlig'::KlasseRelationKode,
 		virkAnsvarlig_B,
-	uuidAnsvarlig_B
+	uuidAnsvarlig_B,
+	null
 ) :: KlasseRelationType
 ;
 
@@ -451,7 +456,8 @@ klasseRelAnsvarlig_B := ROW (
 klasseRelRedaktoer1_B := ROW (
 	'redaktoerer'::KlasseRelationKode,
 		virkRedaktoer1_B,
-	uuidRedaktoer1_B
+	uuidRedaktoer1_B,
+	null
 ) :: KlasseRelationType
 ;
 
@@ -460,14 +466,16 @@ klasseRelRedaktoer1_B := ROW (
 klasseRelRedaktoer2_B := ROW (
 	'redaktoerer'::KlasseRelationKode,
 		virkRedaktoer2_B,
-	uuidRedaktoer2_B
+	uuidRedaktoer2_B,
+	null
 ) :: KlasseRelationType
 ;
 
 klasseRelSideordnede3_B := ROW (
 	'sideordnede'::KlasseRelationKode,
 		virkSideordnede_AB_B,
-	uuidSideordnede_AB
+	uuidSideordnede_AB,
+	null
 ) :: KlasseRelationType
 ;
 
@@ -869,7 +877,8 @@ virkPubliceret2_C := ROW (
 klasseRelAnsvarlig_C := ROW (
 	'ansvarlig'::KlasseRelationKode,
 		virkAnsvarlig_C,
-	uuidAnsvarlig_C
+	uuidAnsvarlig_C,
+	null
 ) :: KlasseRelationType
 ;
 
@@ -877,7 +886,8 @@ klasseRelAnsvarlig_C := ROW (
 klasseRelRedaktoer1_C := ROW (
 	'redaktoerer'::KlasseRelationKode,
 		virkRedaktoer1_C,
-	uuidRedaktoer1_C
+	uuidRedaktoer1_C,
+	null
 ) :: KlasseRelationType
 ;
 
@@ -970,6 +980,7 @@ ARRAY[
 				'[2013-05-01, 2015-04-11]' :: TSTZRANGE,
 				 null,null,null
 			)::virkning ,
+			null,
 			null
 	) :: KlasseRelationType
 ]
@@ -1019,6 +1030,7 @@ ARRAY[
 				'[2013-05-01, 2015-04-11]' :: TSTZRANGE,
 				 null,null,null
 			)::virkning ,
+			null,
 			null
 	) :: KlasseRelationType
 ]
@@ -1544,6 +1556,7 @@ ARRAY[
 				'[2013-05-01, 2015-04-11]' :: TSTZRANGE,
 				 null,null,null
 			)::virkning ,
+			null,
 			null
 	) :: KlasseRelationType
 ]
@@ -1588,6 +1601,7 @@ ARRAY[
 	ROW (
 	'redaktoerer'::KlasseRelationKode,
 		null,--virkning 
+			null,
 			null
 	) :: KlasseRelationType
 ]
@@ -1634,6 +1648,7 @@ ARRAY[
 	ROW (
 	'overordnetklasse'::KlasseRelationKode,
 		null,--virkning 
+			null,
 			null
 	) :: KlasseRelationType
 ]
@@ -1807,6 +1822,7 @@ ARRAY[
 				  	'[2015-05-10, 2015-07-30]' :: TSTZRANGE,
 				  	null,null,null
 				  	)::virkning, 
+			null,
 			null
 	) :: KlasseRelationType,
 	ROW (
@@ -1815,6 +1831,7 @@ ARRAY[
 				  	'[2015-04-20, 2015-04-20]' :: TSTZRANGE,
 				  	null,null,null
 				  	)::virkning, 
+			null,
 			null
 	) :: KlasseRelationType
 ]
@@ -2509,6 +2526,7 @@ ARRAY[
 				  	'[2015-05-10, 2015-07-30]' :: TSTZRANGE,
 				  	null,null,null
 				  	)::virkning, 
+			null,
 			null
 	) :: KlasseRelationType,
 	ROW (
@@ -2517,6 +2535,7 @@ ARRAY[
 				  	'[2015-04-20, 2015-04-20]' :: TSTZRANGE,
 				  	null,null,null
 				  	)::virkning, 
+			null,
 			null
 	) :: KlasseRelationType
 ]
@@ -2552,6 +2571,7 @@ ARRAY[
 				  	'[2015-05-10, 2015-07-30]' :: TSTZRANGE,
 				  	null,null,null
 				  	)::virkning, 
+			null,
 			null
 	) :: KlasseRelationType,
 	ROW (
@@ -2560,6 +2580,7 @@ ARRAY[
 				  	'[2015-04-20, 2015-04-20]' :: TSTZRANGE,
 				  	null,null,null
 				  	)::virkning, 
+			null,
 			null
 	) :: KlasseRelationType
 ]
@@ -2625,27 +2646,7 @@ a.klasse_id=new_uuid_C
 --raise notice 'rows_affected:%',rows_affected;
 */
 
-/*
-read_Klasse1 := as_read_Klasse(new_uuid_A,
-	null, --registrering_tstzrange
-	null --virkning_tstzrange
-	);
 
-read_Klasse2 := as_read_Klasse(new_uuid_B,
-	null, --registrering_tstzrange
-	null --virkning_tstzrange
-	);
-
-
-read_Klasse3 := as_read_Klasse(new_uuid_C,
-	null, --registrering_tstzrange
-	null --virkning_tstzrange
-	);
-
-raise notice 'read_Klasse1:%',to_json(read_Klasse1);
-raise notice 'read_Klasse2:%',to_json(read_Klasse2);
-raise notice 'read_Klasse3:%',to_json(read_Klasse3);
-*/
 
 update_reg_id:=as_update_klasse(
   new_uuid_B, '8762a443-2f60-49c1-bd8e-ecfdef91d48a'::uuid,'Test update'::text,
@@ -2708,6 +2709,26 @@ search_result200 :=as_search_klasse(
 RETURN NEXT ok(expected_result200 @> search_result200 and search_result200 @>expected_result200 and array_length(expected_result200,1)=array_length(search_result200,1), 'test if search does not included Livscykluskode [slettet] pr default.');
 
 
+
+read_Klasse1 := as_read_Klasse(new_uuid_A,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
+	);
+
+read_Klasse2 := as_read_Klasse(new_uuid_B,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
+	);
+
+
+read_Klasse3 := as_read_Klasse(new_uuid_C,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
+	);
+
+--raise notice 'read_Klasse1:%',to_json(read_Klasse1);
+--raise notice 'read_Klasse2:%',to_json(read_Klasse2);
+--raise notice 'read_Klasse3:%',to_json(read_Klasse3);
 
 
 
