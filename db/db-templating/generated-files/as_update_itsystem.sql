@@ -403,7 +403,7 @@ FROM
 DELETE FROM itsystem_attr_egenskaber a
 WHERE 
 a.itsystem_registrering_id=new_itsystem_registrering.id
-AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') AND (a.itsystemnavn IS NULL OR a.itsystemnavn='') AND (a.itsystemtype IS NULL OR a.itsystemtype='') AND (a.konfigurationreference IS NULL OR a.konfigurationreference='')
+AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') AND (a.itsystemnavn IS NULL OR a.itsystemnavn='') AND (a.itsystemtype IS NULL OR a.itsystemtype='') AND (a.konfigurationreference IS NULL OR coalesce(array_length(a.konfigurationreference,1),0)=0)
 ;
 
 END IF;
