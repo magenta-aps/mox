@@ -222,14 +222,21 @@ def delete_object(class_name, note, uuid):
 
     user_ref = get_authenticated_user()
     life_cycle_code = Livscyklus.SLETTET.value
-    sql_template = jinja_env.get_template('passivate_or_delete_object.sql')
+    sql_template = jinja_env.get_template('delete_object.sql')
+    (
+        sql_states, sql_attributes, sql_relations
+    ) = sql_convert_registration([], [], {}, class_name)
     sql = sql_template.render(
         class_name=class_name,
         uuid=uuid,
         life_cycle_code=life_cycle_code,
         user_ref=user_ref,
-        note=note
+        note=note,
+        states=sql_states,
+        attributes=sql_attributes,
+        relations=sql_relations
     )
+    print sql
     # Call Postgres! Return OK or not accordingly
     conn = get_connection()
     cursor = conn.cursor()
@@ -244,7 +251,7 @@ def passivate_object(class_name, note, uuid):
 
     user_ref = get_authenticated_user()
     life_cycle_code = Livscyklus.PASSIVERET.value
-    sql_template = jinja_env.get_template('passivate_or_delete_object.sql')
+    sql_template = jinja_env.get_template('passivate_object.sql')
     sql = sql_template.render(
         class_name=class_name,
         uuid=uuid,
@@ -306,12 +313,15 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
         class_name=class_name
     )
 
+    registration_period = None
+    if registreret_fra is not None or registreret_til is not None:
+        registration_period = DateTimeTZRange(registreret_fra, registreret_til)
+
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute(sql, {
         'uuid': uuid,
-        'registrering_tstzrange': DateTimeTZRange(registreret_fra,
-                                                  registreret_til),
+        'registrering_tstzrange': registration_period,
         'virkning_tstzrange': DateTimeTZRange(virkning_fra, virkning_til)
     })
     output = cursor.fetchone()
