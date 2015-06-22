@@ -90,28 +90,45 @@ IF facet_registrering.attrEgenskaber IS NOT NULL THEN
   FOREACH facet_attr_egenskaber_obj IN ARRAY facet_registrering.attrEgenskaber
   LOOP
 
-  INSERT INTO facet_attr_egenskaber (
-    brugervendtnoegle,
-    beskrivelse,
-    opbygning,
-    ophavsret,
-    plan,
-    supplement,
-    retskilde,
-    virkning,
-    facet_registrering_id
-  )
-  SELECT
-   facet_attr_egenskaber_obj.brugervendtnoegle,
-    facet_attr_egenskaber_obj.beskrivelse,
-    facet_attr_egenskaber_obj.opbygning,
-    facet_attr_egenskaber_obj.ophavsret,
-    facet_attr_egenskaber_obj.plan,
-    facet_attr_egenskaber_obj.supplement,
-    facet_attr_egenskaber_obj.retskilde,
-    facet_attr_egenskaber_obj.virkning,
-    facet_registrering_id
-  ;
+  IF
+  ( facet_attr_egenskaber_obj.brugervendtnoegle IS NOT NULL AND facet_attr_egenskaber_obj.brugervendtnoegle<>'') 
+   OR 
+  ( facet_attr_egenskaber_obj.beskrivelse IS NOT NULL AND facet_attr_egenskaber_obj.beskrivelse<>'') 
+   OR 
+  ( facet_attr_egenskaber_obj.opbygning IS NOT NULL AND facet_attr_egenskaber_obj.opbygning<>'') 
+   OR 
+  ( facet_attr_egenskaber_obj.ophavsret IS NOT NULL AND facet_attr_egenskaber_obj.ophavsret<>'') 
+   OR 
+  ( facet_attr_egenskaber_obj.plan IS NOT NULL AND facet_attr_egenskaber_obj.plan<>'') 
+   OR 
+  ( facet_attr_egenskaber_obj.supplement IS NOT NULL AND facet_attr_egenskaber_obj.supplement<>'') 
+   OR 
+  ( facet_attr_egenskaber_obj.retskilde IS NOT NULL AND facet_attr_egenskaber_obj.retskilde<>'') 
+   THEN
+
+    INSERT INTO facet_attr_egenskaber (
+      brugervendtnoegle,
+      beskrivelse,
+      opbygning,
+      ophavsret,
+      plan,
+      supplement,
+      retskilde,
+      virkning,
+      facet_registrering_id
+    )
+    SELECT
+     facet_attr_egenskaber_obj.brugervendtnoegle,
+      facet_attr_egenskaber_obj.beskrivelse,
+      facet_attr_egenskaber_obj.opbygning,
+      facet_attr_egenskaber_obj.ophavsret,
+      facet_attr_egenskaber_obj.plan,
+      facet_attr_egenskaber_obj.supplement,
+      facet_attr_egenskaber_obj.retskilde,
+      facet_attr_egenskaber_obj.virkning,
+      facet_registrering_id
+    ;
+  END IF;
 
   END LOOP;
 END IF;
@@ -130,16 +147,19 @@ IF facet_registrering.tilsPubliceret IS NOT NULL THEN
   FOREACH facet_tils_publiceret_obj IN ARRAY facet_registrering.tilsPubliceret
   LOOP
 
-  INSERT INTO facet_tils_publiceret (
-    virkning,
-    publiceret,
-    facet_registrering_id
-  )
-  SELECT
-    facet_tils_publiceret_obj.virkning,
-    facet_tils_publiceret_obj.publiceret,
-    facet_registrering_id;
+  IF facet_tils_publiceret_obj.publiceret IS NOT NULL AND facet_tils_publiceret_obj.publiceret<>''::FacetPubliceretTils THEN
 
+    INSERT INTO facet_tils_publiceret (
+      virkning,
+      publiceret,
+      facet_registrering_id
+    )
+    SELECT
+      facet_tils_publiceret_obj.virkning,
+      facet_tils_publiceret_obj.publiceret,
+      facet_registrering_id;
+
+  END IF;
   END LOOP;
 END IF;
 
@@ -159,6 +179,7 @@ END IF;
       a.relMaal,
       a.relType
     FROM unnest(facet_registrering.relationer) a
+    WHERE a.relMaal IS NOT NULL
   ;
 
 

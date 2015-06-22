@@ -86,9 +86,28 @@ IF coalesce(array_length(klasse_registrering.attrEgenskaber, 1),0)<1 THEN
 END IF;
 
 
+
 IF klasse_registrering.attrEgenskaber IS NOT NULL THEN
   FOREACH klasse_attr_egenskaber_obj IN ARRAY klasse_registrering.attrEgenskaber
   LOOP
+
+ IF
+  ( klasse_attr_egenskaber_obj.brugervendtnoegle IS NOT NULL AND klasse_attr_egenskaber_obj.brugervendtnoegle<>'') 
+   OR 
+  ( klasse_attr_egenskaber_obj.beskrivelse IS NOT NULL AND klasse_attr_egenskaber_obj.beskrivelse<>'') 
+   OR 
+  ( klasse_attr_egenskaber_obj.eksempel IS NOT NULL AND klasse_attr_egenskaber_obj.eksempel<>'') 
+   OR 
+  ( klasse_attr_egenskaber_obj.omfang IS NOT NULL AND klasse_attr_egenskaber_obj.omfang<>'') 
+   OR 
+  ( klasse_attr_egenskaber_obj.titel IS NOT NULL AND klasse_attr_egenskaber_obj.titel<>'') 
+   OR 
+  ( klasse_attr_egenskaber_obj.retskilde IS NOT NULL AND klasse_attr_egenskaber_obj.retskilde<>'') 
+   OR 
+  ( klasse_attr_egenskaber_obj.aendringsnotat IS NOT NULL AND klasse_attr_egenskaber_obj.aendringsnotat<>'') 
+  OR
+  ( klasse_attr_egenskaber_obj.soegeord IS NOT NULL AND coalesce(array_length(klasse_attr_egenskaber_obj.soegeord,1),0)>0)
+   THEN
 
 klasse_attr_egenskaber_id:=nextval('klasse_attr_egenskaber_id_seq');
 
@@ -116,6 +135,7 @@ klasse_attr_egenskaber_id:=nextval('klasse_attr_egenskaber_id_seq');
     klasse_attr_egenskaber_obj.virkning,
     klasse_registrering_id
   ;
+ END IF;
 
 /************/
 --Insert Soegeord
@@ -147,7 +167,7 @@ END IF;
 
 --Verification
 --For now all declared states are mandatory.
-IF coalesce(array_length(klasse_registrering.tilsPubliceret, 1),0)<1  THEN
+IF coalesce(array_length(klasse_registrering.tilsPubliceret, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [publiceret] for klasse. Oprettelse afbrydes.';
 END IF;
 
@@ -155,16 +175,19 @@ IF klasse_registrering.tilsPubliceret IS NOT NULL THEN
   FOREACH klasse_tils_publiceret_obj IN ARRAY klasse_registrering.tilsPubliceret
   LOOP
 
-  INSERT INTO klasse_tils_publiceret (
-    virkning,
-    publiceret,
-    klasse_registrering_id
-  )
-  SELECT
-    klasse_tils_publiceret_obj.virkning,
-    klasse_tils_publiceret_obj.publiceret,
-    klasse_registrering_id;
+  IF klasse_tils_publiceret_obj.publiceret IS NOT NULL AND klasse_tils_publiceret_obj.publiceret<>''::KlassePubliceretTils THEN
 
+    INSERT INTO klasse_tils_publiceret (
+      virkning,
+      publiceret,
+      klasse_registrering_id
+    )
+    SELECT
+      klasse_tils_publiceret_obj.virkning,
+      klasse_tils_publiceret_obj.publiceret,
+      klasse_registrering_id;
+
+  END IF;
   END LOOP;
 END IF;
 
@@ -184,6 +207,7 @@ END IF;
       a.relMaal,
       a.relType
     FROM unnest(klasse_registrering.relationer) a
+    WHERE a.relMaal IS NOT NULL
   ;
 
 

@@ -87,16 +87,27 @@ IF {{oio_type}}_registrering.attr{{attribut|title}} IS NOT NULL THEN
   FOREACH {{oio_type}}_attr_{{attribut}}_obj IN ARRAY {{oio_type}}_registrering.attr{{attribut|title}}
   LOOP
 
-  INSERT INTO {{oio_type}}_attr_{{attribut}} (
-    {% for field in attribut_fields %}{{field}},
-    {% endfor %}virkning,
-    {{oio_type}}_registrering_id
-  )
-  SELECT
-   {% for field in attribut_fields %}{{oio_type}}_attr_{{attribut}}_obj.{{field}},
-    {% endfor %}{{oio_type}}_attr_{{attribut}}_obj.virkning,
-    {{oio_type}}_registrering_id
-  ;
+  IF {%- for field in attribut_fields %}
+  ( {{oio_type}}_attr_{{attribut}}_obj.{{field}} IS NOT NULL AND  
+  {%- if  attributter_type_override is defined and attributter_type_override[attribut] is defined and attributter_type_override[attribut][field] is defined %} 
+  {%-if attributter_type_override[attribut][field] == "text[]" %} coalesce(array_length({{oio_type}}_attr_{{attribut}}_obj.{{field}},1),0)>0
+  {%- endif %}
+  {%- else %} {{oio_type}}_attr_{{attribut}}_obj.{{field}}<>'' 
+  {%- endif %}) 
+  {% if (not loop.last)%} OR {% endif %}
+   {%- endfor %} THEN
+
+    INSERT INTO {{oio_type}}_attr_{{attribut}} (
+      {% for field in attribut_fields %}{{field}},
+      {% endfor %}virkning,
+      {{oio_type}}_registrering_id
+    )
+    SELECT
+     {% for field in attribut_fields %}{{oio_type}}_attr_{{attribut}}_obj.{{field}},
+      {% endfor %}{{oio_type}}_attr_{{attribut}}_obj.virkning,
+      {{oio_type}}_registrering_id
+    ;
+  END IF;
 
   END LOOP;
 END IF;
@@ -115,16 +126,19 @@ IF {{oio_type}}_registrering.tils{{tilstand|title}} IS NOT NULL THEN
   FOREACH {{oio_type}}_tils_{{tilstand}}_obj IN ARRAY {{oio_type}}_registrering.tils{{tilstand|title}}
   LOOP
 
-  INSERT INTO {{oio_type}}_tils_{{tilstand}} (
-    virkning,
-    {{tilstand}},
-    {{oio_type}}_registrering_id
-  )
-  SELECT
-    {{oio_type}}_tils_{{tilstand}}_obj.virkning,
-    {{oio_type}}_tils_{{tilstand}}_obj.{{tilstand}},
-    {{oio_type}}_registrering_id;
+  IF {{oio_type}}_tils_{{tilstand}}_obj.{{tilstand}} IS NOT NULL AND {{oio_type}}_tils_{{tilstand}}_obj.{{tilstand}}<>''::{{oio_type|title}}{{tilstand|title}}Tils THEN
 
+    INSERT INTO {{oio_type}}_tils_{{tilstand}} (
+      virkning,
+      {{tilstand}},
+      {{oio_type}}_registrering_id
+    )
+    SELECT
+      {{oio_type}}_tils_{{tilstand}}_obj.virkning,
+      {{oio_type}}_tils_{{tilstand}}_obj.{{tilstand}},
+      {{oio_type}}_registrering_id;
+
+  END IF;
   END LOOP;
 END IF;
 {% endfor %}
@@ -144,6 +158,7 @@ END IF;
       a.relMaal,
       a.relType
     FROM unnest({{oio_type}}_registrering.relationer) a
+    WHERE a.relMaal IS NOT NULL
   ;
 
 

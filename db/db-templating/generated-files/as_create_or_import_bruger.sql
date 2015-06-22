@@ -90,20 +90,29 @@ IF bruger_registrering.attrEgenskaber IS NOT NULL THEN
   FOREACH bruger_attr_egenskaber_obj IN ARRAY bruger_registrering.attrEgenskaber
   LOOP
 
-  INSERT INTO bruger_attr_egenskaber (
-    brugervendtnoegle,
-    brugernavn,
-    brugertype,
-    virkning,
-    bruger_registrering_id
-  )
-  SELECT
-   bruger_attr_egenskaber_obj.brugervendtnoegle,
-    bruger_attr_egenskaber_obj.brugernavn,
-    bruger_attr_egenskaber_obj.brugertype,
-    bruger_attr_egenskaber_obj.virkning,
-    bruger_registrering_id
-  ;
+  IF
+  ( bruger_attr_egenskaber_obj.brugervendtnoegle IS NOT NULL AND bruger_attr_egenskaber_obj.brugervendtnoegle<>'') 
+   OR 
+  ( bruger_attr_egenskaber_obj.brugernavn IS NOT NULL AND bruger_attr_egenskaber_obj.brugernavn<>'') 
+   OR 
+  ( bruger_attr_egenskaber_obj.brugertype IS NOT NULL AND bruger_attr_egenskaber_obj.brugertype<>'') 
+   THEN
+
+    INSERT INTO bruger_attr_egenskaber (
+      brugervendtnoegle,
+      brugernavn,
+      brugertype,
+      virkning,
+      bruger_registrering_id
+    )
+    SELECT
+     bruger_attr_egenskaber_obj.brugervendtnoegle,
+      bruger_attr_egenskaber_obj.brugernavn,
+      bruger_attr_egenskaber_obj.brugertype,
+      bruger_attr_egenskaber_obj.virkning,
+      bruger_registrering_id
+    ;
+  END IF;
 
   END LOOP;
 END IF;
@@ -122,16 +131,19 @@ IF bruger_registrering.tilsGyldighed IS NOT NULL THEN
   FOREACH bruger_tils_gyldighed_obj IN ARRAY bruger_registrering.tilsGyldighed
   LOOP
 
-  INSERT INTO bruger_tils_gyldighed (
-    virkning,
-    gyldighed,
-    bruger_registrering_id
-  )
-  SELECT
-    bruger_tils_gyldighed_obj.virkning,
-    bruger_tils_gyldighed_obj.gyldighed,
-    bruger_registrering_id;
+  IF bruger_tils_gyldighed_obj.gyldighed IS NOT NULL AND bruger_tils_gyldighed_obj.gyldighed<>''::BrugerGyldighedTils THEN
 
+    INSERT INTO bruger_tils_gyldighed (
+      virkning,
+      gyldighed,
+      bruger_registrering_id
+    )
+    SELECT
+      bruger_tils_gyldighed_obj.virkning,
+      bruger_tils_gyldighed_obj.gyldighed,
+      bruger_registrering_id;
+
+  END IF;
   END LOOP;
 END IF;
 
@@ -151,6 +163,7 @@ END IF;
       a.relMaal,
       a.relType
     FROM unnest(bruger_registrering.relationer) a
+    WHERE a.relMaal IS NOT NULL
   ;
 
 

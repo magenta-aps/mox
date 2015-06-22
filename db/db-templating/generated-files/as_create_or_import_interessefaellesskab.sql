@@ -90,20 +90,29 @@ IF interessefaellesskab_registrering.attrEgenskaber IS NOT NULL THEN
   FOREACH interessefaellesskab_attr_egenskaber_obj IN ARRAY interessefaellesskab_registrering.attrEgenskaber
   LOOP
 
-  INSERT INTO interessefaellesskab_attr_egenskaber (
-    brugervendtnoegle,
-    interessefaellesskabsnavn,
-    interessefaellesskabstype,
-    virkning,
-    interessefaellesskab_registrering_id
-  )
-  SELECT
-   interessefaellesskab_attr_egenskaber_obj.brugervendtnoegle,
-    interessefaellesskab_attr_egenskaber_obj.interessefaellesskabsnavn,
-    interessefaellesskab_attr_egenskaber_obj.interessefaellesskabstype,
-    interessefaellesskab_attr_egenskaber_obj.virkning,
-    interessefaellesskab_registrering_id
-  ;
+  IF
+  ( interessefaellesskab_attr_egenskaber_obj.brugervendtnoegle IS NOT NULL AND interessefaellesskab_attr_egenskaber_obj.brugervendtnoegle<>'') 
+   OR 
+  ( interessefaellesskab_attr_egenskaber_obj.interessefaellesskabsnavn IS NOT NULL AND interessefaellesskab_attr_egenskaber_obj.interessefaellesskabsnavn<>'') 
+   OR 
+  ( interessefaellesskab_attr_egenskaber_obj.interessefaellesskabstype IS NOT NULL AND interessefaellesskab_attr_egenskaber_obj.interessefaellesskabstype<>'') 
+   THEN
+
+    INSERT INTO interessefaellesskab_attr_egenskaber (
+      brugervendtnoegle,
+      interessefaellesskabsnavn,
+      interessefaellesskabstype,
+      virkning,
+      interessefaellesskab_registrering_id
+    )
+    SELECT
+     interessefaellesskab_attr_egenskaber_obj.brugervendtnoegle,
+      interessefaellesskab_attr_egenskaber_obj.interessefaellesskabsnavn,
+      interessefaellesskab_attr_egenskaber_obj.interessefaellesskabstype,
+      interessefaellesskab_attr_egenskaber_obj.virkning,
+      interessefaellesskab_registrering_id
+    ;
+  END IF;
 
   END LOOP;
 END IF;
@@ -122,16 +131,19 @@ IF interessefaellesskab_registrering.tilsGyldighed IS NOT NULL THEN
   FOREACH interessefaellesskab_tils_gyldighed_obj IN ARRAY interessefaellesskab_registrering.tilsGyldighed
   LOOP
 
-  INSERT INTO interessefaellesskab_tils_gyldighed (
-    virkning,
-    gyldighed,
-    interessefaellesskab_registrering_id
-  )
-  SELECT
-    interessefaellesskab_tils_gyldighed_obj.virkning,
-    interessefaellesskab_tils_gyldighed_obj.gyldighed,
-    interessefaellesskab_registrering_id;
+  IF interessefaellesskab_tils_gyldighed_obj.gyldighed IS NOT NULL AND interessefaellesskab_tils_gyldighed_obj.gyldighed<>''::InteressefaellesskabGyldighedTils THEN
 
+    INSERT INTO interessefaellesskab_tils_gyldighed (
+      virkning,
+      gyldighed,
+      interessefaellesskab_registrering_id
+    )
+    SELECT
+      interessefaellesskab_tils_gyldighed_obj.virkning,
+      interessefaellesskab_tils_gyldighed_obj.gyldighed,
+      interessefaellesskab_registrering_id;
+
+  END IF;
   END LOOP;
 END IF;
 
@@ -151,6 +163,7 @@ END IF;
       a.relMaal,
       a.relType
     FROM unnest(interessefaellesskab_registrering.relationer) a
+    WHERE a.relMaal IS NOT NULL
   ;
 
 
