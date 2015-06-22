@@ -4,6 +4,8 @@ import db
 from db_helpers import get_attribute_names, get_attribute_fields, \
     get_state_names, get_relation_names, get_state_field
 
+from datetime import datetime
+
 
 # Just a helper during debug
 def j(t):
@@ -49,7 +51,7 @@ class OIORestObject(object):
     @classmethod
     def get_objects(cls):
         """
-        LIST or SEARCH facets, depending on parameters.
+        LIST or SEARCH objects, depending on parameters.
         """
         # Convert arguments to lowercase, getting them as lists
         list_args = {k.lower(): request.args.getlist(k)
@@ -143,7 +145,12 @@ class OIORestObject(object):
         """
         READ a facet, return as JSON.
         """
-        return j("Hent {0} fra databasen og returner som JSON".format(uuid))
+
+        object_list = db.list_objects(cls.__name__, [uuid], None, None,
+                                      datetime.today(),
+                                      None)
+        object = object_list[0]
+        return jsonify({uuid: object})
 
     @classmethod
     def put_object(cls, uuid):
