@@ -90,22 +90,33 @@ IF itsystem_registrering.attrEgenskaber IS NOT NULL THEN
   FOREACH itsystem_attr_egenskaber_obj IN ARRAY itsystem_registrering.attrEgenskaber
   LOOP
 
-  INSERT INTO itsystem_attr_egenskaber (
-    brugervendtnoegle,
-    itsystemnavn,
-    itsystemtype,
-    konfigurationreference,
-    virkning,
-    itsystem_registrering_id
-  )
-  SELECT
-   itsystem_attr_egenskaber_obj.brugervendtnoegle,
-    itsystem_attr_egenskaber_obj.itsystemnavn,
-    itsystem_attr_egenskaber_obj.itsystemtype,
-    itsystem_attr_egenskaber_obj.konfigurationreference,
-    itsystem_attr_egenskaber_obj.virkning,
-    itsystem_registrering_id
-  ;
+  IF
+  ( itsystem_attr_egenskaber_obj.brugervendtnoegle IS NOT NULL AND itsystem_attr_egenskaber_obj.brugervendtnoegle<>'') 
+   OR 
+  ( itsystem_attr_egenskaber_obj.itsystemnavn IS NOT NULL AND itsystem_attr_egenskaber_obj.itsystemnavn<>'') 
+   OR 
+  ( itsystem_attr_egenskaber_obj.itsystemtype IS NOT NULL AND itsystem_attr_egenskaber_obj.itsystemtype<>'') 
+   OR 
+  ( itsystem_attr_egenskaber_obj.konfigurationreference IS NOT NULL AND coalesce(array_length(itsystem_attr_egenskaber_obj.konfigurationreference,1),0)>0) 
+   THEN
+
+    INSERT INTO itsystem_attr_egenskaber (
+      brugervendtnoegle,
+      itsystemnavn,
+      itsystemtype,
+      konfigurationreference,
+      virkning,
+      itsystem_registrering_id
+    )
+    SELECT
+     itsystem_attr_egenskaber_obj.brugervendtnoegle,
+      itsystem_attr_egenskaber_obj.itsystemnavn,
+      itsystem_attr_egenskaber_obj.itsystemtype,
+      itsystem_attr_egenskaber_obj.konfigurationreference,
+      itsystem_attr_egenskaber_obj.virkning,
+      itsystem_registrering_id
+    ;
+  END IF;
 
   END LOOP;
 END IF;
@@ -124,16 +135,19 @@ IF itsystem_registrering.tilsGyldighed IS NOT NULL THEN
   FOREACH itsystem_tils_gyldighed_obj IN ARRAY itsystem_registrering.tilsGyldighed
   LOOP
 
-  INSERT INTO itsystem_tils_gyldighed (
-    virkning,
-    gyldighed,
-    itsystem_registrering_id
-  )
-  SELECT
-    itsystem_tils_gyldighed_obj.virkning,
-    itsystem_tils_gyldighed_obj.gyldighed,
-    itsystem_registrering_id;
+  IF itsystem_tils_gyldighed_obj.gyldighed IS NOT NULL AND itsystem_tils_gyldighed_obj.gyldighed<>''::ItsystemGyldighedTils THEN
 
+    INSERT INTO itsystem_tils_gyldighed (
+      virkning,
+      gyldighed,
+      itsystem_registrering_id
+    )
+    SELECT
+      itsystem_tils_gyldighed_obj.virkning,
+      itsystem_tils_gyldighed_obj.gyldighed,
+      itsystem_registrering_id;
+
+  END IF;
   END LOOP;
 END IF;
 
@@ -153,6 +167,7 @@ END IF;
       a.relMaal,
       a.relType
     FROM unnest(itsystem_registrering.relationer) a
+    WHERE a.relMaal IS NOT NULL
   ;
 
 

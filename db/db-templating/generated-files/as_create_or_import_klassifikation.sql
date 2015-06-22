@@ -90,22 +90,33 @@ IF klassifikation_registrering.attrEgenskaber IS NOT NULL THEN
   FOREACH klassifikation_attr_egenskaber_obj IN ARRAY klassifikation_registrering.attrEgenskaber
   LOOP
 
-  INSERT INTO klassifikation_attr_egenskaber (
-    brugervendtnoegle,
-    beskrivelse,
-    kaldenavn,
-    ophavsret,
-    virkning,
-    klassifikation_registrering_id
-  )
-  SELECT
-   klassifikation_attr_egenskaber_obj.brugervendtnoegle,
-    klassifikation_attr_egenskaber_obj.beskrivelse,
-    klassifikation_attr_egenskaber_obj.kaldenavn,
-    klassifikation_attr_egenskaber_obj.ophavsret,
-    klassifikation_attr_egenskaber_obj.virkning,
-    klassifikation_registrering_id
-  ;
+  IF
+  ( klassifikation_attr_egenskaber_obj.brugervendtnoegle IS NOT NULL AND klassifikation_attr_egenskaber_obj.brugervendtnoegle<>'') 
+   OR 
+  ( klassifikation_attr_egenskaber_obj.beskrivelse IS NOT NULL AND klassifikation_attr_egenskaber_obj.beskrivelse<>'') 
+   OR 
+  ( klassifikation_attr_egenskaber_obj.kaldenavn IS NOT NULL AND klassifikation_attr_egenskaber_obj.kaldenavn<>'') 
+   OR 
+  ( klassifikation_attr_egenskaber_obj.ophavsret IS NOT NULL AND klassifikation_attr_egenskaber_obj.ophavsret<>'') 
+   THEN
+
+    INSERT INTO klassifikation_attr_egenskaber (
+      brugervendtnoegle,
+      beskrivelse,
+      kaldenavn,
+      ophavsret,
+      virkning,
+      klassifikation_registrering_id
+    )
+    SELECT
+     klassifikation_attr_egenskaber_obj.brugervendtnoegle,
+      klassifikation_attr_egenskaber_obj.beskrivelse,
+      klassifikation_attr_egenskaber_obj.kaldenavn,
+      klassifikation_attr_egenskaber_obj.ophavsret,
+      klassifikation_attr_egenskaber_obj.virkning,
+      klassifikation_registrering_id
+    ;
+  END IF;
 
   END LOOP;
 END IF;
@@ -124,16 +135,19 @@ IF klassifikation_registrering.tilsPubliceret IS NOT NULL THEN
   FOREACH klassifikation_tils_publiceret_obj IN ARRAY klassifikation_registrering.tilsPubliceret
   LOOP
 
-  INSERT INTO klassifikation_tils_publiceret (
-    virkning,
-    publiceret,
-    klassifikation_registrering_id
-  )
-  SELECT
-    klassifikation_tils_publiceret_obj.virkning,
-    klassifikation_tils_publiceret_obj.publiceret,
-    klassifikation_registrering_id;
+  IF klassifikation_tils_publiceret_obj.publiceret IS NOT NULL AND klassifikation_tils_publiceret_obj.publiceret<>''::KlassifikationPubliceretTils THEN
 
+    INSERT INTO klassifikation_tils_publiceret (
+      virkning,
+      publiceret,
+      klassifikation_registrering_id
+    )
+    SELECT
+      klassifikation_tils_publiceret_obj.virkning,
+      klassifikation_tils_publiceret_obj.publiceret,
+      klassifikation_registrering_id;
+
+  END IF;
   END LOOP;
 END IF;
 
@@ -153,6 +167,7 @@ END IF;
       a.relMaal,
       a.relType
     FROM unnest(klassifikation_registrering.relationer) a
+    WHERE a.relMaal IS NOT NULL
   ;
 
 

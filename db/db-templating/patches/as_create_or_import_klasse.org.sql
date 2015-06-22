@@ -11,7 +11,7 @@ NOTICE: This file is auto-generated using the script: apply-template.py klasse a
 
 CREATE OR REPLACE FUNCTION as_create_or_import_klasse(
   klasse_registrering KlasseRegistreringType,
-  klasse_uuid uuid DEFAULT public.uuid_generate_v4() --This might genenerate a non unique value. Use uuid_generate_v5(). Consider using uuid_generate_v5() and namespace(s). Consider generating using sequences which generates input to hash, with a namespace part and a id part.
+  klasse_uuid uuid DEFAULT NULL
 	)
   RETURNS uuid AS 
 $$
@@ -26,8 +26,16 @@ DECLARE
   klasse_attr_egenskaber_soegeord_obj KlasseSoegeordType;
 BEGIN
 
+IF klasse_uuid IS NULL THEN
+    LOOP
+    klasse_uuid:=uuid_generate_v4();
+    EXIT WHEN NOT EXISTS (SELECT id from klasse WHERE id=klasse_uuid); 
+    END LOOP;
+END IF;
+
+
 IF EXISTS (SELECT id from klasse WHERE id=klasse_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing klasse with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_klasse (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might occur, albeit very very rarely.',klasse_uuid;
+  RAISE EXCEPTION 'Error creating or importing klasse with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_klasse (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',klasse_uuid;
 END IF;
 
 IF  (klasse_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (klasse_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
@@ -73,14 +81,33 @@ SELECT
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
  
-IF array_length(klasse_registrering.attrEgenskaber, 1)<1 THEN
+IF coalesce(array_length(klasse_registrering.attrEgenskaber, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [klasse]. Oprettelse afbrydes.';
 END IF;
+
 
 
 IF klasse_registrering.attrEgenskaber IS NOT NULL THEN
   FOREACH klasse_attr_egenskaber_obj IN ARRAY klasse_registrering.attrEgenskaber
   LOOP
+
+ IF
+  ( klasse_attr_egenskaber_obj.brugervendtnoegle IS NOT NULL AND klasse_attr_egenskaber_obj.brugervendtnoegle<>'') 
+   OR 
+  ( klasse_attr_egenskaber_obj.beskrivelse IS NOT NULL AND klasse_attr_egenskaber_obj.beskrivelse<>'') 
+   OR 
+  ( klasse_attr_egenskaber_obj.eksempel IS NOT NULL AND klasse_attr_egenskaber_obj.eksempel<>'') 
+   OR 
+  ( klasse_attr_egenskaber_obj.omfang IS NOT NULL AND klasse_attr_egenskaber_obj.omfang<>'') 
+   OR 
+  ( klasse_attr_egenskaber_obj.titel IS NOT NULL AND klasse_attr_egenskaber_obj.titel<>'') 
+   OR 
+  ( klasse_attr_egenskaber_obj.retskilde IS NOT NULL AND klasse_attr_egenskaber_obj.retskilde<>'') 
+   OR 
+  ( klasse_attr_egenskaber_obj.aendringsnotat IS NOT NULL AND klasse_attr_egenskaber_obj.aendringsnotat<>'') 
+  OR
+  ( klasse_attr_egenskaber_obj.soegeord IS NOT NULL AND coalesce(array_length(klasse_attr_egenskaber_obj.soegeord,1),0)>0)
+   THEN
 
 klasse_attr_egenskaber_id:=nextval('klasse_attr_egenskaber_id_seq');
 
@@ -108,6 +135,7 @@ klasse_attr_egenskaber_id:=nextval('klasse_attr_egenskaber_id_seq');
     klasse_attr_egenskaber_obj.virkning,
     klasse_registrering_id
   ;
+ END IF;
 
 /************/
 --Insert Soegeord
@@ -139,7 +167,7 @@ END IF;
 
 --Verification
 --For now all declared states are mandatory.
-IF array_length(klasse_registrering.tilsPubliceret, 1)<1 THEN
+IF coalesce(array_length(klasse_registrering.tilsPubliceret, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [publiceret] for klasse. Oprettelse afbrydes.';
 END IF;
 

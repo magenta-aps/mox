@@ -163,6 +163,15 @@ ELSE
               
   END LOOP;
 
+
+/**********************/
+--Remove any "cleared"/"deleted" relations
+DELETE FROM klassifikation_relation
+WHERE 
+klassifikation_registrering_id=new_klassifikation_registrering.id
+AND rel_maal IS NULL
+;
+
 END IF;
 /**********************/
 -- handle tilstande (states)
@@ -221,6 +230,15 @@ ELSE
     JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
     WHERE a.klassifikation_registrering_id=prev_klassifikation_registrering.id     
   ;
+
+
+/**********************/
+--Remove any "cleared"/"deleted" tilstande
+DELETE FROM klassifikation_tils_publiceret
+WHERE 
+klassifikation_registrering_id=new_klassifikation_registrering.id
+AND publiceret = ''::KlassifikationPubliceretTils
+;
 
 END IF;
 
@@ -377,6 +395,15 @@ FROM
   JOIN klassifikation_attr_egenskaber a ON true  
   JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
   WHERE a.klassifikation_registrering_id=prev_klassifikation_registrering.id     
+;
+
+
+
+--Remove any "cleared"/"deleted" attributes
+DELETE FROM klassifikation_attr_egenskaber a
+WHERE 
+a.klassifikation_registrering_id=new_klassifikation_registrering.id
+AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') AND (a.beskrivelse IS NULL OR a.beskrivelse='') AND (a.kaldenavn IS NULL OR a.kaldenavn='') AND (a.ophavsret IS NULL OR a.ophavsret='')
 ;
 
 END IF;

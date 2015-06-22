@@ -90,18 +90,25 @@ IF organisationenhed_registrering.attrEgenskaber IS NOT NULL THEN
   FOREACH organisationenhed_attr_egenskaber_obj IN ARRAY organisationenhed_registrering.attrEgenskaber
   LOOP
 
-  INSERT INTO organisationenhed_attr_egenskaber (
-    brugervendtnoegle,
-    enhedsnavn,
-    virkning,
-    organisationenhed_registrering_id
-  )
-  SELECT
-   organisationenhed_attr_egenskaber_obj.brugervendtnoegle,
-    organisationenhed_attr_egenskaber_obj.enhedsnavn,
-    organisationenhed_attr_egenskaber_obj.virkning,
-    organisationenhed_registrering_id
-  ;
+  IF
+  ( organisationenhed_attr_egenskaber_obj.brugervendtnoegle IS NOT NULL AND organisationenhed_attr_egenskaber_obj.brugervendtnoegle<>'') 
+   OR 
+  ( organisationenhed_attr_egenskaber_obj.enhedsnavn IS NOT NULL AND organisationenhed_attr_egenskaber_obj.enhedsnavn<>'') 
+   THEN
+
+    INSERT INTO organisationenhed_attr_egenskaber (
+      brugervendtnoegle,
+      enhedsnavn,
+      virkning,
+      organisationenhed_registrering_id
+    )
+    SELECT
+     organisationenhed_attr_egenskaber_obj.brugervendtnoegle,
+      organisationenhed_attr_egenskaber_obj.enhedsnavn,
+      organisationenhed_attr_egenskaber_obj.virkning,
+      organisationenhed_registrering_id
+    ;
+  END IF;
 
   END LOOP;
 END IF;
@@ -120,16 +127,19 @@ IF organisationenhed_registrering.tilsGyldighed IS NOT NULL THEN
   FOREACH organisationenhed_tils_gyldighed_obj IN ARRAY organisationenhed_registrering.tilsGyldighed
   LOOP
 
-  INSERT INTO organisationenhed_tils_gyldighed (
-    virkning,
-    gyldighed,
-    organisationenhed_registrering_id
-  )
-  SELECT
-    organisationenhed_tils_gyldighed_obj.virkning,
-    organisationenhed_tils_gyldighed_obj.gyldighed,
-    organisationenhed_registrering_id;
+  IF organisationenhed_tils_gyldighed_obj.gyldighed IS NOT NULL AND organisationenhed_tils_gyldighed_obj.gyldighed<>''::OrganisationenhedGyldighedTils THEN
 
+    INSERT INTO organisationenhed_tils_gyldighed (
+      virkning,
+      gyldighed,
+      organisationenhed_registrering_id
+    )
+    SELECT
+      organisationenhed_tils_gyldighed_obj.virkning,
+      organisationenhed_tils_gyldighed_obj.gyldighed,
+      organisationenhed_registrering_id;
+
+  END IF;
   END LOOP;
 END IF;
 
@@ -149,6 +159,7 @@ END IF;
       a.relMaal,
       a.relType
     FROM unnest(organisationenhed_registrering.relationer) a
+    WHERE a.relMaal IS NOT NULL
   ;
 
 

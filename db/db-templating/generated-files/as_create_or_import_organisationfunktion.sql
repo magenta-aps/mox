@@ -90,18 +90,25 @@ IF organisationfunktion_registrering.attrEgenskaber IS NOT NULL THEN
   FOREACH organisationfunktion_attr_egenskaber_obj IN ARRAY organisationfunktion_registrering.attrEgenskaber
   LOOP
 
-  INSERT INTO organisationfunktion_attr_egenskaber (
-    brugervendtnoegle,
-    funktionsnavn,
-    virkning,
-    organisationfunktion_registrering_id
-  )
-  SELECT
-   organisationfunktion_attr_egenskaber_obj.brugervendtnoegle,
-    organisationfunktion_attr_egenskaber_obj.funktionsnavn,
-    organisationfunktion_attr_egenskaber_obj.virkning,
-    organisationfunktion_registrering_id
-  ;
+  IF
+  ( organisationfunktion_attr_egenskaber_obj.brugervendtnoegle IS NOT NULL AND organisationfunktion_attr_egenskaber_obj.brugervendtnoegle<>'') 
+   OR 
+  ( organisationfunktion_attr_egenskaber_obj.funktionsnavn IS NOT NULL AND organisationfunktion_attr_egenskaber_obj.funktionsnavn<>'') 
+   THEN
+
+    INSERT INTO organisationfunktion_attr_egenskaber (
+      brugervendtnoegle,
+      funktionsnavn,
+      virkning,
+      organisationfunktion_registrering_id
+    )
+    SELECT
+     organisationfunktion_attr_egenskaber_obj.brugervendtnoegle,
+      organisationfunktion_attr_egenskaber_obj.funktionsnavn,
+      organisationfunktion_attr_egenskaber_obj.virkning,
+      organisationfunktion_registrering_id
+    ;
+  END IF;
 
   END LOOP;
 END IF;
@@ -120,16 +127,19 @@ IF organisationfunktion_registrering.tilsGyldighed IS NOT NULL THEN
   FOREACH organisationfunktion_tils_gyldighed_obj IN ARRAY organisationfunktion_registrering.tilsGyldighed
   LOOP
 
-  INSERT INTO organisationfunktion_tils_gyldighed (
-    virkning,
-    gyldighed,
-    organisationfunktion_registrering_id
-  )
-  SELECT
-    organisationfunktion_tils_gyldighed_obj.virkning,
-    organisationfunktion_tils_gyldighed_obj.gyldighed,
-    organisationfunktion_registrering_id;
+  IF organisationfunktion_tils_gyldighed_obj.gyldighed IS NOT NULL AND organisationfunktion_tils_gyldighed_obj.gyldighed<>''::OrganisationfunktionGyldighedTils THEN
 
+    INSERT INTO organisationfunktion_tils_gyldighed (
+      virkning,
+      gyldighed,
+      organisationfunktion_registrering_id
+    )
+    SELECT
+      organisationfunktion_tils_gyldighed_obj.virkning,
+      organisationfunktion_tils_gyldighed_obj.gyldighed,
+      organisationfunktion_registrering_id;
+
+  END IF;
   END LOOP;
 END IF;
 
@@ -149,6 +159,7 @@ END IF;
       a.relMaal,
       a.relType
     FROM unnest(organisationfunktion_registrering.relationer) a
+    WHERE a.relMaal IS NOT NULL
   ;
 
 

@@ -90,18 +90,25 @@ IF organisation_registrering.attrEgenskaber IS NOT NULL THEN
   FOREACH organisation_attr_egenskaber_obj IN ARRAY organisation_registrering.attrEgenskaber
   LOOP
 
-  INSERT INTO organisation_attr_egenskaber (
-    brugervendtnoegle,
-    organisationsnavn,
-    virkning,
-    organisation_registrering_id
-  )
-  SELECT
-   organisation_attr_egenskaber_obj.brugervendtnoegle,
-    organisation_attr_egenskaber_obj.organisationsnavn,
-    organisation_attr_egenskaber_obj.virkning,
-    organisation_registrering_id
-  ;
+  IF
+  ( organisation_attr_egenskaber_obj.brugervendtnoegle IS NOT NULL AND organisation_attr_egenskaber_obj.brugervendtnoegle<>'') 
+   OR 
+  ( organisation_attr_egenskaber_obj.organisationsnavn IS NOT NULL AND organisation_attr_egenskaber_obj.organisationsnavn<>'') 
+   THEN
+
+    INSERT INTO organisation_attr_egenskaber (
+      brugervendtnoegle,
+      organisationsnavn,
+      virkning,
+      organisation_registrering_id
+    )
+    SELECT
+     organisation_attr_egenskaber_obj.brugervendtnoegle,
+      organisation_attr_egenskaber_obj.organisationsnavn,
+      organisation_attr_egenskaber_obj.virkning,
+      organisation_registrering_id
+    ;
+  END IF;
 
   END LOOP;
 END IF;
@@ -120,16 +127,19 @@ IF organisation_registrering.tilsGyldighed IS NOT NULL THEN
   FOREACH organisation_tils_gyldighed_obj IN ARRAY organisation_registrering.tilsGyldighed
   LOOP
 
-  INSERT INTO organisation_tils_gyldighed (
-    virkning,
-    gyldighed,
-    organisation_registrering_id
-  )
-  SELECT
-    organisation_tils_gyldighed_obj.virkning,
-    organisation_tils_gyldighed_obj.gyldighed,
-    organisation_registrering_id;
+  IF organisation_tils_gyldighed_obj.gyldighed IS NOT NULL AND organisation_tils_gyldighed_obj.gyldighed<>''::OrganisationGyldighedTils THEN
 
+    INSERT INTO organisation_tils_gyldighed (
+      virkning,
+      gyldighed,
+      organisation_registrering_id
+    )
+    SELECT
+      organisation_tils_gyldighed_obj.virkning,
+      organisation_tils_gyldighed_obj.gyldighed,
+      organisation_registrering_id;
+
+  END IF;
   END LOOP;
 END IF;
 
@@ -149,6 +159,7 @@ END IF;
       a.relMaal,
       a.relType
     FROM unnest(organisation_registrering.relationer) a
+    WHERE a.relMaal IS NOT NULL
   ;
 
 

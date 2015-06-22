@@ -163,6 +163,15 @@ ELSE
               
   END LOOP;
 
+
+/**********************/
+--Remove any "cleared"/"deleted" relations
+DELETE FROM bruger_relation
+WHERE 
+bruger_registrering_id=new_bruger_registrering.id
+AND rel_maal IS NULL
+;
+
 END IF;
 /**********************/
 -- handle tilstande (states)
@@ -221,6 +230,15 @@ ELSE
     JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
     WHERE a.bruger_registrering_id=prev_bruger_registrering.id     
   ;
+
+
+/**********************/
+--Remove any "cleared"/"deleted" tilstande
+DELETE FROM bruger_tils_gyldighed
+WHERE 
+bruger_registrering_id=new_bruger_registrering.id
+AND gyldighed = ''::BrugerGyldighedTils
+;
 
 END IF;
 
@@ -372,6 +390,15 @@ FROM
   JOIN bruger_attr_egenskaber a ON true  
   JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
   WHERE a.bruger_registrering_id=prev_bruger_registrering.id     
+;
+
+
+
+--Remove any "cleared"/"deleted" attributes
+DELETE FROM bruger_attr_egenskaber a
+WHERE 
+a.bruger_registrering_id=new_bruger_registrering.id
+AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') AND (a.brugernavn IS NULL OR a.brugernavn='') AND (a.brugertype IS NULL OR a.brugertype='')
 ;
 
 END IF;

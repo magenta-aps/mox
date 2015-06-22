@@ -165,6 +165,15 @@ ELSE
               
   END LOOP;
 
+
+/**********************/
+--Remove any "cleared"/"deleted" relations
+DELETE FROM klasse_relation
+WHERE 
+klasse_registrering_id=new_klasse_registrering.id
+AND rel_maal IS NULL
+;
+
 END IF;
 /**********************/
 -- handle tilstande (states)
@@ -223,6 +232,15 @@ ELSE
     JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
     WHERE a.klasse_registrering_id=prev_klasse_registrering.id     
   ;
+
+
+/**********************/
+--Remove any "cleared"/"deleted" tilstande
+DELETE FROM klasse_tils_publiceret
+WHERE 
+klasse_registrering_id=new_klasse_registrering.id
+AND publiceret = ''::KlassePubliceretTils
+;
 
 END IF;
 
@@ -469,6 +487,15 @@ FROM copied_attr_egenskaber a
 JOIN klasse_attr_egenskaber a2 on a2.klasse_registrering_id=prev_klasse_registrering.id and (a2.virkning).TimePeriod @> a.TimePeriod --this will hit exactly one row - that is, the row that we copied. 
 JOIN klasse_attr_egenskaber_soegeord b on a2.id=b.klasse_attr_egenskaber_id   
 ;
+
+--Remove any "cleared"/"deleted" attributes
+DELETE FROM klasse_attr_egenskaber a
+WHERE 
+a.klasse_registrering_id=new_klasse_registrering.id
+AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') AND (a.beskrivelse IS NULL OR a.beskrivelse='') AND (a.eksempel IS NULL OR a.eksempel='') AND (a.omfang IS NULL OR a.omfang='') AND (a.titel IS NULL OR a.titel='') AND (a.retskilde IS NULL OR a.retskilde='') AND (a.aendringsnotat IS NULL OR a.aendringsnotat='')
+AND a.id NOT IN (SELECT b.klasse_attr_egenskaber_id FROM klasse_attr_egenskaber_soegeord b)
+;
+
 
 END IF;
 
