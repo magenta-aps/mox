@@ -22,6 +22,7 @@ jinja_env = Environment(loader=FileSystemLoader(
     os.path.join(current_directory, 'templates', 'sql')
 ))
 
+
 def adapt(value):
     adapter = psyco_adapt(value)
     if hasattr(adapter, 'prepare'):
@@ -43,6 +44,7 @@ def get_connection():
     return connection
 
 adapt_connection = get_connection()
+
 
 def get_authenticated_user():
     """Return hardcoded UUID until we get real authentication in place."""
@@ -317,9 +319,9 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
 
 
 def search_objects(class_name, uuid, registration,
-                   virkning_fra = None, virkning_til = None,
-                   registreret_fra = None, registreret_til = None,
-                   life_cycle_code = None, user_ref = None, note = None,
+                   virkning_fra=None, virkning_til=None,
+                   registreret_fra=None, registreret_til=None,
+                   life_cycle_code=None, user_ref=None, note=None,
                    any_attr_value_arr=None, any_rel_uuid_arr=None,
                    first_result=0, max_results=2147483647):
 

@@ -9,6 +9,7 @@ from db_helpers import get_attribute_names, get_attribute_fields, \
 def j(t):
     return jsonify(output=t)
 
+
 class OIOStandardHierarchy(object):
     """Implement API for entire hierarchy."""
 
@@ -21,6 +22,7 @@ class OIOStandardHierarchy(object):
         Note that version number etc. may have to be added to the URL."""
         for c in cls._classes:
             c.create_api(cls._name, flask, base_url)
+
 
 class OIORestObject(object):
     """
@@ -113,7 +115,9 @@ class OIORestObject(object):
                             'virkning': None
                         })
 
-            results = db.search_objects(cls.__name__,  uuid_param, registration,
+            results = db.search_objects(cls.__name__,
+                                        uuid_param,
+                                        registration,
                                         virkning_fra, virkning_til,
                                         registreret_fra, registreret_til,
                                         life_cycle_code,
@@ -159,7 +163,7 @@ class OIORestObject(object):
             result = db.create_or_import_object(cls.__name__, note, attributes,
                                                 states, relations, uuid)
             # TODO: When connected to DB, use result properly.
-            return j(u"Importeret {0}: {1}".format(cls.__name__, uuid)), 200
+            return jsonify({'uuid': uuid}), 200
         else:
             "Edit or passivate."
             if (request.json.get('livscyklus', '').lower() == 'passiv'):
@@ -167,14 +171,12 @@ class OIORestObject(object):
                 db.passivate_object(
                     cls.__name__, note, uuid
                 )
-                return j(
-                    u"Passiveret {0}: {1}".format(cls.__name__, uuid)
-                ), 200
+                return jsonify({'uuid': uuid}), 200
             else:
                 # Edit/change
                 result = db.update_object(cls.__name__, note, attributes,
                                           states, relations, uuid)
-                return j(u"Opdateret {0}: {1}".format(cls.__name__, uuid)), 200
+                return jsonify({'uuid': uuid}), 200
         return j(u"Forkerte parametre!"), 405
 
     @classmethod
@@ -185,7 +187,7 @@ class OIORestObject(object):
         class_name = cls.__name__
         result = db.delete_object(class_name, note, uuid)
 
-        return j("Slettet {0}: {1}".format(class_name, uuid)), 200
+        return jsonify({'uuid': uuid}), 200
 
     @classmethod
     def create_api(cls, hierarchy, flask, base_url):
