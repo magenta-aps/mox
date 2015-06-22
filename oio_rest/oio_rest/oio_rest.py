@@ -147,8 +147,7 @@ class OIORestObject(object):
         """
 
         object_list = db.list_objects(cls.__name__, [uuid], None, None,
-                                      datetime.today(),
-                                      None)
+                                      None, None)
         object = object_list[0]
         return jsonify({uuid: object})
 
