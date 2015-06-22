@@ -108,10 +108,10 @@ FROM
 					b.registrering			
 					FROM		{{oio_type}} a
 					JOIN 		{{oio_type}}_registrering b 	ON b.{{oio_type}}_id=a.id
-					WHERE a.id = ANY ({{oio_type}}_uuids) AND (((registrering_tstzrange is null OR isempty(registrering_tstzrange)) AND upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
+					WHERE a.id = ANY ({{oio_type}}_uuids) AND ((registrering_tstzrange is null AND upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
 				{%-for attribut , attribut_fields in attributter_revorder.iteritems() %}{% set outer_loop = loop %}
 					) as a
-					LEFT JOIN {{oio_type}}_attr_{{attribut}} as b ON b.{{oio_type}}_registrering_id=a.{{oio_type}}_registrering_id AND ((virkning_tstzrange is null OR isempty(virkning_tstzrange)) OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
+					LEFT JOIN {{oio_type}}_attr_{{attribut}} as b ON b.{{oio_type}}_registrering_id=a.{{oio_type}}_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
 					GROUP BY 
 					a.{{oio_type}}_id,
 					a.{{oio_type}}_registrering_id,
@@ -124,7 +124,7 @@ FROM
 				{%- endfor %}
 				{%-for tilstand , tilstand_values in tilstande_revorder.iteritems() %}{%- set outer_loop = loop %}	
 			) as a
-			LEFT JOIN {{oio_type}}_tils_{{tilstand}} as b ON b.{{oio_type}}_registrering_id=a.{{oio_type}}_registrering_id AND ((virkning_tstzrange is null OR isempty(virkning_tstzrange)) OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
+			LEFT JOIN {{oio_type}}_tils_{{tilstand}} as b ON b.{{oio_type}}_registrering_id=a.{{oio_type}}_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
 			GROUP BY 
 			a.{{oio_type}}_id,
 			a.{{oio_type}}_registrering_id,
@@ -136,7 +136,7 @@ FROM
 			a.{{oio_type|title}}Tils{{tilstand_inner_loop|title}}Arr{%- if (not loop.last) and (loop.index+1<outer_loop.index)%},{%- endif%}{%- endif %}{%- endfor %}
 				{%- endfor %}
 	) as a
-	LEFT JOIN {{oio_type}}_relation b ON b.{{oio_type}}_registrering_id=a.{{oio_type}}_registrering_id AND ((virkning_tstzrange is null OR isempty(virkning_tstzrange)) OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given
+	LEFT JOIN {{oio_type}}_relation b ON b.{{oio_type}}_registrering_id=a.{{oio_type}}_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given
 	GROUP BY
 	a.{{oio_type}}_id,
 	a.{{oio_type}}_registrering_id,

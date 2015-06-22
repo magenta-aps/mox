@@ -95,22 +95,22 @@ FROM
 					b.registrering			
 					FROM		organisation a
 					JOIN 		organisation_registrering b 	ON b.organisation_id=a.id
-					WHERE a.id = ANY (organisation_uuids) AND (((registrering_tstzrange is null OR isempty(registrering_tstzrange)) AND upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
+					WHERE a.id = ANY (organisation_uuids) AND ((registrering_tstzrange is null AND upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
 					) as a
-					LEFT JOIN organisation_attr_egenskaber as b ON b.organisation_registrering_id=a.organisation_registrering_id AND ((virkning_tstzrange is null OR isempty(virkning_tstzrange)) OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
+					LEFT JOIN organisation_attr_egenskaber as b ON b.organisation_registrering_id=a.organisation_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
 					GROUP BY 
 					a.organisation_id,
 					a.organisation_registrering_id,
 					a.registrering	
 			) as a
-			LEFT JOIN organisation_tils_gyldighed as b ON b.organisation_registrering_id=a.organisation_registrering_id AND ((virkning_tstzrange is null OR isempty(virkning_tstzrange)) OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
+			LEFT JOIN organisation_tils_gyldighed as b ON b.organisation_registrering_id=a.organisation_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
 			GROUP BY 
 			a.organisation_id,
 			a.organisation_registrering_id,
 			a.registrering,
 			a.OrganisationAttrEgenskaberArr
 	) as a
-	LEFT JOIN organisation_relation b ON b.organisation_registrering_id=a.organisation_registrering_id AND ((virkning_tstzrange is null OR isempty(virkning_tstzrange)) OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given
+	LEFT JOIN organisation_relation b ON b.organisation_registrering_id=a.organisation_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given
 	GROUP BY
 	a.organisation_id,
 	a.organisation_registrering_id,

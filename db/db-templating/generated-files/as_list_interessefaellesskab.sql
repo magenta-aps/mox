@@ -96,22 +96,22 @@ FROM
 					b.registrering			
 					FROM		interessefaellesskab a
 					JOIN 		interessefaellesskab_registrering b 	ON b.interessefaellesskab_id=a.id
-					WHERE a.id = ANY (interessefaellesskab_uuids) AND (((registrering_tstzrange is null OR isempty(registrering_tstzrange)) AND upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
+					WHERE a.id = ANY (interessefaellesskab_uuids) AND ((registrering_tstzrange is null AND upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
 					) as a
-					LEFT JOIN interessefaellesskab_attr_egenskaber as b ON b.interessefaellesskab_registrering_id=a.interessefaellesskab_registrering_id AND ((virkning_tstzrange is null OR isempty(virkning_tstzrange)) OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
+					LEFT JOIN interessefaellesskab_attr_egenskaber as b ON b.interessefaellesskab_registrering_id=a.interessefaellesskab_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
 					GROUP BY 
 					a.interessefaellesskab_id,
 					a.interessefaellesskab_registrering_id,
 					a.registrering	
 			) as a
-			LEFT JOIN interessefaellesskab_tils_gyldighed as b ON b.interessefaellesskab_registrering_id=a.interessefaellesskab_registrering_id AND ((virkning_tstzrange is null OR isempty(virkning_tstzrange)) OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
+			LEFT JOIN interessefaellesskab_tils_gyldighed as b ON b.interessefaellesskab_registrering_id=a.interessefaellesskab_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
 			GROUP BY 
 			a.interessefaellesskab_id,
 			a.interessefaellesskab_registrering_id,
 			a.registrering,
 			a.InteressefaellesskabAttrEgenskaberArr
 	) as a
-	LEFT JOIN interessefaellesskab_relation b ON b.interessefaellesskab_registrering_id=a.interessefaellesskab_registrering_id AND ((virkning_tstzrange is null OR isempty(virkning_tstzrange)) OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given
+	LEFT JOIN interessefaellesskab_relation b ON b.interessefaellesskab_registrering_id=a.interessefaellesskab_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given
 	GROUP BY
 	a.interessefaellesskab_id,
 	a.interessefaellesskab_registrering_id,

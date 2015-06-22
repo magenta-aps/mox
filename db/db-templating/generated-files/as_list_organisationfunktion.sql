@@ -95,22 +95,22 @@ FROM
 					b.registrering			
 					FROM		organisationfunktion a
 					JOIN 		organisationfunktion_registrering b 	ON b.organisationfunktion_id=a.id
-					WHERE a.id = ANY (organisationfunktion_uuids) AND (((registrering_tstzrange is null OR isempty(registrering_tstzrange)) AND upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
+					WHERE a.id = ANY (organisationfunktion_uuids) AND ((registrering_tstzrange is null AND upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
 					) as a
-					LEFT JOIN organisationfunktion_attr_egenskaber as b ON b.organisationfunktion_registrering_id=a.organisationfunktion_registrering_id AND ((virkning_tstzrange is null OR isempty(virkning_tstzrange)) OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
+					LEFT JOIN organisationfunktion_attr_egenskaber as b ON b.organisationfunktion_registrering_id=a.organisationfunktion_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
 					GROUP BY 
 					a.organisationfunktion_id,
 					a.organisationfunktion_registrering_id,
 					a.registrering	
 			) as a
-			LEFT JOIN organisationfunktion_tils_gyldighed as b ON b.organisationfunktion_registrering_id=a.organisationfunktion_registrering_id AND ((virkning_tstzrange is null OR isempty(virkning_tstzrange)) OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
+			LEFT JOIN organisationfunktion_tils_gyldighed as b ON b.organisationfunktion_registrering_id=a.organisationfunktion_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
 			GROUP BY 
 			a.organisationfunktion_id,
 			a.organisationfunktion_registrering_id,
 			a.registrering,
 			a.OrganisationfunktionAttrEgenskaberArr
 	) as a
-	LEFT JOIN organisationfunktion_relation b ON b.organisationfunktion_registrering_id=a.organisationfunktion_registrering_id AND ((virkning_tstzrange is null OR isempty(virkning_tstzrange)) OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given
+	LEFT JOIN organisationfunktion_relation b ON b.organisationfunktion_registrering_id=a.organisationfunktion_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given
 	GROUP BY
 	a.organisationfunktion_id,
 	a.organisationfunktion_registrering_id,

@@ -96,22 +96,22 @@ FROM
 					b.registrering			
 					FROM		bruger a
 					JOIN 		bruger_registrering b 	ON b.bruger_id=a.id
-					WHERE a.id = ANY (bruger_uuids) AND (((registrering_tstzrange is null OR isempty(registrering_tstzrange)) AND upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
+					WHERE a.id = ANY (bruger_uuids) AND ((registrering_tstzrange is null AND upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
 					) as a
-					LEFT JOIN bruger_attr_egenskaber as b ON b.bruger_registrering_id=a.bruger_registrering_id AND ((virkning_tstzrange is null OR isempty(virkning_tstzrange)) OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
+					LEFT JOIN bruger_attr_egenskaber as b ON b.bruger_registrering_id=a.bruger_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
 					GROUP BY 
 					a.bruger_id,
 					a.bruger_registrering_id,
 					a.registrering	
 			) as a
-			LEFT JOIN bruger_tils_gyldighed as b ON b.bruger_registrering_id=a.bruger_registrering_id AND ((virkning_tstzrange is null OR isempty(virkning_tstzrange)) OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
+			LEFT JOIN bruger_tils_gyldighed as b ON b.bruger_registrering_id=a.bruger_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
 			GROUP BY 
 			a.bruger_id,
 			a.bruger_registrering_id,
 			a.registrering,
 			a.BrugerAttrEgenskaberArr
 	) as a
-	LEFT JOIN bruger_relation b ON b.bruger_registrering_id=a.bruger_registrering_id AND ((virkning_tstzrange is null OR isempty(virkning_tstzrange)) OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given
+	LEFT JOIN bruger_relation b ON b.bruger_registrering_id=a.bruger_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given
 	GROUP BY
 	a.bruger_id,
 	a.bruger_registrering_id,
