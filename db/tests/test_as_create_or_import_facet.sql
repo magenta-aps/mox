@@ -23,15 +23,16 @@ DECLARE
 	facetRelAnsvarlig FacetRelationType;
 	facetRelRedaktoer1 FacetRelationType;
 	facetRelRedaktoer2 FacetRelationType;
-	uuidAnsvarlig uuid :=uuid_generate_v4();
-	uuidRedaktoer1 uuid :=uuid_generate_v4();
-	uuidRedaktoer2 uuid :=uuid_generate_v4();
-	uuidRegistrering uuid :=uuid_generate_v4();
+	uuidAnsvarlig uuid :='f7109356-e87e-4b10-ad5d-36de6e3ee09f'::uuid;
+	uuidRedaktoer1 uuid :='b7160ce6-ac92-4752-9e82-f17d9e1e52ce'::uuid;
+	--uuidRedaktoer2 uuid :='08533179-fedb-4aa7-8902-ab34a219eed9'::uuid;
+	urnRedaktoer2 text:='urn:isbn:0451450523'::text;
+	uuidRegistrering uuid :='1f368584-4c3e-4ba4-837b-da2b1eee37c9'::uuid;
 	actual_publiceret_virk virkning;
 	actual_publiceret_value FacetPubliceretTils;
 	actual_publiceret FacetPubliceretTilsType;
 	actual_relationer FacetRelationType[];
-	uuid_to_import uuid :=uuid_generate_v4();
+	uuid_to_import uuid :='a1819cce-043b-447f-ba5e-92e6a75df918'::uuid;
 	uuid_returned_from_import uuid;
 
 BEGIN
@@ -100,8 +101,8 @@ facetRelRedaktoer1 := ROW (
 facetRelRedaktoer2 := ROW (
 	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer2,
-	uuidRedaktoer2,
-	null
+	null,
+	urnRedaktoer2
 ) :: FacetRelationType
 ;
 

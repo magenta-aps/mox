@@ -33,10 +33,11 @@ DECLARE
 	facetRelAnsvarlig FacetRelationType;
 	facetRelRedaktoer1 FacetRelationType;
 	facetRelRedaktoer2 FacetRelationType;
-	uuidAnsvarlig uuid :=uuid_generate_v4();
-	uuidRedaktoer1 uuid :=uuid_generate_v4();
-	uuidRedaktoer2 uuid :=uuid_generate_v4();
-	uuidRegistrering uuid :=uuid_generate_v4();
+	uuidAnsvarlig uuid := 'b5a4ed96-5120-435e-af96-3fb1e0747536'::uuid;
+	uuidRedaktoer1 uuid :='3768c4e6-28b0-4472-a805-1efe15f21286'::uuid;
+	--uuidRedaktoer2 uuid :='e6bb8f99-e3a5-47f5-9ff3-588fcb0638fb'::uuid;
+	urnRedaktoer2 text:='urn:isbn:0451450523'::text;
+	uuidRegistrering uuid :='e12e46b3-6f67-4bfd-a5bb-768844cbbe71'::uuid;
 	update_reg_id bigint;
 	actual_relationer FacetRelationType[];
 	actual_publiceret FacetPubliceretTilsType[];
@@ -127,8 +128,8 @@ facetRelRedaktoer1 := ROW (
 facetRelRedaktoer2 := ROW (
 	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer2,
-	uuidRedaktoer2,
-	null
+	null,--uuidRedaktoer2,
+	urnRedaktoer2 
 ) :: FacetRelationType
 ;
 
