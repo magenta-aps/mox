@@ -160,6 +160,7 @@ klasseRelAnsvarlig := ROW (
 	'ansvarlig'::KlasseRelationKode,
 		virkAnsvarlig,
 	uuidAnsvarlig,
+	null,
 	null
 ) :: KlasseRelationType
 ;
@@ -169,6 +170,7 @@ klasseRelRedaktoer1 := ROW (
 	'redaktoerer'::KlasseRelationKode,
 		virkRedaktoer1,
 	uuidRedaktoer1,
+	null,
 	null
 ) :: KlasseRelationType
 ;
@@ -179,6 +181,7 @@ klasseRelRedaktoer2 := ROW (
 	'redaktoerer'::KlasseRelationKode,
 		virkRedaktoer2,
 	uuidRedaktoer2,
+	null,
 	null
 ) :: KlasseRelationType
 ;
@@ -416,7 +419,8 @@ array_agg(
 					a.rel_type,
 					a.virkning,
 					a.rel_maal_uuid,
-					a.rel_maal_urn 
+					a.rel_maal_urn,
+					a.objekt_type 
 				):: KlasseRelationType
 		) into actual_relationer
 FROM klasse_relation a

@@ -243,11 +243,23 @@ CREATE TABLE organisationenhed_relation
   rel_maal_uuid uuid NULL, --we have to allow null values (for now at least), as it is needed to be able to clear/overrule previous registered relations.
   rel_maal_urn text null,
   rel_type OrganisationenhedRelationKode not null,
+  objekt_type text null,
  CONSTRAINT organisationenhed_relation_forkey_organisationenhedregistrering  FOREIGN KEY (organisationenhed_registrering_id) REFERENCES organisationenhed_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
  CONSTRAINT organisationenhed_relation_pkey PRIMARY KEY (id),
  CONSTRAINT organisationenhed_relation_no_virkning_overlap EXCLUDE USING gist (organisationenhed_registrering_id WITH =, _as_convert_organisationenhed_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('adresser'::OrganisationenhedRelationKode ) AND rel_type<>('ansatte'::OrganisationenhedRelationKode ) AND rel_type<>('opgaver'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedebrugere'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedeenheder'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedefunktioner'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedeinteressefaellesskaber'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedeorganisationer'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedepersoner'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedeitsystemer'::OrganisationenhedRelationKode )) ,-- no overlapping virkning except for 0..n --relations
  CONSTRAINT organisationenhed_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
 );
+
+
+CREATE INDEX organisationenhed_relation_idx_rel_maal_obj_uuid
+  ON organisationenhed_relation
+  USING btree
+  (rel_type,objekt_type,rel_maal_uuid);
+
+CREATE INDEX organisationenhed_relation_idx_rel_maal_obj_urn
+  ON organisationenhed_relation
+  USING btree
+  (rel_type,objekt_type,rel_maal_urn);
 
 CREATE INDEX organisationenhed_relation_idx_rel_maal_uuid
   ON organisationenhed_relation

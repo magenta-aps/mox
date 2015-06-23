@@ -18,6 +18,7 @@ DECLARE
 	virkEgenskaberC Virkning;
 	virkEgenskaberD Virkning;
 	virkAnsvarlig Virkning;
+	virkansvarligB Virkning;
 	virkRedaktoer1 Virkning;
 	virkRedaktoer2 Virkning;
 	virkPubliceret Virkning;
@@ -33,7 +34,9 @@ DECLARE
 	facetRelAnsvarlig FacetRelationType;
 	facetRelRedaktoer1 FacetRelationType;
 	facetRelRedaktoer2 FacetRelationType;
+	facetRelAnsvarligB FacetRelationType;
 	uuidAnsvarlig uuid := 'b5a4ed96-5120-435e-af96-3fb1e0747536'::uuid;
+	uuidAnsvarligB uuid := 'c5a4ed96-5120-435e-af96-3fb1e0747539'::uuid;
 	uuidRedaktoer1 uuid :='3768c4e6-28b0-4472-a805-1efe15f21286'::uuid;
 	--uuidRedaktoer2 uuid :='e6bb8f99-e3a5-47f5-9ff3-588fcb0638fb'::uuid;
 	urnRedaktoer2 text:='urn:isbn:0451450523'::text;
@@ -67,6 +70,14 @@ virkAnsvarlig :=	ROW (
           uuid_generate_v4(),
           'Bruger',
           'NoteEx2'
+          ) :: Virkning
+;
+
+virkAnsvarligB :=	ROW (
+	'[2014-03-11, infinity)' :: TSTZRANGE,
+          uuid_generate_v4(),
+          'Bruger',
+          'NoteEx10'
           ) :: Virkning
 ;
 
@@ -110,6 +121,7 @@ facetRelAnsvarlig := ROW (
 	'ansvarlig'::FacetRelationKode,
 		virkAnsvarlig,
 	uuidAnsvarlig,
+	null,
 	null
 ) :: FacetRelationType
 ;
@@ -119,6 +131,7 @@ facetRelRedaktoer1 := ROW (
 	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer1,
 	uuidRedaktoer1,
+	null,
 	null
 ) :: FacetRelationType
 ;
@@ -129,7 +142,8 @@ facetRelRedaktoer2 := ROW (
 	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer2,
 	null,--uuidRedaktoer2,
-	urnRedaktoer2 
+	urnRedaktoer2,
+	'Aktør' 
 ) :: FacetRelationType
 ;
 
@@ -188,6 +202,16 @@ new_uuid := as_create_or_import_facet(registrering);
 
 --***************************************
 --Update the facet created above
+
+
+facetRelAnsvarligB := ROW (
+	'ansvarlig'::FacetRelationKode,
+		virkAnsvarligB,
+	uuidAnsvarligB,
+	null,
+	'Aktør'
+) :: FacetRelationType
+;
 
 virkEgenskaberC :=	ROW (
 	'[2015-01-13, infinity)' :: TSTZRANGE,
@@ -252,7 +276,7 @@ update_reg_id:=as_update_facet(
   'Rettet'::Livscykluskode,          
   array[facetEgenskabC,facetEgenskabD]::FacetEgenskaberAttrType[],
   array[facetPubliceretC]::FacetPubliceretTilsType[],
-  array[facetRelAnsvarlig]::FacetRelationType[]
+  array[facetRelAnsvarligB]::FacetRelationType[]
 	);
 
 
@@ -262,7 +286,8 @@ array_agg(
 					a.rel_type,
 					a.virkning,
 					a.rel_maal_uuid,
-					a.rel_maal_urn 
+					a.rel_maal_urn,
+					a.objekt_type 
 				):: FacetRelationType
 		) into actual_relationer
 FROM facet_relation a
@@ -272,7 +297,7 @@ WHERE b.id=update_reg_id
 
 RETURN NEXT is(
 	actual_relationer,
-	ARRAY[facetRelAnsvarlig,facetRelRedaktoer1,facetRelRedaktoer2]
+	ARRAY[facetRelAnsvarligB,facetRelRedaktoer1,facetRelRedaktoer2]
 ,'relations carried over'); --ok, if all relations are present.
 
 

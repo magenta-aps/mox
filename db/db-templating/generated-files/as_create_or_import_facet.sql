@@ -171,15 +171,16 @@ END IF;
       virkning,
       rel_maal_uuid,
       rel_maal_urn,
-      rel_type
-
+      rel_type,
+      objekt_type
     )
     SELECT
       facet_registrering_id,
       a.virkning,
       a.relMaalUuid,
       a.relMaalUrn,
-      a.relType
+      a.relType,
+      a.objektType
     FROM unnest(facet_registrering.relationer) a
     WHERE (a.relMaalUuid IS NOT NULL OR (a.relMaalUrn IS NOT NULL AND a.relMaalUrn<>'') )
   ;

@@ -243,11 +243,23 @@ CREATE TABLE organisationfunktion_relation
   rel_maal_uuid uuid NULL, --we have to allow null values (for now at least), as it is needed to be able to clear/overrule previous registered relations.
   rel_maal_urn text null,
   rel_type OrganisationfunktionRelationKode not null,
+  objekt_type text null,
  CONSTRAINT organisationfunktion_relation_forkey_organisationfunktionregistrering  FOREIGN KEY (organisationfunktion_registrering_id) REFERENCES organisationfunktion_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
  CONSTRAINT organisationfunktion_relation_pkey PRIMARY KEY (id),
  CONSTRAINT organisationfunktion_relation_no_virkning_overlap EXCLUDE USING gist (organisationfunktion_registrering_id WITH =, _as_convert_organisationfunktion_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('adresser'::OrganisationfunktionRelationKode ) AND rel_type<>('opgaver'::OrganisationfunktionRelationKode ) AND rel_type<>('tilknyttedebrugere'::OrganisationfunktionRelationKode ) AND rel_type<>('tilknyttedeenheder'::OrganisationfunktionRelationKode ) AND rel_type<>('tilknyttedeorganisationer'::OrganisationfunktionRelationKode ) AND rel_type<>('tilknyttedeitsystemer'::OrganisationfunktionRelationKode ) AND rel_type<>('tilknyttedeinteressefaellesskaber'::OrganisationfunktionRelationKode ) AND rel_type<>('tilknyttedepersoner'::OrganisationfunktionRelationKode )) ,-- no overlapping virkning except for 0..n --relations
  CONSTRAINT organisationfunktion_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
 );
+
+
+CREATE INDEX organisationfunktion_relation_idx_rel_maal_obj_uuid
+  ON organisationfunktion_relation
+  USING btree
+  (rel_type,objekt_type,rel_maal_uuid);
+
+CREATE INDEX organisationfunktion_relation_idx_rel_maal_obj_urn
+  ON organisationfunktion_relation
+  USING btree
+  (rel_type,objekt_type,rel_maal_urn);
 
 CREATE INDEX organisationfunktion_relation_idx_rel_maal_uuid
   ON organisationfunktion_relation

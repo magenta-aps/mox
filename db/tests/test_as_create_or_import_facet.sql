@@ -83,7 +83,8 @@ facetRelAnsvarlig := ROW (
 	'ansvarlig'::FacetRelationKode,
 		virkAnsvarlig,
 	uuidAnsvarlig,
-	null
+	null,
+	'Aktør'
 ) :: FacetRelationType
 ;
 
@@ -92,6 +93,7 @@ facetRelRedaktoer1 := ROW (
 	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer1,
 	uuidRedaktoer1,
+	null,
 	null
 ) :: FacetRelationType
 ;
@@ -102,7 +104,8 @@ facetRelRedaktoer2 := ROW (
 	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer2,
 	null,
-	urnRedaktoer2
+	urnRedaktoer2,
+	null
 ) :: FacetRelationType
 ;
 
@@ -200,7 +203,8 @@ array_agg(
 					a.rel_type,
 					a.virkning,
 					a.rel_maal_uuid,
-					a.rel_maal_urn 
+					a.rel_maal_urn,
+					a.objekt_type 
 				):: FacetRelationType
 		) into actual_relationer
 FROM facet_relation a

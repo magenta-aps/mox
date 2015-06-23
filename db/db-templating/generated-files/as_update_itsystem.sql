@@ -75,14 +75,16 @@ ELSE
           virkning,
             rel_maal_uuid,
               rel_maal_urn,
-                rel_type
+                rel_type,
+                  objekt_type
       )
       SELECT
         new_itsystem_registrering.id,
           a.virkning,
             a.relMaalUuid,
               a.relMaalUrn,
-                a.relType
+                a.relType,
+                  a.objektType
       FROM unnest(relationer) as a
     ;
 
@@ -101,7 +103,8 @@ ELSE
           virkning,
             rel_maal_uuid,
               rel_maal_urn,
-                rel_type
+                rel_type,
+                  objekt_type
       )
     SELECT 
         new_itsystem_registrering.id, 
@@ -113,7 +116,8 @@ ELSE
           ) :: virkning,
             a.rel_maal_uuid,
               a.rel_maal_urn,
-                a.rel_type
+                a.rel_type,
+                  a.objekt_type
     FROM
     (
       --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to _subtract_tstzrange_arr on the relations of the previous registrering 
@@ -147,14 +151,16 @@ ELSE
               virkning,
                 rel_maal_uuid,
                   rel_maal_urn,
-                    rel_type
+                    rel_type,
+                      objekt_type
           )
       SELECT 
             new_itsystem_registrering.id,
               virkning,
                 rel_maal_uuid,
                   rel_maal_urn,
-                  rel_type
+                    rel_type,
+                      objekt_type
       FROM itsystem_relation
       WHERE itsystem_registrering_id=prev_itsystem_registrering.id 
       and rel_type=itsystem_relation_navn 

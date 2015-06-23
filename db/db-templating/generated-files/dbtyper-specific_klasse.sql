@@ -45,7 +45,8 @@ CREATE TYPE KlasseRelationType AS (
   relType KlasseRelationKode,
   virkning Virkning,
   relMaalUuid uuid,
-  relMaalUrn  text 
+  relMaalUrn  text,
+  objektType text 
 )
 ;
 

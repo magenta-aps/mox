@@ -33,7 +33,8 @@ CREATE TYPE BrugerRelationType AS (
   relType BrugerRelationKode,
   virkning Virkning,
   relMaalUuid uuid,
-  relMaalUrn  text 
+  relMaalUrn  text,
+  objektType text 
 )
 ;
 

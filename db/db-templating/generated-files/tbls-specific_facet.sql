@@ -303,11 +303,23 @@ CREATE TABLE facet_relation
   rel_maal_uuid uuid NULL, --we have to allow null values (for now at least), as it is needed to be able to clear/overrule previous registered relations.
   rel_maal_urn text null,
   rel_type FacetRelationKode not null,
+  objekt_type text null,
  CONSTRAINT facet_relation_forkey_facetregistrering  FOREIGN KEY (facet_registrering_id) REFERENCES facet_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
  CONSTRAINT facet_relation_pkey PRIMARY KEY (id),
  CONSTRAINT facet_relation_no_virkning_overlap EXCLUDE USING gist (facet_registrering_id WITH =, _as_convert_facet_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('redaktoerer'::FacetRelationKode )) ,-- no overlapping virkning except for 0..n --relations
  CONSTRAINT facet_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
 );
+
+
+CREATE INDEX facet_relation_idx_rel_maal_obj_uuid
+  ON facet_relation
+  USING btree
+  (rel_type,objekt_type,rel_maal_uuid);
+
+CREATE INDEX facet_relation_idx_rel_maal_obj_urn
+  ON facet_relation
+  USING btree
+  (rel_type,objekt_type,rel_maal_urn);
 
 CREATE INDEX facet_relation_idx_rel_maal_uuid
   ON facet_relation

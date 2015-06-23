@@ -60,6 +60,7 @@ relationerArr:=array_append(relationerArr,
           'NoteEx2'
           ) :: Virkning,
 	  'cbe8142b-bafc-4aaf-89b6-4e90b9e08907'::uuid,
+	  null,
 	  null
 ) :: KlasseRelationType
 )
@@ -75,6 +76,7 @@ relationerArr:=array_append(relationerArr,
           'NoteEx3'
           ) :: Virkning,
 	  'fbe8142b-bafc-4aaf-89b6-4e90b9e08908'::uuid,
+	  null,
 	  null
 ) :: KlasseRelationType
 )
@@ -90,6 +92,7 @@ relationerArr:=array_append(relationerArr,
           'NoteEx10'
           ) :: Virkning,
 	  'ebe8142b-bafc-4aaf-89b6-4e90b9e08909'::uuid,
+	  null,
 	  null
 ) :: KlasseRelationType
 )
@@ -105,6 +108,7 @@ relationerArr:=array_append(relationerArr,
           'NoteEx11'
           ) :: Virkning,
 	  'cee8142b-bafc-4aaf-89b6-4e90b9e08900'::uuid,
+	  null,
 	  null
 ) :: KlasseRelationType
 )
@@ -120,6 +124,7 @@ relationerArr:=array_append(relationerArr,
           'NoteEx30'
           ) :: Virkning,
 	  '3ee8142b-bafc-4aaf-89b6-4e90b9e08908'::uuid,
+	  null,
 	  null
 ) :: KlasseRelationType
 )
@@ -159,6 +164,7 @@ relationerArr3:=array_append(relationerArr,
 	          'NoteEx30'
 	          ) :: Virkning,*/
 		,null--  '3ee8142b-bafc-4aaf-89b6-4e90b9e08908'::uuid
+		,null
 		,null
 	) :: KlasseRelationType	
 );

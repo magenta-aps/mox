@@ -301,6 +301,7 @@ klasseRelAnsvarlig_A := ROW (
 	'ansvarlig'::KlasseRelationKode,
 		virkAnsvarlig_A,
 	uuidAnsvarlig_A,
+	null,
 	null
 ) :: KlasseRelationType
 ;
@@ -310,6 +311,7 @@ klasseRelRedaktoer1_A := ROW (
 	'redaktoerer'::KlasseRelationKode,
 		virkRedaktoer1_A,
 	uuidRedaktoer1_A,
+	null,
 	null
 ) :: KlasseRelationType
 ;
@@ -320,6 +322,7 @@ klasseRelRedaktoer2_A := ROW (
 	'redaktoerer'::KlasseRelationKode,
 		virkRedaktoer2_A,
 	uuidRedaktoer2_A,
+	null,
 	null
 ) :: KlasseRelationType
 ;
@@ -328,6 +331,7 @@ klasseRelSideordnede3_A := ROW (
 	'sideordnede'::KlasseRelationKode,
 		virkSideordnede_AB_A,
 	uuidSideordnede_AB,
+	null,
 	null
 ) :: KlasseRelationType
 ;
@@ -448,6 +452,7 @@ klasseRelAnsvarlig_B := ROW (
 	'ansvarlig'::KlasseRelationKode,
 		virkAnsvarlig_B,
 	uuidAnsvarlig_B,
+	null,
 	null
 ) :: KlasseRelationType
 ;
@@ -457,6 +462,7 @@ klasseRelRedaktoer1_B := ROW (
 	'redaktoerer'::KlasseRelationKode,
 		virkRedaktoer1_B,
 	uuidRedaktoer1_B,
+	null,
 	null
 ) :: KlasseRelationType
 ;
@@ -467,6 +473,7 @@ klasseRelRedaktoer2_B := ROW (
 	'redaktoerer'::KlasseRelationKode,
 		virkRedaktoer2_B,
 	uuidRedaktoer2_B,
+	null,
 	null
 ) :: KlasseRelationType
 ;
@@ -475,6 +482,7 @@ klasseRelSideordnede3_B := ROW (
 	'sideordnede'::KlasseRelationKode,
 		virkSideordnede_AB_B,
 	uuidSideordnede_AB,
+	null,
 	null
 ) :: KlasseRelationType
 ;
@@ -878,6 +886,7 @@ klasseRelAnsvarlig_C := ROW (
 	'ansvarlig'::KlasseRelationKode,
 		virkAnsvarlig_C,
 	uuidAnsvarlig_C,
+	null,
 	null
 ) :: KlasseRelationType
 ;
@@ -887,6 +896,7 @@ klasseRelRedaktoer1_C := ROW (
 	'redaktoerer'::KlasseRelationKode,
 		virkRedaktoer1_C,
 	uuidRedaktoer1_C,
+	null,
 	null
 ) :: KlasseRelationType
 ;
@@ -981,6 +991,7 @@ ARRAY[
 				 null,null,null
 			)::virkning ,
 			null,
+			null,
 			null
 	) :: KlasseRelationType
 ]
@@ -1030,6 +1041,7 @@ ARRAY[
 				'[2013-05-01, 2015-04-11]' :: TSTZRANGE,
 				 null,null,null
 			)::virkning ,
+			null,
 			null,
 			null
 	) :: KlasseRelationType
@@ -1557,6 +1569,7 @@ ARRAY[
 				 null,null,null
 			)::virkning ,
 			null,
+			null,
 			null
 	) :: KlasseRelationType
 ]
@@ -1601,6 +1614,7 @@ ARRAY[
 	ROW (
 	'redaktoerer'::KlasseRelationKode,
 		null,--virkning 
+			null,
 			null,
 			null
 	) :: KlasseRelationType
@@ -1648,6 +1662,7 @@ ARRAY[
 	ROW (
 	'overordnetklasse'::KlasseRelationKode,
 		null,--virkning 
+			null,
 			null,
 			null
 	) :: KlasseRelationType
@@ -1823,6 +1838,7 @@ ARRAY[
 				  	null,null,null
 				  	)::virkning, 
 			null,
+			null,
 			null
 	) :: KlasseRelationType,
 	ROW (
@@ -1831,6 +1847,7 @@ ARRAY[
 				  	'[2015-04-20, 2015-04-20]' :: TSTZRANGE,
 				  	null,null,null
 				  	)::virkning, 
+			null,
 			null,
 			null
 	) :: KlasseRelationType
@@ -2527,6 +2544,7 @@ ARRAY[
 				  	null,null,null
 				  	)::virkning, 
 			null,
+			null,
 			null
 	) :: KlasseRelationType,
 	ROW (
@@ -2535,6 +2553,7 @@ ARRAY[
 				  	'[2015-04-20, 2015-04-20]' :: TSTZRANGE,
 				  	null,null,null
 				  	)::virkning, 
+			null,
 			null,
 			null
 	) :: KlasseRelationType
@@ -2572,6 +2591,7 @@ ARRAY[
 				  	null,null,null
 				  	)::virkning, 
 			null,
+			null,
 			null
 	) :: KlasseRelationType,
 	ROW (
@@ -2580,6 +2600,7 @@ ARRAY[
 				  	'[2015-04-20, 2015-04-20]' :: TSTZRANGE,
 				  	null,null,null
 				  	)::virkning, 
+			null,
 			null,
 			null
 	) :: KlasseRelationType

@@ -111,6 +111,7 @@ facetRelAnsvarlig := ROW (
 	'ansvarlig'::FacetRelationKode,
 		virkAnsvarlig,
 	uuidAnsvarlig,
+	null,
 	null
 ) :: FacetRelationType
 ;
@@ -120,6 +121,7 @@ facetRelRedaktoer1 := ROW (
 	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer1,
 	uuidRedaktoer1,
+	null,
 	null
 ) :: FacetRelationType
 ;
@@ -130,6 +132,7 @@ facetRelRedaktoer2 := ROW (
 	'redaktoerer'::FacetRelationKode,
 		virkRedaktoer2,
 	uuidRedaktoer2,
+	null,
 	null
 ) :: FacetRelationType
 ;

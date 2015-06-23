@@ -32,7 +32,8 @@ CREATE TYPE OrganisationRelationType AS (
   relType OrganisationRelationKode,
   virkning Virkning,
   relMaalUuid uuid,
-  relMaalUrn  text 
+  relMaalUrn  text,
+  objektType text 
 )
 ;
 

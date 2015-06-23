@@ -605,6 +605,12 @@ ELSE
 				)
 				AND
 				(
+					relationTypeObj.objektType IS NULL
+					OR
+					relationTypeObj.objektType = a.objekt_type
+				)
+				AND
+				(
 					relationTypeObj.relMaalUrn IS NULL
 					OR
 					relationTypeObj.relMaalUrn = a.rel_maal_urn

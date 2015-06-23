@@ -249,11 +249,23 @@ CREATE TABLE {{oio_type}}_relation
   rel_maal_uuid uuid NULL, --we have to allow null values (for now at least), as it is needed to be able to clear/overrule previous registered relations.
   rel_maal_urn text null,
   rel_type {{oio_type|title}}RelationKode not null,
+  objekt_type text null,
  CONSTRAINT {{oio_type}}_relation_forkey_{{oio_type}}registrering  FOREIGN KEY ({{oio_type}}_registrering_id) REFERENCES {{oio_type}}_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
  CONSTRAINT {{oio_type}}_relation_pkey PRIMARY KEY (id),
  CONSTRAINT {{oio_type}}_relation_no_virkning_overlap EXCLUDE USING gist ({{oio_type}}_registrering_id WITH =, _as_convert_{{oio_type}}_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&) {% if relationer_nul_til_mange %} WHERE ({% for nul_til_mange_rel in relationer_nul_til_mange %} rel_type<>('{{nul_til_mange_rel}}'::{{oio_type|title}}RelationKode ){% if not loop.last %} AND{% endif %}{% endfor %}) {% endif %},-- no overlapping virkning except for 0..n --relations
  CONSTRAINT {{oio_type}}_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
 );
+
+
+CREATE INDEX {{oio_type}}_relation_idx_rel_maal_obj_uuid
+  ON {{oio_type}}_relation
+  USING btree
+  (rel_type,objekt_type,rel_maal_uuid);
+
+CREATE INDEX {{oio_type}}_relation_idx_rel_maal_obj_urn
+  ON {{oio_type}}_relation
+  USING btree
+  (rel_type,objekt_type,rel_maal_urn);
 
 CREATE INDEX {{oio_type}}_relation_idx_rel_maal_uuid
   ON {{oio_type}}_relation

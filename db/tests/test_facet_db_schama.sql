@@ -40,7 +40,7 @@ BEGIN
 	RETURN NEXT has_column( 'facet_relation',   'rel_maal_uuid');
 	RETURN NEXT has_column( 'facet_relation',   'rel_maal_urn');
 	RETURN NEXT has_column( 'facet_relation',   'rel_type');
-
+	RETURN NEXT has_column( 'facet_relation',   'objekt_type');
 
 
 

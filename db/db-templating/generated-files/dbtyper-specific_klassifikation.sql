@@ -34,7 +34,8 @@ CREATE TYPE KlassifikationRelationType AS (
   relType KlassifikationRelationKode,
   virkning Virkning,
   relMaalUuid uuid,
-  relMaalUrn  text 
+  relMaalUrn  text,
+  objektType text 
 )
 ;
 

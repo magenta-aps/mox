@@ -33,7 +33,8 @@ CREATE TYPE InteressefaellesskabRelationType AS (
   relType InteressefaellesskabRelationKode,
   virkning Virkning,
   relMaalUuid uuid,
-  relMaalUrn  text 
+  relMaalUrn  text,
+  objektType text 
 )
 ;
 

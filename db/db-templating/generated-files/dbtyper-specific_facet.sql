@@ -37,7 +37,8 @@ CREATE TYPE FacetRelationType AS (
   relType FacetRelationKode,
   virkning Virkning,
   relMaalUuid uuid,
-  relMaalUrn  text 
+  relMaalUrn  text,
+  objektType text 
 )
 ;
 

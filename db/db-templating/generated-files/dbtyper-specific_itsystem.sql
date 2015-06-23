@@ -34,7 +34,8 @@ CREATE TYPE ItsystemRelationType AS (
   relType ItsystemRelationKode,
   virkning Virkning,
   relMaalUuid uuid,
-  relMaalUrn  text 
+  relMaalUrn  text,
+  objektType text 
 )
 ;
 

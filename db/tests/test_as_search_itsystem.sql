@@ -94,6 +94,7 @@ itsystemRelAnsvarligA := ROW (
 	'tilhoerer'::ItsystemRelationKode,
 		virkAnsvarligA,
 	uuidAnsvarligA,
+	null,
 	null
 ) :: ItsystemRelationType
 ;
@@ -103,6 +104,7 @@ itsystemRelOrganisationer1A := ROW (
 	'tilknyttedeorganisationer'::ItsystemRelationKode,
 		virkOrganisationer1A,
 	uuidOrganisationer1A,
+	null,
 	null
 ) :: ItsystemRelationType
 ;
@@ -113,6 +115,7 @@ itsystemRelOrganisationer2A := ROW (
 	'tilknyttedeorganisationer'::ItsystemRelationKode,
 		virkOrganisationer2A,
 	uuidOrganisationer2A,
+	null,
 	null
 ) :: ItsystemRelationType
 ;
