@@ -1,0 +1,56 @@
+*** ../generated-files/dbtyper-specific_sag.sql	2015-06-23 15:15:45.576399393 +0200
+--- ../patches/dbtyper-specific_sag.org.sql	2015-06-23 15:54:07.424514032 +0200
+***************
+*** 32,48 ****
+   virkning Virkning
+  );
+  
+  
+  CREATE TYPE SagRelationKode AS ENUM  ('behandlingarkiv','afleveringsarkiv','primaerklasse','opgaveklasse','handlingsklasse','kontoklasse','sikkerhedsklasse','foelsomhedsklasse','indsatsklasse','ydelsesklasse','ejer','ansvarlig','primaerbehandler','udlaanttil','primaerpart','ydelsesmodtager','oversag','praecedens','afgiftsobjekt','ejendomsskat','andetarkiv','andrebehandlere','sekundaerpart','andresager','byggeri','fredning','journalpost');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_sag_relation_kode_to_txt is invoked.
+  
+  CREATE TYPE SagRelationType AS (
+    relType SagRelationKode,
+    virkning Virkning,
+    relMaalUuid uuid,
+    relMaalUrn  text,
+!   objektType text 
+  )
+  ;
+  
+  CREATE TYPE SagRegistreringType AS
+  (
+--- 32,65 ----
+   virkning Virkning
+  );
+  
+  
+  CREATE TYPE SagRelationKode AS ENUM  ('behandlingarkiv','afleveringsarkiv','primaerklasse','opgaveklasse','handlingsklasse','kontoklasse','sikkerhedsklasse','foelsomhedsklasse','indsatsklasse','ydelsesklasse','ejer','ansvarlig','primaerbehandler','udlaanttil','primaerpart','ydelsesmodtager','oversag','praecedens','afgiftsobjekt','ejendomsskat','andetarkiv','andrebehandlere','sekundaerpart','andresager','byggeri','fredning','journalpost');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_sag_relation_kode_to_txt is invoked.
++ CREATE TYPE SagRelationJournalPostSpecifikKode AS ENUM ('journalnotat','vedlagtdokument','tilakteretdokument');
++ 
++ CREATE TYPE JournalNotatType AS (
++ titel text,
++ notat text,
++ format text
++ );
++ 
++ CREATE TYPE JournalPostDokumentAttrType AS (
++ dokumenttitel text,
++ OffentlighedUndtaget OffentlighedundtagetType
++ );
++ 
+  
+  CREATE TYPE SagRelationType AS (
+    relType SagRelationKode,
+    virkning Virkning,
+    relMaalUuid uuid,
+    relMaalUrn  text,
+!   objektType text,
+!   relIndex int,
+!   relTypeSpec SagRelationJournalPostSpecifikKode,
+!   journalNotat JournalNotatType,
+!   journalDokumentAttr JournalPostDokumentAttrType
+  )
+  ;
+  
+  CREATE TYPE SagRegistreringType AS
+  (

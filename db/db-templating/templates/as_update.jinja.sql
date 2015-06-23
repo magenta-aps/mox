@@ -410,8 +410,10 @@ WHERE
 a.{{oio_type}}_registrering_id=new_{{oio_type}}_registrering.id
 AND {%-for fieldname in attribut_fields %} (a.{{fieldname}} IS NULL {%- if  attributter_type_override is defined and attributter_type_override[attribut] is defined and attributter_type_override[attribut][fieldname] is defined %} 
             {%-if attributter_type_override[attribut][fieldname] == "text[]" %} OR coalesce(array_length(a.{{fieldname}},1),0)=0
-            {%- endif %} 
-            {%- else %} OR a.{{fieldname}}=''{%- endif %}){%- if (not loop.last) %} AND {%- endif %}{%- endfor %}
+            {%-else %}
+            {%-if attributter_type_override[attribut][fieldname] == "offentlighedundtagettype" %} OR (((a.{{fieldname}}).AlternativTitel IS NULL OR (a.{{fieldname}}).AlternativTitel='') AND ((a.{{fieldname}}).Hjemmel IS NULL OR (a.{{fieldname}}).Hjemmel=''))
+           {%- endif %}{%- endif %} {%- else %} OR a.{{fieldname}}=''{%- endif %}){%- if (not loop.last) %} 
+            AND {% endif %}{%- endfor %}
 ;
 
 END IF;

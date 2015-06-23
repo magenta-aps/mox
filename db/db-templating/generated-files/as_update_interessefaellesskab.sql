@@ -405,7 +405,9 @@ FROM
 DELETE FROM interessefaellesskab_attr_egenskaber a
 WHERE 
 a.interessefaellesskab_registrering_id=new_interessefaellesskab_registrering.id
-AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') AND (a.interessefaellesskabsnavn IS NULL OR a.interessefaellesskabsnavn='') AND (a.interessefaellesskabstype IS NULL OR a.interessefaellesskabstype='')
+AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') 
+            AND  (a.interessefaellesskabsnavn IS NULL OR a.interessefaellesskabsnavn='') 
+            AND  (a.interessefaellesskabstype IS NULL OR a.interessefaellesskabstype='')
 ;
 
 END IF;

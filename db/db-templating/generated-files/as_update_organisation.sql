@@ -400,7 +400,8 @@ FROM
 DELETE FROM organisation_attr_egenskaber a
 WHERE 
 a.organisation_registrering_id=new_organisation_registrering.id
-AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') AND (a.organisationsnavn IS NULL OR a.organisationsnavn='')
+AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') 
+            AND  (a.organisationsnavn IS NULL OR a.organisationsnavn='')
 ;
 
 END IF;

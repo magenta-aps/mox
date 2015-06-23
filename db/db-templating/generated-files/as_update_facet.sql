@@ -425,7 +425,13 @@ FROM
 DELETE FROM facet_attr_egenskaber a
 WHERE 
 a.facet_registrering_id=new_facet_registrering.id
-AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') AND (a.beskrivelse IS NULL OR a.beskrivelse='') AND (a.opbygning IS NULL OR a.opbygning='') AND (a.ophavsret IS NULL OR a.ophavsret='') AND (a.plan IS NULL OR a.plan='') AND (a.supplement IS NULL OR a.supplement='') AND (a.retskilde IS NULL OR a.retskilde='')
+AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') 
+            AND  (a.beskrivelse IS NULL OR a.beskrivelse='') 
+            AND  (a.opbygning IS NULL OR a.opbygning='') 
+            AND  (a.ophavsret IS NULL OR a.ophavsret='') 
+            AND  (a.plan IS NULL OR a.plan='') 
+            AND  (a.supplement IS NULL OR a.supplement='') 
+            AND  (a.retskilde IS NULL OR a.retskilde='')
 ;
 
 END IF;

@@ -37,3 +37,8 @@ brugerref uuid,
 note text
 );
 
+CREATE TYPE OffentlighedundtagetType AS 
+(
+AlternativTitel text,
+Hjemmel text
+);

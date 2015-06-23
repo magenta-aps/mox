@@ -405,7 +405,9 @@ FROM
 DELETE FROM bruger_attr_egenskaber a
 WHERE 
 a.bruger_registrering_id=new_bruger_registrering.id
-AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') AND (a.brugernavn IS NULL OR a.brugernavn='') AND (a.brugertype IS NULL OR a.brugertype='')
+AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') 
+            AND  (a.brugernavn IS NULL OR a.brugernavn='') 
+            AND  (a.brugertype IS NULL OR a.brugertype='')
 ;
 
 END IF;

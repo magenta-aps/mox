@@ -175,6 +175,33 @@ DATABASE_STRUCTURE = {
             "tilknyttedeorganisationer", "tilknyttedeitsystemer",
             "tilknyttedeinteressefaellesskaber", "tilknyttedepersoner"
         ]
+    },
+
+    "sag": {
+        "attributter": {
+            "egenskaber": ["brugervendtnoegle","afleveret","beskrivelse","hjemmel","kassationskode","offentlighedundtaget","principiel","sagsnummer","titel"]
+        },
+        "attributter_type_override": {
+            "egenskaber": {
+                "afleveret": "boolean",
+                "principiel": "boolean",
+                "offentlighedundtaget" : "offentlighedundtagettype"
+            }
+            },
+        "tilstande": {
+            "fremdrift": ["Opstaaet","Oplyst","Afgjort","Bestilt","Udfoert","Afsluttet"]
+        },
+        "relationer_nul_til_en": ["behandlingarkiv","afleveringsarkiv",
+            "primaerklasse","opgaveklasse","handlingsklasse","kontoklasse","sikkerhedsklasse","foelsomhedsklasse","indsatsklasse","ydelsesklasse",
+            "ejer","ansvarlig","primaerbehandler","udlaanttil",
+            "primaerpart","ydelsesmodtager",
+            "oversag","praecedens",
+            "afgiftsobjekt","ejendomsskat"
+        ],
+        "relationer_nul_til_mange": [
+            "andetarkiv","andrebehandlere","sekundaerpart","andresager","byggeri","fredning","journalpost"
+        ]
+
     }
 
 }
@@ -187,3 +214,4 @@ REAL_DB_STRUCTURE["klasse"]["attributter_type_override"] = {
         "soegeord": "soegeord"
     }
 }
+

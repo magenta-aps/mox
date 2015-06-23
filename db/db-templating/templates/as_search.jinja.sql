@@ -134,7 +134,23 @@ ELSE
 						{%-if attributter_type_override[attribut][attribut_field] == "text[]" %}
 					_as_search_match_array(attr{{attribut|title}}TypeObj.{{attribut_field}},a.{{attribut_field}})  
 						{%- else %} 
+						{%-if attributter_type_override[attribut][attribut_field] == "offentlighedundtagettype" %}
+						(
+							(
+								(attr{{attribut|title}}TypeObj.{{attribut_field}}).AlternativTitel IS NULL
+								OR
+								(a.{{attribut_field}}).AlternativTitel ILIKE (attr{{attribut|title}}TypeObj.{{attribut_field}}).AlternativTitel 
+							)
+							AND
+							(
+								(attr{{attribut|title}}TypeObj.{{attribut_field}}).Hjemmel IS NULL
+								OR
+								(a.{{attribut_field}}).Hjemmel ILIKE (attr{{attribut|title}}TypeObj.{{attribut_field}}).Hjemmel
+							)
+						)
+						{%- else %} 
 					a.{{attribut_field}} = attr{{attribut|title}}TypeObj.{{attribut_field}}
+						{%- endif %}
 						{%- endif %}		
 					{%- else %} 
 					a.{{attribut_field}} ILIKE attr{{attribut|title}}TypeObj.{{attribut_field}} --case insensitive

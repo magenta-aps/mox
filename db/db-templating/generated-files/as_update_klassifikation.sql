@@ -410,7 +410,10 @@ FROM
 DELETE FROM klassifikation_attr_egenskaber a
 WHERE 
 a.klassifikation_registrering_id=new_klassifikation_registrering.id
-AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') AND (a.beskrivelse IS NULL OR a.beskrivelse='') AND (a.kaldenavn IS NULL OR a.kaldenavn='') AND (a.ophavsret IS NULL OR a.ophavsret='')
+AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') 
+            AND  (a.beskrivelse IS NULL OR a.beskrivelse='') 
+            AND  (a.kaldenavn IS NULL OR a.kaldenavn='') 
+            AND  (a.ophavsret IS NULL OR a.ophavsret='')
 ;
 
 END IF;

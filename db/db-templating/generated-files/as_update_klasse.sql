@@ -499,7 +499,13 @@ JOIN klasse_attr_egenskaber_soegeord b on a2.id=b.klasse_attr_egenskaber_id
 DELETE FROM klasse_attr_egenskaber a
 WHERE 
 a.klasse_registrering_id=new_klasse_registrering.id
-AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') AND (a.beskrivelse IS NULL OR a.beskrivelse='') AND (a.eksempel IS NULL OR a.eksempel='') AND (a.omfang IS NULL OR a.omfang='') AND (a.titel IS NULL OR a.titel='') AND (a.retskilde IS NULL OR a.retskilde='') AND (a.aendringsnotat IS NULL OR a.aendringsnotat='')
+AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') 
+            AND  (a.beskrivelse IS NULL OR a.beskrivelse='') 
+            AND  (a.eksempel IS NULL OR a.eksempel='') 
+            AND  (a.omfang IS NULL OR a.omfang='') 
+            AND  (a.titel IS NULL OR a.titel='') 
+            AND  (a.retskilde IS NULL OR a.retskilde='') 
+            AND  (a.aendringsnotat IS NULL OR a.aendringsnotat='')
 AND a.id NOT IN (SELECT b.klasse_attr_egenskaber_id FROM klasse_attr_egenskaber_soegeord b)
 ;
 
