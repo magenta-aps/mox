@@ -75,5 +75,9 @@ CREATE TYPE SagType AS
   registrering SagRegistreringType[]
 );  
 
-
+CREATE Type _SagRelationMaxIndex AS
+(
+  relType SagRelationKode,
+  relIndex int
+);
 

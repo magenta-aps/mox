@@ -34,6 +34,7 @@ patch --fuzz=3 -i  ../patches/dbtyper-specific_sag.sql.diff
 patch --fuzz=3 -i  ../patches/as_list_sag.sql.diff
 patch --fuzz=3 -i  ../patches/_remove_nulls_in_array_sag.sql.diff
 patch --fuzz=3 -i  ../patches/as_create_or_import_sag.sql.diff
+patch --fuzz=3 -i  ../patches/as_update_sag.sql.diff
 
 cd ..
 
@@ -74,3 +75,4 @@ sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_search_match_arr
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_search_itsystem.sql
 #sag
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_create_or_import_sag.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_update_sag.sql

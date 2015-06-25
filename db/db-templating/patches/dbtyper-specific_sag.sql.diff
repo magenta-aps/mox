@@ -1,7 +1,16 @@
-*** ../generated-files/dbtyper-specific_sag.sql	2015-06-23 15:15:45.576399393 +0200
---- ../patches/dbtyper-specific_sag.org.sql	2015-06-23 15:54:07.424514032 +0200
+*** ../generated-files/dbtyper-specific_sag.sql	2015-06-25 11:36:21.513561709 +0200
+--- ../patches/dbtyper-specific_sag.org.sql	2015-06-25 11:34:53.725563281 +0200
 ***************
-*** 32,48 ****
+*** 23,48 ****
+  brugervendtnoegle text, 
+  afleveret boolean,
+  beskrivelse text,
+  hjemmel text,
+  kassationskode text, 
+! offentlighedundtaget offentlighedundtagettype, 
+  principiel boolean,
+  sagsnummer text,
+  titel text,
    virkning Virkning
   );
   
@@ -19,7 +28,16 @@
   
   CREATE TYPE SagRegistreringType AS
   (
---- 32,65 ----
+--- 23,65 ----
+  brugervendtnoegle text, 
+  afleveret boolean,
+  beskrivelse text,
+  hjemmel text,
+  kassationskode text, 
+! offentlighedundtaget OffentlighedundtagetType, 
+  principiel boolean,
+  sagsnummer text,
+  titel text,
    virkning Virkning
   );
   
@@ -35,7 +53,7 @@
 + 
 + CREATE TYPE JournalPostDokumentAttrType AS (
 + dokumenttitel text,
-+ OffentlighedUndtaget OffentlighedundtagetType
++ offentlighedUndtaget OffentlighedundtagetType
 + );
 + 
   
@@ -54,3 +72,24 @@
   
   CREATE TYPE SagRegistreringType AS
   (
+***************
+*** 56,62 ****
+  (
+    id uuid,
+    registrering SagRegistreringType[]
+  );  
+  
+! 
+  
+--- 73,83 ----
+  (
+    id uuid,
+    registrering SagRegistreringType[]
+  );  
+  
+! CREATE Type _SagRelationMaxIndex AS
+! (
+!   relType SagRelationKode,
+!   relIndex int
+! );
+  

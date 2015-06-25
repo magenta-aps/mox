@@ -25,7 +25,7 @@ afleveret boolean,
 beskrivelse text,
 hjemmel text,
 kassationskode text, 
-offentlighedundtaget offentlighedundtagettype, 
+offentlighedundtaget OffentlighedundtagetType, 
 principiel boolean,
 sagsnummer text,
 titel text,
@@ -44,7 +44,7 @@ format text
 
 CREATE TYPE JournalPostDokumentAttrType AS (
 dokumenttitel text,
-OffentlighedUndtaget OffentlighedundtagetType
+offentlighedUndtaget OffentlighedundtagetType
 );
 
 
@@ -75,5 +75,9 @@ CREATE TYPE SagType AS
   registrering SagRegistreringType[]
 );  
 
-
+CREATE Type _SagRelationMaxIndex AS
+(
+  relType SagRelationKode,
+  relIndex int
+);
 

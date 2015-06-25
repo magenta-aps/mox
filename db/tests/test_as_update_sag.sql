@@ -6,17 +6,20 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 --SELECT * FROM runtests('test'::name);
-CREATE OR REPLACE FUNCTION test.test_as_create_or_import_sag()
+CREATE OR REPLACE FUNCTION test.test_as_update_sag()
 RETURNS SETOF TEXT LANGUAGE plpgsql AS 
 $$
 DECLARE 
 	new_uuid1 uuid;
 	registrering sagRegistreringType;
+	registreringB sagRegistreringType;
 	actual_registrering RegistreringBase;
 	virkEgenskaber Virkning;
 	virkPrimaerklasse Virkning;
 	virkSekundaerpart1 Virkning;
 	virkSekundaerpart2 Virkning;
+	virkSekundaerpart3 Virkning;
+	virkSekundaerpart4 Virkning;
 	virkAndresager1 Virkning;
 	virkAndresager2 Virkning;
 	virkPubliceret Virkning;
@@ -29,8 +32,10 @@ DECLARE
 	sagRelAndresager2 sagRelationType;
 	uuidPrimaerklasse uuid :='f7109356-e87e-4b10-ad5d-36de6e3ee09f'::uuid;
 	uuidSekundaerpart1 uuid :='b7160ce6-ac92-4752-9e82-f17d9e1e52ce'::uuid;
-	--uuidSekundaerpart2 uuid :='08533179-fedb-4aa7-8902-ab34a219eed9'::uuid;
+	uuidSekundaerpart2 uuid :='08533179-fedb-4aa7-8902-ab34a219eed9'::uuid;
 	urnSekundaerpart2 text:='urn:isbn:0451450523'::text;
+	urnSekundaerpart3 text:='urn:isbn:8751450519'::text;
+	urnSekundaerpart4 text:='urn:isbn:7751450516'::text;
 	uuidAndresager1 uuid :='f7109356-e87e-4b10-ad5d-36de6e3ee09d'::uuid;
 	uuidAndresager2 uuid :='28533179-fedb-4aa7-8902-ab34a219eed1'::uuid;
 	uuidRegistrering uuid :='1f368584-4c3e-4ba4-837b-da2b1eee37c9'::uuid;
@@ -41,6 +46,9 @@ DECLARE
 	uuid_to_import uuid :='a1819cce-043b-447f-ba5e-92e6a75df918'::uuid;
 	uuid_returned_from_import uuid;
 	read_Sag1 SagType;
+	update_reg_id int;
+	read_sag_relation_1 SagRelationType;
+	read_uuidSekundaerpart2 uuid;
 BEGIN
 
 
@@ -76,6 +84,24 @@ virkSekundaerpart2 :=	ROW (
           'NoteEx4'
           ) :: Virkning
 ;
+
+
+virkSekundaerpart3 :=	ROW (
+	'[2014-05-10, 2016-03-20)' :: TSTZRANGE,
+          uuid_generate_v4(),
+          'Bruger',
+          'NoteEx30'
+          ) :: Virkning
+;
+
+virkSekundaerpart4 :=	ROW (
+	'[2013-02-25, 2016-03-21)' :: TSTZRANGE,
+          uuid_generate_v4(),
+          'Bruger',
+          'NoteEx40'
+          ) :: Virkning
+;
+
 
 virkPubliceret := ROW (
 	'[2015-05-18, infinity)' :: TSTZRANGE,
@@ -216,8 +242,65 @@ ARRAY[sagRelPrimaerklasse,sagRelSekundaerpart1,sagRelSekundaerpart2,sagRelAndres
 
 new_uuid1 := as_create_or_import_sag(registrering);
 
-RETURN NEXT ok(true,'No errors running as_create_or_import_sag');
 
+
+registrering := ROW (
+
+	ROW (
+	NULL,
+	'Opstaaet'::Livscykluskode,
+	uuidRegistrering,
+	'Test Note 4') :: RegistreringBase
+	,
+ARRAY[sagFremdrift]::sagFremdriftTilsType[],
+ARRAY[sagEgenskab]::sagEgenskaberAttrType[],
+ARRAY[sagRelPrimaerklasse,sagRelSekundaerpart1,sagRelSekundaerpart2,sagRelAndresager1,sagRelAndresager2]
+) :: sagRegistreringType
+;
+
+
+
+
+sagRelSekundaerpart2 := ROW (
+	'sekundaerpart'::sagRelationKode,
+		virkSekundaerpart2,
+	uuidSekundaerpart2,
+	null,
+	'Person'
+	,2 
+	,null --relTypeSpec
+	,null --journalNotat
+	,null --journalDokumentAttr
+) :: sagRelationType
+;
+
+
+update_reg_id:=as_update_sag(
+  new_uuid1, '5f368584-4c3e-4ba4-837b-da2b1eee37c4'::uuid,'Test update 20'::text,
+  'Rettet'::Livscykluskode,          
+  array[sagEgenskab]::SagEgenskaberAttrType[],
+  array[sagFremdrift]::SagFremdriftTilsType[],
+  array[sagRelSekundaerpart2]::SagRelationType[]
+	);
+
+read_Sag1 := as_read_sag(new_uuid1,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
+	);
+
+--raise notice 'read_Sag_update 1:%',to_json(read_Sag1);
+
+SELECT
+relMaalUuid into read_uuidSekundaerpart2 
+FROM
+unnest(read_Sag1.registrering[1].relationer) a
+where
+a.relIndex=2
+and a.relType = 'sekundaerpart'::sagRelationKode
+;
+
+
+RETURN NEXT is(read_uuidSekundaerpart2,uuidSekundaerpart2,'Test update of sag relation based on index #1');
 
 
 read_Sag1 := as_read_sag(new_uuid1,
@@ -226,12 +309,31 @@ read_Sag1 := as_read_sag(new_uuid1,
 	);
 
 
---raise notice 'read_Sag1:%',to_json(read_Sag1);
+--raise notice 'read_Sag_update 2:%',to_json(read_Sag1);
+/*
 
+*/
+/*
+sagRelSekundaerpart3 := ROW (
+	'sekundaerpart'::sagRelationKode,
+		virkSekundaerpart2,
+	null,
+	urnSekundaerpart3,
+	'Person'
+	,null 
+	,null --relTypeSpec
+	,null --journalNotat
+	,null --journalDokumentAttr
+) :: sagRelationType
+;
+*/
 
 
 
 --TODO: Implement tests here
+
+
+
 
 END;
 $$;
