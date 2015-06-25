@@ -44,7 +44,7 @@ format text
 
 CREATE TYPE JournalPostDokumentAttrType AS (
 dokumenttitel text,
-OffentlighedUndtaget OffentlighedundtagetType
+offentlighedUndtaget OffentlighedundtagetType
 );
 
 

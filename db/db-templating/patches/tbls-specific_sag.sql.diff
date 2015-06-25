@@ -1,14 +1,14 @@
-*** ../generated-files/tbls-specific_sag.sql	2015-06-23 15:15:45.628399395 +0200
---- ../patches/tbls-specific_sag.org.sql	2015-06-23 15:52:18.768508620 +0200
+*** ../generated-files/tbls-specific_sag.sql	2015-06-25 09:04:04.221725340 +0200
+--- ../patches/tbls-specific_sag.org.sql	2015-06-25 09:03:42.621725727 +0200
 ***************
-*** 314,323 ****
---- 314,327 ----
+*** 314,329 ****
+--- 314,334 ----
     virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
     rel_maal_uuid uuid NULL, --we have to allow null values (for now at least), as it is needed to be able to clear/overrule previous registered relations.
     rel_maal_urn text null,
     rel_type SagRelationKode not null,
     objekt_type text null,
-+   rel_index int not null,
++   rel_index int null,
 +   rel_type_spec SagRelationJournalPostSpecifikKode null,
 +   journal_notat JournalNotatType null,
 +   journal_dokument_attr JournalPostDokumentAttrType null,
@@ -17,3 +17,21 @@
    CONSTRAINT sag_relation_no_virkning_overlap EXCLUDE USING gist (sag_registrering_id WITH =, _as_convert_sag_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('andetarkiv'::SagRelationKode ) AND rel_type<>('andrebehandlere'::SagRelationKode ) AND rel_type<>('sekundaerpart'::SagRelationKode ) AND rel_type<>('andresager'::SagRelationKode ) AND rel_type<>('byggeri'::SagRelationKode ) AND rel_type<>('fredning'::SagRelationKode ) AND rel_type<>('journalpost'::SagRelationKode )) ,-- no overlapping virkning except for 0..n --relations
    CONSTRAINT sag_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
   );
+  
++ CREATE UNIQUE INDEX sag_relation_unique_index_within_type  ON sag_relation (sag_registrering_id,rel_type,rel_index) WHERE ( rel_type IN ('andetarkiv'::SagRelationKode,'andrebehandlere'::SagRelationKode,'sekundaerpart'::SagRelationKode,'andresager'::SagRelationKode,'byggeri'::SagRelationKode,'fredning'::SagRelationKode,'journalpost'::SagRelationKode));
+  
+  CREATE INDEX sag_relation_idx_rel_maal_obj_uuid
+    ON sag_relation
+    USING btree
+    (rel_type,objekt_type,rel_maal_uuid);
+***************
+*** 371,378 ****
+  CREATE INDEX sag_relation_pat_virkning_notetekst
+    ON sag_relation
+    USING gin
+    (((virkning).notetekst) gin_trgm_ops);
+  
+- 
+- 
+- 
+--- 376,380 ----

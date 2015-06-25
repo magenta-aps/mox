@@ -22,7 +22,10 @@ DECLARE
   sag_tils_fremdrift_obj sagFremdriftTilsType;
   
   sag_relationer SagRelationType;
-
+  sag_relation_kode SagRelationKode;
+  sag_uuid_underscores text;
+  sag_rel_seq_name text;
+  sag_rel_type_cardinality_unlimited SagRelationKode[]:=ARRAY['andetarkiv'::SagRelationKode,'andrebehandlere'::SagRelationKode,'sekundaerpart'::SagRelationKode,'andresager'::SagRelationKode,'byggeri'::SagRelationKode,'fredning'::SagRelationKode,'journalpost'::SagRelationKode]::SagRelationKode[];
 BEGIN
 
 IF sag_uuid IS NULL THEN
@@ -101,7 +104,7 @@ IF sag_registrering.attrEgenskaber IS NOT NULL THEN
    OR 
   ( sag_attr_egenskaber_obj.kassationskode IS NOT NULL AND sag_attr_egenskaber_obj.kassationskode<>'') 
    OR 
-  ( sag_attr_egenskaber_obj.offentlighedundtaget IS NOT NULL) 
+  ( sag_attr_egenskaber_obj.offentlighedundtaget IS NOT NULL OR ((sag_attr_egenskaber_obj.offentlighedundtaget).AlternativTitel IS NOT NULL AND (sag_attr_egenskaber_obj.offentlighedundtaget).AlternativTitel<>'') OR ((sag_attr_egenskaber_obj.offentlighedundtaget).Hjemmel IS NOT NULL AND (sag_attr_egenskaber_obj.offentlighedundtaget).Hjemmel<>'')) 
    OR 
   ( sag_attr_egenskaber_obj.principiel IS NOT NULL) 
    OR 
@@ -174,13 +177,35 @@ END IF;
 /*********************************/
 --Insert relations
 
+IF coalesce(array_length(sag_registrering.relationer,1),0)>0 THEN
+
+--Create temporary sequences
+sag_uuid_underscores:=replace(sag_uuid::text, '-', '_');
+
+FOREACH sag_relation_kode IN ARRAY sag_rel_type_cardinality_unlimited
+  LOOP
+  sag_rel_seq_name := 'sag_rel_' || sag_relation_kode::text || sag_uuid_underscores;
+
+  EXECUTE 'CREATE TEMPORARY SEQUENCE ' || sag_rel_seq_name || '
+  INCREMENT 1
+  MINVALUE 1
+  MAXVALUE 9223372036854775807
+  START 1
+  CACHE 1;';
+
+END LOOP;
+
     INSERT INTO sag_relation (
       sag_registrering_id,
       virkning,
       rel_maal_uuid,
       rel_maal_urn,
       rel_type,
-      objekt_type
+      objekt_type,
+      rel_index,
+      rel_type_spec,
+      journal_notat,
+      journal_dokument_attr
     )
     SELECT
       sag_registrering_id,
@@ -188,11 +213,35 @@ END IF;
       a.relMaalUuid,
       a.relMaalUrn,
       a.relType,
-      a.objektType
+      a.objektType,
+        CASE WHEN a.relType = any (sag_rel_type_cardinality_unlimited) THEN 
+        nextval('sag_rel_' || a.relType::text || sag_uuid_underscores)
+        ELSE 
+        NULL
+        END,
+      a.relTypeSpec,
+      a.journalNotat,
+      a.journalDokumentAttr
     FROM unnest(sag_registrering.relationer) a
-    WHERE (a.relMaalUuid IS NOT NULL OR (a.relMaalUrn IS NOT NULL AND a.relMaalUrn<>'') )
+    WHERE 
+          a.relMaalUuid IS NOT NULL 
+      OR (a.relMaalUrn IS NOT NULL AND a.relMaalUrn<>'') 
+      OR (  
+          (NOT (a.journalNotat IS NULL)) 
+          AND ( (a.journalNotat).titel <>'' OR (a.journalNotat).notat <>'' OR (a.journalNotat).format<>'' ) 
+        )
   ;
 
+
+--Drop temporary sequences
+FOREACH sag_relation_kode IN ARRAY sag_rel_type_cardinality_unlimited
+  LOOP
+  sag_rel_seq_name := 'sag_rel_' || sag_relation_kode::text || sag_uuid_underscores;
+  EXECUTE 'DROP  SEQUENCE ' || sag_rel_seq_name || ';';
+END LOOP;
+
+
+END IF;
 
 RETURN sag_uuid;
 

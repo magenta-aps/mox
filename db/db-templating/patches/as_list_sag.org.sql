@@ -53,7 +53,7 @@ FROM
 		ELSE
 		NULL
 		END
-		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.objekt_type,b.rel_index,b.rel_type_spec,b.journal_notat,b.journal_dokument_attr,b.virkning
+		order by b.rel_type,b.rel_index,b.rel_maal_uuid,b.rel_maal_urn,b.objekt_type,b.rel_type_spec,b.journal_notat,b.journal_dokument_attr,b.virkning
 	)) SagRelationArr
 	FROM
 	(

@@ -108,7 +108,7 @@ CREATE TABLE sag_attr_egenskaber
    beskrivelse text null, 
    hjemmel text null, 
    kassationskode text null, 
-   offentlighedundtaget OffentlighedundtagetType null, 
+   offentlighedundtaget offentlighedundtagettype null, 
    principiel boolean null, 
    sagsnummer text null, 
    titel text null, 
@@ -316,7 +316,7 @@ CREATE TABLE sag_relation
   rel_maal_urn text null,
   rel_type SagRelationKode not null,
   objekt_type text null,
-  rel_index int not null,
+  rel_index int null,
   rel_type_spec SagRelationJournalPostSpecifikKode null,
   journal_notat JournalNotatType null,
   journal_dokument_attr JournalPostDokumentAttrType null,
@@ -326,6 +326,7 @@ CREATE TABLE sag_relation
  CONSTRAINT sag_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
 );
 
+CREATE UNIQUE INDEX sag_relation_unique_index_within_type  ON sag_relation (sag_registrering_id,rel_type,rel_index) WHERE ( rel_type IN ('andetarkiv'::SagRelationKode,'andrebehandlere'::SagRelationKode,'sekundaerpart'::SagRelationKode,'andresager'::SagRelationKode,'byggeri'::SagRelationKode,'fredning'::SagRelationKode,'journalpost'::SagRelationKode));
 
 CREATE INDEX sag_relation_idx_rel_maal_obj_uuid
   ON sag_relation
@@ -376,7 +377,4 @@ CREATE INDEX sag_relation_pat_virkning_notetekst
   ON sag_relation
   USING gin
   (((virkning).notetekst) gin_trgm_ops);
-
-
-
 
