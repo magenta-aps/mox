@@ -45,6 +45,10 @@ IF NOT EXISTS (select a.id from organisationfunktion a join organisationfunktion
    RAISE EXCEPTION 'Unable to update organisationfunktion with uuid [%], being unable to any previous registrations.',organisationfunktion_uuid;
 END IF;
 
+PERFORM a.id FROM organisationfunktion a
+WHERE a.id=organisationfunktion_uuid
+FOR UPDATE; --We synchronize concurrent invocations of as_updates of this particular object on a exclusive row lock. This lock will be held by the current transaction until it terminates.
+
 new_organisationfunktion_registrering := _as_create_organisationfunktion_registrering(organisationfunktion_uuid,livscykluskode, brugerref, note);
 prev_organisationfunktion_registrering := _as_get_prev_organisationfunktion_registrering(new_organisationfunktion_registrering);
 

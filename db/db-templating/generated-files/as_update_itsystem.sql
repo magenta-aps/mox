@@ -45,6 +45,10 @@ IF NOT EXISTS (select a.id from itsystem a join itsystem_registrering b on b.its
    RAISE EXCEPTION 'Unable to update itsystem with uuid [%], being unable to any previous registrations.',itsystem_uuid;
 END IF;
 
+PERFORM a.id FROM itsystem a
+WHERE a.id=itsystem_uuid
+FOR UPDATE; --We synchronize concurrent invocations of as_updates of this particular object on a exclusive row lock. This lock will be held by the current transaction until it terminates.
+
 new_itsystem_registrering := _as_create_itsystem_registrering(itsystem_uuid,livscykluskode, brugerref, note);
 prev_itsystem_registrering := _as_get_prev_itsystem_registrering(new_itsystem_registrering);
 

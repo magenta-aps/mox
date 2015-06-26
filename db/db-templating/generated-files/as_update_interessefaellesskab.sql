@@ -45,6 +45,10 @@ IF NOT EXISTS (select a.id from interessefaellesskab a join interessefaellesskab
    RAISE EXCEPTION 'Unable to update interessefaellesskab with uuid [%], being unable to any previous registrations.',interessefaellesskab_uuid;
 END IF;
 
+PERFORM a.id FROM interessefaellesskab a
+WHERE a.id=interessefaellesskab_uuid
+FOR UPDATE; --We synchronize concurrent invocations of as_updates of this particular object on a exclusive row lock. This lock will be held by the current transaction until it terminates.
+
 new_interessefaellesskab_registrering := _as_create_interessefaellesskab_registrering(interessefaellesskab_uuid,livscykluskode, brugerref, note);
 prev_interessefaellesskab_registrering := _as_get_prev_interessefaellesskab_registrering(new_interessefaellesskab_registrering);
 

@@ -47,6 +47,10 @@ IF NOT EXISTS (select a.id from klasse a join klasse_registrering b on b.klasse_
    RAISE EXCEPTION 'Unable to update klasse with uuid [%], being unable to any previous registrations.',klasse_uuid;
 END IF;
 
+PERFORM a.id FROM klasse a
+WHERE a.id=klasse_uuid
+FOR UPDATE; --We synchronize concurrent invocations of as_updates of this particular object on a exclusive row lock. This lock will be held by the current transaction until it terminates.
+
 new_klasse_registrering := _as_create_klasse_registrering(klasse_uuid,livscykluskode, brugerref, note);
 prev_klasse_registrering := _as_get_prev_klasse_registrering(new_klasse_registrering);
 

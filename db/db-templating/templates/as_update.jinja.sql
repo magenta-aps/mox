@@ -47,6 +47,10 @@ IF NOT EXISTS (select a.id from {{oio_type}} a join {{oio_type}}_registrering b 
    RAISE EXCEPTION 'Unable to update {{oio_type}} with uuid [%], being unable to any previous registrations.',{{oio_type}}_uuid;
 END IF;
 
+PERFORM a.id FROM {{oio_type}} a
+WHERE a.id={{oio_type}}_uuid
+FOR UPDATE; --We synchronize concurrent invocations of as_updates of this particular object on a exclusive row lock. This lock will be held by the current transaction until it terminates.
+
 new_{{oio_type}}_registrering := _as_create_{{oio_type}}_registrering({{oio_type}}_uuid,livscykluskode, brugerref, note);
 prev_{{oio_type}}_registrering := _as_get_prev_{{oio_type}}_registrering(new_{{oio_type}}_registrering);
 
