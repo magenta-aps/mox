@@ -1,5 +1,5 @@
-*** ../generated-files/as_create_or_import_sag.sql	2015-06-25 10:49:01.849612562 +0200
---- ../patches/as_create_or_import_sag.org.sql	2015-06-25 10:31:28.321631429 +0200
+*** ../generated-files/as_create_or_import_sag.sql	2015-06-26 11:35:35.175511053 +0200
+--- ../patches/as_create_or_import_sag.org.sql	2015-06-26 11:31:41.263515242 +0200
 ***************
 *** 20,30 ****
     sag_attr_egenskaber_obj sagEgenskaberAttrType;
@@ -71,7 +71,7 @@
 + --Create temporary sequences
 + sag_uuid_underscores:=replace(sag_uuid::text, '-', '_');
 + 
-+ FOREACH sag_relation_kode IN ARRAY sag_rel_type_cardinality_unlimited
++ FOREACH sag_relation_kode IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(sag_registrering.relationer) a WHERE a.RelType = any (sag_rel_type_cardinality_unlimited))
 +   LOOP
 +   sag_rel_seq_name := 'sag_rel_' || sag_relation_kode::text || sag_uuid_underscores;
 + 
@@ -123,7 +123,7 @@
   
   
 + --Drop temporary sequences
-+ FOREACH sag_relation_kode IN ARRAY sag_rel_type_cardinality_unlimited
++ FOREACH sag_relation_kode IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(sag_registrering.relationer) a WHERE a.RelType = any (sag_rel_type_cardinality_unlimited))
 +   LOOP
 +   sag_rel_seq_name := 'sag_rel_' || sag_relation_kode::text || sag_uuid_underscores;
 +   EXECUTE 'DROP  SEQUENCE ' || sag_rel_seq_name || ';';

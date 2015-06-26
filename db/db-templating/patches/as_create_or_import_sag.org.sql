@@ -182,7 +182,7 @@ IF coalesce(array_length(sag_registrering.relationer,1),0)>0 THEN
 --Create temporary sequences
 sag_uuid_underscores:=replace(sag_uuid::text, '-', '_');
 
-FOREACH sag_relation_kode IN ARRAY sag_rel_type_cardinality_unlimited
+FOREACH sag_relation_kode IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(sag_registrering.relationer) a WHERE a.RelType = any (sag_rel_type_cardinality_unlimited))
   LOOP
   sag_rel_seq_name := 'sag_rel_' || sag_relation_kode::text || sag_uuid_underscores;
 
@@ -234,7 +234,7 @@ END LOOP;
 
 
 --Drop temporary sequences
-FOREACH sag_relation_kode IN ARRAY sag_rel_type_cardinality_unlimited
+FOREACH sag_relation_kode IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(sag_registrering.relationer) a WHERE a.RelType = any (sag_rel_type_cardinality_unlimited))
   LOOP
   sag_rel_seq_name := 'sag_rel_' || sag_relation_kode::text || sag_uuid_underscores;
   EXECUTE 'DROP  SEQUENCE ' || sag_rel_seq_name || ';';

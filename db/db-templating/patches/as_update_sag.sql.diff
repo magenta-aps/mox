@@ -1,5 +1,5 @@
-*** ../generated-files/as_update_sag.sql	2015-06-25 15:13:49.097328052 +0200
---- ../patches/as_update_sag.org.sql	2015-06-25 15:10:17.017331849 +0200
+*** ../generated-files/as_update_sag.sql	2015-06-26 11:35:35.127511054 +0200
+--- ../patches/as_update_sag.org.sql	2015-06-26 11:36:32.683510024 +0200
 ***************
 *** 35,44 ****
 --- 35,50 ----
@@ -20,7 +20,7 @@
   
   IF NOT EXISTS (select a.id from sag a join sag_registrering b on b.sag_id=a.id  where a.id=sag_uuid) THEN
 ***************
-*** 62,112 ****
+*** 66,116 ****
   IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
   --raise notice 'Skipping relations, as it is explicit set to empty array. Update note [%]',note;
   ELSE
@@ -72,7 +72,7 @@
           new_sag_registrering.id, 
             ROW(
               c.tz_range_leftover,
---- 68,192 ----
+--- 72,196 ----
   IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
   --raise notice 'Skipping relations, as it is explicit set to empty array. Update note [%]',note;
   ELSE
@@ -100,7 +100,7 @@
 + --Create temporary sequences
 + sag_uuid_underscores:=replace(sag_uuid::text, '-', '_');
 + 
-+ FOREACH sag_relation_navn IN ARRAY sag_rel_type_cardinality_unlimited
++ FOREACH sag_relation_navn IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(relationer) a WHERE a.RelType = any (sag_rel_type_cardinality_unlimited))
 +   LOOP
 +   sag_rel_seq_name := 'sag_rel_' || sag_relation_navn::text || sag_uuid_underscores;
 + 
@@ -165,7 +165,7 @@
   
 ! 
 ! --Drop temporary sequences
-! FOREACH sag_relation_navn IN ARRAY sag_rel_type_cardinality_unlimited
+! FOREACH sag_relation_navn IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(relationer) a WHERE a.RelType = any (sag_rel_type_cardinality_unlimited))
 !   LOOP
 !   sag_rel_seq_name := 'sag_rel_' || sag_relation_navn::text || sag_uuid_underscores;
 !   EXECUTE 'DROP  SEQUENCE ' || sag_rel_seq_name || ';';
@@ -199,7 +199,7 @@
             ROW(
               c.tz_range_leftover,
 ***************
-*** 115,125 ****
+*** 119,129 ****
                 (a.virkning).NoteTekst
             ) :: virkning,
               a.rel_maal_uuid,
@@ -211,7 +211,7 @@
         --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to _subtract_tstzrange_arr on the relations of the previous registrering 
         SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
         FROM sag_relation b
---- 195,209 ----
+--- 199,213 ----
                 (a.virkning).NoteTekst
             ) :: virkning,
               a.rel_maal_uuid,
@@ -228,7 +228,7 @@
         SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
         FROM sag_relation b
 ***************
-*** 135,184 ****
+*** 139,188 ****
       ;
     END LOOP;
   
@@ -279,7 +279,7 @@
   END IF;
   /**********************/
   -- handle tilstande (states)
---- 219,276 ----
+--- 223,280 ----
       ;
     END LOOP;
   

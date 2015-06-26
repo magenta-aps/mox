@@ -51,6 +51,10 @@ IF NOT EXISTS (select a.id from sag a join sag_registrering b on b.sag_id=a.id  
    RAISE EXCEPTION 'Unable to update sag with uuid [%], being unable to any previous registrations.',sag_uuid;
 END IF;
 
+PERFORM a.id FROM sag a
+WHERE a.id=sag_uuid
+FOR UPDATE; --We synchronize concurrent invocations of as_updates of this particular object on a exclusive row lock. This lock will be held by the current transaction until it terminates.
+
 new_sag_registrering := _as_create_sag_registrering(sag_uuid,livscykluskode, brugerref, note);
 prev_sag_registrering := _as_get_prev_sag_registrering(new_sag_registrering);
 
@@ -92,7 +96,7 @@ FROM
 --Create temporary sequences
 sag_uuid_underscores:=replace(sag_uuid::text, '-', '_');
 
-FOREACH sag_relation_navn IN ARRAY sag_rel_type_cardinality_unlimited
+FOREACH sag_relation_navn IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(relationer) a WHERE a.RelType = any (sag_rel_type_cardinality_unlimited))
   LOOP
   sag_rel_seq_name := 'sag_rel_' || sag_relation_navn::text || sag_uuid_underscores;
 
@@ -157,7 +161,7 @@ END LOOP;
 
 
 --Drop temporary sequences
-FOREACH sag_relation_navn IN ARRAY sag_rel_type_cardinality_unlimited
+FOREACH sag_relation_navn IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(relationer) a WHERE a.RelType = any (sag_rel_type_cardinality_unlimited))
   LOOP
   sag_rel_seq_name := 'sag_rel_' || sag_relation_navn::text || sag_uuid_underscores;
   EXECUTE 'DROP  SEQUENCE ' || sag_rel_seq_name || ';';
