@@ -14,7 +14,9 @@
             {% else -%}
             NULL
             {% endif -%}:: Virkning,
-        {{ rel.uuid|adapt }}
+        {{ rel.uuid|adapt }},
+        null, 
+        'uuid'
     ){% if not (outer_loop.last and loop.last) -%},{% endif -%}
     {% endfor -%}
     {% endfor -%}
