@@ -33,7 +33,6 @@ setup(
         'itsdangerous==0.24',
         'psycopg2==2.6',
         'wsgiref==0.1.2',
-        'signxml==0.4.2',
         'python-saml==2.1.3'
     ],
     entry_points={
