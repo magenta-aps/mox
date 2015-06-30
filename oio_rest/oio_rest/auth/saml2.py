@@ -1,4 +1,3 @@
-from onelogin.saml2.constants import OneLogin_Saml2_Constants
 from onelogin.saml2.utils import OneLogin_Saml2_Utils
 from onelogin.saml2.response import OneLogin_Saml2_Response
 from defusedxml.lxml import fromstring
@@ -70,49 +69,46 @@ class Saml2_Assertion(OneLogin_Saml2_Response):
         """Call the private __query_assertion method on the base class."""
         return self._OneLogin_Saml2_Response__query_assertion(xpath_expr)
 
-    def is_valid(self):
-        """Check if the assertion is valid.
+    def check_validity(self):
+        """Check if the assertion is valid. If not, raises Exception
 
         Checks if there are at least one AttributeStatement,
         valid timestamps in any Condition elements, valid audience,
         valid issuer, and finally, valid signature.
         """
-        try:
-            # Checks that there is at least one AttributeStatement
-            attribute_statement_nodes = self.__query_assertion(
-                '/saml:AttributeStatement')
-            if not attribute_statement_nodes:
-                raise Exception(
-                    'There is no AttributeStatement in the Assertion')
 
-            # Validates Assertion timestamps
-            if not self.validate_timestamps():
-                raise Exception(
-                    'Timing issues (please check your clock settings)')
+        # Checks that there is at least one AttributeStatement
+        attribute_statement_nodes = self.__query_assertion(
+            '/saml:AttributeStatement')
+        if not attribute_statement_nodes:
+            raise Exception(
+                'There is no AttributeStatement in the Assertion')
 
-            # Checks audience
-            valid_audiences = self.get_audiences()
-            if valid_audiences and self.mox_entity_id not in valid_audiences:
-                raise Exception(
-                    '%s is not a valid audience for this Assertion' %
-                    self.mox_entity_id)
+        # Validates Assertion timestamps
+        if not self.validate_timestamps():
+            raise Exception(
+                'Timing issues (please check your clock settings)')
 
-            # Checks the issuers
-            issuers = self.get_issuers()
-            for issuer in issuers:
-                if issuer is None or issuer != self.idp_entity_id:
-                    raise Exception('Invalid issuer in the Assertion/Response')
+        # Checks audience
+        valid_audiences = self.get_audiences()
+        if valid_audiences and self.mox_entity_id not in valid_audiences:
+            raise Exception(
+                '%s is not a valid audience for this Assertion' %
+                self.mox_entity_id)
 
-            fingerprint = None
-            fingerprintalg = None
-            if not OneLogin_Saml2_Utils.validate_sign(self.original_document,
-                                                      self.idp_cert,
-                                                      fingerprint,
-                                                      fingerprintalg,
-                                                      debug=True):
-                raise Exception(
-                    'Signature validation failed. SAML Response rejected')
-            return True
-        except Exception as e:
-            print str(e)
-            return False
+        # Checks the issuers
+        issuers = self.get_issuers()
+        for issuer in issuers:
+            if issuer is None or issuer != self.idp_entity_id:
+                raise Exception('Invalid issuer in the Assertion/Response')
+
+        fingerprint = None
+        fingerprintalg = None
+        if not OneLogin_Saml2_Utils.validate_sign(self.original_document,
+                                                  self.idp_cert,
+                                                  fingerprint,
+                                                  fingerprintalg,
+                                                  debug=True):
+            raise Exception(
+                'Signature validation failed. SAML Response rejected')
+

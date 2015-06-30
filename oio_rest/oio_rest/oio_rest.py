@@ -8,6 +8,9 @@ from datetime import datetime
 
 
 # Just a helper during debug
+from authentication import requires_auth
+
+
 def j(t):
     return jsonify(output=t)
 
@@ -34,6 +37,7 @@ class OIORestObject(object):
     """
 
     @classmethod
+    @requires_auth
     def create_object(cls):
         """
         CREATE object, generate new UUID.
@@ -49,6 +53,7 @@ class OIORestObject(object):
         return jsonify({'uuid': uuid}), 201
 
     @classmethod
+    @requires_auth
     def get_objects(cls):
         """
         LIST or SEARCH objects, depending on parameters.
@@ -141,6 +146,7 @@ class OIORestObject(object):
         return jsonify({'results': results})
 
     @classmethod
+    @requires_auth
     def get_object(cls, uuid):
         """
         READ a facet, return as JSON.
@@ -152,6 +158,7 @@ class OIORestObject(object):
         return jsonify({uuid: object})
 
     @classmethod
+    @requires_auth
     def put_object(cls, uuid):
         """
         UPDATE, IMPORT or PASSIVIZE an  object.
@@ -186,6 +193,7 @@ class OIORestObject(object):
         return j(u"Forkerte parametre!"), 405
 
     @classmethod
+    @requires_auth
     def delete_object(cls, uuid):
         # Delete facet
         #import pdb; pdb.set_trace()
