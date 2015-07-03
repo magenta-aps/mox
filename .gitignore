@@ -4,6 +4,5 @@
 *.egg-info
 python-env
 oio_rest/oio_api
-*.sql.rej
-*.sql.orig
+
 
