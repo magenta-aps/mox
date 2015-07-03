@@ -214,12 +214,16 @@ END LOOP;
       a.relMaalUrn,
       a.relType,
       a.objektType,
-        CASE WHEN a.relType = any (sag_rel_type_cardinality_unlimited) THEN 
+        CASE WHEN a.relType = any (sag_rel_type_cardinality_unlimited) THEN --rel_index
         nextval('sag_rel_' || a.relType::text || sag_uuid_underscores)
         ELSE 
         NULL
         END,
-      a.relTypeSpec,
+        CASE 
+          WHEN a.relType='journalpost' THEN a.relTypeSpec  --rel_type_spec
+          ELSE
+          NULL
+        END,
       a.journalNotat,
       a.journalDokumentAttr
     FROM unnest(sag_registrering.relationer) a

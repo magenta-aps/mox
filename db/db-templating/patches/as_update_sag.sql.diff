@@ -1,5 +1,5 @@
-*** ../generated-files/as_update_sag.sql	2015-07-03 13:01:24.410371483 +0200
---- ../patches/as_update_sag.org.sql	2015-07-03 13:04:07.022379582 +0200
+*** ../generated-files/as_update_sag.sql	2015-07-03 14:10:57.302579306 +0200
+--- ../patches/as_update_sag.org.sql	2015-07-03 14:13:15.126586170 +0200
 ***************
 *** 33,42 ****
 --- 33,48 ----
@@ -72,7 +72,7 @@
           new_sag_registrering.id, 
             ROW(
               c.tz_range_leftover,
---- 70,194 ----
+--- 70,198 ----
   IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
   --raise notice 'Skipping relations, as it is explicit set to empty array. Update note [%]',note;
   ELSE
@@ -156,7 +156,11 @@
 !                     ELSE
 !                     NULL
 !                     END,
-!                       a.relTypeSpec,
+!                       CASE 
+!                         WHEN a.relType='journalpost' THEN a.relTypeSpec
+!                         ELSE
+!                         NULL
+!                       END,
 !                         a.journalNotat,
 !                           a.journalDokumentAttr
         FROM unnest(relationer) as a
@@ -211,7 +215,7 @@
         --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to _subtract_tstzrange_arr on the relations of the previous registrering 
         SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
         FROM sag_relation b
---- 197,211 ----
+--- 201,215 ----
                 (a.virkning).NoteTekst
             ) :: virkning,
               a.rel_maal_uuid,
@@ -279,7 +283,7 @@
   END IF;
   /**********************/
   -- handle tilstande (states)
---- 221,278 ----
+--- 225,282 ----
       ;
     END LOOP;
   

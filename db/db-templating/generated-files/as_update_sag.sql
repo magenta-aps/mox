@@ -150,7 +150,11 @@ END LOOP;
                     ELSE
                     NULL
                     END,
-                      a.relTypeSpec,
+                      CASE 
+                        WHEN a.relType='journalpost' THEN a.relTypeSpec
+                        ELSE
+                        NULL
+                      END,
                         a.journalNotat,
                           a.journalDokumentAttr
       FROM unnest(relationer) as a
