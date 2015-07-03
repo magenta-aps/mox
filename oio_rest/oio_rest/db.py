@@ -48,6 +48,7 @@ adapt_connection = get_connection()
 
 def get_authenticated_user():
     """Return hardcoded UUID until we get real authentication in place."""
+    # TODO: return request.saml_user_id
     return "615957e8-4aa1-4319-a787-f1f7ad6b5e2c"
 
 

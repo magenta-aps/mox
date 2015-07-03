@@ -6,6 +6,19 @@ DATABASE = 'mox'
 DB_USER = 'mox'
 DB_PASSWORD = 'mox'
 
+# The Endpoint specified in the AppliesTo element of the STS request
+# This will be used to verify the Audience of the SAML Assertion
+SAML_MOX_ENTITY_ID = 'http://localhost:8000'
+
+# The entity ID of the IdP. This will be used to verify the token Issuer
+SAML_IDP_ENTITY_ID = 'localhost'
+
+# The public certificate file of the IdP, in PEM-format.
+SAML_IDP_CERTIFICATE = "test_auth_data/idp-certificate.pem"
+
+# Whether to enable SAML authentication
+USE_SAML_AUTHENTICATION = False
+
 # This specifies the database structure
 DATABASE_STRUCTURE = {
 

@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-from flask import Flask, jsonify, request, url_for
+from flask import Flask, jsonify
 from werkzeug.routing import BaseConverter
 
 
