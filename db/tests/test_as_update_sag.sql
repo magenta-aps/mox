@@ -28,6 +28,7 @@ DECLARE
 	sagRelPrimaerklasse sagRelationType;
 	sagRelSekundaerpart1 sagRelationType;
 	sagRelSekundaerpart2 sagRelationType;
+	sagRelSekundaerpart3 sagRelationType;
 	sagRelAndresager1 sagRelationType;
 	sagRelAndresager2 sagRelationType;
 	uuidPrimaerklasse uuid :='f7109356-e87e-4b10-ad5d-36de6e3ee09f'::uuid;
@@ -49,6 +50,7 @@ DECLARE
 	update_reg_id int;
 	read_sag_relation_1 SagRelationType;
 	read_uuidSekundaerpart2 uuid;
+	read_rel_index_3 int;
 BEGIN
 
 
@@ -309,11 +311,9 @@ read_Sag1 := as_read_sag(new_uuid1,
 	);
 
 
---raise notice 'read_Sag_update 2:%',to_json(read_Sag1);
-/*
 
-*/
-/*
+
+
 sagRelSekundaerpart3 := ROW (
 	'sekundaerpart'::sagRelationKode,
 		virkSekundaerpart2,
@@ -326,8 +326,36 @@ sagRelSekundaerpart3 := ROW (
 	,null --journalDokumentAttr
 ) :: sagRelationType
 ;
-*/
 
+update_reg_id:=as_update_sag(
+  new_uuid1, '5f368584-4c3e-4ba4-837b-da2b1eee37c4'::uuid,'Test update 21'::text,
+  'Rettet'::Livscykluskode,          
+  null,
+  null,
+  array[sagRelSekundaerpart3]::SagRelationType[]
+	);
+
+read_Sag1 := as_read_sag(new_uuid1,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
+	);
+
+
+
+SELECT
+relIndex into read_rel_index_3
+FROM
+unnest(read_Sag1.registrering[1].relationer) a
+where
+a.relMaalUrn = urnSekundaerpart3
+and a.relType = 'sekundaerpart'::sagRelationKode
+;
+
+
+RETURN NEXT is(read_rel_index_3,3,'Test update of sag relation based on index #2');
+
+
+raise notice 'read_Sag1:%',to_json(read_Sag1);
 
 
 --TODO: Implement tests here

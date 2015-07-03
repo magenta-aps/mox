@@ -15,6 +15,9 @@ sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_subtract_tstzrange.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_subtract_tstzrange_arr.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_as_valid_registrering_livscyklus_transition.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_as_search_match_array.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_json_object_delete_keys.sql
+
+
 cd ./db-templating/
 ./generate-sql-tbls-types-funcs-for-oiotype.sh
 
@@ -39,7 +42,7 @@ patch --fuzz=3 -i  ../patches/as_update_sag.sql.diff
 cd ..
 
 oiotypes=( facet klassifikation klasse bruger interessefaellesskab itsystem organisation organisationenhed organisationfunktion sag )
-templates=( dbtyper-specific tbls-specific _remove_nulls_in_array _as_get_prev_registrering _as_create_registrering as_update  as_create_or_import  as_list as_read as_search  )
+templates=( dbtyper-specific tbls-specific _remove_nulls_in_array _as_get_prev_registrering _as_create_registrering as_update  as_create_or_import  as_list as_read as_search json-cast-functions )
 
 
 for oiotype in "${oiotypes[@]}"
@@ -76,3 +79,4 @@ sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_search_itsystem.
 #sag
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_create_or_import_sag.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_update_sag.sql
+#sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_sag_relation_type_to_json

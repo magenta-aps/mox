@@ -11,10 +11,8 @@ NOTICE: This file is auto-generated using the script: apply-template.py bruger a
 
 
 
---Please notice that is it the responsibility of the invoker of this function to compare the resulting bruger_registration (including the entire hierarchy)
---to the previous one, and abort the transaction if the two registrations are identical. (This is to comply with the stipulated behavior in 'Specifikation_af_generelle_egenskaber - til OIOkomiteen.pdf')
 
---Also notice, that the given array of BrugerAttr...Type must be consistent regarding virkning (although the allowance of null-values might make it possible to construct 'logically consistent'-arrays of objects with overlapping virknings)
+--Also notice, that the given arrays of BrugerAttr...Type must be consistent regarding virkning (although the allowance of null-values might make it possible to construct 'logically consistent'-arrays of objects with overlapping virknings)
 
 CREATE OR REPLACE FUNCTION as_update_bruger(
   bruger_uuid uuid,

@@ -1,8 +1,8 @@
-*** ../generated-files/as_update_sag.sql	2015-06-26 11:35:35.127511054 +0200
---- ../patches/as_update_sag.org.sql	2015-06-26 11:36:32.683510024 +0200
+*** ../generated-files/as_update_sag.sql	2015-07-03 13:01:24.410371483 +0200
+--- ../patches/as_update_sag.org.sql	2015-07-03 13:04:07.022379582 +0200
 ***************
-*** 35,44 ****
---- 35,50 ----
+*** 33,42 ****
+--- 33,48 ----
     read_prev_sag_reg SagRegistreringType;
     new_sag_registrering sag_registrering;
     prev_sag_registrering sag_registrering;
@@ -20,7 +20,7 @@
   
   IF NOT EXISTS (select a.id from sag a join sag_registrering b on b.sag_id=a.id  where a.id=sag_uuid) THEN
 ***************
-*** 66,116 ****
+*** 64,114 ****
   IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
   --raise notice 'Skipping relations, as it is explicit set to empty array. Update note [%]',note;
   ELSE
@@ -72,7 +72,7 @@
           new_sag_registrering.id, 
             ROW(
               c.tz_range_leftover,
---- 72,196 ----
+--- 70,194 ----
   IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
   --raise notice 'Skipping relations, as it is explicit set to empty array. Update note [%]',note;
   ELSE
@@ -199,7 +199,7 @@
             ROW(
               c.tz_range_leftover,
 ***************
-*** 119,129 ****
+*** 117,127 ****
                 (a.virkning).NoteTekst
             ) :: virkning,
               a.rel_maal_uuid,
@@ -211,7 +211,7 @@
         --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to _subtract_tstzrange_arr on the relations of the previous registrering 
         SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
         FROM sag_relation b
---- 199,213 ----
+--- 197,211 ----
                 (a.virkning).NoteTekst
             ) :: virkning,
               a.rel_maal_uuid,
@@ -228,7 +228,7 @@
         SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
         FROM sag_relation b
 ***************
-*** 139,188 ****
+*** 137,186 ****
       ;
     END LOOP;
   
@@ -279,7 +279,7 @@
   END IF;
   /**********************/
   -- handle tilstande (states)
---- 223,280 ----
+--- 221,278 ----
       ;
     END LOOP;
   

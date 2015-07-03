@@ -25,7 +25,7 @@ afleveret boolean,
 beskrivelse text,
 hjemmel text,
 kassationskode text, 
-offentlighedundtaget OffentlighedundtagetType, 
+offentlighedundtaget offentlighedundtagetType, 
 principiel boolean,
 sagsnummer text,
 titel text,
@@ -60,6 +60,58 @@ CREATE TYPE SagRelationType AS (
   journalDokumentAttr JournalPostDokumentAttrType
 )
 ;
+
+
+--we create custom cast function to json for SagRelationType, which will be invoked by custom cast to json form SagType
+CREATE OR REPLACE FUNCTION actual_state._sag_relation_type_to_json(SagRelationType) 
+
+RETURNS
+json
+AS 
+$$
+DECLARE 
+result json;
+keys_to_delete text[];
+BEGIN
+
+IF $1.relindex IS NULL THEN
+  keys_to_delete:=array_append(keys_to_delete,'relindex');
+END IF;
+
+IF $1.reltypespec IS NULL THEN
+  keys_to_delete:=array_append(keys_to_delete,'reltypespec');
+END IF;
+
+IF $1.journalnotat IS NULL OR ( ($1.journalnotat).titel IS NULL AND ($1.journalnotat).notat IS NULL AND ($1.journalnotat).format IS NULL) THEN
+  keys_to_delete:=array_append(keys_to_delete,'journalnotat');
+END IF;
+
+IF $1.journaldokumentattr IS NULL 
+    OR ( 
+        ($1.journaldokumentattr).dokumenttitel IS NULL 
+        AND 
+        (
+          ($1.journaldokumentattr).offentlighedundtaget IS NULL 
+          OR
+          (
+            (($1.journaldokumentattr).offentlighedundtaget).alternativtitel IS NULL
+            AND 
+             (($1.journaldokumentattr).offentlighedundtaget).hjemmel IS NULL  
+          )
+        )
+      ) THEN
+    keys_to_delete:=array_append(keys_to_delete,'journaldokumentattr');
+END IF;    
+
+SELECT actual_state._json_object_delete_keys(row_to_json($1),keys_to_delete) into result;
+
+RETURN result;
+
+END;
+$$ LANGUAGE plpgsql immutable;
+
+create cast (SagRelationType as json) with function _sag_relation_type_to_json (SagRelationType); 
+
 
 CREATE TYPE SagRegistreringType AS
 (

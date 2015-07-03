@@ -8,10 +8,8 @@
 {% block body %}
 
 
---Please notice that is it the responsibility of the invoker of this function to compare the resulting {{oio_type}}_registration (including the entire hierarchy)
---to the previous one, and abort the transaction if the two registrations are identical. (This is to comply with the stipulated behavior in 'Specifikation_af_generelle_egenskaber - til OIOkomiteen.pdf')
 
---Also notice, that the given array of {{oio_type|title}}Attr...Type must be consistent regarding virkning (although the allowance of null-values might make it possible to construct 'logically consistent'-arrays of objects with overlapping virknings)
+--Also notice, that the given arrays of {{oio_type|title}}Attr...Type must be consistent regarding virkning (although the allowance of null-values might make it possible to construct 'logically consistent'-arrays of objects with overlapping virknings)
 
 CREATE OR REPLACE FUNCTION as_update_{{oio_type}}(
   {{oio_type}}_uuid uuid,
