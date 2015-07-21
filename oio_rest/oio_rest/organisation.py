@@ -14,35 +14,36 @@ class Bruger(OIORestObject):
 
 class InteresseFaellesskab(OIORestObject):
     """
-    Implement a Klasse  - manage access to database layer from the API.
+    Implement an InteresseFaellesskab - manage access to database layer from
+    the API.
     """
     pass
 
 
 class ItSystem(OIORestObject):
     """
-    Implement a Klassifikation  - manage access to database from the API.
+    Implement an ItSystem  - manage access to database from the API.
     """
     pass
 
 
 class Organisation(OIORestObject):
     """
-    Implement a Klassifikation  - manage access to database from the API.
+    Implement an Organisation  - manage access to database from the API.
     """
     pass
 
 
 class OrganisationEnhed(OIORestObject):
     """
-    Implement a Klassifikation  - manage access to database from the API.
+    Implement an OrganisationEnhed - manage access to database from the API.
     """
     pass
 
 
 class OrganisationFunktion(OIORestObject):
     """
-    Implement a Klassifikation  - manage access to database from the API.
+    Implement an OrganisationFunktion.
     """
     pass
 

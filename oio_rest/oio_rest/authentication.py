@@ -5,7 +5,8 @@ from flask import request, Response
 from werkzeug.exceptions import Unauthorized
 import zlib
 from auth.saml2 import Saml2_Assertion
-from settings import *
+from settings import SAML_IDP_CERTIFICATE, SAML_MOX_ENTITY_ID
+from settings import SAML_IDP_ENTITY_ID, USE_SAML_AUTHENTICATION
 
 # Read the IdP certificate file into memory
 with open(os.path.join(os.path.dirname(os.path.realpath(__file__)),
@@ -29,7 +30,11 @@ def check_saml_authentication():
     auth_header = request.headers.get('Authorization')
     if auth_header is None:
         raise Unauthorized("No Authorization header present")
+    else:
+        print auth_header
 
+    import pdb;pdb.set_trace()
+    # In Python, s.split(None) means "split on one or more whitespace chars".
     (auth_type, encoded_token) = auth_header.split(None, 1)
     auth_type = auth_type.lower()
     if auth_type != 'saml-gzipped':
@@ -50,7 +55,9 @@ def check_saml_authentication():
         request.saml_user_id = name_id
         request.saml_attributes = assertion.get_attributes()
     except Exception as e:
-        raise Unauthorized("SAML token validation failed: %s" % e.message)
+        errmsg = "SAML token validation failed: %s" % e.message
+        print errmsg
+        raise Unauthorized(errmsg)
 
 
 def requires_auth(f):
