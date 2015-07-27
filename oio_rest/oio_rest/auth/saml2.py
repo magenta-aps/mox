@@ -3,6 +3,7 @@ from onelogin.saml2.response import OneLogin_Saml2_Response
 from defusedxml.lxml import fromstring
 from copy import deepcopy
 
+
 class Saml2_Assertion(OneLogin_Saml2_Response):
     """Represent a SAML2 assertion by wrapping it in OneLogin's Response class.
 
@@ -111,4 +112,3 @@ class Saml2_Assertion(OneLogin_Saml2_Response):
                                                   debug=True):
             raise Exception(
                 'Signature validation failed. SAML Response rejected')
-

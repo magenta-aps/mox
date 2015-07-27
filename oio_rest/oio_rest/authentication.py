@@ -33,7 +33,6 @@ def check_saml_authentication():
     else:
         print auth_header
 
-    import pdb;pdb.set_trace()
     # In Python, s.split(None) means "split on one or more whitespace chars".
     (auth_type, encoded_token) = auth_header.split(None, 1)
     auth_type = auth_type.lower()
