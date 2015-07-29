@@ -355,7 +355,7 @@ and a.relType = 'sekundaerpart'::sagRelationKode
 RETURN NEXT is(read_rel_index_3,3,'Test update of sag relation based on index #2');
 
 
-raise notice 'read_Sag1:%',to_json(read_Sag1);
+--raise notice 'read_Sag1:%',to_json(read_Sag1);
 
 
 --TODO: Implement tests here

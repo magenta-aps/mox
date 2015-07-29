@@ -16,7 +16,7 @@ AS $function$
 SELECT COALESCE(
   (SELECT ('{' || string_agg(to_json(key) || ':' || value::json::text, ',') || '}')
    FROM json_each(json)
-   WHERE key <> ANY (keys_to_delete)),
+   WHERE key not in (select key from unnest(keys_to_delete) as a(key))),
   '{}'
 )::json
 $function$;
