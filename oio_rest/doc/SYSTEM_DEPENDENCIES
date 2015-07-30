@@ -1,2 +1,5 @@
+python-virtualenv
 libxmlsec1-dev
 swig
+postgresql-common
+libpq-dev
