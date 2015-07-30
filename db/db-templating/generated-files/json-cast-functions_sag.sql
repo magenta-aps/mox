@@ -68,7 +68,7 @@ FROM
     (
       SELECT
       e.relType,
-      array_agg( _json_object_delete_keys( (ROW(e.relType,e.virkning,e.relMaalUuid,e.relMaalUrn,e.objektType,e.relIndex,e.relTypeSpec,e.journalNotat,e.journalDokumentAttr)::SagRelationType)::json,ARRAY['reltype']::text[])) rel_json_arr
+      array_agg( _json_object_delete_keys(row_to_json(ROW(e.relType,e.virkning,e.relMaalUuid,e.relMaalUrn,e.objektType)::SagRelationType),ARRAY['reltype']::text[])) rel_json_arr
       from unnest($1.relationer) e(relType,virkning,relMaalUuid,relMaalUrn,objektType) 
       group by e.relType
     ) as f
@@ -146,55 +146,5 @@ create cast (SagType as json) with function actual_state._cast_sagType_to_json(S
 
 
 
-
---we create custom cast function to json for SagRelationType, which will be invoked by custom cast to json form SagType
-CREATE OR REPLACE FUNCTION actual_state._sag_relation_type_to_json(SagRelationType) 
-
-RETURNS
-json
-AS 
-$$
-DECLARE 
-result json;
-keys_to_delete text[];
-BEGIN
-
-IF $1.relindex IS NULL THEN
-  keys_to_delete:=array_append(keys_to_delete,'relindex');
-END IF;
-
-IF $1.reltypespec IS NULL THEN
-  keys_to_delete:=array_append(keys_to_delete,'reltypespec');
-END IF;
-
-IF $1.journalnotat IS NULL OR ( ($1.journalnotat).titel IS NULL AND ($1.journalnotat).notat IS NULL AND ($1.journalnotat).format IS NULL) THEN
-  keys_to_delete:=array_append(keys_to_delete,'journalnotat');
-END IF;
-
-IF $1.journaldokumentattr IS NULL 
-    OR ( 
-        ($1.journaldokumentattr).dokumenttitel IS NULL 
-        AND 
-        (
-          ($1.journaldokumentattr).offentlighedundtaget IS NULL 
-          OR
-          (
-            (($1.journaldokumentattr).offentlighedundtaget).alternativtitel IS NULL
-            AND 
-             (($1.journaldokumentattr).offentlighedundtaget).hjemmel IS NULL  
-          )
-        )
-      ) THEN
-    keys_to_delete:=array_append(keys_to_delete,'journaldokumentattr');
-END IF;    
-
-SELECT actual_state._json_object_delete_keys(row_to_json($1),keys_to_delete) into result;
-
-RETURN result;
-
-END;
-$$ LANGUAGE plpgsql immutable;
-
-create cast (SagRelationType as json) with function _sag_relation_type_to_json (SagRelationType); 
 
 
