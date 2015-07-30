@@ -92,8 +92,8 @@ IF {{oio_type}}_registrering.attr{{attribut|title}} IS NOT NULL THEN
   {%- if  attributter_type_override is defined and attributter_type_override[attribut] is defined and attributter_type_override[attribut][field] is defined %} 
   {%-if attributter_type_override[attribut][field] == "text[]" %} AND coalesce(array_length({{oio_type}}_attr_{{attribut}}_obj.{{field}},1),0)>0
   {%- endif %}
-  {%-if attributter_type_override[attribut][field] == "offentlighedundtagettype" %} OR (({{oio_type}}_attr_{{attribut}}_obj.{{field}}).AlternativTitel IS NOT NULL AND ({{oio_type}}_attr_{{attribut}}_obj.{{field}}).AlternativTitel<>'') OR (({{oio_type}}_attr_{{attribut}}_obj.{{field}}).Hjemmel IS NOT NULL AND ({{oio_type}}_attr_{{attribut}}_obj.{{field}}).Hjemmel<>'')
-  {%- endif %}
+  {%-if attributter_type_override[attribut][field] == "offentlighedundtagettype" %} OR (({{oio_type}}_attr_{{attribut}}_obj.{{field}}).AlternativTitel IS NOT NULL AND ({{oio_type}}_attr_{{attribut}}_obj.{{field}}).AlternativTitel<>'') OR (({{oio_type}}_attr_{{attribut}}_obj.{{field}}).Hjemmel IS NOT NULL AND ({{oio_type}}_attr_{{attribut}}_obj.{{field}}).Hjemmel<>''){%- endif %}
+  {%-if attributter_type_override[attribut][field] == "int" or attributter_type_override[attribut][field] == "date" %} {%- endif %} 
   {%- else %} AND {{oio_type}}_attr_{{attribut}}_obj.{{field}}<>'' 
   {%- endif %}) 
   {% if (not loop.last)%} OR {% endif %}

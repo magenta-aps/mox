@@ -41,7 +41,7 @@ patch --fuzz=3 -i  ../patches/as_update_sag.sql.diff
 
 cd ..
 
-oiotypes=( facet klassifikation klasse bruger interessefaellesskab itsystem organisation organisationenhed organisationfunktion sag )
+oiotypes=( facet klassifikation klasse bruger interessefaellesskab itsystem organisation organisationenhed organisationfunktion sag dokument )
 templates=( dbtyper-specific tbls-specific _remove_nulls_in_array _as_get_prev_registrering _as_create_registrering as_update  as_create_or_import  as_list as_read as_search json-cast-functions )
 
 
