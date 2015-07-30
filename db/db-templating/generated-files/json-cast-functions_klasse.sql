@@ -35,7 +35,7 @@ FROM
       (
         SELECT
         CASE 
-        WHEN coalesce(array_length($1.attrEgenskaber,0),0)>0 THEN to_json($1.attrEgenskaber) 
+        WHEN coalesce(array_length($1.attrEgenskaber,1),0)>0 THEN to_json($1.attrEgenskaber) 
         ELSE 
         NULL
         END klasseegenskaber
@@ -53,7 +53,7 @@ FROM
         SELECT 
         
         CASE 
-        WHEN coalesce(array_length($1.tilsPubliceret,0),0)>0 THEN to_json($1.tilsPubliceret) 
+        WHEN coalesce(array_length($1.tilsPubliceret,1),0)>0 THEN to_json($1.tilsPubliceret) 
         ELSE 
         NULL
         END klassepubliceret
@@ -71,6 +71,7 @@ FROM
       array_agg( _json_object_delete_keys(row_to_json(ROW(e.relType,e.virkning,e.relMaalUuid,e.relMaalUrn,e.objektType)::KlasseRelationType),ARRAY['reltype']::text[])) rel_json_arr
       from unnest($1.relationer) e(relType,virkning,relMaalUuid,relMaalUrn,objektType) 
       group by e.relType
+      order by e.relType asc
     ) as f
   )
   SELECT 
@@ -88,8 +89,8 @@ FROM
   FROM
     (
     SELECT
-     (SELECT LOWER(($1.registrering).TimePeriod)) as TidsstempelDatoTid --TODO: Consider formating timestamp (also consider loosing precision vs. ability of api-consumer to determine current registrering )
-    ,(SELECT lower_inc(($1.registrering).TimePeriod)) as GraenseIndikator  --TODO verify meaning of GraenseIndikator
+     (SELECT LOWER(($1.registrering).TimePeriod)) as TidsstempelDatoTid 
+    ,(SELECT lower_inc(($1.registrering).TimePeriod)) as GraenseIndikator 
     ) as  FraTidspunkt
   
 
@@ -121,11 +122,13 @@ reg_json_arr json[];
 reg KlasseRegistreringType;
 BEGIN
 
- FOREACH reg IN ARRAY $1.registrering
-  LOOP
-  reg_json_arr:=array_append(reg_json_arr,reg::json);
-END LOOP;
 
+IF coalesce(array_length($1.registrering,1),0)>0 THEN
+   FOREACH reg IN ARRAY $1.registrering
+    LOOP
+    reg_json_arr:=array_append(reg_json_arr,reg::json);
+    END LOOP;
+END IF;
 
 SELECT row_to_json(a.*) into result
 FROM
