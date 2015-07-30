@@ -17,7 +17,7 @@ SAML_IDP_ENTITY_ID = 'localhost'
 SAML_IDP_CERTIFICATE = "test_auth_data/idp-certificate.pem"
 
 # Whether to enable SAML authentication
-USE_SAML_AUTHENTICATION = True
+USE_SAML_AUTHENTICATION = False
 
 # This specifies the database structure
 DATABASE_STRUCTURE = {
