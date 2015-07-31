@@ -392,6 +392,18 @@ CREATE INDEX dokument_relation_pat_virkning_notetekst
 /**********************************************************************/
 
 
+CREATE TABLE dokument_variant
+(
+ varianttekst text NOT NULL,
+  CONSTRAINT dokument_variant_pkey PRIMARY KEY (varianttekst)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE dokument_variant
+  OWNER TO mox;
+
+
 CREATE SEQUENCE dokument_variant_egenskaber_id_seq
   INCREMENT 1
   MINVALUE 1
@@ -413,6 +425,7 @@ CREATE TABLE dokument_variant_egenskaber
    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
   dokument_registrering_id bigint not null,
 CONSTRAINT dokument_variant_egenskaber_pkey PRIMARY KEY (id),
+CONSTRAINT dokument_variant_egenskaber_forkey_dokument_variant FOREIGN KEY (varianttekst) REFERENCES dokument_variant (varianttekst),
 CONSTRAINT dokument_variant_egenskaber_forkey_dokumentregistrering  FOREIGN KEY (dokument_registrering_id) REFERENCES dokument_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
 CONSTRAINT dokument_variant_egenskaber_exclude_virkning_overlap EXCLUDE USING gist (dokument_registrering_id WITH =,varianttekst WITH =, _composite_type_to_time_range(virkning) WITH &&)
 )
@@ -490,6 +503,18 @@ CREATE INDEX dokument_variant_egenskaber_pat_virkning_notetekst
 /*                        dokument del                                */
 /**********************************************************************/
 
+CREATE TABLE dokument_del
+(
+ deltekst text NOT NULL,
+  CONSTRAINT dokument_del_pkey PRIMARY KEY (deltekst)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE dokument_del
+  OWNER TO mox;
+
+
 
 CREATE SEQUENCE dokument_del_egenskaber_id_seq
   INCREMENT 1
@@ -516,6 +541,8 @@ CREATE TABLE dokument_del_egenskaber
   dokument_registrering_id bigint not null,
 CONSTRAINT dokument_del_egenskaber_pkey PRIMARY KEY (id),
 CONSTRAINT dokument_del_egenskaber_forkey_dokument_registrering  FOREIGN KEY (dokument_registrering_id) REFERENCES dokument_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
+CONSTRAINT dokument_del_forkey_dokument_variant  FOREIGN KEY (varianttekst) REFERENCES dokument_variant (varianttekst) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
+CONSTRAINT dokument_del_forkey_dokument_del  FOREIGN KEY (deltekst) REFERENCES dokument_del (deltekst) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
 CONSTRAINT dokument_del_egenskaber_exclude_virkning_overlap EXCLUDE USING gist (dokument_registrering_id WITH =,varianttekst WITH =,deltekst WITH =, _composite_type_to_time_range(virkning) WITH &&)
 )
 WITH (
@@ -525,6 +552,16 @@ ALTER TABLE dokument_del_egenskaber
   OWNER TO mox;
 
  
+CREATE INDEX dokument_del_egenskaber_pat_varianttekst
+  ON dokument_del_egenskaber
+  USING gin
+  (varianttekst gin_trgm_ops);
+
+CREATE INDEX dokument_del_egenskaber_idx_varianttekst
+  ON dokument_del_egenskaber
+  USING btree
+  (varianttekst); 
+
 CREATE INDEX dokument_del_egenskaber_pat_deltekst
   ON dokument_del_egenskaber
   USING gin
@@ -629,6 +666,8 @@ CREATE TABLE dokument_del_relation
   objekt_type text null,
  CONSTRAINT dokument_del_relation_forkey_dokument_registrering  FOREIGN KEY (dokument_registrering_id) REFERENCES dokument_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
  CONSTRAINT dokument_del_relation_pkey PRIMARY KEY (id),
+ CONSTRAINT dokument_del_relation_forkey_dokument_variant  FOREIGN KEY (varianttekst) REFERENCES dokument_variant (varianttekst) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
+ CONSTRAINT dokument_del_relation_forkey_dokument_del  FOREIGN KEY (deltekst) REFERENCES dokument_del (deltekst) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
 -- CONSTRAINT dokument_del_relation_no_virkning_overlap EXCLUDE USING gist (dokument_del_registrering_id WITH =, _as_convert_dokument_del_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('underredigeringaf'::dokument_delRelationKode )) ,-- no overlapping virkning except for 0..n --relations
  CONSTRAINT dokument_del_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
 );

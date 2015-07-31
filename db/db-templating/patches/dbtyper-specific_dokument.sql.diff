@@ -1,0 +1,12 @@
+*** ../generated-files/dbtyper-specific_dokument.sql	2015-07-31 13:27:14.263856533 +0200
+--- ../patches/dbtyper-specific_dokument.org.sql	2015-07-31 13:28:40.579860832 +0200
+***************
+*** 57,62 ****
+--- 57,63 ----
+    id uuid,
+    registrering DokumentRegistreringType[]
+  );  
+  
+  
++ CREATE TYPE DokumentdelRelationKode AS ENUM  ('underredigeringaf');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_dokumentdel_relation_kode_to_txt is invoked.
+  
