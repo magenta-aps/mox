@@ -44,12 +44,71 @@ CREATE TYPE DokumentRelationType AS (
 )
 ;
 
+
+
+/**************************************************/
+/*					DokumentDel                   */
+/**************************************************/
+
+CREATE TYPE DokumentdelRelationKode AS ENUM  ('underredigeringaf');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_dokumentdel_relation_kode_to_txt is invoked.
+
+
+CREATE TYPE DokumentDelEgenskaberType AS (
+indeks int,
+indhold text,
+lokation text,
+mimetype text,
+ virkning Virkning
+);
+
+
+CREATE TYPE DokumentdelRelationType AS (
+  relType DokumentdelRelationKode,
+  virkning Virkning,
+  relMaalUuid uuid,
+  relMaalUrn  text,
+  objektType text 
+)
+;
+
+CREATE TYPE DokumentDelType AS
+(
+  deltekst text,
+  egenskaber DokumentDelEgenskaberType[],
+  relationer DokumentdelRelationType[]
+);  
+
+
+
+/**************************************************/
+/*					Dokumentvariant               */
+/**************************************************/
+
+CREATE TYPE DokumentVariantEgenskaberType AS ( 
+arkivering boolean, 
+delvisscannet boolean, 
+offentliggoerelse boolean, 
+produktion boolean,
+ virkning Virkning
+);
+
+
+CREATE TYPE DokumentVariantType AS
+(
+  varianttekst text,
+  egenskaber DokumentVariantEgenskaberType[],
+  dele DokumentDelType[]
+);  
+
+/**************************************************/
+
 CREATE TYPE DokumentRegistreringType AS
 (
 registrering RegistreringBase,
 tilsFremdrift DokumentFremdriftTilsType[],
 attrEgenskaber DokumentEgenskaberAttrType[],
-relationer DokumentRelationType[]
+relationer DokumentRelationType[],
+varianter DokumentVariantType[]
 );
 
 CREATE TYPE DokumentType AS
@@ -57,7 +116,3 @@ CREATE TYPE DokumentType AS
   id uuid,
   registrering DokumentRegistreringType[]
 );  
-
-
-CREATE TYPE DokumentdelRelationKode AS ENUM  ('underredigeringaf');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_dokumentdel_relation_kode_to_txt is invoked.
-
