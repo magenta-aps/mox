@@ -27,6 +27,8 @@ DECLARE
   dokument_del_obj DokumentDelType;
   dokument_del_egenskaber_obj DokumentDelEgenskaberType;
   dokument_del_relation_obj DokumentDelRelationType;
+  dokument_variant_new_id bigint;
+  dokument_del_new_id bigint;
 BEGIN
 
 IF dokument_uuid IS NULL THEN
@@ -204,13 +206,23 @@ END IF;
 IF dokument_registrering.varianter IS NOT NULL AND coalesce(array_length(dokument_registrering.varianter,1),0)>0 THEN
   
 
-  INSERT INTO dokument_variant
-  SELECT DISTINCT a.varianttekst
-  FROM unnest(dokument_registrering.varianter) as a(varianttekst,egenskaber,dele)
-  ;
-
 FOREACH dokument_variant_obj IN ARRAY dokument_registrering.varianter
 LOOP
+
+dokument_variant_new_id:=nextval('dokument_variant_id_seq'::regclass);
+
+  INSERT INTO dokument_variant (
+      id,
+        varianttekst,
+          dokument_registrering_id
+  )
+  VALUES
+  (
+      dokument_variant_new_id,
+        dokument_variant_obj.varianttekst,
+          dokument_registrering_id
+  ); 
+
 
   IF dokument_variant_obj.egenskaber IS NOT NULL AND coalesce(array_length(dokument_variant_obj.egenskaber,1),0)>0 THEN
 
@@ -218,7 +230,7 @@ LOOP
     LOOP
 
      INSERT INTO dokument_variant_egenskaber(
-      dokument_registrering_id,
+      variant_id,
         varianttekst,
           arkivering, 
             delvisscannet, 
@@ -227,7 +239,7 @@ LOOP
                   virkning
       )
       VALUES (
-      dokument_registrering_id,  
+      dokument_variant_new_id,  
         dokument_variant_obj.varianttekst,
           dokument_variant_obj_egenskab.arkivering,
             dokument_variant_obj_egenskab.delvisscannet,
@@ -243,14 +255,23 @@ LOOP
 
   IF dokument_variant.dele IS NOT NULL AND coalesce(array_length(dokument_variant.dele,1),0)>0 THEN
 
-
-    INSERT INTO dokument_del
-  SELECT DISTINCT a.deltekst
-  FROM unnest(dokument_variant_obj.dele) as a(deltekst,egenskaber,relationer)
-  ;
-
     FOREACH dokument_del_obj IN ARRAY dokument_variant_obj.dele
     LOOP
+
+    dokument_del_new_id:=nextval('dokument_del_id_seq'::regclass);
+
+  INSERT INTO dokument_del (
+    id,
+      deltekst,
+        variant_id
+    )
+    VALUES
+    (
+    dokument_del_new_id,
+        dokument_del_obj.deltekst,
+          dokument_variant_new_id
+    )
+    ;
 
     IF dokument_del_obj.egenskaber IS NOT NULL AND coalesce(array_length(dokument_del_obj.egenskaber,1),0)>0 THEN
 
@@ -259,25 +280,21 @@ LOOP
 
     INSERT INTO
     dokument_del_egenskaber (
-      dokument_registrering_id,
-        varianttekst, 
-          deltekst, 
-            indeks, 
-              indhold, 
-                lokation, 
-                  mimetype, 
-                    virkning
+      del_id
+        indeks, 
+          indhold, 
+            lokation, 
+              mimetype, 
+                virkning
     )
     VALUES
     (
-      dokument_registrering_id,
-        dokument_variant_obj.varianttekst,
-          dokument_del_obj.deltekst,
-            dokument_del_egenskaber_obj.indeks,
-              dokument_del_egenskaber_obj.indhold,
-                dokument_del_egenskaber_obj.lokation,
-                  dokument_del_egenskaber_obj.mimetype,
-                    dokument_del_egenskaber_obj.virkning
+      dokument_del_new_id, 
+        dokument_del_egenskaber_obj.indeks,
+          dokument_del_egenskaber_obj.indhold,
+            dokument_del_egenskaber_obj.lokation,
+              dokument_del_egenskaber_obj.mimetype,
+                dokument_del_egenskaber_obj.virkning
     )
     ;                
 
@@ -290,25 +307,21 @@ LOOP
     LOOP
 
       INSERT INTO dokument_del_relation (
-        dokument_registrering_id,
-          varianttekst, 
-            deltekst,
-              virkning,
-                rel_maal_uuid, 
-                  rel_maal_urn,
-                    rel_type,
-                      objekt_type
+        del_id,
+          virkning,
+            rel_maal_uuid, 
+              rel_maal_urn,
+                rel_type,
+                  objekt_type
       )
       VALUES
       (
-        dokument_registrering_id,
-          dokument_variant_obj.varianttekst,
-            dokument_del_obj.deltekst,
-              dokument_del_relation_obj.virkning,
-                dokument_del_relation_obj.relMaalUuid,
-                  dokument_del_relation_obj.relMaalUrn,
-                    dokument_del_relation_obj.relType,
-                      dokument_del_relation_obj.objektType
+        dokument_del_new_id,
+          dokument_del_relation_obj.virkning,
+            dokument_del_relation_obj.relMaalUuid,
+              dokument_del_relation_obj.relMaalUrn,
+                dokument_del_relation_obj.relType,
+                  dokument_del_relation_obj.objektType
       )
       ;
 
