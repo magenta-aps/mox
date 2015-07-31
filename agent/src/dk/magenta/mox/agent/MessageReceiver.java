@@ -1,4 +1,4 @@
-package dk.magenta.moxagent;
+package dk.magenta.mox.agent;
 
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.Connection;

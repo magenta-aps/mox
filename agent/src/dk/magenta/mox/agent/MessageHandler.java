@@ -1,4 +1,4 @@
-package dk.magenta.moxagent;
+package dk.magenta.mox.agent;
 
 import com.rabbitmq.client.LongString;
 import org.json.JSONObject;
@@ -6,13 +6,10 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
-import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 public class MessageHandler implements MessageReceivedCallback {
 
