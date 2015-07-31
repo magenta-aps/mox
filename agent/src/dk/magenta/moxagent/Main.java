@@ -1,14 +1,13 @@
 package dk.magenta.moxagent;
 
+import com.sun.javaws.exceptions.InvalidArgumentException;
 import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
@@ -18,33 +17,104 @@ import java.util.concurrent.TimeoutException;
 public class Main {
 
     public static void main(String[] args) throws IOException, TimeoutException {
-        MessageSender test = new MessageSender("localhost", null, "incoming");
-        UUID uuid = UUID.randomUUID();
-        sendCommand(test, "opretFacet", uuid, "test/facet_opret.json");
-        sendCommand(test, "opdaterFacet", uuid, "test/facet_opdater.json");
-        sendCommand(test, "opdaterFacet", uuid, "test/facet_passiv.json");
-        sendCommand(test, "sletFacet", uuid, "test/facet_slet.json");
 
-        uuid = UUID.randomUUID();
-        sendCommand(test, "opretKlasse", uuid, "test/klasse_opret.json");
-        sendCommand(test, "opdaterKlasse", uuid, "test/klasse_opdater.json");
+        if (args.length == 0) {
+            System.out.println("Demonstation program for mox agent communication");
+            System.out.println("Example: listen localhost:5672 incoming http://127.0.0.1:5000");
+        } else {
+            HashMap<String, String> argMap = new HashMap<String, String>();
+            ArrayList<String> commands = new ArrayList<String>();
+            try {
+                String paramKey = null;
+                for (String arg : args) {
+                    arg = arg.trim();
+                    if (arg.startsWith("-")) {
+                        if (commands.size() > 0) {
+                            throw new InvalidArgumentException(new String[]{"You cannot append parameters after the command arguments"});
+                        }
+                        arg = arg.substring(1);
+                        paramKey = arg;
+                    } else if (!arg.isEmpty()) {
+                        if (paramKey != null) {
+                            argMap.put(paramKey, arg);
+                            paramKey = null;
+                        } else {
+                            commands.add(arg);
+                        }
+                    }
+                }
+            } catch (InvalidArgumentException e) {
+                e.printStackTrace();
+                return;
+            }
 
-        uuid = UUID.randomUUID();
-        sendCommand(test, "opretItSystem", uuid, "test/itsystem_opret.json");
+            String queueInterface = argMap.get("i");
+            if (queueInterface == null) {
+                queueInterface = "localhost:5672";
+            }
 
-        test.close();
-    }
+            String queueName = argMap.get("n");
+            if (queueName == null) {
+                queueName = "incoming";
+            }
 
-    private static void sendCommand(MessageSender sender, String operation, UUID uuid, String jsonFilename) throws IOException {
-        File testInput = new File(jsonFilename);
-        try {
-            JSONObject jsonObject = new JSONObject(new JSONTokener(new FileReader(testInput)));
-            HashMap<String, Object> headers = new HashMap<String, Object>();
-            headers.put("operation", operation);
-            headers.put("beskedID", uuid.toString());
-            sender.sendJSON(headers, jsonObject);
-        } catch (JSONException e) {
-            e.printStackTrace();
+            String restInterface = argMap.get("r");
+            if (restInterface == null) {
+                restInterface = "http://127.0.0.1:5000";
+            }
+            try {
+
+                if (commands.size() == 0) {
+                    throw new InvalidArgumentException(new String[]{"No commands defined"});
+                }
+                String command = commands.get(0);
+
+                Map<String, ObjectType> objectTypes = ObjectType.load("agent.properties");
+
+                if (command.equalsIgnoreCase("listen")) {
+                    System.out.println("Listening on "+queueInterface+", queue "+queueName);
+                    System.out.println("Successfully parsed messages will be forwarded to the REST interface at "+restInterface);
+                    MessageReceiver messageReceiver = new MessageReceiver(queueInterface, queueName);
+                    try {
+                        messageReceiver.run(new MessageHandler(restInterface, objectTypes));
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    messageReceiver.close();
+
+                } else if (command.equalsIgnoreCase("send")) {
+                    System.out.println("Sending to "+queueInterface+", queue "+queueName);
+
+                    String operationName = commands.get(1);
+                    String objectTypeName = commands.get(2);
+                    MessageSender messageSender = new MessageSender(queueInterface, null, queueName);
+                    ObjectType objectType = objectTypes.get(objectTypeName);
+
+                    try {
+                        if (operationName.equalsIgnoreCase("create")) {
+                            objectType.create(messageSender, commands.get(3));
+                        } else if (operationName.equalsIgnoreCase("update")) {
+                            objectType.update(messageSender, UUID.fromString(commands.get(3)), commands.get(4));
+                        } else if (operationName.equalsIgnoreCase("passivate")) {
+                            objectType.passivate(messageSender, UUID.fromString(commands.get(3)), commands.get(4));
+                        } else if (operationName.equalsIgnoreCase("delete")) {
+                            objectType.passivate(messageSender, UUID.fromString(commands.get(3)), commands.get(4));
+                        }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    } catch (OperationNotSupportedException e) {
+                        e.printStackTrace();
+                    } catch (IndexOutOfBoundsException e) {
+                        throw new InvalidArgumentException(new String[]{"Incorrect number of arguments; the '" + command + "' command takes more arguments"});
+                    }
+
+                    messageSender.close();
+
+                }
+            } catch (InvalidArgumentException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
