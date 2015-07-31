@@ -224,6 +224,25 @@ DATABASE_STRUCTURE = {
             "byggeri", "fredning", "journalpost"
         ]
 
+    },
+
+    "dokument": {
+        "attributter": {
+            "egenskaber": ["brugervendtnoegle","beskrivelse","brevdato","kassationskode","major","minor","offentlighedundtaget","titel","dokumenttype"]
+            },
+        "attributter_type_override": {
+            "egenskaber": {
+                "brevdato" : "date",
+                "major": "int",
+                "minor": "int",
+                "offentlighedundtaget": "offentlighedundtagettype"
+                }
+            }, 
+         "tilstande": {
+            "fremdrift": ["Modtaget","Fordelt","Underudarbejdelse","Underreview","Publiceret","Endeligt","Afleveret"]
+         },
+        "relationer_nul_til_en": ["nyrevision","primaerklasse","ejer","ansvarlig","primaerbehandler","fordelttil"],
+        "relationer_nul_til_mange": ["arkiver","besvarelser","udgangspunkter","kommentarer","bilag","andredokumenter","andreklasser","andrebehandlere","parter","kopiparter","tilknyttedesager"]
     }
 
 }

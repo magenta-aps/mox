@@ -1,0 +1,104 @@
+*** ../generated-files/dbtyper-specific_dokument.sql	2015-07-31 14:02:01.823960500 +0200
+--- ../patches/dbtyper-specific_dokument.org.sql	2015-07-31 14:01:40.055959416 +0200
+***************
+*** 42,62 ****
+    relMaalUrn  text,
+    objektType text 
+  )
+  ;
+  
+  CREATE TYPE DokumentRegistreringType AS
+  (
+  registrering RegistreringBase,
+  tilsFremdrift DokumentFremdriftTilsType[],
+  attrEgenskaber DokumentEgenskaberAttrType[],
+! relationer DokumentRelationType[]
+  );
+  
+  CREATE TYPE DokumentType AS
+  (
+    id uuid,
+    registrering DokumentRegistreringType[]
+! );  
+! 
+! 
+! 
+--- 42,118 ----
+    relMaalUrn  text,
+    objektType text 
+  )
+  ;
+  
++ 
++ 
++ /**************************************************/
++ /*					DokumentDel                   */
++ /**************************************************/
++ 
++ CREATE TYPE DokumentdelRelationKode AS ENUM  ('underredigeringaf');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_dokumentdel_relation_kode_to_txt is invoked.
++ 
++ 
++ CREATE TYPE DokumentDelEgenskaberType AS (
++ indeks int,
++ indhold text,
++ lokation text,
++ mimetype text,
++  virkning Virkning
++ );
++ 
++ 
++ CREATE TYPE DokumentdelRelationType AS (
++   relType DokumentdelRelationKode,
++   virkning Virkning,
++   relMaalUuid uuid,
++   relMaalUrn  text,
++   objektType text 
++ )
++ ;
++ 
++ CREATE TYPE DokumentDelType AS
++ (
++   deltekst text,
++   egenskaber DokumentDelEgenskaberType[],
++   relationer DokumentdelRelationType[]
++ );  
++ 
++ 
++ 
++ /**************************************************/
++ /*					Dokumentvariant               */
++ /**************************************************/
++ 
++ CREATE TYPE DokumentVariantEgenskaberType AS ( 
++ arkivering boolean, 
++ delvisscannet boolean, 
++ offentliggoerelse boolean, 
++ produktion boolean,
++  virkning Virkning
++ );
++ 
++ 
++ CREATE TYPE DokumentVariantType AS
++ (
++   varianttekst text,
++   egenskaber DokumentVariantEgenskaberType[],
++   dele DokumentDelType[]
++ );  
++ 
++ /**************************************************/
++ 
+  CREATE TYPE DokumentRegistreringType AS
+  (
+  registrering RegistreringBase,
+  tilsFremdrift DokumentFremdriftTilsType[],
+  attrEgenskaber DokumentEgenskaberAttrType[],
+! relationer DokumentRelationType[],
+! varianter DokumentVariantType[]
+  );
+  
+  CREATE TYPE DokumentType AS
+  (
+    id uuid,
+    registrering DokumentRegistreringType[]
+! );  
+\ No newline at end of file

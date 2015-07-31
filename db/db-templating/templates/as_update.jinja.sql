@@ -414,7 +414,9 @@ AND {%-for fieldname in attribut_fields %} (a.{{fieldname}} IS NULL {%- if  attr
             {%-if attributter_type_override[attribut][fieldname] == "text[]" %} OR coalesce(array_length(a.{{fieldname}},1),0)=0
             {%-else %}
             {%-if attributter_type_override[attribut][fieldname] == "offentlighedundtagettype" %} OR (((a.{{fieldname}}).AlternativTitel IS NULL OR (a.{{fieldname}}).AlternativTitel='') AND ((a.{{fieldname}}).Hjemmel IS NULL OR (a.{{fieldname}}).Hjemmel=''))
-           {%- endif %}{%- endif %} {%- else %} OR a.{{fieldname}}=''{%- endif %}){%- if (not loop.last) %} 
+            {%-else %}
+            {%-if attributter_type_override[attribut][fieldname] == "int" or attributter_type_override[attribut][fieldname] == "date" %} 
+           {%- endif %}{%- endif %}{%- endif %} {%- else %} OR a.{{fieldname}}=''{%- endif %}){%- if (not loop.last) %} 
             AND {% endif %}{%- endfor %}
 ;
 

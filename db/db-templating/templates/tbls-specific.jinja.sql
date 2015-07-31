@@ -126,11 +126,36 @@ ALTER TABLE {{oio_type}}_attr_{{attribut}}
   ({{field}} _text_ops);
 {%- else %} 
 
+ {%-if attributter_type_override[attribut][field] == "offentlighedundtagettype" %} 
+
+ CREATE INDEX {{oio_type}}_attr_{{attribut}}_pat_AlternativTitel_{{field}}
+  ON {{oio_type}}_attr_{{attribut}}
+  USING gin
+  ( (({{field}}).AlternativTitel) gin_trgm_ops);
+
+CREATE INDEX {{oio_type}}_attr_{{attribut}}_idx_AlternativTitel_{{field}}
+  ON {{oio_type}}_attr_{{attribut}}
+  USING btree
+  ((({{field}}).AlternativTitel));
+
+  CREATE INDEX {{oio_type}}_attr_{{attribut}}_pat_Hjemmel_{{field}}
+  ON {{oio_type}}_attr_{{attribut}}
+  USING gin
+  ((({{field}}).Hjemmel) gin_trgm_ops);
+
+CREATE INDEX {{oio_type}}_attr_{{attribut}}_idx_Hjemmel_{{field}}
+  ON {{oio_type}}_attr_{{attribut}}
+  USING btree
+  ((({{field}}).Hjemmel));
+
+ {%- else %} 
+
 CREATE INDEX {{oio_type}}_attr_{{attribut}}_idx_{{field}}
   ON {{oio_type}}_attr_{{attribut}}
   USING btree
   ({{field}});
 
+{%- endif %}
 {%- endif %} 
 {%- else %} 
 CREATE INDEX {{oio_type}}_attr_{{attribut}}_pat_{{field}}
