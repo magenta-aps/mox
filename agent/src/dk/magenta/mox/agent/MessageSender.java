@@ -1,4 +1,4 @@
-package dk.magenta.moxagent;
+package dk.magenta.mox.agent;
 
 
 import com.rabbitmq.client.AMQP;
@@ -28,8 +28,14 @@ public class MessageSender {
     public MessageSender(String host, String exchange, String queue) throws IOException, TimeoutException {
         if (!connectionFactories.keySet().contains(host)) {
             ConnectionFactory factory = new ConnectionFactory();
+            int port = 5672;
+            if (host.contains(":")) {
+                int index = host.indexOf(":");
+                port = Integer.parseInt(host.substring(index+1));
+                host = host.substring(0, index);
+            }
             factory.setHost(host);
-            factory.setPort(5672);
+            factory.setPort(port);
             connectionFactories.put(host, factory);
         }
         this.connection = connectionFactories.get(host).newConnection();
@@ -81,6 +87,7 @@ public class MessageSender {
             headers = new HashMap<String, Object>();
         }
         AMQP.BasicProperties properties = this.getStandardPropertyBuilder().headers(headers).contentType("application/json").build();
+        System.out.println(headers + " " + jsonObject.toString());
         this.send(properties, jsonObject.toString().getBytes());
     }
 

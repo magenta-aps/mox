@@ -1,4 +1,4 @@
-package dk.magenta.moxlistener;
+package dk.magenta.mox.agent;
 
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.Connection;
@@ -21,8 +21,14 @@ public class MessageReceiver {
     public MessageReceiver(String host, String queue) throws IOException, TimeoutException {
         if (!connectionFactories.keySet().contains(host)) {
             ConnectionFactory factory = new ConnectionFactory();
+            int port = 5672;
+            if (host.contains(":")) {
+                int index = host.indexOf(":");
+                port = Integer.parseInt(host.substring(index+1));
+                host = host.substring(0, index);
+            }
             factory.setHost(host);
-            factory.setPort(5672);
+            factory.setPort(port);
             connectionFactories.put(host, factory);
         }
         this.connection = connectionFactories.get(host).newConnection();
