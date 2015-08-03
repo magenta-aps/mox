@@ -19,6 +19,12 @@ SAML_IDP_CERTIFICATE = "test_auth_data/idp-certificate.pem"
 # Whether to enable SAML authentication
 USE_SAML_AUTHENTICATION = False
 
+# The module which implements the authorization restrictions.
+# Must be present in sys.path.
+AUTH_RESTRICTION_MODULE = 'oio_rest.auth.restrictions'
+# The name of the function which retrieves the restrictions.
+# Must be present in AUTH_RESTRICTION_MODULE and have the correct signature.
+AUTH_RESTRICTION_FUNCTION = 'get_auth_restrictions'
 # This specifies the database structure
 DATABASE_STRUCTURE = {
 
@@ -228,21 +234,31 @@ DATABASE_STRUCTURE = {
 
     "dokument": {
         "attributter": {
-            "egenskaber": ["brugervendtnoegle","beskrivelse","brevdato","kassationskode","major","minor","offentlighedundtaget","titel","dokumenttype"]
+            "egenskaber": ["brugervendtnoegle", "beskrivelse", "brevdato",
+                           "kassationskode", "major", "minor",
+                           "offentlighedundtaget", "titel", "dokumenttype"]
             },
         "attributter_type_override": {
             "egenskaber": {
-                "brevdato" : "date",
+                "brevdato": "date",
                 "major": "int",
                 "minor": "int",
                 "offentlighedundtaget": "offentlighedundtagettype"
                 }
-            }, 
-         "tilstande": {
-            "fremdrift": ["Modtaget","Fordelt","Underudarbejdelse","Underreview","Publiceret","Endeligt","Afleveret"]
-         },
-        "relationer_nul_til_en": ["nyrevision","primaerklasse","ejer","ansvarlig","primaerbehandler","fordelttil"],
-        "relationer_nul_til_mange": ["arkiver","besvarelser","udgangspunkter","kommentarer","bilag","andredokumenter","andreklasser","andrebehandlere","parter","kopiparter","tilknyttedesager"]
+            },
+        "tilstande": {
+            "fremdrift": ["Modtaget", "Fordelt", "Underudarbejdelse",
+                          "Underreview", "Publiceret", "Endeligt",
+                          "Afleveret"]
+        },
+        "relationer_nul_til_en": ["nyrevision", "primaerklasse", "ejer",
+                                  "ansvarlig", "primaerbehandler",
+                                  "fordelttil"],
+        "relationer_nul_til_mange": ["arkiver", "besvarelser",
+                                     "udgangspunkter", "kommentarer", "bilag",
+                                     "andredokumenter", "andreklasser",
+                                     "andrebehandlere", "parter",
+                                     "kopiparter", "tilknyttedesager"]
     }
 
 }
