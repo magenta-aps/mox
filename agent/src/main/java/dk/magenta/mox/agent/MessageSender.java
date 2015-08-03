@@ -2,50 +2,33 @@ package dk.magenta.mox.agent;
 
 
 import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
 
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
+import com.rabbitmq.client.QueueingConsumer;
 import org.json.*;
 
 
-public class MessageSender {
+public class MessageSender extends MessageInterface {
 
-    private Connection connection;
-    private Channel channel;
-    private String exchange;
-    private String queue;
     private String appId;
     private String clusterId;
+    private String replyQueue;
+    private QueueingConsumer replyConsumer;
+    private HashMap<String, SettableFuture<String>> responseExpectors = new HashMap<String, SettableFuture<String>>();
+    private boolean listening = false;
+
 
     public MessageSender(String host, String exchange, String queue) throws IOException, TimeoutException {
-        if (!connectionFactories.keySet().contains(host)) {
-            ConnectionFactory factory = new ConnectionFactory();
-            int port = 5672;
-            if (host.contains(":")) {
-                int index = host.indexOf(":");
-                port = Integer.parseInt(host.substring(index+1));
-                host = host.substring(0, index);
-            }
-            factory.setHost(host);
-            factory.setPort(port);
-            connectionFactories.put(host, factory);
-        }
-        this.connection = connectionFactories.get(host).newConnection();
-        this.channel = connection.createChannel();
-        this.channel.queueDeclare(queue, false, false, false, null);
-        if (exchange == null) {
-            exchange = "";
-        }
-        this.exchange = exchange;
-        this.queue = queue;
+        super(host, exchange, queue);
+        this.replyQueue = this.getChannel().queueDeclare().getQueue();
+        this.replyConsumer = new QueueingConsumer(this.getChannel());
+        this.getChannel().basicConsume(this.replyQueue, true, this.replyConsumer);
     }
 
     public String getAppId() {
@@ -64,10 +47,6 @@ public class MessageSender {
         this.clusterId = clusterId;
     }
 
-
-    private static HashMap<String, ConnectionFactory> connectionFactories = new HashMap<String, ConnectionFactory>();
-
-
     public AMQP.BasicProperties.Builder getStandardPropertyBuilder() {
         AMQP.BasicProperties.Builder propertyBuilder = new AMQP.BasicProperties.Builder();
         if (this.appId != null) {
@@ -76,41 +55,58 @@ public class MessageSender {
         if (this.clusterId != null) {
             propertyBuilder = propertyBuilder.clusterId(this.clusterId);
         }
+        if (this.replyQueue != null) {
+            propertyBuilder = propertyBuilder.replyTo(this.replyQueue);
+        }
+
         propertyBuilder = propertyBuilder.messageId(UUID.randomUUID().toString()).timestamp(new Date());
 
         return propertyBuilder;
     }
 
 
-    public void sendJSON(Map<String, Object> headers, JSONObject jsonObject) throws IOException {
+    public Future<String> sendJSON(Map<String, Object> headers, JSONObject jsonObject) throws IOException, InterruptedException {
         if (headers == null) {
             headers = new HashMap<String, Object>();
         }
-        AMQP.BasicProperties properties = this.getStandardPropertyBuilder().headers(headers).contentType("application/json").build();
-        System.out.println(headers + " " + jsonObject.toString());
-        this.send(properties, jsonObject.toString().getBytes());
+
+        String correlationId = UUID.randomUUID().toString();
+        AMQP.BasicProperties properties = this.getStandardPropertyBuilder().headers(headers).contentType("application/json").correlationId(correlationId).build();
+        this.getChannel().basicPublish(this.getExchange(), this.getQueueName(), properties, jsonObject.toString().getBytes());
+
+        SettableFuture<String> expector = new SettableFuture<String>(); // Set up a Future<> to wait for a reply
+        this.responseExpectors.put(correlationId, expector);
+        this.startListening();
+
+        return expector;
     }
 
-
-    public void send(AMQP.BasicProperties properties, byte[] payload) throws IOException {
-        this.channel.basicPublish(this.exchange, this.queue, properties, payload);
-    }
-
-
-    public void close() {
-        if (this.channel != null) {
-            try {
-                this.channel.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        if (this.connection != null) {
-            try {
-                this.connection.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+    private void startListening() {
+        // The replyConsumer lets us receive replies one at a time, but we have no guarantee that the next incoming reply matches our latest send
+        // Therefore we listen for ALL such replies, and match them with our expecting SettableFutures. When a reply comes in, it gets applied to the matching SettableFuture
+        // which then completes and gets removed. Wherever get() call that Future was blocking will resume execution
+        if (!this.listening) {
+            new Thread(new Runnable() {
+                public void run() {
+                    while (MessageSender.this.responseExpectors.size() > 0) {
+                        MessageSender.this.listening = true;
+                        try {
+                            QueueingConsumer.Delivery delivery = MessageSender.this.replyConsumer.nextDelivery();
+                            String expectorId = delivery.getProperties().getCorrelationId();
+                            if (expectorId != null) {
+                                SettableFuture<String> expector = MessageSender.this.responseExpectors.get(expectorId);
+                                if (expector != null) {
+                                    expector.set(new String(delivery.getBody()));
+                                    MessageSender.this.responseExpectors.remove(expectorId);
+                                }
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    MessageSender.this.listening = false;
+                }
+            }).start();
         }
     }
 }

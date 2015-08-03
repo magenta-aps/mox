@@ -1,20 +1,25 @@
 package dk.magenta.mox.agent;
 
 import com.rabbitmq.client.LongString;
+import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
+import sun.nio.ch.IOUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
+import java.util.concurrent.*;
 
 public class RestMessageHandler implements MessageReceivedCallback {
 
     private URL url;
     private Map<String, ObjectType> objectTypes;
+    private final ExecutorService pool = Executors.newFixedThreadPool(10);
 
     public RestMessageHandler(String host, Map<String, ObjectType> objectTypes) throws MalformedURLException {
         this(new URL(host), objectTypes);
@@ -42,7 +47,7 @@ public class RestMessageHandler implements MessageReceivedCallback {
         }
     }
 
-    public void run(Map<String, Object> headers, JSONObject jsonObject) {
+    public Future<String> run(Map<String, Object> headers, JSONObject jsonObject) {
         String command = this.getHeaderString(headers, "operation");
 
         ObjectType objectType = null;
@@ -57,34 +62,37 @@ public class RestMessageHandler implements MessageReceivedCallback {
 
         if (operation != null && objectType != null) {
             String uuid = this.getHeaderString(headers, "beskedID");
-            char[] data = jsonObject.toString().toCharArray();
+
             if (command != null) {
-                try {
-                    String path = operation.path;
-                    if (path.contains("[uuid]")) {
-                        path = path.replace("[uuid]", uuid);
-                    }
-                    this.rest(operation.method.toString(), path, data);
-                } catch (IOException e) {
-                    e.printStackTrace();
+                String path = operation.path;
+                if (path.contains("[uuid]")) {
+                    path = path.replace("[uuid]", uuid);
                 }
+                final String method = operation.method.toString();
+                final String fPath = path;
+                final char[] data = jsonObject.toString().toCharArray();
+                return this.pool.submit(new Callable<String>() {
+                    public String call() throws IOException {
+                        return rest(method, fPath, data);
+                    }
+                });
             }
         }
+        return null;
     }
 
     private URL getURLforPath(String path) throws MalformedURLException {
         return new URL(this.url.getProtocol(), this.url.getHost(), this.url.getPort(), path);
     }
 
-    private void rest(String method, String path, char[] payload) throws IOException {
+    private String rest(String method, String path, char[] payload) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) this.getURLforPath(path).openConnection();
-        System.out.println(method + " " + connection.getURL().toString() + "   " + new String(payload));
         connection.setRequestMethod(method);
         connection.setDoOutput(true);
         connection.setRequestProperty("Content-type", "application/json");
         OutputStreamWriter out = new OutputStreamWriter(connection.getOutputStream());
         out.write(payload);
         out.close();
-        InputStream inputStream = connection.getInputStream();
+        return IOUtils.toString(connection.getInputStream());
     }
 }
