@@ -391,12 +391,26 @@ CREATE INDEX dokument_relation_pat_virkning_notetekst
 /*                        dokument variant                            */
 /**********************************************************************/
 
+CREATE SEQUENCE dokument_variant_id_seq
+  INCREMENT 1
+  MINVALUE 1
+  MAXVALUE 9223372036854775807
+  START 1
+  CACHE 1;
+ALTER TABLE dokument_variant_id_seq
+  OWNER TO mox;
+
+
 
 CREATE TABLE dokument_variant
 (
+   id bigint not null DEFAULT nextval('dokument_variant_id_seq'::regclass),
  varianttekst text NOT NULL,
-  CONSTRAINT dokument_variant_pkey PRIMARY KEY (varianttekst)
-)
+ dokument_registrering_id bigint not null,
+ UNIQUE(dokument_registrering_id,varianttekst),
+  CONSTRAINT dokument_variant_pkey PRIMARY KEY (id),
+  CONSTRAINT dokument_variant_forkey_dokumentregistrering  FOREIGN KEY (dokument_registrering_id) REFERENCES dokument_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION
+ )
 WITH (
   OIDS=FALSE
 );
@@ -417,17 +431,15 @@ ALTER TABLE dokument_variant_egenskaber_id_seq
 CREATE TABLE dokument_variant_egenskaber
 (
   id bigint NOT NULL DEFAULT nextval('dokument_variant_egenskaber_id_seq'::regclass), 
-   varianttekst text not null, 
+   variant_id bigint not null, 
    arkivering boolean null, 
    delvisscannet boolean null, 
    offentliggoerelse boolean null, 
    produktion boolean null, 
    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
-  dokument_registrering_id bigint not null,
 CONSTRAINT dokument_variant_egenskaber_pkey PRIMARY KEY (id),
-CONSTRAINT dokument_variant_egenskaber_forkey_dokument_variant FOREIGN KEY (varianttekst) REFERENCES dokument_variant (varianttekst),
-CONSTRAINT dokument_variant_egenskaber_forkey_dokumentregistrering  FOREIGN KEY (dokument_registrering_id) REFERENCES dokument_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
-CONSTRAINT dokument_variant_egenskaber_exclude_virkning_overlap EXCLUDE USING gist (dokument_registrering_id WITH =,varianttekst WITH =, _composite_type_to_time_range(virkning) WITH &&)
+CONSTRAINT dokument_variant_egenskaber_forkey_dokumentvariant  FOREIGN KEY (variant_id) REFERENCES dokument_variant (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
+CONSTRAINT dokument_variant_egenskaber_exclude_virkning_overlap EXCLUDE USING gist (variant_id WITH =, _composite_type_to_time_range(virkning) WITH &&)
 )
 WITH (
   OIDS=FALSE
@@ -436,18 +448,6 @@ ALTER TABLE dokument_variant_egenskaber
   OWNER TO mox;
 
  
-CREATE INDEX dokument_variant_egenskaber_pat_varianttekst
-  ON dokument_variant_egenskaber
-  USING gin
-  (varianttekst gin_trgm_ops);
-
-CREATE INDEX dokument_variant_egenskaber_idx_varianttekst
-  ON dokument_variant_egenskaber
-  USING btree
-  (varianttekst); 
-
- 
-
 CREATE INDEX dokument_variant_egenskaber_idx_arkivering
   ON dokument_variant_egenskaber
   USING btree
@@ -503,10 +503,25 @@ CREATE INDEX dokument_variant_egenskaber_pat_virkning_notetekst
 /*                        dokument del                                */
 /**********************************************************************/
 
+CREATE SEQUENCE dokument_del_id_seq
+  INCREMENT 1
+  MINVALUE 1
+  MAXVALUE 9223372036854775807
+  START 1
+  CACHE 1;
+ALTER TABLE dokument_del_id_seq
+  OWNER TO mox;
+
+
+
 CREATE TABLE dokument_del
 (
+ id bigint not null DEFAULT nextval('dokument_del_id_seq'::regclass),
  deltekst text NOT NULL,
-  CONSTRAINT dokument_del_pkey PRIMARY KEY (deltekst)
+ variant_id bigint not null,
+ UNIQUE (variant_id, deltekst),
+ CONSTRAINT dokument_del_forkey_variant_id  FOREIGN KEY (variant_id) REFERENCES dokument_variant (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
+ CONSTRAINT dokument_del_pkey PRIMARY KEY (id)
 )
 WITH (
   OIDS=FALSE
@@ -531,19 +546,15 @@ ALTER TABLE dokument_del_egenskaber_id_seq
 CREATE TABLE dokument_del_egenskaber
 (
   id bigint NOT NULL DEFAULT nextval('dokument_del_egenskaber_id_seq'::regclass), 
-   varianttekst text not null, 
-   deltekst text not null, 
+  del_id bigint NOT NULL,
    indeks int null, 
    indhold text null, 
    lokation text null, 
    mimetype text null, 
    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
-  dokument_registrering_id bigint not null,
 CONSTRAINT dokument_del_egenskaber_pkey PRIMARY KEY (id),
-CONSTRAINT dokument_del_egenskaber_forkey_dokument_registrering  FOREIGN KEY (dokument_registrering_id) REFERENCES dokument_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
-CONSTRAINT dokument_del_forkey_dokument_variant  FOREIGN KEY (varianttekst) REFERENCES dokument_variant (varianttekst) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
-CONSTRAINT dokument_del_forkey_dokument_del  FOREIGN KEY (deltekst) REFERENCES dokument_del (deltekst) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
-CONSTRAINT dokument_del_egenskaber_exclude_virkning_overlap EXCLUDE USING gist (dokument_registrering_id WITH =,varianttekst WITH =,deltekst WITH =, _composite_type_to_time_range(virkning) WITH &&)
+CONSTRAINT dokument_del_egenskaber_forkey_dokument_del  FOREIGN KEY (del_id) REFERENCES dokument_del (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
+CONSTRAINT dokument_del_egenskaber_exclude_virkning_overlap EXCLUDE USING gist (del_id WITH =, _composite_type_to_time_range(virkning) WITH &&)
 )
 WITH (
   OIDS=FALSE
@@ -551,28 +562,6 @@ WITH (
 ALTER TABLE dokument_del_egenskaber
   OWNER TO mox;
 
- 
-CREATE INDEX dokument_del_egenskaber_pat_varianttekst
-  ON dokument_del_egenskaber
-  USING gin
-  (varianttekst gin_trgm_ops);
-
-CREATE INDEX dokument_del_egenskaber_idx_varianttekst
-  ON dokument_del_egenskaber
-  USING btree
-  (varianttekst); 
-
-CREATE INDEX dokument_del_egenskaber_pat_deltekst
-  ON dokument_del_egenskaber
-  USING gin
-  (deltekst gin_trgm_ops);
-
-CREATE INDEX dokument_del_egenskaber_idx_deltekst
-  ON dokument_del_egenskaber
-  USING btree
-  (deltekst); 
-
- 
 
 CREATE INDEX dokument_del_egenskaber_idx_indeks
   ON dokument_del_egenskaber
@@ -656,18 +645,14 @@ ALTER TABLE dokument_del_relation_id_seq
 CREATE TABLE dokument_del_relation
 (
   id bigint NOT NULL DEFAULT nextval('dokument_del_relation_id_seq'::regclass),
-  dokument_registrering_id bigint not null,
-  varianttekst text not null, 
-  deltekst text not null,
+  del_id bigint not null,
   virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
   rel_maal_uuid uuid NULL, 
   rel_maal_urn text null,
   rel_type DokumentdelRelationKode not null,
   objekt_type text null,
- CONSTRAINT dokument_del_relation_forkey_dokument_registrering  FOREIGN KEY (dokument_registrering_id) REFERENCES dokument_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
+ CONSTRAINT dokument_del_relation_forkey_dokument_del FOREIGN KEY (del_id) REFERENCES dokument_del (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
  CONSTRAINT dokument_del_relation_pkey PRIMARY KEY (id),
- CONSTRAINT dokument_del_relation_forkey_dokument_variant  FOREIGN KEY (varianttekst) REFERENCES dokument_variant (varianttekst) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
- CONSTRAINT dokument_del_relation_forkey_dokument_del  FOREIGN KEY (deltekst) REFERENCES dokument_del (deltekst) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
 -- CONSTRAINT dokument_del_relation_no_virkning_overlap EXCLUDE USING gist (dokument_del_registrering_id WITH =, _as_convert_dokument_del_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('underredigeringaf'::dokument_delRelationKode )) ,-- no overlapping virkning except for 0..n --relations
  CONSTRAINT dokument_del_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
 );
