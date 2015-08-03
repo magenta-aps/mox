@@ -1,5 +1,5 @@
-*** ../generated-files/dbtyper-specific_dokument.sql	2015-07-31 14:02:01.823960500 +0200
---- ../patches/dbtyper-specific_dokument.org.sql	2015-07-31 14:01:40.055959416 +0200
+*** ../generated-files/dbtyper-specific_dokument.sql	2015-08-03 11:12:54.014817713 +0200
+--- ../patches/dbtyper-specific_dokument.org.sql	2015-08-03 11:11:59.798815013 +0200
 ***************
 *** 42,62 ****
     relMaalUrn  text,
@@ -19,11 +19,11 @@
   (
     id uuid,
     registrering DokumentRegistreringType[]
-! );  
+  );  
+  
 ! 
 ! 
-! 
---- 42,118 ----
+--- 42,125 ----
     relMaalUrn  text,
     objektType text 
   )
@@ -100,5 +100,11 @@
   (
     id uuid,
     registrering DokumentRegistreringType[]
-! );  
-\ No newline at end of file
+  );  
+  
+! /**************************************************/
+! CREATE TYPE _DokumentVariantDelKey AS
+! (
+!   varianttekst text,
+!   deltekst text
+! );
