@@ -1,7 +1,7 @@
 package dk.magenta.mox.agentdemo;
 
 import com.sun.javaws.exceptions.InvalidArgumentException;
-import dk.magenta.mox.agent.MessageHandler;
+import dk.magenta.mox.agent.RestMessageHandler;
 import dk.magenta.mox.agent.MessageReceiver;
 import dk.magenta.mox.agent.MessageSender;
 import dk.magenta.mox.agent.ObjectType;
@@ -80,7 +80,7 @@ public class Main {
                     System.out.println("Successfully parsed messages will be forwarded to the REST interface at "+restInterface);
                     MessageReceiver messageReceiver = new MessageReceiver(queueInterface, queueName);
                     try {
-                        messageReceiver.run(new MessageHandler(restInterface, objectTypes));
+                        messageReceiver.run(new RestMessageHandler(restInterface, objectTypes));
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }

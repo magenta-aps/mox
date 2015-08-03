@@ -103,8 +103,6 @@ public class MessageSender {
                 this.channel.close();
             } catch (IOException e) {
                 e.printStackTrace();
-            } catch (TimeoutException e) {
-                e.printStackTrace();
             }
         }
         if (this.connection != null) {

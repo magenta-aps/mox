@@ -11,20 +11,20 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 
-public class MessageHandler implements MessageReceivedCallback {
+public class RestMessageHandler implements MessageReceivedCallback {
 
     private URL url;
     private Map<String, ObjectType> objectTypes;
 
-    public MessageHandler(String host, Map<String, ObjectType> objectTypes) throws MalformedURLException {
+    public RestMessageHandler(String host, Map<String, ObjectType> objectTypes) throws MalformedURLException {
         this(new URL(host), objectTypes);
     }
 
-    public MessageHandler(String protocol, String host, int port, Map<String, ObjectType> objectTypes) throws MalformedURLException {
+    public RestMessageHandler(String protocol, String host, int port, Map<String, ObjectType> objectTypes) throws MalformedURLException {
         this(new URL(protocol, host, port, ""), objectTypes);
     }
 
-    public MessageHandler(URL host, Map<String, ObjectType> objectTypes) {
+    public RestMessageHandler(URL host, Map<String, ObjectType> objectTypes) {
         try {
             this.url = new URL(host.getProtocol(), host.getHost(), host.getPort(), "/");
         } catch (MalformedURLException e) {
@@ -42,7 +42,6 @@ public class MessageHandler implements MessageReceivedCallback {
         }
     }
 
-    @Override
     public void run(Map<String, Object> headers, JSONObject jsonObject) {
         String command = this.getHeaderString(headers, "operation");
 
