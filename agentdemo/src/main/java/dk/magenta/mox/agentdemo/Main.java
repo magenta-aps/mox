@@ -1,7 +1,7 @@
 package dk.magenta.mox.agentdemo;
 
 import com.sun.javaws.exceptions.InvalidArgumentException;
-import dk.magenta.mox.agent.MessageHandler;
+import dk.magenta.mox.agent.RestMessageHandler;
 import dk.magenta.mox.agent.MessageReceiver;
 import dk.magenta.mox.agent.MessageSender;
 import dk.magenta.mox.agent.ObjectType;
@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -78,9 +80,9 @@ public class Main {
                 if (command.equalsIgnoreCase("listen")) {
                     System.out.println("Listening on "+queueInterface+", queue "+queueName);
                     System.out.println("Successfully parsed messages will be forwarded to the REST interface at "+restInterface);
-                    MessageReceiver messageReceiver = new MessageReceiver(queueInterface, queueName);
+                    MessageReceiver messageReceiver = new MessageReceiver(queueInterface, null, queueName);
                     try {
-                        messageReceiver.run(new MessageHandler(restInterface, objectTypes));
+                        messageReceiver.run(new RestMessageHandler(restInterface, objectTypes));
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -96,7 +98,17 @@ public class Main {
 
                     try {
                         if (operationName.equalsIgnoreCase("create")) {
-                            objectType.create(messageSender, commands.get(3));
+
+                            Future<String> response = objectType.create(messageSender, commands.get(3));
+                            try {
+                                System.out.println(response.get());
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            } catch (ExecutionException e) {
+                                e.printStackTrace();
+                            }
+
+
                         } else if (operationName.equalsIgnoreCase("update")) {
                             objectType.update(messageSender, UUID.fromString(commands.get(3)), commands.get(4));
                         } else if (operationName.equalsIgnoreCase("passivate")) {
@@ -112,7 +124,6 @@ public class Main {
                     } catch (IndexOutOfBoundsException e) {
                         throw new InvalidArgumentException(new String[]{"Incorrect number of arguments; the '" + command + "' command takes more arguments"});
                     }
-
                     messageSender.close();
 
                 }
