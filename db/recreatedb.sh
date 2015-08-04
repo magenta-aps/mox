@@ -45,29 +45,43 @@ patch --fuzz=3 -i  ../patches/tbls-specific_dokument.sql.diff
 patch --fuzz=3 -i  ../patches/as_create_or_import_dokument.sql.diff
 patch --fuzz=3 -i  ../patches/as_update_dokument.sql.diff
 patch --fuzz=3 -i  ../patches/_remove_nulls_in_array_dokument.sql.diff
+patch --fuzz=3 -i  ../patches/as_list_dokument.sql.diff
 
 cd ..
 
 oiotypes=( facet klassifikation klasse bruger interessefaellesskab itsystem organisation organisationenhed organisationfunktion sag dokument )
-templates=( dbtyper-specific tbls-specific _remove_nulls_in_array _as_get_prev_registrering _as_create_registrering as_update  as_create_or_import  as_list as_read as_search json-cast-functions )
+
+templates1=( dbtyper-specific tbls-specific _remove_nulls_in_array )
 
 
 for oiotype in "${oiotypes[@]}"
 do
-	for template in "${templates[@]}"
+	for template in "${templates1[@]}"
 	do
 		sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f ./generated-files/${template}_${oiotype}.sql
 	done	
 done
 
 
+#Extra functions depending on templated data types 
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f ../funcs/_ensure_document_del_exists_and_get.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f ../funcs/_ensure_document_variant_exists_and_get.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f ../funcs/_ensure_document_variant_and_del_exists_and_get_del.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f ../funcs/_as_list_dokument_varianter.sql
+
+
+templates2=(  _as_get_prev_registrering _as_create_registrering as_update  as_create_or_import  as_list as_read as_search json-cast-functions )
+
+
+for oiotype in "${oiotypes[@]}"
+do
+	for template in "${templates2[@]}"
+	do
+		sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f ./generated-files/${template}_${oiotype}.sql
+	done	
+done
 
 cd ..
-
-#Extra functions depending on templated data types
-sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_ensure_document_del_exists_and_get.sql
-sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_ensure_document_variant_exists_and_get.sql
-sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_ensure_document_variant_and_del_exists_and_get_del.sql
 
 
 #Test functions
