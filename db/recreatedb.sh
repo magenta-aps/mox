@@ -16,6 +16,7 @@ sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_subtract_tstzrange_arr.
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_as_valid_registrering_livscyklus_transition.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_as_search_match_array.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_json_object_delete_keys.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_json_object_delete_keys.sql
 
 
 cd ./db-templating/
@@ -60,6 +61,11 @@ done
 
 
 cd ..
+
+#Extra functions depending on templated data types
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_ensure_document_del_exists_and_get.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_ensure_document_variant_exists_and_get.sql
+
 
 #Test functions
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_remove_nulls_in_array_klasse.sql
