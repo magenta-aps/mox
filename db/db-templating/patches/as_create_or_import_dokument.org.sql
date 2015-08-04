@@ -253,7 +253,7 @@ dokument_variant_new_id:=nextval('dokument_variant_id_seq'::regclass);
   END IF; --variant_egenskaber
 
 
-  IF dokument_variant.dele IS NOT NULL AND coalesce(array_length(dokument_variant.dele,1),0)>0 THEN
+  IF dokument_variant_obj.dele IS NOT NULL AND coalesce(array_length(dokument_variant_obj.dele,1),0)>0 THEN
 
     FOREACH dokument_del_obj IN ARRAY dokument_variant_obj.dele
     LOOP

@@ -1,5 +1,5 @@
-*** ../generated-files/as_create_or_import_dokument.sql	2015-07-31 16:42:43.468440683 +0200
---- ../patches/as_create_or_import_dokument.org.sql	2015-07-31 16:41:44.572437750 +0200
+*** ../generated-files/as_create_or_import_dokument.sql	2015-08-03 10:57:13.458770871 +0200
+--- ../patches/as_create_or_import_dokument.org.sql	2015-08-03 10:55:44.798766455 +0200
 ***************
 *** 20,30 ****
     dokument_attr_egenskaber_obj dokumentEgenskaberAttrType;
@@ -92,7 +92,7 @@
 +   END IF; --variant_egenskaber
 + 
 + 
-+   IF dokument_variant.dele IS NOT NULL AND coalesce(array_length(dokument_variant.dele,1),0)>0 THEN
++   IF dokument_variant_obj.dele IS NOT NULL AND coalesce(array_length(dokument_variant_obj.dele,1),0)>0 THEN
 + 
 +     FOREACH dokument_del_obj IN ARRAY dokument_variant_obj.dele
 +     LOOP

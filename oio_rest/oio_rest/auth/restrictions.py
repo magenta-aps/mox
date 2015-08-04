@@ -1,0 +1,103 @@
+# encoding: utf-8
+from enum import Enum
+from importlib import import_module
+
+from ..settings import AUTH_RESTRICTION_MODULE, AUTH_RESTRICTION_FUNCTION
+
+
+class Operation(Enum):
+    CREATE = "Opret"
+    READ = "Læs"
+    UPDATE = "Ret"
+    DELETE = "Slet"
+
+
+def get_restrictions(user, object_type, operation):
+    """Return restriction scope for this type of object.
+
+    Return the set of restrictions under which <user> may perform <operation>
+    on an object of type <object_type>.
+
+    The restrictions are returned as a list of triplets (attributes, states,
+    relations) of Python dictionaries specifying the properties which the
+    object must satisfy before the user is allowed to manipulate it.
+
+    The object must satisfy all of the conditions within a triplet in
+    order to be available for the given operation. That is, the conditions
+    within the restriction triplet are combined with the AND operation.
+
+    If the list contains more than one triplet, at least one of them must be
+    fulfilled for the object to be available. That is, the triplets in the
+    list are combined with the OR operation. This allows the restriction
+    module to specify any Boolean expression on the object on a Sum of
+    Products normal form.
+
+    As a corollary, the trivially true restriction is written as
+
+        [(None, None, None)]
+
+    - i.e., one triplet with no restrictions at all.
+
+    The trivially false restriction is written as
+
+    []
+
+    - i.e., an empty list.
+
+    Examples:
+
+        * User A in department (OrganisationEnhed) D wants to read a case
+          (Sag) which is classified and may only be read by users in that
+          department.
+
+          The restrictions module will return [(None, None,
+          { 'Ejer': D.uuid })].
+
+        * User B wishes to change the description of a Klasse used by her own
+          department.
+
+          The restrictions module will return [(None, None,
+          { 'Redaktører': B.uuid })]. This means that B must be a member of
+          the many relation 'Redaktører'.
+
+        * User C wishes to create a new Klassifikation, i.e. an entire new
+          classification scheme. If C had been IT staff, this would be allowed
+          provided the new Klassifikation was owned by C's Organisation.
+
+          However, C is an ordinary user and is not allowed to create a new
+          Klassifikation. The restrictions module will return [], which is
+          trivially false.
+
+        * A user wishes to view a document (Dokument) on the municipality's
+          intranet. The user is not logged in.
+
+          The restrictions module will return [(None,
+          { 'FremdriftStatus': 'Publiceret' }, None)]. I.e., a user who is
+          not logged in may view only publically available documents.
+
+
+    **Limitations:**
+
+    At present, it's not possible to combine restrictions. In the last example
+    above, the user might be allowed to view a document if it is in state
+    "Publiceret" OR its owner ('Ejer') is the user's organisation.
+
+    This is easily expressed by providing a list with two triplets. This,
+    however, will not be supported in the first implementation of this module.
+
+    The reason is that this may be quite complicated to implement in the
+    database layer.
+    """
+    try:
+        auth_module = import_module(AUTH_RESTRICTION_MODULE)
+        auth_function = getattr(auth_module, AUTH_RESTRICTION_FUNCTION)
+
+        return auth_function(user, object_type, operation)
+    except:
+        print "Config error: Unable to load authorization module!"
+        raise
+
+
+def get_auth_restrictions(user, object_type, operation):
+    """Sample or dummy implementation - implement and specify in settings."""
+    return [(None, None, None)]
