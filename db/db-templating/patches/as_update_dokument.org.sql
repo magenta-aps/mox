@@ -23,7 +23,7 @@ CREATE OR REPLACE FUNCTION as_update_dokument(
   tilsFremdrift DokumentFremdriftTilsType[],
   relationer DokumentRelationType[],
   lostUpdatePreventionTZ TIMESTAMPTZ = null
-  )
+	)
   RETURNS bigint AS 
 $$
 DECLARE
@@ -328,12 +328,12 @@ IF attrEgenskaber IS NOT null THEN
     coalesce(attrEgenskaberObj.offentlighedundtaget,a.offentlighedundtaget), 
     coalesce(attrEgenskaberObj.titel,a.titel), 
     coalesce(attrEgenskaberObj.dokumenttype,a.dokumenttype),
-  ROW (
-    (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
-    (attrEgenskaberObj.virkning).AktoerRef,
-    (attrEgenskaberObj.virkning).AktoerTypeKode,
-    (attrEgenskaberObj.virkning).NoteTekst
-  )::Virkning,
+	ROW (
+	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
+	  (attrEgenskaberObj.virkning).AktoerRef,
+	  (attrEgenskaberObj.virkning).AktoerTypeKode,
+	  (attrEgenskaberObj.virkning).NoteTekst
+	)::Virkning,
     new_dokument_registrering.id
   FROM dokument_attr_egenskaber a
   WHERE
@@ -360,12 +360,12 @@ IF attrEgenskaber IS NOT null THEN
     attrEgenskaberObj.offentlighedundtaget, 
     attrEgenskaberObj.titel, 
     attrEgenskaberObj.dokumenttype,
-    ROW (
-         b.tz_range_leftover,
-        (attrEgenskaberObj.virkning).AktoerRef,
-        (attrEgenskaberObj.virkning).AktoerTypeKode,
-        (attrEgenskaberObj.virkning).NoteTekst
-    )::Virkning,
+	  ROW (
+	       b.tz_range_leftover,
+	      (attrEgenskaberObj.virkning).AktoerRef,
+	      (attrEgenskaberObj.virkning).AktoerTypeKode,
+	      (attrEgenskaberObj.virkning).NoteTekst
+	  )::Virkning,
     new_dokument_registrering.id
   FROM
   (
@@ -429,13 +429,13 @@ SELECT
       a.offentlighedundtaget,
       a.titel,
       a.dokumenttype,
-    ROW(
-      c.tz_range_leftover,
-        (a.virkning).AktoerRef,
-        (a.virkning).AktoerTypeKode,
-        (a.virkning).NoteTekst
-    ) :: virkning,
-   new_dokument_registrering.id
+	  ROW(
+	    c.tz_range_leftover,
+	      (a.virkning).AktoerRef,
+	      (a.virkning).AktoerTypeKode,
+	      (a.virkning).NoteTekst
+	  ) :: virkning,
+	 new_dokument_registrering.id
 FROM
 (
  --build an array of the timeperiod of the virkning of the dokument_attr_egenskaber of the new registrering to pass to _subtract_tstzrange_arr on the dokument_attr_egenskaber of the previous registrering 
