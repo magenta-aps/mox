@@ -12,7 +12,7 @@ import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.*;
 
-public class RestMessageHandler implements MessageReceivedCallback {
+public class RestMessageHandler implements MessageHandler {
 
     private URL url;
     private Map<String, ObjectType> objectTypes;

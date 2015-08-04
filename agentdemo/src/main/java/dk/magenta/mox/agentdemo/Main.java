@@ -1,10 +1,7 @@
 package dk.magenta.mox.agentdemo;
 
 import com.sun.javaws.exceptions.InvalidArgumentException;
-import dk.magenta.mox.agent.RestMessageHandler;
-import dk.magenta.mox.agent.MessageReceiver;
-import dk.magenta.mox.agent.MessageSender;
-import dk.magenta.mox.agent.ObjectType;
+import dk.magenta.mox.agent.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -83,9 +80,9 @@ public class Main {
                 Map<String, ObjectType> objectTypes = ObjectType.load("agent.properties");
 
                 if (command.equalsIgnoreCase("listen")) {
-                    System.out.println("Listening on "+queueInterface+", queue "+queueName);
-                    System.out.println("Successfully parsed messages will be forwarded to the REST interface at "+restInterface);
-                    MessageReceiver messageReceiver = new MessageReceiver(queueInterface, null, queueName);
+                    System.out.println("Listening on " + queueInterface + ", queue " + queueName);
+                    System.out.println("Successfully parsed messages will be forwarded to the REST interface at " + restInterface);
+                    MessageReceiver messageReceiver = new MessageReceiver(queueInterface, null, queueName, true);
                     try {
                         messageReceiver.run(new RestMessageHandler(restInterface, objectTypes));
                     } catch (InterruptedException e) {
@@ -181,7 +178,22 @@ public class Main {
                     }
                     messageSender.close();
 
+
+                } else if (command.equalsIgnoreCase("notify")) {
+                    MessageSender sender = new MessageSender(queueInterface, null, queueName);
+                    sender.sendFromGenerator(new DummyMessageGenerator());
+
+                } else if (command.equalsIgnoreCase("getnotifications")) {
+                    MessageReceiver receiver = new MessageReceiver(queueInterface, null, queueName, false);
+                    try {
+                        receiver.run(new PrintMessageHandler());
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
+
+
+
             } catch (InvalidArgumentException e) {
                 e.printStackTrace();
             }
