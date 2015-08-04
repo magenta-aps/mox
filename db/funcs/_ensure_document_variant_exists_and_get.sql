@@ -7,7 +7,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-CREATE OR REPLACE FUNCTION _ensure_document_variant_exists_and_get(reg_id bigint)
+CREATE OR REPLACE FUNCTION _ensure_document_variant_exists_and_get(reg_id bigint,current_variant_text text)
 RETURNS int LANGUAGE plpgsql AS 
 $$
 DECLARE
@@ -19,7 +19,7 @@ SELECT variant_id into res_variant_id
 FROM dokument_variant a 
 WHERE 
 a.dokument_registrering=reg_id
-and a.varianttekst=varianttext
+and a.varianttekst=current_variant_text
 ;
 
 IF res_variant_id IS NULL THEN
@@ -34,7 +34,7 @@ res_variant_id:=nextval('dokument_variant_id_seq'::regclass);
   VALUES
   (
     res_variant_id,
-      varianttext,
+      current_variant_text,
         reg_id
   ); 
 

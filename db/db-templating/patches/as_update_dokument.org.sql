@@ -23,7 +23,7 @@ CREATE OR REPLACE FUNCTION as_update_dokument(
   tilsFremdrift DokumentFremdriftTilsType[],
   relationer DokumentRelationType[],
   lostUpdatePreventionTZ TIMESTAMPTZ = null
-	)
+  )
   RETURNS bigint AS 
 $$
 DECLARE
@@ -52,6 +52,7 @@ DECLARE
   dokument_variant_del_prev_reg_arr _DokumentVariantDelKey[];
   dokument_variant_del_prev_reg _DokumentVariantDelKey;
   dokument_del_id bigint;
+  dokument_variant_del_prev_reg_rel_transfer _DokumentVariantDelKey[];
 BEGIN
 
 --create a new registrering
@@ -327,12 +328,12 @@ IF attrEgenskaber IS NOT null THEN
     coalesce(attrEgenskaberObj.offentlighedundtaget,a.offentlighedundtaget), 
     coalesce(attrEgenskaberObj.titel,a.titel), 
     coalesce(attrEgenskaberObj.dokumenttype,a.dokumenttype),
-	ROW (
-	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
-	  (attrEgenskaberObj.virkning).AktoerRef,
-	  (attrEgenskaberObj.virkning).AktoerTypeKode,
-	  (attrEgenskaberObj.virkning).NoteTekst
-	)::Virkning,
+  ROW (
+    (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
+    (attrEgenskaberObj.virkning).AktoerRef,
+    (attrEgenskaberObj.virkning).AktoerTypeKode,
+    (attrEgenskaberObj.virkning).NoteTekst
+  )::Virkning,
     new_dokument_registrering.id
   FROM dokument_attr_egenskaber a
   WHERE
@@ -359,12 +360,12 @@ IF attrEgenskaber IS NOT null THEN
     attrEgenskaberObj.offentlighedundtaget, 
     attrEgenskaberObj.titel, 
     attrEgenskaberObj.dokumenttype,
-	  ROW (
-	       b.tz_range_leftover,
-	      (attrEgenskaberObj.virkning).AktoerRef,
-	      (attrEgenskaberObj.virkning).AktoerTypeKode,
-	      (attrEgenskaberObj.virkning).NoteTekst
-	  )::Virkning,
+    ROW (
+         b.tz_range_leftover,
+        (attrEgenskaberObj.virkning).AktoerRef,
+        (attrEgenskaberObj.virkning).AktoerTypeKode,
+        (attrEgenskaberObj.virkning).NoteTekst
+    )::Virkning,
     new_dokument_registrering.id
   FROM
   (
@@ -428,13 +429,13 @@ SELECT
       a.offentlighedundtaget,
       a.titel,
       a.dokumenttype,
-	  ROW(
-	    c.tz_range_leftover,
-	      (a.virkning).AktoerRef,
-	      (a.virkning).AktoerTypeKode,
-	      (a.virkning).NoteTekst
-	  ) :: virkning,
-	 new_dokument_registrering.id
+    ROW(
+      c.tz_range_leftover,
+        (a.virkning).AktoerRef,
+        (a.virkning).AktoerTypeKode,
+        (a.virkning).NoteTekst
+    ) :: virkning,
+   new_dokument_registrering.id
 FROM
 (
  --build an array of the timeperiod of the virkning of the dokument_attr_egenskaber of the new registrering to pass to _subtract_tstzrange_arr on the dokument_attr_egenskaber of the previous registrering 
@@ -481,20 +482,7 @@ IF dokument_registrering.varianter IS NOT NULL AND coalesce(array_length(dokumen
 FOREACH dokument_variant_obj IN ARRAY dokument_registrering.varianter
 LOOP
 
-dokument_variant_new_id:=nextval('dokument_variant_id_seq'::regclass);
-
-  INSERT INTO dokument_variant (
-      id,
-        varianttekst,
-          dokument_registrering_id
-  )
-  VALUES
-  (
-      dokument_variant_new_id,
-        dokument_variant_obj.varianttekst,
-          new_dokument_registrering.id
-  ); 
-
+dokument_variant_new_id:=_ensure_document_variant_exists_and_get(new_dokument_registrering.id,dokument_variant_obj.varianttekst);
 
 --handle variant egenskaber
 IF dokument_variant_obj.egenskaber IS NOT NULL AND coalesce(array_length(dokument_variant_obj.egenskaber,1),0)=0 THEN
@@ -551,7 +539,7 @@ FOREACH dokument_variant_egenskab_obj IN ARRAY dokument_variant_obj.egenskaber
                   (dokument_variant_egenskab_obj.virkning).AktoerRef,
                   (dokument_variant_egenskab_obj.virkning).AktoerTypeKode,
                   (dokument_variant_egenskab_obj.virkning).NoteTekst
-                )::Virkning,
+                )::Virkning
   FROM dokument_variant_egenskaber a
   JOIN dokument_variant b on a.variant_id=b.variant_id
   WHERE
@@ -574,7 +562,7 @@ FOREACH dokument_variant_egenskab_obj IN ARRAY dokument_variant_obj.egenskaber
               virkning
   )
   SELECT 
-    dokument_variant_new_id
+    dokument_variant_new_id,
       dokument_variant_egenskab_obj.arkivering, 
         dokument_variant_egenskab_obj.delvisscannet, 
           dokument_variant_egenskab_obj.offentliggoerelse, 
@@ -591,7 +579,7 @@ FOREACH dokument_variant_egenskab_obj IN ARRAY dokument_variant_obj.egenskaber
       SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
       FROM dokument_variant_egenskaber b
       WHERE 
-       b.variant_id=dokument_variant_new_id;
+       b.variant_id=dokument_variant_new_id
   ) as a
   JOIN unnest(_subtract_tstzrange_arr((dokument_variant_egenskab_obj.virkning).TimePeriod,a.tzranges_of_new_reg)) as b(tz_range_leftover) on true
   ;
@@ -624,9 +612,6 @@ FOREACH dokument_variant_egenskab_obj IN ARRAY dokument_variant_obj.egenskaber
 
 END IF; --variant egenskaber given.
 
---first we'll need to check if we need to consider merging egenskaber - otherwise we'll just insert the new egenskaber objs given to avoid needless fragmentation.
-
-
 END IF; --else block: explicit empty array of variant egenskaber given
 
 
@@ -637,26 +622,13 @@ dokument_variant_dele_all_expl_deleted :=array_append(dokument_variant_dele_all_
 
 ELSE
 
-IF dokument_variant_obj.dele IS NOT NULL coalesce(array_length(dokument_variant_obj.dele,1),0)>0 THEN
+IF dokument_variant_obj.dele IS NOT NULL AND coalesce(array_length(dokument_variant_obj.dele,1),0)>0 THEN
 
 
 FOREACH dokument_del_obj IN ARRAY dokument_variant_obj.dele
     LOOP
 
-    dokument_del_new_id:=nextval('dokument_del_id_seq'::regclass);
-
-    INSERT INTO dokument_del (
-    id,
-      deltekst,
-        variant_id
-    )
-    VALUES
-    (
-    dokument_del_new_id,
-        dokument_del_obj.deltekst,
-          dokument_variant_new_id
-    )
-    ;
+    dokument_del_new_id:=_ensure_document_del_exists_and_get(new_dokument_registrering.id, dokument_variant_new_id, dokument_del_obj.deltekst);
 
     IF dokument_del_obj.egenskaber IS NOT NULL AND coalesce(array_length(dokument_del_obj.egenskaber,1),0)=0 THEN
     dokument_variant_del_egenskaber_deleted:=array_append(dokument_variant_del_egenskaber_deleted,ROW( dokument_variant_obj.varianttekst, dokument_del_obj.deltekst)::_DokumentVariantDelKey);
@@ -713,7 +685,7 @@ FOREACH dokument_del_obj IN ARRAY dokument_variant_obj.dele
               )::Virkning
   FROM dokument_del_egenskaber a
   JOIN dokument_del b on a.del_id=b.id
-  JOIN dokument_variant c on b.variant_id=c.id;
+  JOIN dokument_variant c on b.variant_id=c.id
   WHERE
     c.dokumentdel_registrering_id=prev_dokument_registrering.id 
     and c.varianttekst=dokument_variant_obj.varianttekst
@@ -750,7 +722,7 @@ FOREACH dokument_del_obj IN ARRAY dokument_variant_obj.dele
   --build an array of the timeperiod of the virkning of the relevant dokument_del_egenskaber of the new registrering to pass to _subtract_tstzrange_arr 
       SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
       FROM dokument_del_egenskaber b
-      JOIN dokument_del c on b.del_id=c.id;
+      JOIN dokument_del c on b.del_id=c.id
       JOIN dokument_variant d on c.variant_id=d.id
       WHERE 
       d.dokument_registrering_id=new_dokument_registrering.id
@@ -781,8 +753,9 @@ FOREACH dokument_del_obj IN ARRAY dokument_variant_obj.dele
               dokument_del_egenskaber_obj.virkning
   ;
 
-  END IF --else block: null field in del egenskaber obj pesent
+  END IF; --else block: null field in del egenskaber obj pesent
 
+  END LOOP;
     END IF; --del obj has egenskaber given.
 
     END IF; --else block: explicit empty array of variant del egenskaber given
@@ -837,7 +810,7 @@ END IF; --variants given with this update.
 SELECT array_agg(varianttekst) into dokument_variants_prev_reg_arr
 FROM
 dokument_variant a
-WHERE a.dokument_registrering_id=prev_dokument_registrering.id;
+WHERE a.dokument_registrering_id=prev_dokument_registrering.id
 and a.varianttekst not in (select varianttekst from unnest(dokument_variant_egenskaber_expl_deleted) b(varianttekst) )
 ;
 
@@ -846,30 +819,8 @@ IF dokument_variants_prev_reg_arr IS NOT NULL AND coalesce(array_length(dokument
 FOREACH dokument_variant_egenskaber_prev_reg_varianttekst IN ARRAY dokument_variants_prev_reg_arr
 LOOP 
 
-SELECT variant_id into dokument_variant_id 
-FROM dokument_variant a 
-WHERE 
-a.dokument_registrering=new_dokument_registrering.id
-and a.varianttekst=dokument_variant_egenskaber_prev_reg_varianttekst
-;
 
-IF dokument_variant_id IS NULL THEN
-
-dokument_variant_id:=nextval('dokument_variant_id_seq'::regclass);
-
- INSERT INTO dokument_variant (
-    id,
-      varianttekst,
-        dokument_registrering_id
-  )
-  VALUES
-  (
-    dokument_variant_id,
-      dokument_variant_egenskaber_prev_reg_varianttekst,
-        new_dokument_registrering.id
-  ); 
-
-END IF; --dokument_variant_id IS NULL
+dokument_variant_id:=_ensure_document_variant_exists_and_get(new_dokument_registrering.id,dokument_variant_egenskaber_prev_reg_varianttekst);
 
 INSERT INTO
     dokument_variant_egenskaber (
@@ -885,22 +836,20 @@ SELECT
         a.arkivering,
           a.delvisscannet,
             a.offentliggoerelse,
-              a.produktion,
-                a.virkning
-    ROW(
-      c.tz_range_leftover,
-        (a.virkning).AktoerRef,
-        (a.virkning).AktoerTypeKode,
-        (a.virkning).NoteTekst
-    ) :: virkning,
-   new_dokumentvariant_registrering.id
+              a.produktion,               
+                ROW(
+                  c.tz_range_leftover,
+              (a.virkning).AktoerRef,
+              (a.virkning).AktoerTypeKode,
+              (a.virkning).NoteTekst
+                ) :: virkning
 FROM
 (
  --build an array of the timeperiod of the virkning of the dokument_variant_egenskaber of the new registrering to pass to _subtract_tstzrange_arr on the dokumentvariant_attr_egenskaber of the previous registrering 
     SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
     FROM dokument_variant_egenskaber b
     WHERE 
-    b.variant_id=dokument_variant_id;
+    b.variant_id=dokument_variant_id
 
 ) d
   JOIN dokument_variant_egenskaber a ON true  
@@ -911,7 +860,7 @@ FROM
 ;
 
 END LOOP; --loop dokument_variant_egenskaber_prev_reg_varianttekst
-END IF-- not null dokument_variants_prev_reg_arr
+END IF;-- not null dokument_variants_prev_reg_arr
 
 
 --Remove any "cleared"/"deleted" variant egenskaber
@@ -934,7 +883,8 @@ AND (a.varianttekst IS NULL OR a.varianttekst='')
 /****************************************************/
 --carry over any variant del egenskaber of the prev. registration, unless explicitly deleted -  where there is room acording to virkning
 
-  select array_agg(row(a.varianttekst,a.deltekst)::_DokumentVariantDelKey) into dokument_variant_del_prev_reg_arr
+  SELECT array_agg(row(a.varianttekst,a.deltekst)::_DokumentVariantDelKey) into dokument_variant_del_prev_reg_arr
+  FROM
   (
   SELECT a.varianttekst,b.deltekst
   FROM
@@ -955,58 +905,7 @@ if dokument_variant_del_prev_reg_arr IS NOT NULL and coalesce(array_length(dokum
   FOREACH dokument_variant_del_prev_reg in ARRAY dokument_variant_del_prev_reg_arr
   LOOP
 
-  SELECT b.id INTO dokument_del_id
-  FROM
-  dokument_variant a
-  join dokument_del b on b.variant_id=a.id
-  WHERE a.dokument_registrering_id=new_dokument_registrering.id
-  AND a.varianttekst=dokument_variant_del_prev_reg.varianttekst
-  AND b.deltekst=dokument_variant_del_prev_reg.deltekst
-  ;
-
-  IF dokument_del_id is null THEN
-
-    SELECT into dokument_variant_id
-    FROM dokument_variant a
-    WHERE a.varianttekst=dokument_variant_del_prev_reg.varianttekst
-    AND a.dokument_registrering_id=new_dokument_registrering.id
-    ;
-
-    IF dokument_variant_id IS NULL THEN
-    
-    dokument_variant_id:=nextval('dokument_variant_id_seq'::regclass);
-
-     INSERT INTO dokument_variant (
-        id,
-          varianttekst,
-            dokument_registrering_id
-      )
-      VALUES
-      (
-        dokument_variant_id,
-          dokument_variant_del_prev_reg.varianttekst,
-            new_dokument_registrering.id
-      ); 
-    
-    END IF; --dokument_variant_id is null
-
-    dokument_del_id:=nextval('dokument_del_id_seq'::regclass);
-
-    INSERT INTO dokument_del (
-    id,
-      deltekst,
-        variant_id
-    )
-    VALUES
-    (
-    dokument_del_id,
-        dokument_variant_del_prev_reg.deltekst,
-          dokument_variant_id
-    )
-    ;
-  END IF; --dokument_del_id is null
-
-
+  dokument_del_id:=_ensure_document_variant_and_del_exists_and_get_del(new_dokument_registrering.id,dokument_variant_del_prev_reg.varianttekst,dokument_variant_del_prev_reg.deltekst);
 
   INSERT INTO dokument_del_egenskaber (
       del_id,
@@ -1079,10 +978,112 @@ id in
 
 
 
+--3) Transfer relations of prev reg.
+
+--Identify the variant + del combos that should have relations carried over
+SELECT array_agg(ROW(e.varianttekst,e.deltekst)::_DokumentVariantDelKey) into dokument_variant_del_prev_reg_rel_transfer
+FROM
+(
+  SELECT
+  c.varianttekst,b.deltekst
+  FROM dokument_del_relation a 
+  JOIN dokument_del b on a.del_id=b.id
+  JOIN dokument_variant c on b.variant_id=c.id
+  LEFT JOIN unnest(dokument_variant_del_relationer_deleted) d(varianttekst,deltekst) on d.varianttekst=c.varianttekst and d.deltekst=b.deltekst
+  WHERE c.dokument_registrering_id=prev_dokument_registrering.id
+  AND ( d.varianttekst IS NULL AND d.deltekst IS NULL) 
+  EXCEPT
+  SELECT
+  c.varianttekst,b.deltekst
+  FROM dokument_del_relation a 
+  JOIN dokument_del b on a.del_id=b.id
+  JOIN dokument_variant c on b.variant_id=c.id
+  WHERE c.dokument_registrering_id=new_dokument_registrering.id
+) as e
+;
+
+-- Make sure that part + variants are in place 
+IF dokument_variant_del_prev_reg_rel_transfer IS NOT NULL AND coalesce(array_length(dokument_variant_del_prev_reg_rel_transfer,1),0)>0 THEN
+  FOREACH dokument_variant_del_prev_reg IN array dokument_variant_del_prev_reg_rel_transfer
+  LOOP
+     dokument_del_id:=_ensure_document_variant_and_del_exists_and_get_del(new_dokument_registrering.id,dokument_variant_del_prev_reg.varianttekst , dokument_variant_del_prev_reg.deltekst);
+
+--transfer relations of prev reg.
+INSERT INTO dokument_del_relation(
+    del_id, 
+      virkning, 
+        rel_maal_uuid, 
+          rel_maal_urn, 
+            rel_type, 
+              objekt_type
+    )
+SELECT
+    dokument_del_new_id,
+      a.virkning,
+        a.relMaalUuid,
+          a.relMaalUrn,
+            a.relType,
+              a.objektType
+FROM dokument_del_relation a 
+JOIN dokument_del b on a.del_id=b.id
+JOIN dokument_variant c on b.variant_id=c.id
+WHERE c.dokument_registrering_id=prev_dokument_registrering.id
+AND c.varianttekst=dokument_variant_del_prev_reg.varianttekst
+AND b.deltekst=dokument_variant_del_prev_reg.deltekst
+;
+
+END LOOP;
+
+END IF; --block: there are relations to transfer
+
+--Remove any "cleared"/"deleted" relations
+DELETE FROM dokument_del_relation a
+WHERE 
+a.del_in in (
+    SELECT del_id from dokument_del_relation a 
+    JOIN dokument_del b on a.del_id=b.id
+    JOIN dokument_variant c on b.variant_id=c.id
+    WHERE c.dokument_registrering_id=new_dokument_registrering.id
+    )
+AND (a.rel_maal_uuid IS NULL AND (a.rel_maal_urn IS NULL OR a.rel_maal_urn=''))
+;
 
 
+/**************************************************/
+--delete parts that has no relations or egenskaber
 
---TODO: Remember also to delete entries in dokument_variant, that has no egenskaber or parts
+DELETE FROM dokument_del
+WHERE id in 
+(
+SELECT 
+a.id
+from
+dokument_del a
+JOIN dokument_variant b on a.variant_id=b.id
+LEFT JOIN dokument_del_relation c on c.del_id=a.id
+LEFT JOIN dokument_del_egenskaber d on d.del_id=a.id
+WHERE b.dokument_registrering_id=new_dokument_registrering.id
+AND c.id IS NULL AND d.id IS NULL 
+)
+;
+
+--delete variants that has no egenskaber or parts
+
+DELETE FROM dokument_variant
+WHERE id in
+(
+SELECT
+a.id
+from 
+dokument_variant a 
+LEFT JOIN dokument_del b on a.id = b.del_id
+LEFT JOIN dokument_variant_egenskaber c on c.variant_id=a.id
+WHERE 
+a.dokument_registrering_id=new_dokument_registrering.id
+AND b.id IS NULL AND c.id is NULL
+)
+AND dokument_registrering_id=new_dokument_registrering.id
+;
 
 END IF; --else block for skip on empty array for variants.
 

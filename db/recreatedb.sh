@@ -65,6 +65,7 @@ cd ..
 #Extra functions depending on templated data types
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_ensure_document_del_exists_and_get.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_ensure_document_variant_exists_and_get.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_ensure_document_variant_and_del_exists_and_get_del.sql
 
 
 #Test functions
