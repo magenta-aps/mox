@@ -44,6 +44,7 @@ patch --fuzz=3 -i  ../patches/dbtyper-specific_dokument.sql.diff
 patch --fuzz=3 -i  ../patches/tbls-specific_dokument.sql.diff
 patch --fuzz=3 -i  ../patches/as_create_or_import_dokument.sql.diff
 patch --fuzz=3 -i  ../patches/as_update_dokument.sql.diff
+patch --fuzz=3 -i  ../patches/_remove_nulls_in_array_dokument.sql.diff
 
 cd ..
 

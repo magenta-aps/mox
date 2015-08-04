@@ -26,6 +26,7 @@ RETURNS TABLE(dokument_registrering_id bigint, varianter DokumentVariantType[])
   			a.dokument_id, 
   			a.dokument_registrering_id,
   			a.variant_id,
+  			a.varianttekst,
   			a.DokumentVariantEgenskaberTypeArr,
 	  		array_agg(
 	  			ROW (
@@ -40,6 +41,7 @@ RETURNS TABLE(dokument_registrering_id bigint, varianter DokumentVariantType[])
   			a.dokument_id, 
   			a.dokument_registrering_id,
   			a.variant_id,
+  			a.varianttekst,
   			a.DokumentVariantEgenskaberTypeArr,
   			a.del_id,
   			a.deltekst,
@@ -111,7 +113,7 @@ RETURNS TABLE(dokument_registrering_id bigint, varianter DokumentVariantType[])
 					JOIN dokument_variant e on e.dokument_registrering_id=b.id
 					LEFT JOIN dokument_variant_egenskaber c on c.variant_id = e.id AND (virkning_tstzrange is null OR (c.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			 
 					WHERE a.id = ANY (dokument_uuids) AND ((registrering_tstzrange is null AND upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
-					GROUP BY a.id,b.id,c.variant_id 	
+					GROUP BY a.id,b.id,e.id,e.varianttekst 	
 					) as a
 				LEFT JOIN dokument_del b on a.variant_id=b.variant_id
 				LEFT JOIN dokument_del_egenskaber c on b.id = c.del_id AND (virkning_tstzrange is null OR (c.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			 
