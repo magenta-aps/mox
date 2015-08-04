@@ -6,8 +6,13 @@ import dk.magenta.mox.agent.MessageReceiver;
 import dk.magenta.mox.agent.MessageSender;
 import dk.magenta.mox.agent.ObjectType;
 import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import javax.naming.OperationNotSupportedException;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -99,7 +104,7 @@ public class Main {
                     try {
                         if (operationName.equalsIgnoreCase("create")) {
 
-                            Future<String> response = objectType.create(messageSender, commands.get(3));
+                            Future<String> response = objectType.create(messageSender, getJSONObjectFromFilename(commands.get(3)));
                             try {
                                 System.out.println(response.get());
                             } catch (InterruptedException e) {
@@ -110,12 +115,62 @@ public class Main {
 
 
                         } else if (operationName.equalsIgnoreCase("update")) {
-                            objectType.update(messageSender, UUID.fromString(commands.get(3)), commands.get(4));
+                            objectType.update(messageSender, UUID.fromString(commands.get(3)), getJSONObjectFromFilename(commands.get(4)));
                         } else if (operationName.equalsIgnoreCase("passivate")) {
                             objectType.passivate(messageSender, UUID.fromString(commands.get(3)), commands.get(4));
                         } else if (operationName.equalsIgnoreCase("delete")) {
-                            objectType.passivate(messageSender, UUID.fromString(commands.get(3)), commands.get(4));
+                            objectType.delete(messageSender, UUID.fromString(commands.get(3)), commands.get(4));
                         }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    } catch (OperationNotSupportedException e) {
+                        e.printStackTrace();
+                    } catch (IndexOutOfBoundsException e) {
+                        throw new InvalidArgumentException(new String[]{"Incorrect number of arguments; the '" + command + "' command takes more arguments"});
+                    }
+                    messageSender.close();
+
+                } else if (command.equalsIgnoreCase("sendtest")) {
+                    System.out.println("Running sendtest\nSending to "+queueInterface+", queue "+queueName);
+
+                    String authorization = "incorrect";
+
+                    MessageSender messageSender = new MessageSender(queueInterface, null, queueName);
+                    ObjectType objectType = objectTypes.get("facet");
+
+                    try {
+
+                        try {
+                            Future<String> response = objectType.create(messageSender, getJSONObjectFromFilename("test/facet_opret.json"), authorization);
+                            String responseString = response.get();
+                            System.out.println("create response: "+responseString);
+
+                            JSONObject obj = new JSONObject(responseString);
+                            UUID uuid = UUID.fromString(obj.getString("uuid"));
+
+                            response = objectType.update(messageSender, uuid, getJSONObjectFromFilename("test/facet_opdater.json"), authorization);
+                            responseString = response.get();
+                            System.out.println("update response: "+responseString);
+
+                            response = objectType.passivate(messageSender, uuid, "Pacify that sucker", authorization);
+                            responseString = response.get();
+                            System.out.println("passivate response: "+responseString);
+
+                            response = objectType.delete(messageSender, uuid, "Delete that sucker", authorization);
+                            responseString = response.get();
+                            System.out.println("delete response: "+responseString);
+
+
+
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        } catch (ExecutionException e) {
+                            e.printStackTrace();
+                        }
+
+
+
 
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -131,5 +186,9 @@ public class Main {
                 e.printStackTrace();
             }
         }
+    }
+
+    public static JSONObject getJSONObjectFromFilename(String jsonFilename) throws FileNotFoundException, JSONException {
+        return new JSONObject(new JSONTokener(new FileReader(new File(jsonFilename))));
     }
 }

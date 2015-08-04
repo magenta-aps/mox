@@ -31,12 +31,11 @@ public class MessageReceiver extends MessageInterface {
                 final Future<String> response = callback.run(delivery.getProperties().getHeaders(), new JSONObject(new String(delivery.getBody())));
 
                 // Wait for a response from the callback and send it back to the original message sender
-                final MessageReceiver self = this;
                 new Thread(new Runnable() {
                     public void run() {
                         try {
                             String responseString = response.get(); // This blocks while we wait for the callback to run. Hence the thread
-                            self.getChannel().basicPublish("", deliveryProperties.getReplyTo(), responseProperties, responseString.getBytes());
+                            MessageReceiver.this.getChannel().basicPublish("", deliveryProperties.getReplyTo(), responseProperties, responseString.getBytes());
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         } catch (ExecutionException e) {
