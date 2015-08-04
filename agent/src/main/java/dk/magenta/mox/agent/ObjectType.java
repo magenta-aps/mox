@@ -7,6 +7,7 @@ import org.json.JSONTokener;
 import javax.naming.OperationNotSupportedException;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.Future;
 
 /**
  * Created by lars on 30-07-15.
@@ -133,13 +134,13 @@ public class ObjectType {
     }
 
 
-    public void create(MessageSender sender, String jsonFilename) throws IOException, JSONException, OperationNotSupportedException {
-        this.create(sender, this.getJSONObjectFromFilename(jsonFilename));
+    public Future<String> create(MessageSender sender, String jsonFilename) throws IOException, JSONException, OperationNotSupportedException {
+        return this.create(sender, this.getJSONObjectFromFilename(jsonFilename));
     }
 
-    public void create(MessageSender sender, JSONObject data) throws IOException, OperationNotSupportedException {
+    public Future<String> create(MessageSender sender, JSONObject data) throws IOException, OperationNotSupportedException {
         if (this.operations.containsKey(OPERATION_CREATE)) {
-            this.sendCommand(sender, this.operations.get(OPERATION_CREATE).command, null, data);
+            return this.sendCommand(sender, this.operations.get(OPERATION_CREATE).command, null, data);
         } else {
             throw new OperationNotSupportedException("Operation "+OPERATION_CREATE+" is not defined for Object type "+this.name);
         }
@@ -201,13 +202,18 @@ public class ObjectType {
 
 
 
-    private void sendCommand(MessageSender sender, String operation, UUID uuid, JSONObject data) throws IOException {
+    private Future<String> sendCommand(MessageSender sender, String operation, UUID uuid, JSONObject data) throws IOException {
         HashMap<String, Object> headers = new HashMap<String, Object>();
         headers.put("operation", operation);
         if (uuid != null) {
             headers.put("beskedID", uuid.toString());
         }
-        sender.sendJSON(headers, data);
+        try {
+            return sender.sendJSON(headers, data);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private static String capitalize(String s) {

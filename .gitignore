@@ -6,4 +6,6 @@ python-env
 oio_rest/oio_api
 *.orig
 *.rej
+*.class
+*~
 
