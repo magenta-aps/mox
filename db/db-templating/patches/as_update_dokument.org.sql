@@ -1074,6 +1074,12 @@ id in
 )
 ;
 
+/****************************************************/
+--carry over any document part relations of the prev. relation if a) they were not explicitly cleared and b)no document part relations is already present for the variant del.
+
+
+
+
 
 
 --TODO: Remember also to delete entries in dokument_variant, that has no egenskaber or parts
