@@ -1106,7 +1106,8 @@ read_new_dokument_reg:=ROW(
 ROW(null,(read_new_dokument.registrering[1].registrering).livscykluskode,null,null)::registreringBase,
 (read_new_dokument.registrering[1]).tilsFremdrift ,
 (read_new_dokument.registrering[1]).attrEgenskaber ,
-(read_new_dokument.registrering[1]).relationer 
+(read_new_dokument.registrering[1]).relationer,
+(read_new_dokument.registrering[1]).varianter 
 )::dokumentRegistreringType
 ;
 
@@ -1114,7 +1115,8 @@ read_prev_dokument_reg:=ROW(
 ROW(null,(read_prev_dokument.registrering[1].registrering).livscykluskode,null,null)::registreringBase,
 (read_prev_dokument.registrering[1]).tilsFremdrift ,
 (read_prev_dokument.registrering[1]).attrEgenskaber ,
-(read_prev_dokument.registrering[1]).relationer 
+(read_prev_dokument.registrering[1]).relationer,
+(read_prev_dokument.registrering[1]).varianter
 )::dokumentRegistreringType
 ;
 
