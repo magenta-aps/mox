@@ -44,9 +44,6 @@ virtualenv $VIRTUALENV
 
 source $VIRTUALENV/bin/activate
 
-
-
-
 # Database dependencies + installation
 
 if [ ! -z $DB_INSTALL ]; then
@@ -58,7 +55,7 @@ if [ ! -z $DB_INSTALL ]; then
 	done
 
 	sudo pgxn install pgtap
-	sudo pip install jinja2
+	pip install jinja2
 	sudo -u postgres createuser mox
 
 	pushd $DIR/db
