@@ -1,0 +1,5 @@
+postgresql
+postgresql-contrib-9.3
+pgxnclient
+postgresql-server-dev-9.3
+
