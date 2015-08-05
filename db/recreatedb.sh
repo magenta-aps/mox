@@ -109,6 +109,8 @@ sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_create_or_import
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_update_sag.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_json_object_delete_keys.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_json_cast_function.sql
+#dokument
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_create_or_import_dokument.sql
 
 
 

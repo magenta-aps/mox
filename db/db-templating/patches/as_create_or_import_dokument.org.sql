@@ -229,25 +229,22 @@ dokument_variant_new_id:=nextval('dokument_variant_id_seq'::regclass);
     FOREACH dokument_variant_egenskab_obj IN ARRAY dokument_variant_obj.egenskaber
     LOOP
 
-     INSERT INTO dokument_variant_egenskaber(
+     INSERT INTO dokument_variant_egenskaber (
       variant_id,
-        varianttekst,
-          arkivering, 
-            delvisscannet, 
-              offentliggoerelse, 
-                produktion,
-                  virkning
+        arkivering, 
+          delvisscannet, 
+            offentliggoerelse, 
+              produktion,
+                virkning
       )
-      VALUES (
+      SELECT
       dokument_variant_new_id,  
-        dokument_variant_obj.varianttekst,
-          dokument_variant_obj_egenskab.arkivering,
-            dokument_variant_obj_egenskab.delvisscannet,
-              dokument_variant_obj_egenskab.offentliggoerelse,
-                dokument_variant_obj_egenskab.produktion,
-                  dokument_variant_obj_egenskab.virkning
-        )
-    ;
+        dokument_variant_egenskab_obj.arkivering,
+          dokument_variant_egenskab_obj.delvisscannet,
+            dokument_variant_egenskab_obj.offentliggoerelse,
+              dokument_variant_egenskab_obj.produktion,
+                dokument_variant_egenskab_obj.virkning
+      ;
 
     END LOOP; --variant_egenskaber
   END IF; --variant_egenskaber
