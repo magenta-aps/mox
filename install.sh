@@ -68,8 +68,9 @@ fi
 
 
 
-
-python oio_rest/setup.py develop
+pushd $DIR/oio_rest
+python ./setup.py develop
+popd
 
 echo "Run oio_api/oio_api.sh to test API"
 
