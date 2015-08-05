@@ -187,6 +187,61 @@ $$
  $$ LANGUAGE plpgsql IMMUTABLE
 ;
 
+CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr DokumentDelType[])
+RETURNS DokumentDelType[] AS
+$$
+ DECLARE result DokumentDelType[];
+ DECLARE element DokumentDelType;  
+  BEGIN
+
+   IF inputArr IS NOT NULL THEN
+    FOREACH element IN ARRAY  inputArr
+    LOOP
+      IF element IS NULL OR ( element.deltekst IS NULL AND (element.egenskaber IS NULL OR  coalesce(array_length(element.egenskaber,1),0)=0) AND (element.relationer IS NULL OR  coalesce(array_length(element.relationer,1),0)=0)  ) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+      --RAISE DEBUG 'Skipping element';
+      ELSE
+      result:=array_append(result,element);
+      END IF;
+    END LOOP;
+  ELSE
+    return null;  
+  END IF;
+
+  RETURN result;
+    
+  END;
+ 
+ $$ LANGUAGE plpgsql IMMUTABLE
+;
+
+CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr DokumentVariantType[])
+RETURNS DokumentVariantType[] AS
+$$
+ DECLARE result DokumentVariantType[];
+ DECLARE element DokumentVariantType;  
+  BEGIN
+
+   IF inputArr IS NOT NULL THEN
+    FOREACH element IN ARRAY  inputArr
+    LOOP
+      IF element IS NULL OR ( element.varianttekst IS NULL AND (element.egenskaber IS NULL OR  coalesce(array_length(element.egenskaber,1),0)=0) AND (element.dele IS NULL OR  coalesce(array_length(element.dele,1),0)=0)  ) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+      --RAISE DEBUG 'Skipping element';
+      ELSE
+      result:=array_append(result,element);
+      END IF;
+    END LOOP;
+  ELSE
+    return null;  
+  END IF;
+
+  RETURN result;
+    
+  END;
+ 
+ $$ LANGUAGE plpgsql IMMUTABLE
+;
+
+
 
 
 
