@@ -116,3 +116,10 @@ CREATE TYPE DokumentType AS
   id uuid,
   registrering DokumentRegistreringType[]
 );  
+
+/**************************************************/
+CREATE TYPE _DokumentVariantDelKey AS
+(
+  varianttekst text,
+  deltekst text
+);

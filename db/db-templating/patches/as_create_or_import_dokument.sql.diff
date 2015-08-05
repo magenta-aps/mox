@@ -1,5 +1,5 @@
-*** ../generated-files/as_create_or_import_dokument.sql	2015-07-31 16:42:43.468440683 +0200
---- ../patches/as_create_or_import_dokument.org.sql	2015-07-31 16:41:44.572437750 +0200
+*** ../generated-files/as_create_or_import_dokument.sql	2015-08-05 10:48:16.283498465 +0200
+--- ../patches/as_create_or_import_dokument.org.sql	2015-08-05 10:44:57.139502032 +0200
 ***************
 *** 20,30 ****
     dokument_attr_egenskaber_obj dokumentEgenskaberAttrType;
@@ -33,7 +33,7 @@
       dokument_uuid:=uuid_generate_v4();
 ***************
 *** 192,201 ****
---- 198,346 ----
+--- 198,343 ----
       FROM unnest(dokument_registrering.relationer) a
       WHERE (a.relMaalUuid IS NOT NULL OR (a.relMaalUrn IS NOT NULL AND a.relMaalUrn<>'') )
     ;
@@ -68,31 +68,28 @@
 +     FOREACH dokument_variant_egenskab_obj IN ARRAY dokument_variant_obj.egenskaber
 +     LOOP
 + 
-+      INSERT INTO dokument_variant_egenskaber(
++      INSERT INTO dokument_variant_egenskaber (
 +       variant_id,
-+         varianttekst,
-+           arkivering, 
-+             delvisscannet, 
-+               offentliggoerelse, 
-+                 produktion,
-+                   virkning
++         arkivering, 
++           delvisscannet, 
++             offentliggoerelse, 
++               produktion,
++                 virkning
 +       )
-+       VALUES (
++       SELECT
 +       dokument_variant_new_id,  
-+         dokument_variant_obj.varianttekst,
-+           dokument_variant_obj_egenskab.arkivering,
-+             dokument_variant_obj_egenskab.delvisscannet,
-+               dokument_variant_obj_egenskab.offentliggoerelse,
-+                 dokument_variant_obj_egenskab.produktion,
-+                   dokument_variant_obj_egenskab.virkning
-+         )
-+     ;
++         dokument_variant_egenskab_obj.arkivering,
++           dokument_variant_egenskab_obj.delvisscannet,
++             dokument_variant_egenskab_obj.offentliggoerelse,
++               dokument_variant_egenskab_obj.produktion,
++                 dokument_variant_egenskab_obj.virkning
++       ;
 + 
 +     END LOOP; --variant_egenskaber
 +   END IF; --variant_egenskaber
 + 
 + 
-+   IF dokument_variant.dele IS NOT NULL AND coalesce(array_length(dokument_variant.dele,1),0)>0 THEN
++   IF dokument_variant_obj.dele IS NOT NULL AND coalesce(array_length(dokument_variant_obj.dele,1),0)>0 THEN
 + 
 +     FOREACH dokument_del_obj IN ARRAY dokument_variant_obj.dele
 +     LOOP
@@ -119,7 +116,7 @@
 + 
 +     INSERT INTO
 +     dokument_del_egenskaber (
-+       del_id
++       del_id,
 +         indeks, 
 +           indhold, 
 +             lokation, 

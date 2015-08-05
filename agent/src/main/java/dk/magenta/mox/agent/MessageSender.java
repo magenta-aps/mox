@@ -4,10 +4,7 @@ package dk.magenta.mox.agent;
 import com.rabbitmq.client.AMQP;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.*;
 
 import com.rabbitmq.client.QueueingConsumer;
@@ -64,8 +61,11 @@ public class MessageSender extends MessageInterface {
         return propertyBuilder;
     }
 
-
     public Future<String> sendJSON(Map<String, Object> headers, JSONObject jsonObject) throws IOException, InterruptedException {
+        return this.sendJSON(headers, jsonObject, true);
+    }
+
+    public Future<String> sendJSON(Map<String, Object> headers, JSONObject jsonObject, boolean expectReply) throws IOException, InterruptedException {
         if (headers == null) {
             headers = new HashMap<String, Object>();
         }
@@ -74,11 +74,14 @@ public class MessageSender extends MessageInterface {
         AMQP.BasicProperties properties = this.getStandardPropertyBuilder().headers(headers).contentType("application/json").correlationId(correlationId).build();
         this.getChannel().basicPublish(this.getExchange(), this.getQueueName(), properties, jsonObject.toString().getBytes());
 
-        SettableFuture<String> expector = new SettableFuture<String>(); // Set up a Future<> to wait for a reply
-        this.responseExpectors.put(correlationId, expector);
-        this.startListening();
-
-        return expector;
+        if (expectReply) {
+            SettableFuture<String> expector = new SettableFuture<String>(); // Set up a Future<> to wait for a reply
+            this.responseExpectors.put(correlationId, expector);
+            this.startListening();
+            return expector;
+        } else {
+            return new ImmediateFuture<String>("");
+        }
     }
 
     private void startListening() {
@@ -108,5 +111,32 @@ public class MessageSender extends MessageInterface {
                 }
             }).start();
         }
+    }
+
+    public void sendFromGenerator(final MessageGenerator<JSONObject> generator) {
+        new Thread(new Runnable() {
+            public void run() {
+                while (generator.isRunning()) {
+                    List<JSONObject> notifications = generator.getNotifications(); // Must block until there is something
+                    if (notifications == null || notifications.isEmpty()) {
+                        try { // If the generator messes up, don't fast-poll and kill the cpu
+                            Thread.sleep(500);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        for (JSONObject notification : notifications) {
+                            try {
+                                MessageSender.this.sendJSON(null, notification);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
+        }).start();
     }
 }
