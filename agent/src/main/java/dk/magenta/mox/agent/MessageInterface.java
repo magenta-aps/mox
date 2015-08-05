@@ -21,6 +21,10 @@ public abstract class MessageInterface {
     private String queueName;
     private AMQP.Queue.DeclareOk queueResult;
 
+    public static final String HEADER_AUTHORIZATION = "authorization";
+    public static final String HEADER_MESSAGEID = "beskedID";
+    public static final String HEADER_OPERATION = "operation";
+
 
     private static HashMap<String, ConnectionFactory> connectionFactories = new HashMap<String, ConnectionFactory>();
 

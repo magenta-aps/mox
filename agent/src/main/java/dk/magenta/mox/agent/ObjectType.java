@@ -2,7 +2,6 @@ package dk.magenta.mox.agent;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import javax.naming.OperationNotSupportedException;
 import java.io.*;
@@ -129,17 +128,15 @@ public class ObjectType {
     }
 
 
-    private JSONObject getJSONObjectFromFilename(String jsonFilename) throws FileNotFoundException, JSONException {
-        return new JSONObject(new JSONTokener(new FileReader(new File(jsonFilename))));
-    }
 
 
-    public Future<String> create(MessageSender sender, String jsonFilename) throws IOException, JSONException, OperationNotSupportedException {
-        return this.create(sender, this.getJSONObjectFromFilename(jsonFilename));
-    }
 
     public Future<String> create(MessageSender sender, JSONObject data) throws IOException, OperationNotSupportedException {
-        if (this.operations.containsKey(OPERATION_CREATE)) {
+        return this.create(sender, data, null);
+    }
+
+    public Future<String> create(MessageSender sender, JSONObject data, String authorization) throws IOException, OperationNotSupportedException {
+            if (this.operations.containsKey(OPERATION_CREATE)) {
             return this.sendCommand(sender, this.operations.get(OPERATION_CREATE).command, null, data);
         } else {
             throw new OperationNotSupportedException("Operation "+OPERATION_CREATE+" is not defined for Object type "+this.name);
@@ -147,21 +144,25 @@ public class ObjectType {
     }
 
 
-    public void update(MessageSender sender, UUID uuid, String jsonFilename) throws IOException, JSONException, OperationNotSupportedException {
-        this.update(sender, uuid, this.getJSONObjectFromFilename(jsonFilename));
+    public Future<String> update(MessageSender sender, UUID uuid, JSONObject data) throws IOException, OperationNotSupportedException {
+        return this.update(sender, uuid, data, null);
     }
 
-    public void update(MessageSender sender, UUID uuid, JSONObject data) throws IOException, OperationNotSupportedException {
-        if (this.operations.containsKey(OPERATION_UPDATE)) {
-            this.sendCommand(sender, this.operations.get(OPERATION_UPDATE).command, uuid, data);
+    public Future<String> update(MessageSender sender, UUID uuid, JSONObject data, String authorization) throws IOException, OperationNotSupportedException {
+            if (this.operations.containsKey(OPERATION_UPDATE)) {
+            return this.sendCommand(sender, this.operations.get(OPERATION_UPDATE).command, uuid, data);
         } else {
             throw new OperationNotSupportedException("Operation "+OPERATION_UPDATE+" is not defined for Object type "+this.name);
         }
     }
 
 
-    public void passivate(MessageSender sender, UUID uuid, String note) throws IOException, OperationNotSupportedException {
-        if (this.operations.containsKey(OPERATION_PASSIVATE)) {
+    public Future<String> passivate(MessageSender sender, UUID uuid, String note) throws IOException, OperationNotSupportedException {
+        return this.passivate(sender, uuid, note, null);
+    }
+
+    public Future<String> passivate(MessageSender sender, UUID uuid, String note, String authorization) throws IOException, OperationNotSupportedException {
+            if (this.operations.containsKey(OPERATION_PASSIVATE)) {
             JSONObject data = new JSONObject();
             if (note == null) {
                 note = "";
@@ -172,13 +173,17 @@ public class ObjectType {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            this.sendCommand(sender, this.operations.get(OPERATION_PASSIVATE).command, uuid, data);
+            return this.sendCommand(sender, this.operations.get(OPERATION_PASSIVATE).command, uuid, data, authorization);
         } else {
             throw new OperationNotSupportedException("Operation "+OPERATION_PASSIVATE+" is not defined for Object type "+this.name);
         }
     }
 
-    public void delete(MessageSender sender, UUID uuid, String note) throws IOException, OperationNotSupportedException {
+    public Future<String> delete(MessageSender sender, UUID uuid, String note) throws IOException, OperationNotSupportedException {
+        return this.delete(sender, uuid, note, null);
+    }
+
+    public Future<String> delete(MessageSender sender, UUID uuid, String note, String authorization) throws IOException, OperationNotSupportedException {
         if (this.operations.containsKey(OPERATION_DELETE)) {
             JSONObject data = new JSONObject();
             if (note == null) {
@@ -189,7 +194,7 @@ public class ObjectType {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            this.sendCommand(sender, this.operations.get(OPERATION_DELETE).command, uuid, data);
+            return this.sendCommand(sender, this.operations.get(OPERATION_DELETE).command, uuid, data, authorization);
         } else {
             throw new OperationNotSupportedException("Operation "+OPERATION_DELETE+" is not defined for Object type "+this.name);
         }
@@ -199,14 +204,19 @@ public class ObjectType {
 
 
 
-
-
-
     private Future<String> sendCommand(MessageSender sender, String operation, UUID uuid, JSONObject data) throws IOException {
+        return this.sendCommand(sender, operation, uuid, data, null);
+    }
+
+
+    private Future<String> sendCommand(MessageSender sender, String operation, UUID uuid, JSONObject data, String authorization) throws IOException {
         HashMap<String, Object> headers = new HashMap<String, Object>();
-        headers.put("operation", operation);
+        headers.put(MessageInterface.HEADER_OPERATION, operation);
         if (uuid != null) {
-            headers.put("beskedID", uuid.toString());
+            headers.put(MessageInterface.HEADER_MESSAGEID, uuid.toString());
+        }
+        if (authorization != null) {
+            headers.put(MessageInterface.HEADER_AUTHORIZATION, authorization);
         }
         try {
             return sender.sendJSON(headers, data);

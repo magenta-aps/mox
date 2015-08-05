@@ -3,19 +3,16 @@ package dk.magenta.mox.agent;
 import com.rabbitmq.client.LongString;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
-import sun.nio.ch.IOUtil;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStreamWriter;
-import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.*;
 
-public class RestMessageHandler implements MessageReceivedCallback {
+public class RestMessageHandler implements MessageHandler {
 
     private URL url;
     private Map<String, ObjectType> objectTypes;
@@ -48,7 +45,7 @@ public class RestMessageHandler implements MessageReceivedCallback {
     }
 
     public Future<String> run(Map<String, Object> headers, JSONObject jsonObject) {
-        String command = this.getHeaderString(headers, "operation");
+        String command = this.getHeaderString(headers, MessageInterface.HEADER_OPERATION);
 
         ObjectType objectType = null;
         ObjectType.Operation operation = null;
@@ -61,8 +58,8 @@ public class RestMessageHandler implements MessageReceivedCallback {
         }
 
         if (operation != null && objectType != null) {
-            String uuid = this.getHeaderString(headers, "beskedID");
-
+            String uuid = this.getHeaderString(headers, MessageInterface.HEADER_MESSAGEID);
+            final String authorization = this.getHeaderString(headers, MessageInterface.HEADER_AUTHORIZATION);
             if (command != null) {
                 String path = operation.path;
                 if (path.contains("[uuid]")) {
@@ -73,7 +70,8 @@ public class RestMessageHandler implements MessageReceivedCallback {
                 final char[] data = jsonObject.toString().toCharArray();
                 return this.pool.submit(new Callable<String>() {
                     public String call() throws IOException {
-                        return rest(method, fPath, data);
+                        String response = rest(method, fPath, data, authorization);
+                        return response;
                     }
                 });
             }
@@ -86,10 +84,16 @@ public class RestMessageHandler implements MessageReceivedCallback {
     }
 
     private String rest(String method, String path, char[] payload) throws IOException {
+        return this.rest(method, path, payload, null);
+    }
+    private String rest(String method, String path, char[] payload, String authorization) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) this.getURLforPath(path).openConnection();
         connection.setRequestMethod(method);
         connection.setDoOutput(true);
         connection.setRequestProperty("Content-type", "application/json");
+        if (authorization != null && !authorization.isEmpty()) {
+            connection.setRequestProperty("Authorization", authorization);
+        }
         OutputStreamWriter out = new OutputStreamWriter(connection.getOutputStream());
         out.write(payload);
         out.close();
