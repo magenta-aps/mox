@@ -1,0 +1,59 @@
+*** ../generated-files/as_list_dokument.sql	2015-08-04 15:35:34.070914831 +0200
+--- ../patches/as_list_dokument.org.sql	2015-08-04 15:33:29.154908609 +0200
+***************
+*** 12,31 ****
+  CREATE OR REPLACE FUNCTION as_list_dokument(dokument_uuids uuid[],
+    registrering_tstzrange tstzrange,
+    virkning_tstzrange tstzrange)
+    RETURNS setof DokumentType AS
+    $BODY$
+- 
+  SELECT
+  ROW(
+  	a.dokument_id,
+  	array_agg(
+  		ROW (
+  			a.registrering,
+  			a.DokumentTilsFremdriftArr,
+  			a.DokumentAttrEgenskaberArr,
+! 			a.DokumentRelationArr
+  		)::DokumentRegistreringType
+  		order by upper((a.registrering).TimePeriod) DESC		
+  	) 
+  ):: DokumentType
+  FROM
+--- 12,31 ----
+  CREATE OR REPLACE FUNCTION as_list_dokument(dokument_uuids uuid[],
+    registrering_tstzrange tstzrange,
+    virkning_tstzrange tstzrange)
+    RETURNS setof DokumentType AS
+    $BODY$
+  SELECT
+  ROW(
+  	a.dokument_id,
+  	array_agg(
+  		ROW (
+  			a.registrering,
+  			a.DokumentTilsFremdriftArr,
+  			a.DokumentAttrEgenskaberArr,
+! 			a.DokumentRelationArr,
+! 			b.varianter
+  		)::DokumentRegistreringType
+  		order by upper((a.registrering).TimePeriod) DESC		
+  	) 
+  ):: DokumentType
+  FROM
+***************
+*** 125,134 ****
+--- 125,135 ----
+  	a.dokument_registrering_id,
+  	a.registrering,
+  	a.DokumentAttrEgenskaberArr,
+  	a.DokumentTilsFremdriftArr
+  ) as a
++ LEFT JOIN _as_list_dokument_varianter(dokument_uuids,registrering_tstzrange,virkning_tstzrange) b on a.dokument_registrering_id=b.dokument_registrering_id
+  WHERE a.dokument_id IS NOT NULL
+  GROUP BY 
+  a.dokument_id
+  order by a.dokument_id
+  

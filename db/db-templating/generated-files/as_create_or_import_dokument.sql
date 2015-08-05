@@ -280,7 +280,7 @@ dokument_variant_new_id:=nextval('dokument_variant_id_seq'::regclass);
 
     INSERT INTO
     dokument_del_egenskaber (
-      del_id
+      del_id,
         indeks, 
           indhold, 
             lokation, 
