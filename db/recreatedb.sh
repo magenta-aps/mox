@@ -46,6 +46,7 @@ patch --fuzz=3 -i  ../patches/as_create_or_import_dokument.sql.diff
 patch --fuzz=3 -i  ../patches/as_update_dokument.sql.diff
 patch --fuzz=3 -i  ../patches/_remove_nulls_in_array_dokument.sql.diff
 patch --fuzz=3 -i  ../patches/as_list_dokument.sql.diff
+patch --fuzz=3 -i  ../patches/json-cast-functions_dokument.sql.diff
 
 cd ..
 
