@@ -13,13 +13,19 @@ RETURNS TABLE(dokument_registrering_id bigint, varianter DokumentVariantType[])
 
   	SELECT
   	a.dokument_registrering_id,
-  	array_agg(
+  	_remove_nulls_in_array(array_agg(
+  		CASE WHEN (a.DokumentVariantEgenskaberTypeArr IS NOT NULL and  coalesce(array_length(a.DokumentVariantEgenskaberTypeArr,1),0)>0) 
+	  			OR (a.variant_dele IS NOT NULL and  coalesce(array_length(a.variant_dele,1),0)>0) 
+	  			THEN
   		ROW (
   			a.varianttekst,
   			a.DokumentVariantEgenskaberTypeArr,
   			a.variant_dele 
   			) ::DokumentVariantType
-  		) varianter
+  		ELSE
+  		NULL
+  		END
+  		)) varianter
   	FROM
   	(
   		SELECT
@@ -28,13 +34,21 @@ RETURNS TABLE(dokument_registrering_id bigint, varianter DokumentVariantType[])
   			a.variant_id,
   			a.varianttekst,
   			a.DokumentVariantEgenskaberTypeArr,
-	  		array_agg(
+	  		_remove_nulls_in_array(array_agg(
+	  			CASE WHEN 
+	  			(a.DokumentDelEgenskaberTypeArr IS NOT NULL and  coalesce(array_length(a.DokumentDelEgenskaberTypeArr,1),0)>0) 
+	  			OR (a.DokumentdelRelationTypeArr IS NOT NULL and  coalesce(array_length(a.DokumentdelRelationTypeArr,1),0)>0) 
+	  			THEN
 	  			ROW (
 	  				a.deltekst,
 	  				a.DokumentDelEgenskaberTypeArr,
 	  				a.DokumentdelRelationTypeArr 
 	  				)::DokumentDelType
-	  		) variant_dele
+	  			ELSE
+	  			NULL
+	  			END
+	  			order by a.deltekst
+	  		)) variant_dele
   		FROM
 		(  
   			SELECT
