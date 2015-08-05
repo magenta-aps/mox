@@ -18,7 +18,6 @@ fi
 
 # INSTALL OIO_REST
 
-VIRTUALENV=oio_rest/python-env
 
 ## System dependencies. These are the packages we need that are not present on a
 ## fresh OS install.
@@ -35,12 +34,13 @@ done
 
 
 # Setup and start virtual environment
+VIRTUALENV=oio_rest/python-env
 
-if [ -e $VIRTUALENV/bin/activate ]; then
-	echo "virtual environment already installed" 1>&2
-else
-	virtualenv $VIRTUALENV
+if [ -d $VIRTUALENV ]; then
+	rm -rf $VIRTUALENV
 fi
+
+virtualenv $VIRTUALENV
 
 source $VIRTUALENV/bin/activate
 
@@ -60,7 +60,6 @@ if [ ! -z $DB_INSTALL ]; then
 	sudo pgxn install pgtap
 	sudo pip install jinja2
 	sudo -u postgres createuser mox
-
 
 	pushd $DIR/db
 	./recreatedb.sh
