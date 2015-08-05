@@ -6,6 +6,17 @@ sudo -u postgres dropdb $MOX_DB
 sudo -u postgres createdb $MOX_DB
 sudo -u postgres psql -c "GRANT ALL ON DATABASE $MOX_DB TO $MOX_USER"
 sudo -u postgres psql -d $MOX_DB -f basis/dbserver_prep.sql
+
+# Setup AMQP server settings
+sudo -u postgres psql -d $MOX_DB -c "insert into amqp.broker
+(host, port, vhost, username, password)
+values ('$MOX_AMQP_HOST', $MOX_AMQP_PORT, '$MOX_AMQP_VHOST', '$MOX_AMQP_USER',
+'$MOX_AMQP_PASS');"
+
+# Grant mox user privileges to publish to AMQP
+sudo -u postgres psql -d $MOX_DB -c "GRANT ALL PRIVILEGES ON SCHEMA amqp TO $MOX_USER;
+GRANT SELECT ON ALL TABLES IN SCHEMA amqp TO $MOX_USER;"
+
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -c "CREATE SCHEMA actual_state AUTHORIZATION $MOX_USER "
 sudo -u postgres psql -c "ALTER database $MOX_DB SET search_path TO actual_state,public;"
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -c "CREATE SCHEMA test AUTHORIZATION $MOX_USER "
