@@ -326,8 +326,21 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
         'virkning_tstzrange': DateTimeTZRange(virkning_fra, virkning_til)
     })
     output = cursor.fetchone()
-    return output
+    return filter_nulls(output)
 
+def filter_nulls(o):
+    """Recursively remove keys with None values from dicts in object.
+
+    The dicts could be contained in lists or tuples or other dicts.
+    """
+    if isinstance(o, dict):
+        return {k: filter_nulls(v) for k, v in o.iteritems() if v is not None}
+    elif isinstance(o, list):
+        return [filter_nulls(v) for v in o]
+    elif isinstance(o, tuple):
+        return tuple(filter_nulls(v) for v in o)
+    else:
+        return o
 
 def search_objects(class_name, uuid, registration,
                    virkning_fra=None, virkning_til=None,

@@ -82,9 +82,9 @@ FROM
   ,(SELECT attr_json FROM attr) attributter
   ,(SELECT tils_json FROM tils) tilstande
   ,CASE WHEN coalesce(array_length($1.relationer,1),0)>0 THEN
-    (SELECT rel_json from rel) 
+    (SELECT rel_json from rel)
     ELSE
-    NULL
+    '{}'::json
     END relationer
   FROM
     (
