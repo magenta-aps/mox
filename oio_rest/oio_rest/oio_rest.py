@@ -1,10 +1,11 @@
+from datetime import datetime
 from flask import jsonify, request
 
 import db
-from db_helpers import get_attribute_names, get_attribute_fields, \
-    get_state_names, get_relation_names, get_state_field
+from db_helpers import get_attribute_names, get_attribute_fields
+from db_helpers import get_state_names, get_relation_names, get_state_field
 
-from datetime import datetime
+from utils import build_registration
 
 
 # Just a helper during debug
@@ -59,6 +60,7 @@ class OIORestObject(object):
         LIST or SEARCH objects, depending on parameters.
         """
         # Convert arguments to lowercase, getting them as lists
+        #import pdb; pdb.set_trace()
         list_args = {k.lower(): request.args.getlist(k)
                      for k in request.args.keys()}
         args = {k.lower(): request.args.get(k)
@@ -90,38 +92,7 @@ class OIORestObject(object):
             note = args.get('notetekst', None)
 
             # Fill out a registration object based on the query arguments
-            registration = {}
-            for f in list_args:
-                attr = registration.setdefault('attributter', {})
-                for attr_name in get_attribute_names(cls.__name__):
-                    if f in get_attribute_fields(attr_name):
-                        for attr_value in list_args[f]:
-                            attr_period = {'virkning': None, f: attr_value}
-                            attr.setdefault(attr_name, []).append(attr_period)
-
-                state = registration.setdefault('tilstande', {})
-                for state_name in get_state_names(cls.__name__):
-                    state_field_name = get_state_field(cls.__name__,
-                                                       state_name)
-
-                    state_periods = state.setdefault(state_name, [])
-                    if f == state_field_name:
-                        for state_value in list_args[f]:
-                            state_periods.append({
-                                state_field_name: state_value,
-                                'virkning': None
-                            })
-
-                relation = registration.setdefault('relationer', {})
-                if f in get_relation_names(cls.__name__):
-                    relation[f] = []
-                    # Support multiple relation references at a time
-                    for rel in list_args[f]:
-                        relation[f].append({
-                            'uuid': rel,
-                            'virkning': None
-                        })
-
+            registration = build_registration(cls.__name__, list_args)
             results = db.search_objects(cls.__name__,
                                         uuid_param,
                                         registration,

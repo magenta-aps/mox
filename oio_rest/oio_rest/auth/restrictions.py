@@ -34,7 +34,7 @@ def get_restrictions(user, object_type, operation):
 
     As a corollary, the trivially true restriction is written as
 
-        [(None, None, None)]
+        [({}, {}, {})]
 
     - i.e., one triplet with no restrictions at all.
 
@@ -50,13 +50,12 @@ def get_restrictions(user, object_type, operation):
           (Sag) which is classified and may only be read by users in that
           department.
 
-          The restrictions module will return [(None, None,
-          { 'Ejer': D.uuid })].
+          The restrictions module will return [({}, {}, {'Ejer': D.uuid})].
 
         * User B wishes to change the description of a Klasse used by her own
           department.
 
-          The restrictions module will return [(None, None,
+          The restrictions module will return [({}, {},
           { 'Redaktører': B.uuid })]. This means that B must be a member of
           the many relation 'Redaktører'.
 
@@ -71,9 +70,9 @@ def get_restrictions(user, object_type, operation):
         * A user wishes to view a document (Dokument) on the municipality's
           intranet. The user is not logged in.
 
-          The restrictions module will return [(None,
-          { 'FremdriftStatus': 'Publiceret' }, None)]. I.e., a user who is
-          not logged in may view only publically available documents.
+          The restrictions module will return [({},
+          { 'FremdriftStatus': 'Publiceret' }, {})]. I.e., a user who is
+          not logged in may view only publicly available documents.
 
 
     **Limitations:**
@@ -100,4 +99,4 @@ def get_restrictions(user, object_type, operation):
 
 def get_auth_restrictions(user, object_type, operation):
     """Sample or dummy implementation - implement and specify in settings."""
-    return [(None, None, None)]
+    return [({}, {}, {})]

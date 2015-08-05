@@ -1,7 +1,9 @@
-from enum import Enum
 
 import os
+from enum import Enum
+
 import psycopg2
+
 from psycopg2.extras import DateTimeTZRange
 from psycopg2.extensions import adapt as psyco_adapt
 
@@ -11,6 +13,9 @@ from jinja2 import Environment, FileSystemLoader
 from settings import DATABASE, DB_USER
 from db_helpers import get_attribute_fields, get_attribute_names
 from db_helpers import get_field_type, get_state_names, Soegeord
+
+from auth.restrictions import Operation, get_restrictions
+from utils import restriction_to_registration
 
 """
     Jinja2 Environment
@@ -77,7 +82,6 @@ def convert_attributes(attributes):
                 ]
             converted_attr_periods.append(attr_value_list)
         attributes[attr_name] = converted_attr_periods
-    print attributes
     return attributes
 
 
@@ -100,7 +104,6 @@ class Livscyklus(Enum):
 def sql_state_array(state, periods, class_name):
     """Return an SQL array of type <state>TilsType."""
     t = jinja_env.get_template('state_array.sql')
-    print periods
     sql = t.render(class_name=class_name, state_name=state,
                    state_periods=periods)
     return sql
@@ -110,6 +113,7 @@ def sql_attribute_array(attribute, periods):
     """Return an SQL array of type <attribute>AttrType[]."""
     t = jinja_env.get_template('attribute_array.sql')
     sql = t.render(attribute_name=attribute, attribute_periods=periods)
+    # print "SQL", sql
     return sql
 
 
@@ -208,10 +212,8 @@ def create_or_import_object(class_name, note, attributes, states, relations,
     # Call Postgres! Return OK or not accordingly
     conn = get_connection()
     cursor = conn.cursor()
-    print sql
     cursor.execute(sql)
     output = cursor.fetchone()
-    print output
     return output[0]
 
 
@@ -237,13 +239,11 @@ def delete_object(class_name, note, uuid):
         attributes=sql_attributes,
         relations=sql_relations
     )
-    print sql
     # Call Postgres! Return OK or not accordingly
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute(sql)
     output = cursor.fetchone()
-    print output
     return output[0]
 
 
@@ -265,7 +265,6 @@ def passivate_object(class_name, note, uuid):
     cursor = conn.cursor()
     cursor.execute(sql)
     output = cursor.fetchone()
-    print output
     return output[0]
 
 
@@ -295,7 +294,6 @@ def update_object(class_name, note, attributes, states, relations, uuid=None):
     try:
         cursor.execute(sql)
         output = cursor.fetchone()
-        print output
     except psycopg2.DataError:
         # Thrown when no changes
         pass
@@ -370,6 +368,16 @@ def search_objects(class_name, uuid, registration,
     if virkning_fra is not None or virkning_til is not None:
         virkning_soeg = DateTimeTZRange(virkning_fra, virkning_til)
 
+    restrictions = get_restrictions(get_authenticated_user(), class_name,
+                                    Operation.READ)
+
+    restriction_registrations = map(
+        lambda r: restriction_to_registration(class_name, r),
+        restrictions
+    )
+
+    print restriction_registrations
+
     sql = sql_template.render(
         first_result=first_result,
         uuid=uuid,
@@ -380,7 +388,7 @@ def search_objects(class_name, uuid, registration,
         max_results=max_results,
         virkning_soeg=virkning_soeg
     )
-
+    # print "Search SQL", sql
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute(sql)
