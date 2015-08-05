@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 while getopts ":d" OPT; do
-    export DB_INSTALL=1
+	export DB_INSTALL=1
 done
 
 DIR=$(dirname ${BASH_SOURCE[0]})
@@ -11,7 +11,7 @@ DIR=$(dirname ${BASH_SOURCE[0]})
 set +x
 getent passwd mox
 if [ $? -ne 0 ]; then 
-    sudo useradd mox
+	sudo useradd mox
 fi
 
 
@@ -26,7 +26,7 @@ VIRTUALENV=oio_rest/python-env
 SYSTEM_PACKAGES=$(cat "$DIR/oio_rest/SYSTEM_DEPENDENCIES")
 
 for package in "${SYSTEM_PACKAGES[@]}"; do
-    sudo apt-get -y install $package
+	sudo apt-get -y install $package
 done
 
 
@@ -37,9 +37,9 @@ done
 # Setup and start virtual environment
 
 if [ -e $VIRTUALENV/bin/activate ]; then
-    echo "virtual environment already installed" 1>&2
+	echo "virtual environment already installed" 1>&2
 else
-    virtualenv $VIRTUALENV
+	virtualenv $VIRTUALENV
 fi
 
 source $VIRTUALENV/bin/activate
@@ -57,21 +57,23 @@ if [ ! -z $DB_INSTALL ]; then
 		sudo apt-get -y install $package
 	done
 
-    sudo pgxn install pgtap
-    pip install jinja2
+	sudo pgxn install pgtap
+	sudo pip install jinja2
+	sudo -u postgres createuser mox
 
-    pushd $DIR/db
-    ./recreatedb.sh
-    popd
+
+	pushd $DIR/db
+	./recreatedb.sh
+	popd
 fi
 
 
 
 
 pushd $DIR/oio_rest
-python ./setup.py develop
+sudo python ./setup.py develop
 popd
 
-echo "Run oio_api/oio_api.sh to test API"
+echo "Run oio_rest/oio_api.sh to test API"
 
 
