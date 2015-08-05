@@ -63,6 +63,16 @@ DECLARE
 	docDel2Brelation1Virkning Virkning;
 	docDel2Brelation2 DokumentdelRelationType;
 	docDel2Brelation2Virkning Virkning;
+	actual_variant_egenskaber_variant_1 DokumentVariantEgenskaberType[];
+	actual_variant_egenskaber_variant_2 DokumentVariantEgenskaberType[];
+	actual_del_egenskaber_1 DokumentDelEgenskaberType[];
+	actual_del_egenskaber_2 DokumentDelEgenskaberType[];
+	actual_del_egenskaber_3 DokumentDelEgenskaberType[];
+	actual_del_egenskaber_4 DokumentDelEgenskaberType[];
+	actual_del_relationer_1 DokumentdelRelationType[];
+	actual_del_relationer_2 DokumentdelRelationType[];
+	actual_del_relationer_3 DokumentdelRelationType[];
+	actual_del_relationer_4 DokumentdelRelationType[];
 BEGIN
 
 
@@ -522,6 +532,260 @@ RETURN NEXT is(
 	actual_egenskaber,
 	ARRAY[dokumentEgenskab1,dokumentEgenskab2]
 ,'egenskaber present');
+
+--****************************
+--Test document variants egenskaber
+
+SELECT array_agg(
+	ROW(
+		a.arkivering, 
+		a.delvisscannet, 
+		a.offentliggoerelse, 
+		a.produktion,
+ 		a.virkning
+		)::DokumentVariantEgenskaberType
+	order by a.id asc
+	) into actual_variant_egenskaber_variant_1
+from  dokument_variant_egenskaber a
+join dokument_variant b on a.variant_id=b.id
+join dokument_registrering c on b.dokument_registrering_id=c.id
+WHERE c.dokument_id=new_uuid
+and b.varianttekst='doc_varianttekst1'
+;
+
+RETURN NEXT is(
+	actual_variant_egenskaber_variant_1,
+	ARRAY[docVariantEgenskaber1A,docVariantEgenskaber1B]
+,'dokument variant egenskaber 1 present');
+
+
+SELECT array_agg(
+	ROW(
+		a.arkivering, 
+		a.delvisscannet, 
+		a.offentliggoerelse, 
+		a.produktion,
+ 		a.virkning
+		)::DokumentVariantEgenskaberType
+	order by a.id asc
+	) into actual_variant_egenskaber_variant_2
+from  dokument_variant_egenskaber a
+join dokument_variant b on a.variant_id=b.id
+join dokument_registrering c on b.dokument_registrering_id=c.id
+WHERE c.dokument_id=new_uuid
+and b.varianttekst='doc_varianttekst2'
+;
+
+RETURN NEXT is(
+	actual_variant_egenskaber_variant_2,
+	ARRAY[docVariantEgenskaber2A]
+,'dokument variant egenskaber 2 present');
+
+
+--****************************
+--Test document variants del egenskaber
+
+
+SELECT array_agg(
+	ROW(
+		a.indeks,
+		a.indhold,
+		a.lokation,
+		a.mimetype,
+ 		a.virkning
+		)::DokumentDelEgenskaberType
+	order by a.id asc
+	) into actual_del_egenskaber_1
+from  dokument_del_egenskaber a
+join dokument_del d on a.del_id = d.id
+join dokument_variant b on d.variant_id=b.id
+join dokument_registrering c on b.dokument_registrering_id=c.id
+WHERE c.dokument_id=new_uuid
+and b.varianttekst='doc_varianttekst1'
+and d.deltekst='doc_deltekst1A'
+;
+
+RETURN NEXT is(
+	actual_del_egenskaber_1,
+	ARRAY[docDel1AEgenskaber,docDel1A2Egenskaber]
+,'dokument variant del egenskaber 1 present');
+
+
+SELECT array_agg(
+	ROW(
+		a.indeks,
+		a.indhold,
+		a.lokation,
+		a.mimetype,
+ 		a.virkning
+		)::DokumentDelEgenskaberType
+	order by a.id asc
+	) into actual_del_egenskaber_2
+from  dokument_del_egenskaber a
+join dokument_del d on a.del_id = d.id
+join dokument_variant b on d.variant_id=b.id
+join dokument_registrering c on b.dokument_registrering_id=c.id
+WHERE c.dokument_id=new_uuid
+and b.varianttekst='doc_varianttekst1'
+and d.deltekst='doc_deltekst1B'
+;
+
+RETURN NEXT is(
+	actual_del_egenskaber_2,
+	ARRAY[docDel1BEgenskaber]
+,'dokument variant del egenskaber 2 present');
+
+
+SELECT array_agg(
+	ROW(
+		a.indeks,
+		a.indhold,
+		a.lokation,
+		a.mimetype,
+ 		a.virkning
+		)::DokumentDelEgenskaberType
+	order by a.id asc
+	) into actual_del_egenskaber_3
+from  dokument_del_egenskaber a
+join dokument_del d on a.del_id = d.id
+join dokument_variant b on d.variant_id=b.id
+join dokument_registrering c on b.dokument_registrering_id=c.id
+WHERE c.dokument_id=new_uuid
+and b.varianttekst='doc_varianttekst2'
+and d.deltekst='doc_deltekst2A'
+;
+
+RETURN NEXT is(
+	actual_del_egenskaber_3,
+	ARRAY[docDel2AEgenskaber]
+,'dokument variant del egenskaber 3 present');
+
+
+SELECT array_agg(
+	ROW(
+		a.indeks,
+		a.indhold,
+		a.lokation,
+		a.mimetype,
+ 		a.virkning
+		)::DokumentDelEgenskaberType
+	order by a.id asc
+	) into actual_del_egenskaber_4
+from  dokument_del_egenskaber a
+join dokument_del d on a.del_id = d.id
+join dokument_variant b on d.variant_id=b.id
+join dokument_registrering c on b.dokument_registrering_id=c.id
+WHERE c.dokument_id=new_uuid
+and b.varianttekst='doc_varianttekst2'
+and d.deltekst='doc_deltekst2B'
+;
+
+RETURN NEXT ok(
+	coalesce(array_length(actual_del_egenskaber_4,1),0)=0 
+,'dokument variant del egenskaber 4 ok');
+
+
+--****************************
+--Test document variants del relationer
+
+SELECT array_agg(
+	ROW(
+		a.rel_type,
+  		a.virkning,
+  		a.rel_maal_uuid,
+  		a.rel_maal_urn,
+  		a.objekt_type
+		)::DokumentdelRelationType
+	order by a.id asc
+	) into actual_del_relationer_1
+from  dokument_del_relation a
+join dokument_del d on a.del_id = d.id
+join dokument_variant b on d.variant_id=b.id
+join dokument_registrering c on b.dokument_registrering_id=c.id
+WHERE c.dokument_id=new_uuid
+and b.varianttekst='doc_varianttekst1'
+and d.deltekst='doc_deltekst1A'
+;
+
+RETURN NEXT is(
+	actual_del_relationer_1,
+	ARRAY[docDel1Arelation1]
+,'dokument variant del relationer 1 present');
+
+
+
+SELECT array_agg(
+	ROW(
+		a.rel_type,
+  		a.virkning,
+  		a.rel_maal_uuid,
+  		a.rel_maal_urn,
+  		a.objekt_type
+		)::DokumentdelRelationType
+	order by a.id asc
+	) into actual_del_relationer_2
+from  dokument_del_relation a
+join dokument_del d on a.del_id = d.id
+join dokument_variant b on d.variant_id=b.id
+join dokument_registrering c on b.dokument_registrering_id=c.id
+WHERE c.dokument_id=new_uuid
+and b.varianttekst='doc_varianttekst1'
+and d.deltekst='doc_deltekst1B'
+;
+
+RETURN NEXT ok(
+	coalesce(array_length(actual_del_relationer_2,1),0)=0 
+,'dokument variant del relationer 2 ok');
+
+
+
+SELECT array_agg(
+	ROW(
+		a.rel_type,
+  		a.virkning,
+  		a.rel_maal_uuid,
+  		a.rel_maal_urn,
+  		a.objekt_type
+		)::DokumentdelRelationType
+	order by a.id asc
+	) into actual_del_relationer_3
+from  dokument_del_relation a
+join dokument_del d on a.del_id = d.id
+join dokument_variant b on d.variant_id=b.id
+join dokument_registrering c on b.dokument_registrering_id=c.id
+WHERE c.dokument_id=new_uuid
+and b.varianttekst='doc_varianttekst2'
+and d.deltekst='doc_deltekst2A'
+;
+
+RETURN NEXT ok(
+	coalesce(array_length(actual_del_relationer_3,1),0)=0 
+,'dokument variant del relationer 3 ok');
+
+
+SELECT array_agg(
+	ROW(
+		a.rel_type,
+  		a.virkning,
+  		a.rel_maal_uuid,
+  		a.rel_maal_urn,
+  		a.objekt_type
+		)::DokumentdelRelationType
+	order by a.id asc
+	) into actual_del_relationer_4
+from  dokument_del_relation a
+join dokument_del d on a.del_id = d.id
+join dokument_variant b on d.variant_id=b.id
+join dokument_registrering c on b.dokument_registrering_id=c.id
+WHERE c.dokument_id=new_uuid
+and b.varianttekst='doc_varianttekst2'
+and d.deltekst='doc_deltekst2B'
+;
+
+RETURN NEXT is(
+	actual_del_relationer_4,
+	ARRAY[docDel2Brelation1,docDel2Brelation2]
+,'dokument variant del relationer 4 present');
 
 
 --****************************
