@@ -109,6 +109,9 @@ doc1_new_uuid uuid;
 	doc1_override_timeperiod TSTZRANGE;
 	doc2_override_timeperiod TSTZRANGE;
 
+	actual_dokuments2 DokumentType[];
+	expected_dokuments2 DokumentType[];
+
 BEGIN
 
 
@@ -131,7 +134,7 @@ doc1_virkEgenskaber2 :=	ROW (
 
 
 doc1_virkAnsvarlig :=	ROW (
-	'[2015-05-11, infinity)' :: TSTZRANGE,
+	'[2014-05-11, infinity)' :: TSTZRANGE,
           'f71cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
           'Bruger',
           'NoteEx2'
@@ -233,7 +236,7 @@ ROW('doc_Offentlighedundtaget_AlternativTitel2','doc_Offentlighedundtaget_Hjemme
 
 
 doc1_docDel2Brelation2Virkning :=	ROW (
-	'(2011-08-24, 2015-10-01]' :: TSTZRANGE,
+	'(2014-02-24, 2015-10-01]' :: TSTZRANGE,
           '971cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
           'Bruger',
           'NoteEx70'
@@ -250,7 +253,7 @@ doc1_docDel2Brelation1Virkning :=	ROW (
 
 
 doc1_docDel1Arelation1Virkning :=	ROW (
-	'[2014-05-10, infinity)' :: TSTZRANGE,
+	'[2015-05-10, infinity)' :: TSTZRANGE,
           '771cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
           'Bruger',
           'NoteEx71'
@@ -267,7 +270,7 @@ doc1_docVariantEgenskaber2AVirkning :=	ROW (
 ;
 
 doc1_docVariantEgenskaber1BVirkning :=	ROW (
-	'[2014-06-11, infinity)' :: TSTZRANGE,
+	'[2015-01-01, infinity)' :: TSTZRANGE,
           '571cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
           'Bruger',
           'NoteEx291'
@@ -276,7 +279,7 @@ doc1_docVariantEgenskaber1BVirkning :=	ROW (
 
 
 doc1_docVariantEgenskaber1AVirkning :=	ROW (
-	'[2013-02-27, 2014-06-11)' :: TSTZRANGE,
+	'[2013-02-27, 2015-01-01)' :: TSTZRANGE,
           '471cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
           'Bruger',
           'NoteEx191'
@@ -369,7 +372,7 @@ ROW (
 doc1_docDel1Arelation1:=
 ROW (
   'underredigeringaf'::DokumentdelRelationKode,
-  doc1_docDel2Brelation2Virkning,
+  doc1_docDel1Arelation1Virkning,
   'b24a2dd4-415f-4104-b7a7-84607488c091'::uuid,
   null, 
   'Bruger'
@@ -498,7 +501,7 @@ doc2_virkEgenskaber2 :=	ROW (
 
 
 doc2_virkAnsvarlig :=	ROW (
-	'[2015-04-10, infinity)' :: TSTZRANGE,
+	'[2014-04-10, infinity)' :: TSTZRANGE,
           'a71cc58a-3149-414a-9392-dcbcbbccddf7'::uuid,
           'Bruger',
           'NoteEx23'
@@ -660,7 +663,7 @@ doc2_docDel1AEgenskaberVirkning :=	ROW (
 
 doc2_docDel1A2EgenskaberVirkning :=	ROW (
 	'[2010-01-20, 2014-03-20)' :: TSTZRANGE,
-          '771cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
+          '471cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
           'Bruger',
           'NoteEx113'
           ) :: Virkning
@@ -908,7 +911,90 @@ RETURN NEXT is(
 	'dokument list test 1');
 
 
---TODO: Continue here!
+/******************************************************/
+--Test for filtration on virkning
+
+
+
+select array_agg(a.* order by a.id) from as_list_dokument(array[doc1_new_uuid,doc2_new_uuid]::uuid[],null,'(-infinity, 01-01-2015)' :: TSTZRANGE) as a     into actual_dokuments2;
+
+
+expected_dokuments2:= ARRAY[
+		ROW(
+			doc1_new_uuid,
+			ARRAY[
+					ROW(
+						ROW(
+							doc1_override_timeperiod, --this is cheating, but helps the comparison efforts below. (The timeperiod is set during creation/initialization )
+							(doc1_registrering.registrering).livscykluskode,
+							(doc1_registrering.registrering).brugerref,
+							(doc1_registrering.registrering).note 
+							)::RegistreringBase
+						,null--doc1_registrering.tilsfremdrift
+						,ARRAY[doc1_dokumentEgenskab2]::dokumentEgenskaberAttrType[]
+						,ARRAY[doc1_dokumentRelAnsvarlig]
+						--,doc1_registrering.varianter
+						,ARRAY[
+							ROW (
+								'doc_varianttekst1',
+							  	ARRAY[doc1_docVariantEgenskaber1A],
+							  	ARRAY[ROW(
+								'doc_deltekst1A',
+								  ARRAY[doc1_docDel1AEgenskaber,doc1_docDel1A2Egenskaber],
+								  null
+								)::DokumentDelType]
+							)::DokumentVariantType
+							,doc1_docVariant2
+						]::DokumentVariantType[]
+					)::dokumentRegistreringType
+				]::dokumentRegistreringType[]
+			)::dokumentType
+		,
+	ROW(
+			doc2_new_uuid,
+			ARRAY[
+					ROW(
+						ROW(
+							doc2_override_timeperiod, --this is cheating, but helps the comparison efforts below. (The timeperiod is set during creation/initialization )
+							(doc2_registrering.registrering).livscykluskode,
+							(doc2_registrering.registrering).brugerref,
+							(doc2_registrering.registrering).note 
+							)::RegistreringBase
+						,doc2_registrering.tilsfremdrift
+						,doc2_registrering.attrEgenskaber
+						,ARRAY[doc2_dokumentRelAnsvarlig]
+						,ARRAY[
+						ROW (
+							'doc_varianttekst2_1',
+						  	ARRAY[doc2_docVariantEgenskaber1A,doc2_docVariantEgenskaber1B],
+						  	ARRAY[doc2_docDel1A]
+						)::DokumentVariantType
+						,doc2_docVariant2
+						]::DokumentVariantType[]
+						--doc2_registrering.varianter
+					)::dokumentRegistreringType
+			]::dokumentRegistreringType[]
+			)::dokumentType
+	]::dokumentType[];
+
+
+
+select array_agg(a.* order by a.id) from unnest(expected_dokuments2) as a into expected_dokuments2;
+
+--raise notice 'list dokument expected_dokuments2:%',to_json(expected_dokuments2);
+--raise notice 'list dokument actual_dokuments2:%',to_json(actual_dokuments2);
+
+
+RETURN NEXT is(
+	actual_dokuments2,
+	expected_dokuments2,	
+	'dokument list virkning filter test');
+
+
+
+
+--TODO: Test on single uuid
+--TODO: Test on filter on reg time
 
 
 
