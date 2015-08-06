@@ -22,6 +22,7 @@ CREATE OR REPLACE FUNCTION as_update_dokument(
   attrEgenskaber DokumentEgenskaberAttrType[],
   tilsFremdrift DokumentFremdriftTilsType[],
   relationer DokumentRelationType[],
+  varianter  DokumentVariantType[],
   lostUpdatePreventionTZ TIMESTAMPTZ = null
 	)
   RETURNS bigint AS 
@@ -42,10 +43,10 @@ DECLARE
   dokument_del_relation_obj DokumentDelRelationType;
   dokument_variant_new_id bigint;
   dokument_del_new_id bigint;
-  dokument_variant_egenskaber_expl_deleted text[]:=array[];
-  dokument_variant_dele_all_expl_deleted text[]:=array[];
-  dokument_variant_del_egenskaber_deleted _DokumentVariantDelKey[]:=array[];
-  dokument_variant_del_relationer_deleted _DokumentVariantDelKey[]:=array[];
+  dokument_variant_egenskaber_expl_deleted text[]:=array[]::text[];
+  dokument_variant_dele_all_expl_deleted text[]:=array[]::text[];
+  dokument_variant_del_egenskaber_deleted _DokumentVariantDelKey[]:=array[]::_DokumentVariantDelKey[];
+  dokument_variant_del_relationer_deleted _DokumentVariantDelKey[]:=array[]::_DokumentVariantDelKey[];
   dokument_variants_prev_reg_arr text[];
   dokument_variant_egenskaber_prev_reg_varianttekst text;
   dokument_variant_id bigint;
@@ -472,14 +473,14 @@ END IF;
 --Handling document variants and document parts
 
 --check if the update explicitly clears all the doc variants (and parts) by explicitly giving an empty array, if so - no variant will be included in the new reg. 
-IF dokument_registrering.varianter IS NOT NULL AND coalesce(array_length(dokument_registrering.varianter,1),0)=0 THEN
+IF varianter IS NOT NULL AND coalesce(array_length(varianter,1),0)=0 THEN
   --raise notice 'Skipping insertion of doc variants (and parts), as an empty array was given explicitly';
 ELSE
 
 --Check if any variants was given in the new update - otherwise we'll skip ahead to transfering the old variants
-IF dokument_registrering.varianter IS NOT NULL AND coalesce(array_length(dokument_registrering.varianter,1),0)>0 THEN
+IF varianter IS NOT NULL AND coalesce(array_length(varianter,1),0)>0 THEN
   
-FOREACH dokument_variant_obj IN ARRAY dokument_registrering.varianter
+FOREACH dokument_variant_obj IN ARRAY varianter
 LOOP
 
 dokument_variant_new_id:=_ensure_document_variant_exists_and_get(new_dokument_registrering.id,dokument_variant_obj.varianttekst);
@@ -643,7 +644,7 @@ FOREACH dokument_del_obj IN ARRAY dokument_variant_obj.dele
       a.*
       FROM unnest(dokument_del_obj.egenskaber) a
       JOIN  unnest(dokument_del_obj.egenskaber) b on (a.virkning).TimePeriod && (b.virkning).TimePeriod
-      GROUP BY a.variant_id,a.indeks,a.indhold,a.lokation,a.mimetype, a.virkning
+      GROUP BY a.indeks,a.indhold,a.lokation,a.mimetype, a.virkning
       HAVING COUNT(*)>1
     ) THEN
     RAISE EXCEPTION 'Unable to update dokument with uuid [%], as the dokument variant [%] have del [%] with overlapping virknings in the given egenskaber array :%',dokument_uuid,dokument_variant_obj.varianttekst,dokument_del_obj.deltekst,to_json(dokument_del_obj.egenskaber)  USING ERRCODE = 22000;
@@ -853,7 +854,7 @@ FROM
 
 ) d
   JOIN dokument_variant_egenskaber a ON true  
-  JOIN dokument_variant e ON a.variant_id = e.variant_id
+  JOIN dokument_variant e ON a.variant_id = e.id
   JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
   WHERE e.dokument_registrering_id=prev_dokument_registrering.id    
   and e.varianttekst=dokument_variant_egenskaber_prev_reg_varianttekst 
@@ -867,11 +868,10 @@ END IF;-- not null dokument_variants_prev_reg_arr
 DELETE FROM dokument_variant_egenskaber 
 WHERE
 id in (
-SELECT id from dokumentvariant_attr_egenskaber a 
-JOIN dokument_variant e ON a.variant_id = e.variant_id
+SELECT a.id from dokument_variant_egenskaber a 
+JOIN dokument_variant e ON a.variant_id = e.id
 WHERE
-e.dokument_registrering_id=new_dokument_registrering.id
-AND (a.varianttekst IS NULL OR a.varianttekst='') 
+e.dokument_registrering_id=new_dokument_registrering.id 
             AND  (a.arkivering IS NULL) 
             AND  (a.delvisscannet IS NULL) 
             AND  (a.offentliggoerelse IS NULL) 
@@ -941,11 +941,11 @@ if dokument_variant_del_prev_reg_arr IS NOT NULL and coalesce(array_length(dokum
   ) d
     JOIN dokument_del_egenskaber a ON true  
     JOIN dokument_del b on a.del_id=b.id
-    JOIN dokument_variant c on b.variant_id=c.id
+    JOIN dokument_variant e on b.variant_id=e.id
     JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
-    WHERE c.dokument_registrering_id=prev_dokument_registrering.id    
-    AND c.varianttekst=dokument_variant_del_prev_reg.varianttekst
-    AND d.deltekst=dokument_variant_del_prev_reg.deltekst
+    WHERE e.dokument_registrering_id=prev_dokument_registrering.id    
+    AND e.varianttekst=dokument_variant_del_prev_reg.varianttekst
+    AND b.deltekst=dokument_variant_del_prev_reg.deltekst
   ;
 
   END LOOP;
@@ -965,7 +965,6 @@ id in
   JOIN dokument_del c on a.del_id=c.id
   JOIN dokument_variant d on c.variant_id=d.id
   WHERE  d.dokument_registrering_id=new_dokument_registrering.id
-  AND (a.deltekst IS NULL OR a.deltekst='') 
             AND  (a.indeks IS NULL) 
             AND  (a.indhold IS NULL OR a.indhold='') 
             AND  (a.lokation IS NULL OR a.lokation='') 
@@ -1020,10 +1019,10 @@ INSERT INTO dokument_del_relation(
 SELECT
     dokument_del_new_id,
       a.virkning,
-        a.relMaalUuid,
-          a.relMaalUrn,
-            a.relType,
-              a.objektType
+        a.rel_maal_uuid,
+          a.rel_maal_urn,
+            a.rel_type,
+              a.objekt_type
 FROM dokument_del_relation a 
 JOIN dokument_del b on a.del_id=b.id
 JOIN dokument_variant c on b.variant_id=c.id
@@ -1039,13 +1038,14 @@ END IF; --block: there are relations to transfer
 --Remove any "cleared"/"deleted" relations
 DELETE FROM dokument_del_relation a
 WHERE 
-a.del_in in (
-    SELECT del_id from dokument_del_relation a 
+a.id in (
+    SELECT a.id 
+    from dokument_del_relation a 
     JOIN dokument_del b on a.del_id=b.id
     JOIN dokument_variant c on b.variant_id=c.id
     WHERE c.dokument_registrering_id=new_dokument_registrering.id
+    AND (a.rel_maal_uuid IS NULL AND (a.rel_maal_urn IS NULL OR a.rel_maal_urn=''))
     )
-AND (a.rel_maal_uuid IS NULL AND (a.rel_maal_urn IS NULL OR a.rel_maal_urn=''))
 ;
 
 
@@ -1076,8 +1076,8 @@ SELECT
 a.id
 from 
 dokument_variant a 
-LEFT JOIN dokument_del b on a.id = b.del_id
-LEFT JOIN dokument_variant_egenskaber c on c.variant_id=a.id
+LEFT JOIN dokument_del b on a.id = b.variant_id
+LEFT JOIN dokument_variant_egenskaber c on a.id=c.variant_id
 WHERE 
 a.dokument_registrering_id=new_dokument_registrering.id
 AND b.id IS NULL AND c.id is NULL
