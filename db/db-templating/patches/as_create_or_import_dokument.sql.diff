@@ -1,5 +1,5 @@
-*** ../generated-files/as_create_or_import_dokument.sql	2015-08-05 10:48:16.283498465 +0200
---- ../patches/as_create_or_import_dokument.org.sql	2015-08-05 10:44:57.139502032 +0200
+*** ../generated-files/as_create_or_import_dokument.sql	2015-08-06 09:54:59.608725507 +0200
+--- ../patches/as_create_or_import_dokument.org.sql	2015-08-06 10:02:15.932720603 +0200
 ***************
 *** 20,30 ****
     dokument_attr_egenskaber_obj dokumentEgenskaberAttrType;
@@ -32,13 +32,14 @@
       LOOP
       dokument_uuid:=uuid_generate_v4();
 ***************
-*** 192,201 ****
---- 198,343 ----
+*** 191,200 ****
+--- 197,341 ----
+        a.objektType
       FROM unnest(dokument_registrering.relationer) a
       WHERE (a.relMaalUuid IS NOT NULL OR (a.relMaalUrn IS NOT NULL AND a.relMaalUrn<>'') )
     ;
   
-  
++ 
 + /*********************************/
 + --Insert document variants (and parts)
 + 
@@ -173,10 +174,8 @@
 + 
 + END IF; --varianter
 + 
-+ 
-+ 
+    PERFORM amqp.publish(1, 'mox.notifications', '', format('create %s', dokument_uuid));
+  
   RETURN dokument_uuid;
   
   END;
-  $$ LANGUAGE plpgsql VOLATILE;
-  

@@ -1,2 +1,4 @@
 postgresql
+postgresql-contrib
 python-jinja2
+pgxnclient

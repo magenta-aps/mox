@@ -177,13 +177,35 @@ END IF;
 /*********************************/
 --Insert relations
 
+IF coalesce(array_length(sag_registrering.relationer,1),0)>0 THEN
+
+--Create temporary sequences
+sag_uuid_underscores:=replace(sag_uuid::text, '-', '_');
+
+FOREACH sag_relation_kode IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(sag_registrering.relationer) a WHERE a.RelType = any (sag_rel_type_cardinality_unlimited))
+  LOOP
+  sag_rel_seq_name := 'sag_rel_' || sag_relation_kode::text || sag_uuid_underscores;
+
+  EXECUTE 'CREATE TEMPORARY SEQUENCE ' || sag_rel_seq_name || '
+  INCREMENT 1
+  MINVALUE 1
+  MAXVALUE 9223372036854775807
+  START 1
+  CACHE 1;';
+
+END LOOP;
+
     INSERT INTO sag_relation (
       sag_registrering_id,
       virkning,
       rel_maal_uuid,
       rel_maal_urn,
       rel_type,
-      objekt_type
+      objekt_type,
+      rel_index,
+      rel_type_spec,
+      journal_notat,
+      journal_dokument_attr
     )
     SELECT
       sag_registrering_id,
@@ -191,10 +213,39 @@ END IF;
       a.relMaalUuid,
       a.relMaalUrn,
       a.relType,
-      a.objektType
+      a.objektType,
+        CASE WHEN a.relType = any (sag_rel_type_cardinality_unlimited) THEN --rel_index
+        nextval('sag_rel_' || a.relType::text || sag_uuid_underscores)
+        ELSE 
+        NULL
+        END,
+        CASE 
+          WHEN a.relType='journalpost' THEN a.relTypeSpec  --rel_type_spec
+          ELSE
+          NULL
+        END,
+      a.journalNotat,
+      a.journalDokumentAttr
     FROM unnest(sag_registrering.relationer) a
-    WHERE (a.relMaalUuid IS NOT NULL OR (a.relMaalUrn IS NOT NULL AND a.relMaalUrn<>'') )
+    WHERE 
+          a.relMaalUuid IS NOT NULL 
+      OR (a.relMaalUrn IS NOT NULL AND a.relMaalUrn<>'') 
+      OR (  
+          (NOT (a.journalNotat IS NULL)) 
+          AND ( (a.journalNotat).titel <>'' OR (a.journalNotat).notat <>'' OR (a.journalNotat).format<>'' ) 
+        )
   ;
+
+
+--Drop temporary sequences
+FOREACH sag_relation_kode IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(sag_registrering.relationer) a WHERE a.RelType = any (sag_rel_type_cardinality_unlimited))
+  LOOP
+  sag_rel_seq_name := 'sag_rel_' || sag_relation_kode::text || sag_uuid_underscores;
+  EXECUTE 'DROP  SEQUENCE ' || sag_rel_seq_name || ';';
+END LOOP;
+
+
+END IF;
 
   PERFORM amqp.publish(1, 'mox.notifications', '', format('create %s', sag_uuid));
 
