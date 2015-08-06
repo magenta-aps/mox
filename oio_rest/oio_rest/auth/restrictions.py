@@ -99,4 +99,4 @@ def get_restrictions(user, object_type, operation):
 
 def get_auth_restrictions(user, object_type, operation):
     """Sample or dummy implementation - implement and specify in settings."""
-    return [({}, {}, {})]
+    return [({}, {}, {'redaktoerer': 'ddc99abd-c1b0-48c2-aef7-74fea841adae'})]

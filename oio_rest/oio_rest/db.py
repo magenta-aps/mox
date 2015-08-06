@@ -390,6 +390,20 @@ def search_objects(class_name, uuid, registration,
     )
 
     print restriction_registrations
+    for r in restriction_registrations:
+        sql_r = sql_get_registration(
+            class_name, 
+            None, 
+            None,
+            None,
+            None, 
+            sql_convert_registration(
+                r.get('tilstande', {}),
+                r.get('attributter', {}),
+                r.get('relationer', {}), 
+                class_name
+            )
+        )
 
     sql = sql_template.render(
         first_result=first_result,
@@ -399,7 +413,8 @@ def search_objects(class_name, uuid, registration,
         any_attr_value_arr=any_attr_value_arr,
         any_rel_uuid_arr=any_rel_uuid_arr,
         max_results=max_results,
-        virkning_soeg=virkning_soeg
+        virkning_soeg=virkning_soeg,
+        restrictions=restrictions
     )
     # print "Search SQL", sql
     conn = get_connection()

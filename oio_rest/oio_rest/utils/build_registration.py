@@ -36,6 +36,7 @@ def build_registration(class_name, list_args):
                     'uuid': rel,
                     'virkning': None
                 })
+    print registration
     return registration
 
 
