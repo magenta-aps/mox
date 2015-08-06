@@ -27,7 +27,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>dk.magenta.mox.agent.Listener</mainClass>
+                            <mainClass>dk.magenta.mox.agent.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
