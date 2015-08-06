@@ -326,6 +326,7 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
     output = cursor.fetchone()
     return filter_nulls(output)
 
+
 def filter_nulls(o):
     """Recursively remove keys with None values from dicts in object.
 
@@ -339,6 +340,7 @@ def filter_nulls(o):
         return tuple(filter_nulls(v) for v in o)
     else:
         return o
+
 
 def search_objects(class_name, uuid, registration,
                    virkning_fra=None, virkning_til=None,
@@ -388,22 +390,18 @@ def search_objects(class_name, uuid, registration,
         lambda r: restriction_to_registration(class_name, r),
         restrictions
     )
-
-    print restriction_registrations
-    for r in restriction_registrations:
-        sql_r = sql_get_registration(
-            class_name, 
-            None, 
-            None,
-            None,
-            None, 
+    sql_restrictions = map(
+        lambda r: sql_get_registration(
+            class_name, None, None, None, None,
             sql_convert_registration(
                 r.get('tilstande', {}),
-                r.get('attributter', {}),
-                r.get('relationer', {}), 
+                convert_attributes(r.get('attributter', {})),
+                r.get('relationer', {}),
                 class_name
             )
-        )
+        ),
+        restriction_registrations
+    )
 
     sql = sql_template.render(
         first_result=first_result,
@@ -414,7 +412,8 @@ def search_objects(class_name, uuid, registration,
         any_rel_uuid_arr=any_rel_uuid_arr,
         max_results=max_results,
         virkning_soeg=virkning_soeg,
-        restrictions=restrictions
+        # TODO: Get this into the SQL function signature!
+        # restrictions=sql_restrictions
     )
     # print "Search SQL", sql
     conn = get_connection()
