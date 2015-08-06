@@ -21,14 +21,13 @@ fi
 
 ## System dependencies. These are the packages we need that are not present on a
 ## fresh OS install.
+## Virtualenv is usually among these
 #
 SYSTEM_PACKAGES=$(cat "$DIR/oio_rest/SYSTEM_DEPENDENCIES")
 
 for package in "${SYSTEM_PACKAGES[@]}"; do
 	sudo apt-get -y install $package
 done
-
-
 
 
 
@@ -42,34 +41,49 @@ fi
 
 virtualenv $VIRTUALENV
 
-source $VIRTUALENV/bin/activate
+if [ ! -d $VIRTUALENV ]; then
+	echo "Virtual environment not created!"
+else
 
-# Database dependencies + installation
 
-if [ ! -z $DB_INSTALL ]; then
+
+
+
+
+
+
 	# INSTALL DB
 
-	SYSTEM_PACKAGES=$(cat "$DIR/db/SYSTEM_DEPENDENCIES")
-	for package in "${SYSTEM_PACKAGES[@]}"; do
-		sudo apt-get -y install $package
-	done
 
-	sudo pgxn install pgtap
-	pip install jinja2
-	sudo -u postgres createuser mox
+	if [ ! -z $DB_INSTALL ]; then
+	
+		SYSTEM_PACKAGES=$(cat "$DIR/db/SYSTEM_DEPENDENCIES")
+		for package in "${SYSTEM_PACKAGES[@]}"; do
+			sudo apt-get -y install $package
+		done
 
-	pushd $DIR/db
-	./recreatedb.sh
+		source $VIRTUALENV/bin/activate
+
+		sudo pgxn install pgtap
+		pip install jinja2
+		sudo -u postgres createuser mox
+
+		pushd $DIR/db
+		./recreatedb.sh
+		popd
+
+		deactivate
+	fi
+
+	source $VIRTUALENV/bin/activate
+
+	pushd $DIR/oio_rest
+	python setup.py develop
 	popd
+
+	deactivate
+
+	echo "Run oio_rest/oio_api.sh to test API"
+
 fi
-
-
-
-
-pushd $DIR/oio_rest
-sudo python ./setup.py develop
-popd
-
-echo "Run oio_rest/oio_api.sh to test API"
-
 
