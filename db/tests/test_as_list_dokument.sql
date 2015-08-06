@@ -121,6 +121,8 @@ doc1_new_uuid uuid;
 	actual_dokuments5 DokumentType[];
 	expected_dokuments5 DokumentType[];
 
+	document5 DokumentType;
+
 BEGIN
 
 
@@ -988,6 +990,8 @@ expected_dokuments2:= ARRAY[
 
 
 
+
+
 select array_agg(a.* order by a.id) from unnest(expected_dokuments2) as a into expected_dokuments2;
 
 --raise notice 'list dokument expected_dokuments2:%',to_json(expected_dokuments2);
@@ -1003,11 +1007,13 @@ RETURN NEXT is(
 /********************************************/
 --Test filter on non existing reg time.
 
+
 select array_agg(a.* order by a.id) from as_list_dokument(array[doc1_new_uuid,doc2_new_uuid]::uuid[], tstzrange(clock_timestamp() - interval '2 hour', clock_timestamp() - interval '1 hour'),'(-infinity, 01-01-2015)' :: TSTZRANGE) as a     into actual_dokuments3;
 
 RETURN NEXT ok(coalesce(array_length(actual_dokuments3,1),0)=0,'Test on filter on reg time with no reg.');
 
 --Test filter on current reg 
+
 
 select array_agg(a.* order by a.id) from as_list_dokument(array[doc1_new_uuid,doc2_new_uuid]::uuid[], tstzrange(clock_timestamp() - interval '1 hour',clock_timestamp()) ,'(-infinity, 01-01-2015)' :: TSTZRANGE) as a     into actual_dokuments4;
 
@@ -1021,8 +1027,12 @@ RETURN NEXT is(
 
 select array_agg(a.* order by a.id) from as_list_dokument(array[doc2_new_uuid]::uuid[],  tstzrange(clock_timestamp() - interval '1 hour',clock_timestamp()) ,'(-infinity, 01-01-2015)' :: TSTZRANGE) as a     into actual_dokuments5;
 
-
-expected_dokuments5:= array_append(expected_dokuments5,expected_dokuments2[1]);
+IF expected_dokuments2[1].id = doc2_new_uuid THEN
+	expected_dokuments5:=array_append(expected_dokuments5,expected_dokuments2[1]);
+ELSE
+	expected_dokuments5:=array_append(expected_dokuments5,expected_dokuments2[2]);
+END IF;
+ 
 
 --raise notice 'list dokument expected_dokuments5:%',to_json(expected_dokuments5);
 --raise notice 'list dokument actual_dokuments5:%',to_json(actual_dokuments5);
