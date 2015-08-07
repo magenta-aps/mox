@@ -521,7 +521,6 @@ FOREACH dokument_variant_egenskab_obj IN ARRAY dokument_variant_obj.egenskaber
 
   INSERT INTO dokument_variant_egenskaber(
     variant_id,
-      varianttekst,
         arkivering, 
           delvisscannet, 
             offentliggoerelse, 
@@ -530,7 +529,6 @@ FOREACH dokument_variant_egenskab_obj IN ARRAY dokument_variant_obj.egenskaber
       )
   SELECT
     dokument_variant_new_id, 
-      coalesce(dokument_variant_egenskab_obj.varianttekst,a.varianttekst), 
         coalesce(dokument_variant_egenskab_obj.arkivering,a.arkivering), 
           coalesce(dokument_variant_egenskab_obj.delvisscannet,a.delvisscannet), 
             coalesce(dokument_variant_egenskab_obj.offentliggoerelse,a.offentliggoerelse), 
@@ -542,7 +540,7 @@ FOREACH dokument_variant_egenskab_obj IN ARRAY dokument_variant_obj.egenskaber
                   (dokument_variant_egenskab_obj.virkning).NoteTekst
                 )::Virkning
   FROM dokument_variant_egenskaber a
-  JOIN dokument_variant b on a.variant_id=b.variant_id
+  JOIN dokument_variant b on a.variant_id=b.id
   WHERE
     b.dokument_registrering_id=prev_dokument_registrering.id 
     and b.varianttekst=dokument_variant_obj.varianttekst
