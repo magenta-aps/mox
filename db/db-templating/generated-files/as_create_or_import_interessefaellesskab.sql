@@ -169,7 +169,7 @@ END IF;
     WHERE (a.relMaalUuid IS NOT NULL OR (a.relMaalUrn IS NOT NULL AND a.relMaalUrn<>'') )
   ;
 
-  PERFORM amqp.publish(1, 'mox.notifications', '', format('create %s', interessefaellesskab_uuid));
+  PERFORM actual_state._amqp_publish_notification('Interessefaellesskab', 'Opret', interessefaellesskab_uuid);
 
 RETURN interessefaellesskab_uuid;
 

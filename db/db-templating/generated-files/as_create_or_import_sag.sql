@@ -247,7 +247,7 @@ END LOOP;
 
 END IF;
 
-  PERFORM amqp.publish(1, 'mox.notifications', '', format('create %s', sag_uuid));
+  PERFORM actual_state._amqp_publish_notification('Sag', 'Opret', sag_uuid);
 
 RETURN sag_uuid;
 

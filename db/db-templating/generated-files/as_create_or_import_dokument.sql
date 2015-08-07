@@ -334,7 +334,7 @@ dokument_variant_new_id:=nextval('dokument_variant_id_seq'::regclass);
 
 END IF; --varianter
 
-  PERFORM amqp.publish(1, 'mox.notifications', '', format('create %s', dokument_uuid));
+  PERFORM actual_state._amqp_publish_notification('Dokument', 'Opret', dokument_uuid);
 
 RETURN dokument_uuid;
 

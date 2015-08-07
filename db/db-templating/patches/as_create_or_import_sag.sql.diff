@@ -1,5 +1,5 @@
-*** ../generated-files/as_create_or_import_sag.sql	2015-08-06 09:54:58.776725516 +0200
---- ../patches/as_create_or_import_sag.org.sql	2015-08-06 09:57:53.732723550 +0200
+*** ../generated-files/as_create_or_import_sag.sql	2015-08-07 12:17:59.094284922 +0200
+--- ../patches/as_create_or_import_sag.org.sql	2015-08-07 12:19:49.438283682 +0200
 ***************
 *** 20,30 ****
     sag_attr_egenskaber_obj sagEgenskaberAttrType;
@@ -54,7 +54,7 @@
 !     WHERE (a.relMaalUuid IS NOT NULL OR (a.relMaalUrn IS NOT NULL AND a.relMaalUrn<>'') )
     ;
   
-    PERFORM amqp.publish(1, 'mox.notifications', '', format('create %s', sag_uuid));
+    PERFORM actual_state._amqp_publish_notification('Sag', 'Opret', sag_uuid);
   
   RETURN sag_uuid;
   
@@ -135,7 +135,7 @@
 + 
 + END IF;
 + 
-    PERFORM amqp.publish(1, 'mox.notifications', '', format('create %s', sag_uuid));
+    PERFORM actual_state._amqp_publish_notification('Sag', 'Opret', sag_uuid);
   
   RETURN sag_uuid;
   
