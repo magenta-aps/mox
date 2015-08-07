@@ -6,5 +6,13 @@ SELECT to_json(a.*) from as_search_{{ class_name|lower }}(
     {{virkning_soeg|adapt}},
     {{max_results|adapt}},
     {{any_attr_value_arr|adapt}} :: text[],
-    {{any_rel_uuid_arr|adapt}} :: uuid[]
+    {{any_rel_uuid_arr|adapt}} :: uuid[]{% if restrictions %},{% endif %}
+    {% if restrictions %}
+    ARRAY[
+    {% for r in restrictions %}
+    {{ r }}{% if not loop.last %},{% endif %}
+    {% endfor %}
+    ]
+    {% endif %}
+
 ) a;
