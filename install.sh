@@ -1,11 +1,24 @@
 #!/usr/bin/env bash
 
-while getopts ":d" OPT; do
-	export DB_INSTALL=1
-done
-
-while getopts ":a" OPT; do
-	export AGENT_INSTALL=1
+while getopts ":das" OPT; do
+  case $OPT in
+  	d)
+			DB_INSTALL=1
+			;;
+		a)
+			AGENT_INSTALL=1
+			;;
+		s)
+			SKIP_SYSTEM_DEPS=1
+			;;
+		*)
+			echo "Usage: $0 [-d] [-a] [-s]"
+			echo "	-d: Install and (re-)create the DB"
+			echo "	-a: Install the MOX agents"
+			echo "	-s: Skip installing oio_rest API system dependencies"
+			exit 1;
+			;;
+	esac
 done
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
@@ -27,12 +40,13 @@ fi
 ## fresh OS install.
 ## Virtualenv is usually among these
 #
-SYSTEM_PACKAGES=$(cat "$DIR/oio_rest/SYSTEM_DEPENDENCIES")
+if [ -z $SKIP_SYSTEM_DEPS ]; then
+	SYSTEM_PACKAGES=$(cat "$DIR/oio_rest/SYSTEM_DEPENDENCIES")
 
-for package in "${SYSTEM_PACKAGES[@]}"; do
-	sudo apt-get -y install $package
-done
-
+	for package in "${SYSTEM_PACKAGES[@]}"; do
+		sudo apt-get -y install $package
+	done
+fi
 
 
 
@@ -49,36 +63,15 @@ if [ ! -d $VIRTUALENV ]; then
 	echo "Virtual environment not created!"
 else
 
-	# INSTALL DB
-
-
 	if [ ! -z $DB_INSTALL ]; then
-	
-		SYSTEM_PACKAGES=$(cat "$DIR/db/SYSTEM_DEPENDENCIES")
-		for package in "${SYSTEM_PACKAGES[@]}"; do
-			sudo apt-get -y install $package
-		done
 
-		source $VIRTUALENV/bin/activate
+		echo "Installing DB"
 
-		pip install jinja2
-		sudo -u postgres createuser mox
-
-		# Install pgtap - unit test framework
-		sudo pgxn install pgtap
-
-		# Install pg_amqp - Postgres AMQP extension
-		# We depend on a specific fork, which supports setting of message headers
-		# https://github.com/duncanburke/pg_amqp.git
-		git clone https://github.com/duncanburke/pg_amqp.git /tmp/pg_amqp
-		cd /tmp/pg_amqp && sudo make install
-		rm -rf /tmp/pg_amqp
-
+		cd $DIR/db
+		./install.sh
 		cd $DIR/db
 		./recreatedb.sh
 		cd $DIR
-
-		deactivate
 	fi
 
 	source $VIRTUALENV/bin/activate
@@ -95,7 +88,9 @@ else
 
 
 
-	if [ -z $AGENT_INSTALL ]; then
+	if [ ! -z $AGENT_INSTALL ]; then
+
+		echo "Installing MOX agent"
 
 		# Ubuntu 14.04 doesn't come with java 8
 		sudo add-apt-repository ppa:webupd8team/java
