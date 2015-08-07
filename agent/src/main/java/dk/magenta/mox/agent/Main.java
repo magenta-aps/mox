@@ -1,16 +1,35 @@
 package dk.magenta.mox.agent;
 
+import org.apache.axiom.om.OMAbstractFactory;
+import org.apache.axiom.om.OMElement;
+import org.apache.axiom.om.OMFactory;
+import org.apache.axiom.om.impl.builder.StAXOMBuilder;
+import org.apache.axis2.AxisFault;
+import org.apache.neethi.Policy;
+import org.apache.neethi.PolicyEngine;
+import org.apache.rahas.*;
+import org.apache.rahas.client.STSClient;
+import org.apache.rampart.policy.model.CryptoConfig;
+import org.apache.rampart.policy.model.RampartConfig;
+import org.apache.ws.secpolicy.SP11Constants;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import javax.naming.OperationNotSupportedException;
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
+import java.util.zip.GZIPOutputStream;
+
+
+import org.apache.axis2.context.ConfigurationContext;
+import org.apache.axis2.context.ConfigurationContextFactory;
 
 /**
  * Created by lars on 06-08-15.
@@ -89,12 +108,12 @@ public class Main {
                 return;
             }
         }
+        Properties properties = new Properties();
         if (propertiesFile.canRead()) {
-            Properties properties = new Properties();
             try {
                 properties.load(new FileInputStream(propertiesFile));
             } catch (IOException e) {
-                System.err.println("Error loadling from properties file " + propertiesFile.getAbsolutePath() + ": " + e.getMessage());
+                System.err.println("Error loading from properties file " + propertiesFile.getAbsolutePath() + ": " + e.getMessage());
                 return;
             }
             System.out.println("Reading properties file " + propertiesFile.getAbsolutePath());
@@ -212,16 +231,24 @@ public class Main {
 
 
             } else if (command.equalsIgnoreCase("sendtest")) {
+
+
+
                 System.out.println("Running sendtest\nSending to "+queueInterface+", queueName '"+queueName+"'");
 
-                String authorization = "incorrect";
+                String authtoken = getSecurityToken(properties, restInterface);
+
+                String encodedAuthtoken = "saml-gzipped " + base64encode(gzip(authtoken));
+
+                System.out.println("authtoken: "+authtoken);
+                System.out.println("encodedAuthtoken: "+encodedAuthtoken);
 
                 MessageSender messageSender = new MessageSender(queueInterface, null, queueName);
                 ObjectType objectType = objectTypes.get("facet");
 
                 try {
                     System.out.println("Sending create operation");
-                    Future<String> response = objectType.create(messageSender, getJSONObjectFromFilename("test/facet_opret.json"), authorization);
+                    Future<String> response = objectType.create(messageSender, getJSONObjectFromFilename("test/facet_opret.json"), encodedAuthtoken);
                     String responseString = response.get();
                     System.out.println("create response: "+responseString);
 
@@ -229,17 +256,17 @@ public class Main {
                     UUID uuid = UUID.fromString(obj.getString("uuid"));
 
                     System.out.println("Sending update operation");
-                    response = objectType.update(messageSender, uuid, getJSONObjectFromFilename("test/facet_opdater.json"), authorization);
+                    response = objectType.update(messageSender, uuid, getJSONObjectFromFilename("test/facet_opdater.json"), encodedAuthtoken);
                     responseString = response.get();
                     System.out.println("update response: "+responseString);
 
                     System.out.println("Sending passivate operation");
-                    response = objectType.passivate(messageSender, uuid, "Pacify that sucker", authorization);
+                    response = objectType.passivate(messageSender, uuid, "Pacify that sucker", encodedAuthtoken);
                     responseString = response.get();
                     System.out.println("passivate response: "+responseString);
 
                     System.out.println("Sending delete operation");
-                    response = objectType.delete(messageSender, uuid, "Delete that sucker", authorization);
+                    response = objectType.delete(messageSender, uuid, "Delete that sucker", encodedAuthtoken);
                     responseString = response.get();
                     System.out.println("delete response: "+responseString);
 
@@ -267,4 +294,153 @@ public class Main {
     private static JSONObject getJSONObjectFromFilename(String jsonFilename) throws FileNotFoundException, JSONException {
         return new JSONObject(new JSONTokener(new FileReader(new File(jsonFilename))));
     }
+
+
+
+    private static final String SUBJECT_CONFIRMATION_BEARER = "b";
+    private static final String SUBJECT_CONFIRMATION_HOLDER_OF_KEY = "h";
+    private static final String SAML_TOKEN_TYPE_10 = "1.0";
+    private static final String SAML_TOKEN_TYPE_11 = "1.1";
+    private static final String SAML_TOKEN_TYPE_20 = "2.0";
+
+    private static String getSecurityToken(Properties properties, String endpointAddress) {
+
+        try {
+            String resourcePath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator;
+
+            String keystorePath = properties.getProperty("security.keystore.path");
+            String keystorePass = properties.getProperty("security.keystore.password");
+            String repoPath = properties.getProperty("security.repo.path");
+
+            System.setProperty("javax.net.ssl.trustStore", keystorePath);
+            System.setProperty("javax.net.ssl.trustStorePassword", keystorePass);
+
+            ConfigurationContext configCtx = ConfigurationContextFactory.createConfigurationContextFromFileSystem(repoPath);
+
+
+            // Create RST Template
+            String tokenType = properties.getProperty("security.saml.token.type");
+            OMFactory omFac = OMAbstractFactory.getOMFactory();
+            OMElement rstTemplate = omFac.createOMElement(SP11Constants.REQUEST_SECURITY_TOKEN_TEMPLATE);
+
+            if (SAML_TOKEN_TYPE_20.equals(tokenType)) {
+                TrustUtil.createTokenTypeElement(RahasConstants.VERSION_05_02, rstTemplate).setText(RahasConstants.TOK_TYPE_SAML_20);
+            } else if (SAML_TOKEN_TYPE_11.equals(tokenType)) {
+                TrustUtil.createTokenTypeElement(RahasConstants.VERSION_05_02, rstTemplate).setText(RahasConstants.TOK_TYPE_SAML_10);
+            }
+
+            String subjectConfirmationMethod = properties.getProperty("security.subject.confirmation.method");
+            if (SUBJECT_CONFIRMATION_BEARER.equals(subjectConfirmationMethod)) {
+                TrustUtil.createKeyTypeElement(RahasConstants.VERSION_05_02, rstTemplate, RahasConstants.KEY_TYPE_BEARER);
+            } else if (SUBJECT_CONFIRMATION_HOLDER_OF_KEY.equals(subjectConfirmationMethod)) {
+                TrustUtil.createKeyTypeElement(RahasConstants.VERSION_05_02, rstTemplate, RahasConstants.KEY_TYPE_SYMM_KEY);
+            }
+
+            // request claims in the token.
+            String claimDialect = properties.getProperty("security.claim.dialect");
+            String[] claimUris = properties.getProperty("security.claim.uris", "").split(",");
+            OMElement claimElement = TrustUtil.createClaims(RahasConstants.VERSION_05_02, rstTemplate, claimDialect);
+            // Populate the <Claims/> element with the <ClaimType/> elements
+
+            OMElement element;
+            // For each and every claim uri, create an <ClaimType/> elem
+            for (String attr : claimUris) {
+                QName qName = new QName("http://schemas.xmlsoap.org/ws/2005/05/identity", "ClaimType", "wsid");
+                element = claimElement.getOMFactory().createOMElement(qName, claimElement);
+                element.addAttribute(claimElement.getOMFactory().createOMAttribute("Uri", null, attr));
+            }
+
+
+            // create STS client
+            STSClient stsClient = new STSClient(configCtx);
+            stsClient.setRstTemplate(rstTemplate);
+
+
+            String action = null;
+            String responseTokenID = null;
+
+            action = TrustUtil.getActionValue(RahasConstants.VERSION_05_02, RahasConstants.RST_ACTION_ISSUE);
+            stsClient.setAction(action);
+
+
+            String stsPolicyPath = properties.getProperty("security.sts.policy.path");
+            StAXOMBuilder omBuilder = new StAXOMBuilder(stsPolicyPath);
+            Policy stsPolicy = PolicyEngine.getPolicy(omBuilder.getDocumentElement());
+
+
+            // Build Rampart config
+            String username = properties.getProperty("security.user.name");
+            String encryptionUsername = properties.getProperty("security.encryption.username");
+            String userCertAlias = properties.getProperty("security.user.cert.alias");
+            String pwdCallbackClass = PasswordCBHandler.class.getCanonicalName();
+
+            RampartConfig rampartConfig = new RampartConfig();
+            rampartConfig.setUser(username);
+            rampartConfig.setEncryptionUser(encryptionUsername);
+            rampartConfig.setUserCertAlias(userCertAlias);
+            rampartConfig.setPwCbClass(pwdCallbackClass);
+
+            Properties cryptoProperties = new Properties();
+            cryptoProperties.put("org.apache.ws.security.crypto.merlin.keystore.type", "JKS");
+            cryptoProperties.put("org.apache.ws.security.crypto.merlin.file", keystorePath);
+            cryptoProperties.put("org.apache.ws.security.crypto.merlin.keystore.password", keystorePass);
+
+            CryptoConfig cryptoConfig = new CryptoConfig();
+            cryptoConfig.setProvider("org.apache.ws.security.components.crypto.Merlin");
+            cryptoConfig.setProp(cryptoProperties);
+
+            rampartConfig.setEncrCryptoConfig(cryptoConfig);
+            rampartConfig.setSigCryptoConfig(cryptoConfig);
+
+            stsPolicy.addAssertion(rampartConfig);
+
+            // request the security token from STS.
+
+            String stsAddress = properties.getProperty("security.sts.address");
+            Token responseToken = stsClient.requestSecurityToken(null, stsAddress, stsPolicy, endpointAddress);
+
+            // store the obtained token in token store to be used in future communication.
+            TokenStorage store = TrustUtil.getTokenStore(configCtx);
+            responseTokenID = responseToken.getId();
+            store.add(responseToken);
+
+            return responseToken.getToken().toString();
+
+        } catch (AxisFault axisFault) {
+            axisFault.printStackTrace();
+        } catch (TrustException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (XMLStreamException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static byte[] gzip(String str) throws IOException{
+        if (str == null || str.length() == 0) {
+            return null;
+        }
+
+
+        FileOutputStream fos = new FileOutputStream("/home/lars/tmp.gz");
+        GZIPOutputStream gzip = new GZIPOutputStream(fos);
+        gzip.write(str.getBytes());
+        gzip.close();
+
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        GZIPOutputStream gzip2 = new GZIPOutputStream(baos);
+        gzip2.write(str.getBytes());
+        gzip2.close();
+
+        return baos.toByteArray();
+    }
+
+    private static String base64encode(byte[] data) {
+        return Base64.getEncoder().encodeToString(data);
+    }
+
+
 }

@@ -44,9 +44,18 @@ public class MessageReceiver extends MessageInterface {
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             } catch (ExecutionException e) {
+
+                                if (e.getCause() != null && e.getCause() instanceof IOException) {
+                                    try {
+                                        MessageReceiver.this.getChannel().basicPublish("", deliveryProperties.getReplyTo(), responseProperties, ("{\"Error\":\"" + e.getMessage() + "\"}").getBytes());
+                                    } catch (IOException e1) {
+                                        e1.printStackTrace();
+                                    }
+                                }
                                 e.printStackTrace();
                             } catch (IOException e) {
                                 e.printStackTrace();
+
                             }
                         }
                     }).start();

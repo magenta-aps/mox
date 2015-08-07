@@ -136,8 +136,8 @@ public class ObjectType {
     }
 
     public Future<String> create(MessageSender sender, JSONObject data, String authorization) throws IOException, OperationNotSupportedException {
-            if (this.operations.containsKey(OPERATION_CREATE)) {
-            return this.sendCommand(sender, this.operations.get(OPERATION_CREATE).command, null, data);
+        if (this.operations.containsKey(OPERATION_CREATE)) {
+            return this.sendCommand(sender, this.operations.get(OPERATION_CREATE).command, null, data, authorization);
         } else {
             throw new OperationNotSupportedException("Operation "+OPERATION_CREATE+" is not defined for Object type "+this.name);
         }
@@ -150,7 +150,7 @@ public class ObjectType {
 
     public Future<String> update(MessageSender sender, UUID uuid, JSONObject data, String authorization) throws IOException, OperationNotSupportedException {
             if (this.operations.containsKey(OPERATION_UPDATE)) {
-            return this.sendCommand(sender, this.operations.get(OPERATION_UPDATE).command, uuid, data);
+            return this.sendCommand(sender, this.operations.get(OPERATION_UPDATE).command, uuid, data, authorization);
         } else {
             throw new OperationNotSupportedException("Operation "+OPERATION_UPDATE+" is not defined for Object type "+this.name);
         }

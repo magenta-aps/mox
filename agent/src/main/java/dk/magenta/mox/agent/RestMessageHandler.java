@@ -92,6 +92,7 @@ public class RestMessageHandler implements MessageHandler {
         connection.setDoOutput(true);
         connection.setRequestProperty("Content-type", "application/json");
         if (authorization != null && !authorization.isEmpty()) {
+            System.out.println("Authorization: "+authorization);
             connection.setRequestProperty("Authorization", authorization);
         }
         OutputStreamWriter out = new OutputStreamWriter(connection.getOutputStream());
