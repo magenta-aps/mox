@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 CREATE OR REPLACE FUNCTION actual_state._amqp_publish_notification
-(objekttype varchar, operation varchar, objekt_uuid uuid)
+(objekttype varchar, livscykluskode LivscyklusKode, objekt_uuid uuid)
 RETURNS bool
 AS 
 $$
@@ -16,7 +16,7 @@ $$
     ARRAY[
       ARRAY['beskedtype', 'Notification'],
       ARRAY['objekttype', objekttype],
-      ARRAY['operation', operation],
+      ARRAY['livscykluskode', livscykluskode::varchar],
       ARRAY['uuid', objekt_uuid::varchar]
     ],
     'application/json')

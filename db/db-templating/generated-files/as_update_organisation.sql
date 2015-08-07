@@ -448,6 +448,7 @@ END IF;
 
 /******************************************************************/
 
+PERFORM actual_state._amqp_publish_notification('Organisation', livscykluskode, organisation_uuid);
 
 return new_organisation_registrering.id;
 

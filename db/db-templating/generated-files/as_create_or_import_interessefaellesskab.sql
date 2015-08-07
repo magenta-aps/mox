@@ -169,7 +169,7 @@ END IF;
     WHERE (a.relMaalUuid IS NOT NULL OR (a.relMaalUrn IS NOT NULL AND a.relMaalUrn<>'') )
   ;
 
-  PERFORM actual_state._amqp_publish_notification('Interessefaellesskab', 'Opret', interessefaellesskab_uuid);
+  PERFORM actual_state._amqp_publish_notification('Interessefaellesskab', (interessefaellesskab_registrering.registrering).livscykluskode, interessefaellesskab_uuid);
 
 RETURN interessefaellesskab_uuid;
 

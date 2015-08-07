@@ -454,6 +454,7 @@ END IF;
 
 /******************************************************************/
 
+PERFORM actual_state._amqp_publish_notification('Bruger', livscykluskode, bruger_uuid);
 
 return new_bruger_registrering.id;
 

@@ -165,7 +165,7 @@ END IF;
     WHERE (a.relMaalUuid IS NOT NULL OR (a.relMaalUrn IS NOT NULL AND a.relMaalUrn<>'') )
   ;
 
-  PERFORM actual_state._amqp_publish_notification('Organisation', 'Opret', organisation_uuid);
+  PERFORM actual_state._amqp_publish_notification('Organisation', (organisation_registrering.registrering).livscykluskode, organisation_uuid);
 
 RETURN organisation_uuid;
 

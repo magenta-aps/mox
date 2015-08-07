@@ -213,7 +213,7 @@ END IF;
     WHERE (a.relMaalUuid IS NOT NULL OR (a.relMaalUrn IS NOT NULL AND a.relMaalUrn<>'') )
   ;
 
-  PERFORM actual_state._amqp_publish_notification('Klasse', 'Opret', klasse_uuid);
+  PERFORM actual_state._amqp_publish_notification('Klasse', (klasse_registrering.registrering).livscykluskode, klasse_uuid);
 
 RETURN klasse_uuid;
 

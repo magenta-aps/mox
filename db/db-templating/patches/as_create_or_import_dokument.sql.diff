@@ -1,5 +1,5 @@
-*** ../generated-files/as_create_or_import_dokument.sql	2015-08-07 12:17:59.878284913 +0200
---- ../patches/as_create_or_import_dokument.org.sql	2015-08-07 12:19:30.078283899 +0200
+*** ../generated-files/as_create_or_import_dokument.sql	2015-08-07 13:50:53.870592574 +0200
+--- ../patches/as_create_or_import_dokument.org.sql	2015-08-07 13:50:47.290592648 +0200
 ***************
 *** 20,30 ****
     dokument_attr_egenskaber_obj dokumentEgenskaberAttrType;
@@ -174,7 +174,7 @@
 + 
 + END IF; --varianter
 + 
-    PERFORM actual_state._amqp_publish_notification('Dokument', 'Opret', dokument_uuid);
+    PERFORM actual_state._amqp_publish_notification('Dokument', (dokument_registrering.registrering).livscykluskode, dokument_uuid);
   
   RETURN dokument_uuid;
   

@@ -460,6 +460,7 @@ END IF;
 
 /******************************************************************/
 
+PERFORM actual_state._amqp_publish_notification('Klassifikation', livscykluskode, klassifikation_uuid);
 
 return new_klassifikation_registrering.id;
 
