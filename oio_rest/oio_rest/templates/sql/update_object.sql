@@ -13,5 +13,7 @@ SELECT * from as_update_{{ class_name|lower }}(
     {{ state_array }},
     {% endfor -%}
     -- relations
-    {{ relations }}
+    {{ relations }}{% if restrictions %},
+        {{restrictions}}
+            {% endif %}
 );

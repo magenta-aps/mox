@@ -10,6 +10,7 @@ class Operation(Enum):
     READ = "Læs"
     UPDATE = "Ret"
     DELETE = "Slet"
+    PASSIVATE = "Passiver"
 
 
 def get_restrictions(user, object_type, operation):

@@ -12,6 +12,8 @@
         {{ state_array }},
         {% endfor -%}
         -- relations
-        {{ relations }}
+        {{ relations }}{% if restrictions %},
+            {{restrictions}}
+                {% endif %}
     );
  

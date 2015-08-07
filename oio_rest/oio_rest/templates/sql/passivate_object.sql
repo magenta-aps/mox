@@ -5,5 +5,8 @@
         {{ life_cycle_code|adapt }},
         null,
         null,
-        null);
+        null{% if restrictions %},
+        {{restrictions}}
+        {% endif %}
+    );
  
