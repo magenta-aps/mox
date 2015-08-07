@@ -21,11 +21,11 @@ CREATE TYPE DokumentFremdriftTilsType AS (
 
 CREATE TYPE DokumentEgenskaberAttrType AS (
 brugervendtnoegle text,
-beskrivelse text, 
-brevdato date,
-kassationskode text, 
-major int, 
-minor int, 
+beskrivelse text,
+brevdato ClearableDate,
+kassationskode text,
+major ClearableInt,
+minor ClearableInt,
 offentlighedundtaget offentlighedundtagettype,
 titel text,
 dokumenttype text,

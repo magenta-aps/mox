@@ -22,7 +22,7 @@ CREATE TYPE ItsystemGyldighedTilsType AS (
 CREATE TYPE ItsystemEgenskaberAttrType AS (
 brugervendtnoegle text,
 itsystemnavn text,
-itsystemtype text, 
+itsystemtype text,
 konfigurationreference text[],
  virkning Virkning
 );

@@ -319,15 +319,21 @@ IF attrEgenskaber IS NOT null THEN
     ,virkning
     ,dokument_registrering_id
   )
-  SELECT 
-    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle), 
+  SELECT
+    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
     coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse), 
-    coalesce(attrEgenskaberObj.brevdato,a.brevdato), 
+    CASE WHEN (attrEgenskaberObj.brevdato).cleared THEN NULL 
+    ELSE coalesce((attrEgenskaberObj.brevdato).value,a.brevdato)
+    END,
     coalesce(attrEgenskaberObj.kassationskode,a.kassationskode), 
-    coalesce(attrEgenskaberObj.major,a.major), 
-    coalesce(attrEgenskaberObj.minor,a.minor), 
-    coalesce(attrEgenskaberObj.offentlighedundtaget,a.offentlighedundtaget), 
-    coalesce(attrEgenskaberObj.titel,a.titel), 
+    CASE WHEN (attrEgenskaberObj.major).cleared THEN NULL 
+    ELSE coalesce((attrEgenskaberObj.major).value,a.major)
+    END, 
+    CASE WHEN (attrEgenskaberObj.minor).cleared THEN NULL 
+    ELSE coalesce((attrEgenskaberObj.minor).value,a.minor)
+    END,
+    coalesce(attrEgenskaberObj.offentlighedundtaget,a.offentlighedundtaget),
+    coalesce(attrEgenskaberObj.titel,a.titel),
     coalesce(attrEgenskaberObj.dokumenttype,a.dokumenttype),
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,

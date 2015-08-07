@@ -11,8 +11,10 @@ NOTICE: This file is auto-generated using the script: apply-template.py klasse a
 
 
 
+--Please notice that is it the responsibility of the invoker of this function to compare the resulting klasse_registration (including the entire hierarchy)
+--to the previous one, and abort the transaction if the two registrations are identical. (This is to comply with the stipulated behavior in 'Specifikation_af_generelle_egenskaber - til OIOkomiteen.pdf')
 
---Also notice, that the given arrays of KlasseAttr...Type must be consistent regarding virkning (although the allowance of null-values might make it possible to construct 'logically consistent'-arrays of objects with overlapping virknings)
+--Also notice, that the given array of KlasseAttr...Type must be consistent regarding virkning (although the allowance of null-values might make it possible to construct 'logically consistent'-arrays of objects with overlapping virknings)
 
 CREATE OR REPLACE FUNCTION as_update_klasse(
   klasse_uuid uuid,
@@ -303,12 +305,12 @@ WITH inserted_merged_attr_egenskaber AS (
   )
   SELECT 
     nextval('klasse_attr_egenskaber_id_seq'),
-    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle), 
-    coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse), 
-    coalesce(attrEgenskaberObj.eksempel,a.eksempel), 
-    coalesce(attrEgenskaberObj.omfang,a.omfang), 
-    coalesce(attrEgenskaberObj.titel,a.titel), 
-    coalesce(attrEgenskaberObj.retskilde,a.retskilde), 
+    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+    coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
+    coalesce(attrEgenskaberObj.eksempel,a.eksempel),
+    coalesce(attrEgenskaberObj.omfang,a.omfang),
+    coalesce(attrEgenskaberObj.titel,a.titel),
+    coalesce(attrEgenskaberObj.retskilde,a.retskilde),
     coalesce(attrEgenskaberObj.aendringsnotat,a.aendringsnotat),
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,

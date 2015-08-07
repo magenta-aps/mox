@@ -298,13 +298,13 @@ IF attrEgenskaber IS NOT null THEN
     ,virkning
     ,facet_registrering_id
   )
-  SELECT 
-    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle), 
-    coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse), 
-    coalesce(attrEgenskaberObj.opbygning,a.opbygning), 
-    coalesce(attrEgenskaberObj.ophavsret,a.ophavsret), 
-    coalesce(attrEgenskaberObj.plan,a.plan), 
-    coalesce(attrEgenskaberObj.supplement,a.supplement), 
+  SELECT
+    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+    coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
+    coalesce(attrEgenskaberObj.opbygning,a.opbygning),
+    coalesce(attrEgenskaberObj.ophavsret,a.ophavsret),
+    coalesce(attrEgenskaberObj.plan,a.plan),
+    coalesce(attrEgenskaberObj.supplement,a.supplement),
     coalesce(attrEgenskaberObj.retskilde,a.retskilde),
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,

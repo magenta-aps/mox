@@ -295,10 +295,10 @@ IF attrEgenskaber IS NOT null THEN
     ,virkning
     ,itsystem_registrering_id
   )
-  SELECT 
-    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle), 
-    coalesce(attrEgenskaberObj.itsystemnavn,a.itsystemnavn), 
-    coalesce(attrEgenskaberObj.itsystemtype,a.itsystemtype), 
+  SELECT
+    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+    coalesce(attrEgenskaberObj.itsystemnavn,a.itsystemnavn),
+    coalesce(attrEgenskaberObj.itsystemtype,a.itsystemtype),
     coalesce(attrEgenskaberObj.konfigurationreference,a.konfigurationreference),
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
