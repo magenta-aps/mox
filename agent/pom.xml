@@ -71,6 +71,11 @@
             <version>3.1</version>
         </dependency>
         <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.6</version>
+        </dependency>
+        <dependency>
             <groupId>wsdl4j</groupId>
             <artifactId>wsdl4j</artifactId>
             <version>1.6.2</version>
@@ -82,21 +87,26 @@
         </dependency>
         <dependency>
             <groupId>org.apache.woden</groupId>
-            <artifactId>woden</artifactId>
+            <artifactId>woden-impl-commons</artifactId>
             <version>1.0M9</version>
         </dependency>
-        
+
 
         <dependency>
             <groupId>org.apache.ws.commons.axiom.wso2</groupId>
             <artifactId>axiom</artifactId>
             <version>1.2.11.wso2v1</version>
         </dependency>
+
+
+
+
         <dependency>
             <groupId>org.apache.axis2.wso2</groupId>
             <artifactId>axis2</artifactId>
             <version>1.6.1.wso2v4</version>
         </dependency>
+
         <dependency>
             <groupId>org.apache.neethi.wso2</groupId>
             <artifactId>neethi</artifactId>
@@ -112,6 +122,7 @@
             <version>3.2.1</version>
             <artifactId>org.wso2.carbon.addressing</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.apache.rampart.wso2</groupId>
             <artifactId>rampart-core</artifactId>
@@ -123,11 +134,9 @@
             <version>1.6.1.wso2v8</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.rampart</groupId>
+            <groupId>org.apache.rampart.wso2</groupId>
             <artifactId>rampart-trust</artifactId>
             <version>1.6.1.wso2v9</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/rampart-trust-1.6.1-wso2v9.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.apache.ws.security.wso2</groupId>
@@ -144,6 +153,11 @@
             <artifactId>xalan</artifactId>
             <version>2.7.0.wso2v1</version>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.securevault</groupId>
+            <artifactId>securevault</artifactId>
+            <version>1.0.0</version>
+        </dependency>
 
     </dependencies>
 
@@ -151,19 +165,27 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <!--repositories>
+    <repositories>
         <repository>
-            <id>lib</id>
-            <name>lib</name>
-            <releases>
-                <enabled>true</enabled>
-                <checksumPolicy>ignore</checksumPolicy>
-            </releases>
+            <id>central</id>
+            <name>Maven Repository Switchboard</name>
+            <layout>default</layout>
+            <url>http://repo1.maven.org/maven2</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
-            <url>file://${project.basedir}/lib</url>
         </repository>
-    </repositories-->
+
+        <repository>
+            <id>thirdparty</id>
+            <name>Magenta Third-party dependencies</name>
+            <url>http://nexus.magenta-aps.dk/nexus/content/repositories/thirdparty/</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
 
 </project>
