@@ -65,46 +65,15 @@
             <artifactId>commons-io</artifactId>
             <version>2.4</version>
         </dependency>
-
-        <!--dependency>
-            <groupId>org.apache.ws.commons.axiom.wso2</groupId>
-            <artifactId>axiom</artifactId>
-            <version>1.2.11.wso2v1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.axis2.wso2</groupId>
-            <artifactId>axis2</artifactId>
-            <version>1.6.1.wso2v4</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-            <version>1.2</version>
-        </dependency>
         <dependency>
             <groupId>commons-httpclient</groupId>
             <artifactId>commons-httpclient</artifactId>
             <version>3.1</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.ws.commons.schema</groupId>
-            <artifactId>XmlSchema</artifactId>
-            <version>1.4.7</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.neethi.wso2</groupId>
-            <artifactId>neethi</artifactId>
-            <version>2.0.4.wso2v3</version>
-        </dependency>
-        <dependency>
             <groupId>wsdl4j</groupId>
             <artifactId>wsdl4j</artifactId>
-            <version>1.6.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2</groupId>
-            <artifactId>wso2</artifactId>
-            <version>1</version>
+            <version>1.6.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.woden</groupId>
@@ -112,10 +81,11 @@
             <version>1.0M9</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.rampart</groupId>
-            <artifactId>rampart-core</artifactId>
-            <version>1.6.2</version>
-        </dependency-->
+            <groupId>org.apache.woden</groupId>
+            <artifactId>woden</artifactId>
+            <version>1.0M9</version>
+        </dependency>
+        
 
         <dependency>
             <groupId>org.apache.ws.commons.axiom.wso2</groupId>
@@ -180,5 +150,20 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <!--repositories>
+        <repository>
+            <id>lib</id>
+            <name>lib</name>
+            <releases>
+                <enabled>true</enabled>
+                <checksumPolicy>ignore</checksumPolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <url>file://${project.basedir}/lib</url>
+        </repository>
+    </repositories-->
 
 </project>
