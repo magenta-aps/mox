@@ -423,17 +423,10 @@ public class Main {
             return null;
         }
 
-
-        FileOutputStream fos = new FileOutputStream("/home/lars/tmp.gz");
-        GZIPOutputStream gzip = new GZIPOutputStream(fos);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        GZIPOutputStream gzip = new GZIPOutputStream(baos);
         gzip.write(str.getBytes());
         gzip.close();
-
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        GZIPOutputStream gzip2 = new GZIPOutputStream(baos);
-        gzip2.write(str.getBytes());
-        gzip2.close();
 
         return baos.toByteArray();
     }
