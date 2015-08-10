@@ -1,5 +1,5 @@
-*** ../generated-files/as_update_dokument.sql	2015-08-10 12:57:20.862677500 +0200
---- ../patches/as_update_dokument.org.sql	2015-08-10 12:56:32.502678367 +0200
+*** ../generated-files/as_update_dokument.sql	2015-08-10 17:09:11.802406892 +0200
+--- ../patches/as_update_dokument.org.sql	2015-08-10 16:28:36.998450495 +0200
 ***************
 *** 20,29 ****
 --- 20,30 ----
@@ -280,7 +280,7 @@
 +   JOIN dokument_del b on a.del_id=b.id
 +   JOIN dokument_variant c on b.variant_id=c.id
 +   WHERE
-+     c.dokumentdel_registrering_id=prev_dokument_registrering.id 
++     c.dokument_registrering_id=prev_dokument_registrering.id 
 +     and c.varianttekst=dokument_variant_obj.varianttekst
 +     and b.deltekst=dokument_del_obj.deltekst
 +     and (a.virkning).TimePeriod && (dokument_del_egenskaber_obj.virkning).TimePeriod

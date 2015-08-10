@@ -702,7 +702,7 @@ FOREACH dokument_del_obj IN ARRAY dokument_variant_obj.dele
   JOIN dokument_del b on a.del_id=b.id
   JOIN dokument_variant c on b.variant_id=c.id
   WHERE
-    c.dokumentdel_registrering_id=prev_dokument_registrering.id 
+    c.dokument_registrering_id=prev_dokument_registrering.id 
     and c.varianttekst=dokument_variant_obj.varianttekst
     and b.deltekst=dokument_del_obj.deltekst
     and (a.virkning).TimePeriod && (dokument_del_egenskaber_obj.virkning).TimePeriod
