@@ -1,5 +1,5 @@
-*** ../generated-files/as_update_dokument.sql	2015-08-07 12:04:33.820302602 +0200
---- ../patches/as_update_dokument.org.sql	2015-08-07 12:02:21.680296021 +0200
+*** ../generated-files/as_update_dokument.sql	2015-08-10 09:12:01.670919603 +0200
+--- ../patches/as_update_dokument.org.sql	2015-08-10 09:21:56.822908945 +0200
 ***************
 *** 20,29 ****
 --- 20,30 ----
@@ -46,8 +46,8 @@
   
   IF NOT EXISTS (select a.id from dokument a join dokument_registrering b on b.dokument_id=a.id  where a.id=dokument_uuid) THEN
 ***************
-*** 448,457 ****
---- 467,1092 ----
+*** 454,463 ****
+--- 473,1108 ----
               AND  (a.dokumenttype IS NULL OR a.dokumenttype='')
   ;
   
@@ -113,10 +113,18 @@
 +       )
 +   SELECT
 +     dokument_variant_new_id, 
-+         coalesce(dokument_variant_egenskab_obj.arkivering,a.arkivering), 
-+           coalesce(dokument_variant_egenskab_obj.delvisscannet,a.delvisscannet), 
-+             coalesce(dokument_variant_egenskab_obj.offentliggoerelse,a.offentliggoerelse), 
-+               coalesce(dokument_variant_egenskab_obj.produktion,a.produktion),
++         CASE WHEN (dokument_variant_egenskab_obj.arkivering).cleared THEN NULL 
++         ELSE coalesce((dokument_variant_egenskab_obj.arkivering).value,a.arkivering)
++         END, 
++           CASE WHEN (dokument_variant_egenskab_obj.delvisscannet).cleared THEN NULL 
++           ELSE coalesce((dokument_variant_egenskab_obj.delvisscannet).value,a.delvisscannet)
++           END,
++             CASE WHEN (dokument_variant_egenskab_obj.offentliggoerelse).cleared THEN NULL 
++             ELSE coalesce((dokument_variant_egenskab_obj.offentliggoerelse).value,a.offentliggoerelse)
++             END,
++               CASE WHEN (dokument_variant_egenskab_obj.produktion).cleared THEN NULL 
++               ELSE coalesce((dokument_variant_egenskab_obj.produktion).value,a.produktion)
++               END,
 +                 ROW (
 +                   (a.virkning).TimePeriod * (dokument_variant_egenskab_obj.virkning).TimePeriod,
 +                   (dokument_variant_egenskab_obj.virkning).AktoerRef,
@@ -256,7 +264,9 @@
 +   )
 +   SELECT 
 +     dokument_del_new_id, 
-+       coalesce(dokument_del_egenskaber_obj.indeks,a.indeks), 
++       CASE WHEN (dokument_del_egenskaber_obj.indeks).cleared THEN NULL 
++       ELSE coalesce((dokument_del_egenskaber_obj.indeks).value,a.indeks)
++       END, 
 +         coalesce(dokument_del_egenskaber_obj.indhold,a.indhold), 
 +           coalesce(dokument_del_egenskaber_obj.lokation,a.lokation), 
 +             coalesce(dokument_del_egenskaber_obj.mimetype,a.mimetype),
@@ -675,7 +685,7 @@
   
   read_new_dokument:=as_read_dokument(dokument_uuid, (new_dokument_registrering.registrering).timeperiod,null);
 ***************
-*** 467,485 ****
+*** 473,491 ****
   
   read_new_dokument_reg:=ROW(
   ROW(null,(read_new_dokument.registrering[1].registrering).livscykluskode,null,null)::registreringBase,
@@ -695,7 +705,7 @@
   
   
   IF read_prev_dokument_reg=read_new_dokument_reg THEN
---- 1102,1122 ----
+--- 1118,1138 ----
   
   read_new_dokument_reg:=ROW(
   ROW(null,(read_new_dokument.registrering[1].registrering).livscykluskode,null,null)::registreringBase,

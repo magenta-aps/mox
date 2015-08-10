@@ -535,10 +535,18 @@ FOREACH dokument_variant_egenskab_obj IN ARRAY dokument_variant_obj.egenskaber
       )
   SELECT
     dokument_variant_new_id, 
-        coalesce(dokument_variant_egenskab_obj.arkivering,a.arkivering), 
-          coalesce(dokument_variant_egenskab_obj.delvisscannet,a.delvisscannet), 
-            coalesce(dokument_variant_egenskab_obj.offentliggoerelse,a.offentliggoerelse), 
-              coalesce(dokument_variant_egenskab_obj.produktion,a.produktion),
+        CASE WHEN (dokument_variant_egenskab_obj.arkivering).cleared THEN NULL 
+        ELSE coalesce((dokument_variant_egenskab_obj.arkivering).value,a.arkivering)
+        END, 
+          CASE WHEN (dokument_variant_egenskab_obj.delvisscannet).cleared THEN NULL 
+          ELSE coalesce((dokument_variant_egenskab_obj.delvisscannet).value,a.delvisscannet)
+          END,
+            CASE WHEN (dokument_variant_egenskab_obj.offentliggoerelse).cleared THEN NULL 
+            ELSE coalesce((dokument_variant_egenskab_obj.offentliggoerelse).value,a.offentliggoerelse)
+            END,
+              CASE WHEN (dokument_variant_egenskab_obj.produktion).cleared THEN NULL 
+              ELSE coalesce((dokument_variant_egenskab_obj.produktion).value,a.produktion)
+              END,
                 ROW (
                   (a.virkning).TimePeriod * (dokument_variant_egenskab_obj.virkning).TimePeriod,
                   (dokument_variant_egenskab_obj.virkning).AktoerRef,
@@ -678,7 +686,9 @@ FOREACH dokument_del_obj IN ARRAY dokument_variant_obj.dele
   )
   SELECT 
     dokument_del_new_id, 
-      coalesce(dokument_del_egenskaber_obj.indeks,a.indeks), 
+      CASE WHEN (dokument_del_egenskaber_obj.indeks).cleared THEN NULL 
+      ELSE coalesce((dokument_del_egenskaber_obj.indeks).value,a.indeks)
+      END, 
         coalesce(dokument_del_egenskaber_obj.indhold,a.indhold), 
           coalesce(dokument_del_egenskaber_obj.lokation,a.lokation), 
             coalesce(dokument_del_egenskaber_obj.mimetype,a.mimetype),
