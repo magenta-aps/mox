@@ -31,8 +31,6 @@ def check_saml_authentication():
     auth_header = request.headers.get('Authorization')
     if auth_header is None:
         raise Unauthorized("No Authorization header present")
-    else:
-        print auth_header
 
     # In Python, s.split(None) means "split on one or more whitespace chars".
     (auth_type, encoded_token) = auth_header.split(None, 1)
