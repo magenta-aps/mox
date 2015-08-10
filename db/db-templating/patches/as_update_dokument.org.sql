@@ -780,6 +780,7 @@ FOREACH dokument_del_obj IN ARRAY dokument_variant_obj.dele
     
     ELSE
 
+
     INSERT INTO dokument_del_relation(
         del_id, 
           virkning, 
@@ -1015,6 +1016,9 @@ FROM
 ) as e
 ;
 
+
+
+
 -- Make sure that part + variants are in place 
 IF dokument_variant_del_prev_reg_rel_transfer IS NOT NULL AND coalesce(array_length(dokument_variant_del_prev_reg_rel_transfer,1),0)>0 THEN
   FOREACH dokument_variant_del_prev_reg IN array dokument_variant_del_prev_reg_rel_transfer
@@ -1031,7 +1035,7 @@ INSERT INTO dokument_del_relation(
               objekt_type
     )
 SELECT
-    dokument_del_new_id,
+    dokument_del_id,
       a.virkning,
         a.rel_maal_uuid,
           a.rel_maal_urn,
