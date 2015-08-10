@@ -6,6 +6,11 @@ DATABASE = 'mox'
 DB_USER = 'mox'
 DB_PASSWORD = 'mox'
 
+# This is where file uploads are stored. It must be readable and writable by
+# the mox user, running the REST API server. This is used in the Dokument
+# hierarchy.
+FILE_UPLOAD_FOLDER = '/var/mox'
+
 # The Endpoint specified in the AppliesTo element of the STS request
 # This will be used to verify the Audience of the SAML Assertion
 SAML_MOX_ENTITY_ID = 'http://localhost:5000'
