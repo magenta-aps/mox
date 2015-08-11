@@ -1283,9 +1283,9 @@ expected_dokument1:=ROW(
 
 )::DokumentType;
 
-RAISE NOTICE 'expected_doc1,%',expected_dokument1::json;
+--RAISE NOTICE 'expected_doc1,%',expected_dokument1::json;
 
-RAISE NOTICE 'read_dokument1 post update:,%',read_dokument1::json;
+--RAISE NOTICE 'read_dokument1 post update:,%',read_dokument1::json;
 
 
 
