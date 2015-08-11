@@ -193,12 +193,7 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" relations
-DELETE FROM dokument_relation
-WHERE 
-dokument_registrering_id=new_dokument_registrering.id
-AND (rel_maal_uuid IS NULL AND (rel_maal_urn IS NULL OR rel_maal_urn=''))
-;
+
 
 END IF;
 /**********************/
@@ -261,12 +256,6 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" tilstande
-DELETE FROM dokument_tils_fremdrift
-WHERE 
-dokument_registrering_id=new_dokument_registrering.id
-AND fremdrift = ''::DokumentFremdriftTils
-;
 
 END IF;
 
@@ -458,20 +447,7 @@ FROM
 
 
 
---Remove any "cleared"/"deleted" attributes
-DELETE FROM dokument_attr_egenskaber a
-WHERE 
-a.dokument_registrering_id=new_dokument_registrering.id
-AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') 
-            AND  (a.beskrivelse IS NULL OR a.beskrivelse='') 
-            AND  (a.brevdato IS NULL) 
-            AND  (a.kassationskode IS NULL OR a.kassationskode='') 
-            AND  (a.major IS NULL) 
-            AND  (a.minor IS NULL) 
-            AND  (a.offentlighedundtaget IS NULL OR (((a.offentlighedundtaget).AlternativTitel IS NULL OR (a.offentlighedundtaget).AlternativTitel='') AND ((a.offentlighedundtaget).Hjemmel IS NULL OR (a.offentlighedundtaget).Hjemmel=''))) 
-            AND  (a.titel IS NULL OR a.titel='') 
-            AND  (a.dokumenttype IS NULL OR a.dokumenttype='')
-;
+
 
 END IF;
 
@@ -879,22 +855,6 @@ END LOOP; --loop dokument_variant_egenskaber_prev_reg_varianttekst
 END IF;-- not null dokument_variants_prev_reg_arr
 
 
---Remove any "cleared"/"deleted" variant egenskaber
-DELETE FROM dokument_variant_egenskaber 
-WHERE
-id in (
-SELECT a.id from dokument_variant_egenskaber a 
-JOIN dokument_variant e ON a.variant_id = e.id
-WHERE
-e.dokument_registrering_id=new_dokument_registrering.id 
-            AND  (a.arkivering IS NULL) 
-            AND  (a.delvisscannet IS NULL) 
-            AND  (a.offentliggoerelse IS NULL) 
-            AND  (a.produktion IS NULL)
-)
-;
-
-
 /****************************************************/
 --carry over any variant del egenskaber of the prev. registration, unless explicitly deleted -  where there is room acording to virkning
 
@@ -969,23 +929,7 @@ if dokument_variant_del_prev_reg_arr IS NOT NULL and coalesce(array_length(dokum
 END IF; --dokument_variant_del_prev_reg_arr not empty
 
 
---Remove any "cleared"/"deleted" attributes
-DELETE FROM dokument_del_egenskaber 
-WHERE 
-id in
-(
-  SELECT a.id 
-  from 
-  dokument_del_egenskaber a
-  JOIN dokument_del c on a.del_id=c.id
-  JOIN dokument_variant d on c.variant_id=d.id
-  WHERE  d.dokument_registrering_id=new_dokument_registrering.id
-            AND  (a.indeks IS NULL) 
-            AND  (a.indhold IS NULL OR a.indhold='') 
-            AND  (a.lokation IS NULL OR a.lokation='') 
-            AND  (a.mimetype IS NULL OR a.mimetype='')
-)
-;
+
 
 /****************************************************/
 --carry over any document part relations of the prev. relation if a) they were not explicitly cleared and b)no document part relations is already present for the variant del.
@@ -1052,57 +996,6 @@ AND b.deltekst=dokument_variant_del_prev_reg.deltekst
 END LOOP;
 
 END IF; --block: there are relations to transfer
-
---Remove any "cleared"/"deleted" relations
-DELETE FROM dokument_del_relation a
-WHERE 
-a.id in (
-    SELECT a.id 
-    from dokument_del_relation a 
-    JOIN dokument_del b on a.del_id=b.id
-    JOIN dokument_variant c on b.variant_id=c.id
-    WHERE c.dokument_registrering_id=new_dokument_registrering.id
-    AND (a.rel_maal_uuid IS NULL AND (a.rel_maal_urn IS NULL OR a.rel_maal_urn=''))
-    )
-;
-
-
-/**************************************************/
---delete parts that has no relations or egenskaber
-
-DELETE FROM dokument_del
-WHERE id in 
-(
-SELECT 
-a.id
-from
-dokument_del a
-JOIN dokument_variant b on a.variant_id=b.id
-LEFT JOIN dokument_del_relation c on c.del_id=a.id
-LEFT JOIN dokument_del_egenskaber d on d.del_id=a.id
-WHERE b.dokument_registrering_id=new_dokument_registrering.id
-AND c.id IS NULL AND d.id IS NULL 
-)
-;
-
---delete variants that has no egenskaber or parts
-
-DELETE FROM dokument_variant
-WHERE id in
-(
-SELECT
-a.id
-from 
-dokument_variant a 
-LEFT JOIN dokument_del b on a.id = b.variant_id
-LEFT JOIN dokument_variant_egenskaber c on a.id=c.variant_id
-WHERE 
-a.dokument_registrering_id=new_dokument_registrering.id
-AND b.id IS NULL AND c.id is NULL
-)
-AND dokument_registrering_id=new_dokument_registrering.id
-;
-
 END IF; --else block for skip on empty array for variants.
 
 
@@ -1147,6 +1040,7 @@ END IF;
 
 /******************************************************************/
 
+PERFORM actual_state._amqp_publish_notification('Dokument', livscykluskode, dokument_uuid);
 
 return new_dokument_registrering.id;
 

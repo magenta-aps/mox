@@ -174,12 +174,7 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" relations
-DELETE FROM bruger_relation
-WHERE 
-bruger_registrering_id=new_bruger_registrering.id
-AND (rel_maal_uuid IS NULL AND (rel_maal_urn IS NULL OR rel_maal_urn=''))
-;
+
 
 END IF;
 /**********************/
@@ -242,12 +237,6 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" tilstande
-DELETE FROM bruger_tils_gyldighed
-WHERE 
-bruger_registrering_id=new_bruger_registrering.id
-AND gyldighed = ''::BrugerGyldighedTils
-;
 
 END IF;
 
@@ -403,14 +392,7 @@ FROM
 
 
 
---Remove any "cleared"/"deleted" attributes
-DELETE FROM bruger_attr_egenskaber a
-WHERE 
-a.bruger_registrering_id=new_bruger_registrering.id
-AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') 
-            AND  (a.brugernavn IS NULL OR a.brugernavn='') 
-            AND  (a.brugertype IS NULL OR a.brugertype='')
-;
+
 
 END IF;
 

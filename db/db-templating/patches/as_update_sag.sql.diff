@@ -1,5 +1,5 @@
-*** ../generated-files/as_update_sag.sql	2015-07-03 14:10:57.302579306 +0200
---- ../patches/as_update_sag.org.sql	2015-07-03 14:13:15.126586170 +0200
+*** generated-files/as_update_sag.sql	2015-08-11 14:43:18.326321076 +0200
+--- patches/as_update_sag.org.sql	2015-08-11 14:50:27.658342458 +0200
 ***************
 *** 33,42 ****
 --- 33,48 ----
@@ -105,7 +105,7 @@
 +   sag_rel_seq_name := 'sag_rel_' || sag_relation_navn::text || sag_uuid_underscores;
 + 
 +   rel_type_max_index_prev_rev:=null;
-  
++ 
 +   SELECT 
 +     a.relIndex into rel_type_max_index_prev_rev
 +   FROM
@@ -124,7 +124,7 @@
 +   MAXVALUE 9223372036854775807
 +   START ' ||  (rel_type_max_index_prev_rev+1)::text ||'
 +   CACHE 1;';
-+ 
+  
 + END LOOP;
   
         INSERT INTO sag_relation (
@@ -232,7 +232,7 @@
         SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
         FROM sag_relation b
 ***************
-*** 137,186 ****
+*** 137,180 ****
       ;
     END LOOP;
   
@@ -273,17 +273,11 @@
 - 
 - 
   /**********************/
-  --Remove any "cleared"/"deleted" relations
-! DELETE FROM sag_relation
-  WHERE 
-  sag_registrering_id=new_sag_registrering.id
-  AND (rel_maal_uuid IS NULL AND (rel_maal_urn IS NULL OR rel_maal_urn=''))
-  ;
+  
   
   END IF;
   /**********************/
-  -- handle tilstande (states)
---- 225,282 ----
+--- 225,265 ----
       ;
     END LOOP;
   
@@ -321,24 +315,7 @@
         ;
   
   /**********************/
-  --Remove any "cleared"/"deleted" relations
-! DELETE FROM sag_relation a
-  WHERE 
-  sag_registrering_id=new_sag_registrering.id
-  AND (rel_maal_uuid IS NULL AND (rel_maal_urn IS NULL OR rel_maal_urn=''))
-+ AND ( 
-+       (a.journal_notat IS NULL)  
-+      OR  
-+      (  
-+         ((a.journal_notat).titel IS NULL OR (a.journal_notat).titel='') 
-+         AND     
-+         ((a.journal_notat).notat IS NULL OR  (a.journal_notat).notat='')
-+         AND
-+         ((a.journal_notat).format IS NULL OR (a.journal_notat).format='')
-+       )
-+     ) 
-  ;
+  
   
   END IF;
   /**********************/
-  -- handle tilstande (states)

@@ -1,8 +1,7 @@
-*** ../generated-files/as_update_klasse.sql	2015-08-07 15:13:57.848868564 +0200
---- ../patches/as_update_klasse.org.sql	2015-08-07 15:16:01.420874719 +0200
+*** generated-files/as_update_klasse.sql	2015-08-11 14:43:14.758320898 +0200
+--- patches/as_update_klasse.org.sql	2015-08-11 14:46:55.854331909 +0200
 ***************
-*** 9,20 ****
-  NOTICE: This file is auto-generated using the script: apply-template.py klasse as_update.jinja.sql
+*** 10,20 ****
   */
   
   
@@ -14,14 +13,11 @@
     klasse_uuid uuid,
     brugerref uuid,
     note text,
---- 9,22 ----
-  NOTICE: This file is auto-generated using the script: apply-template.py klasse as_update.jinja.sql
+--- 10,20 ----
   */
   
   
   
-+ --Please notice that is it the responsibility of the invoker of this function to compare the resulting klasse_registration (including the entire hierarchy)
-+ --to the previous one, and abort the transaction if the two registrations are identical. (This is to comply with the stipulated behavior in 'Specifikation_af_generelle_egenskaber - til OIOkomiteen.pdf')
   
 ! --Also notice, that the given array of KlasseAttr...Type must be consistent regarding virkning (although the allowance of null-values might make it possible to construct 'logically consistent'-arrays of objects with overlapping virknings)
   
@@ -31,7 +27,7 @@
     note text,
 ***************
 *** 33,42 ****
---- 35,46 ----
+--- 33,44 ----
     read_prev_klasse_reg KlasseRegistreringType;
     new_klasse_registrering klasse_registrering;
     prev_klasse_registrering klasse_registrering;
@@ -45,7 +41,7 @@
   
   IF NOT EXISTS (select a.id from klasse a join klasse_registrering b on b.klasse_id=a.id  where a.id=klasse_uuid) THEN
 ***************
-*** 268,278 ****
+*** 257,267 ****
     IF EXISTS (
     SELECT
     a.*
@@ -57,7 +53,7 @@
     RAISE EXCEPTION 'Unable to update klasse with uuid [%], as the klasse have overlapping virknings in the given egenskaber array :%',klasse_uuid,to_json(attrEgenskaber)  USING ERRCODE = 22000;
   
     END IF;
---- 272,282 ----
+--- 259,269 ----
     IF EXISTS (
     SELECT
     a.*
@@ -70,7 +66,7 @@
   
     END IF;
 ***************
-*** 289,306 ****
+*** 278,295 ****
      (attrEgenskaberObj).titel is null OR 
      (attrEgenskaberObj).retskilde is null OR 
      (attrEgenskaberObj).aendringsnotat is null 
@@ -89,7 +85,7 @@
       coalesce(attrEgenskaberObj.eksempel,a.eksempel),
       coalesce(attrEgenskaberObj.omfang,a.omfang),
       coalesce(attrEgenskaberObj.titel,a.titel),
---- 293,312 ----
+--- 280,299 ----
      (attrEgenskaberObj).titel is null OR 
      (attrEgenskaberObj).retskilde is null OR 
      (attrEgenskaberObj).aendringsnotat is null 
@@ -111,7 +107,7 @@
       coalesce(attrEgenskaberObj.omfang,a.omfang),
       coalesce(attrEgenskaberObj.titel,a.titel),
 ***************
-*** 315,336 ****
+*** 304,325 ****
       new_klasse_registrering.id
     FROM klasse_attr_egenskaber a
     WHERE
@@ -134,7 +130,7 @@
       attrEgenskaberObj.eksempel, 
       attrEgenskaberObj.omfang, 
       attrEgenskaberObj.titel, 
---- 321,367 ----
+--- 308,354 ----
       new_klasse_registrering.id
     FROM klasse_attr_egenskaber a
     WHERE
@@ -183,7 +179,7 @@
       attrEgenskaberObj.omfang, 
       attrEgenskaberObj.titel, 
 ***************
-*** 350,382 ****
+*** 339,371 ****
         FROM klasse_attr_egenskaber b
         WHERE 
          b.klasse_registrering_id=new_klasse_registrering.id
@@ -217,7 +213,7 @@
   
     END LOOP;
   END IF;
---- 381,447 ----
+--- 368,434 ----
         FROM klasse_attr_egenskaber b
         WHERE 
          b.klasse_registrering_id=new_klasse_registrering.id
@@ -286,7 +282,7 @@
     END LOOP;
   END IF;
 ***************
-*** 386,401 ****
+*** 375,390 ****
   --raise debug 'Skipping handling of egenskaber of previous registration as an empty array was explicit given.';  
   ELSE 
   
@@ -303,7 +299,7 @@
         a.eksempel,
         a.omfang,
         a.titel,
---- 451,469 ----
+--- 438,456 ----
   --raise debug 'Skipping handling of egenskaber of previous registration as an empty array was explicit given.';  
   ELSE 
   
@@ -324,7 +320,7 @@
         a.omfang,
         a.titel,
 ***************
-*** 416,430 ****
+*** 405,415 ****
       WHERE 
             b.klasse_registrering_id=new_klasse_registrering.id
   ) d
@@ -333,14 +329,10 @@
 !   WHERE a.klasse_registrering_id=prev_klasse_registrering.id     
   ;
   
-- 
-- 
-  --Remove any "cleared"/"deleted" attributes
-  DELETE FROM klasse_attr_egenskaber a
-  WHERE 
-  a.klasse_registrering_id=new_klasse_registrering.id
-  AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') 
---- 484,506 ----
+  
+  
+  
+--- 471,491 ----
       WHERE 
             b.klasse_registrering_id=new_klasse_registrering.id
   ) d
@@ -359,25 +351,6 @@
 ! JOIN klasse_attr_egenskaber_soegeord b on a2.id=b.klasse_attr_egenskaber_id   
   ;
   
-  --Remove any "cleared"/"deleted" attributes
-  DELETE FROM klasse_attr_egenskaber a
-  WHERE 
-  a.klasse_registrering_id=new_klasse_registrering.id
-  AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') 
-***************
-*** 432,443 ****
---- 508,521 ----
-              AND  (a.eksempel IS NULL OR a.eksempel='') 
-              AND  (a.omfang IS NULL OR a.omfang='') 
-              AND  (a.titel IS NULL OR a.titel='') 
-              AND  (a.retskilde IS NULL OR a.retskilde='') 
-              AND  (a.aendringsnotat IS NULL OR a.aendringsnotat='')
-+ AND a.id NOT IN (SELECT b.klasse_attr_egenskaber_id FROM klasse_attr_egenskaber_soegeord b)
-  ;
-  
-+ 
-  END IF;
   
   
-  /******************************************************************/
-  --If the new registrering is identical to the previous one, we need to throw an exception to abort the transaction. 
+  

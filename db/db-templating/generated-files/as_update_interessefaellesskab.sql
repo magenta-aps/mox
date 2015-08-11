@@ -174,12 +174,7 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" relations
-DELETE FROM interessefaellesskab_relation
-WHERE 
-interessefaellesskab_registrering_id=new_interessefaellesskab_registrering.id
-AND (rel_maal_uuid IS NULL AND (rel_maal_urn IS NULL OR rel_maal_urn=''))
-;
+
 
 END IF;
 /**********************/
@@ -242,12 +237,6 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" tilstande
-DELETE FROM interessefaellesskab_tils_gyldighed
-WHERE 
-interessefaellesskab_registrering_id=new_interessefaellesskab_registrering.id
-AND gyldighed = ''::InteressefaellesskabGyldighedTils
-;
 
 END IF;
 
@@ -403,14 +392,7 @@ FROM
 
 
 
---Remove any "cleared"/"deleted" attributes
-DELETE FROM interessefaellesskab_attr_egenskaber a
-WHERE 
-a.interessefaellesskab_registrering_id=new_interessefaellesskab_registrering.id
-AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') 
-            AND  (a.interessefaellesskabsnavn IS NULL OR a.interessefaellesskabsnavn='') 
-            AND  (a.interessefaellesskabstype IS NULL OR a.interessefaellesskabstype='')
-;
+
 
 END IF;
 

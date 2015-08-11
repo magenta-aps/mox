@@ -318,7 +318,7 @@ WHERE b.id=update_reg_id
 RETURN NEXT is(
 	actual_publiceret,
 ARRAY[
-	--facetPubliceretC,
+	facetPubliceretC,
 	ROW(
 		ROW (
 				TSTZRANGE('2015-05-01','infinity','()')
@@ -441,7 +441,6 @@ ARRAY[
 
 	]::FacetEgenskaberAttrType[]
     ,    'egenskaber updated' );
-
 
 
 END;

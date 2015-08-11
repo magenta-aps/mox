@@ -1236,7 +1236,22 @@ expected_dokument1:=ROW(
 					  		
   							 ARRAY[doc1_docDel1Arelation1]
 					  		)::DokumentDelType
-
+						,ROW(
+					  		'doc_deltekst1B',
+					  		ARRAY[ROW(
+								ROW(null,null)::ClearableInt, --indeks int,
+								''::text, 
+								''::text, 
+								''::text,
+								ROW (
+						'(-infinity, infinity)' :: TSTZRANGE,
+					          '550cc58a-3149-414a-9392-dcbcbbccdd90'::uuid,
+					          'Bruger',
+					          'NoteEx6000'
+					          ) :: Virkning 
+							)::DokumentDelEgenskaberType],
+					  		null --ARRAY[]::DokumentdelRelationType[]
+					  		)::DokumentDelType
 					  	,doc2_docDel1B]
 					)::DokumentVariantType,
 					doc2_docVariant2,

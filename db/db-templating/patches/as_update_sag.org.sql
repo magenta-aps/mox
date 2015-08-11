@@ -259,23 +259,7 @@ END LOOP;
       ;
 
 /**********************/
---Remove any "cleared"/"deleted" relations
-DELETE FROM sag_relation a
-WHERE 
-sag_registrering_id=new_sag_registrering.id
-AND (rel_maal_uuid IS NULL AND (rel_maal_urn IS NULL OR rel_maal_urn=''))
-AND ( 
-      (a.journal_notat IS NULL)  
-     OR  
-     (  
-        ((a.journal_notat).titel IS NULL OR (a.journal_notat).titel='') 
-        AND     
-        ((a.journal_notat).notat IS NULL OR  (a.journal_notat).notat='')
-        AND
-        ((a.journal_notat).format IS NULL OR (a.journal_notat).format='')
-      )
-    ) 
-;
+
 
 END IF;
 /**********************/
@@ -338,12 +322,6 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" tilstande
-DELETE FROM sag_tils_fremdrift
-WHERE 
-sag_registrering_id=new_sag_registrering.id
-AND fremdrift = ''::SagFremdriftTils
-;
 
 END IF;
 
@@ -533,20 +511,7 @@ FROM
 
 
 
---Remove any "cleared"/"deleted" attributes
-DELETE FROM sag_attr_egenskaber a
-WHERE 
-a.sag_registrering_id=new_sag_registrering.id
-AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') 
-            AND  (a.afleveret IS NULL) 
-            AND  (a.beskrivelse IS NULL OR a.beskrivelse='') 
-            AND  (a.hjemmel IS NULL OR a.hjemmel='') 
-            AND  (a.kassationskode IS NULL OR a.kassationskode='') 
-            AND  (a.offentlighedundtaget IS NULL OR (((a.offentlighedundtaget).AlternativTitel IS NULL OR (a.offentlighedundtaget).AlternativTitel='') AND ((a.offentlighedundtaget).Hjemmel IS NULL OR (a.offentlighedundtaget).Hjemmel=''))) 
-            AND  (a.principiel IS NULL) 
-            AND  (a.sagsnummer IS NULL OR a.sagsnummer='') 
-            AND  (a.titel IS NULL OR a.titel='')
-;
+
 
 END IF;
 
@@ -590,6 +555,7 @@ END IF;
 
 /******************************************************************/
 
+PERFORM actual_state._amqp_publish_notification('Sag', livscykluskode, sag_uuid);
 
 return new_sag_registrering.id;
 

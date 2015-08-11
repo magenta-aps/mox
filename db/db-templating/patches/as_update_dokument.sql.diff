@@ -1,5 +1,5 @@
-*** ../generated-files/as_update_dokument.sql	2015-08-10 17:09:11.802406892 +0200
---- ../patches/as_update_dokument.org.sql	2015-08-10 16:28:36.998450495 +0200
+*** ./generated-files/as_update_dokument.sql	2015-08-11 14:59:11.362368540 +0200
+--- ./patches/as_update_dokument.org.sql	2015-08-11 14:58:21.054366034 +0200
 ***************
 *** 20,29 ****
 --- 20,30 ----
@@ -46,10 +46,10 @@
   
   IF NOT EXISTS (select a.id from dokument a join dokument_registrering b on b.dokument_id=a.id  where a.id=dokument_uuid) THEN
 ***************
-*** 454,463 ****
---- 473,1112 ----
-              AND  (a.dokumenttype IS NULL OR a.dokumenttype='')
-  ;
+*** 430,439 ****
+--- 449,1005 ----
+  
+  
   
   END IF;
   
@@ -457,22 +457,6 @@
 + END IF;-- not null dokument_variants_prev_reg_arr
 + 
 + 
-+ --Remove any "cleared"/"deleted" variant egenskaber
-+ DELETE FROM dokument_variant_egenskaber 
-+ WHERE
-+ id in (
-+ SELECT a.id from dokument_variant_egenskaber a 
-+ JOIN dokument_variant e ON a.variant_id = e.id
-+ WHERE
-+ e.dokument_registrering_id=new_dokument_registrering.id 
-+             AND  (a.arkivering IS NULL) 
-+             AND  (a.delvisscannet IS NULL) 
-+             AND  (a.offentliggoerelse IS NULL) 
-+             AND  (a.produktion IS NULL)
-+ )
-+ ;
-+ 
-+ 
 + /****************************************************/
 + --carry over any variant del egenskaber of the prev. registration, unless explicitly deleted -  where there is room acording to virkning
 + 
@@ -547,23 +531,7 @@
 + END IF; --dokument_variant_del_prev_reg_arr not empty
 + 
 + 
-+ --Remove any "cleared"/"deleted" attributes
-+ DELETE FROM dokument_del_egenskaber 
-+ WHERE 
-+ id in
-+ (
-+   SELECT a.id 
-+   from 
-+   dokument_del_egenskaber a
-+   JOIN dokument_del c on a.del_id=c.id
-+   JOIN dokument_variant d on c.variant_id=d.id
-+   WHERE  d.dokument_registrering_id=new_dokument_registrering.id
-+             AND  (a.indeks IS NULL) 
-+             AND  (a.indhold IS NULL OR a.indhold='') 
-+             AND  (a.lokation IS NULL OR a.lokation='') 
-+             AND  (a.mimetype IS NULL OR a.mimetype='')
-+ )
-+ ;
++ 
 + 
 + /****************************************************/
 + --carry over any document part relations of the prev. relation if a) they were not explicitly cleared and b)no document part relations is already present for the variant del.
@@ -630,57 +598,6 @@
 + END LOOP;
 + 
 + END IF; --block: there are relations to transfer
-+ 
-+ --Remove any "cleared"/"deleted" relations
-+ DELETE FROM dokument_del_relation a
-+ WHERE 
-+ a.id in (
-+     SELECT a.id 
-+     from dokument_del_relation a 
-+     JOIN dokument_del b on a.del_id=b.id
-+     JOIN dokument_variant c on b.variant_id=c.id
-+     WHERE c.dokument_registrering_id=new_dokument_registrering.id
-+     AND (a.rel_maal_uuid IS NULL AND (a.rel_maal_urn IS NULL OR a.rel_maal_urn=''))
-+     )
-+ ;
-+ 
-+ 
-+ /**************************************************/
-+ --delete parts that has no relations or egenskaber
-+ 
-+ DELETE FROM dokument_del
-+ WHERE id in 
-+ (
-+ SELECT 
-+ a.id
-+ from
-+ dokument_del a
-+ JOIN dokument_variant b on a.variant_id=b.id
-+ LEFT JOIN dokument_del_relation c on c.del_id=a.id
-+ LEFT JOIN dokument_del_egenskaber d on d.del_id=a.id
-+ WHERE b.dokument_registrering_id=new_dokument_registrering.id
-+ AND c.id IS NULL AND d.id IS NULL 
-+ )
-+ ;
-+ 
-+ --delete variants that has no egenskaber or parts
-+ 
-+ DELETE FROM dokument_variant
-+ WHERE id in
-+ (
-+ SELECT
-+ a.id
-+ from 
-+ dokument_variant a 
-+ LEFT JOIN dokument_del b on a.id = b.variant_id
-+ LEFT JOIN dokument_variant_egenskaber c on a.id=c.variant_id
-+ WHERE 
-+ a.dokument_registrering_id=new_dokument_registrering.id
-+ AND b.id IS NULL AND c.id is NULL
-+ )
-+ AND dokument_registrering_id=new_dokument_registrering.id
-+ ;
-+ 
 + END IF; --else block for skip on empty array for variants.
 + 
   
@@ -689,7 +606,7 @@
   
   read_new_dokument:=as_read_dokument(dokument_uuid, (new_dokument_registrering.registrering).timeperiod,null);
 ***************
-*** 473,491 ****
+*** 449,467 ****
   
   read_new_dokument_reg:=ROW(
   ROW(null,(read_new_dokument.registrering[1].registrering).livscykluskode,null,null)::registreringBase,
@@ -709,7 +626,7 @@
   
   
   IF read_prev_dokument_reg=read_new_dokument_reg THEN
---- 1122,1142 ----
+--- 1015,1035 ----
   
   read_new_dokument_reg:=ROW(
   ROW(null,(read_new_dokument.registrering[1].registrering).livscykluskode,null,null)::registreringBase,

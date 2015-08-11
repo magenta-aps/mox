@@ -174,12 +174,7 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" relations
-DELETE FROM organisationfunktion_relation
-WHERE 
-organisationfunktion_registrering_id=new_organisationfunktion_registrering.id
-AND (rel_maal_uuid IS NULL AND (rel_maal_urn IS NULL OR rel_maal_urn=''))
-;
+
 
 END IF;
 /**********************/
@@ -242,12 +237,6 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" tilstande
-DELETE FROM organisationfunktion_tils_gyldighed
-WHERE 
-organisationfunktion_registrering_id=new_organisationfunktion_registrering.id
-AND gyldighed = ''::OrganisationfunktionGyldighedTils
-;
 
 END IF;
 
@@ -398,13 +387,7 @@ FROM
 
 
 
---Remove any "cleared"/"deleted" attributes
-DELETE FROM organisationfunktion_attr_egenskaber a
-WHERE 
-a.organisationfunktion_registrering_id=new_organisationfunktion_registrering.id
-AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') 
-            AND  (a.funktionsnavn IS NULL OR a.funktionsnavn='')
-;
+
 
 END IF;
 
