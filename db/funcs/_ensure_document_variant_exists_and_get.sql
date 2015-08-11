@@ -15,10 +15,10 @@ res_variant_id bigint;
 BEGIN
 
 
-SELECT variant_id into res_variant_id 
+SELECT a.id into res_variant_id 
 FROM dokument_variant a 
 WHERE 
-a.dokument_registrering=reg_id
+a.dokument_registrering_id=reg_id
 and a.varianttekst=current_variant_text
 ;
 

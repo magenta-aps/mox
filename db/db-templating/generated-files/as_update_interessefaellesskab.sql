@@ -294,9 +294,9 @@ IF attrEgenskaber IS NOT null THEN
     ,virkning
     ,interessefaellesskab_registrering_id
   )
-  SELECT 
-    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle), 
-    coalesce(attrEgenskaberObj.interessefaellesskabsnavn,a.interessefaellesskabsnavn), 
+  SELECT
+    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+    coalesce(attrEgenskaberObj.interessefaellesskabsnavn,a.interessefaellesskabsnavn),
     coalesce(attrEgenskaberObj.interessefaellesskabstype,a.interessefaellesskabstype),
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,

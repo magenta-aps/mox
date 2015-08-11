@@ -396,15 +396,19 @@ IF attrEgenskaber IS NOT null THEN
     ,virkning
     ,sag_registrering_id
   )
-  SELECT 
+  SELECT
     coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle), 
-    coalesce(attrEgenskaberObj.afleveret,a.afleveret), 
-    coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse), 
-    coalesce(attrEgenskaberObj.hjemmel,a.hjemmel), 
-    coalesce(attrEgenskaberObj.kassationskode,a.kassationskode), 
+    CASE WHEN (attrEgenskaberObj.afleveret).cleared THEN NULL 
+    ELSE coalesce((attrEgenskaberObj.afleveret).value,a.afleveret)
+    END,
+    coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
+    coalesce(attrEgenskaberObj.hjemmel,a.hjemmel),
+    coalesce(attrEgenskaberObj.kassationskode,a.kassationskode),
     coalesce(attrEgenskaberObj.offentlighedundtaget,a.offentlighedundtaget), 
-    coalesce(attrEgenskaberObj.principiel,a.principiel), 
-    coalesce(attrEgenskaberObj.sagsnummer,a.sagsnummer), 
+    CASE WHEN (attrEgenskaberObj.principiel).cleared THEN NULL 
+    ELSE coalesce((attrEgenskaberObj.principiel).value,a.principiel)
+    END,
+    coalesce(attrEgenskaberObj.sagsnummer,a.sagsnummer),
     coalesce(attrEgenskaberObj.titel,a.titel),
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,

@@ -293,8 +293,8 @@ IF attrEgenskaber IS NOT null THEN
     ,virkning
     ,organisationenhed_registrering_id
   )
-  SELECT 
-    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle), 
+  SELECT
+    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
     coalesce(attrEgenskaberObj.enhedsnavn,a.enhedsnavn),
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,

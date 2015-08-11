@@ -299,8 +299,14 @@ IF attr{{attribut|title}} IS NOT null THEN
     ,virkning
     ,{{oio_type}}_registrering_id
   )
-  SELECT {%-for fieldname in attribut_fields %} 
+  SELECT {%-for fieldname in attribut_fields %}
+  {%- if  attributter_type_override is defined and attributter_type_override[attribut] is defined and attributter_type_override[attribut][fieldname] is defined and ( attributter_type_override[attribut][fieldname] =='int' or attributter_type_override[attribut][fieldname] =='date' or attributter_type_override[attribut][fieldname]=='boolean')  %} 
+    CASE WHEN (attr{{attribut|title}}Obj.{{fieldname}}).cleared THEN NULL 
+    ELSE coalesce((attr{{attribut|title}}Obj.{{fieldname}}).value,a.{{fieldname}})
+    END,
+   {%-else %}
     coalesce(attr{{attribut|title}}Obj.{{fieldname}},a.{{fieldname}}),
+    {%-endif %}
     {%- endfor %}
 	ROW (
 	  (a.virkning).TimePeriod * (attr{{attribut|title}}Obj.virkning).TimePeriod,

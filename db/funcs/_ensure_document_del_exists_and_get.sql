@@ -15,18 +15,18 @@ res_del_id bigint;
 BEGIN
 
 
-SELECT del_id into res_del_id 
+SELECT b.id into res_del_id 
 FROM dokument_variant a 
-JOIN dokument_del b on b.variant_id=a.id
+JOIN dokument_del b on b.variant_id=a.id 
 WHERE 
-a.dokument_registrering=reg_id
+a.dokument_registrering_id=reg_id
 and a.id=current_variant_id
 and b.deltekst=current_deltekst
 ;
 
 IF res_del_id IS NULL THEN
 
-res_del_id:=nextval('dokument_variant_id_seq'::regclass);
+res_del_id:=nextval('dokument_del_id_seq'::regclass);
 
 
     INSERT INTO dokument_del (
@@ -44,7 +44,7 @@ res_del_id:=nextval('dokument_variant_id_seq'::regclass);
 
 END IF;
 
-RETURN res_variant_id;
+RETURN res_del_id;
 
 END;
 $$;

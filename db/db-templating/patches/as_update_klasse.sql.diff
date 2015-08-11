@@ -1,7 +1,36 @@
-*** ../generated-files/as_update_klasse.sql	2015-06-23 16:46:44.836671280 +0200
---- ../patches/as_update_klasse.org.sql	2015-06-23 16:55:33.852697627 +0200
+*** ../generated-files/as_update_klasse.sql	2015-08-07 15:13:57.848868564 +0200
+--- ../patches/as_update_klasse.org.sql	2015-08-07 15:16:01.420874719 +0200
 ***************
-*** 35,44 ****
+*** 9,20 ****
+  NOTICE: This file is auto-generated using the script: apply-template.py klasse as_update.jinja.sql
+  */
+  
+  
+  
+  
+! --Also notice, that the given arrays of KlasseAttr...Type must be consistent regarding virkning (although the allowance of null-values might make it possible to construct 'logically consistent'-arrays of objects with overlapping virknings)
+  
+  CREATE OR REPLACE FUNCTION as_update_klasse(
+    klasse_uuid uuid,
+    brugerref uuid,
+    note text,
+--- 9,22 ----
+  NOTICE: This file is auto-generated using the script: apply-template.py klasse as_update.jinja.sql
+  */
+  
+  
+  
++ --Please notice that is it the responsibility of the invoker of this function to compare the resulting klasse_registration (including the entire hierarchy)
++ --to the previous one, and abort the transaction if the two registrations are identical. (This is to comply with the stipulated behavior in 'Specifikation_af_generelle_egenskaber - til OIOkomiteen.pdf')
+  
+! --Also notice, that the given array of KlasseAttr...Type must be consistent regarding virkning (although the allowance of null-values might make it possible to construct 'logically consistent'-arrays of objects with overlapping virknings)
+  
+  CREATE OR REPLACE FUNCTION as_update_klasse(
+    klasse_uuid uuid,
+    brugerref uuid,
+    note text,
+***************
+*** 33,42 ****
 --- 35,46 ----
     read_prev_klasse_reg KlasseRegistreringType;
     new_klasse_registrering klasse_registrering;
@@ -16,7 +45,7 @@
   
   IF NOT EXISTS (select a.id from klasse a join klasse_registrering b on b.klasse_id=a.id  where a.id=klasse_uuid) THEN
 ***************
-*** 266,276 ****
+*** 268,278 ****
     IF EXISTS (
     SELECT
     a.*
@@ -28,7 +57,7 @@
     RAISE EXCEPTION 'Unable to update klasse with uuid [%], as the klasse have overlapping virknings in the given egenskaber array :%',klasse_uuid,to_json(attrEgenskaber)  USING ERRCODE = 22000;
   
     END IF;
---- 268,278 ----
+--- 272,282 ----
     IF EXISTS (
     SELECT
     a.*
@@ -41,7 +70,7 @@
   
     END IF;
 ***************
-*** 287,304 ****
+*** 289,306 ****
      (attrEgenskaberObj).titel is null OR 
      (attrEgenskaberObj).retskilde is null OR 
      (attrEgenskaberObj).aendringsnotat is null 
@@ -54,13 +83,13 @@
       ,virkning
       ,klasse_registrering_id
     )
-    SELECT 
-      coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle), 
-      coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse), 
-      coalesce(attrEgenskaberObj.eksempel,a.eksempel), 
-      coalesce(attrEgenskaberObj.omfang,a.omfang), 
-      coalesce(attrEgenskaberObj.titel,a.titel), 
---- 289,308 ----
+!   SELECT
+      coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+      coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
+      coalesce(attrEgenskaberObj.eksempel,a.eksempel),
+      coalesce(attrEgenskaberObj.omfang,a.omfang),
+      coalesce(attrEgenskaberObj.titel,a.titel),
+--- 293,312 ----
      (attrEgenskaberObj).titel is null OR 
      (attrEgenskaberObj).retskilde is null OR 
      (attrEgenskaberObj).aendringsnotat is null 
@@ -74,15 +103,15 @@
       ,virkning
       ,klasse_registrering_id
     )
-    SELECT 
-+     nextval('klasse_attr_egenskaber_id_seq'),
-      coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle), 
-      coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse), 
-      coalesce(attrEgenskaberObj.eksempel,a.eksempel), 
-      coalesce(attrEgenskaberObj.omfang,a.omfang), 
-      coalesce(attrEgenskaberObj.titel,a.titel), 
+!   SELECT 
+!     nextval('klasse_attr_egenskaber_id_seq'),
+      coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+      coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
+      coalesce(attrEgenskaberObj.eksempel,a.eksempel),
+      coalesce(attrEgenskaberObj.omfang,a.omfang),
+      coalesce(attrEgenskaberObj.titel,a.titel),
 ***************
-*** 313,334 ****
+*** 315,336 ****
       new_klasse_registrering.id
     FROM klasse_attr_egenskaber a
     WHERE
@@ -105,7 +134,7 @@
       attrEgenskaberObj.eksempel, 
       attrEgenskaberObj.omfang, 
       attrEgenskaberObj.titel, 
---- 317,363 ----
+--- 321,367 ----
       new_klasse_registrering.id
     FROM klasse_attr_egenskaber a
     WHERE
@@ -154,7 +183,7 @@
       attrEgenskaberObj.omfang, 
       attrEgenskaberObj.titel, 
 ***************
-*** 348,380 ****
+*** 350,382 ****
         FROM klasse_attr_egenskaber b
         WHERE 
          b.klasse_registrering_id=new_klasse_registrering.id
@@ -188,7 +217,7 @@
   
     END LOOP;
   END IF;
---- 377,443 ----
+--- 381,447 ----
         FROM klasse_attr_egenskaber b
         WHERE 
          b.klasse_registrering_id=new_klasse_registrering.id
@@ -257,7 +286,7 @@
     END LOOP;
   END IF;
 ***************
-*** 384,399 ****
+*** 386,401 ****
   --raise debug 'Skipping handling of egenskaber of previous registration as an empty array was explicit given.';  
   ELSE 
   
@@ -274,7 +303,7 @@
         a.eksempel,
         a.omfang,
         a.titel,
---- 447,465 ----
+--- 451,469 ----
   --raise debug 'Skipping handling of egenskaber of previous registration as an empty array was explicit given.';  
   ELSE 
   
@@ -295,7 +324,7 @@
         a.omfang,
         a.titel,
 ***************
-*** 414,428 ****
+*** 416,430 ****
       WHERE 
             b.klasse_registrering_id=new_klasse_registrering.id
   ) d
@@ -311,7 +340,7 @@
   WHERE 
   a.klasse_registrering_id=new_klasse_registrering.id
   AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') 
---- 480,502 ----
+--- 484,506 ----
       WHERE 
             b.klasse_registrering_id=new_klasse_registrering.id
   ) d
@@ -336,8 +365,8 @@
   a.klasse_registrering_id=new_klasse_registrering.id
   AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') 
 ***************
-*** 430,441 ****
---- 504,517 ----
+*** 432,443 ****
+--- 508,521 ----
               AND  (a.eksempel IS NULL OR a.eksempel='') 
               AND  (a.omfang IS NULL OR a.omfang='') 
               AND  (a.titel IS NULL OR a.titel='') 

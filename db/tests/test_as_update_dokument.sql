@@ -6,10 +6,11 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 --SELECT * FROM runtests('test'::name);
-CREATE OR REPLACE FUNCTION test.test_as_list_dokument()
+CREATE OR REPLACE FUNCTION test.test_as_update_dokument()
 RETURNS SETOF TEXT LANGUAGE plpgsql AS 
 $$
 DECLARE 
+
 doc1_new_uuid uuid;
 	doc1_registrering dokumentRegistreringType;
 	doc1_virkEgenskaber1 Virkning;
@@ -56,9 +57,13 @@ doc1_new_uuid uuid;
 	doc1_docDel2Brelation2 DokumentdelRelationType;
 	doc1_docDel2Brelation2Virkning Virkning;
 
+	doc1_extraRel1 DokumentdelRelationType;
+	doc1_extraRel2 DokumentdelRelationType;
+	doc1_extraRelVirkning1 Virkning;
+	doc1_extraRelVirkning2 Virkning;
 
-	doc2_new_uuid uuid;
 	doc2_registrering dokumentRegistreringType;
+
 	doc2_virkEgenskaber1 Virkning;
 	doc2_virkEgenskaber2 Virkning;
 	doc2_virkAnsvarlig Virkning;
@@ -84,6 +89,8 @@ doc1_new_uuid uuid;
 	doc2_docVariantEgenskaber1BVirkning Virkning;
 	doc2_docVariantEgenskaber2A DokumentVariantEgenskaberType;
 	doc2_docVariantEgenskaber2AVirkning Virkning;	
+
+
 	doc2_docDel1A DokumentDelType;
 	doc2_docDel1B DokumentDelType;
 	doc2_docDel2A DokumentDelType;
@@ -103,28 +110,11 @@ doc1_new_uuid uuid;
 	doc2_docDel2Brelation2 DokumentdelRelationType;
 	doc2_docDel2Brelation2Virkning Virkning;
 
-	actual_dokuments1 DokumentType[];
-	expected_dokuments1 DokumentType[];
+	updated_reg_id bigint;
 
-	doc1_override_timeperiod TSTZRANGE;
-	doc2_override_timeperiod TSTZRANGE;
-
-	actual_dokuments2 DokumentType[];
-	expected_dokuments2 DokumentType[];
-
-	actual_dokuments3 DokumentType[];
-	expected_dokuments3 DokumentType[];
-
-	actual_dokuments4 DokumentType[];
-	expected_dokuments4 DokumentType[];
-
-	actual_dokuments5 DokumentType[];
-	expected_dokuments5 DokumentType[];
-
-	document5 DokumentType;
-
-BEGIN
-
+	read_dokument1 DokumentType;
+	expected_dokument1 DokumentType;
+BEGIN 
 
 doc1_virkEgenskaber1 :=	ROW (
 	'[2015-05-12, infinity)' :: TSTZRANGE,
@@ -330,6 +320,21 @@ doc1_docDel2AEgenskaberVirkning :=	ROW (
           ) :: Virkning
 ;
 
+doc1_extraRelVirkning1 :=	ROW (
+	'[2013-02-28, infinity)' :: TSTZRANGE,
+          '120cc58a-3149-414a-9392-dcbcbbccddd9'::uuid,
+          'Bruger',
+          'NoteEx23'
+          ) :: Virkning
+;
+doc1_extraRelVirkning2 :=	ROW (
+	'[2013-02-28, infinity)' :: TSTZRANGE,
+          '280cc58a-3149-414a-9392-dcbcbbccddc0'::uuid,
+          'Bruger',
+          'NoteEx143'
+          ) :: Virkning
+;
+
 
 doc1_docVariantEgenskaber1A:=
 ROW(
@@ -388,6 +393,26 @@ ROW (
   null, 
   'Bruger'
 )::DokumentdelRelationType;
+
+doc1_extraRel1:=
+ROW (
+  'underredigeringaf'::DokumentdelRelationKode,
+  doc1_extraRelVirkning1,
+  '009a2dd4-415f-4104-b7a7-84607488c027'::uuid,
+  null, 
+  'Bruger'
+)::DokumentdelRelationType;
+
+
+doc1_extraRel2:=
+ROW (
+  'underredigeringaf'::DokumentdelRelationKode,
+  doc1_extraRelVirkning2,
+  '889a2dd4-415f-4104-b7a7-84607488c019'::uuid,
+  null, 
+  'Bruger'
+)::DokumentdelRelationType;
+
 
 
 doc1_docDel1AEgenskaber:= ROW(
@@ -457,9 +482,15 @@ ROW(
 
 
 doc1_docVariant1 := ROW (
-	'doc_varianttekst1',
+	'doc_varianttekst2_1',
   	ARRAY[doc1_docVariantEgenskaber1B,doc1_docVariantEgenskaber1A],
-  	ARRAY[doc1_docDel1A,doc1_docDel1B]
+  	ARRAY[doc1_docDel1A,
+  	ROW(
+  		'doc_deltekst1B',
+  		ARRAY[doc1_docDel1BEgenskaber],
+  		ARRAY[doc1_extraRel1,doc1_extraRel2]
+  		)::DokumentDelType
+  	]
 )::DokumentVariantType;
 
 
@@ -488,13 +519,14 @@ ARRAY[doc1_docVariant1,doc1_docVariant2]
 doc1_new_uuid := as_create_or_import_dokument(doc1_registrering);
 
 
+
 /**************************************************************/
 /*						Create doc 2						  */
 /**************************************************************/
 
 
 doc2_virkEgenskaber1 :=	ROW (
-	'[2014-02-20, infinity)' :: TSTZRANGE,
+	'[2014-06-20, 2015-06-30)' :: TSTZRANGE,
           'c71cc58a-3149-414a-9392-dcbcbbccddfe'::uuid,
           'Bruger',
           'NoteEx13'
@@ -512,7 +544,7 @@ doc2_virkEgenskaber2 :=	ROW (
 
 
 doc2_virkAnsvarlig :=	ROW (
-	'[2014-04-10, infinity)' :: TSTZRANGE,
+	'[2014-12-31, infinity)' :: TSTZRANGE,
           'a71cc58a-3149-414a-9392-dcbcbbccddf7'::uuid,
           'Bruger',
           'NoteEx23'
@@ -537,7 +569,7 @@ doc2_virkBesvarelser2 :=	ROW (
 ;
 
 doc2_virkFremdrift := ROW (
-	'[2011-04-20, infinity)' :: TSTZRANGE,
+	'[2011-04-20, 2014-03-08)' :: TSTZRANGE,
           'a71cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
           'Bruger',
           'NoteEx10'
@@ -577,7 +609,7 @@ doc2_dokumentRelBesvarelser2 := ROW (
 
 doc2_dokumentFremdrift := ROW (
 doc2_virkFremdrift,
-'Underreview'
+'Fordelt'
 ):: dokumentFremdriftTilsType
 ;
 
@@ -586,9 +618,9 @@ doc2_dokumentEgenskab1 := ROW (
 'doc_brugervendtnoegle2_1',
 'doc_beskrivelse2_1', 
 '01-10-2014'::date,
-'doc_kassationskode2_1', 
-11, --major int
-2, --minor int
+null, --'doc_kassationskode2_1', 
+null, --major int
+''::text, --minor int
 ROW('doc_Offentlighedundtaget_AlternativTitel2_1','doc_Offentlighedundtaget_Hjemmel2_1') ::OffentlighedundtagetType, --offentlighedundtagettype,
 'doc_titel2_1',
 'doc_dokumenttype2_1',
@@ -648,7 +680,7 @@ doc2_docVariantEgenskaber2AVirkning :=	ROW (
 ;
 
 doc2_docVariantEgenskaber1BVirkning :=	ROW (
-	'[2014-06-11, infinity)' :: TSTZRANGE,
+	'[2015-03-01, infinity)' :: TSTZRANGE,
           '471cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
           'Bruger',
           'NoteEx291'
@@ -657,7 +689,7 @@ doc2_docVariantEgenskaber1BVirkning :=	ROW (
 
 
 doc2_docVariantEgenskaber1AVirkning :=	ROW (
-	'[2013-02-27, 2014-06-11)' :: TSTZRANGE,
+	'[2013-03-27, 2014-05-11)' :: TSTZRANGE,
           '571cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
           'Bruger',
           'NoteEx191'
@@ -665,7 +697,7 @@ doc2_docVariantEgenskaber1AVirkning :=	ROW (
 ;
 
 doc2_docDel1AEgenskaberVirkning :=	ROW (
-	'[2014-03-30, infinity)' :: TSTZRANGE,
+	'[2014-05-19, infinity)' :: TSTZRANGE,
           '671cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
           'Bruger',
           'NoteEx11'
@@ -673,7 +705,7 @@ doc2_docDel1AEgenskaberVirkning :=	ROW (
 ;
 
 doc2_docDel1A2EgenskaberVirkning :=	ROW (
-	'[2010-01-20, 2014-03-20)' :: TSTZRANGE,
+	'[2010-06-25, 2014-01-10)' :: TSTZRANGE,
           '471cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
           'Bruger',
           'NoteEx113'
@@ -701,7 +733,7 @@ doc2_docDel2AEgenskaberVirkning :=	ROW (
 doc2_docVariantEgenskaber1A:=
 ROW(
 false, --arkivering boolean, 
-false, --delvisscannet boolean, 
+NULL, --delvisscannet boolean, 
 true, --offentliggoerelse boolean, 
 true, --produktion boolean,
  doc2_docVariantEgenskaber1AVirkning
@@ -711,7 +743,7 @@ doc2_docVariantEgenskaber1B:=
 ROW(
 true, --arkivering boolean, 
 false, --delvisscannet boolean, 
-true, --offentliggoerelse boolean, 
+''::text, --offentliggoerelse boolean, 
 true, --produktion boolean,
  doc2_docVariantEgenskaber1BVirkning
 )::DokumentVariantEgenskaberType;
@@ -758,8 +790,8 @@ ROW (
 
 
 doc2_docDel1AEgenskaber:= ROW(
-1, --indeks int,
-'del_indhold2_1', 
+''::text, --indeks int,
+null, 
 'del_lokation2_1', 
 'del_mimetype2_1',
  doc2_docDel1AEgenskaberVirkning 
@@ -796,9 +828,9 @@ doc2_docDel2AEgenskaber:= ROW(
 
 doc2_docDel1A:=
 ROW(
-'doc_deltekst2_1A',
+'doc_deltekst1A', --NOTICE!
   ARRAY[doc2_docDel1AEgenskaber,doc2_docDel1A2Egenskaber],
-  ARRAY[doc2_docDel1Arelation1]
+  null--ARRAY[doc2_docDel1Arelation1]
 )::DokumentDelType;
 
 doc2_docDel1B:=
@@ -826,7 +858,25 @@ ROW(
 doc2_docVariant1 := ROW (
 	'doc_varianttekst2_1',
   	ARRAY[doc2_docVariantEgenskaber1A,doc2_docVariantEgenskaber1B],
-  	ARRAY[doc2_docDel1A,doc2_docDel1B]
+  	ARRAY[doc2_docDel1A,doc2_docDel1B, 
+  	ROW(
+  		'doc_deltekst1B',
+  		ARRAY[ROW(
+			''::text, --indeks int,
+			''::text, 
+			''::text, 
+			''::text,
+			ROW (
+	'(-infinity, infinity)' :: TSTZRANGE,
+          '550cc58a-3149-414a-9392-dcbcbbccdd90'::uuid,
+          'Bruger',
+          'NoteEx6000'
+          ) :: Virkning 
+		)::DokumentDelEgenskaberType],
+  		ARRAY[]::DokumentdelRelationType[]
+  		)::DokumentDelType
+
+  	]
 )::DokumentVariantType;
 
 
@@ -836,212 +886,420 @@ doc2_docVariant2 := ROW (
   ARRAY[doc2_docDel2A,doc2_docDel2B]
 )::DokumentVariantType;
 
-doc2_registrering := ROW (
+read_dokument1 := as_read_dokument(doc1_new_uuid,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
+	);
 
-	ROW (
-	NULL,
-	'Opstaaet'::Livscykluskode,
-	doc2_uuidRegistrering,
-	'Test Note 50') :: RegistreringBase
-	,
-ARRAY[doc2_dokumentFremdrift]::dokumentFremdriftTilsType[],
-ARRAY[doc2_dokumentEgenskab1,doc2_dokumentEgenskab2]::dokumentEgenskaberAttrType[],
-ARRAY[doc2_dokumentRelAnsvarlig,doc2_dokumentRelBesvarelser1,doc2_dokumentRelBesvarelser2],
-ARRAY[doc2_docVariant1,doc2_docVariant2]
-) :: dokumentRegistreringType
-;
+--RAISE NOTICE 'read_dokument1 pre update:,%',read_dokument1::json;
 
+updated_reg_id:=as_update_dokument(
+  doc1_new_uuid,
+  doc2_uuidRegistrering,
+  'Test Note 80',
+  'Rettet'::Livscykluskode,           
+  ARRAY[doc2_dokumentEgenskab1,doc2_dokumentEgenskab2],
+  ARRAY[doc2_dokumentFremdrift],
+  ARRAY[doc2_dokumentRelAnsvarlig,doc2_dokumentRelBesvarelser1,doc2_dokumentRelBesvarelser2],
+  ARRAY[doc2_docVariant1,doc2_docVariant2,
 
-doc2_new_uuid := as_create_or_import_dokument(doc2_registrering);
-
-/********************************************************************/
-
-
-select array_agg(a.* order by a.id) from as_list_dokument(array[doc1_new_uuid,doc2_new_uuid]::uuid[],null,null) as a     into actual_dokuments1;
-
-
-select 
-(a.registrering).timeperiod into doc1_override_timeperiod
-from dokument_registrering a
-where 
-dokument_id=doc1_new_uuid;
-
-select 
-(a.registrering).timeperiod into doc2_override_timeperiod
-from dokument_registrering a
-where 
-dokument_id=doc2_new_uuid;
-
-
-expected_dokuments1:= ARRAY[
+ ROW (
+	'doc_varianttekst1',
+  	ARRAY[
 		ROW(
-			doc1_new_uuid,
-			ARRAY[
-					ROW(
-						ROW(
-							doc1_override_timeperiod, --this is cheating, but helps the comparison efforts below. (The timeperiod is set during creation/initialization )
-							(doc1_registrering.registrering).livscykluskode,
-							(doc1_registrering.registrering).brugerref,
-							(doc1_registrering.registrering).note 
-							)::RegistreringBase
-						,doc1_registrering.tilsfremdrift
-						,doc1_registrering.attrEgenskaber
-						,doc1_registrering.relationer
-						,doc1_registrering.varianter
-					)::dokumentRegistreringType
-				]::dokumentRegistreringType[]
-			)::dokumentType
-		,
+		true, --arkivering boolean, 
+		null, --delvisscannet boolean, 
+		null, --offentliggoerelse boolean, 
+		false, --produktion boolean,
+		 	ROW (
+		'[2015-02-01, 2016-12-20]' :: TSTZRANGE,
+          '571cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
+          'Bruger',
+          'NoteEx300'
+          ) :: Virkning
+		)::DokumentVariantEgenskaberType
+,	
 	ROW(
-			doc2_new_uuid,
+	true, --arkivering boolean, 
+	false, --delvisscannet boolean, 
+	false, --offentliggoerelse boolean, 
+	true, --produktion boolean,
+	 ROW (
+		'[2014-02-27, 2015-02-01)' :: TSTZRANGE,
+	          '471cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
+	          'Bruger',
+	          'NoteEx198'
+	          ) :: Virkning
+	)::DokumentVariantEgenskaberType
+ 			],
+  	ARRAY[doc1_docDel1A,doc1_docDel1B]
+  	)::DokumentVariantType
+  	,
+  	 ROW (
+	'doc_varianttekst2',
+  ARRAY[doc1_docVariantEgenskaber2A],
+  ARRAY[doc1_docDel2A,doc1_docDel2B]
+	)::DokumentVariantType
+
+  ],
+  null
+);
+
+
+read_dokument1 := as_read_dokument(doc1_new_uuid,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
+	);
+
+expected_dokument1:=ROW(
+
+	doc1_new_uuid,
+   ARRAY[
+   		ROW(
+   			ROW(((read_dokument1.registrering[1]).registrering).timeperiod,
+			'Rettet'::Livscykluskode,-- livscykluskode,
+			doc2_uuidRegistrering,-- uuid,
+			'Test Note 80')::RegistreringBase ,
 			ARRAY[
-					ROW(
-						ROW(
-							doc2_override_timeperiod, --this is cheating, but helps the comparison efforts below. (The timeperiod is set during creation/initialization )
-							(doc2_registrering.registrering).livscykluskode,
-							(doc2_registrering.registrering).brugerref,
-							(doc2_registrering.registrering).note 
-							)::RegistreringBase
-						,doc2_registrering.tilsfremdrift
-						,doc2_registrering.attrEgenskaber
-						,doc2_registrering.relationer
-						,doc2_registrering.varianter
-					)::dokumentRegistreringType
-			]::dokumentRegistreringType[]
-			)::dokumentType
-	]::dokumentType[];
-
-select array_agg(a.* order by a.id) from unnest(expected_dokuments1) as a into expected_dokuments1;
-
---raise notice 'list dokument expected_dokuments1:%',to_json(expected_dokuments1);
---raise notice 'list dokument actual_dokuments1:%',to_json(actual_dokuments1);
-
-RETURN NEXT is(
-	actual_dokuments1,
-	expected_dokuments1,	
-	'dokument list test 1');
-
-
-/******************************************************/
---Test for filtration on virkning
-
-
-
-select array_agg(a.* order by a.id) from as_list_dokument(array[doc1_new_uuid,doc2_new_uuid]::uuid[],null,'(-infinity, 01-01-2015)' :: TSTZRANGE) as a     into actual_dokuments2;
-
-
-expected_dokuments2:= ARRAY[
-		ROW(
-			doc1_new_uuid,
+				ROW (
+					ROW (
+					'[2011-04-20, 2014-03-08)' :: TSTZRANGE,
+				          'a71cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
+				          'Bruger',
+				          'NoteEx10'
+						) :: Virkning,
+				'Fordelt'
+					):: dokumentFremdriftTilsType,
+				 ROW (
+					ROW (
+						'[2015-05-18, infinity)' :: TSTZRANGE,
+					    'a71cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
+					    'Bruger',
+					    'NoteEx10'
+					) :: Virkning,
+				'Underreview'
+				):: dokumentFremdriftTilsType
+				
+			]::DokumentFremdriftTilsType[],
 			ARRAY[
-					ROW(
-						ROW(
-							doc1_override_timeperiod, --this is cheating, but helps the comparison efforts below. (The timeperiod is set during creation/initialization )
-							(doc1_registrering.registrering).livscykluskode,
-							(doc1_registrering.registrering).brugerref,
-							(doc1_registrering.registrering).note 
-							)::RegistreringBase
-						,null--doc1_registrering.tilsfremdrift
-						,ARRAY[doc1_dokumentEgenskab2]::dokumentEgenskaberAttrType[]
-						,ARRAY[doc1_dokumentRelAnsvarlig]
-						--,doc1_registrering.varianter
-						,ARRAY[
-							ROW (
-								'doc_varianttekst1',
-							  	ARRAY[doc1_docVariantEgenskaber1A],
-							  	ARRAY[ROW(
-								'doc_deltekst1A',
-								  ARRAY[doc1_docDel1AEgenskaber,doc1_docDel1A2Egenskaber],
-								  null
-								)::DokumentDelType]
-							)::DokumentVariantType
-							,doc1_docVariant2
-						]::DokumentVariantType[]
-					)::dokumentRegistreringType
-				]::dokumentRegistreringType[]
-			)::dokumentType
-		,
-	ROW(
-			doc2_new_uuid,
+			ROW (
+				'doc_brugervendtnoegle1',
+				'doc_beskrivelse1', 
+				'10-31-2015'::date,
+				'doc_kassationskode1', 
+				4, --major int
+				9, --minor int
+				ROW('doc_Offentlighedundtaget_AlternativTitel1','doc_Offentlighedundtaget_Hjemmel1') ::OffentlighedundtagetType, --offentlighedundtagettype,
+				'doc_titel1',
+				'doc_dokumenttype1',
+				ROW( '[2015-06-30, infinity)' :: TSTZRANGE,
+				          'd71cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
+				          'Bruger',
+				          'NoteEx1'
+				   	) :: Virkning
+				)::DokumentEgenskaberAttrType,
+				ROW (
+				'doc_brugervendtnoegle2',
+				'doc_beskrivelse2', 
+				'09-20-2014'::date,
+				'doc_kassationskode2', 
+				5, --major int
+				10, --minor int
+				ROW('doc_Offentlighedundtaget_AlternativTitel2','doc_Offentlighedundtaget_Hjemmel2') ::OffentlighedundtagetType, --offentlighedundtagettype,
+				'doc_titel2',
+				'doc_dokumenttype2',
+				ROW(
+				   '[2014-05-12, 2014-06-20)' :: TSTZRANGE,
+         			'e71cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
+         			'Bruger',
+          			'NoteEx11'
+          			) :: Virkning
+				) :: DokumentEgenskaberAttrType,
+				ROW (
+					'doc_brugervendtnoegle2_1',
+					'doc_beskrivelse2_1', 
+					'01-10-2014'::date,
+					'doc_kassationskode1', --'doc_kassationskode2_1', 
+					4, --major int
+					ROW(null,null)::ClearableInt, --minor int
+					ROW('doc_Offentlighedundtaget_AlternativTitel2_1','doc_Offentlighedundtaget_Hjemmel2_1') ::OffentlighedundtagetType, --offentlighedundtagettype,
+					'doc_titel2_1',
+					'doc_dokumenttype2_1',
+					ROW (
+						'[2015-05-12, 2015-06-30)' :: TSTZRANGE,
+					          'c71cc58a-3149-414a-9392-dcbcbbccddfe'::uuid,
+					          'Bruger',
+					          'NoteEx13'
+					) :: Virkning
+				) :: DokumentEgenskaberAttrType
+				,ROW (
+					'doc_brugervendtnoegle2_1',
+					'doc_beskrivelse2_1', 
+					'01-10-2014'::date,
+					'doc_kassationskode2', --'doc_kassationskode2_1', 
+					5, --major int
+					ROW(null,null)::ClearableInt, --minor int
+					ROW('doc_Offentlighedundtaget_AlternativTitel2_1','doc_Offentlighedundtaget_Hjemmel2_1') ::OffentlighedundtagetType, --offentlighedundtagettype,
+					'doc_titel2_1',
+					'doc_dokumenttype2_1',
+					   ROW (
+							'[2014-06-20, 2015-05-12)' :: TSTZRANGE,
+						    'c71cc58a-3149-414a-9392-dcbcbbccddfe'::uuid,
+						    'Bruger',
+						    'NoteEx13'
+						    ) :: Virkning
+					) :: DokumentEgenskaberAttrType
+				,ROW (
+					'doc_brugervendtnoegle2_2',
+					'doc_beskrivelse2_2', 
+					'08-28-2013'::date,
+					'doc_kassationskode2_2', 
+					12, --major int
+					6, --minor int
+					ROW('doc_Offentlighedundtaget_AlternativTitel2_2','doc_Offentlighedundtaget_Hjemmel2_2') ::OffentlighedundtagetType, --offentlighedundtagettype,
+					'doc_titel2_2',
+					'doc_dokumenttype2_2',
+					   	ROW (
+							'[2013-11-30, 2014-02-20)' :: TSTZRANGE,
+						    'd71cc58a-3149-414a-9392-dcbcbbccddf7'::uuid,
+						    'Bruger',
+						    'NoteEx11'
+						    ) :: Virkning
+					) :: dokumentEgenskaberAttrType
+			]::DokumentEgenskaberAttrType[],
 			ARRAY[
-					ROW(
-						ROW(
-							doc2_override_timeperiod, --this is cheating, but helps the comparison efforts below. (The timeperiod is set during creation/initialization )
-							(doc2_registrering.registrering).livscykluskode,
-							(doc2_registrering.registrering).brugerref,
-							(doc2_registrering.registrering).note 
-							)::RegistreringBase
-						,doc2_registrering.tilsfremdrift
-						,doc2_registrering.attrEgenskaber
-						,ARRAY[doc2_dokumentRelAnsvarlig]
-						,ARRAY[
-						ROW (
-							'doc_varianttekst2_1',
-						  	ARRAY[doc2_docVariantEgenskaber1A,doc2_docVariantEgenskaber1B],
-						  	ARRAY[doc2_docDel1A]
+			ROW (
+				'ansvarlig'::dokumentRelationKode,
+					ROW (
+					'[2014-12-31, infinity)' :: TSTZRANGE,
+				          'a71cc58a-3149-414a-9392-dcbcbbccddf7'::uuid,
+				          'Bruger',
+				          'NoteEx23'
+				          ) :: Virkning,
+				doc2_uuidAnsvarlig,
+				null,
+				'Aktør'
+			) :: dokumentRelationType
+
+			,ROW (
+				'ansvarlig'::dokumentRelationKode,
+					ROW (
+						'[2014-05-11, 2014-12-31)' :: TSTZRANGE,
+					    'f71cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
+					    'Bruger',
+					    'NoteEx2'
+          			) :: Virkning,
+				doc1_uuidAnsvarlig,
+				null,
+				'Aktør'
+			) :: dokumentRelationType
+			 ,doc2_dokumentRelBesvarelser1
+			 ,doc2_dokumentRelBesvarelser2
+			]::DokumentRelationType[],
+			ARRAY[
+					 ROW (
+						'doc_varianttekst2_1',
+					  	ARRAY[
+					  		ROW(
+								false, --arkivering boolean, 
+								false, --delvisscannet boolean, 
+								true, --offentliggoerelse boolean, 
+								true, --produktion boolean,
+								 ROW (
+								'[2013-03-27, 2014-05-11)' :: TSTZRANGE,
+							          '571cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
+							          'Bruger',
+							          'NoteEx191'
+							          ) :: Virkning
+							)::DokumentVariantEgenskaberType
+					  		,ROW(
+								false, --arkivering boolean, 
+								false, --delvisscannet boolean, 
+								true, --offentliggoerelse boolean, 
+								true, --produktion boolean,
+								ROW(
+								 '[2015-01-01, 2015-03-01)' :: TSTZRANGE,
+						          '571cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
+						          'Bruger',
+						          'NoteEx291'
+						          ) :: Virkning
+
+							)
+							,ROW(
+							true, --arkivering boolean, 
+							false, --delvisscannet boolean, 
+							true, --offentliggoerelse boolean, 
+							false, --produktion boolean,
+							 ROW (
+								'[2013-02-27, 2013-03-27)' :: TSTZRANGE,
+							          '471cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
+							          'Bruger',
+							          'NoteEx191'
+							          ) :: Virkning
+							)::DokumentVariantEgenskaberType
+							,ROW(
+							true, --arkivering boolean, 
+							false, --delvisscannet boolean, 
+							true, --offentliggoerelse boolean, 
+							false, --produktion boolean,
+							 ROW (
+								'[2014-05-11, 2015-01-01)' :: TSTZRANGE,
+							          '471cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
+							          'Bruger',
+							          'NoteEx191'
+							          ) :: Virkning
+							 )::DokumentVariantEgenskaberType
+							,ROW(
+							true, --arkivering boolean, 
+							false, --delvisscannet boolean, 
+							row(null,null)::ClearableBoolean, --offentliggoerelse boolean, 
+							true, --produktion boolean,
+							 ROW (
+								'[2015-03-01, infinity)' :: TSTZRANGE,
+							          '471cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
+							          'Bruger',
+							          'NoteEx291'
+							          ) :: Virkning
+							 )::DokumentVariantEgenskaberType
+							]::DokumentVariantEgenskaberType[]
+					  	,ARRAY[
+
+					  	
+					  	ROW(
+					  		'doc_deltekst1A',
+					  		 ARRAY[
+					  		 ROW(
+									1, --indeks int,
+									'del_indhold1', 
+									'del_lokation1', 
+									'del_mimetype1',
+									 ROW (
+										'[2014-03-30, 2014-05-19)' :: TSTZRANGE,
+									          '371cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
+									          'Bruger',
+									          'NoteEx11'
+									     ) :: Virkning
+								 	)::DokumentDelEgenskaberType
+					  		 	,
+					  		 	ROW(
+									2, --indeks int,
+									'del_indhold2_4', 
+									'del_lokation2_4', 
+									'del_mimetype2_4',
+									 ROW (
+										'[2010-06-25, 2014-01-10)' :: TSTZRANGE,
+									          '471cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
+									          'Bruger',
+									          'NoteEx113'
+									          ) :: Virkning
+									 )::DokumentDelEgenskaberType
+					  		 	,
+
+					  		 	ROW(
+									2, --indeks int,
+									'del_indhold4', 
+									'del_lokation4', 
+									'del_mimetype4',
+ 									ROW (
+									'[2010-01-20, 2010-06-25)' :: TSTZRANGE,
+								          '271cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
+								          'Bruger',
+								          'NoteEx113'
+								          ) :: Virkning
+					  		  		)::DokumentDelEgenskaberType
+					  			,
+					  			ROW(
+									2, --indeks int,
+									'del_indhold4', 
+									'del_lokation4', 
+									'del_mimetype4',
+									 ROW (
+										'[2014-01-10, 2014-03-20)' :: TSTZRANGE,
+								    	'271cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
+								        'Bruger',
+								        'NoteEx113'
+								          ) :: Virkning 
+									)::DokumentDelEgenskaberType
+					  			,ROW(
+									ROW(null,null)::ClearableInt, --indeks int,
+									'del_indhold1', 
+									'del_lokation2_1', 
+									'del_mimetype2_1',
+									 ROW (
+									'[2014-05-19, infinity)' :: TSTZRANGE,
+								          '671cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
+								          'Bruger',
+								          'NoteEx11'
+								          ) :: Virkning 
+									)::DokumentDelEgenskaberType
+					  		 	],
+					  		
+  							 ARRAY[doc1_docDel1Arelation1]
+					  		)::DokumentDelType
+
+					  	,doc2_docDel1B]
+					)::DokumentVariantType,
+					doc2_docVariant2,
+					 ROW (
+						'doc_varianttekst1',
+					  	ARRAY[
+							ROW(
+							true, --arkivering boolean, 
+							false, --delvisscannet boolean, 
+							false, --offentliggoerelse boolean, 
+							true, --produktion boolean,
+							 ROW (
+								'[2014-02-27, 2015-02-01)' :: TSTZRANGE,
+							          '471cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
+							          'Bruger',
+							          'NoteEx198'
+							          ) :: Virkning
+							)::DokumentVariantEgenskaberType
+							,
+							ROW(
+							true, --arkivering boolean, 
+							ROW(null,null)::ClearableBoolean, --delvisscannet boolean, 
+							ROW(null,null)::ClearableBoolean, --offentliggoerelse boolean, 
+							false, --produktion boolean,
+							 	ROW (
+							'[2015-02-01, 2016-12-20]' :: TSTZRANGE,
+					          '571cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
+					          'Bruger',
+					          'NoteEx300'
+					          ) :: Virkning
+							)::DokumentVariantEgenskaberType
+					 		],
+					  	ARRAY[doc1_docDel1A,doc1_docDel1B]
+					  	)::DokumentVariantType
+						,ROW (
+						'doc_varianttekst2',
+					  	ARRAY[doc1_docVariantEgenskaber2A],
+					  	ARRAY[doc1_docDel2A,doc1_docDel2B]
 						)::DokumentVariantType
-						,doc2_docVariant2
-						]::DokumentVariantType[]
-						--doc2_registrering.varianter
-					)::dokumentRegistreringType
-			]::dokumentRegistreringType[]
-			)::dokumentType
-	]::dokumentType[];
+					]::DokumentVariantType[]
+   		)::DokumentRegistreringType
+   ]::DokumentRegistreringType[]
+
+
+)::DokumentType;
+
+RAISE NOTICE 'expected_doc1,%',expected_dokument1::json;
+
+RAISE NOTICE 'read_dokument1 post update:,%',read_dokument1::json;
+
+
+
+
+RETURN NEXT is(read_dokument1::json::text,expected_dokument1::json::text,'test update document #1');
 
 
 
 
 
-select array_agg(a.* order by a.id) from unnest(expected_dokuments2) as a into expected_dokuments2;
-
---raise notice 'list dokument expected_dokuments2:%',to_json(expected_dokuments2);
---raise notice 'list dokument actual_dokuments2:%',to_json(actual_dokuments2);
 
 
-RETURN NEXT is(
-	actual_dokuments2,
-	expected_dokuments2,	
-	'dokument list virkning filter test');
 
 
-/********************************************/
---Test filter on non existing reg time.
-
-
-select array_agg(a.* order by a.id) from as_list_dokument(array[doc1_new_uuid,doc2_new_uuid]::uuid[], tstzrange(clock_timestamp() - interval '2 hour', clock_timestamp() - interval '1 hour'),'(-infinity, 01-01-2015)' :: TSTZRANGE) as a     into actual_dokuments3;
-
-RETURN NEXT ok(coalesce(array_length(actual_dokuments3,1),0)=0,'Test on filter on reg time with no reg.');
-
---Test filter on current reg 
-
-
-select array_agg(a.* order by a.id) from as_list_dokument(array[doc1_new_uuid,doc2_new_uuid]::uuid[], tstzrange(clock_timestamp() - interval '1 hour',clock_timestamp()) ,'(-infinity, 01-01-2015)' :: TSTZRANGE) as a     into actual_dokuments4;
-
-
-RETURN NEXT is(
-	actual_dokuments4,
-	expected_dokuments2,	--Notice using expected_dokuments2 as this is what we expect
-	'Test on filter on reg time - current time.');
-
---Test on list on single uuid
-
-select array_agg(a.* order by a.id) from as_list_dokument(array[doc2_new_uuid]::uuid[],  tstzrange(clock_timestamp() - interval '1 hour',clock_timestamp()) ,'(-infinity, 01-01-2015)' :: TSTZRANGE) as a     into actual_dokuments5;
-
-IF expected_dokuments2[1].id = doc2_new_uuid THEN
-	expected_dokuments5:=array_append(expected_dokuments5,expected_dokuments2[1]);
-ELSE
-	expected_dokuments5:=array_append(expected_dokuments5,expected_dokuments2[2]);
-END IF;
- 
-
---raise notice 'list dokument expected_dokuments5:%',to_json(expected_dokuments5);
---raise notice 'list dokument actual_dokuments5:%',to_json(actual_dokuments5);
-
-
-RETURN NEXT is(
-	actual_dokuments5,
-	expected_dokuments5,	
-	'Test list single uuid.');		
 
 
 
