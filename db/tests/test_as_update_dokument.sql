@@ -57,6 +57,11 @@ doc1_new_uuid uuid;
 	doc1_docDel2Brelation2 DokumentdelRelationType;
 	doc1_docDel2Brelation2Virkning Virkning;
 
+	doc1_extraRel1 DokumentdelRelationType;
+	doc1_extraRel2 DokumentdelRelationType;
+	doc1_extraRelVirkning1 Virkning;
+	doc1_extraRelVirkning2 Virkning;
+
 	doc2_registrering dokumentRegistreringType;
 
 	doc2_virkEgenskaber1 Virkning;
@@ -84,6 +89,8 @@ doc1_new_uuid uuid;
 	doc2_docVariantEgenskaber1BVirkning Virkning;
 	doc2_docVariantEgenskaber2A DokumentVariantEgenskaberType;
 	doc2_docVariantEgenskaber2AVirkning Virkning;	
+
+
 	doc2_docDel1A DokumentDelType;
 	doc2_docDel1B DokumentDelType;
 	doc2_docDel2A DokumentDelType;
@@ -313,6 +320,21 @@ doc1_docDel2AEgenskaberVirkning :=	ROW (
           ) :: Virkning
 ;
 
+doc1_extraRelVirkning1 :=	ROW (
+	'[2013-02-28, infinity)' :: TSTZRANGE,
+          '120cc58a-3149-414a-9392-dcbcbbccddd9'::uuid,
+          'Bruger',
+          'NoteEx23'
+          ) :: Virkning
+;
+doc1_extraRelVirkning2 :=	ROW (
+	'[2013-02-28, infinity)' :: TSTZRANGE,
+          '280cc58a-3149-414a-9392-dcbcbbccddc0'::uuid,
+          'Bruger',
+          'NoteEx143'
+          ) :: Virkning
+;
+
 
 doc1_docVariantEgenskaber1A:=
 ROW(
@@ -371,6 +393,26 @@ ROW (
   null, 
   'Bruger'
 )::DokumentdelRelationType;
+
+doc1_extraRel1:=
+ROW (
+  'underredigeringaf'::DokumentdelRelationKode,
+  doc1_extraRelVirkning1,
+  '009a2dd4-415f-4104-b7a7-84607488c027'::uuid,
+  null, 
+  'Bruger'
+)::DokumentdelRelationType;
+
+
+doc1_extraRel2:=
+ROW (
+  'underredigeringaf'::DokumentdelRelationKode,
+  doc1_extraRelVirkning2,
+  '889a2dd4-415f-4104-b7a7-84607488c019'::uuid,
+  null, 
+  'Bruger'
+)::DokumentdelRelationType;
+
 
 
 doc1_docDel1AEgenskaber:= ROW(
@@ -442,7 +484,13 @@ ROW(
 doc1_docVariant1 := ROW (
 	'doc_varianttekst2_1',
   	ARRAY[doc1_docVariantEgenskaber1B,doc1_docVariantEgenskaber1A],
-  	ARRAY[doc1_docDel1A,doc1_docDel1B]
+  	ARRAY[doc1_docDel1A,
+  	ROW(
+  		'doc_deltekst1B',
+  		ARRAY[doc1_docDel1BEgenskaber],
+  		ARRAY[doc1_extraRel1,doc1_extraRel2]
+  		)::DokumentDelType
+  	]
 )::DokumentVariantType;
 
 
@@ -649,7 +697,7 @@ doc2_docVariantEgenskaber1AVirkning :=	ROW (
 ;
 
 doc2_docDel1AEgenskaberVirkning :=	ROW (
-	'[2014-03-30, infinity)' :: TSTZRANGE,
+	'[2014-05-19, infinity)' :: TSTZRANGE,
           '671cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
           'Bruger',
           'NoteEx11'
@@ -657,7 +705,7 @@ doc2_docDel1AEgenskaberVirkning :=	ROW (
 ;
 
 doc2_docDel1A2EgenskaberVirkning :=	ROW (
-	'[2010-01-20, 2014-03-20)' :: TSTZRANGE,
+	'[2010-06-25, 2014-01-10)' :: TSTZRANGE,
           '471cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
           'Bruger',
           'NoteEx113'
@@ -742,8 +790,8 @@ ROW (
 
 
 doc2_docDel1AEgenskaber:= ROW(
-1, --indeks int,
-'del_indhold2_1', 
+''::text, --indeks int,
+null, 
 'del_lokation2_1', 
 'del_mimetype2_1',
  doc2_docDel1AEgenskaberVirkning 
@@ -780,9 +828,9 @@ doc2_docDel2AEgenskaber:= ROW(
 
 doc2_docDel1A:=
 ROW(
-'doc_deltekst2_1A',
+'doc_deltekst1A', --NOTICE!
   ARRAY[doc2_docDel1AEgenskaber,doc2_docDel1A2Egenskaber],
-  ARRAY[doc2_docDel1Arelation1]
+  null--ARRAY[doc2_docDel1Arelation1]
 )::DokumentDelType;
 
 doc2_docDel1B:=
@@ -810,7 +858,25 @@ ROW(
 doc2_docVariant1 := ROW (
 	'doc_varianttekst2_1',
   	ARRAY[doc2_docVariantEgenskaber1A,doc2_docVariantEgenskaber1B],
-  	ARRAY[doc2_docDel1A,doc2_docDel1B]
+  	ARRAY[doc2_docDel1A,doc2_docDel1B, 
+  	ROW(
+  		'doc_deltekst1B',
+  		ARRAY[ROW(
+			''::text, --indeks int,
+			''::text, 
+			''::text, 
+			''::text,
+			ROW (
+	'(-infinity, infinity)' :: TSTZRANGE,
+          '550cc58a-3149-414a-9392-dcbcbbccdd90'::uuid,
+          'Bruger',
+          'NoteEx6000'
+          ) :: Virkning 
+		)::DokumentDelEgenskaberType],
+  		ARRAY[]::DokumentdelRelationType[]
+  		)::DokumentDelType
+
+  	]
 )::DokumentVariantType;
 
 
@@ -1013,9 +1079,9 @@ expected_dokument1:=ROW(
 				doc2_uuidAnsvarlig,
 				null,
 				'Aktør'
-			) :: dokumentRelationType,
+			) :: dokumentRelationType
 
-			 ROW (
+			,ROW (
 				'ansvarlig'::dokumentRelationKode,
 					ROW (
 						'[2014-05-11, 2014-12-31)' :: TSTZRANGE,
@@ -1096,7 +1162,82 @@ expected_dokument1:=ROW(
 							          ) :: Virkning
 							 )::DokumentVariantEgenskaberType
 							]::DokumentVariantEgenskaberType[]
-					  	,ARRAY[doc1_docDel1A,doc1_docDel1B,doc2_docDel1A,doc2_docDel1B]
+					  	,ARRAY[
+
+					  	
+					  	ROW(
+					  		'doc_deltekst1A',
+					  		 ARRAY[
+					  		 ROW(
+									1, --indeks int,
+									'del_indhold1', 
+									'del_lokation1', 
+									'del_mimetype1',
+									 ROW (
+										'[2014-03-30, 2014-05-19)' :: TSTZRANGE,
+									          '371cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
+									          'Bruger',
+									          'NoteEx11'
+									     ) :: Virkning
+								 	)::DokumentDelEgenskaberType
+					  		 	,
+					  		 	ROW(
+									2, --indeks int,
+									'del_indhold2_4', 
+									'del_lokation2_4', 
+									'del_mimetype2_4',
+									 ROW (
+										'[2010-06-25, 2014-01-10)' :: TSTZRANGE,
+									          '471cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
+									          'Bruger',
+									          'NoteEx113'
+									          ) :: Virkning
+									 )::DokumentDelEgenskaberType
+					  		 	,
+
+					  		 	ROW(
+									2, --indeks int,
+									'del_indhold4', 
+									'del_lokation4', 
+									'del_mimetype4',
+ 									ROW (
+									'[2010-01-20, 2010-06-25)' :: TSTZRANGE,
+								          '271cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
+								          'Bruger',
+								          'NoteEx113'
+								          ) :: Virkning
+					  		  		)::DokumentDelEgenskaberType
+					  			,
+					  			ROW(
+									2, --indeks int,
+									'del_indhold4', 
+									'del_lokation4', 
+									'del_mimetype4',
+									 ROW (
+										'[2014-01-10, 2014-03-20)' :: TSTZRANGE,
+								    	'271cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
+								        'Bruger',
+								        'NoteEx113'
+								          ) :: Virkning 
+									)::DokumentDelEgenskaberType
+					  			,ROW(
+									ROW(null,null)::ClearableInt, --indeks int,
+									'del_indhold1', 
+									'del_lokation2_1', 
+									'del_mimetype2_1',
+									 ROW (
+									'[2014-05-19, infinity)' :: TSTZRANGE,
+								          '671cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
+								          'Bruger',
+								          'NoteEx11'
+								          ) :: Virkning 
+									)::DokumentDelEgenskaberType
+					  		 	],
+					  		
+  							 ARRAY[doc1_docDel1Arelation1]
+					  		)::DokumentDelType
+
+					  	,doc2_docDel1B]
 					)::DokumentVariantType,
 					doc2_docVariant2,
 					 ROW (
@@ -1142,9 +1283,9 @@ expected_dokument1:=ROW(
 
 )::DokumentType;
 
---RAISE NOTICE 'expected_doc1,%',expected_dokument1;
+RAISE NOTICE 'expected_doc1,%',expected_dokument1::json;
 
---RAISE NOTICE 'read_dokument1 post update:,%',read_dokument1;
+RAISE NOTICE 'read_dokument1 post update:,%',read_dokument1::json;
 
 
 
