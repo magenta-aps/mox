@@ -174,12 +174,7 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" relations
-DELETE FROM organisationenhed_relation
-WHERE 
-organisationenhed_registrering_id=new_organisationenhed_registrering.id
-AND (rel_maal_uuid IS NULL AND (rel_maal_urn IS NULL OR rel_maal_urn=''))
-;
+
 
 END IF;
 /**********************/
@@ -242,12 +237,6 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" tilstande
-DELETE FROM organisationenhed_tils_gyldighed
-WHERE 
-organisationenhed_registrering_id=new_organisationenhed_registrering.id
-AND gyldighed = ''::OrganisationenhedGyldighedTils
-;
 
 END IF;
 
@@ -293,8 +282,8 @@ IF attrEgenskaber IS NOT null THEN
     ,virkning
     ,organisationenhed_registrering_id
   )
-  SELECT 
-    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle), 
+  SELECT
+    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
     coalesce(attrEgenskaberObj.enhedsnavn,a.enhedsnavn),
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
@@ -398,13 +387,7 @@ FROM
 
 
 
---Remove any "cleared"/"deleted" attributes
-DELETE FROM organisationenhed_attr_egenskaber a
-WHERE 
-a.organisationenhed_registrering_id=new_organisationenhed_registrering.id
-AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') 
-            AND  (a.enhedsnavn IS NULL OR a.enhedsnavn='')
-;
+
 
 END IF;
 

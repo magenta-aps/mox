@@ -3,7 +3,6 @@
 from flask import Flask, jsonify
 from werkzeug.routing import BaseConverter
 
-
 app = Flask(__name__)
 
 
@@ -33,10 +32,13 @@ def main():
     from klassifikation import KlassifikationsHierarki
     from organisation import OrganisationsHierarki
     from sag import SagsHierarki
+    from dokument import DokumentsHierarki
 
     KlassifikationsHierarki.setup_api(base_url=BASE_URL, flask=app)
-    OrganisationsHierarki.setup_api(base_url=BASE_URL, flask=app)
     SagsHierarki.setup_api(base_url=BASE_URL, flask=app)
+    OrganisationsHierarki.setup_api(base_url=BASE_URL, flask=app)
+    DokumentsHierarki.setup_api(base_url=BASE_URL, flask=app)
+
     app.run(debug=True)
 
 

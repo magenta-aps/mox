@@ -176,12 +176,7 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" relations
-DELETE FROM {{oio_type}}_relation
-WHERE 
-{{oio_type}}_registrering_id=new_{{oio_type}}_registrering.id
-AND (rel_maal_uuid IS NULL AND (rel_maal_urn IS NULL OR rel_maal_urn=''))
-;
+
 
 END IF;
 /**********************/
@@ -246,12 +241,6 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" tilstande
-DELETE FROM {{oio_type}}_tils_{{tilstand}}
-WHERE 
-{{oio_type}}_registrering_id=new_{{oio_type}}_registrering.id
-AND {{tilstand}} = ''::{{oio_type|title}}{{tilstand|title}}Tils
-;
 
 END IF;
 
@@ -299,8 +288,14 @@ IF attr{{attribut|title}} IS NOT null THEN
     ,virkning
     ,{{oio_type}}_registrering_id
   )
-  SELECT {%-for fieldname in attribut_fields %} 
+  SELECT {%-for fieldname in attribut_fields %}
+  {%- if  attributter_type_override is defined and attributter_type_override[attribut] is defined and attributter_type_override[attribut][fieldname] is defined and ( attributter_type_override[attribut][fieldname] =='int' or attributter_type_override[attribut][fieldname] =='date' or attributter_type_override[attribut][fieldname]=='boolean')  %} 
+    CASE WHEN (attr{{attribut|title}}Obj.{{fieldname}}).cleared THEN NULL 
+    ELSE coalesce((attr{{attribut|title}}Obj.{{fieldname}}).value,a.{{fieldname}})
+    END,
+   {%-else %}
     coalesce(attr{{attribut|title}}Obj.{{fieldname}},a.{{fieldname}}),
+    {%-endif %}
     {%- endfor %}
 	ROW (
 	  (a.virkning).TimePeriod * (attr{{attribut|title}}Obj.virkning).TimePeriod,
@@ -406,19 +401,7 @@ FROM
 
 
 
---Remove any "cleared"/"deleted" attributes
-DELETE FROM {{oio_type}}_attr_{{attribut}} a
-WHERE 
-a.{{oio_type}}_registrering_id=new_{{oio_type}}_registrering.id
-AND {%-for fieldname in attribut_fields %} (a.{{fieldname}} IS NULL {%- if  attributter_type_override is defined and attributter_type_override[attribut] is defined and attributter_type_override[attribut][fieldname] is defined %} 
-            {%-if attributter_type_override[attribut][fieldname] == "text[]" %} OR coalesce(array_length(a.{{fieldname}},1),0)=0
-            {%-else %}
-            {%-if attributter_type_override[attribut][fieldname] == "offentlighedundtagettype" %} OR (((a.{{fieldname}}).AlternativTitel IS NULL OR (a.{{fieldname}}).AlternativTitel='') AND ((a.{{fieldname}}).Hjemmel IS NULL OR (a.{{fieldname}}).Hjemmel=''))
-            {%-else %}
-            {%-if attributter_type_override[attribut][fieldname] == "int" or attributter_type_override[attribut][fieldname] == "date" %} 
-           {%- endif %}{%- endif %}{%- endif %} {%- else %} OR a.{{fieldname}}=''{%- endif %}){%- if (not loop.last) %} 
-            AND {% endif %}{%- endfor %}
-;
+
 
 END IF;
 

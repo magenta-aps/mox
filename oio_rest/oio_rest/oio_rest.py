@@ -1,5 +1,8 @@
 from datetime import datetime
+import json
+from urlparse import urlparse
 from flask import jsonify, request
+from werkzeug.exceptions import BadRequest
 
 import db
 from db_helpers import get_attribute_names, get_attribute_fields
@@ -38,17 +41,72 @@ class OIORestObject(object):
     """
 
     @classmethod
+    def get_json(cls):
+        """
+        Return the JSON input from the request.
+        The JSON input typically comes from the body of the request with
+        Content-Type: application/json. However, for POST/PUT operations
+        involving multipart/form-data, the JSON input is expected to be
+        contained in a form field called 'json'. This method handles this in a
+        consistent way.
+        """
+        if request.json:
+            return request.json
+        else:
+            data = request.form.get('json', None)
+            if data is not None:
+                try:
+                    if request.charset is not None:
+                        return json.loads(data, encoding=request.charset)
+                    else:
+                        return json.loads(data)
+                except ValueError as e:
+                    request.on_json_loading_failed(e)
+            else:
+                return None
+
+    @classmethod
+    def _get_file_storage_for_content_url(cls, url):
+        """
+        Return a FileStorage object for the form field specified by the URL.
+
+        The URL uses the scheme 'field', and its path points to a form field
+        which contains the uploaded file. For example, for a URL of 'field:f1',
+        this method would return the FileStorage object for the file
+        contained in form field 'f1'.
+        """
+        o = urlparse(url)
+        if o.scheme == 'field':
+            field_name = o.path
+            file_obj = request.files.get(field_name, None)
+            if file_obj is None:
+                raise BadRequest(
+                    ('The content URL "%s" referenced the field "%s", but it '
+                     'was not present in the request.') % (url, o.path)
+                )
+            return file_obj
+        else:
+            raise BadRequest('The content field referenced an unsupported '
+                             'scheme or was invalid. The URLs must be of the'
+                             'form: field:<form-field>, where <form-field> '
+                             'is the name of the field in the '
+                             'multipart/form-data-encoded request that '
+                             'contains the file binary data.')
+
+    @classmethod
     @requires_auth
     def create_object(cls):
         """
         CREATE object, generate new UUID.
         """
-        if not request.json:
+        input = cls.get_json()
+        if not input:
             return jsonify({'uuid': None}), 400
-        note = request.json.get("note", "")
-        attributes = request.json.get("attributter", {})
-        states = request.json.get("tilstande", {})
-        relations = request.json.get("relationer", {})
+
+        note = input.get("note", "")
+        attributes = input.get("attributter", {})
+        states = input.get("tilstande", {})
+        relations = input.get("relationer", {})
         uuid = db.create_or_import_object(cls.__name__, note, attributes,
                                           states, relations)
         return jsonify({'uuid': uuid}), 201
@@ -60,7 +118,6 @@ class OIORestObject(object):
         LIST or SEARCH objects, depending on parameters.
         """
         # Convert arguments to lowercase, getting them as lists
-        #import pdb; pdb.set_trace()
         list_args = {k.lower(): request.args.getlist(k)
                      for k in request.args.keys()}
         args = {k.lower(): request.args.get(k)
@@ -134,13 +191,14 @@ class OIORestObject(object):
         """
         UPDATE, IMPORT or PASSIVIZE an  object.
         """
-        if not request.json:
+        input = cls.get_json()
+        if not input:
             return jsonify({'uuid': None}), 400
         # Get most common parameters if available.
-        note = request.json.get("note", "")
-        attributes = request.json.get("attributter", {})
-        states = request.json.get("tilstande", {})
-        relations = request.json.get("relationer", {})
+        note = input.get("note", "")
+        attributes = input.get("attributter", {})
+        states = input.get("tilstande", {})
+        relations = input.get("relationer", {})
 
         if not db.object_exists(cls.__name__, uuid):
             # Do import.
@@ -150,7 +208,7 @@ class OIORestObject(object):
             return jsonify({'uuid': uuid}), 200
         else:
             "Edit or passivate."
-            if (request.json.get('livscyklus', '').lower() == 'passiv'):
+            if (input.get('livscyklus', '').lower() == 'passiv'):
                 # Passivate
                 db.passivate_object(
                     cls.__name__, note, uuid
@@ -167,8 +225,10 @@ class OIORestObject(object):
     @requires_auth
     def delete_object(cls, uuid):
         # Delete facet
-        #import pdb; pdb.set_trace()
-        note = request.json.get("Note", "")
+        input = cls.get_json()
+        if not input:
+            return jsonify({'uuid': None}), 400
+        note = input.get("Note", "")
         class_name = cls.__name__
         result = db.delete_object(class_name, note, uuid)
 

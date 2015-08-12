@@ -240,9 +240,6 @@ public class Main {
 
                 String encodedAuthtoken = "saml-gzipped " + base64encode(gzip(authtoken));
 
-                System.out.println("authtoken: "+authtoken);
-                System.out.println("encodedAuthtoken: "+encodedAuthtoken);
-
                 MessageSender messageSender = new MessageSender(queueInterface, null, queueName);
                 ObjectType objectType = objectTypes.get("facet");
 
@@ -306,8 +303,6 @@ public class Main {
     private static String getSecurityToken(Properties properties, String endpointAddress) {
 
         try {
-            String resourcePath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator;
-
             String keystorePath = properties.getProperty("security.keystore.path");
             String keystorePass = properties.getProperty("security.keystore.password");
             String repoPath = properties.getProperty("security.repo.path");
@@ -423,17 +418,10 @@ public class Main {
             return null;
         }
 
-
-        FileOutputStream fos = new FileOutputStream("/home/lars/tmp.gz");
-        GZIPOutputStream gzip = new GZIPOutputStream(fos);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        GZIPOutputStream gzip = new GZIPOutputStream(baos);
         gzip.write(str.getBytes());
         gzip.close();
-
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        GZIPOutputStream gzip2 = new GZIPOutputStream(baos);
-        gzip2.write(str.getBytes());
-        gzip2.close();
 
         return baos.toByteArray();
     }

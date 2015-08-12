@@ -12,7 +12,7 @@ NOTICE: This file is auto-generated using the script: apply-template.py klasse a
 
 
 
---Also notice, that the given arrays of KlasseAttr...Type must be consistent regarding virkning (although the allowance of null-values might make it possible to construct 'logically consistent'-arrays of objects with overlapping virknings)
+--Also notice, that the given array of KlasseAttr...Type must be consistent regarding virkning (although the allowance of null-values might make it possible to construct 'logically consistent'-arrays of objects with overlapping virknings)
 
 CREATE OR REPLACE FUNCTION as_update_klasse(
   klasse_uuid uuid,
@@ -176,12 +176,7 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" relations
-DELETE FROM klasse_relation
-WHERE 
-klasse_registrering_id=new_klasse_registrering.id
-AND (rel_maal_uuid IS NULL AND (rel_maal_urn IS NULL OR rel_maal_urn=''))
-;
+
 
 END IF;
 /**********************/
@@ -244,12 +239,6 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" tilstande
-DELETE FROM klasse_tils_publiceret
-WHERE 
-klasse_registrering_id=new_klasse_registrering.id
-AND publiceret = ''::KlassePubliceretTils
-;
 
 END IF;
 
@@ -303,12 +292,12 @@ WITH inserted_merged_attr_egenskaber AS (
   )
   SELECT 
     nextval('klasse_attr_egenskaber_id_seq'),
-    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle), 
-    coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse), 
-    coalesce(attrEgenskaberObj.eksempel,a.eksempel), 
-    coalesce(attrEgenskaberObj.omfang,a.omfang), 
-    coalesce(attrEgenskaberObj.titel,a.titel), 
-    coalesce(attrEgenskaberObj.retskilde,a.retskilde), 
+    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+    coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
+    coalesce(attrEgenskaberObj.eksempel,a.eksempel),
+    coalesce(attrEgenskaberObj.omfang,a.omfang),
+    coalesce(attrEgenskaberObj.titel,a.titel),
+    coalesce(attrEgenskaberObj.retskilde,a.retskilde),
     coalesce(attrEgenskaberObj.aendringsnotat,a.aendringsnotat),
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
@@ -497,19 +486,8 @@ JOIN klasse_attr_egenskaber a2 on a2.klasse_registrering_id=prev_klasse_registre
 JOIN klasse_attr_egenskaber_soegeord b on a2.id=b.klasse_attr_egenskaber_id   
 ;
 
---Remove any "cleared"/"deleted" attributes
-DELETE FROM klasse_attr_egenskaber a
-WHERE 
-a.klasse_registrering_id=new_klasse_registrering.id
-AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') 
-            AND  (a.beskrivelse IS NULL OR a.beskrivelse='') 
-            AND  (a.eksempel IS NULL OR a.eksempel='') 
-            AND  (a.omfang IS NULL OR a.omfang='') 
-            AND  (a.titel IS NULL OR a.titel='') 
-            AND  (a.retskilde IS NULL OR a.retskilde='') 
-            AND  (a.aendringsnotat IS NULL OR a.aendringsnotat='')
-AND a.id NOT IN (SELECT b.klasse_attr_egenskaber_id FROM klasse_attr_egenskaber_soegeord b)
-;
+
+
 
 
 END IF;

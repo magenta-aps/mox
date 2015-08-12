@@ -174,12 +174,7 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" relations
-DELETE FROM itsystem_relation
-WHERE 
-itsystem_registrering_id=new_itsystem_registrering.id
-AND (rel_maal_uuid IS NULL AND (rel_maal_urn IS NULL OR rel_maal_urn=''))
-;
+
 
 END IF;
 /**********************/
@@ -242,12 +237,6 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" tilstande
-DELETE FROM itsystem_tils_gyldighed
-WHERE 
-itsystem_registrering_id=new_itsystem_registrering.id
-AND gyldighed = ''::ItsystemGyldighedTils
-;
 
 END IF;
 
@@ -295,10 +284,10 @@ IF attrEgenskaber IS NOT null THEN
     ,virkning
     ,itsystem_registrering_id
   )
-  SELECT 
-    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle), 
-    coalesce(attrEgenskaberObj.itsystemnavn,a.itsystemnavn), 
-    coalesce(attrEgenskaberObj.itsystemtype,a.itsystemtype), 
+  SELECT
+    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+    coalesce(attrEgenskaberObj.itsystemnavn,a.itsystemnavn),
+    coalesce(attrEgenskaberObj.itsystemtype,a.itsystemtype),
     coalesce(attrEgenskaberObj.konfigurationreference,a.konfigurationreference),
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
@@ -408,15 +397,7 @@ FROM
 
 
 
---Remove any "cleared"/"deleted" attributes
-DELETE FROM itsystem_attr_egenskaber a
-WHERE 
-a.itsystem_registrering_id=new_itsystem_registrering.id
-AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') 
-            AND  (a.itsystemnavn IS NULL OR a.itsystemnavn='') 
-            AND  (a.itsystemtype IS NULL OR a.itsystemtype='') 
-            AND  (a.konfigurationreference IS NULL OR coalesce(array_length(a.konfigurationreference,1),0)=0)
-;
+
 
 END IF;
 

@@ -1,5 +1,5 @@
-*** ../generated-files/dbtyper-specific_dokument.sql	2015-08-03 11:12:54.014817713 +0200
---- ../patches/dbtyper-specific_dokument.org.sql	2015-08-03 11:11:59.798815013 +0200
+*** ../generated-files/dbtyper-specific_dokument.sql	2015-08-10 09:26:24.634904149 +0200
+--- ../patches/dbtyper-specific_dokument.org.sql	2015-08-10 09:09:17.718922540 +0200
 ***************
 *** 42,62 ****
     relMaalUrn  text,
@@ -39,7 +39,7 @@
 + 
 + 
 + CREATE TYPE DokumentDelEgenskaberType AS (
-+ indeks int,
++ indeks ClearableInt,
 + indhold text,
 + lokation text,
 + mimetype text,
@@ -70,10 +70,10 @@
 + /**************************************************/
 + 
 + CREATE TYPE DokumentVariantEgenskaberType AS ( 
-+ arkivering boolean, 
-+ delvisscannet boolean, 
-+ offentliggoerelse boolean, 
-+ produktion boolean,
++ arkivering ClearableBoolean, 
++ delvisscannet ClearableBoolean, 
++ offentliggoerelse ClearableBoolean, 
++ produktion ClearableBoolean,
 +  virkning Virkning
 + );
 + 

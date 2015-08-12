@@ -47,7 +47,9 @@ if [ -z $SKIP_SYSTEM_DEPS ]; then
 	done
 fi
 
-
+# Create the MOX content storage directory and give the mox user ownership
+sudo mkdir -p /var/mox
+sudo chown mox /var/mox
 
 # Setup and start virtual environment
 VIRTUALENV=$DIR/oio_rest/python-env

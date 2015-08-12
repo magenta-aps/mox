@@ -6,6 +6,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -92,12 +93,16 @@ public class RestMessageHandler implements MessageHandler {
         connection.setDoOutput(true);
         connection.setRequestProperty("Content-type", "application/json");
         if (authorization != null && !authorization.isEmpty()) {
-            System.out.println("Authorization: "+authorization);
             connection.setRequestProperty("Authorization", authorization);
         }
-        OutputStreamWriter out = new OutputStreamWriter(connection.getOutputStream());
-        out.write(payload);
-        out.close();
-        return IOUtils.toString(connection.getInputStream());
+        try {
+            OutputStreamWriter out = new OutputStreamWriter(connection.getOutputStream());
+            out.write(payload);
+            out.close();
+            return IOUtils.toString(connection.getInputStream());
+        } catch (ConnectException e) {
+            System.err.println("The defined REST interface ("+method+" "+connection.getURL().getHost() + ":" + connection.getURL().getPort() + connection.getURL().getPath()+") does not answer.");
+            throw e;
+        }
     }
 }

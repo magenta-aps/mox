@@ -451,7 +451,7 @@ WHERE b.id=update_reg_id
 RETURN NEXT is(
 	actual_publiceret,
 ARRAY[
-	--klassePubliceretC,
+	klassePubliceretC,
 	ROW(
 		ROW (
 				TSTZRANGE('2015-05-01','infinity','()')
@@ -839,7 +839,7 @@ RETURN NEXT ok(((klasse_read7.registrering[1]).registrering).TimePeriod=((klasse
 
 --Test clearing tilstand publiceret
 --raise notice 'debug 50 klasse_read7:%',to_json(klasse_read7);
-RETURN NEXT ok( coalesce(array_length((klasse_read7.registrering[1]).tilsPubliceret,1),0)=2,'Test if clearing tilstand publiceret  works.#0');
+RETURN NEXT ok( coalesce(array_length((klasse_read7.registrering[1]).tilsPubliceret,1),0)=3,'Test if clearing tilstand publiceret  works.#0');
 
 update_reg_id:=as_update_klasse(
 	  new_uuid, 'cd7473d3-6ffd-4971-81cb-90b91dfe17fb'::uuid,'Test update'::text,

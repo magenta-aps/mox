@@ -1,8 +1,22 @@
-*** ../generated-files/as_update_dokument.sql	2015-08-04 15:56:48.970978325 +0200
---- ../patches/as_update_dokument.org.sql	2015-08-04 15:58:24.390983077 +0200
+*** ./generated-files/as_update_dokument.sql	2015-08-11 14:59:11.362368540 +0200
+--- ./patches/as_update_dokument.org.sql	2015-08-11 14:58:21.054366034 +0200
+***************
+*** 20,29 ****
+--- 20,30 ----
+    note text,
+    livscykluskode Livscykluskode,           
+    attrEgenskaber DokumentEgenskaberAttrType[],
+    tilsFremdrift DokumentFremdriftTilsType[],
+    relationer DokumentRelationType[],
++   varianter  DokumentVariantType[],
+    lostUpdatePreventionTZ TIMESTAMPTZ = null
+  	)
+    RETURNS bigint AS 
+  $$
+  DECLARE
 ***************
 *** 33,42 ****
---- 33,60 ----
+--- 34,61 ----
     read_prev_dokument_reg DokumentRegistreringType;
     new_dokument_registrering dokument_registrering;
     prev_dokument_registrering dokument_registrering;
@@ -15,10 +29,10 @@
 +   dokument_del_relation_obj DokumentDelRelationType;
 +   dokument_variant_new_id bigint;
 +   dokument_del_new_id bigint;
-+   dokument_variant_egenskaber_expl_deleted text[]:=array[];
-+   dokument_variant_dele_all_expl_deleted text[]:=array[];
-+   dokument_variant_del_egenskaber_deleted _DokumentVariantDelKey[]:=array[];
-+   dokument_variant_del_relationer_deleted _DokumentVariantDelKey[]:=array[];
++   dokument_variant_egenskaber_expl_deleted text[]:=array[]::text[];
++   dokument_variant_dele_all_expl_deleted text[]:=array[]::text[];
++   dokument_variant_del_egenskaber_deleted _DokumentVariantDelKey[]:=array[]::_DokumentVariantDelKey[];
++   dokument_variant_del_relationer_deleted _DokumentVariantDelKey[]:=array[]::_DokumentVariantDelKey[];
 +   dokument_variants_prev_reg_arr text[];
 +   dokument_variant_egenskaber_prev_reg_varianttekst text;
 +   dokument_variant_id bigint;
@@ -32,10 +46,10 @@
   
   IF NOT EXISTS (select a.id from dokument a join dokument_registrering b on b.dokument_id=a.id  where a.id=dokument_uuid) THEN
 ***************
-*** 448,457 ****
---- 466,1094 ----
-              AND  (a.dokumenttype IS NULL OR a.dokumenttype='')
-  ;
+*** 430,439 ****
+--- 449,1005 ----
+  
+  
   
   END IF;
   
@@ -43,14 +57,14 @@
 + --Handling document variants and document parts
 + 
 + --check if the update explicitly clears all the doc variants (and parts) by explicitly giving an empty array, if so - no variant will be included in the new reg. 
-+ IF dokument_registrering.varianter IS NOT NULL AND coalesce(array_length(dokument_registrering.varianter,1),0)=0 THEN
++ IF varianter IS NOT NULL AND coalesce(array_length(varianter,1),0)=0 THEN
 +   --raise notice 'Skipping insertion of doc variants (and parts), as an empty array was given explicitly';
 + ELSE
 + 
 + --Check if any variants was given in the new update - otherwise we'll skip ahead to transfering the old variants
-+ IF dokument_registrering.varianter IS NOT NULL AND coalesce(array_length(dokument_registrering.varianter,1),0)>0 THEN
++ IF varianter IS NOT NULL AND coalesce(array_length(varianter,1),0)>0 THEN
 +   
-+ FOREACH dokument_variant_obj IN ARRAY dokument_registrering.varianter
++ FOREACH dokument_variant_obj IN ARRAY varianter
 + LOOP
 + 
 + dokument_variant_new_id:=_ensure_document_variant_exists_and_get(new_dokument_registrering.id,dokument_variant_obj.varianttekst);
@@ -91,7 +105,6 @@
 + 
 +   INSERT INTO dokument_variant_egenskaber(
 +     variant_id,
-+       varianttekst,
 +         arkivering, 
 +           delvisscannet, 
 +             offentliggoerelse, 
@@ -100,11 +113,18 @@
 +       )
 +   SELECT
 +     dokument_variant_new_id, 
-+       coalesce(dokument_variant_egenskab_obj.varianttekst,a.varianttekst), 
-+         coalesce(dokument_variant_egenskab_obj.arkivering,a.arkivering), 
-+           coalesce(dokument_variant_egenskab_obj.delvisscannet,a.delvisscannet), 
-+             coalesce(dokument_variant_egenskab_obj.offentliggoerelse,a.offentliggoerelse), 
-+               coalesce(dokument_variant_egenskab_obj.produktion,a.produktion),
++         CASE WHEN (dokument_variant_egenskab_obj.arkivering).cleared THEN NULL 
++         ELSE coalesce((dokument_variant_egenskab_obj.arkivering).value,a.arkivering)
++         END, 
++           CASE WHEN (dokument_variant_egenskab_obj.delvisscannet).cleared THEN NULL 
++           ELSE coalesce((dokument_variant_egenskab_obj.delvisscannet).value,a.delvisscannet)
++           END,
++             CASE WHEN (dokument_variant_egenskab_obj.offentliggoerelse).cleared THEN NULL 
++             ELSE coalesce((dokument_variant_egenskab_obj.offentliggoerelse).value,a.offentliggoerelse)
++             END,
++               CASE WHEN (dokument_variant_egenskab_obj.produktion).cleared THEN NULL 
++               ELSE coalesce((dokument_variant_egenskab_obj.produktion).value,a.produktion)
++               END,
 +                 ROW (
 +                   (a.virkning).TimePeriod * (dokument_variant_egenskab_obj.virkning).TimePeriod,
 +                   (dokument_variant_egenskab_obj.virkning).AktoerRef,
@@ -112,7 +132,7 @@
 +                   (dokument_variant_egenskab_obj.virkning).NoteTekst
 +                 )::Virkning
 +   FROM dokument_variant_egenskaber a
-+   JOIN dokument_variant b on a.variant_id=b.variant_id
++   JOIN dokument_variant b on a.variant_id=b.id
 +   WHERE
 +     b.dokument_registrering_id=prev_dokument_registrering.id 
 +     and b.varianttekst=dokument_variant_obj.varianttekst
@@ -214,7 +234,7 @@
 +       a.*
 +       FROM unnest(dokument_del_obj.egenskaber) a
 +       JOIN  unnest(dokument_del_obj.egenskaber) b on (a.virkning).TimePeriod && (b.virkning).TimePeriod
-+       GROUP BY a.variant_id,a.indeks,a.indhold,a.lokation,a.mimetype, a.virkning
++       GROUP BY a.indeks,a.indhold,a.lokation,a.mimetype, a.virkning
 +       HAVING COUNT(*)>1
 +     ) THEN
 +     RAISE EXCEPTION 'Unable to update dokument with uuid [%], as the dokument variant [%] have del [%] with overlapping virknings in the given egenskaber array :%',dokument_uuid,dokument_variant_obj.varianttekst,dokument_del_obj.deltekst,to_json(dokument_del_obj.egenskaber)  USING ERRCODE = 22000;
@@ -244,7 +264,9 @@
 +   )
 +   SELECT 
 +     dokument_del_new_id, 
-+       coalesce(dokument_del_egenskaber_obj.indeks,a.indeks), 
++       CASE WHEN (dokument_del_egenskaber_obj.indeks).cleared THEN NULL 
++       ELSE coalesce((dokument_del_egenskaber_obj.indeks).value,a.indeks)
++       END, 
 +         coalesce(dokument_del_egenskaber_obj.indhold,a.indhold), 
 +           coalesce(dokument_del_egenskaber_obj.lokation,a.lokation), 
 +             coalesce(dokument_del_egenskaber_obj.mimetype,a.mimetype),
@@ -258,7 +280,7 @@
 +   JOIN dokument_del b on a.del_id=b.id
 +   JOIN dokument_variant c on b.variant_id=c.id
 +   WHERE
-+     c.dokumentdel_registrering_id=prev_dokument_registrering.id 
++     c.dokument_registrering_id=prev_dokument_registrering.id 
 +     and c.varianttekst=dokument_variant_obj.varianttekst
 +     and b.deltekst=dokument_del_obj.deltekst
 +     and (a.virkning).TimePeriod && (dokument_del_egenskaber_obj.virkning).TimePeriod
@@ -335,6 +357,7 @@
 +      dokument_variant_del_relationer_deleted:=array_append(dokument_variant_del_relationer_deleted,ROW( dokument_variant_obj.varianttekst, dokument_del_obj.deltekst)::_DokumentVariantDelKey);
 +     
 +     ELSE
++ 
 + 
 +     INSERT INTO dokument_del_relation(
 +         del_id, 
@@ -424,7 +447,7 @@
 + 
 + ) d
 +   JOIN dokument_variant_egenskaber a ON true  
-+   JOIN dokument_variant e ON a.variant_id = e.variant_id
++   JOIN dokument_variant e ON a.variant_id = e.id
 +   JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
 +   WHERE e.dokument_registrering_id=prev_dokument_registrering.id    
 +   and e.varianttekst=dokument_variant_egenskaber_prev_reg_varianttekst 
@@ -432,23 +455,6 @@
 + 
 + END LOOP; --loop dokument_variant_egenskaber_prev_reg_varianttekst
 + END IF;-- not null dokument_variants_prev_reg_arr
-+ 
-+ 
-+ --Remove any "cleared"/"deleted" variant egenskaber
-+ DELETE FROM dokument_variant_egenskaber 
-+ WHERE
-+ id in (
-+ SELECT id from dokumentvariant_attr_egenskaber a 
-+ JOIN dokument_variant e ON a.variant_id = e.variant_id
-+ WHERE
-+ e.dokument_registrering_id=new_dokument_registrering.id
-+ AND (a.varianttekst IS NULL OR a.varianttekst='') 
-+             AND  (a.arkivering IS NULL) 
-+             AND  (a.delvisscannet IS NULL) 
-+             AND  (a.offentliggoerelse IS NULL) 
-+             AND  (a.produktion IS NULL)
-+ )
-+ ;
 + 
 + 
 + /****************************************************/
@@ -512,11 +518,11 @@
 +   ) d
 +     JOIN dokument_del_egenskaber a ON true  
 +     JOIN dokument_del b on a.del_id=b.id
-+     JOIN dokument_variant c on b.variant_id=c.id
++     JOIN dokument_variant e on b.variant_id=e.id
 +     JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
-+     WHERE c.dokument_registrering_id=prev_dokument_registrering.id    
-+     AND c.varianttekst=dokument_variant_del_prev_reg.varianttekst
-+     AND d.deltekst=dokument_variant_del_prev_reg.deltekst
++     WHERE e.dokument_registrering_id=prev_dokument_registrering.id    
++     AND e.varianttekst=dokument_variant_del_prev_reg.varianttekst
++     AND b.deltekst=dokument_variant_del_prev_reg.deltekst
 +   ;
 + 
 +   END LOOP;
@@ -525,24 +531,7 @@
 + END IF; --dokument_variant_del_prev_reg_arr not empty
 + 
 + 
-+ --Remove any "cleared"/"deleted" attributes
-+ DELETE FROM dokument_del_egenskaber 
-+ WHERE 
-+ id in
-+ (
-+   SELECT a.id 
-+   from 
-+   dokument_del_egenskaber a
-+   JOIN dokument_del c on a.del_id=c.id
-+   JOIN dokument_variant d on c.variant_id=d.id
-+   WHERE  d.dokument_registrering_id=new_dokument_registrering.id
-+   AND (a.deltekst IS NULL OR a.deltekst='') 
-+             AND  (a.indeks IS NULL) 
-+             AND  (a.indhold IS NULL OR a.indhold='') 
-+             AND  (a.lokation IS NULL OR a.lokation='') 
-+             AND  (a.mimetype IS NULL OR a.mimetype='')
-+ )
-+ ;
++ 
 + 
 + /****************************************************/
 + --carry over any document part relations of the prev. relation if a) they were not explicitly cleared and b)no document part relations is already present for the variant del.
@@ -573,6 +562,9 @@
 + ) as e
 + ;
 + 
++ 
++ 
++ 
 + -- Make sure that part + variants are in place 
 + IF dokument_variant_del_prev_reg_rel_transfer IS NOT NULL AND coalesce(array_length(dokument_variant_del_prev_reg_rel_transfer,1),0)>0 THEN
 +   FOREACH dokument_variant_del_prev_reg IN array dokument_variant_del_prev_reg_rel_transfer
@@ -589,12 +581,12 @@
 +               objekt_type
 +     )
 + SELECT
-+     dokument_del_new_id,
++     dokument_del_id,
 +       a.virkning,
-+         a.relMaalUuid,
-+           a.relMaalUrn,
-+             a.relType,
-+               a.objektType
++         a.rel_maal_uuid,
++           a.rel_maal_urn,
++             a.rel_type,
++               a.objekt_type
 + FROM dokument_del_relation a 
 + JOIN dokument_del b on a.del_id=b.id
 + JOIN dokument_variant c on b.variant_id=c.id
@@ -606,56 +598,6 @@
 + END LOOP;
 + 
 + END IF; --block: there are relations to transfer
-+ 
-+ --Remove any "cleared"/"deleted" relations
-+ DELETE FROM dokument_del_relation a
-+ WHERE 
-+ a.del_in in (
-+     SELECT del_id from dokument_del_relation a 
-+     JOIN dokument_del b on a.del_id=b.id
-+     JOIN dokument_variant c on b.variant_id=c.id
-+     WHERE c.dokument_registrering_id=new_dokument_registrering.id
-+     )
-+ AND (a.rel_maal_uuid IS NULL AND (a.rel_maal_urn IS NULL OR a.rel_maal_urn=''))
-+ ;
-+ 
-+ 
-+ /**************************************************/
-+ --delete parts that has no relations or egenskaber
-+ 
-+ DELETE FROM dokument_del
-+ WHERE id in 
-+ (
-+ SELECT 
-+ a.id
-+ from
-+ dokument_del a
-+ JOIN dokument_variant b on a.variant_id=b.id
-+ LEFT JOIN dokument_del_relation c on c.del_id=a.id
-+ LEFT JOIN dokument_del_egenskaber d on d.del_id=a.id
-+ WHERE b.dokument_registrering_id=new_dokument_registrering.id
-+ AND c.id IS NULL AND d.id IS NULL 
-+ )
-+ ;
-+ 
-+ --delete variants that has no egenskaber or parts
-+ 
-+ DELETE FROM dokument_variant
-+ WHERE id in
-+ (
-+ SELECT
-+ a.id
-+ from 
-+ dokument_variant a 
-+ LEFT JOIN dokument_del b on a.id = b.del_id
-+ LEFT JOIN dokument_variant_egenskaber c on c.variant_id=a.id
-+ WHERE 
-+ a.dokument_registrering_id=new_dokument_registrering.id
-+ AND b.id IS NULL AND c.id is NULL
-+ )
-+ AND dokument_registrering_id=new_dokument_registrering.id
-+ ;
-+ 
 + END IF; --else block for skip on empty array for variants.
 + 
   
@@ -664,7 +606,7 @@
   
   read_new_dokument:=as_read_dokument(dokument_uuid, (new_dokument_registrering.registrering).timeperiod,null);
 ***************
-*** 467,485 ****
+*** 449,467 ****
   
   read_new_dokument_reg:=ROW(
   ROW(null,(read_new_dokument.registrering[1].registrering).livscykluskode,null,null)::registreringBase,
@@ -684,7 +626,7 @@
   
   
   IF read_prev_dokument_reg=read_new_dokument_reg THEN
---- 1104,1124 ----
+--- 1015,1035 ----
   
   read_new_dokument_reg:=ROW(
   ROW(null,(read_new_dokument.registrering[1].registrering).livscykluskode,null,null)::registreringBase,

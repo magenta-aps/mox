@@ -174,12 +174,7 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" relations
-DELETE FROM facet_relation
-WHERE 
-facet_registrering_id=new_facet_registrering.id
-AND (rel_maal_uuid IS NULL AND (rel_maal_urn IS NULL OR rel_maal_urn=''))
-;
+
 
 END IF;
 /**********************/
@@ -242,12 +237,6 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" tilstande
-DELETE FROM facet_tils_publiceret
-WHERE 
-facet_registrering_id=new_facet_registrering.id
-AND publiceret = ''::FacetPubliceretTils
-;
 
 END IF;
 
@@ -298,13 +287,13 @@ IF attrEgenskaber IS NOT null THEN
     ,virkning
     ,facet_registrering_id
   )
-  SELECT 
-    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle), 
-    coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse), 
-    coalesce(attrEgenskaberObj.opbygning,a.opbygning), 
-    coalesce(attrEgenskaberObj.ophavsret,a.ophavsret), 
-    coalesce(attrEgenskaberObj.plan,a.plan), 
-    coalesce(attrEgenskaberObj.supplement,a.supplement), 
+  SELECT
+    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+    coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
+    coalesce(attrEgenskaberObj.opbygning,a.opbygning),
+    coalesce(attrEgenskaberObj.ophavsret,a.ophavsret),
+    coalesce(attrEgenskaberObj.plan,a.plan),
+    coalesce(attrEgenskaberObj.supplement,a.supplement),
     coalesce(attrEgenskaberObj.retskilde,a.retskilde),
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
@@ -423,18 +412,7 @@ FROM
 
 
 
---Remove any "cleared"/"deleted" attributes
-DELETE FROM facet_attr_egenskaber a
-WHERE 
-a.facet_registrering_id=new_facet_registrering.id
-AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') 
-            AND  (a.beskrivelse IS NULL OR a.beskrivelse='') 
-            AND  (a.opbygning IS NULL OR a.opbygning='') 
-            AND  (a.ophavsret IS NULL OR a.ophavsret='') 
-            AND  (a.plan IS NULL OR a.plan='') 
-            AND  (a.supplement IS NULL OR a.supplement='') 
-            AND  (a.retskilde IS NULL OR a.retskilde='')
-;
+
 
 END IF;
 
