@@ -89,7 +89,7 @@ ELSE
 					a.brugertype = attrEgenskaberTypeObj.brugertype 
 				)
 				AND b.bruger_id = ANY (bruger_candidates)
-				AND (a.virkning).TimePeriod && actual_virkning 
+				AND (a.virkning).TimePeriod @> actual_virkning 
 			);
 			
 		END LOOP;
@@ -123,7 +123,7 @@ ELSE
 					tilsGyldighedTypeObj.gyldighed = a.gyldighed
 				)
 				AND b.bruger_id = ANY (bruger_candidates)
-				AND (a.virkning).TimePeriod && actual_virkning
+				AND (a.virkning).TimePeriod @> actual_virkning
 	);
 			
 		END LOOP;
@@ -179,7 +179,7 @@ ELSE
 					relationTypeObj.relMaalUrn = a.rel_maal_urn
 				)
 				AND b.bruger_id = ANY (bruger_candidates)
-				AND (a.virkning).TimePeriod && actual_virkning 
+				AND (a.virkning).TimePeriod @> actual_virkning 
 	);
 		END LOOP;
 	END IF;
