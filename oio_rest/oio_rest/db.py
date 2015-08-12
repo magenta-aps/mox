@@ -12,7 +12,8 @@ from jinja2 import Environment, FileSystemLoader
 
 from settings import DATABASE, DB_USER, DO_ENABLE_RESTRICTIONS
 from db_helpers import get_attribute_fields, get_attribute_names
-from db_helpers import get_field_type, get_state_names, Soegeord
+from db_helpers import get_field_type, get_state_names
+from db_helpers import Soegeord, OffentlighedUndtaget
 
 from auth.restrictions import Operation, get_restrictions
 from utils import restriction_to_registration
@@ -63,6 +64,10 @@ def convert(attribute_name, attribute_field_name, attribute_field_value):
     # convert to the class for which the adapter is registered.
     if get_field_type(attribute_name, attribute_field_name) == "soegeord":
         return [Soegeord(*ord) for ord in attribute_field_value]
+    elif (get_field_type(attribute_name, attribute_field_name) ==
+          "offentlighedundtagettype"):
+        return OffentlighedUndtaget(attribute_field_value['alternativtitel'],
+                                    attribute_field_value['hjemmel'])
     else:
         return attribute_field_value
 
@@ -112,6 +117,8 @@ def sql_state_array(state, periods, class_name):
 def sql_attribute_array(attribute, periods):
     """Return an SQL array of type <attribute>AttrType[]."""
     t = jinja_env.get_template('attribute_array.sql')
+    print "Attribute:", attribute
+    print "Perioder:", periods
     sql = t.render(attribute_name=attribute, attribute_periods=periods)
     # print "SQL", sql
     return sql
@@ -121,6 +128,7 @@ def sql_relations_array(class_name, relations):
     """Return an SQL array of type <class_name>RelationType[]."""
     t = jinja_env.get_template('relations_array.sql')
     sql = t.render(class_name=class_name, relations=relations)
+    print "RELATIONS:", relations
     return sql
 
 
@@ -246,7 +254,9 @@ def create_or_import_object(class_name, note, attributes, states, relations,
         life_cycle_code=life_cycle_code,
         user_ref=user_ref,
         note=note,
-        registration=sql_registration)
+        registration=sql_registration,
+        restrictions=sql_restrictions)
+    print sql
     # Call Postgres! Return OK or not accordingly
     conn = get_connection()
     cursor = conn.cursor()

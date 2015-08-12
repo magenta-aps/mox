@@ -14,9 +14,13 @@
             {% else -%}
             NULL
             {% endif -%}:: Virkning,
-        {{ rel.uuid|adapt }},
-        null, 
-        'uuid'
+            {% if rel.uuid is defined %}{{ rel.uuid|adapt }}{% else %}NULL{% endif %},
+            {% if rel.urn is defined %}{{ rel.urn|adapt }}{% else %}NULL{% endif %},
+            {% if rel.objekttype is defined %}{{ rel.objekttype|adapt }}{% else %}NULL{% endif %}
+        {% if class_name == "Sag" %}
+        ,
+        {{ rel.indeks|adapt }}
+        {% endif %}
     ){% if not (outer_loop.last and loop.last) -%},{% endif -%}
     {% endfor -%}
     {% endfor -%}

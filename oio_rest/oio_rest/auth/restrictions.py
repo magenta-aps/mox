@@ -3,6 +3,7 @@ from enum import Enum
 from importlib import import_module
 
 from ..settings import AUTH_RESTRICTION_MODULE, AUTH_RESTRICTION_FUNCTION
+from ..settings import DO_ENABLE_RESTRICTIONS
 
 
 class Operation(Enum):
@@ -33,11 +34,12 @@ def get_restrictions(user, object_type, operation):
     module to specify any Boolean expression on the object on a Sum of
     Products normal form.
 
-    As a corollary, the trivially true restriction is written as
+    A restriction written as
 
         [({}, {}, {})]
 
-    - i.e., one triplet with no restrictions at all.
+    is trivially true - however, if an operation is always allowed for this
+    user, the restrictions module should return None or Null.
 
     The trivially false restriction is written as
 
@@ -75,25 +77,21 @@ def get_restrictions(user, object_type, operation):
           { 'FremdriftStatus': 'Publiceret' }, {})]. I.e., a user who is
           not logged in may view only publicly available documents.
 
+        The function which supplies the actual access control restrictionsi
+        must have the same signature as this function and must be configured
+        with the variables AUTH_RESTRICTION_MODULE and
+        AUTH_RESTRICTION_FUNCTION in settings.py. AUTH_RESTRICTION may be any
+        module which is accessible on the Python path.
 
-    **Limitations:**
-
-    At present, it's not possible to combine restrictions. In the last example
-    above, the user might be allowed to view a document if it is in state
-    "Publiceret" OR its owner ('Ejer') is the user's organisation.
-
-    This is easily expressed by providing a list with two triplets. This,
-    however, will not be supported in the first implementation of this module.
-
-    The reason is that this may be quite complicated to implement in the
-    database layer.
-    """
+"""
     try:
         auth_module = import_module(AUTH_RESTRICTION_MODULE)
         auth_function = getattr(auth_module, AUTH_RESTRICTION_FUNCTION)
-
-        return auth_function(user, object_type, operation)
-    except:
+        if DO_ENABLE_RESTRICTIONS:
+            return auth_function(user, object_type, operation)
+        else:
+            return None
+    except AttributeError, ImportError:
         print "Config error: Unable to load authorization module!"
         raise
 

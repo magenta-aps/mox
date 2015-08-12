@@ -32,9 +32,11 @@ def main():
     from settings import BASE_URL
     from klassifikation import KlassifikationsHierarki
     from organisation import OrganisationsHierarki
+    from sag import SagsHierarki
 
     KlassifikationsHierarki.setup_api(base_url=BASE_URL, flask=app)
     OrganisationsHierarki.setup_api(base_url=BASE_URL, flask=app)
+    SagsHierarki.setup_api(base_url=BASE_URL, flask=app)
     app.run(debug=True)
 
 
