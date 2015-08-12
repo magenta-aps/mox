@@ -22,7 +22,7 @@ SAML_IDP_ENTITY_ID = 'localhost'
 SAML_IDP_CERTIFICATE = "test_auth_data/idp-certificate.pem"
 
 # Whether to enable SAML authentication
-USE_SAML_AUTHENTICATION = True
+USE_SAML_AUTHENTICATION = False
 
 # Whether authorization is enabled - if not, the restrictions module is not
 # called.

@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 import os
+from urlparse import urlparse
 import uuid
 import errno
 import time
@@ -20,20 +21,47 @@ def _mkdir_p(path):
 
 class ContentStore:
     def _get_new_file_name(self):
+        """Return a newly generated filename based on a random UUID."""
         return "%s.bin" % uuid.uuid4()
 
     def _get_file_sub_path(self):
         """Return the path relative to the file upload dir for a new file."""
-        dir_list = time.strftime("%Y %m %d %H %M %S", time.gmtime()).split()
+        dir_list = time.strftime("%Y %m %d %H %M", time.gmtime()).split()
         return os.path.join(*dir_list)
 
+    def _get_path_for_url(self, url):
+        """Return the full path on the file-system for the URL.
+
+        The URL should be of the form `content:my/sub/path/to/file.bin"""
+        o = urlparse(url)
+        if o.scheme != 'content':
+            raise Exception("Content store supports only URL scheme 'content'")
+        return os.path.join(FILE_UPLOAD_FOLDER, o.path)
+
     def save_file_object(self, file_obj):
+        """Save the file to the content store. Return the content URL.
+
+        The object is expected to be a werkzeug.datastructures.FileStorage
+        object."""
         file_name = self._get_new_file_name()
         sub_path = self._get_file_sub_path()
         full_path = os.path.join(FILE_UPLOAD_FOLDER, sub_path)
         _mkdir_p(full_path)
         file_obj.save(os.path.join(full_path, file_name))
-        return os.path.join(sub_path, file_name)
+        return "content:%s" % os.path.join(sub_path, file_name)
+
+    def remove(self, url):
+        """Remove the file specified by the given content URL."""
+        path = self._get_path_for_url(url)
+        os.remove(path)
+
+        # Try to cleanup any intermediary directories.
+        try:
+            head, tail = os.path.split(path)
+            os.removedirs(head)
+        except OSError:
+            # It's okay, the directory was not empty, leave it alone
+            pass
 
 
 content_store = ContentStore()

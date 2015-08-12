@@ -1,5 +1,6 @@
 from datetime import datetime
 import json
+from urlparse import urlparse
 from flask import jsonify, request
 from werkzeug.exceptions import BadRequest
 
@@ -74,7 +75,6 @@ class OIORestObject(object):
         this method would return the FileStorage object for the file
         contained in form field 'f1'.
         """
-        from urlparse import urlparse
         o = urlparse(url)
         if o.scheme == 'field':
             field_name = o.path
