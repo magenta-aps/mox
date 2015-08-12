@@ -222,12 +222,17 @@ def sql_convert_restrictions(class_name, restrictions):
     )
     return sql_restrictions
 
+class NotAllowedRestriction(Exception):
+    pass
 
 def get_restrictions_as_sql(user, class_name, operation):
     """Get restrictions for user and operation, return as array of SQL."""
     if not DO_ENABLE_RESTRICTIONS:
         return None
     restrictions = get_restrictions(user, class_name, operation)
+    if restrictions == []:
+        raise NotAllowedRestriction("Not allowed, map to 403 Forbidden!")
+
     sql_restrictions = sql_convert_restrictions(class_name, restrictions)
     sql_template = jinja_env.get_template('restrictions.sql')
     sql = sql_template.render(restrictions=sql_restrictions)
