@@ -1,4 +1,4 @@
-
+from datetime import datetime
 import os
 from enum import Enum
 
@@ -62,12 +62,14 @@ def convert(attribute_name, attribute_field_name, attribute_field_value):
     # For simple types that can be adapted by standard psycopg2 adapters, just
     # pass on. For complex types like "Soegeord" with specialized adapters,
     # convert to the class for which the adapter is registered.
-    if get_field_type(attribute_name, attribute_field_name) == "soegeord":
+    field_type = get_field_type(attribute_name, attribute_field_name)
+    if field_type == "soegeord":
         return [Soegeord(*ord) for ord in attribute_field_value]
-    elif (get_field_type(attribute_name, attribute_field_name) ==
-          "offentlighedundtagettype"):
+    elif field_type == "offentlighedundtagettype":
         return OffentlighedUndtaget(attribute_field_value['alternativtitel'],
                                     attribute_field_value['hjemmel'])
+    elif field_type == "date":
+        return datetime.strptime(attribute_field_value, "%Y-%m-%d").date()
     else:
         return attribute_field_value
 
@@ -150,7 +152,7 @@ def sql_convert_registration(states, attributes, relations, class_name):
 
     sql_relations = sql_relations_array(class_name, relations)
 
-    return (sql_states, sql_attributes, sql_relations)
+    return sql_states, sql_attributes, sql_relations
 
 
 def sql_get_registration(class_name, time_period, life_cycle_code,
@@ -169,7 +171,8 @@ def sql_get_registration(class_name, time_period, life_cycle_code,
         note=note,
         states=registration_tuple[0],
         attributes=registration_tuple[1],
-        relations=registration_tuple[2])
+        relations=registration_tuple[2],
+        variants=registration_tuple[3] if len(registration_tuple) >= 4 else None)
     return sql
 
 
