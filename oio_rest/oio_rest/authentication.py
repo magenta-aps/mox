@@ -40,12 +40,15 @@ def check_saml_authentication():
 
     binary_token = b64decode(encoded_token)
 
-    # There are subtle differences between zlib and gzip, which is why we can't just do
+    # There are subtle differences between zlib and gzip, which is why we
+    # can't just do
     # token = zlib.decompress(binary_token)
     # We must do this instead:
     decompressor = zlib.decompressobj(16 + zlib.MAX_WBITS)
     token = decompressor.decompress(binary_token)
-	# See https://rationalpie.wordpress.com/2010/06/02/python-streaming-gzip-decompression/
+    # See
+    # https://rationalpie.wordpress.com/2010/06/02/
+    #           python-streaming-gzip-decompression/
 
     assertion = Saml2_Assertion(token, SAML_MOX_ENTITY_ID,
                                 SAML_IDP_ENTITY_ID, get_idp_cert())

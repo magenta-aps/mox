@@ -11,9 +11,11 @@ from jinja2 import Template
 from jinja2 import Environment, FileSystemLoader
 
 from settings import DATABASE, DB_USER, DO_ENABLE_RESTRICTIONS
+
 from db_helpers import get_attribute_fields, get_attribute_names
-from db_helpers import get_field_type, get_state_names
-from db_helpers import Soegeord, OffentlighedUndtaget
+from db_helpers import get_field_type, get_state_names, get_relation_field_type
+from db_helpers import get_relation_field_type, Soegeord, OffentlighedUndtaget
+from db_helpers import JournalNotat, JournalDokument
 
 from auth.restrictions import Operation, get_restrictions
 from utils import restriction_to_registration
@@ -58,7 +60,8 @@ def get_authenticated_user():
     return "615957e8-4aa1-4319-a787-f1f7ad6b5e2c"
 
 
-def convert(attribute_name, attribute_field_name, attribute_field_value):
+def convert_attr_value(attribute_name, attribute_field_name,
+                       attribute_field_value):
     # For simple types that can be adapted by standard psycopg2 adapters, just
     # pass on. For complex types like "Soegeord" with specialized adapters,
     # convert to the class for which the adapter is registered.
@@ -74,6 +77,20 @@ def convert(attribute_name, attribute_field_name, attribute_field_value):
         return attribute_field_value
 
 
+def convert_relation_value(class_name, field_name, value):
+    field_type = get_relation_field_type(class_name, field_name)
+    if field_type == "journalnotat":
+        return JournalNotat(value["titel"], value["notat"], value["format"])
+    elif field_type == "journaldokument":
+        ou = value["offentlighedundtaget"]
+        return JournalDokument(
+            value["dokumenttitel"],
+            OffentlighedUndtaget(ou['alternativtitel'], ou['hjemmel'])
+        )
+    else:
+        return value
+
+
 def convert_attributes(attributes):
     "Convert attributes from dictionary to list in correct order."
     for attr_name in attributes:
@@ -82,7 +99,7 @@ def convert_attributes(attributes):
         for attr_period in current_attr_periods:
             field_names = get_attribute_fields(attr_name)
             attr_value_list = [
-                convert(
+                convert_attr_value(
                     attr_name, f, attr_period[f]
                 ) if f in attr_period else None
                 for f in field_names
@@ -90,6 +107,18 @@ def convert_attributes(attributes):
             converted_attr_periods.append(attr_value_list)
         attributes[attr_name] = converted_attr_periods
     return attributes
+
+
+def convert_relations(relations, class_name):
+    "Convert relations - i.e., convert each field according to its type"
+    for rel_name in relations:
+        periods = relations[rel_name]
+        for period in periods:
+            for field in period:
+                period[field] = convert_relation_value(
+                    class_name, field, period[field]
+                )
+    return relations
 
 
 class Livscyklus(Enum):
@@ -188,7 +217,7 @@ def sql_convert_restrictions(class_name, restrictions):
             sql_convert_registration(
                 r.get('tilstande', {}),
                 convert_attributes(r.get('attributter', {})),
-                r.get('relationer', {}),
+                convert_relations(r.get('relationer', {})),
                 class_name
             )
         ),
@@ -239,6 +268,7 @@ def create_or_import_object(class_name, note, attributes, states, relations,
     user_ref = get_authenticated_user()
 
     attributes = convert_attributes(attributes)
+    relations = convert_relations(relations, class_name)
     registration = sql_convert_registration(states, attributes, relations,
                                             class_name)
     sql_registration = sql_get_registration(class_name, None, life_cycle_code,
@@ -337,6 +367,7 @@ def update_object(class_name, note, attributes, states, relations, uuid=None):
     user_ref = get_authenticated_user()
 
     attributes = convert_attributes(attributes)
+    relations = convert_relations(relations)
     (
         sql_states, sql_attributes, sql_relations
     ) = sql_convert_registration(states, attributes, relations, class_name)
@@ -439,6 +470,7 @@ def search_objects(class_name, uuid, registration,
                                        registration.get('relationer', None))
 
     attributes = convert_attributes(attributes)
+    relations = convert_relations(relations)
 
     time_period = None
     if registreret_fra is not None or registreret_til is not None:

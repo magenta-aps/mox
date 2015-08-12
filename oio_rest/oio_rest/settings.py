@@ -280,3 +280,7 @@ REAL_DB_STRUCTURE["klasse"]["attributter_type_override"] = {
         "soegeord": "soegeord"
     }
 }
+REAL_DB_STRUCTURE["sag"]["relationer_type_override"] = {
+    "journalnotat": "journalnotat",
+    "journaldokument": "journaldokument"
+}

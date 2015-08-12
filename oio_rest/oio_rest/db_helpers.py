@@ -38,6 +38,14 @@ def get_field_type(attribute_name, field_name):
 _attribute_names = {}
 
 
+def get_relation_field_type(class_name, field_name):
+    class_info = db_struct[class_name.lower()]
+    if "relationer_type_override" in class_info:
+        if field_name in class_info["relationer_type_override"]:
+            return class_info["relationer_type_override"][field_name]
+    return "text"
+
+
 def get_attribute_names(class_name):
     "Return the list of all recognized attributes for this class."
     if len(_attribute_names) == 0:
@@ -87,6 +95,10 @@ Soegeord = namedtuple('KlasseSoegeordType', 'identifier description category')
 OffentlighedUndtaget = namedtuple(
     'OffentlighedUndtagetType', 'alternativtitel hjemmel'
 )
+JournalNotat = namedtuple('JournalNotatType', 'titel notat format')
+JournalDokument = namedtuple(
+    'JournalPostDokumentAttrType', 'dokumenttitel offentlighedundtaget'
+)
 
 
 class NamedTupleAdapter(object):
@@ -116,3 +128,6 @@ class NamedTupleAdapter(object):
         return self.getquoted()
 
 psyco_register_adapter(Soegeord, NamedTupleAdapter)
+psyco_register_adapter(OffentlighedUndtaget, NamedTupleAdapter)
+psyco_register_adapter(JournalNotat, NamedTupleAdapter)
+psyco_register_adapter(JournalDokument, NamedTupleAdapter)
