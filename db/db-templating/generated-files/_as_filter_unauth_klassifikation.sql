@@ -95,7 +95,7 @@ ELSE
 					a.ophavsret = attrEgenskaberTypeObj.ophavsret 
 				)
 				AND b.klassifikation_id = ANY (klassifikation_candidates)
-				AND (a.virkning).TimePeriod && actual_virkning 
+				AND (a.virkning).TimePeriod @> actual_virkning 
 			);
 			
 		END LOOP;
@@ -129,7 +129,7 @@ ELSE
 					tilsPubliceretTypeObj.publiceret = a.publiceret
 				)
 				AND b.klassifikation_id = ANY (klassifikation_candidates)
-				AND (a.virkning).TimePeriod && actual_virkning
+				AND (a.virkning).TimePeriod @> actual_virkning
 	);
 			
 		END LOOP;
@@ -185,7 +185,7 @@ ELSE
 					relationTypeObj.relMaalUrn = a.rel_maal_urn
 				)
 				AND b.klassifikation_id = ANY (klassifikation_candidates)
-				AND (a.virkning).TimePeriod && actual_virkning 
+				AND (a.virkning).TimePeriod @> actual_virkning 
 	);
 		END LOOP;
 	END IF;

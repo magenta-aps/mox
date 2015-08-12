@@ -95,7 +95,7 @@ ELSE
 					_as_search_match_array(attrEgenskaberTypeObj.konfigurationreference,a.konfigurationreference)  --TODO: Fix this 
 				)
 				AND b.itsystem_id = ANY (itsystem_candidates)
-				AND (a.virkning).TimePeriod && actual_virkning 
+				AND (a.virkning).TimePeriod @> actual_virkning 
 			);
 			
 		END LOOP;
@@ -129,7 +129,7 @@ ELSE
 					tilsGyldighedTypeObj.gyldighed = a.gyldighed
 				)
 				AND b.itsystem_id = ANY (itsystem_candidates)
-				AND (a.virkning).TimePeriod && actual_virkning
+				AND (a.virkning).TimePeriod @> actual_virkning
 	);
 			
 		END LOOP;
@@ -185,7 +185,7 @@ ELSE
 					relationTypeObj.relMaalUrn = a.rel_maal_urn
 				)
 				AND b.itsystem_id = ANY (itsystem_candidates)
-				AND (a.virkning).TimePeriod && actual_virkning 
+				AND (a.virkning).TimePeriod @> actual_virkning 
 	);
 		END LOOP;
 	END IF;

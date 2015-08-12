@@ -83,7 +83,7 @@ ELSE
 					a.enhedsnavn = attrEgenskaberTypeObj.enhedsnavn 
 				)
 				AND b.organisationenhed_id = ANY (organisationenhed_candidates)
-				AND (a.virkning).TimePeriod && actual_virkning 
+				AND (a.virkning).TimePeriod @> actual_virkning 
 			);
 			
 		END LOOP;
@@ -117,7 +117,7 @@ ELSE
 					tilsGyldighedTypeObj.gyldighed = a.gyldighed
 				)
 				AND b.organisationenhed_id = ANY (organisationenhed_candidates)
-				AND (a.virkning).TimePeriod && actual_virkning
+				AND (a.virkning).TimePeriod @> actual_virkning
 	);
 			
 		END LOOP;
@@ -173,7 +173,7 @@ ELSE
 					relationTypeObj.relMaalUrn = a.rel_maal_urn
 				)
 				AND b.organisationenhed_id = ANY (organisationenhed_candidates)
-				AND (a.virkning).TimePeriod && actual_virkning 
+				AND (a.virkning).TimePeriod @> actual_virkning 
 	);
 		END LOOP;
 	END IF;

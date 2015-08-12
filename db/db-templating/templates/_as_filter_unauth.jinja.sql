@@ -108,7 +108,7 @@ ELSE
 				{%- endif %}
 				{%- endfor %}
 				AND b.{{oio_type}}_id = ANY ({{oio_type}}_candidates)
-				AND (a.virkning).TimePeriod && actual_virkning 
+				AND (a.virkning).TimePeriod @> actual_virkning 
 			);
 			
 		END LOOP;
@@ -146,7 +146,7 @@ ELSE
 					tils{{tilstand|title}}TypeObj.{{tilstand}} = a.{{tilstand}}
 				)
 				AND b.{{oio_type}}_id = ANY ({{oio_type}}_candidates)
-				AND (a.virkning).TimePeriod && actual_virkning
+				AND (a.virkning).TimePeriod @> actual_virkning
 	);
 			
 		END LOOP;
@@ -204,7 +204,7 @@ ELSE
 					relationTypeObj.relMaalUrn = a.rel_maal_urn
 				)
 				AND b.{{oio_type}}_id = ANY ({{oio_type}}_candidates)
-				AND (a.virkning).TimePeriod && actual_virkning 
+				AND (a.virkning).TimePeriod @> actual_virkning 
 	);
 		END LOOP;
 	END IF;

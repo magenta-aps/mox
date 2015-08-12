@@ -137,7 +137,7 @@ ELSE
 					a.titel = attrEgenskaberTypeObj.titel 
 				)
 				AND b.sag_id = ANY (sag_candidates)
-				AND (a.virkning).TimePeriod && actual_virkning 
+				AND (a.virkning).TimePeriod @> actual_virkning 
 			);
 			
 		END LOOP;
@@ -171,7 +171,7 @@ ELSE
 					tilsFremdriftTypeObj.fremdrift = a.fremdrift
 				)
 				AND b.sag_id = ANY (sag_candidates)
-				AND (a.virkning).TimePeriod && actual_virkning
+				AND (a.virkning).TimePeriod @> actual_virkning
 	);
 			
 		END LOOP;
@@ -227,7 +227,7 @@ ELSE
 					relationTypeObj.relMaalUrn = a.rel_maal_urn
 				)
 				AND b.sag_id = ANY (sag_candidates)
-				AND (a.virkning).TimePeriod && actual_virkning 
+				AND (a.virkning).TimePeriod @> actual_virkning 
 	);
 		END LOOP;
 	END IF;
