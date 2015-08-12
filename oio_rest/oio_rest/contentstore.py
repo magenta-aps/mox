@@ -32,10 +32,10 @@ class ContentStore:
     def _get_path_for_url(self, url):
         """Return the full path on the file-system for the URL.
 
-        The URL should be of the form `content:my/sub/path/to/file.bin"""
+        The URL should be of the form `store:my/sub/path/to/file.bin"""
         o = urlparse(url)
-        if o.scheme != 'content':
-            raise Exception("Content store supports only URL scheme 'content'")
+        if o.scheme != 'store':
+            raise Exception("Content store supports only URL scheme 'store'")
         return os.path.join(FILE_UPLOAD_FOLDER, o.path)
 
     def save_file_object(self, file_obj):
@@ -48,7 +48,7 @@ class ContentStore:
         full_path = os.path.join(FILE_UPLOAD_FOLDER, sub_path)
         _mkdir_p(full_path)
         file_obj.save(os.path.join(full_path, file_name))
-        return "content:%s" % os.path.join(sub_path, file_name)
+        return "store:%s" % os.path.join(sub_path, file_name)
 
     def remove(self, url):
         """Remove the file specified by the given content URL."""
