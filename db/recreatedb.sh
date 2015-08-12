@@ -85,7 +85,7 @@ sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f ../funcs/_ensure_document_vari
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f ../funcs/_as_list_dokument_varianter.sql
 
 
-templates2=(  _as_get_prev_registrering _as_create_registrering as_update  as_create_or_import  as_list as_read as_search json-cast-functions )
+templates2=(  _as_get_prev_registrering _as_create_registrering as_update  as_create_or_import  as_list as_read as_search json-cast-functions _as_filter_unauth )
 
 
 for oiotype in "${oiotypes[@]}"
