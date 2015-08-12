@@ -84,6 +84,9 @@ def get_relation_names(class_name):
 # Helper classers for adapting special types
 
 Soegeord = namedtuple('KlasseSoegeordType', 'identifier description category')
+OffentlighedUndtaget = namedtuple(
+    'OffentlighedUndtagetType', 'alternativtitel hjemmel'
+)
 
 
 class NamedTupleAdapter(object):

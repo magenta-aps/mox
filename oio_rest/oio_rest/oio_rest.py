@@ -269,3 +269,8 @@ class OIORestObject(object):
             object_url, u'_'.join([cls.__name__, 'delete_object']),
             cls.delete_object, methods=['DELETE']
         )
+
+    # Templates which may be overridden on subclass.
+    # Templates may only be overridden on subclass if they are explicitly
+    # listed here.
+    RELATIONS_TEMPLATE = 'relations_array.sql'
