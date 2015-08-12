@@ -32,12 +32,12 @@ def main():
     from klassifikation import KlassifikationsHierarki
     from organisation import OrganisationsHierarki
     from sag import SagsHierarki
-    from dokument import DokumentsHierarki
+    from dokument import DokumentHierarki
 
     KlassifikationsHierarki.setup_api(base_url=BASE_URL, flask=app)
     SagsHierarki.setup_api(base_url=BASE_URL, flask=app)
     OrganisationsHierarki.setup_api(base_url=BASE_URL, flask=app)
-    DokumentsHierarki.setup_api(base_url=BASE_URL, flask=app)
+    DokumentHierarki.setup_api(base_url=BASE_URL, flask=app)
 
     app.run(debug=True)
 

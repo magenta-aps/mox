@@ -49,7 +49,7 @@ class Dokument(OIORestObject):
         return jsonify({'uuid': uuid}), 201
 
 
-class DokumentsHierarki(OIOStandardHierarchy):
+class DokumentHierarki(OIOStandardHierarchy):
     """Implement the Dokument Standard."""
 
     _name = "Dokument"
