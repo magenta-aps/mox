@@ -22,7 +22,8 @@ CREATE OR REPLACE FUNCTION as_update_facet(
   attrEgenskaber FacetEgenskaberAttrType[],
   tilsPubliceret FacetPubliceretTilsType[],
   relationer FacetRelationType[],
-  lostUpdatePreventionTZ TIMESTAMPTZ = null
+  lostUpdatePreventionTZ TIMESTAMPTZ = null,
+  auth_criteria_arr FacetRegistreringType[]=null
 	)
   RETURNS bigint AS 
 $$
@@ -35,17 +36,26 @@ DECLARE
   prev_facet_registrering facet_registrering;
   facet_relation_navn FacetRelationKode;
   attrEgenskaberObj FacetEgenskaberAttrType;
+  auth_filtered_uuids uuid[];
 BEGIN
 
 --create a new registrering
 
 IF NOT EXISTS (select a.id from facet a join facet_registrering b on b.facet_id=a.id  where a.id=facet_uuid) THEN
-   RAISE EXCEPTION 'Unable to update facet with uuid [%], being unable to any previous registrations.',facet_uuid;
+   RAISE EXCEPTION 'Unable to update facet with uuid [%], being unable to find any previous registrations.',facet_uuid;
 END IF;
 
 PERFORM a.id FROM facet a
 WHERE a.id=facet_uuid
 FOR UPDATE; --We synchronize concurrent invocations of as_updates of this particular object on a exclusive row lock. This lock will be held by the current transaction until it terminates.
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_facet(array[facet_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[facet_uuid]) THEN
+  RAISE EXCEPTION 'Unable to update facet with uuid [%]. Object does not met stipulated criteria:%',facet_uuid,to_json(auth_criteria_arr)  USING ERRCODE = MO401; 
+END IF;
+/*********************/
+
 
 new_facet_registrering := _as_create_facet_registrering(facet_uuid,livscykluskode, brugerref, note);
 prev_facet_registrering := _as_get_prev_facet_registrering(new_facet_registrering);

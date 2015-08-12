@@ -205,7 +205,7 @@ ARRAY[facetRelRedaktoer1]
 new_uuid := as_create_or_import_facet(registrering);
 new_uuid2 := as_create_or_import_facet(registrering2);
 
-select array_agg(a.* order by a.id) from as_list_facet(array[new_uuid,new_uuid2]::uuid[],null,null) as a     into actual_facets1;
+actual_facets1:=as_list_facet(array[new_uuid,new_uuid2]::uuid[],null,null);
 
 
 select 

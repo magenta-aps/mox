@@ -11,10 +11,28 @@ NOTICE: This file is auto-generated using the script: apply-template.py sag as_l
 
 CREATE OR REPLACE FUNCTION as_list_sag(sag_uuids uuid[],
   registrering_tstzrange tstzrange,
-  virkning_tstzrange tstzrange)
-  RETURNS setof SagType AS
-  $BODY$
+  virkning_tstzrange tstzrange,
+  auth_criteria_arr SagRegistreringType[]=null
+  )
+  RETURNS SagType[] AS
+$$
+DECLARE
+	auth_filtered_uuids uuid[];
+	result SagType[];
+BEGIN
 
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_sag(sag_uuids,auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=coalesce(array_length(sag_uuids,1),0) AND auth_filtered_uuids @>sag_uuids) THEN
+  RAISE EXCEPTION 'Unable to list sag with uuids [%]. All objects do not fullfill the stipulated criteria:%',sag_uuids,to_json(auth_criteria_arr)  USING ERRCODE = MO401; 
+END IF;
+/*********************/
+
+SELECT 
+array_agg( x.sagObj) into result
+FROM
+(
 SELECT
 ROW(
 	a.sag_id,
@@ -27,7 +45,7 @@ ROW(
 		)::SagRegistreringType
 		order by upper((a.registrering).TimePeriod) DESC		
 	) 
-):: SagType
+):: SagType  sagObj
 FROM
 (
 	SELECT
@@ -135,9 +153,15 @@ WHERE a.sag_id IS NOT NULL
 GROUP BY 
 a.sag_id
 order by a.sag_id
-
-$BODY$
-LANGUAGE sql STABLE
+) as x
 ;
+
+
+
+RETURN result;
+
+END;
+$$ LANGUAGE plpgsql STABLE;
+
 
 

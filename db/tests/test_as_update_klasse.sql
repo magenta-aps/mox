@@ -86,7 +86,7 @@ BEGIN
 --------------------------------------------------------------------
 
 sqlStr2:='SELECT as_update_klasse(''' || extraUuid ||'''::uuid,''2ac63602-6c0a-4531-8a09-ab7633f6dacd''::uuid, ''Test update''::text,''Rettet''::Livscykluskode,null,null,null,''-infinity''::TIMESTAMPTZ)';
-expected_exception_txt2:='Unable to update klasse with uuid ['|| extraUuid ||'], being unable to any previous registrations.';
+expected_exception_txt2:='Unable to update klasse with uuid ['|| extraUuid ||'], being unable to find any previous registrations.';
 
 --raise notice 'debug:sqlStr2:%',sqlStr2;
 RETURN NEXT throws_ok(sqlStr2,expected_exception_txt2);

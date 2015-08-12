@@ -11,10 +11,28 @@ NOTICE: This file is auto-generated using the script: apply-template.py bruger a
 
 CREATE OR REPLACE FUNCTION as_list_bruger(bruger_uuids uuid[],
   registrering_tstzrange tstzrange,
-  virkning_tstzrange tstzrange)
-  RETURNS setof BrugerType AS
-  $BODY$
+  virkning_tstzrange tstzrange,
+  auth_criteria_arr BrugerRegistreringType[]=null
+  )
+  RETURNS BrugerType[] AS
+$$
+DECLARE
+	auth_filtered_uuids uuid[];
+	result BrugerType[];
+BEGIN
 
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_bruger(bruger_uuids,auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=coalesce(array_length(bruger_uuids,1),0) AND auth_filtered_uuids @>bruger_uuids) THEN
+  RAISE EXCEPTION 'Unable to list bruger with uuids [%]. All objects do not fullfill the stipulated criteria:%',bruger_uuids,to_json(auth_criteria_arr)  USING ERRCODE = MO401; 
+END IF;
+/*********************/
+
+SELECT 
+array_agg( x.brugerObj) into result
+FROM
+(
 SELECT
 ROW(
 	a.bruger_id,
@@ -27,7 +45,7 @@ ROW(
 		)::BrugerRegistreringType
 		order by upper((a.registrering).TimePeriod) DESC		
 	) 
-):: BrugerType
+):: BrugerType  brugerObj
 FROM
 (
 	SELECT
@@ -125,9 +143,15 @@ WHERE a.bruger_id IS NOT NULL
 GROUP BY 
 a.bruger_id
 order by a.bruger_id
-
-$BODY$
-LANGUAGE sql STABLE
+) as x
 ;
+
+
+
+RETURN result;
+
+END;
+$$ LANGUAGE plpgsql STABLE;
+
 
 

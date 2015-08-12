@@ -459,7 +459,7 @@ expected_Klasse2 :=
 
 
 
-select array_agg(a.* order by a.id) from as_list_klasse(array[new_uuid]::uuid[],null,null) as a     into actual_klasses_1;
+actual_klasses_1:=as_list_klasse(array[new_uuid]::uuid[],null,null);
 
 --RAISE NOTICE 'actual_klasses_1:%',to_json(actual_klasses_1);
 --RAISE NOTICE 'expected_Klasse1_arr_json:%',to_json(ARRAY[expected_Klasse1]);
@@ -471,8 +471,7 @@ RETURN NEXT is(
 	ARRAY[expected_Klasse1],	
 	'list klasse test 1');
 
-
-select array_agg(a.* order by a.id) from as_list_klasse(array[new_uuid2]::uuid[],null,null) as a     into actual_klasses_2;
+actual_klasses_2:=as_list_klasse(array[new_uuid2]::uuid[],null,null);
 
 
 RETURN NEXT is(
@@ -484,7 +483,7 @@ RETURN NEXT is(
 
 
 
-select array_agg(a.* order by a.id) from as_list_klasse(array[new_uuid,new_uuid2]::uuid[],null,null) as a     into actual_klasses_3;
+actual_klasses_3:=as_list_klasse(array[new_uuid,new_uuid2]::uuid[],null,null);
 
 
 select array_agg(a.* order by a.id) from unnest(ARRAY[expected_Klasse1,expected_Klasse2]) as a into expected_klasses_3;

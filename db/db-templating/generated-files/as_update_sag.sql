@@ -22,7 +22,8 @@ CREATE OR REPLACE FUNCTION as_update_sag(
   attrEgenskaber SagEgenskaberAttrType[],
   tilsFremdrift SagFremdriftTilsType[],
   relationer SagRelationType[],
-  lostUpdatePreventionTZ TIMESTAMPTZ = null
+  lostUpdatePreventionTZ TIMESTAMPTZ = null,
+  auth_criteria_arr SagRegistreringType[]=null
 	)
   RETURNS bigint AS 
 $$
@@ -35,6 +36,7 @@ DECLARE
   prev_sag_registrering sag_registrering;
   sag_relation_navn SagRelationKode;
   attrEgenskaberObj SagEgenskaberAttrType;
+  auth_filtered_uuids uuid[];
   rel_type_max_index_prev_rev int;
   rel_type_max_index_arr _SagRelationMaxIndex[];
   sag_rel_type_cardinality_unlimited SagRelationKode[]:=ARRAY['andetarkiv'::SagRelationKode,'andrebehandlere'::SagRelationKode,'sekundaerpart'::SagRelationKode,'andresager'::SagRelationKode,'byggeri'::SagRelationKode,'fredning'::SagRelationKode,'journalpost'::SagRelationKode]::SagRelationKode[];
@@ -46,12 +48,20 @@ BEGIN
 --create a new registrering
 
 IF NOT EXISTS (select a.id from sag a join sag_registrering b on b.sag_id=a.id  where a.id=sag_uuid) THEN
-   RAISE EXCEPTION 'Unable to update sag with uuid [%], being unable to any previous registrations.',sag_uuid;
+   RAISE EXCEPTION 'Unable to update sag with uuid [%], being unable to find any previous registrations.',sag_uuid;
 END IF;
 
 PERFORM a.id FROM sag a
 WHERE a.id=sag_uuid
 FOR UPDATE; --We synchronize concurrent invocations of as_updates of this particular object on a exclusive row lock. This lock will be held by the current transaction until it terminates.
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_sag(array[sag_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[sag_uuid]) THEN
+  RAISE EXCEPTION 'Unable to update sag with uuid [%]. Object does not met stipulated criteria:%',sag_uuid,to_json(auth_criteria_arr)  USING ERRCODE = MO401; 
+END IF;
+/*********************/
+
 
 new_sag_registrering := _as_create_sag_registrering(sag_uuid,livscykluskode, brugerref, note);
 prev_sag_registrering := _as_get_prev_sag_registrering(new_sag_registrering);

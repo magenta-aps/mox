@@ -22,7 +22,8 @@ CREATE OR REPLACE FUNCTION as_update_interessefaellesskab(
   attrEgenskaber InteressefaellesskabEgenskaberAttrType[],
   tilsGyldighed InteressefaellesskabGyldighedTilsType[],
   relationer InteressefaellesskabRelationType[],
-  lostUpdatePreventionTZ TIMESTAMPTZ = null
+  lostUpdatePreventionTZ TIMESTAMPTZ = null,
+  auth_criteria_arr InteressefaellesskabRegistreringType[]=null
 	)
   RETURNS bigint AS 
 $$
@@ -35,17 +36,26 @@ DECLARE
   prev_interessefaellesskab_registrering interessefaellesskab_registrering;
   interessefaellesskab_relation_navn InteressefaellesskabRelationKode;
   attrEgenskaberObj InteressefaellesskabEgenskaberAttrType;
+  auth_filtered_uuids uuid[];
 BEGIN
 
 --create a new registrering
 
 IF NOT EXISTS (select a.id from interessefaellesskab a join interessefaellesskab_registrering b on b.interessefaellesskab_id=a.id  where a.id=interessefaellesskab_uuid) THEN
-   RAISE EXCEPTION 'Unable to update interessefaellesskab with uuid [%], being unable to any previous registrations.',interessefaellesskab_uuid;
+   RAISE EXCEPTION 'Unable to update interessefaellesskab with uuid [%], being unable to find any previous registrations.',interessefaellesskab_uuid;
 END IF;
 
 PERFORM a.id FROM interessefaellesskab a
 WHERE a.id=interessefaellesskab_uuid
 FOR UPDATE; --We synchronize concurrent invocations of as_updates of this particular object on a exclusive row lock. This lock will be held by the current transaction until it terminates.
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_interessefaellesskab(array[interessefaellesskab_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[interessefaellesskab_uuid]) THEN
+  RAISE EXCEPTION 'Unable to update interessefaellesskab with uuid [%]. Object does not met stipulated criteria:%',interessefaellesskab_uuid,to_json(auth_criteria_arr)  USING ERRCODE = MO401; 
+END IF;
+/*********************/
+
 
 new_interessefaellesskab_registrering := _as_create_interessefaellesskab_registrering(interessefaellesskab_uuid,livscykluskode, brugerref, note);
 prev_interessefaellesskab_registrering := _as_get_prev_interessefaellesskab_registrering(new_interessefaellesskab_registrering);

@@ -11,10 +11,28 @@ NOTICE: This file is auto-generated using the script: apply-template.py klassifi
 
 CREATE OR REPLACE FUNCTION as_list_klassifikation(klassifikation_uuids uuid[],
   registrering_tstzrange tstzrange,
-  virkning_tstzrange tstzrange)
-  RETURNS setof KlassifikationType AS
-  $BODY$
+  virkning_tstzrange tstzrange,
+  auth_criteria_arr KlassifikationRegistreringType[]=null
+  )
+  RETURNS KlassifikationType[] AS
+$$
+DECLARE
+	auth_filtered_uuids uuid[];
+	result KlassifikationType[];
+BEGIN
 
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_klassifikation(klassifikation_uuids,auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=coalesce(array_length(klassifikation_uuids,1),0) AND auth_filtered_uuids @>klassifikation_uuids) THEN
+  RAISE EXCEPTION 'Unable to list klassifikation with uuids [%]. All objects do not fullfill the stipulated criteria:%',klassifikation_uuids,to_json(auth_criteria_arr)  USING ERRCODE = MO401; 
+END IF;
+/*********************/
+
+SELECT 
+array_agg( x.klassifikationObj) into result
+FROM
+(
 SELECT
 ROW(
 	a.klassifikation_id,
@@ -27,7 +45,7 @@ ROW(
 		)::KlassifikationRegistreringType
 		order by upper((a.registrering).TimePeriod) DESC		
 	) 
-):: KlassifikationType
+):: KlassifikationType  klassifikationObj
 FROM
 (
 	SELECT
@@ -126,9 +144,15 @@ WHERE a.klassifikation_id IS NOT NULL
 GROUP BY 
 a.klassifikation_id
 order by a.klassifikation_id
-
-$BODY$
-LANGUAGE sql STABLE
+) as x
 ;
+
+
+
+RETURN result;
+
+END;
+$$ LANGUAGE plpgsql STABLE;
+
 
 

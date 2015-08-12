@@ -11,10 +11,28 @@ NOTICE: This file is auto-generated using the script: apply-template.py interess
 
 CREATE OR REPLACE FUNCTION as_list_interessefaellesskab(interessefaellesskab_uuids uuid[],
   registrering_tstzrange tstzrange,
-  virkning_tstzrange tstzrange)
-  RETURNS setof InteressefaellesskabType AS
-  $BODY$
+  virkning_tstzrange tstzrange,
+  auth_criteria_arr InteressefaellesskabRegistreringType[]=null
+  )
+  RETURNS InteressefaellesskabType[] AS
+$$
+DECLARE
+	auth_filtered_uuids uuid[];
+	result InteressefaellesskabType[];
+BEGIN
 
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_interessefaellesskab(interessefaellesskab_uuids,auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=coalesce(array_length(interessefaellesskab_uuids,1),0) AND auth_filtered_uuids @>interessefaellesskab_uuids) THEN
+  RAISE EXCEPTION 'Unable to list interessefaellesskab with uuids [%]. All objects do not fullfill the stipulated criteria:%',interessefaellesskab_uuids,to_json(auth_criteria_arr)  USING ERRCODE = MO401; 
+END IF;
+/*********************/
+
+SELECT 
+array_agg( x.interessefaellesskabObj) into result
+FROM
+(
 SELECT
 ROW(
 	a.interessefaellesskab_id,
@@ -27,7 +45,7 @@ ROW(
 		)::InteressefaellesskabRegistreringType
 		order by upper((a.registrering).TimePeriod) DESC		
 	) 
-):: InteressefaellesskabType
+):: InteressefaellesskabType  interessefaellesskabObj
 FROM
 (
 	SELECT
@@ -125,9 +143,15 @@ WHERE a.interessefaellesskab_id IS NOT NULL
 GROUP BY 
 a.interessefaellesskab_id
 order by a.interessefaellesskab_id
-
-$BODY$
-LANGUAGE sql STABLE
+) as x
 ;
+
+
+
+RETURN result;
+
+END;
+$$ LANGUAGE plpgsql STABLE;
+
 
 
