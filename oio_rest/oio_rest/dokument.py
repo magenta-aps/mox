@@ -7,10 +7,12 @@ from contentstore import content_store
 from oio_rest import OIORestObject, OIOStandardHierarchy, db
 from authentication import requires_auth
 
+
 class Dokument(OIORestObject):
     """
     Implement a Dokument  - manage access to database layer from the API.
     """
+
     @classmethod
     @requires_auth
     def create_object(cls):
@@ -24,11 +26,8 @@ class Dokument(OIORestObject):
         content_url = input.get("content", "")
         f = cls._get_file_storage_for_content_url(content_url)
 
-        # TODO: Wrap in try/except block, turn off autocommit, and roll back
-        # db transaction if file saving fails
-
         # Save the file and get the URL for the saved file
-        stored_content_url = "content:%s" % content_store.save_file_object(f)
+        stored_content_url = content_store.save_file_object(f)
         print stored_content_url
 
         # TODO: Refactor to extract common functionality in superclass and
@@ -38,8 +37,15 @@ class Dokument(OIORestObject):
         attributes = input.get("attributter", {})
         states = input.get("tilstande", {})
         relations = input.get("relationer", {})
-        uuid = db.create_or_import_object(cls.__name__, note, attributes,
-                                          states, relations)
+
+        try:
+            uuid = db.create_or_import_object(cls.__name__, note, attributes,
+                                              states, relations)
+        except Exception as e:
+            # Remove the stored document, since there was an error with the
+            # DB call.
+            content_store.remove(stored_content_url)
+            raise
         return jsonify({'uuid': uuid}), 201
 
 
