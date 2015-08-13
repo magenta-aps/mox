@@ -22,7 +22,7 @@ BEGIN
 /*** Verify that the object meets the stipulated access allowed criteria  ***/
 auth_filtered_uuids:=_as_filter_unauth_{{oio_type}}({{oio_type}}_uuids,auth_criteria_arr); 
 IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=coalesce(array_length({{oio_type}}_uuids,1),0) AND auth_filtered_uuids @>{{oio_type}}_uuids) THEN
-  RAISE EXCEPTION 'Unable to list {{oio_type}} with uuids [%]. All objects do not fullfill the stipulated criteria:%',{{oio_type}}_uuids,to_json(auth_criteria_arr)  USING ERRCODE = MO401; 
+  RAISE EXCEPTION 'Unable to list {{oio_type}} with uuids [%]. All objects do not fullfill the stipulated criteria:%',{{oio_type}}_uuids,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
 END IF;
 /*********************/
 

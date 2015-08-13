@@ -42,6 +42,11 @@ DECLARE
 	expected_facets1 FacetType[];
 	override_timeperiod1 TSTZRANGE;
 	override_timeperiod2 TSTZRANGE;
+	actual_facets2 FacetType[];
+	expected_facets2 FacetType[];
+	actual_facets3 FacetType[];
+	expected_facets3 FacetType[];
+
 BEGIN
 
 
@@ -55,7 +60,7 @@ virkEgenskaber :=	ROW (
 ;
 
 virkEgenskaberB :=	ROW (
-	'[2014-05-13, 2015-01-01)' :: TSTZRANGE,
+	'[2014-05-13, infinity)' :: TSTZRANGE,
           '48fcbc8b-4c72-4466-9dcc-0451f57b5b52'::uuid,
           'Bruger',
           'NoteEx7'
@@ -183,7 +188,7 @@ registrering := ROW (
 	'Test Note 4') :: RegistreringBase
 	,
 ARRAY[facetPubliceret,facetPubliceretB]::FacetPubliceretTilsType[],
-ARRAY[facetEgenskabA,facetEgenskabB]::FacetEgenskaberAttrType[],
+ARRAY[facetEgenskabA]::FacetEgenskaberAttrType[],
 ARRAY[facetRelRedaktoer1,facetRelRedaktoer2,facetRelAnsvarlig]
 ) :: FacetRegistreringType
 ;
@@ -268,8 +273,85 @@ RETURN NEXT is(
 	expected_facets1,	
 	'list test 1');
 
---TODO: Add tests for different scenarios
+/**********************************************************/
+BEGIN 
 
+
+actual_facets2=as_list_facet(array[new_uuid,new_uuid2]::uuid[],null,null,
+ARRAY[
+ ROW (
+	null --reg base
+	,null -- publiceret ,
+	,ARRAY[
+	ROW (
+	'brugervendt_noegle_B',
+	   null,
+	   null,
+	   null,
+	   null,
+	   null,
+	   NULL, --restkilde
+   	null --virkEgenskaberB
+) :: FacetEgenskaberAttrType]::FacetEgenskaberAttrType[]
+	,null --relationer 
+) :: FacetRegistreringType
+]::FacetRegistreringType[]
+);
+
+RETURN NEXT ok(false,'as_list_facet test #2: Should throw MO401 exception');
+EXCEPTION  
+WHEN sqlstate 'MO401' THEN
+	RETURN NEXT ok(true,'as_list_facet test #2: Throws MO401 exception (as it should)');
+END;
+
+
+/**********************************************************/
+
+
+actual_facets3=as_list_facet(array[new_uuid2]::uuid[],null,null,
+ARRAY[
+ ROW (
+	null --reg base
+	,null -- publiceret ,
+	,ARRAY[
+	ROW (
+	'brugervendt_noegle_B',
+	   null,
+	   null,
+	   null,
+	   null,
+	   null,
+	   NULL, --restkilde
+   	null --virkEgenskaberB
+) :: FacetEgenskaberAttrType]::FacetEgenskaberAttrType[]
+	,null --relationer 
+) :: FacetRegistreringType
+]::FacetRegistreringType[]
+);
+
+expected_facets3:= ARRAY[
+	ROW(
+			new_uuid2,
+			ARRAY[
+					ROW(
+						ROW(
+							override_timeperiod2, --this is cheating, but helps the comparison efforts below. (The timeperiod is set during creation/initialization )
+							(registrering2.registrering).livscykluskode,
+							(registrering2.registrering).brugerref,
+							(registrering2.registrering).note 
+							)::RegistreringBase
+						,registrering2.tilsPubliceret
+						,registrering2.attrEgenskaber
+						,registrering2.relationer
+					)::FacetRegistreringType
+			]::FacetRegistreringType[]
+			)::FacetType
+	]::FacetType[];
+
+RETURN NEXT is(
+	actual_facets3,
+	expected_facets3,	
+	'facet list test #3');
 
 END;
 $$;

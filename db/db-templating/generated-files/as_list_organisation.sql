@@ -25,7 +25,7 @@ BEGIN
 /*** Verify that the object meets the stipulated access allowed criteria  ***/
 auth_filtered_uuids:=_as_filter_unauth_organisation(organisation_uuids,auth_criteria_arr); 
 IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=coalesce(array_length(organisation_uuids,1),0) AND auth_filtered_uuids @>organisation_uuids) THEN
-  RAISE EXCEPTION 'Unable to list organisation with uuids [%]. All objects do not fullfill the stipulated criteria:%',organisation_uuids,to_json(auth_criteria_arr)  USING ERRCODE = MO401; 
+  RAISE EXCEPTION 'Unable to list organisation with uuids [%]. All objects do not fullfill the stipulated criteria:%',organisation_uuids,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
 END IF;
 /*********************/
 

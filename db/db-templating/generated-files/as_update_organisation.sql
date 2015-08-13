@@ -52,7 +52,7 @@ FOR UPDATE; --We synchronize concurrent invocations of as_updates of this partic
 /*** Verify that the object meets the stipulated access allowed criteria  ***/
 auth_filtered_uuids:=_as_filter_unauth_organisation(array[organisation_uuid]::uuid[],auth_criteria_arr); 
 IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[organisation_uuid]) THEN
-  RAISE EXCEPTION 'Unable to update organisation with uuid [%]. Object does not met stipulated criteria:%',organisation_uuid,to_json(auth_criteria_arr)  USING ERRCODE = MO401; 
+  RAISE EXCEPTION 'Unable to update organisation with uuid [%]. Object does not met stipulated criteria:%',organisation_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
 END IF;
 /*********************/
 
