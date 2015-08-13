@@ -1,33 +1,8 @@
-*** generated-files/as_update_klasse.sql	2015-08-11 14:43:14.758320898 +0200
---- patches/as_update_klasse.org.sql	2015-08-11 14:46:55.854331909 +0200
+*** ./generated-files/as_update_klasse.sql	2015-08-12 16:31:32.696524038 +0200
+--- ./patches/as_update_klasse.org.sql	2015-08-12 16:34:44.652533598 +0200
 ***************
-*** 10,20 ****
-  */
-  
-  
-  
-  
-! --Also notice, that the given arrays of KlasseAttr...Type must be consistent regarding virkning (although the allowance of null-values might make it possible to construct 'logically consistent'-arrays of objects with overlapping virknings)
-  
-  CREATE OR REPLACE FUNCTION as_update_klasse(
-    klasse_uuid uuid,
-    brugerref uuid,
-    note text,
---- 10,20 ----
-  */
-  
-  
-  
-  
-! --Also notice, that the given array of KlasseAttr...Type must be consistent regarding virkning (although the allowance of null-values might make it possible to construct 'logically consistent'-arrays of objects with overlapping virknings)
-  
-  CREATE OR REPLACE FUNCTION as_update_klasse(
-    klasse_uuid uuid,
-    brugerref uuid,
-    note text,
-***************
-*** 33,42 ****
---- 33,44 ----
+*** 34,43 ****
+--- 34,45 ----
     read_prev_klasse_reg KlasseRegistreringType;
     new_klasse_registrering klasse_registrering;
     prev_klasse_registrering klasse_registrering;
@@ -35,13 +10,13 @@
     attrEgenskaberObj KlasseEgenskaberAttrType;
 +   new_id_klasse_attr_egenskaber bigint;
 +   klasseSoegeordObj KlasseSoegeordType;
+    auth_filtered_uuids uuid[];
   BEGIN
   
   --create a new registrering
   
-  IF NOT EXISTS (select a.id from klasse a join klasse_registrering b on b.klasse_id=a.id  where a.id=klasse_uuid) THEN
 ***************
-*** 257,267 ****
+*** 267,277 ****
     IF EXISTS (
     SELECT
     a.*
@@ -53,7 +28,7 @@
     RAISE EXCEPTION 'Unable to update klasse with uuid [%], as the klasse have overlapping virknings in the given egenskaber array :%',klasse_uuid,to_json(attrEgenskaber)  USING ERRCODE = 22000;
   
     END IF;
---- 259,269 ----
+--- 269,279 ----
     IF EXISTS (
     SELECT
     a.*
@@ -66,7 +41,7 @@
   
     END IF;
 ***************
-*** 278,295 ****
+*** 288,305 ****
      (attrEgenskaberObj).titel is null OR 
      (attrEgenskaberObj).retskilde is null OR 
      (attrEgenskaberObj).aendringsnotat is null 
@@ -85,7 +60,7 @@
       coalesce(attrEgenskaberObj.eksempel,a.eksempel),
       coalesce(attrEgenskaberObj.omfang,a.omfang),
       coalesce(attrEgenskaberObj.titel,a.titel),
---- 280,299 ----
+--- 290,309 ----
      (attrEgenskaberObj).titel is null OR 
      (attrEgenskaberObj).retskilde is null OR 
      (attrEgenskaberObj).aendringsnotat is null 
@@ -107,7 +82,7 @@
       coalesce(attrEgenskaberObj.omfang,a.omfang),
       coalesce(attrEgenskaberObj.titel,a.titel),
 ***************
-*** 304,325 ****
+*** 314,335 ****
       new_klasse_registrering.id
     FROM klasse_attr_egenskaber a
     WHERE
@@ -130,7 +105,7 @@
       attrEgenskaberObj.eksempel, 
       attrEgenskaberObj.omfang, 
       attrEgenskaberObj.titel, 
---- 308,354 ----
+--- 318,364 ----
       new_klasse_registrering.id
     FROM klasse_attr_egenskaber a
     WHERE
@@ -179,7 +154,7 @@
       attrEgenskaberObj.omfang, 
       attrEgenskaberObj.titel, 
 ***************
-*** 339,371 ****
+*** 349,381 ****
         FROM klasse_attr_egenskaber b
         WHERE 
          b.klasse_registrering_id=new_klasse_registrering.id
@@ -213,7 +188,7 @@
   
     END LOOP;
   END IF;
---- 368,434 ----
+--- 378,444 ----
         FROM klasse_attr_egenskaber b
         WHERE 
          b.klasse_registrering_id=new_klasse_registrering.id
@@ -282,7 +257,7 @@
     END LOOP;
   END IF;
 ***************
-*** 375,390 ****
+*** 385,400 ****
   --raise debug 'Skipping handling of egenskaber of previous registration as an empty array was explicit given.';  
   ELSE 
   
@@ -299,7 +274,7 @@
         a.eksempel,
         a.omfang,
         a.titel,
---- 438,456 ----
+--- 448,466 ----
   --raise debug 'Skipping handling of egenskaber of previous registration as an empty array was explicit given.';  
   ELSE 
   
@@ -320,7 +295,7 @@
         a.omfang,
         a.titel,
 ***************
-*** 405,415 ****
+*** 415,425 ****
       WHERE 
             b.klasse_registrering_id=new_klasse_registrering.id
   ) d
@@ -332,7 +307,7 @@
   
   
   
---- 471,491 ----
+--- 481,501 ----
       WHERE 
             b.klasse_registrering_id=new_klasse_registrering.id
   ) d

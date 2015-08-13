@@ -857,7 +857,7 @@ doc2_new_uuid := as_create_or_import_dokument(doc2_registrering);
 /********************************************************************/
 
 
-select array_agg(a.* order by a.id) from as_list_dokument(array[doc1_new_uuid,doc2_new_uuid]::uuid[],null,null) as a     into actual_dokuments1;
+actual_dokuments1:= as_list_dokument(array[doc1_new_uuid,doc2_new_uuid]::uuid[],null,null);
 
 
 select 
@@ -927,7 +927,7 @@ RETURN NEXT is(
 
 
 
-select array_agg(a.* order by a.id) from as_list_dokument(array[doc1_new_uuid,doc2_new_uuid]::uuid[],null,'(-infinity, 01-01-2015)' :: TSTZRANGE) as a     into actual_dokuments2;
+actual_dokuments2 :=as_list_dokument(array[doc1_new_uuid,doc2_new_uuid]::uuid[],null,'(-infinity, 01-01-2015)' :: TSTZRANGE);
 
 
 expected_dokuments2:= ARRAY[
@@ -1008,14 +1008,14 @@ RETURN NEXT is(
 --Test filter on non existing reg time.
 
 
-select array_agg(a.* order by a.id) from as_list_dokument(array[doc1_new_uuid,doc2_new_uuid]::uuid[], tstzrange(clock_timestamp() - interval '2 hour', clock_timestamp() - interval '1 hour'),'(-infinity, 01-01-2015)' :: TSTZRANGE) as a     into actual_dokuments3;
+actual_dokuments3:=as_list_dokument(array[doc1_new_uuid,doc2_new_uuid]::uuid[], tstzrange(clock_timestamp() - interval '2 hour', clock_timestamp() - interval '1 hour'),'(-infinity, 01-01-2015)' :: TSTZRANGE);
 
 RETURN NEXT ok(coalesce(array_length(actual_dokuments3,1),0)=0,'Test on filter on reg time with no reg.');
 
 --Test filter on current reg 
 
 
-select array_agg(a.* order by a.id) from as_list_dokument(array[doc1_new_uuid,doc2_new_uuid]::uuid[], tstzrange(clock_timestamp() - interval '1 hour',clock_timestamp()) ,'(-infinity, 01-01-2015)' :: TSTZRANGE) as a     into actual_dokuments4;
+actual_dokuments4:=as_list_dokument(array[doc1_new_uuid,doc2_new_uuid]::uuid[], tstzrange(clock_timestamp() - interval '1 hour',clock_timestamp()) ,'(-infinity, 01-01-2015)' :: TSTZRANGE);
 
 
 RETURN NEXT is(
@@ -1025,7 +1025,7 @@ RETURN NEXT is(
 
 --Test on list on single uuid
 
-select array_agg(a.* order by a.id) from as_list_dokument(array[doc2_new_uuid]::uuid[],  tstzrange(clock_timestamp() - interval '1 hour',clock_timestamp()) ,'(-infinity, 01-01-2015)' :: TSTZRANGE) as a     into actual_dokuments5;
+actual_dokuments5:=as_list_dokument(array[doc2_new_uuid]::uuid[],  tstzrange(clock_timestamp() - interval '1 hour',clock_timestamp()) ,'(-infinity, 01-01-2015)' :: TSTZRANGE);
 
 IF expected_dokuments2[1].id = doc2_new_uuid THEN
 	expected_dokuments5:=array_append(expected_dokuments5,expected_dokuments2[1]);

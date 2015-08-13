@@ -12,7 +12,7 @@ NOTICE: This file is auto-generated using the script: apply-template.py klasse a
 
 
 
---Also notice, that the given array of KlasseAttr...Type must be consistent regarding virkning (although the allowance of null-values might make it possible to construct 'logically consistent'-arrays of objects with overlapping virknings)
+--Also notice, that the given arrays of KlasseAttr...Type must be consistent regarding virkning (although the allowance of null-values might make it possible to construct 'logically consistent'-arrays of objects with overlapping virknings)
 
 CREATE OR REPLACE FUNCTION as_update_klasse(
   klasse_uuid uuid,
@@ -22,7 +22,8 @@ CREATE OR REPLACE FUNCTION as_update_klasse(
   attrEgenskaber KlasseEgenskaberAttrType[],
   tilsPubliceret KlassePubliceretTilsType[],
   relationer KlasseRelationType[],
-  lostUpdatePreventionTZ TIMESTAMPTZ = null
+  lostUpdatePreventionTZ TIMESTAMPTZ = null,
+  auth_criteria_arr KlasseRegistreringType[]=null
 	)
   RETURNS bigint AS 
 $$
@@ -37,17 +38,26 @@ DECLARE
   attrEgenskaberObj KlasseEgenskaberAttrType;
   new_id_klasse_attr_egenskaber bigint;
   klasseSoegeordObj KlasseSoegeordType;
+  auth_filtered_uuids uuid[];
 BEGIN
 
 --create a new registrering
 
 IF NOT EXISTS (select a.id from klasse a join klasse_registrering b on b.klasse_id=a.id  where a.id=klasse_uuid) THEN
-   RAISE EXCEPTION 'Unable to update klasse with uuid [%], being unable to any previous registrations.',klasse_uuid;
+   RAISE EXCEPTION 'Unable to update klasse with uuid [%], being unable to find any previous registrations.',klasse_uuid;
 END IF;
 
 PERFORM a.id FROM klasse a
 WHERE a.id=klasse_uuid
 FOR UPDATE; --We synchronize concurrent invocations of as_updates of this particular object on a exclusive row lock. This lock will be held by the current transaction until it terminates.
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_klasse(array[klasse_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[klasse_uuid]) THEN
+  RAISE EXCEPTION 'Unable to update klasse with uuid [%]. Object does not met stipulated criteria:%',klasse_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
 
 new_klasse_registrering := _as_create_klasse_registrering(klasse_uuid,livscykluskode, brugerref, note);
 prev_klasse_registrering := _as_get_prev_klasse_registrering(new_klasse_registrering);

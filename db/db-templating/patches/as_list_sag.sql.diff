@@ -1,7 +1,7 @@
-*** ../generated-files/as_list_sag.sql	2015-06-23 15:59:46.816530935 +0200
---- ../patches/as_list_sag.org.sql	2015-06-23 16:04:32.404545158 +0200
+*** ./generated-files/as_list_sag.sql	2015-08-12 16:23:20.860499543 +0200
+--- ./patches/as_list_sag.org.sql	2015-08-12 16:27:18.700511388 +0200
 ***************
-*** 42,57 ****
+*** 54,69 ****
   		ROW (
   				b.rel_type,
   				b.virkning,
@@ -18,7 +18,7 @@
   	(
   			SELECT
   			a.sag_id,
---- 42,61 ----
+--- 54,73 ----
   		ROW (
   				b.rel_type,
   				b.virkning,

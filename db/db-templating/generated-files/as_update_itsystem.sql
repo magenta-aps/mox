@@ -22,7 +22,8 @@ CREATE OR REPLACE FUNCTION as_update_itsystem(
   attrEgenskaber ItsystemEgenskaberAttrType[],
   tilsGyldighed ItsystemGyldighedTilsType[],
   relationer ItsystemRelationType[],
-  lostUpdatePreventionTZ TIMESTAMPTZ = null
+  lostUpdatePreventionTZ TIMESTAMPTZ = null,
+  auth_criteria_arr ItsystemRegistreringType[]=null
 	)
   RETURNS bigint AS 
 $$
@@ -35,17 +36,26 @@ DECLARE
   prev_itsystem_registrering itsystem_registrering;
   itsystem_relation_navn ItsystemRelationKode;
   attrEgenskaberObj ItsystemEgenskaberAttrType;
+  auth_filtered_uuids uuid[];
 BEGIN
 
 --create a new registrering
 
 IF NOT EXISTS (select a.id from itsystem a join itsystem_registrering b on b.itsystem_id=a.id  where a.id=itsystem_uuid) THEN
-   RAISE EXCEPTION 'Unable to update itsystem with uuid [%], being unable to any previous registrations.',itsystem_uuid;
+   RAISE EXCEPTION 'Unable to update itsystem with uuid [%], being unable to find any previous registrations.',itsystem_uuid;
 END IF;
 
 PERFORM a.id FROM itsystem a
 WHERE a.id=itsystem_uuid
 FOR UPDATE; --We synchronize concurrent invocations of as_updates of this particular object on a exclusive row lock. This lock will be held by the current transaction until it terminates.
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_itsystem(array[itsystem_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[itsystem_uuid]) THEN
+  RAISE EXCEPTION 'Unable to update itsystem with uuid [%]. Object does not met stipulated criteria:%',itsystem_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
 
 new_itsystem_registrering := _as_create_itsystem_registrering(itsystem_uuid,livscykluskode, brugerref, note);
 prev_itsystem_registrering := _as_get_prev_itsystem_registrering(new_itsystem_registrering);

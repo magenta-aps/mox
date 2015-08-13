@@ -1,0 +1,29 @@
+*** ./generated-files/json-cast-functions_sag.sql	2015-08-12 15:31:03.332343284 +0200
+--- ./patches/json-cast-functions_sag.org.sql	2015-08-12 15:36:37.696359937 +0200
+***************
+*** 66,77 ****
+      ('{' || string_agg(   to_json(f.relType::text) || ':' || array_to_json(f.rel_json_arr,false) ,',') || '}')::json rel_json
+      FROM
+      (
+        SELECT
+        e.relType,
+!       array_agg( _json_object_delete_keys(row_to_json(ROW(e.relType,e.virkning,e.relMaalUuid,e.relMaalUrn,e.objektType)::SagRelationType),ARRAY['reltype']::text[])) rel_json_arr
+!       from unnest($1.relationer) e(relType,virkning,relMaalUuid,relMaalUrn,objektType) 
+        group by e.relType
+        order by e.relType asc
+      ) as f
+    )
+    SELECT 
+--- 66,77 ----
+      ('{' || string_agg(   to_json(f.relType::text) || ':' || array_to_json(f.rel_json_arr,false) ,',') || '}')::json rel_json
+      FROM
+      (
+        SELECT
+        e.relType,
+!       array_agg( _json_object_delete_keys(row_to_json(ROW(e.relType,e.virkning,e.relMaalUuid,e.relMaalUrn,e.objektType,e.relIndex,e.relTypeSpec,e.journalNotat,e.journalDokumentAttr)::SagRelationType),ARRAY['reltype']::text[])) rel_json_arr
+!       from unnest($1.relationer) e(relType,virkning,relMaalUuid,relMaalUrn,objektType,relIndex,relTypeSpec,journalNotat,journalDokumentAttr) 
+        group by e.relType
+        order by e.relType asc
+      ) as f
+    )
+    SELECT 

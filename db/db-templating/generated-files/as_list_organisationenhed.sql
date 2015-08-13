@@ -11,10 +11,28 @@ NOTICE: This file is auto-generated using the script: apply-template.py organisa
 
 CREATE OR REPLACE FUNCTION as_list_organisationenhed(organisationenhed_uuids uuid[],
   registrering_tstzrange tstzrange,
-  virkning_tstzrange tstzrange)
-  RETURNS setof OrganisationenhedType AS
-  $BODY$
+  virkning_tstzrange tstzrange,
+  auth_criteria_arr OrganisationenhedRegistreringType[]=null
+  )
+  RETURNS OrganisationenhedType[] AS
+$$
+DECLARE
+	auth_filtered_uuids uuid[];
+	result OrganisationenhedType[];
+BEGIN
 
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_organisationenhed(organisationenhed_uuids,auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=coalesce(array_length(organisationenhed_uuids,1),0) AND auth_filtered_uuids @>organisationenhed_uuids) THEN
+  RAISE EXCEPTION 'Unable to list organisationenhed with uuids [%]. All objects do not fullfill the stipulated criteria:%',organisationenhed_uuids,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
+SELECT 
+array_agg( x.organisationenhedObj) into result
+FROM
+(
 SELECT
 ROW(
 	a.organisationenhed_id,
@@ -27,7 +45,7 @@ ROW(
 		)::OrganisationenhedRegistreringType
 		order by upper((a.registrering).TimePeriod) DESC		
 	) 
-):: OrganisationenhedType
+):: OrganisationenhedType  organisationenhedObj
 FROM
 (
 	SELECT
@@ -124,9 +142,15 @@ WHERE a.organisationenhed_id IS NOT NULL
 GROUP BY 
 a.organisationenhed_id
 order by a.organisationenhed_id
-
-$BODY$
-LANGUAGE sql STABLE
+) as x
 ;
+
+
+
+RETURN result;
+
+END;
+$$ LANGUAGE plpgsql STABLE;
+
 
 

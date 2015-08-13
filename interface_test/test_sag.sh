@@ -27,13 +27,6 @@ fi
 # - Suppose no object with this ID exists.
 #import_uuid=$(uuidgen)
 
-exit
+# List Sag
 
-curl -sH "Content-Type: application/json" -X PUT -d "$(cat test_data/klasse_opdater.json)" http://127.0.0.1:5000/klassifikation/klasse/$uuid
-
-
-
-# List klasser
-
-#curl -sH "Content-Type: application/json" -X GET http://127.0.0.1:5000/klassifikation/klasse?uuid=$uuid 
-
+curl -sH "Content-Type: application/json" -X GET http://127.0.0.1:5000/sag/sag?uuid=$uuid 

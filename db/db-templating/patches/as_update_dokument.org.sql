@@ -23,7 +23,8 @@ CREATE OR REPLACE FUNCTION as_update_dokument(
   tilsFremdrift DokumentFremdriftTilsType[],
   relationer DokumentRelationType[],
   varianter  DokumentVariantType[],
-  lostUpdatePreventionTZ TIMESTAMPTZ = null
+  lostUpdatePreventionTZ TIMESTAMPTZ = null,
+  auth_criteria_arr DokumentRegistreringType[]=null
 	)
   RETURNS bigint AS 
 $$
@@ -36,6 +37,7 @@ DECLARE
   prev_dokument_registrering dokument_registrering;
   dokument_relation_navn DokumentRelationKode;
   attrEgenskaberObj DokumentEgenskaberAttrType;
+  auth_filtered_uuids uuid[];
   dokument_variant_obj DokumentVariantType;
   dokument_variant_egenskab_obj DokumentVariantEgenskaberType;
   dokument_del_obj DokumentDelType;
@@ -59,12 +61,20 @@ BEGIN
 --create a new registrering
 
 IF NOT EXISTS (select a.id from dokument a join dokument_registrering b on b.dokument_id=a.id  where a.id=dokument_uuid) THEN
-   RAISE EXCEPTION 'Unable to update dokument with uuid [%], being unable to any previous registrations.',dokument_uuid;
+   RAISE EXCEPTION 'Unable to update dokument with uuid [%], being unable to find any previous registrations.',dokument_uuid;
 END IF;
 
 PERFORM a.id FROM dokument a
 WHERE a.id=dokument_uuid
 FOR UPDATE; --We synchronize concurrent invocations of as_updates of this particular object on a exclusive row lock. This lock will be held by the current transaction until it terminates.
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_dokument(array[dokument_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[dokument_uuid]) THEN
+  RAISE EXCEPTION 'Unable to update dokument with uuid [%]. Object does not met stipulated criteria:%',dokument_uuid,to_json(auth_criteria_arr)  USING ERRCODE = MO401; 
+END IF;
+/*********************/
+
 
 new_dokument_registrering := _as_create_dokument_registrering(dokument_uuid,livscykluskode, brugerref, note);
 prev_dokument_registrering := _as_get_prev_dokument_registrering(new_dokument_registrering);

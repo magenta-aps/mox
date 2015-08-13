@@ -11,15 +11,23 @@ NOTICE: This file is auto-generated using the script: apply-template.py bruger a
 
 CREATE OR REPLACE FUNCTION as_read_bruger(bruger_uuid uuid,
   registrering_tstzrange tstzrange,
-  virkning_tstzrange tstzrange)
+  virkning_tstzrange tstzrange,
+  auth_criteria_arr BrugerRegistreringType[]=null
+  )
   RETURNS BrugerType AS
-  $BODY$
-SELECT 
-*
-FROM as_list_bruger(ARRAY[bruger_uuid],registrering_tstzrange,virkning_tstzrange)
-LIMIT 1
- 	$BODY$
-LANGUAGE sql STABLE
+  $$
+DECLARE
+	resArr BrugerType[];
+BEGIN  
+resArr:= as_list_bruger(ARRAY[bruger_uuid],registrering_tstzrange,virkning_tstzrange,auth_criteria_arr);
+IF resArr is not null and coalesce(array_length(resArr,1),0)=1 THEN
+	RETURN resArr[1];
+ELSE
+	RETURN null;
+END IF;
+
+END;
+$$ LANGUAGE plpgsql STABLE
 ;
 
 
