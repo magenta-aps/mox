@@ -7,14 +7,14 @@ from ..db_helpers import get_state_names, get_relation_names, get_state_field
 def build_registration(class_name, list_args):
     registration = {}
     for f in list_args:
-        attr = registration.setdefault('attributter', {})
+        attr = registration.setdefault('attributes', {})
         for attr_name in get_attribute_names(class_name):
             if f in get_attribute_fields(attr_name):
                 for attr_value in list_args[f]:
                     attr_period = {'virkning': None, f: attr_value}
                     attr.setdefault(attr_name, []).append(attr_period)
 
-        state = registration.setdefault('tilstande', {})
+        state = registration.setdefault('states', {})
         for state_name in get_state_names(class_name):
             state_field_name = get_state_field(class_name,
                                                state_name)
@@ -27,7 +27,7 @@ def build_registration(class_name, list_args):
                         'virkning': None
                     })
 
-        relation = registration.setdefault('relationer', {})
+        relation = registration.setdefault('relations', {})
         if f in get_relation_names(class_name):
             relation[f] = []
             # Support multiple relation references at a time
@@ -36,6 +36,10 @@ def build_registration(class_name, list_args):
                     'uuid': rel,
                     'virkning': None
                 })
+
+        if class_name == "Dokument":
+            # TODO: Look for variant egenskaber
+            registration.setdefault("variants", {})
     print registration
     return registration
 

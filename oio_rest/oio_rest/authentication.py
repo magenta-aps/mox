@@ -2,7 +2,7 @@ from base64 import b64decode
 from functools import wraps
 import os
 from flask import request, Response
-from werkzeug.exceptions import Unauthorized
+from utils import UnauthorizedException
 import zlib
 import gzip
 from auth.saml2 import Saml2_Assertion
@@ -27,16 +27,18 @@ def check_saml_authentication():
         Authorization: SAML-GZIPPED <base64-encoded gzipped SAML assertion>
 
     If the token is not present, or is not valid, raises an
-    `werkzeug.exceptions.Unauthorized` exception."""
+    `UnauthorizedException` exception."""
     auth_header = request.headers.get('Authorization')
     if auth_header is None:
-        raise Unauthorized("No Authorization header present")
+        raise UnauthorizedException("No Authorization header present")
 
     # In Python, s.split(None) means "split on one or more whitespace chars".
     (auth_type, encoded_token) = auth_header.split(None, 1)
     auth_type = auth_type.lower()
     if auth_type != 'saml-gzipped':
-        raise Unauthorized("Unknown authorization type %s." % auth_type)
+        raise UnauthorizedException(
+            "Unknown authorization type %s." % auth_type
+        )
 
     binary_token = b64decode(encoded_token)
 
@@ -66,7 +68,7 @@ def check_saml_authentication():
     except Exception as e:
         errmsg = "SAML token validation failed: %s" % e.message
         print errmsg
-        raise Unauthorized(errmsg)
+        raise UnauthorizedException(errmsg)
 
 
 def requires_auth(f):
