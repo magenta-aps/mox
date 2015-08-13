@@ -18,6 +18,12 @@ from authentication import requires_auth
 def j(t):
     return jsonify(output=t)
 
+class Registration(object):
+    def __init__(self, oio_class, states, attributes, relations):
+        self.oio_class = oio_class
+        self.states = states
+        self.attributes = attributes
+        self.relations = relations
 
 class OIOStandardHierarchy(object):
     """Implement API for entire hierarchy."""
@@ -104,11 +110,8 @@ class OIORestObject(object):
             return jsonify({'uuid': None}), 400
 
         note = input.get("note", "")
-        attributes = input.get("attributter", {})
-        states = input.get("tilstande", {})
-        relations = input.get("relationer", {})
-        uuid = db.create_or_import_object(cls.__name__, note, attributes,
-                                          states, relations)
+        registration = cls.gather_registration(input)
+        uuid = db.create_or_import_object(cls.__name__, note, registration)
         return jsonify({'uuid': uuid}), 201
 
     @classmethod
@@ -186,6 +189,16 @@ class OIORestObject(object):
         return jsonify({uuid: object})
 
     @classmethod
+    def gather_registration(cls, input):
+        """Return a registration dict from the input dict."""
+        attributes = input.get("attributter", {})
+        states = input.get("tilstande", {})
+        relations = input.get("relationer", {})
+        return {"states": states,
+                "attributes": attributes,
+                "relations": relations}
+
+    @classmethod
     @requires_auth
     def put_object(cls, uuid):
         """
@@ -196,14 +209,13 @@ class OIORestObject(object):
             return jsonify({'uuid': None}), 400
         # Get most common parameters if available.
         note = input.get("note", "")
-        attributes = input.get("attributter", {})
-        states = input.get("tilstande", {})
-        relations = input.get("relationer", {})
+
+        registration = cls.gather_registration(input)
 
         if not db.object_exists(cls.__name__, uuid):
             # Do import.
-            result = db.create_or_import_object(cls.__name__, note, attributes,
-                                                states, relations, uuid)
+            result = db.create_or_import_object(cls.__name__, note,
+                                                registration, uuid)
             # TODO: When connected to DB, use result properly.
             return jsonify({'uuid': uuid}), 200
         else:
@@ -216,8 +228,7 @@ class OIORestObject(object):
                 return jsonify({'uuid': uuid}), 200
             else:
                 # Edit/change
-                result = db.update_object(cls.__name__, note, attributes,
-                                          states, relations, uuid)
+                result = db.update_object(cls.__name__, note, registration, uuid)
                 return jsonify({'uuid': uuid}), 200
         return j(u"Forkerte parametre!"), 405
 
@@ -230,7 +241,9 @@ class OIORestObject(object):
             return jsonify({'uuid': None}), 400
         note = input.get("Note", "")
         class_name = cls.__name__
-        result = db.delete_object(class_name, note, uuid)
+        # Gather a blank registration
+        registration = cls.gather_registration({})
+        result = db.delete_object(class_name, registration, note, uuid)
 
         return jsonify({'uuid': uuid}), 200
 
