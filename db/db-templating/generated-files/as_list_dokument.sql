@@ -11,9 +11,28 @@ NOTICE: This file is auto-generated using the script: apply-template.py dokument
 
 CREATE OR REPLACE FUNCTION as_list_dokument(dokument_uuids uuid[],
   registrering_tstzrange tstzrange,
-  virkning_tstzrange tstzrange)
-  RETURNS setof DokumentType AS
-  $BODY$
+  virkning_tstzrange tstzrange,
+  auth_criteria_arr DokumentRegistreringType[]=null
+  )
+  RETURNS DokumentType[] AS
+$$
+DECLARE
+	auth_filtered_uuids uuid[];
+	result DokumentType[];
+BEGIN
+
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_dokument(dokument_uuids,auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=coalesce(array_length(dokument_uuids,1),0) AND auth_filtered_uuids @>dokument_uuids) THEN
+  RAISE EXCEPTION 'Unable to list dokument with uuids [%]. All objects do not fullfill the stipulated criteria:%',dokument_uuids,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
+SELECT 
+array_agg( x.dokumentObj) into result
+FROM
+(
 SELECT
 ROW(
 	a.dokument_id,
@@ -27,7 +46,7 @@ ROW(
 		)::DokumentRegistreringType
 		order by upper((a.registrering).TimePeriod) DESC		
 	) 
-):: DokumentType
+):: DokumentType  dokumentObj
 FROM
 (
 	SELECT
@@ -132,9 +151,15 @@ WHERE a.dokument_id IS NOT NULL
 GROUP BY 
 a.dokument_id
 order by a.dokument_id
-
-$BODY$
-LANGUAGE sql STABLE
+) as x
 ;
+
+
+
+RETURN result;
+
+END;
+$$ LANGUAGE plpgsql STABLE;
+
 
 

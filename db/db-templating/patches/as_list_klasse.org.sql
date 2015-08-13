@@ -11,10 +11,28 @@ NOTICE: This file is auto-generated using the script: apply-template.py klasse a
 
 CREATE OR REPLACE FUNCTION as_list_klasse(klasse_uuids uuid[],
   registrering_tstzrange tstzrange,
-  virkning_tstzrange tstzrange)
-  RETURNS setof KlasseType AS
-  $BODY$
+  virkning_tstzrange tstzrange,
+  auth_criteria_arr KlasseRegistreringType[]=null
+  )
+  RETURNS KlasseType[] AS
+$$
+DECLARE
+	auth_filtered_uuids uuid[];
+	result KlasseType[];
+BEGIN
 
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_klasse(klasse_uuids,auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=coalesce(array_length(klasse_uuids,1),0) AND auth_filtered_uuids @>klasse_uuids) THEN
+  RAISE EXCEPTION 'Unable to list klasse with uuids [%]. All objects do not fullfill the stipulated criteria:%',klasse_uuids,to_json(auth_criteria_arr)  USING ERRCODE = MO401; 
+END IF;
+/*********************/
+
+SELECT 
+array_agg( x.klasseObj) into result
+FROM
+(
 SELECT
 ROW(
 	a.klasse_id,
@@ -27,7 +45,7 @@ ROW(
 		)::KlasseRegistreringType
 		order by upper((a.registrering).TimePeriod) DESC		
 	) 
-):: KlasseType
+):: KlasseType  klasseObj
 FROM
 (
 	SELECT
@@ -42,12 +60,14 @@ FROM
 		ROW (
 				b.rel_type,
 				b.virkning,
-				b.rel_maal 
+				b.rel_maal_uuid,
+				b.rel_maal_urn,
+				b.objekt_type 
 			):: KlasseRelationType
 		ELSE
 		NULL
 		END
-		order by b.rel_maal,b.rel_type,b.virkning
+		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.objekt_type,b.virkning
 	)) KlasseRelationArr
 	FROM
 	(
@@ -70,10 +90,10 @@ FROM
 				)) KlasseTilsPubliceretArr		
 			FROM
 			(
-				SELECT
-				a.klasse_id,
-				a.klasse_registrering_id,
-				a.registrering,
+					SELECT
+					a.klasse_id,
+					a.klasse_registrering_id,
+					a.registrering,
 					_remove_nulls_in_array(array_agg(
 						CASE 
 						WHEN a.attr_id is not null THEN
@@ -167,12 +187,19 @@ FROM
 	a.KlasseAttrEgenskaberArr,
 	a.KlasseTilsPubliceretArr
 ) as a
+WHERE a.klasse_id IS NOT NULL
 GROUP BY 
 a.klasse_id
 order by a.klasse_id
-
-$BODY$
-LANGUAGE sql STABLE
+) as x
 ;
+
+
+
+RETURN result;
+
+END;
+$$ LANGUAGE plpgsql STABLE;
+
 
 

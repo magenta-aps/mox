@@ -22,7 +22,8 @@ CREATE OR REPLACE FUNCTION as_update_organisation(
   attrEgenskaber OrganisationEgenskaberAttrType[],
   tilsGyldighed OrganisationGyldighedTilsType[],
   relationer OrganisationRelationType[],
-  lostUpdatePreventionTZ TIMESTAMPTZ = null
+  lostUpdatePreventionTZ TIMESTAMPTZ = null,
+  auth_criteria_arr OrganisationRegistreringType[]=null
 	)
   RETURNS bigint AS 
 $$
@@ -35,17 +36,26 @@ DECLARE
   prev_organisation_registrering organisation_registrering;
   organisation_relation_navn OrganisationRelationKode;
   attrEgenskaberObj OrganisationEgenskaberAttrType;
+  auth_filtered_uuids uuid[];
 BEGIN
 
 --create a new registrering
 
 IF NOT EXISTS (select a.id from organisation a join organisation_registrering b on b.organisation_id=a.id  where a.id=organisation_uuid) THEN
-   RAISE EXCEPTION 'Unable to update organisation with uuid [%], being unable to any previous registrations.',organisation_uuid;
+   RAISE EXCEPTION 'Unable to update organisation with uuid [%], being unable to find any previous registrations.',organisation_uuid;
 END IF;
 
 PERFORM a.id FROM organisation a
 WHERE a.id=organisation_uuid
 FOR UPDATE; --We synchronize concurrent invocations of as_updates of this particular object on a exclusive row lock. This lock will be held by the current transaction until it terminates.
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_organisation(array[organisation_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[organisation_uuid]) THEN
+  RAISE EXCEPTION 'Unable to update organisation with uuid [%]. Object does not met stipulated criteria:%',organisation_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
 
 new_organisation_registrering := _as_create_organisation_registrering(organisation_uuid,livscykluskode, brugerref, note);
 prev_organisation_registrering := _as_get_prev_organisation_registrering(new_organisation_registrering);

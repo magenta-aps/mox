@@ -1,4 +1,5 @@
-
+from collections import namedtuple
+from datetime import datetime
 import os
 from enum import Enum
 
@@ -38,6 +39,7 @@ def adapt(value):
         adapter.prepare(adapt_connection)
     return unicode(adapter.getquoted(), adapt_connection.encoding)
 
+
 jinja_env.filters['adapt'] = adapt
 
 """
@@ -51,6 +53,7 @@ def get_connection():
                                                                DB_USER))
     connection.autocommit = True
     return connection
+
 
 adapt_connection = get_connection()
 
@@ -72,6 +75,8 @@ def convert_attr_value(attribute_name, attribute_field_name,
     elif field_type == "offentlighedundtagettype":
         return OffentlighedUndtaget(attribute_field_value['alternativtitel'],
                                     attribute_field_value['hjemmel'])
+    elif field_type == "date":
+        return datetime.strptime(attribute_field_value, "%Y-%m-%d").date()
     else:
         return attribute_field_value
 
@@ -119,6 +124,10 @@ def convert_relations(relations, class_name):
                 )
     return relations
 
+def convert_variants(variants):
+    """Convert variants."""
+    # TODO
+    return variants
 
 class Livscyklus(Enum):
     OPSTAAET = 'Opstaaet'
@@ -159,33 +168,52 @@ def sql_relations_array(class_name, relations):
     return sql
 
 
-def sql_convert_registration(states, attributes, relations, class_name):
+def sql_variant_array(class_name, variants):
+    """Return an SQL array of type <class_name>VariantType[]."""
+    t = jinja_env.get_template('variant_array.sql')
+    sql = t.render(class_name=class_name, variants=variants)
+    return sql
+
+
+def sql_convert_registration(registration, class_name):
     """Convert input JSON to the SQL arrays we need."""
+    registration["attributes"] = convert_attributes(registration["attributes"])
+    registration["relations"] = convert_relations(registration["relations"],
+                                               class_name)
+    if "variants" in registration:
+        registration["variants"] = convert_variants(registration["variants"])
+
+    states = registration["states"]
     sql_states = []
     for s in get_state_names(class_name):
         periods = states[s] if s in states else []
         sql_states.append(
             sql_state_array(s, periods, class_name)
         )
+    registration["states"] = sql_states
 
+    attributes = registration["attributes"]
     sql_attributes = []
     for a in get_attribute_names(class_name):
         periods = attributes[a] if a in attributes else []
         sql_attributes.append(
             sql_attribute_array(a, periods)
         )
+    registration["attributes"] = sql_attributes
 
+    relations = registration["relations"]
     sql_relations = sql_relations_array(class_name, relations)
+    registration["relations"] = sql_relations
 
-    return (sql_states, sql_attributes, sql_relations)
+    return registration
 
 
 def sql_get_registration(class_name, time_period, life_cycle_code,
-                         user_ref, note, registration_tuple):
+                         user_ref, note, registration):
     """
     Return a an SQL registrering object of type
     <class_name>RegistreringType[].
-    Expects a tuple returned from sql_convert_registration.
+    Expects a Registration object returned from sql_convert_registration.
     """
     sql_template = jinja_env.get_template('registration.sql')
     sql = sql_template.render(
@@ -194,9 +222,10 @@ def sql_get_registration(class_name, time_period, life_cycle_code,
         life_cycle_code=life_cycle_code,
         user_ref=user_ref,
         note=note,
-        states=registration_tuple[0],
-        attributes=registration_tuple[1],
-        relations=registration_tuple[2])
+        states=registration["states"],
+        attributes=registration["attributes"],
+        relations=registration["relations"],
+        variants=registration.get("variants", None))
     return sql
 
 
@@ -209,12 +238,7 @@ def sql_convert_restrictions(class_name, restrictions):
     sql_restrictions = map(
         lambda r: sql_get_registration(
             class_name, None, None, None, None,
-            sql_convert_registration(
-                r.get('tilstande', {}),
-                convert_attributes(r.get('attributter', {})),
-                convert_relations(r.get('relationer', {}), class_name),
-                class_name
-            )
+            sql_convert_registration(r, class_name)
         ),
         registrations
     )
@@ -236,6 +260,7 @@ def get_restrictions_as_sql(user, class_name, operation):
     sql = sql_template.render(restrictions=sql_restrictions)
     return sql
 
+
 """
     GENERAL OBJECT RELATED FUNCTIONS
 """
@@ -253,7 +278,7 @@ def object_exists(class_name, uuid):
     return result
 
 
-def create_or_import_object(class_name, note, attributes, states, relations,
+def create_or_import_object(class_name, note, registration,
                             uuid=None):
     """Create a new object by calling the corresponding stored procedure.
 
@@ -267,10 +292,7 @@ def create_or_import_object(class_name, note, attributes, states, relations,
                        else Livscyklus.IMPORTERET.value)
     user_ref = get_authenticated_user()
 
-    attributes = convert_attributes(attributes)
-    relations = convert_relations(relations, class_name)
-    registration = sql_convert_registration(states, attributes, relations,
-                                            class_name)
+    registration = sql_convert_registration(registration, class_name)
     sql_registration = sql_get_registration(class_name, None, life_cycle_code,
                                             user_ref, note, registration)
 
@@ -297,7 +319,7 @@ def create_or_import_object(class_name, note, attributes, states, relations,
     return output[0]
 
 
-def delete_object(class_name, note, uuid):
+def delete_object(class_name, registration, note, uuid):
     """Delete object by using the stored procedure.
 
     Deleting is the same as updating with the life cycle code "Slettet".
@@ -306,9 +328,7 @@ def delete_object(class_name, note, uuid):
     user_ref = get_authenticated_user()
     life_cycle_code = Livscyklus.SLETTET.value
     sql_template = jinja_env.get_template('delete_object.sql')
-    (
-        sql_states, sql_attributes, sql_relations
-    ) = sql_convert_registration([], [], {}, class_name)
+    registration = sql_convert_registration(registration, class_name)
     sql_restrictions = get_restrictions_as_sql(
         get_authenticated_user(),
         class_name,
@@ -320,9 +340,10 @@ def delete_object(class_name, note, uuid):
         life_cycle_code=life_cycle_code,
         user_ref=user_ref,
         note=note,
-        states=sql_states,
-        attributes=sql_attributes,
-        relations=sql_relations,
+        states=registration["states"],
+        attributes=registration["attributes"],
+        relations=registration["relations"],
+        variants=registration.get("variants", None),
         restrictions=sql_restrictions
     )
     # Call Postgres! Return OK or not accordingly
@@ -360,16 +381,12 @@ def passivate_object(class_name, note, uuid):
     return output[0]
 
 
-def update_object(class_name, note, attributes, states, relations, uuid=None):
+def update_object(class_name, note, registration, uuid=None):
     """Update object with the partial data supplied."""
     life_cycle_code = Livscyklus.RETTET.value
     user_ref = get_authenticated_user()
 
-    attributes = convert_attributes(attributes)
-    relations = convert_relations(relations, class_name)
-    (
-        sql_states, sql_attributes, sql_relations
-    ) = sql_convert_registration(states, attributes, relations, class_name)
+    registration = sql_convert_registration(registration, class_name)
 
     sql_restrictions = get_restrictions_as_sql(
         get_authenticated_user(),
@@ -384,9 +401,10 @@ def update_object(class_name, note, attributes, states, relations, uuid=None):
         life_cycle_code=life_cycle_code,
         user_ref=user_ref,
         note=note,
-        states=sql_states,
-        attributes=sql_attributes,
-        relations=sql_relations,
+        states=registration["states"],
+        attributes=registration["attributes"],
+        relations=registration["relations"],
+        variants=registration.get("variants", None),
         restrictions=sql_restrictions)
     # Call PostgreSQL
     conn = get_connection()
@@ -461,7 +479,6 @@ def search_objects(class_name, uuid, registration,
                    life_cycle_code=None, user_ref=None, note=None,
                    any_attr_value_arr=None, any_rel_uuid_arr=None,
                    first_result=0, max_results=2147483647):
-
     if not any_attr_value_arr:
         any_attr_value_arr = []
     if not any_rel_uuid_arr:
@@ -469,27 +486,14 @@ def search_objects(class_name, uuid, registration,
     if uuid is not None:
         assert isinstance(uuid, basestring)
 
-    (attributes, states, relations) = (registration.get('attributter', None),
-                                       registration.get('tilstande', None),
-                                       registration.get('relationer', None))
-
-    attributes = convert_attributes(attributes)
-    relations = convert_relations(relations, class_name)
-
     time_period = None
     if registreret_fra is not None or registreret_til is not None:
         time_period = DateTimeTZRange(registreret_fra, registreret_til)
 
-    sql_registration = sql_get_registration(
-        class_name,
-        time_period,
-        life_cycle_code,
-        user_ref, note,
-        sql_convert_registration(
-            states, attributes, relations,
-            class_name
-        )
-    )
+    registration = sql_convert_registration(registration, class_name)
+    sql_registration = sql_get_registration(class_name, time_period,
+                                            life_cycle_code, user_ref, note,
+                                            registration)
 
     sql_template = jinja_env.get_template('search_objects.sql')
 

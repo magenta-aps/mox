@@ -11,15 +11,23 @@ NOTICE: This file is auto-generated using the script: apply-template.py sag as_r
 
 CREATE OR REPLACE FUNCTION as_read_sag(sag_uuid uuid,
   registrering_tstzrange tstzrange,
-  virkning_tstzrange tstzrange)
+  virkning_tstzrange tstzrange,
+  auth_criteria_arr SagRegistreringType[]=null
+  )
   RETURNS SagType AS
-  $BODY$
-SELECT 
-*
-FROM as_list_sag(ARRAY[sag_uuid],registrering_tstzrange,virkning_tstzrange)
-LIMIT 1
- 	$BODY$
-LANGUAGE sql STABLE
+  $$
+DECLARE
+	resArr SagType[];
+BEGIN  
+resArr:= as_list_sag(ARRAY[sag_uuid],registrering_tstzrange,virkning_tstzrange,auth_criteria_arr);
+IF resArr is not null and coalesce(array_length(resArr,1),0)=1 THEN
+	RETURN resArr[1];
+ELSE
+	RETURN null;
+END IF;
+
+END;
+$$ LANGUAGE plpgsql STABLE
 ;
 
 

@@ -22,7 +22,8 @@ CREATE OR REPLACE FUNCTION as_update_organisationenhed(
   attrEgenskaber OrganisationenhedEgenskaberAttrType[],
   tilsGyldighed OrganisationenhedGyldighedTilsType[],
   relationer OrganisationenhedRelationType[],
-  lostUpdatePreventionTZ TIMESTAMPTZ = null
+  lostUpdatePreventionTZ TIMESTAMPTZ = null,
+  auth_criteria_arr OrganisationenhedRegistreringType[]=null
 	)
   RETURNS bigint AS 
 $$
@@ -35,17 +36,26 @@ DECLARE
   prev_organisationenhed_registrering organisationenhed_registrering;
   organisationenhed_relation_navn OrganisationenhedRelationKode;
   attrEgenskaberObj OrganisationenhedEgenskaberAttrType;
+  auth_filtered_uuids uuid[];
 BEGIN
 
 --create a new registrering
 
 IF NOT EXISTS (select a.id from organisationenhed a join organisationenhed_registrering b on b.organisationenhed_id=a.id  where a.id=organisationenhed_uuid) THEN
-   RAISE EXCEPTION 'Unable to update organisationenhed with uuid [%], being unable to any previous registrations.',organisationenhed_uuid;
+   RAISE EXCEPTION 'Unable to update organisationenhed with uuid [%], being unable to find any previous registrations.',organisationenhed_uuid;
 END IF;
 
 PERFORM a.id FROM organisationenhed a
 WHERE a.id=organisationenhed_uuid
 FOR UPDATE; --We synchronize concurrent invocations of as_updates of this particular object on a exclusive row lock. This lock will be held by the current transaction until it terminates.
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_organisationenhed(array[organisationenhed_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[organisationenhed_uuid]) THEN
+  RAISE EXCEPTION 'Unable to update organisationenhed with uuid [%]. Object does not met stipulated criteria:%',organisationenhed_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
 
 new_organisationenhed_registrering := _as_create_organisationenhed_registrering(organisationenhed_uuid,livscykluskode, brugerref, note);
 prev_organisationenhed_registrering := _as_get_prev_organisationenhed_registrering(new_organisationenhed_registrering);

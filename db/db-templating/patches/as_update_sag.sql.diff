@@ -1,13 +1,13 @@
-*** generated-files/as_update_sag.sql	2015-08-11 14:43:18.326321076 +0200
---- patches/as_update_sag.org.sql	2015-08-11 14:50:27.658342458 +0200
+*** ./generated-files/as_update_sag.sql	2015-08-12 16:31:36.592524232 +0200
+--- ./patches/as_update_sag.org.sql	2015-08-12 16:39:44.060548509 +0200
 ***************
-*** 33,42 ****
---- 33,48 ----
-    read_prev_sag_reg SagRegistreringType;
+*** 35,44 ****
+--- 35,50 ----
     new_sag_registrering sag_registrering;
     prev_sag_registrering sag_registrering;
     sag_relation_navn SagRelationKode;
     attrEgenskaberObj SagEgenskaberAttrType;
+    auth_filtered_uuids uuid[];
 +   rel_type_max_index_prev_rev int;
 +   rel_type_max_index_arr _SagRelationMaxIndex[];
 +   sag_rel_type_cardinality_unlimited SagRelationKode[]:=ARRAY['andetarkiv'::SagRelationKode,'andrebehandlere'::SagRelationKode,'sekundaerpart'::SagRelationKode,'andresager'::SagRelationKode,'byggeri'::SagRelationKode,'fredning'::SagRelationKode,'journalpost'::SagRelationKode]::SagRelationKode[];
@@ -20,7 +20,7 @@
   
   IF NOT EXISTS (select a.id from sag a join sag_registrering b on b.sag_id=a.id  where a.id=sag_uuid) THEN
 ***************
-*** 64,114 ****
+*** 74,124 ****
   IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
   --raise notice 'Skipping relations, as it is explicit set to empty array. Update note [%]',note;
   ELSE
@@ -72,7 +72,7 @@
           new_sag_registrering.id, 
             ROW(
               c.tz_range_leftover,
---- 70,198 ----
+--- 80,208 ----
   IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
   --raise notice 'Skipping relations, as it is explicit set to empty array. Update note [%]',note;
   ELSE
@@ -203,7 +203,7 @@
             ROW(
               c.tz_range_leftover,
 ***************
-*** 117,127 ****
+*** 127,137 ****
                 (a.virkning).NoteTekst
             ) :: virkning,
               a.rel_maal_uuid,
@@ -215,7 +215,7 @@
         --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to _subtract_tstzrange_arr on the relations of the previous registrering 
         SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
         FROM sag_relation b
---- 201,215 ----
+--- 211,225 ----
                 (a.virkning).NoteTekst
             ) :: virkning,
               a.rel_maal_uuid,
@@ -232,7 +232,7 @@
         SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
         FROM sag_relation b
 ***************
-*** 137,180 ****
+*** 147,190 ****
       ;
     END LOOP;
   
@@ -277,7 +277,7 @@
   
   END IF;
   /**********************/
---- 225,265 ----
+--- 235,275 ----
       ;
     END LOOP;
   

@@ -11,10 +11,28 @@ NOTICE: This file is auto-generated using the script: apply-template.py facet as
 
 CREATE OR REPLACE FUNCTION as_list_facet(facet_uuids uuid[],
   registrering_tstzrange tstzrange,
-  virkning_tstzrange tstzrange)
-  RETURNS setof FacetType AS
-  $BODY$
+  virkning_tstzrange tstzrange,
+  auth_criteria_arr FacetRegistreringType[]=null
+  )
+  RETURNS FacetType[] AS
+$$
+DECLARE
+	auth_filtered_uuids uuid[];
+	result FacetType[];
+BEGIN
 
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_facet(facet_uuids,auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=coalesce(array_length(facet_uuids,1),0) AND auth_filtered_uuids @>facet_uuids) THEN
+  RAISE EXCEPTION 'Unable to list facet with uuids [%]. All objects do not fullfill the stipulated criteria:%',facet_uuids,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
+SELECT 
+array_agg( x.facetObj) into result
+FROM
+(
 SELECT
 ROW(
 	a.facet_id,
@@ -27,7 +45,7 @@ ROW(
 		)::FacetRegistreringType
 		order by upper((a.registrering).TimePeriod) DESC		
 	) 
-):: FacetType
+):: FacetType  facetObj
 FROM
 (
 	SELECT
@@ -129,9 +147,15 @@ WHERE a.facet_id IS NOT NULL
 GROUP BY 
 a.facet_id
 order by a.facet_id
-
-$BODY$
-LANGUAGE sql STABLE
+) as x
 ;
+
+
+
+RETURN result;
+
+END;
+$$ LANGUAGE plpgsql STABLE;
+
 
 
