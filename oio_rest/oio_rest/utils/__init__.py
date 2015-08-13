@@ -18,10 +18,13 @@ class OIOFlaskException(Exception):
 class NotAllowedException(OIOFlaskException):
     status_code = 403
 
-
 class NotFoundException(OIOFlaskException):
     status_code = 404
 
+class UnauthorizedException(OIOFlaskException):
+    status_code = 401
 
 class BadRequestException(OIOFlaskException):
     status_code = 400
+
+
