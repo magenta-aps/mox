@@ -2,7 +2,7 @@ from datetime import datetime
 import json
 from urlparse import urlparse
 from flask import jsonify, request
-from werkzeug.exceptions import BadRequest
+from utils import BadRequestException
 
 import db
 from db_helpers import get_attribute_names, get_attribute_fields
@@ -80,18 +80,20 @@ class OIORestObject(object):
             field_name = o.path
             file_obj = request.files.get(field_name, None)
             if file_obj is None:
-                raise BadRequest(
+                raise BadRequestException(
                     ('The content URL "%s" referenced the field "%s", but it '
                      'was not present in the request.') % (url, o.path)
                 )
             return file_obj
         else:
-            raise BadRequest('The content field referenced an unsupported '
-                             'scheme or was invalid. The URLs must be of the'
-                             'form: field:<form-field>, where <form-field> '
-                             'is the name of the field in the '
-                             'multipart/form-data-encoded request that '
-                             'contains the file binary data.')
+            raise BadRequestException(
+                'The content field referenced an unsupported '
+                'scheme or was invalid. The URLs must be of the'
+                'form: field:<form-field>, where <form-field> '
+                'is the name of the field in the '
+                'multipart/form-data-encoded request that '
+                'contains the file binary data.'
+            )
 
     @classmethod
     @requires_auth

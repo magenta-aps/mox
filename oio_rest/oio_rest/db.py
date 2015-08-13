@@ -19,6 +19,7 @@ from db_helpers import JournalNotat, JournalDokument
 
 from auth.restrictions import Operation, get_restrictions
 from utils import restriction_to_registration
+from utils import NotFoundException, NotAllowedException
 
 """
     Jinja2 Environment
@@ -146,8 +147,6 @@ def sql_state_array(state, periods, class_name):
 def sql_attribute_array(attribute, periods):
     """Return an SQL array of type <attribute>AttrType[]."""
     t = jinja_env.get_template('attribute_array.sql')
-    print "Attribute:", attribute
-    print "Perioder:", periods
     sql = t.render(attribute_name=attribute, attribute_periods=periods)
     # print "SQL", sql
     return sql
@@ -157,7 +156,6 @@ def sql_relations_array(class_name, relations):
     """Return an SQL array of type <class_name>RelationType[]."""
     t = jinja_env.get_template('relations_array.sql')
     sql = t.render(class_name=class_name, relations=relations)
-    print "RELATIONS:", relations
     return sql
 
 
@@ -214,7 +212,7 @@ def sql_convert_restrictions(class_name, restrictions):
             sql_convert_registration(
                 r.get('tilstande', {}),
                 convert_attributes(r.get('attributter', {})),
-                convert_relations(r.get('relationer', {})),
+                convert_relations(r.get('relationer', {}), class_name),
                 class_name
             )
         ),
@@ -222,8 +220,6 @@ def sql_convert_restrictions(class_name, restrictions):
     )
     return sql_restrictions
 
-class NotAllowedRestriction(Exception):
-    pass
 
 def get_restrictions_as_sql(user, class_name, operation):
     """Get restrictions for user and operation, return as array of SQL."""
@@ -231,7 +227,9 @@ def get_restrictions_as_sql(user, class_name, operation):
         return None
     restrictions = get_restrictions(user, class_name, operation)
     if restrictions == []:
-        raise NotAllowedRestriction("Not allowed, map to 403 Forbidden!")
+        raise NotAllowedException("Not allowed!")
+    elif restrictions is None:
+        return None
 
     sql_restrictions = sql_convert_restrictions(class_name, restrictions)
     sql_template = jinja_env.get_template('restrictions.sql')
@@ -291,7 +289,6 @@ def create_or_import_object(class_name, note, attributes, states, relations,
         note=note,
         registration=sql_registration,
         restrictions=sql_restrictions)
-    print sql
     # Call Postgres! Return OK or not accordingly
     conn = get_connection()
     cursor = conn.cursor()
@@ -369,7 +366,7 @@ def update_object(class_name, note, attributes, states, relations, uuid=None):
     user_ref = get_authenticated_user()
 
     attributes = convert_attributes(attributes)
-    relations = convert_relations(relations)
+    relations = convert_relations(relations, class_name)
     (
         sql_states, sql_attributes, sql_relations
     ) = sql_convert_registration(states, attributes, relations, class_name)
@@ -435,6 +432,11 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
         'virkning_tstzrange': DateTimeTZRange(virkning_fra, virkning_til)
     })
     output = cursor.fetchone()
+    if not output:
+        # nothing found
+        raise NotFoundException("{0} with UUID {1} not found.".format(
+            class_name, uuid
+        ))
     return filter_nulls(output)
 
 
@@ -472,7 +474,7 @@ def search_objects(class_name, uuid, registration,
                                        registration.get('relationer', None))
 
     attributes = convert_attributes(attributes)
-    relations = convert_relations(relations)
+    relations = convert_relations(relations, class_name)
 
     time_period = None
     if registreret_fra is not None or registreret_til is not None:
@@ -513,7 +515,6 @@ def search_objects(class_name, uuid, registration,
         # TODO: Get this into the SQL function signature!
         restrictions=sql_restrictions
     )
-    print "Search SQL", sql
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute(sql)

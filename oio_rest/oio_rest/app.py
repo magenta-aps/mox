@@ -3,6 +3,8 @@
 from flask import Flask, jsonify
 from werkzeug.routing import BaseConverter
 
+from utils import OIOFlaskException
+
 app = Flask(__name__)
 
 
@@ -25,6 +27,14 @@ def sitemap():
             links.append(str(rule))
             print rule
     return jsonify({"site-map": links})
+
+
+@app.errorhandler(OIOFlaskException)
+def handle_not_allowed(error):
+    dct = error.to_dict()
+    response = jsonify(dct)
+    response.status_code = error.status_code
+    return response
 
 
 def main():
