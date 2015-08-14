@@ -29,7 +29,7 @@ class ContentStore:
         dir_list = time.strftime("%Y %m %d %H %M", time.gmtime()).split()
         return os.path.join(*dir_list)
 
-    def _get_path_for_url(self, url):
+    def get_filename_for_url(self, url):
         """Return the full path on the file-system for the URL.
 
         The URL should be of the form `store:my/sub/path/to/file.bin"""
@@ -60,7 +60,7 @@ class ContentStore:
 
     def remove(self, url):
         """Remove the file specified by the given content URL."""
-        path = self._get_path_for_url(url)
+        path = self.get_filename_for_url(url)
         os.remove(path)
 
         # Try to cleanup any intermediary directories.

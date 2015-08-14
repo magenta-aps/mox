@@ -268,10 +268,26 @@ def object_exists(class_name, uuid):
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute(sql, (uuid,))
-    result = cursor.fetchone()[0]
+    result = cursor.fetchone()
 
     return result
 
+def get_document_from_content_url(content_url):
+    """Return the UUID of the Dokument which has a specific indhold URL.
+
+    Also returns the mimetype of the indhold URL as stored in the
+    DokumenDelEgenskaber.
+    """
+    sql = """select r.dokument_id, de.mimetype from actual_state.dokument_del_egenskaber de
+join actual_state.dokument_del d on d.id = de.del_id join
+actual_state.dokument_variant v on v.id = d.variant_id join
+actual_state.dokument_registrering r on r.id = v.dokument_registrering_id
+where de.indhold = %s"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(sql, (content_url,))
+    result = cursor.fetchone()
+    return result
 
 def create_or_import_object(class_name, note, registration,
                             uuid=None):
