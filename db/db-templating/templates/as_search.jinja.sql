@@ -15,7 +15,8 @@ CREATE OR REPLACE FUNCTION as_search_{{oio_type}}(
 	maxResults int = 2147483647,
 	anyAttrValueArr text[] = '{}'::text[],
 	anyRelUuidArr	uuid[] = '{}'::uuid[],
-	anyRelUrnArr text[] = '{}'::text[]
+	anyRelUrnArr text[] = '{}'::text[],
+	auth_criteria_arr {{oio_type|title}}RegistreringType[]=null
 	)
   RETURNS uuid[] AS 
 $$
@@ -33,6 +34,7 @@ DECLARE
 	anyAttrValue text;
 	anyRelUuid uuid;
 	anyRelUrn text;
+	auth_filtered_uuids uuid[];
 BEGIN
 
 --RAISE DEBUG 'step 0:registreringObj:%',registreringObj;
@@ -493,7 +495,13 @@ END IF;
 --RAISE DEBUG '{{oio_type}}_candidates step 6:%',{{oio_type}}_candidates;
 
 
-return {{oio_type}}_candidates;
+										 
+/*** Filter out the objects that does not meets the stipulated access criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_{{oio_type}}({{oio_type}}_candidates,auth_criteria_arr); 
+/*********************/
+
+
+return auth_filtered_uuids;
 
 
 END;

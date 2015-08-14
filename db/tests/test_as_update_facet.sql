@@ -42,6 +42,8 @@ DECLARE
 	urnRedaktoer2 text:='urn:isbn:0451450523'::text;
 	uuidRegistrering uuid :='e12e46b3-6f67-4bfd-a5bb-768844cbbe71'::uuid;
 	update_reg_id bigint;
+	update_reg_id2 bigint;
+	update_reg_id3 bigint;
 	actual_relationer FacetRelationType[];
 	actual_publiceret FacetPubliceretTilsType[];
 	actual_egenskaber FacetEgenskaberAttrType[];
@@ -441,6 +443,74 @@ ARRAY[
 
 	]::FacetEgenskaberAttrType[]
     ,    'egenskaber updated' );
+
+/*********************************************/
+--Test if providing auth criteria will trigger exception as expected
+BEGIN
+
+update_reg_id2:=as_update_facet(
+  new_uuid, '592fcdea-0f88-4af1-b2b5-990ae4787ecd'::uuid,'Test update 2'::text,
+  'Rettet'::Livscykluskode,          
+  array[facetEgenskabC,facetEgenskabD]::FacetEgenskaberAttrType[],
+  array[]::FacetPubliceretTilsType[],
+  array[facetRelAnsvarligB]::FacetRelationType[]
+  ,null --lostUpdatePreventionTZ
+  , ARRAY [ ROW (
+	 	null --reg base
+	 	,null --states
+	 	,ARRAY[
+		 	ROW (
+			null --'brugervendt_noegle_B',
+		   ,null--'facetbeskrivelse_B',
+		   ,null --'facetopbygning_B',
+			,null--'facetophavsret_BC',
+		   , 'facetplan_343434'
+		   ,null --'facetsupplement_B',
+		   ,NULL --restkilde
+		   ,null --virkning
+			) :: FacetEgenskaberAttrType
+	 	]::FacetEgenskaberAttrType[] 
+	 	,null --relationer
+	 	)::FacetRegistreringType]:: FacetRegistreringType[]
+	);
+
+RETURN NEXT ok(false,'as_update_facet test auth criteria#1: Should throw MO401 exception');
+EXCEPTION  
+WHEN sqlstate 'MO401' THEN
+	RETURN NEXT ok(true,'as_update_facet test auth criteria#1: Throws MO401 exception (as it should)');
+END;
+
+/*********************************************/
+--Test if  providing fullfilled auth criteria will NOT trigger exception as expected
+
+
+update_reg_id3:=as_update_facet(
+  new_uuid, '592fcdea-0f88-4af1-b2b5-990ae4787ecd'::uuid,'Test update 3'::text,
+  'Rettet'::Livscykluskode,          
+  array[facetEgenskabC,facetEgenskabD]::FacetEgenskaberAttrType[],
+  array[]::FacetPubliceretTilsType[],
+  array[facetRelAnsvarligB]::FacetRelationType[]
+  ,null --lostUpdatePreventionTZ
+  , ARRAY [ ROW (
+	 	null --reg base
+	 	,null --states
+	 	,ARRAY[
+		 	ROW (
+				null --'brugervendt_noegle_B',
+			   ,null --'facetbeskrivelse_B',
+			   ,null--'facetopbygning_B',
+				,'facetophavsret_C'
+			   ,null --'facetplan_B',
+			   ,null --'facetsupplement_B',
+			   ,NULL --restkilde
+			   ,null --virkEgenskaberB
+			) :: FacetEgenskaberAttrType
+	 	]::FacetEgenskaberAttrType[] 
+	 	,null --relationer
+	 	)::FacetRegistreringType]:: FacetRegistreringType[]
+	);
+
+RETURN NEXT ok(update_reg_id3<>update_reg_id,'No expetion thrown when access criteria is met');
 
 
 END;

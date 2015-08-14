@@ -1,13 +1,13 @@
-*** ../generated-files/as_search_klasse.sql	2015-06-22 15:46:23.170794003 +0200
---- ../patches/as_search_klasse.sql.org	2015-06-22 16:01:40.450839686 +0200
+*** generated-files/as_search_klasse.sql	2015-08-13 14:14:02.491752907 +0200
+--- patches/as_search_klasse.sql.org	2015-08-13 14:38:38.847826434 +0200
 ***************
-*** 31,40 ****
---- 31,42 ----
-    	tilsPubliceretTypeObj KlassePubliceretTilsType;
+*** 33,42 ****
+--- 33,44 ----
   	relationTypeObj KlasseRelationType;
   	anyAttrValue text;
   	anyRelUuid uuid;
   	anyRelUrn text;
+  	auth_filtered_uuids uuid[];
 + 	manipulatedAttrEgenskaberArr KlasseEgenskaberAttrType[]:='{}';
 + 	soegeordObj KlasseSoegeordType;
   BEGIN
@@ -16,7 +16,7 @@
   
   klasse_candidates_is_initialized := false;
 ***************
-*** 140,162 ****
+*** 142,164 ****
   --Filtration on attribute: Egenskaber
   --/**********************************************************//
   IF registreringObj IS NULL OR (registreringObj).attrEgenskaber IS NULL THEN
@@ -40,7 +40,7 @@
   								(
   							 		(attrEgenskaberTypeObj.virkning).TimePeriod IS NULL
   								)
---- 142,194 ----
+--- 144,196 ----
   --Filtration on attribute: Egenskaber
   --/**********************************************************//
   IF registreringObj IS NULL OR (registreringObj).attrEgenskaber IS NULL THEN
@@ -95,8 +95,8 @@
   							 		(attrEgenskaberTypeObj.virkning).TimePeriod IS NULL
   								)
 ***************
-*** 231,241 ****
---- 263,297 ----
+*** 233,243 ****
+--- 265,299 ----
   					attrEgenskaberTypeObj.aendringsnotat IS NULL
   					OR 
   					a.aendringsnotat ILIKE attrEgenskaberTypeObj.aendringsnotat --case insensitive 
@@ -133,8 +133,8 @@
   					(
   						(registreringObj.registrering).timeperiod IS NULL 
 ***************
-*** 324,333 ****
---- 380,390 ----
+*** 326,335 ****
+--- 382,392 ----
   
   			SELECT DISTINCT
   			b.klasse_id 
@@ -147,8 +147,8 @@
   				OR
   				a.beskrivelse ILIKE anyAttrValue
 ***************
-*** 339,348 ****
---- 396,411 ----
+*** 341,350 ****
+--- 398,413 ----
   				a.titel ILIKE anyAttrValue
   				OR
   				a.retskilde ILIKE anyAttrValue

@@ -19,6 +19,7 @@ class Dokument(OIORestObject):
                 "relations": relations,
                 "variants": variants}
 
+
 class DokumentHierarki(OIOStandardHierarchy):
     """Implement the Dokument Standard."""
 

@@ -18,8 +18,11 @@ from db_helpers import get_field_type, get_state_names, get_relation_field_type
 from db_helpers import get_relation_field_type, Soegeord, OffentlighedUndtaget
 from db_helpers import JournalNotat, JournalDokument, DokumentVariantType
 
+from authentication import get_authenticated_user
+
 from auth.restrictions import Operation, get_restrictions
 from utils import restriction_to_registration
+from utils import NotFoundException, NotAllowedException
 
 """
     Jinja2 Environment
@@ -55,12 +58,6 @@ def get_connection():
 
 
 adapt_connection = get_connection()
-
-
-def get_authenticated_user():
-    """Return hardcoded UUID until we get real authentication in place."""
-    # TODO: return request.saml_user_id
-    return "615957e8-4aa1-4319-a787-f1f7ad6b5e2c"
 
 
 def convert_attr_value(attribute_name, attribute_field_name,
@@ -123,12 +120,14 @@ def convert_relations(relations, class_name):
                 )
     return relations
 
+
 def convert_variants(variants):
     """Convert variants."""
     # TODO
     if variants is None:
         return None
     return [DokumentVariantType.input(variant) for variant in variants]
+
 
 class Livscyklus(Enum):
     OPSTAAET = 'Opstaaet'
@@ -157,8 +156,6 @@ def sql_state_array(state, periods, class_name):
 def sql_attribute_array(attribute, periods):
     """Return an SQL array of type <attribute>AttrType[]."""
     t = jinja_env.get_template('attribute_array.sql')
-    print "Attribute:", attribute
-    print "Perioder:", periods
     sql = t.render(attribute_name=attribute, attribute_periods=periods)
     # print "SQL", sql
     return sql
@@ -168,7 +165,6 @@ def sql_relations_array(class_name, relations):
     """Return an SQL array of type <class_name>RelationType[]."""
     t = jinja_env.get_template('relations_array.sql')
     sql = t.render(class_name=class_name, relations=relations)
-    print "RELATIONS:", relations
     return sql
 
 
@@ -176,7 +172,7 @@ def sql_convert_registration(registration, class_name):
     """Convert input JSON to the SQL arrays we need."""
     registration["attributes"] = convert_attributes(registration["attributes"])
     registration["relations"] = convert_relations(registration["relations"],
-                                               class_name)
+                                                  class_name)
     if "variants" in registration:
         registration["variants"] = adapt(
             convert_variants(registration["variants"])
@@ -243,8 +239,6 @@ def sql_convert_restrictions(class_name, restrictions):
     )
     return sql_restrictions
 
-class NotAllowedRestriction(Exception):
-    pass
 
 def get_restrictions_as_sql(user, class_name, operation):
     """Get restrictions for user and operation, return as array of SQL."""
@@ -252,7 +246,9 @@ def get_restrictions_as_sql(user, class_name, operation):
         return None
     restrictions = get_restrictions(user, class_name, operation)
     if restrictions == []:
-        raise NotAllowedRestriction("Not allowed, map to 403 Forbidden!")
+        raise NotAllowedException("Not allowed!")
+    elif restrictions is None:
+        return None
 
     sql_restrictions = sql_convert_restrictions(class_name, restrictions)
     sql_template = jinja_env.get_template('restrictions.sql')
@@ -310,7 +306,6 @@ def create_or_import_object(class_name, note, registration,
         note=note,
         registration=sql_registration,
         restrictions=sql_restrictions)
-    print sql
     # Call Postgres! Return OK or not accordingly
     conn = get_connection()
     cursor = conn.cursor()
@@ -450,6 +445,11 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
         'virkning_tstzrange': DateTimeTZRange(virkning_fra, virkning_til)
     })
     output = cursor.fetchone()
+    if not output:
+        # nothing found
+        raise NotFoundException("{0} with UUID {1} not found.".format(
+            class_name, uuid
+        ))
     return filter_nulls(output)
 
 
@@ -486,8 +486,9 @@ def search_objects(class_name, uuid, registration,
         time_period = DateTimeTZRange(registreret_fra, registreret_til)
 
     registration = sql_convert_registration(registration, class_name)
-    sql_registration = sql_get_registration(class_name, time_period, life_cycle_code,
-                                            user_ref, note, registration)
+    sql_registration = sql_get_registration(class_name, time_period,
+                                            life_cycle_code, user_ref, note,
+                                            registration)
 
     sql_template = jinja_env.get_template('search_objects.sql')
 
@@ -513,7 +514,6 @@ def search_objects(class_name, uuid, registration,
         # TODO: Get this into the SQL function signature!
         restrictions=sql_restrictions
     )
-    print "Search SQL", sql
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute(sql)

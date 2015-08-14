@@ -39,7 +39,7 @@ def get_restrictions(user, object_type, operation):
         [({}, {}, {})]
 
     is trivially true - however, if an operation is always allowed for this
-    user, the restrictions module should return None or Null.
+    user, the restrictions module should return None or NULL.
 
     The trivially false restriction is written as
 
@@ -98,7 +98,7 @@ def get_restrictions(user, object_type, operation):
 
 def get_auth_restrictions(user, object_type, operation):
     """Sample or dummy implementation - implement and specify in settings."""
-    return [
-        ({'brugervendtnoegle': 'ORGFUNK'}, {'status': 'Publiceret'},  {}),
-        ({}, {}, {'redaktoerer': 'ddc99abd-c1b0-48c2-aef7-74fea841adae'})
-    ]
+    return None  # [
+    #    ({'brugervendtnoegle': 'ORGFUNK'}, {'status': 'Publiceret'},  {}),
+    #    ({}, {}, {'redaktoerer': 'ddc99abd-c1b0-48c2-aef7-74fea841adae'})
+    #]

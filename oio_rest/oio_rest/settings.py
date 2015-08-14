@@ -26,7 +26,7 @@ USE_SAML_AUTHENTICATION = False
 
 # Whether authorization is enabled - if not, the restrictions module is not
 # called.
-DO_ENABLE_RESTRICTIONS = False
+DO_ENABLE_RESTRICTIONS = True
 
 # The module which implements the authorization restrictions.
 # Must be present in sys.path.
