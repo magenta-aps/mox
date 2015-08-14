@@ -12,8 +12,13 @@
         {{ state_array }},
         {% endfor -%}
         -- relations
-        {{ relations }}{% if restrictions %},
-            {{restrictions}}
-                {% endif %}
+        {{ relations }}
+        {% if variants -%},
+        -- variants
+        {{ variants }}
+        {% endif -%}
+        {% if restrictions -%},
+        {{restrictions}}
+        {% endif %}
     );
  

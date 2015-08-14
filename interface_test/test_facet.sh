@@ -27,7 +27,7 @@ fi
 # - Suppose no object with this ID exists.
 import_uuid=$(uuidgen)
 
-curl --write-out %{http_code} --output /test_output/facet_opret.txt -sH "Content-Type: application/json" -X PUT -d "$(cat test_data/facet_opret.json)" http://127.0.0.1:5000/klassifikation/facet/$import_uuid 
+curl --write-out %{http_code} --output test_output/facet_opret.txt -sH "Content-Type: application/json" -X PUT -d "$(cat test_data/facet_opret.json)" http://127.0.0.1:5000/klassifikation/facet/$import_uuid 
 
 # Update the facet
 
