@@ -1,12 +1,16 @@
 """"Encapsulate details about the database structure."""
 from collections import namedtuple
+from urlparse import urlparse
+from flask import request
 import psycopg2
 from psycopg2._range import DateTimeTZRange
 
 from psycopg2.extensions import adapt as psyco_adapt, ISQLQuote
 from psycopg2.extensions import register_adapter as psyco_register_adapter
+from contentstore import content_store
 
 from settings import REAL_DB_STRUCTURE as db_struct
+from utils.exceptions import BadRequestException
 
 _attribute_fields = {}
 
@@ -180,12 +184,50 @@ class DokumentDelEgenskaberType(namedtuple(
     'indeks indhold lokation mimetype virkning'
 )):
     @classmethod
+    def _get_file_storage_for_content_url(cls, url):
+        """
+        Return a FileStorage object for the form field specified by the URL.
+
+        The URL uses the scheme 'field', and its path points to a form field
+        which contains the uploaded file. For example, for a URL of 'field:f1',
+        this method would return the FileStorage object for the file
+        contained in form field 'f1'.
+        """
+        o = urlparse(url)
+        if o.scheme == 'field':
+            field_name = o.path
+            file_obj = request.files.get(field_name, None)
+            if file_obj is None:
+                raise BadRequestException(
+                    ('The content URL "%s" referenced the field "%s", but it '
+                     'was not present in the request.') % (url, o.path)
+                )
+            return file_obj
+        else:
+            raise BadRequestException(
+                'The content field referenced an unsupported '
+                'scheme or was invalid. The URLs must be of the'
+                'form: field:<form-field>, where <form-field> '
+                'is the name of the field in the '
+                'multipart/form-data-encoded request that '
+                'contains the file binary data.'
+            )
+
+    @classmethod
     def input(cls, i):
         if i is None:
             return None
+        content_url = i.get('indhold', None)
+
+        # Get FileStorage object referenced by indhold field
+        f = cls._get_file_storage_for_content_url(content_url)
+
+        # Save the file and get the URL for the saved file
+        stored_content_url = content_store.save_file_object(f)
+
         return cls(
             i.get('indeks', None),
-            i.get('indhold', None),
+            stored_content_url,
             i.get('lokation', None),
             i.get('mimetype', None),
             Virkning.input(i.get('virkning', None))
