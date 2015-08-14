@@ -18,7 +18,8 @@ CREATE OR REPLACE FUNCTION as_search_klasse(
 	maxResults int = 2147483647,
 	anyAttrValueArr text[] = '{}'::text[],
 	anyRelUuidArr	uuid[] = '{}'::uuid[],
-	anyRelUrnArr text[] = '{}'::text[]
+	anyRelUrnArr text[] = '{}'::text[],
+	auth_criteria_arr KlasseRegistreringType[]=null
 	)
   RETURNS uuid[] AS 
 $$
@@ -33,6 +34,7 @@ DECLARE
 	anyAttrValue text;
 	anyRelUuid uuid;
 	anyRelUrn text;
+	auth_filtered_uuids uuid[];
 	manipulatedAttrEgenskaberArr KlasseEgenskaberAttrType[]:='{}';
 	soegeordObj KlasseSoegeordType;
 BEGIN
@@ -1084,7 +1086,13 @@ END IF;
 --RAISE DEBUG 'klasse_candidates step 6:%',klasse_candidates;
 
 
-return klasse_candidates;
+										 
+/*** Filter out the objects that does not meets the stipulated access criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_klasse(klasse_candidates,auth_criteria_arr); 
+/*********************/
+
+
+return auth_filtered_uuids;
 
 
 END;
