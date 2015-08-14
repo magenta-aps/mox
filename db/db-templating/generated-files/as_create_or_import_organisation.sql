@@ -11,7 +11,8 @@ NOTICE: This file is auto-generated using the script: apply-template.py organisa
 
 CREATE OR REPLACE FUNCTION as_create_or_import_organisation(
   organisation_registrering OrganisationRegistreringType,
-  organisation_uuid uuid DEFAULT NULL
+  organisation_uuid uuid DEFAULT NULL,
+  auth_criteria_arr OrganisationRegistreringType[] DEFAULT NULL
 	)
   RETURNS uuid AS 
 $$
@@ -22,7 +23,7 @@ DECLARE
   organisation_tils_gyldighed_obj organisationGyldighedTilsType;
   
   organisation_relationer OrganisationRelationType;
-
+  auth_filtered_uuids uuid[];
 BEGIN
 
 IF organisation_uuid IS NULL THEN
@@ -86,15 +87,9 @@ END IF;
 
 
 
-IF organisation_registrering.attrEgenskaber IS NOT NULL THEN
+IF organisation_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(organisation_registrering.attrEgenskaber,1),0)>0 THEN
   FOREACH organisation_attr_egenskaber_obj IN ARRAY organisation_registrering.attrEgenskaber
   LOOP
-
-  IF
-  ( organisation_attr_egenskaber_obj.brugervendtnoegle IS NOT NULL AND organisation_attr_egenskaber_obj.brugervendtnoegle<>'') 
-   OR 
-  ( organisation_attr_egenskaber_obj.organisationsnavn IS NOT NULL AND organisation_attr_egenskaber_obj.organisationsnavn<>'') 
-   THEN
 
     INSERT INTO organisation_attr_egenskaber (
       brugervendtnoegle,
@@ -108,7 +103,7 @@ IF organisation_registrering.attrEgenskaber IS NOT NULL THEN
       organisation_attr_egenskaber_obj.virkning,
       organisation_registrering_id
     ;
-  END IF;
+ 
 
   END LOOP;
 END IF;
@@ -123,11 +118,9 @@ IF coalesce(array_length(organisation_registrering.tilsGyldighed, 1),0)<1  THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [gyldighed] for organisation. Oprettelse afbrydes.';
 END IF;
 
-IF organisation_registrering.tilsGyldighed IS NOT NULL THEN
+IF organisation_registrering.tilsGyldighed IS NOT NULL AND coalesce(array_length(organisation_registrering.tilsGyldighed,1),0)>0 THEN
   FOREACH organisation_tils_gyldighed_obj IN ARRAY organisation_registrering.tilsGyldighed
   LOOP
-
-  IF organisation_tils_gyldighed_obj.gyldighed IS NOT NULL AND organisation_tils_gyldighed_obj.gyldighed<>''::OrganisationGyldighedTils THEN
 
     INSERT INTO organisation_tils_gyldighed (
       virkning,
@@ -139,7 +132,6 @@ IF organisation_registrering.tilsGyldighed IS NOT NULL THEN
       organisation_tils_gyldighed_obj.gyldighed,
       organisation_registrering_id;
 
-  END IF;
   END LOOP;
 END IF;
 
@@ -162,8 +154,17 @@ END IF;
       a.relType,
       a.objektType
     FROM unnest(organisation_registrering.relationer) a
-    WHERE (a.relMaalUuid IS NOT NULL OR (a.relMaalUrn IS NOT NULL AND a.relMaalUrn<>'') )
   ;
+
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+/*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
+auth_filtered_uuids:=_as_filter_unauth_organisation(array[organisation_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[organisation_uuid]) THEN
+  RAISE EXCEPTION 'Unable to create/import organisation with uuid [%]. Object does not met stipulated criteria:%',organisation_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
 
   PERFORM actual_state._amqp_publish_notification('Organisation', (organisation_registrering.registrering).livscykluskode, organisation_uuid);
 

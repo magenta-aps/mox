@@ -434,7 +434,7 @@ expected_Klasse2 :=
 								(registrering2.registrering).brugerref,
 								(registrering2.registrering).note 
 								)::RegistreringBase
-							,NULL--registrering2.tilsPubliceret
+							,array[klassePubliceretC]
 							,array[
 							klasseEgenskabD,klasseEgenskabE,
 							ROW(
@@ -474,6 +474,10 @@ RETURN NEXT is(
 actual_klasses_2:=as_list_klasse(array[new_uuid2]::uuid[],null,null);
 
 
+--RAISE NOTICE 'actual_klasses_2:%',to_json(actual_klasses_2);
+--RAISE NOTICE 'expected_Klasse2_arr_json:%',to_json(expected_Klasse2);
+
+
 RETURN NEXT is(
 	actual_klasses_2,
 	ARRAY[expected_Klasse2],	
@@ -489,8 +493,6 @@ actual_klasses_3:=as_list_klasse(array[new_uuid,new_uuid2]::uuid[],null,null);
 select array_agg(a.* order by a.id) from unnest(ARRAY[expected_Klasse1,expected_Klasse2]) as a into expected_klasses_3;
 
 
---RAISE NOTICE 'actual_klasses_3:%',to_json(actual_klasses_3);
---RAISE NOTICE 'expected_Klasse3_arr_json:%',to_json(expected_klasses_3);
 
 RETURN NEXT is(
 	actual_klasses_3,

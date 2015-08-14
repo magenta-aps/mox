@@ -1,5 +1,5 @@
-*** ../generated-files/as_create_or_import_klasse.sql	2015-06-22 13:50:42.750448349 +0200
---- ../patches/as_create_or_import_klasse.org.sql	2015-06-22 14:01:09.966479586 +0200
+*** ../generated-files/as_create_or_import_klasse.sql	2015-08-14 12:57:17.317564263 +0200
+--- as_create_or_import_klasse.org.sql	2015-08-14 12:58:29.657567865 +0200
 ***************
 *** 4,14 ****
   -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,7 +12,7 @@
   
   CREATE OR REPLACE FUNCTION as_create_or_import_klasse(
     klasse_registrering KlasseRegistreringType,
-    klasse_uuid uuid DEFAULT NULL
+    klasse_uuid uuid DEFAULT NULL,
 --- 4,14 ----
   -- This Source Code Form is subject to the terms of the Mozilla Public
   -- License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,66 +24,28 @@
   
   CREATE OR REPLACE FUNCTION as_create_or_import_klasse(
     klasse_registrering KlasseRegistreringType,
-    klasse_uuid uuid DEFAULT NULL
+    klasse_uuid uuid DEFAULT NULL,
 ***************
-*** 20,30 ****
+*** 21,30 ****
+--- 21,32 ----
     klasse_attr_egenskaber_obj klasseEgenskaberAttrType;
     
     klasse_tils_publiceret_obj klassePubliceretTilsType;
     
     klasse_relationer KlasseRelationType;
-! 
++   klasse_attr_egenskaber_id bigint;
++   klasse_attr_egenskaber_soegeord_obj KlasseSoegeordType;
+    auth_filtered_uuids uuid[];
   BEGIN
   
   IF klasse_uuid IS NULL THEN
       LOOP
-      klasse_uuid:=uuid_generate_v4();
---- 20,31 ----
-    klasse_attr_egenskaber_obj klasseEgenskaberAttrType;
-    
-    klasse_tils_publiceret_obj klassePubliceretTilsType;
-    
-    klasse_relationer KlasseRelationType;
-!   klasse_attr_egenskaber_id bigint;
-!   klasse_attr_egenskaber_soegeord_obj KlasseSoegeordType;
-  BEGIN
-  
-  IF klasse_uuid IS NULL THEN
-      LOOP
-      klasse_uuid:=uuid_generate_v4();
 ***************
-*** 88,98 ****
+*** 89,122 ****
   
-  IF klasse_registrering.attrEgenskaber IS NOT NULL THEN
+  IF klasse_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(klasse_registrering.attrEgenskaber,1),0)>0 THEN
     FOREACH klasse_attr_egenskaber_obj IN ARRAY klasse_registrering.attrEgenskaber
     LOOP
-  
-!   IF
-    ( klasse_attr_egenskaber_obj.brugervendtnoegle IS NOT NULL AND klasse_attr_egenskaber_obj.brugervendtnoegle<>'') 
-     OR 
-    ( klasse_attr_egenskaber_obj.beskrivelse IS NOT NULL AND klasse_attr_egenskaber_obj.beskrivelse<>'') 
-     OR 
-    ( klasse_attr_egenskaber_obj.eksempel IS NOT NULL AND klasse_attr_egenskaber_obj.eksempel<>'') 
---- 89,99 ----
-  
-  IF klasse_registrering.attrEgenskaber IS NOT NULL THEN
-    FOREACH klasse_attr_egenskaber_obj IN ARRAY klasse_registrering.attrEgenskaber
-    LOOP
-  
-!  IF
-    ( klasse_attr_egenskaber_obj.brugervendtnoegle IS NOT NULL AND klasse_attr_egenskaber_obj.brugervendtnoegle<>'') 
-     OR 
-    ( klasse_attr_egenskaber_obj.beskrivelse IS NOT NULL AND klasse_attr_egenskaber_obj.beskrivelse<>'') 
-     OR 
-    ( klasse_attr_egenskaber_obj.eksempel IS NOT NULL AND klasse_attr_egenskaber_obj.eksempel<>'') 
-***************
-*** 102,147 ****
-    ( klasse_attr_egenskaber_obj.titel IS NOT NULL AND klasse_attr_egenskaber_obj.titel<>'') 
-     OR 
-    ( klasse_attr_egenskaber_obj.retskilde IS NOT NULL AND klasse_attr_egenskaber_obj.retskilde<>'') 
-     OR 
-    ( klasse_attr_egenskaber_obj.aendringsnotat IS NOT NULL AND klasse_attr_egenskaber_obj.aendringsnotat<>'') 
-     THEN
   
 !     INSERT INTO klasse_attr_egenskaber (
 !       brugervendtnoegle,
@@ -107,35 +69,20 @@
 !       klasse_attr_egenskaber_obj.virkning,
 !       klasse_registrering_id
 !     ;
-!   END IF;
+!  
   
     END LOOP;
   END IF;
   
   /*********************************/
   --Insert states (tilstande)
+--- 91,152 ----
   
-  
-  --Verification
-  --For now all declared states are mandatory.
-! IF coalesce(array_length(klasse_registrering.tilsPubliceret, 1),0)<1  THEN
-    RAISE EXCEPTION 'Savner påkraevet tilstand [publiceret] for klasse. Oprettelse afbrydes.';
-  END IF;
-  
-  IF klasse_registrering.tilsPubliceret IS NOT NULL THEN
-    FOREACH klasse_tils_publiceret_obj IN ARRAY klasse_registrering.tilsPubliceret
---- 103,175 ----
-    ( klasse_attr_egenskaber_obj.titel IS NOT NULL AND klasse_attr_egenskaber_obj.titel<>'') 
-     OR 
-    ( klasse_attr_egenskaber_obj.retskilde IS NOT NULL AND klasse_attr_egenskaber_obj.retskilde<>'') 
-     OR 
-    ( klasse_attr_egenskaber_obj.aendringsnotat IS NOT NULL AND klasse_attr_egenskaber_obj.aendringsnotat<>'') 
-+   OR
-+   ( klasse_attr_egenskaber_obj.soegeord IS NOT NULL AND coalesce(array_length(klasse_attr_egenskaber_obj.soegeord,1),0)>0)
-     THEN
+  IF klasse_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(klasse_registrering.attrEgenskaber,1),0)>0 THEN
+    FOREACH klasse_attr_egenskaber_obj IN ARRAY klasse_registrering.attrEgenskaber
+    LOOP
   
 ! klasse_attr_egenskaber_id:=nextval('klasse_attr_egenskaber_id_seq');
-! 
 !   INSERT INTO klasse_attr_egenskaber (
 !     id,
 !     brugervendtnoegle,
@@ -160,13 +107,16 @@
 !     klasse_attr_egenskaber_obj.virkning,
 !     klasse_registrering_id
 !   ;
-!  END IF;
 ! 
 ! /************/
 ! --Insert Soegeord
-!   IF klasse_attr_egenskaber_obj.soegeord IS NOT NULL THEN
+!   IF klasse_attr_egenskaber_obj.soegeord IS NOT NULL AND coalesce(array_length(klasse_attr_egenskaber_obj.soegeord,1),0)>1  THEN
 !     FOREACH klasse_attr_egenskaber_soegeord_obj IN ARRAY klasse_attr_egenskaber_obj.soegeord
 !       LOOP
+! 
+!       IF (klasse_attr_egenskaber_soegeord_obj.soegeordidentifikator IS NOT NULL AND klasse_attr_egenskaber_soegeord_obj.soegeordidentifikator<>'') 
+!       OR (klasse_attr_egenskaber_soegeord_obj.beskrivelse IS NOT NULL AND klasse_attr_egenskaber_soegeord_obj.beskrivelse<>'' )
+!       OR (klasse_attr_egenskaber_soegeord_obj.soegeordskategori IS NOT NULL AND klasse_attr_egenskaber_soegeord_obj.soegeordskategori<>'') THEN
 ! 
 !       INSERT INTO klasse_attr_egenskaber_soegeord (
 !         soegeordidentifikator,
@@ -180,6 +130,7 @@
 !         klasse_attr_egenskaber_soegeord_obj.soegeordskategori,
 !         klasse_attr_egenskaber_id
 !       ;
+!       END IF;
   
 +      END LOOP;
 +     END IF;
@@ -188,13 +139,3 @@
   
   /*********************************/
   --Insert states (tilstande)
-  
-  
-  --Verification
-  --For now all declared states are mandatory.
-! IF coalesce(array_length(klasse_registrering.tilsPubliceret, 1),0)<1 THEN
-    RAISE EXCEPTION 'Savner påkraevet tilstand [publiceret] for klasse. Oprettelse afbrydes.';
-  END IF;
-  
-  IF klasse_registrering.tilsPubliceret IS NOT NULL THEN
-    FOREACH klasse_tils_publiceret_obj IN ARRAY klasse_registrering.tilsPubliceret

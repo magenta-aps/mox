@@ -6,12 +6,13 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py sag as_create_or_import.jinja.sql
+NOTICE: This file is auto-generated using the script: apply-template.py sag as_create_or_import.jinja.sql AND applying a patch
 */
 
 CREATE OR REPLACE FUNCTION as_create_or_import_sag(
   sag_registrering SagRegistreringType,
-  sag_uuid uuid DEFAULT NULL
+  sag_uuid uuid DEFAULT NULL,
+  auth_criteria_arr SagRegistreringType[] DEFAULT NULL
 	)
   RETURNS uuid AS 
 $$
@@ -26,6 +27,7 @@ DECLARE
   sag_uuid_underscores text;
   sag_rel_seq_name text;
   sag_rel_type_cardinality_unlimited SagRelationKode[]:=ARRAY['andetarkiv'::SagRelationKode,'andrebehandlere'::SagRelationKode,'sekundaerpart'::SagRelationKode,'andresager'::SagRelationKode,'byggeri'::SagRelationKode,'fredning'::SagRelationKode,'journalpost'::SagRelationKode]::SagRelationKode[];
+  auth_filtered_uuids uuid[];
 BEGIN
 
 IF sag_uuid IS NULL THEN
@@ -89,29 +91,9 @@ END IF;
 
 
 
-IF sag_registrering.attrEgenskaber IS NOT NULL THEN
+IF sag_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(sag_registrering.attrEgenskaber,1),0)>0 THEN
   FOREACH sag_attr_egenskaber_obj IN ARRAY sag_registrering.attrEgenskaber
   LOOP
-
-  IF
-  ( sag_attr_egenskaber_obj.brugervendtnoegle IS NOT NULL AND sag_attr_egenskaber_obj.brugervendtnoegle<>'') 
-   OR 
-  ( sag_attr_egenskaber_obj.afleveret IS NOT NULL) 
-   OR 
-  ( sag_attr_egenskaber_obj.beskrivelse IS NOT NULL AND sag_attr_egenskaber_obj.beskrivelse<>'') 
-   OR 
-  ( sag_attr_egenskaber_obj.hjemmel IS NOT NULL AND sag_attr_egenskaber_obj.hjemmel<>'') 
-   OR 
-  ( sag_attr_egenskaber_obj.kassationskode IS NOT NULL AND sag_attr_egenskaber_obj.kassationskode<>'') 
-   OR 
-  ( sag_attr_egenskaber_obj.offentlighedundtaget IS NOT NULL OR ((sag_attr_egenskaber_obj.offentlighedundtaget).AlternativTitel IS NOT NULL AND (sag_attr_egenskaber_obj.offentlighedundtaget).AlternativTitel<>'') OR ((sag_attr_egenskaber_obj.offentlighedundtaget).Hjemmel IS NOT NULL AND (sag_attr_egenskaber_obj.offentlighedundtaget).Hjemmel<>'')) 
-   OR 
-  ( sag_attr_egenskaber_obj.principiel IS NOT NULL) 
-   OR 
-  ( sag_attr_egenskaber_obj.sagsnummer IS NOT NULL AND sag_attr_egenskaber_obj.sagsnummer<>'') 
-   OR 
-  ( sag_attr_egenskaber_obj.titel IS NOT NULL AND sag_attr_egenskaber_obj.titel<>'') 
-   THEN
 
     INSERT INTO sag_attr_egenskaber (
       brugervendtnoegle,
@@ -139,7 +121,7 @@ IF sag_registrering.attrEgenskaber IS NOT NULL THEN
       sag_attr_egenskaber_obj.virkning,
       sag_registrering_id
     ;
-  END IF;
+ 
 
   END LOOP;
 END IF;
@@ -154,11 +136,9 @@ IF coalesce(array_length(sag_registrering.tilsFremdrift, 1),0)<1  THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [fremdrift] for sag. Oprettelse afbrydes.';
 END IF;
 
-IF sag_registrering.tilsFremdrift IS NOT NULL THEN
+IF sag_registrering.tilsFremdrift IS NOT NULL AND coalesce(array_length(sag_registrering.tilsFremdrift,1),0)>0 THEN
   FOREACH sag_tils_fremdrift_obj IN ARRAY sag_registrering.tilsFremdrift
   LOOP
-
-  IF sag_tils_fremdrift_obj.fremdrift IS NOT NULL AND sag_tils_fremdrift_obj.fremdrift<>''::SagFremdriftTils THEN
 
     INSERT INTO sag_tils_fremdrift (
       virkning,
@@ -170,7 +150,6 @@ IF sag_registrering.tilsFremdrift IS NOT NULL THEN
       sag_tils_fremdrift_obj.fremdrift,
       sag_registrering_id;
 
-  END IF;
   END LOOP;
 END IF;
 
@@ -227,14 +206,7 @@ END LOOP;
       a.journalNotat,
       a.journalDokumentAttr
     FROM unnest(sag_registrering.relationer) a
-    WHERE 
-          a.relMaalUuid IS NOT NULL 
-      OR (a.relMaalUrn IS NOT NULL AND a.relMaalUrn<>'') 
-      OR (  
-          (NOT (a.journalNotat IS NULL)) 
-          AND ( (a.journalNotat).titel <>'' OR (a.journalNotat).notat <>'' OR (a.journalNotat).format<>'' ) 
-        )
-  ;
+    ;
 
 
 --Drop temporary sequences
@@ -246,6 +218,17 @@ END LOOP;
 
 
 END IF;
+
+
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+/*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
+auth_filtered_uuids:=_as_filter_unauth_sag(array[sag_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[sag_uuid]) THEN
+  RAISE EXCEPTION 'Unable to create/import sag with uuid [%]. Object does not met stipulated criteria:%',sag_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
 
   PERFORM actual_state._amqp_publish_notification('Sag', (sag_registrering.registrering).livscykluskode, sag_uuid);
 

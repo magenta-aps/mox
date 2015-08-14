@@ -11,7 +11,8 @@ NOTICE: This file is auto-generated using the script: apply-template.py organisa
 
 CREATE OR REPLACE FUNCTION as_create_or_import_organisationenhed(
   organisationenhed_registrering OrganisationenhedRegistreringType,
-  organisationenhed_uuid uuid DEFAULT NULL
+  organisationenhed_uuid uuid DEFAULT NULL,
+  auth_criteria_arr OrganisationenhedRegistreringType[] DEFAULT NULL
 	)
   RETURNS uuid AS 
 $$
@@ -22,7 +23,7 @@ DECLARE
   organisationenhed_tils_gyldighed_obj organisationenhedGyldighedTilsType;
   
   organisationenhed_relationer OrganisationenhedRelationType;
-
+  auth_filtered_uuids uuid[];
 BEGIN
 
 IF organisationenhed_uuid IS NULL THEN
@@ -86,15 +87,9 @@ END IF;
 
 
 
-IF organisationenhed_registrering.attrEgenskaber IS NOT NULL THEN
+IF organisationenhed_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(organisationenhed_registrering.attrEgenskaber,1),0)>0 THEN
   FOREACH organisationenhed_attr_egenskaber_obj IN ARRAY organisationenhed_registrering.attrEgenskaber
   LOOP
-
-  IF
-  ( organisationenhed_attr_egenskaber_obj.brugervendtnoegle IS NOT NULL AND organisationenhed_attr_egenskaber_obj.brugervendtnoegle<>'') 
-   OR 
-  ( organisationenhed_attr_egenskaber_obj.enhedsnavn IS NOT NULL AND organisationenhed_attr_egenskaber_obj.enhedsnavn<>'') 
-   THEN
 
     INSERT INTO organisationenhed_attr_egenskaber (
       brugervendtnoegle,
@@ -108,7 +103,7 @@ IF organisationenhed_registrering.attrEgenskaber IS NOT NULL THEN
       organisationenhed_attr_egenskaber_obj.virkning,
       organisationenhed_registrering_id
     ;
-  END IF;
+ 
 
   END LOOP;
 END IF;
@@ -123,11 +118,9 @@ IF coalesce(array_length(organisationenhed_registrering.tilsGyldighed, 1),0)<1  
   RAISE EXCEPTION 'Savner påkraevet tilstand [gyldighed] for organisationenhed. Oprettelse afbrydes.';
 END IF;
 
-IF organisationenhed_registrering.tilsGyldighed IS NOT NULL THEN
+IF organisationenhed_registrering.tilsGyldighed IS NOT NULL AND coalesce(array_length(organisationenhed_registrering.tilsGyldighed,1),0)>0 THEN
   FOREACH organisationenhed_tils_gyldighed_obj IN ARRAY organisationenhed_registrering.tilsGyldighed
   LOOP
-
-  IF organisationenhed_tils_gyldighed_obj.gyldighed IS NOT NULL AND organisationenhed_tils_gyldighed_obj.gyldighed<>''::OrganisationenhedGyldighedTils THEN
 
     INSERT INTO organisationenhed_tils_gyldighed (
       virkning,
@@ -139,7 +132,6 @@ IF organisationenhed_registrering.tilsGyldighed IS NOT NULL THEN
       organisationenhed_tils_gyldighed_obj.gyldighed,
       organisationenhed_registrering_id;
 
-  END IF;
   END LOOP;
 END IF;
 
@@ -162,8 +154,17 @@ END IF;
       a.relType,
       a.objektType
     FROM unnest(organisationenhed_registrering.relationer) a
-    WHERE (a.relMaalUuid IS NOT NULL OR (a.relMaalUrn IS NOT NULL AND a.relMaalUrn<>'') )
   ;
+
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+/*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
+auth_filtered_uuids:=_as_filter_unauth_organisationenhed(array[organisationenhed_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[organisationenhed_uuid]) THEN
+  RAISE EXCEPTION 'Unable to create/import organisationenhed with uuid [%]. Object does not met stipulated criteria:%',organisationenhed_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
 
   PERFORM actual_state._amqp_publish_notification('Organisationenhed', (organisationenhed_registrering.registrering).livscykluskode, organisationenhed_uuid);
 
