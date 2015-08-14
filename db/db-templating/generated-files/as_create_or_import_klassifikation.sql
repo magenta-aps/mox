@@ -11,7 +11,8 @@ NOTICE: This file is auto-generated using the script: apply-template.py klassifi
 
 CREATE OR REPLACE FUNCTION as_create_or_import_klassifikation(
   klassifikation_registrering KlassifikationRegistreringType,
-  klassifikation_uuid uuid DEFAULT NULL
+  klassifikation_uuid uuid DEFAULT NULL,
+  auth_criteria_arr KlassifikationRegistreringType[] DEFAULT NULL
 	)
   RETURNS uuid AS 
 $$
@@ -22,7 +23,7 @@ DECLARE
   klassifikation_tils_publiceret_obj klassifikationPubliceretTilsType;
   
   klassifikation_relationer KlassifikationRelationType;
-
+  auth_filtered_uuids uuid[];
 BEGIN
 
 IF klassifikation_uuid IS NULL THEN
@@ -86,19 +87,9 @@ END IF;
 
 
 
-IF klassifikation_registrering.attrEgenskaber IS NOT NULL THEN
+IF klassifikation_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(klassifikation_registrering.attrEgenskaber,1),0)>0 THEN
   FOREACH klassifikation_attr_egenskaber_obj IN ARRAY klassifikation_registrering.attrEgenskaber
   LOOP
-
-  IF
-  ( klassifikation_attr_egenskaber_obj.brugervendtnoegle IS NOT NULL AND klassifikation_attr_egenskaber_obj.brugervendtnoegle<>'') 
-   OR 
-  ( klassifikation_attr_egenskaber_obj.beskrivelse IS NOT NULL AND klassifikation_attr_egenskaber_obj.beskrivelse<>'') 
-   OR 
-  ( klassifikation_attr_egenskaber_obj.kaldenavn IS NOT NULL AND klassifikation_attr_egenskaber_obj.kaldenavn<>'') 
-   OR 
-  ( klassifikation_attr_egenskaber_obj.ophavsret IS NOT NULL AND klassifikation_attr_egenskaber_obj.ophavsret<>'') 
-   THEN
 
     INSERT INTO klassifikation_attr_egenskaber (
       brugervendtnoegle,
@@ -116,7 +107,7 @@ IF klassifikation_registrering.attrEgenskaber IS NOT NULL THEN
       klassifikation_attr_egenskaber_obj.virkning,
       klassifikation_registrering_id
     ;
-  END IF;
+ 
 
   END LOOP;
 END IF;
@@ -131,11 +122,9 @@ IF coalesce(array_length(klassifikation_registrering.tilsPubliceret, 1),0)<1  TH
   RAISE EXCEPTION 'Savner påkraevet tilstand [publiceret] for klassifikation. Oprettelse afbrydes.';
 END IF;
 
-IF klassifikation_registrering.tilsPubliceret IS NOT NULL THEN
+IF klassifikation_registrering.tilsPubliceret IS NOT NULL AND coalesce(array_length(klassifikation_registrering.tilsPubliceret,1),0)>0 THEN
   FOREACH klassifikation_tils_publiceret_obj IN ARRAY klassifikation_registrering.tilsPubliceret
   LOOP
-
-  IF klassifikation_tils_publiceret_obj.publiceret IS NOT NULL AND klassifikation_tils_publiceret_obj.publiceret<>''::KlassifikationPubliceretTils THEN
 
     INSERT INTO klassifikation_tils_publiceret (
       virkning,
@@ -147,7 +136,6 @@ IF klassifikation_registrering.tilsPubliceret IS NOT NULL THEN
       klassifikation_tils_publiceret_obj.publiceret,
       klassifikation_registrering_id;
 
-  END IF;
   END LOOP;
 END IF;
 
@@ -170,8 +158,17 @@ END IF;
       a.relType,
       a.objektType
     FROM unnest(klassifikation_registrering.relationer) a
-    WHERE (a.relMaalUuid IS NOT NULL OR (a.relMaalUrn IS NOT NULL AND a.relMaalUrn<>'') )
   ;
+
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+/*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
+auth_filtered_uuids:=_as_filter_unauth_klassifikation(array[klassifikation_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[klassifikation_uuid]) THEN
+  RAISE EXCEPTION 'Unable to create/import klassifikation with uuid [%]. Object does not met stipulated criteria:%',klassifikation_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
 
   PERFORM actual_state._amqp_publish_notification('Klassifikation', (klassifikation_registrering.registrering).livscykluskode, klassifikation_uuid);
 
