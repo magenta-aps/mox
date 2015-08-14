@@ -43,12 +43,20 @@ class ContentStore:
 
         The object is expected to be a werkzeug.datastructures.FileStorage
         object."""
-        file_name = self._get_new_file_name()
-        sub_path = self._get_file_sub_path()
-        full_path = os.path.join(FILE_UPLOAD_FOLDER, sub_path)
-        _mkdir_p(full_path)
-        file_obj.save(os.path.join(full_path, file_name))
-        return "store:%s" % os.path.join(sub_path, file_name)
+        while True:
+            file_name = self._get_new_file_name()
+            sub_path = self._get_file_sub_path()
+            full_path = os.path.join(FILE_UPLOAD_FOLDER, sub_path)
+            full_file_path = os.path.join(full_path, file_name)
+            try:
+                os.stat(full_file_path)
+                # Keep looping, until we generate a file name that doesn't
+                # already exist.
+            except OSError, e:
+                # The file didn't exist already, so it is safe to create it
+                _mkdir_p(full_path)
+                file_obj.save(full_file_path)
+                return "store:%s" % os.path.join(sub_path, file_name)
 
     def remove(self, url):
         """Remove the file specified by the given content URL."""

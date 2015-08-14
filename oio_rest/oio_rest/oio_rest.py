@@ -1,14 +1,10 @@
-from datetime import datetime
 import json
-from urlparse import urlparse
+
 from flask import jsonify, request
-from utils import BadRequestException
 
 import db
-from db_helpers import get_attribute_names, get_attribute_fields
-from db_helpers import get_state_names, get_relation_names, get_state_field
-
 from utils import build_registration
+
 
 
 # Just a helper during debug
@@ -18,12 +14,14 @@ from authentication import requires_auth
 def j(t):
     return jsonify(output=t)
 
+
 class Registration(object):
     def __init__(self, oio_class, states, attributes, relations):
         self.oio_class = oio_class
         self.states = states
         self.attributes = attributes
         self.relations = relations
+
 
 class OIOStandardHierarchy(object):
     """Implement API for entire hierarchy."""
@@ -70,36 +68,6 @@ class OIORestObject(object):
                     request.on_json_loading_failed(e)
             else:
                 return None
-
-    @classmethod
-    def _get_file_storage_for_content_url(cls, url):
-        """
-        Return a FileStorage object for the form field specified by the URL.
-
-        The URL uses the scheme 'field', and its path points to a form field
-        which contains the uploaded file. For example, for a URL of 'field:f1',
-        this method would return the FileStorage object for the file
-        contained in form field 'f1'.
-        """
-        o = urlparse(url)
-        if o.scheme == 'field':
-            field_name = o.path
-            file_obj = request.files.get(field_name, None)
-            if file_obj is None:
-                raise BadRequestException(
-                    ('The content URL "%s" referenced the field "%s", but it '
-                     'was not present in the request.') % (url, o.path)
-                )
-            return file_obj
-        else:
-            raise BadRequestException(
-                'The content field referenced an unsupported '
-                'scheme or was invalid. The URLs must be of the'
-                'form: field:<form-field>, where <form-field> '
-                'is the name of the field in the '
-                'multipart/form-data-encoded request that '
-                'contains the file binary data.'
-            )
 
     @classmethod
     @requires_auth
@@ -230,7 +198,8 @@ class OIORestObject(object):
                 return jsonify({'uuid': uuid}), 200
             else:
                 # Edit/change
-                result = db.update_object(cls.__name__, note, registration, uuid)
+                result = db.update_object(cls.__name__, note, registration,
+                                          uuid)
                 return jsonify({'uuid': uuid}), 200
         return j(u"Forkerte parametre!"), 405
 
