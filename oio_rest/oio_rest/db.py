@@ -16,7 +16,7 @@ from settings import DATABASE, DB_USER, DO_ENABLE_RESTRICTIONS
 from db_helpers import get_attribute_fields, get_attribute_names
 from db_helpers import get_field_type, get_state_names, get_relation_field_type
 from db_helpers import get_relation_field_type, Soegeord, OffentlighedUndtaget
-from db_helpers import JournalNotat, JournalDokument
+from db_helpers import JournalNotat, JournalDokument, DokumentVariantType
 
 from auth.restrictions import Operation, get_restrictions
 from utils import restriction_to_registration
@@ -126,7 +126,9 @@ def convert_relations(relations, class_name):
 def convert_variants(variants):
     """Convert variants."""
     # TODO
-    return variants
+    if variants is None:
+        return None
+    return [DokumentVariantType.input(variant) for variant in variants]
 
 class Livscyklus(Enum):
     OPSTAAET = 'Opstaaet'
@@ -170,20 +172,15 @@ def sql_relations_array(class_name, relations):
     return sql
 
 
-def sql_variant_array(class_name, variants):
-    """Return an SQL array of type <class_name>VariantType[]."""
-    t = jinja_env.get_template('variant_array.sql')
-    sql = t.render(class_name=class_name, variants=variants)
-    return sql
-
-
 def sql_convert_registration(registration, class_name):
     """Convert input JSON to the SQL arrays we need."""
     registration["attributes"] = convert_attributes(registration["attributes"])
     registration["relations"] = convert_relations(registration["relations"],
                                                class_name)
     if "variants" in registration:
-        registration["variants"] = convert_variants(registration["variants"])
+        registration["variants"] = adapt(
+            convert_variants(registration["variants"])
+        )
 
     states = registration["states"]
     sql_states = []

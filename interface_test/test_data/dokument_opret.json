@@ -68,7 +68,7 @@
                             "virkning":
                             {
                                 "from": "2014-05-19 12:02:32",
-                                "to": "infinity",
+                                "to": "2015-05-19 12:02:32",
                                 "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
                                 "aktoertypekode": "Bruger",
                                 "notetekst": "Nothing to see here!"
@@ -86,7 +86,7 @@
 
                             "virkning":
                             {
-                                "from": "2014-05-19 12:02:32",
+                                "from": "2015-05-19 12:02:32",
                                 "to": "infinity",
                                 "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
                                 "aktoertypekode": "Bruger",
