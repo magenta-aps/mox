@@ -52,3 +52,28 @@ fi
 curl -sH "Content-Type: application/json" -X PUT -d "$(cat test_data/dokument_opdater.json)" http://127.0.0.1:5000/dokument/dokument/$uuid
 
 curl -sH "Content-Type: application/json" -X GET http://127.0.0.1:5000/dokument/dokument?uuid=$uuid > /tmp/listoutput
+
+
+# Try updating, while uploading a new file
+curl -X PUT \
+    -F "json=$(cat test_data/dokument_opdater2.json)" \
+    -F 'del_indhold1_opdateret=@test_data/test2.txt' \
+    http://localhost:5000/dokument/dokument/$uuid
+
+# List
+curl -sH "Content-Type: application/json" -X GET http://127.0.0.1:5000/dokument/dokument?uuid=$uuid > /tmp/listoutput
+
+# Grab the values of the indhold attributes of each DokumentDel, so we know
+# the content URLs.
+IFS=$'\n' content_paths=($(grep -Po '(?<="indhold": "store:)[^"]*(?=")' /tmp/listoutput))
+content_path=${content_paths[0]}
+
+echo "Downloading from $content_path"
+
+# Check that the first DokumentDel file was updated
+if curl "http://127.0.0.1:5000/dokument/dokument/$content_path" | grep -q "This is an updated test"
+then
+    echo "File upload/download successful after update operation"
+else
+    echo "Error in file upload/download after update operation. Downloaded file does not match uploaded file"
+fi
