@@ -78,4 +78,7 @@ else
     echo "Error in file upload/download after update operation. Downloaded file does not match uploaded file"
 fi
 
+# Passivate
+curl -sH "Content-Type: application/json" -X PUT -d "$(cat test_data/facet_passiv.json)" http://127.0.0.1:5000/dokument/dokument/$uuid
+
 curl -sH "Content-Type: application/json" -X DELETE -d "$(cat test_data/dokument_slet.json)" http://127.0.0.1:5000/dokument/dokument/$uuid

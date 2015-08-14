@@ -338,7 +338,7 @@ def delete_object(class_name, registration, note, uuid):
 
     user_ref = get_authenticated_user()
     life_cycle_code = Livscyklus.SLETTET.value
-    sql_template = jinja_env.get_template('delete_object.sql')
+    sql_template = jinja_env.get_template('update_object.sql')
     registration = sql_convert_registration(registration, class_name)
     sql_restrictions = get_restrictions_as_sql(
         get_authenticated_user(),
@@ -365,12 +365,13 @@ def delete_object(class_name, registration, note, uuid):
     return output[0]
 
 
-def passivate_object(class_name, note, uuid):
+def passivate_object(class_name, note, registration, uuid):
     """Passivate object by calling the stored procedure."""
 
     user_ref = get_authenticated_user()
     life_cycle_code = Livscyklus.PASSIVERET.value
-    sql_template = jinja_env.get_template('passivate_object.sql')
+    sql_template = jinja_env.get_template('update_object.sql')
+    registration = sql_convert_registration(registration, class_name)
     sql_restrictions = get_restrictions_as_sql(
         get_authenticated_user(),
         class_name,
@@ -382,6 +383,10 @@ def passivate_object(class_name, note, uuid):
         life_cycle_code=life_cycle_code,
         user_ref=user_ref,
         note=note,
+        states=registration["states"],
+        attributes=registration["attributes"],
+        relations=registration["relations"],
+        variants=registration.get("variants", None),
         restrictions=sql_restrictions
     )
     # Call PostgreSQL
