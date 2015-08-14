@@ -268,7 +268,7 @@ def object_exists(class_name, uuid):
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute(sql, (uuid,))
-    result = cursor.fetchone()
+    result = cursor.fetchone()[0]
 
     return result
 

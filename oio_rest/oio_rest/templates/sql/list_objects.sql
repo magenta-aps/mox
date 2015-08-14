@@ -4,4 +4,4 @@ SELECT  as_list_{{ class_name | lower }}(
     %(virkning_tstzrange)s{% if restrictions %},
         {{restrictions}}
             {% endif %}
-    ) :: json;
+    ) :: json[];
