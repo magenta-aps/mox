@@ -39,6 +39,7 @@ IFS=$'\n' content_paths=($(grep -Po '(?<="indhold": "store:)[^"]*(?=")' /tmp/lis
 # Take only the first one
 content_path=${content_paths[0]}
 
+
 # Try to download the first file
 if curl "http://127.0.0.1:5000/dokument/dokument/$content_path" | grep -q "This is a test"
 then
@@ -47,3 +48,7 @@ else
     echo "Error in file upload/download. Downloaded file does not match uploaded file"
 fi
 
+# Update the document
+curl -sH "Content-Type: application/json" -X PUT -d "$(cat test_data/dokument_opdater.json)" http://127.0.0.1:5000/dokument/dokument/$uuid
+
+curl -sH "Content-Type: application/json" -X GET http://127.0.0.1:5000/dokument/dokument?uuid=$uuid > /tmp/listoutput
