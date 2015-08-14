@@ -18,6 +18,8 @@ from db_helpers import get_field_type, get_state_names, get_relation_field_type
 from db_helpers import get_relation_field_type, Soegeord, OffentlighedUndtaget
 from db_helpers import JournalNotat, JournalDokument
 
+from authentication import get_authenticated_user
+
 from auth.restrictions import Operation, get_restrictions
 from utils import restriction_to_registration
 from utils import NotFoundException, NotAllowedException
