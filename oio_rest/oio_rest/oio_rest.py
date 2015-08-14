@@ -192,8 +192,9 @@ class OIORestObject(object):
             "Edit or passivate."
             if (input.get('livscyklus', '').lower() == 'passiv'):
                 # Passivate
+                registration = cls.gather_registration({})
                 db.passivate_object(
-                    cls.__name__, note, uuid
+                    cls.__name__, note, registration, uuid
                 )
                 return jsonify({'uuid': uuid}), 200
             else:

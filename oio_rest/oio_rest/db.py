@@ -272,6 +272,22 @@ def object_exists(class_name, uuid):
 
     return result
 
+def get_document_from_content_url(content_url):
+    """Return the UUID of the Dokument which has a specific indhold URL.
+
+    Also returns the mimetype of the indhold URL as stored in the
+    DokumenDelEgenskaber.
+    """
+    sql = """select r.dokument_id, de.mimetype from actual_state.dokument_del_egenskaber de
+join actual_state.dokument_del d on d.id = de.del_id join
+actual_state.dokument_variant v on v.id = d.variant_id join
+actual_state.dokument_registrering r on r.id = v.dokument_registrering_id
+where de.indhold = %s"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(sql, (content_url,))
+    result = cursor.fetchone()
+    return result
 
 def create_or_import_object(class_name, note, registration,
                             uuid=None):
@@ -322,7 +338,7 @@ def delete_object(class_name, registration, note, uuid):
 
     user_ref = get_authenticated_user()
     life_cycle_code = Livscyklus.SLETTET.value
-    sql_template = jinja_env.get_template('delete_object.sql')
+    sql_template = jinja_env.get_template('update_object.sql')
     registration = sql_convert_registration(registration, class_name)
     sql_restrictions = get_restrictions_as_sql(
         get_authenticated_user(),
@@ -349,12 +365,13 @@ def delete_object(class_name, registration, note, uuid):
     return output[0]
 
 
-def passivate_object(class_name, note, uuid):
+def passivate_object(class_name, note, registration, uuid):
     """Passivate object by calling the stored procedure."""
 
     user_ref = get_authenticated_user()
     life_cycle_code = Livscyklus.PASSIVERET.value
-    sql_template = jinja_env.get_template('passivate_object.sql')
+    sql_template = jinja_env.get_template('update_object.sql')
+    registration = sql_convert_registration(registration, class_name)
     sql_restrictions = get_restrictions_as_sql(
         get_authenticated_user(),
         class_name,
@@ -366,6 +383,10 @@ def passivate_object(class_name, note, uuid):
         life_cycle_code=life_cycle_code,
         user_ref=user_ref,
         note=note,
+        states=registration["states"],
+        attributes=registration["attributes"],
+        relations=registration["relations"],
+        variants=registration.get("variants", None),
         restrictions=sql_restrictions
     )
     # Call PostgreSQL
