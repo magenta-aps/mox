@@ -18,12 +18,14 @@ from authentication import requires_auth
 def j(t):
     return jsonify(output=t)
 
+
 class Registration(object):
     def __init__(self, oio_class, states, attributes, relations):
         self.oio_class = oio_class
         self.states = states
         self.attributes = attributes
         self.relations = relations
+
 
 class OIOStandardHierarchy(object):
     """Implement API for entire hierarchy."""
@@ -230,7 +232,8 @@ class OIORestObject(object):
                 return jsonify({'uuid': uuid}), 200
             else:
                 # Edit/change
-                result = db.update_object(cls.__name__, note, registration, uuid)
+                result = db.update_object(cls.__name__, note, registration,
+                                          uuid)
                 return jsonify({'uuid': uuid}), 200
         return j(u"Forkerte parametre!"), 405
 

@@ -58,12 +58,6 @@ def get_connection():
 adapt_connection = get_connection()
 
 
-def get_authenticated_user():
-    """Return hardcoded UUID until we get real authentication in place."""
-    # TODO: return request.saml_user_id
-    return "615957e8-4aa1-4319-a787-f1f7ad6b5e2c"
-
-
 def convert_attr_value(attribute_name, attribute_field_name,
                        attribute_field_value):
     # For simple types that can be adapted by standard psycopg2 adapters, just
@@ -124,10 +118,12 @@ def convert_relations(relations, class_name):
                 )
     return relations
 
+
 def convert_variants(variants):
     """Convert variants."""
     # TODO
     return variants
+
 
 class Livscyklus(Enum):
     OPSTAAET = 'Opstaaet'
@@ -179,7 +175,7 @@ def sql_convert_registration(registration, class_name):
     """Convert input JSON to the SQL arrays we need."""
     registration["attributes"] = convert_attributes(registration["attributes"])
     registration["relations"] = convert_relations(registration["relations"],
-                                               class_name)
+                                                  class_name)
     if "variants" in registration:
         registration["variants"] = convert_variants(registration["variants"])
 

@@ -79,3 +79,11 @@ def requires_auth(f):
         return f(*args, **kwargs)
 
     return decorated
+
+
+def get_authenticated_user():
+    """Return hardcoded UUID if authentication is switched off."""
+    if USE_SAML_AUTHENTICATION:
+        return request.saml_user_id
+    else:
+        "615957e8-4aa1-4319-a787-f1f7ad6b5e2c"
