@@ -41,6 +41,7 @@ DECLARE
 	uuid_to_import uuid :='a1819cce-043b-447f-ba5e-92e6a75df918'::uuid;
 	uuid_returned_from_import uuid;
 	read_Sag1 SagType;
+	expected_sag1 SagType;
 BEGIN
 
 
@@ -219,19 +220,97 @@ new_uuid1 := as_create_or_import_sag(registrering);
 RETURN NEXT ok(true,'No errors running as_create_or_import_sag');
 
 
-
 read_Sag1 := as_read_sag(new_uuid1,
 	null, --registrering_tstzrange
 	null --virkning_tstzrange
 	);
-
-
 --raise notice 'read_Sag1:%',to_json(read_Sag1);
 
+expected_sag1:=ROW(
+		new_uuid1,
+		ARRAY[
+			ROW(
+			(read_Sag1.registrering[1]).registrering
+			,ARRAY[sagFremdrift]::sagFremdriftTilsType[]
+			,ARRAY[sagEgenskab]::sagEgenskaberAttrType[]
+			,ARRAY[
+				ROW (
+						'ansvarlig'::sagRelationKode
+						,virkPrimaerklasse
+						,uuidPrimaerklasse
+						,null
+						,'Klasse'
+						,null  --NOTICE: Is nulled by import
+						,null --relTypeSpec
+						,ROW(null,null,null)::JournalNotatType --journalNotat
+						,ROW(null, ROW(null,null)::OffentlighedundtagetType) ::JournalPostDokumentAttrType  --journalDokumentAttr
+					) :: sagRelationType
+				,  ROW (
+						'sekundaerpart'::sagRelationKode,
+							virkSekundaerpart1,
+						uuidSekundaerpart1,
+						null,
+						'Person'
+						,1 
+						,null --relTypeSpec
+						,ROW(null,null,null)::JournalNotatType 
+						,ROW(null, ROW(null,null)::OffentlighedundtagetType) ::JournalPostDokumentAttrType
+					) :: sagRelationType
+				, 
+				ROW (
+					'sekundaerpart'::sagRelationKode,
+						virkSekundaerpart2,
+					null,
+					urnSekundaerpart2,
+					'Person'
+					,2 
+					,null --relTypeSpec
+					,ROW(null,null,null)::JournalNotatType 
+					,ROW(null, ROW(null,null)::OffentlighedundtagetType) ::JournalPostDokumentAttrType --journalDokumentAttr
+				) :: sagRelationType
+				,
+				ROW (
+					'andresager'::sagRelationKode,
+						virkAndresager1,
+					uuidAndresager1,
+					null,
+					'Person'
+					,1 
+					,null --relTypeSpec
+					,ROW(null,null,null)::JournalNotatType 
+					,ROW(null, ROW(null,null)::OffentlighedundtagetType) ::JournalPostDokumentAttrType --journalDokumentAttr
+				) :: sagRelationType
+				, ROW (
+					'andresager'::sagRelationKode,
+						virkAndresager2,
+					uuidAndresager2,
+					null,
+					'Person'
+					,2 
+					,null --relTypeSpec
+					,ROW(null,null,null)::JournalNotatType 
+					,ROW(null, ROW(null,null)::OffentlighedundtagetType) ::JournalPostDokumentAttrType --journalDokumentAttr
+				) :: sagRelationType
+				]::SagRelationType[]
+			)::SagRegistreringType
+			]::SagRegistreringType[]
+		)::SagType
+;
+
+--raise notice 'expected_sag1:%',to_json(expected_sag1);
+
+
+RETURN NEXT IS(
+	read_Sag1,
+	expected_sag1
+	,'test create sag #1'
+);
 
 
 
---TODO: Implement tests here
+
+
+
 
 END;
 $$;
