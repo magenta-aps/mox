@@ -54,6 +54,7 @@ patch --fuzz=3 -i  ../patches/_remove_nulls_in_array_sag.sql.diff
 patch --fuzz=3 -i  ../patches/as_create_or_import_sag.sql.diff
 patch --fuzz=3 -i  ../patches/as_update_sag.sql.diff
 patch --fuzz=3 -i  ../patches/json-cast-functions_sag.sql.diff
+patch --fuzz=3 -i  ../patches/as_search_sag.sql.diff
 #dokument
 patch --fuzz=3 -i  ../patches/dbtyper-specific_dokument.sql.diff
 patch --fuzz=3 -i  ../patches/tbls-specific_dokument.sql.diff
@@ -124,6 +125,7 @@ sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_search_itsystem.
 #sag
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_create_or_import_sag.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_update_sag.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_search_sag.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_json_object_delete_keys.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_json_cast_function.sql
 #dokument

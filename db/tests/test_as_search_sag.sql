@@ -6,12 +6,14 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 --SELECT * FROM runtests('test'::name);
-CREATE OR REPLACE FUNCTION test.test_as_create_or_import_sag()
+CREATE OR REPLACE FUNCTION test.test_as_search_sag()
 RETURNS SETOF TEXT LANGUAGE plpgsql AS 
 $$
 DECLARE 
 	new_uuid1 uuid;
-	registrering sagRegistreringType;
+	registrering1 sagRegistreringType;
+	new_uuid2 uuid;
+	registrering2 sagRegistreringType;
 	actual_registrering RegistreringBase;
 	virkEgenskaber Virkning;
 	virkPrimaerklasse Virkning;
@@ -69,7 +71,24 @@ DECLARE
 	uuid_returned_from_import uuid;
 	read_Sag1 SagType;
 	expected_sag1 SagType;
+
+	actual_search_res_1 uuid[];
+	actual_search_res_2 uuid[];
+	actual_search_res_3 uuid[];
+	actual_search_res_4 uuid[];
+	actual_search_res_5 uuid[];
+	actual_search_res_6 uuid[];
+
+	expected_search_res_1 uuid[];
+	expected_search_res_2 uuid[];
+	expected_search_res_3 uuid[];
+	expected_search_res_4 uuid[];
+	expected_search_res_5 uuid[];
+	expected_search_res_6 uuid[];
+
 BEGIN
+
+
 
 
 virkJournalNotat1 :=	ROW (
@@ -373,7 +392,7 @@ sagEgenskab := ROW (
 ;
 
 
-registrering := ROW (
+registrering1 := ROW (
 
 	ROW (
 	NULL,
@@ -383,186 +402,200 @@ registrering := ROW (
 	,
 ARRAY[sagFremdrift]::sagFremdriftTilsType[],
 ARRAY[sagEgenskab]::sagEgenskaberAttrType[],
-ARRAY[sagRelPrimaerklasse,sagRelSekundaerpart1,sagRelSekundaerpart2,sagRelAndresager1,sagRelAndresager2,sagJournalNotat1,sagJournalNotat2,sagJournalNotat3,sagJournalNotat4,sagJournalNotat5,sagJournalNotat6,sagJournalNotat7]
+ARRAY[sagRelPrimaerklasse,sagRelSekundaerpart1,sagRelSekundaerpart2,sagRelAndresager1,sagRelAndresager2,sagJournalNotat2,sagJournalNotat3,sagJournalNotat4,sagJournalNotat5,sagJournalNotat6]
 ) :: sagRegistreringType
 ;
 
 
-new_uuid1 := as_create_or_import_sag(registrering);
-
-RETURN NEXT ok(true,'No errors running as_create_or_import_sag');
+new_uuid1 := as_create_or_import_sag(registrering1);
 
 
-read_Sag1 := as_read_sag(new_uuid1,
-	null, --registrering_tstzrange
-	null --virkning_tstzrange
-	);
---raise notice 'read_Sag1:%',to_json(read_Sag1);
 
-expected_sag1:=ROW(
-		new_uuid1,
-		ARRAY[
-			ROW(
-			(read_Sag1.registrering[1]).registrering
-			,ARRAY[sagFremdrift]::sagFremdriftTilsType[]
-			,ARRAY[sagEgenskab]::sagEgenskaberAttrType[]
-			,ARRAY[
+/************************************/
+
+registrering2 := ROW (
+
+	ROW (
+	NULL,
+	'Opstaaet'::Livscykluskode,
+	uuidRegistrering,
+	'Test Note 4') :: RegistreringBase
+	,
+ARRAY[sagFremdrift]::sagFremdriftTilsType[],
+ARRAY[sagEgenskab]::sagEgenskaberAttrType[],
+ARRAY[sagRelPrimaerklasse,sagRelSekundaerpart1,sagRelSekundaerpart2,sagRelAndresager1,sagRelAndresager2,sagJournalNotat1,sagJournalNotat2,sagJournalNotat4,sagJournalNotat7]
+) :: sagRegistreringType
+;
+
+
+new_uuid2 := as_create_or_import_sag(registrering2);
+
+/************************************************/
+
+expected_search_res_1:=array[new_uuid1,new_uuid2];
+
+actual_search_res_1:=as_search_sag(null,null,
+		ROW(
+				null --registrering RegistreringBase,
+				,array[] :: SagFremdriftTilsType[]
+				,null --attrEgenskaber SagEgenskaberAttrType[],
+				,ARRAY[
 				ROW (
-						'ansvarlig'::sagRelationKode
-						,virkPrimaerklasse
-						,uuidPrimaerklasse
-						,null
-						,'Klasse'
-						,null  --NOTICE: Is nulled by import
-						,null --relTypeSpec
-						,ROW(null,null,null)::JournalNotatType --journalNotat
-						,ROW(null, ROW(null,null)::OffentlighedundtagetType) ::JournalPostDokumentAttrType  --journalDokumentAttr
-					) :: sagRelationType
-				,  ROW (
-						'sekundaerpart'::sagRelationKode,
-							virkSekundaerpart1,
-						uuidSekundaerpart1,
-						null,
-						'Person'
-						,1 
-						,null --relTypeSpec
-						,ROW(null,null,null)::JournalNotatType 
-						,ROW(null, ROW(null,null)::OffentlighedundtagetType) ::JournalPostDokumentAttrType
-					) :: sagRelationType
-				, 
+					'journalpost'::sagRelationKode
+					,null --	virkJournalNotat4
+					,null --uuidJournalNotat4
+					,null
+					,null --'Person'
+					,null --19  --NOTICE: Should be replace in by import function
+					,'vedlagtdokument'::SagRelationJournalPostSpecifikKode
+					,null-- ROW(NULL,NULL,NULL)::JournalNotatType --journalNotat
+					,ROW('vedlagt_titel_1', null) ::JournalPostDokumentAttrType --journalDokumentAttr
+				) ::sagRelationType
+				] ::sagRelationType[]
+			)::SagRegistreringType	
+		,null
+);
+
+RETURN NEXT ok(expected_search_res_1 @> actual_search_res_1 and actual_search_res_1 @>expected_search_res_1 and array_length(expected_search_res_1,1)=array_length(actual_search_res_1,1), 'search sag reltion extra meta data #1.');
+
+/************************************************/
+expected_search_res_2:=array[]::uuid[];
+
+actual_search_res_2:=as_search_sag(null,null,
+		ROW(
+				null --registrering RegistreringBase,
+				,array[] :: SagFremdriftTilsType[]
+				,null --attrEgenskaber SagEgenskaberAttrType[],
+				,ARRAY[
 				ROW (
-					'sekundaerpart'::sagRelationKode,
-						virkSekundaerpart2,
-					null,
-					urnSekundaerpart2,
-					'Person'
-					,2 
-					,null --relTypeSpec
-					,ROW(null,null,null)::JournalNotatType 
-					,ROW(null, ROW(null,null)::OffentlighedundtagetType) ::JournalPostDokumentAttrType --journalDokumentAttr
-				) :: sagRelationType
-				,
+					'journalpost'::sagRelationKode
+					,null --	virkJournalNotat4
+					,null --uuidJournalNotat4
+					,null
+					,null --'Person'
+					,null --29  --NOTICE: Should be replace in by import function
+					,'vedlagtdokument'::SagRelationJournalPostSpecifikKode
+					,null-- ROW(NULL,NULL,NULL)::JournalNotatType --journalNotat
+					,ROW('vedlagt_titel_2', null) ::JournalPostDokumentAttrType --journalDokumentAttr
+				) ::sagRelationType
+				] ::sagRelationType[]
+			)::SagRegistreringType	
+		,null
+);
+
+RETURN NEXT ok(coalesce(array_length(expected_search_res_2,1),0)=coalesce(array_length(actual_search_res_2,1),0), 'search sag reltion extra meta data #2.');
+
+
+
+/************************************************/
+expected_search_res_3:=array[new_uuid2]::uuid[];
+
+actual_search_res_3:=as_search_sag(null,null,
+		ROW(
+				null --registrering RegistreringBase,
+				,array[] :: SagFremdriftTilsType[]
+				,null --attrEgenskaber SagEgenskaberAttrType[],
+				,ARRAY[
 				ROW (
-					'andresager'::sagRelationKode,
-						virkAndresager1,
-					uuidAndresager1,
-					null,
-					'Person'
-					,1 
-					,null --relTypeSpec
-					,ROW(null,null,null)::JournalNotatType 
-					,ROW(null, ROW(null,null)::OffentlighedundtagetType) ::JournalPostDokumentAttrType --journalDokumentAttr
-				) :: sagRelationType
-				, ROW (
-					'andresager'::sagRelationKode,
-						virkAndresager2,
-					uuidAndresager2,
-					null,
-					'Person'
-					,2 
-					,null --relTypeSpec
-					,ROW(null,null,null)::JournalNotatType 
-					,ROW(null, ROW(null,null)::OffentlighedundtagetType) ::JournalPostDokumentAttrType --journalDokumentAttr
-				) :: sagRelationType
-				,
-				 ROW (
-					'journalpost'::sagRelationKode,
-						virkJournalNotat1,
-					uuidJournalNotat1,
-					null,
-					'Person'
-					,1 
+					'journalpost'::sagRelationKode
+					,null --	virkJournalNotat4
+					,null --uuidJournalNotat4
+					,null
+					,null --'Person'
+					,null --39  --NOTICE: Should be replace in by import function
+					,'tilakteretdokument'::SagRelationJournalPostSpecifikKode
+					,null-- ROW(NULL,NULL,NULL)::JournalNotatType --journalNotat
+					,ROW(NULL, ROW(NULL,'Hjemmel_3')::OffentlighedundtagetType) ::JournalPostDokumentAttrType --journalDokumentAttr
+				) ::sagRelationType
+				] ::sagRelationType[]
+			)::SagRegistreringType	
+		,null
+);
+
+RETURN NEXT ok(expected_search_res_3 @> actual_search_res_3 and actual_search_res_3 @>expected_search_res_3 and coalesce(array_length(expected_search_res_3,1),0)=coalesce(array_length(actual_search_res_3,1),0), 'search sag reltion extra meta data #3.');
+
+/************************************************/
+expected_search_res_4:=array[new_uuid1]::uuid[];
+
+actual_search_res_4:=as_search_sag(null,null,
+		ROW(
+				null --registrering RegistreringBase,
+				,array[] :: SagFremdriftTilsType[]
+				,null --attrEgenskaber SagEgenskaberAttrType[],
+				,ARRAY[
+				ROW (
+					'journalpost'::sagRelationKode
+					,null --	virkJournalNotat4
+					,null --uuidJournalNotat4
+					,null
+					,null --'Person'
+					,null --49  --NOTICE: Should be replace in by import function
+					,'tilakteretdokument'::SagRelationJournalPostSpecifikKode
+					,null-- ROW(NULL,NULL,NULL)::JournalNotatType --journalNotat
+					,ROW(NULL, ROW('AlternativTitel_1',null)::OffentlighedundtagetType) ::JournalPostDokumentAttrType --journalDokumentAttr
+				) ::sagRelationType
+				] ::sagRelationType[]
+			)::SagRegistreringType	
+		,null
+);
+
+RETURN NEXT ok(expected_search_res_4 @> actual_search_res_4 and actual_search_res_4 @>expected_search_res_4 and coalesce(array_length(expected_search_res_4,1),0)=coalesce(array_length(actual_search_res_4,1),0), 'search sag reltion extra meta data #4.');
+
+
+/************************************************/
+expected_search_res_5:=array[new_uuid2]::uuid[];
+
+actual_search_res_5:=as_search_sag(null,null,
+		ROW(
+				null --registrering RegistreringBase,
+				,array[] :: SagFremdriftTilsType[]
+				,null --attrEgenskaber SagEgenskaberAttrType[],
+				,ARRAY[
+				ROW (
+					'journalpost'::sagRelationKode
+					,null--	virkJournalNotat1,
+					,null--uuidJournalNotat1,
+					,null
+					,null --'Person'
+					,null --4  --NOTICE: Should be replace in by import function
 					,'journalnotat'::SagRelationJournalPostSpecifikKode
 					, ROW('journal_txt1','journal_notat1','journal_format1')::JournalNotatType --journalNotat
 					,ROW(null, ROW(null,null)::OffentlighedundtagetType) ::JournalPostDokumentAttrType --journalDokumentAttr
-				)
-				 ,
-				 ROW (
-					'journalpost'::sagRelationKode,
-						virkJournalNotat2,
-					uuidJournalNotat2,
-					null,
-					'Person'
-					,2  --NOTICE: 
-					,'journalnotat'::SagRelationJournalPostSpecifikKode
-					, ROW(NULL,NULL,'journal_format2')::JournalNotatType --journalNotat
-					,ROW(null, ROW(null,null)::OffentlighedundtagetType) ::JournalPostDokumentAttrType  --journalDokumentAttr
-				),
-				  ROW (
-					'journalpost'::sagRelationKode,
-						virkJournalNotat3,
-					uuidJournalNotat3,
-					null,
-					'Person'
-					,3  --NOTICE: Should be replace in by import function
-					,'journalnotat'::SagRelationJournalPostSpecifikKode
-					, ROW(NULL,NULL,NULL)::JournalNotatType --journalNotat
-					,ROW(null, ROW(null,null)::OffentlighedundtagetType) ::JournalPostDokumentAttrType  --journalDokumentAttr
-				)
-				 ,ROW (
-					'journalpost'::sagRelationKode,
-						virkJournalNotat4,
-					uuidJournalNotat4,
-					null,
-					'Person'
-					,4  --NOTICE: Should be replace in by import function
-					,'vedlagtdokument'::SagRelationJournalPostSpecifikKode
-					, ROW(NULL,NULL,NULL)::JournalNotatType --journalNotat
-					,ROW('vedlagt_titel_1', ROW(null,null)::OffentlighedundtagetType) ::JournalPostDokumentAttrType --journalDokumentAttr
-				)
-				 ,ROW (
-					'journalpost'::sagRelationKode,
-						virkJournalNotat5,
-					uuidJournalNotat5,
-					null,
-					'Person'
-					,5  --NOTICE: Should be replace in by import function
-					,'tilakteretdokument'::SagRelationJournalPostSpecifikKode
-					, ROW(NULL,NULL,NULL)::JournalNotatType --journalNotat
-					,ROW(NULL, ROW('AlternativTitel_1','Hjemmel_1')::OffentlighedundtagetType) ::JournalPostDokumentAttrType --journalDokumentAttr
-				),
-				 ROW (
-					'journalpost'::sagRelationKode,
-						virkJournalNotat6,
-					uuidJournalNotat6,
-					null,
-					'Person'
-					,6  --NOTICE: Should be replace in by import function
-					,'tilakteretdokument'::SagRelationJournalPostSpecifikKode
-					, ROW(NULL,NULL,NULL)::JournalNotatType --journalNotat
-					,ROW(NULL, ROW('AlternativTitel_2',NULL)::OffentlighedundtagetType) ::JournalPostDokumentAttrType --journalDokumentAttr
-				)
-				,
-				 ROW (
-					'journalpost'::sagRelationKode,
-						virkJournalNotat7,
-					uuidJournalNotat7,
-					null,
-					'Person'
-					,7  --NOTICE: Should be replace in by import function
-					,'tilakteretdokument'::SagRelationJournalPostSpecifikKode
-					, ROW(NULL,NULL,NULL)::JournalNotatType --journalNotat
-					,ROW(NULL, ROW(NULL,'Hjemmel_3')::OffentlighedundtagetType) ::JournalPostDokumentAttrType --journalDokumentAttr
-					)
-				]::SagRelationType[]
-			)::SagRegistreringType
-			]::SagRegistreringType[]
-		)::SagType
-;
-
---raise notice 'expected_sag1:%',to_json(expected_sag1);
-
-
-
-RETURN NEXT IS(
-	read_Sag1,
-	expected_sag1
-	,'test create sag #1'
+				) ::sagRelationType
+				] ::sagRelationType[]
+			)::SagRegistreringType	
+		,null
 );
 
+RETURN NEXT ok(expected_search_res_5 @> actual_search_res_5 and actual_search_res_5 @>expected_search_res_5 and coalesce(array_length(expected_search_res_5,1),0)=coalesce(array_length(actual_search_res_5,1),0), 'search sag reltion extra meta data #5.');
 
 
+/************************************************/
+expected_search_res_6:=array[new_uuid1,new_uuid2]::uuid[];
 
+actual_search_res_6:=as_search_sag(null,null,
+		ROW(
+				null --registrering RegistreringBase,
+				,array[] :: SagFremdriftTilsType[]
+				,null --attrEgenskaber SagEgenskaberAttrType[],
+				,ARRAY[
+				ROW (
+					'journalpost'::sagRelationKode
+					,null--	virkJournalNotat1,
+					,null--uuidJournalNotat1,
+					,null
+					,null --'Person'
+					,null --4  --NOTICE: Should be replace in by import function
+					,'journalnotat'::SagRelationJournalPostSpecifikKode
+					, ROW(null,null,'journal_format2')::JournalNotatType --journalNotat
+					,ROW(null, ROW(null,null)::OffentlighedundtagetType) ::JournalPostDokumentAttrType --journalDokumentAttr
+				) ::sagRelationType
+				] ::sagRelationType[]
+			)::SagRegistreringType	
+		,null
+);
+
+RETURN NEXT ok(expected_search_res_6 @> actual_search_res_6 and actual_search_res_6 @>expected_search_res_6 and coalesce(array_length(expected_search_res_6,1),0)=coalesce(array_length(actual_search_res_6,1),0), 'search sag reltion extra meta data #6.');
 
 
 

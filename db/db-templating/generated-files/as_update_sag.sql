@@ -165,8 +165,42 @@ END LOOP;
                         ELSE
                         NULL
                       END,
-                        a.journalNotat,
-                          a.journalDokumentAttr
+                        CASE 
+                          WHEN  
+                            (NOT (a.journalNotat IS NULL)) 
+                            AND
+                            (
+                              (a.journalNotat).titel IS NOT NULL
+                              OR
+                              (a.journalNotat).notat IS NOT NULL
+                              OR
+                              (a.journalNotat).format IS NOT NULL
+                            )
+                           THEN a.journalNotat
+                          ELSE
+                           NULL
+                        END
+                          ,CASE 
+                            WHEN ( 
+                                    (NOT a.journalDokumentAttr IS NULL)
+                                    AND
+                                    (
+                                      (a.journalDokumentAttr).dokumenttitel IS NOT NULL
+                                      OR
+                                      (
+                                        NOT ((a.journalDokumentAttr).offentlighedUndtaget IS NULL)
+                                        AND
+                                        (
+                                          ((a.journalDokumentAttr).offentlighedUndtaget).AlternativTitel IS NOT NULL
+                                          OR
+                                          ((a.journalDokumentAttr).offentlighedUndtaget).Hjemmel IS NOT NULL
+                                        )
+                                      )
+                                   )
+                                 ) THEN a.journalDokumentAttr
+                            ELSE
+                            NULL
+                          END
       FROM unnest(relationer) as a
       LEFT JOIN sag_relation b on a.relType = any (sag_rel_type_cardinality_unlimited) and b.sag_registrering_id=prev_sag_registrering.id and a.relType=b.rel_type and a.relIndex=b.rel_index
     ;

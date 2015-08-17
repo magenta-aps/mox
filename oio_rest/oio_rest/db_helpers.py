@@ -217,17 +217,22 @@ class DokumentDelEgenskaberType(namedtuple(
     def input(cls, i):
         if i is None:
             return None
-        content_url = i.get('indhold', None)
+        indhold = i.get('indhold', None)
 
-        # Get FileStorage object referenced by indhold field
-        f = cls._get_file_storage_for_content_url(content_url)
+        # If the content URL is provided, save the uploaded file
+        if indhold != "":
+            # Get FileStorage object referenced by indhold field
+            f = cls._get_file_storage_for_content_url(indhold)
 
-        # Save the file and get the URL for the saved file
-        stored_content_url = content_store.save_file_object(f)
+            # Save the file and get the URL for the saved file
+            indhold = content_store.save_file_object(f)
+        else:
+            # Empty string for indhold will clear the field.
+            pass
 
         return cls(
             i.get('indeks', None),
-            stored_content_url,
+            indhold,
             i.get('lokation', None),
             i.get('mimetype', None),
             Virkning.input(i.get('virkning', None))
