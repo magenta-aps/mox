@@ -2,7 +2,7 @@ from base64 import b64decode
 from functools import wraps
 import os
 from flask import request, Response
-from utils import UnauthorizedException
+from custom_exceptions import UnauthorizedException
 import zlib
 import gzip
 from auth.saml2 import Saml2_Assertion

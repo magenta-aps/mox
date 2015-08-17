@@ -22,7 +22,7 @@ from authentication import get_authenticated_user
 
 from auth.restrictions import Operation, get_restrictions
 from utils import restriction_to_registration
-from utils import NotFoundException, NotAllowedException
+from custom_exceptions import NotFoundException, NotAllowedException
 
 """
     Jinja2 Environment

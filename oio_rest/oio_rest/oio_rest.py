@@ -6,7 +6,6 @@ import db
 from utils import build_registration
 
 
-
 # Just a helper during debug
 from authentication import requires_auth
 
