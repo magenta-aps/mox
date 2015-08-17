@@ -13,7 +13,7 @@ FILE_UPLOAD_FOLDER = '/var/mox'
 
 # The Endpoint specified in the AppliesTo element of the STS request
 # This will be used to verify the Audience of the SAML Assertion
-SAML_MOX_ENTITY_ID = 'http://localhost:5000'
+SAML_MOX_ENTITY_ID = 'http://localhost:80'
 
 # The entity ID of the IdP. This will be used to verify the token Issuer
 SAML_IDP_ENTITY_ID = 'localhost'
