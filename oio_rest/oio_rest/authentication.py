@@ -28,6 +28,7 @@ def check_saml_authentication():
 
     If the token is not present, or is not valid, raises an
     `werkzeug.exceptions.Unauthorized` exception."""
+    
     auth_header = request.headers.get('Authorization')
     if auth_header is None:
         raise Unauthorized("No Authorization header present")
@@ -37,7 +38,6 @@ def check_saml_authentication():
     auth_type = auth_type.lower()
     if auth_type != 'saml-gzipped':
         raise Unauthorized("Unknown authorization type %s." % auth_type)
-
     binary_token = b64decode(encoded_token)
 
     # There are subtle differences between zlib and gzip, which is why we can't just do
@@ -45,8 +45,8 @@ def check_saml_authentication():
     # We must do this instead:
     decompressor = zlib.decompressobj(16 + zlib.MAX_WBITS)
     token = decompressor.decompress(binary_token)
-	# See https://rationalpie.wordpress.com/2010/06/02/python-streaming-gzip-decompression/
-
+    # See https://rationalpie.wordpress.com/2010/06/02/python-streaming-gzip-decompression/
+    
     assertion = Saml2_Assertion(token, SAML_MOX_ENTITY_ID,
                                 SAML_IDP_ENTITY_ID, get_idp_cert())
 
