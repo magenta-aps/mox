@@ -3,6 +3,8 @@
 from flask import Flask, jsonify
 from werkzeug.routing import BaseConverter
 
+from utils import OIOFlaskException
+
 app = Flask(__name__)
 
 
@@ -27,15 +29,26 @@ def sitemap():
     return jsonify({"site-map": links})
 
 
+@app.errorhandler(OIOFlaskException)
+def handle_not_allowed(error):
+    dct = error.to_dict()
+    response = jsonify(dct)
+    response.status_code = error.status_code
+    return response
+
+
 def main():
     from settings import BASE_URL
     from klassifikation import KlassifikationsHierarki
     from organisation import OrganisationsHierarki
-    from dokument import DokumentsHierarki
+    from sag import SagsHierarki
+    from dokument import DokumentHierarki
 
     KlassifikationsHierarki.setup_api(base_url=BASE_URL, flask=app)
+    SagsHierarki.setup_api(base_url=BASE_URL, flask=app)
     OrganisationsHierarki.setup_api(base_url=BASE_URL, flask=app)
-    DokumentsHierarki.setup_api(base_url=BASE_URL, flask=app)
+    DokumentHierarki.setup_api(base_url=BASE_URL, flask=app)
+
     app.run(debug=True)
 
 

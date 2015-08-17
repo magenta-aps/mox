@@ -22,11 +22,11 @@ SAML_IDP_ENTITY_ID = 'localhost'
 SAML_IDP_CERTIFICATE = "test_auth_data/idp-certificate.pem"
 
 # Whether to enable SAML authentication
-USE_SAML_AUTHENTICATION = True
+USE_SAML_AUTHENTICATION = False
 
 # Whether authorization is enabled - if not, the restrictions module is not
 # called.
-DO_ENABLE_RESTRICTIONS = False
+DO_ENABLE_RESTRICTIONS = True
 
 # The module which implements the authorization restrictions.
 # Must be present in sys.path.
@@ -279,4 +279,8 @@ REAL_DB_STRUCTURE["klasse"]["attributter_type_override"] = {
     "egenskaber": {
         "soegeord": "soegeord"
     }
+}
+REAL_DB_STRUCTURE["sag"]["relationer_type_override"] = {
+    "journalnotat": "journalnotat",
+    "journaldokument": "journaldokument"
 }

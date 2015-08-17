@@ -11,10 +11,28 @@ NOTICE: This file is auto-generated using the script: apply-template.py itsystem
 
 CREATE OR REPLACE FUNCTION as_list_itsystem(itsystem_uuids uuid[],
   registrering_tstzrange tstzrange,
-  virkning_tstzrange tstzrange)
-  RETURNS setof ItsystemType AS
-  $BODY$
+  virkning_tstzrange tstzrange,
+  auth_criteria_arr ItsystemRegistreringType[]=null
+  )
+  RETURNS ItsystemType[] AS
+$$
+DECLARE
+	auth_filtered_uuids uuid[];
+	result ItsystemType[];
+BEGIN
 
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_itsystem(itsystem_uuids,auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=coalesce(array_length(itsystem_uuids,1),0) AND auth_filtered_uuids @>itsystem_uuids) THEN
+  RAISE EXCEPTION 'Unable to list itsystem with uuids [%]. All objects do not fullfill the stipulated criteria:%',itsystem_uuids,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
+SELECT 
+array_agg( x.itsystemObj) into result
+FROM
+(
 SELECT
 ROW(
 	a.itsystem_id,
@@ -27,7 +45,7 @@ ROW(
 		)::ItsystemRegistreringType
 		order by upper((a.registrering).TimePeriod) DESC		
 	) 
-):: ItsystemType
+):: ItsystemType  itsystemObj
 FROM
 (
 	SELECT
@@ -126,9 +144,15 @@ WHERE a.itsystem_id IS NOT NULL
 GROUP BY 
 a.itsystem_id
 order by a.itsystem_id
-
-$BODY$
-LANGUAGE sql STABLE
+) as x
 ;
+
+
+
+RETURN result;
+
+END;
+$$ LANGUAGE plpgsql STABLE;
+
 
 

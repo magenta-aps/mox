@@ -22,7 +22,8 @@ CREATE OR REPLACE FUNCTION as_update_organisationfunktion(
   attrEgenskaber OrganisationfunktionEgenskaberAttrType[],
   tilsGyldighed OrganisationfunktionGyldighedTilsType[],
   relationer OrganisationfunktionRelationType[],
-  lostUpdatePreventionTZ TIMESTAMPTZ = null
+  lostUpdatePreventionTZ TIMESTAMPTZ = null,
+  auth_criteria_arr OrganisationfunktionRegistreringType[]=null
 	)
   RETURNS bigint AS 
 $$
@@ -35,17 +36,26 @@ DECLARE
   prev_organisationfunktion_registrering organisationfunktion_registrering;
   organisationfunktion_relation_navn OrganisationfunktionRelationKode;
   attrEgenskaberObj OrganisationfunktionEgenskaberAttrType;
+  auth_filtered_uuids uuid[];
 BEGIN
 
 --create a new registrering
 
 IF NOT EXISTS (select a.id from organisationfunktion a join organisationfunktion_registrering b on b.organisationfunktion_id=a.id  where a.id=organisationfunktion_uuid) THEN
-   RAISE EXCEPTION 'Unable to update organisationfunktion with uuid [%], being unable to any previous registrations.',organisationfunktion_uuid;
+   RAISE EXCEPTION 'Unable to update organisationfunktion with uuid [%], being unable to find any previous registrations.',organisationfunktion_uuid;
 END IF;
 
 PERFORM a.id FROM organisationfunktion a
 WHERE a.id=organisationfunktion_uuid
 FOR UPDATE; --We synchronize concurrent invocations of as_updates of this particular object on a exclusive row lock. This lock will be held by the current transaction until it terminates.
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_organisationfunktion(array[organisationfunktion_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[organisationfunktion_uuid]) THEN
+  RAISE EXCEPTION 'Unable to update organisationfunktion with uuid [%]. Object does not met stipulated criteria:%',organisationfunktion_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
 
 new_organisationfunktion_registrering := _as_create_organisationfunktion_registrering(organisationfunktion_uuid,livscykluskode, brugerref, note);
 prev_organisationfunktion_registrering := _as_get_prev_organisationfunktion_registrering(new_organisationfunktion_registrering);
@@ -174,12 +184,7 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" relations
-DELETE FROM organisationfunktion_relation
-WHERE 
-organisationfunktion_registrering_id=new_organisationfunktion_registrering.id
-AND (rel_maal_uuid IS NULL AND (rel_maal_urn IS NULL OR rel_maal_urn=''))
-;
+
 
 END IF;
 /**********************/
@@ -242,12 +247,6 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" tilstande
-DELETE FROM organisationfunktion_tils_gyldighed
-WHERE 
-organisationfunktion_registrering_id=new_organisationfunktion_registrering.id
-AND gyldighed = ''::OrganisationfunktionGyldighedTils
-;
 
 END IF;
 
@@ -293,8 +292,8 @@ IF attrEgenskaber IS NOT null THEN
     ,virkning
     ,organisationfunktion_registrering_id
   )
-  SELECT 
-    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle), 
+  SELECT
+    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
     coalesce(attrEgenskaberObj.funktionsnavn,a.funktionsnavn),
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
@@ -398,13 +397,7 @@ FROM
 
 
 
---Remove any "cleared"/"deleted" attributes
-DELETE FROM organisationfunktion_attr_egenskaber a
-WHERE 
-a.organisationfunktion_registrering_id=new_organisationfunktion_registrering.id
-AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') 
-            AND  (a.funktionsnavn IS NULL OR a.funktionsnavn='')
-;
+
 
 END IF;
 

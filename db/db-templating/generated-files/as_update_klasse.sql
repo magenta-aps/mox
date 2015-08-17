@@ -22,7 +22,8 @@ CREATE OR REPLACE FUNCTION as_update_klasse(
   attrEgenskaber KlasseEgenskaberAttrType[],
   tilsPubliceret KlassePubliceretTilsType[],
   relationer KlasseRelationType[],
-  lostUpdatePreventionTZ TIMESTAMPTZ = null
+  lostUpdatePreventionTZ TIMESTAMPTZ = null,
+  auth_criteria_arr KlasseRegistreringType[]=null
 	)
   RETURNS bigint AS 
 $$
@@ -37,17 +38,26 @@ DECLARE
   attrEgenskaberObj KlasseEgenskaberAttrType;
   new_id_klasse_attr_egenskaber bigint;
   klasseSoegeordObj KlasseSoegeordType;
+  auth_filtered_uuids uuid[];
 BEGIN
 
 --create a new registrering
 
 IF NOT EXISTS (select a.id from klasse a join klasse_registrering b on b.klasse_id=a.id  where a.id=klasse_uuid) THEN
-   RAISE EXCEPTION 'Unable to update klasse with uuid [%], being unable to any previous registrations.',klasse_uuid;
+   RAISE EXCEPTION 'Unable to update klasse with uuid [%], being unable to find any previous registrations.',klasse_uuid;
 END IF;
 
 PERFORM a.id FROM klasse a
 WHERE a.id=klasse_uuid
 FOR UPDATE; --We synchronize concurrent invocations of as_updates of this particular object on a exclusive row lock. This lock will be held by the current transaction until it terminates.
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_klasse(array[klasse_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[klasse_uuid]) THEN
+  RAISE EXCEPTION 'Unable to update klasse with uuid [%]. Object does not met stipulated criteria:%',klasse_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
 
 new_klasse_registrering := _as_create_klasse_registrering(klasse_uuid,livscykluskode, brugerref, note);
 prev_klasse_registrering := _as_get_prev_klasse_registrering(new_klasse_registrering);
@@ -176,12 +186,7 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" relations
-DELETE FROM klasse_relation
-WHERE 
-klasse_registrering_id=new_klasse_registrering.id
-AND (rel_maal_uuid IS NULL AND (rel_maal_urn IS NULL OR rel_maal_urn=''))
-;
+
 
 END IF;
 /**********************/
@@ -244,12 +249,6 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" tilstande
-DELETE FROM klasse_tils_publiceret
-WHERE 
-klasse_registrering_id=new_klasse_registrering.id
-AND publiceret = ''::KlassePubliceretTils
-;
 
 END IF;
 
@@ -303,12 +302,12 @@ WITH inserted_merged_attr_egenskaber AS (
   )
   SELECT 
     nextval('klasse_attr_egenskaber_id_seq'),
-    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle), 
-    coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse), 
-    coalesce(attrEgenskaberObj.eksempel,a.eksempel), 
-    coalesce(attrEgenskaberObj.omfang,a.omfang), 
-    coalesce(attrEgenskaberObj.titel,a.titel), 
-    coalesce(attrEgenskaberObj.retskilde,a.retskilde), 
+    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+    coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
+    coalesce(attrEgenskaberObj.eksempel,a.eksempel),
+    coalesce(attrEgenskaberObj.omfang,a.omfang),
+    coalesce(attrEgenskaberObj.titel,a.titel),
+    coalesce(attrEgenskaberObj.retskilde,a.retskilde),
     coalesce(attrEgenskaberObj.aendringsnotat,a.aendringsnotat),
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
@@ -497,19 +496,8 @@ JOIN klasse_attr_egenskaber a2 on a2.klasse_registrering_id=prev_klasse_registre
 JOIN klasse_attr_egenskaber_soegeord b on a2.id=b.klasse_attr_egenskaber_id   
 ;
 
---Remove any "cleared"/"deleted" attributes
-DELETE FROM klasse_attr_egenskaber a
-WHERE 
-a.klasse_registrering_id=new_klasse_registrering.id
-AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') 
-            AND  (a.beskrivelse IS NULL OR a.beskrivelse='') 
-            AND  (a.eksempel IS NULL OR a.eksempel='') 
-            AND  (a.omfang IS NULL OR a.omfang='') 
-            AND  (a.titel IS NULL OR a.titel='') 
-            AND  (a.retskilde IS NULL OR a.retskilde='') 
-            AND  (a.aendringsnotat IS NULL OR a.aendringsnotat='')
-AND a.id NOT IN (SELECT b.klasse_attr_egenskaber_id FROM klasse_attr_egenskaber_soegeord b)
-;
+
+
 
 
 END IF;

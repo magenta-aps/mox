@@ -22,7 +22,8 @@ CREATE OR REPLACE FUNCTION as_update_sag(
   attrEgenskaber SagEgenskaberAttrType[],
   tilsFremdrift SagFremdriftTilsType[],
   relationer SagRelationType[],
-  lostUpdatePreventionTZ TIMESTAMPTZ = null
+  lostUpdatePreventionTZ TIMESTAMPTZ = null,
+  auth_criteria_arr SagRegistreringType[]=null
 	)
   RETURNS bigint AS 
 $$
@@ -35,6 +36,7 @@ DECLARE
   prev_sag_registrering sag_registrering;
   sag_relation_navn SagRelationKode;
   attrEgenskaberObj SagEgenskaberAttrType;
+  auth_filtered_uuids uuid[];
   rel_type_max_index_prev_rev int;
   rel_type_max_index_arr _SagRelationMaxIndex[];
   sag_rel_type_cardinality_unlimited SagRelationKode[]:=ARRAY['andetarkiv'::SagRelationKode,'andrebehandlere'::SagRelationKode,'sekundaerpart'::SagRelationKode,'andresager'::SagRelationKode,'byggeri'::SagRelationKode,'fredning'::SagRelationKode,'journalpost'::SagRelationKode]::SagRelationKode[];
@@ -46,12 +48,20 @@ BEGIN
 --create a new registrering
 
 IF NOT EXISTS (select a.id from sag a join sag_registrering b on b.sag_id=a.id  where a.id=sag_uuid) THEN
-   RAISE EXCEPTION 'Unable to update sag with uuid [%], being unable to any previous registrations.',sag_uuid;
+   RAISE EXCEPTION 'Unable to update sag with uuid [%], being unable to find any previous registrations.',sag_uuid;
 END IF;
 
 PERFORM a.id FROM sag a
 WHERE a.id=sag_uuid
 FOR UPDATE; --We synchronize concurrent invocations of as_updates of this particular object on a exclusive row lock. This lock will be held by the current transaction until it terminates.
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_sag(array[sag_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[sag_uuid]) THEN
+  RAISE EXCEPTION 'Unable to update sag with uuid [%]. Object does not met stipulated criteria:%',sag_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
 
 new_sag_registrering := _as_create_sag_registrering(sag_uuid,livscykluskode, brugerref, note);
 prev_sag_registrering := _as_get_prev_sag_registrering(new_sag_registrering);
@@ -155,8 +165,42 @@ END LOOP;
                         ELSE
                         NULL
                       END,
-                        a.journalNotat,
-                          a.journalDokumentAttr
+                        CASE 
+                          WHEN  
+                            (NOT (a.journalNotat IS NULL)) 
+                            AND
+                            (
+                              (a.journalNotat).titel IS NOT NULL
+                              OR
+                              (a.journalNotat).notat IS NOT NULL
+                              OR
+                              (a.journalNotat).format IS NOT NULL
+                            )
+                           THEN a.journalNotat
+                          ELSE
+                           NULL
+                        END
+                          ,CASE 
+                            WHEN ( 
+                                    (NOT a.journalDokumentAttr IS NULL)
+                                    AND
+                                    (
+                                      (a.journalDokumentAttr).dokumenttitel IS NOT NULL
+                                      OR
+                                      (
+                                        NOT ((a.journalDokumentAttr).offentlighedUndtaget IS NULL)
+                                        AND
+                                        (
+                                          ((a.journalDokumentAttr).offentlighedUndtaget).AlternativTitel IS NOT NULL
+                                          OR
+                                          ((a.journalDokumentAttr).offentlighedUndtaget).Hjemmel IS NOT NULL
+                                        )
+                                      )
+                                   )
+                                 ) THEN a.journalDokumentAttr
+                            ELSE
+                            NULL
+                          END
       FROM unnest(relationer) as a
       LEFT JOIN sag_relation b on a.relType = any (sag_rel_type_cardinality_unlimited) and b.sag_registrering_id=prev_sag_registrering.id and a.relType=b.rel_type and a.relIndex=b.rel_index
     ;
@@ -259,23 +303,7 @@ END LOOP;
       ;
 
 /**********************/
---Remove any "cleared"/"deleted" relations
-DELETE FROM sag_relation a
-WHERE 
-sag_registrering_id=new_sag_registrering.id
-AND (rel_maal_uuid IS NULL AND (rel_maal_urn IS NULL OR rel_maal_urn=''))
-AND ( 
-      (a.journal_notat IS NULL)  
-     OR  
-     (  
-        ((a.journal_notat).titel IS NULL OR (a.journal_notat).titel='') 
-        AND     
-        ((a.journal_notat).notat IS NULL OR  (a.journal_notat).notat='')
-        AND
-        ((a.journal_notat).format IS NULL OR (a.journal_notat).format='')
-      )
-    ) 
-;
+
 
 END IF;
 /**********************/
@@ -338,12 +366,6 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" tilstande
-DELETE FROM sag_tils_fremdrift
-WHERE 
-sag_registrering_id=new_sag_registrering.id
-AND fremdrift = ''::SagFremdriftTils
-;
 
 END IF;
 
@@ -396,15 +418,19 @@ IF attrEgenskaber IS NOT null THEN
     ,virkning
     ,sag_registrering_id
   )
-  SELECT 
+  SELECT
     coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle), 
-    coalesce(attrEgenskaberObj.afleveret,a.afleveret), 
-    coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse), 
-    coalesce(attrEgenskaberObj.hjemmel,a.hjemmel), 
-    coalesce(attrEgenskaberObj.kassationskode,a.kassationskode), 
+    CASE WHEN (attrEgenskaberObj.afleveret).cleared THEN NULL 
+    ELSE coalesce((attrEgenskaberObj.afleveret).value,a.afleveret)
+    END,
+    coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
+    coalesce(attrEgenskaberObj.hjemmel,a.hjemmel),
+    coalesce(attrEgenskaberObj.kassationskode,a.kassationskode),
     coalesce(attrEgenskaberObj.offentlighedundtaget,a.offentlighedundtaget), 
-    coalesce(attrEgenskaberObj.principiel,a.principiel), 
-    coalesce(attrEgenskaberObj.sagsnummer,a.sagsnummer), 
+    CASE WHEN (attrEgenskaberObj.principiel).cleared THEN NULL 
+    ELSE coalesce((attrEgenskaberObj.principiel).value,a.principiel)
+    END,
+    coalesce(attrEgenskaberObj.sagsnummer,a.sagsnummer),
     coalesce(attrEgenskaberObj.titel,a.titel),
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
@@ -529,20 +555,7 @@ FROM
 
 
 
---Remove any "cleared"/"deleted" attributes
-DELETE FROM sag_attr_egenskaber a
-WHERE 
-a.sag_registrering_id=new_sag_registrering.id
-AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') 
-            AND  (a.afleveret IS NULL) 
-            AND  (a.beskrivelse IS NULL OR a.beskrivelse='') 
-            AND  (a.hjemmel IS NULL OR a.hjemmel='') 
-            AND  (a.kassationskode IS NULL OR a.kassationskode='') 
-            AND  (a.offentlighedundtaget IS NULL OR (((a.offentlighedundtaget).AlternativTitel IS NULL OR (a.offentlighedundtaget).AlternativTitel='') AND ((a.offentlighedundtaget).Hjemmel IS NULL OR (a.offentlighedundtaget).Hjemmel=''))) 
-            AND  (a.principiel IS NULL) 
-            AND  (a.sagsnummer IS NULL OR a.sagsnummer='') 
-            AND  (a.titel IS NULL OR a.titel='')
-;
+
 
 END IF;
 

@@ -11,10 +11,28 @@ NOTICE: This file is auto-generated using the script: apply-template.py organisa
 
 CREATE OR REPLACE FUNCTION as_list_organisation(organisation_uuids uuid[],
   registrering_tstzrange tstzrange,
-  virkning_tstzrange tstzrange)
-  RETURNS setof OrganisationType AS
-  $BODY$
+  virkning_tstzrange tstzrange,
+  auth_criteria_arr OrganisationRegistreringType[]=null
+  )
+  RETURNS OrganisationType[] AS
+$$
+DECLARE
+	auth_filtered_uuids uuid[];
+	result OrganisationType[];
+BEGIN
 
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_organisation(organisation_uuids,auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=coalesce(array_length(organisation_uuids,1),0) AND auth_filtered_uuids @>organisation_uuids) THEN
+  RAISE EXCEPTION 'Unable to list organisation with uuids [%]. All objects do not fullfill the stipulated criteria:%',organisation_uuids,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
+SELECT 
+array_agg( x.organisationObj) into result
+FROM
+(
 SELECT
 ROW(
 	a.organisation_id,
@@ -27,7 +45,7 @@ ROW(
 		)::OrganisationRegistreringType
 		order by upper((a.registrering).TimePeriod) DESC		
 	) 
-):: OrganisationType
+):: OrganisationType  organisationObj
 FROM
 (
 	SELECT
@@ -124,9 +142,15 @@ WHERE a.organisation_id IS NOT NULL
 GROUP BY 
 a.organisation_id
 order by a.organisation_id
-
-$BODY$
-LANGUAGE sql STABLE
+) as x
 ;
+
+
+
+RETURN result;
+
+END;
+$$ LANGUAGE plpgsql STABLE;
+
 
 

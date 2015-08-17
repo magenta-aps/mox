@@ -15,4 +15,8 @@
         {% endfor %}
         -- relations
         {{ relations }}
+        {% if variants -%},
+        -- variants
+        {{ variants }}
+        {% endif -%}
     ) :: {{ class_name }}RegistreringType

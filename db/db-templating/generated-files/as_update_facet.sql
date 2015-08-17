@@ -22,7 +22,8 @@ CREATE OR REPLACE FUNCTION as_update_facet(
   attrEgenskaber FacetEgenskaberAttrType[],
   tilsPubliceret FacetPubliceretTilsType[],
   relationer FacetRelationType[],
-  lostUpdatePreventionTZ TIMESTAMPTZ = null
+  lostUpdatePreventionTZ TIMESTAMPTZ = null,
+  auth_criteria_arr FacetRegistreringType[]=null
 	)
   RETURNS bigint AS 
 $$
@@ -35,17 +36,26 @@ DECLARE
   prev_facet_registrering facet_registrering;
   facet_relation_navn FacetRelationKode;
   attrEgenskaberObj FacetEgenskaberAttrType;
+  auth_filtered_uuids uuid[];
 BEGIN
 
 --create a new registrering
 
 IF NOT EXISTS (select a.id from facet a join facet_registrering b on b.facet_id=a.id  where a.id=facet_uuid) THEN
-   RAISE EXCEPTION 'Unable to update facet with uuid [%], being unable to any previous registrations.',facet_uuid;
+   RAISE EXCEPTION 'Unable to update facet with uuid [%], being unable to find any previous registrations.',facet_uuid;
 END IF;
 
 PERFORM a.id FROM facet a
 WHERE a.id=facet_uuid
 FOR UPDATE; --We synchronize concurrent invocations of as_updates of this particular object on a exclusive row lock. This lock will be held by the current transaction until it terminates.
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_facet(array[facet_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[facet_uuid]) THEN
+  RAISE EXCEPTION 'Unable to update facet with uuid [%]. Object does not met stipulated criteria:%',facet_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
 
 new_facet_registrering := _as_create_facet_registrering(facet_uuid,livscykluskode, brugerref, note);
 prev_facet_registrering := _as_get_prev_facet_registrering(new_facet_registrering);
@@ -174,12 +184,7 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" relations
-DELETE FROM facet_relation
-WHERE 
-facet_registrering_id=new_facet_registrering.id
-AND (rel_maal_uuid IS NULL AND (rel_maal_urn IS NULL OR rel_maal_urn=''))
-;
+
 
 END IF;
 /**********************/
@@ -242,12 +247,6 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" tilstande
-DELETE FROM facet_tils_publiceret
-WHERE 
-facet_registrering_id=new_facet_registrering.id
-AND publiceret = ''::FacetPubliceretTils
-;
 
 END IF;
 
@@ -298,13 +297,13 @@ IF attrEgenskaber IS NOT null THEN
     ,virkning
     ,facet_registrering_id
   )
-  SELECT 
-    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle), 
-    coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse), 
-    coalesce(attrEgenskaberObj.opbygning,a.opbygning), 
-    coalesce(attrEgenskaberObj.ophavsret,a.ophavsret), 
-    coalesce(attrEgenskaberObj.plan,a.plan), 
-    coalesce(attrEgenskaberObj.supplement,a.supplement), 
+  SELECT
+    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+    coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
+    coalesce(attrEgenskaberObj.opbygning,a.opbygning),
+    coalesce(attrEgenskaberObj.ophavsret,a.ophavsret),
+    coalesce(attrEgenskaberObj.plan,a.plan),
+    coalesce(attrEgenskaberObj.supplement,a.supplement),
     coalesce(attrEgenskaberObj.retskilde,a.retskilde),
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
@@ -423,18 +422,7 @@ FROM
 
 
 
---Remove any "cleared"/"deleted" attributes
-DELETE FROM facet_attr_egenskaber a
-WHERE 
-a.facet_registrering_id=new_facet_registrering.id
-AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') 
-            AND  (a.beskrivelse IS NULL OR a.beskrivelse='') 
-            AND  (a.opbygning IS NULL OR a.opbygning='') 
-            AND  (a.ophavsret IS NULL OR a.ophavsret='') 
-            AND  (a.plan IS NULL OR a.plan='') 
-            AND  (a.supplement IS NULL OR a.supplement='') 
-            AND  (a.retskilde IS NULL OR a.retskilde='')
-;
+
 
 END IF;
 

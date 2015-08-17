@@ -20,13 +20,13 @@ CREATE TYPE SagFremdriftTilsType AS (
 ;
 
 CREATE TYPE SagEgenskaberAttrType AS (
-brugervendtnoegle text, 
-afleveret boolean,
+brugervendtnoegle text,
+afleveret ClearableBoolean,
 beskrivelse text,
 hjemmel text,
-kassationskode text, 
-offentlighedundtaget offentlighedundtagetType, 
-principiel boolean,
+kassationskode text,
+offentlighedundtaget offentlighedundtagettype,
+principiel ClearableBoolean,
 sagsnummer text,
 titel text,
  virkning Virkning

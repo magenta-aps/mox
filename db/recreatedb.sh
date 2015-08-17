@@ -27,8 +27,10 @@ sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_subtract_tstzrange_arr.
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_as_valid_registrering_livscyklus_transition.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_as_search_match_array.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_json_object_delete_keys.sql
-sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_json_object_delete_keys.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_amqp_functions.sql
+
+
+
 
 
 cd ./db-templating/
@@ -51,6 +53,8 @@ patch --fuzz=3 -i  ../patches/as_list_sag.sql.diff
 patch --fuzz=3 -i  ../patches/_remove_nulls_in_array_sag.sql.diff
 patch --fuzz=3 -i  ../patches/as_create_or_import_sag.sql.diff
 patch --fuzz=3 -i  ../patches/as_update_sag.sql.diff
+patch --fuzz=3 -i  ../patches/json-cast-functions_sag.sql.diff
+patch --fuzz=3 -i  ../patches/as_search_sag.sql.diff
 #dokument
 patch --fuzz=3 -i  ../patches/dbtyper-specific_dokument.sql.diff
 patch --fuzz=3 -i  ../patches/tbls-specific_dokument.sql.diff
@@ -83,7 +87,7 @@ sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f ../funcs/_ensure_document_vari
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f ../funcs/_as_list_dokument_varianter.sql
 
 
-templates2=(  _as_get_prev_registrering _as_create_registrering as_update  as_create_or_import  as_list as_read as_search json-cast-functions )
+templates2=(  _as_get_prev_registrering _as_create_registrering as_update  as_create_or_import  as_list as_read as_search json-cast-functions _as_filter_unauth )
 
 
 for oiotype in "${oiotypes[@]}"
@@ -99,6 +103,7 @@ cd ..
 
 #Test functions
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_remove_nulls_in_array_klasse.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_common_types_cleable_casts.sql
 
 #Facet
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_facet_db_schama.sql
@@ -107,6 +112,7 @@ sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_list_facet.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_read_facet.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_search_facet.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_update_facet.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_filter_unauth_facet.sql
 #Klasse (BUT testing template-generated code through klasse, IM)
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_update_klasse.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_read_klasse.sql
@@ -119,11 +125,12 @@ sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_search_itsystem.
 #sag
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_create_or_import_sag.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_update_sag.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_search_sag.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_json_object_delete_keys.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_json_cast_function.sql
 #dokument
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_create_or_import_dokument.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_list_dokument.sql
-
-
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_update_dokument.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_search_dokument.sql
 

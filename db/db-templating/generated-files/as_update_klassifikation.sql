@@ -22,7 +22,8 @@ CREATE OR REPLACE FUNCTION as_update_klassifikation(
   attrEgenskaber KlassifikationEgenskaberAttrType[],
   tilsPubliceret KlassifikationPubliceretTilsType[],
   relationer KlassifikationRelationType[],
-  lostUpdatePreventionTZ TIMESTAMPTZ = null
+  lostUpdatePreventionTZ TIMESTAMPTZ = null,
+  auth_criteria_arr KlassifikationRegistreringType[]=null
 	)
   RETURNS bigint AS 
 $$
@@ -35,17 +36,26 @@ DECLARE
   prev_klassifikation_registrering klassifikation_registrering;
   klassifikation_relation_navn KlassifikationRelationKode;
   attrEgenskaberObj KlassifikationEgenskaberAttrType;
+  auth_filtered_uuids uuid[];
 BEGIN
 
 --create a new registrering
 
 IF NOT EXISTS (select a.id from klassifikation a join klassifikation_registrering b on b.klassifikation_id=a.id  where a.id=klassifikation_uuid) THEN
-   RAISE EXCEPTION 'Unable to update klassifikation with uuid [%], being unable to any previous registrations.',klassifikation_uuid;
+   RAISE EXCEPTION 'Unable to update klassifikation with uuid [%], being unable to find any previous registrations.',klassifikation_uuid;
 END IF;
 
 PERFORM a.id FROM klassifikation a
 WHERE a.id=klassifikation_uuid
 FOR UPDATE; --We synchronize concurrent invocations of as_updates of this particular object on a exclusive row lock. This lock will be held by the current transaction until it terminates.
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_klassifikation(array[klassifikation_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[klassifikation_uuid]) THEN
+  RAISE EXCEPTION 'Unable to update klassifikation with uuid [%]. Object does not met stipulated criteria:%',klassifikation_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
 
 new_klassifikation_registrering := _as_create_klassifikation_registrering(klassifikation_uuid,livscykluskode, brugerref, note);
 prev_klassifikation_registrering := _as_get_prev_klassifikation_registrering(new_klassifikation_registrering);
@@ -174,12 +184,7 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" relations
-DELETE FROM klassifikation_relation
-WHERE 
-klassifikation_registrering_id=new_klassifikation_registrering.id
-AND (rel_maal_uuid IS NULL AND (rel_maal_urn IS NULL OR rel_maal_urn=''))
-;
+
 
 END IF;
 /**********************/
@@ -242,12 +247,6 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" tilstande
-DELETE FROM klassifikation_tils_publiceret
-WHERE 
-klassifikation_registrering_id=new_klassifikation_registrering.id
-AND publiceret = ''::KlassifikationPubliceretTils
-;
 
 END IF;
 
@@ -295,10 +294,10 @@ IF attrEgenskaber IS NOT null THEN
     ,virkning
     ,klassifikation_registrering_id
   )
-  SELECT 
-    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle), 
-    coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse), 
-    coalesce(attrEgenskaberObj.kaldenavn,a.kaldenavn), 
+  SELECT
+    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+    coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
+    coalesce(attrEgenskaberObj.kaldenavn,a.kaldenavn),
     coalesce(attrEgenskaberObj.ophavsret,a.ophavsret),
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
@@ -408,15 +407,7 @@ FROM
 
 
 
---Remove any "cleared"/"deleted" attributes
-DELETE FROM klassifikation_attr_egenskaber a
-WHERE 
-a.klassifikation_registrering_id=new_klassifikation_registrering.id
-AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') 
-            AND  (a.beskrivelse IS NULL OR a.beskrivelse='') 
-            AND  (a.kaldenavn IS NULL OR a.kaldenavn='') 
-            AND  (a.ophavsret IS NULL OR a.ophavsret='')
-;
+
 
 END IF;
 

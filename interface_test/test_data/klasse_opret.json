@@ -47,7 +47,8 @@
                 "aktoertypekode": "Bruger", 
                 "notetekst": "Nothing to see here!" 
             
-            }
+            },
+            "objekttype": "Bruger"
         }
         ],
    "redaktoerer": [ 
@@ -59,7 +60,8 @@
                 "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
                 "aktoertypekode": "Bruger", 
                 "notetekst": "Nothing to see here!" 
-            } 
+            }, 
+            "objekttype": "Bruger"
         }, 
             { 
                 "uuid": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
@@ -69,7 +71,8 @@
                     "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
                     "aktoertypekode": "Bruger", 
                     "notetekst": "Nothing to see here!" 
-                } 
+                },
+            "objekttype": "Bruger"
             } 
         ] 
     } 

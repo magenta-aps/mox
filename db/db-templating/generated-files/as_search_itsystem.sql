@@ -18,7 +18,8 @@ CREATE OR REPLACE FUNCTION as_search_itsystem(
 	maxResults int = 2147483647,
 	anyAttrValueArr text[] = '{}'::text[],
 	anyRelUuidArr	uuid[] = '{}'::uuid[],
-	anyRelUrnArr text[] = '{}'::text[]
+	anyRelUrnArr text[] = '{}'::text[],
+	auth_criteria_arr ItsystemRegistreringType[]=null
 	)
   RETURNS uuid[] AS 
 $$
@@ -33,6 +34,7 @@ DECLARE
 	anyAttrValue text;
 	anyRelUuid uuid;
 	anyRelUrn text;
+	auth_filtered_uuids uuid[];
 BEGIN
 
 --RAISE DEBUG 'step 0:registreringObj:%',registreringObj;
@@ -997,7 +999,13 @@ END IF;
 --RAISE DEBUG 'itsystem_candidates step 6:%',itsystem_candidates;
 
 
-return itsystem_candidates;
+										 
+/*** Filter out the objects that does not meets the stipulated access criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_itsystem(itsystem_candidates,auth_criteria_arr); 
+/*********************/
+
+
+return auth_filtered_uuids;
 
 
 END;

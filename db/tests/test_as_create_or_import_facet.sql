@@ -33,8 +33,9 @@ DECLARE
 	actual_publiceret FacetPubliceretTilsType;
 	actual_relationer FacetRelationType[];
 	uuid_to_import uuid :='a1819cce-043b-447f-ba5e-92e6a75df918'::uuid;
+	uuid_to_import2 uuid :='90819cce-043b-447f-ba1e-92e6a75df929'::uuid;
 	uuid_returned_from_import uuid;
-
+	uuid_returned_from_import2 uuid;
 BEGIN
 
 
@@ -238,6 +239,56 @@ RETURN NEXT is(
 	ARRAY[uuid_to_import]::uuid[]
 ,'import creates new facet.');
 
+--****************************
+--test that an exception is thrown when stipulated access criteria is not met
+
+
+BEGIN
+uuid_returned_from_import2:=as_create_or_import_facet(registrering,uuid_to_import2,
+	ARRAY[
+	ROW(
+		null,
+		array [
+			ROW (
+			null,
+			'IkkePubliceret'
+			):: FacetPubliceretTilsType
+		]
+		,null
+		,null
+		)
+	::FacetRegistreringType
+		]
+	);
+
+
+RETURN NEXT ok(false,'as_create_or_import test auth criteria#1: Should throw MO401 exception');
+EXCEPTION  
+WHEN sqlstate 'MO401' THEN
+	RETURN NEXT ok(true,'as_create_or_import test auth criteria#1: Throws MO401 exception (as it should)');
+END;
+
+--****************************
+--test that an exception is not thrown when stipulated access criteria is met
+
+uuid_returned_from_import2:=as_create_or_import_facet(registrering,uuid_to_import2,
+	ARRAY[
+	ROW(
+		null,
+		array [
+			ROW (
+			null,
+			'Publiceret'
+			):: FacetPubliceretTilsType
+		]
+		,null
+		,null
+		)
+	::FacetRegistreringType
+		]
+	);
+
+RETURN NEXT is (uuid_returned_from_import2,uuid_to_import2,'No exception thrown, when criteria is met invoking import.');
 
 
 

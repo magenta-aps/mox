@@ -25,7 +25,6 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 
 # Add system user if none exists
-set +x
 getent passwd mox
 if [ $? -ne 0 ]; then 
 	sudo useradd mox
@@ -53,7 +52,7 @@ sudo mkdir -p /var/mox
 sudo chown mox /var/mox
 
 # Setup and start virtual environment
-VIRTUALENV=oio_rest/python-env
+VIRTUALENV=$DIR/oio_rest/python-env
 
 if [ -d $VIRTUALENV ]; then
 	rm -rf $VIRTUALENV
@@ -65,6 +64,12 @@ if [ ! -d $VIRTUALENV ]; then
 	echo "Virtual environment not created!"
 else
 
+	source $VIRTUALENV/bin/activate
+
+	pushd $DIR/oio_rest
+	python setup.py develop
+	popd
+
 	if [ ! -z $DB_INSTALL ]; then
 
 		echo "Installing DB"
@@ -75,13 +80,6 @@ else
 		./recreatedb.sh
 		cd $DIR
 	fi
-
-	source $VIRTUALENV/bin/activate
-
-	pushd $DIR/oio_rest
-	python setup.py develop
-	popd
-
 	deactivate
 
 	echo "Run oio_rest/oio_api.sh to test API"

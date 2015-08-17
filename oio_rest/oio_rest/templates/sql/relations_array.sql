@@ -14,9 +14,15 @@
             {% else -%}
             NULL
             {% endif -%}:: Virkning,
-        {{ rel.uuid|adapt }},
-        null, 
-        'uuid'
+            {% if rel.uuid is defined %}{{ rel.uuid|adapt }}{% else %}NULL{% endif %},
+            {% if rel.urn is defined %}{{ rel.urn|adapt }}{% else %}NULL{% endif %},
+            {% if rel.objekttype is defined %}{{ rel.objekttype|adapt }}{% else %}NULL{% endif %}
+        {% if class_name == "Sag" %}
+        ,        {{ rel.indeks|adapt }},
+            {% if rel.journalpostkode is defined %}{{ rel.journalpostkode|adapt }}{% else %}NULL{% endif %},
+            {% if rel.journalnotat is defined %}{{ rel.journalnotat|adapt }}{% else %}NULL{% endif %},
+            {% if rel.journaldokument is defined %}{{ rel.journaldokument|adapt }}{% else %}NULL{% endif %}
+        {% endif %}
     ){% if not (outer_loop.last and loop.last) -%},{% endif -%}
     {% endfor -%}
     {% endfor -%}

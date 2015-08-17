@@ -23,7 +23,8 @@ CREATE OR REPLACE FUNCTION as_update_{{oio_type}}(
   tils{{tilstand|title}} {{oio_type|title}}{{tilstand|title}}TilsType[],
   {%- endfor %}
   relationer {{oio_type|title}}RelationType[],
-  lostUpdatePreventionTZ TIMESTAMPTZ = null
+  lostUpdatePreventionTZ TIMESTAMPTZ = null,
+  auth_criteria_arr {{oio_type|title}}RegistreringType[]=null
 	)
   RETURNS bigint AS 
 $$
@@ -37,17 +38,26 @@ DECLARE
   {{oio_type}}_relation_navn {{oio_type|title}}RelationKode;
   {%- for attribut , attribut_fields in attributter.iteritems() %}
   attr{{attribut|title}}Obj {{oio_type|title}}{{attribut|title}}AttrType;{%- endfor %}
+  auth_filtered_uuids uuid[];
 BEGIN
 
 --create a new registrering
 
 IF NOT EXISTS (select a.id from {{oio_type}} a join {{oio_type}}_registrering b on b.{{oio_type}}_id=a.id  where a.id={{oio_type}}_uuid) THEN
-   RAISE EXCEPTION 'Unable to update {{oio_type}} with uuid [%], being unable to any previous registrations.',{{oio_type}}_uuid;
+   RAISE EXCEPTION 'Unable to update {{oio_type}} with uuid [%], being unable to find any previous registrations.',{{oio_type}}_uuid;
 END IF;
 
 PERFORM a.id FROM {{oio_type}} a
 WHERE a.id={{oio_type}}_uuid
 FOR UPDATE; --We synchronize concurrent invocations of as_updates of this particular object on a exclusive row lock. This lock will be held by the current transaction until it terminates.
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_{{oio_type}}(array[{{oio_type}}_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[{{oio_type}}_uuid]) THEN
+  RAISE EXCEPTION 'Unable to update {{oio_type}} with uuid [%]. Object does not met stipulated criteria:%',{{oio_type}}_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
 
 new_{{oio_type}}_registrering := _as_create_{{oio_type}}_registrering({{oio_type}}_uuid,livscykluskode, brugerref, note);
 prev_{{oio_type}}_registrering := _as_get_prev_{{oio_type}}_registrering(new_{{oio_type}}_registrering);
@@ -176,12 +186,7 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" relations
-DELETE FROM {{oio_type}}_relation
-WHERE 
-{{oio_type}}_registrering_id=new_{{oio_type}}_registrering.id
-AND (rel_maal_uuid IS NULL AND (rel_maal_urn IS NULL OR rel_maal_urn=''))
-;
+
 
 END IF;
 /**********************/
@@ -246,12 +251,6 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" tilstande
-DELETE FROM {{oio_type}}_tils_{{tilstand}}
-WHERE 
-{{oio_type}}_registrering_id=new_{{oio_type}}_registrering.id
-AND {{tilstand}} = ''::{{oio_type|title}}{{tilstand|title}}Tils
-;
 
 END IF;
 
@@ -299,8 +298,14 @@ IF attr{{attribut|title}} IS NOT null THEN
     ,virkning
     ,{{oio_type}}_registrering_id
   )
-  SELECT {%-for fieldname in attribut_fields %} 
+  SELECT {%-for fieldname in attribut_fields %}
+  {%- if  attributter_type_override is defined and attributter_type_override[attribut] is defined and attributter_type_override[attribut][fieldname] is defined and ( attributter_type_override[attribut][fieldname] =='int' or attributter_type_override[attribut][fieldname] =='date' or attributter_type_override[attribut][fieldname]=='boolean')  %} 
+    CASE WHEN (attr{{attribut|title}}Obj.{{fieldname}}).cleared THEN NULL 
+    ELSE coalesce((attr{{attribut|title}}Obj.{{fieldname}}).value,a.{{fieldname}})
+    END,
+   {%-else %}
     coalesce(attr{{attribut|title}}Obj.{{fieldname}},a.{{fieldname}}),
+    {%-endif %}
     {%- endfor %}
 	ROW (
 	  (a.virkning).TimePeriod * (attr{{attribut|title}}Obj.virkning).TimePeriod,
@@ -406,19 +411,7 @@ FROM
 
 
 
---Remove any "cleared"/"deleted" attributes
-DELETE FROM {{oio_type}}_attr_{{attribut}} a
-WHERE 
-a.{{oio_type}}_registrering_id=new_{{oio_type}}_registrering.id
-AND {%-for fieldname in attribut_fields %} (a.{{fieldname}} IS NULL {%- if  attributter_type_override is defined and attributter_type_override[attribut] is defined and attributter_type_override[attribut][fieldname] is defined %} 
-            {%-if attributter_type_override[attribut][fieldname] == "text[]" %} OR coalesce(array_length(a.{{fieldname}},1),0)=0
-            {%-else %}
-            {%-if attributter_type_override[attribut][fieldname] == "offentlighedundtagettype" %} OR (((a.{{fieldname}}).AlternativTitel IS NULL OR (a.{{fieldname}}).AlternativTitel='') AND ((a.{{fieldname}}).Hjemmel IS NULL OR (a.{{fieldname}}).Hjemmel=''))
-            {%-else %}
-            {%-if attributter_type_override[attribut][fieldname] == "int" or attributter_type_override[attribut][fieldname] == "date" %} 
-           {%- endif %}{%- endif %}{%- endif %} {%- else %} OR a.{{fieldname}}=''{%- endif %}){%- if (not loop.last) %} 
-            AND {% endif %}{%- endfor %}
-;
+
 
 END IF;
 
