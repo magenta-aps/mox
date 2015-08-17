@@ -1,5 +1,5 @@
-*** ../generated-files/as_create_or_import_sag.sql	2015-08-14 12:57:21.253564459 +0200
---- as_create_or_import_sag.org.sql	2015-08-14 13:01:37.365577214 +0200
+*** generated-files/as_create_or_import_sag.sql	2015-08-17 09:43:23.813174094 +0200
+--- patches/as_create_or_import_sag.org.sql	2015-08-17 09:42:44.441174618 +0200
 ***************
 *** 4,14 ****
   -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -71,7 +71,7 @@
   /*** Verify that the object meets the stipulated access allowed criteria  ***/
   /*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
   auth_filtered_uuids:=_as_filter_unauth_sag(array[sag_uuid]::uuid[],auth_criteria_arr); 
---- 154,226 ----
+--- 154,260 ----
   END IF;
   
   /*********************************/
@@ -124,8 +124,42 @@
 !           ELSE
 !           NULL
 !         END,
-!       a.journalNotat,
-!       a.journalDokumentAttr
+!       CASE 
+!           WHEN  
+!             (NOT (a.journalNotat IS NULL)) 
+!             AND
+!             (
+!               (a.journalNotat).titel IS NOT NULL
+!               OR
+!               (a.journalNotat).notat IS NOT NULL
+!               OR
+!               (a.journalNotat).format IS NOT NULL
+!             )
+!            THEN a.journalNotat
+!            ELSE
+!            NULL
+!       END
+!       ,CASE 
+!         WHEN ( 
+!                 (NOT a.journalDokumentAttr IS NULL)
+!                 AND
+!                 (
+!                   (a.journalDokumentAttr).dokumenttitel IS NOT NULL
+!                   OR
+!                   (
+!                     NOT ((a.journalDokumentAttr).offentlighedUndtaget IS NULL)
+!                     AND
+!                     (
+!                       ((a.journalDokumentAttr).offentlighedUndtaget).AlternativTitel IS NOT NULL
+!                       OR
+!                       ((a.journalDokumentAttr).offentlighedUndtaget).Hjemmel IS NOT NULL
+!                     )
+!                   )
+!                )
+!              ) THEN a.journalDokumentAttr
+!         ELSE
+!         NULL
+!       END
       FROM unnest(sag_registrering.relationer) a
 !     ;
 ! 
