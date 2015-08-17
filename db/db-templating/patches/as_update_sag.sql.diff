@@ -1,5 +1,5 @@
-*** ./generated-files/as_update_sag.sql	2015-08-12 16:31:36.592524232 +0200
---- ./patches/as_update_sag.org.sql	2015-08-12 16:39:44.060548509 +0200
+*** generated-files/as_update_sag.sql	2015-08-17 10:23:10.077142324 +0200
+--- patches/as_update_sag.org.sql	2015-08-17 10:26:01.057140048 +0200
 ***************
 *** 35,44 ****
 --- 35,50 ----
@@ -72,7 +72,7 @@
           new_sag_registrering.id, 
             ROW(
               c.tz_range_leftover,
---- 80,208 ----
+--- 80,242 ----
   IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
   --raise notice 'Skipping relations, as it is explicit set to empty array. Update note [%]',note;
   ELSE
@@ -161,8 +161,42 @@
 !                         ELSE
 !                         NULL
 !                       END,
-!                         a.journalNotat,
-!                           a.journalDokumentAttr
+!                         CASE 
+!                           WHEN  
+!                             (NOT (a.journalNotat IS NULL)) 
+!                             AND
+!                             (
+!                               (a.journalNotat).titel IS NOT NULL
+!                               OR
+!                               (a.journalNotat).notat IS NOT NULL
+!                               OR
+!                               (a.journalNotat).format IS NOT NULL
+!                             )
+!                            THEN a.journalNotat
+!                           ELSE
+!                            NULL
+!                         END
+!                           ,CASE 
+!                             WHEN ( 
+!                                     (NOT a.journalDokumentAttr IS NULL)
+!                                     AND
+!                                     (
+!                                       (a.journalDokumentAttr).dokumenttitel IS NOT NULL
+!                                       OR
+!                                       (
+!                                         NOT ((a.journalDokumentAttr).offentlighedUndtaget IS NULL)
+!                                         AND
+!                                         (
+!                                           ((a.journalDokumentAttr).offentlighedUndtaget).AlternativTitel IS NOT NULL
+!                                           OR
+!                                           ((a.journalDokumentAttr).offentlighedUndtaget).Hjemmel IS NOT NULL
+!                                         )
+!                                       )
+!                                    )
+!                                  ) THEN a.journalDokumentAttr
+!                             ELSE
+!                             NULL
+!                           END
         FROM unnest(relationer) as a
 +       LEFT JOIN sag_relation b on a.relType = any (sag_rel_type_cardinality_unlimited) and b.sag_registrering_id=prev_sag_registrering.id and a.relType=b.rel_type and a.relIndex=b.rel_index
       ;
@@ -215,7 +249,7 @@
         --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to _subtract_tstzrange_arr on the relations of the previous registrering 
         SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
         FROM sag_relation b
---- 211,225 ----
+--- 245,259 ----
                 (a.virkning).NoteTekst
             ) :: virkning,
               a.rel_maal_uuid,
@@ -277,7 +311,7 @@
   
   END IF;
   /**********************/
---- 235,275 ----
+--- 269,309 ----
       ;
     END LOOP;
   
