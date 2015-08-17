@@ -6,8 +6,6 @@
         "brugervendtnoegle": "DOK1234567890",
         "titel": "Dokument nr. 12345",
         "beskrivelse": "Dette er en dokument",
-        "major": 1,
-        "minor": 0,
         "offentlighedundtaget": {
           "alternativtitel": "s1kr3t!",
           "hjemmel": "ingen"

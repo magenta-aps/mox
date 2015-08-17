@@ -471,8 +471,31 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
         raise NotFoundException("{0} with UUID {1} not found.".format(
             class_name, uuid
         ))
-    return filter_nulls(output)
+    return filter_json_output(output)
 
+def filter_json_output(output):
+    """Filter the JSON output returned from the DB-layer."""
+    return filter_nulls(simplify_cleared_wrappers(output))
+
+def simplify_cleared_wrappers(o):
+    """Recursively simplify any values wrapped in a cleared-wrapper.
+
+    {"blah": {"value": true, "cleared": false}} becomes simply {"blah": true}
+
+    The dicts could be contained in lists or tuples or other dicts.
+    """
+    if isinstance(o, dict):
+        if "cleared" in o:
+            # Handle clearable wrapper db-types.
+            return o.get("value", None)
+        else:
+            return {k: simplify_cleared_wrappers(v) for k, v in o.iteritems()}
+    elif isinstance(o, list):
+        return [simplify_cleared_wrappers(v) for v in o]
+    elif isinstance(o, tuple):
+        return tuple(simplify_cleared_wrappers(v) for v in o)
+    else:
+        return o
 
 def filter_nulls(o):
     """Recursively remove keys with None values from dicts in object.
@@ -480,14 +503,18 @@ def filter_nulls(o):
     The dicts could be contained in lists or tuples or other dicts.
     """
     if isinstance(o, dict):
-        return {k: filter_nulls(v) for k, v in o.iteritems() if v is not None}
+        if "cleared" in o:
+            # Handle clearable wrapper db-types.
+            return o.get("value", None)
+        else:
+            return {k: filter_nulls(v) for k, v in o.iteritems()
+                    if v is not None and filter_nulls(v) is not None}
     elif isinstance(o, list):
         return [filter_nulls(v) for v in o]
     elif isinstance(o, tuple):
         return tuple(filter_nulls(v) for v in o)
     else:
         return o
-
 
 def search_objects(class_name, uuid, registration,
                    virkning_fra=None, virkning_til=None,
