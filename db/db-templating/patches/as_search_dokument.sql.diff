@@ -1,0 +1,22 @@
+*** generated-files/as_search_dokument.sql	2015-08-18 10:14:36.841381940 +0200
+--- patches/as_search_dokument.org.sql	2015-08-18 10:17:10.557389596 +0200
+***************
+*** 32,41 ****
+--- 32,48 ----
+    	tilsFremdriftTypeObj DokumentFremdriftTilsType;
+  	relationTypeObj DokumentRelationType;
+  	anyAttrValue text;
+  	anyRelUuid uuid;
+  	anyRelUrn text;
++ 	variantTypeObj DokumentVariantType;
++ 	variantEgenskaberTypeObj DokumentVariantEgenskaberType;
++ 	delTypeObj DokumentDelType;
++ 	delEgenskaberTypeObj DokumentDelEgenskaberType;
++ 	delRelationTypeObj DokumentdelRelationType;
++ 	variant_candidates_ids bigint[];
++ 	variant_candidates_is_initialized boolean;
+  	auth_filtered_uuids uuid[];
+  BEGIN
+  
+  --RAISE DEBUG 'step 0:registreringObj:%',registreringObj;
+  
