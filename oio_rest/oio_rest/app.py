@@ -3,7 +3,7 @@
 from flask import Flask, jsonify
 from werkzeug.routing import BaseConverter
 
-from utils import OIOFlaskException
+from custom_exceptions import OIOFlaskException
 
 app = Flask(__name__)
 
