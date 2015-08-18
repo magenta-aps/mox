@@ -2406,6 +2406,85 @@ RETURN NEXT ok(expected_result23 @> search_result23 and search_result23 @>expect
 
 /***************************************************/
 
+expected_result24
+:=ARRAY[doc2_new_uuid]::uuid[];
+
+search_result24:=as_search_dokument(
+	null
+	,null --dokument_uuid uuid,
+	,null --registreringObj DokumentRegistreringType,
+	,null --virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+	,null --maxResults int = 2147483647,
+	,null --anyAttrValueArr text[] = '{}'::text[],
+	,array[doc2_uuidBesvarelser1]::uuid[]
+	,null --anyRelUrnArr text[] = '{}'::text[],
+	);
+
+
+RETURN NEXT ok(expected_result24 @> search_result24 and search_result24 @>expected_result24 and coalesce(array_length(search_result24,1),0)=coalesce(array_length(expected_result24,1),0), 'search dokument #24.');
+
+
+
+/***************************************************/
+
+expected_result25
+:=ARRAY[doc1_new_uuid]::uuid[];
+
+search_result25:=as_search_dokument(
+	null
+	,null --dokument_uuid uuid,
+	,null --registreringObj DokumentRegistreringType,
+	,null --virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+	,null --maxResults int = 2147483647,
+	,null --anyAttrValueArr text[] = '{}'::text[],
+	,array['b24a2dd4-415f-4104-b7a7-84607488c091'::uuid]::uuid[]
+	,null --anyRelUrnArr text[] = '{}'::text[],
+	);
+
+
+RETURN NEXT ok(expected_result25 @> search_result25 and search_result25 @>expected_result25 and coalesce(array_length(search_result25,1),0)=coalesce(array_length(expected_result25,1),0), 'search dokument #25.');
+
+
+/***************************************************/
+
+expected_result26
+:=ARRAY[doc1_new_uuid]::uuid[];
+
+search_result26:=as_search_dokument(
+	null
+	,null --dokument_uuid uuid,
+	,null --registreringObj DokumentRegistreringType,
+	,null --virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+	,null --maxResults int = 2147483647,
+	,null --anyAttrValueArr text[] = '{}'::text[],
+	,null --array['b24a2dd4-415f-4104-b7a7-84607488c091'::uuid]::uuid[]
+	,array[doc1_urnBesvarelser2] --anyRelUrnArr text[] = '{}'::text[],
+	);
+
+
+RETURN NEXT ok(expected_result26 @> search_result26 and search_result26 @>expected_result26 and coalesce(array_length(search_result26,1),0)=coalesce(array_length(expected_result26,1),0), 'search dokument #26.');
+
+/***************************************************/
+
+expected_result27
+:=ARRAY[doc3_new_uuid]::uuid[];
+
+search_result27:=as_search_dokument(
+	null
+	,null --dokument_uuid uuid,
+	,null --registreringObj DokumentRegistreringType,
+	,null --virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+	,null --maxResults int = 2147483647,
+	,null --anyAttrValueArr text[] = '{}'::text[],
+	,null --array['b24a2dd4-415f-4104-b7a7-84607488c091'::uuid]::uuid[]
+	,array['urn:cpr 7000000'] --anyRelUrnArr text[] = '{}'::text[],
+	);
+
+
+RETURN NEXT ok(expected_result27 @> search_result27 and search_result27 @>expected_result27 and coalesce(array_length(search_result27,1),0)=coalesce(array_length(expected_result27,1),0), 'search dokument #27.');
+
+
+
 
 
 

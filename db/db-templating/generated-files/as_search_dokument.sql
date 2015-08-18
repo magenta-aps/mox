@@ -770,16 +770,23 @@ IF coalesce(array_length(anyRelUuidArr ,1),0)>0 THEN
 		dokument_candidates:=array(
 			SELECT DISTINCT
 			b.dokument_id 
-			FROM  dokument_relation a
-			JOIN dokument_registrering b on a.dokument_registrering_id=b.id
-			WHERE
-			anyRelUuid = a.rel_maal_uuid
-			AND
-			(
-				virkningSoeg IS NULL
-				OR
-				virkningSoeg && (a.virkning).TimePeriod
-			)
+ 			FROM dokument_registrering b  
+ 			LEFT JOIN dokument_relation a on a.dokument_registrering_id=b.id
+ 			LEFT JOIN dokument_variant c on c.dokument_registrering_id=b.id
+ 			LEFT JOIN dokument_del d on d.variant_id=c.id
+ 			LEFT JOIN dokument_del_relation e on d.id=e.del_id
+  			WHERE
+ 			(anyRelUuid = a.rel_maal_uuid OR anyRelUuid = e.rel_maal_uuid)
+  			AND
+  			(
+  				virkningSoeg IS NULL
+  				OR
+ 				(
+ 					(a.id is not null and virkningSoeg && (a.virkning).TimePeriod) 
+ 					OR
+					(e.id is not null and virkningSoeg && (e.virkning).TimePeriod)
+ 				)
+  			)
 			AND
 					(
 				(registreringObj.registrering) IS NULL 
@@ -865,16 +872,23 @@ IF coalesce(array_length(anyRelUrnArr ,1),0)>0 THEN
 		dokument_candidates:=array(
 			SELECT DISTINCT
 			b.dokument_id 
-			FROM  dokument_relation a
-			JOIN dokument_registrering b on a.dokument_registrering_id=b.id
-			WHERE
-			anyRelUrn = a.rel_maal_urn
-			AND
-			(
-				virkningSoeg IS NULL
-				OR
-				virkningSoeg && (a.virkning).TimePeriod
-			)
+ 			FROM dokument_registrering b  
+ 			LEFT JOIN dokument_relation a on a.dokument_registrering_id=b.id
+ 			LEFT JOIN dokument_variant c on c.dokument_registrering_id=b.id
+ 			LEFT JOIN dokument_del d on d.variant_id=c.id
+ 			LEFT JOIN dokument_del_relation e on d.id=e.del_id
+  			WHERE
+ 			(anyRelUrn = a.rel_maal_urn OR anyRelUrn = e.rel_maal_urn)
+  			AND
+  			(
+  				virkningSoeg IS NULL
+  				OR
+ 				(
+ 					(a.id is not null and virkningSoeg && (a.virkning).TimePeriod) 
+ 					OR
+ 					(e.id is not null and virkningSoeg && (e.virkning).TimePeriod)
+ 				)
+  			)
 			AND
 					(
 				(registreringObj.registrering) IS NULL 
