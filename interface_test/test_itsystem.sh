@@ -13,7 +13,16 @@
 
 # First, create a new itsystem
 
-result=$(curl -H "Content-Type: application/json" -X POST -d "$(cat test_data/itsystem_opret.json)" http://127.0.0.1:5000/organisation/itsystem)
+HOST_URL="https://mox.magenta-aps.dk"
+
+read -p "Indtast URL, default $HOST_URL: " URL
+
+if [ ! -z $URL ]
+then
+    HOST_URL=$URL
+fi
+
+result=$(curl -H "Content-Type: application/json" -X POST -d "$(cat test_data/itsystem_opret.json)" $HOST_URL/organisation/itsystem)
 uuid=$(expr "$result" : '.*"uuid": "\([^"]*\)"')
 echo "Oprettet itsystem: $uuid"
 

@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py dokument as_search.jinja.sql
+NOTICE: This file is auto-generated using the script: apply-template.py dokument as_search.jinja.sql and applying a patch
 */
 
 
@@ -503,7 +503,7 @@ ELSE
 						)
 						AND
 						(
-								(tilsFremdriftTypeObj.virkning).NoteTekst IS NULL OR (a.virkning).NoteTekst ILIKE (tilsFremdriftTypeObj.virkning).NoteTekst
+								(tilsFremdriftTypeObj.virkning).NoteTekst IS NULL OR (tilsFremdriftTypeObj.virkning).NoteTekst=(a.virkning).NoteTekst
 						)
 					)
 				)
@@ -646,7 +646,7 @@ ELSE
 						)
 						AND
 						(
-								(relationTypeObj.virkning).NoteTekst IS NULL OR (a.virkning).NoteTekst ILIKE (relationTypeObj.virkning).NoteTekst
+								(relationTypeObj.virkning).NoteTekst IS NULL OR (relationTypeObj.virkning).NoteTekst=(a.virkning).NoteTekst
 						)
 					)
 				)
@@ -953,22 +953,19 @@ END IF;
 
 --/**********************//
 
---/**********************************************************//
---Filtration on variants and document parts (dele)
---/**********************************************************//
-
+/**********************/
+--search on variants and document parts (dele)
 
 IF registreringObj IS NULL OR (registreringObj).varianter IS NULL THEN
 	--RAISE DEBUG 'as_search_dokument: skipping filtration on relationer';
 ELSE
-		IF (registreringObj).varianter IS NOT NULL AND coalesce(array_length(registreringObj.varianter,1),0)>0  THEN
-		FOREACH variantTypeObj IN ARRAY registreringObj.varianter
-		LOOP
-
+	IF (coalesce(array_length(dokument_candidates,1),0)>0 OR NOT dokument_candidates_is_initialized) AND (registreringObj).varianter IS NOT NULL AND coalesce(array_length(registreringObj.varianter),1,0)>0  THEN
+		
 		variant_candidates_ids=array[]::bigint[];
 		variant_candidates_is_initialized:=false;
 
-		IF (coalesce(array_length(dokument_candidates,1),0)>0 OR NOT dokument_candidates_is_initialized) THEN 
+		FOREACH variantTypeObj IN ARRAY registreringObj.varianter
+		LOOP
 
 		--HACK: As variant_name logically can be said to be part of variant egenskaber (regarding virkning), we'll force a filter on variant egenskaber if needed
 		IF coalesce(array_length(variantTypeObj.egenskaber,1),0)=0 AND variantTypeObj.varianttekst IS NOT NULL THEN
@@ -1030,15 +1027,15 @@ ELSE
 				OR
 					(
 						(
-								(variantEgenskaberTypeObj.virkning).AktoerRef IS NULL OR (c.virkning).AktoerRef = (variantEgenskaberTypeObj.virkning).AktoerRef
+								(variantEgenskaberTypeObj.virkning).AktoerRef IS NULL OR (d.virkning).AktoerRef ilike (variantEgenskaberTypeObj.virkning).AktoerRef
 						)
 						AND
 						(
-								(variantEgenskaberTypeObj.virkning).AktoerTypeKode IS NULL OR (variantEgenskaberTypeObj.virkning).AktoerTypeKode=(c.virkning).AktoerTypeKode
+								(variantEgenskaberTypeObj.virkning).AktoerTypeKode IS NULL OR (variantEgenskaberTypeObj.virkning).AktoerTypeKode=(d.virkning).AktoerTypeKode
 						)
 						AND
 						(
-								(variantEgenskaberTypeObj.virkning).NoteTekst IS NULL OR (c.virkning).NoteTekst ilike (variantEgenskaberTypeObj.virkning).NoteTekst
+								(variantEgenskaberTypeObj.virkning).NoteTekst IS NULL OR (d.virkning).NoteTekst ilike (variantEgenskaberTypeObj.virkning).NoteTekst
 						)
 					)
 				)
@@ -1150,22 +1147,19 @@ ELSE
 			END LOOP; --variant egenskaber
 
 			
-			END IF;--variantTypeObj.egenskaber exists  
-
-			/**************    Dokument Dele        ******************/
+			END IF;--filter on variant name  
 
 			IF coalesce(array_length(variantTypeObj.dele,1),0)>0 THEN
+
 			
 			FOREACH delTypeObj IN ARRAY variantTypeObj.dele 
 			LOOP
 
 			--HACK: As del_name logically can be said to be part of del egenskaber (regarding virkning), we'll force a filter on del egenskaber if needed
-			IF coalesce(array_length(delTypeObj.egenskaber,1),0)=0 AND delTypeObj.deltekst IS NOT NULL THEN
-				delTypeObj.egenskaber:=ARRAY[ROW(null,null,null,null,null,null,null,null,null,null)::DokumentDelEgenskaberAttrType]::DokumentDelEgenskaberAttrType[];
-			END IF;
+		IF coalesce(array_length(delTypeObj.egenskaber,1),0)=0 AND delTypeObj.deltekst IS NOT NULL THEN
+			delTypeObj.egenskaber:=ARRAY[ROW(null,null,null,null,null,null,null,null,null,null)::DokumentDelEgenskaberAttrType]::DokumentDelEgenskaberAttrType[];
+		END IF;
 
-
-			/**************    Dokument Del Egenskaber    ******************/
 
 			IF (array_length(delTypeObj.egenskaber,1),0)>0 THEN 
 			
@@ -1213,7 +1207,7 @@ ELSE
 				OR
 					(
 						(
-								(delEgenskaberTypeObj.virkning).AktoerRef IS NULL OR (d.virkning).AktoerRef = (delEgenskaberTypeObj.virkning).AktoerRef
+								(delEgenskaberTypeObj.virkning).AktoerRef IS NULL OR (d.virkning).AktoerRef ilike (delEgenskaberTypeObj.virkning).AktoerRef
 						)
 						AND
 						(
@@ -1361,7 +1355,7 @@ ELSE
 			END LOOP; --loop del egenskaber
 			END IF; -- del egenskaber exists
 
-			/**************    Dokument Del Relationer    ******************/
+
 
 			IF (array_length(delTypeObj.relationer,1),0)>0 THEN 
 			
@@ -1401,7 +1395,7 @@ ELSE
 				OR
 					(
 						(
-								(delRelationTypeObj.virkning).AktoerRef IS NULL OR (d.virkning).AktoerRef = (delRelationTypeObj.virkning).AktoerRef
+								(delRelationTypeObj.virkning).AktoerRef IS NULL OR (d.virkning).AktoerRef ilike (delRelationTypeObj.virkning).AktoerRef
 						)
 						AND
 						(
@@ -1539,11 +1533,9 @@ ELSE
 			
 			END IF; --variant_candidates_is_initialized
 
-			END IF; --no doc candidates - skipping ahead;
 			END LOOP; --FOREACH variantTypeObj
-		
-		END IF; --varianter exists
-	END IF; --array registreringObj.varianter exists 
+	END IF; --registreringObj.varianter exists
+END IF; --skipping variants;
 
 
 
