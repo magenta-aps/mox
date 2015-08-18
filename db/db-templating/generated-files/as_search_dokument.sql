@@ -1006,7 +1006,7 @@ ELSE
 			(
 				variantTypeObj.varianttekst IS NULL
 				OR
-				a.variant_tekst ilike variantTypeObj.varianttekst
+				a.varianttekst ilike variantTypeObj.varianttekst
 			)
 			AND
 			(
@@ -1167,7 +1167,7 @@ ELSE
 
 			/**************    Dokument Del Egenskaber    ******************/
 
-			IF (array_length(delTypeObj.egenskaber,1),0)>0 THEN 
+			IF coalesce(array_length(delTypeObj.egenskaber,1),0)>0 THEN 
 			
 			FOREACH delEgenskaberTypeObj IN ARRAY delTypeObj.egenskaber
 			LOOP
@@ -1193,7 +1193,7 @@ ELSE
 			(
 				delTypeObj.deltekst IS NULL
 				OR
-				c.del_tekst ilike delTypeObj.deltekst
+				c.deltekst ilike delTypeObj.deltekst
 			)
 			AND
 			(
@@ -1229,57 +1229,27 @@ ELSE
 			(
 				(
 					(
-						delEgenskaberTypeObj.brugervendtnoegle IS NULL  
+						delEgenskaberTypeObj.indeks IS NULL  
 						OR
-						d.brugervendtnoegle ilike delEgenskaberTypeObj.brugervendtnoegle
+						delEgenskaberTypeObj.indeks = d.indeks
 					)
 					AND
 					(
-						delEgenskaberTypeObj.beskrivelse IS NULL  
+						delEgenskaberTypeObj.indhold IS NULL  
 						OR
-						d.beskrivelse ilike delEgenskaberTypeObj.beskrivelse
+						d.indhold ilike delEgenskaberTypeObj.indhold  
 					)
 					AND
 					(
-						delEgenskaberTypeObj.brevdato IS NULL 
+						delEgenskaberTypeObj.lokation IS NULL 
 						OR
-						delEgenskaberTypeObj.brevdato = d.brevdato
+						d.lokation ilike delEgenskaberTypeObj.lokation 
 					)
 					AND
 					(
-						delEgenskaberTypeObj.kassationskode IS NULL 
+						delEgenskaberTypeObj.mimetype IS NULL 
 						OR
-						d.kassationskode ilike delEgenskaberTypeObj.kassationskode
-					)
-					AND
-					(
-						delEgenskaberTypeObj.major IS NULL
-						OR
-						delEgenskaberTypeObj.major = d.major
-					)
-					AND
-					(
-						delEgenskaberTypeObj.minor IS NULL
-						OR
-						delEgenskaberTypeObj.minor = d.minor
-					)
-					AND
-					(
-						delEgenskaberTypeObj.offentlighedundtaget IS NULL
-						OR
-							(
-								(
-									(delEgenskaberTypeObj.offentlighedundtaget).AlternativTitel IS NULL
-									OR
-									(d.offentlighedundtaget).AlternativTitel ILIKE (delEgenskaberTypeObj.offentlighedundtaget).AlternativTitel 
-								)
-								AND
-								(
-									(delEgenskaberTypeObj.offentlighedundtaget).Hjemmel IS NULL
-									OR
-									(d.offentlighedundtaget).Hjemmel ILIKE (delEgenskaberTypeObj.offentlighedundtaget).Hjemmel
-								)
-							) 
+						d.mimetype ilike delEgenskaberTypeObj.mimetype
 					)
 				)
 			)
@@ -1363,7 +1333,7 @@ ELSE
 
 			/**************    Dokument Del Relationer    ******************/
 
-			IF (array_length(delTypeObj.relationer,1),0)>0 THEN 
+			IF coalesce(array_length(delTypeObj.relationer,1),0)>0 THEN 
 			
 			FOREACH delRelationTypeObj IN ARRAY delTypeObj.relationer
 			LOOP
@@ -1376,12 +1346,12 @@ ELSE
 			FROM  dokument_variant a
 			JOIN dokument_registrering b on a.dokument_registrering_id=b.id
 			JOIN dokument_del c on c.variant_id=a.id
-			JOIN dokument_del_relationer d on d.del_id=c.id
+			JOIN dokument_del_relation d on d.del_id=c.id
 			WHERE
 			(
 				delTypeObj.deltekst IS NULL
 				OR
-				c.del_tekst ilike delTypeObj.deltekst
+				c.deltekst ilike delTypeObj.deltekst
 			)
 			AND
 			(
