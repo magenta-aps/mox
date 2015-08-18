@@ -13,8 +13,18 @@
 
 # First, create a new Sag
 
+HOST_URL="https://mox.magenta-aps.dk"
+
+read -p "Indtast URL, default $HOST_URL: " URL
+
+if [ ! -z $URL ]
+then
+    HOST_URL=$URL
+fi
+
 DIR=$(dirname ${BASH_SOURCE[0]})
-result=$(curl -sH "Content-Type: application/json" -X POST -d "$(cat $DIR/test_data/sag_opret.json)" http://127.0.0.1:5000/sag/sag)
+result=$(curl -sH "Content-Type: application/json" -X POST -d "$(cat $DIR/test_data/sag_opret.json)" $HOST_URL/sag/sag)
+echo "<$result>"
 uuid=$(expr "$result" : '.*"uuid": "\([^"]*\)"')
 if [ ! -z $uuid ]
 then
@@ -28,5 +38,9 @@ fi
 #import_uuid=$(uuidgen)
 
 # List Sag
+echo "List, output til /tmp/list_sag.txt"
 
-curl -sH "Content-Type: application/json" -X GET http://127.0.0.1:5000/sag/sag?uuid=$uuid 
+set -x
+curl -sH "Content-Type: application/json" -X GET $HOST_URL/sag/sag?uuid=$uuid > /tmp/list_sag.txt
+set +x
+
