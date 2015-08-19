@@ -177,10 +177,25 @@ CREATE INDEX sag_attr_egenskaber_idx_kassationskode
 
  
 
-CREATE INDEX sag_attr_egenskaber_idx_offentlighedundtaget
+ CREATE INDEX sag_attr_egenskaber_pat_AlternativTitel_offentlighedundtaget
+  ON sag_attr_egenskaber
+  USING gin
+  ( ((offentlighedundtaget).AlternativTitel) gin_trgm_ops);
+
+CREATE INDEX sag_attr_egenskaber_idx_AlternativTitel_offentlighedundtaget
   ON sag_attr_egenskaber
   USING btree
-  (offentlighedundtaget); 
+  (((offentlighedundtaget).AlternativTitel));
+
+  CREATE INDEX sag_attr_egenskaber_pat_Hjemmel_offentlighedundtaget
+  ON sag_attr_egenskaber
+  USING gin
+  (((offentlighedundtaget).Hjemmel) gin_trgm_ops);
+
+CREATE INDEX sag_attr_egenskaber_idx_Hjemmel_offentlighedundtaget
+  ON sag_attr_egenskaber
+  USING btree
+  (((offentlighedundtaget).Hjemmel)); 
 
  
 

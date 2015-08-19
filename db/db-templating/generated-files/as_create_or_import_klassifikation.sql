@@ -35,11 +35,11 @@ END IF;
 
 
 IF EXISTS (SELECT id from klassifikation WHERE id=klassifikation_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing klassifikation with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_klassifikation (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',klassifikation_uuid;
+  RAISE EXCEPTION 'Error creating or importing klassifikation with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_klassifikation (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',klassifikation_uuid USING ERRCODE='MO500';
 END IF;
 
 IF  (klassifikation_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (klassifikation_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_klassifikation.',(klassifikation_registrering.registrering).livscykluskode;
+  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_klassifikation.',(klassifikation_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
@@ -82,7 +82,7 @@ SELECT
 
  
 IF coalesce(array_length(klassifikation_registrering.attrEgenskaber, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [klassifikation]. Oprettelse afbrydes.';
+  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [klassifikation]. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
 
@@ -119,7 +119,7 @@ END IF;
 --Verification
 --For now all declared states are mandatory.
 IF coalesce(array_length(klassifikation_registrering.tilsPubliceret, 1),0)<1  THEN
-  RAISE EXCEPTION 'Savner påkraevet tilstand [publiceret] for klassifikation. Oprettelse afbrydes.';
+  RAISE EXCEPTION 'Savner påkraevet tilstand [publiceret] for klassifikation. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
 IF klassifikation_registrering.tilsPubliceret IS NOT NULL AND coalesce(array_length(klassifikation_registrering.tilsPubliceret,1),0)>0 THEN

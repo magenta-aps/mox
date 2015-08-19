@@ -45,7 +45,7 @@ UPDATE sag_registrering as a
 GET DIAGNOSTICS rows_affected = ROW_COUNT;
 
 IF rows_affected=0 THEN
-  RAISE EXCEPTION 'Error updating sag with uuid [%], Invalid [livscyklus] transition to [%]',sag_uuid,livscykluskode USING ERRCODE = 22000;
+  RAISE EXCEPTION 'Error updating sag with uuid [%], Invalid [livscyklus] transition to [%]',sag_uuid,livscykluskode USING ERRCODE = 'MO400';
 END IF;
 
 --create a new sag registrering
