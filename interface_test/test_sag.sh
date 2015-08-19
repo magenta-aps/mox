@@ -13,16 +13,10 @@
 
 # First, create a new Sag
 
-HOST_URL="https://mox.magenta-aps.dk"
-
-read -p "Indtast URL, default $HOST_URL: " URL
-
-if [ ! -z $URL ]
-then
-    HOST_URL=$URL
-fi
-
+# Test configuration
+source config.sh
 DIR=$(dirname ${BASH_SOURCE[0]})
+
 result=$(curl -sH "Content-Type: application/json" -X POST -d "$(cat $DIR/test_data/sag_opret.json)" $HOST_URL/sag/sag)
 echo "<$result>"
 uuid=$(expr "$result" : '.*"uuid": "\([^"]*\)"')
