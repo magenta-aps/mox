@@ -13,22 +13,17 @@
 
 # First, create a new itsystem
 
-HOST_URL="https://mox.magenta-aps.dk"
+# Test configuration
+DIR=$(dirname ${BASH_SOURCE[0]})
+source $DIR/config.sh
 
-read -p "Indtast URL, default $HOST_URL: " URL
-
-if [ ! -z $URL ]
-then
-    HOST_URL=$URL
-fi
-
-result=$(curl -H "Content-Type: application/json" -X POST -d "$(cat test_data/itsystem_opret.json)" $HOST_URL/organisation/itsystem)
+result=$(curl -H "Content-Type: application/json" -X POST -d "$(cat $DIR/test_data/itsystem_opret.json)" $HOST_URL/organisation/itsystem)
 uuid=$(expr "$result" : '.*"uuid": "\([^"]*\)"')
 echo "Oprettet itsystem: $uuid"
 
 #exit
 
-#curl -sH "Content-Type: application/json" -X PUT -d "$(cat test_data/klasse_opdater.json)" http://127.0.0.1:5000/klassifikation/klasse/$uuid
+#curl -sH "Content-Type: application/json" -X PUT -d "$(cat $DIR/test_data/klasse_opdater.json)" http://127.0.0.1:5000/klassifikation/klasse/$uuid
 
 
 

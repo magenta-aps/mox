@@ -2,6 +2,7 @@ from werkzeug.datastructures import MultiDict
 
 from ..db_helpers import get_attribute_names, get_attribute_fields
 from ..db_helpers import get_state_names, get_relation_names, get_state_field
+from ..db_helpers import DokumentVariantEgenskaberType
 
 
 def build_registration(class_name, list_args):
@@ -37,9 +38,26 @@ def build_registration(class_name, list_args):
                     'virkning': None
                 })
 
-        if class_name == "Dokument":
-            # TODO: Look for variant egenskaber
-            registration.setdefault("variants", {})
+    if class_name == "Dokument":
+        variants = registration.setdefault("variants", [])
+        variant = {
+            # Search on only one varianttekst is supported through REST API
+            "varianttekst": list_args.get("varianttekst", [None])[0]
+        }
+
+        # Look for variant egenskaber
+        egenskaber = []
+        variant["egenskaber"] = egenskaber
+        for f in list_args:
+            if f in DokumentVariantEgenskaberType._fields:
+                for val in list_args[f]:
+                    egenskaber.append({
+                        f: val,
+                        'virkning': None
+                    })
+        # TODO: Support deltekst, del egenskaber and del relationer
+        variants.append(variant)
+
     print registration
     return registration
 
