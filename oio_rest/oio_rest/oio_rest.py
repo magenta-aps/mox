@@ -1,5 +1,6 @@
 """Superclasses for OIO objects and object hierarchies."""
 import json
+import datetime
 
 from flask import jsonify, request
 from custom_exceptions import BadRequestException
@@ -125,6 +126,12 @@ class OIORestObject(object):
             life_cycle_code = args.get('livscykluskode', None)
             user_ref = args.get('brugerref', None)
             note = args.get('notetekst', None)
+
+            if virkning_fra is None and virkning_til is None:
+                # TODO: Use the equivalent of TSTZRANGE(current_timestamp,
+                # current_timestamp,'[]') if possible
+                virkning_fra = datetime.datetime.now()
+                virkning_til = datetime.datetime.now()
 
             # Fill out a registration object based on the query arguments
             registration = build_registration(cls.__name__, list_args)
