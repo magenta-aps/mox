@@ -27,8 +27,7 @@ class Dokument(OIORestObject):
         # Read in the object. This will throw a NotFoundException if the
         # document does not exist, OR another exception if the user does not
         # have access to it.
-        object_list = db.list_objects(cls.__name__, [uuid], None, None,
-                                      None, None)
+        db.list_objects(cls.__name__, [uuid], None, None, None, None)
 
         filename = content_store.get_filename_for_url(content_url)
 
@@ -55,9 +54,11 @@ class Dokument(OIORestObject):
             date_path_regex
         )
 
-        flask.add_url_rule(download_content_url, u'_'.join([cls.__name__,
-                                                       'download_content']),
-                           cls.download_content, methods=['GET'])
+        flask.add_url_rule(
+            download_content_url, u'_'.join(
+                [cls.__name__, 'download_content']
+            ), cls.download_content, methods=['GET']
+        )
 
     @classmethod
     def gather_registration(cls, input):
