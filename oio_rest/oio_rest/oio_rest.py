@@ -2,6 +2,7 @@
 import json
 
 from flask import jsonify, request
+from custom_exceptions import BadRequestException
 
 import db
 from utils.build_registration import build_registration
@@ -102,12 +103,16 @@ class OIORestObject(object):
         registreret_til = args.get('registrerettil', None)
 
         uuid_param = list_args.get('uuid', None)
-        if uuid_param is None:
-            # Assume the search operation
-            # Later on, we should support searches which filter on uuids as
-            # well
-            uuid_param = None
-
+        # Assume the search operation if other params were specified
+        if not set(args.keys()).issubset(('virkningfra', 'virkningtil',
+                                          'registreretfra', 'registrerettil',
+                                          'uuid')):
+            # Only one uuid is supported through the search operation
+            if uuid_param is not None and len(uuid_param) > 1:
+                raise BadRequestException("Multiple uuid parameters passed "
+                                          "to search operation. Only one "
+                                          "uuid parameter is supported.")
+            uuid_param = args.get('uuid', None)
             first_result = args.get('foersteresultat', None)
             if first_result is not None:
                 first_result = int(first_result)

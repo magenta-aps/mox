@@ -115,6 +115,18 @@ def input_list(_type, input, key):
     else:
         return [_type.input(v) for v in values]
 
+def to_bool(s):
+    """Convert string to boolean. Passes through bool and None values."""
+    if isinstance(s, bool):
+        return s
+    elif s is None:
+        return None
+    else:
+        if s in ("True", "true", "1"):
+            return True
+        elif s in ("False", "false", "0"):
+            return False
+        raise ValueError("%s is not a valid boolean value" % s)
 
 class DokumentVariantType(namedtuple('DokumentVariantType',
                                      'varianttekst egenskaber dele')):
@@ -138,10 +150,10 @@ class DokumentVariantEgenskaberType(namedtuple(
         if i is None:
             return None
         return cls(
-            i.get("arkivering", None),
-            i.get("delvisscannet", None),
-            i.get("offentliggoerelse", None),
-            i.get("produktion", None),
+            to_bool(i.get("arkivering", None)),
+            to_bool(i.get("delvisscannet", None)),
+            to_bool(i.get("offentliggoerelse", None)),
+            to_bool(i.get("produktion", None)),
             Virkning.input(i.get("virkning", None))
         )
 

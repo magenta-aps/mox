@@ -88,7 +88,20 @@ else
     echo "Error in file upload/download after update operation. Downloaded file does not match uploaded file"
 fi
 
+# Search
+
+echo "Search"
+curl -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?produktion=false&virkningtil=2015-05-18&uuid=$uuid"
+
+# TODO: Test results
+
+echo "Search del"
+curl -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?varianttekst=PDF&deltekst=doc_deltekst1A&mimetype=text/plain&uuid=$uuid"
+
+# TODO: Test results
+
 # Passivate
 curl -sH "Content-Type: application/json" -X PUT -d "$(cat test_data/facet_passiv.json)" $HOST_URL/dokument/dokument/$uuid
 
+# Delete
 curl -sH "Content-Type: application/json" -X DELETE -d "$(cat test_data/dokument_slet.json)" $HOST_URL/dokument/dokument/$uuid
