@@ -92,7 +92,7 @@ ELSE
 				(
 					attrEgenskaberTypeObj.konfigurationreference IS NULL
 					OR
-					_as_search_match_array(attrEgenskaberTypeObj.konfigurationreference,a.konfigurationreference)  --TODO: Fix this 
+						( (coalesce(array_length(attrEgenskaberTypeObj.konfigurationreference,1),0)=0 AND coalesce(array_length(a.konfigurationreference,1),0)=0 ) OR (attrEgenskaberTypeObj.konfigurationreference @> a.konfigurationreference AND a.konfigurationreference @>attrEgenskaberTypeObj.konfigurationreference  )) 
 				)
 				AND b.itsystem_id = ANY (itsystem_candidates)
 				AND (a.virkning).TimePeriod @> actual_virkning 

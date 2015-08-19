@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py dokument as_search.jinja.sql and applying a patch
+NOTICE: This file is auto-generated using the script: apply-template.py dokument as_search.jinja.sql
 */
 
 
@@ -503,7 +503,7 @@ ELSE
 						)
 						AND
 						(
-								(tilsFremdriftTypeObj.virkning).NoteTekst IS NULL OR (tilsFremdriftTypeObj.virkning).NoteTekst=(a.virkning).NoteTekst
+								(tilsFremdriftTypeObj.virkning).NoteTekst IS NULL OR (a.virkning).NoteTekst ILIKE (tilsFremdriftTypeObj.virkning).NoteTekst
 						)
 					)
 				)
@@ -646,7 +646,7 @@ ELSE
 						)
 						AND
 						(
-								(relationTypeObj.virkning).NoteTekst IS NULL OR (relationTypeObj.virkning).NoteTekst=(a.virkning).NoteTekst
+								(relationTypeObj.virkning).NoteTekst IS NULL OR (a.virkning).NoteTekst ILIKE (relationTypeObj.virkning).NoteTekst
 						)
 					)
 				)
@@ -770,16 +770,23 @@ IF coalesce(array_length(anyRelUuidArr ,1),0)>0 THEN
 		dokument_candidates:=array(
 			SELECT DISTINCT
 			b.dokument_id 
-			FROM  dokument_relation a
-			JOIN dokument_registrering b on a.dokument_registrering_id=b.id
-			WHERE
-			anyRelUuid = a.rel_maal_uuid
-			AND
-			(
-				virkningSoeg IS NULL
-				OR
-				virkningSoeg && (a.virkning).TimePeriod
-			)
+ 			FROM dokument_registrering b  
+ 			LEFT JOIN dokument_relation a on a.dokument_registrering_id=b.id
+ 			LEFT JOIN dokument_variant c on c.dokument_registrering_id=b.id
+ 			LEFT JOIN dokument_del d on d.variant_id=c.id
+ 			LEFT JOIN dokument_del_relation e on d.id=e.del_id
+  			WHERE
+ 			(anyRelUuid = a.rel_maal_uuid OR anyRelUuid = e.rel_maal_uuid)
+  			AND
+  			(
+  				virkningSoeg IS NULL
+  				OR
+ 				(
+ 					(a.id is not null and virkningSoeg && (a.virkning).TimePeriod) 
+ 					OR
+					(e.id is not null and virkningSoeg && (e.virkning).TimePeriod)
+ 				)
+  			)
 			AND
 					(
 				(registreringObj.registrering) IS NULL 
@@ -865,16 +872,23 @@ IF coalesce(array_length(anyRelUrnArr ,1),0)>0 THEN
 		dokument_candidates:=array(
 			SELECT DISTINCT
 			b.dokument_id 
-			FROM  dokument_relation a
-			JOIN dokument_registrering b on a.dokument_registrering_id=b.id
-			WHERE
-			anyRelUrn = a.rel_maal_urn
-			AND
-			(
-				virkningSoeg IS NULL
-				OR
-				virkningSoeg && (a.virkning).TimePeriod
-			)
+ 			FROM dokument_registrering b  
+ 			LEFT JOIN dokument_relation a on a.dokument_registrering_id=b.id
+ 			LEFT JOIN dokument_variant c on c.dokument_registrering_id=b.id
+ 			LEFT JOIN dokument_del d on d.variant_id=c.id
+ 			LEFT JOIN dokument_del_relation e on d.id=e.del_id
+  			WHERE
+ 			(anyRelUrn = a.rel_maal_urn OR anyRelUrn = e.rel_maal_urn)
+  			AND
+  			(
+  				virkningSoeg IS NULL
+  				OR
+ 				(
+ 					(a.id is not null and virkningSoeg && (a.virkning).TimePeriod) 
+ 					OR
+ 					(e.id is not null and virkningSoeg && (e.virkning).TimePeriod)
+ 				)
+  			)
 			AND
 					(
 				(registreringObj.registrering) IS NULL 
@@ -953,19 +967,22 @@ END IF;
 
 --/**********************//
 
-/**********************/
---search on variants and document parts (dele)
+--/**********************************************************//
+--Filtration on variants and document parts (dele)
+--/**********************************************************//
+
 
 IF registreringObj IS NULL OR (registreringObj).varianter IS NULL THEN
 	--RAISE DEBUG 'as_search_dokument: skipping filtration on relationer';
 ELSE
-	IF (coalesce(array_length(dokument_candidates,1),0)>0 OR NOT dokument_candidates_is_initialized) AND (registreringObj).varianter IS NOT NULL AND coalesce(array_length(registreringObj.varianter),1,0)>0  THEN
-		
+		IF (registreringObj).varianter IS NOT NULL AND coalesce(array_length(registreringObj.varianter,1),0)>0  THEN
+		FOREACH variantTypeObj IN ARRAY registreringObj.varianter
+		LOOP
+
 		variant_candidates_ids=array[]::bigint[];
 		variant_candidates_is_initialized:=false;
 
-		FOREACH variantTypeObj IN ARRAY registreringObj.varianter
-		LOOP
+		IF (coalesce(array_length(dokument_candidates,1),0)>0 OR NOT dokument_candidates_is_initialized) THEN 
 
 		--HACK: As variant_name logically can be said to be part of variant egenskaber (regarding virkning), we'll force a filter on variant egenskaber if needed
 		IF coalesce(array_length(variantTypeObj.egenskaber,1),0)=0 AND variantTypeObj.varianttekst IS NOT NULL THEN
@@ -1003,7 +1020,7 @@ ELSE
 			(
 				variantTypeObj.varianttekst IS NULL
 				OR
-				a.variant_tekst ilike variantTypeObj.varianttekst
+				a.varianttekst ilike variantTypeObj.varianttekst
 			)
 			AND
 			(
@@ -1027,15 +1044,15 @@ ELSE
 				OR
 					(
 						(
-								(variantEgenskaberTypeObj.virkning).AktoerRef IS NULL OR (d.virkning).AktoerRef ilike (variantEgenskaberTypeObj.virkning).AktoerRef
+								(variantEgenskaberTypeObj.virkning).AktoerRef IS NULL OR (c.virkning).AktoerRef = (variantEgenskaberTypeObj.virkning).AktoerRef
 						)
 						AND
 						(
-								(variantEgenskaberTypeObj.virkning).AktoerTypeKode IS NULL OR (variantEgenskaberTypeObj.virkning).AktoerTypeKode=(d.virkning).AktoerTypeKode
+								(variantEgenskaberTypeObj.virkning).AktoerTypeKode IS NULL OR (variantEgenskaberTypeObj.virkning).AktoerTypeKode=(c.virkning).AktoerTypeKode
 						)
 						AND
 						(
-								(variantEgenskaberTypeObj.virkning).NoteTekst IS NULL OR (d.virkning).NoteTekst ilike (variantEgenskaberTypeObj.virkning).NoteTekst
+								(variantEgenskaberTypeObj.virkning).NoteTekst IS NULL OR (c.virkning).NoteTekst ilike (variantEgenskaberTypeObj.virkning).NoteTekst
 						)
 					)
 				)
@@ -1147,21 +1164,24 @@ ELSE
 			END LOOP; --variant egenskaber
 
 			
-			END IF;--filter on variant name  
+			END IF;--variantTypeObj.egenskaber exists  
+
+			/**************    Dokument Dele        ******************/
 
 			IF coalesce(array_length(variantTypeObj.dele,1),0)>0 THEN
-
 			
 			FOREACH delTypeObj IN ARRAY variantTypeObj.dele 
 			LOOP
 
 			--HACK: As del_name logically can be said to be part of del egenskaber (regarding virkning), we'll force a filter on del egenskaber if needed
-		IF coalesce(array_length(delTypeObj.egenskaber,1),0)=0 AND delTypeObj.deltekst IS NOT NULL THEN
-			delTypeObj.egenskaber:=ARRAY[ROW(null,null,null,null,null,null,null,null,null,null)::DokumentDelEgenskaberAttrType]::DokumentDelEgenskaberAttrType[];
-		END IF;
+			IF coalesce(array_length(delTypeObj.egenskaber,1),0)=0 AND delTypeObj.deltekst IS NOT NULL THEN
+				delTypeObj.egenskaber:=ARRAY[ROW(null,null,null,null,null,null,null,null,null,null)::DokumentDelEgenskaberAttrType]::DokumentDelEgenskaberAttrType[];
+			END IF;
 
 
-			IF (array_length(delTypeObj.egenskaber,1),0)>0 THEN 
+			/**************    Dokument Del Egenskaber    ******************/
+
+			IF coalesce(array_length(delTypeObj.egenskaber,1),0)>0 THEN 
 			
 			FOREACH delEgenskaberTypeObj IN ARRAY delTypeObj.egenskaber
 			LOOP
@@ -1187,7 +1207,7 @@ ELSE
 			(
 				delTypeObj.deltekst IS NULL
 				OR
-				c.del_tekst ilike delTypeObj.deltekst
+				c.deltekst ilike delTypeObj.deltekst
 			)
 			AND
 			(
@@ -1207,7 +1227,7 @@ ELSE
 				OR
 					(
 						(
-								(delEgenskaberTypeObj.virkning).AktoerRef IS NULL OR (d.virkning).AktoerRef ilike (delEgenskaberTypeObj.virkning).AktoerRef
+								(delEgenskaberTypeObj.virkning).AktoerRef IS NULL OR (d.virkning).AktoerRef = (delEgenskaberTypeObj.virkning).AktoerRef
 						)
 						AND
 						(
@@ -1223,57 +1243,27 @@ ELSE
 			(
 				(
 					(
-						delEgenskaberTypeObj.brugervendtnoegle IS NULL  
+						delEgenskaberTypeObj.indeks IS NULL  
 						OR
-						d.brugervendtnoegle ilike delEgenskaberTypeObj.brugervendtnoegle
+						delEgenskaberTypeObj.indeks = d.indeks
 					)
 					AND
 					(
-						delEgenskaberTypeObj.beskrivelse IS NULL  
+						delEgenskaberTypeObj.indhold IS NULL  
 						OR
-						d.beskrivelse ilike delEgenskaberTypeObj.beskrivelse
+						d.indhold ilike delEgenskaberTypeObj.indhold  
 					)
 					AND
 					(
-						delEgenskaberTypeObj.brevdato IS NULL 
+						delEgenskaberTypeObj.lokation IS NULL 
 						OR
-						delEgenskaberTypeObj.brevdato = d.brevdato
+						d.lokation ilike delEgenskaberTypeObj.lokation 
 					)
 					AND
 					(
-						delEgenskaberTypeObj.kassationskode IS NULL 
+						delEgenskaberTypeObj.mimetype IS NULL 
 						OR
-						d.kassationskode ilike delEgenskaberTypeObj.kassationskode
-					)
-					AND
-					(
-						delEgenskaberTypeObj.major IS NULL
-						OR
-						delEgenskaberTypeObj.major = d.major
-					)
-					AND
-					(
-						delEgenskaberTypeObj.minor IS NULL
-						OR
-						delEgenskaberTypeObj.minor = d.minor
-					)
-					AND
-					(
-						delEgenskaberTypeObj.offentlighedundtaget IS NULL
-						OR
-							(
-								(
-									(delEgenskaberTypeObj.offentlighedundtaget).AlternativTitel IS NULL
-									OR
-									(d.offentlighedundtaget).AlternativTitel ILIKE (delEgenskaberTypeObj.offentlighedundtaget).AlternativTitel 
-								)
-								AND
-								(
-									(delEgenskaberTypeObj.offentlighedundtaget).Hjemmel IS NULL
-									OR
-									(d.offentlighedundtaget).Hjemmel ILIKE (delEgenskaberTypeObj.offentlighedundtaget).Hjemmel
-								)
-							) 
+						d.mimetype ilike delEgenskaberTypeObj.mimetype
 					)
 				)
 			)
@@ -1355,9 +1345,9 @@ ELSE
 			END LOOP; --loop del egenskaber
 			END IF; -- del egenskaber exists
 
+			/**************    Dokument Del Relationer    ******************/
 
-
-			IF (array_length(delTypeObj.relationer,1),0)>0 THEN 
+			IF coalesce(array_length(delTypeObj.relationer,1),0)>0 THEN 
 			
 			FOREACH delRelationTypeObj IN ARRAY delTypeObj.relationer
 			LOOP
@@ -1370,12 +1360,12 @@ ELSE
 			FROM  dokument_variant a
 			JOIN dokument_registrering b on a.dokument_registrering_id=b.id
 			JOIN dokument_del c on c.variant_id=a.id
-			JOIN dokument_del_relationer d on d.del_id=c.id
+			JOIN dokument_del_relation d on d.del_id=c.id
 			WHERE
 			(
 				delTypeObj.deltekst IS NULL
 				OR
-				c.del_tekst ilike delTypeObj.deltekst
+				c.deltekst ilike delTypeObj.deltekst
 			)
 			AND
 			(
@@ -1395,7 +1385,7 @@ ELSE
 				OR
 					(
 						(
-								(delRelationTypeObj.virkning).AktoerRef IS NULL OR (d.virkning).AktoerRef ilike (delRelationTypeObj.virkning).AktoerRef
+								(delRelationTypeObj.virkning).AktoerRef IS NULL OR (d.virkning).AktoerRef = (delRelationTypeObj.virkning).AktoerRef
 						)
 						AND
 						(
@@ -1533,9 +1523,11 @@ ELSE
 			
 			END IF; --variant_candidates_is_initialized
 
+			END IF; --no doc candidates - skipping ahead;
 			END LOOP; --FOREACH variantTypeObj
-	END IF; --registreringObj.varianter exists
-END IF; --skipping variants;
+		
+		END IF; --varianter exists
+	END IF; --array registreringObj.varianter exists 
 
 
 
