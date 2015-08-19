@@ -312,13 +312,10 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 			JOIN itsystem_registrering b on a.itsystem_registrering_id=b.id
 			WHERE
 			(
-				a.brugervendtnoegle ILIKE anyAttrValue
-				OR
-				a.itsystemnavn ILIKE anyAttrValue
-				OR
-				a.itsystemtype ILIKE anyAttrValue
-				OR
-				anyAttrValue ILIKE ANY (a.konfigurationreference)
+						a.brugervendtnoegle ILIKE anyAttrValue OR
+						a.itsystemnavn ILIKE anyAttrValue OR
+						a.itsystemtype ILIKE anyAttrValue OR
+							  _as_search_ilike_array(anyAttrValue,a.konfigurationreference)
 			)
 			AND
 			(

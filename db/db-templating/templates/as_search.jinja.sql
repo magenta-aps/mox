@@ -197,18 +197,23 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 			WHERE
 			(
 				{%- for attribut_field in attribut_fields %}
-				{%- if  attributter_type_override is defined and attributter_type_override[attribut] is defined and attributter_type_override[attribut][attribut_field] is defined %} 
-				{%-if attributter_type_override[attribut][attribut_field] == "text[]" %}
-				anyAttrValue ILIKE ANY (a.{{attribut_field}})
-				{%-else %}
-				anyAttrValue = a.{{attribut_field}}
-				{%- endif -%}
-				{%-else %}
-				a.{{attribut_field}} ILIKE anyAttrValue  
-				{%- endif -%}
-				{%- if (not loop.last)%}
-				OR
-				{%- endif %}
+					{%- if  attributter_type_override is defined and attributter_type_override[attribut] is defined and attributter_type_override[attribut][attribut_field] is defined %} 
+						{%-if attributter_type_override[attribut][attribut_field] == "text[]" %}
+							  _as_search_ilike_array(anyAttrValue,a.{{attribut_field}})  {%- if (not loop.last)%} OR {%- endif %}
+						{%-else %}
+							{%-if attributter_type_override[attribut][attribut_field] == "boolean" %}
+								{# boolean is skipped intentionally #}
+							{%-else %}
+								{%-if attributter_type_override[attribut][attribut_field] == "offentlighedundtagettype" %}
+									(a.{{attribut_field}}).Hjemmel ilike anyAttrValue OR (a.{{attribut_field}}).AlternativTitel ilike anyAttrValue {%- if (not loop.last)%} OR {%- endif %}
+								{%-else %}
+									a.{{attribut_field}}::text ilike anyAttrValue  {%- if (not loop.last)%} OR {%- endif %}
+								{%- endif -%}
+							{%- endif -%}
+						{%- endif -%}
+					{%-else %}
+						a.{{attribut_field}} ILIKE anyAttrValue {%- if (not loop.last)%} OR {%- endif %}
+					{%- endif -%}
 				{%- endfor %}
 			)
 			AND

@@ -357,33 +357,41 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 
 			SELECT DISTINCT
 			b.dokument_id 
-			FROM  dokument_attr_egenskaber a
-			JOIN dokument_registrering b on a.dokument_registrering_id=b.id
+			FROM  dokument_registrering b 
+			LEFT JOIN dokument_attr_egenskaber a on a.dokument_registrering_id=b.id and (virkningSoeg IS NULL or virkningSoeg && (a.virkning).TimePeriod )
+			LEFT JOIN dokument_variant c on c.dokument_registrering_id=b.id 
+			LEFT JOIN dokument_del f on f.variant_id=c.id
+			LEFT JOIN dokument_del_egenskaber d on d.del_id = f.id and (virkningSoeg IS NULL or virkningSoeg && (d.virkning).TimePeriod )
+			LEFT JOIN dokument_variant_egenskaber e on e.variant_id = c.id and (virkningSoeg IS NULL or virkningSoeg && (e.virkning).TimePeriod )
 			WHERE
 			(
-				a.brugervendtnoegle ILIKE anyAttrValue
+				(
+					a.brugervendtnoegle ILIKE anyAttrValue OR
+						a.beskrivelse ILIKE anyAttrValue OR
+									a.brevdato::text ilike anyAttrValue OR
+						a.kassationskode ILIKE anyAttrValue OR
+									a.major::text ilike anyAttrValue OR
+									a.minor::text ilike anyAttrValue OR
+									(a.offentlighedundtaget).Hjemmel ilike anyAttrValue OR (a.offentlighedundtaget).AlternativTitel ilike anyAttrValue OR
+						a.titel ILIKE anyAttrValue OR
+						a.dokumenttype ILIKE anyAttrValue
+				)
 				OR
-				a.beskrivelse ILIKE anyAttrValue
+				(
+					( c.varianttekst ilike anyAttrValue and e.id is not null) --varianttekst handled like it is logically part of variant egenskaber
+				)
 				OR
-				anyAttrValue = a.brevdato
-				OR
-				a.kassationskode ILIKE anyAttrValue
-				OR
-				anyAttrValue = a.major
-				OR
-				anyAttrValue = a.minor
-				OR
-				anyAttrValue = a.offentlighedundtaget
-				OR
-				a.titel ILIKE anyAttrValue
-				OR
-				a.dokumenttype ILIKE anyAttrValue
-			)
-			AND
-			(
-				virkningSoeg IS NULL
-				OR
-				virkningSoeg && (a.virkning).TimePeriod
+				(
+					( f.deltekst ilike anyAttrValue and d.id is not null ) --deltekst handled like it is logically part of del egenskaber
+					OR
+					d.indeks::text = anyAttrValue
+					OR
+					d.indhold ILIKE anyAttrValue
+					OR
+					d.lokation ILIKE anyAttrValue
+					OR
+					d.mimetype ILIKE anyAttrValue
+				)
 			)
 			AND
 					(
@@ -771,22 +779,12 @@ IF coalesce(array_length(anyRelUuidArr ,1),0)>0 THEN
 			SELECT DISTINCT
 			b.dokument_id 
  			FROM dokument_registrering b  
- 			LEFT JOIN dokument_relation a on a.dokument_registrering_id=b.id
+ 			LEFT JOIN dokument_relation a on a.dokument_registrering_id=b.id and (virkningSoeg IS NULL or (virkningSoeg && (a.virkning).TimePeriod) )
  			LEFT JOIN dokument_variant c on c.dokument_registrering_id=b.id
- 			LEFT JOIN dokument_del d on d.variant_id=c.id
- 			LEFT JOIN dokument_del_relation e on d.id=e.del_id
+ 			LEFT JOIN dokument_del d on d.variant_id=c.id 
+ 			LEFT JOIN dokument_del_relation e on d.id=e.del_id and (virkningSoeg IS NULL or (virkningSoeg && (e.virkning).TimePeriod) )
   			WHERE
  			(anyRelUuid = a.rel_maal_uuid OR anyRelUuid = e.rel_maal_uuid)
-  			AND
-  			(
-  				virkningSoeg IS NULL
-  				OR
- 				(
- 					(a.id is not null and virkningSoeg && (a.virkning).TimePeriod) 
- 					OR
-					(e.id is not null and virkningSoeg && (e.virkning).TimePeriod)
- 				)
-  			)
 			AND
 					(
 				(registreringObj.registrering) IS NULL 
@@ -873,22 +871,12 @@ IF coalesce(array_length(anyRelUrnArr ,1),0)>0 THEN
 			SELECT DISTINCT
 			b.dokument_id 
  			FROM dokument_registrering b  
- 			LEFT JOIN dokument_relation a on a.dokument_registrering_id=b.id
+ 			LEFT JOIN dokument_relation a on a.dokument_registrering_id=b.id and (virkningSoeg IS NULL or virkningSoeg && (a.virkning).TimePeriod )
  			LEFT JOIN dokument_variant c on c.dokument_registrering_id=b.id
  			LEFT JOIN dokument_del d on d.variant_id=c.id
- 			LEFT JOIN dokument_del_relation e on d.id=e.del_id
+ 			LEFT JOIN dokument_del_relation e on d.id=e.del_id and (virkningSoeg IS NULL or virkningSoeg && (e.virkning).TimePeriod)
   			WHERE
  			(anyRelUrn = a.rel_maal_urn OR anyRelUrn = e.rel_maal_urn)
-  			AND
-  			(
-  				virkningSoeg IS NULL
-  				OR
- 				(
- 					(a.id is not null and virkningSoeg && (a.virkning).TimePeriod) 
- 					OR
- 					(e.id is not null and virkningSoeg && (e.virkning).TimePeriod)
- 				)
-  			)
 			AND
 					(
 				(registreringObj.registrering) IS NULL 

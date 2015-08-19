@@ -1,5 +1,5 @@
-*** generated-files/as_search_klasse.sql	2015-08-13 14:14:02.491752907 +0200
---- patches/as_search_klasse.sql.org	2015-08-13 14:38:38.847826434 +0200
+*** generated-files/as_search_klasse.sql	2015-08-19 10:15:14.752116163 +0200
+--- patches/as_search_klasse.sql.org	2015-08-19 10:18:45.084112396 +0200
 ***************
 *** 33,42 ****
 --- 33,44 ----
@@ -133,8 +133,8 @@
   					(
   						(registreringObj.registrering).timeperiod IS NULL 
 ***************
-*** 326,335 ****
---- 382,392 ----
+*** 326,344 ****
+--- 382,407 ----
   
   			SELECT DISTINCT
   			b.klasse_id 
@@ -143,17 +143,13 @@
 + 			LEFT JOIN klasse_attr_egenskaber_soegeord c on a.id=c.klasse_attr_egenskaber_id
   			WHERE
   			(
-  				a.brugervendtnoegle ILIKE anyAttrValue
-  				OR
-  				a.beskrivelse ILIKE anyAttrValue
-***************
-*** 341,350 ****
---- 398,413 ----
-  				a.titel ILIKE anyAttrValue
-  				OR
-  				a.retskilde ILIKE anyAttrValue
-  				OR
-  				a.aendringsnotat ILIKE anyAttrValue
+  						a.brugervendtnoegle ILIKE anyAttrValue OR
+  						a.beskrivelse ILIKE anyAttrValue OR
+  						a.eksempel ILIKE anyAttrValue OR
+  						a.omfang ILIKE anyAttrValue OR
+  						a.titel ILIKE anyAttrValue OR
+  						a.retskilde ILIKE anyAttrValue OR
+  						a.aendringsnotat ILIKE anyAttrValue
 + 				OR 
 + 				c.soegeordidentifikator ILIKE anyAttrValue
 + 				OR 

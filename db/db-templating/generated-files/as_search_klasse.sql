@@ -387,19 +387,13 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 			LEFT JOIN klasse_attr_egenskaber_soegeord c on a.id=c.klasse_attr_egenskaber_id
 			WHERE
 			(
-				a.brugervendtnoegle ILIKE anyAttrValue
-				OR
-				a.beskrivelse ILIKE anyAttrValue
-				OR
-				a.eksempel ILIKE anyAttrValue
-				OR
-				a.omfang ILIKE anyAttrValue
-				OR
-				a.titel ILIKE anyAttrValue
-				OR
-				a.retskilde ILIKE anyAttrValue
-				OR
-				a.aendringsnotat ILIKE anyAttrValue
+						a.brugervendtnoegle ILIKE anyAttrValue OR
+						a.beskrivelse ILIKE anyAttrValue OR
+						a.eksempel ILIKE anyAttrValue OR
+						a.omfang ILIKE anyAttrValue OR
+						a.titel ILIKE anyAttrValue OR
+						a.retskilde ILIKE anyAttrValue OR
+						a.aendringsnotat ILIKE anyAttrValue
 				OR 
 				c.soegeordidentifikator ILIKE anyAttrValue
 				OR 

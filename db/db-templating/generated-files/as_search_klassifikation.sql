@@ -312,13 +312,10 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 			JOIN klassifikation_registrering b on a.klassifikation_registrering_id=b.id
 			WHERE
 			(
-				a.brugervendtnoegle ILIKE anyAttrValue
-				OR
-				a.beskrivelse ILIKE anyAttrValue
-				OR
-				a.kaldenavn ILIKE anyAttrValue
-				OR
-				a.ophavsret ILIKE anyAttrValue
+						a.brugervendtnoegle ILIKE anyAttrValue OR
+						a.beskrivelse ILIKE anyAttrValue OR
+						a.kaldenavn ILIKE anyAttrValue OR
+						a.ophavsret ILIKE anyAttrValue
 			)
 			AND
 			(

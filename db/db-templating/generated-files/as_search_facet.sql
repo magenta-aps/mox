@@ -330,19 +330,13 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 			JOIN facet_registrering b on a.facet_registrering_id=b.id
 			WHERE
 			(
-				a.brugervendtnoegle ILIKE anyAttrValue
-				OR
-				a.beskrivelse ILIKE anyAttrValue
-				OR
-				a.opbygning ILIKE anyAttrValue
-				OR
-				a.ophavsret ILIKE anyAttrValue
-				OR
-				a.plan ILIKE anyAttrValue
-				OR
-				a.supplement ILIKE anyAttrValue
-				OR
-				a.retskilde ILIKE anyAttrValue
+						a.brugervendtnoegle ILIKE anyAttrValue OR
+						a.beskrivelse ILIKE anyAttrValue OR
+						a.opbygning ILIKE anyAttrValue OR
+						a.ophavsret ILIKE anyAttrValue OR
+						a.plan ILIKE anyAttrValue OR
+						a.supplement ILIKE anyAttrValue OR
+						a.retskilde ILIKE anyAttrValue
 			)
 			AND
 			(

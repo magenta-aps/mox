@@ -255,6 +255,29 @@ doc3_new_uuid uuid;
 	expected_result28 uuid[];
 	expected_result29 uuid[];
 
+	search_result30 uuid[];
+	search_result31 uuid[];
+	search_result32 uuid[];
+	search_result33 uuid[];
+	search_result34 uuid[];
+	search_result35 uuid[];
+	search_result36 uuid[];
+	search_result37 uuid[];
+	search_result38 uuid[];
+	search_result39 uuid[];
+
+	expected_result30 uuid[];
+	expected_result31 uuid[];
+	expected_result32 uuid[];
+	expected_result33 uuid[];
+	expected_result34 uuid[];
+	expected_result35 uuid[];
+	expected_result36 uuid[];
+	expected_result37 uuid[];
+	expected_result38 uuid[];
+	expected_result39 uuid[];
+
+
 
 BEGIN 
 
@@ -1150,7 +1173,7 @@ doc2_docVariantEgenskaber1AVirkning :=	ROW (
 ;
 
 doc2_docDel1AEgenskaberVirkning :=	ROW (
-	'[2014-03-30, infinity)' :: TSTZRANGE,
+	'[2014-03-28, infinity)' :: TSTZRANGE,
           '371cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
           'Bruger',
           'NoteEx11'
@@ -2484,9 +2507,86 @@ search_result27:=as_search_dokument(
 RETURN NEXT ok(expected_result27 @> search_result27 and search_result27 @>expected_result27 and coalesce(array_length(search_result27,1),0)=coalesce(array_length(expected_result27,1),0), 'search dokument #27.');
 
 
+/***************************************************/
+expected_result28
+:=ARRAY[doc2_new_uuid]::uuid[];
+
+search_result28:=as_search_dokument(
+	null
+	,null --dokument_uuid uuid,
+	,null --registreringObj DokumentRegistreringType,
+	,null --virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+	,null --maxResults int = 2147483647,
+	,array['doc2_kassationskode1']::text[] --anyAttrValueArr text[] = '{}'::text[],
+	,null --array['b24a2dd4-415f-4104-b7a7-84607488c091'::uuid]::uuid[]
+	,null --array['urn:cpr 7000000'] --anyRelUrnArr text[] = '{}'::text[],
+	);
+
+
+RETURN NEXT ok(expected_result28 @> search_result28 and search_result28 @>expected_result28 and coalesce(array_length(search_result28,1),0)=coalesce(array_length(expected_result28,1),0), 'search dokument #28.');
 
 
 
+/***************************************************/
+expected_result29
+:=ARRAY[doc1_new_uuid,doc2_new_uuid,doc3_new_uuid]::uuid[];
+
+search_result29:=as_search_dokument(
+	null
+	,null --dokument_uuid uuid,
+	,null --registreringObj DokumentRegistreringType,
+	,null --virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+	,null --maxResults int = 2147483647,
+	,array['del_mimetype1%']::text[] --anyAttrValueArr text[] = '{}'::text[],
+	,null --array['b24a2dd4-415f-4104-b7a7-84607488c091'::uuid]::uuid[]
+	,null --array['urn:cpr 7000000'] --anyRelUrnArr text[] = '{}'::text[],
+	);
+
+
+RETURN NEXT ok(expected_result29 @> search_result29 and search_result29 @>expected_result29 and coalesce(array_length(search_result29,1),0)=coalesce(array_length(expected_result29,1),0), 'search dokument #29.');
+
+/***************************************************/
+expected_result30
+:=ARRAY[doc1_new_uuid,doc3_new_uuid]::uuid[];
+
+search_result30:=as_search_dokument(
+	null
+	,null --dokument_uuid uuid,
+	,null --registreringObj DokumentRegistreringType,
+	,TSTZRANGE(current_timestamp,current_timestamp,'[]') --virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+	,null --maxResults int = 2147483647,
+	,array['del_mimetype1']::text[] --anyAttrValueArr text[] = '{}'::text[],
+	,null --array['b24a2dd4-415f-4104-b7a7-84607488c091'::uuid]::uuid[]
+	,null --array['urn:cpr 7000000'] --anyRelUrnArr text[] = '{}'::text[],
+	);
+
+
+--RAISE NOTICE 'expected_result30:%',to_json(expected_result30);
+--RAISE NOTICE 'search_result30:%',to_json(search_result30);
+
+RETURN NEXT ok(expected_result30 @> search_result30 and search_result30 @>expected_result30 and coalesce(array_length(search_result30,1),0)=coalesce(array_length(expected_result30,1),0), 'search dokument #30.');
+
+
+/***************************************************/
+
+expected_result31:=ARRAY[doc2_new_uuid]::uuid[];
+
+search_result31:=as_search_dokument(
+	null
+	,null --dokument_uuid uuid,
+	,null --registreringObj DokumentRegistreringType,
+	,null --virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+	,null --maxResults int = 2147483647,
+	,array['doc2_Offentlighedundtaget_Hjemmel1']::text[] --anyAttrValueArr text[] = '{}'::text[],
+	,null --array['b24a2dd4-415f-4104-b7a7-84607488c091'::uuid]::uuid[]
+	,null --array['urn:cpr 7000000'] --anyRelUrnArr text[] = '{}'::text[],
+	);
+
+
+--RAISE NOTICE 'expected_result31:%',to_json(expected_result31);
+--RAISE NOTICE 'search_result31:%',to_json(search_result31);
+
+RETURN NEXT ok(expected_result31 @> search_result31 and search_result31 @>expected_result31 and coalesce(array_length(search_result31,1),0)=coalesce(array_length(expected_result31,1),0), 'search dokument #31.');
 
 
 
