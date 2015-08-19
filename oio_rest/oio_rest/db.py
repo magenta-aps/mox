@@ -1,4 +1,3 @@
-from collections import namedtuple
 from datetime import datetime
 import os
 from enum import Enum
@@ -8,20 +7,19 @@ import psycopg2
 from psycopg2.extras import DateTimeTZRange
 from psycopg2.extensions import adapt as psyco_adapt
 
-from jinja2 import Template
 from jinja2 import Environment, FileSystemLoader
 
 from settings import DATABASE, DB_USER, DO_ENABLE_RESTRICTIONS
 
 from db_helpers import get_attribute_fields, get_attribute_names
 from db_helpers import get_field_type, get_state_names, get_relation_field_type
-from db_helpers import get_relation_field_type, Soegeord, OffentlighedUndtaget
-from db_helpers import JournalNotat, JournalDokument, DokumentVariantType
+from db_helpers import (Soegeord, OffentlighedUndtaget, JournalNotat,
+                        JournalDokument, DokumentVariantType)
 
 from authentication import get_authenticated_user
 
 from auth.restrictions import Operation, get_restrictions
-from utils import restriction_to_registration
+from utils.build_registration import restriction_to_registration
 from custom_exceptions import NotFoundException, NotAllowedException
 from custom_exceptions import DBException
 
@@ -439,7 +437,7 @@ def update_object(class_name, note, registration, uuid=None):
     cursor = conn.cursor()
     try:
         cursor.execute(sql)
-        output = cursor.fetchone()
+        cursor.fetchone()
     except psycopg2.DataError:
         # Thrown when no changes
         pass

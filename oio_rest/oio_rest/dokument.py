@@ -27,8 +27,7 @@ class Dokument(OIORestObject):
         # Read in the object. This will throw a NotFoundException if the
         # document does not exist, OR another exception if the user does not
         # have access to it.
-        object_list = db.list_objects(cls.__name__, [uuid], None, None,
-                                      None, None)
+        db.list_objects(cls.__name__, [uuid], None, None, None, None)
 
         filename = content_store.get_filename_for_url(content_url)
 

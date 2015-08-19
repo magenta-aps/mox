@@ -1,1 +1,0 @@
-from build_registration import build_registration, restriction_to_registration
