@@ -20,16 +20,15 @@ ELSE
 	--RAISE NOTICE 'SQL part  searchForArr[%], searchInArr[%]',to_json(searchForArr),to_json(searchInArr);
 	IF EXISTS (
 	SELECT
-	a.searchForElement,
-	b.searchTargetElement
+	a.searchInElement
 	FROM
 	unnest(searchInArr) a(searchInElement)
-	WHERE  a.searchInElement ilike a.searchForElement
+	WHERE  a.searchInElement ilike searchFor
 	)
 	THEN 
-	RETURN FALSE;
-	ELSE
 	RETURN TRUE;
+	ELSE
+	RETURN FALSE;
 	END IF;
 
 END IF;
