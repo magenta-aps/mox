@@ -5,6 +5,7 @@ import jinja2
 import os
 import sys
 from settings import DATABASE_STRUCTURE
+from settings import DB_TEMPLATE_EXTRA_OPTIONS
 from collections import OrderedDict
 
  
@@ -27,5 +28,11 @@ tilstande_items.reverse()
 attributter_items.reverse()
 templateVars['tilstande_revorder']=OrderedDict(tilstande_items)
 templateVars['attributter_revorder']=OrderedDict(attributter_items)
+
+if sys.argv[1] in DB_TEMPLATE_EXTRA_OPTIONS and sys.argv[2] in DB_TEMPLATE_EXTRA_OPTIONS[sys.argv[1]] and 'include_mixin' in DB_TEMPLATE_EXTRA_OPTIONS[sys.argv[1]][sys.argv[2]] :
+	templateVars['include_mixin']=DB_TEMPLATE_EXTRA_OPTIONS[sys.argv[1]][sys.argv[2]]['include_mixin']
+else:
+	templateVars['include_mixin']="empty.jinja"
+
 outputText = template.render( templateVars )
 print(outputText)

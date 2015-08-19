@@ -13,7 +13,7 @@ FILE_UPLOAD_FOLDER = '/var/mox'
 
 # The Endpoint specified in the AppliesTo element of the STS request
 # This will be used to verify the Audience of the SAML Assertion
-SAML_MOX_ENTITY_ID = 'http://localhost:5000'
+SAML_MOX_ENTITY_ID = 'http://localhost:80'
 
 # The entity ID of the IdP. This will be used to verify the token Issuer
 SAML_IDP_ENTITY_ID = 'localhost'
@@ -283,4 +283,12 @@ REAL_DB_STRUCTURE["klasse"]["attributter_type_override"] = {
 REAL_DB_STRUCTURE["sag"]["relationer_type_override"] = {
     "journalnotat": "journalnotat",
     "journaldokument": "journaldokument"
+}
+#
+DB_TEMPLATE_EXTRA_OPTIONS = {
+    "dokument": {
+        "as_search.jinja.sql": {
+            "include_mixin": "as_search_dokument_mixin.jinja.sql"
+        }
+    }
 }

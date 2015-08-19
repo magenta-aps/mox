@@ -52,7 +52,7 @@ class ContentStore:
                 os.stat(full_file_path)
                 # Keep looping, until we generate a file name that doesn't
                 # already exist.
-            except OSError, e:
+            except OSError:
                 # The file didn't exist already, so it is safe to create it
                 _mkdir_p(full_path)
                 file_obj.save(full_file_path)

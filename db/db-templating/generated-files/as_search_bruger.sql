@@ -436,7 +436,7 @@ ELSE
 						)
 						AND
 						(
-								(tilsGyldighedTypeObj.virkning).NoteTekst IS NULL OR (tilsGyldighedTypeObj.virkning).NoteTekst=(a.virkning).NoteTekst
+								(tilsGyldighedTypeObj.virkning).NoteTekst IS NULL OR (a.virkning).NoteTekst ILIKE (tilsGyldighedTypeObj.virkning).NoteTekst
 						)
 					)
 				)
@@ -579,7 +579,7 @@ ELSE
 						)
 						AND
 						(
-								(relationTypeObj.virkning).NoteTekst IS NULL OR (relationTypeObj.virkning).NoteTekst=(a.virkning).NoteTekst
+								(relationTypeObj.virkning).NoteTekst IS NULL OR (a.virkning).NoteTekst ILIKE (relationTypeObj.virkning).NoteTekst
 						)
 					)
 				)
@@ -885,6 +885,9 @@ IF coalesce(array_length(anyRelUrnArr ,1),0)>0 THEN
 END IF;
 
 --/**********************//
+
+ 
+
 
 
 --RAISE DEBUG 'bruger_candidates_is_initialized step 5:%',bruger_candidates_is_initialized;

@@ -79,7 +79,7 @@ ELSE
 					OR
 					 {%- if  attributter_type_override is defined and attributter_type_override[attribut] is defined and attributter_type_override[attribut][attribut_field] is defined %} 
 						{%-if attributter_type_override[attribut][attribut_field] == "text[]" %}
-					_as_search_match_array(attr{{attribut|title}}TypeObj.{{attribut_field}},a.{{attribut_field}})  --TODO: Fix this
+						( (coalesce(array_length(attr{{attribut|title}}TypeObj.{{attribut_field}},1),0)=0 AND coalesce(array_length(a.{{attribut_field}},1),0)=0 ) OR (attr{{attribut|title}}TypeObj.{{attribut_field}} @> a.{{attribut_field}} AND a.{{attribut_field}} @>attr{{attribut|title}}TypeObj.{{attribut_field}}  )) 
 						{%- else %} 
 						{%-if attributter_type_override[attribut][attribut_field] == "offentlighedundtagettype" %}
 						(

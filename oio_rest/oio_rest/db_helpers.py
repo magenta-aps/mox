@@ -2,15 +2,14 @@
 from collections import namedtuple
 from urlparse import urlparse
 from flask import request
-import psycopg2
-from psycopg2._range import DateTimeTZRange
 
+from psycopg2._range import DateTimeTZRange
 from psycopg2.extensions import adapt as psyco_adapt, ISQLQuote
 from psycopg2.extensions import register_adapter as psyco_register_adapter
 from contentstore import content_store
 
 from settings import REAL_DB_STRUCTURE as db_struct
-from utils.exceptions import BadRequestException
+from custom_exceptions import BadRequestException
 
 _attribute_fields = {}
 
@@ -117,8 +116,8 @@ def input_list(_type, input, key):
         return [_type.input(v) for v in values]
 
 
-class DokumentVariantType(
-    namedtuple('DokumentVariantType', 'varianttekst egenskaber dele')):
+class DokumentVariantType(namedtuple('DokumentVariantType',
+                                     'varianttekst egenskaber dele')):
     @classmethod
     def input(cls, i):
         if i is None:

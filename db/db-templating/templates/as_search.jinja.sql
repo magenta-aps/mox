@@ -273,7 +273,7 @@ ELSE
 						)
 						AND
 						(
-								(tils{{tilstand|title}}TypeObj.virkning).NoteTekst IS NULL OR (tils{{tilstand|title}}TypeObj.virkning).NoteTekst=(a.virkning).NoteTekst
+								(tils{{tilstand|title}}TypeObj.virkning).NoteTekst IS NULL OR (a.virkning).NoteTekst ILIKE (tils{{tilstand|title}}TypeObj.virkning).NoteTekst
 						)
 					)
 				)
@@ -351,7 +351,7 @@ ELSE
 						)
 						AND
 						(
-								(relationTypeObj.virkning).NoteTekst IS NULL OR (relationTypeObj.virkning).NoteTekst=(a.virkning).NoteTekst
+								(relationTypeObj.virkning).NoteTekst IS NULL OR (a.virkning).NoteTekst ILIKE (relationTypeObj.virkning).NoteTekst
 						)
 					)
 				)
@@ -456,6 +456,9 @@ IF coalesce(array_length(anyRelUrnArr ,1),0)>0 THEN
 END IF;
 
 --/**********************//
+
+{% include  include_mixin  %} 
+
 
 
 --RAISE DEBUG '{{oio_type}}_candidates_is_initialized step 5:%',{{oio_type}}_candidates_is_initialized;

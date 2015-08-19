@@ -1,10 +1,9 @@
 from base64 import b64decode
 from functools import wraps
 import os
-from flask import request, Response
-from utils import UnauthorizedException
+from flask import request
+from custom_exceptions import UnauthorizedException
 import zlib
-import gzip
 from auth.saml2 import Saml2_Assertion
 from settings import SAML_IDP_CERTIFICATE, SAML_MOX_ENTITY_ID
 from settings import SAML_IDP_ENTITY_ID, USE_SAML_AUTHENTICATION

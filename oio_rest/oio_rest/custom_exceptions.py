@@ -27,3 +27,10 @@ class UnauthorizedException(OIOFlaskException):
 
 class BadRequestException(OIOFlaskException):
     status_code = 400
+
+
+class DBException(OIOFlaskException):
+
+    def __init__(self, status_code, message, payload=None):
+        OIOFlaskException.__init__(self, message, payload)
+        self.status_code = status_code

@@ -1,10 +1,10 @@
+"""Superclasses for OIO objects and object hierarchies."""
 import json
 
 from flask import jsonify, request
 
 import db
-from utils import build_registration
-
+from utils.build_registration import build_registration
 
 
 # Just a helper during debug
@@ -141,9 +141,6 @@ class OIORestObject(object):
                                       registreret_til)
         if results is None:
             results = []
-        # TODO: Return JSON object key should be based on class name,
-        # e.g. {"Facetter": [..]}, not {"results": [..]}
-        # TODO: Include Return value
         return jsonify({'results': results})
 
     @classmethod
@@ -184,13 +181,12 @@ class OIORestObject(object):
 
         if not db.object_exists(cls.__name__, uuid):
             # Do import.
-            result = db.create_or_import_object(cls.__name__, note,
-                                                registration, uuid)
-            # TODO: When connected to DB, use result properly.
+            db.create_or_import_object(cls.__name__, note,
+                                       registration, uuid)
             return jsonify({'uuid': uuid}), 200
         else:
             "Edit or passivate."
-            if (input.get('livscyklus', '').lower() == 'passiv'):
+            if input.get('livscyklus', '').lower() == 'passiv':
                 # Passivate
                 registration = cls.gather_registration({})
                 db.passivate_object(
@@ -199,8 +195,8 @@ class OIORestObject(object):
                 return jsonify({'uuid': uuid}), 200
             else:
                 # Edit/change
-                result = db.update_object(cls.__name__, note, registration,
-                                          uuid)
+                db.update_object(cls.__name__, note, registration,
+                                 uuid)
                 return jsonify({'uuid': uuid}), 200
         return j(u"Forkerte parametre!"), 405
 
@@ -215,7 +211,7 @@ class OIORestObject(object):
         class_name = cls.__name__
         # Gather a blank registration
         registration = cls.gather_registration({})
-        result = db.delete_object(class_name, registration, note, uuid)
+        db.delete_object(class_name, registration, note, uuid)
 
         return jsonify({'uuid': uuid}), 200
 
@@ -226,7 +222,7 @@ class OIORestObject(object):
         class_name = cls.__name__.lower()
         class_url = u"{0}/{1}/{2}".format(base_url,
                                           hierarchy,
-                                          cls.__name__.lower())
+                                          class_name)
         uuid_regex = (
             "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}" +
             "-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
