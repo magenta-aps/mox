@@ -986,13 +986,13 @@ ELSE
 
 			IF  variantTypeObj.varianttekst IS NOT NULL OR
 				(
-					variantEgenskaberTypeObj.arkivering IS NOT NULL
+					(NOT (variantEgenskaberTypeObj.arkivering IS NULL))
 					OR
-					variantEgenskaberTypeObj.delvisscannet IS NOT NULL
+					(NOT (variantEgenskaberTypeObj.delvisscannet IS NULL))
 					OR
-					variantEgenskaberTypeObj.offentliggoerelse IS NOT NULL
+					(NOT (variantEgenskaberTypeObj.offentliggoerelse IS NULL))
 					OR
-					variantEgenskaberTypeObj.produktion IS NOT NULL
+					(NOT (variantEgenskaberTypeObj.produktion IS NULL))
 				)
 			 THEN --test if there is any data availiable for variant to filter on
 			
@@ -1175,7 +1175,7 @@ ELSE
 			LOOP
 			
 			IF delTypeObj.deltekst IS NOT NULL  	
-			OR delEgenskaberTypeObj.indeks IS NOT NULL
+			OR (NOT delEgenskaberTypeObj.indeks IS NULL)
 			OR delEgenskaberTypeObj.indhold IS NOT NULL
 			OR delEgenskaberTypeObj.lokation IS NOT NULL
 			OR delEgenskaberTypeObj.mimetype IS NOT NULL
