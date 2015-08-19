@@ -332,8 +332,11 @@ def create_or_import_object(class_name, note, registration,
     try:
         cursor.execute(sql)
     except Exception as e:
-        status_code = int(e.pgcode[2:])
-        raise DBException(status_code, e.message)
+        if e.pgcode[:2] == 'MO':
+            status_code = int(e.pgcode[2:])
+            raise DBException(status_code, e.message)
+        else:
+            raise
 
     output = cursor.fetchone()
     return output[0]
