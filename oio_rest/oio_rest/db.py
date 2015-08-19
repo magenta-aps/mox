@@ -23,6 +23,7 @@ from authentication import get_authenticated_user
 from auth.restrictions import Operation, get_restrictions
 from utils import restriction_to_registration
 from custom_exceptions import NotFoundException, NotAllowedException
+from custom_exceptions import DBException
 
 """
     Jinja2 Environment
@@ -272,13 +273,15 @@ def object_exists(class_name, uuid):
 
     return result
 
+
 def get_document_from_content_url(content_url):
     """Return the UUID of the Dokument which has a specific indhold URL.
 
     Also returns the mimetype of the indhold URL as stored in the
     DokumenDelEgenskaber.
     """
-    sql = """select r.dokument_id, de.mimetype from actual_state.dokument_del_egenskaber de
+    sql = """select r.dokument_id, de.mimetype from
+             actual_state.dokument_del_egenskaber de
 join actual_state.dokument_del d on d.id = de.del_id join
 actual_state.dokument_variant v on v.id = d.variant_id join
 actual_state.dokument_registrering r on r.id = v.dokument_registrering_id
@@ -288,6 +291,7 @@ where de.indhold = %s"""
     cursor.execute(sql, (content_url,))
     result = cursor.fetchone()
     return result
+
 
 def create_or_import_object(class_name, note, registration,
                             uuid=None):
@@ -325,7 +329,12 @@ def create_or_import_object(class_name, note, registration,
     # Call Postgres! Return OK or not accordingly
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute(sql)
+    try:
+        cursor.execute(sql)
+    except Exception as e:
+        status_code = int(e.pgcode[2:])
+        raise DBException(status_code, e.message)
+
     output = cursor.fetchone()
     return output[0]
 
@@ -473,9 +482,11 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
         ))
     return filter_json_output(output)
 
+
 def filter_json_output(output):
     """Filter the JSON output returned from the DB-layer."""
     return filter_nulls(simplify_cleared_wrappers(output))
+
 
 def simplify_cleared_wrappers(o):
     """Recursively simplify any values wrapped in a cleared-wrapper.
@@ -497,6 +508,7 @@ def simplify_cleared_wrappers(o):
     else:
         return o
 
+
 def filter_nulls(o):
     """Recursively remove keys with None values from dicts in object.
 
@@ -515,6 +527,7 @@ def filter_nulls(o):
         return tuple(filter_nulls(v) for v in o)
     else:
         return o
+
 
 def search_objects(class_name, uuid, registration,
                    virkning_fra=None, virkning_til=None,

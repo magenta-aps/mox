@@ -55,9 +55,11 @@ class Dokument(OIORestObject):
             date_path_regex
         )
 
-        flask.add_url_rule(download_content_url, u'_'.join([cls.__name__,
-                                                       'download_content']),
-                           cls.download_content, methods=['GET'])
+        flask.add_url_rule(
+            download_content_url, u'_'.join(
+                [cls.__name__, 'download_content']
+            ), cls.download_content, methods=['GET']
+        )
 
     @classmethod
     def gather_registration(cls, input):
