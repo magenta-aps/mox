@@ -1,7 +1,9 @@
 """Superclasses for OIO objects and object hierarchies."""
 import json
+import datetime
 
 from flask import jsonify, request
+from custom_exceptions import BadRequestException
 
 import db
 from utils.build_registration import build_registration
@@ -102,12 +104,16 @@ class OIORestObject(object):
         registreret_til = args.get('registrerettil', None)
 
         uuid_param = list_args.get('uuid', None)
-        if uuid_param is None:
-            # Assume the search operation
-            # Later on, we should support searches which filter on uuids as
-            # well
-            uuid_param = None
-
+        # Assume the search operation if other params were specified
+        if not set(args.keys()).issubset(('virkningfra', 'virkningtil',
+                                          'registreretfra', 'registrerettil',
+                                          'uuid')):
+            # Only one uuid is supported through the search operation
+            if uuid_param is not None and len(uuid_param) > 1:
+                raise BadRequestException("Multiple uuid parameters passed "
+                                          "to search operation. Only one "
+                                          "uuid parameter is supported.")
+            uuid_param = args.get('uuid', None)
             first_result = args.get('foersteresultat', None)
             if first_result is not None:
                 first_result = int(first_result)
@@ -120,6 +126,12 @@ class OIORestObject(object):
             life_cycle_code = args.get('livscykluskode', None)
             user_ref = args.get('brugerref', None)
             note = args.get('notetekst', None)
+
+            if virkning_fra is None and virkning_til is None:
+                # TODO: Use the equivalent of TSTZRANGE(current_timestamp,
+                # current_timestamp,'[]') if possible
+                virkning_fra = datetime.datetime.now()
+                virkning_til = datetime.datetime.now()
 
             # Fill out a registration object based on the query arguments
             registration = build_registration(cls.__name__, list_args)

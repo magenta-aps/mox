@@ -35,6 +35,15 @@ else
     exit
 fi
 
+# Import
+import_uuid=$(uuidgen)
+curl --write-out %{http_code} --output /tmp/dokument_opret.txt -X PUT \
+    -F "json=$(cat test_data/dokument_opret.json)" \
+    -F 'del_indhold1=@test_data/test.txt' \
+    -F 'del_indhold2=@test_data/test.docx' \
+    -F 'del_indhold3=@test_data/test.xls' \
+    $HOST_URL/dokument/dokument/$import_uuid
+
 # List
 curl -sH "Content-Type: application/json" -X GET $HOST_URL/dokument/dokument?uuid=$uuid > /tmp/listoutput
 
@@ -88,4 +97,20 @@ fi
 # Passivate
 curl -sH "Content-Type: application/json" -X PUT -d "$(cat $DIR/test_data/facet_passiv.json)" $HOST_URL/dokument/dokument/$uuid
 
+# Delete
 curl -sH "Content-Type: application/json" -X DELETE -d "$(cat $DIR/test_data/dokument_slet.json)" $HOST_URL/dokument/dokument/$uuid
+
+
+
+# Search on the imported dokument
+
+echo "Search"
+curl -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?produktion=true&virkningfra=2015-05-20&uuid=$import_uuid"
+
+# TODO: Test results
+
+echo "Search del"
+curl -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?varianttekst=PDF&deltekst=doc_deltekst1A&mimetype=text/plain&uuid=$import_uuid"
+
+# TODO: Test results
+

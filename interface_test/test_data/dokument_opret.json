@@ -143,9 +143,9 @@
           "arkivering": false,
           "delvisscannet": true,
           "offentliggoerelse": false,
-          "produktion": true,
+          "produktion": false,
           "virkning": {
-            "from": "2014-05-19 12:02:32",
+            "from": "2015-05-19 12:02:32",
             "to": "infinity",
             "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
             "aktoertypekode": "Bruger",
