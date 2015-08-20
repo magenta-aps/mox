@@ -486,7 +486,7 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
 
 def filter_json_output(output):
     """Filter the JSON output returned from the DB-layer."""
-    return filter_nulls(simplify_cleared_wrappers(output))
+    return filter_empty(simplify_cleared_wrappers(output))
 
 
 def simplify_cleared_wrappers(o):
@@ -510,6 +510,22 @@ def simplify_cleared_wrappers(o):
         return o
 
 
+def filter_empty(d):
+    """Recursively filter out empty dictionary keys."""
+    if type(d) is dict:
+        return dict(
+            (k, filter_empty(v)) for k, v in d.iteritems() if v and
+            filter_empty(v)
+        )
+    elif type(d) is list:
+        return [filter_empty(v) for v in d if v and filter_empty(v)]
+    elif type(d) is tuple:
+        return tuple(filter_empty(v) for v in d if v and filter_empty(v))
+    else:
+        return d
+
+'''
+TODO: Remove this function if/when it turns out we don't need it.
 def filter_nulls(o):
     """Recursively remove keys with None values from dicts in object.
 
@@ -528,6 +544,7 @@ def filter_nulls(o):
         return tuple(filter_nulls(v) for v in o)
     else:
         return o
+'''
 
 
 def search_objects(class_name, uuid, registration,

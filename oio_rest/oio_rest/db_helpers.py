@@ -115,6 +115,7 @@ def input_list(_type, input, key):
     else:
         return [_type.input(v) for v in values]
 
+
 def to_bool(s):
     """Convert string to boolean. Passes through bool and None values."""
     if isinstance(s, bool):
@@ -127,6 +128,7 @@ def to_bool(s):
         elif s in ("False", "false", "0"):
             return False
         raise ValueError("%s is not a valid boolean value" % s)
+
 
 class DokumentVariantType(namedtuple('DokumentVariantType',
                                      'varianttekst egenskaber dele')):
