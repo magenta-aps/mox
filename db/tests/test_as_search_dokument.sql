@@ -1811,14 +1811,14 @@ read_doc1 := as_read_dokument(doc1_new_uuid,
 	null --virkning_tstzrange
 	);
 
-raise notice 'read_doc1:%',to_json(read_doc1);
+--raise notice 'read_doc1:%',to_json(read_doc1);
 
 read_doc2 := as_read_dokument(doc2_new_uuid,
 	null, --registrering_tstzrange
 	null --virkning_tstzrange
 	);
 
-raise notice 'read_doc2:%',to_json(read_doc2);
+--raise notice 'read_doc2:%',to_json(read_doc2);
 
 
 read_doc3 := as_read_dokument(doc3_new_uuid,
@@ -1826,7 +1826,7 @@ read_doc3 := as_read_dokument(doc3_new_uuid,
 	null --virkning_tstzrange
 	);
 
-raise notice 'read_doc3:%',to_json(read_doc3);
+--raise notice 'read_doc3:%',to_json(read_doc3);
 
 /***************************************************/
 
