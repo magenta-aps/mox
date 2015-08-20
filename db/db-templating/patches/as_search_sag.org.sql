@@ -354,23 +354,15 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 			JOIN sag_registrering b on a.sag_registrering_id=b.id
 			WHERE
 			(
-				a.brugervendtnoegle ILIKE anyAttrValue
-				OR
-				anyAttrValue = a.afleveret
-				OR
-				a.beskrivelse ILIKE anyAttrValue
-				OR
-				a.hjemmel ILIKE anyAttrValue
-				OR
-				a.kassationskode ILIKE anyAttrValue
-				OR
-				anyAttrValue = a.offentlighedundtaget
-				OR
-				anyAttrValue = a.principiel
-				OR
-				a.sagsnummer ILIKE anyAttrValue
-				OR
-				a.titel ILIKE anyAttrValue
+						a.brugervendtnoegle ILIKE anyAttrValue OR
+								
+						a.beskrivelse ILIKE anyAttrValue OR
+						a.hjemmel ILIKE anyAttrValue OR
+						a.kassationskode ILIKE anyAttrValue OR
+									(a.offentlighedundtaget).Hjemmel ilike anyAttrValue OR (a.offentlighedundtaget).AlternativTitel ilike anyAttrValue OR
+								
+						a.sagsnummer ILIKE anyAttrValue OR
+						a.titel ILIKE anyAttrValue
 			)
 			AND
 			(
@@ -496,7 +488,7 @@ ELSE
 						)
 						AND
 						(
-								(tilsFremdriftTypeObj.virkning).NoteTekst IS NULL OR (tilsFremdriftTypeObj.virkning).NoteTekst=(a.virkning).NoteTekst
+								(tilsFremdriftTypeObj.virkning).NoteTekst IS NULL OR (a.virkning).NoteTekst ILIKE (tilsFremdriftTypeObj.virkning).NoteTekst
 						)
 					)
 				)
@@ -639,7 +631,7 @@ ELSE
 						)
 						AND
 						(
-								(relationTypeObj.virkning).NoteTekst IS NULL OR (relationTypeObj.virkning).NoteTekst=(a.virkning).NoteTekst
+								(relationTypeObj.virkning).NoteTekst IS NULL OR (a.virkning).NoteTekst ILIKE (relationTypeObj.virkning).NoteTekst
 						)
 					)
 				)
@@ -1011,6 +1003,9 @@ IF coalesce(array_length(anyRelUrnArr ,1),0)>0 THEN
 END IF;
 
 --/**********************//
+
+ 
+
 
 
 --RAISE DEBUG 'sag_candidates_is_initialized step 5:%',sag_candidates_is_initialized;

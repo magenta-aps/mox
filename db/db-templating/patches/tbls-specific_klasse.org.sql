@@ -102,15 +102,15 @@ ALTER TABLE klasse_attr_egenskaber_id_seq
 
 CREATE TABLE klasse_attr_egenskaber
 (
-  id bigint NOT NULL DEFAULT nextval('klasse_attr_egenskaber_id_seq'::regclass),
-    brugervendtnoegle text null,
-    beskrivelse text null,
-    eksempel text null,
-    omfang text null,
-    titel text null,
-    retskilde text null,
-    aendringsnotat text null,
-    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
+  id bigint NOT NULL DEFAULT nextval('klasse_attr_egenskaber_id_seq'::regclass), 
+   brugervendtnoegle text null, 
+   beskrivelse text null, 
+   eksempel text null, 
+   omfang text null, 
+   titel text null, 
+   retskilde text null, 
+   aendringsnotat text null, 
+   virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
   klasse_registrering_id bigint not null,
 CONSTRAINT klasse_attr_egenskaber_pkey PRIMARY KEY (id),
 CONSTRAINT klasse_attr_egenskaber_forkey_klasseregistrering  FOREIGN KEY (klasse_registrering_id) REFERENCES klasse_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
@@ -123,88 +123,81 @@ ALTER TABLE klasse_attr_egenskaber
   OWNER TO mox;
 
  
-
-CREATE INDEX klasse_attr_egenskaber_idx_brugervendtnoegle
-  ON klasse_attr_egenskaber
-  USING btree
-  (brugervendtnoegle);
-
 CREATE INDEX klasse_attr_egenskaber_pat_brugervendtnoegle
   ON klasse_attr_egenskaber
   USING gin
   (brugervendtnoegle gin_trgm_ops);
 
- 
-
-CREATE INDEX klasse_attr_egenskaber_idx_beskrivelse
+CREATE INDEX klasse_attr_egenskaber_idx_brugervendtnoegle
   ON klasse_attr_egenskaber
   USING btree
-  (beskrivelse);
+  (brugervendtnoegle); 
 
+ 
 CREATE INDEX klasse_attr_egenskaber_pat_beskrivelse
   ON klasse_attr_egenskaber
   USING gin
   (beskrivelse gin_trgm_ops);
 
- 
-
-CREATE INDEX klasse_attr_egenskaber_idx_eksempel
+CREATE INDEX klasse_attr_egenskaber_idx_beskrivelse
   ON klasse_attr_egenskaber
   USING btree
-  (eksempel);
+  (beskrivelse); 
 
+ 
 CREATE INDEX klasse_attr_egenskaber_pat_eksempel
   ON klasse_attr_egenskaber
   USING gin
   (eksempel gin_trgm_ops);
 
- 
-
-CREATE INDEX klasse_attr_egenskaber_idx_omfang
+CREATE INDEX klasse_attr_egenskaber_idx_eksempel
   ON klasse_attr_egenskaber
   USING btree
-  (omfang);
+  (eksempel); 
 
+ 
 CREATE INDEX klasse_attr_egenskaber_pat_omfang
   ON klasse_attr_egenskaber
   USING gin
   (omfang gin_trgm_ops);
 
- 
-
-CREATE INDEX klasse_attr_egenskaber_idx_titel
+CREATE INDEX klasse_attr_egenskaber_idx_omfang
   ON klasse_attr_egenskaber
   USING btree
-  (titel);
+  (omfang); 
 
+ 
 CREATE INDEX klasse_attr_egenskaber_pat_titel
   ON klasse_attr_egenskaber
   USING gin
   (titel gin_trgm_ops);
 
- 
-
-CREATE INDEX klasse_attr_egenskaber_idx_retskilde
+CREATE INDEX klasse_attr_egenskaber_idx_titel
   ON klasse_attr_egenskaber
   USING btree
-  (retskilde);
+  (titel); 
 
+ 
 CREATE INDEX klasse_attr_egenskaber_pat_retskilde
   ON klasse_attr_egenskaber
   USING gin
   (retskilde gin_trgm_ops);
 
- 
-
-CREATE INDEX klasse_attr_egenskaber_idx_aendringsnotat
+CREATE INDEX klasse_attr_egenskaber_idx_retskilde
   ON klasse_attr_egenskaber
   USING btree
-  (aendringsnotat);
+  (retskilde); 
 
+ 
 CREATE INDEX klasse_attr_egenskaber_pat_aendringsnotat
   ON klasse_attr_egenskaber
   USING gin
   (aendringsnotat gin_trgm_ops);
+
+CREATE INDEX klasse_attr_egenskaber_idx_aendringsnotat
+  ON klasse_attr_egenskaber
+  USING btree
+  (aendringsnotat); 
 
 
 
@@ -365,17 +358,46 @@ CREATE TABLE klasse_relation
   id bigint NOT NULL DEFAULT nextval('klasse_relation_id_seq'::regclass),
   klasse_registrering_id bigint not null,
   virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
-  rel_maal uuid NULL, --we have to allow null values (for now at least), as it is needed to be able to clear/overrule previous registered relations.
+  rel_maal_uuid uuid NULL, --we have to allow null values (for now at least), as it is needed to be able to clear/overrule previous registered relations.
+  rel_maal_urn text null,
   rel_type KlasseRelationKode not null,
+  objekt_type text null,
  CONSTRAINT klasse_relation_forkey_klasseregistrering  FOREIGN KEY (klasse_registrering_id) REFERENCES klasse_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
  CONSTRAINT klasse_relation_pkey PRIMARY KEY (id),
- CONSTRAINT klasse_relation_no_virkning_overlap EXCLUDE USING gist (klasse_registrering_id WITH =, _as_convert_klasse_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('redaktoerer'::KlasseRelationKode ) AND rel_type<>('sideordnede'::KlasseRelationKode ) AND rel_type<>('mapninger'::KlasseRelationKode ) AND rel_type<>('tilfoejelser'::KlasseRelationKode ) AND rel_type<>('erstatter'::KlasseRelationKode ) AND rel_type<>('lovligekombinationer'::KlasseRelationKode )) -- no overlapping virkning except for 0..n --relations
+ CONSTRAINT klasse_relation_no_virkning_overlap EXCLUDE USING gist (klasse_registrering_id WITH =, _as_convert_klasse_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('redaktoerer'::KlasseRelationKode ) AND rel_type<>('sideordnede'::KlasseRelationKode ) AND rel_type<>('mapninger'::KlasseRelationKode ) AND rel_type<>('tilfoejelser'::KlasseRelationKode ) AND rel_type<>('erstatter'::KlasseRelationKode ) AND rel_type<>('lovligekombinationer'::KlasseRelationKode )) ,-- no overlapping virkning except for 0..n --relations
+ CONSTRAINT klasse_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
 );
 
-CREATE INDEX klasse_relation_idx_rel_maal
+
+CREATE INDEX klasse_relation_idx_rel_maal_obj_uuid
   ON klasse_relation
   USING btree
-  (rel_type, rel_maal);
+  (rel_type,objekt_type,rel_maal_uuid);
+
+CREATE INDEX klasse_relation_idx_rel_maal_obj_urn
+  ON klasse_relation
+  USING btree
+  (rel_type,objekt_type,rel_maal_urn);
+
+CREATE INDEX klasse_relation_idx_rel_maal_uuid
+  ON klasse_relation
+  USING btree
+  (rel_type, rel_maal_uuid);
+
+CREATE INDEX klasse_relation_idx_rel_maal_uuid_isolated
+  ON klasse_relation
+  USING btree
+  (rel_maal_uuid);
+
+CREATE INDEX klasse_relation_idx_rel_maal_urn_isolated
+  ON klasse_relation
+  USING btree
+  (rel_maal_urn);
+
+CREATE INDEX klasse_relation_idx_rel_maal_urn
+  ON klasse_relation
+  USING btree
+  (rel_type, rel_maal_urn);
 
 CREATE INDEX klasse_relation_idx_virkning_aktoerref
   ON klasse_relation

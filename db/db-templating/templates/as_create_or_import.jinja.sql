@@ -32,11 +32,11 @@ END IF;
 
 
 IF EXISTS (SELECT id from {{oio_type}} WHERE id={{oio_type}}_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing {{oio_type}} with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_{{oio_type}} (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',{{oio_type}}_uuid;
+  RAISE EXCEPTION 'Error creating or importing {{oio_type}} with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_{{oio_type}} (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',{{oio_type}}_uuid USING ERRCODE='MO500';
 END IF;
 
 IF  ({{oio_type}}_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and ({{oio_type}}_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_{{oio_type}}.',({{oio_type}}_registrering.registrering).livscykluskode;
+  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_{{oio_type}}.',({{oio_type}}_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
@@ -79,7 +79,7 @@ SELECT
 
  {%for attribut , attribut_fields in attributter.iteritems() %}
 IF coalesce(array_length({{oio_type}}_registrering.attr{{attribut|title}}, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet attribut [{{attribut}}] for [{{oio_type}}]. Oprettelse afbrydes.';
+  RAISE EXCEPTION 'Savner påkraevet attribut [{{attribut}}] for [{{oio_type}}]. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
 
@@ -110,7 +110,7 @@ END IF;
 --Verification
 --For now all declared states are mandatory.
 IF coalesce(array_length({{oio_type}}_registrering.tils{{tilstand|title}}, 1),0)<1  THEN
-  RAISE EXCEPTION 'Savner påkraevet tilstand [{{tilstand}}] for {{oio_type}}. Oprettelse afbrydes.';
+  RAISE EXCEPTION 'Savner påkraevet tilstand [{{tilstand}}] for {{oio_type}}. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
 IF {{oio_type}}_registrering.tils{{tilstand|title}} IS NOT NULL AND coalesce(array_length({{oio_type}}_registrering.tils{{tilstand|title}},1),0)>0 THEN

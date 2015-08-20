@@ -42,11 +42,11 @@ END IF;
 
 
 IF EXISTS (SELECT id from dokument WHERE id=dokument_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing dokument with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_dokument (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',dokument_uuid;
+  RAISE EXCEPTION 'Error creating or importing dokument with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_dokument (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',dokument_uuid USING ERRCODE='MO500';
 END IF;
 
 IF  (dokument_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (dokument_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_dokument.',(dokument_registrering.registrering).livscykluskode;
+  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_dokument.',(dokument_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
@@ -89,7 +89,7 @@ SELECT
 
  
 IF coalesce(array_length(dokument_registrering.attrEgenskaber, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [dokument]. Oprettelse afbrydes.';
+  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [dokument]. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
 
@@ -136,7 +136,7 @@ END IF;
 --Verification
 --For now all declared states are mandatory.
 IF coalesce(array_length(dokument_registrering.tilsFremdrift, 1),0)<1  THEN
-  RAISE EXCEPTION 'Savner påkraevet tilstand [fremdrift] for dokument. Oprettelse afbrydes.';
+  RAISE EXCEPTION 'Savner påkraevet tilstand [fremdrift] for dokument. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
 IF dokument_registrering.tilsFremdrift IS NOT NULL AND coalesce(array_length(dokument_registrering.tilsFremdrift,1),0)>0 THEN
