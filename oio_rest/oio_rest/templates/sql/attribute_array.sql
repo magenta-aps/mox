@@ -1,4 +1,7 @@
-        ARRAY[
+{% if attribute_periods is none -%}
+NULL
+{% else -%}
+    ARRAY[
         {% for attribute_value in attribute_periods -%}
         ROW({% for value in attribute_value -%}
             {% if loop.last -%}
@@ -24,3 +27,4 @@
         ){% if not loop.last %},{% endif %}
         {% endfor -%}
     ] :: {{ attribute_name }}AttrType[]
+{% endif -%}

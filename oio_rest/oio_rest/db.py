@@ -92,19 +92,20 @@ def convert_relation_value(class_name, field_name, value):
 
 def convert_attributes(attributes):
     "Convert attributes from dictionary to list in correct order."
-    for attr_name in attributes:
-        current_attr_periods = attributes[attr_name]
-        converted_attr_periods = []
-        for attr_period in current_attr_periods:
-            field_names = get_attribute_fields(attr_name)
-            attr_value_list = [
-                convert_attr_value(
-                    attr_name, f, attr_period[f]
-                ) if f in attr_period else None
-                for f in field_names
+    if attributes:
+        for attr_name in attributes:
+            current_attr_periods = attributes[attr_name]
+            converted_attr_periods = []
+            for attr_period in current_attr_periods:
+                field_names = get_attribute_fields(attr_name)
+                attr_value_list = [
+                    convert_attr_value(
+                        attr_name, f, attr_period[f]
+                    ) if f in attr_period else None
+                    for f in field_names
                 ]
-            converted_attr_periods.append(attr_value_list)
-        attributes[attr_name] = converted_attr_periods
+                converted_attr_periods.append(attr_value_list)
+            attributes[attr_name] = converted_attr_periods
     return attributes
 
 
@@ -190,7 +191,7 @@ def sql_convert_registration(registration, class_name):
     attributes = registration["attributes"]
     sql_attributes = []
     for a in get_attribute_names(class_name):
-        periods = attributes[a] if a in attributes else []
+        periods = attributes[a] if a in attributes else None
         sql_attributes.append(
             sql_attribute_array(a, periods)
         )

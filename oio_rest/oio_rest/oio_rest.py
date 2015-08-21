@@ -188,7 +188,6 @@ class OIORestObject(object):
             return jsonify({'uuid': None}), 400
         # Get most common parameters if available.
         note = input.get("note", "")
-
         registration = cls.gather_registration(input)
 
         if not db.object_exists(cls.__name__, uuid):
