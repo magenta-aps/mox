@@ -35,11 +35,11 @@ END IF;
 
 
 IF EXISTS (SELECT id from facet WHERE id=facet_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing facet with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_facet (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',facet_uuid;
+  RAISE EXCEPTION 'Error creating or importing facet with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_facet (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',facet_uuid USING ERRCODE='MO500';
 END IF;
 
 IF  (facet_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (facet_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_facet.',(facet_registrering.registrering).livscykluskode;
+  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_facet.',(facet_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
@@ -82,7 +82,7 @@ SELECT
 
  
 IF coalesce(array_length(facet_registrering.attrEgenskaber, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [facet]. Oprettelse afbrydes.';
+  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [facet]. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
 
@@ -125,7 +125,7 @@ END IF;
 --Verification
 --For now all declared states are mandatory.
 IF coalesce(array_length(facet_registrering.tilsPubliceret, 1),0)<1  THEN
-  RAISE EXCEPTION 'Savner påkraevet tilstand [publiceret] for facet. Oprettelse afbrydes.';
+  RAISE EXCEPTION 'Savner påkraevet tilstand [publiceret] for facet. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
 IF facet_registrering.tilsPubliceret IS NOT NULL AND coalesce(array_length(facet_registrering.tilsPubliceret,1),0)>0 THEN

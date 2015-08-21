@@ -13,43 +13,37 @@
 
 # First, create a new facet.
 
-HOST_URL="https://mox.magenta-aps.dk"
+# Test configuration
+DIR=$(dirname ${BASH_SOURCE[0]})
+source $DIR/config.sh
 
-read -p "Indtast URL, default $HOST_URL: " URL
-
-if [ ! -z $URL ]
-then
-    HOST_URL=$URL
-fi
-
-
-result=$(curl -sH "Content-Type: application/json" -X POST -d "$(cat test_data/facet_opret.json)" $HOST_URL/klassifikation/facet)
+result=$(curl -H "Content-Type: application/json" -X POST -d "$(cat $DIR/test_data/facet_opret.json)" $HOST_URL/klassifikation/facet)
 uuid=$(expr "$result" : '.*"uuid": "\([^"]*\)"')
 
 if [ ! -z $uuid ]
 then
     echo "Oprettet facet: $uuid"
 else
-    echo "Opret facet fejlet: $uuid" 
+    echo "Opret facet fejlet: $result" 
     exit
 fi
 # Now, import a new facet
 # - Suppose no object with this ID exists.
 import_uuid=$(uuidgen)
 
-curl --write-out %{http_code} --output /tmp/facet_opret.txt -sH "Content-Type: application/json" -X PUT -d "$(cat test_data/facet_opret.json)" $HOST_URL/klassifikation/facet/$import_uuid 
+curl --write-out %{http_code} --output /tmp/facet_opret.txt -sH "Content-Type: application/json" -X PUT -d "$(cat $DIR/test_data/facet_opret.json)" $HOST_URL/klassifikation/facet/$import_uuid 
 
 # Update the facet
 
-curl -sH "Content-Type: application/json" -X PUT -d "$(cat test_data/facet_opdater.json)" $HOST_URL/klassifikation/facet/$uuid
+curl -sH "Content-Type: application/json" -X PUT -d "$(cat $DIR/test_data/facet_opdater.json)" $HOST_URL/klassifikation/facet/$uuid
 
 # Passivate the facet. 
 
-curl -sH "Content-Type: application/json" -X PUT -d "$(cat test_data/facet_passiv.json)" $HOST_URL/klassifikation/facet/$uuid
+curl -sH "Content-Type: application/json" -X PUT -d "$(cat $DIR/test_data/facet_passiv.json)" $HOST_URL/klassifikation/facet/$uuid
 
 # Delete the facet. 
 
-curl -sH "Content-Type: application/json" -X DELETE -d "$(cat test_data/facet_slet.json)" $HOST_URL/klassifikation/facet/$uuid
+curl -sH "Content-Type: application/json" -X DELETE -d "$(cat $DIR/test_data/facet_slet.json)" $HOST_URL/klassifikation/facet/$uuid
 
 # NOTE: The difference between import and update&passive hinges on
 # whether the object with the given UUID exists or not.

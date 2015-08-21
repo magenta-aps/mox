@@ -172,7 +172,7 @@ class OIORestObject(object):
         """Return a registration dict from the input dict."""
         attributes = input.get("attributter", {})
         states = input.get("tilstande", {})
-        relations = input.get("relationer", {})
+        relations = input.get("relationer", None)
         return {"states": states,
                 "attributes": attributes,
                 "relations": relations}
@@ -188,7 +188,6 @@ class OIORestObject(object):
             return jsonify({'uuid': None}), 400
         # Get most common parameters if available.
         note = input.get("note", "")
-
         registration = cls.gather_registration(input)
 
         if not db.object_exists(cls.__name__, uuid):

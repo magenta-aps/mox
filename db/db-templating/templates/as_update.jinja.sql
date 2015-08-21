@@ -44,7 +44,7 @@ BEGIN
 --create a new registrering
 
 IF NOT EXISTS (select a.id from {{oio_type}} a join {{oio_type}}_registrering b on b.{{oio_type}}_id=a.id  where a.id={{oio_type}}_uuid) THEN
-   RAISE EXCEPTION 'Unable to update {{oio_type}} with uuid [%], being unable to find any previous registrations.',{{oio_type}}_uuid;
+   RAISE EXCEPTION 'Unable to update {{oio_type}} with uuid [%], being unable to find any previous registrations.',{{oio_type}}_uuid USING ERRCODE = 'MO400';
 END IF;
 
 PERFORM a.id FROM {{oio_type}} a
@@ -64,7 +64,7 @@ prev_{{oio_type}}_registrering := _as_get_prev_{{oio_type}}_registrering(new_{{o
 
 IF lostUpdatePreventionTZ IS NOT NULL THEN
   IF NOT (LOWER((prev_{{oio_type}}_registrering.registrering).timeperiod)=lostUpdatePreventionTZ) THEN
-    RAISE EXCEPTION 'Unable to update {{oio_type}} with uuid [%], as the {{oio_type}} seems to have been updated since latest read by client (the given lostUpdatePreventionTZ [%] does not match the timesamp of latest registration [%]).',{{oio_type}}_uuid,lostUpdatePreventionTZ,LOWER((prev_{{oio_type}}_registrering.registrering).timeperiod);
+    RAISE EXCEPTION 'Unable to update {{oio_type}} with uuid [%], as the {{oio_type}} seems to have been updated since latest read by client (the given lostUpdatePreventionTZ [%] does not match the timesamp of latest registration [%]).',{{oio_type}}_uuid,lostUpdatePreventionTZ,LOWER((prev_{{oio_type}}_registrering.registrering).timeperiod) USING ERRCODE = 'MO409';
   END IF;   
 END IF;
 
@@ -278,7 +278,7 @@ IF attr{{attribut|title}} IS NOT null THEN
   GROUP BY a.{{attribut_fields|join(',a.')}}, a.virkning
   HAVING COUNT(*)>1
   ) THEN
-  RAISE EXCEPTION 'Unable to update {{oio_type}} with uuid [%], as the {{oio_type}} have overlapping virknings in the given {{attribut}} array :%',{{oio_type}}_uuid,to_json(attr{{attribut|title}})  USING ERRCODE = 22000;
+  RAISE EXCEPTION 'Unable to update {{oio_type}} with uuid [%], as the {{oio_type}} have overlapping virknings in the given {{attribut}} array :%',{{oio_type}}_uuid,to_json(attr{{attribut|title}})  USING ERRCODE = 'MO400';
 
   END IF;
 
@@ -428,7 +428,7 @@ read_prev_{{oio_type}}:=as_read_{{oio_type}}({{oio_type}}_uuid, (prev_{{oio_type
 --the ordering in as_list (called by as_read) ensures that the latest registration is returned at index pos 1
 
 IF NOT (lower((read_new_{{oio_type}}.registrering[1].registrering).TimePeriod)=lower((new_{{oio_type}}_registrering.registrering).TimePeriod) AND lower((read_prev_{{oio_type}}.registrering[1].registrering).TimePeriod)=lower((prev_{{oio_type}}_registrering.registrering).TimePeriod)) THEN
-  RAISE EXCEPTION 'Error updating {{oio_type}} with id [%]: The ordering of as_list_{{oio_type}} should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].',{{oio_type}}_uuid,to_json(new_{{oio_type}}_registrering),to_json(read_new_{{oio_type}}.registrering[1].registrering),to_json(prev_{{oio_type}}_registrering),to_json(prev_new_{{oio_type}}.registrering[1].registrering);
+  RAISE EXCEPTION 'Error updating {{oio_type}} with id [%]: The ordering of as_list_{{oio_type}} should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].',{{oio_type}}_uuid,to_json(new_{{oio_type}}_registrering),to_json(read_new_{{oio_type}}.registrering[1].registrering),to_json(prev_{{oio_type}}_registrering),to_json(prev_new_{{oio_type}}.registrering[1].registrering) USING ERRCODE = 'MO500';
 END IF;
  
  --we'll ignore the registreringBase part in the comparrison - except for the livcykluskode
@@ -457,7 +457,7 @@ ROW(null,(read_prev_{{oio_type}}.registrering[1].registrering).livscykluskode,nu
 IF read_prev_{{oio_type}}_reg=read_new_{{oio_type}}_reg THEN
   --RAISE NOTICE 'Note[%]. Aborted reg:%',note,to_json(read_new_{{oio_type}}_reg);
   --RAISE NOTICE 'Note[%]. Previous reg:%',note,to_json(read_prev_{{oio_type}}_reg);
-  RAISE EXCEPTION 'Aborted updating {{oio_type}} with id [%] as the given data, does not give raise to a new registration. Aborted reg:[%], previous reg:[%]',{{oio_type}}_uuid,to_json(read_new_{{oio_type}}_reg),to_json(read_prev_{{oio_type}}_reg) USING ERRCODE = 22000;
+  RAISE EXCEPTION 'Aborted updating {{oio_type}} with id [%] as the given data, does not give raise to a new registration. Aborted reg:[%], previous reg:[%]',{{oio_type}}_uuid,to_json(read_new_{{oio_type}}_reg),to_json(read_prev_{{oio_type}}_reg) USING ERRCODE = 'MO400';
 END IF;
 
 /******************************************************************/

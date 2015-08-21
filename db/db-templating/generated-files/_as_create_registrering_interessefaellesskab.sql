@@ -45,7 +45,7 @@ UPDATE interessefaellesskab_registrering as a
 GET DIAGNOSTICS rows_affected = ROW_COUNT;
 
 IF rows_affected=0 THEN
-  RAISE EXCEPTION 'Error updating interessefaellesskab with uuid [%], Invalid [livscyklus] transition to [%]',interessefaellesskab_uuid,livscykluskode USING ERRCODE = 22000;
+  RAISE EXCEPTION 'Error updating interessefaellesskab with uuid [%], Invalid [livscyklus] transition to [%]',interessefaellesskab_uuid,livscykluskode USING ERRCODE = 'MO400';
 END IF;
 
 --create a new interessefaellesskab registrering

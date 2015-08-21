@@ -696,7 +696,7 @@ BEGIN
 
 	RETURN NEXT ok(false,'test as_update_klasse - NO exception was triggered by updating klasse with no new data.'); 
 
-	EXCEPTION WHEN data_exception THEN
+	EXCEPTION WHEN sqlstate 'MO400' THEN
 			RETURN NEXT ok(true,'test as_update_klasse - caught exception, triggered by updating klasse with no new data.'); 
 	
 END;
@@ -737,7 +737,7 @@ update_reg_id:=as_update_klasse(
 	
 	RETURN NEXT ok(false,'test as_update_klasse - NO exception was triggered by updating klasse with new livscykluskode, causing an invalid transition.'); 
 
-	EXCEPTION WHEN data_exception THEN
+	EXCEPTION WHEN SQLSTATE 'MO400' THEN
 			RETURN NEXT ok(true,'test as_update_klasse - caught exception was triggered by updating klasse with new livscykluskode, causing an invalid transition.'); 
 
 END;
@@ -779,7 +779,7 @@ update_reg_id:=as_update_klasse(
 		);
 	
 		RETURN NEXT ok(false,'Test null egenskaber array will not trigger update#1');
-	EXCEPTION WHEN data_exception THEN
+	EXCEPTION WHEN sqlstate 'MO400' THEN
 		RETURN NEXT ok(true,'Test null egenskaber array will not trigger update #1');
 END;
 
@@ -824,7 +824,7 @@ update_reg_id:=as_update_klasse(
 		);
 	
 		RETURN NEXT ok(false,'Test null tilstand publiceret array will not trigger update #1');
-	EXCEPTION WHEN data_exception THEN
+	EXCEPTION WHEN SQLSTATE 'MO400' THEN
 		RETURN NEXT ok(true,'Test null tilstand publiceret array will not trigger update #1');
 END;
 
@@ -893,7 +893,7 @@ update_reg_id:=as_update_klasse(
 		);
 	
 		RETURN NEXT ok(false,'Test null relationer array will not trigger update #1');
-	EXCEPTION WHEN data_exception THEN
+	EXCEPTION WHEN SQLSTATE 'MO400' THEN
 		RETURN NEXT ok(true,'Test null relationer array will not trigger update #1');
 END;
 
@@ -972,7 +972,7 @@ update_reg_id:=as_update_klasse(
 
 RETURN NEXT ok(false,'test as_update_klasse - Test that nulling a single attr egenskab field will not trigger an update #1'); 
 
-	EXCEPTION WHEN data_exception THEN
+	EXCEPTION WHEN SQLSTATE 'MO400' THEN
 			RETURN NEXT ok(true,'test as_update_klasse - Test that nulling a single attr egenskab field will not trigger an update #1.'); 
 
 --TODO: Test if nulling a value is enough to trigger update
@@ -1122,7 +1122,7 @@ update_reg_id:=as_update_klasse(
 	
 	RETURN NEXT ok(false,'test as_update_klasse - NO exception was triggered by updating klasse with egenskaber with overlapping virkning.'); 
 
-	EXCEPTION WHEN data_exception THEN
+	EXCEPTION WHEN SQLSTATE 'MO400' THEN
 			RETURN NEXT ok(true,'test as_update_klasse - caught exception triggered by updating klasse with egenskaber with overlapping virkning.'); 
 
 END;

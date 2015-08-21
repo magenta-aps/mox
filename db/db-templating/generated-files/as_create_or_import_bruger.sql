@@ -35,11 +35,11 @@ END IF;
 
 
 IF EXISTS (SELECT id from bruger WHERE id=bruger_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing bruger with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_bruger (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',bruger_uuid;
+  RAISE EXCEPTION 'Error creating or importing bruger with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_bruger (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',bruger_uuid USING ERRCODE='MO500';
 END IF;
 
 IF  (bruger_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (bruger_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_bruger.',(bruger_registrering.registrering).livscykluskode;
+  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_bruger.',(bruger_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
@@ -82,7 +82,7 @@ SELECT
 
  
 IF coalesce(array_length(bruger_registrering.attrEgenskaber, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [bruger]. Oprettelse afbrydes.';
+  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [bruger]. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
 
@@ -117,7 +117,7 @@ END IF;
 --Verification
 --For now all declared states are mandatory.
 IF coalesce(array_length(bruger_registrering.tilsGyldighed, 1),0)<1  THEN
-  RAISE EXCEPTION 'Savner påkraevet tilstand [gyldighed] for bruger. Oprettelse afbrydes.';
+  RAISE EXCEPTION 'Savner påkraevet tilstand [gyldighed] for bruger. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
 IF bruger_registrering.tilsGyldighed IS NOT NULL AND coalesce(array_length(bruger_registrering.tilsGyldighed,1),0)>0 THEN

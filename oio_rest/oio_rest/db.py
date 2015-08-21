@@ -92,31 +92,33 @@ def convert_relation_value(class_name, field_name, value):
 
 def convert_attributes(attributes):
     "Convert attributes from dictionary to list in correct order."
-    for attr_name in attributes:
-        current_attr_periods = attributes[attr_name]
-        converted_attr_periods = []
-        for attr_period in current_attr_periods:
-            field_names = get_attribute_fields(attr_name)
-            attr_value_list = [
-                convert_attr_value(
-                    attr_name, f, attr_period[f]
-                ) if f in attr_period else None
-                for f in field_names
+    if attributes:
+        for attr_name in attributes:
+            current_attr_periods = attributes[attr_name]
+            converted_attr_periods = []
+            for attr_period in current_attr_periods:
+                field_names = get_attribute_fields(attr_name)
+                attr_value_list = [
+                    convert_attr_value(
+                        attr_name, f, attr_period[f]
+                    ) if f in attr_period else None
+                    for f in field_names
                 ]
-            converted_attr_periods.append(attr_value_list)
-        attributes[attr_name] = converted_attr_periods
+                converted_attr_periods.append(attr_value_list)
+            attributes[attr_name] = converted_attr_periods
     return attributes
 
 
 def convert_relations(relations, class_name):
     "Convert relations - i.e., convert each field according to its type"
-    for rel_name in relations:
-        periods = relations[rel_name]
-        for period in periods:
-            for field in period:
-                period[field] = convert_relation_value(
-                    class_name, field, period[field]
-                )
+    if relations:
+        for rel_name in relations:
+            periods = relations[rel_name]
+            for period in periods:
+                for field in period:
+                    period[field] = convert_relation_value(
+                        class_name, field, period[field]
+                    )
     return relations
 
 
@@ -180,7 +182,7 @@ def sql_convert_registration(registration, class_name):
     states = registration["states"]
     sql_states = []
     for s in get_state_names(class_name):
-        periods = states[s] if s in states else []
+        periods = states[s] if s in states else None
         sql_states.append(
             sql_state_array(s, periods, class_name)
         )
@@ -189,7 +191,7 @@ def sql_convert_registration(registration, class_name):
     attributes = registration["attributes"]
     sql_attributes = []
     for a in get_attribute_names(class_name):
-        periods = attributes[a] if a in attributes else []
+        periods = attributes[a] if a in attributes else None
         sql_attributes.append(
             sql_attribute_array(a, periods)
         )
@@ -432,6 +434,7 @@ def update_object(class_name, note, registration, uuid=None):
         relations=registration["relations"],
         variants=registration.get("variants", None),
         restrictions=sql_restrictions)
+    print "UPDATE SQL", sql
     # Call PostgreSQL
     conn = get_connection()
     cursor = conn.cursor()
@@ -486,7 +489,7 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
 
 def filter_json_output(output):
     """Filter the JSON output returned from the DB-layer."""
-    return filter_nulls(simplify_cleared_wrappers(output))
+    return filter_empty(simplify_cleared_wrappers(output))
 
 
 def simplify_cleared_wrappers(o):
@@ -510,6 +513,22 @@ def simplify_cleared_wrappers(o):
         return o
 
 
+def filter_empty(d):
+    """Recursively filter out empty dictionary keys."""
+    if type(d) is dict:
+        return dict(
+            (k, filter_empty(v)) for k, v in d.iteritems() if v and
+            filter_empty(v)
+        )
+    elif type(d) is list:
+        return [filter_empty(v) for v in d if v and filter_empty(v)]
+    elif type(d) is tuple:
+        return tuple(filter_empty(v) for v in d if v and filter_empty(v))
+    else:
+        return d
+
+'''
+TODO: Remove this function if/when it turns out we don't need it.
 def filter_nulls(o):
     """Recursively remove keys with None values from dicts in object.
 
@@ -528,6 +547,7 @@ def filter_nulls(o):
         return tuple(filter_nulls(v) for v in o)
     else:
         return o
+'''
 
 
 def search_objects(class_name, uuid, registration,

@@ -25,7 +25,7 @@ BEGIN
 /*** Verify that the object meets the stipulated access allowed criteria  ***/
 auth_filtered_uuids:=_as_filter_unauth_sag(sag_uuids,auth_criteria_arr); 
 IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=coalesce(array_length(sag_uuids,1),0) AND auth_filtered_uuids @>sag_uuids) THEN
-  RAISE EXCEPTION 'Unable to list sag with uuids [%]. All objects do not fullfill the stipulated criteria:%',sag_uuids,to_json(auth_criteria_arr)  USING ERRCODE = MO401; 
+  RAISE EXCEPTION 'Unable to list sag with uuids [%]. All objects do not fullfill the stipulated criteria:%',sag_uuids,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
 END IF;
 /*********************/
 
