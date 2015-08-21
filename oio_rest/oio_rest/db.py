@@ -110,13 +110,14 @@ def convert_attributes(attributes):
 
 def convert_relations(relations, class_name):
     "Convert relations - i.e., convert each field according to its type"
-    for rel_name in relations:
-        periods = relations[rel_name]
-        for period in periods:
-            for field in period:
-                period[field] = convert_relation_value(
-                    class_name, field, period[field]
-                )
+    if relations:
+        for rel_name in relations:
+            periods = relations[rel_name]
+            for period in periods:
+                for field in period:
+                    period[field] = convert_relation_value(
+                        class_name, field, period[field]
+                    )
     return relations
 
 
@@ -180,7 +181,7 @@ def sql_convert_registration(registration, class_name):
     states = registration["states"]
     sql_states = []
     for s in get_state_names(class_name):
-        periods = states[s] if s in states else []
+        periods = states[s] if s in states else None
         sql_states.append(
             sql_state_array(s, periods, class_name)
         )
@@ -432,6 +433,7 @@ def update_object(class_name, note, registration, uuid=None):
         relations=registration["relations"],
         variants=registration.get("variants", None),
         restrictions=sql_restrictions)
+    print "UPDATE SQL", sql
     # Call PostgreSQL
     conn = get_connection()
     cursor = conn.cursor()

@@ -172,7 +172,7 @@ class OIORestObject(object):
         """Return a registration dict from the input dict."""
         attributes = input.get("attributter", {})
         states = input.get("tilstande", {})
-        relations = input.get("relationer", {})
+        relations = input.get("relationer", None)
         return {"states": states,
                 "attributes": attributes,
                 "relations": relations}

@@ -1,3 +1,6 @@
+{% if state_periods is none -%}
+NULL
+{% else -%}
         ARRAY[
         {% for state_value in state_periods -%}
         ROW(
@@ -16,3 +19,5 @@
         ){% if not loop.last %},{% endif %}
         {% endfor -%}
         ] :: {{ state_name }}TilsType[]
+{% endif -%}
+
