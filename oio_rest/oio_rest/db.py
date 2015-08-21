@@ -158,7 +158,6 @@ def sql_attribute_array(attribute, periods):
     """Return an SQL array of type <attribute>AttrType[]."""
     t = jinja_env.get_template('attribute_array.sql')
     sql = t.render(attribute_name=attribute, attribute_periods=periods)
-    # print "SQL", sql
     return sql
 
 
@@ -434,7 +433,6 @@ def update_object(class_name, note, registration, uuid=None):
         relations=registration["relations"],
         variants=registration.get("variants", None),
         restrictions=sql_restrictions)
-    print "UPDATE SQL", sql
     # Call PostgreSQL
     conn = get_connection()
     cursor = conn.cursor()
@@ -489,7 +487,7 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
 
 def filter_json_output(output):
     """Filter the JSON output returned from the DB-layer."""
-    return filter_empty(simplify_cleared_wrappers(output))
+    return transform_virkning(filter_empty(simplify_cleared_wrappers(output)))
 
 
 def simplify_cleared_wrappers(o):
@@ -509,6 +507,29 @@ def simplify_cleared_wrappers(o):
         return [simplify_cleared_wrappers(v) for v in o]
     elif isinstance(o, tuple):
         return tuple(simplify_cleared_wrappers(v) for v in o)
+    else:
+        return o
+
+
+def transform_virkning(o):
+    """Recurse through output to transform Virkning time periods."""
+    if isinstance(o, dict):
+        if "timeperiod" in o:
+            # Handle clearable wrapper db-types.
+            f, t = o["timeperiod"][1:-1].split(',')
+            # Get rid of quotes
+            if f[0] == '"':
+                f = f[1:-1]
+            if t[0] == '"':
+                t = t[1:-1]
+            items = o.items() + [('from', f), ('to', t)]
+            return {k: v for k, v in items if k != "timeperiod"}
+        else:
+            return {k: transform_virkning(v) for k, v in o.iteritems()}
+    elif isinstance(o, list):
+        return [transform_virkning(v) for v in o]
+    elif isinstance(o, tuple):
+        return tuple(transform_virkning(v) for v in o)
     else:
         return o
 
