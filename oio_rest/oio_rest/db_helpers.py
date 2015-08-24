@@ -65,12 +65,7 @@ _state_names = {}
 
 def get_state_names(class_name):
     "Return the list of all recognized states for this class."
-    if len(_state_names) == 0:
-        for c in db_struct:
-            _state_names[c] = [
-                c + a for a in db_struct[c]['tilstande']
-                ]
-    return _state_names[class_name.lower()]
+    return db_struct[class_name.lower()]['tilstande']
 
 
 def get_state_field(class_name, state_name):

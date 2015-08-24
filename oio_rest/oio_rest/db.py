@@ -180,10 +180,11 @@ def sql_convert_registration(registration, class_name):
 
     states = registration["states"]
     sql_states = []
-    for s in get_state_names(class_name):
-        periods = states[s] if s in states else None
+    for sn in get_state_names(class_name):
+        qsn = class_name.lower() + sn  # qualified_state_name
+        periods = states[qsn] if qsn in states else None
         sql_states.append(
-            sql_state_array(s, periods, class_name)
+            sql_state_array(sn, periods, class_name)
         )
     registration["states"] = sql_states
 
