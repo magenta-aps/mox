@@ -29,9 +29,9 @@ uuid=$(expr "$result" : '.*"uuid": "\([^"]*\)"')
 
 if [ ! -z $uuid ]
 then
-    echo "Oprettet dokument: $uuid"
+    printf "\nOprettet dokument: $uuid"
 else
-    echo "Opret dokument fejlet: $result"
+    printf "\nOpret dokument fejlet: $result"
     exit
 fi
 
@@ -58,9 +58,9 @@ content_path=${content_paths[0]}
 # Try to download the first file
 if curl -s "$HOST_URL/dokument/dokument/$content_path" | grep -q "This is a test"
 then
-    echo "File upload/download successful"
+    printf "\nFile upload/download successful"
 else
-    echo "Error in file upload/download. Downloaded file does not match uploaded file"
+    printf "\nError in file upload/download. Downloaded file does not match uploaded file"
     exit
 fi
 
@@ -84,14 +84,14 @@ curl -sH "Content-Type: application/json" -X GET $HOST_URL/dokument/dokument?uui
 IFS=$'\n' content_paths=($(grep -Po '(?<="indhold": "store:)[^"]*(?=")' /tmp/listoutput))
 content_path=${content_paths[0]}
 
-echo "Downloading from $content_path"
+printf "\nDownloading from $content_path"
 
 # Check that the first DokumentDel file was updated
 if curl "$HOST_URL/dokument/dokument/$content_path" | grep -q "This is an updated test"
 then
-    echo "File upload/download successful after update operation"
+    printf "\nFile upload/download successful after update operation"
 else
-    echo "Error in file upload/download after update operation. Downloaded file does not match uploaded file"
+    printf "\nError in file upload/download after update operation. Downloaded file does not match uploaded file"
 fi
 
 # Passivate
@@ -104,13 +104,29 @@ curl -sH "Content-Type: application/json" -X DELETE -d "$(cat $DIR/test_data/dok
 
 # Search on the imported dokument
 
-echo "Search"
-curl -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?produktion=true&virkningfra=2015-05-20&uuid=$import_uuid"
+if ! $(curl -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?produktion=true&virkningfra=2015-05-20&uuid=$import_uuid" | grep -q "$import_uuid")
+then
+    printf "\nSearch 1 successful"
+else
+    printf "\nError in search 1."
+    exit
+fi
 
-# TODO: Test results
 
-echo "Search del"
-curl -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?varianttekst=PDF&deltekst=doc_deltekst1A&mimetype=text/plain&uuid=$import_uuid"
+if $(curl -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?varianttekst=PDF&deltekst=doc_deltekst1A&mimetype=text/plain&uuid=$import_uuid" | grep -q "$import_uuid")
+then
+    printf "\nSearch del 1 successful"
+else
+    printf "\nError in search del 1."
+    exit
+fi
 
-# TODO: Test results
+if $(curl -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?deltekst=doc_deltekst1A&mimetype=text/plain&uuid=$import_uuid" | grep -q "$import_uuid")
+then
+    printf "\nSearch del 2 successful"
+else
+    printf "\nError in search del 2."
+    exit
+fi
+
 

@@ -101,20 +101,21 @@
               }
             }
           ],
-          "relationer": [
-            {
-              "reltype": "underredigeringaf",
-              "virkning": {
-                "from": "2014-05-19 12:02:32",
-                "to": "infinity",
-                "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
-                "aktoertypekode": "Bruger",
-                "notetekst": "Nothing to see here!"
-              },
-              "relmaaluuid": "b24a2dd4-415f-4104-b7a7-84607488c091",
-              "objekttype": "Bruger"
-            }
-          ]
+          "relationer": {
+            "underredigeringaf": [
+              {
+                "virkning": {
+                  "from": "2014-05-19 12:02:32",
+                  "to": "infinity",
+                  "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+                  "aktoertypekode": "Bruger",
+                  "notetekst": "Nothing to see here!"
+                },
+                "urn": "urn:cpr 8883394",
+                "objekttype": "Bruger"
+              }
+            ]
+          }
         },
         {
           "deltekst": "doc_deltekst1B",
@@ -174,20 +175,21 @@
         },
         {
           "deltekst": "doc_deltekst2B",
-          "relationer": [
-            {
-              "reltype": "underredigeringaf",
-              "virkning": {
-                "from": "2014-05-19 12:02:32",
-                "to": "infinity",
-                "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
-                "aktoertypekode": "Bruger",
-                "notetekst": "Nothing to see here!"
-              },
-              "relmaalurn": "urn:cpr 8883394",
-              "objekttype": "Bruger"
-            }
-          ]
+          "relationer": {
+            "underredigeringaf": [
+              {
+                "virkning": {
+                  "from": "2014-05-19 12:02:32",
+                  "to": "infinity",
+                  "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+                  "aktoertypekode": "Bruger",
+                  "notetekst": "Nothing to see here!"
+                },
+                "urn": "urn:cpr 8883394",
+                "objekttype": "Bruger"
+              }
+            ]
+          }
         }
       ]
     }

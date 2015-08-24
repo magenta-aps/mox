@@ -8,6 +8,23 @@ To run, run:
 
 Then, go to http://localhost:5000/site-map to see a map of all available URLs
 
+API Notes
+=========================================
+
+Search operation
+-----------------------------------------
+All search parameters which search on an attribute value use
+case-insensitive matching, with the possibility to use wildcards. In
+the case of the Dokument type, the "varianttekst" and "deltekst" parameters
+also support this type of matching.
+The wildcard character "%" (percent sign) may be used in parameters to the
+search function.
+This character matches zero or more of any characters.
+If it is desired to search for attribute values which
+contain "%" themselves, then the character must be escaped in the search
+parameters with a backslash, like, for example: "abc\%def" would match the
+value "abc%def". Contrary, to typical SQL LIKE syntax, the character "_"
+(underscore) matches only the underscore character (and not "any character").
 
 File upload
 =========================================
