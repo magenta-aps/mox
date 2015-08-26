@@ -19,6 +19,7 @@ GRANT SELECT ON ALL TABLES IN SCHEMA amqp TO $MOX_USER;"
 
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -c "CREATE SCHEMA actual_state AUTHORIZATION $MOX_USER "
 sudo -u postgres psql -c "ALTER database $MOX_DB SET search_path TO actual_state,public;"
+sudo -u postgres psql -c "ALTER database mox SET DATESTYLE to 'ISO, YMD';" #Please notice that the db-tests are run, using a different datestyle
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -c "CREATE SCHEMA test AUTHORIZATION $MOX_USER "
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f basis/common_types.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_index_helper_funcs.sql
