@@ -2,9 +2,8 @@
 from collections import namedtuple
 from urlparse import urlparse
 from flask import request
-import psycopg2
-from psycopg2._range import DateTimeTZRange
 
+from psycopg2._range import DateTimeTZRange
 from psycopg2.extensions import adapt as psyco_adapt, ISQLQuote
 from psycopg2.extensions import register_adapter as psyco_register_adapter
 from contentstore import content_store
@@ -66,12 +65,7 @@ _state_names = {}
 
 def get_state_names(class_name):
     "Return the list of all recognized states for this class."
-    if len(_state_names) == 0:
-        for c in db_struct:
-            _state_names[c] = [
-                c + a for a in db_struct[c]['tilstande']
-                ]
-    return _state_names[class_name.lower()]
+    return db_struct[class_name.lower()]['tilstande']
 
 
 def get_state_field(class_name, state_name):
@@ -94,6 +88,10 @@ def get_relation_names(class_name):
                 ]
     return _relation_names[class_name.lower()]
 
+def get_document_part_relation_names():
+    """Return the list of all recognized relations for DokumentDel"""
+    return ["underredigeringaf"]
+
 # Helper classers for adapting special types
 Soegeord = namedtuple('KlasseSoegeordType', 'identifier description category')
 OffentlighedUndtaget = namedtuple(
@@ -112,10 +110,47 @@ def input_list(_type, input, key):
     found in the input, then None is returned."""
     values = input.get(key, None)
     if values is None:
-        return values
+        return None
     else:
         return [_type.input(v) for v in values]
 
+def input_dict_list(_type, input):
+    """Take a dict input and return a generator.
+
+    Input is assumed to be a dict with list values.
+
+    _type.input is called for each value in the list corresponding to each
+    key. If the input is None, then None is returned."""
+    if input is None:
+        return None
+    else:
+        return [_type.input(k, v) for k in input.keys() for v in input[k]]
+
+def to_bool(s):
+    """Convert string to boolean. Passes through bool and None values."""
+    if isinstance(s, bool):
+        return s
+    elif s is None:
+        return None
+    else:
+        if s in ("True", "true", "1"):
+            return True
+        elif s in ("False", "false", "0"):
+            return False
+        raise ValueError("%s is not a valid boolean value" % s)
+
+
+class Searchable(object):
+    """Mixin class for searchable namedtuples."""
+    non_searchable_fields = ('virkning',)
+
+    @classmethod
+    def get_fields(cls):
+        """Return tuple of searchable fields."""
+        if 'virkning' in cls._fields:
+            return tuple(set(cls._fields) - set(cls.non_searchable_fields))
+        else:
+            return cls._fields
 
 class DokumentVariantType(namedtuple('DokumentVariantType',
                                      'varianttekst egenskaber dele')):
@@ -129,8 +164,7 @@ class DokumentVariantType(namedtuple('DokumentVariantType',
             input_list(DokumentDelType, i, "dele")
         )
 
-
-class DokumentVariantEgenskaberType(namedtuple(
+class DokumentVariantEgenskaberType(Searchable, namedtuple(
     'DokumentVariantEgenskaberType',
     'arkivering delvisscannet offentliggoerelse produktion virkning'
 )):
@@ -139,10 +173,10 @@ class DokumentVariantEgenskaberType(namedtuple(
         if i is None:
             return None
         return cls(
-            i.get("arkivering", None),
-            i.get("delvisscannet", None),
-            i.get("offentliggoerelse", None),
-            i.get("produktion", None),
+            to_bool(i.get("arkivering", None)),
+            to_bool(i.get("delvisscannet", None)),
+            to_bool(i.get("offentliggoerelse", None)),
+            to_bool(i.get("produktion", None)),
             Virkning.input(i.get("virkning", None))
         )
 
@@ -158,7 +192,7 @@ class DokumentDelType(namedtuple(
         return cls(
             i.get('deltekst', None),
             input_list(DokumentDelEgenskaberType, i, "egenskaber"),
-            input_list(DokumentDelRelationType, i, "relationer")
+            input_dict_list(DokumentDelRelationType, i.get("relationer", None))
         )
 
 
@@ -179,7 +213,7 @@ class Virkning(namedtuple('Virkning',
         )
 
 
-class DokumentDelEgenskaberType(namedtuple(
+class DokumentDelEgenskaberType(Searchable, namedtuple(
     'DokumentDelEgenskaberType',
     'indeks indhold lokation mimetype virkning'
 )):
@@ -219,8 +253,9 @@ class DokumentDelEgenskaberType(namedtuple(
             return None
         indhold = i.get('indhold', None)
 
-        # If the content URL is provided, save the uploaded file
-        if indhold != "":
+        # If the content URL is provided, and we are not doing a read
+        # operation, save the uploaded file
+        if indhold != "" and request.method != 'GET':
             # Get FileStorage object referenced by indhold field
             f = cls._get_file_storage_for_content_url(indhold)
 
@@ -244,14 +279,14 @@ class DokumentDelRelationType(namedtuple(
     'reltype virkning relmaaluuid relmaalurn objekttype'
 )):
     @classmethod
-    def input(cls, i):
+    def input(cls, key, i):
         if i is None:
             return None
         return cls(
-            i.get('reltype', None),
+            key,
             Virkning.input(i.get('virkning', None)),
-            i.get('relmaaluuid', None),
-            i.get('relmaalurn', None),
+            i.get('uuid', None),
+            i.get('urn', None),
             i.get('objekttype', None),
         )
 

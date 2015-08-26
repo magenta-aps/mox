@@ -300,9 +300,8 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 			JOIN organisationfunktion_registrering b on a.organisationfunktion_registrering_id=b.id
 			WHERE
 			(
-				a.brugervendtnoegle ILIKE anyAttrValue
-				OR
-				a.funktionsnavn ILIKE anyAttrValue
+						a.brugervendtnoegle ILIKE anyAttrValue OR
+						a.funktionsnavn ILIKE anyAttrValue
 			)
 			AND
 			(

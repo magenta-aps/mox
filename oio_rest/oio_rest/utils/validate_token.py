@@ -1,6 +1,8 @@
 import sys
+
+from oio_rest.settings import SAML_MOX_ENTITY_ID, SAML_IDP_ENTITY_ID
+
 from oio_rest.auth.saml2 import Saml2_Assertion
-from oio_rest.settings import *
 from oio_rest.authentication import get_idp_cert
 
 if len(sys.argv) > 1:

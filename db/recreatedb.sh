@@ -26,6 +26,7 @@ sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_subtract_tstzrange.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_subtract_tstzrange_arr.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_as_valid_registrering_livscyklus_transition.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_as_search_match_array.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_as_search_ilike_array.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_json_object_delete_keys.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f funcs/_amqp_functions.sql
 
@@ -105,7 +106,9 @@ cd ..
 #Test functions
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_remove_nulls_in_array_klasse.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_common_types_cleable_casts.sql
-
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_common_types_cleable_casts.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_search_match_array.sql
+sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_search_ilike_array.sql
 #Facet
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_facet_db_schama.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_create_or_import_facet.sql
@@ -120,7 +123,7 @@ sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_read_klasse.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_list_klasse.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_search_klasse.sql
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_remove_nulls_in_array_klasse.sql
-sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_search_match_array.sql
+
 #itsystem
 sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f tests/test_as_search_itsystem.sql
 #sag

@@ -1,3 +1,6 @@
+{% if relations is none -%}
+NULL
+{% else -%}
     ARRAY[
     {% for r, relation_periods in relations.iteritems() -%}
     {% set outer_loop = loop %}
@@ -27,3 +30,4 @@
     {% endfor -%}
     {% endfor -%}
     ] :: {{ class_name }}RelationType[]
+{% endif -%}

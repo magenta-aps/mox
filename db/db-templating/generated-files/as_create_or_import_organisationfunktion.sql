@@ -35,11 +35,11 @@ END IF;
 
 
 IF EXISTS (SELECT id from organisationfunktion WHERE id=organisationfunktion_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing organisationfunktion with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_organisationfunktion (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',organisationfunktion_uuid;
+  RAISE EXCEPTION 'Error creating or importing organisationfunktion with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_organisationfunktion (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',organisationfunktion_uuid USING ERRCODE='MO500';
 END IF;
 
 IF  (organisationfunktion_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (organisationfunktion_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_organisationfunktion.',(organisationfunktion_registrering.registrering).livscykluskode;
+  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_organisationfunktion.',(organisationfunktion_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
@@ -82,7 +82,7 @@ SELECT
 
  
 IF coalesce(array_length(organisationfunktion_registrering.attrEgenskaber, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [organisationfunktion]. Oprettelse afbrydes.';
+  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [organisationfunktion]. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
 
@@ -115,7 +115,7 @@ END IF;
 --Verification
 --For now all declared states are mandatory.
 IF coalesce(array_length(organisationfunktion_registrering.tilsGyldighed, 1),0)<1  THEN
-  RAISE EXCEPTION 'Savner påkraevet tilstand [gyldighed] for organisationfunktion. Oprettelse afbrydes.';
+  RAISE EXCEPTION 'Savner påkraevet tilstand [gyldighed] for organisationfunktion. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
 IF organisationfunktion_registrering.tilsGyldighed IS NOT NULL AND coalesce(array_length(organisationfunktion_registrering.tilsGyldighed,1),0)>0 THEN

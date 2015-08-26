@@ -357,33 +357,41 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 
 			SELECT DISTINCT
 			b.dokument_id 
-			FROM  dokument_attr_egenskaber a
-			JOIN dokument_registrering b on a.dokument_registrering_id=b.id
+			FROM  dokument_registrering b 
+			LEFT JOIN dokument_attr_egenskaber a on a.dokument_registrering_id=b.id and (virkningSoeg IS NULL or virkningSoeg && (a.virkning).TimePeriod )
+			LEFT JOIN dokument_variant c on c.dokument_registrering_id=b.id 
+			LEFT JOIN dokument_del f on f.variant_id=c.id
+			LEFT JOIN dokument_del_egenskaber d on d.del_id = f.id and (virkningSoeg IS NULL or virkningSoeg && (d.virkning).TimePeriod )
+			LEFT JOIN dokument_variant_egenskaber e on e.variant_id = c.id and (virkningSoeg IS NULL or virkningSoeg && (e.virkning).TimePeriod )
 			WHERE
 			(
-				a.brugervendtnoegle ILIKE anyAttrValue
+				(
+					a.brugervendtnoegle ILIKE anyAttrValue OR
+						a.beskrivelse ILIKE anyAttrValue OR
+									a.brevdato::text ilike anyAttrValue OR
+						a.kassationskode ILIKE anyAttrValue OR
+									a.major::text ilike anyAttrValue OR
+									a.minor::text ilike anyAttrValue OR
+									(a.offentlighedundtaget).Hjemmel ilike anyAttrValue OR (a.offentlighedundtaget).AlternativTitel ilike anyAttrValue OR
+						a.titel ILIKE anyAttrValue OR
+						a.dokumenttype ILIKE anyAttrValue
+				)
 				OR
-				a.beskrivelse ILIKE anyAttrValue
+				(
+					( c.varianttekst ilike anyAttrValue and e.id is not null) --varianttekst handled like it is logically part of variant egenskaber
+				)
 				OR
-				anyAttrValue = a.brevdato
-				OR
-				a.kassationskode ILIKE anyAttrValue
-				OR
-				anyAttrValue = a.major
-				OR
-				anyAttrValue = a.minor
-				OR
-				anyAttrValue = a.offentlighedundtaget
-				OR
-				a.titel ILIKE anyAttrValue
-				OR
-				a.dokumenttype ILIKE anyAttrValue
-			)
-			AND
-			(
-				virkningSoeg IS NULL
-				OR
-				virkningSoeg && (a.virkning).TimePeriod
+				(
+					( f.deltekst ilike anyAttrValue and d.id is not null ) --deltekst handled like it is logically part of del egenskaber
+					OR
+					d.indeks::text = anyAttrValue
+					OR
+					d.indhold ILIKE anyAttrValue
+					OR
+					d.lokation ILIKE anyAttrValue
+					OR
+					d.mimetype ILIKE anyAttrValue
+				)
 			)
 			AND
 					(
@@ -770,16 +778,13 @@ IF coalesce(array_length(anyRelUuidArr ,1),0)>0 THEN
 		dokument_candidates:=array(
 			SELECT DISTINCT
 			b.dokument_id 
-			FROM  dokument_relation a
-			JOIN dokument_registrering b on a.dokument_registrering_id=b.id
-			WHERE
-			anyRelUuid = a.rel_maal_uuid
-			AND
-			(
-				virkningSoeg IS NULL
-				OR
-				virkningSoeg && (a.virkning).TimePeriod
-			)
+ 			FROM dokument_registrering b  
+ 			LEFT JOIN dokument_relation a on a.dokument_registrering_id=b.id and (virkningSoeg IS NULL or (virkningSoeg && (a.virkning).TimePeriod) )
+ 			LEFT JOIN dokument_variant c on c.dokument_registrering_id=b.id
+ 			LEFT JOIN dokument_del d on d.variant_id=c.id 
+ 			LEFT JOIN dokument_del_relation e on d.id=e.del_id and (virkningSoeg IS NULL or (virkningSoeg && (e.virkning).TimePeriod) )
+  			WHERE
+ 			(anyRelUuid = a.rel_maal_uuid OR anyRelUuid = e.rel_maal_uuid)
 			AND
 					(
 				(registreringObj.registrering) IS NULL 
@@ -865,16 +870,13 @@ IF coalesce(array_length(anyRelUrnArr ,1),0)>0 THEN
 		dokument_candidates:=array(
 			SELECT DISTINCT
 			b.dokument_id 
-			FROM  dokument_relation a
-			JOIN dokument_registrering b on a.dokument_registrering_id=b.id
-			WHERE
-			anyRelUrn = a.rel_maal_urn
-			AND
-			(
-				virkningSoeg IS NULL
-				OR
-				virkningSoeg && (a.virkning).TimePeriod
-			)
+ 			FROM dokument_registrering b  
+ 			LEFT JOIN dokument_relation a on a.dokument_registrering_id=b.id and (virkningSoeg IS NULL or virkningSoeg && (a.virkning).TimePeriod )
+ 			LEFT JOIN dokument_variant c on c.dokument_registrering_id=b.id
+ 			LEFT JOIN dokument_del d on d.variant_id=c.id
+ 			LEFT JOIN dokument_del_relation e on d.id=e.del_id and (virkningSoeg IS NULL or virkningSoeg && (e.virkning).TimePeriod)
+  			WHERE
+ 			(anyRelUrn = a.rel_maal_urn OR anyRelUrn = e.rel_maal_urn)
 			AND
 					(
 				(registreringObj.registrering) IS NULL 
@@ -984,13 +986,13 @@ ELSE
 
 			IF  variantTypeObj.varianttekst IS NOT NULL OR
 				(
-					variantEgenskaberTypeObj.arkivering IS NOT NULL
+					(NOT (variantEgenskaberTypeObj.arkivering IS NULL))
 					OR
-					variantEgenskaberTypeObj.delvisscannet IS NOT NULL
+					(NOT (variantEgenskaberTypeObj.delvisscannet IS NULL))
 					OR
-					variantEgenskaberTypeObj.offentliggoerelse IS NOT NULL
+					(NOT (variantEgenskaberTypeObj.offentliggoerelse IS NULL))
 					OR
-					variantEgenskaberTypeObj.produktion IS NOT NULL
+					(NOT (variantEgenskaberTypeObj.produktion IS NULL))
 				)
 			 THEN --test if there is any data availiable for variant to filter on
 			
@@ -1006,7 +1008,7 @@ ELSE
 			(
 				variantTypeObj.varianttekst IS NULL
 				OR
-				a.variant_tekst ilike variantTypeObj.varianttekst
+				a.varianttekst ilike variantTypeObj.varianttekst
 			)
 			AND
 			(
@@ -1167,13 +1169,13 @@ ELSE
 
 			/**************    Dokument Del Egenskaber    ******************/
 
-			IF (array_length(delTypeObj.egenskaber,1),0)>0 THEN 
+			IF coalesce(array_length(delTypeObj.egenskaber,1),0)>0 THEN 
 			
 			FOREACH delEgenskaberTypeObj IN ARRAY delTypeObj.egenskaber
 			LOOP
 			
 			IF delTypeObj.deltekst IS NOT NULL  	
-			OR delEgenskaberTypeObj.indeks IS NOT NULL
+			OR (NOT delEgenskaberTypeObj.indeks IS NULL)
 			OR delEgenskaberTypeObj.indhold IS NOT NULL
 			OR delEgenskaberTypeObj.lokation IS NOT NULL
 			OR delEgenskaberTypeObj.mimetype IS NOT NULL
@@ -1193,7 +1195,7 @@ ELSE
 			(
 				delTypeObj.deltekst IS NULL
 				OR
-				c.del_tekst ilike delTypeObj.deltekst
+				c.deltekst ilike delTypeObj.deltekst
 			)
 			AND
 			(
@@ -1229,57 +1231,27 @@ ELSE
 			(
 				(
 					(
-						delEgenskaberTypeObj.brugervendtnoegle IS NULL  
+						delEgenskaberTypeObj.indeks IS NULL  
 						OR
-						d.brugervendtnoegle ilike delEgenskaberTypeObj.brugervendtnoegle
+						delEgenskaberTypeObj.indeks = d.indeks
 					)
 					AND
 					(
-						delEgenskaberTypeObj.beskrivelse IS NULL  
+						delEgenskaberTypeObj.indhold IS NULL  
 						OR
-						d.beskrivelse ilike delEgenskaberTypeObj.beskrivelse
+						d.indhold ilike delEgenskaberTypeObj.indhold  
 					)
 					AND
 					(
-						delEgenskaberTypeObj.brevdato IS NULL 
+						delEgenskaberTypeObj.lokation IS NULL 
 						OR
-						delEgenskaberTypeObj.brevdato = d.brevdato
+						d.lokation ilike delEgenskaberTypeObj.lokation 
 					)
 					AND
 					(
-						delEgenskaberTypeObj.kassationskode IS NULL 
+						delEgenskaberTypeObj.mimetype IS NULL 
 						OR
-						d.kassationskode ilike delEgenskaberTypeObj.kassationskode
-					)
-					AND
-					(
-						delEgenskaberTypeObj.major IS NULL
-						OR
-						delEgenskaberTypeObj.major = d.major
-					)
-					AND
-					(
-						delEgenskaberTypeObj.minor IS NULL
-						OR
-						delEgenskaberTypeObj.minor = d.minor
-					)
-					AND
-					(
-						delEgenskaberTypeObj.offentlighedundtaget IS NULL
-						OR
-							(
-								(
-									(delEgenskaberTypeObj.offentlighedundtaget).AlternativTitel IS NULL
-									OR
-									(d.offentlighedundtaget).AlternativTitel ILIKE (delEgenskaberTypeObj.offentlighedundtaget).AlternativTitel 
-								)
-								AND
-								(
-									(delEgenskaberTypeObj.offentlighedundtaget).Hjemmel IS NULL
-									OR
-									(d.offentlighedundtaget).Hjemmel ILIKE (delEgenskaberTypeObj.offentlighedundtaget).Hjemmel
-								)
-							) 
+						d.mimetype ilike delEgenskaberTypeObj.mimetype
 					)
 				)
 			)
@@ -1363,7 +1335,7 @@ ELSE
 
 			/**************    Dokument Del Relationer    ******************/
 
-			IF (array_length(delTypeObj.relationer,1),0)>0 THEN 
+			IF coalesce(array_length(delTypeObj.relationer,1),0)>0 THEN 
 			
 			FOREACH delRelationTypeObj IN ARRAY delTypeObj.relationer
 			LOOP
@@ -1376,12 +1348,12 @@ ELSE
 			FROM  dokument_variant a
 			JOIN dokument_registrering b on a.dokument_registrering_id=b.id
 			JOIN dokument_del c on c.variant_id=a.id
-			JOIN dokument_del_relationer d on d.del_id=c.id
+			JOIN dokument_del_relation d on d.del_id=c.id
 			WHERE
 			(
 				delTypeObj.deltekst IS NULL
 				OR
-				c.del_tekst ilike delTypeObj.deltekst
+				c.deltekst ilike delTypeObj.deltekst
 			)
 			AND
 			(

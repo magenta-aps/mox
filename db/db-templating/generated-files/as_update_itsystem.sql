@@ -42,7 +42,7 @@ BEGIN
 --create a new registrering
 
 IF NOT EXISTS (select a.id from itsystem a join itsystem_registrering b on b.itsystem_id=a.id  where a.id=itsystem_uuid) THEN
-   RAISE EXCEPTION 'Unable to update itsystem with uuid [%], being unable to find any previous registrations.',itsystem_uuid;
+   RAISE EXCEPTION 'Unable to update itsystem with uuid [%], being unable to find any previous registrations.',itsystem_uuid USING ERRCODE = 'MO400';
 END IF;
 
 PERFORM a.id FROM itsystem a
@@ -62,7 +62,7 @@ prev_itsystem_registrering := _as_get_prev_itsystem_registrering(new_itsystem_re
 
 IF lostUpdatePreventionTZ IS NOT NULL THEN
   IF NOT (LOWER((prev_itsystem_registrering.registrering).timeperiod)=lostUpdatePreventionTZ) THEN
-    RAISE EXCEPTION 'Unable to update itsystem with uuid [%], as the itsystem seems to have been updated since latest read by client (the given lostUpdatePreventionTZ [%] does not match the timesamp of latest registration [%]).',itsystem_uuid,lostUpdatePreventionTZ,LOWER((prev_itsystem_registrering.registrering).timeperiod);
+    RAISE EXCEPTION 'Unable to update itsystem with uuid [%], as the itsystem seems to have been updated since latest read by client (the given lostUpdatePreventionTZ [%] does not match the timesamp of latest registration [%]).',itsystem_uuid,lostUpdatePreventionTZ,LOWER((prev_itsystem_registrering.registrering).timeperiod) USING ERRCODE = 'MO409';
   END IF;   
 END IF;
 
@@ -272,7 +272,7 @@ IF attrEgenskaber IS NOT null THEN
   GROUP BY a.brugervendtnoegle,a.itsystemnavn,a.itsystemtype,a.konfigurationreference, a.virkning
   HAVING COUNT(*)>1
   ) THEN
-  RAISE EXCEPTION 'Unable to update itsystem with uuid [%], as the itsystem have overlapping virknings in the given egenskaber array :%',itsystem_uuid,to_json(attrEgenskaber)  USING ERRCODE = 22000;
+  RAISE EXCEPTION 'Unable to update itsystem with uuid [%], as the itsystem have overlapping virknings in the given egenskaber array :%',itsystem_uuid,to_json(attrEgenskaber)  USING ERRCODE = 'MO400';
 
   END IF;
 
@@ -421,7 +421,7 @@ read_prev_itsystem:=as_read_itsystem(itsystem_uuid, (prev_itsystem_registrering.
 --the ordering in as_list (called by as_read) ensures that the latest registration is returned at index pos 1
 
 IF NOT (lower((read_new_itsystem.registrering[1].registrering).TimePeriod)=lower((new_itsystem_registrering.registrering).TimePeriod) AND lower((read_prev_itsystem.registrering[1].registrering).TimePeriod)=lower((prev_itsystem_registrering.registrering).TimePeriod)) THEN
-  RAISE EXCEPTION 'Error updating itsystem with id [%]: The ordering of as_list_itsystem should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].',itsystem_uuid,to_json(new_itsystem_registrering),to_json(read_new_itsystem.registrering[1].registrering),to_json(prev_itsystem_registrering),to_json(prev_new_itsystem.registrering[1].registrering);
+  RAISE EXCEPTION 'Error updating itsystem with id [%]: The ordering of as_list_itsystem should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].',itsystem_uuid,to_json(new_itsystem_registrering),to_json(read_new_itsystem.registrering[1].registrering),to_json(prev_itsystem_registrering),to_json(prev_new_itsystem.registrering[1].registrering) USING ERRCODE = 'MO500';
 END IF;
  
  --we'll ignore the registreringBase part in the comparrison - except for the livcykluskode
@@ -446,7 +446,7 @@ ROW(null,(read_prev_itsystem.registrering[1].registrering).livscykluskode,null,n
 IF read_prev_itsystem_reg=read_new_itsystem_reg THEN
   --RAISE NOTICE 'Note[%]. Aborted reg:%',note,to_json(read_new_itsystem_reg);
   --RAISE NOTICE 'Note[%]. Previous reg:%',note,to_json(read_prev_itsystem_reg);
-  RAISE EXCEPTION 'Aborted updating itsystem with id [%] as the given data, does not give raise to a new registration. Aborted reg:[%], previous reg:[%]',itsystem_uuid,to_json(read_new_itsystem_reg),to_json(read_prev_itsystem_reg) USING ERRCODE = 22000;
+  RAISE EXCEPTION 'Aborted updating itsystem with id [%] as the given data, does not give raise to a new registration. Aborted reg:[%], previous reg:[%]',itsystem_uuid,to_json(read_new_itsystem_reg),to_json(read_prev_itsystem_reg) USING ERRCODE = 'MO400';
 END IF;
 
 /******************************************************************/

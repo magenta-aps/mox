@@ -48,7 +48,7 @@ BEGIN
 --create a new registrering
 
 IF NOT EXISTS (select a.id from sag a join sag_registrering b on b.sag_id=a.id  where a.id=sag_uuid) THEN
-   RAISE EXCEPTION 'Unable to update sag with uuid [%], being unable to find any previous registrations.',sag_uuid;
+   RAISE EXCEPTION 'Unable to update sag with uuid [%], being unable to find any previous registrations.',sag_uuid USING ERRCODE = 'MO400';
 END IF;
 
 PERFORM a.id FROM sag a
@@ -68,7 +68,7 @@ prev_sag_registrering := _as_get_prev_sag_registrering(new_sag_registrering);
 
 IF lostUpdatePreventionTZ IS NOT NULL THEN
   IF NOT (LOWER((prev_sag_registrering.registrering).timeperiod)=lostUpdatePreventionTZ) THEN
-    RAISE EXCEPTION 'Unable to update sag with uuid [%], as the sag seems to have been updated since latest read by client (the given lostUpdatePreventionTZ [%] does not match the timesamp of latest registration [%]).',sag_uuid,lostUpdatePreventionTZ,LOWER((prev_sag_registrering.registrering).timeperiod);
+    RAISE EXCEPTION 'Unable to update sag with uuid [%], as the sag seems to have been updated since latest read by client (the given lostUpdatePreventionTZ [%] does not match the timesamp of latest registration [%]).',sag_uuid,lostUpdatePreventionTZ,LOWER((prev_sag_registrering.registrering).timeperiod) USING ERRCODE = 'MO409';
   END IF;   
 END IF;
 
@@ -391,7 +391,7 @@ IF attrEgenskaber IS NOT null THEN
   GROUP BY a.brugervendtnoegle,a.afleveret,a.beskrivelse,a.hjemmel,a.kassationskode,a.offentlighedundtaget,a.principiel,a.sagsnummer,a.titel, a.virkning
   HAVING COUNT(*)>1
   ) THEN
-  RAISE EXCEPTION 'Unable to update sag with uuid [%], as the sag have overlapping virknings in the given egenskaber array :%',sag_uuid,to_json(attrEgenskaber)  USING ERRCODE = 22000;
+  RAISE EXCEPTION 'Unable to update sag with uuid [%], as the sag have overlapping virknings in the given egenskaber array :%',sag_uuid,to_json(attrEgenskaber)  USING ERRCODE = 'MO400';
 
   END IF;
 
@@ -569,7 +569,7 @@ read_prev_sag:=as_read_sag(sag_uuid, (prev_sag_registrering.registrering).timepe
 --the ordering in as_list (called by as_read) ensures that the latest registration is returned at index pos 1
 
 IF NOT (lower((read_new_sag.registrering[1].registrering).TimePeriod)=lower((new_sag_registrering.registrering).TimePeriod) AND lower((read_prev_sag.registrering[1].registrering).TimePeriod)=lower((prev_sag_registrering.registrering).TimePeriod)) THEN
-  RAISE EXCEPTION 'Error updating sag with id [%]: The ordering of as_list_sag should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].',sag_uuid,to_json(new_sag_registrering),to_json(read_new_sag.registrering[1].registrering),to_json(prev_sag_registrering),to_json(prev_new_sag.registrering[1].registrering);
+  RAISE EXCEPTION 'Error updating sag with id [%]: The ordering of as_list_sag should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].',sag_uuid,to_json(new_sag_registrering),to_json(read_new_sag.registrering[1].registrering),to_json(prev_sag_registrering),to_json(prev_new_sag.registrering[1].registrering) USING ERRCODE = 'MO500';
 END IF;
  
  --we'll ignore the registreringBase part in the comparrison - except for the livcykluskode
@@ -594,7 +594,7 @@ ROW(null,(read_prev_sag.registrering[1].registrering).livscykluskode,null,null):
 IF read_prev_sag_reg=read_new_sag_reg THEN
   --RAISE NOTICE 'Note[%]. Aborted reg:%',note,to_json(read_new_sag_reg);
   --RAISE NOTICE 'Note[%]. Previous reg:%',note,to_json(read_prev_sag_reg);
-  RAISE EXCEPTION 'Aborted updating sag with id [%] as the given data, does not give raise to a new registration. Aborted reg:[%], previous reg:[%]',sag_uuid,to_json(read_new_sag_reg),to_json(read_prev_sag_reg) USING ERRCODE = 22000;
+  RAISE EXCEPTION 'Aborted updating sag with id [%] as the given data, does not give raise to a new registration. Aborted reg:[%], previous reg:[%]',sag_uuid,to_json(read_new_sag_reg),to_json(read_prev_sag_reg) USING ERRCODE = 'MO400';
 END IF;
 
 /******************************************************************/

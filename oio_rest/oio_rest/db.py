@@ -1,4 +1,3 @@
-from collections import namedtuple
 from datetime import datetime
 import os
 from enum import Enum
@@ -8,21 +7,21 @@ import psycopg2
 from psycopg2.extras import DateTimeTZRange
 from psycopg2.extensions import adapt as psyco_adapt
 
-from jinja2 import Template
 from jinja2 import Environment, FileSystemLoader
 
 from settings import DATABASE, DB_USER, DO_ENABLE_RESTRICTIONS
 
 from db_helpers import get_attribute_fields, get_attribute_names
 from db_helpers import get_field_type, get_state_names, get_relation_field_type
-from db_helpers import get_relation_field_type, Soegeord, OffentlighedUndtaget
-from db_helpers import JournalNotat, JournalDokument, DokumentVariantType
+from db_helpers import (Soegeord, OffentlighedUndtaget, JournalNotat,
+                        JournalDokument, DokumentVariantType)
 
 from authentication import get_authenticated_user
 
 from auth.restrictions import Operation, get_restrictions
-from utils import restriction_to_registration
+from utils.build_registration import restriction_to_registration
 from custom_exceptions import NotFoundException, NotAllowedException
+from custom_exceptions import DBException
 
 """
     Jinja2 Environment
@@ -93,31 +92,33 @@ def convert_relation_value(class_name, field_name, value):
 
 def convert_attributes(attributes):
     "Convert attributes from dictionary to list in correct order."
-    for attr_name in attributes:
-        current_attr_periods = attributes[attr_name]
-        converted_attr_periods = []
-        for attr_period in current_attr_periods:
-            field_names = get_attribute_fields(attr_name)
-            attr_value_list = [
-                convert_attr_value(
-                    attr_name, f, attr_period[f]
-                ) if f in attr_period else None
-                for f in field_names
+    if attributes:
+        for attr_name in attributes:
+            current_attr_periods = attributes[attr_name]
+            converted_attr_periods = []
+            for attr_period in current_attr_periods:
+                field_names = get_attribute_fields(attr_name)
+                attr_value_list = [
+                    convert_attr_value(
+                        attr_name, f, attr_period[f]
+                    ) if f in attr_period else None
+                    for f in field_names
                 ]
-            converted_attr_periods.append(attr_value_list)
-        attributes[attr_name] = converted_attr_periods
+                converted_attr_periods.append(attr_value_list)
+            attributes[attr_name] = converted_attr_periods
     return attributes
 
 
 def convert_relations(relations, class_name):
     "Convert relations - i.e., convert each field according to its type"
-    for rel_name in relations:
-        periods = relations[rel_name]
-        for period in periods:
-            for field in period:
-                period[field] = convert_relation_value(
-                    class_name, field, period[field]
-                )
+    if relations:
+        for rel_name in relations:
+            periods = relations[rel_name]
+            for period in periods:
+                for field in period:
+                    period[field] = convert_relation_value(
+                        class_name, field, period[field]
+                    )
     return relations
 
 
@@ -157,7 +158,6 @@ def sql_attribute_array(attribute, periods):
     """Return an SQL array of type <attribute>AttrType[]."""
     t = jinja_env.get_template('attribute_array.sql')
     sql = t.render(attribute_name=attribute, attribute_periods=periods)
-    # print "SQL", sql
     return sql
 
 
@@ -180,17 +180,18 @@ def sql_convert_registration(registration, class_name):
 
     states = registration["states"]
     sql_states = []
-    for s in get_state_names(class_name):
-        periods = states[s] if s in states else []
+    for sn in get_state_names(class_name):
+        qsn = class_name.lower() + sn  # qualified_state_name
+        periods = states[qsn] if qsn in states else None
         sql_states.append(
-            sql_state_array(s, periods, class_name)
+            sql_state_array(sn, periods, class_name)
         )
     registration["states"] = sql_states
 
     attributes = registration["attributes"]
     sql_attributes = []
     for a in get_attribute_names(class_name):
-        periods = attributes[a] if a in attributes else []
+        periods = attributes[a] if a in attributes else None
         sql_attributes.append(
             sql_attribute_array(a, periods)
         )
@@ -272,13 +273,15 @@ def object_exists(class_name, uuid):
 
     return result
 
+
 def get_document_from_content_url(content_url):
     """Return the UUID of the Dokument which has a specific indhold URL.
 
     Also returns the mimetype of the indhold URL as stored in the
     DokumenDelEgenskaber.
     """
-    sql = """select r.dokument_id, de.mimetype from actual_state.dokument_del_egenskaber de
+    sql = """select r.dokument_id, de.mimetype from
+             actual_state.dokument_del_egenskaber de
 join actual_state.dokument_del d on d.id = de.del_id join
 actual_state.dokument_variant v on v.id = d.variant_id join
 actual_state.dokument_registrering r on r.id = v.dokument_registrering_id
@@ -288,6 +291,7 @@ where de.indhold = %s"""
     cursor.execute(sql, (content_url,))
     result = cursor.fetchone()
     return result
+
 
 def create_or_import_object(class_name, note, registration,
                             uuid=None):
@@ -325,7 +329,15 @@ def create_or_import_object(class_name, note, registration,
     # Call Postgres! Return OK or not accordingly
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute(sql)
+    try:
+        cursor.execute(sql)
+    except Exception as e:
+        if e.pgcode[:2] == 'MO':
+            status_code = int(e.pgcode[2:])
+            raise DBException(status_code, e.message)
+        else:
+            raise
+
     output = cursor.fetchone()
     return output[0]
 
@@ -427,7 +439,7 @@ def update_object(class_name, note, registration, uuid=None):
     cursor = conn.cursor()
     try:
         cursor.execute(sql)
-        output = cursor.fetchone()
+        cursor.fetchone()
     except psycopg2.DataError:
         # Thrown when no changes
         pass
@@ -473,9 +485,11 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
         ))
     return filter_json_output(output)
 
+
 def filter_json_output(output):
     """Filter the JSON output returned from the DB-layer."""
-    return filter_nulls(simplify_cleared_wrappers(output))
+    return transform_virkning(filter_empty(simplify_cleared_wrappers(output)))
+
 
 def simplify_cleared_wrappers(o):
     """Recursively simplify any values wrapped in a cleared-wrapper.
@@ -497,6 +511,46 @@ def simplify_cleared_wrappers(o):
     else:
         return o
 
+
+def transform_virkning(o):
+    """Recurse through output to transform Virkning time periods."""
+    if isinstance(o, dict):
+        if "timeperiod" in o:
+            # Handle clearable wrapper db-types.
+            f, t = o["timeperiod"][1:-1].split(',')
+            # Get rid of quotes
+            if f[0] == '"':
+                f = f[1:-1]
+            if t[0] == '"':
+                t = t[1:-1]
+            items = o.items() + [('from', f), ('to', t)]
+            return {k: v for k, v in items if k != "timeperiod"}
+        else:
+            return {k: transform_virkning(v) for k, v in o.iteritems()}
+    elif isinstance(o, list):
+        return [transform_virkning(v) for v in o]
+    elif isinstance(o, tuple):
+        return tuple(transform_virkning(v) for v in o)
+    else:
+        return o
+
+
+def filter_empty(d):
+    """Recursively filter out empty dictionary keys."""
+    if type(d) is dict:
+        return dict(
+            (k, filter_empty(v)) for k, v in d.iteritems() if v and
+            filter_empty(v)
+        )
+    elif type(d) is list:
+        return [filter_empty(v) for v in d if v and filter_empty(v)]
+    elif type(d) is tuple:
+        return tuple(filter_empty(v) for v in d if v and filter_empty(v))
+    else:
+        return d
+
+'''
+TODO: Remove this function if/when it turns out we don't need it.
 def filter_nulls(o):
     """Recursively remove keys with None values from dicts in object.
 
@@ -515,6 +569,8 @@ def filter_nulls(o):
         return tuple(filter_nulls(v) for v in o)
     else:
         return o
+'''
+
 
 def search_objects(class_name, uuid, registration,
                    virkning_fra=None, virkning_til=None,

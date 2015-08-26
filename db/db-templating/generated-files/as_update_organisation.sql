@@ -42,7 +42,7 @@ BEGIN
 --create a new registrering
 
 IF NOT EXISTS (select a.id from organisation a join organisation_registrering b on b.organisation_id=a.id  where a.id=organisation_uuid) THEN
-   RAISE EXCEPTION 'Unable to update organisation with uuid [%], being unable to find any previous registrations.',organisation_uuid;
+   RAISE EXCEPTION 'Unable to update organisation with uuid [%], being unable to find any previous registrations.',organisation_uuid USING ERRCODE = 'MO400';
 END IF;
 
 PERFORM a.id FROM organisation a
@@ -62,7 +62,7 @@ prev_organisation_registrering := _as_get_prev_organisation_registrering(new_org
 
 IF lostUpdatePreventionTZ IS NOT NULL THEN
   IF NOT (LOWER((prev_organisation_registrering.registrering).timeperiod)=lostUpdatePreventionTZ) THEN
-    RAISE EXCEPTION 'Unable to update organisation with uuid [%], as the organisation seems to have been updated since latest read by client (the given lostUpdatePreventionTZ [%] does not match the timesamp of latest registration [%]).',organisation_uuid,lostUpdatePreventionTZ,LOWER((prev_organisation_registrering.registrering).timeperiod);
+    RAISE EXCEPTION 'Unable to update organisation with uuid [%], as the organisation seems to have been updated since latest read by client (the given lostUpdatePreventionTZ [%] does not match the timesamp of latest registration [%]).',organisation_uuid,lostUpdatePreventionTZ,LOWER((prev_organisation_registrering.registrering).timeperiod) USING ERRCODE = 'MO409';
   END IF;   
 END IF;
 
@@ -272,7 +272,7 @@ IF attrEgenskaber IS NOT null THEN
   GROUP BY a.brugervendtnoegle,a.organisationsnavn, a.virkning
   HAVING COUNT(*)>1
   ) THEN
-  RAISE EXCEPTION 'Unable to update organisation with uuid [%], as the organisation have overlapping virknings in the given egenskaber array :%',organisation_uuid,to_json(attrEgenskaber)  USING ERRCODE = 22000;
+  RAISE EXCEPTION 'Unable to update organisation with uuid [%], as the organisation have overlapping virknings in the given egenskaber array :%',organisation_uuid,to_json(attrEgenskaber)  USING ERRCODE = 'MO400';
 
   END IF;
 
@@ -411,7 +411,7 @@ read_prev_organisation:=as_read_organisation(organisation_uuid, (prev_organisati
 --the ordering in as_list (called by as_read) ensures that the latest registration is returned at index pos 1
 
 IF NOT (lower((read_new_organisation.registrering[1].registrering).TimePeriod)=lower((new_organisation_registrering.registrering).TimePeriod) AND lower((read_prev_organisation.registrering[1].registrering).TimePeriod)=lower((prev_organisation_registrering.registrering).TimePeriod)) THEN
-  RAISE EXCEPTION 'Error updating organisation with id [%]: The ordering of as_list_organisation should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].',organisation_uuid,to_json(new_organisation_registrering),to_json(read_new_organisation.registrering[1].registrering),to_json(prev_organisation_registrering),to_json(prev_new_organisation.registrering[1].registrering);
+  RAISE EXCEPTION 'Error updating organisation with id [%]: The ordering of as_list_organisation should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].',organisation_uuid,to_json(new_organisation_registrering),to_json(read_new_organisation.registrering[1].registrering),to_json(prev_organisation_registrering),to_json(prev_new_organisation.registrering[1].registrering) USING ERRCODE = 'MO500';
 END IF;
  
  --we'll ignore the registreringBase part in the comparrison - except for the livcykluskode
@@ -436,7 +436,7 @@ ROW(null,(read_prev_organisation.registrering[1].registrering).livscykluskode,nu
 IF read_prev_organisation_reg=read_new_organisation_reg THEN
   --RAISE NOTICE 'Note[%]. Aborted reg:%',note,to_json(read_new_organisation_reg);
   --RAISE NOTICE 'Note[%]. Previous reg:%',note,to_json(read_prev_organisation_reg);
-  RAISE EXCEPTION 'Aborted updating organisation with id [%] as the given data, does not give raise to a new registration. Aborted reg:[%], previous reg:[%]',organisation_uuid,to_json(read_new_organisation_reg),to_json(read_prev_organisation_reg) USING ERRCODE = 22000;
+  RAISE EXCEPTION 'Aborted updating organisation with id [%] as the given data, does not give raise to a new registration. Aborted reg:[%], previous reg:[%]',organisation_uuid,to_json(read_new_organisation_reg),to_json(read_prev_organisation_reg) USING ERRCODE = 'MO400';
 END IF;
 
 /******************************************************************/

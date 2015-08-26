@@ -44,7 +44,7 @@ BEGIN
 --create a new registrering
 
 IF NOT EXISTS (select a.id from klasse a join klasse_registrering b on b.klasse_id=a.id  where a.id=klasse_uuid) THEN
-   RAISE EXCEPTION 'Unable to update klasse with uuid [%], being unable to find any previous registrations.',klasse_uuid;
+   RAISE EXCEPTION 'Unable to update klasse with uuid [%], being unable to find any previous registrations.',klasse_uuid USING ERRCODE = 'MO400';
 END IF;
 
 PERFORM a.id FROM klasse a
@@ -54,7 +54,7 @@ FOR UPDATE; --We synchronize concurrent invocations of as_updates of this partic
 /*** Verify that the object meets the stipulated access allowed criteria  ***/
 auth_filtered_uuids:=_as_filter_unauth_klasse(array[klasse_uuid]::uuid[],auth_criteria_arr); 
 IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[klasse_uuid]) THEN
-  RAISE EXCEPTION 'Unable to update klasse with uuid [%]. Object does not met stipulated criteria:%',klasse_uuid,to_json(auth_criteria_arr)  USING ERRCODE = MO401; 
+  RAISE EXCEPTION 'Unable to update klasse with uuid [%]. Object does not met stipulated criteria:%',klasse_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
 END IF;
 /*********************/
 
@@ -64,7 +64,7 @@ prev_klasse_registrering := _as_get_prev_klasse_registrering(new_klasse_registre
 
 IF lostUpdatePreventionTZ IS NOT NULL THEN
   IF NOT (LOWER((prev_klasse_registrering.registrering).timeperiod)=lostUpdatePreventionTZ) THEN
-    RAISE EXCEPTION 'Unable to update klasse with uuid [%], as the klasse seems to have been updated since latest read by client (the given lostUpdatePreventionTZ [%] does not match the timesamp of latest registration [%]).',klasse_uuid,lostUpdatePreventionTZ,LOWER((prev_klasse_registrering.registrering).timeperiod);
+    RAISE EXCEPTION 'Unable to update klasse with uuid [%], as the klasse seems to have been updated since latest read by client (the given lostUpdatePreventionTZ [%] does not match the timesamp of latest registration [%]).',klasse_uuid,lostUpdatePreventionTZ,LOWER((prev_klasse_registrering.registrering).timeperiod) USING ERRCODE = 'MO409';
   END IF;   
 END IF;
 
@@ -274,7 +274,7 @@ IF attrEgenskaber IS NOT null THEN
   GROUP BY a.brugervendtnoegle,a.beskrivelse,a.eksempel,a.omfang,a.titel,a.retskilde,a.aendringsnotat, a.virkning, a.soegeord
   HAVING COUNT(*)>1
   ) THEN
-  RAISE EXCEPTION 'Unable to update klasse with uuid [%], as the klasse have overlapping virknings in the given egenskaber array :%',klasse_uuid,to_json(attrEgenskaber)  USING ERRCODE = 22000;
+  RAISE EXCEPTION 'Unable to update klasse with uuid [%], as the klasse have overlapping virknings in the given egenskaber array :%',klasse_uuid,to_json(attrEgenskaber)  USING ERRCODE = 'MO400';
 
   END IF;
 
@@ -512,7 +512,7 @@ read_prev_klasse:=as_read_klasse(klasse_uuid, (prev_klasse_registrering.registre
 --the ordering in as_list (called by as_read) ensures that the latest registration is returned at index pos 1
 
 IF NOT (lower((read_new_klasse.registrering[1].registrering).TimePeriod)=lower((new_klasse_registrering.registrering).TimePeriod) AND lower((read_prev_klasse.registrering[1].registrering).TimePeriod)=lower((prev_klasse_registrering.registrering).TimePeriod)) THEN
-  RAISE EXCEPTION 'Error updating klasse with id [%]: The ordering of as_list_klasse should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].',klasse_uuid,to_json(new_klasse_registrering),to_json(read_new_klasse.registrering[1].registrering),to_json(prev_klasse_registrering),to_json(prev_new_klasse.registrering[1].registrering);
+  RAISE EXCEPTION 'Error updating klasse with id [%]: The ordering of as_list_klasse should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].',klasse_uuid,to_json(new_klasse_registrering),to_json(read_new_klasse.registrering[1].registrering),to_json(prev_klasse_registrering),to_json(prev_new_klasse.registrering[1].registrering) USING ERRCODE = 'MO500';
 END IF;
  
  --we'll ignore the registreringBase part in the comparrison - except for the livcykluskode
@@ -537,7 +537,7 @@ ROW(null,(read_prev_klasse.registrering[1].registrering).livscykluskode,null,nul
 IF read_prev_klasse_reg=read_new_klasse_reg THEN
   --RAISE NOTICE 'Note[%]. Aborted reg:%',note,to_json(read_new_klasse_reg);
   --RAISE NOTICE 'Note[%]. Previous reg:%',note,to_json(read_prev_klasse_reg);
-  RAISE EXCEPTION 'Aborted updating klasse with id [%] as the given data, does not give raise to a new registration. Aborted reg:[%], previous reg:[%]',klasse_uuid,to_json(read_new_klasse_reg),to_json(read_prev_klasse_reg) USING ERRCODE = 22000;
+  RAISE EXCEPTION 'Aborted updating klasse with id [%] as the given data, does not give raise to a new registration. Aborted reg:[%], previous reg:[%]',klasse_uuid,to_json(read_new_klasse_reg),to_json(read_prev_klasse_reg) USING ERRCODE = 'MO400';
 END IF;
 
 /******************************************************************/

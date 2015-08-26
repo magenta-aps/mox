@@ -42,7 +42,7 @@ BEGIN
 --create a new registrering
 
 IF NOT EXISTS (select a.id from klassifikation a join klassifikation_registrering b on b.klassifikation_id=a.id  where a.id=klassifikation_uuid) THEN
-   RAISE EXCEPTION 'Unable to update klassifikation with uuid [%], being unable to find any previous registrations.',klassifikation_uuid;
+   RAISE EXCEPTION 'Unable to update klassifikation with uuid [%], being unable to find any previous registrations.',klassifikation_uuid USING ERRCODE = 'MO400';
 END IF;
 
 PERFORM a.id FROM klassifikation a
@@ -62,7 +62,7 @@ prev_klassifikation_registrering := _as_get_prev_klassifikation_registrering(new
 
 IF lostUpdatePreventionTZ IS NOT NULL THEN
   IF NOT (LOWER((prev_klassifikation_registrering.registrering).timeperiod)=lostUpdatePreventionTZ) THEN
-    RAISE EXCEPTION 'Unable to update klassifikation with uuid [%], as the klassifikation seems to have been updated since latest read by client (the given lostUpdatePreventionTZ [%] does not match the timesamp of latest registration [%]).',klassifikation_uuid,lostUpdatePreventionTZ,LOWER((prev_klassifikation_registrering.registrering).timeperiod);
+    RAISE EXCEPTION 'Unable to update klassifikation with uuid [%], as the klassifikation seems to have been updated since latest read by client (the given lostUpdatePreventionTZ [%] does not match the timesamp of latest registration [%]).',klassifikation_uuid,lostUpdatePreventionTZ,LOWER((prev_klassifikation_registrering.registrering).timeperiod) USING ERRCODE = 'MO409';
   END IF;   
 END IF;
 
@@ -272,7 +272,7 @@ IF attrEgenskaber IS NOT null THEN
   GROUP BY a.brugervendtnoegle,a.beskrivelse,a.kaldenavn,a.ophavsret, a.virkning
   HAVING COUNT(*)>1
   ) THEN
-  RAISE EXCEPTION 'Unable to update klassifikation with uuid [%], as the klassifikation have overlapping virknings in the given egenskaber array :%',klassifikation_uuid,to_json(attrEgenskaber)  USING ERRCODE = 22000;
+  RAISE EXCEPTION 'Unable to update klassifikation with uuid [%], as the klassifikation have overlapping virknings in the given egenskaber array :%',klassifikation_uuid,to_json(attrEgenskaber)  USING ERRCODE = 'MO400';
 
   END IF;
 
@@ -421,7 +421,7 @@ read_prev_klassifikation:=as_read_klassifikation(klassifikation_uuid, (prev_klas
 --the ordering in as_list (called by as_read) ensures that the latest registration is returned at index pos 1
 
 IF NOT (lower((read_new_klassifikation.registrering[1].registrering).TimePeriod)=lower((new_klassifikation_registrering.registrering).TimePeriod) AND lower((read_prev_klassifikation.registrering[1].registrering).TimePeriod)=lower((prev_klassifikation_registrering.registrering).TimePeriod)) THEN
-  RAISE EXCEPTION 'Error updating klassifikation with id [%]: The ordering of as_list_klassifikation should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].',klassifikation_uuid,to_json(new_klassifikation_registrering),to_json(read_new_klassifikation.registrering[1].registrering),to_json(prev_klassifikation_registrering),to_json(prev_new_klassifikation.registrering[1].registrering);
+  RAISE EXCEPTION 'Error updating klassifikation with id [%]: The ordering of as_list_klassifikation should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].',klassifikation_uuid,to_json(new_klassifikation_registrering),to_json(read_new_klassifikation.registrering[1].registrering),to_json(prev_klassifikation_registrering),to_json(prev_new_klassifikation.registrering[1].registrering) USING ERRCODE = 'MO500';
 END IF;
  
  --we'll ignore the registreringBase part in the comparrison - except for the livcykluskode
@@ -446,7 +446,7 @@ ROW(null,(read_prev_klassifikation.registrering[1].registrering).livscykluskode,
 IF read_prev_klassifikation_reg=read_new_klassifikation_reg THEN
   --RAISE NOTICE 'Note[%]. Aborted reg:%',note,to_json(read_new_klassifikation_reg);
   --RAISE NOTICE 'Note[%]. Previous reg:%',note,to_json(read_prev_klassifikation_reg);
-  RAISE EXCEPTION 'Aborted updating klassifikation with id [%] as the given data, does not give raise to a new registration. Aborted reg:[%], previous reg:[%]',klassifikation_uuid,to_json(read_new_klassifikation_reg),to_json(read_prev_klassifikation_reg) USING ERRCODE = 22000;
+  RAISE EXCEPTION 'Aborted updating klassifikation with id [%] as the given data, does not give raise to a new registration. Aborted reg:[%], previous reg:[%]',klassifikation_uuid,to_json(read_new_klassifikation_reg),to_json(read_prev_klassifikation_reg) USING ERRCODE = 'MO400';
 END IF;
 
 /******************************************************************/

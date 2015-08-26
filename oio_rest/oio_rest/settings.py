@@ -285,10 +285,10 @@ REAL_DB_STRUCTURE["sag"]["relationer_type_override"] = {
     "journaldokument": "journaldokument"
 }
 #
-DB_TEMPLATE_EXTRA_OPTIONS= {
+DB_TEMPLATE_EXTRA_OPTIONS = {
     "dokument": {
-        "as_search.jinja.sql" : {
-            "include_mixin" : "as_search_dokument_mixin.jinja.sql"
+        "as_search.jinja.sql": {
+            "include_mixin": "as_search_dokument_mixin.jinja.sql"
         }
     }
 }

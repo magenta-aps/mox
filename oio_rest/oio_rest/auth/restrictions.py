@@ -91,7 +91,7 @@ def get_restrictions(user, object_type, operation):
             return auth_function(user, object_type, operation)
         else:
             return None
-    except AttributeError, ImportError:
+    except (AttributeError, ImportError):
         print "Config error: Unable to load authorization module!"
         raise
 

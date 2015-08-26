@@ -39,11 +39,11 @@ END IF;
 
 
 IF EXISTS (SELECT id from sag WHERE id=sag_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing sag with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_sag (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',sag_uuid;
+  RAISE EXCEPTION 'Error creating or importing sag with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_sag (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',sag_uuid USING ERRCODE='MO500';
 END IF;
 
 IF  (sag_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (sag_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_sag.',(sag_registrering.registrering).livscykluskode;
+  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_sag.',(sag_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
@@ -86,7 +86,7 @@ SELECT
 
  
 IF coalesce(array_length(sag_registrering.attrEgenskaber, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [sag]. Oprettelse afbrydes.';
+  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [sag]. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
 
@@ -133,7 +133,7 @@ END IF;
 --Verification
 --For now all declared states are mandatory.
 IF coalesce(array_length(sag_registrering.tilsFremdrift, 1),0)<1  THEN
-  RAISE EXCEPTION 'Savner påkraevet tilstand [fremdrift] for sag. Oprettelse afbrydes.';
+  RAISE EXCEPTION 'Savner påkraevet tilstand [fremdrift] for sag. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
 IF sag_registrering.tilsFremdrift IS NOT NULL AND coalesce(array_length(sag_registrering.tilsFremdrift,1),0)>0 THEN

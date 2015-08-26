@@ -306,11 +306,9 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 			JOIN bruger_registrering b on a.bruger_registrering_id=b.id
 			WHERE
 			(
-				a.brugervendtnoegle ILIKE anyAttrValue
-				OR
-				a.brugernavn ILIKE anyAttrValue
-				OR
-				a.brugertype ILIKE anyAttrValue
+						a.brugervendtnoegle ILIKE anyAttrValue OR
+						a.brugernavn ILIKE anyAttrValue OR
+						a.brugertype ILIKE anyAttrValue
 			)
 			AND
 			(

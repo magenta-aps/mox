@@ -13,17 +13,10 @@
 
 # First, create a new facet.
 
-HOST_URL="https://mox.magenta-aps.dk"
-
-read -p "Indtast URL, default $HOST_URL: " URL
-
-if [ ! -z $URL ]
-then
-    HOST_URL=$URL
-fi
-
-
+# Test configuration
 DIR=$(dirname ${BASH_SOURCE[0]})
+source $DIR/config.sh
+
 result=$(curl -H "Content-Type: application/json" -X POST -d "$(cat $DIR/test_data/klasse_opret.json)" $HOST_URL/klassifikation/klasse)
 uuid=$(expr "$result" : '.*"uuid": "\([^"]*\)"')
 echo "Oprettet klasse: $uuid"
