@@ -88,6 +88,7 @@ def get_relation_names(class_name):
                 ]
     return _relation_names[class_name.lower()]
 
+
 def get_document_part_relation_names():
     """Return the list of all recognized relations for DokumentDel"""
     return ["underredigeringaf"]
@@ -114,6 +115,7 @@ def input_list(_type, input, key):
     else:
         return [_type.input(v) for v in values]
 
+
 def input_dict_list(_type, input):
     """Take a dict input and return a generator.
 
@@ -125,6 +127,7 @@ def input_dict_list(_type, input):
         return None
     else:
         return [_type.input(k, v) for k in input.keys() for v in input[k]]
+
 
 def to_bool(s):
     """Convert string to boolean. Passes through bool and None values."""
@@ -152,6 +155,7 @@ class Searchable(object):
         else:
             return cls._fields
 
+
 class DokumentVariantType(namedtuple('DokumentVariantType',
                                      'varianttekst egenskaber dele')):
     @classmethod
@@ -163,6 +167,7 @@ class DokumentVariantType(namedtuple('DokumentVariantType',
             input_list(DokumentVariantEgenskaberType, i, "egenskaber"),
             input_list(DokumentDelType, i, "dele")
         )
+
 
 class DokumentVariantEgenskaberType(Searchable, namedtuple(
     'DokumentVariantEgenskaberType',
