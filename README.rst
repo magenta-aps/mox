@@ -201,14 +201,18 @@ Alternately, if using bash shell: ::
 Format of JSON input files 
 ===========================
 
-Examples of the format of the JSON bodies to supply when invoking the particular REST operations can be seen in the folder '/interface_test/test_data'.
+Examples of the format of the JSON bodies to supply when invoking the
+particular REST operations can be seen in the folder
+``/interface_test/test_data``.
 
 Below here is listed some points to pay special attention to:
 
 Deleting / Clearing Attributes 
 -------------------------------
 
-To clear / delete a previously set attribute value – lets say the egenskab 'supplement' of a Facet object – specify the empty string as the attribute value in the JSON body: ::
+To clear / delete a previously set attribute value – lets say the
+egenskab 'supplement' of a Facet object – specify the empty string as
+the attribute value in the JSON body: ::
 
   …
   "attributter": { 
@@ -227,7 +231,10 @@ To clear / delete a previously set attribute value – lets say the egenskab 'su
       }, 
   …
 
-To delete all previously set attribute values of a specific kind - for all 'virknings' periods - you may simply specify an empty list for the given type of attribute. Eg. to clear all 'egenskaber' for a Facet - for all 'virknings' periods, you should do this: ::
+To delete all previously set attribute values of a specific kind - for
+all 'virknings' periods - you may simply specify an empty list for the
+given type of attribute. Eg. to clear all 'egenskaber' for a Facet - for
+all 'virknings' periods, you should do this: ::
 
   …
   "attributter": { 
@@ -236,7 +243,11 @@ To delete all previously set attribute values of a specific kind - for all 'virk
       }, 
   …
 
-Please notice, that this is different than omitting the list completely, in which case, the specific attributes will not be updated at all. Eg. if you omit the "facetegenskaber" key in the "attributes" object in the JSON body supplied to the update operation, all the facetegenskaber of the previous registration will be carried over untouched. ::
+Please notice, that this is different than omitting the list completely,
+in which case, the specific attributes will not be updated at all. Eg.
+if you omit the "facetegenskaber" key in the "attributes" object in the
+JSON body supplied to the update operation, all the facetegenskaber of
+the previous registration will be carried over untouched. ::
 
   ...
   "attributter": { 
@@ -246,7 +257,11 @@ Please notice, that this is different than omitting the list completely, in whic
 Deleting / Clearing Sates 
 -------------------------------
 
-Similar to the procedure stated above for the attributes - clearing/deleting previously set states is done be supplying the empty string as value and the desired virknings period. Eg. to clear state 'publiceret' of a Facet object, the relevant part of the JSON body should look like this: ::
+Similar to the procedure stated above for the attributes -
+clearing/deleting previously set states is done be supplying the empty
+string as value and the desired virknings period. Eg. to clear state
+'publiceret' of a Facet object, the relevant part of the JSON body
+should look like this: ::
 
   ...
    "tilstande": { 
@@ -265,7 +280,9 @@ Similar to the procedure stated above for the attributes - clearing/deleting pre
   ...
 
 
-You can clear all states of a specific kind, by explicitly specifying a completely empty list. Eg. to clear "facetpubliceret" for all virkning periods, the specific part of the JSON body should look like this: :: 
+You can clear all states of a specific kind, by explicitly specifying a
+completely empty list. Eg. to clear "facetpubliceret" for all virkning
+periods, the specific part of the JSON body should look like this: :: 
 
   ...
    "tilstande": { 
@@ -274,7 +291,11 @@ You can clear all states of a specific kind, by explicitly specifying a complete
       },
   ...
 
-Please notice, that this is different than omitting the list completly, in which case, the specific state will not be updated at all. Eg. if you omit the "facetpubliceret" key in the "tilstande" object in the JSON body supplied to the update operation, all the facetpubliceret state values of the previous registration will be carried over untouched. ::
+Please notice, that this is different than omitting the list completly,
+in which case, the specific state will not be updated at all. Eg. if you
+omit the "facetpubliceret" key in the "tilstande" object in the JSON
+body supplied to the update operation, all the facetpubliceret state
+values of the previous registration will be carried over untouched. ::
 
   ...
    "tilstande": { 
@@ -285,7 +306,11 @@ Please notice, that this is different than omitting the list completly, in which
 Deleting / Clearing Relations
 ---------------------------------
 
-Again, similar to the procedure stated above for the attributes and states, clearing a previously set relation with cardinality 0..1 is done by supplying empty strings for both uuid and urn of the relation. Eg. to clear a previously set the 'ansvarlig' of a Facet object, specific part of the JSON body would look like this: ::
+Again, similar to the procedure stated above for the attributes and
+states, clearing a previously set relation with cardinality 0..1 is done
+by supplying empty strings for both uuid and urn of the relation. Eg. to
+clear a previously set the 'ansvarlig' of a Facet object, specific part
+of the JSON body would look like this: ::
 
   ...
   "relationer": { 
@@ -306,21 +331,33 @@ Again, similar to the procedure stated above for the attributes and states, clea
   }
   ...
 
-When updating relations unlimited cardinality (0..n), you have to supply the full list - that is, all the relations of the particular type - and clearing a particular relation is accordingly done by supplying the full list sans the relation, that you wish to clear. ( The exception to this is when updating the Sag object, where you can specify an index of the relation to only update a particular relation). 
+When updating relations unlimited cardinality (0..n), you have to supply
+the full list - that is, all the relations of the particular type - and
+clearing a particular relation is accordingly done by supplying the full
+list sans the relation, that you wish to clear. ( The exception to this
+is when updating the Sag object, where you can specify an index of the
+relation to only update a particular relation). 
 
-Specifying an explicitly empty object will clear all the relations of the object. Eg.: ::
+Specifying an explicitly empty object will clear all the relations of
+the object. Eg.: ::
 
   ...
     "relationer": {}
   ...
 
-Notice, that this is different than omitting the "relationer"-key entirely, which will carry over all the relations of the registration untouched.
+Notice, that this is different than omitting the "relationer"-key
+entirely, which will carry over all the relations of the registration
+untouched.
 
 
 Deleting / Clearing "Varianter" of a Dokument object
 ----------------------------------------------------
 
-To clear/delete a specific Dokument Variant you need to need to clear all the Variant 'egenskaber' and Variant dele explicitly. Eg to clear the "offentliggørelsesvariant" of a Dokument you should supply the specific part of the JSON body to the update Dokument operation like this: :: 
+To clear/delete a specific Dokument Variant you need to need to clear
+all the Variant 'egenskaber' and Variant dele explicitly. Eg to clear
+the "offentliggørelsesvariant" of a Dokument you should supply the
+specific part of the JSON body to the update Dokument operation like
+this: :: 
 
   ...
   "varianter": [
@@ -333,18 +370,25 @@ To clear/delete a specific Dokument Variant you need to need to clear all the Va
   ]
   ...
 
-To delete / clear all the "varianter" of a Dokument, you should explicitly specify an empty list in the JSON body. Eg. : ::
+To delete / clear all the "varianter" of a Dokument, you should
+explicitly specify an empty list in the JSON body. Eg. : ::
 
   ...
   "varianter": [],
   ...
 
-And again, please notice that this is different, than omitting the "varianter"-key completely in the JSON body, which will carry over all the Dokument varianter of the previous registration untouched.
+And again, please notice that this is different, than omitting the
+"varianter"-key completely in the JSON body, which will carry over all
+the Dokument varianter of the previous registration untouched.
 
 Deleting / Clearing Dokument-Del of a Dokument-Variant
 ------------------------------------------------------
 
-To clear / delete a specify Dokument Del of a Dokument Variant you should clear all the Dokument Del 'egenskaber' and Dokument Del relations explicitly. Eg. to clear the 'Kap. 1' Del of the "offentliggørelsesvariant", you should supply the specific part of the JSON body to the update Dokument operation like this: ::
+To clear / delete a specify Dokument Del of a Dokument Variant you
+should clear all the Dokument Del 'egenskaber' and Dokument Del
+relations explicitly. Eg. to clear the 'Kap. 1' Del of the
+"offentliggørelsesvariant", you should supply the specific part of the
+JSON body to the update Dokument operation like this: ::
 
   ...
   "varianter": [
@@ -359,7 +403,9 @@ To clear / delete a specify Dokument Del of a Dokument Variant you should clear 
   ]
   ...
 
-To clear / delete all the "Dele" of a Variant, you should explicitly specify an empty list. Eg. for Del 'Kap. 1'  of a "offentliggørelsesvariant, it would look like this: ::
+To clear / delete all the "Dele" of a Variant, you should explicitly
+specify an empty list. Eg. for Del 'Kap. 1'  of a
+"offentliggørelsesvariant, it would look like this: ::
 
   ...
   "varianter": [
@@ -374,7 +420,10 @@ To clear / delete all the "Dele" of a Variant, you should explicitly specify an 
 Deleting / Clearing 'egenskaber' of a Dokument Del
 ---------------------------------------------------
 
-To clear all 'egenskaber' of a Dokument Del for all 'virknings' periods, you should explicitly specify an empty list. Eg. to clear all the 'egenskaber' of a 'Kap. 1'-Del of a Dokument Variant it would look this: ::
+To clear all 'egenskaber' of a Dokument Del for all 'virknings' periods,
+you should explicitly specify an empty list. Eg. to clear all the
+'egenskaber' of a 'Kap. 1'-Del of a Dokument Variant it would look this:
+::
 
   ...
   "varianter": [
@@ -388,7 +437,11 @@ To clear all 'egenskaber' of a Dokument Del for all 'virknings' periods, you sho
   ]
   ...
 
-To clear some or all the 'egenskaber' of a Dokument Del for a particular 'virknings' period, you should use the empty string to clear the unwanted values. Eg. to clear 'lokation' egenskab value of 'Kap. 1' of a 'offentliggørelsesvariant' for the year 2014 the particular part of the JSON body would look like this: ::
+To clear some or all the 'egenskaber' of a Dokument Del for a particular
+'virknings' period, you should use the empty string to clear the
+unwanted values. Eg. to clear 'lokation' egenskab value of 'Kap. 1' of a
+'offentliggørelsesvariant' for the year 2014 the particular part of the
+JSON body would look like this: ::
 
   ...
   "varianter": [
@@ -416,7 +469,10 @@ To clear some or all the 'egenskaber' of a Dokument Del for a particular 'virkni
 Deleting / Clearing relations of a Dokument Del
 ------------------------------------------------
 
-To clear all the relations of a particular Dokument Del, you should explictly specify an empty list. Eg. to clear all the relations of the 'Kap. 1' Dokument Del of the 'offentliggørelsesvariant' Variant, the specific part of the JSON body would look like this: ::
+To clear all the relations of a particular Dokument Del, you should
+explictly specify an empty list. Eg. to clear all the relations of the
+'Kap. 1' Dokument Del of the 'offentliggørelsesvariant' Variant, the
+specific part of the JSON body would look like this: ::
 
   ...
   "varianter": [
@@ -430,7 +486,10 @@ To clear all the relations of a particular Dokument Del, you should explictly sp
   ]
   ...
 
-The delete / clear a specific relation of a Dokument Del you have to specify the full list of the relations of the Dokument Del sans the relation, that you wish to remove. In general, when updating the Dokument Del relations, you have to specify the full list of relations.
+The delete / clear a specific relation of a Dokument Del you have to
+specify the full list of the relations of the Dokument Del sans the
+relation, that you wish to remove. In general, when updating the
+Dokument Del relations, you have to specify the full list of relations.
 
 
 
