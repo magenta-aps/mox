@@ -111,7 +111,7 @@
                   "aktoertypekode": "Bruger",
                   "notetekst": "Nothing to see here!"
                 },
-                "urn": "urn:cpr 8883394",
+                "urn": "urn:cpr8883394",
                 "objekttype": "Bruger"
               }
             ]
@@ -185,7 +185,7 @@
                   "aktoertypekode": "Bruger",
                   "notetekst": "Nothing to see here!"
                 },
-                "urn": "urn:cpr 8883394",
+                "urn": "urn:cpr8883394",
                 "objekttype": "Bruger"
               }
             ]

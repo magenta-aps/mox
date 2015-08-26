@@ -129,4 +129,10 @@ else
     exit
 fi
 
-
+if $(curl -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?underredigeringaf=urn:cpr8883394&uuid=$import_uuid" | grep -q "$import_uuid")
+then
+    printf "\nSearch on del relation URN successful"
+else
+    printf "\nError in search on del relation URN."
+    exit
+fi

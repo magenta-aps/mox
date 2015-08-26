@@ -30,6 +30,20 @@ def escape_underscores(s):
     return s.replace("_", "\_")
 
 
+def build_relation(value, virkning=None):
+    relation = {
+        'virkning': virkning
+    }
+    if is_uuid(value):
+        relation['uuid'] = value
+    elif is_urn(value):
+        relation['urn'] = value
+    else:
+        raise ValueError(
+            "Relation has an invalid value (not a UUID or URN) '%s'" % value)
+    return relation
+
+
 def build_registration(class_name, list_args):
     registration = {}
     for f in list_args:
@@ -61,10 +75,7 @@ def build_registration(class_name, list_args):
             relation[f] = []
             # Support multiple relation references at a time
             for rel in list_args[f]:
-                relation[f].append({
-                    'uuid': rel,
-                    'virkning': None
-                })
+                relation[f].append(build_relation(rel))
 
     if class_name == "Dokument":
         variants = registration.setdefault("variants", [])
@@ -116,10 +127,7 @@ def build_registration(class_name, list_args):
             if f in get_document_part_relation_names():
                 part_relations[f] = []
                 for rel in list_args[f]:
-                    part_relations[f].append({
-                        'uuid': rel,
-                        'virkning': None
-                    })
+                    part_relations[f].append(build_relation(rel))
 
     return registration
 
