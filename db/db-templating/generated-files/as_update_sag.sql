@@ -111,9 +111,9 @@ FOREACH sag_relation_navn IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  
   rel_type_max_index_prev_rev:=null;
 
   SELECT 
-    a.relIndex into rel_type_max_index_prev_rev
+    a.indeks into rel_type_max_index_prev_rev
   FROM
-    unnest(rel_type_max_index_arr) a(relType,relIndex)
+    unnest(rel_type_max_index_arr) a(relType,indeks)
   WHERE
     a.relType=sag_relation_navn
   ;
@@ -146,16 +146,16 @@ END LOOP;
       SELECT
         new_sag_registrering.id,
           a.virkning,
-            a.relMaalUuid,
-              a.relMaalUrn,
+            a.uuid,
+              a.urn,
                 a.relType,
                   a.objektType,
                     CASE 
                     WHEN a.relType = any (sag_rel_type_cardinality_unlimited) THEN
-                      CASE WHEN a.relIndex IS NULL OR b.id IS NULL THEN --for new relations and relations with index given that is not found in prev registrering, we'll assign new index values 
+                      CASE WHEN a.indeks IS NULL OR b.id IS NULL THEN --for new relations and relations with index given that is not found in prev registrering, we'll assign new index values 
                         nextval('sag_rel_' || a.relType::text || sag_uuid_underscores)
                       ELSE
-                        a.relIndex
+                        a.indeks
                       END
                     ELSE
                     NULL
@@ -202,7 +202,7 @@ END LOOP;
                             NULL
                           END
       FROM unnest(relationer) as a
-      LEFT JOIN sag_relation b on a.relType = any (sag_rel_type_cardinality_unlimited) and b.sag_registrering_id=prev_sag_registrering.id and a.relType=b.rel_type and a.relIndex=b.rel_index
+      LEFT JOIN sag_relation b on a.relType = any (sag_rel_type_cardinality_unlimited) and b.sag_registrering_id=prev_sag_registrering.id and a.relType=b.rel_type and a.indeks=b.rel_index
     ;
 
 

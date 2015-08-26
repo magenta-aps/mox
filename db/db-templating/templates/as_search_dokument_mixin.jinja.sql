@@ -302,9 +302,9 @@ ELSE
 			)
 			AND
 			(
-				delRelationTypeObj.relMaalUuid IS NULL
+				delRelationTypeObj.uuid IS NULL
 				OR
-				delRelationTypeObj.relMaalUuid = d.rel_maal_uuid	
+				delRelationTypeObj.uuid = d.rel_maal_uuid	
 			)
 			AND
 			(
@@ -314,9 +314,9 @@ ELSE
 			)
 			AND
 			(
-				delRelationTypeObj.relMaalUrn IS NULL
+				delRelationTypeObj.urn IS NULL
 				OR
-				delRelationTypeObj.relMaalUrn = d.rel_maal_urn
+				delRelationTypeObj.urn = d.rel_maal_urn
 			)
 			AND
 			{% include 'as_search_mixin_filter_reg.jinja.sql' %}

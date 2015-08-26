@@ -189,8 +189,8 @@ END IF;
     SELECT
       klasse_registrering_id,
       a.virkning,
-      a.relMaalUuid,
-      a.relMaalUrn,
+      a.uuid,
+      a.urn,
       a.relType,
       a.objektType
     FROM unnest(klasse_registrering.relationer) a

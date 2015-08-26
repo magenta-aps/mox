@@ -370,7 +370,7 @@ ROW (
   'underredigeringaf'::DokumentdelRelationKode,
   doc1_docDel2Brelation1Virkning,
   'a24a2dd4-415f-4104-b7a7-84607488c096'::uuid,
-  null, --relMaalUrn,
+  null, --urn,
   'Bruger'
 )::DokumentdelRelationType;
 
@@ -764,7 +764,7 @@ ROW (
   'underredigeringaf'::DokumentdelRelationKode,
   doc2_docDel2Brelation1Virkning,
   '124a2dd4-415f-4104-b7a7-84607488c096'::uuid,
-  null, --relMaalUrn,
+  null, --urn,
   'Bruger'
 )::DokumentdelRelationType;
 

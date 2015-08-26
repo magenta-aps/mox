@@ -144,8 +144,8 @@ END IF;
     SELECT
       {{oio_type}}_registrering_id,
       a.virkning,
-      a.relMaalUuid,
-      a.relMaalUrn,
+      a.uuid,
+      a.urn,
       a.relType,
       a.objektType
     FROM unnest({{oio_type}}_registrering.relationer) a

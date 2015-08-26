@@ -93,8 +93,8 @@ ELSE
       SELECT
         new_organisationfunktion_registrering.id,
           a.virkning,
-            a.relMaalUuid,
-              a.relMaalUrn,
+            a.uuid,
+              a.urn,
                 a.relType,
                   a.objektType
       FROM unnest(relationer) as a

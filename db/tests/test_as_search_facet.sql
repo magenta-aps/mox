@@ -782,8 +782,8 @@ search_result9 :=as_search_facet(
 	null--virkningSoeg
 	,null --maxResults
 	,null --anyAttrValueArr
-	,null --anyRelUuidArr
-	,null --anyRelUrnArr
+	,null --anyuuidArr
+	,null --anyurnArr
 	,ARRAY[
 	 ROW (
 	 	null --reg base

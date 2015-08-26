@@ -149,8 +149,8 @@ END IF;
     SELECT
       organisationfunktion_registrering_id,
       a.virkning,
-      a.relMaalUuid,
-      a.relMaalUrn,
+      a.uuid,
+      a.urn,
       a.relType,
       a.objektType
     FROM unnest(organisationfunktion_registrering.relationer) a

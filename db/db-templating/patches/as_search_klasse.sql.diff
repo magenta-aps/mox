@@ -5,8 +5,8 @@
 --- 33,44 ----
   	relationTypeObj KlasseRelationType;
   	anyAttrValue text;
-  	anyRelUuid uuid;
-  	anyRelUrn text;
+  	anyuuid uuid;
+  	anyurn text;
   	auth_filtered_uuids uuid[];
 + 	manipulatedAttrEgenskaberArr KlasseEgenskaberAttrType[]:='{}';
 + 	soegeordObj KlasseSoegeordType;

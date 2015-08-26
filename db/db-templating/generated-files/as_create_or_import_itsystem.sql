@@ -153,8 +153,8 @@ END IF;
     SELECT
       itsystem_registrering_id,
       a.virkning,
-      a.relMaalUuid,
-      a.relMaalUrn,
+      a.uuid,
+      a.urn,
       a.relType,
       a.objektType
     FROM unnest(itsystem_registrering.relationer) a

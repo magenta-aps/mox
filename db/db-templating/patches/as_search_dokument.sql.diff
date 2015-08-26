@@ -6,8 +6,8 @@
     	tilsFremdriftTypeObj DokumentFremdriftTilsType;
   	relationTypeObj DokumentRelationType;
   	anyAttrValue text;
-  	anyRelUuid uuid;
-  	anyRelUrn text;
+  	anyuuid uuid;
+  	anyurn text;
 + 	variantTypeObj DokumentVariantType;
 + 	variantEgenskaberTypeObj DokumentVariantEgenskaberType;
 + 	delTypeObj DokumentDelType;
@@ -99,7 +99,7 @@
   				OR
 ***************
 *** 753,772 ****
-  	FOREACH anyRelUuid IN ARRAY anyRelUuidArr
+  	FOREACH anyuuid IN ARRAY anyuuidArr
   	LOOP
   		dokument_candidates:=array(
   			SELECT DISTINCT
@@ -107,7 +107,7 @@
 ! 			FROM  dokument_relation a
 ! 			JOIN dokument_registrering b on a.dokument_registrering_id=b.id
 ! 			WHERE
-! 			anyRelUuid = a.rel_maal_uuid
+! 			anyuuid = a.rel_maal_uuid
 ! 			AND
 ! 			(
 ! 				virkningSoeg IS NULL
@@ -120,7 +120,7 @@
   				OR
   				(
 --- 776,792 ----
-  	FOREACH anyRelUuid IN ARRAY anyRelUuidArr
+  	FOREACH anyuuid IN ARRAY anyuuidArr
   	LOOP
   		dokument_candidates:=array(
   			SELECT DISTINCT
@@ -131,7 +131,7 @@
 !  			LEFT JOIN dokument_del d on d.variant_id=c.id 
 !  			LEFT JOIN dokument_del_relation e on d.id=e.del_id and (virkningSoeg IS NULL or (virkningSoeg && (e.virkning).TimePeriod) )
 !   			WHERE
-!  			(anyRelUuid = a.rel_maal_uuid OR anyRelUuid = e.rel_maal_uuid)
+!  			(anyuuid = a.rel_maal_uuid OR anyuuid = e.rel_maal_uuid)
   			AND
   					(
   				(registreringObj.registrering) IS NULL 
@@ -139,7 +139,7 @@
   				(
 ***************
 *** 848,867 ****
-  	FOREACH anyRelUrn IN ARRAY anyRelUrnArr
+  	FOREACH anyurn IN ARRAY anyurnArr
   	LOOP
   		dokument_candidates:=array(
   			SELECT DISTINCT
@@ -147,7 +147,7 @@
 ! 			FROM  dokument_relation a
 ! 			JOIN dokument_registrering b on a.dokument_registrering_id=b.id
 ! 			WHERE
-! 			anyRelUrn = a.rel_maal_urn
+! 			anyurn = a.rel_maal_urn
 ! 			AND
 ! 			(
 ! 				virkningSoeg IS NULL
@@ -160,7 +160,7 @@
   				OR
   				(
 --- 868,884 ----
-  	FOREACH anyRelUrn IN ARRAY anyRelUrnArr
+  	FOREACH anyurn IN ARRAY anyurnArr
   	LOOP
   		dokument_candidates:=array(
   			SELECT DISTINCT
@@ -171,7 +171,7 @@
 !  			LEFT JOIN dokument_del d on d.variant_id=c.id
 !  			LEFT JOIN dokument_del_relation e on d.id=e.del_id and (virkningSoeg IS NULL or virkningSoeg && (e.virkning).TimePeriod)
 !   			WHERE
-!  			(anyRelUrn = a.rel_maal_urn OR anyRelUrn = e.rel_maal_urn)
+!  			(anyurn = a.rel_maal_urn OR anyurn = e.rel_maal_urn)
   			AND
   					(
   				(registreringObj.registrering) IS NULL 

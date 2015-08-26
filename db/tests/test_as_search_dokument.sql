@@ -535,7 +535,7 @@ ROW (
   'underredigeringaf'::DokumentdelRelationKode,
   doc1_docDel2Brelation1Virkning,
   'a24a2dd4-415f-4104-b7a7-84607488c096'::uuid,
-  null, --relMaalUrn,
+  null, --urn,
   'Bruger'
 )::DokumentdelRelationType;
 
@@ -1255,7 +1255,7 @@ ROW (
   'underredigeringaf'::DokumentdelRelationKode,
   doc2_docDel2Brelation1Virkning,
   '904a2dd4-415f-4104-b7a7-84607488c096'::uuid,
-  null, --relMaalUrn,
+  null, --urn,
   'Bruger'
 )::DokumentdelRelationType;
 
@@ -1659,7 +1659,7 @@ ROW (
   'underredigeringaf'::DokumentdelRelationKode,
   doc3_docDel2Brelation1Virkning,
   '700a2dd4-415f-4104-b7a7-84607488c096'::uuid,
-  null, --relMaalUrn,
+  null, --urn,
   'Bruger'
 )::DokumentdelRelationType;
 
@@ -2440,7 +2440,7 @@ search_result24:=as_search_dokument(
 	,null --maxResults int = 2147483647,
 	,null --anyAttrValueArr text[] = '{}'::text[],
 	,array[doc2_uuidBesvarelser1]::uuid[]
-	,null --anyRelUrnArr text[] = '{}'::text[],
+	,null --anyurnArr text[] = '{}'::text[],
 	);
 
 
@@ -2461,7 +2461,7 @@ search_result25:=as_search_dokument(
 	,null --maxResults int = 2147483647,
 	,null --anyAttrValueArr text[] = '{}'::text[],
 	,array['b24a2dd4-415f-4104-b7a7-84607488c091'::uuid]::uuid[]
-	,null --anyRelUrnArr text[] = '{}'::text[],
+	,null --anyurnArr text[] = '{}'::text[],
 	);
 
 
@@ -2481,7 +2481,7 @@ search_result26:=as_search_dokument(
 	,null --maxResults int = 2147483647,
 	,null --anyAttrValueArr text[] = '{}'::text[],
 	,null --array['b24a2dd4-415f-4104-b7a7-84607488c091'::uuid]::uuid[]
-	,array[doc1_urnBesvarelser2] --anyRelUrnArr text[] = '{}'::text[],
+	,array[doc1_urnBesvarelser2] --anyurnArr text[] = '{}'::text[],
 	);
 
 
@@ -2500,7 +2500,7 @@ search_result27:=as_search_dokument(
 	,null --maxResults int = 2147483647,
 	,null --anyAttrValueArr text[] = '{}'::text[],
 	,null --array['b24a2dd4-415f-4104-b7a7-84607488c091'::uuid]::uuid[]
-	,array['urn:cpr 7000000'] --anyRelUrnArr text[] = '{}'::text[],
+	,array['urn:cpr 7000000'] --anyurnArr text[] = '{}'::text[],
 	);
 
 
@@ -2519,7 +2519,7 @@ search_result28:=as_search_dokument(
 	,null --maxResults int = 2147483647,
 	,array['doc2_kassationskode1']::text[] --anyAttrValueArr text[] = '{}'::text[],
 	,null --array['b24a2dd4-415f-4104-b7a7-84607488c091'::uuid]::uuid[]
-	,null --array['urn:cpr 7000000'] --anyRelUrnArr text[] = '{}'::text[],
+	,null --array['urn:cpr 7000000'] --anyurnArr text[] = '{}'::text[],
 	);
 
 
@@ -2539,7 +2539,7 @@ search_result29:=as_search_dokument(
 	,null --maxResults int = 2147483647,
 	,array['del_mimetype1%']::text[] --anyAttrValueArr text[] = '{}'::text[],
 	,null --array['b24a2dd4-415f-4104-b7a7-84607488c091'::uuid]::uuid[]
-	,null --array['urn:cpr 7000000'] --anyRelUrnArr text[] = '{}'::text[],
+	,null --array['urn:cpr 7000000'] --anyurnArr text[] = '{}'::text[],
 	);
 
 
@@ -2557,7 +2557,7 @@ search_result30:=as_search_dokument(
 	,null --maxResults int = 2147483647,
 	,array['del_mimetype1']::text[] --anyAttrValueArr text[] = '{}'::text[],
 	,null --array['b24a2dd4-415f-4104-b7a7-84607488c091'::uuid]::uuid[]
-	,null --array['urn:cpr 7000000'] --anyRelUrnArr text[] = '{}'::text[],
+	,null --array['urn:cpr 7000000'] --anyurnArr text[] = '{}'::text[],
 	);
 
 
@@ -2579,7 +2579,7 @@ search_result31:=as_search_dokument(
 	,null --maxResults int = 2147483647,
 	,array['doc2_Offentlighedundtaget_Hjemmel1']::text[] --anyAttrValueArr text[] = '{}'::text[],
 	,null --array['b24a2dd4-415f-4104-b7a7-84607488c091'::uuid]::uuid[]
-	,null --array['urn:cpr 7000000'] --anyRelUrnArr text[] = '{}'::text[],
+	,null --array['urn:cpr 7000000'] --anyurnArr text[] = '{}'::text[],
 	);
 
 

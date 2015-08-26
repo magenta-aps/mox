@@ -38,8 +38,8 @@ CREATE TYPE DokumentRelationKode AS ENUM  ('nyrevision','primaerklasse','ejer','
 CREATE TYPE DokumentRelationType AS (
   relType DokumentRelationKode,
   virkning Virkning,
-  relMaalUuid uuid,
-  relMaalUrn  text,
+  uuid uuid,
+  urn  text,
   objektType text 
 )
 ;
@@ -65,8 +65,8 @@ mimetype text,
 CREATE TYPE DokumentdelRelationType AS (
   relType DokumentdelRelationKode,
   virkning Virkning,
-  relMaalUuid uuid,
-  relMaalUrn  text,
+  uuid uuid,
+  urn  text,
   objektType text 
 )
 ;

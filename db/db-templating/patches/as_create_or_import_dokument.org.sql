@@ -170,8 +170,8 @@ END IF;
     SELECT
       dokument_registrering_id,
       a.virkning,
-      a.relMaalUuid,
-      a.relMaalUrn,
+      a.uuid,
+      a.urn,
       a.relType,
       a.objektType
     FROM unnest(dokument_registrering.relationer) a
@@ -293,8 +293,8 @@ dokument_variant_new_id:=nextval('dokument_variant_id_seq'::regclass);
       (
         dokument_del_new_id,
           dokument_del_relation_obj.virkning,
-            dokument_del_relation_obj.relMaalUuid,
-              dokument_del_relation_obj.relMaalUrn,
+            dokument_del_relation_obj.uuid,
+              dokument_del_relation_obj.urn,
                 dokument_del_relation_obj.relType,
                   dokument_del_relation_obj.objektType
       )

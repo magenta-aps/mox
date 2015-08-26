@@ -3,15 +3,15 @@
 ***************
 *** 676,685 ****
 --- 676,751 ----
-  					relationTypeObj.relMaalUrn IS NULL
+  					relationTypeObj.urn IS NULL
   					OR
-  					relationTypeObj.relMaalUrn = a.rel_maal_urn
+  					relationTypeObj.urn = a.rel_maal_urn
   				)
   				AND
 + 				(
-+ 					relationTypeObj.relIndex IS NULL
++ 					relationTypeObj.indeks IS NULL
 + 					OR
-+ 					relationTypeObj.relIndex = a.rel_index
++ 					relationTypeObj.indeks = a.rel_index
 + 				)
 + 				AND
 + 				(

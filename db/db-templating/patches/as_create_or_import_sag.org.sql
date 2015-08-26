@@ -189,8 +189,8 @@ END LOOP;
     SELECT
       sag_registrering_id,
       a.virkning,
-      a.relMaalUuid,
-      a.relMaalUrn,
+      a.uuid,
+      a.urn,
       a.relType,
       a.objektType,
         CASE WHEN a.relType = any (sag_rel_type_cardinality_unlimited) THEN --rel_index

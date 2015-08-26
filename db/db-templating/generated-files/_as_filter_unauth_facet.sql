@@ -186,9 +186,9 @@ ELSE
 				)
 				AND
 				(
-					relationTypeObj.relMaalUuid IS NULL
+					relationTypeObj.uuid IS NULL
 					OR
-					relationTypeObj.relMaalUuid = a.rel_maal_uuid	
+					relationTypeObj.uuid = a.rel_maal_uuid	
 				)
 				AND
 				(
@@ -198,9 +198,9 @@ ELSE
 				)
 				AND
 				(
-					relationTypeObj.relMaalUrn IS NULL
+					relationTypeObj.urn IS NULL
 					OR
-					relationTypeObj.relMaalUrn = a.rel_maal_urn
+					relationTypeObj.urn = a.rel_maal_urn
 				)
 				AND b.facet_id = ANY (facet_candidates)
 				AND (a.virkning).TimePeriod @> actual_virkning 

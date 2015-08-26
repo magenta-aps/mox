@@ -33,8 +33,8 @@ CREATE TYPE ItsystemRelationKode AS ENUM  ('tilhoerer','tilknyttedeorganisatione
 CREATE TYPE ItsystemRelationType AS (
   relType ItsystemRelationKode,
   virkning Virkning,
-  relMaalUuid uuid,
-  relMaalUrn  text,
+  uuid uuid,
+  urn  text,
   objektType text 
 )
 ;

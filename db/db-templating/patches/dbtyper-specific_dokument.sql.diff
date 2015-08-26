@@ -2,7 +2,7 @@
 --- ../patches/dbtyper-specific_dokument.org.sql	2015-08-10 09:09:17.718922540 +0200
 ***************
 *** 42,62 ****
-    relMaalUrn  text,
+    urn  text,
     objektType text 
   )
   ;
@@ -24,7 +24,7 @@
 ! 
 ! 
 --- 42,125 ----
-    relMaalUrn  text,
+    urn  text,
     objektType text 
   )
   ;
@@ -50,8 +50,8 @@
 + CREATE TYPE DokumentdelRelationType AS (
 +   relType DokumentdelRelationKode,
 +   virkning Virkning,
-+   relMaalUuid uuid,
-+   relMaalUrn  text,
++   uuid uuid,
++   urn  text,
 +   objektType text 
 + )
 + ;

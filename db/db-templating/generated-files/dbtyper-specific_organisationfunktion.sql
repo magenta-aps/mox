@@ -31,8 +31,8 @@ CREATE TYPE OrganisationfunktionRelationKode AS ENUM  ('organisatoriskfunktionst
 CREATE TYPE OrganisationfunktionRelationType AS (
   relType OrganisationfunktionRelationKode,
   virkning Virkning,
-  relMaalUuid uuid,
-  relMaalUrn  text,
+  uuid uuid,
+  urn  text,
   objektType text 
 )
 ;

@@ -323,11 +323,11 @@ read_Sag1 := as_read_sag(new_uuid1,
 --raise notice 'read_Sag_update 1:%',to_json(read_Sag1);
 
 SELECT
-relMaalUuid into read_uuidSekundaerpart2 
+uuid into read_uuidSekundaerpart2 
 FROM
 unnest(read_Sag1.registrering[1].relationer) a
 where
-a.relIndex=2
+a.indeks=2
 and a.relType = 'sekundaerpart'::sagRelationKode
 ;
 
@@ -370,11 +370,11 @@ read_Sag1 := as_read_sag(new_uuid1,
 
 
 SELECT
-relIndex into read_rel_index_3
+indeks into read_rel_index_3
 FROM
 unnest(read_Sag1.registrering[1].relationer) a
 where
-a.relMaalUrn = urnSekundaerpart3
+a.urn = urnSekundaerpart3
 and a.relType = 'sekundaerpart'::sagRelationKode
 ;
 

@@ -44,8 +44,8 @@ CREATE TYPE KlasseRelationKode AS ENUM  ('ejer','ansvarlig','overordnetklasse','
 CREATE TYPE KlasseRelationType AS (
   relType KlasseRelationKode,
   virkning Virkning,
-  relMaalUuid uuid,
-  relMaalUrn  text,
+  uuid uuid,
+  urn  text,
   objektType text 
 )
 ;

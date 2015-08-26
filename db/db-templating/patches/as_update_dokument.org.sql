@@ -112,8 +112,8 @@ ELSE
       SELECT
         new_dokument_registrering.id,
           a.virkning,
-            a.relMaalUuid,
-              a.relMaalUrn,
+            a.uuid,
+              a.urn,
                 a.relType,
                   a.objektType
       FROM unnest(relationer) as a
@@ -778,11 +778,11 @@ FOREACH dokument_del_obj IN ARRAY dokument_variant_obj.dele
     SELECT
         dokument_del_new_id,
           a.virkning,
-            a.relMaalUuid,
-              a.relMaalUrn,
+            a.uuid,
+              a.urn,
                 a.relType,
                   a.objektType
-    FROM unnest(dokument_del_obj.relationer) a(relType,virkning,relMaalUuid,relMaalUrn,objektType)
+    FROM unnest(dokument_del_obj.relationer) a(relType,virkning,uuid,urn,objektType)
     ;
 
     END IF; --explicit empty array of variant del relationer given
