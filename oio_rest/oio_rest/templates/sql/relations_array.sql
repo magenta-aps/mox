@@ -17,8 +17,8 @@ NULL
             {% else -%}
             NULL
             {% endif -%}:: Virkning,
-            {% if rel.uuid is defined %}{{ rel.uuid|adapt }}{% else %}NULL{% endif %},
-            {% if rel.urn is defined %}{{ rel.urn|adapt }}{% else %}NULL{% endif %},
+            {% if rel.uuid is defined  and rel.uuid %}{{ rel.uuid|adapt }}{% else %}NULL{% endif %},
+            {% if rel.urn is defined  and rel.urn %}{{ rel.urn|adapt }}{% else %}NULL{% endif %},
             {% if rel.objekttype is defined %}{{ rel.objekttype|adapt }}{% else %}NULL{% endif %}
         {% if class_name == "Sag" %}
         ,        {{ rel.indeks|adapt }},
