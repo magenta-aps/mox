@@ -1,4 +1,5 @@
-To install, run install.sh
+To install, run install.sh 
+(NOTICE: If you need to initialize the postgresql database as well you need to run run 'install.sh -d' CAUTION: This will drop any existing mox database and any data in it will be lost.)
 
 Then, activate the virtualenv by running:
   source python-env/bin/activate
@@ -128,3 +129,82 @@ to the curl request.
 
 Alternately, if using bash shell:
   curl -H "$(python utils/encode_token.py" /my/saml/assertion.xml) ...
+
+
+Format of JSON input files 
+===========================
+
+Examples of the format of the json files to supply when invoking the particular REST operations can be seen in the folder '/interface_test/test_data'.
+
+Below here is listed some points to pay special attention to:
+
+Deleting / Clearing Attributes 
+-------------------------------
+
+To clear / delete a previously set attribute value – lets say the egenskab 'supplement' of a facet object – specify the empty string as the attribute value in the json body:
+
+…
+"attributter": { 
+        "facetegenskaber": [ 
+            {
+            "supplement": "", 
+            "virkning": { 
+                "from": "2014-05-19", 
+                "to": "infinity", 
+                "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                "aktoertypekode": "Bruger", 
+                "notetekst": "Clearing supplement, defined by a mistake." 
+            } 
+            }
+        ] 
+    }, 
+…
+
+
+Deleting / Clearing Sates 
+-------------------------------
+
+Similar to the procedure stated above - clearing/deleting previously set states is done be supplying the empty string as value and the desired virknings period. Eg. to clear state 'publiceret' of a facet object, the relevant part of the JSON body should look like this:
+
+...
+ "tilstande": { 
+        "facetpubliceret": [{ 
+            "publiceret": "", 
+            "virkning": { 
+                "from": "2014-05-19", 
+                "to": "infinity", 
+                "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                "aktoertypekode": "Bruger", 
+                "notetekst": "Clearing publiceret, defined by a mistake." 
+            } 
+        }
+        ] 
+    },
+...
+
+Deleting / Clearing Relations
+---------------------------------
+
+Again, similar to the procedure stated above, clearing a previously set relation with cardinality 0..1 is done by supplying empty strings for both uuid and urn of the relation. Eg. to clear a previously set the 'ansvarlig' of a facet object, specific part of the JSON body would look like this:
+
+...
+"relationer": { 
+        "ansvarlig": [
+        { 
+            "uuid": "",
+            "urn" : "", 
+            "virkning": { 
+                "from": "2014-05-19", 
+                "to": "infinity", 
+                "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                "aktoertypekode": "Bruger", 
+                "notetekst": "Nothing to see here!" 
+            
+            }
+        }
+        ]
+}
+....
+
+When updating relations unlimited cardinality (0..n), you have to supply the full list (except for when updating the Sag object), and clearing a particular relation is accordingly done by supplying the full list sans the relation, that you wish to clear.
+
