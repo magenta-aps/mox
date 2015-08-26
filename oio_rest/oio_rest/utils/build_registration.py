@@ -121,7 +121,6 @@ def build_registration(class_name, list_args):
                         'virkning': None
                     })
 
-    print registration
     return registration
 
 

@@ -268,7 +268,15 @@ def object_exists(class_name, uuid):
            "_id from " + class_name + "_registrering))")
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute(sql, (uuid,))
+    try:
+        cursor.execute(sql, (uuid,))
+    except Exception as e:
+        if e.pgcode[:2] == 'MO':
+            status_code = int(e.pgcode[2:])
+            raise DBException(status_code, e.message)
+        else:
+            raise
+
     result = cursor.fetchone()[0]
 
     return result
@@ -288,7 +296,15 @@ actual_state.dokument_registrering r on r.id = v.dokument_registrering_id
 where de.indhold = %s"""
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute(sql, (content_url,))
+    try:
+        cursor.execute(sql, (content_url,))
+    except Exception as e:
+        if e.pgcode[:2] == 'MO':
+            status_code = int(e.pgcode[2:])
+            raise DBException(status_code, e.message)
+        else:
+            raise
+
     result = cursor.fetchone()
     return result
 
@@ -372,7 +388,15 @@ def delete_object(class_name, registration, note, uuid):
     # Call Postgres! Return OK or not accordingly
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute(sql)
+    try:
+        cursor.execute(sql)
+    except Exception as e:
+        if e.pgcode[:2] == 'MO':
+            status_code = int(e.pgcode[2:])
+            raise DBException(status_code, e.message)
+        else:
+            raise
+
     output = cursor.fetchone()
     return output[0]
 
@@ -404,7 +428,15 @@ def passivate_object(class_name, note, registration, uuid):
     # Call PostgreSQL
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute(sql)
+    try:
+        cursor.execute(sql)
+    except Exception as e:
+        if e.pgcode[:2] == 'MO':
+            status_code = int(e.pgcode[2:])
+            raise DBException(status_code, e.message)
+        else:
+            raise
+
     output = cursor.fetchone()
     return output[0]
 
@@ -443,6 +475,13 @@ def update_object(class_name, note, registration, uuid=None):
     except psycopg2.DataError:
         # Thrown when no changes
         pass
+    except Exception as e:
+        if e.pgcode[:2] == 'MO':
+            status_code = int(e.pgcode[2:])
+            raise DBException(status_code, e.message)
+        else:
+            raise
+
     return uuid
 
 
@@ -472,11 +511,19 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
 
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute(sql, {
-        'uuid': uuid,
-        'registrering_tstzrange': registration_period,
-        'virkning_tstzrange': DateTimeTZRange(virkning_fra, virkning_til)
-    })
+    try:
+        cursor.execute(sql, {
+            'uuid': uuid,
+            'registrering_tstzrange': registration_period,
+            'virkning_tstzrange': DateTimeTZRange(virkning_fra, virkning_til)
+        })
+    except Exception as e:
+        if e.pgcode[:2] == 'MO':
+            status_code = int(e.pgcode[2:])
+            raise DBException(status_code, e.message)
+        else:
+            raise
+
     output = cursor.fetchone()
     if not output:
         # nothing found
@@ -518,12 +565,18 @@ def transform_virkning(o):
         if "timeperiod" in o:
             # Handle clearable wrapper db-types.
             f, t = o["timeperiod"][1:-1].split(',')
+            from_included = o["timeperiod"][0] == '['
+            to_included = o["timeperiod"][-1] == ']'
+
             # Get rid of quotes
             if f[0] == '"':
                 f = f[1:-1]
             if t[0] == '"':
                 t = t[1:-1]
-            items = o.items() + [('from', f), ('to', t)]
+            items = o.items() + [
+                ('from', f), ('to', t), ("from_included", from_included),
+                ("to_included", to_included)
+            ]
             return {k: v for k, v in items if k != "timeperiod"}
         else:
             return {k: transform_virkning(v) for k, v in o.iteritems()}
@@ -620,6 +673,14 @@ def search_objects(class_name, uuid, registration,
     )
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute(sql)
+    try:
+        cursor.execute(sql)
+    except Exception as e:
+        if e.pgcode[:2] == 'MO':
+            status_code = int(e.pgcode[2:])
+            raise DBException(status_code, e.message)
+        else:
+            raise
+
     output = cursor.fetchone()
     return output
