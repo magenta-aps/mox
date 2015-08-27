@@ -30,9 +30,10 @@ def escape_underscores(s):
     return s.replace("_", "\_")
 
 
-def build_relation(value, virkning=None):
+def build_relation(value, objekttype=None, virkning=None):
     relation = {
-        'virkning': virkning
+        'virkning': virkning,
+        'objekttype': objekttype
     }
     if is_uuid(value):
         relation['uuid'] = value
@@ -43,6 +44,28 @@ def build_relation(value, virkning=None):
             "Relation has an invalid value (not a UUID or URN) '%s'" % value)
     return relation
 
+
+def split_param(value):
+    """Return a tuple of the first and second item in a colon-separated str.
+
+    E.g. if the input is "a:b", returns ("a", "b").
+    If the input does not contain a color, e.g. "a", then ("a", None) is
+    returned.
+    """
+    try:
+        a, b = value.split(":")
+        return a, b
+    except ValueError:
+        return value, None
+
+def to_lower_param(s):
+    """Return the colon-separated string with the first
+    item in lowercase. The second item is left untouched."""
+    try:
+        a, b = s.split(":")
+        return "%s:%s" % (a.lower(), b)
+    except ValueError:
+        return s.lower()
 
 def build_registration(class_name, list_args):
     registration = {}
@@ -71,11 +94,12 @@ def build_registration(class_name, list_args):
                     })
 
         relation = registration.setdefault('relations', {})
-        if f in get_relation_names(class_name):
-            relation[f] = []
+        rel_name, objekttype = split_param(f)
+        if rel_name in get_relation_names(class_name):
+            relation[rel_name] = []
             # Support multiple relation references at a time
             for rel in list_args[f]:
-                relation[f].append(build_relation(rel))
+                relation[rel_name].append(build_relation(rel, objekttype))
 
     if class_name == "Dokument":
         variants = registration.setdefault("variants", [])
@@ -124,10 +148,12 @@ def build_registration(class_name, list_args):
         # Look for del relationer
         part_relations = part.setdefault("relationer", {})
         for f in list_args:
-            if f in get_document_part_relation_names():
-                part_relations[f] = []
+            rel_name, objekttype = split_param(f)
+            if rel_name in get_document_part_relation_names():
+                part_relations[rel_name] = []
                 for rel in list_args[f]:
-                    part_relations[f].append(build_relation(rel))
+                    part_relations[rel_name].append(
+                        build_relation(rel, objekttype))
 
     return registration
 

@@ -6,7 +6,7 @@ from flask import jsonify, request
 from custom_exceptions import BadRequestException
 
 import db
-from utils.build_registration import build_registration
+from utils.build_registration import build_registration, to_lower_param
 
 
 # Just a helper during debug
@@ -93,9 +93,9 @@ class OIORestObject(object):
         LIST or SEARCH objects, depending on parameters.
         """
         # Convert arguments to lowercase, getting them as lists
-        list_args = {k.lower(): request.args.getlist(k)
+        list_args = {to_lower_param(k): request.args.getlist(k)
                      for k in request.args.keys()}
-        args = {k.lower(): request.args.get(k)
+        args = {to_lower_param(k): request.args.get(k)
                 for k in request.args.keys()}
 
         virkning_fra = args.get('virkningfra', None)
