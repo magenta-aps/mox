@@ -42,6 +42,21 @@ public class Main {
         String queueName = null;
         String restInterface = null;
 
+        for (String arg : args) {
+            if (arg.equalsIgnoreCase("help")) {
+                System.out.println("Mox agent message interface");
+                System.out.println("---------------------------");
+                System.out.println("Will interface with a RabbitMQ message queue and pass messages through to a REST interface");
+                System.out.println("Usage: java -cp ");
+                System.out.println("Parameters:");
+                System.out.println("propertiesFile (-DpropertiesFile=<hostname>:<port>): A Java properties file that contains configuration values.\nAny parameters not found on the command line will be loaded from there.\nShould also contain configuration for a SAML token service.\nIf this parameter is unset, the file 'agent.properties' will be loaded.\n");
+                System.out.println("queueInterface (-DqueueInterface=<hostname>:<port>): An interface (<hostname>:<port>) where an instance of RabbitMQ is listening.\nIf this is neither found in the command line or in the properties file, the value defaults to localhost:5672.\n");
+                System.out.println("queueName (-DqueueName=<name>): The name of the RabbitMQ queue to send or receive messages in.\nDefaults to 'incoming' if not found elsewhere.\n");
+                System.out.println("restInterface (-DrestInterface=<protocol>://<hostname>:<port>): The REST interface where messages should end up when passed through the queue.\nAlso needed for obtaining a SAML token for authenticating to that interface.\nDefaults to http://127.0.0.1:5000\n");
+
+                return;
+            }
+        }
 
         System.out.println("Reading command line arguments");
 
@@ -258,7 +273,7 @@ public class Main {
                     System.out.println("update response: "+responseString);
 
                     System.out.println("Sending passivate operation");
-                    response = objectType.passivate(messageSender, uuid, "Pacify that sucker", encodedAuthtoken);
+                    response = objectType.passivate(messageSender, uuid, null, encodedAuthtoken);
                     responseString = response.get();
                     System.out.println("passivate response: "+responseString);
 
@@ -300,7 +315,7 @@ public class Main {
     private static final String SAML_TOKEN_TYPE_11 = "1.1";
     private static final String SAML_TOKEN_TYPE_20 = "2.0";
 
-    private static String getSecurityToken(Properties properties, String endpointAddress) {
+    public static String getSecurityToken(Properties properties, String endpointAddress) {
 
         try {
             String keystorePath = properties.getProperty("security.keystore.path");

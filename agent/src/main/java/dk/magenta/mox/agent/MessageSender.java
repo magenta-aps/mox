@@ -20,7 +20,9 @@ public class MessageSender extends MessageInterface {
     private HashMap<String, SettableFuture<String>> responseExpectors = new HashMap<String, SettableFuture<String>>();
     private boolean listening = false;
 
-
+    public MessageSender(String host, String queue) throws IOException, TimeoutException {
+        this(host, null, queue);
+    }
     public MessageSender(String host, String exchange, String queue) throws IOException, TimeoutException {
         super(host, exchange, queue);
         this.replyQueue = this.getChannel().queueDeclare().getQueue();

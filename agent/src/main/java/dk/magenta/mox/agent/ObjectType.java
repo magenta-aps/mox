@@ -25,25 +25,42 @@ public class ObjectType {
     }
 
     public class Operation {
+        private String name;
         public Method method;
         public String path;
-        public String command;
+        public Operation(String name) {
+            this.name = name;
+        }
     }
 
-    private static final String OPERATION_CREATE = "create";
-    private static final String OPERATION_UPDATE = "update";
-    private static final String OPERATION_PASSIVATE = "passivate";
-    private static final String OPERATION_DELETE = "delete";
+    private static final String COMMAND_CREATE = "create";
+    private static final String COMMAND_UPDATE = "update";
+    private static final String COMMAND_PASSIVATE = "passivate";
+    private static final String COMMAND_DELETE = "delete";
 
-    private ObjectType(String name) {
+    public ObjectType(String name) {
         this.name = name;
         this.operations = new HashMap<String, Operation>();
     }
 
-    public Operation addOperation(String name) {
-        Operation operation = new Operation();
+    private Operation addOperation(String name) {
+        Operation operation = new Operation(name);
         this.operations.put(name, operation);
         return operation;
+    }
+
+    public Operation addOperation(String name, Method method, String path) {
+        if (name != null) {
+            Operation operation = this.addOperation(name);
+            operation.method = method;
+            operation.path = path;
+            return operation;
+        }
+        return null;
+    }
+
+    public Operation getOperation(String name) {
+        return this.getOperation(name, false);
     }
 
     public Operation getOperation(String name, boolean createIfMissing) {
@@ -52,21 +69,6 @@ public class ObjectType {
             return this.addOperation(name);
         }
         return operation;
-    }
-
-    public Operation getOperationByCommand(String command) {
-        if (command != null) {
-            for (Operation operation : this.operations.values()) {
-                if (command.equals(operation.command)) {
-                    return operation;
-                }
-            }
-        }
-        return null;
-    }
-
-    public boolean hasCommand(String command) {
-        return (this.getOperationByCommand(command) != null);
     }
 
     public static Map<String,ObjectType> load(String propertiesFileName) throws IOException {
@@ -107,12 +109,10 @@ public class ObjectType {
                     }
                 } else if (attributeName.equals("path")) {
                     operation.path = attributeValue;
-                } else if (attributeName.equals("command")) {
-                    operation.command = attributeValue;
                 }
             }
         }
-        String[] neededOperations = {OPERATION_CREATE, OPERATION_UPDATE, OPERATION_PASSIVATE, OPERATION_DELETE};
+        String[] neededOperations = {COMMAND_CREATE, COMMAND_UPDATE, COMMAND_PASSIVATE, COMMAND_DELETE};
         for (ObjectType objectType : objectTypes.values()) {
             for (String operation : neededOperations) {
                 if (!objectType.operations.containsKey(operation)) {
@@ -136,10 +136,10 @@ public class ObjectType {
     }
 
     public Future<String> create(MessageSender sender, JSONObject data, String authorization) throws IOException, OperationNotSupportedException {
-        if (this.operations.containsKey(OPERATION_CREATE)) {
-            return this.sendCommand(sender, this.operations.get(OPERATION_CREATE).command, null, data, authorization);
+        if (this.operations.containsKey(COMMAND_CREATE)) {
+            return this.sendCommand(sender, COMMAND_CREATE, null, data, authorization);
         } else {
-            throw new OperationNotSupportedException("Operation "+OPERATION_CREATE+" is not defined for Object type "+this.name);
+            throw new OperationNotSupportedException("Operation "+ COMMAND_CREATE +" is not defined for Object type "+this.name);
         }
     }
 
@@ -149,10 +149,10 @@ public class ObjectType {
     }
 
     public Future<String> update(MessageSender sender, UUID uuid, JSONObject data, String authorization) throws IOException, OperationNotSupportedException {
-            if (this.operations.containsKey(OPERATION_UPDATE)) {
-            return this.sendCommand(sender, this.operations.get(OPERATION_UPDATE).command, uuid, data, authorization);
+            if (this.operations.containsKey(COMMAND_UPDATE)) {
+            return this.sendCommand(sender, COMMAND_UPDATE, uuid, data, authorization);
         } else {
-            throw new OperationNotSupportedException("Operation "+OPERATION_UPDATE+" is not defined for Object type "+this.name);
+            throw new OperationNotSupportedException("Operation "+ COMMAND_UPDATE +" is not defined for Object type "+this.name);
         }
     }
 
@@ -162,7 +162,7 @@ public class ObjectType {
     }
 
     public Future<String> passivate(MessageSender sender, UUID uuid, String note, String authorization) throws IOException, OperationNotSupportedException {
-            if (this.operations.containsKey(OPERATION_PASSIVATE)) {
+            if (this.operations.containsKey(COMMAND_PASSIVATE)) {
             JSONObject data = new JSONObject();
             if (note == null) {
                 note = "";
@@ -173,9 +173,9 @@ public class ObjectType {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            return this.sendCommand(sender, this.operations.get(OPERATION_PASSIVATE).command, uuid, data, authorization);
+            return this.sendCommand(sender, COMMAND_PASSIVATE, uuid, data, authorization);
         } else {
-            throw new OperationNotSupportedException("Operation "+OPERATION_PASSIVATE+" is not defined for Object type "+this.name);
+            throw new OperationNotSupportedException("Operation "+ COMMAND_PASSIVATE +" is not defined for Object type "+this.name);
         }
     }
 
@@ -184,7 +184,7 @@ public class ObjectType {
     }
 
     public Future<String> delete(MessageSender sender, UUID uuid, String note, String authorization) throws IOException, OperationNotSupportedException {
-        if (this.operations.containsKey(OPERATION_DELETE)) {
+        if (this.operations.containsKey(COMMAND_DELETE)) {
             JSONObject data = new JSONObject();
             if (note == null) {
                 note = "";
@@ -194,9 +194,9 @@ public class ObjectType {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            return this.sendCommand(sender, this.operations.get(OPERATION_DELETE).command, uuid, data, authorization);
+            return this.sendCommand(sender, COMMAND_DELETE, uuid, data, authorization);
         } else {
-            throw new OperationNotSupportedException("Operation "+OPERATION_DELETE+" is not defined for Object type "+this.name);
+            throw new OperationNotSupportedException("Operation "+ COMMAND_DELETE +" is not defined for Object type "+this.name);
         }
     }
 
@@ -204,14 +204,15 @@ public class ObjectType {
 
 
 
-    private Future<String> sendCommand(MessageSender sender, String operation, UUID uuid, JSONObject data) throws IOException {
-        return this.sendCommand(sender, operation, uuid, data, null);
+    public Future<String> sendCommand(MessageSender sender, String operationName, UUID uuid, JSONObject data) throws IOException {
+        return this.sendCommand(sender, operationName, uuid, data, null);
     }
 
 
-    private Future<String> sendCommand(MessageSender sender, String operation, UUID uuid, JSONObject data, String authorization) throws IOException {
+    public Future<String> sendCommand(MessageSender sender, String operationName, UUID uuid, JSONObject data, String authorization) throws IOException {
         HashMap<String, Object> headers = new HashMap<String, Object>();
-        headers.put(MessageInterface.HEADER_OPERATION, operation);
+        headers.put(MessageInterface.HEADER_OBJECTTYPE, this.name);
+        headers.put(MessageInterface.HEADER_OPERATION, operationName);
         if (uuid != null) {
             headers.put(MessageInterface.HEADER_MESSAGEID, uuid.toString());
         }
