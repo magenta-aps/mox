@@ -57,19 +57,62 @@ OIO REST API Notes
 Search operation
 ----------------
 
-All search parameters which search on an attribute value use
-case-insensitive matching, with the possibility to use wildcards. In
-the case of the Dokument type, the "varianttekst" and "deltekst" parameters
-also support this type of matching.
+One is capable of searching for objects by all attributes, relations,
+states (and variants and their corresponding DokumentDele, in the case of
+Dokument). It is also possible to specify a single uuid to search on, e.g. ::
 
-The wildcard character "%" (percent sign) may be used in parameters to the
-search function. This character matches zero or more of any characters.
+    &uuid=4096a8df-ace7-477e-bda1-d5fdd7428a95
 
-If it is desired to search for attribute values which
+The results returned are only those which the user making the request is
+allowed to see, according to the current restrictions present on the object.
+
+Search parameter names (attributes, relations, states, etc...) are
+case-insensitive, e.g. to search on the "Ejer" attribute, one can specify
+either: ::
+
+    &ejer=urn:cpr12312323 or &Ejer=urn:cpr12312323.
+
+All search parameters which search on an attribute value of type TEXT use
+case-insensitive matching, with the possibility to use wildcards. Other
+value types use a simple equality operator. In the case of the Dokument
+type, the "varianttekst" and "deltekst" parameters also support this type of
+matching.
+
+The wildcard character "%" (percent sign) may be used in these search
+parameter values. This character matches zero or more of any characters.
+
+If it is desired to search for attribute values of type TEXT which
 contain "%" themselves, then the character must be escaped in the search
 parameters with a backslash, like, for example: "abc\%def" would match the
 value "abc%def". Contrary, to typical SQL LIKE syntax, the character "_"
 (underscore) matches only the underscore character (and not "any character").
+
+When searching on relations, one can limit the relation to a specific object
+type by specifying a search parameter of the format: ::
+
+    &<relation>:<objecttype>=<uuid|urn>
+
+Note that the objecttype parameter is case-sensitive.
+
+It is only possible to search on one DokumentVariant and DokumentDel at a time.
+For example, if ::
+
+    &deltekst=a&underredigeringaf=<UUID>
+
+is specified, then the search will return documents which have a DokumentDel
+with deltekst="a" and which has the relation "underredigeringaf"=<UUID>.
+However, if the deltekst parameter is omitted, e.g. ::
+
+    &underredigeringaf=<UUID>
+
+Then, all documents which have at least one DokumentDel which has the given
+UUID will be returned.
+
+The same logic applies to the "varianttekst" parameter. If it
+is not specified, then all variants are searched across. Note that when
+"varianttekst" is specified, then any DokumentDel parameters apply only to
+that specific variant. If the DokumentDel parameters are matched under a
+different variant, then they are not included in the results.
 
 File upload
 -----------

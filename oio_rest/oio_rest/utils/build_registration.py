@@ -121,7 +121,7 @@ def build_registration(class_name, list_args):
                         f: escape_underscores(val),
                         'virkning': None
                     })
-        # TODO: Support deltekst, del egenskaber and del relationer
+
         parts = []
         variant["dele"] = parts
         part = {
