@@ -44,6 +44,8 @@ curl --write-out %{http_code} --output /tmp/dokument_opret.txt -X PUT \
     -F 'del_indhold3=@test_data/test.xls' \
     $HOST_URL/dokument/dokument/$import_uuid
 
+printf "\nImported dokument: $import_uuid"
+
 # List
 curl -sH "Content-Type: application/json" -X GET $HOST_URL/dokument/dokument?uuid=$uuid > /tmp/listoutput
 
@@ -92,6 +94,7 @@ then
     printf "\nFile upload/download successful after update operation"
 else
     printf "\nError in file upload/download after update operation. Downloaded file does not match uploaded file"
+    exit
 fi
 
 # Passivate
@@ -136,3 +139,30 @@ else
     printf "\nError in search on del relation URN."
     exit
 fi
+
+
+if $(curl -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?ejer:Organisation=ef2713ee-1a38-4c23-8fcb-3c4331262194&uuid=$import_uuid" | grep -q "$import_uuid")
+then
+    printf "\nSearch on relation with objekttype successful"
+else
+    printf "\nError in search on relation with objekttype."
+    exit
+fi
+
+if ! $(curl -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?ejer:Blah=ef2713ee-1a38-4c23-8fcb-3c4331262194&uuid=$import_uuid" | grep -q "$import_uuid")
+then
+    printf "\nSearch on relation with wrong objekttype successful"
+else
+    printf "\nError in search on relation with wrong objekttype."
+    exit
+fi
+
+if $(curl -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?underredigeringaf:Bruger=urn:cpr8883394&uuid=$import_uuid" | grep -q "$import_uuid")
+then
+    printf "\nSearch on del relation with objekttype successful"
+else
+    printf "\nError in search on del relation with objekttype."
+    exit
+fi
+
+

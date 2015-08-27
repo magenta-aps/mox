@@ -46,35 +46,31 @@ public class RestMessageHandler implements MessageHandler {
     }
 
     public Future<String> run(Map<String, Object> headers, JSONObject jsonObject) {
-        String command = this.getHeaderString(headers, MessageInterface.HEADER_OPERATION);
+        String objectTypeName = this.getHeaderString(headers, MessageInterface.HEADER_OBJECTTYPE);
+        String operationName = this.getHeaderString(headers, MessageInterface.HEADER_OPERATION);
 
-        ObjectType objectType = null;
-        ObjectType.Operation operation = null;
-        for (ObjectType o : this.objectTypes.values()) {
-            operation = o.getOperationByCommand(command);
+        ObjectType objectType = this.objectTypes.get(objectTypeName);
+        if (objectType != null) {
+            ObjectType.Operation operation = objectType.getOperation(operationName);
+
             if (operation != null) {
-                objectType = o;
-                break;
-            }
-        }
-
-        if (operation != null && objectType != null) {
-            String uuid = this.getHeaderString(headers, MessageInterface.HEADER_MESSAGEID);
-            final String authorization = this.getHeaderString(headers, MessageInterface.HEADER_AUTHORIZATION);
-            if (command != null) {
-                String path = operation.path;
-                if (path.contains("[uuid]")) {
-                    path = path.replace("[uuid]", uuid);
-                }
-                final String method = operation.method.toString();
-                final String fPath = path;
-                final char[] data = jsonObject.toString().toCharArray();
-                return this.pool.submit(new Callable<String>() {
-                    public String call() throws IOException {
-                        String response = rest(method, fPath, data, authorization);
-                        return response;
+                String uuid = this.getHeaderString(headers, MessageInterface.HEADER_MESSAGEID);
+                final String authorization = this.getHeaderString(headers, MessageInterface.HEADER_AUTHORIZATION);
+                if (operationName != null) {
+                    String path = operation.path;
+                    if (path.contains("[uuid]")) {
+                        path = path.replace("[uuid]", uuid);
                     }
-                });
+                    final String method = operation.method.toString();
+                    final String fPath = path;
+                    final char[] data = jsonObject.toString().toCharArray();
+                    return this.pool.submit(new Callable<String>() {
+                        public String call() throws IOException {
+                            String response = rest(method, fPath, data, authorization);
+                            return response;
+                        }
+                    });
+                }
             }
         }
         return null;

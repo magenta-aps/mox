@@ -242,15 +242,6 @@ class DokumentDelEgenskaberType(Searchable, namedtuple(
                      'was not present in the request.') % (url, o.path)
                 )
             return file_obj
-        else:
-            raise BadRequestException(
-                'The content field referenced an unsupported '
-                'scheme or was invalid. The URLs must be of the'
-                'form: field:<form-field>, where <form-field> '
-                'is the name of the field in the '
-                'multipart/form-data-encoded request that '
-                'contains the file binary data.'
-            )
 
     @classmethod
     def input(cls, i):
@@ -261,14 +252,22 @@ class DokumentDelEgenskaberType(Searchable, namedtuple(
         # If the content URL is provided, and we are not doing a read
         # operation, save the uploaded file
         if indhold != "" and request.method != 'GET':
-            # Get FileStorage object referenced by indhold field
-            f = cls._get_file_storage_for_content_url(indhold)
+            try:
+                o = urlparse(indhold)
+            except ValueError:
+                raise BadRequestException(
+                    "The parameter \"indhold\" contained "
+                    "an invalid URL: \"%s\"" % indhold)
+            # If the user is uploading a file, then handle the upload
+            if o.scheme == 'field':
+                # Get FileStorage object referenced by indhold field
+                f = cls._get_file_storage_for_content_url(indhold)
 
-            # Save the file and get the URL for the saved file
-            indhold = content_store.save_file_object(f)
-        else:
-            # Empty string for indhold will clear the field.
-            pass
+                # Save the file and get the URL for the saved file
+                indhold = content_store.save_file_object(f)
+            else:
+                # Otherwise, just accept whatever URL they pass.
+                pass
 
         return cls(
             i.get('indeks', None),
