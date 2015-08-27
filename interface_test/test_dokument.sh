@@ -92,6 +92,7 @@ then
     printf "\nFile upload/download successful after update operation"
 else
     printf "\nError in file upload/download after update operation. Downloaded file does not match uploaded file"
+    exit
 fi
 
 # Passivate
@@ -134,5 +135,14 @@ then
     printf "\nSearch on del relation URN successful"
 else
     printf "\nError in search on del relation URN."
+    exit
+fi
+
+
+if $(curl -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?indhold=http://www.google.com/&uuid=$import_uuid" | grep -q "$import_uuid")
+then
+    printf "\nSearch on del indhold with http URL successful"
+else
+    printf "\nError in search on del indhold with http URL."
     exit
 fi
