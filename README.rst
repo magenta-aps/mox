@@ -600,6 +600,150 @@ specific section dedicated to this topic).
 Also see the section named 'Deleting / Clearing Relations' for info regarding
 clearing relations.
 
+
+Behaviour Of Relations Of Object Of Type Sag
+--------------------------------------------
+
+The relations with unlimited cardinality (0..n) of the 'Sag' object is different
+than the relations of the other object types, as it operates with an 'index' 
+field. This means that you can update relations with unlimited cardinality 
+without specifying the full list of the relations of the given type. You can 
+update a specific relation instance, making use of its index value.
+
+Lets say that you have a 'Sag' object with the following 'andrebehandlere' 
+relations in place in the DB: ::
+
+  ...
+  "relationer": {
+        "andrebehandlere": [{ 
+            "objekttype": "Bruger",
+            "indeks": 1,
+            "uuid": "ff2713ee-1a38-4c23-8fcb-3c4331262194",
+            "virkning": { 
+                "from": "2014-05-19", 
+                "to": "infinity", 
+                "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                "aktoertypekode": "Bruger", 
+                "notetekst": "As per meeting d.2014-05-19" 
+            }
+        }, 
+        { 
+            "objekttype": "Organisation",
+            "indeks": 2, 
+            "uuid": "ddc99abd-c1b0-48c2-aef7-74fea841adae"
+            ,"virkning": { 
+                "from": "2015-02-20", 
+                "to": "infinity", 
+                "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                "aktoertypekode": "Bruger", 
+                "notetekst": "As per meeting 2015-02-20" 
+            }, 
+        } 
+        ]
+  }
+  ...
+
+Lets say you now provide the following fragment as part of the JSON body 
+provided to the update operation of the Sag object: ::
+
+  ...
+  "relationer": {
+  "andrebehandlere": [
+              {
+                "objekttype": "Organisation",
+                "indeks": 2, 
+                "uuid": "ddc99abd-c1b0-48c2-aef7-74fea841adae"
+                ,"virkning": { 
+                    "from": "2015-05-20", 
+                    "to": "2015-08-20", 
+                    "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                    "aktoertypekode": "Bruger", 
+                    "notetekst": "As per meeting d.2015-02-20" 
+                }, 
+            },
+            { 
+                "objekttype": "Organisation",
+                "uuid": "ef2713ee-1a38-4c23-8fcb-3c4331262194"
+                ,"virkning": { 
+                    "from": "2015-08-20", 
+                    "to": "infinity", 
+                    "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                    "aktoertypekode": "Bruger", 
+                    "notetekst": "As per meeting 2015-08-20" 
+                }, 
+            },
+        ]
+  }
+  ...
+
+The result would be the following: ::
+
+  ...
+  "relationer": {
+  "andrebehandlere": [
+              { 
+                "objekttype": "Bruger",
+                "indeks": 1,
+                "uuid": "ff2713ee-1a38-4c23-8fcb-3c4331262194",
+                "virkning": { 
+                    "from": "2014-05-19", 
+                    "to": "infinity", 
+                    "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                    "aktoertypekode": "Bruger", 
+                    "notetekst": "As per meeting d.2014-05-19" 
+                }, 
+            },
+              {
+                "objekttype": "Organisation",
+                "indeks": 2, 
+                "uuid": "ddc99abd-c1b0-48c2-aef7-74fea841adae"
+                ,"virkning": { 
+                    "from": "2015-05-20", 
+                    "to": "2015-08-20", 
+                    "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                    "aktoertypekode": "Bruger", 
+                    "notetekst": "As per meeting d.2015-02-20" 
+                }, 
+            },
+            { 
+                "objekttype": "Organisation",
+                "indeks": 3, 
+                "uuid": "ef2713ee-1a38-4c23-8fcb-3c4331262194"
+                ,"virkning": { 
+                    "from": "2015-08-20", 
+                    "to": "infinity", 
+                    "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                    "aktoertypekode": "Bruger", 
+                    "notetekst": "As per meeting 2015-08-20" 
+                }, 
+            },
+        ]
+  }
+  ...
+
+As can be seen, the relation with index 2 has been updated and a new relation
+with index 3 has been created. The relation with index 1 has been carried over
+from the previous registration. Please notice, that in the case of relations
+*of unlimited cardinality* for the Sag object, there is no merge logic regarding
+'virknings' periods. 
+
+To delete / clear a relation with a given index, you specify a blank uuid and/or
+a blank urn for that particular index.
+
+Please notice, that for the update, create and import operations of the 
+Sag object, the rule is, that if you supply an index value that is unknown in 
+the database, the specified index value will be ignored, and a new relation 
+instance will be created with an index value computed by the logic in the 
+DB-server. For the create and import operations, this will be all the specified 
+index values.
+
+Updating relations with cardinality 0..1 of the Sag object is done similar to
+updating relations of objects of other types. Any specified index values are
+ignored and blanked by the logic of the update operation. Otherwise consult the
+section 'Examples Of The Effects Of The Merging Logic When Updating Relations'
+for examples and more info regarding this.
+
+
 Deleting / Clearing Attributes 
 -------------------------------
 
