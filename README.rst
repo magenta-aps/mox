@@ -241,14 +241,407 @@ Alternately, if using bash shell: ::
     curl -H "$(python utils/encode_token.py" /my/saml/assertion.xml) ...
 
 
-Format of JSON input files 
-===========================
+Format of JSON body in requests to REST-api
+============================================
 
 Examples of the format of the JSON bodies to supply when invoking the
 particular REST operations can be seen in the folder
 ``/interface_test/test_data``.
 
 Below here is listed some points to pay special attention to:
+
+
+Merging Of Attributes / States / Relations When Updating Object
+----------------------------------------------------------------
+
+It is worth noting, that the current implementation of the REST-api and the 
+underlying DB procedures *as a general* rule, merges the incomming registration 
+with the registration currently in effect, for all 'virknings' periods not 
+explictly covered by the incomming registration.
+
+
+Exceptions to this rule:
+------------------------
+
+- Deleting Attributes / States / Relations by explicitly specifying an empty 
+  list / object 
+  (see section below regarding clearing/deleting Attributes/States/Relations)
+
+- When updating relations with *unlimited cardinality* (0..n) you always have to
+  supply the full list of all the relations *of that particular type*. No 
+  merging with the set of relations of the same particular type of the previous 
+  registration takes place. However, if you omit the particular type of 
+  relation entirely, when you're updating the object - all the relations of that 
+  particular type of the previous registration, will be carried over.
+  ( The exception to this rule, is in the case of the object Sag - see section
+  below regarding this. )
+
+
+Examples Of The Effects Of The Merging Logic When Updating Attributes
+----------------------------------------------------------------------
+
+As an example (purely made up to suit the purpose), lets say we have a Facet 
+object in the DB, where the current 'Egenskaber' looks like this: ::
+
+  ...
+  "facetegenskaber": [ 
+              {
+              "brugervendtnoegle": "ORGFUNK", 
+              "beskrivelse": "Organisatorisk funktion æ", 
+              "plan": "XYZ", 
+              "opbygning": "Hierarkisk", 
+              "ophavsret": "Magenta", 
+              "supplement": "Ja", 
+              "virkning": { 
+                  "from": "2014-05-19", 
+                  "to": "infinity", 
+                  "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                  "aktoertypekode": "Bruger", 
+                  "notetekst": "Adjusted egenskaber" 
+              } 
+              }
+  ]
+  ...
+
+Lets say we now supply the following fragment as part of the JSON body to the 
+update operation: ::
+
+  ...
+  "facetegenskaber": [ 
+              {
+              "supplement": "Nej", 
+              "virkning": { 
+                  "from": "2015-08-27", 
+                  "to": "2015-09-30", 
+                  "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                  "aktoertypekode": "Bruger", 
+                  "notetekst": "Adjusted supplement" 
+                } 
+              }
+  ]
+  ...
+
+The resulting 'Egenskaber' of the Facet would look like this: ::
+
+  ...
+  "facetegenskaber": [ 
+              {
+              "brugervendtnoegle": "ORGFUNK", 
+              "beskrivelse": "Organisatorisk funktion æ", 
+              "plan": "XYZ", 
+              "opbygning": "Hierarkisk", 
+              "ophavsret": "Magenta", 
+              "supplement": "Ja", 
+              "virkning": { 
+                  "from": "2014-05-19", 
+                  "to": "2015-08-27", 
+                  "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                  "aktoertypekode": "Bruger", 
+                  "notetekst": "Adjusted egenskaber" 
+                } 
+              }
+              ,
+               {
+              "brugervendtnoegle": "ORGFUNK", 
+              "beskrivelse": "Organisatorisk funktion æ", 
+              "plan": "XYZ", 
+              "opbygning": "Hierarkisk", 
+              "ophavsret": "Magenta", 
+              "supplement": "Nej", 
+              "virkning": { 
+                  "from": "2015-08-27", 
+                  "to": "2015-09-30", 
+                  "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                  "aktoertypekode": "Bruger", 
+                  "notetekst": "Adjusted supplement" 
+                } 
+              }
+              ,{
+              "brugervendtnoegle": "ORGFUNK", 
+              "beskrivelse": "Organisatorisk funktion æ", 
+              "plan": "XYZ", 
+              "opbygning": "Hierarkisk", 
+              "ophavsret": "Magenta", 
+              "supplement": "Ja", 
+              "virkning": { 
+                  "from": "2015-09-30", 
+                  "to": "infinity", 
+                  "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                  "aktoertypekode": "Bruger", 
+                  "notetekst": "Adjusted egenskaber" 
+                } 
+              }
+
+  ]
+  ...
+
+As we can se, the update operation will merge the incomming fragment with 
+the 'Egenskaber' of the current registration according to the 'virknings' periods
+stipulated. The 'Egenskaber' fields not provided in the incomming fragment, will
+be left untouched. If you wish to clear/delete particular 'Egenskaber' fields, see
+the section 'Deleting / Clearing Attributes' regarding this.
+
+
+Examples Of The Effects Of The Merging Logic When Updating States
+----------------------------------------------------------------------
+
+Lets say we have a Facet object, where the state 'Publiceret' look likes this 
+in the DB: ::
+
+  ...
+  "tilstande": { 
+          "facetpubliceret": [{ 
+              "publiceret": "Publiceret", 
+              "virkning": { 
+                  "from": "2014-05-19", 
+                  "to": "infinity", 
+                  "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                  "aktoertypekode": "Bruger", 
+                  "notetekst": "Publication Approved" 
+              } 
+          }
+          ] 
+      },
+  ...
+
+Lets say that we now, provide the following fragment as part of the JSON body to 
+the update operation of the REST-api: ::
+
+  ...
+  "tilstande": { 
+          "facetpubliceret": [{ 
+              "publiceret": "IkkePubliceret", 
+              "virkning": { 
+                  "from": "2015-01-01", 
+                  "to": "2015-12-31", 
+                  "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                  "aktoertypekode": "Bruger", 
+                  "notetekst": "Temp. Redacted" 
+              } 
+          }
+          ] 
+      },
+  ...
+
+The resulting 'Publiceret' state produced by the update operation, would look 
+like this: ::
+
+  ...
+  "tilstande": { 
+          "facetpubliceret": [{ 
+              "publiceret": "Publiceret", 
+              "virkning": { 
+                  "from": "2014-05-19", 
+                  "to": "2015-01-01", 
+                  "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                  "aktoertypekode": "Bruger", 
+                  "notetekst": "Publication Approved" 
+              } 
+          },
+          { 
+              "publiceret": "IkkePubliceret", 
+              "virkning": { 
+                  "from": "2015-01-01", 
+                  "to": "2015-12-31", 
+                  "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                  "aktoertypekode": "Bruger", 
+                  "notetekst": "Temp. Redacted" 
+              } 
+          },
+          { 
+              "publiceret": "Publiceret", 
+              "virkning": { 
+                  "from": "2015-12-31", 
+                  "to": "infinity", 
+                  "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                  "aktoertypekode": "Bruger", 
+                  "notetekst": "Publication Approved" 
+              } 
+          }
+          ] 
+      },
+  ...
+
+Hopefully it can be seen, that the update operation will merge the incomming 
+fragment with the 'Publiceret' state of the current registration according to 
+the 'virknings' periods stipulated. If you wish to clear/delete particular 
+states, see the section 'Deleting / Clearing States' regarding this.
+
+
+Examples Of The Effects Of The Merging Logic When Updating Relations
+----------------------------------------------------------------------
+
+As described in the section 'Merging Of Attributes / States / 
+Relations When Updating Object' we differentiate between relations with 
+cardinality 0..1 and 0..n (see beforementioned section).
+
+Lets say we have an Facet object in the database, which has the following 
+'ansvarlig' (cardinality 0..1) relation in place: ::
+
+  ...
+  "relationer": { 
+          "ansvarlig": [
+          { 
+              "uuid": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+              "virkning": { 
+                  "from": "2014-05-19", 
+                  "to": "infinity", 
+                  "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                  "aktoertypekode": "Bruger", 
+                  "notetekst": "Initial Responsible Set" 
+              }
+          }
+        ]
+      }
+  ...
+
+
+Lets say we now provide the following fragment as part of the incomming JSON 
+body sent to the update operation: ::
+
+  ...
+  "relationer": { 
+          "ansvarlig": [
+          { 
+              "uuid": "ef2713ee-1a38-4c23-8fcb-3c4331262194", 
+              "virkning": { 
+                  "from": "2015-02-14", 
+                  "to": "2015-06-20", 
+                  "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                  "aktoertypekode": "Bruger", 
+                  "notetekst": "Change of responsible" 
+              }
+          }
+          ]
+        }
+  ...
+
+The resulting 'ansvarlig' relation of the Facet object would look like this: ::
+
+  ...
+  "relationer": { 
+          "ansvarlig": [
+          { 
+              "uuid": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+              "virkning": { 
+                  "from": "2014-05-19", 
+                  "to": "2015-02-14", 
+                  "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                  "aktoertypekode": "Bruger", 
+                  "notetekst": "Initial Responsible Set" 
+              }
+          }
+          ,{ 
+              "uuid": "ef2713ee-1a38-4c23-8fcb-3c4331262194", 
+              "virkning": { 
+                  "from": "2015-02-14", 
+                  "to": "2015-06-20", 
+                  "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                  "aktoertypekode": "Bruger", 
+                  "notetekst": "Change of responsible" 
+              }
+          },
+           { 
+              "uuid": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+              "virkning": { 
+                  "from": "2015-06-20", 
+                  "to": "infinity", 
+                  "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                  "aktoertypekode": "Bruger", 
+                  "notetekst": "Initial Responsible Set" 
+              }
+          }
+        ]
+      }
+  ...
+
+As it can be seen, the update operation has merged the incomming relation with
+the 'ansvarlig' relation of the previous registration.
+
+If you wish to delete / clear relations, see the section regading 
+'Deleting / Clearing Relations'. 
+
+If we want to update relations of a type with unlimited cardinality, we need to
+supply *the full list* of the relations of that particalar type to the update
+operation. Lets say we have a Facet object in the DB with the following 
+'redaktoerer'-relations in place: ::
+
+  ...
+  "relationer": { 
+     "redaktoerer": [ 
+            { 
+                "uuid": "ef2713ee-1a38-4c23-8fcb-3c4331262194", 
+                "virkning": { 
+                    "from": "2014-05-19", 
+                    "to": "infinity", 
+                    "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                    "aktoertypekode": "Bruger", 
+                    "notetekst": "First editor set" 
+                } 
+            }, 
+                { 
+                    "uuid": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                    "virkning": { 
+                        "from": "2015-08-20", 
+                        "to": "infinity", 
+                        "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                        "aktoertypekode": "Bruger", 
+                        "notetekst": "Second editor set" 
+                    } 
+                } 
+            ] 
+        } 
+  ...
+
+
+Lets say we now provide the following fragment as part of the JSON body sent to
+the update operation: ::
+
+  ...
+  "relationer": { 
+     "redaktoerer": [  
+                { 
+                    "uuid": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                    "virkning": { 
+                        "from": "2015-08-26", 
+                        "to": "infinity", 
+                        "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                        "aktoertypekode": "Bruger", 
+                        "notetekst": "Single editor now" 
+                    } 
+                } 
+            ] 
+        } 
+  ...
+
+The resulting 'redaktoerer' part of the relations of the Facet object, 
+will look like this: ::
+
+  ...
+  "relationer": { 
+     "redaktoerer": [  
+                { 
+                    "uuid": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                    "virkning": { 
+                        "from": "2015-08-26", 
+                        "to": "infinity", 
+                        "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                        "aktoertypekode": "Bruger", 
+                        "notetekst": "Single editor now" 
+                    } 
+                } 
+            ] 
+        } 
+  ...
+
+
+As we can see no merging has taken place, as we in this example are updating 
+relations of a type with unlimited cardinality (0..n). ( The exception to 
+the behaviour described here, is when updating relations of the Sag object - see
+specific section dedicated to this topic). 
+
+Also see the section named 'Deleting / Clearing Relations' for info regarding
+clearing relations.
 
 Deleting / Clearing Attributes 
 -------------------------------
@@ -374,12 +767,17 @@ of the JSON body would look like this: ::
   }
   ...
 
-When updating relations unlimited cardinality (0..n), you have to supply
+When updating relations with unlimited cardinality (0..n), you have to supply
 the full list - that is, all the relations of the particular type - and
-clearing a particular relation is accordingly done by supplying the full
-list sans the relation, that you wish to clear. ( The exception to this
+clearing a particular relation of a given type is accordingly done by supplying 
+the full list sans the relation, that you wish to clear. ( The exception to this
 is when updating the Sag object, where you can specify an index of the
-relation to only update a particular relation). 
+relation to only update a particular relation). To delete all the relations of
+a particular type with unlimited cardinality (0..n) you must use the same 
+procedure as described above for relations with cardinality 0..1, 
+where you specify a single relation of the given type with an empty string for 
+uuid and urn and with a 'virknings' period as desired.
+
 
 Specifying an explicitly empty object will clear all the relations of
 the object. Eg.: ::
