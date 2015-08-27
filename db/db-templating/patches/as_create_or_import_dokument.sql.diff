@@ -1,45 +1,58 @@
-*** ../generated-files/as_create_or_import_dokument.sql	2015-08-07 13:50:53.870592574 +0200
---- ../patches/as_create_or_import_dokument.org.sql	2015-08-07 13:50:47.290592648 +0200
+*** ../generated-files/as_create_or_import_dokument.sql	2015-08-14 12:57:21.821564487 +0200
+--- as_create_or_import_dokument.org.sql	2015-08-14 13:00:33.581574037 +0200
 ***************
-*** 20,30 ****
+*** 4,14 ****
+  -- This Source Code Form is subject to the terms of the Mozilla Public
+  -- License, v. 2.0. If a copy of the MPL was not distributed with this
+  -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+  
+  /*
+! NOTICE: This file is auto-generated using the script: apply-template.py dokument as_create_or_import.jinja.sql
+  */
+  
+  CREATE OR REPLACE FUNCTION as_create_or_import_dokument(
+    dokument_registrering DokumentRegistreringType,
+    dokument_uuid uuid DEFAULT NULL,
+--- 4,14 ----
+  -- This Source Code Form is subject to the terms of the Mozilla Public
+  -- License, v. 2.0. If a copy of the MPL was not distributed with this
+  -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+  
+  /*
+! NOTICE: This file is auto-generated using the script: apply-template.py dokument as_create_or_import.jinja.sql AND applying a patch.
+  */
+  
+  CREATE OR REPLACE FUNCTION as_create_or_import_dokument(
+    dokument_registrering DokumentRegistreringType,
+    dokument_uuid uuid DEFAULT NULL,
+***************
+*** 21,30 ****
+--- 21,37 ----
     dokument_attr_egenskaber_obj dokumentEgenskaberAttrType;
     
     dokument_tils_fremdrift_obj dokumentFremdriftTilsType;
     
     dokument_relationer DokumentRelationType;
-! 
++   dokument_variant_obj DokumentVariantType;
++   dokument_variant_egenskab_obj DokumentVariantEgenskaberType;
++   dokument_del_obj DokumentDelType;
++   dokument_del_egenskaber_obj DokumentDelEgenskaberType;
++   dokument_del_relation_obj DokumentDelRelationType;
++   dokument_variant_new_id bigint;
++   dokument_del_new_id bigint;
+    auth_filtered_uuids uuid[];
   BEGIN
   
   IF dokument_uuid IS NULL THEN
       LOOP
-      dokument_uuid:=uuid_generate_v4();
---- 20,36 ----
-    dokument_attr_egenskaber_obj dokumentEgenskaberAttrType;
-    
-    dokument_tils_fremdrift_obj dokumentFremdriftTilsType;
-    
-    dokument_relationer DokumentRelationType;
-!   dokument_variant_obj DokumentVariantType;
-!   dokument_variant_egenskab_obj DokumentVariantEgenskaberType;
-!   dokument_del_obj DokumentDelType;
-!   dokument_del_egenskaber_obj DokumentDelEgenskaberType;
-!   dokument_del_relation_obj DokumentDelRelationType;
-!   dokument_variant_new_id bigint;
-!   dokument_del_new_id bigint;
-  BEGIN
-  
-  IF dokument_uuid IS NULL THEN
-      LOOP
-      dokument_uuid:=uuid_generate_v4();
 ***************
-*** 191,200 ****
---- 197,341 ----
+*** 169,178 ****
+--- 176,320 ----
         a.objektType
       FROM unnest(dokument_registrering.relationer) a
-      WHERE (a.relMaalUuid IS NOT NULL OR (a.relMaalUrn IS NOT NULL AND a.relMaalUrn<>'') )
     ;
   
-+ 
+  
 + /*********************************/
 + --Insert document variants (and parts)
 + 
@@ -155,8 +168,8 @@
 +       (
 +         dokument_del_new_id,
 +           dokument_del_relation_obj.virkning,
-+             dokument_del_relation_obj.relMaalUuid,
-+               dokument_del_relation_obj.relMaalUrn,
++             dokument_del_relation_obj.uuid,
++               dokument_del_relation_obj.urn,
 +                 dokument_del_relation_obj.relType,
 +                   dokument_del_relation_obj.objektType
 +       )
@@ -174,8 +187,9 @@
 + 
 + END IF; --varianter
 + 
-    PERFORM actual_state._amqp_publish_notification('Dokument', (dokument_registrering.registrering).livscykluskode, dokument_uuid);
-  
-  RETURN dokument_uuid;
-  
-  END;
++ 
+  /*** Verify that the object meets the stipulated access allowed criteria  ***/
+  /*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
+  auth_filtered_uuids:=_as_filter_unauth_dokument(array[dokument_uuid]::uuid[],auth_criteria_arr); 
+  IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[dokument_uuid]) THEN
+    RAISE EXCEPTION 'Unable to create/import dokument with uuid [%]. Object does not met stipulated criteria:%',dokument_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 

@@ -1913,7 +1913,7 @@ firstResult int,--TOOD ??
 	virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
 	maxResults int = 2147483647,
 	anyAttrValueArr text[] = '{}'::text[],
-	anyRelUuidArr	uuid[] = '{}'::uuid[]
+	anyuuidArr	uuid[] = '{}'::uuid[]
 */
 
 expected_result25:=ARRAY[new_uuid_A,new_uuid_B]::uuid[];
@@ -1972,7 +1972,7 @@ firstResult int,--TOOD ??
 	virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
 	maxResults int = 2147483647,
 	anyAttrValueArr text[] = '{}'::text[],
-	anyRelUuidArr	uuid[] = '{}'::uuid[]
+	anyuuidArr	uuid[] = '{}'::uuid[]
 */
 
 expected_result26:=ARRAY[new_uuid_B]::uuid[];
@@ -2033,7 +2033,7 @@ firstResult int,--TOOD ??
 	virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
 	maxResults int = 2147483647,
 	anyAttrValueArr text[] = '{}'::text[],
-	anyRelUuidArr	uuid[] = '{}'::uuid[]
+	anyuuidArr	uuid[] = '{}'::uuid[]
 */
 
 expected_result27:=ARRAY[]::uuid[];

@@ -11,7 +11,8 @@ NOTICE: This file is auto-generated using the script: apply-template.py klasse a
 
 CREATE OR REPLACE FUNCTION as_create_or_import_klasse(
   klasse_registrering KlasseRegistreringType,
-  klasse_uuid uuid DEFAULT NULL
+  klasse_uuid uuid DEFAULT NULL,
+  auth_criteria_arr KlasseRegistreringType[] DEFAULT NULL
 	)
   RETURNS uuid AS 
 $$
@@ -24,6 +25,7 @@ DECLARE
   klasse_relationer KlasseRelationType;
   klasse_attr_egenskaber_id bigint;
   klasse_attr_egenskaber_soegeord_obj KlasseSoegeordType;
+  auth_filtered_uuids uuid[];
 BEGIN
 
 IF klasse_uuid IS NULL THEN
@@ -35,11 +37,11 @@ END IF;
 
 
 IF EXISTS (SELECT id from klasse WHERE id=klasse_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing klasse with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_klasse (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',klasse_uuid;
+  RAISE EXCEPTION 'Error creating or importing klasse with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_klasse (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',klasse_uuid USING ERRCODE='MO500';
 END IF;
 
 IF  (klasse_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (klasse_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_klasse.',(klasse_registrering.registrering).livscykluskode;
+  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_klasse.',(klasse_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
@@ -82,35 +84,16 @@ SELECT
 
  
 IF coalesce(array_length(klasse_registrering.attrEgenskaber, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [klasse]. Oprettelse afbrydes.';
+  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [klasse]. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
 
 
-IF klasse_registrering.attrEgenskaber IS NOT NULL THEN
+IF klasse_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(klasse_registrering.attrEgenskaber,1),0)>0 THEN
   FOREACH klasse_attr_egenskaber_obj IN ARRAY klasse_registrering.attrEgenskaber
   LOOP
 
- IF
-  ( klasse_attr_egenskaber_obj.brugervendtnoegle IS NOT NULL AND klasse_attr_egenskaber_obj.brugervendtnoegle<>'') 
-   OR 
-  ( klasse_attr_egenskaber_obj.beskrivelse IS NOT NULL AND klasse_attr_egenskaber_obj.beskrivelse<>'') 
-   OR 
-  ( klasse_attr_egenskaber_obj.eksempel IS NOT NULL AND klasse_attr_egenskaber_obj.eksempel<>'') 
-   OR 
-  ( klasse_attr_egenskaber_obj.omfang IS NOT NULL AND klasse_attr_egenskaber_obj.omfang<>'') 
-   OR 
-  ( klasse_attr_egenskaber_obj.titel IS NOT NULL AND klasse_attr_egenskaber_obj.titel<>'') 
-   OR 
-  ( klasse_attr_egenskaber_obj.retskilde IS NOT NULL AND klasse_attr_egenskaber_obj.retskilde<>'') 
-   OR 
-  ( klasse_attr_egenskaber_obj.aendringsnotat IS NOT NULL AND klasse_attr_egenskaber_obj.aendringsnotat<>'') 
-  OR
-  ( klasse_attr_egenskaber_obj.soegeord IS NOT NULL AND coalesce(array_length(klasse_attr_egenskaber_obj.soegeord,1),0)>0)
-   THEN
-
 klasse_attr_egenskaber_id:=nextval('klasse_attr_egenskaber_id_seq');
-
   INSERT INTO klasse_attr_egenskaber (
     id,
     brugervendtnoegle,
@@ -135,13 +118,16 @@ klasse_attr_egenskaber_id:=nextval('klasse_attr_egenskaber_id_seq');
     klasse_attr_egenskaber_obj.virkning,
     klasse_registrering_id
   ;
- END IF;
 
 /************/
 --Insert Soegeord
-  IF klasse_attr_egenskaber_obj.soegeord IS NOT NULL THEN
+  IF klasse_attr_egenskaber_obj.soegeord IS NOT NULL AND coalesce(array_length(klasse_attr_egenskaber_obj.soegeord,1),0)>1  THEN
     FOREACH klasse_attr_egenskaber_soegeord_obj IN ARRAY klasse_attr_egenskaber_obj.soegeord
       LOOP
+
+      IF (klasse_attr_egenskaber_soegeord_obj.soegeordidentifikator IS NOT NULL AND klasse_attr_egenskaber_soegeord_obj.soegeordidentifikator<>'') 
+      OR (klasse_attr_egenskaber_soegeord_obj.beskrivelse IS NOT NULL AND klasse_attr_egenskaber_soegeord_obj.beskrivelse<>'' )
+      OR (klasse_attr_egenskaber_soegeord_obj.soegeordskategori IS NOT NULL AND klasse_attr_egenskaber_soegeord_obj.soegeordskategori<>'') THEN
 
       INSERT INTO klasse_attr_egenskaber_soegeord (
         soegeordidentifikator,
@@ -155,6 +141,7 @@ klasse_attr_egenskaber_id:=nextval('klasse_attr_egenskaber_id_seq');
         klasse_attr_egenskaber_soegeord_obj.soegeordskategori,
         klasse_attr_egenskaber_id
       ;
+      END IF;
 
      END LOOP;
     END IF;
@@ -167,15 +154,13 @@ END IF;
 
 --Verification
 --For now all declared states are mandatory.
-IF coalesce(array_length(klasse_registrering.tilsPubliceret, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet tilstand [publiceret] for klasse. Oprettelse afbrydes.';
+IF coalesce(array_length(klasse_registrering.tilsPubliceret, 1),0)<1  THEN
+  RAISE EXCEPTION 'Savner påkraevet tilstand [publiceret] for klasse. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
-IF klasse_registrering.tilsPubliceret IS NOT NULL THEN
+IF klasse_registrering.tilsPubliceret IS NOT NULL AND coalesce(array_length(klasse_registrering.tilsPubliceret,1),0)>0 THEN
   FOREACH klasse_tils_publiceret_obj IN ARRAY klasse_registrering.tilsPubliceret
   LOOP
-
-  IF klasse_tils_publiceret_obj.publiceret IS NOT NULL AND klasse_tils_publiceret_obj.publiceret<>''::KlassePubliceretTils THEN
 
     INSERT INTO klasse_tils_publiceret (
       virkning,
@@ -187,7 +172,6 @@ IF klasse_registrering.tilsPubliceret IS NOT NULL THEN
       klasse_tils_publiceret_obj.publiceret,
       klasse_registrering_id;
 
-  END IF;
   END LOOP;
 END IF;
 
@@ -205,13 +189,22 @@ END IF;
     SELECT
       klasse_registrering_id,
       a.virkning,
-      a.relMaalUuid,
-      a.relMaalUrn,
+      a.uuid,
+      a.urn,
       a.relType,
       a.objektType
     FROM unnest(klasse_registrering.relationer) a
-    WHERE (a.relMaalUuid IS NOT NULL OR (a.relMaalUrn IS NOT NULL AND a.relMaalUrn<>'') )
   ;
+
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+/*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
+auth_filtered_uuids:=_as_filter_unauth_klasse(array[klasse_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[klasse_uuid]) THEN
+  RAISE EXCEPTION 'Unable to create/import klasse with uuid [%]. Object does not met stipulated criteria:%',klasse_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
 
   PERFORM actual_state._amqp_publish_notification('Klasse', (klasse_registrering.registrering).livscykluskode, klasse_uuid);
 

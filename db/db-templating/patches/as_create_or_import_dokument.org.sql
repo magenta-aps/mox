@@ -6,12 +6,13 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py dokument as_create_or_import.jinja.sql
+NOTICE: This file is auto-generated using the script: apply-template.py dokument as_create_or_import.jinja.sql AND applying a patch.
 */
 
 CREATE OR REPLACE FUNCTION as_create_or_import_dokument(
   dokument_registrering DokumentRegistreringType,
-  dokument_uuid uuid DEFAULT NULL
+  dokument_uuid uuid DEFAULT NULL,
+  auth_criteria_arr DokumentRegistreringType[] DEFAULT NULL
 	)
   RETURNS uuid AS 
 $$
@@ -29,6 +30,7 @@ DECLARE
   dokument_del_relation_obj DokumentDelRelationType;
   dokument_variant_new_id bigint;
   dokument_del_new_id bigint;
+  auth_filtered_uuids uuid[];
 BEGIN
 
 IF dokument_uuid IS NULL THEN
@@ -40,11 +42,11 @@ END IF;
 
 
 IF EXISTS (SELECT id from dokument WHERE id=dokument_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing dokument with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_dokument (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',dokument_uuid;
+  RAISE EXCEPTION 'Error creating or importing dokument with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_dokument (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',dokument_uuid USING ERRCODE='MO500';
 END IF;
 
 IF  (dokument_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (dokument_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_dokument.',(dokument_registrering.registrering).livscykluskode;
+  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_dokument.',(dokument_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
@@ -87,34 +89,14 @@ SELECT
 
  
 IF coalesce(array_length(dokument_registrering.attrEgenskaber, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [dokument]. Oprettelse afbrydes.';
+  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [dokument]. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
 
 
-IF dokument_registrering.attrEgenskaber IS NOT NULL THEN
+IF dokument_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(dokument_registrering.attrEgenskaber,1),0)>0 THEN
   FOREACH dokument_attr_egenskaber_obj IN ARRAY dokument_registrering.attrEgenskaber
   LOOP
-
-  IF
-  ( dokument_attr_egenskaber_obj.brugervendtnoegle IS NOT NULL AND dokument_attr_egenskaber_obj.brugervendtnoegle<>'') 
-   OR 
-  ( dokument_attr_egenskaber_obj.beskrivelse IS NOT NULL AND dokument_attr_egenskaber_obj.beskrivelse<>'') 
-   OR 
-  ( dokument_attr_egenskaber_obj.brevdato IS NOT NULL) 
-   OR 
-  ( dokument_attr_egenskaber_obj.kassationskode IS NOT NULL AND dokument_attr_egenskaber_obj.kassationskode<>'') 
-   OR 
-  ( dokument_attr_egenskaber_obj.major IS NOT NULL) 
-   OR 
-  ( dokument_attr_egenskaber_obj.minor IS NOT NULL) 
-   OR 
-  ( dokument_attr_egenskaber_obj.offentlighedundtaget IS NOT NULL OR ((dokument_attr_egenskaber_obj.offentlighedundtaget).AlternativTitel IS NOT NULL AND (dokument_attr_egenskaber_obj.offentlighedundtaget).AlternativTitel<>'') OR ((dokument_attr_egenskaber_obj.offentlighedundtaget).Hjemmel IS NOT NULL AND (dokument_attr_egenskaber_obj.offentlighedundtaget).Hjemmel<>'')) 
-   OR 
-  ( dokument_attr_egenskaber_obj.titel IS NOT NULL AND dokument_attr_egenskaber_obj.titel<>'') 
-   OR 
-  ( dokument_attr_egenskaber_obj.dokumenttype IS NOT NULL AND dokument_attr_egenskaber_obj.dokumenttype<>'') 
-   THEN
 
     INSERT INTO dokument_attr_egenskaber (
       brugervendtnoegle,
@@ -142,7 +124,7 @@ IF dokument_registrering.attrEgenskaber IS NOT NULL THEN
       dokument_attr_egenskaber_obj.virkning,
       dokument_registrering_id
     ;
-  END IF;
+ 
 
   END LOOP;
 END IF;
@@ -154,14 +136,12 @@ END IF;
 --Verification
 --For now all declared states are mandatory.
 IF coalesce(array_length(dokument_registrering.tilsFremdrift, 1),0)<1  THEN
-  RAISE EXCEPTION 'Savner påkraevet tilstand [fremdrift] for dokument. Oprettelse afbrydes.';
+  RAISE EXCEPTION 'Savner påkraevet tilstand [fremdrift] for dokument. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
-IF dokument_registrering.tilsFremdrift IS NOT NULL THEN
+IF dokument_registrering.tilsFremdrift IS NOT NULL AND coalesce(array_length(dokument_registrering.tilsFremdrift,1),0)>0 THEN
   FOREACH dokument_tils_fremdrift_obj IN ARRAY dokument_registrering.tilsFremdrift
   LOOP
-
-  IF dokument_tils_fremdrift_obj.fremdrift IS NOT NULL AND dokument_tils_fremdrift_obj.fremdrift<>''::DokumentFremdriftTils THEN
 
     INSERT INTO dokument_tils_fremdrift (
       virkning,
@@ -173,7 +153,6 @@ IF dokument_registrering.tilsFremdrift IS NOT NULL THEN
       dokument_tils_fremdrift_obj.fremdrift,
       dokument_registrering_id;
 
-  END IF;
   END LOOP;
 END IF;
 
@@ -191,12 +170,11 @@ END IF;
     SELECT
       dokument_registrering_id,
       a.virkning,
-      a.relMaalUuid,
-      a.relMaalUrn,
+      a.uuid,
+      a.urn,
       a.relType,
       a.objektType
     FROM unnest(dokument_registrering.relationer) a
-    WHERE (a.relMaalUuid IS NOT NULL OR (a.relMaalUrn IS NOT NULL AND a.relMaalUrn<>'') )
   ;
 
 
@@ -315,8 +293,8 @@ dokument_variant_new_id:=nextval('dokument_variant_id_seq'::regclass);
       (
         dokument_del_new_id,
           dokument_del_relation_obj.virkning,
-            dokument_del_relation_obj.relMaalUuid,
-              dokument_del_relation_obj.relMaalUrn,
+            dokument_del_relation_obj.uuid,
+              dokument_del_relation_obj.urn,
                 dokument_del_relation_obj.relType,
                   dokument_del_relation_obj.objektType
       )
@@ -333,6 +311,16 @@ dokument_variant_new_id:=nextval('dokument_variant_id_seq'::regclass);
 
 
 END IF; --varianter
+
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+/*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
+auth_filtered_uuids:=_as_filter_unauth_dokument(array[dokument_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[dokument_uuid]) THEN
+  RAISE EXCEPTION 'Unable to create/import dokument with uuid [%]. Object does not met stipulated criteria:%',dokument_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
 
   PERFORM actual_state._amqp_publish_notification('Dokument', (dokument_registrering.registrering).livscykluskode, dokument_uuid);
 

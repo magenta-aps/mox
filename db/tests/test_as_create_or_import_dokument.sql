@@ -315,7 +315,7 @@ ROW (
   'underredigeringaf'::DokumentdelRelationKode,
   docDel2Brelation1Virkning,
   'a24a2dd4-415f-4104-b7a7-84607488c096'::uuid,
-  null, --relMaalUrn,
+  null, --urn,
   'Bruger'
 )::DokumentdelRelationType;
 
@@ -496,6 +496,7 @@ array_agg(
 					a.rel_maal_urn,
 					a.objekt_type 
 				):: dokumentRelationType
+			order by a.id
 		) into actual_relationer
 FROM dokument_relation a
 JOIN dokument_registrering as b on a.dokument_registrering_id=b.id

@@ -33,8 +33,8 @@ CREATE TYPE KlassifikationRelationKode AS ENUM  ('ansvarlig','ejer');  --WARNING
 CREATE TYPE KlassifikationRelationType AS (
   relType KlassifikationRelationKode,
   virkning Virkning,
-  relMaalUuid uuid,
-  relMaalUrn  text,
+  uuid uuid,
+  urn  text,
   objektType text 
 )
 ;

@@ -40,6 +40,12 @@ DECLARE
 	uuidAndresager1 uuid :='f7109356-e87e-4b10-ad5d-36de6e3ee09d'::uuid;
 	uuidAndresager2 uuid :='28533179-fedb-4aa7-8902-ab34a219eed1'::uuid;
 	uuidRegistrering uuid :='1f368584-4c3e-4ba4-837b-da2b1eee37c9'::uuid;
+	virkJournalNotat1 Virkning;
+	uuidJournalNotat1  uuid :='97109356-e87e-4b10-ad5d-36de6e3ee011'::uuid;
+	sagJournalNotat1 sagRelationType;
+	virkJournalNotat5 Virkning;
+	uuidJournalNotat5  uuid :='80109356-e87e-4b10-ad5d-36de6e3ee007'::uuid;
+	sagJournalNotat5 sagRelationType;
 	actual_publiceret_virk virkning;
 	actual_publiceret_value sagFremdriftTils;
 	actual_publiceret sagFremdriftTilsType;
@@ -130,6 +136,22 @@ virkAndresager2 :=	ROW (
           ) :: Virkning
 ;
 
+virkJournalNotat1 :=	ROW (
+	'[2014-05-12, infinity)' :: TSTZRANGE,
+          uuidJournalNotat1,
+          'Bruger',
+          'NoteEx1233'
+          ) :: Virkning
+;
+
+virkJournalNotat5 :=	ROW (
+	'[2014-09-12, infinity)' :: TSTZRANGE,
+          uuidJournalNotat5,
+          'Bruger',
+          'NoteEx9'
+          ) :: Virkning
+;
+
 sagRelPrimaerklasse := ROW (
 	'ansvarlig'::sagRelationKode
 	,virkPrimaerklasse
@@ -202,6 +224,31 @@ sagRelAndresager2 := ROW (
 ) :: sagRelationType
 ;
 
+sagJournalNotat1:= ROW (
+					'journalpost'::sagRelationKode,
+						virkJournalNotat1,
+					uuidJournalNotat1,
+					null,
+					'Person'
+					,4  --NOTICE: Should be replace in by import function
+					,'journalnotat'::SagRelationJournalPostSpecifikKode
+					, ROW('journal_txt1','journal_notat1','journal_format1')::JournalNotatType --journalNotat
+					,ROW(null, ROW(null,null)::OffentlighedundtagetType) ::JournalPostDokumentAttrType --journalDokumentAttr
+				);
+
+sagJournalNotat5:= ROW (
+					'journalpost'::sagRelationKode,
+						virkJournalNotat5,
+					uuidJournalNotat5,
+					null,
+					'Person'
+					,20  --NOTICE: Should be replace in by import function
+					,'tilakteretdokument'::SagRelationJournalPostSpecifikKode
+					, ROW(NULL,NULL,NULL)::JournalNotatType --journalNotat
+					,ROW(NULL, ROW('AlternativTitel_1','Hjemmel_1')::OffentlighedundtagetType) ::JournalPostDokumentAttrType --journalDokumentAttr
+				);
+
+
 sagFremdrift := ROW (
 virkPubliceret,
 'Opstaaet'
@@ -237,29 +284,12 @@ registrering := ROW (
 	,
 ARRAY[sagFremdrift]::sagFremdriftTilsType[],
 ARRAY[sagEgenskab]::sagEgenskaberAttrType[],
-ARRAY[sagRelPrimaerklasse,sagRelSekundaerpart1,sagRelSekundaerpart2,sagRelAndresager1,sagRelAndresager2]
+ARRAY[sagRelPrimaerklasse,sagRelSekundaerpart1,sagRelSekundaerpart2,sagRelAndresager1,sagRelAndresager2,sagJournalNotat1,sagJournalNotat5]
 ) :: sagRegistreringType
 ;
 
 
 new_uuid1 := as_create_or_import_sag(registrering);
-
-
-
-registrering := ROW (
-
-	ROW (
-	NULL,
-	'Opstaaet'::Livscykluskode,
-	uuidRegistrering,
-	'Test Note 4') :: RegistreringBase
-	,
-ARRAY[sagFremdrift]::sagFremdriftTilsType[],
-ARRAY[sagEgenskab]::sagEgenskaberAttrType[],
-ARRAY[sagRelPrimaerklasse,sagRelSekundaerpart1,sagRelSekundaerpart2,sagRelAndresager1,sagRelAndresager2]
-) :: sagRegistreringType
-;
-
 
 
 
@@ -293,11 +323,11 @@ read_Sag1 := as_read_sag(new_uuid1,
 --raise notice 'read_Sag_update 1:%',to_json(read_Sag1);
 
 SELECT
-relMaalUuid into read_uuidSekundaerpart2 
+uuid into read_uuidSekundaerpart2 
 FROM
 unnest(read_Sag1.registrering[1].relationer) a
 where
-a.relIndex=2
+a.indeks=2
 and a.relType = 'sekundaerpart'::sagRelationKode
 ;
 
@@ -309,9 +339,6 @@ read_Sag1 := as_read_sag(new_uuid1,
 	null, --registrering_tstzrange
 	null --virkning_tstzrange
 	);
-
-
-
 
 
 sagRelSekundaerpart3 := ROW (
@@ -343,11 +370,11 @@ read_Sag1 := as_read_sag(new_uuid1,
 
 
 SELECT
-relIndex into read_rel_index_3
+indeks into read_rel_index_3
 FROM
 unnest(read_Sag1.registrering[1].relationer) a
 where
-a.relMaalUrn = urnSekundaerpart3
+a.urn = urnSekundaerpart3
 and a.relType = 'sekundaerpart'::sagRelationKode
 ;
 
@@ -355,7 +382,7 @@ and a.relType = 'sekundaerpart'::sagRelationKode
 RETURN NEXT is(read_rel_index_3,3,'Test update of sag relation based on index #2');
 
 
---raise notice 'read_Sag1:%',to_json(read_Sag1);
+--raise notice 'read_Sag1 update:%',to_json(read_Sag1);
 
 
 --TODO: Implement tests here

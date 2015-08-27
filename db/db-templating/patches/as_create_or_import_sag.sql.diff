@@ -1,35 +1,49 @@
-*** ../generated-files/as_create_or_import_sag.sql	2015-08-07 13:51:06.394592433 +0200
---- ../patches/as_create_or_import_sag.org.sql	2015-08-07 13:51:07.458592421 +0200
+*** generated-files/as_create_or_import_sag.sql	2015-08-17 09:43:23.813174094 +0200
+--- patches/as_create_or_import_sag.org.sql	2015-08-17 09:42:44.441174618 +0200
 ***************
-*** 20,30 ****
+*** 4,14 ****
+  -- This Source Code Form is subject to the terms of the Mozilla Public
+  -- License, v. 2.0. If a copy of the MPL was not distributed with this
+  -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+  
+  /*
+! NOTICE: This file is auto-generated using the script: apply-template.py sag as_create_or_import.jinja.sql
+  */
+  
+  CREATE OR REPLACE FUNCTION as_create_or_import_sag(
+    sag_registrering SagRegistreringType,
+    sag_uuid uuid DEFAULT NULL,
+--- 4,14 ----
+  -- This Source Code Form is subject to the terms of the Mozilla Public
+  -- License, v. 2.0. If a copy of the MPL was not distributed with this
+  -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+  
+  /*
+! NOTICE: This file is auto-generated using the script: apply-template.py sag as_create_or_import.jinja.sql AND applying a patch
+  */
+  
+  CREATE OR REPLACE FUNCTION as_create_or_import_sag(
+    sag_registrering SagRegistreringType,
+    sag_uuid uuid DEFAULT NULL,
+***************
+*** 21,30 ****
+--- 21,34 ----
     sag_attr_egenskaber_obj sagEgenskaberAttrType;
     
     sag_tils_fremdrift_obj sagFremdriftTilsType;
     
     sag_relationer SagRelationType;
-! 
++   sag_relation_kode SagRelationKode;
++   sag_uuid_underscores text;
++   sag_rel_seq_name text;
++   sag_rel_type_cardinality_unlimited SagRelationKode[]:=ARRAY['andetarkiv'::SagRelationKode,'andrebehandlere'::SagRelationKode,'sekundaerpart'::SagRelationKode,'andresager'::SagRelationKode,'byggeri'::SagRelationKode,'fredning'::SagRelationKode,'journalpost'::SagRelationKode]::SagRelationKode[];
+    auth_filtered_uuids uuid[];
   BEGIN
   
   IF sag_uuid IS NULL THEN
       LOOP
-      sag_uuid:=uuid_generate_v4();
---- 20,33 ----
-    sag_attr_egenskaber_obj sagEgenskaberAttrType;
-    
-    sag_tils_fremdrift_obj sagFremdriftTilsType;
-    
-    sag_relationer SagRelationType;
-!   sag_relation_kode SagRelationKode;
-!   sag_uuid_underscores text;
-!   sag_rel_seq_name text;
-!   sag_rel_type_cardinality_unlimited SagRelationKode[]:=ARRAY['andetarkiv'::SagRelationKode,'andrebehandlere'::SagRelationKode,'sekundaerpart'::SagRelationKode,'andresager'::SagRelationKode,'byggeri'::SagRelationKode,'fredning'::SagRelationKode,'journalpost'::SagRelationKode]::SagRelationKode[];
-  BEGIN
-  
-  IF sag_uuid IS NULL THEN
-      LOOP
-      sag_uuid:=uuid_generate_v4();
 ***************
-*** 172,200 ****
+*** 150,176 ****
   END IF;
   
   /*********************************/
@@ -46,20 +60,18 @@
       SELECT
         sag_registrering_id,
         a.virkning,
-        a.relMaalUuid,
-        a.relMaalUrn,
+        a.uuid,
+        a.urn,
         a.relType,
 !       a.objektType
       FROM unnest(sag_registrering.relationer) a
-!     WHERE (a.relMaalUuid IS NOT NULL OR (a.relMaalUrn IS NOT NULL AND a.relMaalUrn<>'') )
-    ;
+!   ;
   
-    PERFORM actual_state._amqp_publish_notification('Sag', (sag_registrering.registrering).livscykluskode, sag_uuid);
   
-  RETURN sag_uuid;
-  
-  END;
---- 175,254 ----
+  /*** Verify that the object meets the stipulated access allowed criteria  ***/
+  /*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
+  auth_filtered_uuids:=_as_filter_unauth_sag(array[sag_uuid]::uuid[],auth_criteria_arr); 
+--- 154,260 ----
   END IF;
   
   /*********************************/
@@ -98,8 +110,8 @@
       SELECT
         sag_registrering_id,
         a.virkning,
-        a.relMaalUuid,
-        a.relMaalUrn,
+        a.uuid,
+        a.urn,
         a.relType,
 !       a.objektType,
 !         CASE WHEN a.relType = any (sag_rel_type_cardinality_unlimited) THEN --rel_index
@@ -112,31 +124,58 @@
 !           ELSE
 !           NULL
 !         END,
-!       a.journalNotat,
-!       a.journalDokumentAttr
+!       CASE 
+!           WHEN  
+!             (NOT (a.journalNotat IS NULL)) 
+!             AND
+!             (
+!               (a.journalNotat).titel IS NOT NULL
+!               OR
+!               (a.journalNotat).notat IS NOT NULL
+!               OR
+!               (a.journalNotat).format IS NOT NULL
+!             )
+!            THEN a.journalNotat
+!            ELSE
+!            NULL
+!       END
+!       ,CASE 
+!         WHEN ( 
+!                 (NOT a.journalDokumentAttr IS NULL)
+!                 AND
+!                 (
+!                   (a.journalDokumentAttr).dokumenttitel IS NOT NULL
+!                   OR
+!                   (
+!                     NOT ((a.journalDokumentAttr).offentlighedUndtaget IS NULL)
+!                     AND
+!                     (
+!                       ((a.journalDokumentAttr).offentlighedUndtaget).AlternativTitel IS NOT NULL
+!                       OR
+!                       ((a.journalDokumentAttr).offentlighedUndtaget).Hjemmel IS NOT NULL
+!                     )
+!                   )
+!                )
+!              ) THEN a.journalDokumentAttr
+!         ELSE
+!         NULL
+!       END
       FROM unnest(sag_registrering.relationer) a
-!     WHERE 
-!           a.relMaalUuid IS NOT NULL 
-!       OR (a.relMaalUrn IS NOT NULL AND a.relMaalUrn<>'') 
-!       OR (  
-!           (NOT (a.journalNotat IS NULL)) 
-!           AND ( (a.journalNotat).titel <>'' OR (a.journalNotat).notat <>'' OR (a.journalNotat).format<>'' ) 
-!         )
-    ;
+!     ;
+! 
+! 
+! --Drop temporary sequences
+! FOREACH sag_relation_kode IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(sag_registrering.relationer) a WHERE a.RelType = any (sag_rel_type_cardinality_unlimited))
+!   LOOP
+!   sag_rel_seq_name := 'sag_rel_' || sag_relation_kode::text || sag_uuid_underscores;
+!   EXECUTE 'DROP  SEQUENCE ' || sag_rel_seq_name || ';';
+! END LOOP;
+! 
+! 
+! END IF;
+! 
   
-+ 
-+ --Drop temporary sequences
-+ FOREACH sag_relation_kode IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(sag_registrering.relationer) a WHERE a.RelType = any (sag_rel_type_cardinality_unlimited))
-+   LOOP
-+   sag_rel_seq_name := 'sag_rel_' || sag_relation_kode::text || sag_uuid_underscores;
-+   EXECUTE 'DROP  SEQUENCE ' || sag_rel_seq_name || ';';
-+ END LOOP;
-+ 
-+ 
-+ END IF;
-+ 
-    PERFORM actual_state._amqp_publish_notification('Sag', (sag_registrering.registrering).livscykluskode, sag_uuid);
   
-  RETURN sag_uuid;
-  
-  END;
+  /*** Verify that the object meets the stipulated access allowed criteria  ***/
+  /*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
+  auth_filtered_uuids:=_as_filter_unauth_sag(array[sag_uuid]::uuid[],auth_criteria_arr); 

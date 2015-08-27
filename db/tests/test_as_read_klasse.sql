@@ -454,7 +454,7 @@ expected_Klasse2 :=
 								(registrering2.registrering).brugerref,
 								(registrering2.registrering).note 
 								)::RegistreringBase
-							,NULL--registrering2.tilsPubliceret
+							,ARRAY[klassePubliceretC]--registrering2.tilsPubliceret
 							,array[klasseEgenskabD,klasseEgenskabE,
 							ROW(
 							klasseEgenskabC.brugervendtnoegle,

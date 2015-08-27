@@ -112,6 +112,17 @@ doc1_new_uuid uuid;
 	actual_dokuments2 DokumentType[];
 	expected_dokuments2 DokumentType[];
 
+	actual_dokuments3 DokumentType[];
+	expected_dokuments3 DokumentType[];
+
+	actual_dokuments4 DokumentType[];
+	expected_dokuments4 DokumentType[];
+
+	actual_dokuments5 DokumentType[];
+	expected_dokuments5 DokumentType[];
+
+	document5 DokumentType;
+
 BEGIN
 
 
@@ -354,7 +365,7 @@ ROW (
   'underredigeringaf'::DokumentdelRelationKode,
   doc1_docDel2Brelation1Virkning,
   'a24a2dd4-415f-4104-b7a7-84607488c096'::uuid,
-  null, --relMaalUrn,
+  null, --urn,
   'Bruger'
 )::DokumentdelRelationType;
 
@@ -721,7 +732,7 @@ ROW (
   'underredigeringaf'::DokumentdelRelationKode,
   doc2_docDel2Brelation1Virkning,
   '124a2dd4-415f-4104-b7a7-84607488c096'::uuid,
-  null, --relMaalUrn,
+  null, --urn,
   'Bruger'
 )::DokumentdelRelationType;
 
@@ -846,7 +857,7 @@ doc2_new_uuid := as_create_or_import_dokument(doc2_registrering);
 /********************************************************************/
 
 
-select array_agg(a.* order by a.id) from as_list_dokument(array[doc1_new_uuid,doc2_new_uuid]::uuid[],null,null) as a     into actual_dokuments1;
+actual_dokuments1:= as_list_dokument(array[doc1_new_uuid,doc2_new_uuid]::uuid[],null,null);
 
 
 select 
@@ -916,7 +927,7 @@ RETURN NEXT is(
 
 
 
-select array_agg(a.* order by a.id) from as_list_dokument(array[doc1_new_uuid,doc2_new_uuid]::uuid[],null,'(-infinity, 01-01-2015)' :: TSTZRANGE) as a     into actual_dokuments2;
+actual_dokuments2 :=as_list_dokument(array[doc1_new_uuid,doc2_new_uuid]::uuid[],null,'(-infinity, 01-01-2015)' :: TSTZRANGE);
 
 
 expected_dokuments2:= ARRAY[
@@ -979,6 +990,8 @@ expected_dokuments2:= ARRAY[
 
 
 
+
+
 select array_agg(a.* order by a.id) from unnest(expected_dokuments2) as a into expected_dokuments2;
 
 --raise notice 'list dokument expected_dokuments2:%',to_json(expected_dokuments2);
@@ -991,10 +1004,44 @@ RETURN NEXT is(
 	'dokument list virkning filter test');
 
 
+/********************************************/
+--Test filter on non existing reg time.
 
 
---TODO: Test on single uuid
---TODO: Test on filter on reg time
+actual_dokuments3:=as_list_dokument(array[doc1_new_uuid,doc2_new_uuid]::uuid[], tstzrange(clock_timestamp() - interval '2 hour', clock_timestamp() - interval '1 hour'),'(-infinity, 01-01-2015)' :: TSTZRANGE);
+
+RETURN NEXT ok(coalesce(array_length(actual_dokuments3,1),0)=0,'Test on filter on reg time with no reg.');
+
+--Test filter on current reg 
+
+
+actual_dokuments4:=as_list_dokument(array[doc1_new_uuid,doc2_new_uuid]::uuid[], tstzrange(clock_timestamp() - interval '1 hour',clock_timestamp()) ,'(-infinity, 01-01-2015)' :: TSTZRANGE);
+
+
+RETURN NEXT is(
+	actual_dokuments4,
+	expected_dokuments2,	--Notice using expected_dokuments2 as this is what we expect
+	'Test on filter on reg time - current time.');
+
+--Test on list on single uuid
+
+actual_dokuments5:=as_list_dokument(array[doc2_new_uuid]::uuid[],  tstzrange(clock_timestamp() - interval '1 hour',clock_timestamp()) ,'(-infinity, 01-01-2015)' :: TSTZRANGE);
+
+IF expected_dokuments2[1].id = doc2_new_uuid THEN
+	expected_dokuments5:=array_append(expected_dokuments5,expected_dokuments2[1]);
+ELSE
+	expected_dokuments5:=array_append(expected_dokuments5,expected_dokuments2[2]);
+END IF;
+ 
+
+--raise notice 'list dokument expected_dokuments5:%',to_json(expected_dokuments5);
+--raise notice 'list dokument actual_dokuments5:%',to_json(actual_dokuments5);
+
+
+RETURN NEXT is(
+	actual_dokuments5,
+	expected_dokuments5,	
+	'Test list single uuid.');		
 
 
 

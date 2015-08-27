@@ -11,7 +11,8 @@ NOTICE: This file is auto-generated using the script: apply-template.py organisa
 
 CREATE OR REPLACE FUNCTION as_create_or_import_organisationfunktion(
   organisationfunktion_registrering OrganisationfunktionRegistreringType,
-  organisationfunktion_uuid uuid DEFAULT NULL
+  organisationfunktion_uuid uuid DEFAULT NULL,
+  auth_criteria_arr OrganisationfunktionRegistreringType[] DEFAULT NULL
 	)
   RETURNS uuid AS 
 $$
@@ -22,7 +23,7 @@ DECLARE
   organisationfunktion_tils_gyldighed_obj organisationfunktionGyldighedTilsType;
   
   organisationfunktion_relationer OrganisationfunktionRelationType;
-
+  auth_filtered_uuids uuid[];
 BEGIN
 
 IF organisationfunktion_uuid IS NULL THEN
@@ -34,11 +35,11 @@ END IF;
 
 
 IF EXISTS (SELECT id from organisationfunktion WHERE id=organisationfunktion_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing organisationfunktion with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_organisationfunktion (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',organisationfunktion_uuid;
+  RAISE EXCEPTION 'Error creating or importing organisationfunktion with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_organisationfunktion (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',organisationfunktion_uuid USING ERRCODE='MO500';
 END IF;
 
 IF  (organisationfunktion_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (organisationfunktion_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_organisationfunktion.',(organisationfunktion_registrering.registrering).livscykluskode;
+  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_organisationfunktion.',(organisationfunktion_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
@@ -81,20 +82,14 @@ SELECT
 
  
 IF coalesce(array_length(organisationfunktion_registrering.attrEgenskaber, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [organisationfunktion]. Oprettelse afbrydes.';
+  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [organisationfunktion]. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
 
 
-IF organisationfunktion_registrering.attrEgenskaber IS NOT NULL THEN
+IF organisationfunktion_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(organisationfunktion_registrering.attrEgenskaber,1),0)>0 THEN
   FOREACH organisationfunktion_attr_egenskaber_obj IN ARRAY organisationfunktion_registrering.attrEgenskaber
   LOOP
-
-  IF
-  ( organisationfunktion_attr_egenskaber_obj.brugervendtnoegle IS NOT NULL AND organisationfunktion_attr_egenskaber_obj.brugervendtnoegle<>'') 
-   OR 
-  ( organisationfunktion_attr_egenskaber_obj.funktionsnavn IS NOT NULL AND organisationfunktion_attr_egenskaber_obj.funktionsnavn<>'') 
-   THEN
 
     INSERT INTO organisationfunktion_attr_egenskaber (
       brugervendtnoegle,
@@ -108,7 +103,7 @@ IF organisationfunktion_registrering.attrEgenskaber IS NOT NULL THEN
       organisationfunktion_attr_egenskaber_obj.virkning,
       organisationfunktion_registrering_id
     ;
-  END IF;
+ 
 
   END LOOP;
 END IF;
@@ -120,14 +115,12 @@ END IF;
 --Verification
 --For now all declared states are mandatory.
 IF coalesce(array_length(organisationfunktion_registrering.tilsGyldighed, 1),0)<1  THEN
-  RAISE EXCEPTION 'Savner påkraevet tilstand [gyldighed] for organisationfunktion. Oprettelse afbrydes.';
+  RAISE EXCEPTION 'Savner påkraevet tilstand [gyldighed] for organisationfunktion. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
-IF organisationfunktion_registrering.tilsGyldighed IS NOT NULL THEN
+IF organisationfunktion_registrering.tilsGyldighed IS NOT NULL AND coalesce(array_length(organisationfunktion_registrering.tilsGyldighed,1),0)>0 THEN
   FOREACH organisationfunktion_tils_gyldighed_obj IN ARRAY organisationfunktion_registrering.tilsGyldighed
   LOOP
-
-  IF organisationfunktion_tils_gyldighed_obj.gyldighed IS NOT NULL AND organisationfunktion_tils_gyldighed_obj.gyldighed<>''::OrganisationfunktionGyldighedTils THEN
 
     INSERT INTO organisationfunktion_tils_gyldighed (
       virkning,
@@ -139,7 +132,6 @@ IF organisationfunktion_registrering.tilsGyldighed IS NOT NULL THEN
       organisationfunktion_tils_gyldighed_obj.gyldighed,
       organisationfunktion_registrering_id;
 
-  END IF;
   END LOOP;
 END IF;
 
@@ -157,13 +149,22 @@ END IF;
     SELECT
       organisationfunktion_registrering_id,
       a.virkning,
-      a.relMaalUuid,
-      a.relMaalUrn,
+      a.uuid,
+      a.urn,
       a.relType,
       a.objektType
     FROM unnest(organisationfunktion_registrering.relationer) a
-    WHERE (a.relMaalUuid IS NOT NULL OR (a.relMaalUrn IS NOT NULL AND a.relMaalUrn<>'') )
   ;
+
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+/*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
+auth_filtered_uuids:=_as_filter_unauth_organisationfunktion(array[organisationfunktion_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[organisationfunktion_uuid]) THEN
+  RAISE EXCEPTION 'Unable to create/import organisationfunktion with uuid [%]. Object does not met stipulated criteria:%',organisationfunktion_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
 
   PERFORM actual_state._amqp_publish_notification('Organisationfunktion', (organisationfunktion_registrering.registrering).livscykluskode, organisationfunktion_uuid);
 

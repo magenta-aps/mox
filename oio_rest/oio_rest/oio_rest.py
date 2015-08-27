@@ -1,13 +1,12 @@
-from datetime import datetime
+"""Superclasses for OIO objects and object hierarchies."""
 import json
+import datetime
+
 from flask import jsonify, request
-from werkzeug.exceptions import BadRequest
+from custom_exceptions import BadRequestException
 
 import db
-from db_helpers import get_attribute_names, get_attribute_fields
-from db_helpers import get_state_names, get_relation_names, get_state_field
-
-from utils import build_registration
+from utils.build_registration import build_registration
 
 
 # Just a helper during debug
@@ -16,6 +15,14 @@ from authentication import requires_auth
 
 def j(t):
     return jsonify(output=t)
+
+
+class Registration(object):
+    def __init__(self, oio_class, states, attributes, relations):
+        self.oio_class = oio_class
+        self.states = states
+        self.attributes = attributes
+        self.relations = relations
 
 
 class OIOStandardHierarchy(object):
@@ -65,35 +72,6 @@ class OIORestObject(object):
                 return None
 
     @classmethod
-    def _get_file_storage_for_content_url(cls, url):
-        """
-        Return a FileStorage object for the form field specified by the URL.
-
-        The URL uses the scheme 'field', and its path points to a form field
-        which contains the uploaded file. For example, for a URL of 'field:f1',
-        this method would return the FileStorage object for the file
-        contained in form field 'f1'.
-        """
-        from urlparse import urlparse
-        o = urlparse(url)
-        if o.scheme == 'field':
-            field_name = o.path
-            file_obj = request.files.get(field_name, None)
-            if file_obj is None:
-                raise BadRequest(
-                    ('The content URL "%s" referenced the field "%s", but it '
-                     'was not present in the request.') % (url, o.path)
-                )
-            return file_obj
-        else:
-            raise BadRequest('The content field referenced an unsupported '
-                             'scheme or was invalid. The URLs must be of the'
-                             'form: field:<form-field>, where <form-field> '
-                             'is the name of the field in the '
-                             'multipart/form-data-encoded request that '
-                             'contains the file binary data.')
-
-    @classmethod
     @requires_auth
     def create_object(cls):
         """
@@ -104,11 +82,8 @@ class OIORestObject(object):
             return jsonify({'uuid': None}), 400
 
         note = input.get("note", "")
-        attributes = input.get("attributter", {})
-        states = input.get("tilstande", {})
-        relations = input.get("relationer", {})
-        uuid = db.create_or_import_object(cls.__name__, note, attributes,
-                                          states, relations)
+        registration = cls.gather_registration(input)
+        uuid = db.create_or_import_object(cls.__name__, note, registration)
         return jsonify({'uuid': uuid}), 201
 
     @classmethod
@@ -129,12 +104,16 @@ class OIORestObject(object):
         registreret_til = args.get('registrerettil', None)
 
         uuid_param = list_args.get('uuid', None)
-        if uuid_param is None:
-            # Assume the search operation
-            # Later on, we should support searches which filter on uuids as
-            # well
-            uuid_param = None
-
+        # Assume the search operation if other params were specified
+        if not set(args.keys()).issubset(('virkningfra', 'virkningtil',
+                                          'registreretfra', 'registrerettil',
+                                          'uuid')):
+            # Only one uuid is supported through the search operation
+            if uuid_param is not None and len(uuid_param) > 1:
+                raise BadRequestException("Multiple uuid parameters passed "
+                                          "to search operation. Only one "
+                                          "uuid parameter is supported.")
+            uuid_param = args.get('uuid', None)
             first_result = args.get('foersteresultat', None)
             if first_result is not None:
                 first_result = int(first_result)
@@ -147,6 +126,12 @@ class OIORestObject(object):
             life_cycle_code = args.get('livscykluskode', None)
             user_ref = args.get('brugerref', None)
             note = args.get('notetekst', None)
+
+            if virkning_fra is None and virkning_til is None:
+                # TODO: Use the equivalent of TSTZRANGE(current_timestamp,
+                # current_timestamp,'[]') if possible
+                virkning_fra = datetime.datetime.now()
+                virkning_til = datetime.datetime.now()
 
             # Fill out a registration object based on the query arguments
             registration = build_registration(cls.__name__, list_args)
@@ -168,9 +153,6 @@ class OIORestObject(object):
                                       registreret_til)
         if results is None:
             results = []
-        # TODO: Return JSON object key should be based on class name,
-        # e.g. {"Facetter": [..]}, not {"results": [..]}
-        # TODO: Include Return value
         return jsonify({'results': results})
 
     @classmethod
@@ -186,6 +168,16 @@ class OIORestObject(object):
         return jsonify({uuid: object})
 
     @classmethod
+    def gather_registration(cls, input):
+        """Return a registration dict from the input dict."""
+        attributes = input.get("attributter", {})
+        states = input.get("tilstande", {})
+        relations = input.get("relationer", None)
+        return {"states": states,
+                "attributes": attributes,
+                "relations": relations}
+
+    @classmethod
     @requires_auth
     def put_object(cls, uuid):
         """
@@ -196,28 +188,26 @@ class OIORestObject(object):
             return jsonify({'uuid': None}), 400
         # Get most common parameters if available.
         note = input.get("note", "")
-        attributes = input.get("attributter", {})
-        states = input.get("tilstande", {})
-        relations = input.get("relationer", {})
+        registration = cls.gather_registration(input)
 
         if not db.object_exists(cls.__name__, uuid):
             # Do import.
-            result = db.create_or_import_object(cls.__name__, note, attributes,
-                                                states, relations, uuid)
-            # TODO: When connected to DB, use result properly.
+            db.create_or_import_object(cls.__name__, note,
+                                       registration, uuid)
             return jsonify({'uuid': uuid}), 200
         else:
             "Edit or passivate."
-            if (input.get('livscyklus', '').lower() == 'passiv'):
+            if input.get('livscyklus', '').lower() == 'passiv':
                 # Passivate
+                registration = cls.gather_registration({})
                 db.passivate_object(
-                    cls.__name__, note, uuid
+                    cls.__name__, note, registration, uuid
                 )
                 return jsonify({'uuid': uuid}), 200
             else:
                 # Edit/change
-                result = db.update_object(cls.__name__, note, attributes,
-                                          states, relations, uuid)
+                db.update_object(cls.__name__, note, registration,
+                                 uuid)
                 return jsonify({'uuid': uuid}), 200
         return j(u"Forkerte parametre!"), 405
 
@@ -230,7 +220,9 @@ class OIORestObject(object):
             return jsonify({'uuid': None}), 400
         note = input.get("Note", "")
         class_name = cls.__name__
-        result = db.delete_object(class_name, note, uuid)
+        # Gather a blank registration
+        registration = cls.gather_registration({})
+        db.delete_object(class_name, registration, note, uuid)
 
         return jsonify({'uuid': uuid}), 200
 
@@ -241,7 +233,7 @@ class OIORestObject(object):
         class_name = cls.__name__.lower()
         class_url = u"{0}/{1}/{2}".format(base_url,
                                           hierarchy,
-                                          cls.__name__.lower())
+                                          class_name)
         uuid_regex = (
             "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}" +
             "-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
@@ -269,3 +261,8 @@ class OIORestObject(object):
             object_url, u'_'.join([cls.__name__, 'delete_object']),
             cls.delete_object, methods=['DELETE']
         )
+
+    # Templates which may be overridden on subclass.
+    # Templates may only be overridden on subclass if they are explicitly
+    # listed here.
+    RELATIONS_TEMPLATE = 'relations_array.sql'

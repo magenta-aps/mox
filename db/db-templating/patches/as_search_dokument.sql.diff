@@ -1,0 +1,179 @@
+*** generated-files/as_search_dokument.sql	2015-08-19 10:30:40.412099586 +0200
+--- patches/as_search_dokument.org.sql	2015-08-19 10:29:59.052100326 +0200
+***************
+*** 32,41 ****
+--- 32,48 ----
+    	tilsFremdriftTypeObj DokumentFremdriftTilsType;
+  	relationTypeObj DokumentRelationType;
+  	anyAttrValue text;
+  	anyuuid uuid;
+  	anyurn text;
++ 	variantTypeObj DokumentVariantType;
++ 	variantEgenskaberTypeObj DokumentVariantEgenskaberType;
++ 	delTypeObj DokumentDelType;
++ 	delEgenskaberTypeObj DokumentDelEgenskaberType;
++ 	delRelationTypeObj DokumentdelRelationType;
++ 	variant_candidates_ids bigint[];
++ 	variant_candidates_is_initialized boolean;
+  	auth_filtered_uuids uuid[];
+  BEGIN
+  
+  --RAISE DEBUG 'step 0:registreringObj:%',registreringObj;
+  
+***************
+*** 348,376 ****
+  	LOOP
+  		dokument_candidates:=array( 
+  
+  			SELECT DISTINCT
+  			b.dokument_id 
+! 			FROM  dokument_attr_egenskaber a
+! 			JOIN dokument_registrering b on a.dokument_registrering_id=b.id
+  			WHERE
+  			(
+! 						a.brugervendtnoegle ILIKE anyAttrValue OR
+  						a.beskrivelse ILIKE anyAttrValue OR
+  									a.brevdato::text ilike anyAttrValue OR
+  						a.kassationskode ILIKE anyAttrValue OR
+  									a.major::text ilike anyAttrValue OR
+  									a.minor::text ilike anyAttrValue OR
+  									(a.offentlighedundtaget).Hjemmel ilike anyAttrValue OR (a.offentlighedundtaget).AlternativTitel ilike anyAttrValue OR
+  						a.titel ILIKE anyAttrValue OR
+  						a.dokumenttype ILIKE anyAttrValue
+! 			)
+! 			AND
+! 			(
+! 				virkningSoeg IS NULL
+  				OR
+! 				virkningSoeg && (a.virkning).TimePeriod
+  			)
+  			AND
+  					(
+  				(registreringObj.registrering) IS NULL 
+  				OR
+--- 355,399 ----
+  	LOOP
+  		dokument_candidates:=array( 
+  
+  			SELECT DISTINCT
+  			b.dokument_id 
+! 			FROM  dokument_registrering b 
+! 			LEFT JOIN dokument_attr_egenskaber a on a.dokument_registrering_id=b.id and (virkningSoeg IS NULL or virkningSoeg && (a.virkning).TimePeriod )
+! 			LEFT JOIN dokument_variant c on c.dokument_registrering_id=b.id 
+! 			LEFT JOIN dokument_del f on f.variant_id=c.id
+! 			LEFT JOIN dokument_del_egenskaber d on d.del_id = f.id and (virkningSoeg IS NULL or virkningSoeg && (d.virkning).TimePeriod )
+! 			LEFT JOIN dokument_variant_egenskaber e on e.variant_id = c.id and (virkningSoeg IS NULL or virkningSoeg && (e.virkning).TimePeriod )
+  			WHERE
+  			(
+! 				(
+! 					a.brugervendtnoegle ILIKE anyAttrValue OR
+  						a.beskrivelse ILIKE anyAttrValue OR
+  									a.brevdato::text ilike anyAttrValue OR
+  						a.kassationskode ILIKE anyAttrValue OR
+  									a.major::text ilike anyAttrValue OR
+  									a.minor::text ilike anyAttrValue OR
+  									(a.offentlighedundtaget).Hjemmel ilike anyAttrValue OR (a.offentlighedundtaget).AlternativTitel ilike anyAttrValue OR
+  						a.titel ILIKE anyAttrValue OR
+  						a.dokumenttype ILIKE anyAttrValue
+! 				)
+  				OR
+! 				(
+! 					( c.varianttekst ilike anyAttrValue and e.id is not null) --varianttekst handled like it is logically part of variant egenskaber
+! 				)
+! 				OR
+! 				(
+! 					( f.deltekst ilike anyAttrValue and d.id is not null ) --deltekst handled like it is logically part of del egenskaber
+! 					OR
+! 					d.indeks::text = anyAttrValue
+! 					OR
+! 					d.indhold ILIKE anyAttrValue
+! 					OR
+! 					d.lokation ILIKE anyAttrValue
+! 					OR
+! 					d.mimetype ILIKE anyAttrValue
+! 				)
+  			)
+  			AND
+  					(
+  				(registreringObj.registrering) IS NULL 
+  				OR
+***************
+*** 753,772 ****
+  	FOREACH anyuuid IN ARRAY anyuuidArr
+  	LOOP
+  		dokument_candidates:=array(
+  			SELECT DISTINCT
+  			b.dokument_id 
+! 			FROM  dokument_relation a
+! 			JOIN dokument_registrering b on a.dokument_registrering_id=b.id
+! 			WHERE
+! 			anyuuid = a.rel_maal_uuid
+! 			AND
+! 			(
+! 				virkningSoeg IS NULL
+! 				OR
+! 				virkningSoeg && (a.virkning).TimePeriod
+! 			)
+  			AND
+  					(
+  				(registreringObj.registrering) IS NULL 
+  				OR
+  				(
+--- 776,792 ----
+  	FOREACH anyuuid IN ARRAY anyuuidArr
+  	LOOP
+  		dokument_candidates:=array(
+  			SELECT DISTINCT
+  			b.dokument_id 
+!  			FROM dokument_registrering b  
+!  			LEFT JOIN dokument_relation a on a.dokument_registrering_id=b.id and (virkningSoeg IS NULL or (virkningSoeg && (a.virkning).TimePeriod) )
+!  			LEFT JOIN dokument_variant c on c.dokument_registrering_id=b.id
+!  			LEFT JOIN dokument_del d on d.variant_id=c.id 
+!  			LEFT JOIN dokument_del_relation e on d.id=e.del_id and (virkningSoeg IS NULL or (virkningSoeg && (e.virkning).TimePeriod) )
+!   			WHERE
+!  			(anyuuid = a.rel_maal_uuid OR anyuuid = e.rel_maal_uuid)
+  			AND
+  					(
+  				(registreringObj.registrering) IS NULL 
+  				OR
+  				(
+***************
+*** 848,867 ****
+  	FOREACH anyurn IN ARRAY anyurnArr
+  	LOOP
+  		dokument_candidates:=array(
+  			SELECT DISTINCT
+  			b.dokument_id 
+! 			FROM  dokument_relation a
+! 			JOIN dokument_registrering b on a.dokument_registrering_id=b.id
+! 			WHERE
+! 			anyurn = a.rel_maal_urn
+! 			AND
+! 			(
+! 				virkningSoeg IS NULL
+! 				OR
+! 				virkningSoeg && (a.virkning).TimePeriod
+! 			)
+  			AND
+  					(
+  				(registreringObj.registrering) IS NULL 
+  				OR
+  				(
+--- 868,884 ----
+  	FOREACH anyurn IN ARRAY anyurnArr
+  	LOOP
+  		dokument_candidates:=array(
+  			SELECT DISTINCT
+  			b.dokument_id 
+!  			FROM dokument_registrering b  
+!  			LEFT JOIN dokument_relation a on a.dokument_registrering_id=b.id and (virkningSoeg IS NULL or virkningSoeg && (a.virkning).TimePeriod )
+!  			LEFT JOIN dokument_variant c on c.dokument_registrering_id=b.id
+!  			LEFT JOIN dokument_del d on d.variant_id=c.id
+!  			LEFT JOIN dokument_del_relation e on d.id=e.del_id and (virkningSoeg IS NULL or virkningSoeg && (e.virkning).TimePeriod)
+!   			WHERE
+!  			(anyurn = a.rel_maal_urn OR anyurn = e.rel_maal_urn)
+  			AND
+  					(
+  				(registreringObj.registrering) IS NULL 
+  				OR
+  				(

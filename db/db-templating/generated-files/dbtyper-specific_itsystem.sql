@@ -22,7 +22,7 @@ CREATE TYPE ItsystemGyldighedTilsType AS (
 CREATE TYPE ItsystemEgenskaberAttrType AS (
 brugervendtnoegle text,
 itsystemnavn text,
-itsystemtype text, 
+itsystemtype text,
 konfigurationreference text[],
  virkning Virkning
 );
@@ -33,8 +33,8 @@ CREATE TYPE ItsystemRelationKode AS ENUM  ('tilhoerer','tilknyttedeorganisatione
 CREATE TYPE ItsystemRelationType AS (
   relType ItsystemRelationKode,
   virkning Virkning,
-  relMaalUuid uuid,
-  relMaalUrn  text,
+  uuid uuid,
+  urn  text,
   objektType text 
 )
 ;

@@ -21,11 +21,11 @@ CREATE TYPE DokumentFremdriftTilsType AS (
 
 CREATE TYPE DokumentEgenskaberAttrType AS (
 brugervendtnoegle text,
-beskrivelse text, 
-brevdato date,
-kassationskode text, 
-major int, 
-minor int, 
+beskrivelse text,
+brevdato ClearableDate,
+kassationskode text,
+major ClearableInt,
+minor ClearableInt,
 offentlighedundtaget offentlighedundtagettype,
 titel text,
 dokumenttype text,
@@ -38,8 +38,8 @@ CREATE TYPE DokumentRelationKode AS ENUM  ('nyrevision','primaerklasse','ejer','
 CREATE TYPE DokumentRelationType AS (
   relType DokumentRelationKode,
   virkning Virkning,
-  relMaalUuid uuid,
-  relMaalUrn  text,
+  uuid uuid,
+  urn  text,
   objektType text 
 )
 ;
@@ -54,7 +54,7 @@ CREATE TYPE DokumentdelRelationKode AS ENUM  ('underredigeringaf');  --WARNING: 
 
 
 CREATE TYPE DokumentDelEgenskaberType AS (
-indeks int,
+indeks ClearableInt,
 indhold text,
 lokation text,
 mimetype text,
@@ -65,8 +65,8 @@ mimetype text,
 CREATE TYPE DokumentdelRelationType AS (
   relType DokumentdelRelationKode,
   virkning Virkning,
-  relMaalUuid uuid,
-  relMaalUrn  text,
+  uuid uuid,
+  urn  text,
   objektType text 
 )
 ;
@@ -85,10 +85,10 @@ CREATE TYPE DokumentDelType AS
 /**************************************************/
 
 CREATE TYPE DokumentVariantEgenskaberType AS ( 
-arkivering boolean, 
-delvisscannet boolean, 
-offentliggoerelse boolean, 
-produktion boolean,
+arkivering ClearableBoolean, 
+delvisscannet ClearableBoolean, 
+offentliggoerelse ClearableBoolean, 
+produktion ClearableBoolean,
  virkning Virkning
 );
 

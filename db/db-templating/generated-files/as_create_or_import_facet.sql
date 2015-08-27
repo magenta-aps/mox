@@ -11,7 +11,8 @@ NOTICE: This file is auto-generated using the script: apply-template.py facet as
 
 CREATE OR REPLACE FUNCTION as_create_or_import_facet(
   facet_registrering FacetRegistreringType,
-  facet_uuid uuid DEFAULT NULL
+  facet_uuid uuid DEFAULT NULL,
+  auth_criteria_arr FacetRegistreringType[] DEFAULT NULL
 	)
   RETURNS uuid AS 
 $$
@@ -22,7 +23,7 @@ DECLARE
   facet_tils_publiceret_obj facetPubliceretTilsType;
   
   facet_relationer FacetRelationType;
-
+  auth_filtered_uuids uuid[];
 BEGIN
 
 IF facet_uuid IS NULL THEN
@@ -34,11 +35,11 @@ END IF;
 
 
 IF EXISTS (SELECT id from facet WHERE id=facet_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing facet with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_facet (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',facet_uuid;
+  RAISE EXCEPTION 'Error creating or importing facet with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_facet (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',facet_uuid USING ERRCODE='MO500';
 END IF;
 
 IF  (facet_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (facet_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_facet.',(facet_registrering.registrering).livscykluskode;
+  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_facet.',(facet_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
@@ -81,30 +82,14 @@ SELECT
 
  
 IF coalesce(array_length(facet_registrering.attrEgenskaber, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [facet]. Oprettelse afbrydes.';
+  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [facet]. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
 
 
-IF facet_registrering.attrEgenskaber IS NOT NULL THEN
+IF facet_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(facet_registrering.attrEgenskaber,1),0)>0 THEN
   FOREACH facet_attr_egenskaber_obj IN ARRAY facet_registrering.attrEgenskaber
   LOOP
-
-  IF
-  ( facet_attr_egenskaber_obj.brugervendtnoegle IS NOT NULL AND facet_attr_egenskaber_obj.brugervendtnoegle<>'') 
-   OR 
-  ( facet_attr_egenskaber_obj.beskrivelse IS NOT NULL AND facet_attr_egenskaber_obj.beskrivelse<>'') 
-   OR 
-  ( facet_attr_egenskaber_obj.opbygning IS NOT NULL AND facet_attr_egenskaber_obj.opbygning<>'') 
-   OR 
-  ( facet_attr_egenskaber_obj.ophavsret IS NOT NULL AND facet_attr_egenskaber_obj.ophavsret<>'') 
-   OR 
-  ( facet_attr_egenskaber_obj.plan IS NOT NULL AND facet_attr_egenskaber_obj.plan<>'') 
-   OR 
-  ( facet_attr_egenskaber_obj.supplement IS NOT NULL AND facet_attr_egenskaber_obj.supplement<>'') 
-   OR 
-  ( facet_attr_egenskaber_obj.retskilde IS NOT NULL AND facet_attr_egenskaber_obj.retskilde<>'') 
-   THEN
 
     INSERT INTO facet_attr_egenskaber (
       brugervendtnoegle,
@@ -128,7 +113,7 @@ IF facet_registrering.attrEgenskaber IS NOT NULL THEN
       facet_attr_egenskaber_obj.virkning,
       facet_registrering_id
     ;
-  END IF;
+ 
 
   END LOOP;
 END IF;
@@ -140,14 +125,12 @@ END IF;
 --Verification
 --For now all declared states are mandatory.
 IF coalesce(array_length(facet_registrering.tilsPubliceret, 1),0)<1  THEN
-  RAISE EXCEPTION 'Savner påkraevet tilstand [publiceret] for facet. Oprettelse afbrydes.';
+  RAISE EXCEPTION 'Savner påkraevet tilstand [publiceret] for facet. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
-IF facet_registrering.tilsPubliceret IS NOT NULL THEN
+IF facet_registrering.tilsPubliceret IS NOT NULL AND coalesce(array_length(facet_registrering.tilsPubliceret,1),0)>0 THEN
   FOREACH facet_tils_publiceret_obj IN ARRAY facet_registrering.tilsPubliceret
   LOOP
-
-  IF facet_tils_publiceret_obj.publiceret IS NOT NULL AND facet_tils_publiceret_obj.publiceret<>''::FacetPubliceretTils THEN
 
     INSERT INTO facet_tils_publiceret (
       virkning,
@@ -159,7 +142,6 @@ IF facet_registrering.tilsPubliceret IS NOT NULL THEN
       facet_tils_publiceret_obj.publiceret,
       facet_registrering_id;
 
-  END IF;
   END LOOP;
 END IF;
 
@@ -177,13 +159,22 @@ END IF;
     SELECT
       facet_registrering_id,
       a.virkning,
-      a.relMaalUuid,
-      a.relMaalUrn,
+      a.uuid,
+      a.urn,
       a.relType,
       a.objektType
     FROM unnest(facet_registrering.relationer) a
-    WHERE (a.relMaalUuid IS NOT NULL OR (a.relMaalUrn IS NOT NULL AND a.relMaalUrn<>'') )
   ;
+
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+/*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
+auth_filtered_uuids:=_as_filter_unauth_facet(array[facet_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[facet_uuid]) THEN
+  RAISE EXCEPTION 'Unable to create/import facet with uuid [%]. Object does not met stipulated criteria:%',facet_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
 
   PERFORM actual_state._amqp_publish_notification('Facet', (facet_registrering.registrering).livscykluskode, facet_uuid);
 

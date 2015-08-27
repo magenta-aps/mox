@@ -1,16 +1,10 @@
-*** ../generated-files/as_list_klasse.sql	2015-06-22 09:34:59.561684212 +0200
---- ../patches/as_list_klasse.org.sql	2015-06-22 09:38:44.125695396 +0200
+*** ./generated-files/as_list_klasse.sql	2015-08-12 16:23:16.928499347 +0200
+--- ./patches/as_list_klasse.org.sql	2015-08-12 16:25:24.004505676 +0200
 ***************
-*** 68,114 ****
-  					END
-  					order by b.publiceret,b.virkning
-  				)) KlasseTilsPubliceretArr		
-  			FROM
-  			(
-! 					SELECT
-! 					a.klasse_id,
-! 					a.klasse_registrering_id,
-! 					a.registrering,
+*** 88,128 ****
+  					a.klasse_id,
+  					a.klasse_registrering_id,
+  					a.registrering,
   					_remove_nulls_in_array(array_agg(
   						CASE 
 ! 						WHEN b.id is not null THEN
@@ -49,16 +43,10 @@
   			GROUP BY 
   			a.klasse_id,
   			a.klasse_registrering_id,
---- 68,158 ----
-  					END
-  					order by b.publiceret,b.virkning
-  				)) KlasseTilsPubliceretArr		
-  			FROM
-  			(
-! 				SELECT
-! 				a.klasse_id,
-! 				a.klasse_registrering_id,
-! 				a.registrering,
+--- 88,172 ----
+  					a.klasse_id,
+  					a.klasse_registrering_id,
+  					a.registrering,
   					_remove_nulls_in_array(array_agg(
   						CASE 
 ! 						WHEN a.attr_id is not null THEN

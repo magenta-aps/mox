@@ -11,10 +11,8 @@ NOTICE: This file is auto-generated using the script: apply-template.py klasse a
 
 
 
---Please notice that is it the responsibility of the invoker of this function to compare the resulting klasse_registration (including the entire hierarchy)
---to the previous one, and abort the transaction if the two registrations are identical. (This is to comply with the stipulated behavior in 'Specifikation_af_generelle_egenskaber - til OIOkomiteen.pdf')
 
---Also notice, that the given array of KlasseAttr...Type must be consistent regarding virkning (although the allowance of null-values might make it possible to construct 'logically consistent'-arrays of objects with overlapping virknings)
+--Also notice, that the given arrays of KlasseAttr...Type must be consistent regarding virkning (although the allowance of null-values might make it possible to construct 'logically consistent'-arrays of objects with overlapping virknings)
 
 CREATE OR REPLACE FUNCTION as_update_klasse(
   klasse_uuid uuid,
@@ -24,7 +22,8 @@ CREATE OR REPLACE FUNCTION as_update_klasse(
   attrEgenskaber KlasseEgenskaberAttrType[],
   tilsPubliceret KlassePubliceretTilsType[],
   relationer KlasseRelationType[],
-  lostUpdatePreventionTZ TIMESTAMPTZ = null
+  lostUpdatePreventionTZ TIMESTAMPTZ = null,
+  auth_criteria_arr KlasseRegistreringType[]=null
 	)
   RETURNS bigint AS 
 $$
@@ -39,20 +38,33 @@ DECLARE
   attrEgenskaberObj KlasseEgenskaberAttrType;
   new_id_klasse_attr_egenskaber bigint;
   klasseSoegeordObj KlasseSoegeordType;
+  auth_filtered_uuids uuid[];
 BEGIN
 
 --create a new registrering
 
 IF NOT EXISTS (select a.id from klasse a join klasse_registrering b on b.klasse_id=a.id  where a.id=klasse_uuid) THEN
-   RAISE EXCEPTION 'Unable to update klasse with uuid [%], being unable to any previous registrations.',klasse_uuid;
+   RAISE EXCEPTION 'Unable to update klasse with uuid [%], being unable to find any previous registrations.',klasse_uuid USING ERRCODE = 'MO400';
 END IF;
+
+PERFORM a.id FROM klasse a
+WHERE a.id=klasse_uuid
+FOR UPDATE; --We synchronize concurrent invocations of as_updates of this particular object on a exclusive row lock. This lock will be held by the current transaction until it terminates.
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_klasse(array[klasse_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[klasse_uuid]) THEN
+  RAISE EXCEPTION 'Unable to update klasse with uuid [%]. Object does not met stipulated criteria:%',klasse_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
 
 new_klasse_registrering := _as_create_klasse_registrering(klasse_uuid,livscykluskode, brugerref, note);
 prev_klasse_registrering := _as_get_prev_klasse_registrering(new_klasse_registrering);
 
 IF lostUpdatePreventionTZ IS NOT NULL THEN
   IF NOT (LOWER((prev_klasse_registrering.registrering).timeperiod)=lostUpdatePreventionTZ) THEN
-    RAISE EXCEPTION 'Unable to update klasse with uuid [%], as the klasse seems to have been updated since latest read by client (the given lostUpdatePreventionTZ [%] does not match the timesamp of latest registration [%]).',klasse_uuid,lostUpdatePreventionTZ,LOWER((prev_klasse_registrering.registrering).timeperiod);
+    RAISE EXCEPTION 'Unable to update klasse with uuid [%], as the klasse seems to have been updated since latest read by client (the given lostUpdatePreventionTZ [%] does not match the timesamp of latest registration [%]).',klasse_uuid,lostUpdatePreventionTZ,LOWER((prev_klasse_registrering.registrering).timeperiod) USING ERRCODE = 'MO409';
   END IF;   
 END IF;
 
@@ -83,8 +95,8 @@ ELSE
       SELECT
         new_klasse_registrering.id,
           a.virkning,
-            a.relMaalUuid,
-              a.relMaalUrn,
+            a.uuid,
+              a.urn,
                 a.relType,
                   a.objektType
       FROM unnest(relationer) as a
@@ -174,12 +186,7 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" relations
-DELETE FROM klasse_relation
-WHERE 
-klasse_registrering_id=new_klasse_registrering.id
-AND (rel_maal_uuid IS NULL AND (rel_maal_urn IS NULL OR rel_maal_urn=''))
-;
+
 
 END IF;
 /**********************/
@@ -242,12 +249,6 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" tilstande
-DELETE FROM klasse_tils_publiceret
-WHERE 
-klasse_registrering_id=new_klasse_registrering.id
-AND publiceret = ''::KlassePubliceretTils
-;
 
 END IF;
 
@@ -273,7 +274,7 @@ IF attrEgenskaber IS NOT null THEN
   GROUP BY a.brugervendtnoegle,a.beskrivelse,a.eksempel,a.omfang,a.titel,a.retskilde,a.aendringsnotat, a.virkning, a.soegeord
   HAVING COUNT(*)>1
   ) THEN
-  RAISE EXCEPTION 'Unable to update klasse with uuid [%], as the klasse have overlapping virknings in the given egenskaber array :%',klasse_uuid,to_json(attrEgenskaber)  USING ERRCODE = 22000;
+  RAISE EXCEPTION 'Unable to update klasse with uuid [%], as the klasse have overlapping virknings in the given egenskaber array :%',klasse_uuid,to_json(attrEgenskaber)  USING ERRCODE = 'MO400';
 
   END IF;
 
@@ -301,12 +302,12 @@ WITH inserted_merged_attr_egenskaber AS (
   )
   SELECT 
     nextval('klasse_attr_egenskaber_id_seq'),
-    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle), 
-    coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse), 
-    coalesce(attrEgenskaberObj.eksempel,a.eksempel), 
-    coalesce(attrEgenskaberObj.omfang,a.omfang), 
-    coalesce(attrEgenskaberObj.titel,a.titel), 
-    coalesce(attrEgenskaberObj.retskilde,a.retskilde), 
+    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+    coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
+    coalesce(attrEgenskaberObj.eksempel,a.eksempel),
+    coalesce(attrEgenskaberObj.omfang,a.omfang),
+    coalesce(attrEgenskaberObj.titel,a.titel),
+    coalesce(attrEgenskaberObj.retskilde,a.retskilde),
     coalesce(attrEgenskaberObj.aendringsnotat,a.aendringsnotat),
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
@@ -495,19 +496,8 @@ JOIN klasse_attr_egenskaber a2 on a2.klasse_registrering_id=prev_klasse_registre
 JOIN klasse_attr_egenskaber_soegeord b on a2.id=b.klasse_attr_egenskaber_id   
 ;
 
---Remove any "cleared"/"deleted" attributes
-DELETE FROM klasse_attr_egenskaber a
-WHERE 
-a.klasse_registrering_id=new_klasse_registrering.id
-AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') 
-            AND  (a.beskrivelse IS NULL OR a.beskrivelse='') 
-            AND  (a.eksempel IS NULL OR a.eksempel='') 
-            AND  (a.omfang IS NULL OR a.omfang='') 
-            AND  (a.titel IS NULL OR a.titel='') 
-            AND  (a.retskilde IS NULL OR a.retskilde='') 
-            AND  (a.aendringsnotat IS NULL OR a.aendringsnotat='')
-AND a.id NOT IN (SELECT b.klasse_attr_egenskaber_id FROM klasse_attr_egenskaber_soegeord b)
-;
+
+
 
 
 END IF;
@@ -522,7 +512,7 @@ read_prev_klasse:=as_read_klasse(klasse_uuid, (prev_klasse_registrering.registre
 --the ordering in as_list (called by as_read) ensures that the latest registration is returned at index pos 1
 
 IF NOT (lower((read_new_klasse.registrering[1].registrering).TimePeriod)=lower((new_klasse_registrering.registrering).TimePeriod) AND lower((read_prev_klasse.registrering[1].registrering).TimePeriod)=lower((prev_klasse_registrering.registrering).TimePeriod)) THEN
-  RAISE EXCEPTION 'Error updating klasse with id [%]: The ordering of as_list_klasse should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].',klasse_uuid,to_json(new_klasse_registrering),to_json(read_new_klasse.registrering[1].registrering),to_json(prev_klasse_registrering),to_json(prev_new_klasse.registrering[1].registrering);
+  RAISE EXCEPTION 'Error updating klasse with id [%]: The ordering of as_list_klasse should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].',klasse_uuid,to_json(new_klasse_registrering),to_json(read_new_klasse.registrering[1].registrering),to_json(prev_klasse_registrering),to_json(prev_new_klasse.registrering[1].registrering) USING ERRCODE = 'MO500';
 END IF;
  
  --we'll ignore the registreringBase part in the comparrison - except for the livcykluskode
@@ -547,11 +537,12 @@ ROW(null,(read_prev_klasse.registrering[1].registrering).livscykluskode,null,nul
 IF read_prev_klasse_reg=read_new_klasse_reg THEN
   --RAISE NOTICE 'Note[%]. Aborted reg:%',note,to_json(read_new_klasse_reg);
   --RAISE NOTICE 'Note[%]. Previous reg:%',note,to_json(read_prev_klasse_reg);
-  RAISE EXCEPTION 'Aborted updating klasse with id [%] as the given data, does not give raise to a new registration. Aborted reg:[%], previous reg:[%]',klasse_uuid,to_json(read_new_klasse_reg),to_json(read_prev_klasse_reg) USING ERRCODE = 22000;
+  RAISE EXCEPTION 'Aborted updating klasse with id [%] as the given data, does not give raise to a new registration. Aborted reg:[%], previous reg:[%]',klasse_uuid,to_json(read_new_klasse_reg),to_json(read_prev_klasse_reg) USING ERRCODE = 'MO400';
 END IF;
 
 /******************************************************************/
 
+PERFORM actual_state._amqp_publish_notification('Klasse', livscykluskode, klasse_uuid);
 
 return new_klasse_registrering.id;
 

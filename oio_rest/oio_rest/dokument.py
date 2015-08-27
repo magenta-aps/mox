@@ -1,49 +1,78 @@
 # encoding: utf-8
-
-import os
-from flask import jsonify
-from contentstore import content_store
-
-from oio_rest import OIORestObject, OIOStandardHierarchy, db
+import flask
 from authentication import requires_auth
+from contentstore import content_store
+import db
+
+from oio_rest import OIORestObject, OIOStandardHierarchy
+
 
 class Dokument(OIORestObject):
     """
     Implement a Dokument  - manage access to database layer from the API.
     """
+
     @classmethod
     @requires_auth
-    def create_object(cls):
-        input = cls.get_json()
-        if not input:
-            return jsonify({'uuid': None}), 400
+    def download_content(cls, content_path):
+        """
+        Download a content file, given a content path.
+        """
+        content_url = "store:%s" % content_path
 
-        # Temporarily for now, look for a "content" field on the main
-        # json object, so we can test file upload.
-        # This should really look into the DokumentDel subobject for this field
-        content_url = input.get("content", "")
-        f = cls._get_file_storage_for_content_url(content_url)
+        # Get the document UUID, and the content's mimetype associated with
+        # the content URL
+        uuid, mimetype = db.get_document_from_content_url(content_url)
 
-        # TODO: Wrap in try/except block, turn off autocommit, and roll back
-        # db transaction if file saving fails
+        # Read in the object. This will throw a NotFoundException if the
+        # document does not exist, OR another exception if the user does not
+        # have access to it.
+        db.list_objects(cls.__name__, [uuid], None, None, None, None)
 
-        # Save the file and get the URL for the saved file
-        stored_content_url = "content:%s" % content_store.save_file_object(f)
-        print stored_content_url
+        filename = content_store.get_filename_for_url(content_url)
 
-        # TODO: Refactor to extract common functionality in superclass and
-        # call superclass method instead of duplicating code.
+        # Send the file efficiently, if possible
+        return flask.send_file(filename, mimetype=mimetype)
 
-        note = input.get("note", "")
+    @classmethod
+    def create_api(cls, hierarchy, flask, base_url):
+        """Set up API with correct database access functions."""
+        super(Dokument, cls).create_api(hierarchy, flask, base_url)
+        hierarchy = hierarchy.lower()
+        class_url = u"{0}/{1}/{2}".format(base_url,
+                                          hierarchy,
+                                          cls.__name__.lower())
+        uuid_regex = (
+            "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}" +
+            "-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+        )
+        date_path_regex = (
+            "\\d{4}/\\d{2}/\\d{2}/\\d{2}/\\d{2}/" + uuid_regex + ".bin"
+        )
+        download_content_url = u'{0}/<regex("{1}"):content_path>'.format(
+            class_url,
+            date_path_regex
+        )
+
+        flask.add_url_rule(
+            download_content_url, u'_'.join(
+                [cls.__name__, 'download_content']
+            ), cls.download_content, methods=['GET']
+        )
+
+    @classmethod
+    def gather_registration(cls, input):
         attributes = input.get("attributter", {})
         states = input.get("tilstande", {})
         relations = input.get("relationer", {})
-        uuid = db.create_or_import_object(cls.__name__, note, attributes,
-                                          states, relations)
-        return jsonify({'uuid': uuid}), 201
+        variants = input.get("varianter", [])
+        return {"states": states,
+                "attributes": attributes,
+                "relations": relations,
+                "variants": variants}
 
 
-class DokumentsHierarki(OIOStandardHierarchy):
+class DokumentHierarki(OIOStandardHierarchy):
     """Implement the Dokument Standard."""
 
     _name = "Dokument"

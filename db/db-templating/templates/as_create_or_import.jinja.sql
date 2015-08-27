@@ -8,7 +8,8 @@
 {% block body %}
 CREATE OR REPLACE FUNCTION as_create_or_import_{{oio_type}}(
   {{oio_type}}_registrering {{oio_type|title}}RegistreringType,
-  {{oio_type}}_uuid uuid DEFAULT NULL
+  {{oio_type}}_uuid uuid DEFAULT NULL,
+  auth_criteria_arr {{oio_type|title}}RegistreringType[] DEFAULT NULL
 	)
   RETURNS uuid AS 
 $$
@@ -19,7 +20,7 @@ DECLARE
   {% for tilstand, tilstand_values in tilstande.iteritems() %}{{oio_type}}_tils_{{tilstand}}_obj {{oio_type}}{{tilstand|title}}TilsType;
   {% endfor %}
   {{oio_type}}_relationer {{oio_type|title}}RelationType;
-
+  auth_filtered_uuids uuid[];
 BEGIN
 
 IF {{oio_type}}_uuid IS NULL THEN
@@ -31,11 +32,11 @@ END IF;
 
 
 IF EXISTS (SELECT id from {{oio_type}} WHERE id={{oio_type}}_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing {{oio_type}} with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_{{oio_type}} (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',{{oio_type}}_uuid;
+  RAISE EXCEPTION 'Error creating or importing {{oio_type}} with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_{{oio_type}} (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',{{oio_type}}_uuid USING ERRCODE='MO500';
 END IF;
 
 IF  ({{oio_type}}_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and ({{oio_type}}_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_{{oio_type}}.',({{oio_type}}_registrering.registrering).livscykluskode;
+  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_{{oio_type}}.',({{oio_type}}_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
@@ -78,26 +79,14 @@ SELECT
 
  {%for attribut , attribut_fields in attributter.iteritems() %}
 IF coalesce(array_length({{oio_type}}_registrering.attr{{attribut|title}}, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet attribut [{{attribut}}] for [{{oio_type}}]. Oprettelse afbrydes.';
+  RAISE EXCEPTION 'Savner påkraevet attribut [{{attribut}}] for [{{oio_type}}]. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
 
 
-IF {{oio_type}}_registrering.attr{{attribut|title}} IS NOT NULL THEN
+IF {{oio_type}}_registrering.attr{{attribut|title}} IS NOT NULL and coalesce(array_length({{oio_type}}_registrering.attr{{attribut|title}},1),0)>0 THEN
   FOREACH {{oio_type}}_attr_{{attribut}}_obj IN ARRAY {{oio_type}}_registrering.attr{{attribut|title}}
   LOOP
-
-  IF {%- for field in attribut_fields %}
-  ( {{oio_type}}_attr_{{attribut}}_obj.{{field}} IS NOT NULL   
-  {%- if  attributter_type_override is defined and attributter_type_override[attribut] is defined and attributter_type_override[attribut][field] is defined %} 
-  {%-if attributter_type_override[attribut][field] == "text[]" %} AND coalesce(array_length({{oio_type}}_attr_{{attribut}}_obj.{{field}},1),0)>0
-  {%- endif %}
-  {%-if attributter_type_override[attribut][field] == "offentlighedundtagettype" %} OR (({{oio_type}}_attr_{{attribut}}_obj.{{field}}).AlternativTitel IS NOT NULL AND ({{oio_type}}_attr_{{attribut}}_obj.{{field}}).AlternativTitel<>'') OR (({{oio_type}}_attr_{{attribut}}_obj.{{field}}).Hjemmel IS NOT NULL AND ({{oio_type}}_attr_{{attribut}}_obj.{{field}}).Hjemmel<>''){%- endif %}
-  {%-if attributter_type_override[attribut][field] == "int" or attributter_type_override[attribut][field] == "date" %} {%- endif %} 
-  {%- else %} AND {{oio_type}}_attr_{{attribut}}_obj.{{field}}<>'' 
-  {%- endif %}) 
-  {% if (not loop.last)%} OR {% endif %}
-   {%- endfor %} THEN
 
     INSERT INTO {{oio_type}}_attr_{{attribut}} (
       {% for field in attribut_fields %}{{field}},
@@ -109,7 +98,7 @@ IF {{oio_type}}_registrering.attr{{attribut|title}} IS NOT NULL THEN
       {% endfor %}{{oio_type}}_attr_{{attribut}}_obj.virkning,
       {{oio_type}}_registrering_id
     ;
-  END IF;
+ 
 
   END LOOP;
 END IF;
@@ -121,14 +110,12 @@ END IF;
 --Verification
 --For now all declared states are mandatory.
 IF coalesce(array_length({{oio_type}}_registrering.tils{{tilstand|title}}, 1),0)<1  THEN
-  RAISE EXCEPTION 'Savner påkraevet tilstand [{{tilstand}}] for {{oio_type}}. Oprettelse afbrydes.';
+  RAISE EXCEPTION 'Savner påkraevet tilstand [{{tilstand}}] for {{oio_type}}. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
-IF {{oio_type}}_registrering.tils{{tilstand|title}} IS NOT NULL THEN
+IF {{oio_type}}_registrering.tils{{tilstand|title}} IS NOT NULL AND coalesce(array_length({{oio_type}}_registrering.tils{{tilstand|title}},1),0)>0 THEN
   FOREACH {{oio_type}}_tils_{{tilstand}}_obj IN ARRAY {{oio_type}}_registrering.tils{{tilstand|title}}
   LOOP
-
-  IF {{oio_type}}_tils_{{tilstand}}_obj.{{tilstand}} IS NOT NULL AND {{oio_type}}_tils_{{tilstand}}_obj.{{tilstand}}<>''::{{oio_type|title}}{{tilstand|title}}Tils THEN
 
     INSERT INTO {{oio_type}}_tils_{{tilstand}} (
       virkning,
@@ -140,7 +127,6 @@ IF {{oio_type}}_registrering.tils{{tilstand|title}} IS NOT NULL THEN
       {{oio_type}}_tils_{{tilstand}}_obj.{{tilstand}},
       {{oio_type}}_registrering_id;
 
-  END IF;
   END LOOP;
 END IF;
 {% endfor %}
@@ -158,13 +144,22 @@ END IF;
     SELECT
       {{oio_type}}_registrering_id,
       a.virkning,
-      a.relMaalUuid,
-      a.relMaalUrn,
+      a.uuid,
+      a.urn,
       a.relType,
       a.objektType
     FROM unnest({{oio_type}}_registrering.relationer) a
-    WHERE (a.relMaalUuid IS NOT NULL OR (a.relMaalUrn IS NOT NULL AND a.relMaalUrn<>'') )
   ;
+
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+/*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
+auth_filtered_uuids:=_as_filter_unauth_{{oio_type}}(array[{{oio_type}}_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[{{oio_type}}_uuid]) THEN
+  RAISE EXCEPTION 'Unable to create/import {{oio_type}} with uuid [%]. Object does not met stipulated criteria:%',{{oio_type}}_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
 
   PERFORM actual_state._amqp_publish_notification('{{oio_type|title}}', ({{oio_type}}_registrering.registrering).livscykluskode, {{oio_type}}_uuid);
 

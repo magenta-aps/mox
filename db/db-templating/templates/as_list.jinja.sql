@@ -8,10 +8,28 @@
 {% block body %}
 CREATE OR REPLACE FUNCTION as_list_{{oio_type}}({{oio_type}}_uuids uuid[],
   registrering_tstzrange tstzrange,
-  virkning_tstzrange tstzrange)
-  RETURNS setof {{oio_type|title}}Type AS
-  $BODY$
+  virkning_tstzrange tstzrange,
+  auth_criteria_arr {{oio_type|title}}RegistreringType[]=null
+  )
+  RETURNS {{oio_type|title}}Type[] AS
+$$
+DECLARE
+	auth_filtered_uuids uuid[];
+	result {{oio_type|title}}Type[];
+BEGIN
 
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_{{oio_type}}({{oio_type}}_uuids,auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=coalesce(array_length({{oio_type}}_uuids,1),0) AND auth_filtered_uuids @>{{oio_type}}_uuids) THEN
+  RAISE EXCEPTION 'Unable to list {{oio_type}} with uuids [%]. All objects do not fullfill the stipulated criteria:%',{{oio_type}}_uuids,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
+SELECT 
+array_agg( x.{{oio_type}}Obj) into result
+FROM
+(
 SELECT
 ROW(
 	a.{{oio_type}}_id,
@@ -26,7 +44,7 @@ ROW(
 		)::{{oio_type|title}}RegistreringType
 		order by upper((a.registrering).TimePeriod) DESC		
 	) 
-):: {{oio_type|title}}Type
+):: {{oio_type|title}}Type  {{oio_type}}Obj
 FROM
 (
 	SELECT
@@ -152,8 +170,14 @@ WHERE a.{{oio_type}}_id IS NOT NULL
 GROUP BY 
 a.{{oio_type}}_id
 order by a.{{oio_type}}_id
-
-$BODY$
-LANGUAGE sql STABLE
+) as x
 ;
+
+
+
+RETURN result;
+
+END;
+$$ LANGUAGE plpgsql STABLE;
+
 {% endblock %}

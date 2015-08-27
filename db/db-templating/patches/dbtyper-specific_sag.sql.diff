@@ -1,16 +1,7 @@
-*** ../generated-files/dbtyper-specific_sag.sql	2015-07-03 13:18:35.694422844 +0200
---- ../patches/dbtyper-specific_sag.org.sql	2015-07-03 13:17:53.898420763 +0200
+*** ../generated-files/dbtyper-specific_sag.sql	2015-08-07 14:47:27.308789351 +0200
+--- ../patches/dbtyper-specific_sag.org.sql	2015-08-07 14:48:25.192792234 +0200
 ***************
-*** 23,48 ****
-  brugervendtnoegle text, 
-  afleveret boolean,
-  beskrivelse text,
-  hjemmel text,
-  kassationskode text, 
-! offentlighedundtaget offentlighedundtagettype, 
-  principiel boolean,
-  sagsnummer text,
-  titel text,
+*** 32,48 ****
    virkning Virkning
   );
   
@@ -20,24 +11,15 @@
   CREATE TYPE SagRelationType AS (
     relType SagRelationKode,
     virkning Virkning,
-    relMaalUuid uuid,
-    relMaalUrn  text,
+    uuid uuid,
+    urn  text,
 !   objektType text 
   )
   ;
   
   CREATE TYPE SagRegistreringType AS
   (
---- 23,65 ----
-  brugervendtnoegle text, 
-  afleveret boolean,
-  beskrivelse text,
-  hjemmel text,
-  kassationskode text, 
-! offentlighedundtaget offentlighedundtagetType, 
-  principiel boolean,
-  sagsnummer text,
-  titel text,
+--- 32,65 ----
    virkning Virkning
   );
   
@@ -60,10 +42,10 @@
   CREATE TYPE SagRelationType AS (
     relType SagRelationKode,
     virkning Virkning,
-    relMaalUuid uuid,
-    relMaalUrn  text,
+    uuid uuid,
+    urn  text,
 !   objektType text,
-!   relIndex int,
+!   indeks int,
 !   relTypeSpec SagRelationJournalPostSpecifikKode,
 !   journalNotat JournalNotatType,
 !   journalDokumentAttr JournalPostDokumentAttrType
@@ -90,6 +72,6 @@
 ! CREATE Type _SagRelationMaxIndex AS
 ! (
 !   relType SagRelationKode,
-!   relIndex int
+!   indeks int
 ! );
   

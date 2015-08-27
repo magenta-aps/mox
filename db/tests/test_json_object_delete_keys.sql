@@ -20,9 +20,9 @@ sagRelType1 := ROW (
 	'ansvarlig'::sagRelationKode
 	,null --virkning
 	,'f7109356-e87e-4b10-ad5d-36de6e3ee09f'::uuid
-	,null --relmaalurn
+	,null --urn
 	,'Klasse' --objekttype
-	,567   --relIndex
+	,567   --indeks
 	,null --relTypeSpec
 	,null --journalNotat
 	,null --journalDokumentAttr
@@ -31,7 +31,7 @@ sagRelType1 := ROW (
 
 resultJson:=_json_object_delete_keys(row_to_json(sagRelType1),ARRAY['reltypespec','journalnotat','journaldokumentattr']);
 select count(*) into actualCount1 from json_each(resultJson);
-select count(*) into actualCount2 from json_each(resultJson) where key = ANY(ARRAY['reltypespec','journalnotat','journaldokumentattr','relmaalurn']) ;
+select count(*) into actualCount2 from json_each(resultJson) where key = ANY(ARRAY['reltypespec','journalnotat','journaldokumentattr','urn']) ;
 return next is(actualCount1,6,'Test for number of json fields, after delete #1.');
 return next is(actualCount2,1,'Test for number of json fields, after delete #2.');
 

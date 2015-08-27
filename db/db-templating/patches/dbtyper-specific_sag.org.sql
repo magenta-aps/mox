@@ -20,13 +20,13 @@ CREATE TYPE SagFremdriftTilsType AS (
 ;
 
 CREATE TYPE SagEgenskaberAttrType AS (
-brugervendtnoegle text, 
-afleveret boolean,
+brugervendtnoegle text,
+afleveret ClearableBoolean,
 beskrivelse text,
 hjemmel text,
-kassationskode text, 
-offentlighedundtaget offentlighedundtagetType, 
-principiel boolean,
+kassationskode text,
+offentlighedundtaget offentlighedundtagettype,
+principiel ClearableBoolean,
 sagsnummer text,
 titel text,
  virkning Virkning
@@ -51,10 +51,10 @@ offentlighedUndtaget OffentlighedundtagetType
 CREATE TYPE SagRelationType AS (
   relType SagRelationKode,
   virkning Virkning,
-  relMaalUuid uuid,
-  relMaalUrn  text,
+  uuid uuid,
+  urn  text,
   objektType text,
-  relIndex int,
+  indeks int,
   relTypeSpec SagRelationJournalPostSpecifikKode,
   journalNotat JournalNotatType,
   journalDokumentAttr JournalPostDokumentAttrType
@@ -78,6 +78,6 @@ CREATE TYPE SagType AS
 CREATE Type _SagRelationMaxIndex AS
 (
   relType SagRelationKode,
-  relIndex int
+  indeks int
 );
 

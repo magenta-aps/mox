@@ -11,7 +11,8 @@ NOTICE: This file is auto-generated using the script: apply-template.py interess
 
 CREATE OR REPLACE FUNCTION as_create_or_import_interessefaellesskab(
   interessefaellesskab_registrering InteressefaellesskabRegistreringType,
-  interessefaellesskab_uuid uuid DEFAULT NULL
+  interessefaellesskab_uuid uuid DEFAULT NULL,
+  auth_criteria_arr InteressefaellesskabRegistreringType[] DEFAULT NULL
 	)
   RETURNS uuid AS 
 $$
@@ -22,7 +23,7 @@ DECLARE
   interessefaellesskab_tils_gyldighed_obj interessefaellesskabGyldighedTilsType;
   
   interessefaellesskab_relationer InteressefaellesskabRelationType;
-
+  auth_filtered_uuids uuid[];
 BEGIN
 
 IF interessefaellesskab_uuid IS NULL THEN
@@ -34,11 +35,11 @@ END IF;
 
 
 IF EXISTS (SELECT id from interessefaellesskab WHERE id=interessefaellesskab_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing interessefaellesskab with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_interessefaellesskab (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',interessefaellesskab_uuid;
+  RAISE EXCEPTION 'Error creating or importing interessefaellesskab with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_interessefaellesskab (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',interessefaellesskab_uuid USING ERRCODE='MO500';
 END IF;
 
 IF  (interessefaellesskab_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (interessefaellesskab_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_interessefaellesskab.',(interessefaellesskab_registrering.registrering).livscykluskode;
+  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_interessefaellesskab.',(interessefaellesskab_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
@@ -81,22 +82,14 @@ SELECT
 
  
 IF coalesce(array_length(interessefaellesskab_registrering.attrEgenskaber, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [interessefaellesskab]. Oprettelse afbrydes.';
+  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [interessefaellesskab]. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
 
 
-IF interessefaellesskab_registrering.attrEgenskaber IS NOT NULL THEN
+IF interessefaellesskab_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(interessefaellesskab_registrering.attrEgenskaber,1),0)>0 THEN
   FOREACH interessefaellesskab_attr_egenskaber_obj IN ARRAY interessefaellesskab_registrering.attrEgenskaber
   LOOP
-
-  IF
-  ( interessefaellesskab_attr_egenskaber_obj.brugervendtnoegle IS NOT NULL AND interessefaellesskab_attr_egenskaber_obj.brugervendtnoegle<>'') 
-   OR 
-  ( interessefaellesskab_attr_egenskaber_obj.interessefaellesskabsnavn IS NOT NULL AND interessefaellesskab_attr_egenskaber_obj.interessefaellesskabsnavn<>'') 
-   OR 
-  ( interessefaellesskab_attr_egenskaber_obj.interessefaellesskabstype IS NOT NULL AND interessefaellesskab_attr_egenskaber_obj.interessefaellesskabstype<>'') 
-   THEN
 
     INSERT INTO interessefaellesskab_attr_egenskaber (
       brugervendtnoegle,
@@ -112,7 +105,7 @@ IF interessefaellesskab_registrering.attrEgenskaber IS NOT NULL THEN
       interessefaellesskab_attr_egenskaber_obj.virkning,
       interessefaellesskab_registrering_id
     ;
-  END IF;
+ 
 
   END LOOP;
 END IF;
@@ -124,14 +117,12 @@ END IF;
 --Verification
 --For now all declared states are mandatory.
 IF coalesce(array_length(interessefaellesskab_registrering.tilsGyldighed, 1),0)<1  THEN
-  RAISE EXCEPTION 'Savner påkraevet tilstand [gyldighed] for interessefaellesskab. Oprettelse afbrydes.';
+  RAISE EXCEPTION 'Savner påkraevet tilstand [gyldighed] for interessefaellesskab. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
-IF interessefaellesskab_registrering.tilsGyldighed IS NOT NULL THEN
+IF interessefaellesskab_registrering.tilsGyldighed IS NOT NULL AND coalesce(array_length(interessefaellesskab_registrering.tilsGyldighed,1),0)>0 THEN
   FOREACH interessefaellesskab_tils_gyldighed_obj IN ARRAY interessefaellesskab_registrering.tilsGyldighed
   LOOP
-
-  IF interessefaellesskab_tils_gyldighed_obj.gyldighed IS NOT NULL AND interessefaellesskab_tils_gyldighed_obj.gyldighed<>''::InteressefaellesskabGyldighedTils THEN
 
     INSERT INTO interessefaellesskab_tils_gyldighed (
       virkning,
@@ -143,7 +134,6 @@ IF interessefaellesskab_registrering.tilsGyldighed IS NOT NULL THEN
       interessefaellesskab_tils_gyldighed_obj.gyldighed,
       interessefaellesskab_registrering_id;
 
-  END IF;
   END LOOP;
 END IF;
 
@@ -161,13 +151,22 @@ END IF;
     SELECT
       interessefaellesskab_registrering_id,
       a.virkning,
-      a.relMaalUuid,
-      a.relMaalUrn,
+      a.uuid,
+      a.urn,
       a.relType,
       a.objektType
     FROM unnest(interessefaellesskab_registrering.relationer) a
-    WHERE (a.relMaalUuid IS NOT NULL OR (a.relMaalUrn IS NOT NULL AND a.relMaalUrn<>'') )
   ;
+
+
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+/*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
+auth_filtered_uuids:=_as_filter_unauth_interessefaellesskab(array[interessefaellesskab_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[interessefaellesskab_uuid]) THEN
+  RAISE EXCEPTION 'Unable to create/import interessefaellesskab with uuid [%]. Object does not met stipulated criteria:%',interessefaellesskab_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
 
   PERFORM actual_state._amqp_publish_notification('Interessefaellesskab', (interessefaellesskab_registrering.registrering).livscykluskode, interessefaellesskab_uuid);
 

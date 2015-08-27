@@ -13,7 +13,11 @@
 
 # First, create a new facet.
 
-result=$(curl -H "Content-Type: application/json" -X POST -d "$(cat test_data/klasse_opret.json)" http://127.0.0.1:5000/klassifikation/klasse)
+# Test configuration
+DIR=$(dirname ${BASH_SOURCE[0]})
+source $DIR/config.sh
+
+result=$(curl -H "Content-Type: application/json" -X POST -d "$(cat $DIR/test_data/klasse_opret.json)" $HOST_URL/klassifikation/klasse)
 uuid=$(expr "$result" : '.*"uuid": "\([^"]*\)"')
 echo "Oprettet klasse: $uuid"
 # Now, import a new facet
@@ -22,7 +26,7 @@ import_uuid=$(uuidgen)
 
 #exit
 
-curl -sH "Content-Type: application/json" -X PUT -d "$(cat test_data/klasse_opdater.json)" http://127.0.0.1:5000/klassifikation/klasse/$uuid
+curl -sH "Content-Type: application/json" -X PUT -d "$(cat $DIR/test_data/klasse_opdater.json)" $HOST_URL/klassifikation/klasse/$uuid
 
 
 

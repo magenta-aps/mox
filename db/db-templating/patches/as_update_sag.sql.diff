@@ -1,13 +1,13 @@
-*** ../generated-files/as_update_sag.sql	2015-07-03 14:10:57.302579306 +0200
---- ../patches/as_update_sag.org.sql	2015-07-03 14:13:15.126586170 +0200
+*** generated-files/as_update_sag.sql	2015-08-17 10:23:10.077142324 +0200
+--- patches/as_update_sag.org.sql	2015-08-17 10:26:01.057140048 +0200
 ***************
-*** 33,42 ****
---- 33,48 ----
-    read_prev_sag_reg SagRegistreringType;
+*** 35,44 ****
+--- 35,50 ----
     new_sag_registrering sag_registrering;
     prev_sag_registrering sag_registrering;
     sag_relation_navn SagRelationKode;
     attrEgenskaberObj SagEgenskaberAttrType;
+    auth_filtered_uuids uuid[];
 +   rel_type_max_index_prev_rev int;
 +   rel_type_max_index_arr _SagRelationMaxIndex[];
 +   sag_rel_type_cardinality_unlimited SagRelationKode[]:=ARRAY['andetarkiv'::SagRelationKode,'andrebehandlere'::SagRelationKode,'sekundaerpart'::SagRelationKode,'andresager'::SagRelationKode,'byggeri'::SagRelationKode,'fredning'::SagRelationKode,'journalpost'::SagRelationKode]::SagRelationKode[];
@@ -20,7 +20,7 @@
   
   IF NOT EXISTS (select a.id from sag a join sag_registrering b on b.sag_id=a.id  where a.id=sag_uuid) THEN
 ***************
-*** 64,114 ****
+*** 74,124 ****
   IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
   --raise notice 'Skipping relations, as it is explicit set to empty array. Update note [%]',note;
   ELSE
@@ -43,8 +43,8 @@
         SELECT
           new_sag_registrering.id,
             a.virkning,
-              a.relMaalUuid,
-                a.relMaalUrn,
+              a.uuid,
+                a.urn,
                   a.relType,
 !                   a.objektType
         FROM unnest(relationer) as a
@@ -72,7 +72,7 @@
           new_sag_registrering.id, 
             ROW(
               c.tz_range_leftover,
---- 70,198 ----
+--- 80,242 ----
   IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
   --raise notice 'Skipping relations, as it is explicit set to empty array. Update note [%]',note;
   ELSE
@@ -105,11 +105,11 @@
 +   sag_rel_seq_name := 'sag_rel_' || sag_relation_navn::text || sag_uuid_underscores;
 + 
 +   rel_type_max_index_prev_rev:=null;
-  
++ 
 +   SELECT 
-+     a.relIndex into rel_type_max_index_prev_rev
++     a.indeks into rel_type_max_index_prev_rev
 +   FROM
-+     unnest(rel_type_max_index_arr) a(relType,relIndex)
++     unnest(rel_type_max_index_arr) a(relType,indeks)
 +   WHERE
 +     a.relType=sag_relation_navn
 +   ;
@@ -124,7 +124,7 @@
 +   MAXVALUE 9223372036854775807
 +   START ' ||  (rel_type_max_index_prev_rev+1)::text ||'
 +   CACHE 1;';
-+ 
+  
 + END LOOP;
   
         INSERT INTO sag_relation (
@@ -142,16 +142,16 @@
         SELECT
           new_sag_registrering.id,
             a.virkning,
-              a.relMaalUuid,
-                a.relMaalUrn,
+              a.uuid,
+                a.urn,
                   a.relType,
 !                   a.objektType,
 !                     CASE 
 !                     WHEN a.relType = any (sag_rel_type_cardinality_unlimited) THEN
-!                       CASE WHEN a.relIndex IS NULL OR b.id IS NULL THEN --for new relations and relations with index given that is not found in prev registrering, we'll assign new index values 
+!                       CASE WHEN a.indeks IS NULL OR b.id IS NULL THEN --for new relations and relations with index given that is not found in prev registrering, we'll assign new index values 
 !                         nextval('sag_rel_' || a.relType::text || sag_uuid_underscores)
 !                       ELSE
-!                         a.relIndex
+!                         a.indeks
 !                       END
 !                     ELSE
 !                     NULL
@@ -161,10 +161,44 @@
 !                         ELSE
 !                         NULL
 !                       END,
-!                         a.journalNotat,
-!                           a.journalDokumentAttr
+!                         CASE 
+!                           WHEN  
+!                             (NOT (a.journalNotat IS NULL)) 
+!                             AND
+!                             (
+!                               (a.journalNotat).titel IS NOT NULL
+!                               OR
+!                               (a.journalNotat).notat IS NOT NULL
+!                               OR
+!                               (a.journalNotat).format IS NOT NULL
+!                             )
+!                            THEN a.journalNotat
+!                           ELSE
+!                            NULL
+!                         END
+!                           ,CASE 
+!                             WHEN ( 
+!                                     (NOT a.journalDokumentAttr IS NULL)
+!                                     AND
+!                                     (
+!                                       (a.journalDokumentAttr).dokumenttitel IS NOT NULL
+!                                       OR
+!                                       (
+!                                         NOT ((a.journalDokumentAttr).offentlighedUndtaget IS NULL)
+!                                         AND
+!                                         (
+!                                           ((a.journalDokumentAttr).offentlighedUndtaget).AlternativTitel IS NOT NULL
+!                                           OR
+!                                           ((a.journalDokumentAttr).offentlighedUndtaget).Hjemmel IS NOT NULL
+!                                         )
+!                                       )
+!                                    )
+!                                  ) THEN a.journalDokumentAttr
+!                             ELSE
+!                             NULL
+!                           END
         FROM unnest(relationer) as a
-+       LEFT JOIN sag_relation b on a.relType = any (sag_rel_type_cardinality_unlimited) and b.sag_registrering_id=prev_sag_registrering.id and a.relType=b.rel_type and a.relIndex=b.rel_index
++       LEFT JOIN sag_relation b on a.relType = any (sag_rel_type_cardinality_unlimited) and b.sag_registrering_id=prev_sag_registrering.id and a.relType=b.rel_type and a.indeks=b.rel_index
       ;
   
 ! 
@@ -203,7 +237,7 @@
             ROW(
               c.tz_range_leftover,
 ***************
-*** 117,127 ****
+*** 127,137 ****
                 (a.virkning).NoteTekst
             ) :: virkning,
               a.rel_maal_uuid,
@@ -215,7 +249,7 @@
         --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to _subtract_tstzrange_arr on the relations of the previous registrering 
         SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
         FROM sag_relation b
---- 201,215 ----
+--- 245,259 ----
                 (a.virkning).NoteTekst
             ) :: virkning,
               a.rel_maal_uuid,
@@ -232,7 +266,7 @@
         SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
         FROM sag_relation b
 ***************
-*** 137,186 ****
+*** 147,190 ****
       ;
     END LOOP;
   
@@ -273,17 +307,11 @@
 - 
 - 
   /**********************/
-  --Remove any "cleared"/"deleted" relations
-! DELETE FROM sag_relation
-  WHERE 
-  sag_registrering_id=new_sag_registrering.id
-  AND (rel_maal_uuid IS NULL AND (rel_maal_urn IS NULL OR rel_maal_urn=''))
-  ;
+  
   
   END IF;
   /**********************/
-  -- handle tilstande (states)
---- 225,282 ----
+--- 269,309 ----
       ;
     END LOOP;
   
@@ -321,24 +349,7 @@
         ;
   
   /**********************/
-  --Remove any "cleared"/"deleted" relations
-! DELETE FROM sag_relation a
-  WHERE 
-  sag_registrering_id=new_sag_registrering.id
-  AND (rel_maal_uuid IS NULL AND (rel_maal_urn IS NULL OR rel_maal_urn=''))
-+ AND ( 
-+       (a.journal_notat IS NULL)  
-+      OR  
-+      (  
-+         ((a.journal_notat).titel IS NULL OR (a.journal_notat).titel='') 
-+         AND     
-+         ((a.journal_notat).notat IS NULL OR  (a.journal_notat).notat='')
-+         AND
-+         ((a.journal_notat).format IS NULL OR (a.journal_notat).format='')
-+       )
-+     ) 
-  ;
+  
   
   END IF;
   /**********************/
-  -- handle tilstande (states)

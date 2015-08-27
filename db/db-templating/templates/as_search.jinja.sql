@@ -14,8 +14,9 @@ CREATE OR REPLACE FUNCTION as_search_{{oio_type}}(
 	virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
 	maxResults int = 2147483647,
 	anyAttrValueArr text[] = '{}'::text[],
-	anyRelUuidArr	uuid[] = '{}'::uuid[],
-	anyRelUrnArr text[] = '{}'::text[]
+	anyuuidArr	uuid[] = '{}'::uuid[],
+	anyurnArr text[] = '{}'::text[],
+	auth_criteria_arr {{oio_type|title}}RegistreringType[]=null
 	)
   RETURNS uuid[] AS 
 $$
@@ -31,8 +32,9 @@ DECLARE
   	{%- endfor %}
 	relationTypeObj {{oio_type|title}}RelationType;
 	anyAttrValue text;
-	anyRelUuid uuid;
-	anyRelUrn text;
+	anyuuid uuid;
+	anyurn text;
+	auth_filtered_uuids uuid[];
 BEGIN
 
 --RAISE DEBUG 'step 0:registreringObj:%',registreringObj;
@@ -195,18 +197,23 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 			WHERE
 			(
 				{%- for attribut_field in attribut_fields %}
-				{%- if  attributter_type_override is defined and attributter_type_override[attribut] is defined and attributter_type_override[attribut][attribut_field] is defined %} 
-				{%-if attributter_type_override[attribut][attribut_field] == "text[]" %}
-				anyAttrValue ILIKE ANY (a.{{attribut_field}})
-				{%-else %}
-				anyAttrValue = a.{{attribut_field}}
-				{%- endif -%}
-				{%-else %}
-				a.{{attribut_field}} ILIKE anyAttrValue  
-				{%- endif -%}
-				{%- if (not loop.last)%}
-				OR
-				{%- endif %}
+					{%- if  attributter_type_override is defined and attributter_type_override[attribut] is defined and attributter_type_override[attribut][attribut_field] is defined %} 
+						{%-if attributter_type_override[attribut][attribut_field] == "text[]" %}
+							  _as_search_ilike_array(anyAttrValue,a.{{attribut_field}})  {%- if (not loop.last)%} OR {%- endif %}
+						{%-else %}
+							{%-if attributter_type_override[attribut][attribut_field] == "boolean" %}
+								{# boolean is skipped intentionally #}
+							{%-else %}
+								{%-if attributter_type_override[attribut][attribut_field] == "offentlighedundtagettype" %}
+									(a.{{attribut_field}}).Hjemmel ilike anyAttrValue OR (a.{{attribut_field}}).AlternativTitel ilike anyAttrValue {%- if (not loop.last)%} OR {%- endif %}
+								{%-else %}
+									a.{{attribut_field}}::text ilike anyAttrValue  {%- if (not loop.last)%} OR {%- endif %}
+								{%- endif -%}
+							{%- endif -%}
+						{%- endif -%}
+					{%-else %}
+						a.{{attribut_field}} ILIKE anyAttrValue {%- if (not loop.last)%} OR {%- endif %}
+					{%- endif -%}
 				{%- endfor %}
 			)
 			AND
@@ -271,7 +278,7 @@ ELSE
 						)
 						AND
 						(
-								(tils{{tilstand|title}}TypeObj.virkning).NoteTekst IS NULL OR (tils{{tilstand|title}}TypeObj.virkning).NoteTekst=(a.virkning).NoteTekst
+								(tils{{tilstand|title}}TypeObj.virkning).NoteTekst IS NULL OR (a.virkning).NoteTekst ILIKE (tils{{tilstand|title}}TypeObj.virkning).NoteTekst
 						)
 					)
 				)
@@ -349,7 +356,7 @@ ELSE
 						)
 						AND
 						(
-								(relationTypeObj.virkning).NoteTekst IS NULL OR (relationTypeObj.virkning).NoteTekst=(a.virkning).NoteTekst
+								(relationTypeObj.virkning).NoteTekst IS NULL OR (a.virkning).NoteTekst ILIKE (relationTypeObj.virkning).NoteTekst
 						)
 					)
 				)
@@ -371,9 +378,9 @@ ELSE
 				)
 				AND
 				(
-					relationTypeObj.relMaalUuid IS NULL
+					relationTypeObj.uuid IS NULL
 					OR
-					relationTypeObj.relMaalUuid = a.rel_maal_uuid	
+					relationTypeObj.uuid = a.rel_maal_uuid	
 				)
 				AND
 				(
@@ -383,9 +390,9 @@ ELSE
 				)
 				AND
 				(
-					relationTypeObj.relMaalUrn IS NULL
+					relationTypeObj.urn IS NULL
 					OR
-					relationTypeObj.relMaalUrn = a.rel_maal_urn
+					relationTypeObj.urn = a.rel_maal_urn
 				)
 				AND
 				{% include 'as_search_mixin_filter_reg.jinja.sql' %}
@@ -399,9 +406,9 @@ ELSE
 END IF;
 --/**********************//
 
-IF coalesce(array_length(anyRelUuidArr ,1),0)>0 THEN
+IF coalesce(array_length(anyuuidArr ,1),0)>0 THEN
 
-	FOREACH anyRelUuid IN ARRAY anyRelUuidArr
+	FOREACH anyuuid IN ARRAY anyuuidArr
 	LOOP
 		{{oio_type}}_candidates:=array(
 			SELECT DISTINCT
@@ -409,7 +416,7 @@ IF coalesce(array_length(anyRelUuidArr ,1),0)>0 THEN
 			FROM  {{oio_type}}_relation a
 			JOIN {{oio_type}}_registrering b on a.{{oio_type}}_registrering_id=b.id
 			WHERE
-			anyRelUuid = a.rel_maal_uuid
+			anyuuid = a.rel_maal_uuid
 			AND
 			(
 				virkningSoeg IS NULL
@@ -427,9 +434,9 @@ END IF;
 
 --/**********************//
 
-IF coalesce(array_length(anyRelUrnArr ,1),0)>0 THEN
+IF coalesce(array_length(anyurnArr ,1),0)>0 THEN
 
-	FOREACH anyRelUrn IN ARRAY anyRelUrnArr
+	FOREACH anyurn IN ARRAY anyurnArr
 	LOOP
 		{{oio_type}}_candidates:=array(
 			SELECT DISTINCT
@@ -437,7 +444,7 @@ IF coalesce(array_length(anyRelUrnArr ,1),0)>0 THEN
 			FROM  {{oio_type}}_relation a
 			JOIN {{oio_type}}_registrering b on a.{{oio_type}}_registrering_id=b.id
 			WHERE
-			anyRelUrn = a.rel_maal_urn
+			anyurn = a.rel_maal_urn
 			AND
 			(
 				virkningSoeg IS NULL
@@ -454,6 +461,9 @@ IF coalesce(array_length(anyRelUrnArr ,1),0)>0 THEN
 END IF;
 
 --/**********************//
+
+{% include  include_mixin  %} 
+
 
 
 --RAISE DEBUG '{{oio_type}}_candidates_is_initialized step 5:%',{{oio_type}}_candidates_is_initialized;
@@ -493,7 +503,13 @@ END IF;
 --RAISE DEBUG '{{oio_type}}_candidates step 6:%',{{oio_type}}_candidates;
 
 
-return {{oio_type}}_candidates;
+										 
+/*** Filter out the objects that does not meets the stipulated access criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_{{oio_type}}({{oio_type}}_candidates,auth_criteria_arr); 
+/*********************/
+
+
+return auth_filtered_uuids;
 
 
 END;

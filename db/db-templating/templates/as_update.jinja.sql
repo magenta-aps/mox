@@ -23,7 +23,8 @@ CREATE OR REPLACE FUNCTION as_update_{{oio_type}}(
   tils{{tilstand|title}} {{oio_type|title}}{{tilstand|title}}TilsType[],
   {%- endfor %}
   relationer {{oio_type|title}}RelationType[],
-  lostUpdatePreventionTZ TIMESTAMPTZ = null
+  lostUpdatePreventionTZ TIMESTAMPTZ = null,
+  auth_criteria_arr {{oio_type|title}}RegistreringType[]=null
 	)
   RETURNS bigint AS 
 $$
@@ -37,24 +38,33 @@ DECLARE
   {{oio_type}}_relation_navn {{oio_type|title}}RelationKode;
   {%- for attribut , attribut_fields in attributter.iteritems() %}
   attr{{attribut|title}}Obj {{oio_type|title}}{{attribut|title}}AttrType;{%- endfor %}
+  auth_filtered_uuids uuid[];
 BEGIN
 
 --create a new registrering
 
 IF NOT EXISTS (select a.id from {{oio_type}} a join {{oio_type}}_registrering b on b.{{oio_type}}_id=a.id  where a.id={{oio_type}}_uuid) THEN
-   RAISE EXCEPTION 'Unable to update {{oio_type}} with uuid [%], being unable to any previous registrations.',{{oio_type}}_uuid;
+   RAISE EXCEPTION 'Unable to update {{oio_type}} with uuid [%], being unable to find any previous registrations.',{{oio_type}}_uuid USING ERRCODE = 'MO400';
 END IF;
 
 PERFORM a.id FROM {{oio_type}} a
 WHERE a.id={{oio_type}}_uuid
 FOR UPDATE; --We synchronize concurrent invocations of as_updates of this particular object on a exclusive row lock. This lock will be held by the current transaction until it terminates.
 
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_{{oio_type}}(array[{{oio_type}}_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[{{oio_type}}_uuid]) THEN
+  RAISE EXCEPTION 'Unable to update {{oio_type}} with uuid [%]. Object does not met stipulated criteria:%',{{oio_type}}_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
+
 new_{{oio_type}}_registrering := _as_create_{{oio_type}}_registrering({{oio_type}}_uuid,livscykluskode, brugerref, note);
 prev_{{oio_type}}_registrering := _as_get_prev_{{oio_type}}_registrering(new_{{oio_type}}_registrering);
 
 IF lostUpdatePreventionTZ IS NOT NULL THEN
   IF NOT (LOWER((prev_{{oio_type}}_registrering.registrering).timeperiod)=lostUpdatePreventionTZ) THEN
-    RAISE EXCEPTION 'Unable to update {{oio_type}} with uuid [%], as the {{oio_type}} seems to have been updated since latest read by client (the given lostUpdatePreventionTZ [%] does not match the timesamp of latest registration [%]).',{{oio_type}}_uuid,lostUpdatePreventionTZ,LOWER((prev_{{oio_type}}_registrering.registrering).timeperiod);
+    RAISE EXCEPTION 'Unable to update {{oio_type}} with uuid [%], as the {{oio_type}} seems to have been updated since latest read by client (the given lostUpdatePreventionTZ [%] does not match the timesamp of latest registration [%]).',{{oio_type}}_uuid,lostUpdatePreventionTZ,LOWER((prev_{{oio_type}}_registrering.registrering).timeperiod) USING ERRCODE = 'MO409';
   END IF;   
 END IF;
 
@@ -85,8 +95,8 @@ ELSE
       SELECT
         new_{{oio_type}}_registrering.id,
           a.virkning,
-            a.relMaalUuid,
-              a.relMaalUrn,
+            a.uuid,
+              a.urn,
                 a.relType,
                   a.objektType
       FROM unnest(relationer) as a
@@ -176,12 +186,7 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" relations
-DELETE FROM {{oio_type}}_relation
-WHERE 
-{{oio_type}}_registrering_id=new_{{oio_type}}_registrering.id
-AND (rel_maal_uuid IS NULL AND (rel_maal_urn IS NULL OR rel_maal_urn=''))
-;
+
 
 END IF;
 /**********************/
@@ -246,12 +251,6 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" tilstande
-DELETE FROM {{oio_type}}_tils_{{tilstand}}
-WHERE 
-{{oio_type}}_registrering_id=new_{{oio_type}}_registrering.id
-AND {{tilstand}} = ''::{{oio_type|title}}{{tilstand|title}}Tils
-;
 
 END IF;
 
@@ -279,7 +278,7 @@ IF attr{{attribut|title}} IS NOT null THEN
   GROUP BY a.{{attribut_fields|join(',a.')}}, a.virkning
   HAVING COUNT(*)>1
   ) THEN
-  RAISE EXCEPTION 'Unable to update {{oio_type}} with uuid [%], as the {{oio_type}} have overlapping virknings in the given {{attribut}} array :%',{{oio_type}}_uuid,to_json(attr{{attribut|title}})  USING ERRCODE = 22000;
+  RAISE EXCEPTION 'Unable to update {{oio_type}} with uuid [%], as the {{oio_type}} have overlapping virknings in the given {{attribut}} array :%',{{oio_type}}_uuid,to_json(attr{{attribut|title}})  USING ERRCODE = 'MO400';
 
   END IF;
 
@@ -299,8 +298,14 @@ IF attr{{attribut|title}} IS NOT null THEN
     ,virkning
     ,{{oio_type}}_registrering_id
   )
-  SELECT {%-for fieldname in attribut_fields %} 
+  SELECT {%-for fieldname in attribut_fields %}
+  {%- if  attributter_type_override is defined and attributter_type_override[attribut] is defined and attributter_type_override[attribut][fieldname] is defined and ( attributter_type_override[attribut][fieldname] =='int' or attributter_type_override[attribut][fieldname] =='date' or attributter_type_override[attribut][fieldname]=='boolean')  %} 
+    CASE WHEN (attr{{attribut|title}}Obj.{{fieldname}}).cleared THEN NULL 
+    ELSE coalesce((attr{{attribut|title}}Obj.{{fieldname}}).value,a.{{fieldname}})
+    END,
+   {%-else %}
     coalesce(attr{{attribut|title}}Obj.{{fieldname}},a.{{fieldname}}),
+    {%-endif %}
     {%- endfor %}
 	ROW (
 	  (a.virkning).TimePeriod * (attr{{attribut|title}}Obj.virkning).TimePeriod,
@@ -406,19 +411,7 @@ FROM
 
 
 
---Remove any "cleared"/"deleted" attributes
-DELETE FROM {{oio_type}}_attr_{{attribut}} a
-WHERE 
-a.{{oio_type}}_registrering_id=new_{{oio_type}}_registrering.id
-AND {%-for fieldname in attribut_fields %} (a.{{fieldname}} IS NULL {%- if  attributter_type_override is defined and attributter_type_override[attribut] is defined and attributter_type_override[attribut][fieldname] is defined %} 
-            {%-if attributter_type_override[attribut][fieldname] == "text[]" %} OR coalesce(array_length(a.{{fieldname}},1),0)=0
-            {%-else %}
-            {%-if attributter_type_override[attribut][fieldname] == "offentlighedundtagettype" %} OR (((a.{{fieldname}}).AlternativTitel IS NULL OR (a.{{fieldname}}).AlternativTitel='') AND ((a.{{fieldname}}).Hjemmel IS NULL OR (a.{{fieldname}}).Hjemmel=''))
-            {%-else %}
-            {%-if attributter_type_override[attribut][fieldname] == "int" or attributter_type_override[attribut][fieldname] == "date" %} 
-           {%- endif %}{%- endif %}{%- endif %} {%- else %} OR a.{{fieldname}}=''{%- endif %}){%- if (not loop.last) %} 
-            AND {% endif %}{%- endfor %}
-;
+
 
 END IF;
 
@@ -435,7 +428,7 @@ read_prev_{{oio_type}}:=as_read_{{oio_type}}({{oio_type}}_uuid, (prev_{{oio_type
 --the ordering in as_list (called by as_read) ensures that the latest registration is returned at index pos 1
 
 IF NOT (lower((read_new_{{oio_type}}.registrering[1].registrering).TimePeriod)=lower((new_{{oio_type}}_registrering.registrering).TimePeriod) AND lower((read_prev_{{oio_type}}.registrering[1].registrering).TimePeriod)=lower((prev_{{oio_type}}_registrering.registrering).TimePeriod)) THEN
-  RAISE EXCEPTION 'Error updating {{oio_type}} with id [%]: The ordering of as_list_{{oio_type}} should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].',{{oio_type}}_uuid,to_json(new_{{oio_type}}_registrering),to_json(read_new_{{oio_type}}.registrering[1].registrering),to_json(prev_{{oio_type}}_registrering),to_json(prev_new_{{oio_type}}.registrering[1].registrering);
+  RAISE EXCEPTION 'Error updating {{oio_type}} with id [%]: The ordering of as_list_{{oio_type}} should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].',{{oio_type}}_uuid,to_json(new_{{oio_type}}_registrering),to_json(read_new_{{oio_type}}.registrering[1].registrering),to_json(prev_{{oio_type}}_registrering),to_json(prev_new_{{oio_type}}.registrering[1].registrering) USING ERRCODE = 'MO500';
 END IF;
  
  --we'll ignore the registreringBase part in the comparrison - except for the livcykluskode
@@ -464,7 +457,7 @@ ROW(null,(read_prev_{{oio_type}}.registrering[1].registrering).livscykluskode,nu
 IF read_prev_{{oio_type}}_reg=read_new_{{oio_type}}_reg THEN
   --RAISE NOTICE 'Note[%]. Aborted reg:%',note,to_json(read_new_{{oio_type}}_reg);
   --RAISE NOTICE 'Note[%]. Previous reg:%',note,to_json(read_prev_{{oio_type}}_reg);
-  RAISE EXCEPTION 'Aborted updating {{oio_type}} with id [%] as the given data, does not give raise to a new registration. Aborted reg:[%], previous reg:[%]',{{oio_type}}_uuid,to_json(read_new_{{oio_type}}_reg),to_json(read_prev_{{oio_type}}_reg) USING ERRCODE = 22000;
+  RAISE EXCEPTION 'Aborted updating {{oio_type}} with id [%] as the given data, does not give raise to a new registration. Aborted reg:[%], previous reg:[%]',{{oio_type}}_uuid,to_json(read_new_{{oio_type}}_reg),to_json(read_prev_{{oio_type}}_reg) USING ERRCODE = 'MO400';
 END IF;
 
 /******************************************************************/

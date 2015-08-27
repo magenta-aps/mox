@@ -86,7 +86,7 @@ BEGIN
 --------------------------------------------------------------------
 
 sqlStr2:='SELECT as_update_klasse(''' || extraUuid ||'''::uuid,''2ac63602-6c0a-4531-8a09-ab7633f6dacd''::uuid, ''Test update''::text,''Rettet''::Livscykluskode,null,null,null,''-infinity''::TIMESTAMPTZ)';
-expected_exception_txt2:='Unable to update klasse with uuid ['|| extraUuid ||'], being unable to any previous registrations.';
+expected_exception_txt2:='Unable to update klasse with uuid ['|| extraUuid ||'], being unable to find any previous registrations.';
 
 --raise notice 'debug:sqlStr2:%',sqlStr2;
 RETURN NEXT throws_ok(sqlStr2,expected_exception_txt2);
@@ -451,7 +451,7 @@ WHERE b.id=update_reg_id
 RETURN NEXT is(
 	actual_publiceret,
 ARRAY[
-	--klassePubliceretC,
+	klassePubliceretC,
 	ROW(
 		ROW (
 				TSTZRANGE('2015-05-01','infinity','()')
@@ -696,7 +696,7 @@ BEGIN
 
 	RETURN NEXT ok(false,'test as_update_klasse - NO exception was triggered by updating klasse with no new data.'); 
 
-	EXCEPTION WHEN data_exception THEN
+	EXCEPTION WHEN sqlstate 'MO400' THEN
 			RETURN NEXT ok(true,'test as_update_klasse - caught exception, triggered by updating klasse with no new data.'); 
 	
 END;
@@ -737,7 +737,7 @@ update_reg_id:=as_update_klasse(
 	
 	RETURN NEXT ok(false,'test as_update_klasse - NO exception was triggered by updating klasse with new livscykluskode, causing an invalid transition.'); 
 
-	EXCEPTION WHEN data_exception THEN
+	EXCEPTION WHEN SQLSTATE 'MO400' THEN
 			RETURN NEXT ok(true,'test as_update_klasse - caught exception was triggered by updating klasse with new livscykluskode, causing an invalid transition.'); 
 
 END;
@@ -779,7 +779,7 @@ update_reg_id:=as_update_klasse(
 		);
 	
 		RETURN NEXT ok(false,'Test null egenskaber array will not trigger update#1');
-	EXCEPTION WHEN data_exception THEN
+	EXCEPTION WHEN sqlstate 'MO400' THEN
 		RETURN NEXT ok(true,'Test null egenskaber array will not trigger update #1');
 END;
 
@@ -824,7 +824,7 @@ update_reg_id:=as_update_klasse(
 		);
 	
 		RETURN NEXT ok(false,'Test null tilstand publiceret array will not trigger update #1');
-	EXCEPTION WHEN data_exception THEN
+	EXCEPTION WHEN SQLSTATE 'MO400' THEN
 		RETURN NEXT ok(true,'Test null tilstand publiceret array will not trigger update #1');
 END;
 
@@ -839,7 +839,7 @@ RETURN NEXT ok(((klasse_read7.registrering[1]).registrering).TimePeriod=((klasse
 
 --Test clearing tilstand publiceret
 --raise notice 'debug 50 klasse_read7:%',to_json(klasse_read7);
-RETURN NEXT ok( coalesce(array_length((klasse_read7.registrering[1]).tilsPubliceret,1),0)=2,'Test if clearing tilstand publiceret  works.#0');
+RETURN NEXT ok( coalesce(array_length((klasse_read7.registrering[1]).tilsPubliceret,1),0)=3,'Test if clearing tilstand publiceret  works.#0');
 
 update_reg_id:=as_update_klasse(
 	  new_uuid, 'cd7473d3-6ffd-4971-81cb-90b91dfe17fb'::uuid,'Test update'::text,
@@ -893,7 +893,7 @@ update_reg_id:=as_update_klasse(
 		);
 	
 		RETURN NEXT ok(false,'Test null relationer array will not trigger update #1');
-	EXCEPTION WHEN data_exception THEN
+	EXCEPTION WHEN SQLSTATE 'MO400' THEN
 		RETURN NEXT ok(true,'Test null relationer array will not trigger update #1');
 END;
 
@@ -972,7 +972,7 @@ update_reg_id:=as_update_klasse(
 
 RETURN NEXT ok(false,'test as_update_klasse - Test that nulling a single attr egenskab field will not trigger an update #1'); 
 
-	EXCEPTION WHEN data_exception THEN
+	EXCEPTION WHEN SQLSTATE 'MO400' THEN
 			RETURN NEXT ok(true,'test as_update_klasse - Test that nulling a single attr egenskab field will not trigger an update #1.'); 
 
 --TODO: Test if nulling a value is enough to trigger update
@@ -1122,7 +1122,7 @@ update_reg_id:=as_update_klasse(
 	
 	RETURN NEXT ok(false,'test as_update_klasse - NO exception was triggered by updating klasse with egenskaber with overlapping virkning.'); 
 
-	EXCEPTION WHEN data_exception THEN
+	EXCEPTION WHEN SQLSTATE 'MO400' THEN
 			RETURN NEXT ok(true,'test as_update_klasse - caught exception triggered by updating klasse with egenskaber with overlapping virkning.'); 
 
 END;

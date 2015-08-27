@@ -1,13 +1,13 @@
-*** ../generated-files/as_search_klasse.sql	2015-06-22 15:46:23.170794003 +0200
---- ../patches/as_search_klasse.sql.org	2015-06-22 16:01:40.450839686 +0200
+*** generated-files/as_search_klasse.sql	2015-08-19 10:15:14.752116163 +0200
+--- patches/as_search_klasse.sql.org	2015-08-19 10:18:45.084112396 +0200
 ***************
-*** 31,40 ****
---- 31,42 ----
-    	tilsPubliceretTypeObj KlassePubliceretTilsType;
+*** 33,42 ****
+--- 33,44 ----
   	relationTypeObj KlasseRelationType;
   	anyAttrValue text;
-  	anyRelUuid uuid;
-  	anyRelUrn text;
+  	anyuuid uuid;
+  	anyurn text;
+  	auth_filtered_uuids uuid[];
 + 	manipulatedAttrEgenskaberArr KlasseEgenskaberAttrType[]:='{}';
 + 	soegeordObj KlasseSoegeordType;
   BEGIN
@@ -16,7 +16,7 @@
   
   klasse_candidates_is_initialized := false;
 ***************
-*** 140,162 ****
+*** 142,164 ****
   --Filtration on attribute: Egenskaber
   --/**********************************************************//
   IF registreringObj IS NULL OR (registreringObj).attrEgenskaber IS NULL THEN
@@ -40,7 +40,7 @@
   								(
   							 		(attrEgenskaberTypeObj.virkning).TimePeriod IS NULL
   								)
---- 142,194 ----
+--- 144,196 ----
   --Filtration on attribute: Egenskaber
   --/**********************************************************//
   IF registreringObj IS NULL OR (registreringObj).attrEgenskaber IS NULL THEN
@@ -95,8 +95,8 @@
   							 		(attrEgenskaberTypeObj.virkning).TimePeriod IS NULL
   								)
 ***************
-*** 231,241 ****
---- 263,297 ----
+*** 233,243 ****
+--- 265,299 ----
   					attrEgenskaberTypeObj.aendringsnotat IS NULL
   					OR 
   					a.aendringsnotat ILIKE attrEgenskaberTypeObj.aendringsnotat --case insensitive 
@@ -133,8 +133,8 @@
   					(
   						(registreringObj.registrering).timeperiod IS NULL 
 ***************
-*** 324,333 ****
---- 380,390 ----
+*** 326,344 ****
+--- 382,407 ----
   
   			SELECT DISTINCT
   			b.klasse_id 
@@ -143,17 +143,13 @@
 + 			LEFT JOIN klasse_attr_egenskaber_soegeord c on a.id=c.klasse_attr_egenskaber_id
   			WHERE
   			(
-  				a.brugervendtnoegle ILIKE anyAttrValue
-  				OR
-  				a.beskrivelse ILIKE anyAttrValue
-***************
-*** 339,348 ****
---- 396,411 ----
-  				a.titel ILIKE anyAttrValue
-  				OR
-  				a.retskilde ILIKE anyAttrValue
-  				OR
-  				a.aendringsnotat ILIKE anyAttrValue
+  						a.brugervendtnoegle ILIKE anyAttrValue OR
+  						a.beskrivelse ILIKE anyAttrValue OR
+  						a.eksempel ILIKE anyAttrValue OR
+  						a.omfang ILIKE anyAttrValue OR
+  						a.titel ILIKE anyAttrValue OR
+  						a.retskilde ILIKE anyAttrValue OR
+  						a.aendringsnotat ILIKE anyAttrValue
 + 				OR 
 + 				c.soegeordidentifikator ILIKE anyAttrValue
 + 				OR 

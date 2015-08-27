@@ -22,7 +22,8 @@ CREATE OR REPLACE FUNCTION as_update_bruger(
   attrEgenskaber BrugerEgenskaberAttrType[],
   tilsGyldighed BrugerGyldighedTilsType[],
   relationer BrugerRelationType[],
-  lostUpdatePreventionTZ TIMESTAMPTZ = null
+  lostUpdatePreventionTZ TIMESTAMPTZ = null,
+  auth_criteria_arr BrugerRegistreringType[]=null
 	)
   RETURNS bigint AS 
 $$
@@ -35,24 +36,33 @@ DECLARE
   prev_bruger_registrering bruger_registrering;
   bruger_relation_navn BrugerRelationKode;
   attrEgenskaberObj BrugerEgenskaberAttrType;
+  auth_filtered_uuids uuid[];
 BEGIN
 
 --create a new registrering
 
 IF NOT EXISTS (select a.id from bruger a join bruger_registrering b on b.bruger_id=a.id  where a.id=bruger_uuid) THEN
-   RAISE EXCEPTION 'Unable to update bruger with uuid [%], being unable to any previous registrations.',bruger_uuid;
+   RAISE EXCEPTION 'Unable to update bruger with uuid [%], being unable to find any previous registrations.',bruger_uuid USING ERRCODE = 'MO400';
 END IF;
 
 PERFORM a.id FROM bruger a
 WHERE a.id=bruger_uuid
 FOR UPDATE; --We synchronize concurrent invocations of as_updates of this particular object on a exclusive row lock. This lock will be held by the current transaction until it terminates.
 
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_bruger(array[bruger_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[bruger_uuid]) THEN
+  RAISE EXCEPTION 'Unable to update bruger with uuid [%]. Object does not met stipulated criteria:%',bruger_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
+
 new_bruger_registrering := _as_create_bruger_registrering(bruger_uuid,livscykluskode, brugerref, note);
 prev_bruger_registrering := _as_get_prev_bruger_registrering(new_bruger_registrering);
 
 IF lostUpdatePreventionTZ IS NOT NULL THEN
   IF NOT (LOWER((prev_bruger_registrering.registrering).timeperiod)=lostUpdatePreventionTZ) THEN
-    RAISE EXCEPTION 'Unable to update bruger with uuid [%], as the bruger seems to have been updated since latest read by client (the given lostUpdatePreventionTZ [%] does not match the timesamp of latest registration [%]).',bruger_uuid,lostUpdatePreventionTZ,LOWER((prev_bruger_registrering.registrering).timeperiod);
+    RAISE EXCEPTION 'Unable to update bruger with uuid [%], as the bruger seems to have been updated since latest read by client (the given lostUpdatePreventionTZ [%] does not match the timesamp of latest registration [%]).',bruger_uuid,lostUpdatePreventionTZ,LOWER((prev_bruger_registrering.registrering).timeperiod) USING ERRCODE = 'MO409';
   END IF;   
 END IF;
 
@@ -83,8 +93,8 @@ ELSE
       SELECT
         new_bruger_registrering.id,
           a.virkning,
-            a.relMaalUuid,
-              a.relMaalUrn,
+            a.uuid,
+              a.urn,
                 a.relType,
                   a.objektType
       FROM unnest(relationer) as a
@@ -174,12 +184,7 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" relations
-DELETE FROM bruger_relation
-WHERE 
-bruger_registrering_id=new_bruger_registrering.id
-AND (rel_maal_uuid IS NULL AND (rel_maal_urn IS NULL OR rel_maal_urn=''))
-;
+
 
 END IF;
 /**********************/
@@ -242,12 +247,6 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" tilstande
-DELETE FROM bruger_tils_gyldighed
-WHERE 
-bruger_registrering_id=new_bruger_registrering.id
-AND gyldighed = ''::BrugerGyldighedTils
-;
 
 END IF;
 
@@ -273,7 +272,7 @@ IF attrEgenskaber IS NOT null THEN
   GROUP BY a.brugervendtnoegle,a.brugernavn,a.brugertype, a.virkning
   HAVING COUNT(*)>1
   ) THEN
-  RAISE EXCEPTION 'Unable to update bruger with uuid [%], as the bruger have overlapping virknings in the given egenskaber array :%',bruger_uuid,to_json(attrEgenskaber)  USING ERRCODE = 22000;
+  RAISE EXCEPTION 'Unable to update bruger with uuid [%], as the bruger have overlapping virknings in the given egenskaber array :%',bruger_uuid,to_json(attrEgenskaber)  USING ERRCODE = 'MO400';
 
   END IF;
 
@@ -294,9 +293,9 @@ IF attrEgenskaber IS NOT null THEN
     ,virkning
     ,bruger_registrering_id
   )
-  SELECT 
-    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle), 
-    coalesce(attrEgenskaberObj.brugernavn,a.brugernavn), 
+  SELECT
+    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+    coalesce(attrEgenskaberObj.brugernavn,a.brugernavn),
     coalesce(attrEgenskaberObj.brugertype,a.brugertype),
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
@@ -403,14 +402,7 @@ FROM
 
 
 
---Remove any "cleared"/"deleted" attributes
-DELETE FROM bruger_attr_egenskaber a
-WHERE 
-a.bruger_registrering_id=new_bruger_registrering.id
-AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') 
-            AND  (a.brugernavn IS NULL OR a.brugernavn='') 
-            AND  (a.brugertype IS NULL OR a.brugertype='')
-;
+
 
 END IF;
 
@@ -424,7 +416,7 @@ read_prev_bruger:=as_read_bruger(bruger_uuid, (prev_bruger_registrering.registre
 --the ordering in as_list (called by as_read) ensures that the latest registration is returned at index pos 1
 
 IF NOT (lower((read_new_bruger.registrering[1].registrering).TimePeriod)=lower((new_bruger_registrering.registrering).TimePeriod) AND lower((read_prev_bruger.registrering[1].registrering).TimePeriod)=lower((prev_bruger_registrering.registrering).TimePeriod)) THEN
-  RAISE EXCEPTION 'Error updating bruger with id [%]: The ordering of as_list_bruger should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].',bruger_uuid,to_json(new_bruger_registrering),to_json(read_new_bruger.registrering[1].registrering),to_json(prev_bruger_registrering),to_json(prev_new_bruger.registrering[1].registrering);
+  RAISE EXCEPTION 'Error updating bruger with id [%]: The ordering of as_list_bruger should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].',bruger_uuid,to_json(new_bruger_registrering),to_json(read_new_bruger.registrering[1].registrering),to_json(prev_bruger_registrering),to_json(prev_new_bruger.registrering[1].registrering) USING ERRCODE = 'MO500';
 END IF;
  
  --we'll ignore the registreringBase part in the comparrison - except for the livcykluskode
@@ -449,7 +441,7 @@ ROW(null,(read_prev_bruger.registrering[1].registrering).livscykluskode,null,nul
 IF read_prev_bruger_reg=read_new_bruger_reg THEN
   --RAISE NOTICE 'Note[%]. Aborted reg:%',note,to_json(read_new_bruger_reg);
   --RAISE NOTICE 'Note[%]. Previous reg:%',note,to_json(read_prev_bruger_reg);
-  RAISE EXCEPTION 'Aborted updating bruger with id [%] as the given data, does not give raise to a new registration. Aborted reg:[%], previous reg:[%]',bruger_uuid,to_json(read_new_bruger_reg),to_json(read_prev_bruger_reg) USING ERRCODE = 22000;
+  RAISE EXCEPTION 'Aborted updating bruger with id [%] as the given data, does not give raise to a new registration. Aborted reg:[%], previous reg:[%]',bruger_uuid,to_json(read_new_bruger_reg),to_json(read_prev_bruger_reg) USING ERRCODE = 'MO400';
 END IF;
 
 /******************************************************************/

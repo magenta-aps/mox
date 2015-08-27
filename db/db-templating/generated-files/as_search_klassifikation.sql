@@ -17,8 +17,9 @@ CREATE OR REPLACE FUNCTION as_search_klassifikation(
 	virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
 	maxResults int = 2147483647,
 	anyAttrValueArr text[] = '{}'::text[],
-	anyRelUuidArr	uuid[] = '{}'::uuid[],
-	anyRelUrnArr text[] = '{}'::text[]
+	anyuuidArr	uuid[] = '{}'::uuid[],
+	anyurnArr text[] = '{}'::text[],
+	auth_criteria_arr KlassifikationRegistreringType[]=null
 	)
   RETURNS uuid[] AS 
 $$
@@ -31,8 +32,9 @@ DECLARE
   	tilsPubliceretTypeObj KlassifikationPubliceretTilsType;
 	relationTypeObj KlassifikationRelationType;
 	anyAttrValue text;
-	anyRelUuid uuid;
-	anyRelUrn text;
+	anyuuid uuid;
+	anyurn text;
+	auth_filtered_uuids uuid[];
 BEGIN
 
 --RAISE DEBUG 'step 0:registreringObj:%',registreringObj;
@@ -310,13 +312,10 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 			JOIN klassifikation_registrering b on a.klassifikation_registrering_id=b.id
 			WHERE
 			(
-				a.brugervendtnoegle ILIKE anyAttrValue
-				OR
-				a.beskrivelse ILIKE anyAttrValue
-				OR
-				a.kaldenavn ILIKE anyAttrValue
-				OR
-				a.ophavsret ILIKE anyAttrValue
+						a.brugervendtnoegle ILIKE anyAttrValue OR
+						a.beskrivelse ILIKE anyAttrValue OR
+						a.kaldenavn ILIKE anyAttrValue OR
+						a.ophavsret ILIKE anyAttrValue
 			)
 			AND
 			(
@@ -442,7 +441,7 @@ ELSE
 						)
 						AND
 						(
-								(tilsPubliceretTypeObj.virkning).NoteTekst IS NULL OR (tilsPubliceretTypeObj.virkning).NoteTekst=(a.virkning).NoteTekst
+								(tilsPubliceretTypeObj.virkning).NoteTekst IS NULL OR (a.virkning).NoteTekst ILIKE (tilsPubliceretTypeObj.virkning).NoteTekst
 						)
 					)
 				)
@@ -585,7 +584,7 @@ ELSE
 						)
 						AND
 						(
-								(relationTypeObj.virkning).NoteTekst IS NULL OR (relationTypeObj.virkning).NoteTekst=(a.virkning).NoteTekst
+								(relationTypeObj.virkning).NoteTekst IS NULL OR (a.virkning).NoteTekst ILIKE (relationTypeObj.virkning).NoteTekst
 						)
 					)
 				)
@@ -607,9 +606,9 @@ ELSE
 				)
 				AND
 				(
-					relationTypeObj.relMaalUuid IS NULL
+					relationTypeObj.uuid IS NULL
 					OR
-					relationTypeObj.relMaalUuid = a.rel_maal_uuid	
+					relationTypeObj.uuid = a.rel_maal_uuid	
 				)
 				AND
 				(
@@ -619,9 +618,9 @@ ELSE
 				)
 				AND
 				(
-					relationTypeObj.relMaalUrn IS NULL
+					relationTypeObj.urn IS NULL
 					OR
-					relationTypeObj.relMaalUrn = a.rel_maal_urn
+					relationTypeObj.urn = a.rel_maal_urn
 				)
 				AND
 						(
@@ -702,9 +701,9 @@ ELSE
 END IF;
 --/**********************//
 
-IF coalesce(array_length(anyRelUuidArr ,1),0)>0 THEN
+IF coalesce(array_length(anyuuidArr ,1),0)>0 THEN
 
-	FOREACH anyRelUuid IN ARRAY anyRelUuidArr
+	FOREACH anyuuid IN ARRAY anyuuidArr
 	LOOP
 		klassifikation_candidates:=array(
 			SELECT DISTINCT
@@ -712,7 +711,7 @@ IF coalesce(array_length(anyRelUuidArr ,1),0)>0 THEN
 			FROM  klassifikation_relation a
 			JOIN klassifikation_registrering b on a.klassifikation_registrering_id=b.id
 			WHERE
-			anyRelUuid = a.rel_maal_uuid
+			anyuuid = a.rel_maal_uuid
 			AND
 			(
 				virkningSoeg IS NULL
@@ -797,9 +796,9 @@ END IF;
 
 --/**********************//
 
-IF coalesce(array_length(anyRelUrnArr ,1),0)>0 THEN
+IF coalesce(array_length(anyurnArr ,1),0)>0 THEN
 
-	FOREACH anyRelUrn IN ARRAY anyRelUrnArr
+	FOREACH anyurn IN ARRAY anyurnArr
 	LOOP
 		klassifikation_candidates:=array(
 			SELECT DISTINCT
@@ -807,7 +806,7 @@ IF coalesce(array_length(anyRelUrnArr ,1),0)>0 THEN
 			FROM  klassifikation_relation a
 			JOIN klassifikation_registrering b on a.klassifikation_registrering_id=b.id
 			WHERE
-			anyRelUrn = a.rel_maal_urn
+			anyurn = a.rel_maal_urn
 			AND
 			(
 				virkningSoeg IS NULL
@@ -891,6 +890,9 @@ IF coalesce(array_length(anyRelUrnArr ,1),0)>0 THEN
 END IF;
 
 --/**********************//
+
+ 
+
 
 
 --RAISE DEBUG 'klassifikation_candidates_is_initialized step 5:%',klassifikation_candidates_is_initialized;
@@ -997,7 +999,13 @@ END IF;
 --RAISE DEBUG 'klassifikation_candidates step 6:%',klassifikation_candidates;
 
 
-return klassifikation_candidates;
+										 
+/*** Filter out the objects that does not meets the stipulated access criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_klassifikation(klassifikation_candidates,auth_criteria_arr); 
+/*********************/
+
+
+return auth_filtered_uuids;
 
 
 END;

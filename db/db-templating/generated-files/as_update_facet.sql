@@ -22,7 +22,8 @@ CREATE OR REPLACE FUNCTION as_update_facet(
   attrEgenskaber FacetEgenskaberAttrType[],
   tilsPubliceret FacetPubliceretTilsType[],
   relationer FacetRelationType[],
-  lostUpdatePreventionTZ TIMESTAMPTZ = null
+  lostUpdatePreventionTZ TIMESTAMPTZ = null,
+  auth_criteria_arr FacetRegistreringType[]=null
 	)
   RETURNS bigint AS 
 $$
@@ -35,24 +36,33 @@ DECLARE
   prev_facet_registrering facet_registrering;
   facet_relation_navn FacetRelationKode;
   attrEgenskaberObj FacetEgenskaberAttrType;
+  auth_filtered_uuids uuid[];
 BEGIN
 
 --create a new registrering
 
 IF NOT EXISTS (select a.id from facet a join facet_registrering b on b.facet_id=a.id  where a.id=facet_uuid) THEN
-   RAISE EXCEPTION 'Unable to update facet with uuid [%], being unable to any previous registrations.',facet_uuid;
+   RAISE EXCEPTION 'Unable to update facet with uuid [%], being unable to find any previous registrations.',facet_uuid USING ERRCODE = 'MO400';
 END IF;
 
 PERFORM a.id FROM facet a
 WHERE a.id=facet_uuid
 FOR UPDATE; --We synchronize concurrent invocations of as_updates of this particular object on a exclusive row lock. This lock will be held by the current transaction until it terminates.
 
+/*** Verify that the object meets the stipulated access allowed criteria  ***/
+auth_filtered_uuids:=_as_filter_unauth_facet(array[facet_uuid]::uuid[],auth_criteria_arr); 
+IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[facet_uuid]) THEN
+  RAISE EXCEPTION 'Unable to update facet with uuid [%]. Object does not met stipulated criteria:%',facet_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+END IF;
+/*********************/
+
+
 new_facet_registrering := _as_create_facet_registrering(facet_uuid,livscykluskode, brugerref, note);
 prev_facet_registrering := _as_get_prev_facet_registrering(new_facet_registrering);
 
 IF lostUpdatePreventionTZ IS NOT NULL THEN
   IF NOT (LOWER((prev_facet_registrering.registrering).timeperiod)=lostUpdatePreventionTZ) THEN
-    RAISE EXCEPTION 'Unable to update facet with uuid [%], as the facet seems to have been updated since latest read by client (the given lostUpdatePreventionTZ [%] does not match the timesamp of latest registration [%]).',facet_uuid,lostUpdatePreventionTZ,LOWER((prev_facet_registrering.registrering).timeperiod);
+    RAISE EXCEPTION 'Unable to update facet with uuid [%], as the facet seems to have been updated since latest read by client (the given lostUpdatePreventionTZ [%] does not match the timesamp of latest registration [%]).',facet_uuid,lostUpdatePreventionTZ,LOWER((prev_facet_registrering.registrering).timeperiod) USING ERRCODE = 'MO409';
   END IF;   
 END IF;
 
@@ -83,8 +93,8 @@ ELSE
       SELECT
         new_facet_registrering.id,
           a.virkning,
-            a.relMaalUuid,
-              a.relMaalUrn,
+            a.uuid,
+              a.urn,
                 a.relType,
                   a.objektType
       FROM unnest(relationer) as a
@@ -174,12 +184,7 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" relations
-DELETE FROM facet_relation
-WHERE 
-facet_registrering_id=new_facet_registrering.id
-AND (rel_maal_uuid IS NULL AND (rel_maal_urn IS NULL OR rel_maal_urn=''))
-;
+
 
 END IF;
 /**********************/
@@ -242,12 +247,6 @@ ELSE
 
 
 /**********************/
---Remove any "cleared"/"deleted" tilstande
-DELETE FROM facet_tils_publiceret
-WHERE 
-facet_registrering_id=new_facet_registrering.id
-AND publiceret = ''::FacetPubliceretTils
-;
 
 END IF;
 
@@ -273,7 +272,7 @@ IF attrEgenskaber IS NOT null THEN
   GROUP BY a.brugervendtnoegle,a.beskrivelse,a.opbygning,a.ophavsret,a.plan,a.supplement,a.retskilde, a.virkning
   HAVING COUNT(*)>1
   ) THEN
-  RAISE EXCEPTION 'Unable to update facet with uuid [%], as the facet have overlapping virknings in the given egenskaber array :%',facet_uuid,to_json(attrEgenskaber)  USING ERRCODE = 22000;
+  RAISE EXCEPTION 'Unable to update facet with uuid [%], as the facet have overlapping virknings in the given egenskaber array :%',facet_uuid,to_json(attrEgenskaber)  USING ERRCODE = 'MO400';
 
   END IF;
 
@@ -298,13 +297,13 @@ IF attrEgenskaber IS NOT null THEN
     ,virkning
     ,facet_registrering_id
   )
-  SELECT 
-    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle), 
-    coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse), 
-    coalesce(attrEgenskaberObj.opbygning,a.opbygning), 
-    coalesce(attrEgenskaberObj.ophavsret,a.ophavsret), 
-    coalesce(attrEgenskaberObj.plan,a.plan), 
-    coalesce(attrEgenskaberObj.supplement,a.supplement), 
+  SELECT
+    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+    coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
+    coalesce(attrEgenskaberObj.opbygning,a.opbygning),
+    coalesce(attrEgenskaberObj.ophavsret,a.ophavsret),
+    coalesce(attrEgenskaberObj.plan,a.plan),
+    coalesce(attrEgenskaberObj.supplement,a.supplement),
     coalesce(attrEgenskaberObj.retskilde,a.retskilde),
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
@@ -423,18 +422,7 @@ FROM
 
 
 
---Remove any "cleared"/"deleted" attributes
-DELETE FROM facet_attr_egenskaber a
-WHERE 
-a.facet_registrering_id=new_facet_registrering.id
-AND (a.brugervendtnoegle IS NULL OR a.brugervendtnoegle='') 
-            AND  (a.beskrivelse IS NULL OR a.beskrivelse='') 
-            AND  (a.opbygning IS NULL OR a.opbygning='') 
-            AND  (a.ophavsret IS NULL OR a.ophavsret='') 
-            AND  (a.plan IS NULL OR a.plan='') 
-            AND  (a.supplement IS NULL OR a.supplement='') 
-            AND  (a.retskilde IS NULL OR a.retskilde='')
-;
+
 
 END IF;
 
@@ -448,7 +436,7 @@ read_prev_facet:=as_read_facet(facet_uuid, (prev_facet_registrering.registrering
 --the ordering in as_list (called by as_read) ensures that the latest registration is returned at index pos 1
 
 IF NOT (lower((read_new_facet.registrering[1].registrering).TimePeriod)=lower((new_facet_registrering.registrering).TimePeriod) AND lower((read_prev_facet.registrering[1].registrering).TimePeriod)=lower((prev_facet_registrering.registrering).TimePeriod)) THEN
-  RAISE EXCEPTION 'Error updating facet with id [%]: The ordering of as_list_facet should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].',facet_uuid,to_json(new_facet_registrering),to_json(read_new_facet.registrering[1].registrering),to_json(prev_facet_registrering),to_json(prev_new_facet.registrering[1].registrering);
+  RAISE EXCEPTION 'Error updating facet with id [%]: The ordering of as_list_facet should ensure that the latest registrering can be found at index 1. Expected new reg: [%]. Actual new reg at index 1: [%]. Expected prev reg: [%]. Actual prev reg at index 1: [%].',facet_uuid,to_json(new_facet_registrering),to_json(read_new_facet.registrering[1].registrering),to_json(prev_facet_registrering),to_json(prev_new_facet.registrering[1].registrering) USING ERRCODE = 'MO500';
 END IF;
  
  --we'll ignore the registreringBase part in the comparrison - except for the livcykluskode
@@ -473,7 +461,7 @@ ROW(null,(read_prev_facet.registrering[1].registrering).livscykluskode,null,null
 IF read_prev_facet_reg=read_new_facet_reg THEN
   --RAISE NOTICE 'Note[%]. Aborted reg:%',note,to_json(read_new_facet_reg);
   --RAISE NOTICE 'Note[%]. Previous reg:%',note,to_json(read_prev_facet_reg);
-  RAISE EXCEPTION 'Aborted updating facet with id [%] as the given data, does not give raise to a new registration. Aborted reg:[%], previous reg:[%]',facet_uuid,to_json(read_new_facet_reg),to_json(read_prev_facet_reg) USING ERRCODE = 22000;
+  RAISE EXCEPTION 'Aborted updating facet with id [%] as the given data, does not give raise to a new registration. Aborted reg:[%], previous reg:[%]',facet_uuid,to_json(read_new_facet_reg),to_json(read_prev_facet_reg) USING ERRCODE = 'MO400';
 END IF;
 
 /******************************************************************/

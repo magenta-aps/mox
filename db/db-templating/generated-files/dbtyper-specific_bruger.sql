@@ -32,8 +32,8 @@ CREATE TYPE BrugerRelationKode AS ENUM  ('tilhoerer','adresser','brugertyper','o
 CREATE TYPE BrugerRelationType AS (
   relType BrugerRelationKode,
   virkning Virkning,
-  relMaalUuid uuid,
-  relMaalUrn  text,
+  uuid uuid,
+  urn  text,
   objektType text 
 )
 ;
