@@ -20,6 +20,16 @@
           ]
         }
       ]
+    },
+    {
+      "varianttekst": "doc_varianttekst2",
+      "dele": [
+        {
+          "deltekst": "doc_deltekst2B",
+          "relationer": {
+          }
+        }
+      ]
     }
   ]
 }
