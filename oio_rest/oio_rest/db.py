@@ -537,7 +537,8 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
 
 def filter_json_output(output):
     """Filter the JSON output returned from the DB-layer."""
-    return transform_virkning(filter_empty(simplify_cleared_wrappers(output)))
+    return transform_relations(transform_virkning(filter_empty(
+        simplify_cleared_wrappers(output))))
 
 
 def simplify_cleared_wrappers(o):
@@ -603,6 +604,34 @@ def filter_empty(d):
         return tuple(filter_empty(v) for v in d if v and filter_empty(v))
     else:
         return d
+
+
+def transform_relations(o):
+    """Recurse through output to transform relation lists to dicts.
+
+    Currently, this only applies to DokumentDel relations, because the cast
+    to.JSON for other types of relations is currently done in PostgreSQL cast
+    functions.
+    """
+    if isinstance(o, dict):
+        if "relationer" in o and (isinstance(o["relationer"], list)
+                                  or isinstance(o["relationer"], tuple)):
+            relations = o["relationer"]
+            rel_dict = {}
+            for rel in relations:
+                # Remove the reltype from the dict and add to the output dict
+                rel_type = rel.pop("reltype")
+                rel_dict.setdefault(rel_type, []).append(rel)
+            o["relationer"] = rel_dict
+            return o
+        else:
+            return {k: transform_relations(v) for k, v in o.iteritems()}
+    elif isinstance(o, list):
+        return [transform_relations(v) for v in o]
+    elif isinstance(o, tuple):
+        return tuple(transform_relations(v) for v in o)
+    else:
+        return o
 
 
 '''
