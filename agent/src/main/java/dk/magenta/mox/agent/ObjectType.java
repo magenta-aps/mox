@@ -220,6 +220,8 @@ public class ObjectType {
             headers.put(MessageInterface.HEADER_AUTHORIZATION, authorization);
         }
         try {
+            System.out.println("Sending:");
+            System.out.println(headers);
             return sender.sendJSON(headers, data);
         } catch (InterruptedException e) {
             e.printStackTrace();

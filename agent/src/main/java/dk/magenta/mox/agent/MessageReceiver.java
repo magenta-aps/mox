@@ -27,7 +27,7 @@ public class MessageReceiver extends MessageInterface {
         this.running = true;
         while (this.running) {
             QueueingConsumer.Delivery delivery = this.consumer.nextDelivery();
-
+            System.out.println("Got a message from the queue");
             try {
                 final Future<String> response = callback.run(delivery.getProperties().getHeaders(), new JSONObject(new String(delivery.getBody())));
 
