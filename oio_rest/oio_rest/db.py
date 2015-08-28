@@ -79,12 +79,14 @@ def convert_attr_value(attribute_name, attribute_field_name,
 def convert_relation_value(class_name, field_name, value):
     field_type = get_relation_field_type(class_name, field_name)
     if field_type == "journalnotat":
-        return JournalNotat(value["titel"], value["notat"], value["format"])
+        return JournalNotat(value.get("titel", None), value.get("notat", None),
+                            value.get("format", None))
     elif field_type == "journaldokument":
-        ou = value["offentlighedundtaget"]
+        ou = value.get("offentlighedundtaget", {})
         return JournalDokument(
-            value["dokumenttitel"],
-            OffentlighedUndtaget(ou['alternativtitel'], ou['hjemmel'])
+            value.get("dokumenttitel", None),
+            OffentlighedUndtaget(ou.get('alternativtitel', None),
+                                 ou.get('hjemmel', None))
         )
     else:
         return value
@@ -103,7 +105,7 @@ def convert_attributes(attributes):
                         attr_name, f, attr_period[f]
                     ) if f in attr_period else None
                     for f in field_names
-                ]
+                    ]
                 converted_attr_periods.append(attr_value_list)
             attributes[attr_name] = converted_attr_periods
     return attributes
@@ -601,6 +603,7 @@ def filter_empty(d):
         return tuple(filter_empty(v) for v in d if v and filter_empty(v))
     else:
         return d
+
 
 '''
 TODO: Remove this function if/when it turns out we don't need it.

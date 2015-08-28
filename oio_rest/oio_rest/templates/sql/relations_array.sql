@@ -21,7 +21,7 @@ NULL
             {% if rel.urn is defined  and rel.urn %}{{ rel.urn|adapt }}{% else %}NULL{% endif %},
             {% if rel.objekttype is defined %}{{ rel.objekttype|adapt }}{% else %}NULL{% endif %}
         {% if class_name == "Sag" %}
-        ,        {{ rel.indeks|adapt }},
+        ,        {% if rel.indeks is defined %}{{ rel.indeks|adapt }}{% else%}NULL{% endif %},
             {% if rel.journalpostkode is defined %}{{ rel.journalpostkode|adapt }}{% else %}NULL{% endif %},
             {% if rel.journalnotat is defined %}{{ rel.journalnotat|adapt }}{% else %}NULL{% endif %},
             {% if rel.journaldokument is defined %}{{ rel.journaldokument|adapt }}{% else %}NULL{% endif %}
