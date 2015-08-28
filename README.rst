@@ -118,20 +118,26 @@ File upload
 -----------
 
 When performing an import/create/update operation on a Dokument, it is
-possible to simultaneously upload files.
+possible (if desired) to simultaneously upload files.
 These requests should be made using multipart/form-data encoding.
-The encoding is the same used for HTML upload forms.
+The encoding is the same that is used for HTML upload forms.
 
 The JSON input for the request should be specified in a "form" field called
 "json". Any uploaded files should be included in the multpart/form-data
 request as separate "form" fields.
-The "indhold" attribute of any DokumentDel must point be a URI pointing to
-one of these uploaded file "fields". The URI must be of the format: ::
+The "indhold" attribute of any DokumentDel may be a URI pointing to
+one of these uploaded file "fields". In that case, the URI must be of the
+format: ::
 
     field:myfield
 
 where myfield is the "form" field name of the uploaded file included in
 the request that should be referenced by the DokumentDel.
+
+It is also possible to specify any URI (e.g. "http://....", etc..) as the value
+of the "indhold" attribute. In that case, the URI will be stored, however no
+file will be downloaded and stored to the server. It is then expected that the
+consumer of the API knows how to access the URI.
 
 File download
 -------------
