@@ -66,6 +66,16 @@ else
     exit
 fi
 
+# Make sure that deleting DokumentDel relations is possible
+if $(curl -sH "Content-Type: application/json" \
+"$HOST_URL/dokument/dokument?variant=doc_varianttekst2&deltekst=doc_deltekst2B&underredigeringaf=urn:cpr8883394&uuid=$uuid" | grep -q "$uuid")
+then
+    printf "\nSearch on del relation successful"
+else
+    printf "\nError in search on del relation.\n"
+    exit
+fi
+
 # Update the document
 curl -sH "Content-Type: application/json" -X PUT -d "$(cat $DIR/test_data/dokument_opdater.json)" $HOST_URL/dokument/dokument/$uuid
 
@@ -94,6 +104,16 @@ then
     printf "\nFile upload/download successful after update operation"
 else
     printf "\nError in file upload/download after update operation. Downloaded file does not match uploaded file\n"
+    exit
+fi
+
+# Make sure that deleting DokumentDel relations is possible
+if ! $(curl -sH "Content-Type: application/json" \
+"$HOST_URL/dokument/dokument?variant=doc_varianttekst2&deltekst=doc_deltekst2B&underredigeringaf=urn:cpr8883394&uuid=$uuid" | grep -q "$uuid")
+then
+    printf "\nSearch on deleted del relation successful"
+else
+    printf "\nError in search on deleted del relation.\n"
     exit
 fi
 
