@@ -13,7 +13,7 @@ FILE_UPLOAD_FOLDER = '/var/mox'
 
 # The Endpoint specified in the AppliesTo element of the STS request
 # This will be used to verify the Audience of the SAML Assertion
-SAML_MOX_ENTITY_ID = 'http://localhost:80'
+SAML_MOX_ENTITY_ID = 'https://mox.magenta-aps.dk:443'
 
 # The entity ID of the IdP. This will be used to verify the token Issuer
 SAML_IDP_ENTITY_ID = 'localhost'
@@ -22,7 +22,7 @@ SAML_IDP_ENTITY_ID = 'localhost'
 SAML_IDP_CERTIFICATE = "test_auth_data/idp-certificate.pem"
 
 # Whether to enable SAML authentication
-USE_SAML_AUTHENTICATION = False
+USE_SAML_AUTHENTICATION = True
 
 # Whether authorization is enabled - if not, the restrictions module is not
 # called.
