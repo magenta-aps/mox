@@ -68,8 +68,15 @@ def convert_attr_value(attribute_name, attribute_field_name,
     if field_type == "soegeord":
         return [Soegeord(*ord) for ord in attribute_field_value]
     elif field_type == "offentlighedundtagettype":
-        return OffentlighedUndtaget(attribute_field_value['alternativtitel'],
-                                    attribute_field_value['hjemmel'])
+        if not ('alternativtitel' in attribute_field_value) and not (
+                'hjemmel' in attribute_field_value):
+            # Empty object, so provide the DB with a NULL, so that the old
+            # value is not overwritten.
+            return None
+        else:
+            return OffentlighedUndtaget(
+                attribute_field_value.get('alternativtitel', None),
+                attribute_field_value.get('hjemmel', None))
     elif field_type == "date":
         return datetime.strptime(attribute_field_value, "%Y-%m-%d").date()
     else:
