@@ -1083,6 +1083,140 @@ relation, that you wish to remove. In general, when updating the
 Dokument Del relations, you have to specify the full list of relations.
 
 
+Sending Messages on the Beskedfordeler
+======================================
+
+Using the OIO Mox Library
+-------------------------
+
+This is located in the folder ``agent/`` in the Mox source code
+repository.
+
+The library is built with Apache Maven - see pom.xml for Maven dependencies. 
+
+To send a command through the message queue, you first need a
+``ObjectType`` representing the type of object you want to manipulate.
+
+A collection of these can be defined in a properties file and loaded with ::
+
+    Map<String, ObjectType> objectTypes = ObjectType.load(File propertiesFile) 
+
+or ::
+
+    Map<String, ObjectType> objectTypes = ObjectType.load(Properties properties). 
+    
+The properties must contain a set of keys adhering to the format: ::
+
+    type.[name].[operation].method = [method]
+    type.[name].[operation].path = [path]
+
+For example: ::
+
+    type.facet.create.method = POST
+    type.facet.create.path = /klassifikation/facet
+
+The default agent.properties file defines all of the classes from the
+OIOXML hierarchies Klassifikation, Organisation, Sag and Dokument.
+
+You can then get your ObjectType by calling get(String name) on the returned collection.
+
+
+If you instead want to create your ObjectType yourself, you can create a
+new ``ObjectType(String name)`` and add operations to it with ::
+
+    addOperation(String name, ObjectType.Method method, String path)
+    
+where 
+
+* ``name`` denotes the type of operation (usually "create", "update",
+  "passivate" or "delete", but you can specify your own) 
+
+* ``method`` denotes the HTTP method to use when connecting to the REST interface.
+  Available are: GET, POST, PUT, DELETE and HEAD)
+
+* ``path`` denotes the REST path, e.g. "/klassifikation/facet/[uuid]", and ``[uuid]`` will be
+  replaced with a uuid you specify when calling the operation
+
+
+
+You also need a ``MessageSender``  object, which can be created with: ::
+
+    new MessageSender(String queueInterface, String queueName); 
+    
+where
+
+* ``queueInterface`` is a hostname/port combination to the RabbitMQ
+  instance, e.g. "localhost:5672", and
+
+* ``queueName``  is the RabbitMQ queue name, e.g. "incoming".  
+  
+The queue name and interface port must match what the queue listener is
+set up to use; the oio_moxagent listener is currently configured to use
+the queueName "incoming" for the RabbitMQ service on port 5672.
+
+
+
+Now that you have an ObjectType instance and a MessageSender, you can
+call any of the following methods:  
+
+create 
+++++++
+
+::
+
+    Future<String> create(MessageSender sender, JSONObject data)
+    Future<String> create(MessageSender sender, JSONObject data, String authorization)
+
+Sends a 'create' operation to the message queue, provided that a
+'create' operation has been defined in the ObjectType. Put your JSON
+document in the ``data`` field, and include an optional authorization
+token for the REST interface. The demonstration class already contains
+example code on how to obtain such a token (see the
+``getSecurityToken()`` method in ``Main.java``) The function immediately
+returns a ``Future<String>`` handle, which can be used to obtain the
+server response. Calling the ``get()`` method on this handle blocks until a
+response is ready, and then returns it in a String. 
+
+update
+++++++
+
+::
+
+    Future<String> update(MessageSender sender, UUID uuid, JSONObject data)
+    Future<String> update(MessageSender sender, UUID uuid, JSONObject data, String authorization)
+
+Sends an 'update' operation to the message queue, provided that an
+'update' operation has been defined in the ObjectType. Add the document
+UUID to be updated, as well as the JSON document you're updating with.  
+
+passivate
++++++++++
+
+::
+
+    Future<String> passivate(MessageSender sender, UUID uuid, String note)
+    Future<String> passivate(MessageSender sender, UUID uuid, String note, String authorization)
+
+Sends a 'passivate' operation to the message queue, provided such an
+operation has been defined in the ObjectType. Add the document UUID to
+be passivated, as well as a note to go with the passivate operation (may
+be null). ::
+
+    Future<String> delete(MessageSender sender, UUID uuid, String note)
+    Future<String> delete(MessageSender sender, UUID uuid, String note, String authorization)
+
+Sends a 'delete' operation to the message queue, provided such an
+operation has been defined in the ObjectType. Add the document UUID to
+be deleted, as well as a note to go with the delete operation (may be
+null). ::
+
+     Future<String> sendCommand(MessageSender sender, String operationName, UUID uuid, JSONObject data)
+     Future<String> sendCommand(MessageSender sender, String operationName, UUID uuid, JSONObject data, String authorization)
+
+Sends a custom operationName (useful if you added an operation other
+than create, update, passivate or delete). Add a UUID and a JSON Object
+as needed by the operation.
+
 
 Licensing
 =========
