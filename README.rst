@@ -38,7 +38,10 @@ Getting started
 To install the OIO REST API, run ``install.sh``
 
 **NOTICE:** If you need to initialize the postgresql database as well
-you need to run run ``install.sh -d`` 
+you need to run run ``install.sh -d``. 
+
+**NOTE:** PostgreSQL must already be installed. PostgreSQL 9.3 or later
+is required.
 
 **CAUTION:** This will drop any existing mox database and any data in it will be lost.)
 
