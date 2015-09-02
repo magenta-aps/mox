@@ -21,9 +21,9 @@ public abstract class MessageInterface {
     private String queueName;
     private AMQP.Queue.DeclareOk queueResult;
 
-    public static final String HEADER_AUTHORIZATION = "authorization";
-    public static final String HEADER_MESSAGEID = "beskedID";
-    public static final String HEADER_OBJECTTYPE = "objecttype";
+    public static final String HEADER_AUTHORIZATION = "autorisation";
+    public static final String HEADER_MESSAGEID = "objektID";
+    public static final String HEADER_OBJECTTYPE = "objekttype";
     public static final String HEADER_OPERATION = "operation";
 
 

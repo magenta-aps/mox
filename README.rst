@@ -1296,12 +1296,12 @@ running.
 The message handler will recognize four AMQP headers when sending Mox
 messages:
 
-* "authorization" - must contain the SAML token as described above.
+* "autorisation" - must contain the SAML token as described above.
 
-* "beskedID" - must contain the UUID of the object to manipulate; not
+* "objektID" - must contain the UUID of the object to manipulate; not
   used with create operations.
 
-* "objecttype" - i.e., OIO class, e.g. "Facet".
+* "objekttype" - i.e., OIO class, e.g. "Facet".
 
 * "operation", the action to be performed. Must be one of "create",
   "update", "passivate" or "delete".
