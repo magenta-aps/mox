@@ -1,8 +1,19 @@
+* Version 0.2.0, September 2, 2015
+
+New in this version:
+
+* REST interface for the OIO services Sag, Dokument, Organisation and
+  Klassifikation.
+* Database implementing the same hierarchies.
+* Complete redesign of database.
+* Support for authentication with SAML tokens.
+
+
 * Version 0.1.1, March 9, 2015
 
 New in this version:
 
- - Added missing classed from the Organisation hierarchy.
+ - Added missing classes from the Organisation hierarchy.
 
 
 * Version 0.1.0, February 23, 2015
