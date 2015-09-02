@@ -12,17 +12,21 @@ You can find the current MOX specification here:
 
 http://www.kl.dk/ImageVaultFiles/id_55874/cf_202/MOX_specifikation_version_0.PDF
 
-You can find the Organisation hierarchy, which is the first  part of the
-specification to be supported by this database, here:
+As an example, you can find the Organisation hierarchy
+here:
 
 http://digitaliser.dk/resource/991439/artefact/Informations-+og+meddelelsesmodeller+for+Organisation+%5bvs.+1.1%5d.pdf
+
+This version of the system implements four OIO hierarchies, namely
+Klassifikation, Sag, Dokument and Organisation. In each installation of
+the service, it is possible to only enable some of the hierarchies.
 
 
 On this documentation
 ---------------------
 
-This file is a reStructuredText document, and an HTML version can be
-obtained by running the command ::
+This README file is a reStructuredText document, and an HTML version can
+be obtained by running the command ::
 
     rst2html README.rst README.html
 
@@ -32,34 +36,38 @@ command: ::
 
     sudo apt-get install python-docutils
 
+If you're reading this on Github, you're probably seeing the HTML
+rendering.
+
 Getting started
 ===============
 
 Configuration
 -------------
 
-The file ``db/config.sh`` contains configuration for the database, such as
-which username/password to use to connect to the database, and which
+The file ``db/config.sh`` contains configuration for the database, such
+as which username/password to use to connect to the database, and which
 database name to use.
 
-To setup the database to send notifications to an AMQP message exchange, the
-database must know how to connect to the AMQP server. The defaults assume
-you have a local AMQP server and use the guest user. However, these can be
-changed in ``db/config.sh`` prior to performing installation.
+To setup the database to send notifications to an AMQP message exchange,
+the database must know how to connect to the AMQP server. The defaults
+assume you have a local AMQP server and use the guest user. However,
+these can be changed in ``db/config.sh`` prior to performing
+installation.
 
-The file ``oio_rest/oio_rest/settings.py`` contains configuration for the
-generation of the database structure and the REST API. Set the DATABASE,
-DB_USER and DB_PASSWORD settings according to what you have chosen in
-``db/config.sh``.
+The file ``oio_rest/oio_rest/settings.py`` contains configuration for
+the generation of the database structure and the REST API. Set the
+DATABASE, DB_USER and DB_PASSWORD settings according to what you have
+chosen in ``db/config.sh``.
 
 The FILE_UPLOAD_FOLDER setting allows you to change where the database
-stores its files (used for storing the contents of binary
-files in the Dokument hierarchy). The default is i``/var/mox``, and this is
+stores its files (used for storing the contents of binary files in the
+Dokument hierarchy). The default is i``/var/mox``, and this is
 automatically created by the install script.
 
 There are some other settings that can be changed, and there should be
-comments describing their purpose, or they are described in another section of
-this document.
+comments describing their purpose, or they are described in another
+section of this document.
 
 Installing
 ----------
@@ -72,7 +80,8 @@ you need to run ``install.sh -d``.
 **NOTE:** PostgreSQL must already be installed. PostgreSQL 9.3 or later
 is required.
 
-**CAUTION:** This will drop any existing mox database and any data in it will be lost.
+**CAUTION:** This will drop any existing mox database and any data in it
+will be lost.
 
 
 To run the API for testing or development purposes, run: ::
@@ -85,8 +94,8 @@ URLs.
 For deployment in production environments, please see the sample Apache
 deployment in the config/ folder.
 
-To run the OIO Rest Mox Agent (the one listening for messages and relaying them
- onwards to the REST interface), run: ::
+To run the OIO Rest Mox Agent (the one listening for messages and
+relaying them onwards to the REST interface), run: ::
 
     agent/agent.sh
 
@@ -95,12 +104,12 @@ To test sending messages through the agent, run: ::
     agent/test.sh
 
 If Saml authentication is turned on (i.e., if the parameter
-``USE_SAML_AUTHENTICATION`` in ``oio_rest/oio_rest/settings.py`` is `True`),
-the IDP must be configured correctly - see the corresponding sections below
-for instruction on how to do this.
+``USE_SAML_AUTHENTICATION`` in ``oio_rest/oio_rest/settings.py`` is
+`True`), the IDP must be configured correctly - see the corresponding
+sections below for instruction on how to do this.
 
-In ``config/etc/init`` you can find example init files for running the Mox
-Agent and the WSO2 Identity Server as daemons.
+In ``config/etc/init`` you can find example init files for running the
+Mox Agent and the WSO2 Identity Server as daemons.
 
 
 OIO REST API Notes
@@ -118,13 +127,15 @@ Search operation
 ----------------
 
 One is capable of searching for objects by all attributes, relations,
-states (and variants and their corresponding DokumentDele, in the case of
-Dokument). It is also possible to specify a single uuid to search on, e.g. ::
+states (and variants and their corresponding DokumentDele, in the case
+of Dokument). It is also possible to specify a single uuid to search on,
+e.g. ::
 
     &uuid=4096a8df-ace7-477e-bda1-d5fdd7428a95
 
 The results returned are only those which the user making the request is
-allowed to see, according to the current restrictions present on the object.
+allowed to see, according to the current restrictions present on the
+object.
 
 Search parameter names (attributes, relations, states, etc...) are
 case-insensitive, e.g. to search on the "Ejer" attribute, one can specify
@@ -168,11 +179,11 @@ However, if the deltekst parameter is omitted, e.g. ::
 Then, all documents which have at least one DokumentDel which has the given
 UUID will be returned.
 
-The same logic applies to the "varianttekst" parameter. If it
-is not specified, then all variants are searched across. Note that when
-"varianttekst" is specified, then any DokumentDel parameters apply only to
-that specific variant. If the DokumentDel parameters are matched under a
-different variant, then they are not included in the results.
+The same logic applies to the "varianttekst" parameter. If it is not
+specified, then all variants are searched across. Note that when
+"varianttekst" is specified, then any DokumentDel parameters apply only
+to that specific variant. If the DokumentDel parameters are matched
+under a different variant, then they are not included in the results.
 
 Searching on Sag JournalPost relations
 ++++++++++++++++++++++++++++++++++++++
@@ -215,6 +226,7 @@ The encoding is the same that is used for HTML upload forms.
 The JSON input for the request should be specified in a "form" field called
 "json". Any uploaded files should be included in the multpart/form-data
 request as separate "form" fields.
+
 The "indhold" attribute of any DokumentDel may be a URI pointing to
 one of these uploaded file "fields". In that case, the URI must be of the
 format: ::
@@ -304,7 +316,7 @@ object in the DB, where the current 'Egenskaber' looks like this: ::
   ]
   ...
 
-Lets say we now supply the following fragment as part of the JSON body to the 
+Let's say we now supply the following fragment as part of the JSON body to the 
 update operation: ::
 
   ...
@@ -376,7 +388,7 @@ The resulting 'Egenskaber' of the Facet would look like this: ::
   ]
   ...
 
-As we can se, the update operation will merge the incomming fragment with 
+As we can se, the update operation will merge the incoming fragment with 
 the 'Egenskaber' of the current registration according to the 'virknings' periods
 stipulated. The 'Egenskaber' fields not provided in the incomming fragment, will
 be left untouched. If you wish to clear/delete particular 'Egenskaber' fields, see
@@ -463,7 +475,7 @@ like this: ::
       },
   ...
 
-Hopefully it can be seen, that the update operation will merge the incomming 
+Hopefully it can be seen, that the update operation will merge the incoming 
 fragment with the 'Publiceret' state of the current registration according to 
 the 'virknings' periods stipulated. If you wish to clear/delete particular 
 states, see the section 'Deleting / Clearing States' regarding this.
@@ -497,7 +509,7 @@ Lets say we have an Facet object in the database, which has the following
   ...
 
 
-Lets say we now provide the following fragment as part of the incomming JSON 
+Lets say we now provide the following fragment as part of the incoming JSON 
 body sent to the update operation: ::
 
   ...
@@ -556,7 +568,7 @@ The resulting 'ansvarlig' relation of the Facet object would look like this: ::
       }
   ...
 
-As it can be seen, the update operation has merged the incomming relation with
+As it can be seen, the update operation has merged the incoming relation with
 the 'ansvarlig' relation of the previous registration.
 
 If you wish to delete / clear relations, see the section regading 
@@ -1372,6 +1384,7 @@ the REST interface must be used directly.
 For an example of how to create and send Mox messages with Java, please
 see the file ObjectType.java in
 ``agent/src/main/java/dk/magenta/mox/agent``.
+
 
 Notification Messages
 +++++++++++++++++++++
