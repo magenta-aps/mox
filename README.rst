@@ -1032,12 +1032,16 @@ relation, that you wish to remove. In general, when updating the
 Dokument Del relations, you have to specify the full list of relations.
 
 
-SAML Authentication
+Authentication
 ==========================================
-To test SAML authentication, do the following:
 
-You need a running STS (Security Token Service) running on your IdP.
-An open-source STS is available from http://wso2.com/products/identity-server/
+SAML token authentication is enabled by default. This requires that you have access to a SAML Identity Provider (IdP) which provides a Security Token Service (STS).
+
+Setting up an IdP with STS for testing
+--------------------------------------
+
+You need a STS (Security Token Service) running on your IdP.
+An open-source IdP is available from http://wso2.com/products/identity-server/
 and is useful for testing. Download the binary, and follow the instructions
 to run it.
 
@@ -1048,28 +1052,51 @@ https://docs.wso2.com/display/IS500/Configuring+the+Identity+Server+to+Issue+Sec
 Restart the WSO2 server! The STS endpoint simply did not work until I
 restarted the WSO2 server.
 
+Setting up users on the IDP
+---------------------------
+
+This is for testing with the WSO2 Identity Server as described above -
+we assume that this is not the configuration which the municipalities
+want to use in a production setting.
+
+Log in to the IDP with the credentials provided. The IDP could, e.g., be
+located at https://mox.magenta-aps.dk:9443/.
+
+To create a new user, enter the "Configure" tab and select "Users and
+roles". Enter the user's first name, last name and email address.
+
+**Important:** In the URL field, enter the user's (OIO) UUID. The URL
+field is currently used to map between the IDP and the OIO's user
+concept. If the UUID is not specified, it will not be possible to
+authorize users correctly, nor will it be possible to make any changes
+to the database.
+
+
 OIO-REST SAML settings
 ----------------------
 
-WSO2's default IdP entity ID is called "localhost". If you are using a
-different IdP, you must change the SAML_IDP_ENTITY_ID setting to reflect your
-IdP's entity ID.
+The default IdP entity ID is called "localhost". If your IdP has a
+different entity ID, you must change the SAML_IDP_ENTITY_ID setting
+to reflect your IdP's entity ID.
 
 For testing purposes, WSO2's IdP public certificate file is included in the
 distribution.
 
-If you are using a different IdP, you must change, specify the IdP's public
-certificate file by setting in settings.py: ::
+When configuring the REST API to use your IdP, you must specify your
+IdP's public certificate file by setting in settings.py: ::
 
     SAML_IDP_CERTIFICATE = '/my/idp/certificate.pem'
 
-In settings.py, turn on SAML authentication: ::
+In settings.py, SAML authentication can be turned off by setting: ::
 
-    USE_SAML_AUTHENTICATION = True
+    USE_SAML_AUTHENTICATION = False
 
 
-Requesting a SAML token
------------------------
+Requesting a SAML token manually
+--------------------------------
+
+Although the Java MOX agent does this automatically, it can be useful
+to request a SAML token manually, for testing purposes.
 
 To request a SAML token, it is useful to use SoapUI.
 
@@ -1115,26 +1142,6 @@ to the curl request.
 Alternately, if using bash shell: ::
 
     curl -H "$(python utils/encode_token.py" /my/saml/assertion.xml) ...
-
-
-Setting up users on the IDP
----------------------------
-
-This is for testing with the WSO2 Identity Server as described above -
-we assume that this is not the configuration which the municipalities
-want to use in a production setting.
-
-Log in to the IDP with the credentials provided. The IDP could, e.g., be
-located at https://mox.magenta-aps.dk:9443/.
-
-To create a new user, enter the "Configure" tab and select "Users and
-roles". Enter the user's first name, last name and email address.
-
-**Important:** In the URL field, enter the user's (OIO) UUID. The URL
-field  is currently used to map between the IDP and the OIO's user
-concept. If the UUID is not specified, it will not be possible to
-authorize users correctly, nor will it be possible to make any changes
-to the database.
 
 
 Sending Messages on the Beskedfordeler
