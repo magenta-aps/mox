@@ -50,8 +50,10 @@ jinja_env.filters['adapt'] = adapt
 
 def get_connection():
     """Handle all intricacies of connecting to Postgres."""
-    connection = psycopg2.connect("dbname={0} user={1}".format(DATABASE,
-                                                               DB_USER))
+    DATESTYLE = '-c DateStyle=ISO'
+    connection = psycopg2.connect(
+        "dbname={0} user={1} options={2}".format(DATABASE, DB_USER, DATESTYLE)
+    )
     connection.autocommit = True
     return connection
 
@@ -68,8 +70,15 @@ def convert_attr_value(attribute_name, attribute_field_name,
     if field_type == "soegeord":
         return [Soegeord(*ord) for ord in attribute_field_value]
     elif field_type == "offentlighedundtagettype":
-        return OffentlighedUndtaget(attribute_field_value['alternativtitel'],
-                                    attribute_field_value['hjemmel'])
+        if not ('alternativtitel' in attribute_field_value) and not (
+                'hjemmel' in attribute_field_value):
+            # Empty object, so provide the DB with a NULL, so that the old
+            # value is not overwritten.
+            return None
+        else:
+            return OffentlighedUndtaget(
+                attribute_field_value.get('alternativtitel', None),
+                attribute_field_value.get('hjemmel', None))
     elif field_type == "date":
         return datetime.strptime(attribute_field_value, "%Y-%m-%d").date()
     else:
@@ -537,7 +546,8 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
 
 def filter_json_output(output):
     """Filter the JSON output returned from the DB-layer."""
-    return transform_virkning(filter_empty(simplify_cleared_wrappers(output)))
+    return transform_relations(transform_virkning(filter_empty(
+        simplify_cleared_wrappers(output))))
 
 
 def simplify_cleared_wrappers(o):
@@ -603,6 +613,34 @@ def filter_empty(d):
         return tuple(filter_empty(v) for v in d if v and filter_empty(v))
     else:
         return d
+
+
+def transform_relations(o):
+    """Recurse through output to transform relation lists to dicts.
+
+    Currently, this only applies to DokumentDel relations, because the cast
+    to.JSON for other types of relations is currently done in PostgreSQL cast
+    functions.
+    """
+    if isinstance(o, dict):
+        if "relationer" in o and (isinstance(o["relationer"], list)
+                                  or isinstance(o["relationer"], tuple)):
+            relations = o["relationer"]
+            rel_dict = {}
+            for rel in relations:
+                # Remove the reltype from the dict and add to the output dict
+                rel_type = rel.pop("reltype")
+                rel_dict.setdefault(rel_type, []).append(rel)
+            o["relationer"] = rel_dict
+            return o
+        else:
+            return {k: transform_relations(v) for k, v in o.iteritems()}
+    elif isinstance(o, list):
+        return [transform_relations(v) for v in o]
+    elif isinstance(o, tuple):
+        return tuple(transform_relations(v) for v in o)
+    else:
+        return o
 
 
 '''

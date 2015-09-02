@@ -139,7 +139,7 @@ ELSE
 
 			--HACK: As del_name logically can be said to be part of del egenskaber (regarding virkning), we'll force a filter on del egenskaber if needed
 			IF coalesce(array_length(delTypeObj.egenskaber,1),0)=0 AND delTypeObj.deltekst IS NOT NULL THEN
-				delTypeObj.egenskaber:=ARRAY[ROW(null,null,null,null,null,null,null,null,null,null)::DokumentDelEgenskaberAttrType]::DokumentDelEgenskaberAttrType[];
+				delTypeObj.egenskaber:=ARRAY[ROW(null,null,null,null,null)::DokumentDelEgenskaberType]::DokumentDelEgenskaberType[];
 			END IF;
 
 

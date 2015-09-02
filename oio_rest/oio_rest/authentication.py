@@ -62,8 +62,13 @@ def check_saml_authentication():
         print "Name ID: %s" % name_id
 
         # Add the username and SAML attributes to the request object
-        request.saml_user_id = name_id
         request.saml_attributes = assertion.get_attributes()
+        request.saml_user_id = request.saml_attributes[
+            'http://wso2.org/claims/url'
+        ][0]
+        print "SAML ATTRIBUTES", request.saml_attributes
+        print "UUID", request.saml_user_id
+        # print "TOKEN: ", token
     except Exception as e:
         errmsg = "SAML token validation failed: %s" % e.message
         print errmsg
