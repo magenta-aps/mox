@@ -47,13 +47,20 @@ public class Main {
                 System.out.println("Mox agent message interface");
                 System.out.println("---------------------------");
                 System.out.println("Will interface with a RabbitMQ message queue and pass messages through to a REST interface");
-                System.out.println("Usage: java -cp ");
-                System.out.println("Parameters:");
-                System.out.println("propertiesFile (-DpropertiesFile=<hostname>:<port>): A Java properties file that contains configuration values.\nAny parameters not found on the command line will be loaded from there.\nShould also contain configuration for a SAML token service.\nIf this parameter is unset, the file 'agent.properties' will be loaded.\n");
-                System.out.println("queueInterface (-DqueueInterface=<hostname>:<port>): An interface (<hostname>:<port>) where an instance of RabbitMQ is listening.\nIf this is neither found in the command line or in the properties file, the value defaults to localhost:5672.\n");
-                System.out.println("queueName (-DqueueName=<name>): The name of the RabbitMQ queue to send or receive messages in.\nDefaults to 'incoming' if not found elsewhere.\n");
-                System.out.println("restInterface (-DrestInterface=<protocol>://<hostname>:<port>): The REST interface where messages should end up when passed through the queue.\nAlso needed for obtaining a SAML token for authenticating to that interface.\nDefaults to http://127.0.0.1:5000\n");
+                System.out.println("Usage: java -cp \"target/moxagent-1.0.jar:target/dependency/*\" dk.magenta.mox.agent.Main [parameters] command\n");
 
+                System.out.println("-----------");
+                System.out.println("Parameters:\n");
+                System.out.println("propertiesFile (-DpropertiesFile=<hostname>:<port>):\n    A Java properties file that contains configuration values.\n    Any parameters not found on the command line will be loaded from there.\n    Should also contain configuration for a SAML token service.\n    If this parameter is unset, the file 'agent.properties' will be loaded.\n");
+                System.out.println("queueInterface (-DqueueInterface=<hostname>:<port>):\n    An interface (<hostname>:<port>) where an instance of RabbitMQ is listening.\n    If this is neither found in the command line or in the properties file, the value defaults to localhost:5672.\n");
+                System.out.println("queueName (-DqueueName=<name>):\n    The name of the RabbitMQ queue to send or receive messages in.\n    Defaults to 'incoming' if not found elsewhere.\n");
+                System.out.println("restInterface (-DrestInterface=<protocol>://<hostname>:<port>):\n    The REST interface where messages should end up when passed through the queue.\n    Also needed for obtaining a SAML token for authenticating to that interface.\n    Defaults to http://127.0.0.1:5000\n");
+
+                System.out.println("---------");
+                System.out.println("Commands:\n");
+                System.out.println("listen\n    Starts a listener agent, which reads from the defined queue and sends requests to the defined REST interface\n");
+                System.out.println("send [operation] [objecttype] [jsonfile]\n    Sends a messsage to the queue, telling listeners to perform [operation] on [objecttype] with data from [jsonfile].\n    E.g. 'send create facet facet.json'\n");
+                System.out.println("sendtest\n    Runs a test by sending a series of messages to the queue, creating, updating, passivating and finally deleting a document.\n");
                 return;
             }
         }
