@@ -38,12 +38,12 @@ Getting started
 To install the OIO REST API, run ``install.sh``
 
 **NOTICE:** If you need to initialize the postgresql database as well
-you need to run run ``install.sh -d``. 
+you need to run ``install.sh -d``. 
 
 **NOTE:** PostgreSQL must already be installed. PostgreSQL 9.3 or later
 is required.
 
-**CAUTION:** This will drop any existing mox database and any data in it will be lost.)
+**CAUTION:** This will drop any existing mox database and any data in it will be lost.
 
 
 To run the API for testing or development purposes, run: ::
@@ -84,7 +84,7 @@ Search parameter names (attributes, relations, states, etc...) are
 case-insensitive, e.g. to search on the "Ejer" attribute, one can specify
 either: ::
 
-    &ejer=urn:cpr12312323 or &Ejer=urn:cpr12312323.
+    &ejer=urn:cpr12312323 or &Ejer=urn:cpr12312323
 
 All search parameters which search on an attribute value of type TEXT use
 case-insensitive matching, with the possibility to use wildcards. Other
@@ -844,7 +844,7 @@ Deleting / Clearing Relations
 Again, similar to the procedure stated above for the attributes and
 states, clearing a previously set relation with cardinality 0..1 is done
 by supplying empty strings for both uuid and urn of the relation. Eg. to
-clear a previously set the 'ansvarlig' of a Facet object, specific part
+clear a previously set the 'ansvarlig' of a Facet object, the specific part
 of the JSON body would look like this: ::
 
   ...
