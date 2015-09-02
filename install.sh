@@ -72,6 +72,11 @@ else
 
 	if [ ! -z $DB_INSTALL ]; then
 
+		SYSTEM_PACKAGES=$(cat "$DIR/db/SYSTEM_DEPENDENCIES")
+		for package in "${SYSTEM_PACKAGES[@]}"; do
+			sudo apt-get -y install $package
+		done
+
 		echo "Installing DB"
 
 		cd $DIR/db

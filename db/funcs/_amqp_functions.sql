@@ -17,7 +17,7 @@ $$
       ARRAY['beskedtype', 'Notification'],
       ARRAY['objekttype', objekttype],
       ARRAY['livscykluskode', livscykluskode::varchar],
-      ARRAY['uuid', objekt_uuid::varchar]
+      ARRAY['objektID', objekt_uuid::varchar]
     ],
     'application/json')
 $$ LANGUAGE sql immutable;

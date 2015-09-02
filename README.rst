@@ -1,6 +1,9 @@
 Mox Messaging Service and Actual State Database
 ===============================================
 
+.. contents:: `Table of contents`
+   :depth: 5
+
 This project contains an implementation (in PostgreSQL) of the OIO object
 model, used as a standard for data exchange by the Danish government, for use
 with a MOX messaging queue.
@@ -35,9 +38,12 @@ Getting started
 To install the OIO REST API, run ``install.sh``
 
 **NOTICE:** If you need to initialize the postgresql database as well
-you need to run run ``install.sh -d`` 
+you need to run ``install.sh -d``. 
 
-**CAUTION:** This will drop any existing mox database and any data in it will be lost.)
+**NOTE:** PostgreSQL must already be installed. PostgreSQL 9.3 or later
+is required.
+
+**CAUTION:** This will drop any existing mox database and any data in it will be lost.
 
 
 To run the API for testing or development purposes, run: ::
@@ -53,6 +59,14 @@ deployment in the config/ folder.
 
 OIO REST API Notes
 ==================
+
+
+Format of JSON body in requests to REST API
+-------------------------------------------
+
+Examples of the format of the JSON bodies to supply when invoking the
+particular REST operations can be seen in the folder
+``interface_test/test_data``.
 
 Search operation
 ----------------
@@ -70,7 +84,7 @@ Search parameter names (attributes, relations, states, etc...) are
 case-insensitive, e.g. to search on the "Ejer" attribute, one can specify
 either: ::
 
-    &ejer=urn:cpr12312323 or &Ejer=urn:cpr12312323.
+    &ejer=urn:cpr12312323 or &Ejer=urn:cpr12312323
 
 All search parameters which search on an attribute value of type TEXT use
 case-insensitive matching, with the possibility to use wildcards. Other
@@ -113,6 +127,36 @@ is not specified, then all variants are searched across. Note that when
 "varianttekst" is specified, then any DokumentDel parameters apply only to
 that specific variant. If the DokumentDel parameters are matched under a
 different variant, then they are not included in the results.
+
+Searching on Sag JournalPost relations
+++++++++++++++++++++++++++++++++++++++
+
+To search on the sub-fields of the "JournalPost" relation in Sag, requires a
+special dot-notation syntax, due to possible ambiguity with other search
+parameters (for example, the "titel" parameter).
+
+The following are some examples: ::
+
+  &journalpostkode=vedlagtdokument
+  &journalnotat.titel=Kommentarer
+  &journalnotat.notat=Læg+mærke+til
+  &journalnotat.format=internt
+  &journaldokument.dokumenttitel=Rapport+XYZ
+  &journaldokument.offentlighedundtaget.alternativtitel=Fortroligt
+  &journaldokument.offentlighedundtaget.hjemmel=nej
+
+All of these parameters support wildcards ("%") and use case-insensitive
+matching, except "journalpostkode", which is treated as-is.
+
+Note that when these parameters are combined, it is not required that the
+matches occur on the *same* JournalPost relation.
+
+For example, the following query would match any Sag which has one or more
+JournalPost relations which has a journalpostkode = "vedlagtdokument" AND
+which has one or more JournalPost relations which has a
+journaldokument.dokumenttitel = "Rapport XYZ" ::
+
+  &journalpostkode=vedlagtdokument&journaldokument.dokumenttitel=Rapport+XYZ
 
 File upload
 -----------
@@ -162,101 +206,6 @@ Virkning periods will always default to "lower bound included, upper
 bound not included".
 
 
-SAML Authentication
-==========================================
-To test SAML authentication, do the following:
-
-You need a running STS (Security Token Service) running on your IdP.
-An open-source STS is available from http://wso2.com/products/identity-server/
-and is useful for testing. Download the binary, and follow the instructions
-to run it.
-
-To configure a STS, follow the instructions on
-https://docs.wso2.com/display/IS500/Configuring+the+Identity+Server+to+Issue+Security+Tokens
-(skip the part about Holder of Key).
-
-Restart the WSO2 server! The STS endpoint simply did not work until I
-restarted the WSO2 server.
-
-OIO-REST SAML settings
-----------------------
-
-WSO2's default IdP entity ID is called "localhost". If you are using a
-different IdP, you must change the SAML_IDP_ENTITY_ID setting to reflect your
-IdP's entity ID.
-
-For testing purposes, WSO2's IdP public certificate file is included in the
-distribution.
-
-If you are using a different IdP, you must change, specify the IdP's public
-certificate file by setting in settings.py: ::
-
-    SAML_IDP_CERTIFICATE = '/my/idp/certificate.pem'
-
-In settings.py, turn on SAML authentication: ::
-
-    USE_SAML_AUTHENTICATION = True
-
-
-Requesting a SAML token
------------------------
-
-To request a SAML token, it is useful to use SoapUI.
-
-Download SoapUI (http://www.soapui.org/) and import the project
-provided in 'oio_rest/test_auth_data/soapui-saml2-sts-request.xml'.
-
-Navigate to and double-click on: ::
-
-    "sts" -> "wso2carbon-stsSoap11Binding" -> "Issue token - SAML 2.0"
-
-Note: The value of <a:Address> element in <wsp:AppliesTo> must match your
-SAML_MOX_ENTITY_ID setting. Change as needed.
-
-The project assumes you are running the IdP server on https://localhost:9443/
-(the default).
-
-Execute the SOAP request. You can copy the response by clicking on the
-"Raw" tab in the right side of the window and then selecting all, and
-copying to the clipboard. Paste the response, making sure that the
-original whitespace/indentation is preserved. Remove all elements/text
-surrounding the <saml2:Assertion>..</saml2:Assertion> tag. Save to a
-file, e.g. /my/saml/assertion.xml.
-
-After requesting a SAML token, to make a REST request using the SAML token,
-you need to pass in an HTTP Authorization header of a specific format: ::
-
-    Authorization: saml-gzipped <base64-encoded gzip-compressed SAML assertion>
-
-A script has been included to generate this HTTP header from a SAML token
-XML file. This file must only contain the <saml2:Assertion> element.
-
-To run it: ::
-
-    python utils/encode_token.py /my/saml/assertion.xml
-
-The output of this script can be used in a curl request by adding the
-parameter -H, e.g.: ::
-
-    curl -H "Authorization saml-gzipped eJy9V1................." ...
-
-to the curl request. 
-
-Alternately, if using bash shell: ::
-
-    curl -H "$(python utils/encode_token.py" /my/saml/assertion.xml) ...
-
-
-Format of JSON body in requests to REST-api
-============================================
-
-Examples of the format of the JSON bodies to supply when invoking the
-particular REST operations can be seen in the folder
-``/interface_test/test_data``.
-
-Below here is listed some points to pay special attention to:
-
-
 Merging Of Attributes / States / Relations When Updating Object
 ----------------------------------------------------------------
 
@@ -266,8 +215,8 @@ with the registration currently in effect, for all 'virknings' periods not
 explictly covered by the incomming registration.
 
 
-Exceptions to this rule:
-------------------------
+Exceptions to this rule
+++++++++++++++++++++++++
 
 - Deleting Attributes / States / Relations by explicitly specifying an empty 
   list / object 
@@ -895,7 +844,7 @@ Deleting / Clearing Relations
 Again, similar to the procedure stated above for the attributes and
 states, clearing a previously set relation with cardinality 0..1 is done
 by supplying empty strings for both uuid and urn of the relation. Eg. to
-clear a previously set the 'ansvarlig' of a Facet object, specific part
+clear a previously set the 'ansvarlig' of a Facet object, the specific part
 of the JSON body would look like this: ::
 
   ...
@@ -1083,6 +1032,118 @@ relation, that you wish to remove. In general, when updating the
 Dokument Del relations, you have to specify the full list of relations.
 
 
+Authentication
+==========================================
+
+SAML token authentication is enabled by default. This requires that you have access to a SAML Identity Provider (IdP) which provides a Security Token Service (STS).
+
+Setting up an IdP with STS for testing
+--------------------------------------
+
+You need a STS (Security Token Service) running on your IdP.
+An open-source IdP is available from http://wso2.com/products/identity-server/
+and is useful for testing. Download the binary, and follow the instructions
+to run it.
+
+To configure a STS, follow the instructions on
+https://docs.wso2.com/display/IS500/Configuring+the+Identity+Server+to+Issue+Security+Tokens
+(skip the part about Holder of Key).
+
+Restart the WSO2 server! The STS endpoint simply did not work until I
+restarted the WSO2 server.
+
+Setting up users on the IDP
+---------------------------
+
+This is for testing with the WSO2 Identity Server as described above -
+we assume that this is not the configuration which the municipalities
+want to use in a production setting.
+
+Log in to the IDP with the credentials provided. The IDP could, e.g., be
+located at https://mox.magenta-aps.dk:9443/.
+
+To create a new user, enter the "Configure" tab and select "Users and
+roles". Enter the user's first name, last name and email address.
+
+**Important:** In the URL field, enter the user's (OIO) UUID. The URL
+field is currently used to map between the IDP and the OIO's user
+concept. If the UUID is not specified, it will not be possible to
+authorize users correctly, nor will it be possible to make any changes
+to the database.
+
+
+OIO-REST SAML settings
+----------------------
+
+The default IdP entity ID is called "localhost". If your IdP has a
+different entity ID, you must change the SAML_IDP_ENTITY_ID setting
+to reflect your IdP's entity ID.
+
+For testing purposes, WSO2's IdP public certificate file is included in the
+distribution.
+
+When configuring the REST API to use your IdP, you must specify your
+IdP's public certificate file by setting in settings.py: ::
+
+    SAML_IDP_CERTIFICATE = '/my/idp/certificate.pem'
+
+In settings.py, SAML authentication can be turned off by setting: ::
+
+    USE_SAML_AUTHENTICATION = False
+
+
+Requesting a SAML token manually
+--------------------------------
+
+Although the Java MOX agent does this automatically, it can be useful
+to request a SAML token manually, for testing purposes.
+
+To request a SAML token, it is useful to use SoapUI.
+
+Download SoapUI (http://www.soapui.org/) and import the project
+provided in 'oio_rest/test_auth_data/soapui-saml2-sts-request.xml'.
+
+Navigate to and double-click on: ::
+
+    "sts" -> "wso2carbon-stsSoap11Binding" -> "Issue token - SAML 2.0"
+
+Note: The value of <a:Address> element in <wsp:AppliesTo> must match your
+SAML_MOX_ENTITY_ID setting. Change as needed.
+
+The project assumes you are running the IdP server on https://localhost:9443/
+(the default).
+
+Execute the SOAP request. You can copy the response by clicking on the
+"Raw" tab in the right side of the window and then selecting all, and
+copying to the clipboard. Paste the response, making sure that the
+original whitespace/indentation is preserved. Remove all elements/text
+surrounding the <saml2:Assertion>..</saml2:Assertion> tag. Save to a
+file, e.g. /my/saml/assertion.xml.
+
+After requesting a SAML token, to make a REST request using the SAML token,
+you need to pass in an HTTP Authorization header of a specific format: ::
+
+    Authorization: saml-gzipped <base64-encoded gzip-compressed SAML assertion>
+
+A script has been included to generate this HTTP header from a SAML token
+XML file. This file must only contain the <saml2:Assertion> element.
+
+To run it: ::
+
+    python utils/encode_token.py /my/saml/assertion.xml
+
+The output of this script can be used in a curl request by adding the
+parameter -H, e.g.: ::
+
+    curl -H "Authorization saml-gzipped eJy9V1................." ...
+
+to the curl request. 
+
+Alternately, if using bash shell: ::
+
+    curl -H "$(python utils/encode_token.py" /my/saml/assertion.xml) ...
+
+
 Sending Messages on the Beskedfordeler
 ======================================
 
@@ -1200,7 +1261,12 @@ passivate
 Sends a 'passivate' operation to the message queue, provided such an
 operation has been defined in the ObjectType. Add the document UUID to
 be passivated, as well as a note to go with the passivate operation (may
-be null). ::
+be null). 
+
+delete 
+++++++
+
+::
 
     Future<String> delete(MessageSender sender, UUID uuid, String note)
     Future<String> delete(MessageSender sender, UUID uuid, String note, String authorization)
@@ -1208,7 +1274,12 @@ be null). ::
 Sends a 'delete' operation to the message queue, provided such an
 operation has been defined in the ObjectType. Add the document UUID to
 be deleted, as well as a note to go with the delete operation (may be
-null). ::
+null). 
+
+sendCommand
++++++++++++
+
+::
 
      Future<String> sendCommand(MessageSender sender, String operationName, UUID uuid, JSONObject data)
      Future<String> sendCommand(MessageSender sender, String operationName, UUID uuid, JSONObject data, String authorization)
@@ -1217,6 +1288,68 @@ Sends a custom operationName (useful if you added an operation other
 than create, update, passivate or delete). Add a UUID and a JSON Object
 as needed by the operation.
 
+This is the more general function, which is used to implement the other
+operations.
+
+
+Using AMQP Messages
+-------------------
+
+If you do not wish to use the Java library described above, you can send
+messages directly to the AMQP queue where the message handler is
+running.
+
+The message handler will recognize four AMQP headers when sending Mox
+messages:
+
+* "autorisation" - must contain the SAML token as described above.
+
+* "objektID" - must contain the UUID of the object to manipulate; not
+  used with create operations.
+
+* "objekttype" - i.e., OIO class, e.g. "Facet".
+
+* "operation", the action to be performed. Must be one of "create",
+  "update", "passivate" or "delete".
+
+Import operations can be performed with the "update" command - but note
+that it's also possible to map new commands by editing the
+``agent.properties`` file as described above. This could also be used to
+specify read operations with GET, if so desired.
+
+The content of the commands, i.e. the actual data, are send as the
+payload of the messages. Note that while it is possible to specify a URL
+when uploading a document, it is currently *not* possible to upload 
+the binary contents of a document through the message queue - for this,
+the REST interface must be used directly.
+
+For an example of how to create and send Mox messages with Java, please
+see the file ObjectType.java in
+``agent/src/main/java/dk/magenta/mox/agent``.
+
+Notification Messages
++++++++++++++++++++++
+
+Each time a write operation (create/import/passivate/update/delete) is
+performed, a notification messages is sent out by the database to an AMQP
+message exchange called "mox.notifications".
+
+This exchange is automatically created during the DB installation
+using the "fanout" exchange type.
+However, this can be modified later on the AMQP server.
+
+The notification message has the following headers:
+
+* "beskedtype" - always contains the value 'Notification'
+
+* "objektID" - contains the UUID of the object.
+
+* "objekttype" - i.e., OIO class, e.g. "Facet".
+
+* "livscykluskode" - i.e. 'Opstaaet', 'Importeret', 'Passiveret', 'Slettet' or
+  'Rettet'
+
+The notification message has an empty body.
 
 Licensing
 =========

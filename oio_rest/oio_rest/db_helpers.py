@@ -251,7 +251,7 @@ class DokumentDelEgenskaberType(Searchable, namedtuple(
 
         # If the content URL is provided, and we are not doing a read
         # operation, save the uploaded file
-        if indhold != "" and request.method != 'GET':
+        if indhold is not None and indhold != "" and request.method != 'GET':
             try:
                 o = urlparse(indhold)
             except ValueError:

@@ -31,7 +31,7 @@ if [ ! -z $uuid ]
 then
     printf "\nOprettet dokument: $uuid"
 else
-    printf "\nOpret dokument fejlet: $result"
+    printf "\nOpret dokument fejlet: $result\n"
     exit
 fi
 
@@ -62,7 +62,17 @@ if curl -s "$HOST_URL/dokument/dokument/$content_path" | grep -q "This is a test
 then
     printf "\nFile upload/download successful"
 else
-    printf "\nError in file upload/download. Downloaded file does not match uploaded file"
+    printf "\nError in file upload/download. Downloaded file does not match uploaded file\n"
+    exit
+fi
+
+# Make sure that deleting DokumentDel relations is possible
+if $(curl -sH "Content-Type: application/json" \
+"$HOST_URL/dokument/dokument?variant=doc_varianttekst2&deltekst=doc_deltekst2B&underredigeringaf=urn:cpr8883394&uuid=$uuid" | grep -q "$uuid")
+then
+    printf "\nSearch on del relation successful"
+else
+    printf "\nError in search on del relation.\n"
     exit
 fi
 
@@ -93,7 +103,17 @@ if curl "$HOST_URL/dokument/dokument/$content_path" | grep -q "This is an update
 then
     printf "\nFile upload/download successful after update operation"
 else
-    printf "\nError in file upload/download after update operation. Downloaded file does not match uploaded file"
+    printf "\nError in file upload/download after update operation. Downloaded file does not match uploaded file\n"
+    exit
+fi
+
+# Make sure that deleting DokumentDel relations is possible
+if ! $(curl -sH "Content-Type: application/json" \
+"$HOST_URL/dokument/dokument?variant=doc_varianttekst2&deltekst=doc_deltekst2B&underredigeringaf=urn:cpr8883394&uuid=$uuid" | grep -q "$uuid")
+then
+    printf "\nSearch on deleted del relation successful"
+else
+    printf "\nError in search on deleted del relation.\n"
     exit
 fi
 
@@ -111,7 +131,7 @@ if ! $(curl -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?pr
 then
     printf "\nSearch 1 successful"
 else
-    printf "\nError in search 1."
+    printf "\nError in search 1.\n"
     exit
 fi
 
@@ -120,7 +140,7 @@ if $(curl -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?vari
 then
     printf "\nSearch del 1 successful"
 else
-    printf "\nError in search del 1."
+    printf "\nError in search del 1.\n"
     exit
 fi
 
@@ -128,7 +148,7 @@ if $(curl -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?delt
 then
     printf "\nSearch del 2 successful"
 else
-    printf "\nError in search del 2."
+    printf "\nError in search del 2.\n"
     exit
 fi
 
@@ -136,7 +156,7 @@ if $(curl -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?unde
 then
     printf "\nSearch on del relation URN successful"
 else
-    printf "\nError in search on del relation URN."
+    printf "\nError in search on del relation URN.\n"
     exit
 fi
 
@@ -145,7 +165,7 @@ if $(curl -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?ejer
 then
     printf "\nSearch on relation with objekttype successful"
 else
-    printf "\nError in search on relation with objekttype."
+    printf "\nError in search on relation with objekttype.\n"
     exit
 fi
 
@@ -153,7 +173,7 @@ if ! $(curl -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?ej
 then
     printf "\nSearch on relation with wrong objekttype successful"
 else
-    printf "\nError in search on relation with wrong objekttype."
+    printf "\nError in search on relation with wrong objekttype.\n"
     exit
 fi
 
@@ -161,8 +181,8 @@ if $(curl -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?unde
 then
     printf "\nSearch on del relation with objekttype successful"
 else
-    printf "\nError in search on del relation with objekttype."
+    printf "\nError in search on del relation with objekttype.\n"
     exit
 fi
 
-
+echo

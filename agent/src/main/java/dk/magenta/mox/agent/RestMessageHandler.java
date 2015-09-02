@@ -91,6 +91,7 @@ public class RestMessageHandler implements MessageHandler {
         if (authorization != null && !authorization.isEmpty()) {
             connection.setRequestProperty("Authorization", authorization);
         }
+        System.out.println("Sending message to REST interface: "+method+" "+this.getURLforPath(path).toString());
         try {
             OutputStreamWriter out = new OutputStreamWriter(connection.getOutputStream());
             out.write(payload);

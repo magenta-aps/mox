@@ -70,8 +70,15 @@ def convert_attr_value(attribute_name, attribute_field_name,
     if field_type == "soegeord":
         return [Soegeord(*ord) for ord in attribute_field_value]
     elif field_type == "offentlighedundtagettype":
-        return OffentlighedUndtaget(attribute_field_value['alternativtitel'],
-                                    attribute_field_value['hjemmel'])
+        if not ('alternativtitel' in attribute_field_value) and not (
+                'hjemmel' in attribute_field_value):
+            # Empty object, so provide the DB with a NULL, so that the old
+            # value is not overwritten.
+            return None
+        else:
+            return OffentlighedUndtaget(
+                attribute_field_value.get('alternativtitel', None),
+                attribute_field_value.get('hjemmel', None))
     elif field_type == "date":
         return datetime.strptime(attribute_field_value, "%Y-%m-%d").date()
     else:
@@ -81,12 +88,14 @@ def convert_attr_value(attribute_name, attribute_field_name,
 def convert_relation_value(class_name, field_name, value):
     field_type = get_relation_field_type(class_name, field_name)
     if field_type == "journalnotat":
-        return JournalNotat(value["titel"], value["notat"], value["format"])
+        return JournalNotat(value.get("titel", None), value.get("notat", None),
+                            value.get("format", None))
     elif field_type == "journaldokument":
-        ou = value["offentlighedundtaget"]
+        ou = value.get("offentlighedundtaget", {})
         return JournalDokument(
-            value["dokumenttitel"],
-            OffentlighedUndtaget(ou['alternativtitel'], ou['hjemmel'])
+            value.get("dokumenttitel", None),
+            OffentlighedUndtaget(ou.get('alternativtitel', None),
+                                 ou.get('hjemmel', None))
         )
     else:
         return value
@@ -105,7 +114,7 @@ def convert_attributes(attributes):
                         attr_name, f, attr_period[f]
                     ) if f in attr_period else None
                     for f in field_names
-                ]
+                    ]
                 converted_attr_periods.append(attr_value_list)
             attributes[attr_name] = converted_attr_periods
     return attributes
@@ -537,7 +546,8 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
 
 def filter_json_output(output):
     """Filter the JSON output returned from the DB-layer."""
-    return transform_virkning(filter_empty(simplify_cleared_wrappers(output)))
+    return transform_relations(transform_virkning(filter_empty(
+        simplify_cleared_wrappers(output))))
 
 
 def simplify_cleared_wrappers(o):
@@ -603,6 +613,35 @@ def filter_empty(d):
         return tuple(filter_empty(v) for v in d if v and filter_empty(v))
     else:
         return d
+
+
+def transform_relations(o):
+    """Recurse through output to transform relation lists to dicts.
+
+    Currently, this only applies to DokumentDel relations, because the cast
+    to.JSON for other types of relations is currently done in PostgreSQL cast
+    functions.
+    """
+    if isinstance(o, dict):
+        if "relationer" in o and (isinstance(o["relationer"], list)
+                                  or isinstance(o["relationer"], tuple)):
+            relations = o["relationer"]
+            rel_dict = {}
+            for rel in relations:
+                # Remove the reltype from the dict and add to the output dict
+                rel_type = rel.pop("reltype")
+                rel_dict.setdefault(rel_type, []).append(rel)
+            o["relationer"] = rel_dict
+            return o
+        else:
+            return {k: transform_relations(v) for k, v in o.iteritems()}
+    elif isinstance(o, list):
+        return [transform_relations(v) for v in o]
+    elif isinstance(o, tuple):
+        return tuple(transform_relations(v) for v in o)
+    else:
+        return o
+
 
 '''
 TODO: Remove this function if/when it turns out we don't need it.
