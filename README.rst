@@ -1,6 +1,9 @@
 Mox Messaging Service and Actual State Database
 ===============================================
 
+.. contents:: `Table of contents`
+   :depth: 5
+
 This project contains an implementation (in PostgreSQL) of the OIO object
 model, used as a standard for data exchange by the Danish government, for use
 with a MOX messaging queue.
@@ -1246,6 +1249,42 @@ null). ::
 Sends a custom operationName (useful if you added an operation other
 than create, update, passivate or delete). Add a UUID and a JSON Object
 as needed by the operation.
+
+
+Using AMQP Messages
+-------------------
+
+If you do not wish to use the Java library described above, you can send
+messages directly to the AMQP queue where the message handler is
+running.
+
+The message handler will recognize four AMQP headers when sending Mox
+messages:
+
+* "authorization" - must contain the SAML token as described above.
+
+* "beskedID" - must contain the UUID of the object to manipulate; not
+  used with create operations.
+
+* "objecttype" - i.e., OIO class, e.g. "Facet".
+
+* "operation", the action to be performed. Must be one of "create",
+  "update", "passivate" or "delete".
+
+Import operations can be performed with the "update" command - but note
+that it's also possible to map new commands by editing the
+``agent.properties`` file as described above. This could also be used to
+specify read operations with GET, if so desired.
+
+The content of the commands, i.e. the actual data, are send as the
+payload of the messages. Note that while it is possible to specify a URL
+when uploading a document, it is currently *not* possible to upload 
+the binary contents of a document through the message queue - for this,
+the REST interface must be used directly.
+
+For an example of how to create and send Mox messages with Java, please
+see the file ObjectType.java in
+``agent/src/main/java/dk/magenta/mox/agent``.
 
 
 Licensing
