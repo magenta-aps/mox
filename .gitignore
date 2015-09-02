@@ -1,0 +1,11 @@
+*.pyc
+.env
+*.swp
+*.egg-info
+python-env
+oio_rest/oio_api
+*.orig
+*.rej
+*.class
+*~
+

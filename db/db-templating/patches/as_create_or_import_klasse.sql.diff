@@ -1,0 +1,141 @@
+*** ../generated-files/as_create_or_import_klasse.sql	2015-08-14 12:57:17.317564263 +0200
+--- as_create_or_import_klasse.org.sql	2015-08-14 12:58:29.657567865 +0200
+***************
+*** 4,14 ****
+  -- This Source Code Form is subject to the terms of the Mozilla Public
+  -- License, v. 2.0. If a copy of the MPL was not distributed with this
+  -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+  
+  /*
+! NOTICE: This file is auto-generated using the script: apply-template.py klasse as_create_or_import.jinja.sql
+  */
+  
+  CREATE OR REPLACE FUNCTION as_create_or_import_klasse(
+    klasse_registrering KlasseRegistreringType,
+    klasse_uuid uuid DEFAULT NULL,
+--- 4,14 ----
+  -- This Source Code Form is subject to the terms of the Mozilla Public
+  -- License, v. 2.0. If a copy of the MPL was not distributed with this
+  -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+  
+  /*
+! NOTICE: This file is auto-generated using the script: apply-template.py klasse as_create_or_import.jinja.sql AND applying a patch (as_create_or_import_klasse.sql.diff)
+  */
+  
+  CREATE OR REPLACE FUNCTION as_create_or_import_klasse(
+    klasse_registrering KlasseRegistreringType,
+    klasse_uuid uuid DEFAULT NULL,
+***************
+*** 21,30 ****
+--- 21,32 ----
+    klasse_attr_egenskaber_obj klasseEgenskaberAttrType;
+    
+    klasse_tils_publiceret_obj klassePubliceretTilsType;
+    
+    klasse_relationer KlasseRelationType;
++   klasse_attr_egenskaber_id bigint;
++   klasse_attr_egenskaber_soegeord_obj KlasseSoegeordType;
+    auth_filtered_uuids uuid[];
+  BEGIN
+  
+  IF klasse_uuid IS NULL THEN
+      LOOP
+***************
+*** 89,122 ****
+  
+  IF klasse_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(klasse_registrering.attrEgenskaber,1),0)>0 THEN
+    FOREACH klasse_attr_egenskaber_obj IN ARRAY klasse_registrering.attrEgenskaber
+    LOOP
+  
+!     INSERT INTO klasse_attr_egenskaber (
+!       brugervendtnoegle,
+!       beskrivelse,
+!       eksempel,
+!       omfang,
+!       titel,
+!       retskilde,
+!       aendringsnotat,
+!       virkning,
+!       klasse_registrering_id
+!     )
+!     SELECT
+!      klasse_attr_egenskaber_obj.brugervendtnoegle,
+!       klasse_attr_egenskaber_obj.beskrivelse,
+!       klasse_attr_egenskaber_obj.eksempel,
+!       klasse_attr_egenskaber_obj.omfang,
+!       klasse_attr_egenskaber_obj.titel,
+!       klasse_attr_egenskaber_obj.retskilde,
+!       klasse_attr_egenskaber_obj.aendringsnotat,
+!       klasse_attr_egenskaber_obj.virkning,
+!       klasse_registrering_id
+!     ;
+!  
+  
+    END LOOP;
+  END IF;
+  
+  /*********************************/
+  --Insert states (tilstande)
+--- 91,152 ----
+  
+  IF klasse_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(klasse_registrering.attrEgenskaber,1),0)>0 THEN
+    FOREACH klasse_attr_egenskaber_obj IN ARRAY klasse_registrering.attrEgenskaber
+    LOOP
+  
+! klasse_attr_egenskaber_id:=nextval('klasse_attr_egenskaber_id_seq');
+!   INSERT INTO klasse_attr_egenskaber (
+!     id,
+!     brugervendtnoegle,
+!     beskrivelse,
+!     eksempel,
+!     omfang,
+!     titel,
+!     retskilde,
+!     aendringsnotat,
+!     virkning,
+!     klasse_registrering_id
+!   )
+!   SELECT
+!     klasse_attr_egenskaber_id,
+!    klasse_attr_egenskaber_obj.brugervendtnoegle,
+!     klasse_attr_egenskaber_obj.beskrivelse,
+!     klasse_attr_egenskaber_obj.eksempel,
+!     klasse_attr_egenskaber_obj.omfang,
+!     klasse_attr_egenskaber_obj.titel,
+!     klasse_attr_egenskaber_obj.retskilde,
+!     klasse_attr_egenskaber_obj.aendringsnotat,
+!     klasse_attr_egenskaber_obj.virkning,
+!     klasse_registrering_id
+!   ;
+! 
+! /************/
+! --Insert Soegeord
+!   IF klasse_attr_egenskaber_obj.soegeord IS NOT NULL AND coalesce(array_length(klasse_attr_egenskaber_obj.soegeord,1),0)>1  THEN
+!     FOREACH klasse_attr_egenskaber_soegeord_obj IN ARRAY klasse_attr_egenskaber_obj.soegeord
+!       LOOP
+! 
+!       IF (klasse_attr_egenskaber_soegeord_obj.soegeordidentifikator IS NOT NULL AND klasse_attr_egenskaber_soegeord_obj.soegeordidentifikator<>'') 
+!       OR (klasse_attr_egenskaber_soegeord_obj.beskrivelse IS NOT NULL AND klasse_attr_egenskaber_soegeord_obj.beskrivelse<>'' )
+!       OR (klasse_attr_egenskaber_soegeord_obj.soegeordskategori IS NOT NULL AND klasse_attr_egenskaber_soegeord_obj.soegeordskategori<>'') THEN
+! 
+!       INSERT INTO klasse_attr_egenskaber_soegeord (
+!         soegeordidentifikator,
+!         beskrivelse,
+!         soegeordskategori,
+!         klasse_attr_egenskaber_id
+!       )
+!       SELECT
+!         klasse_attr_egenskaber_soegeord_obj.soegeordidentifikator,
+!         klasse_attr_egenskaber_soegeord_obj.beskrivelse,
+!         klasse_attr_egenskaber_soegeord_obj.soegeordskategori,
+!         klasse_attr_egenskaber_id
+!       ;
+!       END IF;
+  
++      END LOOP;
++     END IF;
+    END LOOP;
+  END IF;
+  
+  /*********************************/
+  --Insert states (tilstande)

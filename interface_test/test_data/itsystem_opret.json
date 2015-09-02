@@ -1,0 +1,71 @@
+{ 
+    "note": "Nyt IT-system",
+    "attributter": { 
+        "itsystemegenskaber": [ 
+            {
+            "brugervendtnoegle": "OIO_REST", 
+            "itsystemnavn": "OIOXML REST API", 
+            "itsystemtype": "Kommunalt sysæøtem", 
+            "konfigurationreference": ["Jåa", "Neæj", "Ved ikkeø"], 
+            "virkning": { 
+                "from": "2014-05-19 12:02:32", 
+                "to": "infinity", 
+                "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                "aktoertypekode": "Bruger", 
+                "notetekst": "Nothing to see here!" 
+            } 
+            }
+        ] 
+    }, 
+    "tilstande": { 
+        "itsystemgyldighed": [{ 
+            "gyldighed": "Aktiv", 
+            "virkning": { 
+                "from": "2014-05-19 12:02:32", 
+                "to": "infinity", 
+                "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                "aktoertypekode": "Bruger", 
+                "notetekst": "Nothing to see here!" 
+            } 
+        }
+        ] 
+    },
+    "relationer": { 
+        "tilhoerer": [
+        { 
+            "uuid": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+            "virkning": { 
+                "from": "2014-05-19 12:02:32", 
+                "to": "infinity", 
+                "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                "aktoertypekode": "Bruger", 
+                "notetekst": "Nothing to see here!" 
+            
+            }
+        }
+        ],
+   "tilknyttedeorganisationer": [ 
+        { 
+            "uuid": "ef2713ee-1a38-4c23-8fcb-3c4331262194", 
+            "virkning": { 
+                "from": "2014-05-19 12:02:32", 
+                "to": "infinity", 
+                "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                "aktoertypekode": "Bruger", 
+                "notetekst": "Nothing to see here!" 
+            } 
+        }, 
+            { 
+                "uuid": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                "virkning": { 
+                    "from": "2015-05-19 12:02:32", 
+                    "to": "infinity", 
+                    "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+                    "aktoertypekode": "Bruger", 
+                    "notetekst": "Nothing to see here!" 
+                } 
+            } 
+        ] 
+    } 
+
+}

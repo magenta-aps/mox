@@ -1,0 +1,37 @@
+{
+  "note": "Opdateret dokument 2",
+  "varianter": [
+    {
+      "varianttekst": "PDF",
+      "dele": [
+        {
+          "deltekst": "doc_deltekst1A",
+          "egenskaber": [
+            {
+              "indhold": "field:del_indhold1_opdateret",
+              "virkning": {
+                "from": "2014-05-19 12:02:32",
+                "to": "infinity",
+                "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+                "aktoertypekode": "Bruger",
+                "notetekst": "Nothing to see here!"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "varianttekst": "doc_varianttekst2",
+      "dele": [
+        {
+          "deltekst": "doc_deltekst2B",
+          "relationer": {
+          }
+        }
+      ]
+    }
+  ]
+}
+
+

@@ -1,0 +1,158 @@
+*** ../generated-files/_remove_nulls_in_array_dokument.sql	2015-08-05 15:21:07.455205289 +0200
+--- ../patches/_remove_nulls_in_array_dokument.org.sql	2015-08-05 15:20:53.183205544 +0200
+***************
+*** 97,102 ****
+--- 97,249 ----
+   
+   $$ LANGUAGE plpgsql IMMUTABLE
+  ;
+  
+  
++ /********************************************/
++ /* Handle document variants and parts */
++ 
++ 
++ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr DokumentVariantEgenskaberType[])
++   RETURNS DokumentVariantEgenskaberType[] AS
++   $$
++   DECLARE result DokumentVariantEgenskaberType[]; 
++    DECLARE element DokumentVariantEgenskaberType; 
++   BEGIN
++ 
++   IF inputArr IS NOT NULL THEN
++     FOREACH element IN ARRAY  inputArr
++     LOOP
++       IF element IS NULL OR (( element.arkivering IS NULL AND element.delvisscannet IS NULL AND element.offentliggoerelse IS NULL AND element.produktion IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
++     --  RAISE DEBUG 'Skipping element';
++       ELSE
++       result:=array_append(result,element);
++       END IF;
++     END LOOP;
++   ELSE
++     return null;  
++   END IF;
++ 
++   RETURN result;
++ 
++   END;
++  
++  $$ LANGUAGE plpgsql IMMUTABLE
++ ;
++ 
++ 
++ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr DokumentDelEgenskaberType[])
++   RETURNS DokumentDelEgenskaberType[] AS
++   $$
++   DECLARE result DokumentDelEgenskaberType[]; 
++    DECLARE element DokumentDelEgenskaberType; 
++   BEGIN
++ 
++   IF inputArr IS NOT NULL THEN
++     FOREACH element IN ARRAY  inputArr
++     LOOP
++       IF element IS NULL OR (( element.indeks IS NULL AND element.indhold IS NULL AND element.lokation IS NULL AND element.mimetype IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
++     --  RAISE DEBUG 'Skipping element';
++       ELSE
++       result:=array_append(result,element);
++       END IF;
++     END LOOP;
++   ELSE
++     return null;  
++   END IF;
++ 
++   RETURN result;
++ 
++   END;
++  
++  $$ LANGUAGE plpgsql IMMUTABLE
++ ;
++ 
++ 
++ 
++ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr DokumentdelRelationType[])
++ RETURNS DokumentdelRelationType[] AS
++ $$
++  DECLARE result DokumentdelRelationType[];
++  DECLARE element DokumentdelRelationType;  
++   BEGIN
++ 
++    IF inputArr IS NOT NULL THEN
++     FOREACH element IN ARRAY  inputArr
++     LOOP
++       IF element IS NULL OR ( element.relType IS NULL AND element.uuid IS NULL AND element.urn IS NULL AND element.objektType IS NULL AND element.virkning IS NULL  ) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
++       --RAISE DEBUG 'Skipping element';
++       ELSE
++       result:=array_append(result,element);
++       END IF;
++     END LOOP;
++   ELSE
++     return null;  
++   END IF;
++ 
++   RETURN result;
++     
++   END;
++  
++  $$ LANGUAGE plpgsql IMMUTABLE
++ ;
++ 
++ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr DokumentDelType[])
++ RETURNS DokumentDelType[] AS
++ $$
++  DECLARE result DokumentDelType[];
++  DECLARE element DokumentDelType;  
++   BEGIN
++ 
++    IF inputArr IS NOT NULL THEN
++     FOREACH element IN ARRAY  inputArr
++     LOOP
++       IF element IS NULL OR ( element.deltekst IS NULL AND (element.egenskaber IS NULL OR  coalesce(array_length(element.egenskaber,1),0)=0) AND (element.relationer IS NULL OR  coalesce(array_length(element.relationer,1),0)=0)  ) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
++       --RAISE DEBUG 'Skipping element';
++       ELSE
++       result:=array_append(result,element);
++       END IF;
++     END LOOP;
++   ELSE
++     return null;  
++   END IF;
++ 
++   RETURN result;
++     
++   END;
++  
++  $$ LANGUAGE plpgsql IMMUTABLE
++ ;
++ 
++ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr DokumentVariantType[])
++ RETURNS DokumentVariantType[] AS
++ $$
++  DECLARE result DokumentVariantType[];
++  DECLARE element DokumentVariantType;  
++   BEGIN
++ 
++    IF inputArr IS NOT NULL THEN
++     FOREACH element IN ARRAY  inputArr
++     LOOP
++       IF element IS NULL OR ( element.varianttekst IS NULL AND (element.egenskaber IS NULL OR  coalesce(array_length(element.egenskaber,1),0)=0) AND (element.dele IS NULL OR  coalesce(array_length(element.dele,1),0)=0)  ) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
++       --RAISE DEBUG 'Skipping element';
++       ELSE
++       result:=array_append(result,element);
++       END IF;
++     END LOOP;
++   ELSE
++     return null;  
++   END IF;
++ 
++   RETURN result;
++     
++   END;
++  
++  $$ LANGUAGE plpgsql IMMUTABLE
++ ;
++ 
++ 
++ 
++ 
++ 
++ 
+  

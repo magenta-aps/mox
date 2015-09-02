@@ -1,0 +1,331 @@
+*** ./generated-files/as_update_klasse.sql	2015-08-12 16:31:32.696524038 +0200
+--- ./patches/as_update_klasse.org.sql	2015-08-12 16:34:44.652533598 +0200
+***************
+*** 34,43 ****
+--- 34,45 ----
+    read_prev_klasse_reg KlasseRegistreringType;
+    new_klasse_registrering klasse_registrering;
+    prev_klasse_registrering klasse_registrering;
+    klasse_relation_navn KlasseRelationKode;
+    attrEgenskaberObj KlasseEgenskaberAttrType;
++   new_id_klasse_attr_egenskaber bigint;
++   klasseSoegeordObj KlasseSoegeordType;
+    auth_filtered_uuids uuid[];
+  BEGIN
+  
+  --create a new registrering
+  
+***************
+*** 267,277 ****
+    IF EXISTS (
+    SELECT
+    a.*
+    FROM unnest(attrEgenskaber) a
+    JOIN  unnest(attrEgenskaber) b on (a.virkning).TimePeriod && (b.virkning).TimePeriod
+!   GROUP BY a.brugervendtnoegle,a.beskrivelse,a.eksempel,a.omfang,a.titel,a.retskilde,a.aendringsnotat, a.virkning
+    HAVING COUNT(*)>1
+    ) THEN
+    RAISE EXCEPTION 'Unable to update klasse with uuid [%], as the klasse have overlapping virknings in the given egenskaber array :%',klasse_uuid,to_json(attrEgenskaber)  USING ERRCODE = 22000;
+  
+    END IF;
+--- 269,279 ----
+    IF EXISTS (
+    SELECT
+    a.*
+    FROM unnest(attrEgenskaber) a
+    JOIN  unnest(attrEgenskaber) b on (a.virkning).TimePeriod && (b.virkning).TimePeriod
+!   GROUP BY a.brugervendtnoegle,a.beskrivelse,a.eksempel,a.omfang,a.titel,a.retskilde,a.aendringsnotat, a.virkning, a.soegeord
+    HAVING COUNT(*)>1
+    ) THEN
+    RAISE EXCEPTION 'Unable to update klasse with uuid [%], as the klasse have overlapping virknings in the given egenskaber array :%',klasse_uuid,to_json(attrEgenskaber)  USING ERRCODE = 22000;
+  
+    END IF;
+***************
+*** 288,305 ****
+     (attrEgenskaberObj).titel is null OR 
+     (attrEgenskaberObj).retskilde is null OR 
+     (attrEgenskaberObj).aendringsnotat is null 
+    THEN
+  
+    INSERT INTO
+    klasse_attr_egenskaber
+    (
+!     brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat
+      ,virkning
+      ,klasse_registrering_id
+    )
+!   SELECT
+      coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+      coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
+      coalesce(attrEgenskaberObj.eksempel,a.eksempel),
+      coalesce(attrEgenskaberObj.omfang,a.omfang),
+      coalesce(attrEgenskaberObj.titel,a.titel),
+--- 290,309 ----
+     (attrEgenskaberObj).titel is null OR 
+     (attrEgenskaberObj).retskilde is null OR 
+     (attrEgenskaberObj).aendringsnotat is null 
+    THEN
+  
++ WITH inserted_merged_attr_egenskaber AS (
+    INSERT INTO
+    klasse_attr_egenskaber
+    (
+!     id,brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat
+      ,virkning
+      ,klasse_registrering_id
+    )
+!   SELECT 
+!     nextval('klasse_attr_egenskaber_id_seq'),
+      coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+      coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
+      coalesce(attrEgenskaberObj.eksempel,a.eksempel),
+      coalesce(attrEgenskaberObj.omfang,a.omfang),
+      coalesce(attrEgenskaberObj.titel,a.titel),
+***************
+*** 314,335 ****
+      new_klasse_registrering.id
+    FROM klasse_attr_egenskaber a
+    WHERE
+      a.klasse_registrering_id=prev_klasse_registrering.id 
+      and (a.virkning).TimePeriod && (attrEgenskaberObj.virkning).TimePeriod
+!   ;
+  
+    --For any periods within the virkning of the attrEgenskaberObj, that is NOT covered by any "merged" rows inserted above, generate and insert rows
+  
+    INSERT INTO
+    klasse_attr_egenskaber
+    (
+!     brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat
+      ,virkning
+      ,klasse_registrering_id
+    )
+    SELECT 
+      attrEgenskaberObj.brugervendtnoegle, 
+      attrEgenskaberObj.beskrivelse, 
+      attrEgenskaberObj.eksempel, 
+      attrEgenskaberObj.omfang, 
+      attrEgenskaberObj.titel, 
+--- 318,364 ----
+      new_klasse_registrering.id
+    FROM klasse_attr_egenskaber a
+    WHERE
+      a.klasse_registrering_id=prev_klasse_registrering.id 
+      and (a.virkning).TimePeriod && (attrEgenskaberObj.virkning).TimePeriod
+!     RETURNING id new_id,(virkning).TimePeriod merged_timeperiod
+! )
+! INSERT INTO 
+! klasse_attr_egenskaber_soegeord 
+! (soegeordidentifikator,beskrivelse,soegeordskategori,klasse_attr_egenskaber_id)
+! SELECT
+!   coalesce(b.soegeordidentifikator,c.soegeordidentifikator), --please notice that this is not a merge - one of the joins on b or c will fail.
+!   coalesce(b.beskrivelse,c.beskrivelse),--please notice that this is not a merge - one of the joins on b or c will fail.
+!   coalesce(b.soegeordskategori,c.soegeordskategori),--please notice that this is not a merge - one of the joins on b or c will fail.
+!   a.new_id
+! FROM inserted_merged_attr_egenskaber a
+! LEFT JOIN unnest(attrEgenskaberObj.soegeord) as b(soegeordidentifikator,beskrivelse,soegeordskategori) on attrEgenskaberObj.soegeord IS NOT NULL
+! LEFT JOIN klasse_attr_egenskaber as b2 on attrEgenskaberObj.soegeord IS NULL and b2.klasse_registrering_id=prev_klasse_registrering.id and (b2.virkning).TimePeriod @> a.merged_timeperiod --Please notice, that this will max hit exactly one row - the row that the new id was merged with
+! LEFT JOIN klasse_attr_egenskaber_soegeord as c on attrEgenskaberObj.soegeord IS NULL AND c.klasse_attr_egenskaber_id = b2.id
+! WHERE 
+!   (
+!     (attrEgenskaberObj.soegeord IS NULL and c.id is not null) --there is sogeord of merged egenskab
+!     or
+!     coalesce(array_length(attrEgenskaberObj.soegeord,1),0)>0   --soegeord is defined in array 
+!   )
+!   and
+!   (NOT (attrEgenskaberObj.soegeord IS NOT NULL AND array_length(attrEgenskaberObj.soegeord,1)=0)) --if the array is empty, no sogeord should be inserted  
+! 
+! ;
+  
+    --For any periods within the virkning of the attrEgenskaberObj, that is NOT covered by any "merged" rows inserted above, generate and insert rows
+  
++ WITH inserted_attr_egenskaber AS (
+    INSERT INTO
+    klasse_attr_egenskaber
+    (
+!     id,brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat
+      ,virkning
+      ,klasse_registrering_id
+    )
+    SELECT 
++     nextval('klasse_attr_egenskaber_id_seq'),
+      attrEgenskaberObj.brugervendtnoegle, 
+      attrEgenskaberObj.beskrivelse, 
+      attrEgenskaberObj.eksempel, 
+      attrEgenskaberObj.omfang, 
+      attrEgenskaberObj.titel, 
+***************
+*** 349,381 ****
+        FROM klasse_attr_egenskaber b
+        WHERE 
+         b.klasse_registrering_id=new_klasse_registrering.id
+    ) as a
+    JOIN unnest(_subtract_tstzrange_arr((attrEgenskaberObj.virkning).TimePeriod,a.tzranges_of_new_reg)) as b(tz_range_leftover) on true
+!   ;
+  
+    ELSE
+      --insert attrEgenskaberObj raw (if there were no null-valued fields) 
+  
+      INSERT INTO
+      klasse_attr_egenskaber
+      (
+!     brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat
+      ,virkning
+      ,klasse_registrering_id
+      )
+      VALUES ( 
+      attrEgenskaberObj.brugervendtnoegle, 
+      attrEgenskaberObj.beskrivelse, 
+      attrEgenskaberObj.eksempel, 
+      attrEgenskaberObj.omfang, 
+      attrEgenskaberObj.titel, 
+      attrEgenskaberObj.retskilde, 
+      attrEgenskaberObj.aendringsnotat,
+      attrEgenskaberObj.virkning,
+      new_klasse_registrering.id
+!     );
+  
+    END IF;
+  
+    END LOOP;
+  END IF;
+--- 378,444 ----
+        FROM klasse_attr_egenskaber b
+        WHERE 
+         b.klasse_registrering_id=new_klasse_registrering.id
+    ) as a
+    JOIN unnest(_subtract_tstzrange_arr((attrEgenskaberObj.virkning).TimePeriod,a.tzranges_of_new_reg)) as b(tz_range_leftover) on true
+!   RETURNING id
+!   )
+! INSERT INTO 
+! klasse_attr_egenskaber_soegeord 
+! (soegeordidentifikator,beskrivelse,soegeordskategori,klasse_attr_egenskaber_id)
+! SELECT
+! a.soegeordidentifikator,a.beskrivelse,a.soegeordskategori,b.id
+! FROM
+! unnest(attrEgenskaberObj.soegeord) as a(soegeordidentifikator,beskrivelse,soegeordskategori)
+! JOIN inserted_attr_egenskaber b on true
+! ;
+! 
+! 
+  
+    ELSE
+      --insert attrEgenskaberObj raw (if there were no null-valued fields) 
+  
++     new_id_klasse_attr_egenskaber:=nextval('klasse_attr_egenskaber_id_seq');
++ 
+      INSERT INTO
+      klasse_attr_egenskaber
+      (
+!     id,brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat
+      ,virkning
+      ,klasse_registrering_id
+      )
+      VALUES ( 
++     new_id_klasse_attr_egenskaber,
+      attrEgenskaberObj.brugervendtnoegle, 
+      attrEgenskaberObj.beskrivelse, 
+      attrEgenskaberObj.eksempel, 
+      attrEgenskaberObj.omfang, 
+      attrEgenskaberObj.titel, 
+      attrEgenskaberObj.retskilde, 
+      attrEgenskaberObj.aendringsnotat,
+      attrEgenskaberObj.virkning,
+      new_klasse_registrering.id
+!     )
+!     ;
+!    
+!     IF attrEgenskaberObj.soegeord IS NOT NULL THEN
+!     INSERT INTO klasse_attr_egenskaber_soegeord( 
+!           soegeordidentifikator,
+!           beskrivelse,
+!           soegeordskategori,
+!           klasse_attr_egenskaber_id
+!           )
+!     SELECT
+!     a.soegeordidentifikator,
+!     a.beskrivelse,
+!     a.soegeordskategori,
+!     new_id_klasse_attr_egenskaber
+!     FROM
+!     unnest(attrEgenskaberObj.soegeord) as a(soegeordidentifikator,beskrivelse,soegeordskategori)
+!     ;
+!     END IF;
+! 
+  
+    END IF;
+  
+    END LOOP;
+  END IF;
+***************
+*** 385,400 ****
+  --raise debug 'Skipping handling of egenskaber of previous registration as an empty array was explicit given.';  
+  ELSE 
+  
+  --Handle egenskaber of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
+  
+  INSERT INTO klasse_attr_egenskaber (
+!     brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat
+      ,virkning
+      ,klasse_registrering_id
+  )
+  SELECT
+        a.brugervendtnoegle,
+        a.beskrivelse,
+        a.eksempel,
+        a.omfang,
+        a.titel,
+--- 448,466 ----
+  --raise debug 'Skipping handling of egenskaber of previous registration as an empty array was explicit given.';  
+  ELSE 
+  
+  --Handle egenskaber of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
+  
++ 
++ WITH copied_attr_egenskaber AS (
+  INSERT INTO klasse_attr_egenskaber (
+!     id,brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat
+      ,virkning
+      ,klasse_registrering_id
+  )
+  SELECT
++       nextval('klasse_attr_egenskaber_id_seq'),
+        a.brugervendtnoegle,
+        a.beskrivelse,
+        a.eksempel,
+        a.omfang,
+        a.titel,
+***************
+*** 415,425 ****
+      WHERE 
+            b.klasse_registrering_id=new_klasse_registrering.id
+  ) d
+    JOIN klasse_attr_egenskaber a ON true  
+    JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
+!   WHERE a.klasse_registrering_id=prev_klasse_registrering.id     
+  ;
+  
+  
+  
+  
+--- 481,501 ----
+      WHERE 
+            b.klasse_registrering_id=new_klasse_registrering.id
+  ) d
+    JOIN klasse_attr_egenskaber a ON true  
+    JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
+!   WHERE a.klasse_registrering_id=prev_klasse_registrering.id 
+!   RETURNING id new_id,(virkning).TimePeriod  
+! )
+! INSERT INTO 
+! klasse_attr_egenskaber_soegeord 
+! (soegeordidentifikator,beskrivelse,soegeordskategori,klasse_attr_egenskaber_id)
+! SELECT
+! b.soegeordidentifikator,b.beskrivelse,b.soegeordskategori,a.new_id
+! FROM copied_attr_egenskaber a
+! JOIN klasse_attr_egenskaber a2 on a2.klasse_registrering_id=prev_klasse_registrering.id and (a2.virkning).TimePeriod @> a.TimePeriod --this will hit exactly one row - that is, the row that we copied. 
+! JOIN klasse_attr_egenskaber_soegeord b on a2.id=b.klasse_attr_egenskaber_id   
+  ;
+  
+  
+  
+  
