@@ -35,6 +35,35 @@ command: ::
 Getting started
 ===============
 
+Configuration
+-------------
+
+The file ``db/config.sh`` contains configuration for the database, such as
+which username/password to use to connect to the database, and which
+database name to use.
+
+To setup the database to send notifications to an AMQP message exchange, the
+database must know how to connect to the AMQP server. The defaults assume
+you have a local AMQP server and use the guest user. However, these can be
+changed in ``db/config.sh`` prior to performing installation.
+
+The file ``oio_rest/settings.py`` contains configuration for the
+generation of the database structure and the REST API. Set the DATABASE,
+DB_USER and DB_PASSWORD settings according to what you have chosen in
+``db/config.sh``.
+
+The FILE_UPLOAD_FOLDER setting allows you to change where the database
+stores its files (used for storing the contents of binary
+files in the Dokument hierarchy). The default is /var/mox, and this is
+automatically created by the install script.
+
+There are some other settings that can be changed, and there should be
+comments describing their purpose, or they are described in another section of
+this document.
+
+Installing
+----------
+
 To install the OIO REST API, run ``install.sh``
 
 **NOTICE:** If you need to initialize the postgresql database as well
