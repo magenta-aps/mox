@@ -1233,7 +1233,12 @@ passivate
 Sends a 'passivate' operation to the message queue, provided such an
 operation has been defined in the ObjectType. Add the document UUID to
 be passivated, as well as a note to go with the passivate operation (may
-be null). ::
+be null). 
+
+delete 
+++++++
+
+::
 
     Future<String> delete(MessageSender sender, UUID uuid, String note)
     Future<String> delete(MessageSender sender, UUID uuid, String note, String authorization)
@@ -1241,7 +1246,12 @@ be null). ::
 Sends a 'delete' operation to the message queue, provided such an
 operation has been defined in the ObjectType. Add the document UUID to
 be deleted, as well as a note to go with the delete operation (may be
-null). ::
+null). 
+
+sendCommand
++++++++++++
+
+::
 
      Future<String> sendCommand(MessageSender sender, String operationName, UUID uuid, JSONObject data)
      Future<String> sendCommand(MessageSender sender, String operationName, UUID uuid, JSONObject data, String authorization)
@@ -1249,6 +1259,9 @@ null). ::
 Sends a custom operationName (useful if you added an operation other
 than create, update, passivate or delete). Add a UUID and a JSON Object
 as needed by the operation.
+
+This is the more general function, which is used to implement the other
+operations.
 
 
 Using AMQP Messages
