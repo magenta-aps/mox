@@ -280,6 +280,25 @@ Alternately, if using bash shell: ::
     curl -H "$(python utils/encode_token.py" /my/saml/assertion.xml) ...
 
 
+Setting up users on the IDP
+---------------------------
+
+This is for testing with the WSO2 Identity Server as described above -
+we assume that this is not the configuration which the municipalities
+want to use in a production setting.
+
+Log in to the IDP with the credentials provided. The IDP could, e.g., be
+located at https://mox.magenta-aps.dk:9443/.
+
+To create a new user, enter the "Configure" tab and select "Users and
+roles". Enter the user's first name, last name and email address.
+
+**Important:** In the URL field, enter the user's (OIO) UUID. The URL
+field  is currently used to map between the IDP and the OIO's user
+concept. If the UUID is not specified, it will not be possible to
+authorize users correctly, nor will it be possible to make any changes
+to the database.
+
 Format of JSON body in requests to REST-api
 ============================================
 
