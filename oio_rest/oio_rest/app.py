@@ -28,6 +28,7 @@ def sitemap():
             print rule
     return jsonify({"site-map": links})
 
+
 @app.errorhandler(OIOFlaskException)
 def handle_not_allowed(error):
     dct = error.to_dict()
