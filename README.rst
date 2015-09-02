@@ -852,7 +852,7 @@ the previous registration will be carried over untouched. ::
       },
   ...
 
-Deleting / Clearing Sates 
+Deleting / Clearing States 
 -------------------------------
 
 Similar to the procedure stated above for the attributes -
