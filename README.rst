@@ -1327,6 +1327,29 @@ For an example of how to create and send Mox messages with Java, please
 see the file ObjectType.java in
 ``agent/src/main/java/dk/magenta/mox/agent``.
 
+Notification Messages
++++++++++++++++++++++
+
+Each time a write operation (create/import/passivate/update/delete) is
+performed, a notification messages is sent out by the database to an AMQP
+message exchange called "mox.notifications".
+
+This exchange is automatically created during the DB installation
+using the "fanout" exchange type.
+However, this can be modified later on the AMQP server.
+
+The notification message has the following headers:
+
+* "beskedtype" - always contains the value 'Notification'
+
+* "objektID" - contains the UUID of the object.
+
+* "objekttype" - i.e., OIO class, e.g. "Facet".
+
+* "livscykluskode" - i.e. 'Opstaaet', 'Importeret', 'Passiveret', 'Slettet' or
+  'Rettet'
+
+The notification message has an empty body.
 
 Licensing
 =========
