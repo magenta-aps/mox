@@ -50,9 +50,8 @@ jinja_env.filters['adapt'] = adapt
 
 def get_connection():
     """Handle all intricacies of connecting to Postgres."""
-    DATESTYLE = '-c DateStyle=ISO'
     connection = psycopg2.connect(
-        "dbname={0} user={1} options={2}".format(DATABASE, DB_USER, DATESTYLE)
+        "dbname={0} user={1}".format(DATABASE, DB_USER)
     )
     connection.autocommit = True
     return connection
