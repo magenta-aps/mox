@@ -47,14 +47,14 @@ database must know how to connect to the AMQP server. The defaults assume
 you have a local AMQP server and use the guest user. However, these can be
 changed in ``db/config.sh`` prior to performing installation.
 
-The file ``oio_rest/settings.py`` contains configuration for the
+The file ``oio_rest/oio_rest/settings.py`` contains configuration for the
 generation of the database structure and the REST API. Set the DATABASE,
 DB_USER and DB_PASSWORD settings according to what you have chosen in
 ``db/config.sh``.
 
 The FILE_UPLOAD_FOLDER setting allows you to change where the database
 stores its files (used for storing the contents of binary
-files in the Dokument hierarchy). The default is /var/mox, and this is
+files in the Dokument hierarchy). The default is i``/var/mox``, and this is
 automatically created by the install script.
 
 There are some other settings that can be changed, and there should be
@@ -84,6 +84,23 @@ URLs.
 
 For deployment in production environments, please see the sample Apache
 deployment in the config/ folder.
+
+To run the OIO Rest Mox Agent (the one listening for messages and relaying them
+ onwards to the REST interface), run: ::
+
+    agent/agent.sh
+
+To test sending messages through the agent, run: ::
+
+    agent/test.sh
+
+If Saml authentication is turned on (i.e., if the parameter
+``USE_SAML_AUTHENTICATION`` in ``oio_rest/oio_rest/settings.py`` is `True`),
+the IDP must be configured correctly - see the corresponding sections below
+for instruction on how to do this.
+
+In ``config/etc/init`` you can find example init files for running the Mox
+Agent and the WSO2 Identity Server as daemons.
 
 
 OIO REST API Notes
