@@ -101,7 +101,15 @@ relaying them onwards to the REST interface), run: ::
 
 To test sending messages through the agent, run: ::
 
-    agent/test.sh
+    agent/agent.sh sendtest
+
+To request a token for the username from the IdP and output it in
+base64-encoded gzipped format, run: ::
+
+    agent/agent.sh gettoken <username>
+
+Insert your username in the command argument. You will be prompted to enter
+a password.
 
 If Saml authentication is turned on (i.e., if the parameter
 ``USE_SAML_AUTHENTICATION`` in ``oio_rest/oio_rest/settings.py`` is
@@ -1154,6 +1162,31 @@ In settings.py, SAML authentication can be turned off by setting: ::
 
     USE_SAML_AUTHENTICATION = False
 
+
+Requesting a SAML token using the OIO REST service
+--------------------------------------------------
+
+The OIO REST service provides a convenience method for requesting a SAML
+token in the correct base64-encoded gzipped format for use with the API.
+
+Visit the following URL of the OIO REST server, e.g. ::
+
+    http://localhost:5000/get-token
+
+
+You will be presented with a form with a username/password field.
+Optionally, you can specify the STS address to use.
+This will request a token from the STS service using the given
+username and password. It will return the token result as JSON.
+
+This token can then be included in the HTTP "Authorization" header, like the
+following: ::
+
+    Authorization: saml-gzipped <saml-gzipped token>
+
+For testing purposes, it is useful to use tools like the Chrome "app" called
+"Advanced REST client", available at https://chrome.google.com/webstore/detail/advanced-rest-client/hgmloofddffdnphfgcellkdfbfbjeloo
+or the Firefox addon "REST Easy", available at https://addons.mozilla.org/da/firefox/addon/rest-easy/
 
 Requesting a SAML token manually
 --------------------------------

@@ -177,6 +177,16 @@
         </repository>
 
         <repository>
+            <id>wso2-nexus</id>
+            <name>WSO2 Nexus</name>
+            <layout>default</layout>
+            <url>http://maven.wso2.org/nexus/content/groups/wso2-public</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+
+        <repository>
             <id>thirdparty</id>
             <name>Magenta Third-party dependencies</name>
             <url>http://nexus.magenta-aps.dk/nexus/content/repositories/thirdparty/</url>
