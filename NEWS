@@ -1,3 +1,11 @@
+* Version 0.2.2, September 18, 2015
+
+New in this version:
+
+* Fix for /get-token script to take into account proper location
+  of agent.sh script.
+
+
 * Version 0.2.1, September 18, 2015
 
 New in this version:

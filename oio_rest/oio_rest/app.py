@@ -5,6 +5,8 @@ from werkzeug.routing import BaseConverter
 
 from custom_exceptions import OIOFlaskException
 from custom_exceptions import UnauthorizedException, BadRequestException
+import os
+from settings import MOX_BASE_DIR
 
 app = Flask(__name__)
 
@@ -60,8 +62,9 @@ def get_token():
         params = ['gettoken', username]
         if sts != '':
             params.insert(0, "-DstsAddress=" + sts)
-        child = pexpect.spawn('../agent/agent.sh',
-                              params)
+
+        child = pexpect.spawn(os.path.join(MOX_BASE_DIR, '/agent/agent.sh'),
+                                           params)
         i = child.expect([pexpect.TIMEOUT, "Password:"])
         if i == 0:
             child.kill(0)

@@ -292,3 +292,6 @@ DB_TEMPLATE_EXTRA_OPTIONS = {
         }
     }
 }
+
+import os
+MOX_BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
