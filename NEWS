@@ -1,3 +1,10 @@
+* Version 0.2.3, September 18, 2015
+
+New in this version:
+
+* Fix for bug in previous hotfix related to /get-token script.
+
+
 * Version 0.2.2, September 18, 2015
 
 New in this version:

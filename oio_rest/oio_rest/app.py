@@ -63,7 +63,7 @@ def get_token():
         if sts != '':
             params.insert(0, "-DstsAddress=" + sts)
 
-        child = pexpect.spawn(os.path.join(MOX_BASE_DIR, '/agent/agent.sh'),
+        child = pexpect.spawn(os.path.join(MOX_BASE_DIR, 'agent/agent.sh'),
                                            params)
         i = child.expect([pexpect.TIMEOUT, "Password:"])
         if i == 0:
