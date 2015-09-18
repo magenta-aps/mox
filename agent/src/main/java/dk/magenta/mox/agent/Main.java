@@ -51,16 +51,18 @@ public class Main {
 
                 System.out.println("-----------");
                 System.out.println("Parameters:\n");
-                System.out.println("propertiesFile (-DpropertiesFile=<hostname>:<port>):\n    A Java properties file that contains configuration values.\n    Any parameters not found on the command line will be loaded from there.\n    Should also contain configuration for a SAML token service.\n    If this parameter is unset, the file 'agent.properties' will be loaded.\n");
+                System.out.println("propertiesFile (-DpropertiesFile=<file>):\n    A Java properties file that contains configuration values.\n    Any parameters not found on the command line will be loaded from there.\n    Should also contain configuration for a SAML token service.\n    If this parameter is unset, the file 'agent.properties' will be loaded.\n");
                 System.out.println("queueInterface (-DqueueInterface=<hostname>:<port>):\n    An interface (<hostname>:<port>) where an instance of RabbitMQ is listening.\n    If this is neither found in the command line or in the properties file, the value defaults to localhost:5672.\n");
                 System.out.println("queueName (-DqueueName=<name>):\n    The name of the RabbitMQ queue to send or receive messages in.\n    Defaults to 'incoming' if not found elsewhere.\n");
                 System.out.println("restInterface (-DrestInterface=<protocol>://<hostname>:<port>):\n    The REST interface where messages should end up when passed through the queue.\n    Also needed for obtaining a SAML token for authenticating to that interface.\n    Defaults to http://127.0.0.1:5000\n");
+                System.out.println("stsAddress " + "" + "(-DstsAddress=<protocol>://<hostname>:<port>):\n   The address of a Security Token Service, for requesting a SAML Security Token\n");
 
                 System.out.println("---------");
                 System.out.println("Commands:\n");
                 System.out.println("listen\n    Starts a listener agent, which reads from the defined queue and sends requests to the defined REST interface\n");
                 System.out.println("send [operation] [objecttype] [jsonfile]\n    Sends a messsage to the queue, telling listeners to perform [operation] on [objecttype] with data from [jsonfile].\n    E.g. 'send create facet facet.json'\n");
                 System.out.println("sendtest\n    Runs a test by sending a series of messages to the queue, creating, updating, passivating and finally deleting a document.\n");
+                System.out.println("gettoken <username>)\n    Requests a security token as the username specified. The password must be entered on standard input..\n");
                 return;
             }
         }
@@ -70,22 +72,21 @@ public class Main {
         HashMap<String, String> argMap = new HashMap<String, String>();
         ArrayList<String> commands = new ArrayList<String>();
         try {
-            String paramKey = null;
             for (String arg : args) {
                 arg = arg.trim();
                 if (arg.startsWith("-")) {
                     if (commands.size() > 0) {
                         throw new IllegalArgumentException("You cannot append parameters after the command arguments");
                     }
-                    arg = arg.substring(1);
-                    paramKey = arg;
-                } else if (!arg.isEmpty()) {
-                    if (paramKey != null) {
-                        argMap.put(paramKey, arg);
-                        paramKey = null;
-                    } else {
-                        commands.add(arg);
+                    arg = arg.substring(2);
+                    String[] keyVal = arg.split("=", 2);
+                    if (keyVal.length != 2) {
+                        throw new IllegalArgumentException("Parameter " +
+                                arg + " must be of the format -Dparam=value");
                     }
+                    argMap.put(keyVal[0], keyVal[1]);
+                } else if (!arg.isEmpty()) {
+                    commands.add(arg);
                 }
             }
         } catch (IllegalArgumentException e) {
@@ -107,7 +108,6 @@ public class Main {
             restInterface = argMap.get("restInterface");
             System.out.println("    restInterface = " + restInterface);
         }
-
 
 
         String propertiesFilename = argMap.get("propertiesFile");
@@ -161,6 +161,11 @@ public class Main {
                 }
                 System.out.println("    commands = " + String.join(" ", commands));
             }
+        }
+
+        if (argMap.containsKey("stsAddress")) {
+            properties.setProperty("security.sts.address", argMap.get("stsAddress"));
+            System.out.println("    stsAddress = " + argMap.get("stsAddress"));
         }
 
 
@@ -298,8 +303,18 @@ public class Main {
                 } catch (OperationNotSupportedException e) {
                     e.printStackTrace();
                 }
+            } else if (command.equalsIgnoreCase("gettoken")) {
+                String username = commands.get(1);
+                if (username == null) {
+                    throw new IllegalArgumentException("Command argument <username>' must be specified");
+                }
+                String password = String.valueOf(System.console().readPassword("Password:"));
+                properties.setProperty("security.user.name", username);
+                properties.setProperty("security.user.password", password);
+                String authtoken = getSecurityToken(properties, restInterface);
+                String encodedAuthtoken = "saml-gzipped " + base64encode(gzip(authtoken));
+                System.out.println(encodedAuthtoken);
             }
-
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (TimeoutException e) {

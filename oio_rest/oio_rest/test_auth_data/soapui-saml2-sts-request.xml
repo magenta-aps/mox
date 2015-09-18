@@ -112,6 +112,8 @@
                                 Uri="http://wso2.org/claims/givenname"/>
                 <wsid:ClaimType xmlns:wsid="http://schemas.xmlsoap.org/ws/2005/05/identity"
                                 Uri="http://wso2.org/claims/emailaddress"/>
+                <wsid:ClaimType xmlns:wsid="http://schemas.xmlsoap.org/ws/2005/05/identity"
+                                Uri="http://wso2.org/claims/url"/>
             </wst:Claims>
         </wst:RequestSecurityToken>
         </soapenv:Body>

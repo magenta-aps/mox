@@ -1,3 +1,18 @@
+* Version 0.2.1, September 18, 2015
+
+New in this version:
+
+* REST Interface implements a form for requesting SAML token
+  from at the URL "/get-token".
+* Java agent client supports getting token via command-line, using
+  "gettoken <username>" command.
+* Updated sample SOAP project to request the SAML token to include
+  the "URL" claim, which is needed in the test setup, as it supplies
+  the user's UUID to the REST API.
+* Fix parsing of MOX agent "-D" parameters.
+* Add WSO2's nexus repository to Java agent Maven project.
+
+
 * Version 0.2.0, September 2, 2015
 
 New in this version:
