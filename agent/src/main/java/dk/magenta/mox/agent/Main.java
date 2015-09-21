@@ -35,6 +35,7 @@ import org.apache.axis2.context.ConfigurationContextFactory;
  * Created by lars on 06-08-15.
  */
 public class Main {
+    public static Properties properties;
 
     public static void main(String[] args) {
 
@@ -130,7 +131,7 @@ public class Main {
                 return;
             }
         }
-        Properties properties = new Properties();
+        properties = new Properties();
         if (propertiesFile.canRead()) {
             try {
                 properties.load(new FileInputStream(propertiesFile));
@@ -312,6 +313,9 @@ public class Main {
                 properties.setProperty("security.user.name", username);
                 properties.setProperty("security.user.password", password);
                 String authtoken = getSecurityToken(properties, restInterface);
+                if (authtoken == null) {
+                    System.exit(1);
+                }
                 String encodedAuthtoken = "saml-gzipped " + base64encode(gzip(authtoken));
                 System.out.println(encodedAuthtoken);
             }
