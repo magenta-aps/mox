@@ -1177,12 +1177,14 @@ Visit the following URL of the OIO REST server, e.g. ::
 You will be presented with a form with a username/password field.
 Optionally, you can specify the STS address to use.
 This will request a token from the STS service using the given
-username and password. It will return the token result as JSON.
+username and password. It will return the value that should be used for the
+HTTP "Authorization" header. If it fails due to invalid username/password,
+an error message will be returned.
 
-This token can then be included in the HTTP "Authorization" header, like the
+This value can then be included in the HTTP "Authorization" header, like the
 following: ::
 
-    Authorization: saml-gzipped <saml-gzipped token>
+    Authorization: <output of get-token>
 
 For testing purposes, it is useful to use tools like the Chrome "app" called
 "Advanced REST client", available at https://chrome.google.com/webstore/detail/advanced-rest-client/hgmloofddffdnphfgcellkdfbfbjeloo

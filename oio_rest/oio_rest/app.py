@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
 from werkzeug.routing import BaseConverter
 
 from custom_exceptions import OIOFlaskException
@@ -52,6 +52,10 @@ def get_token():
     elif request.method == 'POST':
         import pexpect
         import re
+        try:
+            from shlex import quote as cmd_quote
+        except ImportError:
+            from pipes import quote as cmd_quote
         username = request.form.get('username')
         password = request.form.get('password')
         sts = request.form.get('sts', '')
@@ -63,22 +67,29 @@ def get_token():
         if sts != '':
             params.insert(0, "-DstsAddress=" + sts)
 
-        child = pexpect.spawn(os.path.join(MOX_BASE_DIR, 'agent/agent.sh'),
-                                           params)
-        i = child.expect([pexpect.TIMEOUT, "Password:"])
-        if i == 0:
-            child.kill(0)
-            raise UnauthorizedException("Error requesting token.")
-        else:
-            child.sendline(password)
-        output = child.read()
-        print output
-        m = re.search("saml-gzipped\s+(.+?)\s", output)
-        if m is not None:
-            token = m.group(1)
-            return jsonify({"saml-gzipped": token})
-        else:
-            raise UnauthorizedException("Error requesting token: " + output)
+        child = pexpect.spawn(os.path.join(MOX_BASE_DIR, 'agent/agent.sh') +
+                              ' ' + ' '.join(cmd_quote(param) for param in params))
+        try:
+            i = child.expect([pexpect.TIMEOUT, "Password:"])
+            if i == 0:
+                raise UnauthorizedException("Error requesting token.")
+            else:
+                child.sendline(password)
+            output = child.read()
+            print output
+            m = re.search("saml-gzipped\s+(.+?)\s", output)
+            if m is not None:
+                token = m.group(1)
+                return Response("saml-gzipped " + token, mimetype='text/plain')
+            else:
+                m = re.search("AxisFault: Must Understand check failed", output)
+                if m is not None:
+                    raise UnauthorizedException("Error requesting token: "
+                                                "invalid username or password")
+                else:
+                    raise UnauthorizedException("Error requesting token: " + output)
+        finally:
+            child.close()
 
 
 @app.route('/site-map')
