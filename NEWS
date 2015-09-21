@@ -1,3 +1,20 @@
+* Version 0.2.4, September 21, 2015
+
+New in this version:
+
+* Output Authorization header in easier-to-copy-and-paste
+  format than the previous JSON output.
+* Close the agent.sh process in /get-token after opening it.
+* Better error-handling in /get-token callback for invalid
+  passwords.
+* Fix: Java agent's "gettoken" command did not use the supplied
+  username/password, but instead read them from the
+  agent.properties file.
+* Fix security vulnerability: /get-token callback did not escape
+  command arguments to agent.sh script.
+ 
+
+
 * Version 0.2.3, September 18, 2015
 
 New in this version:

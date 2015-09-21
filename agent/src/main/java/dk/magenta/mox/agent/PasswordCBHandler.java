@@ -55,8 +55,8 @@ public class PasswordCBHandler implements CallbackHandler{
     }
     
     public void readUsernamePasswordFromProperties() throws IOException{
-        Properties properties = new Properties();
-        properties.load(new FileInputStream("agent.properties"));
+        // Use the static properties from the Main class
+        Properties properties = Main.properties;
         this.username = properties.getProperty("security.user.name");
         this.password = properties.getProperty("security.user.password");
         this.keyAlias = properties.getProperty("security.user.cert.alias");
