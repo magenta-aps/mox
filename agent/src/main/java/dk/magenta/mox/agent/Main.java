@@ -313,6 +313,9 @@ public class Main {
                 properties.setProperty("security.user.name", username);
                 properties.setProperty("security.user.password", password);
                 String authtoken = getSecurityToken(properties, restInterface);
+                if (authtoken == null) {
+                    System.exit(1);
+                }
                 String encodedAuthtoken = "saml-gzipped " + base64encode(gzip(authtoken));
                 System.out.println(encodedAuthtoken);
             }

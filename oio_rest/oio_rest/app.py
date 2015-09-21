@@ -76,7 +76,6 @@ def get_token():
             else:
                 child.sendline(password)
             output = child.read()
-            print output
             m = re.search("saml-gzipped\s+(.+?)\s", output)
             if m is not None:
                 token = m.group(1)
@@ -88,6 +87,8 @@ def get_token():
                                                 "invalid username or password")
                 else:
                     raise UnauthorizedException("Error requesting token: " + output)
+        except pexpect.TIMEOUT:
+            raise UnauthorizedException("Timeout while requesting token")
         finally:
             child.close()
 
