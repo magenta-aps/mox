@@ -28,17 +28,8 @@ public abstract class MessageInterface {
 
 
     private static HashMap<String, ConnectionFactory> connectionFactories = new HashMap<String, ConnectionFactory>();
-    public MessageInterface(String host, String exchange, String queueName) throws IOException {
-        this(null, null, host, exchange, queueName);
-    }
-    public MessageInterface(String username, String password, String host, String exchange, String queueName) throws IOException {
-        if (username == null) {
-            username = ConnectionFactory.DEFAULT_USER;
-        }
-        if (password == null) {
-            password = ConnectionFactory.DEFAULT_PASS;
-        }
 
+    public MessageInterface(String host, String exchange, String queueName) throws IOException {
         this.id = UUID.randomUUID().toString();
         if (!connectionFactories.keySet().contains(host)) {
             ConnectionFactory factory = new ConnectionFactory();
@@ -50,9 +41,6 @@ public abstract class MessageInterface {
             }
             factory.setHost(host);
             factory.setPort(port);
-            System.out.println(username+" "+password);
-            factory.setUsername(username);
-            factory.setPassword(password);
             connectionFactories.put(host, factory);
         }
         if (exchange == null) {

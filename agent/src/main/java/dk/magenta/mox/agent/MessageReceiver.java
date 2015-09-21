@@ -17,10 +17,7 @@ public class MessageReceiver extends MessageInterface {
     private boolean sendReplies;
 
     public MessageReceiver(String host, String exchange, String queue, boolean sendReplies) throws IOException, TimeoutException {
-        this(null, null, host, exchange, queue, sendReplies);
-    }
-    public MessageReceiver(String username, String password, String host, String exchange, String queue, boolean sendReplies) throws IOException, TimeoutException {
-        super(username, password, host, exchange, queue);
+        super(host, exchange, queue);
         this.consumer = new QueueingConsumer(this.getChannel());
         this.getChannel().basicConsume(queue, true, this.consumer);
         this.sendReplies = sendReplies;
