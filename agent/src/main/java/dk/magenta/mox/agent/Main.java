@@ -40,8 +40,8 @@ public class Main {
 
     public static void main(String[] args) {
 
-        String username = null;
-        String password = null;
+        String queueUsername = null;
+        String queuePassword = null;
         String queueInterface = null;
         String queueName = null;
         String restInterface = null;
@@ -56,8 +56,8 @@ public class Main {
                 System.out.println("-----------");
                 System.out.println("Parameters:\n");
                 System.out.println("propertiesFile (-DpropertiesFile=<file>):\n    A Java properties file that contains configuration values.\n    Any parameters not found on the command line will be loaded from there.\n    Should also contain configuration for a SAML token service.\n    If this parameter is unset, the file 'agent.properties' will be loaded.\n");
-                System.out.println("username (-Dusername=<username>):\n    The RabbitMQ username.\n    If this is neither found in the command line or in the properties file, the value defaults to "+ ConnectionFactory.DEFAULT_USER+".\n");
-                System.out.println("password (-Dpassword=<password>):\n    The RabbitMQ password.\n    If this is neither found in the command line or in the properties file, the value defaults to "+ ConnectionFactory.DEFAULT_PASS+".\n");
+                System.out.println("queueUsername (-DqueueUsername=<queueUsername>):\n    The RabbitMQ username.\n    If this is neither found in the command line or in the properties file, the value defaults to "+ ConnectionFactory.DEFAULT_USER+".\n");
+                System.out.println("queuePassword (-DqueuePassword=<queuePassword>):\n    The RabbitMQ password.\n    If this is neither found in the command line or in the properties file, the value defaults to "+ ConnectionFactory.DEFAULT_PASS+".\n");
                 System.out.println("queueInterface (-DqueueInterface=<hostname>:<port>):\n    An interface (<hostname>:<port>) where an instance of RabbitMQ is listening.\n    If this is neither found in the command line or in the properties file, the value defaults to localhost:5672.\n");
                 System.out.println("queueName (-DqueueName=<name>):\n    The name of the RabbitMQ queue to send or receive messages in.\n    Defaults to 'incoming' if not found elsewhere.\n");
                 System.out.println("restInterface (-DrestInterface=<protocol>://<hostname>:<port>):\n    The REST interface where messages should end up when passed through the queue.\n    Also needed for obtaining a SAML token for authenticating to that interface.\n    Defaults to http://127.0.0.1:5000\n");
@@ -100,14 +100,14 @@ public class Main {
             return;
         }
 
-        if (argMap.containsKey("username")) {
-            queueInterface = argMap.get("username");
-            System.out.println("    username = " + username);
+        if (argMap.containsKey("queueUsername")) {
+            queueInterface = argMap.get("queueUsername");
+            System.out.println("    queueUsername = " + queueUsername);
         }
 
-        if (argMap.containsKey("password")) {
-            queueInterface = argMap.get("password");
-            System.out.println("    password = " + password);
+        if (argMap.containsKey("queuePassword")) {
+            queueInterface = argMap.get("queuePassword");
+            System.out.println("    queuePassword = " + queuePassword);
         }
 
         if (argMap.containsKey("queueInterface")) {
@@ -156,16 +156,16 @@ public class Main {
             }
             System.out.println("Reading properties file " + propertiesFile.getAbsolutePath());
 
-            if (username == null) {
-                username = properties.getProperty("username");
-                if (username != null) {
-                    System.out.println("    username = " + username);
+            if (queueUsername == null) {
+                queueUsername = properties.getProperty("queueUsername");
+                if (queueUsername != null) {
+                    System.out.println("    queueUsername = " + queueUsername);
                 }
             }
-            if (password == null) {
-                password = properties.getProperty("password");
-                if (password != null) {
-                    System.out.println("    password = ********");
+            if (queuePassword == null) {
+                queuePassword = properties.getProperty("queuePassword");
+                if (queuePassword != null) {
+                    System.out.println("    queuePassword = ********");
                 }
             }
             if (queueInterface == null) {
@@ -231,7 +231,7 @@ public class Main {
 
             	System.out.println("Listening for messages from RabbitMQ service at " + queueInterface + ", queue name '" + queueName + "'");
             	System.out.println("Successfully parsed messages will be forwarded to the REST interface at " + restInterface);
-            	MessageReceiver messageReceiver = new MessageReceiver(username, password, queueInterface, null, queueName, true);
+            	MessageReceiver messageReceiver = new MessageReceiver(queueUsername, queuePassword, queueInterface, null, queueName, true);
             	try {
             	    messageReceiver.run(new RestMessageHandler(restInterface, objectTypes));
             	} catch (InterruptedException e) {
@@ -248,7 +248,7 @@ public class Main {
 
                 String operationName = commands.get(1);
                 String objectTypeName = commands.get(2);
-                MessageSender messageSender = new MessageSender(username, password, queueInterface, null, queueName);
+                MessageSender messageSender = new MessageSender(queueUsername, queuePassword, queueInterface, null, queueName);
                 ObjectType objectType = objectTypes.get(objectTypeName);
 
                 try {
@@ -295,7 +295,7 @@ public class Main {
 
                 String encodedAuthtoken = "saml-gzipped " + base64encode(gzip(authtoken));
 
-                MessageSender messageSender = new MessageSender(username, password, queueInterface, null, queueName);
+                MessageSender messageSender = new MessageSender(queueUsername, queuePassword, queueInterface, null, queueName);
                 ObjectType objectType = objectTypes.get("facet");
 
                 try {
@@ -332,13 +332,13 @@ public class Main {
                     e.printStackTrace();
                 }
             } else if (command.equalsIgnoreCase("gettoken")) {
-                String restusername = commands.get(1);
-                if (restusername == null) {
+                String restUsername = commands.get(1);
+                if (restUsername == null) {
                     throw new IllegalArgumentException("Command argument <username>' must be specified");
                 }
-                String restpassword = String.valueOf(System.console().readPassword("Password:"));
-                properties.setProperty("security.user.name", restusername);
-                properties.setProperty("security.user.password", restpassword);
+                String restPassword = String.valueOf(System.console().readPassword("Password:"));
+                properties.setProperty("security.user.name", restUsername);
+                properties.setProperty("security.user.password", restPassword);
                 String authtoken = getSecurityToken(properties, restInterface);
                 if (authtoken == null) {
                     System.exit(1);

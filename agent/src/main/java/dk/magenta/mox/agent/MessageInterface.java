@@ -50,7 +50,6 @@ public abstract class MessageInterface {
             }
             factory.setHost(host);
             factory.setPort(port);
-            System.out.println(username+" "+password);
             factory.setUsername(username);
             factory.setPassword(password);
             connectionFactories.put(host, factory);
