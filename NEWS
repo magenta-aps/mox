@@ -1,3 +1,13 @@
+* Version 0.2.5, September 21, 2015
+
+New in this version:
+
+* Added support for RabbitMQ credentials 'queueUsername' and 'queuePassword'
+  When specifying a user, please make sure that he is created in the 
+  RabbitMQ server, and that he has access to /
+
+
+
 * Version 0.2.4, September 21, 2015
 
 New in this version:
