@@ -1,3 +1,13 @@
+* Version 0.2.6, September 22, 2015
+
+New in this version:
+
+* Bugfix: For LIST operation, virkning parameters default to the current
+  date/time.
+* Improved documentation of search/list operation virkning/registrering
+  parameters.
+
+
 * Version 0.2.5, September 21, 2015
 
 New in this version:
