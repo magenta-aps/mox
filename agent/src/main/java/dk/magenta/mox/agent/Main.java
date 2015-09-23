@@ -101,28 +101,28 @@ public class Main {
             return;
         }
 
-        if (argMap.containsKey("queueUsername")) {
-            queueInterface = argMap.get("queueUsername");
+        if (argMap.containsKey("amqp.username")) {
+            queueInterface = argMap.get("amqp.username");
             System.out.println("    queueUsername = " + queueUsername);
         }
 
-        if (argMap.containsKey("queuePassword")) {
-            queueInterface = argMap.get("queuePassword");
+        if (argMap.containsKey("amqp.password")) {
+            queueInterface = argMap.get("amqp.password");
             System.out.println("    queuePassword = " + queuePassword);
         }
 
-        if (argMap.containsKey("queueInterface")) {
-            queueInterface = argMap.get("queueInterface");
+        if (argMap.containsKey("amqp.interface")) {
+            queueInterface = argMap.get("amqp.interface");
             System.out.println("    queueInterface = " + queueInterface);
         }
 
-        if (argMap.containsKey("queueName")) {
-            queueName = argMap.get("queueName");
+        if (argMap.containsKey("amqp.queue")) {
+            queueName = argMap.get("amqp.queue");
             System.out.println("    queueName = " + queueName);
         }
 
-        if (argMap.containsKey("restInterface")) {
-            restInterface = argMap.get("restInterface");
+        if (argMap.containsKey("rest.interface")) {
+            restInterface = argMap.get("rest.interface");
             System.out.println("    restInterface = " + restInterface);
         }
 
@@ -158,27 +158,27 @@ public class Main {
             System.out.println("Reading properties file " + propertiesFile.getAbsolutePath());
 
             if (queueUsername == null) {
-                queueUsername = properties.getProperty("queueUsername");
+                queueUsername = properties.getProperty("amqp.username");
                 if (queueUsername != null) {
                     System.out.println("    queueUsername = " + queueUsername);
                 }
             }
             if (queuePassword == null) {
-                queuePassword = properties.getProperty("queuePassword");
+                queuePassword = properties.getProperty("amqp.password");
                 if (queuePassword != null) {
                     System.out.println("    queuePassword = ********");
                 }
             }
             if (queueInterface == null) {
-                queueInterface = properties.getProperty("queueInterface");
+                queueInterface = properties.getProperty("amqp.interface");
                 System.out.println("    queueInterface = " + queueInterface);
             }
             if (queueName == null) {
-                queueName = properties.getProperty("queueName");
+                queueName = properties.getProperty("amqp.queue");
                 System.out.println("    queueName = " + queueName);
             }
             if (restInterface == null) {
-                restInterface = properties.getProperty("restInterface");
+                restInterface = properties.getProperty("rest.interface");
                 System.out.println("    restInterface = " + restInterface);
             }
             if (commands.isEmpty()) {
