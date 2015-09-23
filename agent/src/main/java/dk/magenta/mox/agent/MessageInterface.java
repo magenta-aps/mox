@@ -25,6 +25,7 @@ public abstract class MessageInterface {
     public static final String HEADER_MESSAGEID = "objektID";
     public static final String HEADER_OBJECTTYPE = "objekttype";
     public static final String HEADER_OPERATION = "operation";
+    public static final String HEADER_QUERY = "query";
 
 
     private static HashMap<String, ConnectionFactory> connectionFactories = new HashMap<String, ConnectionFactory>();

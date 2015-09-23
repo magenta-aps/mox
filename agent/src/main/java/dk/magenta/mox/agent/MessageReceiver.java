@@ -30,35 +30,40 @@ public class MessageReceiver extends MessageInterface {
         this.running = true;
         while (this.running) {
             QueueingConsumer.Delivery delivery = this.consumer.nextDelivery();
+            System.out.println("----------------------------");
             System.out.println("Got a message from the queue");
             try {
-                final Future<String> response = callback.run(delivery.getProperties().getHeaders(), new JSONObject(new String(delivery.getBody())));
+                String data = new String(delivery.getBody()).trim();
+                final Future<String> response = callback.run(delivery.getProperties().getHeaders(), new JSONObject(data.isEmpty() ? "{}" : data));
 
                 if (this.sendReplies && response != null) {
                     final AMQP.BasicProperties deliveryProperties = delivery.getProperties();
                     final AMQP.BasicProperties responseProperties = new AMQP.BasicProperties().builder().correlationId(deliveryProperties.getCorrelationId()).build();
+                    final String replyTo = deliveryProperties.getReplyTo();
 
                     // Wait for a response from the callback and send it back to the original message sender
                     new Thread(new Runnable() {
                         public void run() {
                             try {
                                 String responseString = response.get(); // This blocks while we wait for the callback to run. Hence the thread
-                                MessageReceiver.this.getChannel().basicPublish("", deliveryProperties.getReplyTo(), responseProperties, responseString.getBytes());
+                                MessageReceiver.this.getChannel().basicPublish("", replyTo, responseProperties, responseString.getBytes());
                             } catch (InterruptedException e) {
-                                e.printStackTrace();
+                                try {
+                                    MessageReceiver.this.getChannel().basicPublish("", replyTo, responseProperties, Util.error(e).getBytes());
+                                } catch (IOException e1) {
+                                    e1.printStackTrace();
+                                }
                             } catch (ExecutionException e) {
 
                                 if (e.getCause() != null && e.getCause() instanceof IOException) {
                                     try {
-                                        MessageReceiver.this.getChannel().basicPublish("", deliveryProperties.getReplyTo(), responseProperties, ("{\"Error\":\"" + e.getMessage() + "\"}").getBytes());
+                                        MessageReceiver.this.getChannel().basicPublish("", replyTo, responseProperties, Util.error(e).getBytes());
                                     } catch (IOException e1) {
                                         e1.printStackTrace();
                                     }
                                 }
-                                e.printStackTrace();
                             } catch (IOException e) {
                                 e.printStackTrace();
-
                             }
                         }
                     }).start();
@@ -69,6 +74,8 @@ public class MessageReceiver extends MessageInterface {
             }
         }
     }
+
+
 
     public void stop() {
         this.running = false;

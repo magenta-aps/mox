@@ -13,6 +13,7 @@ import org.apache.rahas.client.STSClient;
 import org.apache.rampart.policy.model.CryptoConfig;
 import org.apache.rampart.policy.model.RampartConfig;
 import org.apache.ws.secpolicy.SP11Constants;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -287,41 +288,80 @@ public class Main {
 
             } else if (command.equalsIgnoreCase("sendtest")) {
 
-
-
                 System.out.println("Running sendtest\nSending to "+queueInterface+", queueName '"+queueName+"'");
 
-                String authtoken = getSecurityToken(properties, restInterface);
-
-                String encodedAuthtoken = "saml-gzipped " + base64encode(gzip(authtoken));
+                String encodedAuthtoken = null;
+                if (properties.getProperty("security.enabled").equalsIgnoreCase("true")) {
+                    String authtoken = getSecurityToken(properties, restInterface);
+                    encodedAuthtoken = "saml-gzipped " + base64encode(gzip(authtoken));
+                }
 
                 MessageSender messageSender = new MessageSender(queueUsername, queuePassword, queueInterface, null, queueName);
                 ObjectType objectType = objectTypes.get("facet");
 
                 try {
+                    Future<String> response;
+
                     System.out.println("Sending create operation");
-                    Future<String> response = objectType.create(messageSender, getJSONObjectFromFilename("test/facet_opret.json"), encodedAuthtoken);
+                    response = objectType.create(messageSender, getJSONObjectFromFilename("test/facet_opret.json"), encodedAuthtoken);
                     String responseString = response.get();
                     System.out.println("create response: "+responseString);
 
                     JSONObject obj = new JSONObject(responseString);
                     UUID uuid = UUID.fromString(obj.getString("uuid"));
 
+                    System.out.println("Sending read operation");
+                    response = objectType.read(messageSender, uuid, encodedAuthtoken);
+                    System.out.println("read response: "+response.get());
+
+                    System.out.println("Sending search operation");
+                    JSONObject jsonQuery = new JSONObject();
+                    JSONArray array = new JSONArray();
+                    array.put("ddc99abd-c1b0-48c2-aef7-74fea841adae");
+                    array.put("ef2713ee-1a38-4c23-8fcb-3c4331262194");
+                    jsonQuery.put("redaktoerer", array);
+                    jsonQuery.put("status", "Publiceret");
+                    jsonQuery.put("plan", "XYZ");
+                    jsonQuery.put("brugervendtnoegle", "ORGFUNK");
+                    jsonQuery.put("virkningFra", "2000-01-01");
+                    jsonQuery.put("virkningTil", "2016-01-01");
+                    response = objectType.search(messageSender, jsonQuery, encodedAuthtoken);
+                    System.out.println("read response: " + response.get());
+
+                    System.out.println("Sending search operation");
+                    ParameterMap<String, String> query = new ParameterMap<>();
+                    query.add("redaktoerer", "ddc99abd-c1b0-48c2-aef7-74fea841adae");
+                    query.add("redaktoerer", "ef2713ee-1a38-4c23-8fcb-3c4331262194");
+                    query.add("status", "Publiceret");
+                    query.add("plan", "XYZ");
+                    query.add("brugervendtnoegle", "ORGFUNK");
+                    query.add("virkningFra", "2000-01-01");
+                    query.add("virkningTil", "2016-01-01");
+                    response = objectType.search(messageSender, query, encodedAuthtoken);
+                    System.out.println("read response: " + response.get());
+
+                    System.out.println("Sending list operation");
+                    response = objectType.list(messageSender, uuid, encodedAuthtoken);
+                    System.out.println("list response: "+response.get());
+
+                    System.out.println("Sending list operation");
+                    ArrayList<UUID> uuids = new ArrayList<>();
+                    uuids.add(uuid);
+                    response = objectType.list(messageSender, uuids, encodedAuthtoken);
+                    System.out.println("list response: "+response.get());
+
+
                     System.out.println("Sending update operation");
                     response = objectType.update(messageSender, uuid, getJSONObjectFromFilename("test/facet_opdater.json"), encodedAuthtoken);
-                    responseString = response.get();
-                    System.out.println("update response: "+responseString);
+                    System.out.println("update response: "+response.get());
 
                     System.out.println("Sending passivate operation");
                     response = objectType.passivate(messageSender, uuid, null, encodedAuthtoken);
-                    responseString = response.get();
-                    System.out.println("passivate response: "+responseString);
+                    System.out.println("passivate response: "+response.get());
 
                     System.out.println("Sending delete operation");
                     response = objectType.delete(messageSender, uuid, "Delete that sucker", encodedAuthtoken);
-                    responseString = response.get();
-                    System.out.println("delete response: "+responseString);
-
+                    System.out.println("delete response: "+response.get());
 
 
                 } catch (InterruptedException e) {

@@ -77,7 +77,8 @@ public class MessageSender extends MessageInterface {
 
         String correlationId = UUID.randomUUID().toString();
         AMQP.BasicProperties properties = this.getStandardPropertyBuilder().headers(headers).contentType("application/json").correlationId(correlationId).build();
-        this.getChannel().basicPublish(this.getExchange(), this.getQueueName(), properties, jsonObject.toString().getBytes());
+
+        this.getChannel().basicPublish(this.getExchange(), this.getQueueName(), properties, jsonObject==null ? null : jsonObject.toString().getBytes());
 
         if (expectReply) {
             SettableFuture<String> expector = new SettableFuture<String>(); // Set up a Future<> to wait for a reply
