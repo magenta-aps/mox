@@ -13,6 +13,7 @@ import org.apache.rahas.client.STSClient;
 import org.apache.rampart.policy.model.CryptoConfig;
 import org.apache.rampart.policy.model.RampartConfig;
 import org.apache.ws.secpolicy.SP11Constants;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -312,6 +313,34 @@ public class Main {
                     System.out.println("Sending read operation");
                     response = objectType.read(messageSender, uuid, encodedAuthtoken);
                     System.out.println("read response: "+response.get());
+
+                    System.out.println("Sending search operation");
+                    JSONObject jsonQuery = new JSONObject();
+                    JSONArray array = new JSONArray();
+                    array.put("ddc99abd-c1b0-48c2-aef7-74fea841adae");
+                    array.put("ef2713ee-1a38-4c23-8fcb-3c4331262194");
+                    jsonQuery.put("redaktoerer", array);
+                    jsonQuery.put("status", "Publiceret");
+                    jsonQuery.put("plan", "XYZ");
+                    jsonQuery.put("brugervendtnoegle", "ORGFUNK");
+                    jsonQuery.put("virkningFra", "2000-01-01");
+                    jsonQuery.put("virkningTil", "2016-01-01");
+                    response = objectType.search(messageSender, jsonQuery, encodedAuthtoken);
+                    System.out.println("read response: " + response.get());
+
+                    System.out.println("Sending search operation");
+                    ParameterList<String, String> query = new ParameterList<>();
+                    query.add("redaktoerer", "ddc99abd-c1b0-48c2-aef7-74fea841adae");
+                    query.add("redaktoerer", "ef2713ee-1a38-4c23-8fcb-3c4331262194");
+                    query.add("status", "Publiceret");
+                    query.add("plan", "XYZ");
+                    query.add("brugervendtnoegle", "ORGFUNK");
+                    query.add("virkningFra", "2000-01-01");
+                    query.add("virkningTil", "2016-01-01");
+                    response = objectType.search(messageSender, query, encodedAuthtoken);
+                    System.out.println("read response: "+response.get());
+
+
 
                     System.out.println("Sending update operation");
                     response = objectType.update(messageSender, uuid, getJSONObjectFromFilename("test/facet_opdater.json"), encodedAuthtoken);

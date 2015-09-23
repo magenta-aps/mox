@@ -2,11 +2,14 @@ package dk.magenta.mox.agent;
 
 import com.rabbitmq.client.LongString;
 import org.apache.commons.io.IOUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -54,14 +57,23 @@ public class RestMessageHandler implements MessageHandler {
             ObjectType.Operation operation = objectType.getOperation(operationName);
 
             String query = this.getHeaderString(headers, MessageInterface.HEADER_QUERY);
-            HashMap<String, String> queryMap = null;
+            HashMap<String, ArrayList<String>> queryMap = null;
             System.out.println("query: "+query);
 
             if (query != null) {
                 JSONObject queryObject = new JSONObject(query);
                 queryMap = new HashMap<>();
                 for (String key : queryObject.keySet()) {
-                    queryMap.put(key, queryObject.getString(key));
+                    ArrayList<String> list = new ArrayList<>();
+                    try {
+                        JSONArray array = queryObject.getJSONArray(key);
+                        for (int i=0; i<array.length(); i++) {
+                            list.add(array.optString(i));
+                        }
+                    } catch (JSONException e) {
+                        list.add(queryObject.optString(key));
+                    }
+                    queryMap.put(key, list);
                 }
             }
 
@@ -70,8 +82,6 @@ public class RestMessageHandler implements MessageHandler {
                 final String authorization = this.getHeaderString(headers, MessageInterface.HEADER_AUTHORIZATION);
                 if (operationName != null) {
                     String path = operation.path;
-                    System.out.println("method: "+operation.method.toString());
-                    System.out.println("path: "+path);
                     if (path.contains("[uuid]")) {
                         if (uuid == null) {
                             return Util.futureError(new IllegalArgumentException("Operation '" + operationName + "' requires a UUID to be set in the AMQP header '" + MessageInterface.HEADER_MESSAGEID + "'"));
@@ -86,9 +96,12 @@ public class RestMessageHandler implements MessageHandler {
                         } else {
                             StringJoiner parameters = new StringJoiner("&");
                             for (String key : queryMap.keySet()) {
-                                parameters.add(key+"="+queryMap.get(key));
+                                ArrayList<String> list = queryMap.get(key);
+                                for (String item : list) {
+                                    parameters.add(key + "=" + item);
+                                }
                             }
-                            url = new URI(this.url.getProtocol(), this.url.getHost(), path, parameters.toString(), null).toURL();
+                            url = new URI(this.url.getProtocol(), null, this.url.getHost(), this.url.getPort(), path, parameters.toString(), null).toURL();
                         }
                     } catch (MalformedURLException e) {
                         return Util.futureError(e);

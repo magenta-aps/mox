@@ -1,5 +1,6 @@
 package dk.magenta.mox.agent;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -35,6 +36,7 @@ public class ObjectType {
 
     private static final String COMMAND_CREATE = "create";
     private static final String COMMAND_READ = "read";
+    private static final String COMMAND_SEARCH = "search";
     private static final String COMMAND_UPDATE = "update";
     private static final String COMMAND_PASSIVATE = "passivate";
     private static final String COMMAND_DELETE = "delete";
@@ -113,7 +115,7 @@ public class ObjectType {
                 }
             }
         }
-        String[] neededOperations = {COMMAND_CREATE, COMMAND_READ, COMMAND_UPDATE, COMMAND_PASSIVATE, COMMAND_DELETE};
+        String[] neededOperations = {COMMAND_CREATE, COMMAND_READ, COMMAND_SEARCH, COMMAND_UPDATE, COMMAND_PASSIVATE, COMMAND_DELETE};
         for (ObjectType objectType : objectTypes.values()) {
             for (String operation : neededOperations) {
                 if (!objectType.operations.containsKey(operation)) {
@@ -153,6 +155,17 @@ public class ObjectType {
             return this.sendCommand(sender, COMMAND_READ, uuid, null, authorization);
         } else {
             throw new OperationNotSupportedException("Operation "+ COMMAND_READ +" is not defined for Object type "+this.name);
+        }
+    }
+
+    public Future<String> search(MessageSender sender, ParameterList<String, String> query, String authorization) throws IOException, OperationNotSupportedException {
+        return this.search(sender, query.toJSON(), authorization);
+    }
+    public Future<String> search(MessageSender sender, JSONObject query, String authorization) throws IOException, OperationNotSupportedException {
+        if (this.operations.containsKey(COMMAND_SEARCH)) {
+            return this.sendCommand(sender, COMMAND_SEARCH, null, null, authorization, query);
+        } else {
+            throw new OperationNotSupportedException("Operation "+ COMMAND_SEARCH +" is not defined for Object type "+this.name);
         }
     }
 
