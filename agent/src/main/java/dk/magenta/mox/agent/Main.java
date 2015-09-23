@@ -287,41 +287,43 @@ public class Main {
 
             } else if (command.equalsIgnoreCase("sendtest")) {
 
-
-
                 System.out.println("Running sendtest\nSending to "+queueInterface+", queueName '"+queueName+"'");
 
-                String authtoken = getSecurityToken(properties, restInterface);
-
-                String encodedAuthtoken = "saml-gzipped " + base64encode(gzip(authtoken));
+                String encodedAuthtoken = null;
+                if (properties.getProperty("security.enabled").equalsIgnoreCase("true")) {
+                    String authtoken = getSecurityToken(properties, restInterface);
+                    encodedAuthtoken = "saml-gzipped " + base64encode(gzip(authtoken));
+                }
 
                 MessageSender messageSender = new MessageSender(queueUsername, queuePassword, queueInterface, null, queueName);
                 ObjectType objectType = objectTypes.get("facet");
 
                 try {
+                    Future<String> response;
+
                     System.out.println("Sending create operation");
-                    Future<String> response = objectType.create(messageSender, getJSONObjectFromFilename("test/facet_opret.json"), encodedAuthtoken);
+                    response = objectType.create(messageSender, getJSONObjectFromFilename("test/facet_opret.json"), encodedAuthtoken);
                     String responseString = response.get();
                     System.out.println("create response: "+responseString);
 
                     JSONObject obj = new JSONObject(responseString);
                     UUID uuid = UUID.fromString(obj.getString("uuid"));
 
+                    System.out.println("Sending read operation");
+                    response = objectType.read(messageSender, uuid, encodedAuthtoken);
+                    System.out.println("read response: "+response.get());
+
                     System.out.println("Sending update operation");
                     response = objectType.update(messageSender, uuid, getJSONObjectFromFilename("test/facet_opdater.json"), encodedAuthtoken);
-                    responseString = response.get();
-                    System.out.println("update response: "+responseString);
+                    System.out.println("update response: "+response.get());
 
                     System.out.println("Sending passivate operation");
                     response = objectType.passivate(messageSender, uuid, null, encodedAuthtoken);
-                    responseString = response.get();
-                    System.out.println("passivate response: "+responseString);
+                    System.out.println("passivate response: "+response.get());
 
                     System.out.println("Sending delete operation");
                     response = objectType.delete(messageSender, uuid, "Delete that sucker", encodedAuthtoken);
-                    responseString = response.get();
-                    System.out.println("delete response: "+responseString);
-
+                    System.out.println("delete response: "+response.get());
 
 
                 } catch (InterruptedException e) {

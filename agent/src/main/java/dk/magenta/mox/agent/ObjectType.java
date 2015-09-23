@@ -34,6 +34,7 @@ public class ObjectType {
     }
 
     private static final String COMMAND_CREATE = "create";
+    private static final String COMMAND_READ = "read";
     private static final String COMMAND_UPDATE = "update";
     private static final String COMMAND_PASSIVATE = "passivate";
     private static final String COMMAND_DELETE = "delete";
@@ -112,7 +113,7 @@ public class ObjectType {
                 }
             }
         }
-        String[] neededOperations = {COMMAND_CREATE, COMMAND_UPDATE, COMMAND_PASSIVATE, COMMAND_DELETE};
+        String[] neededOperations = {COMMAND_CREATE, COMMAND_READ, COMMAND_UPDATE, COMMAND_PASSIVATE, COMMAND_DELETE};
         for (ObjectType objectType : objectTypes.values()) {
             for (String operation : neededOperations) {
                 if (!objectType.operations.containsKey(operation)) {
@@ -140,6 +141,18 @@ public class ObjectType {
             return this.sendCommand(sender, COMMAND_CREATE, null, data, authorization);
         } else {
             throw new OperationNotSupportedException("Operation "+ COMMAND_CREATE +" is not defined for Object type "+this.name);
+        }
+    }
+
+    public Future<String> read(MessageSender sender, UUID uuid) throws IOException, OperationNotSupportedException {
+        return this.read(sender, uuid, null);
+    }
+
+    public Future<String> read(MessageSender sender, UUID uuid, String authorization) throws IOException, OperationNotSupportedException {
+        if (this.operations.containsKey(COMMAND_READ)) {
+            return this.sendCommand(sender, COMMAND_READ, uuid, null, authorization);
+        } else {
+            throw new OperationNotSupportedException("Operation "+ COMMAND_READ +" is not defined for Object type "+this.name);
         }
     }
 
@@ -205,11 +218,13 @@ public class ObjectType {
 
 
     public Future<String> sendCommand(MessageSender sender, String operationName, UUID uuid, JSONObject data) throws IOException {
-        return this.sendCommand(sender, operationName, uuid, data, null);
+        return this.sendCommand(sender, operationName, uuid, data, null, null);
+    }
+    public Future<String> sendCommand(MessageSender sender, String operationName, UUID uuid, JSONObject data, String authorization) throws IOException {
+        return this.sendCommand(sender, operationName, uuid, data, authorization, null);
     }
 
-
-    public Future<String> sendCommand(MessageSender sender, String operationName, UUID uuid, JSONObject data, String authorization) throws IOException {
+    public Future<String> sendCommand(MessageSender sender, String operationName, UUID uuid, JSONObject data, String authorization, JSONObject query) throws IOException {
         HashMap<String, Object> headers = new HashMap<String, Object>();
         headers.put(MessageInterface.HEADER_OBJECTTYPE, this.name);
         headers.put(MessageInterface.HEADER_OPERATION, operationName);
@@ -218,6 +233,9 @@ public class ObjectType {
         }
         if (authorization != null) {
             headers.put(MessageInterface.HEADER_AUTHORIZATION, authorization);
+        }
+        if (query != null) {
+            headers.put(MessageInterface.HEADER_QUERY, query.toString());
         }
         try {
             System.out.println("Sending:");
