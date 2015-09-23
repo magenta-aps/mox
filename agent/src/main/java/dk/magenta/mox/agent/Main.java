@@ -329,7 +329,7 @@ public class Main {
                     System.out.println("read response: " + response.get());
 
                     System.out.println("Sending search operation");
-                    ParameterList<String, String> query = new ParameterList<>();
+                    ParameterMap<String, String> query = new ParameterMap<>();
                     query.add("redaktoerer", "ddc99abd-c1b0-48c2-aef7-74fea841adae");
                     query.add("redaktoerer", "ef2713ee-1a38-4c23-8fcb-3c4331262194");
                     query.add("status", "Publiceret");
@@ -338,8 +338,17 @@ public class Main {
                     query.add("virkningFra", "2000-01-01");
                     query.add("virkningTil", "2016-01-01");
                     response = objectType.search(messageSender, query, encodedAuthtoken);
-                    System.out.println("read response: "+response.get());
+                    System.out.println("read response: " + response.get());
 
+                    System.out.println("Sending list operation");
+                    response = objectType.list(messageSender, uuid, encodedAuthtoken);
+                    System.out.println("list response: "+response.get());
+
+                    System.out.println("Sending list operation");
+                    ArrayList<UUID> uuids = new ArrayList<>();
+                    uuids.add(uuid);
+                    response = objectType.list(messageSender, uuids, encodedAuthtoken);
+                    System.out.println("list response: "+response.get());
 
 
                     System.out.println("Sending update operation");

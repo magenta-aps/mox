@@ -9,15 +9,16 @@ import java.util.List;
 
 /**
  * Created by lars on 23-09-15.
+ *
+ * Map that holds multiple values for a given key
  */
-public class ParameterList<K,V> extends HashMap<K,ArrayList<V>> {
+public class ParameterMap<K,V> extends HashMap<K,ArrayList<V>> {
+
     public void add(K key, V value) {
-        ArrayList list;
-        if (!this.containsKey(key)) {
+        ArrayList<V> list = this.get(key);
+        if (list == null) {
             list = new ArrayList<V>();
             this.put(key, list);
-        } else {
-            list = this.get(key);
         }
         list.add(value);
     }
