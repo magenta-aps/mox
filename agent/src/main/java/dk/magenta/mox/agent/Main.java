@@ -103,27 +103,27 @@ public class Main {
 
         if (argMap.containsKey("amqp.username")) {
             queueInterface = argMap.get("amqp.username");
-            System.out.println("    queueUsername = " + queueUsername);
+            System.out.println("    amqp.username = " + queueUsername);
         }
 
         if (argMap.containsKey("amqp.password")) {
             queueInterface = argMap.get("amqp.password");
-            System.out.println("    queuePassword = " + queuePassword);
+            System.out.println("    amqp.password = " + queuePassword);
         }
 
         if (argMap.containsKey("amqp.interface")) {
             queueInterface = argMap.get("amqp.interface");
-            System.out.println("    queueInterface = " + queueInterface);
+            System.out.println("    amqp.interface = " + queueInterface);
         }
 
         if (argMap.containsKey("amqp.queue")) {
             queueName = argMap.get("amqp.queue");
-            System.out.println("    queueName = " + queueName);
+            System.out.println("    amqp.queue = " + queueName);
         }
 
         if (argMap.containsKey("rest.interface")) {
             restInterface = argMap.get("rest.interface");
-            System.out.println("    restInterface = " + restInterface);
+            System.out.println("    rest.interface = " + restInterface);
         }
 
 
@@ -160,26 +160,26 @@ public class Main {
             if (queueUsername == null) {
                 queueUsername = properties.getProperty("amqp.username");
                 if (queueUsername != null) {
-                    System.out.println("    queueUsername = " + queueUsername);
+                    System.out.println("    amqp.username = " + queueUsername);
                 }
             }
             if (queuePassword == null) {
                 queuePassword = properties.getProperty("amqp.password");
                 if (queuePassword != null) {
-                    System.out.println("    queuePassword = ********");
+                    System.out.println("    amqp.password = ********");
                 }
             }
             if (queueInterface == null) {
                 queueInterface = properties.getProperty("amqp.interface");
-                System.out.println("    queueInterface = " + queueInterface);
+                System.out.println("    amqp.interface = " + queueInterface);
             }
             if (queueName == null) {
                 queueName = properties.getProperty("amqp.queue");
-                System.out.println("    queueName = " + queueName);
+                System.out.println("    amqp.queue = " + queueName);
             }
             if (restInterface == null) {
                 restInterface = properties.getProperty("rest.interface");
-                System.out.println("    restInterface = " + restInterface);
+                System.out.println("    rest.interface = " + restInterface);
             }
             if (commands.isEmpty()) {
                 String cmds = properties.getProperty("command", "");
@@ -203,15 +203,15 @@ public class Main {
 
         if (queueInterface == null) {
             queueInterface = "localhost:5672";
-            System.out.println("    queueInterface = " + queueInterface);
+            System.out.println("    amqp.interface = " + queueInterface);
         }
         if (queueName == null) {
             queueName = "incoming";
-            System.out.println("    queueName = " + queueName);
+            System.out.println("    amqp.queue = " + queueName);
         }
         if (restInterface == null) {
             restInterface = "http://127.0.0.1:5000";
-            System.out.println("    restInterface = " + restInterface);
+            System.out.println("    rest.interface = " + restInterface);
         }
         if (commands.isEmpty()) {
             commands.add("sendtest");

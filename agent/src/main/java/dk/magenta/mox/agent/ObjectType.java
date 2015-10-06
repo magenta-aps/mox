@@ -32,6 +32,14 @@ public class ObjectType {
         public Operation(String name) {
             this.name = name;
         }
+        public String toString() {
+            return "Operation { \"name\":\""+this.name+"\", \"method\":\""+this.method.toString()+"\", \"path\":\""+this.path+"\" }";
+        }
+    }
+
+    private static class Inheritance {
+        public String inheritFrom;
+        public String basePath;
     }
 
     private static final String COMMAND_CREATE = "create";
@@ -45,6 +53,21 @@ public class ObjectType {
     public ObjectType(String name) {
         this.name = name;
         this.operations = new HashMap<String, Operation>();
+    }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("ObjectType { ");
+        sb.append("\"name\":\""+this.name+"\",");
+        sb.append("\"operations\":[");
+        for (String operationName : this.operations.keySet()) {
+            sb.append("\""+operationName+"\":");
+            sb.append(this.operations.get(operationName).toString());
+            sb.append(",");
+        }
+        sb.append("]");
+        sb.append("}");
+        return sb.toString();
     }
 
     private Operation addOperation(String name) {
@@ -87,35 +110,67 @@ public class ObjectType {
 
     public static Map<String,ObjectType> load(Properties properties) {
         HashMap<String, ObjectType> objectTypes = new HashMap<String, ObjectType>();
+        HashMap<ObjectType, Inheritance> inheritances = new HashMap<>();
         for (String key : properties.stringPropertyNames()) {
             String[] path = key.split("\\.");
-            if (path.length >= 4 && path[0].equals("type")) {
+            if (path[0].equals("type")) {
                 String name = path[1];
                 ObjectType objectType = objectTypes.get(name);
                 if (objectType == null) {
                     objectType = new ObjectType(name);
                     objectTypes.put(name, objectType);
                 }
-                String operationName = path[2];
-                Operation operation = objectType.getOperation(operationName, true);
-                String attributeName = path[3].trim();
                 String attributeValue = properties.getProperty(key);
-                if (attributeName.equals("method")) {
-                    try {
-                        operation.method = Method.valueOf(attributeValue);
-                    } catch (IllegalArgumentException e) {
-                        String[] strings = new String[Method.values().length];
-                        int i=0;
-                        for (Method m : Method.values()) {
-                            strings[i++] = m.toString();
+
+                if (path.length >= 4 && !path[2].startsWith("_")) {
+                    String operationName = path[2];
+                    Operation operation = objectType.getOperation(operationName, true);
+                    String attributeName = path[3].trim();
+                    if (attributeName.equals("method")) {
+                        try {
+                            operation.method = Method.valueOf(attributeValue);
+                        } catch (IllegalArgumentException e) {
+                            String[] strings = new String[Method.values().length];
+                            int i = 0;
+                            for (Method m : Method.values()) {
+                                strings[i++] = m.toString();
+                            }
+                            System.err.println("Error loading properties: method '" + attributeName + "' is not recognized. Recognized methods are: " + String.join(", ", strings));
                         }
-                        System.err.println("Error loading properties: method '"+attributeName+"' is not recognized. Recognized methods are: " + String.join(", ", strings));
+                    } else if (attributeName.equals("path")) {
+                        operation.path = attributeValue;
                     }
-                } else if (attributeName.equals("path")) {
-                    operation.path = attributeValue;
+                } else if (path.length == 3 && path[2].startsWith("_")){
+                    Inheritance inheritance = inheritances.get(objectType);
+                    if (inheritance == null) {
+                        inheritance = new Inheritance();
+                        inheritances.put(objectType, inheritance);
+                    }
+                    if (path[2].equals("_basetype")) {
+                        inheritance.inheritFrom = attributeValue;
+                    } else if (path[2].equals("_basepath")) {
+                        inheritance.basePath = attributeValue;
+                    }
                 }
             }
         }
+
+        for (ObjectType objectType : inheritances.keySet()) {
+            Inheritance inheritance = inheritances.get(objectType);
+            ObjectType dependee = objectTypes.get(inheritance.inheritFrom);
+            if (dependee == null) {
+                System.err.println("Object type "+objectType.getName()+" inherits from Object type"+ inheritance.inheritFrom +", but it is not found");
+            } else {
+                String basepath = inheritance.basePath;
+                for (String operationName : dependee.operations.keySet()) {
+                    Operation dependeeOperation = dependee.getOperation(operationName);
+                    Operation operation = objectType.getOperation(operationName, true);
+                    operation.method = dependeeOperation.method;
+                    operation.path = dependeeOperation.path.replace("[basepath]", basepath);
+                }
+            }
+        }
+
         String[] neededOperations = {COMMAND_CREATE, COMMAND_READ, COMMAND_SEARCH, COMMAND_LIST, COMMAND_UPDATE, COMMAND_PASSIVATE, COMMAND_DELETE};
         for (ObjectType objectType : objectTypes.values()) {
             for (String operation : neededOperations) {
