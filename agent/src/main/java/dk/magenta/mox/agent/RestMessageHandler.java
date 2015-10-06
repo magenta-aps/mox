@@ -99,7 +99,7 @@ public class RestMessageHandler implements MessageHandler {
                         String path = operation.path;
                         if (path.contains("[uuid]")) {
                             if (uuid == null) {
-                                return Util.futureError(new IllegalArgumentException("Operation '" + operationName + "' requires a UUID to be set in the AMQP header '" + MessageInterface.HEADER_MESSAGEID + "'"));
+                                throw new IllegalArgumentException("Operation '" + operationName + "' requires a UUID to be set in the AMQP header '" + MessageInterface.HEADER_MESSAGEID + "'");
                             }
                             path = path.replace("[uuid]", uuid);
                         }
