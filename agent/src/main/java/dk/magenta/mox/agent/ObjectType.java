@@ -89,11 +89,23 @@ public class ObjectType {
     public Operation getOperation(String name) {
         return this.getOperation(name, false);
     }
-
     public Operation getOperation(String name, boolean createIfMissing) {
+        try {
+            return this.getOperation(name, createIfMissing, false);
+        } catch (OperationNotSupportedException e) {
+            e.printStackTrace(); // This can't really happen
+            return null;
+        }
+    }
+
+    public Operation getOperation(String name, boolean createIfMissing, boolean failIfMissing) throws OperationNotSupportedException {
         Operation operation = this.operations.get(name);
-        if (operation == null && createIfMissing) {
-            return this.addOperation(name);
+        if (operation == null) {
+            if (createIfMissing) {
+                return this.addOperation(name);
+            } else if (failIfMissing) {
+                this.testOperationSupported(name);
+            }
         }
         return operation;
     }
@@ -326,8 +338,11 @@ public class ObjectType {
         return s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase();
     }
 
-    private void testOperationSupported(String operationName) throws OperationNotSupportedException {
-        if (!this.operations.containsKey(operationName)) {
+    public boolean isOperationSupported(String operationName) throws OperationNotSupportedException {
+        return this.operations.containsKey(operationName);
+    }
+    public void testOperationSupported(String operationName) throws OperationNotSupportedException {
+        if (!this.isOperationSupported(operationName)) {
             throw new OperationNotSupportedException("Operation " + operationName + " is not defined for Object type " + this.name);
         }
     }

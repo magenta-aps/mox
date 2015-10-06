@@ -39,95 +39,107 @@ public class RestMessageHandler implements MessageHandler {
     }
 
     private static String getHeaderString(Map<String, Object> headers, String key) {
+        try {
+            return RestMessageHandler.getHeaderString(headers, key, false);
+        } catch (MissingHeaderException e) {
+            e.printStackTrace(); // This really can't happen
+            return null;
+        }
+    }
+
+    private static String getHeaderString(Map<String, Object> headers, String key, boolean required) throws MissingHeaderException {
         Object value = headers.get(key);
         if (value == null) {
-            return null;
+            if (required) {
+                throw new MissingHeaderException(key);
+            } else {
+                return null;
+            }
         } else {
-            return ((LongString) value).toString();
+            return ((LongString) value).toString().trim();
         }
     }
 
     public Future<String> run(Map<String, Object> headers, JSONObject jsonObject) {
-        String objectTypeName = this.getHeaderString(headers, MessageInterface.HEADER_OBJECTTYPE);
-        System.out.println("objectTypeName: "+objectTypeName);
-        String operationName = this.getHeaderString(headers, MessageInterface.HEADER_OPERATION);
-        System.out.println("operationName: "+operationName);
+        try {
+            String objectTypeName = this.getHeaderString(headers, MessageInterface.HEADER_OBJECTTYPE, true).toLowerCase();
+            System.out.println("objectTypeName: " + objectTypeName);
+            String operationName = this.getHeaderString(headers, MessageInterface.HEADER_OPERATION, true).toLowerCase();
+            System.out.println("operationName: " + operationName);
 
 
-        ObjectType objectType = this.objectTypes.get(objectTypeName);
-        if (objectType != null) {
-            ObjectType.Operation operation = objectType.getOperation(operationName);
+            ObjectType objectType = this.objectTypes.get(objectTypeName);
+            if (objectType != null) {
+                ObjectType.Operation operation = objectType.getOperation(operationName);
 
-            String query = this.getHeaderString(headers, MessageInterface.HEADER_QUERY);
-            HashMap<String, ArrayList<String>> queryMap = null;
-            System.out.println("query: "+query);
-
-            if (query != null) {
-                JSONObject queryObject = new JSONObject(query);
-                queryMap = new HashMap<>();
-                for (String key : queryObject.keySet()) {
-                    ArrayList<String> list = new ArrayList<>();
-                    try {
-                        JSONArray array = queryObject.getJSONArray(key);
-                        for (int i=0; i<array.length(); i++) {
-                            list.add(array.optString(i));
-                        }
-                    } catch (JSONException e) {
-                        list.add(queryObject.optString(key));
-                    }
-                    queryMap.put(key, list);
-                }
-            }
-
-            if (operation != null) {
-                String uuid = this.getHeaderString(headers, MessageInterface.HEADER_MESSAGEID);
-                final String authorization = this.getHeaderString(headers, MessageInterface.HEADER_AUTHORIZATION);
-                if (operationName != null) {
-                    String path = operation.path;
-                    if (path.contains("[uuid]")) {
-                        if (uuid == null) {
-                            return Util.futureError(new IllegalArgumentException("Operation '" + operationName + "' requires a UUID to be set in the AMQP header '" + MessageInterface.HEADER_MESSAGEID + "'"));
-                        }
-                        path = path.replace("[uuid]", uuid);
-                    }
-                    URL url;
-
-                    try {
-                        if (queryMap == null) {
-                            url = this.getURLforPath(path);
-                        } else {
-                            StringJoiner parameters = new StringJoiner("&");
-                            for (String key : queryMap.keySet()) {
-                                ArrayList<String> list = queryMap.get(key);
-                                for (String item : list) {
-                                    parameters.add(key + "=" + item);
-                                }
+                String query = this.getHeaderString(headers, MessageInterface.HEADER_QUERY);
+                HashMap<String, ArrayList<String>> queryMap = null;
+                if (query != null) {
+                    System.out.println("query: " + query);
+                    JSONObject queryObject = new JSONObject(query);
+                    queryMap = new HashMap<>();
+                    for (String key : queryObject.keySet()) {
+                        ArrayList<String> list = new ArrayList<>();
+                        try {
+                            JSONArray array = queryObject.getJSONArray(key);
+                            for (int i = 0; i < array.length(); i++) {
+                                list.add(array.optString(i));
                             }
-                            url = new URI(this.url.getProtocol(), null, this.url.getHost(), this.url.getPort(), path, parameters.toString(), null).toURL();
+                        } catch (JSONException e) {
+                            list.add(queryObject.optString(key));
                         }
-                    } catch (MalformedURLException e) {
-                        return Util.futureError(e);
-                    } catch (URISyntaxException e) {
-                        return Util.futureError(e);
+                        queryMap.put(key, list);
                     }
-                    if (url != null) {
+                }
+
+                if (operation != null) {
+                    String uuid = this.getHeaderString(headers, MessageInterface.HEADER_MESSAGEID);
+                    final String authorization = this.getHeaderString(headers, MessageInterface.HEADER_AUTHORIZATION);
+                    if (operationName != null) {
+                        String path = operation.path;
+                        if (path.contains("[uuid]")) {
+                            if (uuid == null) {
+                                return Util.futureError(new IllegalArgumentException("Operation '" + operationName + "' requires a UUID to be set in the AMQP header '" + MessageInterface.HEADER_MESSAGEID + "'"));
+                            }
+                            path = path.replace("[uuid]", uuid);
+                        }
+                        URL url;
+
+                        try {
+                            if (queryMap == null) {
+                                url = this.getURLforPath(path);
+                            } else {
+                                StringJoiner parameters = new StringJoiner("&");
+                                for (String key : queryMap.keySet()) {
+                                    ArrayList<String> list = queryMap.get(key);
+                                    for (String item : list) {
+                                        parameters.add(key + "=" + item);
+                                    }
+                                }
+                                url = new URI(this.url.getProtocol(), null, this.url.getHost(), this.url.getPort(), path, parameters.toString(), null).toURL();
+                            }
+                        } catch (MalformedURLException e) {
+                            return Util.futureError(e);
+                        } catch (URISyntaxException e) {
+                            return Util.futureError(e);
+                        }
                         final String method = operation.method.toString();
                         final URL finalUrl = url;
                         final char[] data = jsonObject.toString().toCharArray();
                         return this.pool.submit(new Callable<String>() {
                             public String call() throws IOException {
                                 String response = rest(method, finalUrl, data, authorization);
-                                System.out.println("response: "+response);
+                                System.out.println("response: " + response);
                                 return response;
                             }
                         });
-                    } else {
-                       // return Util.futureError()
                     }
                 }
             }
+            return null;
+        } catch (Exception e) {
+            return Util.futureError(e);
         }
-        return null;
     }
 
     private URL getURLforPath(String path) throws MalformedURLException {
