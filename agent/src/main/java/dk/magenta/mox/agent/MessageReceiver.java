@@ -32,6 +32,7 @@ public class MessageReceiver extends MessageInterface {
             QueueingConsumer.Delivery delivery = this.consumer.nextDelivery();
             System.out.println("----------------------------");
             System.out.println("Got a message from the queue");
+            System.out.println("Properties: "+delivery.getProperties());
             try {
                 String data = new String(delivery.getBody()).trim();
                 final Future<String> response = callback.run(delivery.getProperties().getHeaders(), new JSONObject(data.isEmpty() ? "{}" : data));
@@ -40,6 +41,7 @@ public class MessageReceiver extends MessageInterface {
                     final AMQP.BasicProperties deliveryProperties = delivery.getProperties();
                     final AMQP.BasicProperties responseProperties = new AMQP.BasicProperties().builder().correlationId(deliveryProperties.getCorrelationId()).build();
                     final String replyTo = deliveryProperties.getReplyTo();
+                    System.out.println("Send response to (replyTo:"+deliveryProperties.getReplyTo()+", correlationId:"+deliveryProperties.getCorrelationId()+")");
 
                     // Wait for a response from the callback and send it back to the original message sender
                     new Thread(new Runnable() {
