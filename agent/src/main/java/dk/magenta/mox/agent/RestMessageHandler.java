@@ -14,12 +14,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringJoiner;
 import java.util.concurrent.*;
+import java.util.logging.Logger;
 
 public class RestMessageHandler implements MessageHandler {
 
     private URL url;
     private Map<String, ObjectType> objectTypes;
     private final ExecutorService pool = Executors.newFixedThreadPool(10);
+    protected Logger logger = Logger.getLogger(this.getClass().getName());
 
     public RestMessageHandler(String host, Map<String, ObjectType> objectTypes) throws MalformedURLException {
         this(new URL(host), objectTypes);
@@ -64,9 +66,10 @@ public class RestMessageHandler implements MessageHandler {
         try {
             String objectTypeName = this.getHeaderString(headers, MessageInterface.HEADER_OBJECTTYPE, true).toLowerCase();
             System.out.println("objectTypeName: " + objectTypeName);
+            this.logger.info("objectTypeName: " + objectTypeName);
             String operationName = this.getHeaderString(headers, MessageInterface.HEADER_OPERATION, true).toLowerCase();
             System.out.println("operationName: " + operationName);
-
+            this.logger.info("operationName: " + operationName);
 
             ObjectType objectType = this.objectTypes.get(objectTypeName);
             if (objectType != null) {
@@ -76,6 +79,7 @@ public class RestMessageHandler implements MessageHandler {
                 HashMap<String, ArrayList<String>> queryMap = null;
                 if (query != null) {
                     System.out.println("query: " + query);
+                    this.logger.info("query: " + query);
                     JSONObject queryObject = new JSONObject(query);
                     queryMap = new HashMap<>();
                     for (String key : queryObject.keySet()) {
@@ -130,6 +134,7 @@ public class RestMessageHandler implements MessageHandler {
                             public String call() throws IOException {
                                 String response = rest(method, finalUrl, data, authorization);
                                 System.out.println("response: " + response);
+                                RestMessageHandler.this.logger.info("response: " + response);
                                 return response;
                             }
                         });
@@ -138,6 +143,7 @@ public class RestMessageHandler implements MessageHandler {
             }
             return null;
         } catch (Exception e) {
+            this.logger.throwing(this.getClass().getCanonicalName(), "run", e);
             return Util.futureError(e);
         }
     }
@@ -156,6 +162,7 @@ public class RestMessageHandler implements MessageHandler {
     private String rest(String method, URL url, char[] payload, String authorization) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod(method);
+        connection.setConnectTimeout(30000);
 
         connection.setDoOutput(true);
         connection.setRequestProperty("Content-type", "application/json");
