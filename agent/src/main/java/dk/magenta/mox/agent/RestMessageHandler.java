@@ -2,6 +2,7 @@ package dk.magenta.mox.agent;
 
 import com.rabbitmq.client.LongString;
 import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,14 +15,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringJoiner;
 import java.util.concurrent.*;
-import java.util.logging.Logger;
 
 public class RestMessageHandler implements MessageHandler {
 
     private URL url;
     private Map<String, ObjectType> objectTypes;
     private final ExecutorService pool = Executors.newFixedThreadPool(10);
-    protected Logger logger = Logger.getLogger(this.getClass().getName());
+    protected Logger logger = Logger.getLogger(RestMessageHandler.class);
 
     public RestMessageHandler(String host, Map<String, ObjectType> objectTypes) throws MalformedURLException {
         this(new URL(host), objectTypes);
@@ -139,7 +139,7 @@ public class RestMessageHandler implements MessageHandler {
             }
             return null;
         } catch (Exception e) {
-            this.logger.throwing(this.getClass().getCanonicalName(), "run", e);
+            this.logger.error(e);
             return Util.futureError(e);
         }
     }
@@ -176,10 +176,10 @@ public class RestMessageHandler implements MessageHandler {
             this.logger.info("got response");
             return response;
         } catch (ConnectException e) {
-            this.logger.warning("The defined REST interface ("+method+" "+connection.getURL().getHost() + ":" + connection.getURL().getPort() + connection.getURL().getPath()+") does not answer.");
+            this.logger.warn("The defined REST interface ("+method+" "+connection.getURL().getHost() + ":" + connection.getURL().getPort() + connection.getURL().getPath()+") does not answer.");
             throw e;
         } catch (IOException e) {
-            this.logger.warning("IOException on request to "+method+" "+url.toString()+": "+e.getMessage());
+            this.logger.warn("IOException on request to "+method+" "+url.toString()+": "+e.getMessage());
             throw e;
         }
     }

@@ -111,7 +111,7 @@ public class MessageSender extends MessageInterface {
                             }
                         } catch (InterruptedException e) {
                             e.printStackTrace();
-                            MessageSender.this.logger.throwing(this.getClass().getCanonicalName(), "run", e);
+                            MessageSender.this.logger.error(e);
                         }
                     }
                     MessageSender.this.listening = false;
@@ -137,10 +137,10 @@ public class MessageSender extends MessageInterface {
                                 MessageSender.this.sendJSON(null, notification);
                             } catch (IOException e) {
                                 e.printStackTrace();
-                                MessageSender.this.logger.throwing(this.getClass().getCanonicalName(), "run", e);
+                                MessageSender.this.logger.error(e);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
-                                MessageSender.this.logger.throwing(this.getClass().getCanonicalName(), "run", e);
+                                MessageSender.this.logger.error(e);
                             }
                         }
                     }

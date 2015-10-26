@@ -5,7 +5,7 @@
     <appender name="FILE" class="org.apache.log4j.FileAppender">
     	<param name="File" value="/var/log/moxagent/moxagent.log" />
 		<param name="immediateFlush" value="true"/>
-		<param name="threshold" value="INFO"/>
+		<param name="threshold" value="ALL"/>
 		<param name="append" value="true"/>
 		<layout class="org.apache.log4j.PatternLayout">
 			<param name="conversionPattern" value="%m%n"/>
@@ -13,7 +13,7 @@
 	</appender>
 
     <root>
-    	<priority value="DEBUG" />
+    	<level value="ALL" />
         <appender-ref ref="FILE" />
     </root>
 
