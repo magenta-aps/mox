@@ -34,7 +34,6 @@ public class MessageReceiver extends MessageInterface {
             QueueingConsumer.Delivery delivery = this.consumer.nextDelivery();
             this.logger.info("----------------------------");
             this.logger.info("Got a message from the queue");
-            this.logger.info("Properties: " + delivery.getProperties());
 
             final AMQP.BasicProperties deliveryProperties = delivery.getProperties();
             final AMQP.BasicProperties responseProperties = new AMQP.BasicProperties().builder().correlationId(deliveryProperties.getCorrelationId()).build();
