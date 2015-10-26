@@ -4,6 +4,7 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -20,6 +21,7 @@ public abstract class MessageInterface {
     private String exchange;
     private String queueName;
     private AMQP.Queue.DeclareOk queueResult;
+    protected Logger logger = Logger.getLogger(this.getClass());
 
     public static final String HEADER_AUTHORIZATION = "autorisation";
     public static final String HEADER_MESSAGEID = "objektID";

@@ -6,6 +6,7 @@ import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMFactory;
 import org.apache.axiom.om.impl.builder.StAXOMBuilder;
 import org.apache.axis2.AxisFault;
+import org.apache.log4j.xml.DOMConfigurator;
 import org.apache.neethi.Policy;
 import org.apache.neethi.PolicyEngine;
 import org.apache.rahas.*;
@@ -40,6 +41,8 @@ public class Main {
     public static Properties properties;
 
     public static void main(String[] args) {
+
+        DOMConfigurator.configure("log4j.xml");
 
         String queueUsername = null;
         String queuePassword = null;

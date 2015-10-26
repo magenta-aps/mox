@@ -2,6 +2,7 @@ package dk.magenta.mox.agent;
 
 import com.rabbitmq.client.LongString;
 import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,6 +21,7 @@ public class RestMessageHandler implements MessageHandler {
     private URL url;
     private Map<String, ObjectType> objectTypes;
     private final ExecutorService pool = Executors.newFixedThreadPool(10);
+    protected Logger logger = Logger.getLogger(RestMessageHandler.class);
 
     public RestMessageHandler(String host, Map<String, ObjectType> objectTypes) throws MalformedURLException {
         this(new URL(host), objectTypes);
@@ -63,10 +65,9 @@ public class RestMessageHandler implements MessageHandler {
     public Future<String> run(Map<String, Object> headers, JSONObject jsonObject) {
         try {
             String objectTypeName = this.getHeaderString(headers, MessageInterface.HEADER_OBJECTTYPE, true).toLowerCase();
-            System.out.println("objectTypeName: " + objectTypeName);
+            this.logger.info("objectTypeName: " + objectTypeName);
             String operationName = this.getHeaderString(headers, MessageInterface.HEADER_OPERATION, true).toLowerCase();
-            System.out.println("operationName: " + operationName);
-
+            this.logger.info("operationName: " + operationName);
 
             ObjectType objectType = this.objectTypes.get(objectTypeName);
             if (objectType != null) {
@@ -75,7 +76,7 @@ public class RestMessageHandler implements MessageHandler {
                 String query = this.getHeaderString(headers, MessageInterface.HEADER_QUERY);
                 HashMap<String, ArrayList<String>> queryMap = null;
                 if (query != null) {
-                    System.out.println("query: " + query);
+                    this.logger.info("query: " + query);
                     JSONObject queryObject = new JSONObject(query);
                     queryMap = new HashMap<>();
                     for (String key : queryObject.keySet()) {
@@ -129,7 +130,7 @@ public class RestMessageHandler implements MessageHandler {
                         return this.pool.submit(new Callable<String>() {
                             public String call() throws IOException {
                                 String response = rest(method, finalUrl, data, authorization);
-                                System.out.println("response: " + response);
+                                RestMessageHandler.this.logger.info("response: " + response);
                                 return response;
                             }
                         });
@@ -138,6 +139,7 @@ public class RestMessageHandler implements MessageHandler {
             }
             return null;
         } catch (Exception e) {
+            this.logger.error(e);
             return Util.futureError(e);
         }
     }
@@ -156,22 +158,28 @@ public class RestMessageHandler implements MessageHandler {
     private String rest(String method, URL url, char[] payload, String authorization) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod(method);
+        connection.setConnectTimeout(30000);
 
         connection.setDoOutput(true);
         connection.setRequestProperty("Content-type", "application/json");
         if (authorization != null && !authorization.isEmpty()) {
             connection.setRequestProperty("Authorization", authorization);
         }
-        System.out.println("Sending message to REST interface: " + method + " " + url.toString());
+        this.logger.info("Sending message to REST interface: " + method + " " + url.toString());
         try {
             if (!("GET".equalsIgnoreCase(method))) {
                 OutputStreamWriter out = new OutputStreamWriter(connection.getOutputStream());
                 out.write(payload);
                 out.close();
             }
-            return IOUtils.toString(connection.getInputStream());
+            String response = IOUtils.toString(connection.getInputStream());
+            this.logger.info("got response");
+            return response;
         } catch (ConnectException e) {
-            System.err.println("The defined REST interface ("+method+" "+connection.getURL().getHost() + ":" + connection.getURL().getPort() + connection.getURL().getPath()+") does not answer.");
+            this.logger.warn("The defined REST interface ("+method+" "+connection.getURL().getHost() + ":" + connection.getURL().getPort() + connection.getURL().getPath()+") does not answer.");
+            throw e;
+        } catch (IOException e) {
+            this.logger.warn("IOException on request to "+method+" "+url.toString()+": "+e.getMessage());
             throw e;
         }
     }
