@@ -1,3 +1,22 @@
+* Version 0.2.9, October 26, 2015
+
+New in this version:
+
+* Enhanced logging for java mox listener
+
+
+
+* Version 0.2.8, October 7, 2015
+
+New in this version:
+
+* AMQP listener now accepts mixed-case values for headers objectType and 
+  operation
+* AMQP listener throws more error messages back through the defined response 
+  channel, rather than staying silent.
+
+
+
 * Version 0.2.7, September 23, 2015
 
 New in this version:
