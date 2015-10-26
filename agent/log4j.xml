@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
 
-    <appender name="rolling" class="org.apache.log4j.DailyRollingFileAppender">
-    	<param name="File" value="/var/log/moxagent/moxagent.log" />
-    	<param name="DatePattern" value=".yyyy-MM-dd" />
-    	<layout class="org.apache.log4j.PatternLayout">
-    		<param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss} %-5p [%C] [IP=%X{ipAddress}] [user=%X{user}] %m%n" />
-    	</layout>
+    <appender name="FILE" class="org.apache.log4j.FileAppender">
+		<param name="File" value="/var/log/moxagent/moxagent.log" />
+		<param name="immediateFlush" value="true"/>
+		<param name="threshold" value="INFO"/>
+		<param name="append" value="true"/>
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="conversionPattern" value="%m%n"/>
+		</layout>
     </appender>
 
     <root>
-    	<priority value="fine" />
-        <appender-ref ref="rolling" />
+    	<priority value="DEBUG" />
+        <appender-ref ref="FILE" />
     </root>
 
 </log4j:configuration>
