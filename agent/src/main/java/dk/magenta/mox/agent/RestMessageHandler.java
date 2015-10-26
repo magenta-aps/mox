@@ -65,10 +65,8 @@ public class RestMessageHandler implements MessageHandler {
     public Future<String> run(Map<String, Object> headers, JSONObject jsonObject) {
         try {
             String objectTypeName = this.getHeaderString(headers, MessageInterface.HEADER_OBJECTTYPE, true).toLowerCase();
-            System.out.println("objectTypeName: " + objectTypeName);
             this.logger.info("objectTypeName: " + objectTypeName);
             String operationName = this.getHeaderString(headers, MessageInterface.HEADER_OPERATION, true).toLowerCase();
-            System.out.println("operationName: " + operationName);
             this.logger.info("operationName: " + operationName);
 
             ObjectType objectType = this.objectTypes.get(objectTypeName);
@@ -78,7 +76,6 @@ public class RestMessageHandler implements MessageHandler {
                 String query = this.getHeaderString(headers, MessageInterface.HEADER_QUERY);
                 HashMap<String, ArrayList<String>> queryMap = null;
                 if (query != null) {
-                    System.out.println("query: " + query);
                     this.logger.info("query: " + query);
                     JSONObject queryObject = new JSONObject(query);
                     queryMap = new HashMap<>();
@@ -133,7 +130,6 @@ public class RestMessageHandler implements MessageHandler {
                         return this.pool.submit(new Callable<String>() {
                             public String call() throws IOException {
                                 String response = rest(method, finalUrl, data, authorization);
-                                System.out.println("response: " + response);
                                 RestMessageHandler.this.logger.info("response: " + response);
                                 return response;
                             }
