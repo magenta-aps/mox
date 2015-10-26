@@ -2,6 +2,7 @@ package dk.magenta.mox.agent;
 
 import com.rabbitmq.client.LongString;
 import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,6 +21,7 @@ public class RestMessageHandler implements MessageHandler {
     private URL url;
     private Map<String, ObjectType> objectTypes;
     private final ExecutorService pool = Executors.newFixedThreadPool(10);
+    protected Logger logger = Logger.getLogger(RestMessageHandler.class);
 
     public RestMessageHandler(String host, Map<String, ObjectType> objectTypes) throws MalformedURLException {
         this(new URL(host), objectTypes);
@@ -39,92 +41,107 @@ public class RestMessageHandler implements MessageHandler {
     }
 
     private static String getHeaderString(Map<String, Object> headers, String key) {
+        try {
+            return RestMessageHandler.getHeaderString(headers, key, false);
+        } catch (MissingHeaderException e) {
+            e.printStackTrace(); // This really can't happen
+            return null;
+        }
+    }
+
+    private static String getHeaderString(Map<String, Object> headers, String key, boolean required) throws MissingHeaderException {
         Object value = headers.get(key);
         if (value == null) {
-            return null;
+            if (required) {
+                throw new MissingHeaderException(key);
+            } else {
+                return null;
+            }
         } else {
-            return ((LongString) value).toString();
+            return ((LongString) value).toString().trim();
         }
     }
 
     public Future<String> run(Map<String, Object> headers, JSONObject jsonObject) {
-        String objectTypeName = this.getHeaderString(headers, MessageInterface.HEADER_OBJECTTYPE);
-        String operationName = this.getHeaderString(headers, MessageInterface.HEADER_OPERATION);
+        try {
+            String objectTypeName = this.getHeaderString(headers, MessageInterface.HEADER_OBJECTTYPE, true).toLowerCase();
+            this.logger.info("objectTypeName: " + objectTypeName);
+            String operationName = this.getHeaderString(headers, MessageInterface.HEADER_OPERATION, true).toLowerCase();
+            this.logger.info("operationName: " + operationName);
 
+            ObjectType objectType = this.objectTypes.get(objectTypeName);
+            if (objectType != null) {
+                ObjectType.Operation operation = objectType.getOperation(operationName);
 
-        ObjectType objectType = this.objectTypes.get(objectTypeName);
-        if (objectType != null) {
-            ObjectType.Operation operation = objectType.getOperation(operationName);
-
-            String query = this.getHeaderString(headers, MessageInterface.HEADER_QUERY);
-            HashMap<String, ArrayList<String>> queryMap = null;
-            System.out.println("query: "+query);
-
-            if (query != null) {
-                JSONObject queryObject = new JSONObject(query);
-                queryMap = new HashMap<>();
-                for (String key : queryObject.keySet()) {
-                    ArrayList<String> list = new ArrayList<>();
-                    try {
-                        JSONArray array = queryObject.getJSONArray(key);
-                        for (int i=0; i<array.length(); i++) {
-                            list.add(array.optString(i));
-                        }
-                    } catch (JSONException e) {
-                        list.add(queryObject.optString(key));
-                    }
-                    queryMap.put(key, list);
-                }
-            }
-
-            if (operation != null) {
-                String uuid = this.getHeaderString(headers, MessageInterface.HEADER_MESSAGEID);
-                final String authorization = this.getHeaderString(headers, MessageInterface.HEADER_AUTHORIZATION);
-                if (operationName != null) {
-                    String path = operation.path;
-                    if (path.contains("[uuid]")) {
-                        if (uuid == null) {
-                            return Util.futureError(new IllegalArgumentException("Operation '" + operationName + "' requires a UUID to be set in the AMQP header '" + MessageInterface.HEADER_MESSAGEID + "'"));
-                        }
-                        path = path.replace("[uuid]", uuid);
-                    }
-                    URL url;
-
-                    try {
-                        if (queryMap == null) {
-                            url = this.getURLforPath(path);
-                        } else {
-                            StringJoiner parameters = new StringJoiner("&");
-                            for (String key : queryMap.keySet()) {
-                                ArrayList<String> list = queryMap.get(key);
-                                for (String item : list) {
-                                    parameters.add(key + "=" + item);
-                                }
+                String query = this.getHeaderString(headers, MessageInterface.HEADER_QUERY);
+                HashMap<String, ArrayList<String>> queryMap = null;
+                if (query != null) {
+                    this.logger.info("query: " + query);
+                    JSONObject queryObject = new JSONObject(query);
+                    queryMap = new HashMap<>();
+                    for (String key : queryObject.keySet()) {
+                        ArrayList<String> list = new ArrayList<>();
+                        try {
+                            JSONArray array = queryObject.getJSONArray(key);
+                            for (int i = 0; i < array.length(); i++) {
+                                list.add(array.optString(i));
                             }
-                            url = new URI(this.url.getProtocol(), null, this.url.getHost(), this.url.getPort(), path, parameters.toString(), null).toURL();
+                        } catch (JSONException e) {
+                            list.add(queryObject.optString(key));
                         }
-                    } catch (MalformedURLException e) {
-                        return Util.futureError(e);
-                    } catch (URISyntaxException e) {
-                        return Util.futureError(e);
+                        queryMap.put(key, list);
                     }
-                    if (url != null) {
+                }
+
+                if (operation != null) {
+                    String uuid = this.getHeaderString(headers, MessageInterface.HEADER_MESSAGEID);
+                    final String authorization = this.getHeaderString(headers, MessageInterface.HEADER_AUTHORIZATION);
+                    if (operationName != null) {
+                        String path = operation.path;
+                        if (path.contains("[uuid]")) {
+                            if (uuid == null) {
+                                throw new IllegalArgumentException("Operation '" + operationName + "' requires a UUID to be set in the AMQP header '" + MessageInterface.HEADER_MESSAGEID + "'");
+                            }
+                            path = path.replace("[uuid]", uuid);
+                        }
+                        URL url;
+
+                        try {
+                            if (queryMap == null) {
+                                url = this.getURLforPath(path);
+                            } else {
+                                StringJoiner parameters = new StringJoiner("&");
+                                for (String key : queryMap.keySet()) {
+                                    ArrayList<String> list = queryMap.get(key);
+                                    for (String item : list) {
+                                        parameters.add(key + "=" + item);
+                                    }
+                                }
+                                url = new URI(this.url.getProtocol(), null, this.url.getHost(), this.url.getPort(), path, parameters.toString(), null).toURL();
+                            }
+                        } catch (MalformedURLException e) {
+                            return Util.futureError(e);
+                        } catch (URISyntaxException e) {
+                            return Util.futureError(e);
+                        }
                         final String method = operation.method.toString();
                         final URL finalUrl = url;
                         final char[] data = jsonObject.toString().toCharArray();
                         return this.pool.submit(new Callable<String>() {
                             public String call() throws IOException {
                                 String response = rest(method, finalUrl, data, authorization);
+                                RestMessageHandler.this.logger.info("response: " + response);
                                 return response;
                             }
                         });
-                    } else {
-                       // return Util.futureError()
                     }
                 }
             }
+            return null;
+        } catch (Exception e) {
+            this.logger.error(e);
+            return Util.futureError(e);
         }
-        return null;
     }
 
     private URL getURLforPath(String path) throws MalformedURLException {
@@ -141,22 +158,28 @@ public class RestMessageHandler implements MessageHandler {
     private String rest(String method, URL url, char[] payload, String authorization) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod(method);
+        connection.setConnectTimeout(30000);
 
         connection.setDoOutput(true);
         connection.setRequestProperty("Content-type", "application/json");
         if (authorization != null && !authorization.isEmpty()) {
             connection.setRequestProperty("Authorization", authorization);
         }
-        System.out.println("Sending message to REST interface: " + method + " " + url.toString());
+        this.logger.info("Sending message to REST interface: " + method + " " + url.toString());
         try {
             if (!("GET".equalsIgnoreCase(method))) {
                 OutputStreamWriter out = new OutputStreamWriter(connection.getOutputStream());
                 out.write(payload);
                 out.close();
             }
-            return IOUtils.toString(connection.getInputStream());
+            String response = IOUtils.toString(connection.getInputStream());
+            this.logger.info("got response");
+            return response;
         } catch (ConnectException e) {
-            System.err.println("The defined REST interface ("+method+" "+connection.getURL().getHost() + ":" + connection.getURL().getPort() + connection.getURL().getPath()+") does not answer.");
+            this.logger.warn("The defined REST interface ("+method+" "+connection.getURL().getHost() + ":" + connection.getURL().getPort() + connection.getURL().getPath()+") does not answer.");
+            throw e;
+        } catch (IOException e) {
+            this.logger.warn("IOException on request to "+method+" "+url.toString()+": "+e.getMessage());
             throw e;
         }
     }

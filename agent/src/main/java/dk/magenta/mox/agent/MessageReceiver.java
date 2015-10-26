@@ -8,6 +8,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class MessageReceiver extends MessageInterface {
@@ -30,48 +31,48 @@ public class MessageReceiver extends MessageInterface {
         this.running = true;
         while (this.running) {
             QueueingConsumer.Delivery delivery = this.consumer.nextDelivery();
-            System.out.println("----------------------------");
-            System.out.println("Got a message from the queue");
+            this.logger.info("----------------------------");
+            this.logger.info("Got a message from the queue");
+
+            final AMQP.BasicProperties deliveryProperties = delivery.getProperties();
+            final AMQP.BasicProperties responseProperties = new AMQP.BasicProperties().builder().correlationId(deliveryProperties.getCorrelationId()).build();
+            final String replyTo = deliveryProperties.getReplyTo();
+            this.logger.info("Send response to (replyTo:"+deliveryProperties.getReplyTo()+", correlationId:"+deliveryProperties.getCorrelationId()+")");
+
+            String data = new String(delivery.getBody()).trim();
+            JSONObject dataObject;
             try {
-                String data = new String(delivery.getBody()).trim();
-                final Future<String> response = callback.run(delivery.getProperties().getHeaders(), new JSONObject(data.isEmpty() ? "{}" : data));
+                dataObject = new JSONObject(data.isEmpty() ? "{}" : data);
+            } catch (JSONException e) {
+                try {
+                    MessageReceiver.this.getChannel().basicPublish("", replyTo, responseProperties, Util.error(e).getBytes());
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+                continue;
+            }
+            final Future<String> response = callback.run(delivery.getProperties().getHeaders(), dataObject);
 
-                if (this.sendReplies && response != null) {
-                    final AMQP.BasicProperties deliveryProperties = delivery.getProperties();
-                    final AMQP.BasicProperties responseProperties = new AMQP.BasicProperties().builder().correlationId(deliveryProperties.getCorrelationId()).build();
-                    final String replyTo = deliveryProperties.getReplyTo();
+            if (this.sendReplies && response != null) {
 
-                    // Wait for a response from the callback and send it back to the original message sender
-                    new Thread(new Runnable() {
-                        public void run() {
+                // Wait for a response from the callback and send it back to the original message sender
+                new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            String responseString = response.get(30, TimeUnit.SECONDS); // This blocks while we wait for the callback to run. Hence the thread
+                            MessageReceiver.this.getChannel().basicPublish("", replyTo, responseProperties, responseString.getBytes());
+                        } catch (Exception e) {
                             try {
-                                String responseString = response.get(); // This blocks while we wait for the callback to run. Hence the thread
-                                MessageReceiver.this.getChannel().basicPublish("", replyTo, responseProperties, responseString.getBytes());
-                            } catch (InterruptedException e) {
-                                try {
-                                    MessageReceiver.this.getChannel().basicPublish("", replyTo, responseProperties, Util.error(e).getBytes());
-                                } catch (IOException e1) {
-                                    e1.printStackTrace();
-                                }
-                            } catch (ExecutionException e) {
-
-                                if (e.getCause() != null && e.getCause() instanceof IOException) {
-                                    try {
-                                        MessageReceiver.this.getChannel().basicPublish("", replyTo, responseProperties, Util.error(e).getBytes());
-                                    } catch (IOException e1) {
-                                        e1.printStackTrace();
-                                    }
-                                }
-                            } catch (IOException e) {
-                                e.printStackTrace();
+                                MessageReceiver.this.getChannel().basicPublish("", replyTo, responseProperties, Util.error(e).getBytes());
+                            } catch (IOException e1) {
+                                e1.printStackTrace();
                             }
                         }
-                    }).start();
-                }
-
-            } catch (JSONException e) {
-                e.printStackTrace();
+                    }
+                }).start();
             }
+
+
         }
     }
 
