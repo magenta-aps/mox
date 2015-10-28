@@ -70,30 +70,34 @@ public class RestMessageHandler implements MessageHandler {
             this.logger.info("operationName: " + operationName);
 
             ObjectType objectType = this.objectTypes.get(objectTypeName);
-            if (objectType != null) {
+            if (objectType == null) {
+                throw new InvalidObjectTypeException(objectTypeName);
+            } else {
                 ObjectType.Operation operation = objectType.getOperation(operationName);
+                if (operation == null) {
+                    throw new InvalidOperationException(operationName);
+                } else {
 
-                String query = this.getHeaderString(headers, MessageInterface.HEADER_QUERY);
-                HashMap<String, ArrayList<String>> queryMap = null;
-                if (query != null) {
-                    this.logger.info("query: " + query);
-                    JSONObject queryObject = new JSONObject(query);
-                    queryMap = new HashMap<>();
-                    for (String key : queryObject.keySet()) {
-                        ArrayList<String> list = new ArrayList<>();
-                        try {
-                            JSONArray array = queryObject.getJSONArray(key);
-                            for (int i = 0; i < array.length(); i++) {
-                                list.add(array.optString(i));
+                    String query = this.getHeaderString(headers, MessageInterface.HEADER_QUERY);
+                    HashMap<String, ArrayList<String>> queryMap = null;
+                    if (query != null) {
+                        this.logger.info("query: " + query);
+                        JSONObject queryObject = new JSONObject(query);
+                        queryMap = new HashMap<>();
+                        for (String key : queryObject.keySet()) {
+                            ArrayList<String> list = new ArrayList<>();
+                            try {
+                                JSONArray array = queryObject.getJSONArray(key);
+                                for (int i = 0; i < array.length(); i++) {
+                                    list.add(array.optString(i));
+                                }
+                            } catch (JSONException e) {
+                                list.add(queryObject.optString(key));
                             }
-                        } catch (JSONException e) {
-                            list.add(queryObject.optString(key));
+                            queryMap.put(key, list);
                         }
-                        queryMap.put(key, list);
                     }
-                }
 
-                if (operation != null) {
                     String uuid = this.getHeaderString(headers, MessageInterface.HEADER_MESSAGEID);
                     final String authorization = this.getHeaderString(headers, MessageInterface.HEADER_AUTHORIZATION);
                     if (operationName != null) {
