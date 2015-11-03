@@ -8,9 +8,9 @@ NULL
             {% if value -%}
             ROW(
                 '[{{ value.from }}, {{ value.to }})',
-            {{ value.aktoerref|adapt }},
-            {{ value.aktoertypekode|adapt }},
-            {{ value.notetekst|adapt }}
+            {% if value.aktoerref %}{{ value.aktoerref|adapt }}{% else %}NULL{% endif %},
+            {% if value.aktoertypekode %}{{ value.aktoertypekode|adapt }}{% else %}NULL{% endif %},
+            {% if value.notekst %}{{ value.notetekst|adapt }}{% else %}''{% endif %}
             )
          {% else -%}
             NULL
