@@ -10,9 +10,9 @@ NULL
         {% if rel.virkning -%}
         ROW(
             '[{{ rel.virkning.from }}, {{ rel.virkning.to }})',
-             {{ rel.virkning.aktoerref|adapt }},
-             {{ rel.virkning.aktoertypekode|adapt }},
-             {{ rel.virkning.notetekst|adapt }}
+             {% if rel.virkning.aktoerref %}{{ rel.virkning.aktoerref|adapt }}{% else %}NULL{% endif %},
+             {% if rel.virkning.aktoertypekode %}{{ rel.virkning.aktoertypekode|adapt }}{% else %}NULL{% endif %},
+             {% if rel.virkning.notetekst %}{{ rel.virkning.notetekst|adapt }}{% else %}''{% endif %}
             )
             {% else -%}
             NULL

@@ -7,9 +7,9 @@ NULL
             {% if state_value.virkning %}
             ROW(
                 '[{{ state_value.virkning.from }}, {{ state_value.virkning.to }})',
-                {{ state_value.virkning.aktoerref|adapt }},
-                {{ state_value.virkning.aktoertypekode|adapt }},
-                {{ state_value.virkning.notetekst|adapt }}
+                {% if state_value.virkning.aktoerref %}{{ state_value.virkning.aktoerref|adapt }}{% else %}NULL{% endif %},
+                {% if state_value.virkning.aktoertypekode %}{{ state_value.virkning.aktoertypekode|adapt }}{% else %}NULL{% endif %},
+                {% if state_value.virkning.notetekst %}{{ state_value.virkning.notetekst|adapt }}{% else %}''{% endif %}
             )
             {% else -%}
             NULL
