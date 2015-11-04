@@ -27,8 +27,6 @@ def check_saml_authentication():
 
     If the token is not present, or is not valid, raises an
     `UnauthorizedException` exception."""
-    import pdb
-    pdb.set_trace()
     auth_header = request.headers.get('Authorization')
     if auth_header is None:
         raise UnauthorizedException("No Authorization header present")

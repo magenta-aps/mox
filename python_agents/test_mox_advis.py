@@ -22,7 +22,7 @@ def get_saml_token():
 
 # SAML token for authentication against OIO REST services.
 saml_token = get_saml_token()
-uuid = ''
+uuid = '23c7e72e-2b99-495d-95a2-08b049b364bb'
 print saml_token
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(
@@ -38,7 +38,8 @@ channel.basic_publish(exchange='',
                       properties=pika.BasicProperties(
                           content_type='text/plain',
                           delivery_mode=2,
-                          headers={'authorization': saml_token}
+                          headers={'authorization': saml_token,
+                                   'uuid': uuid}
                       ))
 print " [x] Sent '%s'" % message
 connection.close()

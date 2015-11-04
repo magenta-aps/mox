@@ -19,8 +19,7 @@ channel = connection.channel()
 channel.queue_declare(queue=MOX_ADVIS_QUEUE, durable=True)
 
 # Get rid of certain warnings
-from requests.packages import urllib3
-urllib3.disable_warnings()
+requests.packages.urllib3.disable_warnings()
 
 print ' [*] Waiting for messages. To exit press CTRL+C'
 
@@ -56,11 +55,8 @@ def callback(ch, method, properties, body):
         return
     uuid = properties.headers.get('uuid', None)
 
-    if uuid:
-        # TODO: Contact Organisation service to get email address for user
-        print uuid
-    else:
-        # TODO: Extract uuid from SAML token
+    if not uuid:
+        # Extract uuid from SAML token
         assertion = Saml2_Assertion(saml_token, SAML_MOX_ENTITY_ID,
                                     SAML_IDP_ENTITY_ID, get_idp_cert())
         try:
@@ -69,17 +65,19 @@ def callback(ch, method, properties, body):
             print "No valid authentication, can't proceed!"
             print e.message
             return
-    attributes = assertion.get_attributes()
-    uuid = attributes['http://wso2.org/claims/url'][0]
+        attributes = assertion.get_attributes()
+        uuid = attributes['http://wso2.org/claims/url'][0]
 
-    # UUID OK, now retrieve email address from Organisation.
+    # UUID OK. Now retrieve email address from Organisation.
     bruger_url = "{0}/organisation/bruger".format(OIOREST_SERVER)
     request_url = "{0}?uuid={1}".format(bruger_url, uuid)
     headers = {"Authorization": gzip_token}
 
-    print gzip_token
+    print request_url
     resp = requests.get(request_url, headers=headers)
     result = resp.json()
+    import pdb
+    pdb.set_trace()
     print result
 
 
