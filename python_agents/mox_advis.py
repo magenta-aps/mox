@@ -73,12 +73,12 @@ def callback(ch, method, properties, body):
     uuid = attributes['http://wso2.org/claims/url'][0]
 
     # UUID OK, now retrieve email address from Organisation.
-    bruger_url = "{0}/organisation/bruger".format('http://127.0.0.1:5000')
+    bruger_url = "{0}/organisation/bruger".format(OIOREST_SERVER)
     request_url = "{0}?uuid={1}".format(bruger_url, uuid)
     headers = {"Authorization": gzip_token}
 
     print gzip_token
-    resp = requests.get(request_url, headers)
+    resp = requests.get(request_url, headers=headers)
     result = resp.json()
     print result
 
