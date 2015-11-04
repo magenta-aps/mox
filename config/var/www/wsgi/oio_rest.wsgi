@@ -1,14 +1,12 @@
 import sys
-import site
 import logging
 logging.basicConfig(stream=sys.stderr)
 
-activate_this = '/home/mox/mox/oio_rest/python-env/bin/activate_this.py'
+activate_this = '/home/agger/src/mox/oio_rest/python-env/bin/activate_this.py'
 execfile(activate_this, dict(__file__=activate_this))
 
 
-sys.path.append('/home/mox/mox/oio_rest')
-# site.addsitedir('/home/mox/mox/oio_rest/python-env/lib/python2.7/site-packages')
+sys.path.append('/home/agger/src/mox/oio_rest')
 from oio_rest.settings import BASE_URL
 from oio_rest.klassifikation import KlassifikationsHierarki
 from oio_rest.organisation import OrganisationsHierarki

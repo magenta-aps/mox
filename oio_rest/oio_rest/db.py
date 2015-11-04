@@ -622,8 +622,8 @@ def transform_relations(o):
     functions.
     """
     if isinstance(o, dict):
-        if "relationer" in o and (isinstance(o["relationer"], list)
-                                  or isinstance(o["relationer"], tuple)):
+        if "relationer" in o and (isinstance(o["relationer"], list) or
+                                  isinstance(o["relationer"], tuple)):
             relations = o["relationer"]
             rel_dict = {}
             for rel in relations:

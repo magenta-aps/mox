@@ -97,7 +97,6 @@ class OIORestObject(object):
                      for k in request.args.keys()}
         args = {to_lower_param(k): request.args.get(k)
                 for k in request.args.keys()}
-
         virkning_fra = args.get('virkningfra', None)
         virkning_til = args.get('virkningtil', None)
         registreret_fra = args.get('registreretfra', None)

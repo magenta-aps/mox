@@ -3,7 +3,7 @@ URL=
 if [ -z $HOST_URL ]
 then
 
-    HOST_URL="https://mox.magenta-aps.dk"
+    HOST_URL="https://mox"
 
     if [ -z $1 ]
     then

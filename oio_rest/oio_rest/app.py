@@ -41,7 +41,8 @@ def get_token():
             <label>
                 STS Address:
                 <input name="sts" type="text"
-                    value="https://mox.magenta-aps.dk:9443/services/wso2carbon-sts?wsdl" size="80"/>
+     value="https://mox.magenta-aps.dk:9443/services/wso2carbon-sts?wsdl"
+     size="80"/>
             </label>
             <br/>
             <input type="submit" value="Request Token"/>
@@ -67,8 +68,9 @@ def get_token():
         if sts != '':
             params.insert(0, "-DstsAddress=" + sts)
 
-        child = pexpect.spawn(os.path.join(MOX_BASE_DIR, 'agent/agent.sh') +
-                              ' ' + ' '.join(cmd_quote(param) for param in params))
+        child = pexpect.spawn(
+            os.path.join(MOX_BASE_DIR, 'agent/agent.sh') +
+            ' ' + ' '.join(cmd_quote(param) for param in params))
         try:
             i = child.expect([pexpect.TIMEOUT, "Password:"])
             if i == 0:
@@ -86,7 +88,9 @@ def get_token():
                     raise UnauthorizedException("Error requesting token: "
                                                 "invalid username or password")
                 else:
-                    raise UnauthorizedException("Error requesting token: " + output)
+                    raise UnauthorizedException(
+                        "Error requesting token: " + output
+                    )
         except pexpect.TIMEOUT:
             raise UnauthorizedException("Timeout while requesting token")
         finally:
