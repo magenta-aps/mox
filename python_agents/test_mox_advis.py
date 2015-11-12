@@ -10,7 +10,7 @@ from settings import OIOREST_SERVER
 
 def get_saml_token():
     """Obtain SAML token in order to test MOX agent."""
-    userdata = {'username': 'admin', 'password': 'admin'}
+    userdata = {'username': 'agger', 'password': 'agger'}
     url = "{0}/{1}".format(OIOREST_SERVER, "get-token")
     # Just for now, later update to a newer Python version.
     from requests.packages import urllib3
@@ -22,8 +22,9 @@ def get_saml_token():
 
 # SAML token for authentication against OIO REST services.
 saml_token = get_saml_token()
-uuid = '23c7e72e-2b99-495d-95a2-08b049b364bb'
-print saml_token
+uuid = 'beeef82b-c51c-4df7-b49f-e9d35b99c4af'
+uuid_not_working = '10100ef4-0ac4-4bb1-aaee-3343fe017103'
+uuid_doesnt_exist = '10100ef4-0ac4-4bb1-aaee-3343f6666666'
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(
         host=AMQP_SERVER))
@@ -32,6 +33,7 @@ channel = connection.channel()
 channel.queue_declare(queue=MOX_ADVIS_QUEUE, durable=True)
 
 message = ' '.join(sys.argv[1:]) or "Hello World!"
+subject = 'MOX Advis test message'
 channel.basic_publish(exchange='',
                       routing_key=MOX_ADVIS_QUEUE,
                       body=message,
@@ -39,7 +41,10 @@ channel.basic_publish(exchange='',
                           content_type='text/plain',
                           delivery_mode=2,
                           headers={'authorization': saml_token,
-                                   'uuid': uuid}
+                                   'query': [uuid,
+                                             uuid_not_working,
+                                             uuid_doesnt_exist],
+                                   'subject': subject, }
                       ))
 print " [x] Sent '%s'" % message
 connection.close()
