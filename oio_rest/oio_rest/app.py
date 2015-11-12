@@ -1,14 +1,26 @@
 # encoding: utf-8
 
+import os
+
 from flask import Flask, jsonify, request, Response
 from werkzeug.routing import BaseConverter
+from jinja2 import Environment, FileSystemLoader
 
 from custom_exceptions import OIOFlaskException
 from custom_exceptions import UnauthorizedException, BadRequestException
-import os
-from settings import MOX_BASE_DIR
+from settings import MOX_BASE_DIR, SAML_IDP_URL
 
 app = Flask(__name__)
+
+"""
+    Jinja2 Environment
+"""
+
+current_directory = os.path.dirname(os.path.realpath(__file__))
+
+jinja_env = Environment(loader=FileSystemLoader(
+    os.path.join(current_directory, 'templates', 'html')
+))
 
 
 class RegexConverter(BaseConverter):
@@ -23,33 +35,10 @@ app.url_map.converters['regex'] = RegexConverter
 @app.route('/get-token', methods=['GET', 'POST'])
 def get_token():
     if request.method == 'GET':
-        return """
-        <html>
-        <head><title>Get token</title></head>
-        <body>
-        <form method="POST" action="/get-token">
-            <label>
-                Username:
-                <input name="username" type="text"/>
-            </label>
-            <br/>
-            <label>
-                Password:
-                <input name="password" type="password"/>
-            </label>
-            <br/>
-            <label>
-                STS Address:
-                <input name="sts" type="text"
-     value="https://mox.magenta-aps.dk:9443/services/wso2carbon-sts?wsdl"
-     size="80"/>
-            </label>
-            <br/>
-            <input type="submit" value="Request Token"/>
-        </form>
-        </body>
-        </html>
-        """
+
+        t = jinja_env.get_template('get_token.html')
+        html = t.render(saml_url=SAML_IDP_URL)
+        return html
     elif request.method == 'POST':
         import pexpect
         import re
@@ -83,7 +72,8 @@ def get_token():
                 token = m.group(1)
                 return Response("saml-gzipped " + token, mimetype='text/plain')
             else:
-                m = re.search("AxisFault: Must Understand check failed", output)
+                m = re.search("AxisFault: Must Understand check failed",
+                              output)
                 if m is not None:
                     raise UnauthorizedException("Error requesting token: "
                                                 "invalid username or password")
