@@ -1,4 +1,8 @@
 """Settings for the different MOX agents included in this bundle."""
+import os
+
+DIR = os.path.dirname(__file__)
+
 AMQP_SERVER = 'localhost'
 
 MOX_ADVIS_QUEUE = 'Advis'
@@ -6,7 +10,7 @@ MOX_ADVIS_QUEUE = 'Advis'
 OIOREST_SERVER = "https://moxtest.magenta-aps.dk"
 
 # Public key of SAML IDP
-SAML_IDP_CERTIFICATE = 'test_auth_data/idp-certificate.pem'
+SAML_IDP_CERTIFICATE = os.path.join(DIR, 'test_auth_data/idp-certificate.pem')
 
 # Default system email
 FROM_EMAIL = 'mox-advis@noreply.magenta.dk'
