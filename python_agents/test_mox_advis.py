@@ -25,6 +25,7 @@ saml_token = get_saml_token()
 uuid = 'beeef82b-c51c-4df7-b49f-e9d35b99c4af'
 uuid_not_working = '10100ef4-0ac4-4bb1-aaee-3343fe017103'
 uuid_doesnt_exist = '10100ef4-0ac4-4bb1-aaee-3343f6666666'
+uuid_no_address = '431607f7-e764-4b1a-917f-2c08a2df0e59'
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(
         host=AMQP_SERVER))
@@ -43,7 +44,8 @@ channel.basic_publish(exchange='',
                           headers={'authorization': saml_token,
                                    'query': [uuid,
                                              uuid_not_working,
-                                             uuid_doesnt_exist],
+                                             uuid_doesnt_exist,
+                                             uuid_no_address],
                                    'subject': subject, }
                       ))
 print " [x] Sent '%s'" % message
