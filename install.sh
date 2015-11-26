@@ -115,3 +115,6 @@ else
 
 fi
 
+touch /var/log/mox.log
+
+

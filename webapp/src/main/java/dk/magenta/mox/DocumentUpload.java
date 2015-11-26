@@ -1,5 +1,7 @@
 package dk.magenta.mox;
 
+import org.apache.log4j.Logger;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
@@ -19,6 +21,9 @@ import java.util.HashMap;
 @WebServlet(name = "DocumentUpload")
 @MultipartConfig
 public class DocumentUpload extends HttpServlet {
+
+    Logger log = Logger.getLogger(DocumentUpload.class);
+
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         final String fileFieldName = "file";
