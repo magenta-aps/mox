@@ -40,49 +40,72 @@ import org.apache.axis2.context.ConfigurationContextFactory;
 public class Main {
     public static Properties properties;
 
+
+    String queueUsername = null;
+    String queuePassword = null;
+    String queueInterface = null;
+    String queueName = null;
+    String restInterface = null;
+    File propertiesFile = new File("agent.properties");;
+
+    Map<String, ObjectType> objectTypes;
+    ArrayList<String> commands = new ArrayList<String>();
+
+
     public static void main(String[] args) {
-
         DOMConfigurator.configure("log4j.xml");
-
-        String queueUsername = null;
-        String queuePassword = null;
-        String queueInterface = null;
-        String queueName = null;
-        String restInterface = null;
+        Main main = new Main();
 
         for (String arg : args) {
             if (arg.equalsIgnoreCase("help")) {
-                System.out.println("Mox agent message interface");
-                System.out.println("---------------------------");
-                System.out.println("Will interface with a RabbitMQ message queue and pass messages through to a REST interface");
-                System.out.println("Usage: java -cp \"target/moxagent-1.0.jar:target/dependency/*\" dk.magenta.mox.agent.Main [parameters] command\n");
-
-                System.out.println("-----------");
-                System.out.println("Parameters:\n");
-                System.out.println("propertiesFile (-DpropertiesFile=<file>):\n    A Java properties file that contains configuration values.\n    Any parameters not found on the command line will be loaded from there.\n    Should also contain configuration for a SAML token service.\n    If this parameter is unset, the file 'agent.properties' will be loaded.\n");
-                System.out.println("queueUsername (-DqueueUsername=<queueUsername>):\n    The RabbitMQ username.\n    If this is neither found in the command line or in the properties file, the value defaults to "+ ConnectionFactory.DEFAULT_USER+".\n");
-                System.out.println("queuePassword (-DqueuePassword=<queuePassword>):\n    The RabbitMQ password.\n    If this is neither found in the command line or in the properties file, the value defaults to "+ ConnectionFactory.DEFAULT_PASS+".\n");
-                System.out.println("queueInterface (-DqueueInterface=<hostname>:<port>):\n    An interface (<hostname>:<port>) where an instance of RabbitMQ is listening.\n    If this is neither found in the command line or in the properties file, the value defaults to localhost:5672.\n");
-                System.out.println("queueName (-DqueueName=<name>):\n    The name of the RabbitMQ queue to send or receive messages in.\n    Defaults to 'incoming' if not found elsewhere.\n");
-                System.out.println("restInterface (-DrestInterface=<protocol>://<hostname>:<port>):\n    The REST interface where messages should end up when passed through the queue.\n    Also needed for obtaining a SAML token for authenticating to that interface.\n    Defaults to http://127.0.0.1:5000\n");
-                System.out.println("stsAddress " + "" + "(-DstsAddress=<protocol>://<hostname>:<port>):\n   The address of a Security Token Service, for requesting a SAML Security Token\n");
-
-                System.out.println("---------");
-                System.out.println("Commands:\n");
-                System.out.println("listen\n    Starts a listener agent, which reads from the defined queue and sends requests to the defined REST interface\n");
-                System.out.println("send [operation] [objecttype] [jsonfile]\n    Sends a messsage to the queue, telling listeners to perform [operation] on [objecttype] with data from [jsonfile].\n    E.g. 'send create facet facet.json'\n");
-                System.out.println("sendtest\n    Runs a test by sending a series of messages to the queue, creating, updating, passivating and finally deleting a document.\n");
-                System.out.println("gettoken <username>)\n    Requests a security token as the username specified. The password must be entered on standard input..\n");
+                main.printHelp();
                 return;
             }
         }
 
+        main.run(args);
+    }
+
+    private void loadObjectTypes() {
+        try {
+            objectTypes = ObjectType.load(propertiesFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void printHelp() {
+        System.out.println("Mox agent message interface");
+        System.out.println("---------------------------");
+        System.out.println("Will interface with a RabbitMQ message queue and pass messages through to a REST interface");
+        System.out.println("Usage: java -cp \"target/moxagent-1.0.jar:target/dependency/*\" dk.magenta.mox.agent.Main [parameters] command\n");
+
+        System.out.println("-----------");
+        System.out.println("Parameters:\n");
+        System.out.println("propertiesFile (-DpropertiesFile=<file>):\n    A Java properties file that contains configuration values.\n    Any parameters not found on the command line will be loaded from there.\n    Should also contain configuration for a SAML token service.\n    If this parameter is unset, the file 'agent.properties' will be loaded.\n");
+        System.out.println("queueUsername (-DqueueUsername=<queueUsername>):\n    The RabbitMQ username.\n    If this is neither found in the command line or in the properties file, the value defaults to " + ConnectionFactory.DEFAULT_USER + ".\n");
+        System.out.println("queuePassword (-DqueuePassword=<queuePassword>):\n    The RabbitMQ password.\n    If this is neither found in the command line or in the properties file, the value defaults to " + ConnectionFactory.DEFAULT_PASS + ".\n");
+        System.out.println("queueInterface (-DqueueInterface=<hostname>:<port>):\n    An interface (<hostname>:<port>) where an instance of RabbitMQ is listening.\n    If this is neither found in the command line or in the properties file, the value defaults to localhost:5672.\n");
+        System.out.println("queueName (-DqueueName=<name>):\n    The name of the RabbitMQ queue to send or receive messages in.\n    Defaults to 'incoming' if not found elsewhere.\n");
+        System.out.println("restInterface (-DrestInterface=<protocol>://<hostname>:<port>):\n    The REST interface where messages should end up when passed through the queue.\n    Also needed for obtaining a SAML token for authenticating to that interface.\n    Defaults to http://127.0.0.1:5000\n");
+        System.out.println("stsAddress " + "" + "(-DstsAddress=<protocol>://<hostname>:<port>):\n   The address of a Security Token Service, for requesting a SAML Security Token\n");
+
+        System.out.println("---------");
+        System.out.println("Commands:\n");
+        System.out.println("listen\n    Starts a listener agent, which reads from the defined queue and sends requests to the defined REST interface\n");
+        System.out.println("send [operation] [objecttype] [jsonfile]\n    Sends a messsage to the queue, telling listeners to perform [operation] on [objecttype] with data from [jsonfile].\n    E.g. 'send create facet facet.json'\n");
+        System.out.println("sendtest\n    Runs a test by sending a series of messages to the queue, creating, updating, passivating and finally deleting a document.\n");
+        System.out.println("gettoken <username>)\n    Requests a security token as the username specified. The password must be entered on standard input..\n");
+        return;
+    }
+
+    private void loadArgs(String[] commandlineArgs) {
+
         System.out.println("Reading command line arguments");
 
         HashMap<String, String> argMap = new HashMap<String, String>();
-        ArrayList<String> commands = new ArrayList<String>();
         try {
-            for (String arg : args) {
+            for (String arg : commandlineArgs) {
                 arg = arg.trim();
                 if (arg.startsWith("-")) {
                     if (commands.size() > 0) {
@@ -129,14 +152,18 @@ public class Main {
             System.out.println("    rest.interface = " + restInterface);
         }
 
+        if (argMap.containsKey("stsAddress")) {
+            properties.setProperty("security.sts.address", argMap.get("stsAddress"));
+            System.out.println("    stsAddress = " + argMap.get("stsAddress"));
+        }
 
         String propertiesFilename = argMap.get("propertiesFile");
-        File propertiesFile;
 
         if (propertiesFilename == null) {
-            propertiesFilename = "agent.properties";
-            propertiesFile = new File(propertiesFilename);
-            if (!propertiesFile.canRead()) {
+            if (propertiesFile == null) {
+                System.err.println("properties file not set");
+                return;
+            } else if (!propertiesFile.canRead()) {
                 System.err.println("Cannot read from default properties file " + propertiesFile.getAbsolutePath());
                 return;
             }
@@ -150,6 +177,11 @@ public class Main {
                 return;
             }
         }
+    }
+
+
+
+    private void loadPropertiesFile() {
         properties = new Properties();
         if (propertiesFile.canRead()) {
             try {
@@ -194,14 +226,10 @@ public class Main {
                 System.out.println("    commands = " + String.join(" ", commands));
             }
         }
-
-        if (argMap.containsKey("stsAddress")) {
-            properties.setProperty("security.sts.address", argMap.get("stsAddress"));
-            System.out.println("    stsAddress = " + argMap.get("stsAddress"));
-        }
+    }
 
 
-
+    private void loadDefaults() {
         System.out.println("Loading defaults");
 
         if (queueInterface == null) {
@@ -220,12 +248,18 @@ public class Main {
             commands.add("sendtest");
             System.out.println("    commands = sendtest");
         }
+    }
 
+    private void run(String[] args) {
+
+        this.loadArgs(args);
+        this.loadPropertiesFile();
+        this.loadDefaults();
+        this.loadObjectTypes();
 
         SecurityTokenObtainer securityTokenObtainer = new SecurityTokenObtainer(properties);
 
         try {
-            Map<String, ObjectType> objectTypes = ObjectType.load(propertiesFile);
 
 			if (commands.size() == 0) {
                 throw new IllegalArgumentException("No commands defined");
