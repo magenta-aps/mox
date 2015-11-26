@@ -1,5 +1,5 @@
 """Settings for the different MOX agents included in this bundle."""
-AMQP_SERVER = 'localhost'
+AMQP_SERVER = 'moxtest.magenta-aps.dk'
 
 MOX_ADVIS_QUEUE = 'Advis'
 
