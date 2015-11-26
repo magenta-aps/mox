@@ -1,26 +1,41 @@
 package dk.magenta.mox;
 
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Writer;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * Created by lars on 26-11-15.
  */
 @WebServlet(name = "DocumentUpload")
 @MultipartConfig
-public class DocumentUpload extends HttpServlet {
+public class DocumentUpload extends UploadServlet {
+
+    private HashMap<String, SpreadsheetConverter> converterMap = new HashMap<String, SpreadsheetConverter>();
+
+    public void init() {
+
+        ArrayList<SpreadsheetConverter> converterList = new ArrayList<SpreadsheetConverter>();
+        converterList.add(new OdfConverter());
+        converterList.add(new XlsConverter());
+        converterList.add(new XlsxConverter());
+        for (SpreadsheetConverter converter : converterList) {
+            for (String contentType : converter.getApplicableContentTypes()) {
+                this.converterMap.put(contentType, converter);
+            }
+        }
+    }
+
 
     Logger log = Logger.getLogger(DocumentUpload.class);
 
@@ -28,26 +43,40 @@ public class DocumentUpload extends HttpServlet {
 
         final String fileFieldName = "file";
 
+
         Writer output = response.getWriter();
 
-        Collection<Part> parts = request.getParts();
-        if (parts.size() == 0) {
-            throw new ServletException("The upload does not contain any files");
-        }
+        try {
+            List<FileItem> files = this.getUploadFiles(request);
+            for (FileItem file : files) {
+                if (fileFieldName.equals(file.getFieldName())) {
+                    SpreadsheetConverter converter = this.converterMap.get(file.getContentType());
+                    if (converter != null) {
+                        try {
+                            JSONArray jsonDocument = converter.convert(file.getInputStream());
+                        } catch (Exception e) {
+                            throw new ServletException("Failed converting uploaded file", e);
+                        }
+                    } else {
+                        throw new ServletException("No SpreadsheetConverter for content type '" + file.getContentType() + "'");
+                    }
 
-        HashMap<String, Part> partMap = new HashMap<String, Part>();
-        for (Part part : parts) {
-            partMap.put(part.getName(), part);
-        }
-
-        if (partMap.containsKey(fileFieldName)) {
-            InputStream dataStream = partMap.get(fileFieldName).getInputStream();
-        } else {
-            throw new ServletException("'"+fileFieldName+"' field not set in upload");
+                }
+            }
+        } catch (FileUploadException e) {
+            e.printStackTrace();
         }
     }
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
+    protected Map<String, String> parseContentDisposition(String contentDisposition) {
+        HashMap<String, String> parsed = new HashMap<String, String>();
+        for (String chunk : contentDisposition.split(";\\s*")) {
+            int index = chunk.indexOf("=");
+            if (index != -1) {
+                parsed.put(chunk.substring(0, index), chunk.substring(index));
+                System.out.println(chunk.substring(0, index)+"/"+chunk.substring(index+1));
+            }
+        }
+        return parsed;
     }
 }
