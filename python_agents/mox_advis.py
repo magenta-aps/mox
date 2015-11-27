@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env /srv/mox/python_agents/python-env/bin/python
 import zlib
 import base64
 import smtplib
@@ -89,7 +89,11 @@ class MOXAdvis(MOXAgent):
         # Get rid of certain warnings
         requests.packages.urllib3.disable_warnings()
         # Set up logging
-        logging.basicConfig(filename=MOX_ADVIS_LOG_FILE, level=logging.DEBUG)
+        logging.basicConfig(
+            filename=MOX_ADVIS_LOG_FILE,
+            level=logging.DEBUG,
+            format='%(asctime)s %(levelname)s %(message)s'
+        )
 
     queue = MOX_ADVIS_QUEUE
     do_persist = True
@@ -137,7 +141,14 @@ class MOXAdvis(MOXAgent):
         headers = {"Authorization": gzip_token}
         destination_emails = get_destination_emails(uuids, headers)
         # Ready to send mail.
-        smtp = smtplib.SMTP('localhost')
+        try:
+            smtp = smtplib.SMTP('localhost')
+        except Exception as e:
+            logging.critical(
+                'Unable to connect to mail server: {0}'.format(e.message)
+            )
+            return
+
         for email in destination_emails:
             msg = MIMEText(body)
             msg['Subject'] = "{0} {1}".format(ADVIS_SUBJECT_PREFIX, subject)
