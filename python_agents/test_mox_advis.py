@@ -1,11 +1,11 @@
-#!/usr/bin/env python
 import sys
 
 import pika
 import requests
 
-from settings import AMQP_SERVER, MOX_ADVIS_QUEUE
-from settings import OIOREST_SERVER
+OIOREST_SERVER = "https://moxtest.magenta-aps.dk"
+AMQP_SERVER = 'moxtest.magenta-aps.dk'
+MOX_ADVIS_QUEUE = 'Advis'
 
 
 def get_saml_token():
