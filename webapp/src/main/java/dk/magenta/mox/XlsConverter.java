@@ -1,20 +1,26 @@
 package dk.magenta.mox;
 
+import dk.magenta.mox.agent.ObjectType;
+import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.openxml4j.opc.OPCPackage;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
 import org.json.JSONArray;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * Created by lars on 26-11-15.
  */
 public class XlsConverter extends SpreadsheetConverter {
+
+    protected XlsConverter(Map<String, ObjectType> objectTypes) throws IOException {
+        super(objectTypes);
+    }
 
     protected String[] getApplicableContentTypes() {
         return new String[]{
@@ -22,16 +28,39 @@ public class XlsConverter extends SpreadsheetConverter {
         };
     }
 
-    public JSONArray convert(InputStream data) throws Exception {
+    public SpreadsheetConversion convert(InputStream data) throws Exception {
+        SpreadsheetConversion spreadsheetConversion = new SpreadsheetConversion();
         HSSFWorkbook document = new HSSFWorkbook(data);
-        int sheetCount = document.getNumberOfSheets();
-        for (int i=0; i<sheetCount; i++) {
+        for (int i = 0; i < document.getNumberOfSheets(); i++) {
             HSSFSheet sheet = document.getSheetAt(i);
-            for (int j = sheet.getFirstRowNum(); j<sheet.getLastRowNum(); j++) {
-                HSSFRow row = sheet.getRow(j);
-
+            String sheetName = sheet.getSheetName();
+            for (int j = 0; j <= sheet.getLastRowNum(); j++) {
+                SpreadsheetRow rowData = new SpreadsheetRow();
+                if (j >= sheet.getFirstRowNum()) {
+                    HSSFRow row = sheet.getRow(j);
+                    int firstCell = row.getFirstCellNum();
+                    int lastCell = row.getLastCellNum();
+                    for (int k = 0; k < lastCell; k++) {
+                        rowData.add(row.getCell(k) == null ? "" : getCellString(row.getCell(k)));
+                    }
+                }
+                spreadsheetConversion.addRow(sheetName, rowData, j==0);
             }
         }
-        return new JSONArray();
+        return spreadsheetConversion;
+    }
+
+    private static String getCellString(HSSFCell cell) {
+        if (cell != null) {
+            int cellType = cell.getCellType();
+            if (cellType == Cell.CELL_TYPE_STRING) {
+                return cell.getStringCellValue();
+            } else if (cellType == Cell.CELL_TYPE_NUMERIC) {
+                return "" + cell.getNumericCellValue();
+            } else if (cellType == Cell.CELL_TYPE_BOOLEAN) {
+                return "" + cell.getBooleanCellValue();
+            }
+        }
+        return "";
     }
 }

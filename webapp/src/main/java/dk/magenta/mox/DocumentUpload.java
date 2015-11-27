@@ -1,5 +1,6 @@
 package dk.magenta.mox;
 
+import dk.magenta.mox.agent.ObjectType;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.log4j.Logger;
@@ -23,12 +24,25 @@ public class DocumentUpload extends UploadServlet {
 
     private HashMap<String, SpreadsheetConverter> converterMap = new HashMap<String, SpreadsheetConverter>();
 
-    public void init() {
+    public void init() throws ServletException {
 
         ArrayList<SpreadsheetConverter> converterList = new ArrayList<SpreadsheetConverter>();
-        converterList.add(new OdfConverter());
-        converterList.add(new XlsConverter());
-        converterList.add(new XlsxConverter());
+        Properties agentProperties = new Properties();
+        try {
+            agentProperties.load(this.getServletContext().getResourceAsStream("/WEB-INF/agent.properties"));
+        } catch (IOException e) {
+            throw new ServletException("Failed to load /WEB-INF/agent.properties",e);
+        }
+
+        Map<String, ObjectType> objectTypes = ObjectType.load(agentProperties);
+
+        try {
+            converterList.add(new OdfConverter(objectTypes));
+            converterList.add(new XlsConverter(objectTypes));
+            converterList.add(new XlsxConverter(objectTypes));
+        } catch (IOException e) {
+            throw new ServletException("Failed converter initialization",e);
+        }
         for (SpreadsheetConverter converter : converterList) {
             for (String contentType : converter.getApplicableContentTypes()) {
                 this.converterMap.put(contentType, converter);
@@ -53,7 +67,7 @@ public class DocumentUpload extends UploadServlet {
                     SpreadsheetConverter converter = this.converterMap.get(file.getContentType());
                     if (converter != null) {
                         try {
-                            JSONArray jsonDocument = converter.convert(file.getInputStream());
+                            converter.convert(file.getInputStream());
                         } catch (Exception e) {
                             throw new ServletException("Failed converting uploaded file", e);
                         }

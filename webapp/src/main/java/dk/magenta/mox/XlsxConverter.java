@@ -1,20 +1,27 @@
 package dk.magenta.mox;
 
+import dk.magenta.mox.agent.ObjectType;
 import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFDataFormat;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.usermodel.*;
 import org.json.JSONArray;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Created by lars on 26-11-15.
  */
 public class XlsxConverter extends SpreadsheetConverter {
+
+    protected XlsxConverter(Map<String, ObjectType> objectTypes) {
+        super(objectTypes);
+    }
 
     protected String[] getApplicableContentTypes() {
         return new String[]{
@@ -23,16 +30,41 @@ public class XlsxConverter extends SpreadsheetConverter {
         };
     }
 
-    public JSONArray convert(InputStream data) throws Exception {
+    public SpreadsheetConversion convert(InputStream data) throws Exception {
+        SpreadsheetConversion spreadsheetConversion = new SpreadsheetConversion();
         XSSFWorkbook document = new XSSFWorkbook(data);
         int sheetCount = document.getNumberOfSheets();
-        for (int i=0; i<sheetCount; i++) {
+        for (int i = 0; i < sheetCount; i++) {
             XSSFSheet sheet = document.getSheetAt(i);
-            for (int j = sheet.getFirstRowNum(); j<sheet.getLastRowNum(); j++) {
-                XSSFRow row = sheet.getRow(j);
-
+            String sheetName = sheet.getSheetName();
+            for (int j = 0; j <= sheet.getLastRowNum(); j++) {
+                SpreadsheetRow rowData = new SpreadsheetRow();
+                if (j >= sheet.getFirstRowNum()) {
+                    XSSFRow row = sheet.getRow(j);
+                    int firstCell = row.getFirstCellNum();
+                    int lastCell = row.getLastCellNum();
+                    for (int k = 0; k < lastCell; k++) {
+                        rowData.add((k < firstCell) ? "" : getCellString(row.getCell(k)));
+                    }
+                }
+                spreadsheetConversion.addRow(sheetName, rowData, j==0);
             }
         }
-        return new JSONArray();
+        return spreadsheetConversion;
+    }
+
+
+    private static String getCellString(XSSFCell cell) {
+        if (cell != null) {
+            int cellType = cell.getCellType();
+            if (cellType == Cell.CELL_TYPE_STRING) {
+                return cell.getStringCellValue();
+            } else if (cellType == Cell.CELL_TYPE_NUMERIC) {
+                return "" + cell.getNumericCellValue();
+            } else if (cellType == Cell.CELL_TYPE_BOOLEAN) {
+                return "" + cell.getBooleanCellValue();
+            }
+        }
+        return "";
     }
 }
