@@ -107,7 +107,7 @@ ELSE
   -- 0..1 relations 
    
 
-  FOREACH bruger_relation_navn in array  ARRAY['tilhoerer'::BrugerRelationKode]
+  FOREACH bruger_relation_navn in array  ARRAY['tilhoerer'::BrugerRelationKode]::BrugerRelationKode[]
   LOOP
 
     INSERT INTO bruger_relation (
@@ -153,7 +153,7 @@ ELSE
   --We only have to check if there are any of the relations with the given name present in the new registration, otherwise copy the ones from the previous registration
 
 
-  FOREACH bruger_relation_navn in array ARRAY['adresser'::BrugerRelationKode,'brugertyper'::BrugerRelationKode,'opgaver'::BrugerRelationKode,'tilknyttedeenheder'::BrugerRelationKode,'tilknyttedefunktioner'::BrugerRelationKode,'tilknyttedeinteressefaellesskaber'::BrugerRelationKode,'tilknyttedeorganisationer'::BrugerRelationKode,'tilknyttedepersoner'::BrugerRelationKode,'tilknyttedeitsystemer'::BrugerRelationKode]
+  FOREACH bruger_relation_navn in array ARRAY['adresser'::BrugerRelationKode,'brugertyper'::BrugerRelationKode,'opgaver'::BrugerRelationKode,'tilknyttedeenheder'::BrugerRelationKode,'tilknyttedefunktioner'::BrugerRelationKode,'tilknyttedeinteressefaellesskaber'::BrugerRelationKode,'tilknyttedeorganisationer'::BrugerRelationKode,'tilknyttedepersoner'::BrugerRelationKode,'tilknyttedeitsystemer'::BrugerRelationKode]::BrugerRelationKode[]
   LOOP
 
     IF NOT EXISTS  (SELECT 1 FROM bruger_relation WHERE bruger_registrering_id=new_bruger_registrering.id and rel_type=bruger_relation_navn) THEN

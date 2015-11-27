@@ -109,7 +109,7 @@ ELSE
   -- 0..1 relations 
    
 
-  FOREACH {{oio_type}}_relation_navn in array  ARRAY[{%-for relkode in relationer_nul_til_en  %}'{{relkode}}'::{{oio_type|title}}RelationKode{% if not loop.last%},{% endif %}{% endfor %}]
+  FOREACH {{oio_type}}_relation_navn in array  ARRAY[{%-for relkode in relationer_nul_til_en  %}'{{relkode}}'::{{oio_type|title}}RelationKode{% if not loop.last%},{% endif %}{% endfor %}]::{{oio_type|title}}RelationKode[]
   LOOP
 
     INSERT INTO {{oio_type}}_relation (
@@ -155,7 +155,7 @@ ELSE
   --We only have to check if there are any of the relations with the given name present in the new registration, otherwise copy the ones from the previous registration
 
 
-  FOREACH {{oio_type}}_relation_navn in array ARRAY[{%-for relkode in relationer_nul_til_mange  %}'{{relkode}}'::{{oio_type|title}}RelationKode{% if not loop.last%},{% endif %}{% endfor %}]
+  FOREACH {{oio_type}}_relation_navn in array ARRAY[{%-for relkode in relationer_nul_til_mange  %}'{{relkode}}'::{{oio_type|title}}RelationKode{% if not loop.last%},{% endif %}{% endfor %}]::{{oio_type|title}}RelationKode[]
   LOOP
 
     IF NOT EXISTS  (SELECT 1 FROM {{oio_type}}_relation WHERE {{oio_type}}_registrering_id=new_{{oio_type}}_registrering.id and rel_type={{oio_type}}_relation_navn) THEN

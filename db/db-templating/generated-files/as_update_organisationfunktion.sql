@@ -107,7 +107,7 @@ ELSE
   -- 0..1 relations 
    
 
-  FOREACH organisationfunktion_relation_navn in array  ARRAY['organisatoriskfunktionstype'::OrganisationfunktionRelationKode]
+  FOREACH organisationfunktion_relation_navn in array  ARRAY['organisatoriskfunktionstype'::OrganisationfunktionRelationKode]::OrganisationfunktionRelationKode[]
   LOOP
 
     INSERT INTO organisationfunktion_relation (
@@ -153,7 +153,7 @@ ELSE
   --We only have to check if there are any of the relations with the given name present in the new registration, otherwise copy the ones from the previous registration
 
 
-  FOREACH organisationfunktion_relation_navn in array ARRAY['adresser'::OrganisationfunktionRelationKode,'opgaver'::OrganisationfunktionRelationKode,'tilknyttedebrugere'::OrganisationfunktionRelationKode,'tilknyttedeenheder'::OrganisationfunktionRelationKode,'tilknyttedeorganisationer'::OrganisationfunktionRelationKode,'tilknyttedeitsystemer'::OrganisationfunktionRelationKode,'tilknyttedeinteressefaellesskaber'::OrganisationfunktionRelationKode,'tilknyttedepersoner'::OrganisationfunktionRelationKode]
+  FOREACH organisationfunktion_relation_navn in array ARRAY['adresser'::OrganisationfunktionRelationKode,'opgaver'::OrganisationfunktionRelationKode,'tilknyttedebrugere'::OrganisationfunktionRelationKode,'tilknyttedeenheder'::OrganisationfunktionRelationKode,'tilknyttedeorganisationer'::OrganisationfunktionRelationKode,'tilknyttedeitsystemer'::OrganisationfunktionRelationKode,'tilknyttedeinteressefaellesskaber'::OrganisationfunktionRelationKode,'tilknyttedepersoner'::OrganisationfunktionRelationKode]::OrganisationfunktionRelationKode[]
   LOOP
 
     IF NOT EXISTS  (SELECT 1 FROM organisationfunktion_relation WHERE organisationfunktion_registrering_id=new_organisationfunktion_registrering.id and rel_type=organisationfunktion_relation_navn) THEN

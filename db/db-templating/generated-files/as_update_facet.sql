@@ -107,7 +107,7 @@ ELSE
   -- 0..1 relations 
    
 
-  FOREACH facet_relation_navn in array  ARRAY['ansvarlig'::FacetRelationKode,'ejer'::FacetRelationKode,'facettilhoerer'::FacetRelationKode]
+  FOREACH facet_relation_navn in array  ARRAY['ansvarlig'::FacetRelationKode,'ejer'::FacetRelationKode,'facettilhoerer'::FacetRelationKode]::FacetRelationKode[]
   LOOP
 
     INSERT INTO facet_relation (
@@ -153,7 +153,7 @@ ELSE
   --We only have to check if there are any of the relations with the given name present in the new registration, otherwise copy the ones from the previous registration
 
 
-  FOREACH facet_relation_navn in array ARRAY['redaktoerer'::FacetRelationKode]
+  FOREACH facet_relation_navn in array ARRAY['redaktoerer'::FacetRelationKode]::FacetRelationKode[]
   LOOP
 
     IF NOT EXISTS  (SELECT 1 FROM facet_relation WHERE facet_registrering_id=new_facet_registrering.id and rel_type=facet_relation_navn) THEN
