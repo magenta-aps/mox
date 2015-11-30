@@ -1,17 +1,11 @@
 package dk.magenta.mox;
 
-import org.json.JSONArray;
-
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import dk.magenta.mox.agent.ObjectType;
-
-import javax.servlet.ServletContext;
 
 /**
  * Created by lars on 26-11-15.
@@ -19,6 +13,7 @@ import javax.servlet.ServletContext;
 public abstract class SpreadsheetConverter {
 
     protected Map<String, ObjectType> objectTypes;
+    protected static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     protected SpreadsheetConverter(Map<String, ObjectType> objectTypes) {
         this.objectTypes = objectTypes;

@@ -1,16 +1,15 @@
 package dk.magenta.mox;
 
 import dk.magenta.mox.agent.ObjectType;
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DateUtil;
 import org.json.JSONArray;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -18,7 +17,7 @@ import java.util.Map;
  */
 public class XlsConverter extends SpreadsheetConverter {
 
-    protected XlsConverter(Map<String, ObjectType> objectTypes) throws IOException {
+    protected XlsConverter(Map<String, ObjectType> objectTypes) {
         super(objectTypes);
     }
 
@@ -50,13 +49,18 @@ public class XlsConverter extends SpreadsheetConverter {
         return spreadsheetConversion;
     }
 
-    private static String getCellString(HSSFCell cell) {
+
+    protected static String getCellString(Cell cell) {
         if (cell != null) {
             int cellType = cell.getCellType();
             if (cellType == Cell.CELL_TYPE_STRING) {
                 return cell.getStringCellValue();
             } else if (cellType == Cell.CELL_TYPE_NUMERIC) {
-                return "" + cell.getNumericCellValue();
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    return dateFormat.format(DateUtil.getJavaDate(cell.getNumericCellValue()));
+                } else {
+                    return "" + cell.getNumericCellValue();
+                }
             } else if (cellType == Cell.CELL_TYPE_BOOLEAN) {
                 return "" + cell.getBooleanCellValue();
             }

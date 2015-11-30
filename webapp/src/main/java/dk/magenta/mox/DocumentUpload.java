@@ -5,6 +5,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -67,7 +68,13 @@ public class DocumentUpload extends UploadServlet {
                     SpreadsheetConverter converter = this.converterMap.get(file.getContentType());
                     if (converter != null) {
                         try {
-                            converter.convert(file.getInputStream());
+                            SpreadsheetConversion conversion = converter.convert(file.getInputStream());
+                            for (String sheetName : conversion.getSheetNames()) {
+                                for (String objectId : conversion.getObjectIds(sheetName)) {
+                                    JSONObject convertedObject = conversion.getConvertedObject(sheetName, objectId);
+                                    //System.out.println(convertedObject.toString(2));
+                                }
+                            }
                         } catch (Exception e) {
                             throw new ServletException("Failed converting uploaded file", e);
                         }

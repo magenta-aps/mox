@@ -46,7 +46,7 @@ public class Main {
     String queueInterface = null;
     String queueName = null;
     String restInterface = null;
-    File propertiesFile = new File("agent.properties");;
+    File propertiesFile = new File("agent.properties");
 
     Map<String, ObjectType> objectTypes;
     ArrayList<String> commands = new ArrayList<String>();

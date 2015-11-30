@@ -3,6 +3,7 @@ package dk.magenta.mox;
 import dk.magenta.mox.agent.ObjectType;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.*;
@@ -17,7 +18,7 @@ import java.util.Properties;
 /**
  * Created by lars on 26-11-15.
  */
-public class XlsxConverter extends SpreadsheetConverter {
+public class XlsxConverter extends XlsConverter {
 
     protected XlsxConverter(Map<String, ObjectType> objectTypes) {
         super(objectTypes);
@@ -53,18 +54,4 @@ public class XlsxConverter extends SpreadsheetConverter {
         return spreadsheetConversion;
     }
 
-
-    private static String getCellString(XSSFCell cell) {
-        if (cell != null) {
-            int cellType = cell.getCellType();
-            if (cellType == Cell.CELL_TYPE_STRING) {
-                return cell.getStringCellValue();
-            } else if (cellType == Cell.CELL_TYPE_NUMERIC) {
-                return "" + cell.getNumericCellValue();
-            } else if (cellType == Cell.CELL_TYPE_BOOLEAN) {
-                return "" + cell.getBooleanCellValue();
-            }
-        }
-        return "";
-    }
 }

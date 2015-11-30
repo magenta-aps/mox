@@ -1,16 +1,13 @@
 package dk.magenta.mox;
 
 import dk.magenta.mox.agent.ObjectType;
-import org.json.JSONArray;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Properties;
 
 import org.odftoolkit.simple.SpreadsheetDocument;
+import org.odftoolkit.simple.table.Cell;
 import org.odftoolkit.simple.table.Row;
 import org.odftoolkit.simple.table.Table;
 
@@ -39,11 +36,19 @@ public class OdfConverter extends SpreadsheetConverter {
                 Row row = sheet.getRowByIndex(j);
                 SpreadsheetRow rowData = new SpreadsheetRow();
                 for (int k = 0; k < row.getCellCount(); k++) {
-                    rowData.add(row.getCellByIndex(k).getStringValue());
+                    Cell cell = row.getCellByIndex(k);
+                    rowData.add(getCellString(cell));
                 }
                 spreadsheetConversion.addRow(sheetName, rowData, j==0);
             }
         }
         return spreadsheetConversion;
+    }
+
+    private static String getCellString(Cell cell) {
+        if ("date".equals(cell.getValueType())) {
+            return dateFormat.format(cell.getDateValue());
+        }
+        return cell.getStringValue();
     }
 }
