@@ -3,13 +3,8 @@ package dk.magenta.mox;
 import dk.magenta.mox.agent.ObjectType;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.DateUtil;
-import org.json.JSONArray;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.Map;
 
 /**
@@ -56,11 +51,11 @@ public class XlsConverter extends SpreadsheetConverter {
             if (cellType == Cell.CELL_TYPE_STRING) {
                 return cell.getStringCellValue();
             } else if (cellType == Cell.CELL_TYPE_NUMERIC) {
-                if (DateUtil.isCellDateFormatted(cell)) {
+                /*if (DateUtil.isCellDateFormatted(cell)) {
                     return dateFormat.format(DateUtil.getJavaDate(cell.getNumericCellValue()));
-                } else {
+                } else {*/
                     return "" + cell.getNumericCellValue();
-                }
+                //}
             } else if (cellType == Cell.CELL_TYPE_BOOLEAN) {
                 return "" + cell.getBooleanCellValue();
             }

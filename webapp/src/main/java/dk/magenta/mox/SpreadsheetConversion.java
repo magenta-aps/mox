@@ -1,9 +1,7 @@
 package dk.magenta.mox;
 
-import dk.magenta.mox.agent.ObjectType;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import dk.magenta.mox.json.JSONArray;
+import dk.magenta.mox.json.JSONObject;
 
 import java.util.*;
 
@@ -107,7 +105,7 @@ class SpreadsheetConversion {
                         break;
                     }
                 }
-                if (id != null) {
+                if (id != null && !id.isEmpty()) {
                     HashMap<String, String> object = sheet.objects.get(id);
                     if (object == null) {
                         object = new HashMap<String, String>();
@@ -134,11 +132,11 @@ class SpreadsheetConversion {
     public JSONObject getConvertedObject(String sheetName, String id) {
         SheetData sheet = this.sheets.get(sheetName);
         if (sheet == null) {
-            // Error: invalid sheet name
+            throw new IllegalArgumentException("Invalid sheet name '"+sheetName+"'; not found in loaded data. Valid sheet names are: " + this.getSheetNames());
         } else {
             HashMap<String, String> objectData = sheet.objects.get(id);
             if (objectData == null) {
-                // Error: invalid id
+                throw new IllegalArgumentException("Invalid object id '"+id+"'; not found in sheet '"+sheetName+"'. Valid object ids are: " + this.getObjectIds(sheetName));
             } else {
                 JSONObject output = new JSONObject();
 
@@ -148,56 +146,61 @@ class SpreadsheetConversion {
                 for (String key : objectData.keySet()) {
                     String value = objectData.get(key);
                     List<String> path = sheet.structure.get(key);
+                    System.out.println(sheetName+"."+key+" / "+path+" = "+value);
 
                     if (path == null) {
                         System.out.println("No structure path for header "+key+" in sheet "+sheetName);
-                    } else if (path.size() >= 2) {
+                    } else {
                         String pathLevel1 = path.get(0);
-                        String pathLevel2 = path.get(1);
 
-                        List<String> subPath = path.subList(2, path.size());
-                        
-                        if (pathLevel1.equalsIgnoreCase("registrering")) {
-                            output.append(pathLevel2, value);
-                        } else if (pathLevel1.equalsIgnoreCase("virkning")) {
+                        if (pathLevel1.equalsIgnoreCase("virkning")) {
                             if (key.equalsIgnoreCase("fra")) {
                                 effectiveObject.put("from", value);
-                            }
-                            if (key.equalsIgnoreCase("til")) {
+                            } else if (key.equalsIgnoreCase("til")) {
                                 effectiveObject.put("to", value);
                             }
-                        } else if (pathLevel1.equalsIgnoreCase("attributter") || pathLevel1.equalsIgnoreCase("tilstande") || pathLevel1.equalsIgnoreCase("relationer")) {
+                        } else if (path.size() >= 2) {
+                            String pathLevel2 = path.get(1);
+                            List<String> subPath = path.subList(2, path.size());
+                            if (pathLevel1.equalsIgnoreCase("registrering")) {
+                                output.put(pathLevel2, value);
+                            } else if (pathLevel1.equalsIgnoreCase("attributter") || pathLevel1.equalsIgnoreCase("tilstande") || pathLevel1.equalsIgnoreCase("relationer")) {
 
-                            JSONObject objectLevel1 = output.optJSONObject(pathLevel1); // attributter
-                            if (objectLevel1 == null) {
-                                objectLevel1 = new JSONObject();
-                                output.put(pathLevel1, objectLevel1);
-                            }
-                            JSONArray objectLevel2 = objectLevel1.optJSONArray(pathLevel2); // klassifikationegenskaber
-                            if (objectLevel2 == null) {
-                                objectLevel2 = new JSONArray();
-                                objectLevel1.put(pathLevel2, objectLevel2);
-                            }
-
-
-
-                            JSONObject container = objectLevel2.optJSONObject(0);
-                            if (container == null) {
-                                container = new JSONObject();
-                                objectLevel2.put(container);
-                                containers.add(container);
-                            }
-                            for (int i = 0; i < subPath.size(); i++) {
-                                String pathKey = subPath.get(i);
-                                if (i == subPath.size() - 1) {
-                                    container.put(pathKey, value);
-                                } else {
-                                    if (!container.has(pathKey)) {
-                                        container.put(pathKey, new JSONObject());
+                                if (pathLevel1.equalsIgnoreCase("relationer")) {
+                                    String firstSubPath = subPath.isEmpty() ? null : subPath.get(0);
+                                    if (firstSubPath != null) {
+                                        if (firstSubPath.equalsIgnoreCase("uuid")) {
+                                            try {
+                                                UUID.fromString(value);
+                                            } catch (IllegalArgumentException e) {
+                                                // It's not a valid uuid
+                                                subPath = new ArrayList<String>(subPath);
+                                                subPath.set(0, "urn");
+                                                value = "urn: " + value;
+                                            }
+                                        } else if (firstSubPath.equalsIgnoreCase("objekttype")) {
+                                            continue;
+                                        }
                                     }
-                                    container = container.getJSONObject(pathKey);
                                 }
+
+                                JSONObject objectLevel1 = output.fetchJSONObject(pathLevel1);
+                                JSONArray objectLevel2 = objectLevel1.fetchJSONArray(pathLevel2);
+                                JSONObject container = objectLevel2.fetchJSONObject(0);
+                                containers.add(container);
+
+                                for (int i = 0; i < subPath.size(); i++) {
+                                    String pathKey = subPath.get(i);
+                                    if (i == subPath.size() - 1) {
+                                        container.put(pathKey, value);
+                                    } else {
+                                        container = container.fetchJSONObject(pathKey);
+                                    }
+                                }
+                            } else {
+                                System.out.println("Unrecognized pathlevel1: "+pathLevel1);
                             }
+
                         }
                     }
                 }
@@ -207,10 +210,6 @@ class SpreadsheetConversion {
                 return output;
             }
         }
-
-
-
-        return null;
     }
 
 

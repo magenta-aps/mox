@@ -71,8 +71,9 @@ public class DocumentUpload extends UploadServlet {
                             SpreadsheetConversion conversion = converter.convert(file.getInputStream());
                             for (String sheetName : conversion.getSheetNames()) {
                                 for (String objectId : conversion.getObjectIds(sheetName)) {
+                                    System.out.println("-------------------------------------");
                                     JSONObject convertedObject = conversion.getConvertedObject(sheetName, objectId);
-                                    //System.out.println(convertedObject.toString(2));
+                                    System.out.println(convertedObject.toString(2));
                                 }
                             }
                         } catch (Exception e) {
