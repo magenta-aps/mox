@@ -2,6 +2,7 @@ package dk.magenta.mox;
 
 import dk.magenta.mox.json.JSONArray;
 import dk.magenta.mox.json.JSONObject;
+import org.apache.log4j.Logger;
 
 import java.util.*;
 
@@ -10,10 +11,27 @@ import java.util.*;
  */
 class SpreadsheetConversion {
 
+    private static Logger log = Logger.getLogger(SpreadsheetConversion.class);
+
     private static String[] idHeaderNames = new String[] {
             "objektID",
             "BrugervendtNoegle"
     };
+    private static String operationHeaderName = "operation";
+    private static Map<String, String> operations;
+
+    static {
+        operations = new HashMap<String, String>();
+        operations.put("opret","create");
+        operations.put("ret","update");
+        operations.put("import","import");
+        operations.put("slet","delete");
+        operations.put("passiver","passivate");
+        operations.put("læs","read");
+        operations.put("list","list");
+        operations.put("søg","search");
+        operations.put("ajour","ajour");
+    }
 
     /**
      * Data chunk for all objects in a particular sheet
@@ -23,6 +41,8 @@ class SpreadsheetConversion {
         public SpreadsheetRow header;
         // Stores the indexes in which the object ID may be found
         public ArrayList<Integer> headerIdIndexes;
+        // Stores the index in which the operation may be found
+        public int headerOperationIndex = 0;
         // Key conversion: Maps spreadsheet column headers to json path
         public HashMap<String, ArrayList<String>> structure = new HashMap<String, ArrayList<String>>();
         // A collection of objects obtained from the spreadsheet
@@ -84,6 +104,10 @@ class SpreadsheetConversion {
                 sheet.headerIdIndexes.add(index);
             }
         }
+        int index = row.indexOf(operationHeaderName);
+        if (index != -1) {
+            sheet.headerOperationIndex = index;
+        }
     }
 
     /**
@@ -95,25 +119,40 @@ class SpreadsheetConversion {
         if (headerRow == null) {
             // Error: header not loaded
         } else {
-            for (int i=0; i<row.size(); i++) {
-                String value = row.get(i);
-                String tag = headerRow.get(i);
-                String id = null;
-                for (Integer idIndex : sheet.headerIdIndexes) {
-                    id = row.get(idIndex);
-                    if (!id.isEmpty()) {
-                        break;
-                    }
+            String id = null;
+            for (Integer idIndex : sheet.headerIdIndexes) {
+                id = row.get(idIndex);
+                if (!id.isEmpty()) {
+                    break;
                 }
-                if (id != null && !id.isEmpty()) {
+            }
+            String operation = row.get(sheet.headerOperationIndex);
+            if (id == null || id.isEmpty()) {
+                log.warn("No id for object row " + row);
+            } else if (operation == null || operation.isEmpty()) {
+                log.warn("No operation for object row (id='" + id + "')");
+            } else if (!operations.containsKey(operation) && !operations.containsValue(operation)) {
+                log.warn("Unrecognized operation for object row (id='" + id + "')");
+            } else {
+
+                for (int i = 0; i < row.size(); i++) {
+                    String value = row.get(i);
+                    String tag = headerRow.get(i);
+
                     HashMap<String, String> object = sheet.objects.get(id);
                     if (object == null) {
                         object = new HashMap<String, String>();
                         sheet.objects.put(id, object);
                     }
+                    if (i == sheet.headerOperationIndex && tag.equalsIgnoreCase(operationHeaderName)) {
+                        if (operations.containsKey(value)) {
+                            value = operations.get(value);
+                        }
+                    }
                     object.put(tag, value);
                 }
             }
+
         }
     }
 
@@ -144,63 +183,65 @@ class SpreadsheetConversion {
                 JSONObject effectiveObject = new JSONObject();
 
                 for (String key : objectData.keySet()) {
-                    String value = objectData.get(key);
-                    List<String> path = sheet.structure.get(key);
-                    System.out.println(sheetName+"."+key+" / "+path+" = "+value);
+                    if (!key.equalsIgnoreCase("operation")) {
+                        String value = objectData.get(key);
+                        List<String> path = sheet.structure.get(key);
 
-                    if (path == null) {
-                        System.out.println("No structure path for header "+key+" in sheet "+sheetName);
-                    } else {
-                        String pathLevel1 = path.get(0);
+                        if (path == null) {
+                            log.warn("No structure path for header "+key+" in sheet "+sheetName);
+                        } else {
+                            String pathLevel1 = path.get(0);
 
-                        if (pathLevel1.equalsIgnoreCase("virkning")) {
-                            if (key.equalsIgnoreCase("fra")) {
-                                effectiveObject.put("from", value);
-                            } else if (key.equalsIgnoreCase("til")) {
-                                effectiveObject.put("to", value);
-                            }
-                        } else if (path.size() >= 2) {
-                            String pathLevel2 = path.get(1);
-                            List<String> subPath = path.subList(2, path.size());
-                            if (pathLevel1.equalsIgnoreCase("registrering")) {
-                                output.put(pathLevel2, value);
-                            } else if (pathLevel1.equalsIgnoreCase("attributter") || pathLevel1.equalsIgnoreCase("tilstande") || pathLevel1.equalsIgnoreCase("relationer")) {
+                            if (pathLevel1.equalsIgnoreCase("virkning")) {
+                                if (key.equalsIgnoreCase("fra")) {
+                                    effectiveObject.put("from", value);
+                                } else if (key.equalsIgnoreCase("til")) {
+                                    effectiveObject.put("to", value);
+                                }
+                            } else if (path.size() >= 2) {
+                                String pathLevel2 = path.get(1);
+                                List<String> subPath = path.subList(2, path.size());
+                                if (pathLevel1.equalsIgnoreCase("registrering")) {
+                                    output.put(pathLevel2, value);
+                                } else if (pathLevel1.equalsIgnoreCase("attributter") || pathLevel1.equalsIgnoreCase("tilstande") || pathLevel1.equalsIgnoreCase("relationer")) {
 
-                                if (pathLevel1.equalsIgnoreCase("relationer")) {
-                                    String firstSubPath = subPath.isEmpty() ? null : subPath.get(0);
-                                    if (firstSubPath != null) {
-                                        if (firstSubPath.equalsIgnoreCase("uuid")) {
-                                            try {
-                                                UUID.fromString(value);
-                                            } catch (IllegalArgumentException e) {
-                                                // It's not a valid uuid
-                                                subPath = new ArrayList<String>(subPath);
-                                                subPath.set(0, "urn");
-                                                value = "urn: " + value;
+                                    if (pathLevel1.equalsIgnoreCase("relationer")) {
+                                        String firstSubPath = subPath.isEmpty() ? null : subPath.get(0);
+                                        if (firstSubPath != null) {
+                                            if (firstSubPath.equalsIgnoreCase("uuid")) {
+                                                try {
+                                                    UUID.fromString(value);
+                                                } catch (IllegalArgumentException e) {
+                                                    // It's not a valid uuid
+                                                    subPath = new ArrayList<String>(subPath);
+                                                    subPath.set(0, "urn");
+                                                    value = "urn: " + value;
+                                                }
+                                            } else if (firstSubPath.equalsIgnoreCase("objekttype")) {
+                                                continue;
                                             }
-                                        } else if (firstSubPath.equalsIgnoreCase("objekttype")) {
-                                            continue;
                                         }
                                     }
-                                }
 
-                                JSONObject objectLevel1 = output.fetchJSONObject(pathLevel1);
-                                JSONArray objectLevel2 = objectLevel1.fetchJSONArray(pathLevel2);
-                                JSONObject container = objectLevel2.fetchJSONObject(0);
-                                containers.add(container);
+                                    JSONObject objectLevel1 = output.fetchJSONObject(pathLevel1);
+                                    JSONArray objectLevel2 = objectLevel1.fetchJSONArray(pathLevel2);
+                                    JSONObject container = objectLevel2.fetchJSONObject(0);
+                                    containers.add(container);
 
-                                for (int i = 0; i < subPath.size(); i++) {
-                                    String pathKey = subPath.get(i);
-                                    if (i == subPath.size() - 1) {
-                                        container.put(pathKey, value);
-                                    } else {
-                                        container = container.fetchJSONObject(pathKey);
+                                    for (int i = 0; i < subPath.size(); i++) {
+                                        String pathKey = subPath.get(i);
+                                        if (i == subPath.size() - 1) {
+                                            container.put(pathKey, value);
+                                        } else {
+                                            container = container.fetchJSONObject(pathKey);
+                                        }
                                     }
+                                } else {
+                                    log.warn("Unrecognized path: "+sheetName+"."+id+" => "+path+" = "+value+". Ignoring.");
                                 }
                             } else {
-                                System.out.println("Unrecognized pathlevel1: "+pathLevel1);
+                                log.warn("Unrecognized path length: "+sheetName+"."+id+" => "+path+" = "+value+". Path must have at least two parts.");
                             }
-
                         }
                     }
                 }
