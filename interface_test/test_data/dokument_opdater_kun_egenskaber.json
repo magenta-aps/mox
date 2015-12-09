@@ -1,0 +1,22 @@
+{
+  "note": "Opdateret dokument",
+  "attributter": {
+    "dokumentegenskaber": [
+      {
+        "titel": "Dokument nr. 12345 opdateret",
+        "beskrivelse": "Dette er en dokument",
+        "major": 2,
+        "minor": 0,
+        "virkning": {
+          "from": "2014-05-19 12:02:32",
+          "to": "infinity",
+          "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+          "aktoertypekode": "Bruger",
+          "notetekst": "Nothing to see here!"
+        }
+      }
+    ]
+  }
+}
+
+

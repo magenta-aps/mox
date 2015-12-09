@@ -109,7 +109,7 @@ ELSE
   -- 0..1 relations 
    
 
-  FOREACH klasse_relation_navn in array  ARRAY['ejer'::KlasseRelationKode,'ansvarlig'::KlasseRelationKode,'overordnetklasse'::KlasseRelationKode,'facet'::KlasseRelationKode]
+  FOREACH klasse_relation_navn in array  ARRAY['ejer'::KlasseRelationKode,'ansvarlig'::KlasseRelationKode,'overordnetklasse'::KlasseRelationKode,'facet'::KlasseRelationKode]::KlasseRelationKode[]
   LOOP
 
     INSERT INTO klasse_relation (
@@ -155,7 +155,7 @@ ELSE
   --We only have to check if there are any of the relations with the given name present in the new registration, otherwise copy the ones from the previous registration
 
 
-  FOREACH klasse_relation_navn in array ARRAY['redaktoerer'::KlasseRelationKode,'sideordnede'::KlasseRelationKode,'mapninger'::KlasseRelationKode,'tilfoejelser'::KlasseRelationKode,'erstatter'::KlasseRelationKode,'lovligekombinationer'::KlasseRelationKode]
+  FOREACH klasse_relation_navn in array ARRAY['redaktoerer'::KlasseRelationKode,'sideordnede'::KlasseRelationKode,'mapninger'::KlasseRelationKode,'tilfoejelser'::KlasseRelationKode,'erstatter'::KlasseRelationKode,'lovligekombinationer'::KlasseRelationKode]::KlasseRelationKode[]
   LOOP
 
     IF NOT EXISTS  (SELECT 1 FROM klasse_relation WHERE klasse_registrering_id=new_klasse_registrering.id and rel_type=klasse_relation_navn) THEN
