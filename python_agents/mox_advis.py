@@ -101,7 +101,7 @@ class MOXAdvis(MOXAgent):
     def callback(self, ch, method, properties, body):
         """Extract UUID and SAML token - send body as email to user."""
         gzip_token = properties.headers.get(
-            'authorization', None
+            'autorisation', None
         ) if properties.headers else None
         saml_token = unpack_saml_token(gzip_token) if gzip_token else None
         # TODO: If no SAML token, we can't proceed!
