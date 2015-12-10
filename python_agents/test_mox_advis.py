@@ -41,7 +41,7 @@ channel.basic_publish(exchange='',
                       properties=pika.BasicProperties(
                           content_type='text/plain',
                           delivery_mode=2,
-                          headers={'authorization': saml_token,
+                          headers={'autorisation': saml_token,
                                    'query': [uuid,
                                              uuid_not_working,
                                              uuid_doesnt_exist,
