@@ -107,7 +107,7 @@ ELSE
   -- 0..1 relations 
    
 
-  FOREACH organisation_relation_navn in array  ARRAY['branche'::OrganisationRelationKode,'myndighed'::OrganisationRelationKode,'myndighedstype'::OrganisationRelationKode,'overordnet'::OrganisationRelationKode,'produktionsenhed'::OrganisationRelationKode,'skatteenhed'::OrganisationRelationKode,'tilhoerer'::OrganisationRelationKode,'virksomhed'::OrganisationRelationKode,'virksomhedstype'::OrganisationRelationKode]
+  FOREACH organisation_relation_navn in array  ARRAY['branche'::OrganisationRelationKode,'myndighed'::OrganisationRelationKode,'myndighedstype'::OrganisationRelationKode,'overordnet'::OrganisationRelationKode,'produktionsenhed'::OrganisationRelationKode,'skatteenhed'::OrganisationRelationKode,'tilhoerer'::OrganisationRelationKode,'virksomhed'::OrganisationRelationKode,'virksomhedstype'::OrganisationRelationKode]::OrganisationRelationKode[]
   LOOP
 
     INSERT INTO organisation_relation (
@@ -153,7 +153,7 @@ ELSE
   --We only have to check if there are any of the relations with the given name present in the new registration, otherwise copy the ones from the previous registration
 
 
-  FOREACH organisation_relation_navn in array ARRAY['adresser'::OrganisationRelationKode,'ansatte'::OrganisationRelationKode,'opgaver'::OrganisationRelationKode,'tilknyttedebrugere'::OrganisationRelationKode,'tilknyttedeenheder'::OrganisationRelationKode,'tilknyttedefunktioner'::OrganisationRelationKode,'tilknyttedeinteressefaellesskaber'::OrganisationRelationKode,'tilknyttedeorganisationer'::OrganisationRelationKode,'tilknyttedepersoner'::OrganisationRelationKode,'tilknyttedeitsystemer'::OrganisationRelationKode]
+  FOREACH organisation_relation_navn in array ARRAY['adresser'::OrganisationRelationKode,'ansatte'::OrganisationRelationKode,'opgaver'::OrganisationRelationKode,'tilknyttedebrugere'::OrganisationRelationKode,'tilknyttedeenheder'::OrganisationRelationKode,'tilknyttedefunktioner'::OrganisationRelationKode,'tilknyttedeinteressefaellesskaber'::OrganisationRelationKode,'tilknyttedeorganisationer'::OrganisationRelationKode,'tilknyttedepersoner'::OrganisationRelationKode,'tilknyttedeitsystemer'::OrganisationRelationKode]::OrganisationRelationKode[]
   LOOP
 
     IF NOT EXISTS  (SELECT 1 FROM organisation_relation WHERE organisation_registrering_id=new_organisation_registrering.id and rel_type=organisation_relation_navn) THEN

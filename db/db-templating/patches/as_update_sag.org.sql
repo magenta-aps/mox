@@ -220,7 +220,7 @@ END LOOP;
   -- 0..1 relations 
   --Please notice, that for 0..1 relations for Sag, we're ignoring index here, and handling it the same way, that is done for other object types (like Facet, Klasse etc). That is, you only make changes for the virkningsperiod that you explicitly specify (unless you delete all relations) 
 
-  FOREACH sag_relation_navn in array  ARRAY['behandlingarkiv'::SagRelationKode,'afleveringsarkiv'::SagRelationKode,'primaerklasse'::SagRelationKode,'opgaveklasse'::SagRelationKode,'handlingsklasse'::SagRelationKode,'kontoklasse'::SagRelationKode,'sikkerhedsklasse'::SagRelationKode,'foelsomhedsklasse'::SagRelationKode,'indsatsklasse'::SagRelationKode,'ydelsesklasse'::SagRelationKode,'ejer'::SagRelationKode,'ansvarlig'::SagRelationKode,'primaerbehandler'::SagRelationKode,'udlaanttil'::SagRelationKode,'primaerpart'::SagRelationKode,'ydelsesmodtager'::SagRelationKode,'oversag'::SagRelationKode,'praecedens'::SagRelationKode,'afgiftsobjekt'::SagRelationKode,'ejendomsskat'::SagRelationKode]
+  FOREACH sag_relation_navn in array  ARRAY['behandlingarkiv'::SagRelationKode,'afleveringsarkiv'::SagRelationKode,'primaerklasse'::SagRelationKode,'opgaveklasse'::SagRelationKode,'handlingsklasse'::SagRelationKode,'kontoklasse'::SagRelationKode,'sikkerhedsklasse'::SagRelationKode,'foelsomhedsklasse'::SagRelationKode,'indsatsklasse'::SagRelationKode,'ydelsesklasse'::SagRelationKode,'ejer'::SagRelationKode,'ansvarlig'::SagRelationKode,'primaerbehandler'::SagRelationKode,'udlaanttil'::SagRelationKode,'primaerpart'::SagRelationKode,'ydelsesmodtager'::SagRelationKode,'oversag'::SagRelationKode,'praecedens'::SagRelationKode,'afgiftsobjekt'::SagRelationKode,'ejendomsskat'::SagRelationKode]::SagRelationKode[]
   LOOP
 
     INSERT INTO sag_relation (
