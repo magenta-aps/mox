@@ -101,4 +101,4 @@ def get_auth_restrictions(user, object_type, operation):
     return None  # [
     #    ({'brugervendtnoegle': 'ORGFUNK'}, {'status': 'Publiceret'},  {}),
     #    ({}, {}, {'redaktoerer': 'ddc99abd-c1b0-48c2-aef7-74fea841adae'})
-    #]
+    # ]

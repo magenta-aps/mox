@@ -8,5 +8,5 @@ oio_rest/oio_api
 *.rej
 *.class
 *~
-.ropeproject/
-
+.ropeproject
+oio_rest/dist

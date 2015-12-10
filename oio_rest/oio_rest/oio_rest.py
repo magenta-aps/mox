@@ -6,6 +6,7 @@ from flask import jsonify, request
 from custom_exceptions import BadRequestException
 
 import db
+import settings
 from utils.build_registration import build_registration, to_lower_param
 
 
@@ -37,6 +38,20 @@ class OIOStandardHierarchy(object):
         Note that version number etc. may have to be added to the URL."""
         for c in cls._classes:
             c.create_api(cls._name, flask, base_url)
+
+        hierarchy = cls._name.lower()
+        classes_url = u"{0}/{1}/{2}".format(base_url, hierarchy, u"classes")
+
+        def get_classes():
+            structure = settings.REAL_DB_STRUCTURE
+            clsnms = [c.__name__.lower() for c in cls._classes]
+            hierarchy_dict = {c: structure[c] for c in clsnms}
+            return json.dumps(hierarchy_dict)
+
+        flask.add_url_rule(
+            classes_url, u'_'.join([hierarchy, 'classes']),
+            get_classes, methods=['GET']
+        )
 
 
 class OIORestObject(object):
@@ -97,7 +112,6 @@ class OIORestObject(object):
                      for k in request.args.keys()}
         args = {to_lower_param(k): request.args.get(k)
                 for k in request.args.keys()}
-
         virkning_fra = args.get('virkningfra', None)
         virkning_til = args.get('virkningtil', None)
         registreret_fra = args.get('registreretfra', None)
@@ -227,6 +241,15 @@ class OIORestObject(object):
         return jsonify({'uuid': uuid}), 200
 
     @classmethod
+    def get_fields(cls):
+        """Set up API with correct database access functions."""
+        structure = settings.REAL_DB_STRUCTURE
+        class_key = cls.__name__.lower()
+        # TODO: Perform some transformations to improve readability.
+        class_dict = structure[class_key]
+        return json.dumps(class_dict)
+
+    @classmethod
     def create_api(cls, hierarchy, flask, base_url):
         """Set up API with correct database access functions."""
         hierarchy = hierarchy.lower()
@@ -234,6 +257,7 @@ class OIORestObject(object):
         class_url = u"{0}/{1}/{2}".format(base_url,
                                           hierarchy,
                                           class_name)
+        cls_fields_url = u"{0}/{1}".format(class_url, u"fields")
         uuid_regex = (
             "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}" +
             "-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
@@ -243,6 +267,9 @@ class OIORestObject(object):
             uuid_regex
         )
 
+        def get_classes_for_hierarchy():
+            return cls.get_classes(hierarchy)
+
         flask.add_url_rule(class_url, u'_'.join([cls.__name__, 'get_objects']),
                            cls.get_objects, methods=['GET'])
 
@@ -251,7 +278,6 @@ class OIORestObject(object):
 
         flask.add_url_rule(object_url, u'_'.join([cls.__name__, 'put_object']),
                            cls.put_object, methods=['PUT'])
-
         flask.add_url_rule(
             class_url, u'_'.join([cls.__name__, 'create_object']),
             cls.create_object, methods=['POST']
@@ -260,6 +286,12 @@ class OIORestObject(object):
         flask.add_url_rule(
             object_url, u'_'.join([cls.__name__, 'delete_object']),
             cls.delete_object, methods=['DELETE']
+        )
+
+        # Structure URLs
+        flask.add_url_rule(
+            cls_fields_url, u'_'.join([cls.__name__, 'fields']),
+            cls.get_fields, methods=['GET']
         )
 
     # Templates which may be overridden on subclass.

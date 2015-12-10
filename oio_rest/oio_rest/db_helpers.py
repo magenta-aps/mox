@@ -83,8 +83,8 @@ def get_relation_names(class_name):
     if len(_relation_names) == 0:
         for c in db_struct:
             _relation_names[c] = [
-                a for a in db_struct[c]['relationer_nul_til_en']
-                + [b for b in db_struct[c]['relationer_nul_til_mange']]
+                a for a in db_struct[c]['relationer_nul_til_en'] +
+                [b for b in db_struct[c]['relationer_nul_til_mange']]
                 ]
     return _relation_names[class_name.lower()]
 
