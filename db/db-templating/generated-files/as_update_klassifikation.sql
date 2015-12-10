@@ -107,7 +107,7 @@ ELSE
   -- 0..1 relations 
    
 
-  FOREACH klassifikation_relation_navn in array  ARRAY['ansvarlig'::KlassifikationRelationKode,'ejer'::KlassifikationRelationKode]
+  FOREACH klassifikation_relation_navn in array  ARRAY['ansvarlig'::KlassifikationRelationKode,'ejer'::KlassifikationRelationKode]::KlassifikationRelationKode[]
   LOOP
 
     INSERT INTO klassifikation_relation (
@@ -153,7 +153,7 @@ ELSE
   --We only have to check if there are any of the relations with the given name present in the new registration, otherwise copy the ones from the previous registration
 
 
-  FOREACH klassifikation_relation_navn in array ARRAY[]
+  FOREACH klassifikation_relation_navn in array ARRAY[]::KlassifikationRelationKode[]
   LOOP
 
     IF NOT EXISTS  (SELECT 1 FROM klassifikation_relation WHERE klassifikation_registrering_id=new_klassifikation_registrering.id and rel_type=klassifikation_relation_navn) THEN
