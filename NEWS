@@ -1,3 +1,13 @@
+* Version 0.2.11, November 10, 2015
+
+New in this version:
+
+* Mox agent Mox Advis.
+* Display JSON for class structures at e.g. /sag/classes
+* Bug in Update Klassifikation due to wrong formatting of empty array.
+
+
+
 * Version 0.2.10, November 3, 2015
 
 New in this version:
