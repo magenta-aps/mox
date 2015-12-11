@@ -17,7 +17,7 @@
 source config.sh
 DIR=$(dirname ${BASH_SOURCE[0]})
 
-result=$(curl -sH "Content-Type: application/json" -X POST -d "$(cat $DIR/test_data/sag_opret.json)" $HOST_URL/sag/sag)
+result=$(curl -k -sH "Content-Type: application/json" -X POST -d "$(cat $DIR/test_data/sag_opret.json)" $HOST_URL/sag/sag)
 echo "<$result>"
 uuid=$(expr "$result" : '.*"uuid": "\([^"]*\)"')
 if [ ! -z $uuid ]
@@ -35,10 +35,10 @@ fi
 echo "List, output til /tmp/list_sag.txt"
 
 #set -x
-curl -sH "Content-Type: application/json" -X GET $HOST_URL/sag/sag?uuid=$uuid > /tmp/list_sag.txt
+curl -k -sH "Content-Type: application/json" -X GET $HOST_URL/sag/sag?uuid=$uuid > /tmp/list_sag.txt
 #set +x
 
-if $(curl -sH "Content-Type: application/json" -X GET "$HOST_URL/sag/sag?andrebehandlere=ef2713ee-1a38-4c23-8fcb-3c4331262194&uuid=$uuid" | grep -q "$uuid")
+if $(curl -k -sH "Content-Type: application/json" -X GET "$HOST_URL/sag/sag?andrebehandlere=ef2713ee-1a38-4c23-8fcb-3c4331262194&uuid=$uuid" | grep -q "$uuid")
 then
     printf "\nSearch on case andrebehandlere relation successful"
 else
@@ -49,7 +49,7 @@ fi
 
 
 
-if $(curl -sH "Content-Type: application/json" -X GET \
+if $(curl -k -sH "Content-Type: application/json" -X GET \
 "$HOST_URL/sag/sag?journalpostkode=journalnotat&uuid=$uuid" | grep -q "$uuid")
 then
     printf "\nSearch on case journalpostkode relation successful"
@@ -58,7 +58,7 @@ else
     exit
 fi
 
-if ! $(curl -sH "Content-Type: application/json" -X GET \
+if ! $(curl -k -sH "Content-Type: application/json" -X GET \
 "$HOST_URL/sag/sag?journalpostkode=tilakteretdokument&uuid=$uuid" | grep -q "$uuid")
 then
     printf "\nSearch on case wrong journalpostkode relation successful"
@@ -67,7 +67,7 @@ else
     exit
 fi
 
-if $(curl -sH "Content-Type: application/json" -X GET \
+if $(curl -k -sH "Content-Type: application/json" -X GET \
 "$HOST_URL/sag/sag?journalnotat.titel=Kommentarer%&uuid=$uuid" | grep -q "$uuid")
 then
     printf "\nSearch on case journalnotat.titel relation successful"
@@ -76,7 +76,7 @@ else
     exit
 fi
 
-if ! $(curl -sH "Content-Type: application/json" -X GET \
+if ! $(curl -k -sH "Content-Type: application/json" -X GET \
 "$HOST_URL/sag/sag?journalnotat.titel=Wrong&uuid=$uuid" | grep -q "$uuid")
 then
     printf "\nSearch on case wrong journalnotat.titel relation successful"
@@ -85,7 +85,7 @@ else
     exit
 fi
 
-if $(curl -sH "Content-Type: application/json" -X GET \
+if $(curl -k -sH "Content-Type: application/json" -X GET \
 "$HOST_URL/sag/sag?journaldokument.dokumenttitel=Rapport%&uuid=$uuid" |
 grep -q "$uuid")
 then
@@ -95,7 +95,7 @@ else
     exit
 fi
 
-if ! $(curl -sH "Content-Type: application/json" -X GET \
+if ! $(curl -k -sH "Content-Type: application/json" -X GET \
 "$HOST_URL/sag/sag?journaldokument.dokumenttitel=Wrong&uuid=$uuid" | grep -q "$uuid")
 then
     printf "\nSearch on case wrong journaldokument.dokumenttitel relation successful"
@@ -104,7 +104,7 @@ else
     exit
 fi
 
-if $(curl -sH "Content-Type: application/json" -X GET \
+if $(curl -k -sH "Content-Type: application/json" -X GET \
 "$HOST_URL/sag/sag?journaldokument.offentlighedundtaget.alternativtitel=Fortroligt!&uuid=$uuid" | grep -q "$uuid")
 then
     printf "\nSearch on case journaldokument.offentlighedundtaget.alternativtitel relation successful"
@@ -113,7 +113,7 @@ else
     exit
 fi
 
-if ! $(curl -sH "Content-Type: application/json" -X GET \
+if ! $(curl -k -sH "Content-Type: application/json" -X GET \
 "$HOST_URL/sag/sag?journaldokument.offentlighedundtaget.alternativtitel=Wrong&uuid=$uuid" | grep -q "$uuid")
 then
     printf "\nSearch on case wrong journaldokument.offentlighedundtaget.alternativtitel relation successful"

@@ -3,3 +3,4 @@ postgresql-server-dev-all
 postgresql-contrib
 python-jinja2
 pgxnclient
+rabbitmq-server

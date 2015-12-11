@@ -107,7 +107,7 @@ ELSE
   -- 0..1 relations 
    
 
-  FOREACH itsystem_relation_navn in array  ARRAY['tilhoerer'::ItsystemRelationKode]
+  FOREACH itsystem_relation_navn in array  ARRAY['tilhoerer'::ItsystemRelationKode]::ItsystemRelationKode[]
   LOOP
 
     INSERT INTO itsystem_relation (
@@ -153,7 +153,7 @@ ELSE
   --We only have to check if there are any of the relations with the given name present in the new registration, otherwise copy the ones from the previous registration
 
 
-  FOREACH itsystem_relation_navn in array ARRAY['tilknyttedeorganisationer'::ItsystemRelationKode,'tilknyttedeenheder'::ItsystemRelationKode,'tilknyttedefunktioner'::ItsystemRelationKode,'tilknyttedebrugere'::ItsystemRelationKode,'tilknyttedeinteressefaellesskaber'::ItsystemRelationKode,'tilknyttedeitsystemer'::ItsystemRelationKode,'tilknyttedepersoner'::ItsystemRelationKode,'systemtyper'::ItsystemRelationKode,'opgaver'::ItsystemRelationKode,'adresser'::ItsystemRelationKode]
+  FOREACH itsystem_relation_navn in array ARRAY['tilknyttedeorganisationer'::ItsystemRelationKode,'tilknyttedeenheder'::ItsystemRelationKode,'tilknyttedefunktioner'::ItsystemRelationKode,'tilknyttedebrugere'::ItsystemRelationKode,'tilknyttedeinteressefaellesskaber'::ItsystemRelationKode,'tilknyttedeitsystemer'::ItsystemRelationKode,'tilknyttedepersoner'::ItsystemRelationKode,'systemtyper'::ItsystemRelationKode,'opgaver'::ItsystemRelationKode,'adresser'::ItsystemRelationKode]::ItsystemRelationKode[]
   LOOP
 
     IF NOT EXISTS  (SELECT 1 FROM itsystem_relation WHERE itsystem_registrering_id=new_itsystem_registrering.id and rel_type=itsystem_relation_navn) THEN

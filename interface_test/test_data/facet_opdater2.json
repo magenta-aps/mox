@@ -1,0 +1,20 @@
+{ 
+    "note": "Opdateret facet, ændret BVN",
+    "attributter": { 
+        "facetegenskaber": [ 
+            {
+            "brugervendtnoegle": "ORGFUNK1", 
+            "beskrivelse": "Organisatorisk funktion 2", 
+            "plan": "XYZ", 
+            "opbygning": "Hierarkisk", 
+            "ophavsret": "Magenta", 
+            "supplement": "Ja", 
+            "virkning": { 
+                "from": "2016-01-01 00:00:00", 
+                "to": "infinity"
+            }
+            }
+        ] 
+    }
+
+}

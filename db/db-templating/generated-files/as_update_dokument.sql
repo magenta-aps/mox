@@ -126,7 +126,7 @@ ELSE
   -- 0..1 relations 
    
 
-  FOREACH dokument_relation_navn in array  ARRAY['nyrevision'::DokumentRelationKode,'primaerklasse'::DokumentRelationKode,'ejer'::DokumentRelationKode,'ansvarlig'::DokumentRelationKode,'primaerbehandler'::DokumentRelationKode,'fordelttil'::DokumentRelationKode]
+  FOREACH dokument_relation_navn in array  ARRAY['nyrevision'::DokumentRelationKode,'primaerklasse'::DokumentRelationKode,'ejer'::DokumentRelationKode,'ansvarlig'::DokumentRelationKode,'primaerbehandler'::DokumentRelationKode,'fordelttil'::DokumentRelationKode]::DokumentRelationKode[]
   LOOP
 
     INSERT INTO dokument_relation (
@@ -172,7 +172,7 @@ ELSE
   --We only have to check if there are any of the relations with the given name present in the new registration, otherwise copy the ones from the previous registration
 
 
-  FOREACH dokument_relation_navn in array ARRAY['arkiver'::DokumentRelationKode,'besvarelser'::DokumentRelationKode,'udgangspunkter'::DokumentRelationKode,'kommentarer'::DokumentRelationKode,'bilag'::DokumentRelationKode,'andredokumenter'::DokumentRelationKode,'andreklasser'::DokumentRelationKode,'andrebehandlere'::DokumentRelationKode,'parter'::DokumentRelationKode,'kopiparter'::DokumentRelationKode,'tilknyttedesager'::DokumentRelationKode]
+  FOREACH dokument_relation_navn in array ARRAY['arkiver'::DokumentRelationKode,'besvarelser'::DokumentRelationKode,'udgangspunkter'::DokumentRelationKode,'kommentarer'::DokumentRelationKode,'bilag'::DokumentRelationKode,'andredokumenter'::DokumentRelationKode,'andreklasser'::DokumentRelationKode,'andrebehandlere'::DokumentRelationKode,'parter'::DokumentRelationKode,'kopiparter'::DokumentRelationKode,'tilknyttedesager'::DokumentRelationKode]::DokumentRelationKode[]
   LOOP
 
     IF NOT EXISTS  (SELECT 1 FROM dokument_relation WHERE dokument_registrering_id=new_dokument_registrering.id and rel_type=dokument_relation_navn) THEN
