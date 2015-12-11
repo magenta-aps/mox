@@ -9,6 +9,7 @@
     <version>1.0</version>
     <packaging>jar</packaging>
     <name>Mox authentication obtainer</name>
+
     <build>
         <plugins>
             <plugin>
@@ -198,6 +199,5 @@
             </snapshots>
         </repository>
     </repositories>
-
 
 </project>

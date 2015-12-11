@@ -100,15 +100,15 @@ public class Main {
                 System.out.println("Reading properties file " + propertiesFile.getAbsolutePath());
 
                 if (this.username == null) {
-                    this.username = properties.getProperty("username");
+                    this.username = properties.getProperty("security.user.name");
                     System.out.println("    username = " + this.username);
                 }
                 if (this.password == null) {
-                    this.password = properties.getProperty("password");
+                    this.password = properties.getProperty("security.user.password");
                     System.out.println("    password = ***");
                 }
                 if (this.restInterface == null) {
-                    this.restInterface = properties.getProperty("restInterface");
+                    this.restInterface = properties.getProperty("amqp.interface");
                     System.out.println("    restInterface = " + this.restInterface);
                 }
             }
