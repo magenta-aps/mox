@@ -1,20 +1,29 @@
 package dk.magenta.mox;
 
-import dk.magenta.mox.agent.ObjectType;
+import dk.magenta.mox.agent.*;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
+import javax.net.ssl.HttpsURLConnection;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
+import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
 
 /**
  * Created by lars on 26-11-15.
@@ -24,6 +33,78 @@ import java.util.*;
 public class DocumentUpload extends UploadServlet {
 
     private HashMap<String, SpreadsheetConverter> converterMap = new HashMap<String, SpreadsheetConverter>();
+    private MessageSender moxSender;
+    private String restInterface;
+
+    private static Collection<String> getResources(
+            final String element,
+            final Pattern pattern){
+        final ArrayList<String> retval = new ArrayList<String>();
+        final File file = new File(element);
+        if(file.isDirectory()){
+            retval.addAll(getResourcesFromDirectory(file, pattern));
+        } else{
+            retval.addAll(getResourcesFromJarFile(file, pattern));
+        }
+        return retval;
+    }
+
+    private static Collection<String> getResourcesFromJarFile(
+            final File file,
+            final Pattern pattern){
+        final ArrayList<String> retval = new ArrayList<String>();
+        ZipFile zf;
+        try{
+            zf = new ZipFile(file);
+        } catch(final ZipException e){
+            throw new Error(e);
+        } catch(final IOException e){
+            throw new Error(e);
+        }
+        final Enumeration e = zf.entries();
+        while(e.hasMoreElements()){
+            final ZipEntry ze = (ZipEntry) e.nextElement();
+            final String fileName = ze.getName();
+            final boolean accept = true;//pattern.matcher(fileName).matches();
+            if(accept){
+                retval.add(fileName);
+            }
+        }
+        try{
+            zf.close();
+        } catch(final IOException e1){
+            throw new Error(e1);
+        }
+        return retval;
+    }
+
+    private static Collection<String> getResourcesFromDirectory(
+            final File directory,
+            final Pattern pattern){
+        final ArrayList<String> retval = new ArrayList<String>();
+        final File[] fileList = directory.listFiles();
+        for(final File file : fileList){
+            if(file.isDirectory()){
+                retval.addAll(getResourcesFromDirectory(file, pattern));
+            } else{
+                try{
+                    final String fileName = file.getCanonicalPath();
+                    final boolean accept = true;//pattern.matcher(fileName).matches();
+                    if(accept){
+                        retval.add(fileName);
+                    }
+                } catch(final IOException e){
+                    throw new Error(e);
+                }
+            }
+        }
+        return retval;
+    }
+
+    private void unpackResource(String resourceName) {
+        Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceName);
+
+    }
 
     public void init() throws ServletException {
 
@@ -34,21 +115,43 @@ public class DocumentUpload extends UploadServlet {
         } catch (IOException e) {
             throw new ServletException("Failed to load /WEB-INF/agent.properties",e);
         }
+        String queueInterface = this.getPropertyOrThrow(agentProperties, "amqp.interface");
+        String queueName = this.getPropertyOrThrow(agentProperties, "amqp.queue");
+        String queueUsername = this.getPropertyOrThrow(agentProperties, "amqp.username");
+        String queuePassword = this.getPropertyOrThrow(agentProperties, "amqp.password");
 
         Map<String, ObjectType> objectTypes = ObjectType.load(agentProperties);
+
+        this.restInterface = this.getPropertyOrThrow(agentProperties, "rest.interface");
 
         try {
             converterList.add(new OdfConverter(objectTypes));
             converterList.add(new XlsConverter(objectTypes));
             converterList.add(new XlsxConverter(objectTypes));
         } catch (IOException e) {
-            throw new ServletException("Failed converter initialization",e);
+            throw new ServletException("Failed converter initialization", e);
         }
         for (SpreadsheetConverter converter : converterList) {
             for (String contentType : converter.getApplicableContentTypes()) {
                 this.converterMap.put(contentType, converter);
             }
         }
+
+        try {
+            this.moxSender = new MessageSender(queueUsername, queuePassword, queueInterface, null, queueName);
+        } catch (IOException e) {
+            throw new ServletException("Unable to connect to amqp queue '"+queueInterface+"/"+queueName+"'. Documents were not dispatched.", e);
+        } catch (TimeoutException e) {
+            throw new ServletException("Timeout when connecting to amqp queue '"+queueInterface+"/"+queueName+"'. Documents were not dispatched.", e);
+        }
+    }
+
+    private String getPropertyOrThrow(Properties properties, String key) throws ServletException {
+        String value = properties.getProperty(key);
+        if (value == null) {
+            throw new ServletException("Failed to get property '"+key+"' from configuration file");
+        }
+        return value;
     }
 
 
@@ -58,8 +161,12 @@ public class DocumentUpload extends UploadServlet {
 
         final String fileFieldName = "file";
 
-
         Writer output = response.getWriter();
+        String authorization;
+
+        authorization = this.getSecurityToken(this.restInterface);
+
+
 
         try {
             List<FileItem> files = this.getUploadFiles(request);
@@ -72,8 +179,19 @@ public class DocumentUpload extends UploadServlet {
                             for (String sheetName : conversion.getSheetNames()) {
                                 for (String objectId : conversion.getObjectIds(sheetName)) {
                                     System.out.println("-------------------------------------");
-                                    JSONObject convertedObject = conversion.getConvertedObject(sheetName, objectId);
-                                    System.out.println(convertedObject.toString(2));
+                                    SpreadsheetConversion.ObjectData object = conversion.getObject(sheetName, objectId);
+
+                                    ObjectType objectType = converter.getObjectType(object.getSheetName());
+                                    String operation = object.getOperation();
+                                    JSONObject data = object.convert();
+
+                                    UUID uuid = null;
+                                    try {
+                                        UUID.fromString(object.getId());
+                                    } catch (IllegalArgumentException e) {}
+
+                                    Future<String> moxResponse = objectType.sendCommand(this.moxSender, operation, uuid, data, authorization);
+                                    output.append(moxResponse.get());
                                 }
                             }
                         } catch (Exception e) {
@@ -90,15 +208,7 @@ public class DocumentUpload extends UploadServlet {
         }
     }
 
-    protected Map<String, String> parseContentDisposition(String contentDisposition) {
-        HashMap<String, String> parsed = new HashMap<String, String>();
-        for (String chunk : contentDisposition.split(";\\s*")) {
-            int index = chunk.indexOf("=");
-            if (index != -1) {
-                parsed.put(chunk.substring(0, index), chunk.substring(index));
-                System.out.println(chunk.substring(0, index)+"/"+chunk.substring(index+1));
-            }
-        }
-        return parsed;
+    private String getSecurityToken(String restInterface) {
+        return null;
     }
 }

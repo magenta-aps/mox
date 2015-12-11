@@ -1,8 +1,10 @@
 package dk.magenta.mox;
 
+import dk.magenta.mox.agent.ObjectType;
 import dk.magenta.mox.json.JSONArray;
 import dk.magenta.mox.json.JSONObject;
 import org.apache.log4j.Logger;
+import org.apache.poi.ss.usermodel.Sheet;
 
 import java.util.*;
 
@@ -37,16 +39,122 @@ class SpreadsheetConversion {
      * Data chunk for all objects in a particular sheet
      * */
     class SheetData {
+        public String name;
+
         // Spreadsheet column header
         public SpreadsheetRow header;
+
         // Stores the indexes in which the object ID may be found
         public ArrayList<Integer> headerIdIndexes;
+
         // Stores the index in which the operation may be found
         public int headerOperationIndex = 0;
+
         // Key conversion: Maps spreadsheet column headers to json path
         public HashMap<String, ArrayList<String>> structure = new HashMap<String, ArrayList<String>>();
+
         // A collection of objects obtained from the spreadsheet
-        public HashMap<String, HashMap<String,String>> objects = new HashMap<String, HashMap<String,String>>();
+        public HashMap<String, ObjectData> objects = new HashMap<String, ObjectData>();
+    }
+
+    public class ObjectData extends HashMap<String, String> {
+
+        private SheetData sheet;
+        private String id;
+        private String operation;
+
+        public ObjectData(SheetData sheet, String id, String operation) {
+            this.sheet = sheet;
+            this.id = id;
+            this.operation = operation;
+        }
+
+        public String getOperation() {
+            return operation;
+        }
+
+        public String getSheetName() {
+            return this.sheet.name;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public JSONObject convert() {
+            JSONObject output = new JSONObject();
+
+            Set<JSONObject> containers = new HashSet<JSONObject>();
+            JSONObject effectiveObject = new JSONObject();
+
+            for (String key : this.keySet()) {
+                if (!key.equalsIgnoreCase("operation")) {
+                    String value = this.get(key);
+                    List<String> path = this.sheet.structure.get(key);
+
+                    if (path == null) {
+                        log.warn("No structure path for header "+key+" in sheet "+this.sheet.name);
+                    } else {
+                        String pathLevel1 = path.get(0);
+
+                        if (pathLevel1.equalsIgnoreCase("virkning")) {
+                            if (key.equalsIgnoreCase("fra")) {
+                                effectiveObject.put("from", value);
+                            } else if (key.equalsIgnoreCase("til")) {
+                                effectiveObject.put("to", value);
+                            }
+                        } else if (path.size() >= 2) {
+                            String pathLevel2 = path.get(1);
+                            List<String> subPath = path.subList(2, path.size());
+                            if (pathLevel1.equalsIgnoreCase("registrering")) {
+                                output.put(pathLevel2, value);
+                            } else if (pathLevel1.equalsIgnoreCase("attributter") || pathLevel1.equalsIgnoreCase("tilstande") || pathLevel1.equalsIgnoreCase("relationer")) {
+
+                                if (pathLevel1.equalsIgnoreCase("relationer")) {
+                                    String firstSubPath = subPath.isEmpty() ? null : subPath.get(0);
+                                    if (firstSubPath != null) {
+                                        if (firstSubPath.equalsIgnoreCase("uuid")) {
+                                            try {
+                                                UUID.fromString(value);
+                                            } catch (IllegalArgumentException e) {
+                                                // It's not a valid uuid
+                                                subPath = new ArrayList<String>(subPath);
+                                                subPath.set(0, "urn");
+                                                value = "urn: " + value;
+                                            }
+                                        } else if (firstSubPath.equalsIgnoreCase("objekttype")) {
+                                            continue;
+                                        }
+                                    }
+                                }
+
+                                JSONObject objectLevel1 = output.fetchJSONObject(pathLevel1);
+                                JSONArray objectLevel2 = objectLevel1.fetchJSONArray(pathLevel2);
+                                JSONObject container = objectLevel2.fetchJSONObject(0);
+                                containers.add(container);
+
+                                for (int i = 0; i < subPath.size(); i++) {
+                                    String pathKey = subPath.get(i);
+                                    if (i == subPath.size() - 1) {
+                                        container.put(pathKey, value);
+                                    } else {
+                                        container = container.fetchJSONObject(pathKey);
+                                    }
+                                }
+                            } else {
+                                log.warn("Unrecognized path: "+this.sheet.name+"."+id+" => "+path+" = "+value+". Ignoring.");
+                            }
+                        } else {
+                            log.warn("Unrecognized path length: "+this.sheet.name+"."+id+" => "+path+" = "+value+". Path must have at least two parts.");
+                        }
+                    }
+                }
+            }
+            for (JSONObject container : containers) {
+                container.put("virkning", effectiveObject);
+            }
+            return output;
+        }
     }
 
     private HashMap<String, SheetData> sheets = new HashMap<String, SheetData>();
@@ -56,7 +164,9 @@ class SpreadsheetConversion {
      * */
     private SheetData getSheet(String sheetName) {
         if (!this.sheets.containsKey(sheetName)) {
-            this.sheets.put(sheetName, new SheetData());
+            SheetData sheet = new SheetData();
+            sheet.name = sheetName;
+            this.sheets.put(sheetName, sheet);
         }
         return this.sheets.get(sheetName);
     }
@@ -139,15 +249,15 @@ class SpreadsheetConversion {
                     String value = row.get(i);
                     String tag = headerRow.get(i);
 
-                    HashMap<String, String> object = sheet.objects.get(id);
-                    if (object == null) {
-                        object = new HashMap<String, String>();
-                        sheet.objects.put(id, object);
-                    }
+                    ObjectData object = sheet.objects.get(id);
                     if (i == sheet.headerOperationIndex && tag.equalsIgnoreCase(operationHeaderName)) {
                         if (operations.containsKey(value)) {
                             value = operations.get(value);
                         }
+                    }
+                    if (object == null) {
+                        object = new ObjectData(sheet, id, operation);
+                        sheet.objects.put(id, object);
                     }
                     object.put(tag, value);
                 }
@@ -168,90 +278,22 @@ class SpreadsheetConversion {
         return null;
     }
 
-    public JSONObject getConvertedObject(String sheetName, String id) {
+    public ObjectData getObject(String sheetName, String id) {
         SheetData sheet = this.sheets.get(sheetName);
         if (sheet == null) {
             throw new IllegalArgumentException("Invalid sheet name '"+sheetName+"'; not found in loaded data. Valid sheet names are: " + this.getSheetNames());
         } else {
-            HashMap<String, String> objectData = sheet.objects.get(id);
+            ObjectData objectData = sheet.objects.get(id);
             if (objectData == null) {
                 throw new IllegalArgumentException("Invalid object id '"+id+"'; not found in sheet '"+sheetName+"'. Valid object ids are: " + this.getObjectIds(sheetName));
             } else {
-                JSONObject output = new JSONObject();
-
-                Set<JSONObject> containers = new HashSet<JSONObject>();
-                JSONObject effectiveObject = new JSONObject();
-
-                for (String key : objectData.keySet()) {
-                    if (!key.equalsIgnoreCase("operation")) {
-                        String value = objectData.get(key);
-                        List<String> path = sheet.structure.get(key);
-
-                        if (path == null) {
-                            log.warn("No structure path for header "+key+" in sheet "+sheetName);
-                        } else {
-                            String pathLevel1 = path.get(0);
-
-                            if (pathLevel1.equalsIgnoreCase("virkning")) {
-                                if (key.equalsIgnoreCase("fra")) {
-                                    effectiveObject.put("from", value);
-                                } else if (key.equalsIgnoreCase("til")) {
-                                    effectiveObject.put("to", value);
-                                }
-                            } else if (path.size() >= 2) {
-                                String pathLevel2 = path.get(1);
-                                List<String> subPath = path.subList(2, path.size());
-                                if (pathLevel1.equalsIgnoreCase("registrering")) {
-                                    output.put(pathLevel2, value);
-                                } else if (pathLevel1.equalsIgnoreCase("attributter") || pathLevel1.equalsIgnoreCase("tilstande") || pathLevel1.equalsIgnoreCase("relationer")) {
-
-                                    if (pathLevel1.equalsIgnoreCase("relationer")) {
-                                        String firstSubPath = subPath.isEmpty() ? null : subPath.get(0);
-                                        if (firstSubPath != null) {
-                                            if (firstSubPath.equalsIgnoreCase("uuid")) {
-                                                try {
-                                                    UUID.fromString(value);
-                                                } catch (IllegalArgumentException e) {
-                                                    // It's not a valid uuid
-                                                    subPath = new ArrayList<String>(subPath);
-                                                    subPath.set(0, "urn");
-                                                    value = "urn: " + value;
-                                                }
-                                            } else if (firstSubPath.equalsIgnoreCase("objekttype")) {
-                                                continue;
-                                            }
-                                        }
-                                    }
-
-                                    JSONObject objectLevel1 = output.fetchJSONObject(pathLevel1);
-                                    JSONArray objectLevel2 = objectLevel1.fetchJSONArray(pathLevel2);
-                                    JSONObject container = objectLevel2.fetchJSONObject(0);
-                                    containers.add(container);
-
-                                    for (int i = 0; i < subPath.size(); i++) {
-                                        String pathKey = subPath.get(i);
-                                        if (i == subPath.size() - 1) {
-                                            container.put(pathKey, value);
-                                        } else {
-                                            container = container.fetchJSONObject(pathKey);
-                                        }
-                                    }
-                                } else {
-                                    log.warn("Unrecognized path: "+sheetName+"."+id+" => "+path+" = "+value+". Ignoring.");
-                                }
-                            } else {
-                                log.warn("Unrecognized path length: "+sheetName+"."+id+" => "+path+" = "+value+". Path must have at least two parts.");
-                            }
-                        }
-                    }
-                }
-                for (JSONObject container : containers) {
-                    container.put("virkning", effectiveObject);
-                }
-                return output;
+                return objectData;
             }
         }
     }
 
+    public JSONObject getConvertedObject(String sheetName, String id) {
+        return this.getObject(sheetName, id).convert();
+    }
 
 }
