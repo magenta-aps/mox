@@ -13,7 +13,7 @@
 	</appender>
 
 	<root>
-		<level value="ALL" />
+		<level value="ERROR" />
 		<appender-ref ref="FILE" />
 	</root>
 

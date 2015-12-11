@@ -66,6 +66,10 @@ public class SecurityTokenObtainer {
     protected static Properties rampartProperties;
 
     public SecurityTokenObtainer(Properties properties) throws MissingPropertyException {
+        this(properties, false);
+    }
+
+    public SecurityTokenObtainer(Properties properties, boolean silent) throws MissingPropertyException {
         String basedir = properties.getProperty("basedir","");
         if (!basedir.isEmpty() && !basedir.endsWith(File.separator)) {
             basedir = basedir + File.separator;
@@ -84,7 +88,6 @@ public class SecurityTokenObtainer {
         this.userCertAlias = this.getPropertyOrThrow(properties, "security.user.cert.alias");
         this.certPassword = this.getPropertyOrThrow(properties, "security.user.cert.password");
         this.stsAddress = this.getPropertyOrThrow(properties, "security.sts.address");
-        System.out.println("this.repoPath: "+this.repoPath);
     }
 
     public String getSecurityToken(String endpointAddress) throws SecurityTokenException {

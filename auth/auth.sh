@@ -10,5 +10,5 @@ fi
 
 
 cd $DIR
-java -cp "target/moxagent-1.0.jar:target/dependency/*" dk.magenta.mox.agent.Main $args
+java -cp "target/auth-1.0.jar:target/dependency/*" dk.magenta.mox.auth.Main $args
 cd - > /dev/null

@@ -12,6 +12,6 @@ for package in "${SYSTEM_PACKAGES[@]}"; do
 	sudo apt-get -y install $package
 done
 
-cd $DIR/agent
+cd $DIR/auth
 mvn package
 

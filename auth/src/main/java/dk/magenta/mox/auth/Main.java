@@ -14,6 +14,7 @@ public class Main {
     public static Properties properties;
 
     boolean printHelp = false;
+    boolean silent = false;
     String username = null;
     String password = null;
     String restInterface = null;
@@ -37,14 +38,26 @@ public class Main {
         System.out.println("Mox auth authentication interface");
         System.out.println("---------------------------");
         System.out.println("Will interface with a WSO2 server with a username and password, to obtain a valid authtoken");
-        System.out.println("Usage: java -cp \"target/moxauth-1.0.jar:target/dependency/*\" dk.magenta.mox.auth.Main [-u username] [-p password] [-i interface] [-f propertiesfile]\n");
+        System.out.println("Usage: java -cp \"target/auth-1.0.jar:target/dependency/*\" dk.magenta.mox.auth.Main [-s] [-u username] [-p password] [-i interface] [-f propertiesfile]\n");
         return;
     }
 
-    private void loadArgs(String[] argv) {
-        Getopt getopt = new Getopt("testprog", argv, "hu:p:i:f:");
+    private void print(String output) {
+        if (!this.silent) {
+            System.out.println(output);
+        }
+    }
 
-        System.out.println("Reading command line arguments");
+    private void loadArgs(String[] argv) {
+        Getopt getopt = new Getopt("testprog", argv, "hu:p:i:f:s");
+
+        for (String a : argv) {
+            if (a.trim().equalsIgnoreCase("-s")) {
+                this.silent = true;
+            }
+        }
+
+        this.print("Reading command line arguments");
         int c;
         while ((c = getopt.getopt()) != -1) {
             switch (c) {
@@ -53,19 +66,19 @@ public class Main {
                     return;
                 case 'u':
                     this.username = getopt.getOptarg();
-                    System.out.println("    username = " + this.username);
+                    this.print("    username = " + this.username);
                     break;
                 case 'p':
                     this.password = getopt.getOptarg();
-                    System.out.println("    password = ***");
+                    this.print("    password = ***");
                     break;
                 case 'i':
                     this.restInterface = getopt.getOptarg();
-                    System.out.println("    restInterface = " + this.restInterface);
+                    this.print("    restInterface = " + this.restInterface);
                     break;
                 case 'f':
                     this.propertiesFileName = getopt.getOptarg();
-                    System.out.println("    propertiesFilename = " + this.propertiesFileName);
+                    this.print("    propertiesFilename = " + this.propertiesFileName);
                     break;
             }
         }
@@ -75,8 +88,8 @@ public class Main {
 
         if (this.propertiesFileName == null) {
             this.propertiesFileName = "auth.properties";
-            System.out.println("Loading default");
-            System.out.println("    propertiesFilename = " + this.propertiesFileName);
+            this.print("Loading default");
+            this.print("    propertiesFilename = " + this.propertiesFileName);
         }
 
         File propertiesFile = new File(this.propertiesFileName);
@@ -97,19 +110,19 @@ public class Main {
                 return;
             }
             if (this.username == null || this.password == null || this.restInterface == null) {
-                System.out.println("Reading properties file " + propertiesFile.getAbsolutePath());
+                this.print("Reading properties file " + propertiesFile.getAbsolutePath());
 
                 if (this.username == null) {
                     this.username = properties.getProperty("security.user.name");
-                    System.out.println("    username = " + this.username);
+                    this.print("    username = " + this.username);
                 }
                 if (this.password == null) {
                     this.password = properties.getProperty("security.user.password");
-                    System.out.println("    password = ***");
+                    this.print("    password = ***");
                 }
                 if (this.restInterface == null) {
                     this.restInterface = properties.getProperty("amqp.interface");
-                    System.out.println("    restInterface = " + this.restInterface);
+                    this.print("    restInterface = " + this.restInterface);
                 }
             }
         }
@@ -126,7 +139,7 @@ public class Main {
 
         SecurityTokenObtainer securityTokenObtainer = null;
         try {
-            securityTokenObtainer = new SecurityTokenObtainer(properties);
+            securityTokenObtainer = new SecurityTokenObtainer(properties, this.silent);
         } catch (MissingPropertyException e) {
             e.printStackTrace();
         }
