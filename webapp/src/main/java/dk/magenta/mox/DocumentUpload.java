@@ -12,9 +12,7 @@ import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.IOException;
-import java.io.Writer;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -164,7 +162,7 @@ public class DocumentUpload extends UploadServlet {
         Writer output = response.getWriter();
         String authorization;
 
-        authorization = this.getSecurityToken(this.restInterface);
+        authorization = this.getSecurityToken();
 
 
 
@@ -208,7 +206,23 @@ public class DocumentUpload extends UploadServlet {
         }
     }
 
-    private String getSecurityToken(String restInterface) {
+    private String getSecurityToken() {
+        Process p = null;
+        try {
+            p = Runtime.getRuntime().exec("/home/mox/mox/auth/auth.sh -s -u admin -p admin -i localhost:5672");
+            BufferedReader stdOut = new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+            BufferedReader stdError = new BufferedReader(new
+                    InputStreamReader(p.getErrorStream()));
+
+            // read the output from the command
+            String line;
+            while ((line = stdOut.readLine()) != null) {
+                System.out.println(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 }
