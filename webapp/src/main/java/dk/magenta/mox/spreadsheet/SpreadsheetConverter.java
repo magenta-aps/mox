@@ -1,4 +1,4 @@
-package dk.magenta.mox;
+package dk.magenta.mox.spreadsheet;
 
 import java.io.InputStream;
 import java.text.SimpleDateFormat;

@@ -11,7 +11,7 @@
     <title>$Title$</title>
   </head>
   <body>
-    <form action="/DocumentUpload" method="POST" enctype="multipart/form-data">
+    <form action="DocumentUpload" method="POST" enctype="multipart/form-data">
       <input type="file" name="file"/>
       <input type="submit"/>
     </form>

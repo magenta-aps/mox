@@ -40,6 +40,7 @@ public class MessageReceiver extends MessageInterface {
             this.logger.info("Send response to (replyTo:"+deliveryProperties.getReplyTo()+", correlationId:"+deliveryProperties.getCorrelationId()+")");
 
             String data = new String(delivery.getBody()).trim();
+            this.logger.info("data: "+data);
             JSONObject dataObject;
             try {
                 dataObject = new JSONObject(data.isEmpty() ? "{}" : data);

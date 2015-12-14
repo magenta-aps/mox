@@ -5,7 +5,7 @@
          version="3.1">
     <servlet>
         <servlet-name>DocumentUpload</servlet-name>
-        <servlet-class>dk.magenta.mox.DocumentUpload</servlet-class>
+        <servlet-class>dk.magenta.mox.spreadsheet.DocumentUpload</servlet-class>
     </servlet>
     
     <servlet-mapping>

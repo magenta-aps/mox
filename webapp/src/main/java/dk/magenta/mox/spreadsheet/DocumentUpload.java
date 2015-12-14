@@ -1,22 +1,21 @@
-package dk.magenta.mox;
+package dk.magenta.mox.spreadsheet;
 
+import dk.magenta.mox.UploadServlet;
 import dk.magenta.mox.agent.*;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
-import javax.net.ssl.HttpsURLConnection;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.*;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -32,95 +31,23 @@ public class DocumentUpload extends UploadServlet {
 
     private HashMap<String, SpreadsheetConverter> converterMap = new HashMap<String, SpreadsheetConverter>();
     private MessageSender moxSender;
-    private String restInterface;
-
-    private static Collection<String> getResources(
-            final String element,
-            final Pattern pattern){
-        final ArrayList<String> retval = new ArrayList<String>();
-        final File file = new File(element);
-        if(file.isDirectory()){
-            retval.addAll(getResourcesFromDirectory(file, pattern));
-        } else{
-            retval.addAll(getResourcesFromJarFile(file, pattern));
-        }
-        return retval;
-    }
-
-    private static Collection<String> getResourcesFromJarFile(
-            final File file,
-            final Pattern pattern){
-        final ArrayList<String> retval = new ArrayList<String>();
-        ZipFile zf;
-        try{
-            zf = new ZipFile(file);
-        } catch(final ZipException e){
-            throw new Error(e);
-        } catch(final IOException e){
-            throw new Error(e);
-        }
-        final Enumeration e = zf.entries();
-        while(e.hasMoreElements()){
-            final ZipEntry ze = (ZipEntry) e.nextElement();
-            final String fileName = ze.getName();
-            final boolean accept = true;//pattern.matcher(fileName).matches();
-            if(accept){
-                retval.add(fileName);
-            }
-        }
-        try{
-            zf.close();
-        } catch(final IOException e1){
-            throw new Error(e1);
-        }
-        return retval;
-    }
-
-    private static Collection<String> getResourcesFromDirectory(
-            final File directory,
-            final Pattern pattern){
-        final ArrayList<String> retval = new ArrayList<String>();
-        final File[] fileList = directory.listFiles();
-        for(final File file : fileList){
-            if(file.isDirectory()){
-                retval.addAll(getResourcesFromDirectory(file, pattern));
-            } else{
-                try{
-                    final String fileName = file.getCanonicalPath();
-                    final boolean accept = true;//pattern.matcher(fileName).matches();
-                    if(accept){
-                        retval.add(fileName);
-                    }
-                } catch(final IOException e){
-                    throw new Error(e);
-                }
-            }
-        }
-        return retval;
-    }
-
-    private void unpackResource(String resourceName) {
-        Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceName);
-
-    }
+    private Properties agentProperties;
 
     public void init() throws ServletException {
 
         ArrayList<SpreadsheetConverter> converterList = new ArrayList<SpreadsheetConverter>();
-        Properties agentProperties = new Properties();
+        this.agentProperties = new Properties();
         try {
-            agentProperties.load(this.getServletContext().getResourceAsStream("/WEB-INF/agent.properties"));
+            this.agentProperties.load(this.getServletContext().getResourceAsStream("/WEB-INF/agent.properties"));
         } catch (IOException e) {
             throw new ServletException("Failed to load /WEB-INF/agent.properties",e);
         }
-        String queueInterface = this.getPropertyOrThrow(agentProperties, "amqp.interface");
-        String queueName = this.getPropertyOrThrow(agentProperties, "amqp.queue");
-        String queueUsername = this.getPropertyOrThrow(agentProperties, "amqp.username");
-        String queuePassword = this.getPropertyOrThrow(agentProperties, "amqp.password");
+        String queueInterface = this.getPropertyOrThrow(this.agentProperties, "amqp.interface");
+        String queueName = this.getPropertyOrThrow(this.agentProperties, "amqp.queue");
+        String queueUsername = this.getPropertyOrThrow(this.agentProperties, "amqp.username");
+        String queuePassword = this.getPropertyOrThrow(this.agentProperties, "amqp.password");
 
-        Map<String, ObjectType> objectTypes = ObjectType.load(agentProperties);
-
-        this.restInterface = this.getPropertyOrThrow(agentProperties, "rest.interface");
+        Map<String, ObjectType> objectTypes = ObjectType.load(this.agentProperties);
 
         try {
             converterList.add(new OdfConverter(objectTypes));
@@ -161,11 +88,11 @@ public class DocumentUpload extends UploadServlet {
 
         Writer output = response.getWriter();
         String authorization;
+        this.tic();
 
         authorization = this.getSecurityToken();
 
-
-
+        output.append("got authtoken at " + this.toc()+"\n");
         try {
             List<FileItem> files = this.getUploadFiles(request);
             for (FileItem file : files) {
@@ -174,11 +101,11 @@ public class DocumentUpload extends UploadServlet {
                     if (converter != null) {
                         try {
                             SpreadsheetConversion conversion = converter.convert(file.getInputStream());
+
+                            output.append("converted file " +file.getName()+ " at " + this.toc()+"\n");
                             for (String sheetName : conversion.getSheetNames()) {
                                 for (String objectId : conversion.getObjectIds(sheetName)) {
-                                    System.out.println("-------------------------------------");
                                     SpreadsheetConversion.ObjectData object = conversion.getObject(sheetName, objectId);
-
                                     ObjectType objectType = converter.getObjectType(object.getSheetName());
                                     String operation = object.getOperation();
                                     JSONObject data = object.convert();
@@ -188,8 +115,16 @@ public class DocumentUpload extends UploadServlet {
                                         UUID.fromString(object.getId());
                                     } catch (IllegalArgumentException e) {}
 
+                                    output.append("extracted data for item " +file.getName()+ "/"+sheetName+"/"+objectId+" at " + this.toc()+"\n");
+
                                     Future<String> moxResponse = objectType.sendCommand(this.moxSender, operation, uuid, data, authorization);
-                                    output.append(moxResponse.get());
+                                    output.append("uploaded data for item " +file.getName()+ "/"+sheetName+"/"+objectId+" at " + this.toc()+"\n");
+                                    String responseString = moxResponse.get(30, TimeUnit.SECONDS);
+                                    if (responseString != null) {
+                                        output.append("got response for item " + file.getName() + "/" + sheetName + "/" + objectId + " at " + this.toc() + "\n");
+                                    } else {
+                                        output.append("response timeout on " + file.getName() + "/" + sheetName + "/" + objectId + " at " + this.toc() + "\n");
+                                    }
                                 }
                             }
                         } catch (Exception e) {
@@ -206,19 +141,28 @@ public class DocumentUpload extends UploadServlet {
         }
     }
 
+    private Date startTime;
+    private void tic() {
+        this.startTime = new Date();
+    }
+    private long toc() {
+        return new Date().getTime() - this.startTime.getTime();
+    }
+
     private String getSecurityToken() {
-        Process p = null;
         try {
-            p = Runtime.getRuntime().exec("/home/mox/mox/auth/auth.sh -s -u admin -p admin -i localhost:5672");
-            BufferedReader stdOut = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String tokenObtainerCommand = this.agentProperties.getProperty("security.tokenObtainerCommand");
+            if (tokenObtainerCommand != null) {
+                Process p = Runtime.getRuntime().exec(tokenObtainerCommand);
+                BufferedReader stdOut = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
-            BufferedReader stdError = new BufferedReader(new
-                    InputStreamReader(p.getErrorStream()));
-
-            // read the output from the command
-            String line;
-            while ((line = stdOut.readLine()) != null) {
-                System.out.println(line);
+                // read the output from the command
+                String line;
+                while ((line = stdOut.readLine()) != null) {
+                    if (line.startsWith("saml-gzipped")) {
+                        return line;
+                    }
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();

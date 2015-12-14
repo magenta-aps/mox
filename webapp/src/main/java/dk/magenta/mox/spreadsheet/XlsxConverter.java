@@ -1,4 +1,4 @@
-package dk.magenta.mox;
+package dk.magenta.mox.spreadsheet;
 
 import dk.magenta.mox.agent.ObjectType;
 import org.apache.poi.xssf.usermodel.*;

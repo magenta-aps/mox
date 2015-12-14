@@ -1,10 +1,8 @@
-package dk.magenta.mox;
+package dk.magenta.mox.spreadsheet;
 
-import dk.magenta.mox.agent.ObjectType;
 import dk.magenta.mox.json.JSONArray;
 import dk.magenta.mox.json.JSONObject;
 import org.apache.log4j.Logger;
-import org.apache.poi.ss.usermodel.Sheet;
 
 import java.util.*;
 
@@ -70,7 +68,7 @@ class SpreadsheetConversion {
         }
 
         public String getOperation() {
-            return operation;
+            return this.operation;
         }
 
         public String getSheetName() {
@@ -252,7 +250,7 @@ class SpreadsheetConversion {
                     ObjectData object = sheet.objects.get(id);
                     if (i == sheet.headerOperationIndex && tag.equalsIgnoreCase(operationHeaderName)) {
                         if (operations.containsKey(value)) {
-                            value = operations.get(value);
+                            operation = operations.get(value);
                         }
                     }
                     if (object == null) {
