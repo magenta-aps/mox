@@ -107,7 +107,7 @@ ELSE
   -- 0..1 relations 
    
 
-  FOREACH interessefaellesskab_relation_navn in array  ARRAY['branche'::InteressefaellesskabRelationKode,'interessefaellesskabstype'::InteressefaellesskabRelationKode,'overordnet'::InteressefaellesskabRelationKode,'tilhoerer'::InteressefaellesskabRelationKode]
+  FOREACH interessefaellesskab_relation_navn in array  ARRAY['branche'::InteressefaellesskabRelationKode,'interessefaellesskabstype'::InteressefaellesskabRelationKode,'overordnet'::InteressefaellesskabRelationKode,'tilhoerer'::InteressefaellesskabRelationKode]::InteressefaellesskabRelationKode[]
   LOOP
 
     INSERT INTO interessefaellesskab_relation (
@@ -153,7 +153,7 @@ ELSE
   --We only have to check if there are any of the relations with the given name present in the new registration, otherwise copy the ones from the previous registration
 
 
-  FOREACH interessefaellesskab_relation_navn in array ARRAY['adresser'::InteressefaellesskabRelationKode,'opgaver'::InteressefaellesskabRelationKode,'tilknyttedebrugere'::InteressefaellesskabRelationKode,'tilknyttedeenheder'::InteressefaellesskabRelationKode,'tilknyttedefunktioner'::InteressefaellesskabRelationKode,'tilknyttedeinteressefaellesskaber'::InteressefaellesskabRelationKode,'tilknyttedeorganisationer'::InteressefaellesskabRelationKode,'tilknyttedepersoner'::InteressefaellesskabRelationKode,'tilknyttedeitsystemer'::InteressefaellesskabRelationKode]
+  FOREACH interessefaellesskab_relation_navn in array ARRAY['adresser'::InteressefaellesskabRelationKode,'opgaver'::InteressefaellesskabRelationKode,'tilknyttedebrugere'::InteressefaellesskabRelationKode,'tilknyttedeenheder'::InteressefaellesskabRelationKode,'tilknyttedefunktioner'::InteressefaellesskabRelationKode,'tilknyttedeinteressefaellesskaber'::InteressefaellesskabRelationKode,'tilknyttedeorganisationer'::InteressefaellesskabRelationKode,'tilknyttedepersoner'::InteressefaellesskabRelationKode,'tilknyttedeitsystemer'::InteressefaellesskabRelationKode]::InteressefaellesskabRelationKode[]
   LOOP
 
     IF NOT EXISTS  (SELECT 1 FROM interessefaellesskab_relation WHERE interessefaellesskab_registrering_id=new_interessefaellesskab_registrering.id and rel_type=interessefaellesskab_relation_navn) THEN

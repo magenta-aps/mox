@@ -1,3 +1,4 @@
+import os
 from copy import deepcopy
 
 BASE_URL = ''
@@ -13,10 +14,14 @@ FILE_UPLOAD_FOLDER = '/var/mox'
 
 # The Endpoint specified in the AppliesTo element of the STS request
 # This will be used to verify the Audience of the SAML Assertion
-SAML_MOX_ENTITY_ID = 'https://mox.magenta-aps.dk:443'
+SAML_MOX_ENTITY_ID = 'https://moxtest.magenta-aps.dk'
 
 # The entity ID of the IdP. This will be used to verify the token Issuer
 SAML_IDP_ENTITY_ID = 'localhost'
+
+# The URL on which to access the SAML IdP.
+SAML_IDP_URL = ("https://moxtest.magenta-aps.dk:9443" +
+                "/services/wso2carbon-sts?wsdl")
 
 # The public certificate file of the IdP, in PEM-format.
 SAML_IDP_CERTIFICATE = "test_auth_data/idp-certificate.pem"
@@ -293,5 +298,6 @@ DB_TEMPLATE_EXTRA_OPTIONS = {
     }
 }
 
-import os
-MOX_BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+MOX_BASE_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..', '..')
+)

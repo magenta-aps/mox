@@ -1,0 +1,25 @@
+        <html>
+        <head><title>Get token</title></head>
+        <body>
+        <form method="POST" action="/get-token">
+            <label>
+                Username:
+                <input name="username" type="text"/>
+            </label>
+            <br/>
+            <label>
+                Password:
+                <input name="password" type="password"/>
+            </label>
+            <br/>
+            <label>
+                STS Address:
+                <input name="sts" type="text"
+     value="{{saml_url}}"
+     size="80"/>
+            </label>
+            <br/>
+            <input type="submit" value="Request Token"/>
+        </form>
+        </body>
+        </html>

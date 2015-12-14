@@ -1,5 +1,5 @@
-*** generated-files/as_update_sag.sql	2015-08-17 10:23:10.077142324 +0200
---- patches/as_update_sag.org.sql	2015-08-17 10:26:01.057140048 +0200
+*** ./generated-files/as_update_sag.sql	2015-11-27 11:08:17.257041485 +0100
+--- ./patches/as_update_sag.org.sql	2015-11-27 11:06:08.897045136 +0100
 ***************
 *** 35,44 ****
 --- 35,50 ----
@@ -57,7 +57,7 @@
     -- 0..1 relations 
 !    
   
-    FOREACH sag_relation_navn in array  ARRAY['behandlingarkiv'::SagRelationKode,'afleveringsarkiv'::SagRelationKode,'primaerklasse'::SagRelationKode,'opgaveklasse'::SagRelationKode,'handlingsklasse'::SagRelationKode,'kontoklasse'::SagRelationKode,'sikkerhedsklasse'::SagRelationKode,'foelsomhedsklasse'::SagRelationKode,'indsatsklasse'::SagRelationKode,'ydelsesklasse'::SagRelationKode,'ejer'::SagRelationKode,'ansvarlig'::SagRelationKode,'primaerbehandler'::SagRelationKode,'udlaanttil'::SagRelationKode,'primaerpart'::SagRelationKode,'ydelsesmodtager'::SagRelationKode,'oversag'::SagRelationKode,'praecedens'::SagRelationKode,'afgiftsobjekt'::SagRelationKode,'ejendomsskat'::SagRelationKode]
+    FOREACH sag_relation_navn in array  ARRAY['behandlingarkiv'::SagRelationKode,'afleveringsarkiv'::SagRelationKode,'primaerklasse'::SagRelationKode,'opgaveklasse'::SagRelationKode,'handlingsklasse'::SagRelationKode,'kontoklasse'::SagRelationKode,'sikkerhedsklasse'::SagRelationKode,'foelsomhedsklasse'::SagRelationKode,'indsatsklasse'::SagRelationKode,'ydelsesklasse'::SagRelationKode,'ejer'::SagRelationKode,'ansvarlig'::SagRelationKode,'primaerbehandler'::SagRelationKode,'udlaanttil'::SagRelationKode,'primaerpart'::SagRelationKode,'ydelsesmodtager'::SagRelationKode,'oversag'::SagRelationKode,'praecedens'::SagRelationKode,'afgiftsobjekt'::SagRelationKode,'ejendomsskat'::SagRelationKode]::SagRelationKode[]
     LOOP
   
       INSERT INTO sag_relation (
@@ -216,7 +216,7 @@
     -- 0..1 relations 
 !   --Please notice, that for 0..1 relations for Sag, we're ignoring index here, and handling it the same way, that is done for other object types (like Facet, Klasse etc). That is, you only make changes for the virkningsperiod that you explicitly specify (unless you delete all relations) 
   
-    FOREACH sag_relation_navn in array  ARRAY['behandlingarkiv'::SagRelationKode,'afleveringsarkiv'::SagRelationKode,'primaerklasse'::SagRelationKode,'opgaveklasse'::SagRelationKode,'handlingsklasse'::SagRelationKode,'kontoklasse'::SagRelationKode,'sikkerhedsklasse'::SagRelationKode,'foelsomhedsklasse'::SagRelationKode,'indsatsklasse'::SagRelationKode,'ydelsesklasse'::SagRelationKode,'ejer'::SagRelationKode,'ansvarlig'::SagRelationKode,'primaerbehandler'::SagRelationKode,'udlaanttil'::SagRelationKode,'primaerpart'::SagRelationKode,'ydelsesmodtager'::SagRelationKode,'oversag'::SagRelationKode,'praecedens'::SagRelationKode,'afgiftsobjekt'::SagRelationKode,'ejendomsskat'::SagRelationKode]
+    FOREACH sag_relation_navn in array  ARRAY['behandlingarkiv'::SagRelationKode,'afleveringsarkiv'::SagRelationKode,'primaerklasse'::SagRelationKode,'opgaveklasse'::SagRelationKode,'handlingsklasse'::SagRelationKode,'kontoklasse'::SagRelationKode,'sikkerhedsklasse'::SagRelationKode,'foelsomhedsklasse'::SagRelationKode,'indsatsklasse'::SagRelationKode,'ydelsesklasse'::SagRelationKode,'ejer'::SagRelationKode,'ansvarlig'::SagRelationKode,'primaerbehandler'::SagRelationKode,'udlaanttil'::SagRelationKode,'primaerpart'::SagRelationKode,'ydelsesmodtager'::SagRelationKode,'oversag'::SagRelationKode,'praecedens'::SagRelationKode,'afgiftsobjekt'::SagRelationKode,'ejendomsskat'::SagRelationKode]::SagRelationKode[]
     LOOP
   
       INSERT INTO sag_relation (
@@ -276,7 +276,7 @@
 !   --We only have to check if there are any of the relations with the given name present in the new registration, otherwise copy the ones from the previous registration
 ! 
 ! 
-!   FOREACH sag_relation_navn in array ARRAY['andetarkiv'::SagRelationKode,'andrebehandlere'::SagRelationKode,'sekundaerpart'::SagRelationKode,'andresager'::SagRelationKode,'byggeri'::SagRelationKode,'fredning'::SagRelationKode,'journalpost'::SagRelationKode]
+!   FOREACH sag_relation_navn in array ARRAY['andetarkiv'::SagRelationKode,'andrebehandlere'::SagRelationKode,'sekundaerpart'::SagRelationKode,'andresager'::SagRelationKode,'byggeri'::SagRelationKode,'fredning'::SagRelationKode,'journalpost'::SagRelationKode]::SagRelationKode[]
 !   LOOP
 ! 
 !     IF NOT EXISTS  (SELECT 1 FROM sag_relation WHERE sag_registrering_id=new_sag_registrering.id and rel_type=sag_relation_navn) THEN
