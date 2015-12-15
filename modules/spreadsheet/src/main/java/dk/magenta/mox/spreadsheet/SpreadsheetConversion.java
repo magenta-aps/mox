@@ -293,4 +293,16 @@ class SpreadsheetConversion {
         return this.getObject(sheetName, id).convert();
     }
 
+    public Map<String, Map<String, ObjectData>> getConvertedObjects() {
+        HashMap<String, Map<String, ObjectData>> out = new HashMap<String, Map<String, ObjectData>>();
+        for (String sheetName : this.getSheetNames()) {
+            HashMap<String, ObjectData> sheetObjects = new HashMap<String, ObjectData>();
+            for (String objectId : this.getObjectIds(sheetName)) {
+                sheetObjects.put(objectId, this.getObject(sheetName, objectId));
+            }
+            out.put(sheetName, sheetObjects);
+        }
+        return out;
+    }
+
 }
