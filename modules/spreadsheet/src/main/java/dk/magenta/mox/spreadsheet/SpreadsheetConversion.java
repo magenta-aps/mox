@@ -1,7 +1,5 @@
 package dk.magenta.mox.spreadsheet;
 
-import dk.magenta.mox.agent.ObjectType;
-import dk.magenta.mox.json.JSONArray;
 import dk.magenta.mox.json.JSONObject;
 import org.apache.log4j.Logger;
 
@@ -53,110 +51,7 @@ class SpreadsheetConversion {
         public HashMap<String, ArrayList<String>> structure = new HashMap<String, ArrayList<String>>();
 
         // A collection of objects obtained from the spreadsheet
-        public HashMap<String, ObjectData> objects = new HashMap<String, ObjectData>();
-    }
-
-    public class ObjectData extends HashMap<String, String> {
-
-        private SheetData sheet;
-        private String id;
-        private String operation;
-        private JSONObject generatedJSON;
-
-        public ObjectData(SheetData sheet, String id, String operation) {
-            this.sheet = sheet;
-            this.id = id;
-            this.operation = operation;
-        }
-
-        public String getOperation() {
-            return this.operation;
-        }
-
-        public String getSheetName() {
-            return this.sheet.name;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        protected JSONObject toJSON() {
-            if (this.generatedJSON == null) {
-                this.generatedJSON = new JSONObject();
-
-                Set<JSONObject> containers = new HashSet<JSONObject>();
-                JSONObject effectiveObject = new JSONObject();
-
-                for (String key : this.keySet()) {
-                    if (!key.equalsIgnoreCase("operation")) {
-                        String value = this.get(key);
-                        List<String> path = this.sheet.structure.get(key);
-
-                        if (path == null) {
-                            log.warn("No structure path for header "+key+" in sheet "+this.sheet.name);
-                        } else {
-                            String pathLevel1 = path.get(0);
-
-                            if (pathLevel1.equalsIgnoreCase("virkning")) {
-                                if (key.equalsIgnoreCase("fra")) {
-                                    effectiveObject.put("from", value);
-                                } else if (key.equalsIgnoreCase("til")) {
-                                    effectiveObject.put("to", value);
-                                }
-                            } else if (path.size() >= 2) {
-                                String pathLevel2 = path.get(1);
-                                List<String> subPath = path.subList(2, path.size());
-                                if (pathLevel1.equalsIgnoreCase("registrering")) {
-                                    this.generatedJSON.put(pathLevel2, value);
-                                } else if (pathLevel1.equalsIgnoreCase("attributter") || pathLevel1.equalsIgnoreCase("tilstande") || pathLevel1.equalsIgnoreCase("relationer")) {
-
-                                    if (pathLevel1.equalsIgnoreCase("relationer")) {
-                                        String firstSubPath = subPath.isEmpty() ? null : subPath.get(0);
-                                        if (firstSubPath != null) {
-                                            if (firstSubPath.equalsIgnoreCase("uuid")) {
-                                                try {
-                                                    UUID.fromString(value);
-                                                } catch (IllegalArgumentException e) {
-                                                    // It's not a valid uuid
-                                                    subPath = new ArrayList<String>(subPath);
-                                                    subPath.set(0, "urn");
-                                                    value = "urn: " + value;
-                                                }
-                                            } else if (firstSubPath.equalsIgnoreCase("objekttype")) {
-                                                continue;
-                                            }
-                                        }
-                                    }
-
-                                    JSONObject objectLevel1 = this.generatedJSON.fetchJSONObject(pathLevel1);
-                                    JSONArray objectLevel2 = objectLevel1.fetchJSONArray(pathLevel2);
-                                    JSONObject container = objectLevel2.fetchJSONObject(0);
-                                    containers.add(container);
-
-                                    for (int i = 0; i < subPath.size(); i++) {
-                                        String pathKey = subPath.get(i);
-                                        if (i == subPath.size() - 1) {
-                                            container.put(pathKey, value);
-                                        } else {
-                                            container = container.fetchJSONObject(pathKey);
-                                        }
-                                    }
-                                } else {
-                                    log.warn("Unrecognized path: "+this.sheet.name+"."+id+" => "+path+" = "+value+". Ignoring.");
-                                }
-                            } else {
-                                log.warn("Unrecognized path length: "+this.sheet.name+"."+id+" => "+path+" = "+value+". Path must have at least two parts.");
-                            }
-                        }
-                    }
-                }
-                for (JSONObject container : containers) {
-                    container.put("virkning", effectiveObject);
-                }
-            }
-            return this.generatedJSON;
-        }
+        public HashMap<String, ConvertedObject> objects = new HashMap<String, ConvertedObject>();
     }
 
     private HashMap<String, SheetData> sheets = new HashMap<String, SheetData>();
@@ -176,7 +71,7 @@ class SpreadsheetConversion {
     /**
      * Receive a row from a spreadsheet and parses it.
      * */
-    public void addRow(String sheetName, SpreadsheetRow rowData, boolean firstRow) {
+    protected void addRow(String sheetName, SpreadsheetRow rowData, boolean firstRow) {
         if (rowData != null && !rowData.isEmpty()) {
             if (sheetName.equalsIgnoreCase("besked")) {
             } else if (sheetName.equalsIgnoreCase("struktur")) {
@@ -251,14 +146,14 @@ class SpreadsheetConversion {
                     String value = row.get(i);
                     String tag = headerRow.get(i);
 
-                    ObjectData object = sheet.objects.get(id);
+                    ConvertedObject object = sheet.objects.get(id);
                     if (i == sheet.headerOperationIndex && tag.equalsIgnoreCase(operationHeaderName)) {
                         if (operations.containsKey(value)) {
                             operation = operations.get(value);
                         }
                     }
                     if (object == null) {
-                        object = new ObjectData(sheet, id, operation);
+                        object = new ConvertedObject(sheet, id, operation);
                         sheet.objects.put(id, object);
                     }
                     object.put(tag, value);
@@ -279,28 +174,24 @@ class SpreadsheetConversion {
         return null;
     }
 
-    public ObjectData getObject(String sheetName, String id) {
+    public ConvertedObject getObject(String sheetName, String id) {
         SheetData sheet = this.sheets.get(sheetName);
         if (sheet == null) {
             throw new IllegalArgumentException("Invalid sheet name '"+sheetName+"'; not found in loaded data. Valid sheet names are: " + this.getSheetNames());
         } else {
-            ObjectData objectData = sheet.objects.get(id);
-            if (objectData == null) {
+            ConvertedObject convertedObject = sheet.objects.get(id);
+            if (convertedObject == null) {
                 throw new IllegalArgumentException("Invalid object id '"+id+"'; not found in sheet '"+sheetName+"'. Valid object ids are: " + this.getObjectIds(sheetName));
             } else {
-                return objectData;
+                return convertedObject;
             }
         }
     }
 
-    public JSONObject getConvertedObject(String sheetName, String id) {
-        return this.getObject(sheetName, id).toJSON();
-    }
-
-    public Map<String, Map<String, ObjectData>> getConvertedObjects() {
-        HashMap<String, Map<String, ObjectData>> out = new HashMap<String, Map<String, ObjectData>>();
+    public Map<String, Map<String, ConvertedObject>> getConvertedObjects() {
+        HashMap<String, Map<String, ConvertedObject>> out = new HashMap<String, Map<String, ConvertedObject>>();
         for (String sheetName : this.getSheetNames()) {
-            HashMap<String, ObjectData> sheetObjects = new HashMap<String, ObjectData>();
+            HashMap<String, ConvertedObject> sheetObjects = new HashMap<String, ConvertedObject>();
             for (String objectId : this.getObjectIds(sheetName)) {
                 sheetObjects.put(objectId, this.getObject(sheetName, objectId));
             }
