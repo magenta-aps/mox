@@ -22,11 +22,11 @@ public class ConvertedObject extends HashMap<String, String> {
         this.sheet = sheet;
         this.id = id;
         this.operation = operation;
-        this.json = this.parse();
+        this.parse();
     }
 
-    private JSONObject parse() {
-        JSONObject parsed = new JSONObject();
+    private void parse() {
+        this.json = new JSONObject();
 
         Set<JSONObject> containers = new HashSet<JSONObject>();
         JSONObject effectiveObject = new JSONObject();
@@ -51,7 +51,7 @@ public class ConvertedObject extends HashMap<String, String> {
                         String pathLevel2 = path.get(1);
                         List<String> subPath = path.subList(2, path.size());
                         if (pathLevel1.equalsIgnoreCase("registrering")) {
-                            parsed.put(pathLevel2, value);
+                            this.json.put(pathLevel2, value);
                         } else if (pathLevel1.equalsIgnoreCase("attributter") || pathLevel1.equalsIgnoreCase("tilstande") || pathLevel1.equalsIgnoreCase("relationer")) {
 
                             if (pathLevel1.equalsIgnoreCase("relationer")) {
@@ -72,7 +72,7 @@ public class ConvertedObject extends HashMap<String, String> {
                                 }
                             }
 
-                            JSONObject objectLevel1 = parsed.fetchJSONObject(pathLevel1);
+                            JSONObject objectLevel1 = this.json.fetchJSONObject(pathLevel1);
                             JSONArray objectLevel2 = objectLevel1.fetchJSONArray(pathLevel2);
                             JSONObject container = objectLevel2.fetchJSONObject(0);
                             containers.add(container);
@@ -97,7 +97,6 @@ public class ConvertedObject extends HashMap<String, String> {
         for (JSONObject container : containers) {
             container.put("virkning", effectiveObject);
         }
-        return parsed;
     }
 
     public String getOperation() {
