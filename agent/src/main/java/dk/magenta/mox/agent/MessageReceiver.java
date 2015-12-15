@@ -40,6 +40,7 @@ public class MessageReceiver extends MessageInterface {
             this.logger.info("Send response to (replyTo:"+deliveryProperties.getReplyTo()+", correlationId:"+deliveryProperties.getCorrelationId()+")");
 
             String data = new String(delivery.getBody()).trim();
+            this.logger.info("data: "+data);
             JSONObject dataObject;
             try {
                 dataObject = new JSONObject(data.isEmpty() ? "{}" : data);
@@ -53,26 +54,31 @@ public class MessageReceiver extends MessageInterface {
             }
             final Future<String> response = callback.run(delivery.getProperties().getHeaders(), dataObject);
 
-            if (this.sendReplies && response != null) {
-
-                // Wait for a response from the callback and send it back to the original message sender
-                new Thread(new Runnable() {
-                    public void run() {
-                        try {
-                            String responseString = response.get(30, TimeUnit.SECONDS); // This blocks while we wait for the callback to run. Hence the thread
-                            MessageReceiver.this.getChannel().basicPublish("", replyTo, responseProperties, responseString.getBytes());
-                        } catch (Exception e) {
+            if (this.sendReplies) {
+                if (response == null) {
+                    try {
+                        this.getChannel().basicPublish("", replyTo, responseProperties, "No response".getBytes());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    // Wait for a response from the callback and send it back to the original message sender
+                    new Thread(new Runnable() {
+                        public void run() {
                             try {
-                                MessageReceiver.this.getChannel().basicPublish("", replyTo, responseProperties, Util.error(e).getBytes());
-                            } catch (IOException e1) {
-                                e1.printStackTrace();
+                                String responseString = response.get(30, TimeUnit.SECONDS); // This blocks while we wait for the callback to run. Hence the thread
+                                MessageReceiver.this.getChannel().basicPublish("", replyTo, responseProperties, responseString.getBytes());
+                            } catch (Exception e) {
+                                try {
+                                    MessageReceiver.this.getChannel().basicPublish("", replyTo, responseProperties, Util.error(e).getBytes());
+                                } catch (IOException e1) {
+                                    e1.printStackTrace();
+                                }
                             }
                         }
-                    }
-                }).start();
+                    }).start();
+                }
             }
-
-
         }
     }
 

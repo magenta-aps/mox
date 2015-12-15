@@ -1,5 +1,6 @@
 package dk.magenta.mox.agent;
 
+import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,6 +17,8 @@ import java.util.concurrent.Future;
 public class ObjectType {
     private String name;
     private HashMap<String, Operation> operations;
+
+    private Logger log = Logger.getLogger(ObjectType.class);
 
     public enum Method {
         GET,
@@ -325,8 +328,6 @@ public class ObjectType {
             headers.put(MessageInterface.HEADER_QUERY, query.toString());
         }
         try {
-            System.out.println("Sending:");
-            System.out.println(headers);
             return sender.sendJSON(headers, data);
         } catch (InterruptedException e) {
             e.printStackTrace();
