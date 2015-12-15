@@ -411,9 +411,12 @@ public class Main {
                     e.printStackTrace();
                 }
             } else if (command.equalsIgnoreCase("gettoken")) {
-                String restUsername = commands.get(1);
+                String restUsername = null;
+                if (commands.size() >= 2) {
+                    restUsername = commands.get(1);
+                }
                 if (restUsername == null) {
-                    throw new IllegalArgumentException("Command argument <username>' must be specified");
+                    throw new IllegalArgumentException("Command argument <username> must be specified");
                 }
                 String restPassword = String.valueOf(System.console().readPassword("Password:"));
                 properties.setProperty("security.user.name", restUsername);

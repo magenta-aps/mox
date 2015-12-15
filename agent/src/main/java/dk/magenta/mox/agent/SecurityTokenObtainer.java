@@ -7,6 +7,7 @@ import org.apache.axiom.om.impl.builder.StAXOMBuilder;
 import org.apache.axis2.AxisFault;
 import org.apache.axis2.context.ConfigurationContext;
 import org.apache.axis2.context.ConfigurationContextFactory;
+import org.apache.log4j.Logger;
 import org.apache.neethi.Policy;
 import org.apache.neethi.PolicyEngine;
 import org.apache.rahas.*;
@@ -58,6 +59,8 @@ public class SecurityTokenObtainer {
         this.userCertAlias = properties.getProperty("security.user.cert.alias");
         this.stsAddress = properties.getProperty("security.sts.address");
     }
+
+    private static Logger log = Logger.getLogger(SecurityTokenObtainer.class);
 
     public String getSecurityToken(String endpointAddress) {
         String oldKeystorePath = System.getProperty("javax.net.ssl.trustStore");
@@ -150,12 +153,18 @@ public class SecurityTokenObtainer {
 
         } catch (AxisFault axisFault) {
             axisFault.printStackTrace();
+            log.error("axisfault", axisFault);
         } catch (TrustException e) {
             e.printStackTrace();
+            log.error("trustexception", e);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+            log.error("filenotfound", e);
         } catch (XMLStreamException e) {
             e.printStackTrace();
+            log.error("xmlstream", e);
+        } catch (Exception e) {
+            log.error("exception", e);
         }
         System.setProperty("javax.net.ssl.trustStore", oldKeystorePath);
         System.setProperty("javax.net.ssl.trustStorePassword", oldKeystorePass);
