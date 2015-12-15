@@ -100,43 +100,47 @@ public class DocumentUpload extends UploadServlet {
         }
 
 
-        ArrayList<Future<String>> moxResponses = new ArrayList<Future<String>>();
+        HashMap<String, Future<String>> moxResponses = new HashMap<String, Future<String>>();
         for (String fileFieldName : fileFieldNames) {
             Part file = request.getPart(fileFieldName);
-
-            if (file.getName() != null) {
-                SpreadsheetConverter converter = this.converterMap.get(file.getContentType());
-                if (converter != null) {
-                    try {
-                        SpreadsheetConversion conversion = converter.convert(file.getInputStream());
-
-                        for (String sheetName : conversion.getSheetNames()) {
-                            for (String objectId : conversion.getObjectIds(sheetName)) {
-                                SpreadsheetConversion.ObjectData object = conversion.getObject(sheetName, objectId);
-                                ObjectType objectType = converter.getObjectType(object.getSheetName());
-                                String operation = object.getOperation();
-                                JSONObject data = object.convert();
-
-                                UUID uuid = null;
-                                try {
-                                    UUID.fromString(object.getId());
-                                } catch (IllegalArgumentException e) {}
-
-                                Future<String> moxResponse = objectType.sendCommand(this.moxSender, operation, uuid, data, authorization);
-                                moxResponses.add(moxResponse);
-                            }
-                        }
-                    } catch (Exception e) {
-                        throw new ServletException("Failed converting uploaded file", e);
-                    }
-                } else {
-                    throw new ServletException("No SpreadsheetConverter for content type '" + file.getContentType() + "'");
-                }
-
+            Map<String, String> contentDisposition = this.parseContentDisposition(file.getHeader("content-disposition"));
+            String filename = contentDisposition.get("filename");
+            if (filename == null) {
+                filename = file.getName();
             }
+
+            SpreadsheetConverter converter = this.converterMap.get(file.getContentType());
+            if (converter != null) {
+                try {
+                    SpreadsheetConversion conversion = converter.convert(file.getInputStream());
+
+                    for (String sheetName : conversion.getSheetNames()) {
+                        for (String objectId : conversion.getObjectIds(sheetName)) {
+                            SpreadsheetConversion.ObjectData object = conversion.getObject(sheetName, objectId);
+                            ObjectType objectType = converter.getObjectType(object.getSheetName());
+                            String operation = object.getOperation();
+                            JSONObject data = object.convert();
+
+                            UUID uuid = null;
+                            try {
+                                UUID.fromString(object.getId());
+                            } catch (IllegalArgumentException e) {}
+
+                            Future<String> moxResponse = objectType.sendCommand(this.moxSender, operation, uuid, data, authorization);
+                            moxResponses.put(filename + " => " + sheetName + " => " + objectId, moxResponse);
+                        }
+                    }
+                } catch (Exception e) {
+                    throw new ServletException("Failed converting uploaded file", e);
+                }
+            } else {
+                throw new ServletException("No SpreadsheetConverter for content type '" + file.getContentType() + "'");
+            }
+
         }
 
-        for (Future<String> moxResponse : moxResponses) {
+        for (String key : moxResponses.keySet()) {
+            Future<String> moxResponse = moxResponses.get(key);
             String responseString = null;
             try {
                 responseString = moxResponse.get(30, TimeUnit.SECONDS);
@@ -152,7 +156,7 @@ public class DocumentUpload extends UploadServlet {
                 if (responseObject != null) {
                     String errorType = responseObject.optString("type");
                     if (errorType != null && errorType.equalsIgnoreCase("ExecutionException")) {
-                        throw new ServletException(responseObject.optString("message", responseString));
+                        throw new ServletException(responseObject.optString("message", responseString) + "\nwhen uploading " + key);
                     }
                 }
             } else {
@@ -169,4 +173,5 @@ public class DocumentUpload extends UploadServlet {
     private long toc() {
         return new Date().getTime() - this.startTime.getTime();
     }
+
 }

@@ -10,7 +10,9 @@ import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by lars on 26-11-15.
@@ -31,5 +33,24 @@ public class UploadServlet extends HttpServlet {
 
 
         return new ServletFileUpload(diskFileItemFactory).parseRequest(request);
+    }
+
+    protected Map<String, String> parseContentDisposition(String contentDisposition) {
+        HashMap<String, String> parsed = new HashMap<String, String>();
+        if (contentDisposition != null) {
+            for (String part : contentDisposition.split(";\\s+")) {
+                part = part.trim();
+                String key = part;
+                String value = null;
+                if (part.contains("=")) {
+                    int eqIndex = part.indexOf("=");
+                    key = part.substring(0, eqIndex);
+                    value = part.substring(eqIndex + 1);
+                    value = value.replaceAll("^\"|\"$", "");
+                }
+                parsed.put(key, value);
+            }
+        }
+        return parsed;
     }
 }
