@@ -10,5 +10,5 @@ oio_rest/oio_api
 *~
 .ropeproject
 oio_rest/dist
-*.idea
+*.idea/*
 
