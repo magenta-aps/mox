@@ -141,18 +141,18 @@ public class DocumentUpload extends UploadServlet {
             try {
                 responseString = moxResponse.get(30, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                throw new ServletException("Interruption error when interfacing with rest interface through message queue.", e);
             } catch (ExecutionException e) {
-                e.printStackTrace();
+                throw new ServletException("Execution error when interfacing with rest interface through message queue.", e);
             } catch (TimeoutException e) {
-                e.printStackTrace();
+                throw new ServletException("Timeout (30 seconds) when interfacing with rest interface through message queue.", e);
             }
             if (responseString != null) {
                 JSONObject responseObject = new JSONObject(responseString);
                 if (responseObject != null) {
                     String errorType = responseObject.optString("type");
                     if (errorType != null && errorType.equalsIgnoreCase("ExecutionException")) {
-                        output.append(responseObject.optString("message", "Error"));
+                        throw new ServletException(responseObject.optString("message", responseString));
                     }
                 }
             } else {
