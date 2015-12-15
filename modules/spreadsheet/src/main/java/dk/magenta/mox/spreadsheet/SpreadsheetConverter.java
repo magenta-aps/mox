@@ -2,10 +2,10 @@ package dk.magenta.mox.spreadsheet;
 
 import dk.magenta.mox.agent.ObjectType;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by lars on 26-11-15.
@@ -57,6 +57,37 @@ public abstract class SpreadsheetConverter {
             }
         }
         return true;
+    }
+
+
+
+    private static HashMap<String, SpreadsheetConverter> converterMap = null;
+    private static void loadConverters(Properties properties) throws IOException {
+        Map<String, ObjectType> objectTypes = ObjectType.load(properties);
+        ArrayList<SpreadsheetConverter> converterList = new ArrayList<SpreadsheetConverter>();
+        converterList.add(new OdfConverter(objectTypes));
+        converterList.add(new XlsConverter(objectTypes));
+        converterList.add(new XlsxConverter(objectTypes));
+        converterMap = new HashMap<String, SpreadsheetConverter>();
+        for (SpreadsheetConverter converter : converterList) {
+            for (String contentType : converter.getApplicableContentTypes()) {
+                converterMap.put(contentType, converter);
+            }
+        }
+    }
+
+    public static SpreadsheetConverter getConverter(String contentType) throws IOException {
+        if (converterMap == null) {
+            Properties properties = new Properties();
+            properties.load(SpreadsheetConverter.class.getClassLoader().getResourceAsStream("objecttype.properties"));
+            loadConverters(properties);
+        }
+        return converterMap.get(contentType);
+    }
+
+    public static SpreadsheetConversion convert(InputStream data, String contentType) throws Exception {
+        SpreadsheetConverter converter = getConverter(contentType);
+        return converter.convert(data);
     }
 
 }
