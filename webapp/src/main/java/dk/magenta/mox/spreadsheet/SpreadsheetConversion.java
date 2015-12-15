@@ -260,7 +260,6 @@ class SpreadsheetConversion {
                     object.put(tag, value);
                 }
             }
-
         }
     }
 

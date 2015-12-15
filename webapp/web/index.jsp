@@ -12,7 +12,8 @@
   </head>
   <body>
     <form action="DocumentUpload" method="POST" enctype="multipart/form-data">
-      <input type="file" name="file"/>
+      <input type="file" name="file"/><br/>
+      <textarea name="authtoken"></textarea><br/>
       <input type="submit"/>
     </form>
   </body>

@@ -6,6 +6,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 ;
 import javax.servlet.ServletContext;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
@@ -14,9 +15,8 @@ import java.util.List;
 /**
  * Created by lars on 26-11-15.
  */
+@MultipartConfig
 public class UploadServlet extends HttpServlet {
-
-
 
     protected List<FileItem> getUploadFiles(HttpServletRequest request) throws FileUploadException {
         DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();

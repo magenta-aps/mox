@@ -12,6 +12,7 @@ import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.Future;
@@ -84,60 +85,62 @@ public class DocumentUpload extends UploadServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        final String fileFieldName = "file";
+        final String[] fileFieldNames = new String[] {"file"};
 
         Writer output = response.getWriter();
-        String authorization;
         this.tic();
 
-        authorization = this.getSecurityToken();
+        String authorization = request.getHeader("authorization");
+        if (authorization == null) {
+            authorization = request.getParameter("authtoken");
+        }
+        if (authorization == null) {
+            output.append("No authtoken present. Sucks to be you.");
+        }
 
-        output.append("got authtoken at " + this.toc()+"\n");
-        try {
-            List<FileItem> files = this.getUploadFiles(request);
-            for (FileItem file : files) {
-                if (fileFieldName.equals(file.getFieldName())) {
-                    SpreadsheetConverter converter = this.converterMap.get(file.getContentType());
-                    if (converter != null) {
-                        try {
-                            SpreadsheetConversion conversion = converter.convert(file.getInputStream());
+        for (String fileFieldName : fileFieldNames) {
+            Part file = request.getPart(fileFieldName);
 
-                            output.append("converted file " +file.getName()+ " at " + this.toc()+"\n");
-                            for (String sheetName : conversion.getSheetNames()) {
-                                for (String objectId : conversion.getObjectIds(sheetName)) {
-                                    SpreadsheetConversion.ObjectData object = conversion.getObject(sheetName, objectId);
-                                    ObjectType objectType = converter.getObjectType(object.getSheetName());
-                                    String operation = object.getOperation();
-                                    JSONObject data = object.convert();
+            if (file.getName() != null) {
+                output.append("looking at file "+file.getName()+"\n");
+                SpreadsheetConverter converter = this.converterMap.get(file.getContentType());
+                if (converter != null) {
+                    try {
+                        SpreadsheetConversion conversion = converter.convert(file.getInputStream());
 
-                                    UUID uuid = null;
-                                    try {
-                                        UUID.fromString(object.getId());
-                                    } catch (IllegalArgumentException e) {}
+                        output.append("converted file " +file.getName()+ " at " + this.toc()+"\n");
+                        for (String sheetName : conversion.getSheetNames()) {
+                            for (String objectId : conversion.getObjectIds(sheetName)) {
+                                SpreadsheetConversion.ObjectData object = conversion.getObject(sheetName, objectId);
+                                ObjectType objectType = converter.getObjectType(object.getSheetName());
+                                String operation = object.getOperation();
+                                JSONObject data = object.convert();
 
-                                    output.append("extracted data for item " +file.getName()+ "/"+sheetName+"/"+objectId+" at " + this.toc()+"\n");
+                                UUID uuid = null;
+                                try {
+                                    UUID.fromString(object.getId());
+                                } catch (IllegalArgumentException e) {}
 
-                                    Future<String> moxResponse = objectType.sendCommand(this.moxSender, operation, uuid, data, authorization);
-                                    output.append("uploaded data for item " +file.getName()+ "/"+sheetName+"/"+objectId+" at " + this.toc()+"\n");
-                                    String responseString = moxResponse.get(30, TimeUnit.SECONDS);
-                                    if (responseString != null) {
-                                        output.append("got response for item " + file.getName() + "/" + sheetName + "/" + objectId + " at " + this.toc() + "\n");
-                                    } else {
-                                        output.append("response timeout on " + file.getName() + "/" + sheetName + "/" + objectId + " at " + this.toc() + "\n");
-                                    }
+                                output.append("extracted data for item " +file.getName()+ "/"+sheetName+"/"+objectId+" at " + this.toc()+"\n");
+                                Future<String> moxResponse = objectType.sendCommand(this.moxSender, operation, uuid, data, authorization);
+                                output.append("uploaded data for item " +file.getName()+ "/"+sheetName+"/"+objectId+" at " + this.toc()+"\n");
+                                String responseString = moxResponse.get(30, TimeUnit.SECONDS);
+                                if (responseString != null) {
+                                    output.append("got response for item " + file.getName() + "/" + sheetName + "/" + objectId + " at " + this.toc() + "\n");
+                                    output.append(responseString+"\n");
+                                } else {
+                                    output.append("response timeout on " + file.getName() + "/" + sheetName + "/" + objectId + " at " + this.toc() + "\n");
                                 }
                             }
-                        } catch (Exception e) {
-                            throw new ServletException("Failed converting uploaded file", e);
                         }
-                    } else {
-                        throw new ServletException("No SpreadsheetConverter for content type '" + file.getContentType() + "'");
+                    } catch (Exception e) {
+                        throw new ServletException("Failed converting uploaded file", e);
                     }
-
+                } else {
+                    throw new ServletException("No SpreadsheetConverter for content type '" + file.getContentType() + "'");
                 }
+
             }
-        } catch (FileUploadException e) {
-            e.printStackTrace();
         }
     }
 
@@ -147,26 +150,5 @@ public class DocumentUpload extends UploadServlet {
     }
     private long toc() {
         return new Date().getTime() - this.startTime.getTime();
-    }
-
-    private String getSecurityToken() {
-        try {
-            String tokenObtainerCommand = this.agentProperties.getProperty("security.tokenObtainerCommand");
-            if (tokenObtainerCommand != null) {
-                Process p = Runtime.getRuntime().exec(tokenObtainerCommand);
-                BufferedReader stdOut = new BufferedReader(new InputStreamReader(p.getInputStream()));
-
-                // read the output from the command
-                String line;
-                while ((line = stdOut.readLine()) != null) {
-                    if (line.startsWith("saml-gzipped")) {
-                        return line;
-                    }
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 }
