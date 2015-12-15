@@ -45,7 +45,6 @@ public class XlsConverter extends SpreadsheetConverter {
         return spreadsheetConversion;
     }
 
-
     protected static String getCellString(Cell cell) {
         if (cell != null) {
             int cellType = cell.getCellType();

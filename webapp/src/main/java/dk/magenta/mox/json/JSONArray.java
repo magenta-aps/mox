@@ -5,6 +5,13 @@ package dk.magenta.mox.json;
  */
 public class JSONArray extends org.json.JSONArray {
 
+    public JSONArray() {
+        super();
+    }
+    public JSONArray(String jsonString) {
+        super(jsonString);
+    }
+
     public JSONObject fetchJSONObject(int index) {
         if (!this.has(index)) {
             JSONObject object = new JSONObject();

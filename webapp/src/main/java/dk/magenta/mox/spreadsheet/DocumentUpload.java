@@ -80,29 +80,35 @@ public class DocumentUpload extends UploadServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        final String[] fileFieldNames = new String[] {"file"};
+        try {
+            final String[] fileFieldNames = new String[]{"file"};
 
-        Writer output = response.getWriter();
+            Writer output = response.getWriter();
 
-        String authorization = request.getHeader("authorization");
-        if (authorization == null) {
-            authorization = request.getParameter("authtoken");
-        }
-
-        HashMap<String, Future<String>> moxResponses = new HashMap<String, Future<String>>();
-        for (String fileFieldName : fileFieldNames) {
-            Part file = request.getPart(fileFieldName);
-            Map<String, String> contentDisposition = this.parseContentDisposition(file.getHeader("content-disposition"));
-            String filename = contentDisposition.get("filename");
-            if (filename == null) {
-                filename = file.getName();
+            String authorization = request.getHeader("authorization");
+            if (authorization == null) {
+                authorization = request.getParameter("authtoken");
             }
 
-            SpreadsheetConverter converter = this.converterMap.get(file.getContentType());
-            if (converter != null) {
-                try {
-                    SpreadsheetConversion conversion = converter.convert(file.getInputStream());
+            HashMap<String, Future<String>> moxResponses = new HashMap<String, Future<String>>();
+            for (String fileFieldName : fileFieldNames) {
+                Part file = request.getPart(fileFieldName);
+                Map<String, String> contentDisposition = this.parseContentDisposition(file.getHeader("content-disposition"));
+                String filename = contentDisposition.get("filename");
+                if (filename == null) {
+                    filename = file.getName();
+                }
 
+                SpreadsheetConverter converter = this.converterMap.get(file.getContentType());
+                if (converter == null) {
+                    throw new ServletException("No SpreadsheetConverter for content type '" + file.getContentType() + "'");
+                } else {
+                    SpreadsheetConversion conversion;
+                    try {
+                        conversion = converter.convert(file.getInputStream());
+                    } catch (Exception e) {
+                        throw new ServletException("Failed converting uploaded file", e);
+                    }
                     for (String sheetName : conversion.getSheetNames()) {
                         for (String objectId : conversion.getObjectIds(sheetName)) {
                             SpreadsheetConversion.ObjectData object = conversion.getObject(sheetName, objectId);
@@ -113,47 +119,46 @@ public class DocumentUpload extends UploadServlet {
                             UUID uuid = null;
                             try {
                                 UUID.fromString(object.getId());
-                            } catch (IllegalArgumentException e) {}
+                            } catch (IllegalArgumentException e) {
+                            }
 
                             Future<String> moxResponse = objectType.sendCommand(this.moxSender, operation, uuid, data, authorization);
                             moxResponses.put(filename + " : " + sheetName + " : " + objectId, moxResponse);
                         }
                     }
-                } catch (Exception e) {
-                    throw new ServletException("Failed converting uploaded file", e);
                 }
-            } else {
-                throw new ServletException("No SpreadsheetConverter for content type '" + file.getContentType() + "'");
             }
 
-        }
-
-        for (String key : moxResponses.keySet()) {
-            Future<String> moxResponse = moxResponses.get(key);
-            String responseString;
-            try {
-                responseString = moxResponse.get(30, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                throw new ServletException("Interruption error when interfacing with rest interface through message queue.\nWhen uploading " + key, e);
-            } catch (ExecutionException e) {
-                throw new ServletException("Execution error when interfacing with rest interface through message queue.\nWhen uploading " + key, e);
-            } catch (TimeoutException e) {
-                throw new ServletException("Timeout (30 seconds) when interfacing with rest interface through message queue.\nWhen uploading " + key, e);
-            }
-            if (responseString != null) {
-                JSONObject responseObject = new JSONObject(responseString);
-                if (responseObject != null) {
-                    String errorType = responseObject.optString("type");
-                    if (errorType != null && errorType.equalsIgnoreCase("ExecutionException")) {
-                        throw new ServletException("Error from REST interface: " + responseObject.optString("message", responseString) + "\nWhen uploading " + key);
+            for (String key : moxResponses.keySet()) {
+                Future<String> moxResponse = moxResponses.get(key);
+                String responseString;
+                try {
+                    responseString = moxResponse.get(30, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    throw new ServletException("Interruption error when interfacing with rest interface through message queue.\nWhen uploading " + key, e);
+                } catch (ExecutionException e) {
+                    throw new ServletException("Execution error when interfacing with rest interface through message queue.\nWhen uploading " + key, e);
+                } catch (TimeoutException e) {
+                    throw new ServletException("Timeout (30 seconds) when interfacing with rest interface through message queue.\nWhen uploading " + key, e);
+                }
+                if (responseString != null) {
+                    JSONObject responseObject = new JSONObject(responseString);
+                    if (responseObject != null) {
+                        String errorType = responseObject.optString("type");
+                        if (errorType != null && errorType.equalsIgnoreCase("ExecutionException")) {
+                            throw new ServletException("Error from REST interface: " + responseObject.optString("message", responseString) + "\nWhen uploading " + key);
+                        }
                     }
+
+                    output.append(key + " => " + responseString);
+
+                } else {
+                    throw new ServletException("No response from REST interface\nWhen uploading " + key);
                 }
-
-                output.append(key+ " => " + responseString);
-
-            } else {
-                throw new ServletException("No response from REST interface\nWhen uploading " + key);
             }
+        } catch (ServletException e) {
+            log.error("Error when receiving or parsing upload", e);
+            throw e;
         }
 
     }
