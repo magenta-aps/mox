@@ -1,6 +1,5 @@
 package dk.magenta.mox.spreadsheet;
 
-import dk.magenta.mox.json.JSONObject;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -8,7 +7,7 @@ import java.util.*;
 /**
  * Created by lars on 27-11-15.
  */
-class SpreadsheetConversion {
+public class SpreadsheetConversion {
 
     private static Logger log = Logger.getLogger(SpreadsheetConversion.class);
 

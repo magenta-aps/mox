@@ -63,9 +63,13 @@ public abstract class SpreadsheetConverter {
         return converterMap.get(contentType);
     }
 
-    public static SpreadsheetConversion convert(InputStream data, String contentType) throws Exception {
+    public static SpreadsheetConversion getSpreadsheetConversion(InputStream data, String contentType) throws Exception {
         SpreadsheetConverter converter = getConverter(contentType);
         return converter.convert(data);
+    }
+
+    public static Map<String, Map<String, ConvertedObject>> convert(InputStream data, String contentType) throws Exception {
+        return getSpreadsheetConversion(data, contentType).getConvertedObjects();
     }
 
 }
