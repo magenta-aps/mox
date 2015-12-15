@@ -3,6 +3,7 @@ package dk.magenta.mox.spreadsheet;
 import dk.magenta.mox.UploadServlet;
 import dk.magenta.mox.agent.*;
 import dk.magenta.mox.json.JSONObject;
+import org.apache.commons.fileupload.FileUploadException;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletException;
@@ -81,8 +82,6 @@ public class DocumentUpload extends UploadServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         try {
-            final String[] fileFieldNames = new String[]{"file"};
-
             Writer output = response.getWriter();
 
             String authorization = request.getHeader("authorization");
@@ -90,15 +89,10 @@ public class DocumentUpload extends UploadServlet {
                 authorization = request.getParameter("authtoken");
             }
 
-            HashMap<String, Future<String>> moxResponses = new HashMap<String, Future<String>>();
-            for (String fileFieldName : fileFieldNames) {
-                Part file = request.getPart(fileFieldName);
-                Map<String, String> contentDisposition = this.parseContentDisposition(file.getHeader("content-disposition"));
-                String filename = contentDisposition.get("filename");
-                if (filename == null) {
-                    filename = file.getName();
-                }
+            List<UploadedFile> files = this.getUploadFiles(request);
 
+            HashMap<String, Future<String>> moxResponses = new HashMap<String, Future<String>>();
+            for (UploadedFile file : files) {
                 SpreadsheetConverter converter = this.converterMap.get(file.getContentType());
                 if (converter == null) {
                     throw new ServletException("No SpreadsheetConverter for content type '" + file.getContentType() + "'");
@@ -123,7 +117,7 @@ public class DocumentUpload extends UploadServlet {
                             }
 
                             Future<String> moxResponse = objectType.sendCommand(this.moxSender, operation, uuid, data, authorization);
-                            moxResponses.put(filename + " : " + sheetName + " : " + objectId, moxResponse);
+                            moxResponses.put(file.getFilename() + " : " + sheetName + " : " + objectId, moxResponse);
                         }
                     }
                 }
