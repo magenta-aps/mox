@@ -1,7 +1,5 @@
 package dk.magenta.mox.spreadsheet;
 
-import dk.magenta.mox.agent.ObjectType;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
