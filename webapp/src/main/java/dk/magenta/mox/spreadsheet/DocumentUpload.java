@@ -3,8 +3,6 @@ package dk.magenta.mox.spreadsheet;
 import dk.magenta.mox.UploadServlet;
 import dk.magenta.mox.agent.*;
 import dk.magenta.mox.json.JSONObject;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletException;
@@ -19,10 +17,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.regex.Pattern;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
 
 /**
  * Created by lars on 26-11-15.
@@ -89,16 +83,11 @@ public class DocumentUpload extends UploadServlet {
         final String[] fileFieldNames = new String[] {"file"};
 
         Writer output = response.getWriter();
-        this.tic();
 
         String authorization = request.getHeader("authorization");
         if (authorization == null) {
             authorization = request.getParameter("authtoken");
         }
-        if (authorization == null) {
-            output.append("No authtoken present. Sucks to be you.");
-        }
-
 
         HashMap<String, Future<String>> moxResponses = new HashMap<String, Future<String>>();
         for (String fileFieldName : fileFieldNames) {
@@ -127,7 +116,7 @@ public class DocumentUpload extends UploadServlet {
                             } catch (IllegalArgumentException e) {}
 
                             Future<String> moxResponse = objectType.sendCommand(this.moxSender, operation, uuid, data, authorization);
-                            moxResponses.put(filename + " => " + sheetName + " => " + objectId, moxResponse);
+                            moxResponses.put(filename + " : " + sheetName + " : " + objectId, moxResponse);
                         }
                     }
                 } catch (Exception e) {
@@ -141,37 +130,32 @@ public class DocumentUpload extends UploadServlet {
 
         for (String key : moxResponses.keySet()) {
             Future<String> moxResponse = moxResponses.get(key);
-            String responseString = null;
+            String responseString;
             try {
                 responseString = moxResponse.get(30, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
-                throw new ServletException("Interruption error when interfacing with rest interface through message queue.", e);
+                throw new ServletException("Interruption error when interfacing with rest interface through message queue.\nWhen uploading " + key, e);
             } catch (ExecutionException e) {
-                throw new ServletException("Execution error when interfacing with rest interface through message queue.", e);
+                throw new ServletException("Execution error when interfacing with rest interface through message queue.\nWhen uploading " + key, e);
             } catch (TimeoutException e) {
-                throw new ServletException("Timeout (30 seconds) when interfacing with rest interface through message queue.", e);
+                throw new ServletException("Timeout (30 seconds) when interfacing with rest interface through message queue.\nWhen uploading " + key, e);
             }
             if (responseString != null) {
                 JSONObject responseObject = new JSONObject(responseString);
                 if (responseObject != null) {
                     String errorType = responseObject.optString("type");
                     if (errorType != null && errorType.equalsIgnoreCase("ExecutionException")) {
-                        throw new ServletException(responseObject.optString("message", responseString) + "\nwhen uploading " + key);
+                        throw new ServletException("Error from REST interface: " + responseObject.optString("message", responseString) + "\nWhen uploading " + key);
                     }
                 }
+
+                output.append(key+ " => " + responseString);
+
             } else {
-                output.append("response timeout\n");
+                throw new ServletException("No response from REST interface\nWhen uploading " + key);
             }
         }
 
-    }
-
-    private Date startTime;
-    private void tic() {
-        this.startTime = new Date();
-    }
-    private long toc() {
-        return new Date().getTime() - this.startTime.getTime();
     }
 
 }
