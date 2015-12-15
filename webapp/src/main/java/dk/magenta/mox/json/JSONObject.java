@@ -5,6 +5,13 @@ package dk.magenta.mox.json;
  */
 public class JSONObject extends org.json.JSONObject {
 
+    public JSONObject() {
+        super();
+    }
+    public JSONObject(String jsonString) {
+        super(jsonString);
+    }
+
     public JSONObject fetchJSONObject(String key) {
         if (!this.has(key)) {
             JSONObject object = new JSONObject();

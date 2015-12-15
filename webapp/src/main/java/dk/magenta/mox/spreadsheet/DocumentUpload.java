@@ -2,10 +2,10 @@ package dk.magenta.mox.spreadsheet;
 
 import dk.magenta.mox.UploadServlet;
 import dk.magenta.mox.agent.*;
+import dk.magenta.mox.json.JSONObject;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.log4j.Logger;
-import org.json.JSONObject;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -98,17 +99,17 @@ public class DocumentUpload extends UploadServlet {
             output.append("No authtoken present. Sucks to be you.");
         }
 
+
+        ArrayList<Future<String>> moxResponses = new ArrayList<Future<String>>();
         for (String fileFieldName : fileFieldNames) {
             Part file = request.getPart(fileFieldName);
 
             if (file.getName() != null) {
-                output.append("looking at file "+file.getName()+"\n");
                 SpreadsheetConverter converter = this.converterMap.get(file.getContentType());
                 if (converter != null) {
                     try {
                         SpreadsheetConversion conversion = converter.convert(file.getInputStream());
 
-                        output.append("converted file " +file.getName()+ " at " + this.toc()+"\n");
                         for (String sheetName : conversion.getSheetNames()) {
                             for (String objectId : conversion.getObjectIds(sheetName)) {
                                 SpreadsheetConversion.ObjectData object = conversion.getObject(sheetName, objectId);
@@ -121,16 +122,8 @@ public class DocumentUpload extends UploadServlet {
                                     UUID.fromString(object.getId());
                                 } catch (IllegalArgumentException e) {}
 
-                                output.append("extracted data for item " +file.getName()+ "/"+sheetName+"/"+objectId+" at " + this.toc()+"\n");
                                 Future<String> moxResponse = objectType.sendCommand(this.moxSender, operation, uuid, data, authorization);
-                                output.append("uploaded data for item " +file.getName()+ "/"+sheetName+"/"+objectId+" at " + this.toc()+"\n");
-                                String responseString = moxResponse.get(30, TimeUnit.SECONDS);
-                                if (responseString != null) {
-                                    output.append("got response for item " + file.getName() + "/" + sheetName + "/" + objectId + " at " + this.toc() + "\n");
-                                    output.append(responseString+"\n");
-                                } else {
-                                    output.append("response timeout on " + file.getName() + "/" + sheetName + "/" + objectId + " at " + this.toc() + "\n");
-                                }
+                                moxResponses.add(moxResponse);
                             }
                         }
                     } catch (Exception e) {
@@ -142,6 +135,31 @@ public class DocumentUpload extends UploadServlet {
 
             }
         }
+
+        for (Future<String> moxResponse : moxResponses) {
+            String responseString = null;
+            try {
+                responseString = moxResponse.get(30, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (TimeoutException e) {
+                e.printStackTrace();
+            }
+            if (responseString != null) {
+                JSONObject responseObject = new JSONObject(responseString);
+                if (responseObject != null) {
+                    String errorType = responseObject.optString("type");
+                    if (errorType != null && errorType.equalsIgnoreCase("ExecutionException")) {
+                        output.append(responseObject.optString("message", "Error"));
+                    }
+                }
+            } else {
+                output.append("response timeout\n");
+            }
+        }
+
     }
 
     private Date startTime;
