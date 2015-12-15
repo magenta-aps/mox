@@ -1,5 +1,7 @@
 package dk.magenta.mox.spreadsheet;
 
+import org.apache.log4j.Logger;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
@@ -11,6 +13,8 @@ import java.util.*;
 public abstract class SpreadsheetConverter {
 
     protected static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+    private static Logger log = Logger.getLogger(SpreadsheetConverter.class);
 
     protected String[] getApplicableContentTypes() {
         return new String[0];
@@ -57,6 +61,9 @@ public abstract class SpreadsheetConverter {
     public static SpreadsheetConverter getConverter(String contentType) throws IOException {
         if (converterMap == null) {
             loadConverters();
+        }
+        if (!converterMap.containsKey(contentType)) {
+            log.error("Could not find converter for content type '"+contentType+"'");
         }
         return converterMap.get(contentType);
     }
