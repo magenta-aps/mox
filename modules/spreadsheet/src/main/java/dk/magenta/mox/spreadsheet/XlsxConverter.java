@@ -1,19 +1,13 @@
 package dk.magenta.mox.spreadsheet;
 
-import dk.magenta.mox.agent.ObjectType;
 import org.apache.poi.xssf.usermodel.*;
 
 import java.io.InputStream;
-import java.util.Map;
 
 /**
  * Created by lars on 26-11-15.
  */
 public class XlsxConverter extends XlsConverter {
-
-    protected XlsxConverter(Map<String, ObjectType> objectTypes) {
-        super(objectTypes);
-    }
 
     protected String[] getApplicableContentTypes() {
         return new String[]{

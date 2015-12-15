@@ -12,10 +12,6 @@ import java.util.Scanner;
  */
 public class CsvConverter extends SpreadsheetConverter {
 
-    protected CsvConverter(Map<String, ObjectType> objectTypes) throws IOException {
-        super(objectTypes);
-    }
-
     protected String[] getApplicableContentTypes() {
         return new String[]{
                 "text/csv",

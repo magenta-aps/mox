@@ -12,12 +12,7 @@ import java.util.*;
  */
 public abstract class SpreadsheetConverter {
 
-    protected Map<String, ObjectType> objectTypes;
     protected static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-    protected SpreadsheetConverter(Map<String, ObjectType> objectTypes) {
-        this.objectTypes = objectTypes;
-    }
 
     protected String[] getApplicableContentTypes() {
         return new String[0];
@@ -36,18 +31,6 @@ public abstract class SpreadsheetConverter {
         return null;
     }
 
-    protected ObjectType getObjectType(String key) {
-        ObjectType objectType = this.objectTypes.get(key);
-        if (objectType == null) {
-            for (String k : this.objectTypes.keySet()) {
-                if (k.equalsIgnoreCase(key)) {
-                    return this.objectTypes.get(k);
-                }
-            }
-        }
-        return objectType;
-    }
-
     protected static boolean isRowdataEmpty(List<String> rowData) {
         if (rowData != null && !rowData.isEmpty()) {
             for (String s : rowData) {
@@ -59,15 +42,12 @@ public abstract class SpreadsheetConverter {
         return true;
     }
 
-
-
     private static HashMap<String, SpreadsheetConverter> converterMap = null;
-    private static void loadConverters(Properties properties) throws IOException {
-        Map<String, ObjectType> objectTypes = ObjectType.load(properties);
+    private static void loadConverters() throws IOException {
         ArrayList<SpreadsheetConverter> converterList = new ArrayList<SpreadsheetConverter>();
-        converterList.add(new OdfConverter(objectTypes));
-        converterList.add(new XlsConverter(objectTypes));
-        converterList.add(new XlsxConverter(objectTypes));
+        converterList.add(new OdfConverter());
+        converterList.add(new XlsConverter());
+        converterList.add(new XlsxConverter());
         converterMap = new HashMap<String, SpreadsheetConverter>();
         for (SpreadsheetConverter converter : converterList) {
             for (String contentType : converter.getApplicableContentTypes()) {
@@ -78,9 +58,7 @@ public abstract class SpreadsheetConverter {
 
     public static SpreadsheetConverter getConverter(String contentType) throws IOException {
         if (converterMap == null) {
-            Properties properties = new Properties();
-            properties.load(SpreadsheetConverter.class.getClassLoader().getResourceAsStream("objecttype.properties"));
-            loadConverters(properties);
+            loadConverters();
         }
         return converterMap.get(contentType);
     }
