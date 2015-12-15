@@ -16,17 +16,15 @@ public class ConvertedObject extends HashMap<String, String> {
     private SpreadsheetConversion.SheetData sheet;
     private String id;
     private String operation;
-    private JSONObject json;
 
     public ConvertedObject(SpreadsheetConversion.SheetData sheet, String id, String operation) {
         this.sheet = sheet;
         this.id = id;
         this.operation = operation;
-        this.parse();
     }
 
-    private void parse() {
-        this.json = new JSONObject();
+    public JSONObject getJSON() {
+        JSONObject json = new JSONObject();
 
         Set<JSONObject> containers = new HashSet<JSONObject>();
         JSONObject effectiveObject = new JSONObject();
@@ -51,7 +49,7 @@ public class ConvertedObject extends HashMap<String, String> {
                         String pathLevel2 = path.get(1);
                         List<String> subPath = path.subList(2, path.size());
                         if (pathLevel1.equalsIgnoreCase("registrering")) {
-                            this.json.put(pathLevel2, value);
+                            json.put(pathLevel2, value);
                         } else if (pathLevel1.equalsIgnoreCase("attributter") || pathLevel1.equalsIgnoreCase("tilstande") || pathLevel1.equalsIgnoreCase("relationer")) {
 
                             if (pathLevel1.equalsIgnoreCase("relationer")) {
@@ -72,7 +70,7 @@ public class ConvertedObject extends HashMap<String, String> {
                                 }
                             }
 
-                            JSONObject objectLevel1 = this.json.fetchJSONObject(pathLevel1);
+                            JSONObject objectLevel1 = json.fetchJSONObject(pathLevel1);
                             JSONArray objectLevel2 = objectLevel1.fetchJSONArray(pathLevel2);
                             JSONObject container = objectLevel2.fetchJSONObject(0);
                             containers.add(container);
@@ -97,6 +95,7 @@ public class ConvertedObject extends HashMap<String, String> {
         for (JSONObject container : containers) {
             container.put("virkning", effectiveObject);
         }
+        return json;
     }
 
     public String getOperation() {
@@ -109,9 +108,5 @@ public class ConvertedObject extends HashMap<String, String> {
 
     public String getId() {
         return id;
-    }
-
-    public JSONObject getJSON() {
-        return this.json;
     }
 }
