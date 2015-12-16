@@ -1,9 +1,9 @@
-package dk.magenta.mox.spreadsheet;
+package dk.magenta.mox;
 
-import dk.magenta.mox.UploadServlet;
 import dk.magenta.mox.agent.*;
 import dk.magenta.mox.json.JSONObject;
-import org.apache.commons.fileupload.FileUploadException;
+import dk.magenta.mox.spreadsheet.ConvertedObject;
+import dk.magenta.mox.spreadsheet.SpreadsheetConverter;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletException;
@@ -11,7 +11,6 @@ import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -26,13 +25,12 @@ import java.util.concurrent.TimeoutException;
 @MultipartConfig
 public class DocumentUpload extends UploadServlet {
 
-    private HashMap<String, SpreadsheetConverter> converterMap = new HashMap<String, SpreadsheetConverter>();
     private MessageSender moxSender;
     private Properties agentProperties;
+    private Map<String, ObjectType> objectTypes;
 
     public void init() throws ServletException {
 
-        ArrayList<SpreadsheetConverter> converterList = new ArrayList<SpreadsheetConverter>();
         this.agentProperties = new Properties();
         try {
             this.agentProperties.load(this.getServletContext().getResourceAsStream("/WEB-INF/agent.properties"));
@@ -44,20 +42,7 @@ public class DocumentUpload extends UploadServlet {
         String queueUsername = this.getPropertyOrThrow(this.agentProperties, "amqp.username");
         String queuePassword = this.getPropertyOrThrow(this.agentProperties, "amqp.password");
 
-        Map<String, ObjectType> objectTypes = ObjectType.load(this.agentProperties);
-
-        try {
-            converterList.add(new OdfConverter(objectTypes));
-            converterList.add(new XlsConverter(objectTypes));
-            converterList.add(new XlsxConverter(objectTypes));
-        } catch (IOException e) {
-            throw new ServletException("Failed converter initialization", e);
-        }
-        for (SpreadsheetConverter converter : converterList) {
-            for (String contentType : converter.getApplicableContentTypes()) {
-                this.converterMap.put(contentType, converter);
-            }
-        }
+        this.objectTypes = ObjectType.load(this.agentProperties);
 
         try {
             this.moxSender = new MessageSender(queueUsername, queuePassword, queueInterface, null, queueName);
@@ -93,34 +78,32 @@ public class DocumentUpload extends UploadServlet {
 
             HashMap<String, Future<String>> moxResponses = new HashMap<String, Future<String>>();
             for (UploadedFile file : files) {
-                SpreadsheetConverter converter = this.converterMap.get(file.getContentType());
-                if (converter == null) {
-                    throw new ServletException("No SpreadsheetConverter for content type '" + file.getContentType() + "'");
-                } else {
-                    SpreadsheetConversion conversion;
-                    try {
-                        conversion = converter.convert(file.getInputStream());
-                    } catch (Exception e) {
-                        throw new ServletException("Failed converting uploaded file", e);
-                    }
-                    for (String sheetName : conversion.getSheetNames()) {
-                        for (String objectId : conversion.getObjectIds(sheetName)) {
-                            SpreadsheetConversion.ObjectData object = conversion.getObject(sheetName, objectId);
-                            ObjectType objectType = converter.getObjectType(object.getSheetName());
-                            String operation = object.getOperation();
-                            JSONObject data = object.convert();
 
-                            UUID uuid = null;
-                            try {
-                                UUID.fromString(object.getId());
-                            } catch (IllegalArgumentException e) {
-                            }
+                Map<String, Map<String, ConvertedObject>> convertedSpreadsheets;
+                try {
+                    convertedSpreadsheets = SpreadsheetConverter.convert(file.getInputStream(), file.getContentType());
+                } catch (Exception e) {
+                    throw new ServletException("Failed converting uploaded file", e);
+                }
+                for (String sheetName : convertedSpreadsheets.keySet()) {
+                    for (String objectId : convertedSpreadsheets.get(sheetName).keySet()) {
+                        ConvertedObject object = convertedSpreadsheets.get(sheetName).get(objectId);
 
-                            Future<String> moxResponse = objectType.sendCommand(this.moxSender, operation, uuid, data, authorization);
-                            moxResponses.put(file.getFilename() + " : " + sheetName + " : " + objectId, moxResponse);
+                        ObjectType objectType = this.objectTypes.get(object.getSheetName());
+                        String operation = object.getOperation();
+                        JSONObject data = object.getJSON();
+
+                        UUID uuid = null;
+                        try {
+                            uuid = UUID.fromString(object.getId());
+                        } catch (IllegalArgumentException e) {
                         }
+
+                        Future<String> moxResponse = objectType.sendCommand(this.moxSender, operation, uuid, data, authorization);
+                        moxResponses.put(file.getFilename() + " : " + sheetName + " : " + objectId, moxResponse);
                     }
                 }
+
             }
 
             for (String key : moxResponses.keySet()) {
@@ -155,6 +138,23 @@ public class DocumentUpload extends UploadServlet {
             throw e;
         }
 
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        Writer output = response.getWriter();
+        output.append("<html>\n");
+        output.append("<head>\n");
+        output.append("<title>Mox document uploader</title>\n");
+        output.append("</head>\n");
+        output.append("<body>\n");
+        output.append("<form action=\"DocumentUpload\" method=\"POST\" enctype=\"multipart/form-data\">\n");
+        output.append("<input type=\"file\" name=\"file\"/><br/>\n");
+        output.append("<textarea name=\"authtoken\"></textarea><br/>\n");
+        output.append("<input type=\"submit\"/>\n");
+        output.append("</form>\n");
+        output.append("</body>\n");
+        output.append("</html>\n");
     }
 
 }
