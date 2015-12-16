@@ -6,6 +6,7 @@ import dk.magenta.mox.spreadsheet.ConvertedObject;
 import dk.magenta.mox.spreadsheet.SpreadsheetConverter;
 import org.apache.log4j.Logger;
 
+import javax.naming.OperationNotSupportedException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
@@ -99,11 +100,16 @@ public class DocumentUpload extends UploadServlet {
                         } catch (IllegalArgumentException e) {
                         }
 
-                        Future<String> moxResponse = objectType.sendCommand(this.moxSender, operation, uuid, data, authorization);
-                        moxResponses.put(file.getFilename() + " : " + sheetName + " : " + objectId, moxResponse);
+                        try {
+                            Future<String> moxResponse = this.moxSender.send(objectType, operation, uuid, data, authorization);
+                            moxResponses.put(file.getFilename() + " : " + sheetName + " : " + objectId, moxResponse);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        } catch (OperationNotSupportedException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
-
             }
 
             for (String key : moxResponses.keySet()) {
@@ -149,9 +155,11 @@ public class DocumentUpload extends UploadServlet {
         output.append("</head>\n");
         output.append("<body>\n");
         output.append("<form action=\"DocumentUpload\" method=\"POST\" enctype=\"multipart/form-data\">\n");
-        output.append("<input type=\"file\" name=\"file\"/><br/>\n");
-        output.append("<textarea name=\"authtoken\"></textarea><br/>\n");
-        output.append("<input type=\"submit\"/>\n");
+        output.append("<label for=\"file\">Spreadsheet file:</label><br/>");
+        output.append("<input type=\"file\" id=\"file\" name=\"file\"/><br/>\n");
+        output.append("<label for=\"authtoken\">Authtoken:</label><br/>");
+        output.append("<textarea name=\"authtoken\" id=\"authtoken\"></textarea><br/>\n");
+        output.append("<input type=\"submit\" value=\"Upload\"/>\n");
         output.append("</form>\n");
         output.append("</body>\n");
         output.append("</html>\n");
