@@ -34,18 +34,22 @@ public class JSONArray extends org.json.JSONArray {
         return (index >= 0 && index < this.length());
     }
 
+    @Override
     public JSONObject getJSONObject(int index) {
         return (JSONObject) super.getJSONObject(index);
     }
 
+    @Override
     public JSONArray getJSONArray(int index) {
         return (JSONArray) super.getJSONArray(index);
     }
 
+    @Override
     public JSONObject optJSONObject(int index) {
         return (JSONObject) super.optJSONObject(index);
     }
 
+    @Override
     public JSONArray optJSONArray(int index) {
         return (JSONArray) super.optJSONArray(index);
     }

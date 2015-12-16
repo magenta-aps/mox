@@ -30,18 +30,22 @@ public class JSONObject extends org.json.JSONObject {
     }
 
 
+    @Override
     public JSONObject getJSONObject(String key) {
         return (JSONObject) super.getJSONObject(key);
     }
 
+    @Override
     public JSONArray getJSONArray(String key) {
         return (JSONArray) super.getJSONArray(key);
     }
 
+    @Override
     public JSONObject optJSONObject(String key) {
         return (JSONObject) super.optJSONObject(key);
     }
 
+    @Override
     public JSONArray optJSONArray(String key) {
         return (JSONArray) super.optJSONArray(key);
     }
