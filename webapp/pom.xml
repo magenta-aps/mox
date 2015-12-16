@@ -46,8 +46,8 @@
             </plugin>
         </plugins>
     </build>
-    <dependencies>
 
+    <dependencies>
         <dependency>
             <groupId>dk.magenta.mox</groupId>
             <artifactId>moxagent</artifactId>

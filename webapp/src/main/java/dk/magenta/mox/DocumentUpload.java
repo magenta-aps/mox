@@ -89,9 +89,6 @@ public class DocumentUpload extends UploadServlet {
                     for (String objectId : convertedSpreadsheets.get(sheetName).keySet()) {
                         ConvertedObject object = convertedSpreadsheets.get(sheetName).get(objectId);
 
-                        log.info("objectType: "+object.getSheetName());
-                        log.info("objectData: "+object.getJSON());
-
                         ObjectType objectType = this.objectTypes.get(object.getSheetName());
                         String operation = object.getOperation();
                         JSONObject data = object.getJSON();
@@ -141,6 +138,23 @@ public class DocumentUpload extends UploadServlet {
             throw e;
         }
 
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        Writer output = response.getWriter();
+        output.append("<html>\n");
+        output.append("<head>\n");
+        output.append("<title>Mox document uploader</title>\n");
+        output.append("</head>\n");
+        output.append("<body>\n");
+        output.append("<form action=\"DocumentUpload\" method=\"POST\" enctype=\"multipart/form-data\">\n");
+        output.append("<input type=\"file\" name=\"file\"/><br/>\n");
+        output.append("<textarea name=\"authtoken\"></textarea><br/>\n");
+        output.append("<input type=\"submit\"/>\n");
+        output.append("</form>\n");
+        output.append("</body>\n");
+        output.append("</html>\n");
     }
 
 }
