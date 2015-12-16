@@ -41,11 +41,6 @@
         <!-- MOX dependencies -->
         <dependency>
             <groupId>dk.magenta.mox</groupId>
-            <artifactId>moxagent</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>dk.magenta.mox</groupId>
             <artifactId>json</artifactId>
             <version>1.0</version>
         </dependency>
