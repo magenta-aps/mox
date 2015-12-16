@@ -108,10 +108,8 @@ public class DocumentUpload extends UploadServlet {
                         } catch (OperationNotSupportedException e) {
                             e.printStackTrace();
                         }
-
                     }
                 }
-
             }
 
             for (String key : moxResponses.keySet()) {
@@ -157,9 +155,11 @@ public class DocumentUpload extends UploadServlet {
         output.append("</head>\n");
         output.append("<body>\n");
         output.append("<form action=\"DocumentUpload\" method=\"POST\" enctype=\"multipart/form-data\">\n");
-        output.append("<input type=\"file\" name=\"file\"/><br/>\n");
-        output.append("<textarea name=\"authtoken\"></textarea><br/>\n");
-        output.append("<input type=\"submit\"/>\n");
+        output.append("<label for=\"file\">Spreadsheet file:</label><br/>");
+        output.append("<input type=\"file\" id=\"file\" name=\"file\"/><br/>\n");
+        output.append("<label for=\"authtoken\">Authtoken:</label><br/>");
+        output.append("<textarea name=\"authtoken\" id=\"authtoken\"></textarea><br/>\n");
+        output.append("<input type=\"submit\" value=\"Upload\"/>\n");
         output.append("</form>\n");
         output.append("</body>\n");
         output.append("</html>\n");
