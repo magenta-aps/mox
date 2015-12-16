@@ -6,6 +6,7 @@ import dk.magenta.mox.spreadsheet.ConvertedObject;
 import dk.magenta.mox.spreadsheet.SpreadsheetConverter;
 import org.apache.log4j.Logger;
 
+import javax.naming.OperationNotSupportedException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
@@ -99,8 +100,15 @@ public class DocumentUpload extends UploadServlet {
                         } catch (IllegalArgumentException e) {
                         }
 
-                        Future<String> moxResponse = objectType.sendCommand(this.moxSender, operation, uuid, data, authorization);
-                        moxResponses.put(file.getFilename() + " : " + sheetName + " : " + objectId, moxResponse);
+                        try {
+                            Future<String> moxResponse = this.moxSender.send(objectType, operation, uuid, data, authorization);
+                            moxResponses.put(file.getFilename() + " : " + sheetName + " : " + objectId, moxResponse);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        } catch (OperationNotSupportedException e) {
+                            e.printStackTrace();
+                        }
+
                     }
                 }
 

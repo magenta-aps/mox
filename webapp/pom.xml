@@ -50,7 +50,7 @@
     <dependencies>
         <dependency>
             <groupId>dk.magenta.mox</groupId>
-            <artifactId>moxagent</artifactId>
+            <artifactId>agent</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>
