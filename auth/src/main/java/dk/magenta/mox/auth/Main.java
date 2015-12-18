@@ -121,7 +121,7 @@ public class Main {
                     this.print("    password = ***");
                 }
                 if (this.restInterface == null) {
-                    this.restInterface = properties.getProperty("amqp.interface");
+                    this.restInterface = properties.getProperty("rest.interface");
                     this.print("    restInterface = " + this.restInterface);
                 }
             }

@@ -113,6 +113,10 @@ public class ObjectType {
         return operation;
     }
 
+    public boolean hasOperation(String operationName) {
+        return this.operations.containsKey(operationName);
+    }
+
     public static Map<String,ObjectType> load(String propertiesFileName) throws IOException {
         return load(new File(propertiesFileName));
     }
@@ -272,6 +276,9 @@ public class ObjectType {
 
     public Future<String> passivate(MessageSender sender, UUID uuid, String note, String authorization) throws IOException, OperationNotSupportedException {
         testOperationSupported(COMMAND_PASSIVATE);
+        return this.sendCommand(sender, COMMAND_PASSIVATE, uuid, this.getPassivateObject(note), authorization);
+    }
+    public JSONObject getPassivateObject(String note) {
         JSONObject data = new JSONObject();
         if (note == null) {
             note = "";
@@ -282,8 +289,9 @@ public class ObjectType {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return this.sendCommand(sender, COMMAND_PASSIVATE, uuid, data, authorization);
+        return data;
     }
+
 
     public Future<String> delete(MessageSender sender, UUID uuid, String note) throws IOException, OperationNotSupportedException {
         return this.delete(sender, uuid, note, null);
@@ -291,6 +299,11 @@ public class ObjectType {
 
     public Future<String> delete(MessageSender sender, UUID uuid, String note, String authorization) throws IOException, OperationNotSupportedException {
         testOperationSupported(COMMAND_DELETE);
+
+        return this.sendCommand(sender, COMMAND_DELETE, uuid, this.getDeleteObject(note), authorization);
+    }
+
+    public JSONObject getDeleteObject(String note) {
         JSONObject data = new JSONObject();
         if (note == null) {
             note = "";
@@ -300,7 +313,7 @@ public class ObjectType {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return this.sendCommand(sender, COMMAND_DELETE, uuid, data, authorization);
+        return data;
     }
 
 
@@ -338,12 +351,8 @@ public class ObjectType {
     private static String capitalize(String s) {
         return s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase();
     }
-
-    public boolean isOperationSupported(String operationName) throws OperationNotSupportedException {
-        return this.operations.containsKey(operationName);
-    }
     public void testOperationSupported(String operationName) throws OperationNotSupportedException {
-        if (!this.isOperationSupported(operationName)) {
+        if (!this.hasOperation(operationName)) {
             throw new OperationNotSupportedException("Operation " + operationName + " is not defined for Object type " + this.name);
         }
     }
