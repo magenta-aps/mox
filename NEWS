@@ -1,3 +1,13 @@
+* Version 0.2.12, December 18, 2015
+
+New in this version:
+
+* Java components split into modules and ordered under that folder
+* Servlet architecture set up
+* Spreadsheet servlet begun
+
+
+
 * Version 0.2.11, November 10, 2015
 
 New in this version:
