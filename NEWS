@@ -1,3 +1,11 @@
+* Version 0.2.12, January 4, 2016
+
+New in this version:
+
+* Read operation now supports registreringFra/Til parameters.
+* Update README documentation to fix typo and to explain that the
+  date range filters use the overlap operator.
+
 * Version 0.2.11, November 10, 2015
 
 New in this version:
