@@ -2,7 +2,7 @@ How to generate these patches:
 
 Run recreatedb.sh and note which patch files have failed:
 ./recreatedb.sh &> recreatedb.log
-grep fail recreatedb.log
+grep -i fail recreatedb.log
 
 Edit recreatedb.sh and comment out the lines beginning with "patch" which apply the patch files that have failed
 
