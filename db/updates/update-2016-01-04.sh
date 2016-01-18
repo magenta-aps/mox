@@ -6,5 +6,5 @@ templates=( json-cast-functions_bruger.sql json-cast-functions_dokument.sql json
 
 for template in "${templates[@]}"
 do
-	sudo -u $MOX_USER psql -d $MOX_DB -U $MOX_USER -f ../db-templating/generated-files/${template}
+	sudo -u postgres psql -d $MOX_DB -f ../db-templating/generated-files/${template}
 done
