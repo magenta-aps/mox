@@ -60,7 +60,6 @@ def get_token():
         else:
             params.extend(['-p', password]);
 
-        print os.path.join(MOX_BASE_DIR, 'auth.sh') + ' ' + ' '.join(cmd_quote(param) for param in params)
         child = pexpect.spawn(
             os.path.join(MOX_BASE_DIR, 'auth.sh') +
             ' ' + ' '.join(cmd_quote(param) for param in params))
