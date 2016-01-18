@@ -7,6 +7,7 @@ import org.apache.axiom.om.impl.builder.StAXOMBuilder;
 import org.apache.axis2.AxisFault;
 import org.apache.axis2.context.ConfigurationContext;
 import org.apache.axis2.context.ConfigurationContextFactory;
+import org.apache.commons.httpclient.ConnectTimeoutException;
 import org.apache.neethi.Policy;
 import org.apache.neethi.PolicyEngine;
 import org.apache.rahas.*;
@@ -158,6 +159,7 @@ public class SecurityTokenObtainer {
 
 
             // Build Rampart config
+
             SecurityTokenObtainer.rampartProperties = new Properties();
             SecurityTokenObtainer.rampartProperties.setProperty("security.user.name", this.username);
             SecurityTokenObtainer.rampartProperties.setProperty("security.user.password", this.password);
@@ -202,8 +204,13 @@ public class SecurityTokenObtainer {
             throw new SecurityTokenException(e);
 
         } catch (TrustException e) {
-            e.printStackTrace();
             this.setSystemProperties(oldKeystorePath, oldKeystorePass);
+            try {
+                if (e.getCause().getCause() instanceof ConnectTimeoutException) {
+                    throw new SecurityTokenException((ConnectTimeoutException) e.getCause().getCause());
+                }
+            } catch (NullPointerException ex) {
+            }
             throw new SecurityTokenException(e);
 
         } catch (FileNotFoundException e) {
