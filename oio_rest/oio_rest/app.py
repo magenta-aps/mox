@@ -42,6 +42,7 @@ def get_token():
     elif request.method == 'POST':
         import pexpect
         import re
+        send_pwd_with_ipc = True
         try:
             from shlex import quote as cmd_quote
         except ImportError:
@@ -53,27 +54,30 @@ def get_token():
             raise BadRequestException("Parameters username and password are "
                                       "required")
 
-        params = ['gettoken', username]
-        if sts != '':
-            params.insert(0, "-DstsAddress=" + sts)
+        params = ['-u', username, '-a', sts, '-s']
+        if send_pwd_with_ipc:
+            params.append('-p')
+        else:
+            params.extend(['-p', password]);
 
+        print os.path.join(MOX_BASE_DIR, 'auth.sh') + ' ' + ' '.join(cmd_quote(param) for param in params)
         child = pexpect.spawn(
-            os.path.join(MOX_BASE_DIR, 'agent/agent.sh') +
+            os.path.join(MOX_BASE_DIR, 'auth.sh') +
             ' ' + ' '.join(cmd_quote(param) for param in params))
         try:
-            i = child.expect([pexpect.TIMEOUT, "Password:"])
-            if i == 0:
-                raise UnauthorizedException("Error requesting token.")
-            else:
-                child.sendline(password)
+            if send_pwd_with_ipc:
+                i = child.expect([pexpect.TIMEOUT, "Password:"])
+                if i == 0:
+                    raise UnauthorizedException("Error requesting token.")
+                else:
+                    child.sendline(password)
             output = child.read()
             m = re.search("saml-gzipped\s+(.+?)\s", output)
             if m is not None:
                 token = m.group(1)
                 return Response("saml-gzipped " + token, mimetype='text/plain')
             else:
-                m = re.search("AxisFault: Must Understand check failed",
-                              output)
+                m = re.search("Incorrect password!", output)
                 if m is not None:
                     raise UnauthorizedException("Error requesting token: "
                                                 "invalid username or password")

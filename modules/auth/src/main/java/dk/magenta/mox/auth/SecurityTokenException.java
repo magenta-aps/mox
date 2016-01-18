@@ -1,6 +1,7 @@
 package dk.magenta.mox.auth;
 
 import org.apache.axis2.AxisFault;
+import org.apache.commons.httpclient.ConnectTimeoutException;
 import org.apache.rahas.TrustException;
 
 import javax.xml.stream.XMLStreamException;
@@ -36,6 +37,10 @@ public class SecurityTokenException extends Exception {
     public SecurityTokenException(FileNotFoundException fileNotFoundException) {
         super("Couln't find file: " + fileNotFoundException.getMessage());
         this.cause = fileNotFoundException;
+    }
+    public SecurityTokenException(ConnectTimeoutException connectTimeoutException) {
+        super("Couldn't connect to Identity Service: " + connectTimeoutException.getMessage());
+        this.cause = connectTimeoutException;
     }
 
     public Exception getCause() {

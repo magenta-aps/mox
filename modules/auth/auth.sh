@@ -1,6 +1,10 @@
 #!/bin/bash
 
-DIR=$(dirname ${BASH_SOURCE[0]})
+# arguments: [-s] [-u username] [-p password] [-i interface] [-f propertiesfile]
+# the -s parameter means to silence config output, displaying only the token
+
+SELF=${BASH_SOURCE[0]}
+DIR=$(dirname "$(test -L "$SELF" && readlink "$SELF" || echo "$SELF")")
 
 if [[ -z $@ ]]; then
   args="listen"
