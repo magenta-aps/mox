@@ -74,8 +74,9 @@ FROM
       order by e.relType asc
     ) as f
   )
-  SELECT 
+  SELECT
   row_to_json(FraTidspunkt.*) FraTidspunkt
+  ,row_to_json(TilTidspunkt.*) TilTidspunkt
   ,($1.registrering).livscykluskode
   ,($1.registrering).note
   ,($1.registrering).brugerref
@@ -89,9 +90,14 @@ FROM
   FROM
     (
     SELECT
-     (SELECT LOWER(($1.registrering).TimePeriod)) as TidsstempelDatoTid 
-    ,(SELECT lower_inc(($1.registrering).TimePeriod)) as GraenseIndikator 
-    ) as  FraTidspunkt
+     (SELECT LOWER(($1.registrering).TimePeriod)) as TidsstempelDatoTid
+    ,(SELECT lower_inc(($1.registrering).TimePeriod)) as GraenseIndikator
+    ) as  FraTidspunkt,
+    (
+    SELECT
+     (SELECT UPPER(($1.registrering).TimePeriod)) as TidsstempelDatoTid
+    ,(SELECT upper_inc(($1.registrering).TimePeriod)) as GraenseIndikator
+    ) as  TilTidspunkt
   
 
 )
