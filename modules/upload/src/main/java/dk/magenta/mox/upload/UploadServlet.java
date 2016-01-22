@@ -8,8 +8,14 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -27,11 +33,14 @@ import org.apache.commons.io.IOUtils;
 
 @WebServlet("/UploadServlet")
 public class UploadServlet extends HttpServlet {
-    private static final long serialVersionUID = 1L;
     private ServletFileUpload uploader = null;
 
     public static final String UPLOAD_SERVLET_URL = "UploadServlet";
     public static final String cacheFolderNameConfigKey = "FILES_DIR";
+
+    private InetAddress localAddress;
+    private static Pattern hostnamePattern = Pattern.compile("[a-z]+://([a-z0-9\\-\\.]+)/.*", Pattern.CASE_INSENSITIVE);
+
 
     @Override
     public void init() throws ServletException {
@@ -48,6 +57,12 @@ public class UploadServlet extends HttpServlet {
         fileFactory.setRepository(cacheFolder);
 
         this.uploader = new ServletFileUpload(fileFactory);
+
+        try {
+            this.localAddress = InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -81,6 +96,18 @@ public class UploadServlet extends HttpServlet {
             throw new ServletException("Content type is not multipart/form-data");
         }
 
+        ArrayList<UploadedDocumentMessage> messages = new ArrayList<>();
+
+        String protocol = request.getProtocol().replaceAll("/.*","");
+
+        String hostname;
+        Matcher m = hostnamePattern.matcher(request.getRequestURL().toString());
+        if (m.find()) {
+            hostname = m.group(1);
+        } else {
+            hostname = this.localAddress.getHostName();
+        }
+
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();
         out.write("<html><head></head><body>");
@@ -91,9 +118,17 @@ public class UploadServlet extends HttpServlet {
                 FileItem fileItem = fileItemsIterator.next();
                 File file = new File(request.getServletContext().getAttribute(cacheFolderNameConfigKey) + File.separator + fileItem.getName());
                 fileItem.write(file);
+
+                String relativePath = UPLOAD_SERVLET_URL + "?fileName=" + fileItem.getName();
+
                 out.write("File " + fileItem.getName() + " uploaded successfully.");
                 out.write("<br/>");
-                out.write("<a href=\"" + UPLOAD_SERVLET_URL + "?fileName=" + fileItem.getName()+"\">Download " + fileItem.getName() + "</a>");
+                out.write("<a href=\"" + relativePath + "\">Download " + fileItem.getName() + "</a>");
+
+                String path = this.getServletContext().getContextPath() + "/" + relativePath;
+                UploadedDocumentMessage message = new UploadedDocumentMessage(fileItem.getName(), new URL(protocol, hostname, path));
+                System.out.println(message.toJSON());
+                messages.add(message);
             }
         } catch (FileUploadException e) {
             out.write("Exception in uploading file.");
