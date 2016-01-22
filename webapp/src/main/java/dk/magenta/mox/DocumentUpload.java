@@ -4,6 +4,7 @@ import dk.magenta.mox.agent.*;
 import dk.magenta.mox.json.JSONObject;
 import dk.magenta.mox.spreadsheet.ConvertedObject;
 import dk.magenta.mox.spreadsheet.SpreadsheetConverter;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import javax.naming.OperationNotSupportedException;
@@ -28,10 +29,11 @@ public class DocumentUpload extends UploadServlet {
 
     private MessageSender moxSender;
     private Properties agentProperties;
-    private Map<String, ObjectType> objectTypes;
+    private File cacheFolder;
 
     public void init() throws ServletException {
 
+        File servletBasePath = new File(this.getServletContext().getRealPath("/"));
         this.agentProperties = new Properties();
         try {
             this.agentProperties.load(this.getServletContext().getResourceAsStream("/WEB-INF/agent.properties"));
@@ -43,7 +45,14 @@ public class DocumentUpload extends UploadServlet {
         String queueUsername = this.getPropertyOrThrow(this.agentProperties, "amqp.username");
         String queuePassword = this.getPropertyOrThrow(this.agentProperties, "amqp.password");
 
-        this.objectTypes = ObjectType.load(this.agentProperties);
+        this.cacheFolder = new File(servletBasePath, this.getPropertyOrThrow(this.agentProperties, "file.cache"));
+        if (!this.cacheFolder.exists()) {
+            if (!this.cacheFolder.mkdirs()) {
+                throw new ServletException("Misconfiguration: file.cache property points to a nonexistent directory '"+this.cacheFolder+"' => '"+this.cacheFolder.getAbsolutePath()+"' that could not be created");
+            }
+        } else if (!cacheFolder.isDirectory()) {
+            throw new ServletException("Misconfiguration: file.cache property does not point to a directory");
+        }
 
         try {
             this.moxSender = new MessageSender(queueUsername, queuePassword, queueInterface, null, queueName);
@@ -79,37 +88,22 @@ public class DocumentUpload extends UploadServlet {
 
             HashMap<String, Future<String>> moxResponses = new HashMap<String, Future<String>>();
             for (UploadedFile file : files) {
-
-                Map<String, Map<String, ConvertedObject>> convertedSpreadsheets;
-                try {
-                    convertedSpreadsheets = SpreadsheetConverter.convert(file.getInputStream(), file.getContentType());
-                } catch (Exception e) {
-                    throw new ServletException("Failed converting uploaded file", e);
+                File cachedFile = new File(this.cacheFolder, file.getFilename());
+                for (int i = 0; cachedFile.exists() && i<100000; i++) {
+                    cachedFile = new File(this.cacheFolder, file.getFilename() + ".cache" + i);
                 }
-                for (String sheetName : convertedSpreadsheets.keySet()) {
-                    for (String objectId : convertedSpreadsheets.get(sheetName).keySet()) {
-                        ConvertedObject object = convertedSpreadsheets.get(sheetName).get(objectId);
-
-                        ObjectType objectType = this.objectTypes.get(object.getSheetName());
-                        String operation = object.getOperation();
-                        JSONObject data = object.getJSON();
-
-                        UUID uuid = null;
-                        try {
-                            uuid = UUID.fromString(object.getId());
-                        } catch (IllegalArgumentException e) {
-                        }
-
-                        try {
-                            Future<String> moxResponse = this.moxSender.send(objectType, operation, uuid, data, authorization);
-                            moxResponses.put(file.getFilename() + " : " + sheetName + " : " + objectId, moxResponse);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        } catch (OperationNotSupportedException e) {
-                            e.printStackTrace();
-                        }
-                    }
+                boolean created = cachedFile.createNewFile();
+                if (!created) {
+                    throw new ServletException("Unable to create cache file "+cachedFile.getAbsolutePath());
                 }
+                if (!cachedFile.canWrite()) {
+                    throw new ServletException("Cannot write to cache file "+ cachedFile.getAbsolutePath());
+                }
+                InputStream fileInput = file.getInputStream();
+                FileOutputStream cacheOutput = new FileOutputStream(cachedFile);
+                IOUtils.copy(fileInput, cacheOutput);
+                fileInput.close();
+                cacheOutput.close();
             }
 
             for (String key : moxResponses.keySet()) {
