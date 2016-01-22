@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="war" name="upload:war">
-    <output-path>$PROJECT_DIR$/target</output-path>
-    <root id="archive" name="mox.war">
-      <element id="artifact" artifact-name="upload:war exploded" />
-    </root>
-  </artifact>
-</component>
