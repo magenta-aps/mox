@@ -95,6 +95,10 @@ public class SecurityTokenObtainer {
         String oldKeystorePass = System.getProperty("javax.net.ssl.trustStorePassword");
 
         try {
+            if (!(new File(this.keystorePath).exists())) {
+                throw new FileNotFoundException("Keystore path '"+this.keystorePath+"' does not point to an existing file");
+            }
+
             this.setSystemProperties(this.keystorePath, this.keystorePass);
             ConfigurationContext configCtx;
 

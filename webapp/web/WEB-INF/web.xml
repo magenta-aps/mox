@@ -12,4 +12,27 @@
         <servlet-name>DocumentUpload</servlet-name>
         <url-pattern>/DocumentUpload</url-pattern>
     </servlet-mapping>
+
+    <!--security-constraint>
+        <display-name>excluded</display-name>
+        <web-resource-collection>
+            <web-resource-name>No Access</web-resource-name>
+            <url-pattern>/cache/*</url-pattern>
+        </web-resource-collection>
+        <web-resource-collection>
+            <web-resource-name>No Access</web-resource-name>
+            <url-pattern>/files/*</url-pattern>
+            <http-method>DELETE</http-method>
+            <http-method>PUT</http-method>
+            <http-method>HEAD</http-method>
+            <http-method>OPTIONS</http-method>
+            <http-method>TRACE</http-method>
+            <http-method>GET</http-method>
+            <http-method>POST</http-method>
+        </web-resource-collection>
+        <auth-constraint />
+        <user-data-constraint>
+            <transport-guarantee>NONE</transport-guarantee>
+        </user-data-constraint>
+    </security-constraint-->
 </web-app>
