@@ -8,4 +8,20 @@
         <param-name>tempfile.dir</param-name>
         <param-value>cache</param-value>
     </context-param>
+    <context-param>
+        <param-name>amqp.interface</param-name>
+        <param-value>localhost:5672</param-value>
+    </context-param>
+    <context-param>
+        <param-name>amqp.queue</param-name>
+        <param-value>uploaded</param-value>
+    </context-param>
+    <context-param>
+        <param-name>amqp.username</param-name>
+        <param-value>guest</param-value>
+    </context-param>
+    <context-param>
+        <param-name>amqp.password</param-name>
+        <param-value>guest</param-value>
+    </context-param>
 </web-app>
