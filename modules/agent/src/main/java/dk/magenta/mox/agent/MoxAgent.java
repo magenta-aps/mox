@@ -4,7 +4,6 @@ import com.rabbitmq.client.ConnectionFactory;
 
 import org.apache.log4j.xml.DOMConfigurator;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -20,14 +19,13 @@ import java.util.concurrent.TimeoutException;
 /**
  * Created by lars on 06-08-15.
  */
-public class Main {
+public class MoxAgent {
     public static Properties properties;
 
-    String queueUsername = null;
-    String queuePassword = null;
-    String queueInterface = null;
-    String queueName = null;
     String restInterface = null;
+
+    AmqpDefinition amqpDefinition;
+
     File propertiesFile = new File("agent.properties");
 
     Map<String, ObjectType> objectTypes;
@@ -36,7 +34,7 @@ public class Main {
 
     public static void main(String[] args) {
         DOMConfigurator.configure("log4j.xml");
-        Main main = new Main();
+        MoxAgent main = new MoxAgent(args);
 
         for (String arg : args) {
             if (arg.equalsIgnoreCase("help")) {
@@ -45,7 +43,18 @@ public class Main {
             }
         }
 
-        main.run(args);
+        main.run();
+    }
+
+    protected MoxAgent() {
+    }
+
+    public MoxAgent(String[] args) {
+        this.amqpDefinition = new AmqpDefinition();
+        this.loadArgs(args);
+        this.loadPropertiesFile();
+        this.loadDefaults();
+        this.loadObjectTypes();
     }
 
     private void loadObjectTypes() {
@@ -78,7 +87,7 @@ public class Main {
         return;
     }
 
-    private void loadArgs(String[] commandlineArgs) {
+    protected void loadArgs(String[] commandlineArgs) {
 
         System.out.println("Reading command line arguments");
 
@@ -106,25 +115,7 @@ public class Main {
             return;
         }
 
-        if (argMap.containsKey("amqp.username")) {
-            queueInterface = argMap.get("amqp.username");
-            System.out.println("    amqp.username = " + queueUsername);
-        }
-
-        if (argMap.containsKey("amqp.password")) {
-            queueInterface = argMap.get("amqp.password");
-            System.out.println("    amqp.password = " + queuePassword);
-        }
-
-        if (argMap.containsKey("amqp.interface")) {
-            queueInterface = argMap.get("amqp.interface");
-            System.out.println("    amqp.interface = " + queueInterface);
-        }
-
-        if (argMap.containsKey("amqp.queue")) {
-            queueName = argMap.get("amqp.queue");
-            System.out.println("    amqp.queue = " + queueName);
-        }
+        this.amqpDefinition.populateFromMap(argMap, "amqp", true, true);
 
         if (argMap.containsKey("rest.interface")) {
             restInterface = argMap.get("rest.interface");
@@ -158,8 +149,6 @@ public class Main {
         }
     }
 
-
-
     private void loadPropertiesFile() {
         properties = new Properties();
         if (propertiesFile.canRead()) {
@@ -170,27 +159,8 @@ public class Main {
                 return;
             }
             System.out.println("Reading properties file " + propertiesFile.getAbsolutePath());
+            this.amqpDefinition.populateFromProperties(properties, "amqp", false, true);
 
-            if (queueUsername == null) {
-                queueUsername = properties.getProperty("amqp.username");
-                if (queueUsername != null) {
-                    System.out.println("    amqp.username = " + queueUsername);
-                }
-            }
-            if (queuePassword == null) {
-                queuePassword = properties.getProperty("amqp.password");
-                if (queuePassword != null) {
-                    System.out.println("    amqp.password = ********");
-                }
-            }
-            if (queueInterface == null) {
-                queueInterface = properties.getProperty("amqp.interface");
-                System.out.println("    amqp.interface = " + queueInterface);
-            }
-            if (queueName == null) {
-                queueName = properties.getProperty("amqp.queue");
-                System.out.println("    amqp.queue = " + queueName);
-            }
             if (restInterface == null) {
                 restInterface = properties.getProperty("rest.interface");
                 System.out.println("    rest.interface = " + restInterface);
@@ -207,18 +177,12 @@ public class Main {
         }
     }
 
-
     private void loadDefaults() {
+
         System.out.println("Loading defaults");
 
-        if (queueInterface == null) {
-            queueInterface = "localhost:5672";
-            System.out.println("    amqp.interface = " + queueInterface);
-        }
-        if (queueName == null) {
-            queueName = "incoming";
-            System.out.println("    amqp.queue = " + queueName);
-        }
+        this.amqpDefinition.populateFromDefaults(true, "amqp");
+
         if (restInterface == null) {
             restInterface = "http://127.0.0.1:5000";
             System.out.println("    rest.interface = " + restInterface);
@@ -229,12 +193,16 @@ public class Main {
         }
     }
 
-    private void run(String[] args) {
+    protected MessageReceiver createMessageReceiver() throws IOException, TimeoutException {
+        return new MessageReceiver(this.amqpDefinition, true);
+    }
 
-        this.loadArgs(args);
-        this.loadPropertiesFile();
-        this.loadDefaults();
-        this.loadObjectTypes();
+    protected MessageSender createMessageSender() throws IOException, TimeoutException {
+        return new MessageSender(this.amqpDefinition);
+    }
+
+
+    protected void run() {
 
         try {
 
@@ -246,9 +214,9 @@ public class Main {
 
             if (command.equalsIgnoreCase("listen")) {
 
-            	System.out.println("Listening for messages from RabbitMQ service at " + queueInterface + ", queue name '" + queueName + "'");
+            	System.out.println("Listening for messages from RabbitMQ service at " + this.amqpDefinition.getAmqpLocation() + ", queue name '" + this.amqpDefinition.getQueueName() + "'");
             	System.out.println("Successfully parsed messages will be forwarded to the REST interface at " + restInterface);
-            	MessageReceiver messageReceiver = new MessageReceiver(queueUsername, queuePassword, queueInterface, null, queueName, true);
+            	MessageReceiver messageReceiver = this.createMessageReceiver();
             	try {
             	    messageReceiver.run(new RestMessageHandler(restInterface, objectTypes));
             	} catch (InterruptedException e) {
@@ -257,11 +225,11 @@ public class Main {
             	messageReceiver.close();
 
 			} else if (command.equalsIgnoreCase("send")) {
-                System.out.println("Sending to "+queueInterface+", queue "+queueName);
+                System.out.println("Sending to "+this.amqpDefinition.getAmqpLocation()+", queue "+this.amqpDefinition.getQueueName());
 
                 String operationName = commands.get(1);
                 String objectTypeName = commands.get(2);
-                MessageSender messageSender = new MessageSender(queueUsername, queuePassword, queueInterface, null, queueName);
+                MessageSender messageSender = this.createMessageSender();
                 ObjectType objectType = objectTypes.get(objectTypeName);
                 String authorization = null;
                 Future<String> response = null;

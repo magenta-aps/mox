@@ -2,6 +2,7 @@ package dk.magenta.mox.agent;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.QueueingConsumer;
+import dk.magenta.mox.agent.messages.Headers;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -16,6 +17,14 @@ public class MessageReceiver extends MessageInterface {
     private QueueingConsumer consumer;
     private boolean running;
     private boolean sendReplies;
+
+    public MessageReceiver(AmqpDefinition amqpDefinition) throws IOException {
+        super(amqpDefinition);
+    }
+    public MessageReceiver(AmqpDefinition amqpDefinition, boolean sendReplies) throws IOException {
+        super(amqpDefinition);
+        this.sendReplies = sendReplies;
+    }
 
     public MessageReceiver(String host, String exchange, String queue, boolean sendReplies) throws IOException, TimeoutException {
         this(null, null, host, exchange, queue, sendReplies);
@@ -52,7 +61,7 @@ public class MessageReceiver extends MessageInterface {
                 }
                 continue;
             }
-            final Future<String> response = callback.run(delivery.getProperties().getHeaders(), dataObject);
+            final Future<String> response = callback.run((Headers) delivery.getProperties().getHeaders(), dataObject);
 
             if (this.sendReplies) {
                 if (response == null) {

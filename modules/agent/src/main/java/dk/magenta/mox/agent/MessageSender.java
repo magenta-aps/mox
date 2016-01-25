@@ -23,6 +23,10 @@ public class MessageSender extends MessageInterface {
     private HashMap<String, SettableFuture<String>> responseExpectors = new HashMap<String, SettableFuture<String>>();
     private boolean listening = false;
 
+    public MessageSender(AmqpDefinition amqpDefinition) throws IOException {
+        super(amqpDefinition);
+    }
+
     public MessageSender(String username, String password, String host, String queue) throws IOException, TimeoutException {
         this(username, password, host, null, queue);
     }
