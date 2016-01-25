@@ -36,7 +36,7 @@ public class Message {
     public Headers getHeaders() {
         Headers headers = new Headers();
         headers.put(HEADER_AUTHORIZATION, this.authorization);
-        headers.put(HEADER_MESSAGEID, UUID.randomUUID());
+        headers.put(HEADER_MESSAGEID, UUID.randomUUID().toString());
         headers.put(HEADER_MESSAGEVERSION, version);
         return headers;
     }
