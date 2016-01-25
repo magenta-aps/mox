@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" version="3.0">
+    <display-name>ServletFileUpload</display-name>
+    <welcome-file-list>
+        <welcome-file>index.html</welcome-file>
+    </welcome-file-list>
+    <context-param>
+        <param-name>tempfile.dir</param-name>
+        <param-value>cache</param-value>
+    </context-param>
+    <context-param>
+        <param-name>amqp.interface</param-name>
+        <param-value>localhost:5672</param-value>
+    </context-param>
+    <context-param>
+        <param-name>amqp.queue</param-name>
+        <param-value>uploaded</param-value>
+    </context-param>
+    <context-param>
+        <param-name>amqp.username</param-name>
+        <param-value>guest</param-value>
+    </context-param>
+    <context-param>
+        <param-name>amqp.password</param-name>
+        <param-value>guest</param-value>
+    </context-param>
+</web-app>

@@ -33,7 +33,9 @@ public class DocumentUpload extends UploadServlet {
 
     public void init() throws ServletException {
 
-        File servletBasePath = new File(this.getServletContext().getRealPath("/"));
+        File servletFilesystemBasePath = new File(this.getServletContext().getRealPath("/"));
+        String servletWebBasePath = this.getServletContext().getContextPath();
+
         this.agentProperties = new Properties();
         try {
             this.agentProperties.load(this.getServletContext().getResourceAsStream("/WEB-INF/agent.properties"));
@@ -45,7 +47,8 @@ public class DocumentUpload extends UploadServlet {
         String queueUsername = this.getPropertyOrThrow(this.agentProperties, "amqp.username");
         String queuePassword = this.getPropertyOrThrow(this.agentProperties, "amqp.password");
 
-        this.cacheFolder = new File(servletBasePath, this.getPropertyOrThrow(this.agentProperties, "file.cache"));
+        this.cacheFolder = new File(servletFilesystemBasePath, this.getPropertyOrThrow(this.agentProperties, "file.cache"));
+
         if (!this.cacheFolder.exists()) {
             if (!this.cacheFolder.mkdirs()) {
                 throw new ServletException("Misconfiguration: file.cache property points to a nonexistent directory '"+this.cacheFolder+"' => '"+this.cacheFolder.getAbsolutePath()+"' that could not be created");
@@ -104,8 +107,13 @@ public class DocumentUpload extends UploadServlet {
                 IOUtils.copy(fileInput, cacheOutput);
                 fileInput.close();
                 cacheOutput.close();
-            }
 
+                JSONObject message = new JSONObject();
+                message.put("url", this.getServletContext().getContextPath() + "/" + this.cacheFolder.getPath() + "/" + cachedFile.getPath());
+
+                output.append(message.toString());
+            }
+/*
             for (String key : moxResponses.keySet()) {
                 Future<String> moxResponse = moxResponses.get(key);
                 String responseString;
@@ -132,7 +140,7 @@ public class DocumentUpload extends UploadServlet {
                 } else {
                     throw new ServletException("No response from REST interface\nWhen uploading " + key);
                 }
-            }
+            }*/
         } catch (ServletException e) {
             log.error("Error when receiving or parsing upload", e);
             throw e;

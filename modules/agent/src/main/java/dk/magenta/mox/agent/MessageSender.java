@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 import com.rabbitmq.client.QueueingConsumer;
+import dk.magenta.mox.agent.messages.Message;
 import org.json.*;
 
 import javax.naming.OperationNotSupportedException;
@@ -89,6 +90,10 @@ public class MessageSender extends MessageInterface {
             headers.put(MessageInterface.HEADER_QUERY, query.toString());
         }
         return this.sendJSON(headers, data);
+    }
+
+    public Future<String> send(Message message) throws IOException, InterruptedException {
+        return this.sendJSON(message.getHeaders(), message.getJSON());
     }
 
     public Future<String> sendJSON(Map<String, Object> headers, JSONObject jsonObject) throws IOException, InterruptedException {
