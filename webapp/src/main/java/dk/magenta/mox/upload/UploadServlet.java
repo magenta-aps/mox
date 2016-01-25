@@ -44,6 +44,8 @@ public class UploadServlet extends HttpServlet {
 
     private MessageSender messageSender;
 
+    private static boolean waitForAmqpResponses = false;
+
     @Override
     public void init() throws ServletException {
         ServletContext context = getServletContext();
@@ -171,15 +173,17 @@ public class UploadServlet extends HttpServlet {
                     e.printStackTrace();
                 }
             }
-            for (Future<String> amqpResponse : amqpResponses) {
-                try {
-                    String realResponse = amqpResponse.get(30, TimeUnit.SECONDS);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                } catch (TimeoutException e) {
-                    e.printStackTrace();
+            if (waitForAmqpResponses) {
+                for (Future<String> amqpResponse : amqpResponses) {
+                    try {
+                        String realResponse = amqpResponse.get(30, TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (TimeoutException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         } catch (FileUploadException e) {
