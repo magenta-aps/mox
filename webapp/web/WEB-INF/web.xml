@@ -7,7 +7,7 @@
         <servlet-name>DocumentUpload</servlet-name>
         <servlet-class>dk.magenta.mox.upload.UploadServlet</servlet-class>
     </servlet>
-    
+
     <servlet-mapping>
         <servlet-name>DocumentUpload</servlet-name>
         <url-pattern>/DocumentUpload</url-pattern>
