@@ -69,7 +69,7 @@ public class MessageReceiver extends MessageInterface {
                 }
                 continue;
             }
-            final Future<String> response = callback.run((Headers) delivery.getProperties().getHeaders(), dataObject);
+            final Future<String> response = callback.run(new Headers(delivery.getProperties().getHeaders()), dataObject);
 
             if (this.sendReplies) {
                 if (response == null) {
