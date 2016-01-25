@@ -12,11 +12,14 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.naming.OperationNotSupportedException;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -26,12 +29,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import dk.magenta.mox.agent.MessageSender;
+import dk.magenta.mox.agent.messages.UploadedDocumentMessage;
+
+
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.IOUtils;
-import sun.plugin2.message.Message;
 
 @WebServlet("/UploadServlet")
 public class UploadServlet extends HttpServlet {
@@ -113,7 +118,7 @@ public class UploadServlet extends HttpServlet {
         if (!ServletFileUpload.isMultipartContent(request)) {
             throw new ServletException("Content type is not multipart/form-data");
         }
-
+        String authorization = null;
 
         String protocol = request.getProtocol().replaceAll("/.*", "");
 
@@ -145,18 +150,29 @@ public class UploadServlet extends HttpServlet {
                     out.write("<a href=\"" + relativePath + "\">Download " + fileItem.getName() + "</a>");
 
                     String path = this.getServletContext().getContextPath() + "/" + relativePath;
-                    UploadedDocumentMessage message = new UploadedDocumentMessage(fileItem.getName(), new URL(protocol, hostname, path));
+                    UploadedDocumentMessage message = new UploadedDocumentMessage(fileItem.getName(), new URL(protocol, hostname, path), authorization);
                     messages.add(message);
                 } catch (Exception e) {
                     out.write("Error when writing file to cache.");
                 }
             }
+            ArrayList<Future<String>> amqpResponses = new ArrayList<>();
             for (UploadedDocumentMessage message : messages) {
-                HashMap<String, Object> headers = new HashMap<>();
-                //headers.put()
                 try {
-                    Future<String> amqpResponse = this.messageSender.sendJSON(headers, message.toJSON());
+                    Future<String> amqpResponse = this.messageSender.send(message);
+                    amqpResponses.add(amqpResponse);
                 } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            for (Future<String> amqpResponse : amqpResponses) {
+                try {
+                    String realResponse = amqpResponse.get(30, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (TimeoutException e) {
                     e.printStackTrace();
                 }
             }
