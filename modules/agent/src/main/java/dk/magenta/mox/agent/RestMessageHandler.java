@@ -1,6 +1,7 @@
 package dk.magenta.mox.agent;
 
 import com.rabbitmq.client.LongString;
+import dk.magenta.mox.agent.messages.Headers;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -62,7 +63,7 @@ public class RestMessageHandler implements MessageHandler {
         }
     }
 
-    public Future<String> run(Map<String, Object> headers, JSONObject jsonObject) {
+    public Future<String> run(Headers headers, JSONObject jsonObject) {
         try {
             String objectTypeName = this.getHeaderString(headers, MessageInterface.HEADER_OBJECTTYPE, true).toLowerCase();
             this.logger.info("objectTypeName: " + objectTypeName);

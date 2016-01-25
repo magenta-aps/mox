@@ -31,6 +31,15 @@ public abstract class MessageInterface {
 
 
     private static HashMap<String, ConnectionFactory> connectionFactories = new HashMap<String, ConnectionFactory>();
+
+    public MessageInterface(AmqpDefinition amqpDefinition) throws IOException {
+        this(amqpDefinition.getUsername(),
+                amqpDefinition.getPassword(),
+                amqpDefinition.getAmqpLocation(),
+                amqpDefinition.getExchangeName(),
+                amqpDefinition.getQueueName());
+    }
+
     public MessageInterface(String host, String exchange, String queueName) throws IOException {
         this(null, null, host, exchange, queueName);
     }
