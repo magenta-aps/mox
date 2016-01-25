@@ -203,8 +203,13 @@ class OIORestObject(object):
         # Get most common parameters if available.
         note = input.get("note", "")
         registration = cls.gather_registration(input)
-
-        if not db.object_exists(cls.__name__, uuid):
+        exists = db.object_exists(cls.__name__, uuid)
+        if exists:
+            livscyklus = db.get_life_cycle_code(uuid)
+            if livscyklus == 'Passiveret' or livscyklus == 'Slettet':
+                # TODO: Use symbols, not constants
+                exists = False
+        if not exists:
             # Do import.
             db.create_or_import_object(cls.__name__, note,
                                        registration, uuid)
