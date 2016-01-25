@@ -33,7 +33,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@WebServlet("/DocumentUpload")
 public class UploadServlet extends HttpServlet {
     private ServletFileUpload uploader = null;
 
@@ -85,27 +84,39 @@ public class UploadServlet extends HttpServlet {
 
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String fileName = request.getParameter("fileName");
-        if (fileName == null || fileName.equals("")){
-            throw new ServletException("File Name can't be null or empty");
-        }
-        File file = new File(request.getServletContext().getAttribute(cacheFolderNameConfigKey) + File.separator + fileName);
-        if (!file.exists()) {
-            throw new ServletException("File doesn't exists on server.");
-        }
-        ServletContext ctx = getServletContext();
-        InputStream fis = new FileInputStream(file);
-        String mimeType = ctx.getMimeType(file.getAbsolutePath());
-        response.setContentType(mimeType != null ? mimeType : "application/octet-stream");
-        response.setContentLength((int) file.length());
-        response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+        String fileName = request.getParameter("download");
+        if (fileName != null && !fileName.equals("")) {
+            File file = new File(request.getServletContext().getAttribute(cacheFolderNameConfigKey) + File.separator + fileName);
+            if (!file.exists()) {
+                throw new ServletException("File doesn't exists on server.");
+            }
+            ServletContext ctx = getServletContext();
+            InputStream fis = new FileInputStream(file);
+            String mimeType = ctx.getMimeType(file.getAbsolutePath());
+            response.setContentType(mimeType != null ? mimeType : "application/octet-stream");
+            response.setContentLength((int) file.length());
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
 
-        ServletOutputStream os = response.getOutputStream();
-        IOUtils.copy(fis, os);
+            ServletOutputStream os = response.getOutputStream();
+            IOUtils.copy(fis, os);
 
-        os.flush();
-        os.close();
-        fis.close();
+            os.flush();
+            os.close();
+            fis.close();
+            return;
+        }
+
+        Writer out = response.getWriter();
+        out.append("<html>\n" +
+                "<head></head>\n" +
+                "<body>\n" +
+                "<form action=\"UploadServlet\" method=\"post\" enctype=\"multipart/form-data\">\n" +
+                "    Select File to Upload:<input type=\"file\" name=\"fileName\">\n" +
+                "    <br>\n" +
+                "    <input type=\"submit\" value=\"Upload\">\n" +
+                "</form>\n" +
+                "</body>\n" +
+                "</html>");
     }
 
 
@@ -138,7 +149,7 @@ public class UploadServlet extends HttpServlet {
                     File file = new File(request.getServletContext().getAttribute(cacheFolderNameConfigKey) + File.separator + fileItem.getName());
                     fileItem.write(file);
 
-                    String relativePath = UPLOAD_SERVLET_URL + "?fileName=" + fileItem.getName();
+                    String relativePath = UPLOAD_SERVLET_URL + "?download=" + fileItem.getName();
 
                     out.write("File " + fileItem.getName() + " uploaded successfully.");
                     out.write("<br/>");
