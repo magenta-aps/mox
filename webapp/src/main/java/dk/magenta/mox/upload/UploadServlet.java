@@ -110,7 +110,7 @@ public class UploadServlet extends HttpServlet {
         out.append("<html>\n" +
                 "<head></head>\n" +
                 "<body>\n" +
-                "<form action=\"UploadServlet\" method=\"post\" enctype=\"multipart/form-data\">\n" +
+                "<form action=\"DocumentUpload\" method=\"post\" enctype=\"multipart/form-data\">\n" +
                 "    Select File to Upload:<input type=\"file\" name=\"fileName\">\n" +
                 "    <br>\n" +
                 "    <input type=\"submit\" value=\"Upload\">\n" +
