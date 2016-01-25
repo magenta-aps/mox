@@ -31,7 +31,7 @@ public class MoxTabel extends MoxAgent {
         super(args);
 
         String listenerPrefix = "amqp.incoming";
-        String senderPrefix = "amqp.incoming";
+        String senderPrefix = "amqp.outgoing";
 
 
         HashMap<String, String> argMap = new HashMap<String, String>();
@@ -82,6 +82,10 @@ public class MoxTabel extends MoxAgent {
         this.senderDefinition.populateFromDefaults(true, senderPrefix);
 
 
+    }
+
+    protected String getDefaultPropertiesFileName() {
+        return "moxtabel.properties";
     }
 
     @Override

@@ -210,7 +210,7 @@ public class AmqpDefinition {
     //--------------------------------------------------------------------------
 
     private String formatValue(String key, String value, int printIndent, String prefix) {
-       return this.repeat(printIndent, ' ') + prefix + key + " = " + value;
+       return this.repeat(printIndent, ' ') + prefix + "." + key + " = " + value;
     }
 
     private String repeat(int count, char ch) {

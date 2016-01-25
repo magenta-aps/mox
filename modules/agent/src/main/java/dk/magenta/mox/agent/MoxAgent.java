@@ -26,7 +26,8 @@ public class MoxAgent {
 
     AmqpDefinition amqpDefinition;
 
-    File propertiesFile = new File("agent.properties");
+    private File propertiesFile;
+
 
     protected Map<String, ObjectType> objectTypes;
     ArrayList<String> commands = new ArrayList<String>();
@@ -55,6 +56,14 @@ public class MoxAgent {
         this.loadPropertiesFile();
         this.loadDefaults();
         this.loadObjectTypes();
+    }
+
+    protected String getDefaultPropertiesFileName() {
+        return "agent.properties";
+    }
+
+    private void setPropertiesFile(String propertiesFileName) {
+        this.propertiesFile = new File(propertiesFileName);
     }
 
     private void loadObjectTypes() {
@@ -130,15 +139,17 @@ public class MoxAgent {
         String propertiesFilename = argMap.get("propertiesFile");
 
         if (propertiesFilename == null) {
+            String defaultPropertiesFilename = this.getDefaultPropertiesFileName();
+            this.setPropertiesFile(defaultPropertiesFilename);
             if (propertiesFile == null) {
-                System.err.println("properties file not set");
+                System.err.println("properties file '"+defaultPropertiesFilename+"' not set");
                 return;
             } else if (!propertiesFile.canRead()) {
                 System.err.println("Cannot read from default properties file " + propertiesFile.getAbsolutePath());
                 return;
             }
         } else {
-            propertiesFile = new File(propertiesFilename);
+            this.setPropertiesFile(propertiesFilename);
             if (!propertiesFile.exists()) {
                 System.err.println("Invalid parameter: properties file " + propertiesFile.getAbsolutePath() + " does not exist");
                 return;
