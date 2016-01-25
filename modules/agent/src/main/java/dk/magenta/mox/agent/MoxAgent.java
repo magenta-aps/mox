@@ -28,7 +28,7 @@ public class MoxAgent {
 
     File propertiesFile = new File("agent.properties");
 
-    Map<String, ObjectType> objectTypes;
+    protected Map<String, ObjectType> objectTypes;
     ArrayList<String> commands = new ArrayList<String>();
 
 
