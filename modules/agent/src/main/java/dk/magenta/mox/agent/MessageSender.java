@@ -93,6 +93,7 @@ public class MessageSender extends MessageInterface {
     }
 
     public Future<String> send(Message message) throws IOException, InterruptedException {
+        logger.info("Sending message: \n"+message.getHeaders()+"\n"+message.getJSON().toString());
         return this.sendJSON(message.getHeaders(), message.getJSON());
     }
 

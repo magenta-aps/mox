@@ -33,7 +33,7 @@ public class UploadedDocumentMessage extends DocumentMessage {
     public Headers getHeaders() {
         Headers headers = super.getHeaders();
         headers.put(Message.HEADER_TYPE, Message.HEADER_TYPE_VALUE_MANUAL);
-        headers.put(Message.HEADER_OBJECTREFERENCE, this.retrievalUrl);
+        headers.put(Message.HEADER_OBJECTREFERENCE, this.retrievalUrl.toString());
         return headers;
     }
 }
