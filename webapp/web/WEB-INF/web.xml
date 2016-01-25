@@ -5,7 +5,7 @@
          version="3.1">
     <servlet>
         <servlet-name>DocumentUpload</servlet-name>
-        <servlet-class>dk.magenta.mox.DocumentUpload</servlet-class>
+        <servlet-class>dk.magenta.mox.upload.UploadServlet</servlet-class>
     </servlet>
     
     <servlet-mapping>
@@ -35,5 +35,35 @@
             <transport-guarantee>NONE</transport-guarantee>
         </user-data-constraint>
     </security-constraint>
+
+
+    <context-param>
+        <param-name>tempfile.dir</param-name>
+        <param-value>cache</param-value>
+    </context-param>
+    <context-param>
+        <param-name>amqp.interface</param-name>
+        <param-value>localhost:5672</param-value>
+    </context-param>
+    <context-param>
+        <param-name>amqp.queue</param-name>
+        <param-value>uploaded</param-value>
+    </context-param>
+    <context-param>
+        <param-name>amqp.username</param-name>
+        <param-value>guest</param-value>
+    </context-param>
+    <context-param>
+        <param-name>amqp.password</param-name>
+        <param-value>guest</param-value>
+    </context-param>
+    <context-param>
+        <param-name>security.tokenObtainerCommand</param-name>
+        <param-value>/srv/mox/auth/auth.sh -s -u admin -p admin -i localhost:5672</param-value>
+    </context-param>
+    <context-param>
+        <param-name>security.enabled</param-name>
+        <param-value>true</param-value>
+    </context-param>
 </web-app>
 

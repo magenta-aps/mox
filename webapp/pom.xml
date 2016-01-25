@@ -51,6 +51,15 @@
     </build>
 
     <dependencies>
+
+        <!-- We are a servlet -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.0.1</version>
+        </dependency>
+
+        <!-- Mox dependencies -->
         <dependency>
             <groupId>dk.magenta.mox</groupId>
             <artifactId>agent</artifactId>
@@ -89,15 +98,11 @@
             <version>2.6</version>
         </dependency>
 
-
-
-
-
-
+        <!-- Apache Fileupload -->
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>3.0.1</version>
+            <groupId>commons-fileupload</groupId>
+            <artifactId>commons-fileupload</artifactId>
+            <version>1.2.1</version>
         </dependency>
 
         <!-- Logging -->
@@ -124,30 +129,6 @@
             <version>20140107</version>
         </dependency>
 
-        <!-- For converting excel spreadsheets -->
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi</artifactId>
-            <version>3.11</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi-ooxml</artifactId>
-            <version>3.11</version>
-        </dependency>
-
-        <!-- For converting odf spreadsheets -->
-        <dependency>
-            <groupId>org.apache.odftoolkit</groupId>
-            <artifactId>odfdom-java</artifactId>
-            <version>0.8.8-incubating</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.odftoolkit</groupId>
-            <artifactId>simple-odf</artifactId>
-            <version>0.7-incubating</version>
-        </dependency>
     </dependencies>
 
     <repositories>
