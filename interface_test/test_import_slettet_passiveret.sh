@@ -14,28 +14,33 @@
 # First, create a new Sag
 
 # Test configuration
-source config.sh
+HOST_URL=https://moxtest.magenta-aps.dk
 DIR=$(dirname ${BASH_SOURCE[0]})
 
+if [ -z $AUTH_TOKEN ]
+then
+    echo "Please set authorization header in AUTH_TOKEN"
+    exit
+fi
 # Create object.
-
-result=$(curl -k -H "Content-Type: application/json" -X POST -d "$(cat $DIR/test_data/facet_opret.json)" $HOST_URL/klassifikation/facet)
+set -x
+result=$(curl -k -H "Authorization: $AUTH_TOKEN" -H "Content-Type: application/json" -X POST -d "$(cat $DIR/test_data/facet_opret.json)" $HOST_URL/klassifikation/facet)
 
 uuid=$(expr "$result" : '.*"uuid": "\([^"]*\)"')
 
 # Passivate object.
 
- curl -k -sH "Content-Type: application/json" -X PUT -d "$(cat $DIR/test_data/facet_passiv.json)" $HOST_URL/klassifikation/facet/$uuid
+ curl -k -H "Authorization: $AUTH_TOKEN" -sH "Content-Type: application/json" -X PUT -d "$(cat $DIR/test_data/facet_passiv.json)" $HOST_URL/klassifikation/facet/$uuid
 
  # Import object.
 
- curl -k -sH "Content-Type: application/json" -X PUT -d "$(cat $DIR/test_data/facet_opret.json)" $HOST_URL/klassifikation/facet/$uuid
+ curl -k -sH "Content-Type: application/json" -H "Authorization: $AUTH_TOKEN" -X PUT -d "$(cat $DIR/test_data/facet_opret.json)" $HOST_URL/klassifikation/facet/$uuid
 
  # Delete object
 
- curl -k -sH "Content-Type: application/json" -X DELETE -d "$(cat $DIR/test_data/facet_slet.json)" $HOST_URL/klassifikation/facet/$uuid
+ curl -k -sH "Content-Type: application/json" -H "Authorization: $AUTH_TOKEN" -X DELETE -d "$(cat $DIR/test_data/facet_slet.json)" $HOST_URL/klassifikation/facet/$uuid
 
 
  # Import object
  
- curl -k -sH "Content-Type: application/json" -X PUT -d "$(cat $DIR/test_data/facet_opret.json)" $HOST_URL/klassifikation/facet/$uuid
+ curl -k -sH "Content-Type: application/json" -H "Authorization: $AUTH_TOKEN" -X PUT -d "$(cat $DIR/test_data/facet_opret.json)" $HOST_URL/klassifikation/facet/$uuid
