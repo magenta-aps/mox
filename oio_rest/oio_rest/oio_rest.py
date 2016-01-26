@@ -204,16 +204,27 @@ class OIORestObject(object):
         note = input.get("note", "")
         registration = cls.gather_registration(input)
         exists = db.object_exists(cls.__name__, uuid)
+        deleted_or_passive = False
         if exists:
             livscyklus = db.get_life_cycle_code(uuid)
-            if livscyklus == 'Passiveret' or livscyklus == 'Slettet':
-                # TODO: Use symbols, not constants
-                exists = False
+            if (
+                livscyklus == db.Livscyklus.PASSIVERET.value or
+                livscyklus == db.Livscyklus.SLETTET.value
+            ):
+                deleted_or_passive = True
+
         if not exists:
             # Do import.
             db.create_or_import_object(cls.__name__, note,
                                        registration, uuid)
             return jsonify({'uuid': uuid}), 200
+        elif deleted_or_passive:
+            # Import.
+            db.update_object(cls.__name__, note, registration,
+                             uuid=uuid,
+                             life_cycle_code=db.Livscyklus.IMPORTERET.value)
+            return jsonify({'uuid': uuid}), 200
+
         else:
             "Edit or passivate."
             if input.get('livscyklus', '').lower() == 'passiv':
