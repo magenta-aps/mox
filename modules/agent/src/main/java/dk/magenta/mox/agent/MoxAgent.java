@@ -36,7 +36,6 @@ public class MoxAgent {
         return properties;
     }
 
-    protected Map<String, ObjectType> objectTypes;
     ArrayList<String> commands = new ArrayList<String>();
 
 
@@ -62,7 +61,6 @@ public class MoxAgent {
         this.loadArgs(args);
         this.loadPropertiesFile();
         this.loadDefaults();
-        this.loadObjectTypes();
     }
 
     protected String getDefaultPropertiesFileName() {
@@ -71,14 +69,6 @@ public class MoxAgent {
 
     private void setPropertiesFile(String propertiesFileName) {
         this.propertiesFile = new File(propertiesFileName);
-    }
-
-    private void loadObjectTypes() {
-        try {
-            objectTypes = ObjectType.load(propertiesFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     private void printHelp() {
@@ -219,73 +209,7 @@ public class MoxAgent {
         return new MessageSender(this.amqpDefinition);
     }
 
-
     public void run() {
-
-        try {
-
-			if (commands.size() == 0) {
-                throw new IllegalArgumentException("No commands defined");
-            }
-            String command = commands.get(0);
-
-
-            if (command.equalsIgnoreCase("listen")) {
-
-            	System.out.println("Listening for messages from RabbitMQ service at " + this.amqpDefinition.getAmqpLocation() + ", queue name '" + this.amqpDefinition.getQueueName() + "'");
-            	System.out.println("Successfully parsed messages will be forwarded to the REST interface at " + restInterface);
-            	MessageReceiver messageReceiver = this.createMessageReceiver();
-            	try {
-            	    messageReceiver.run(new RestMessageHandler(restInterface, objectTypes));
-            	} catch (InterruptedException e) {
-            	    e.printStackTrace();
-            	}
-            	messageReceiver.close();
-
-			} else if (command.equalsIgnoreCase("send")) {
-                System.out.println("Sending to "+this.amqpDefinition.getAmqpLocation()+", queue "+this.amqpDefinition.getQueueName());
-
-                String operationName = commands.get(1);
-                String objectTypeName = commands.get(2);
-                MessageSender messageSender = this.createMessageSender();
-                ObjectType objectType = objectTypes.get(objectTypeName);
-                String authorization = null;
-                Future<String> response = null;
-                try {
-                    if (operationName.equalsIgnoreCase("create")) {
-                        response = messageSender.send(objectType, "create", null, getJSONObjectFromFilename(commands.get(3)), authorization);
-                    } else if (operationName.equalsIgnoreCase("update")) {
-                        response = messageSender.send(objectType, "update", UUID.fromString(commands.get(3)), getJSONObjectFromFilename(commands.get(4)), authorization);
-                    } else if (operationName.equalsIgnoreCase("passivate")) {
-                        response = messageSender.send(objectType, "passivate", UUID.fromString(commands.get(3)), objectType.getPassivateObject(commands.get(4)), authorization);
-                    } else if (operationName.equalsIgnoreCase("delete")) {
-                        response = messageSender.send(objectType, "delete", UUID.fromString(commands.get(3)), objectType.getDeleteObject(commands.get(4)), authorization);
-                    }
-                    if (response != null) {
-                        System.out.println(response.get());
-                    }
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                } catch (OperationNotSupportedException e) {
-                    e.printStackTrace();
-                } catch (IndexOutOfBoundsException e) {
-                    throw new IllegalArgumentException("Incorrect number of arguments; the '" + command + "' command takes more arguments");
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                }
-                messageSender.close();
-            }
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.exit(0);
     }
 
     private static JSONObject getJSONObjectFromFilename(String jsonFilename) throws FileNotFoundException, JSONException {
