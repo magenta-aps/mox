@@ -1,6 +1,5 @@
 package dk.magenta.mox.moxtabel;
 
-import com.rabbitmq.client.impl.LongStringHelper;
 import dk.magenta.mox.agent.MessageHandler;
 import dk.magenta.mox.agent.MessageSender;
 import dk.magenta.mox.agent.ObjectType;

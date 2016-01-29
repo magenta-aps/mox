@@ -25,6 +25,7 @@ public class MessageSender extends MessageInterface {
 
     public MessageSender(AmqpDefinition amqpDefinition) throws IOException {
         super(amqpDefinition);
+        this.setup();
     }
 
     public MessageSender(String username, String password, String host, String queue) throws IOException, TimeoutException {
@@ -35,6 +36,10 @@ public class MessageSender extends MessageInterface {
     }
     public MessageSender(String username, String password, String host, String exchange, String queue) throws IOException, TimeoutException {
         super(username, password, host, exchange, queue);
+        this.setup();
+    }
+
+    private void setup() throws IOException {
         this.replyQueue = this.getChannel().queueDeclare().getQueue();
         this.replyConsumer = new QueueingConsumer(this.getChannel());
         this.getChannel().basicConsume(this.replyQueue, true, this.replyConsumer);
