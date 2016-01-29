@@ -1,5 +1,6 @@
 package dk.magenta.mox.moxtabel;
 
+import com.rabbitmq.client.impl.LongStringHelper;
 import dk.magenta.mox.agent.MessageHandler;
 import dk.magenta.mox.agent.MessageSender;
 import dk.magenta.mox.agent.ObjectType;
@@ -8,12 +9,12 @@ import dk.magenta.mox.agent.messages.Message;
 import dk.magenta.mox.agent.messages.UploadedDocumentMessage;
 import dk.magenta.mox.spreadsheet.ConvertedObject;
 import dk.magenta.mox.spreadsheet.SpreadsheetConverter;
+import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.naming.OperationNotSupportedException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -36,16 +37,30 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
     }
 
     public Future<String> run(Headers headers, JSONObject jsonObject) {
-        String reference = (String) headers.get(Message.HEADER_OBJECTREFERENCE);
+        System.out.println("Reading a message " + headers.toString()+" -- "+jsonObject.toString());
+        String reference = headers.get(Message.HEADER_OBJECTREFERENCE).toString();
 
         String authorization = null;
 
+        File tempFile = null;
+        InputStream data = null;
         try {
             URL url = new URL(reference);
             URLConnection connection = url.openConnection();
+            connection.connect();
             String contentType = connection.getContentType();
-            InputStream data = connection.getInputStream();
+            data = connection.getInputStream();
             String filename = jsonObject.optString(UploadedDocumentMessage.KEY_FILENAME);
+
+            tempFile = File.createTempFile(filename, "tmp");
+            FileOutputStream fileOutputStream = new FileOutputStream(tempFile);
+            IOUtils.copy(data, fileOutputStream);
+            data.close();
+            fileOutputStream.close();
+
+            data = new FileInputStream(tempFile);
+
+            System.out.println("Converting document of type "+contentType);
             SpreadsheetConverter.convert(data, contentType);
 
             Map<String, Map<String, ConvertedObject>> convertedSpreadsheets = SpreadsheetConverter.convert(data, contentType);
@@ -58,6 +73,7 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
                     ObjectType objectType = this.objectTypeMap.get(object.getSheetName());
                     String operation = object.getOperation();
                     JSONObject objectData = object.getJSON();
+                    System.out.println("found command "+operation+" "+objectType.getName()+" "+objectData.toString());
 
                     UUID uuid = null;
                     try {
@@ -106,6 +122,16 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
             e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            if (data != null) {
+                try {
+                    data.close();
+                } catch (IOException ex) {
+                }
+            }
+            if (tempFile != null) {
+                tempFile.delete();
+            }
         }
         return null;
     }
