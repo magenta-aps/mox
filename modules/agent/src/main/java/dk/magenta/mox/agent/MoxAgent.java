@@ -24,10 +24,17 @@ public class MoxAgent {
 
     String restInterface = null;
 
-    AmqpDefinition amqpDefinition;
+    private AmqpDefinition amqpDefinition;
 
     private File propertiesFile;
 
+    public AmqpDefinition getAmqpDefinition() {
+        return amqpDefinition;
+    }
+
+    public static Properties getProperties() {
+        return properties;
+    }
 
     protected Map<String, ObjectType> objectTypes;
     ArrayList<String> commands = new ArrayList<String>();
@@ -160,7 +167,7 @@ public class MoxAgent {
         }
     }
 
-    private void loadPropertiesFile() {
+    protected void loadPropertiesFile() {
         properties = new Properties();
         if (propertiesFile.canRead()) {
             try {
@@ -188,7 +195,7 @@ public class MoxAgent {
         }
     }
 
-    private void loadDefaults() {
+    protected void loadDefaults() {
 
         System.out.println("Loading defaults");
 
@@ -213,7 +220,7 @@ public class MoxAgent {
     }
 
 
-    protected void run() {
+    public void run() {
 
         try {
 
