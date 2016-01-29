@@ -57,12 +57,11 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
             data.close();
             fileOutputStream.close();
 
-            data = new FileInputStream(tempFile);
-
-            System.out.println("Converting document of type "+contentType);
-            SpreadsheetConverter.convert(data, contentType);
-
-            Map<String, Map<String, ConvertedObject>> convertedSpreadsheets = SpreadsheetConverter.convert(data, contentType);
+            Map<String, Map<String, ConvertedObject>> convertedSpreadsheets = SpreadsheetConverter.convert(tempFile, contentType);
+            try {
+                tempFile.delete();
+            } catch (SecurityException ex) {
+            }
 
             HashMap<String, Future<String>> moxResponses = new HashMap<String, Future<String>>();
             for (String sheetName : convertedSpreadsheets.keySet()) {
@@ -121,16 +120,6 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
             e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            if (data != null) {
-                try {
-                    data.close();
-                } catch (IOException ex) {
-                }
-            }
-            if (tempFile != null) {
-                tempFile.delete();
-            }
         }
         return null;
     }
