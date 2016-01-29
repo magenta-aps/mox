@@ -23,14 +23,19 @@ import java.util.concurrent.TimeoutException;
 public class Main {
     public static Properties properties;
 
-    String queueUsername = null;
-    String queuePassword = null;
-    String queueInterface = null;
-    String queueName = null;
-    String restInterface = null;
-    File propertiesFile = new File("agent.properties");
+    private AmqpDefinition amqpDefinition;
 
-    Map<String, ObjectType> objectTypes;
+    private File propertiesFile;
+
+    public AmqpDefinition getAmqpDefinition() {
+        return amqpDefinition;
+    }
+
+    public static Properties getProperties() {
+        return properties;
+    }
+
+    protected Map<String, ObjectType> objectTypes;
     ArrayList<String> commands = new ArrayList<String>();
 
 
@@ -159,7 +164,6 @@ public class Main {
     }
 
 
-
     private void loadPropertiesFile() {
         properties = new Properties();
         if (propertiesFile.canRead()) {
@@ -207,7 +211,6 @@ public class Main {
         }
     }
 
-
     private void loadDefaults() {
         System.out.println("Loading defaults");
 
@@ -230,7 +233,6 @@ public class Main {
     }
 
     private void run(String[] args) {
-
         this.loadArgs(args);
         this.loadPropertiesFile();
         this.loadDefaults();
