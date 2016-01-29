@@ -5,6 +5,7 @@ import dk.magenta.mox.agent.MessageSender;
 import dk.magenta.mox.agent.ObjectType;
 import dk.magenta.mox.agent.messages.Headers;
 import dk.magenta.mox.agent.messages.Message;
+import dk.magenta.mox.agent.messages.UploadedDocumentMessage;
 import dk.magenta.mox.spreadsheet.ConvertedObject;
 import dk.magenta.mox.spreadsheet.SpreadsheetConverter;
 import org.json.JSONArray;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -40,9 +42,10 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
 
         try {
             URL url = new URL(reference);
-            InputStream data = url.openConnection().getInputStream();
-            String filename = "noget";
-            String contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            URLConnection connection = url.openConnection();
+            String contentType = connection.getContentType();
+            InputStream data = connection.getInputStream();
+            String filename = jsonObject.optString(UploadedDocumentMessage.KEY_FILENAME);
             SpreadsheetConverter.convert(data, contentType);
 
             Map<String, Map<String, ConvertedObject>> convertedSpreadsheets = SpreadsheetConverter.convert(data, contentType);
@@ -64,6 +67,7 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
 
                     try {
                         Future<String> moxResponse = this.sender.send(objectType, operation, uuid, objectData, authorization);
+                        System.out.println(operation + " " + objectType.getName()+" "+objectData.toString());
                         moxResponses.put(filename + " : " + sheetName + " : " + objectId, moxResponse);
                     } catch (InterruptedException e) {
                         e.printStackTrace();

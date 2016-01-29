@@ -6,13 +6,8 @@ import dk.magenta.mox.agent.MessageSender;
 import dk.magenta.mox.agent.MoxAgent;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Created by lars on 25-01-16.
