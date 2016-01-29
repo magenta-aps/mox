@@ -36,7 +36,7 @@ import java.util.regex.Pattern;
 public class UploadServlet extends HttpServlet {
     private ServletFileUpload uploader = null;
 
-    public static final String UPLOAD_SERVLET_URL = "UploadServlet";
+    public static final String UPLOAD_SERVLET_URL = "DocumentUpload";
     public static final String cacheFolderNameConfigKey = "FILES_DIR";
 
     private InetAddress localAddress;
@@ -90,7 +90,7 @@ public class UploadServlet extends HttpServlet {
         if (fileName != null && !fileName.equals("")) {
             File file = new File(request.getServletContext().getAttribute(cacheFolderNameConfigKey) + File.separator + fileName);
             if (!file.exists()) {
-                throw new ServletException("File doesn't exists on server.");
+                throw new ServletException("File doesn't exist on server.");
             }
             ServletContext ctx = getServletContext();
             InputStream fis = new FileInputStream(file);
