@@ -5,4 +5,5 @@ postgresql-common
 libpq-dev
 python-dev
 
+libapache2-mod-wsgi
 

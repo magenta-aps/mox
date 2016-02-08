@@ -5,9 +5,6 @@ while getopts ":das" OPT; do
   	d)
 			DB_INSTALL=1
 			;;
-		a)
-			AGENT_INSTALL=1
-			;;
 		s)
 			SKIP_SYSTEM_DEPS=1
 			;;
@@ -89,32 +86,8 @@ else
 
 	echo "Run oio_rest/oio_api.sh to test API"
 
-
-
-
-
-	if [ ! -z $AGENT_INSTALL ]; then
-
-		echo "Installing MOX agent"
-
-		# Ubuntu 14.04 doesn't come with java 8
-                sudo add-apt-repository ppa:openjdk-r/ppa
-		sudo apt-get update
-                sudo apt-get install openjdk-8-jdk
-
-		SYSTEM_PACKAGES=$(cat "$DIR/agent/SYSTEM_DEPENDENCIES")
-		for package in "${SYSTEM_PACKAGES[@]}"; do
-			sudo apt-get -y install $package
-		done
-
-		cd $DIR/agent
-		mvn package
-		
-
-	fi
-
 fi
 
-touch /var/log/mox.log
+sudo mkdir "/var/log/mox"
 
 
