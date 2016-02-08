@@ -1,7 +1,9 @@
 package dk.magenta.mox.auth;
 
-import gnu.getopt.Getopt;
+import org.apache.commons.httpclient.ConnectTimeoutException;
 import org.apache.log4j.xml.DOMConfigurator;
+import org.apache.rahas.TrustException;
+
 import java.io.*;
 import java.net.MalformedURLException;
 import java.util.*;
@@ -19,6 +21,7 @@ public class Main {
     String password = null;
     String restInterface = null;
     String propertiesFileName = null;
+    String stsAddress = null;
 
     public static void main(String[] args) {
         DOMConfigurator.configure("log4j.xml");
@@ -38,7 +41,7 @@ public class Main {
         System.out.println("Mox auth authentication interface");
         System.out.println("---------------------------");
         System.out.println("Will interface with a WSO2 server with a username and password, to obtain a valid authtoken");
-        System.out.println("Usage: java -cp \"target/auth-1.0.jar:target/dependency/*\" dk.magenta.mox.auth.Main [-s] [-u username] [-p password] [-i interface] [-f propertiesfile]\n");
+        System.out.println("Usage: java -cp \"target/auth-1.0.jar:target/dependency/*\" dk.magenta.mox.auth.Main [-s] [-u username] [-p password] [-i interface] [-f propertiesfile] [-a stsAddress]\n");
         return;
     }
 
@@ -49,38 +52,48 @@ public class Main {
     }
 
     private void loadArgs(String[] argv) {
-        Getopt getopt = new Getopt("testprog", argv, "hu:p:i:f:s");
-
+        HashMap<String, String> argMap = new HashMap<>();
+        String currentKey = null;
         for (String a : argv) {
-            if (a.trim().equalsIgnoreCase("-s")) {
-                this.silent = true;
+            String arg = a.trim();
+            if (arg.startsWith("-")) {
+                currentKey = arg.replace("-", "");
+                argMap.put(currentKey, null);
+            } else {
+                argMap.put(currentKey, arg);
             }
         }
 
-        this.print("Reading command line arguments");
-        int c;
-        while ((c = getopt.getopt()) != -1) {
-            switch (c) {
-                case 'h':
-                    this.printHelp = true;
-                    return;
-                case 'u':
-                    this.username = getopt.getOptarg();
-                    this.print("    username = " + this.username);
-                    break;
-                case 'p':
-                    this.password = getopt.getOptarg();
-                    this.print("    password = ***");
-                    break;
-                case 'i':
-                    this.restInterface = getopt.getOptarg();
-                    this.print("    restInterface = " + this.restInterface);
-                    break;
-                case 'f':
-                    this.propertiesFileName = getopt.getOptarg();
-                    this.print("    propertiesFilename = " + this.propertiesFileName);
-                    break;
+        if (argMap.containsKey("h")) {
+            this.printHelp = true;
+            return;
+        }
+        if (argMap.containsKey("s")) {
+            this.silent = true;
+        }
+        if (argMap.containsKey("u")) {
+            this.username = argMap.get("u");
+            this.print("    username = " + this.username);
+        }
+        if (argMap.containsKey("p")) {
+            this.password = argMap.get("p");
+            if (this.password == null) {
+                this.password = new String(System.console().readPassword("Password: "));
+            } else {
+                this.print("    password = ***");
             }
+        }
+        if (argMap.containsKey("i")) {
+            this.restInterface = argMap.get("i");
+            this.print("    restInterface = " + this.restInterface);
+        }
+        if (argMap.containsKey("f")) {
+            this.propertiesFileName = argMap.get("f");
+            this.print("    propertiesFilename = " + this.propertiesFileName);
+        }
+        if (argMap.containsKey("a")) {
+            this.stsAddress = argMap.get("a");
+            this.print("    stsAddress = " + this.stsAddress);
         }
     }
 
@@ -109,7 +122,7 @@ public class Main {
                 System.err.println("Error loading from properties file " + propertiesFile.getAbsolutePath() + ": " + e.getMessage());
                 return;
             }
-            if (this.username == null || this.password == null || this.restInterface == null) {
+            if (this.username == null || this.password == null || this.restInterface == null || this.stsAddress == null) {
                 this.print("Reading properties file " + propertiesFile.getAbsolutePath());
 
                 if (this.username == null) {
@@ -124,6 +137,10 @@ public class Main {
                     this.restInterface = properties.getProperty("rest.interface");
                     this.print("    restInterface = " + this.restInterface);
                 }
+                if (this.stsAddress == null) {
+                    this.stsAddress = properties.getProperty("security.sts.address");
+                    this.print("    stsAddress = " + this.stsAddress);
+                }
             }
         }
     }
@@ -137,6 +154,10 @@ public class Main {
         }
         this.loadPropertiesFile();
 
+        properties.setProperty("security.user.name", this.username);
+        properties.setProperty("security.user.password", this.password);
+        properties.setProperty("security.sts.address", this.stsAddress);
+
         SecurityTokenObtainer securityTokenObtainer = null;
         try {
             securityTokenObtainer = new SecurityTokenObtainer(properties, this.silent);
@@ -145,8 +166,6 @@ public class Main {
         }
 
         try {
-            properties.setProperty("security.user.name", this.username);
-            properties.setProperty("security.user.password", this.password);
             String authtoken = securityTokenObtainer.getSecurityToken(this.restInterface);
             if (authtoken == null) {
                 System.exit(1);
@@ -159,7 +178,15 @@ public class Main {
         } catch (IOException e) {
             e.printStackTrace();
         } catch (SecurityTokenException e) {
-            e.printStackTrace();
+            if (e.getCause() instanceof TrustException) {
+                System.out.println("Incorrect password!");
+                System.exit(1);
+            } else if (e.getCause() instanceof ConnectTimeoutException) {
+                System.out.println("Couldn't connect to Identity Provider "+properties.getProperty("security.sts.address"));
+                System.exit(1);
+            } else {
+                e.printStackTrace();
+            }
         }
         System.exit(0);
     }

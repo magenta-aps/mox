@@ -100,6 +100,7 @@ public class RestMessageHandler implements MessageHandler {
 
                     String uuid = this.getHeaderString(headers, MessageInterface.HEADER_MESSAGEID);
                     final String authorization = this.getHeaderString(headers, MessageInterface.HEADER_AUTHORIZATION);
+                    logger.info("authorization: '"+authorization+"'\n");
                     if (operationName != null) {
                         String path = operation.path;
                         if (path.contains("[uuid]")) {
