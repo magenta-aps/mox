@@ -19,6 +19,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.URL;
@@ -39,6 +40,7 @@ public class UploadServlet extends HttpServlet {
     public static final String UPLOAD_SERVLET_URL = "DocumentUpload";
     public static final String cacheFolderNameConfigKey = "FILES_DIR";
     public static final String fileKey = "file";
+    public static final String authKey = "authentication";
 
     private InetAddress localAddress;
     private static Pattern hostnamePattern = Pattern.compile("[a-z]+://([a-z0-9\\-\\.]+)/.*", Pattern.CASE_INSENSITIVE);
@@ -116,7 +118,7 @@ public class UploadServlet extends HttpServlet {
                 "<form action=\"DocumentUpload\" method=\"post\" enctype=\"multipart/form-data\">\n" +
                 "    Select File to Upload:<input type=\"file\" name=\""+ fileKey +"\">\n" +
                 "    <br/>\n" +
-                "    Token:<textarea name=\"authentication\" name=\"authtoken\"></textarea>" +
+                "    Token:<textarea name=\""+ authKey +"\"></textarea>" +
                 "    <input type=\"submit\" value=\"Upload\">\n" +
                 "</form>\n" +
                 "</body>\n" +
@@ -128,7 +130,6 @@ public class UploadServlet extends HttpServlet {
         if (!ServletFileUpload.isMultipartContent(request)) {
             throw new ServletException("Content type is not multipart/form-data");
         }
-        String authorization = request.getParameter("authtoken");
 
         String protocol = request.getProtocol().replaceAll("/.*", "");
 
@@ -143,11 +144,20 @@ public class UploadServlet extends HttpServlet {
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();
         out.write("<html><head></head><body>");
-        out.write("auth: "+authorization);
 
         try {
             List<FileItem> fileItemsList = uploader.parseRequest(request);
             Iterator<FileItem> fileItemsIterator = fileItemsList.iterator();
+
+            String authorization = null;
+            while (fileItemsIterator.hasNext()) {
+                FileItem fileItem = fileItemsIterator.next();
+                if (authKey.equals(fileItem.getFieldName())) {
+                    authorization = new String(fileItem.get());
+                }
+            }
+            fileItemsIterator = fileItemsList.iterator();
+
             ArrayList<UploadedDocumentMessage> messages = new ArrayList<>();
             while (fileItemsIterator.hasNext()) {
                 try {
