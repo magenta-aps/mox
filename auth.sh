@@ -1,1 +1,1 @@
-/home/lars/Projekt/mox/modules/auth/auth.sh
+modules/auth/auth.sh
