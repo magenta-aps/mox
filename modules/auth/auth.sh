@@ -5,6 +5,9 @@
 
 SELF=${BASH_SOURCE[0]}
 DIR=$(dirname "$(test -L "$SELF" && readlink "$SELF" || echo "$SELF")")
+if [[ ! -d "$DIR" ]]; then
+	DIR="/srv/mox/modules/auth"
+fi
 
 if [[ -z $@ ]]; then
   args="listen"
