@@ -38,6 +38,7 @@ public class UploadServlet extends HttpServlet {
 
     public static final String UPLOAD_SERVLET_URL = "UploadServlet";
     public static final String cacheFolderNameConfigKey = "FILES_DIR";
+    public static final String fileKey = "file";
 
     private InetAddress localAddress;
     private static Pattern hostnamePattern = Pattern.compile("[a-z]+://([a-z0-9\\-\\.]+)/.*", Pattern.CASE_INSENSITIVE);
@@ -113,7 +114,7 @@ public class UploadServlet extends HttpServlet {
                 "<head></head>\n" +
                 "<body>\n" +
                 "<form action=\"DocumentUpload\" method=\"post\" enctype=\"multipart/form-data\">\n" +
-                "    Select File to Upload:<input type=\"file\" name=\"fileName\">\n" +
+                "    Select File to Upload:<input type=\"file\" name=\""+ fileKey +"\">\n" +
                 "    <br/>\n" +
                 "    Token:<textarea name=\"authentication\" name=\"authtoken\"></textarea>" +
                 "    <input type=\"submit\" value=\"Upload\">\n" +
@@ -142,6 +143,8 @@ public class UploadServlet extends HttpServlet {
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();
         out.write("<html><head></head><body>");
+        out.write("auth: "+authorization);
+
         try {
             List<FileItem> fileItemsList = uploader.parseRequest(request);
             Iterator<FileItem> fileItemsIterator = fileItemsList.iterator();
@@ -149,18 +152,20 @@ public class UploadServlet extends HttpServlet {
             while (fileItemsIterator.hasNext()) {
                 try {
                     FileItem fileItem = fileItemsIterator.next();
-                    File file = new File(request.getServletContext().getAttribute(cacheFolderNameConfigKey) + File.separator + fileItem.getName());
-                    fileItem.write(file);
+                    if (fileItem.getFieldName().equals(fileKey)) {
+                        File file = new File(request.getServletContext().getAttribute(cacheFolderNameConfigKey) + File.separator + fileItem.getName());
+                        fileItem.write(file);
 
-                    String relativePath = UPLOAD_SERVLET_URL + "?download=" + fileItem.getName();
+                        String relativePath = UPLOAD_SERVLET_URL + "?download=" + fileItem.getName();
 
-                    out.write("File " + fileItem.getName() + " uploaded successfully.");
-                    out.write("<br/>");
-                    out.write("<a href=\"" + relativePath + "\">Download " + fileItem.getName() + "</a>");
+                        out.write("File " + fileItem.getName() + " uploaded successfully.");
+                        out.write("<br/>");
+                        out.write("<a href=\"" + relativePath + "\">Download " + fileItem.getName() + "</a>");
 
-                    String path = this.getServletContext().getContextPath() + "/" + relativePath;
-                    UploadedDocumentMessage message = new UploadedDocumentMessage(fileItem.getName(), new URL(protocol, hostname, path), authorization);
-                    messages.add(message);
+                        String path = this.getServletContext().getContextPath() + "/" + relativePath;
+                        UploadedDocumentMessage message = new UploadedDocumentMessage(fileItem.getName(), new URL(protocol, hostname, path), authorization);
+                        messages.add(message);
+                    }
                 } catch (Exception e) {
                     out.write("Error when writing file to cache.");
                 }
