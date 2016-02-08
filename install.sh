@@ -88,6 +88,6 @@ else
 
 fi
 
-sudo mkdir "/var/log/mox"
+sudo mkdir -p "/var/log/mox"
 
 
