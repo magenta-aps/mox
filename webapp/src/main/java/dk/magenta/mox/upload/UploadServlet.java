@@ -114,7 +114,8 @@ public class UploadServlet extends HttpServlet {
                 "<body>\n" +
                 "<form action=\"DocumentUpload\" method=\"post\" enctype=\"multipart/form-data\">\n" +
                 "    Select File to Upload:<input type=\"file\" name=\"fileName\">\n" +
-                "    <br>\n" +
+                "    <br/>\n" +
+                "    Token:<textarea name=\"authentication\" name=\"authtoken\"></textarea>" +
                 "    <input type=\"submit\" value=\"Upload\">\n" +
                 "</form>\n" +
                 "</body>\n" +
@@ -126,7 +127,7 @@ public class UploadServlet extends HttpServlet {
         if (!ServletFileUpload.isMultipartContent(request)) {
             throw new ServletException("Content type is not multipart/form-data");
         }
-        String authorization = null;
+        String authorization = request.getParameter("authtoken");
 
         String protocol = request.getProtocol().replaceAll("/.*", "");
 
