@@ -84,7 +84,7 @@ public class MoxTabel extends MoxAgent {
     }
 
     @Override
-    protected void run() {
+    public void run() {
         try {
             MessageReceiver receiver = new MessageReceiver(this.listenerDefinition, true);
             MessageSender sender = new MessageSender(this.senderDefinition);
