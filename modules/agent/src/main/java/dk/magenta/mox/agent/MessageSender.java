@@ -78,47 +78,17 @@ public class MessageSender extends MessageInterface {
         return propertyBuilder;
     }
 
-    public Future<String> send(ObjectType objectType, String operationName, UUID uuid, JSONObject data) throws IOException, InterruptedException, OperationNotSupportedException {
-        return this.send(objectType, operationName, uuid, data, null, null);
-    }
-    public Future<String> send(ObjectType objectType, String operationName, UUID uuid, JSONObject data, String authorization) throws IOException, InterruptedException, OperationNotSupportedException {
-        return this.send(objectType, operationName, uuid, data, authorization, null);
-    }
-    public Future<String> send(ObjectType objectType, String operationName, UUID uuid, JSONObject data, String authorization, JSONObject query) throws IOException, InterruptedException, OperationNotSupportedException {
-        HashMap<String, Object> headers = new HashMap<String, Object>();
-        headers.put(MessageInterface.HEADER_OBJECTTYPE, objectType.getName());
-        objectType.testOperationSupported(operationName);
-        headers.put(MessageInterface.HEADER_OPERATION, operationName);
-        if (uuid != null) {
-            headers.put(MessageInterface.HEADER_MESSAGEID, uuid.toString());
-        }
-        if (authorization != null) {
-            headers.put(MessageInterface.HEADER_AUTHORIZATION, authorization);
-        }
-        if (query != null) {
-            headers.put(MessageInterface.HEADER_QUERY, query.toString());
-        }
-        return this.sendJSON(headers, data);
-    }
-
     public Future<String> send(Message message) throws IOException, InterruptedException {
+        return this.send(message, true);
+    }
+
+    public Future<String> send(Message message, boolean expectReply) throws IOException, InterruptedException {
         logger.info("Sending message: \n"+message.getHeaders()+"\n"+message.getJSON().toString());
-        return this.sendJSON(message.getHeaders(), message.getJSON());
-    }
-
-    public Future<String> sendJSON(Map<String, Object> headers, JSONObject jsonObject) throws IOException, InterruptedException {
-        return this.sendJSON(headers, jsonObject, true);
-    }
-
-    public Future<String> sendJSON(Map<String, Object> headers, JSONObject jsonObject, boolean expectReply) throws IOException, InterruptedException {
-        if (headers == null) {
-            headers = new HashMap<String, Object>();
-        }
 
         String correlationId = UUID.randomUUID().toString();
-        AMQP.BasicProperties properties = this.getStandardPropertyBuilder().headers(headers).contentType("application/json").correlationId(correlationId).build();
+        AMQP.BasicProperties properties = this.getStandardPropertyBuilder().headers(message.getHeaders()).contentType("application/json").correlationId(correlationId).build();
 
-        this.getChannel().basicPublish(this.getExchange(), this.getQueueName(), properties, jsonObject==null ? null : jsonObject.toString().getBytes());
+        this.getChannel().basicPublish(this.getExchange(), this.getQueueName(), properties, message.getJSON().toString().getBytes());
 
         if (expectReply) {
             SettableFuture<String> expector = new SettableFuture<String>(); // Set up a Future<> to wait for a reply
@@ -160,32 +130,4 @@ public class MessageSender extends MessageInterface {
         }
     }
 
-    public void sendFromGenerator(final MessageGenerator<JSONObject> generator) {
-        new Thread(new Runnable() {
-            public void run() {
-                while (generator.isRunning()) {
-                    List<JSONObject> notifications = generator.getNotifications(); // Must block until there is something
-                    if (notifications == null || notifications.isEmpty()) {
-                        try { // If the generator messes up, don't fast-poll and kill the cpu
-                            Thread.sleep(500);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-                        for (JSONObject notification : notifications) {
-                            try {
-                                MessageSender.this.sendJSON(null, notification);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                                MessageSender.this.logger.error(e);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                                MessageSender.this.logger.error(e);
-                            }
-                        }
-                    }
-                }
-            }
-        }).start();
-    }
 }

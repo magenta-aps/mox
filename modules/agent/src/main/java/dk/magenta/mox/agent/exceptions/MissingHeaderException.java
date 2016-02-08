@@ -1,4 +1,4 @@
-package dk.magenta.mox.agent;
+package dk.magenta.mox.agent.exceptions;
 
 /**
  * Created by lars on 06-10-15.
