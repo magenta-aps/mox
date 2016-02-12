@@ -1,7 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-
+# TODO: bail if root
+UID=`id -u`
+if [ $UID == 0 ]; then
+	echo "Do not run as root"
+	exit 1;
+fi
 
 # Ubuntu 14.04 doesn't come with java 8
 apt-cache -q=2 show oracle-java8-installer 2>&1 >/dev/null
@@ -12,13 +16,8 @@ if [[ $? > 0 ]]; then
 fi
 
 SYSTEM_PACKAGES=$(cat "$DIR/SYSTEM_DEPENDENCIES")
+
 for package in "${SYSTEM_PACKAGES[@]}"; do
 	sudo apt-get -y install $package
 done
-
-cd $DIR
-mvn package
-
-cd "../../"
-ln -sf "modules/auth/auth.sh" "auth.sh"
 

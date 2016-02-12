@@ -196,7 +196,6 @@ public class MoxAgent {
     }
 
     protected void loadDefaults() {
-
         System.out.println("Loading defaults");
 
         this.amqpDefinition.populateFromDefaults(true, "amqp");

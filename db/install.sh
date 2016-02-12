@@ -14,3 +14,6 @@ sudo pgxn install pgtap
 git clone https://github.com/duncanburke/pg_amqp.git /tmp/pg_amqp
 cd /tmp/pg_amqp && sudo make install
 rm -rf /tmp/pg_amqp
+
+# Set authentication method to 'md5' (= password, not peer)
+sed -i 's/local   all             all                                     peer/local   all             all                                     md5/g' /etc/postgresql/9.3/main/pg_hba.conf
