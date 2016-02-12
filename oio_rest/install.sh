@@ -1,8 +1,104 @@
 #!/bin/bash
 
-SERVERNAME="moxdev.magenta-aps.dk"
+while getopts ":ds" OPT; do
+  case $OPT in
+  	d)
+		DB_INSTALL=1
+		;;
+	s)
+		SKIP_SYSTEM_DEPS=1
+		;;
+	*)
+		echo "Usage: $0 [-d] [-s]"
+		echo "	-d: Install and (re-)create the DB"
+		echo "	-s: Skip installing oio_rest API system dependencies"
+		exit 1;
+		;;
+	esac
+done
 
+# Get the folder of this script
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+
+
+
+## System dependencies. These are the packages we need that are not present on a
+## fresh OS install.
+## Virtualenv is usually among these
+#
+if [ -z $SKIP_SYSTEM_DEPS ]; then
+    echo "Installing oio_rest dependencies"
+	SYSTEM_PACKAGES=$(cat "$DIR/oio_rest/SYSTEM_DEPENDENCIES")
+
+	for package in "${SYSTEM_PACKAGES[@]}"; do
+		sudo apt-get -y install $package
+	done
+fi
+
+
+
+# Create the MOX content storage directory and give the mox user ownership
+MOX_STORAGE="/var/mox"
+echo "Creating MOX content storage directory"
+sudo mkdir -p "$MOX_STORAGE"
+sudo chown mox "$MOX_STORAGE"
+
+
+
+# Setup and start virtual environment
+VIRTUALENV="$DIR/python-env"
+
+echo "Setting up virtual enviroment '$VIRTUALENV'"
+if [ -d $VIRTUALENV ]; then
+	echo "$VIRTUALENV already existed. Removing."
+	rm -rf $VIRTUALENV
+fi
+
+echo "Creating virtual enviroment '$VIRTUALENV'"
+virtualenv $VIRTUALENV
+
+if [ ! -d $VIRTUALENV ]; then
+	echo "Failed creating virtual environment!"
+	exit 1
+else
+	echo "Virtual environment created. Starting..."
+	source $VIRTUALENV/bin/activate
+
+	pushd "$DIR"
+	python setup.py develop
+	popd
+
+	echo "Stopping virtual environment"
+	deactivate
+
+fi
+
+
+
+# Install Database
+if [ ! -z $DB_INSTALL ]; then
+	source $VIRTUALENV/bin/activate
+
+	echo "Installing database dependencies"
+	SYSTEM_PACKAGES=$(cat "$DIR/db/SYSTEM_DEPENDENCIES")
+	for package in "${SYSTEM_PACKAGES[@]}"; do
+		sudo apt-get -y install $package
+	done
+
+	echo "Installing database"
+
+	cd "$DIR/db"
+	./install.sh
+	cd "$DIR/db"
+	./recreatedb.sh
+	cd "$DIR"
+	deactivate
+fi
+
+
+
+# Install WSGI service
+SERVERNAME="moxdev.magenta-aps.dk"
 
 echo "Setting up oio_rest WSGI service for Apache"
 sudo mkdir -p /var/www/wsgi
