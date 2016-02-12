@@ -8,9 +8,10 @@ for package in "${SYSTEM_PACKAGES[@]}"; do
 	sudo apt-get -y install $package
 done
 
-pushd
+pushd "$DIR"
 mvn package
 
 ln -sf "auth.sh" "../../auth.sh"
 
 popd
+
