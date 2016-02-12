@@ -79,18 +79,19 @@ fi
 # Install Database
 if [ ! -z $DB_INSTALL ]; then
 	source $VIRTUALENV/bin/activate
+	DB_FOLDER="$DIR/../db"
 
 	echo "Installing database dependencies"
-	SYSTEM_PACKAGES=$(cat "$DIR/db/SYSTEM_DEPENDENCIES")
+	SYSTEM_PACKAGES=$(cat "$DB_FOLDER/SYSTEM_DEPENDENCIES")
 	for package in "${SYSTEM_PACKAGES[@]}"; do
 		sudo apt-get -y install $package
 	done
 
 	echo "Installing database"
 
-	cd "$DIR/db"
+	cd "$DB_FOLDER"
 	./install.sh
-	cd "$DIR/db"
+	cd "$DB_FOLDER"
 	./recreatedb.sh
 	cd "$DIR"
 	deactivate
