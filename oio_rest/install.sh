@@ -29,7 +29,7 @@ echo "DIR=$DIR"
 #
 if [ -z $SKIP_SYSTEM_DEPS ]; then
     echo "Installing oio_rest dependencies"
-	SYSTEM_PACKAGES=$(cat "$DIR/oio_rest/SYSTEM_DEPENDENCIES")
+	SYSTEM_PACKAGES=$(cat "$DIR/SYSTEM_DEPENDENCIES")
 
 	for package in "${SYSTEM_PACKAGES[@]}"; do
 		sudo apt-get -y install $package

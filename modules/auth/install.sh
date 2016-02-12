@@ -3,16 +3,14 @@
 echo "Compiling auth module"
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
-echo "DIR=$DIR"
-
 SYSTEM_PACKAGES=$(cat "$DIR/SYSTEM_DEPENDENCIES")
 for package in "${SYSTEM_PACKAGES[@]}"; do
 	sudo apt-get -y install $package
 done
 
-cd $DIR
+pushd
 mvn package
 
-cd "../../"
-ln -sf "modules/auth/auth.sh" "auth.sh"
+ln -sf "auth.sh" "../../auth.sh"
 
+popd
