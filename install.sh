@@ -24,6 +24,7 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 # Add system user if none exists
 getent passwd mox
 if [ $? -ne 0 ]; then 
+	echo "Creating system user 'mox'"
 	sudo useradd mox
 fi
 
@@ -37,6 +38,7 @@ fi
 ## Virtualenv is usually among these
 #
 if [ -z $SKIP_SYSTEM_DEPS ]; then
+    echo "Installing oio_rest dependencies"
 	SYSTEM_PACKAGES=$(cat "$DIR/oio_rest/SYSTEM_DEPENDENCIES")
 
 	for package in "${SYSTEM_PACKAGES[@]}"; do
@@ -45,10 +47,13 @@ if [ -z $SKIP_SYSTEM_DEPS ]; then
 fi
 
 # Create the MOX content storage directory and give the mox user ownership
-sudo mkdir -p /var/mox
-sudo chown mox /var/mox
+MOX_STORAGE="/var/mox"
+echo "Creating MOX content storage directory"
+sudo mkdir -p "$MOX_STORAGE"
+sudo chown mox "$MOX_STORAGE"
 
 # Setup and start virtual environment
+echo "Setting up virtual enviroment"
 VIRTUALENV=$DIR/oio_rest/python-env
 
 if [ -d $VIRTUALENV ]; then
@@ -60,7 +65,7 @@ virtualenv $VIRTUALENV
 if [ ! -d $VIRTUALENV ]; then
 	echo "Virtual environment not created!"
 else
-
+	echo "Starting virtual environment"
 	source $VIRTUALENV/bin/activate
 
 	pushd $DIR/oio_rest
@@ -89,12 +94,18 @@ else
 fi
 
 # Create log dir
+echo "Creating log dir"
 sudo mkdir -p "/var/log/mox"
 
+
+# Set up oio_rest apache service
+$DIR/oio_rest/install.sh
+
+echo "Installing java modules"
 sudo apt-get -y install maven
 
-modules/agent/install.sh
-modules/auth/install.sh
-modules/json/install.sh
-modules/spreadsheet/install.sh
+$DIR/modules/agent/install.sh
+$DIR/modules/auth/install.sh
+$DIR/modules/json/install.sh
+$DIR/modules/spreadsheet/install.sh
 

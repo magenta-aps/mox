@@ -1,9 +1,10 @@
 #!/bin/bash
 
-DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-
 SERVERNAME="moxdev.magenta-aps.dk"
 
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+
+echo "Setting up oio_rest WSGI service for Apache"
 sudo mkdir -p /var/www/wsgi
 sudo cp "$DIR/server-setup/oio_rest.wsgi" "/var/www/wsgi/"
 

@@ -1,5 +1,6 @@
 #!/bin/bash
 
+echo "Compiling auth module"
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 
