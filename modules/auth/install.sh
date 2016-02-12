@@ -3,6 +3,7 @@
 echo "Compiling auth module"
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
+echo "DIR=$DIR"
 
 # Ubuntu 14.04 doesn't come with java 8
 apt-cache -q=2 show oracle-java8-installer 2>&1 >/dev/null
