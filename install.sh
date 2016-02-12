@@ -88,6 +88,13 @@ else
 
 fi
 
+# Create log dir
 sudo mkdir -p "/var/log/mox"
 
+sudo apt-get -y install maven
+
+modules/agent/install.sh
+modules/auth/install.sh
+modules/json/install.sh
+modules/spreadsheet/install.sh
 
