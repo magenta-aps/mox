@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+# TODO: bail if root
+UID=`id -u`
+if [ $UID == 0 ]; then
+	echo "Do not run as root. We'll sudo when necessary"
+	exit 1;
+fi
+
+
 while getopts ":ds" OPT; do
   case $OPT in
   	d)
@@ -44,11 +52,25 @@ sudo mkdir -p "/var/log/mox"
 
 
 
+# Ubuntu 14.04 doesn't come with java 8
+sudo apt-cache -q=2 show oracle-java8-installer 2>&1 >/dev/null
+if [[ $? > 0 ]]; then
+	sudo add-apt-repository ppa:webupd8team/java
+	sudo apt-get update
+	sudo apt-get -y install oracle-java8-installer
+fi
+
 echo "Installing java modules"
 sudo apt-get -y install maven
+
 
 $DIR/modules/agent/install.sh
 $DIR/modules/auth/install.sh
 $DIR/modules/json/install.sh
 $DIR/modules/spreadsheet/install.sh
+
+
+
+#echo "Installing Tomcat webservices"
+#$DIR/webapp/install.sh
 
