@@ -2,6 +2,7 @@ package dk.magenta.mox.spreadsheet;
 
 import org.apache.log4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
@@ -30,6 +31,10 @@ public abstract class SpreadsheetConverter {
     }
 
     public SpreadsheetConversion convert(InputStream data) throws Exception {
+        return null;
+    }
+
+    public SpreadsheetConversion convert(File data) throws Exception {
         return null;
     }
 
@@ -74,6 +79,15 @@ public abstract class SpreadsheetConverter {
     }
 
     public static Map<String, Map<String, ConvertedObject>> convert(InputStream data, String contentType) throws Exception {
+        return getSpreadsheetConversion(data, contentType).getConvertedObjects();
+    }
+
+    public static SpreadsheetConversion getSpreadsheetConversion(File data, String contentType) throws Exception {
+        SpreadsheetConverter converter = getConverter(contentType);
+        return converter.convert(data);
+    }
+
+    public static Map<String, Map<String, ConvertedObject>> convert(File data, String contentType) throws Exception {
         return getSpreadsheetConversion(data, contentType).getConvertedObjects();
     }
 

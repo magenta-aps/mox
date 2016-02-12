@@ -5,6 +5,7 @@ import org.odftoolkit.simple.table.Cell;
 import org.odftoolkit.simple.table.Row;
 import org.odftoolkit.simple.table.Table;
 
+import java.io.File;
 import java.io.InputStream;
 
 /**
@@ -19,8 +20,14 @@ public class OdfConverter extends SpreadsheetConverter {
     };
 
     public SpreadsheetConversion convert(InputStream data) throws Exception {
+        return this.convert(SpreadsheetDocument.loadDocument(data));
+    }
+    public SpreadsheetConversion convert(File data) throws Exception {
+        return this.convert(SpreadsheetDocument.loadDocument(data));
+    }
+
+    private SpreadsheetConversion convert(SpreadsheetDocument document) throws Exception {
         SpreadsheetConversion spreadsheetConversion = new SpreadsheetConversion();
-        SpreadsheetDocument document = SpreadsheetDocument.loadDocument(data);
         for (int i = 0; i < document.getSheetCount(); i++) {
             Table sheet = document.getSheetByIndex(i);
             String sheetName = sheet.getTableName();
