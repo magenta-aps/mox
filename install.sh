@@ -58,6 +58,7 @@ if [[ $? > 0 ]]; then
 	sudo apt-get update
 	sudo apt-get -y install oracle-java8-installer
 fi
+export JAVA_HOME="/usr/lib/jvm/java-8-oracle/"
 
 echo "Installing java modules"
 sudo apt-get -y install maven
