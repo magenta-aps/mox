@@ -6,6 +6,7 @@ import dk.magenta.mox.agent.MessageReceiver;
 import org.apache.log4j.xml.DOMConfigurator;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
@@ -16,17 +17,14 @@ public class MoxRestFrontend extends MoxAgent {
 
     public static void main(String[] args) {
         DOMConfigurator.configure("log4j.xml");
-        MoxAgent agent = new MoxAgent(args);
+        MoxRestFrontend agent = new MoxRestFrontend(args);
         agent.run();
     }
 
     public MoxRestFrontend(String[] args) {
         super(args);
-        this.loadObjectTypes();
-    }
-
-    private void loadObjectTypes() {
-        this.objectTypes = ObjectType.load(this.getProperties());
+        this.restInterface = this.getSetting("rest.interface");
+        this.objectTypes = ObjectType.load(this.properties);
     }
 
     public void run() {
@@ -47,6 +45,5 @@ public class MoxRestFrontend extends MoxAgent {
         if (messageReceiver != null) {
             messageReceiver.close();
         }
-
     }
 }
