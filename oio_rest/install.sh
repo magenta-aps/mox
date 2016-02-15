@@ -108,7 +108,10 @@ sudo cp "$DIR/server-setup/oio_rest.wsgi" "/var/www/wsgi/"
 
 sudo cp "$DIR/server-setup/oio_rest.conf" "/etc/apache2/sites-available/"
 sudo a2ensite oio_rest
+sudo a2enmod ssl
 
 REPLACENAME="moxtest.magenta-aps.dk"
 sed -i "s/$REPLACENAME/$SERVERNAME/" "$DIR/oio_rest/settings.py"
+
+sudo mkdir -p /var/log/mox/oio_rest
 
