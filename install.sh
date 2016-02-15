@@ -73,3 +73,8 @@ $DIR/modules/spreadsheet/install.sh
 #echo "Installing Tomcat webservices"
 #$DIR/webapp/install.sh
 
+
+
+$DIR/agents/MoxTabel/install.sh
+$DIR/agents/MoxRestFrontend/install.sh
+
