@@ -21,6 +21,3 @@ sudo cp "$DIR/server-setup/tomcat.conf" "/etc/apache2/sites-available/"
 sed -i "s/$REPLACENAME/$SERVERNAME/" "/etc/apache2/sites-available/tomcat.conf"
 sudo a2ensite tomcat
 
-
-sudo mkdir -p /var/log/mox/oio_rest
-
