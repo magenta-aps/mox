@@ -21,3 +21,8 @@ sudo cp "$DIR/server-setup/tomcat.conf" "/etc/apache2/sites-available/"
 sed -i "s/$REPLACENAME/$SERVERNAME/" "/etc/apache2/sites-available/tomcat.conf"
 sudo a2ensite tomcat
 
+
+WORKERS_CONFIG="/etc/libapache2-mod-jk/workers.properties"
+sudo sed -i -r "s/workers.tomcat_home=.*/workers.tomcat_home=\/usr\/share\/tomcat7/" $WORKERS_CONFIG
+sudo apache2 reload
+

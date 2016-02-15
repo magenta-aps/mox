@@ -70,6 +70,6 @@ $DIR/modules/spreadsheet/install.sh
 
 
 
-#echo "Installing Tomcat webservices"
-#$DIR/webapp/install.sh
+echo "Installing Tomcat webservices"
+$DIR/webapp/install.sh
 
