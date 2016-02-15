@@ -2,6 +2,7 @@
 
 echo "Compiling auth module"
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+ROOTDIR="/srv/mox"
 
 SYSTEM_PACKAGES=$(cat "$DIR/SYSTEM_DEPENDENCIES")
 for package in "${SYSTEM_PACKAGES[@]}"; do
@@ -10,8 +11,7 @@ done
 
 pushd "$DIR"
 mvn package
-
-ln -sf "auth.sh" "../../auth.sh"
-
 popd
+
+ln -sf "$DIR/auth.sh" "$ROOTDIR/auth.sh"
 
