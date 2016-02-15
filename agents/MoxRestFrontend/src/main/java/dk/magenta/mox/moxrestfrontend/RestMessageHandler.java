@@ -2,6 +2,9 @@ package dk.magenta.mox.moxrestfrontend;
 
 import com.rabbitmq.client.LongString;
 import dk.magenta.mox.agent.*;
+import dk.magenta.mox.agent.exceptions.InvalidObjectTypeException;
+import dk.magenta.mox.agent.exceptions.InvalidOperationException;
+import dk.magenta.mox.agent.exceptions.MissingHeaderException;
 import dk.magenta.mox.agent.messages.Headers;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
@@ -26,7 +29,7 @@ public class RestMessageHandler implements MessageHandler {
     private URL url;
     private Map<String, ObjectType> objectTypes;
     private final ExecutorService pool = Executors.newFixedThreadPool(10);
-    protected Logger logger = Logger.getLogger(dk.magenta.mox.agent.RestMessageHandler.class);
+    protected Logger logger = Logger.getLogger(RestMessageHandler.class);
 
     public RestMessageHandler(String host, Map<String, ObjectType> objectTypes) throws MalformedURLException {
         this(new URL(host), objectTypes);
