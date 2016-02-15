@@ -1,11 +1,17 @@
-* Version 0.2.11, November 10, 2015
+* Version 0.2.11.1, February 15, 2015
+
+Hotfix:
+
+* Mox Advis should not crash if receiving one UUID as string.
+
+
+* Version 0.2.11, December 10, 2015
 
 New in this version:
 
 * Mox agent Mox Advis.
 * Display JSON for class structures at e.g. /sag/classes
 * Bug in Update Klassifikation due to wrong formatting of empty array.
-
 
 
 * Version 0.2.10, November 3, 2015
