@@ -7,7 +7,7 @@ AMQP_SERVER = 'localhost'
 
 MOX_ADVIS_QUEUE = 'Advis'
 
-OIOREST_SERVER = "https://moxtest.magenta-aps.dk"
+OIOREST_SERVER = "https://referencedata.dk"
 
 # Public key of SAML IDP
 SAML_IDP_CERTIFICATE = os.path.join(DIR, 'test_auth_data/idp-certificate.pem')
