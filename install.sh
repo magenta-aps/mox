@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 # TODO: bail if root
-UID=`id -u`
-if [ $UID == 0 ]; then
+if [ `id -u` == 0 ]; then
 	echo "Do not run as root. We'll sudo when necessary"
 	exit 1;
 fi
