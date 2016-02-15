@@ -8,7 +8,7 @@ for package in "${SYSTEM_PACKAGES[@]}"; do
 	sudo apt-get -y install $package
 done
 
-
+JAVA_HOME="/usr/lib/jvm/java-8-oracle"
 
 
 # Install Tomcat apache connector
