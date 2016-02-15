@@ -1,17 +1,16 @@
 package dk.magenta.mox.moxrestfrontend;
 
+import com.rabbitmq.client.LongString;
 import dk.magenta.mox.agent.*;
-import dk.magenta.mox.agent.exceptions.InvalidObjectTypeException;
-import dk.magenta.mox.agent.exceptions.InvalidOperationException;
 import dk.magenta.mox.agent.messages.Headers;
-import dk.magenta.mox.agent.messages.Message;
-import dk.magenta.mox.agent.rest.RestClient;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,29 +22,57 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public class RestMessageHandler implements MessageHandler {
-    public Logger log = Logger.getLogger(RestMessageHandler.class);
-    private RestClient restClient;
+
+    private URL url;
     private Map<String, ObjectType> objectTypes;
     private final ExecutorService pool = Executors.newFixedThreadPool(10);
+    protected Logger logger = Logger.getLogger(dk.magenta.mox.agent.RestMessageHandler.class);
 
     public RestMessageHandler(String host, Map<String, ObjectType> objectTypes) throws MalformedURLException {
         this(new URL(host), objectTypes);
     }
 
-    public RestMessageHandler(URL host, Map<String, ObjectType> objectTypes) throws MalformedURLException {
-        this.restClient = new RestClient(new URL(host.getProtocol(),
-                host.getHost(),
-                host.getPort(), "/"));
+    public RestMessageHandler(String protocol, String host, int port, Map<String, ObjectType> objectTypes) throws MalformedURLException {
+        this(new URL(protocol, host, port, ""), objectTypes);
+    }
+
+    public RestMessageHandler(URL host, Map<String, ObjectType> objectTypes) {
+        try {
+            this.url = new URL(host.getProtocol(), host.getHost(), host.getPort(), "/");
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
         this.objectTypes = objectTypes;
     }
 
-    public Future<String> run(Headers headers, JSONObject jsonObject) {
-        this.log.info("Parsing message");
+    private static String getHeaderString(Map<String, Object> headers, String key) {
         try {
-            String objectTypeName = headers.getString(Message.HEADER_OBJECTTYPE).toLowerCase();
-            this.log.info("objectTypeName: " + objectTypeName);
-            String operationName = headers.getString(Message.HEADER_OPERATION).toLowerCase();
-            this.log.info("operationName: " + operationName);
+            return RestMessageHandler.getHeaderString(headers, key, false);
+        } catch (MissingHeaderException e) {
+            e.printStackTrace(); // This really can't happen
+            return null;
+        }
+    }
+
+    private static String getHeaderString(Map<String, Object> headers, String key, boolean required) throws MissingHeaderException {
+        Object value = headers.get(key);
+        if (value == null) {
+            if (required) {
+                throw new MissingHeaderException(key);
+            } else {
+                return null;
+            }
+        } else {
+            return ((LongString) value).toString().trim();
+        }
+    }
+
+    public Future<String> run(Headers headers, JSONObject jsonObject) {
+        try {
+            String objectTypeName = this.getHeaderString(headers, MessageInterface.HEADER_OBJECTTYPE, true).toLowerCase();
+            this.logger.info("objectTypeName: " + objectTypeName);
+            String operationName = this.getHeaderString(headers, MessageInterface.HEADER_OPERATION, true).toLowerCase();
+            this.logger.info("operationName: " + operationName);
 
             ObjectType objectType = this.objectTypes.get(objectTypeName);
             if (objectType == null) {
@@ -56,10 +83,10 @@ public class RestMessageHandler implements MessageHandler {
                     throw new InvalidOperationException(operationName);
                 } else {
 
-                    String query = headers.optString(Message.HEADER_QUERY);
+                    String query = this.getHeaderString(headers, MessageInterface.HEADER_QUERY);
                     HashMap<String, ArrayList<String>> queryMap = null;
                     if (query != null) {
-                        this.log.info("query: " + query);
+                        this.logger.info("query: " + query);
                         JSONObject queryObject = new JSONObject(query);
                         queryMap = new HashMap<>();
                         for (String key : queryObject.keySet()) {
@@ -76,13 +103,13 @@ public class RestMessageHandler implements MessageHandler {
                         }
                     }
 
-                    final String authorization = headers.optString(Message.HEADER_AUTHORIZATION);
+                    String uuid = this.getHeaderString(headers, MessageInterface.HEADER_MESSAGEID);
+                    final String authorization = this.getHeaderString(headers, MessageInterface.HEADER_AUTHORIZATION);
                     if (operationName != null) {
                         String path = operation.path;
                         if (path.contains("[uuid]")) {
-                            String uuid = headers.optString(Message.HEADER_OBJECTID);
                             if (uuid == null) {
-                                throw new IllegalArgumentException("Operation '" + operationName + "' requires a UUID to be set in the AMQP header '" + Message.HEADER_OBJECTID + "'");
+                                throw new IllegalArgumentException("Operation '" + operationName + "' requires a UUID to be set in the AMQP header '" + MessageInterface.HEADER_MESSAGEID + "'");
                             }
                             path = path.replace("[uuid]", uuid);
                         }
@@ -90,7 +117,7 @@ public class RestMessageHandler implements MessageHandler {
 
                         try {
                             if (queryMap == null) {
-                                url = restClient.getURLforPath(path);
+                                url = this.getURLforPath(path);
                             } else {
                                 StringJoiner parameters = new StringJoiner("&");
                                 for (String key : queryMap.keySet()) {
@@ -99,26 +126,20 @@ public class RestMessageHandler implements MessageHandler {
                                         parameters.add(key + "=" + item);
                                     }
                                 }
-                                url = new URI(this.restClient.url.getProtocol(), null, this.restClient.url.getHost(), this.restClient.url.getPort(), path, parameters.toString(), null).toURL();
+                                url = new URI(this.url.getProtocol(), null, this.url.getHost(), this.url.getPort(), path, parameters.toString(), null).toURL();
                             }
                         } catch (MalformedURLException e) {
                             return Util.futureError(e);
                         } catch (URISyntaxException e) {
                             return Util.futureError(e);
                         }
-                        this.log.info("Calling REST interface at " + url.toString());
                         final String method = operation.method.toString();
                         final URL finalUrl = url;
                         final char[] data = jsonObject.toString().toCharArray();
                         return this.pool.submit(new Callable<String>() {
-                            public String call() {
-                                String response = null;
-                                try {
-                                    response = restClient.rest(method, finalUrl, data, authorization);
-                                } catch (IOException e) {
-                                    response = Util.error(e);
-                                }
-                                RestMessageHandler.this.log.info("Response: " + response);
+                            public String call() throws IOException {
+                                String response = rest(method, finalUrl, data, authorization);
+                                RestMessageHandler.this.logger.info("response: " + response);
                                 return response;
                             }
                         });
@@ -127,8 +148,49 @@ public class RestMessageHandler implements MessageHandler {
             }
             return null;
         } catch (Exception e) {
-            this.log.error(e);
+            this.logger.error(e);
             return Util.futureError(e);
+        }
+    }
+
+    private URL getURLforPath(String path) throws MalformedURLException {
+        return new URL(this.url.getProtocol(), this.url.getHost(), this.url.getPort(), path);
+    }
+
+    private String rest(String method, String path, char[] payload) throws IOException {
+        return this.rest(method, path, payload, null);
+    }
+
+    private String rest(String method, String path, char[] payload, String authorization) throws IOException {
+        return this.rest(method, this.getURLforPath(path), payload, authorization);
+    }
+    private String rest(String method, URL url, char[] payload, String authorization) throws IOException {
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod(method);
+        connection.setConnectTimeout(30000);
+
+        connection.setDoOutput(true);
+        connection.setRequestProperty("Content-type", "application/json");
+        if (authorization != null && !authorization.isEmpty()) {
+            connection.setRequestProperty("Authorization", authorization);
+        }
+        this.logger.info("Sending message to REST interface: " + method + " " + url.toString());
+        System.out.println("Sending message to REST interface: " + method + " " + url.toString() + " " + new String(payload));
+        try {
+            if (!("GET".equalsIgnoreCase(method))) {
+                OutputStreamWriter out = new OutputStreamWriter(connection.getOutputStream());
+                out.write(payload);
+                out.close();
+            }
+            String response = IOUtils.toString(connection.getInputStream());
+            this.logger.info("got response");
+            return response;
+        } catch (ConnectException e) {
+            this.logger.warn("The defined REST interface ("+method+" "+connection.getURL().getHost() + ":" + connection.getURL().getPort() + connection.getURL().getPath()+") does not answer.");
+            throw e;
+        } catch (IOException e) {
+            this.logger.warn("IOException on request to "+method+" "+url.toString()+": "+e.getMessage());
+            throw e;
         }
     }
 }
