@@ -1,15 +1,13 @@
 package dk.magenta.mox.agent.messages;
 
-import org.json.JSONObject;
+import dk.magenta.mox.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 /**
  * Created by lars on 25-01-16.
  */
-public class Message {
+public abstract class Message {
 
     public static final String HEADER_AUTHORIZATION = "autorisation";
     public static final String HEADER_MESSAGEID = "beskedID";
@@ -19,6 +17,8 @@ public class Message {
 
     public static final String HEADER_TYPE = "type";
     public static final String HEADER_TYPE_VALUE_MANUAL = "Manuel";
+
+    public static final String HEADER_OBJECTTYPE_VALUE_DOCUMENT = "dokument";
 
     public static final long version = 1L;
 

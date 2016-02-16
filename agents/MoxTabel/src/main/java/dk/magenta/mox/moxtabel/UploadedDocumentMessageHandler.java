@@ -3,9 +3,7 @@ package dk.magenta.mox.moxtabel;
 import dk.magenta.mox.agent.MessageHandler;
 import dk.magenta.mox.agent.MessageSender;
 import dk.magenta.mox.agent.ObjectType;
-import dk.magenta.mox.agent.messages.Headers;
-import dk.magenta.mox.agent.messages.Message;
-import dk.magenta.mox.agent.messages.UploadedDocumentMessage;
+import dk.magenta.mox.agent.messages.*;
 import dk.magenta.mox.spreadsheet.ConvertedObject;
 import dk.magenta.mox.spreadsheet.SpreadsheetConverter;
 import org.apache.commons.io.IOUtils;
@@ -68,25 +66,45 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
                 for (String objectId : convertedSpreadsheets.get(sheetName).keySet()) {
                     ConvertedObject object = convertedSpreadsheets.get(sheetName).get(objectId);
 
-                    ObjectType objectType = this.objectTypeMap.get(object.getSheetName());
+                    //ObjectType objectType = this.objectTypeMap.get(object.getSheetName());
+                    String objectTypeName = object.getSheetName();
                     String operation = object.getOperation();
                     JSONObject objectData = object.getJSON();
-                    System.out.println("found command "+operation+" "+objectType.getName()+" "+objectData.toString());
-
                     UUID uuid = null;
                     try {
                         uuid = UUID.fromString(object.getId());
                     } catch (IllegalArgumentException e) {
                     }
 
-                    try {
-                        Future<String> moxResponse = this.sender.send(objectType, operation, uuid, objectData, authorization);
-                        System.out.println(operation + " " + objectType.getName()+" "+objectData.toString());
-                        moxResponses.put(filename + " : " + sheetName + " : " + objectId, moxResponse);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    } catch (OperationNotSupportedException e) {
-                        e.printStackTrace();
+                    DocumentMessage documentMessage = DocumentMessage.parse(headers, objectData);
+                    switch (operation.trim().toLowerCase()) {
+                        case DocumentMessage.OPERATION_READ:
+                            documentMessage = new ReadDocumentMessage(authorization, objectTypeName, uuid);
+                            break;
+                        case DocumentMessage.OPERATION_LIST:
+                            documentMessage = new ListDocumentMessage(authorization, objectTypeName, uuid);
+                            break;
+                        case DocumentMessage.OPERATION_CREATE:
+                            documentMessage = new CreateDocumentMessage(authorization, objectTypeName, objectData);
+                            break;
+                        case DocumentMessage.OPERATION_UPDATE:
+                            documentMessage = new UpdateDocumentMessage(authorization, objectTypeName, uuid, objectData);
+                            break;
+                        case DocumentMessage.OPERATION_PASSIVATE:
+                            documentMessage = new PassivateDocumentMessage(authorization, objectTypeName, uuid);
+                            break;
+                        case DocumentMessage.OPERATION_DELETE:
+                            documentMessage = new DeleteDocumentMessage(authorization, objectTypeName, uuid);
+                            break;
+                    }
+                    if (documentMessage != null) {
+                        try {
+                            Future<String> moxResponse = this.sender.send(documentMessage, true);
+                            //Future<String> moxResponse = this.sender.send(objectType, operation, uuid, objectData, authorization);
+                            moxResponses.put(filename + " : " + sheetName + " : " + objectId, moxResponse);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }

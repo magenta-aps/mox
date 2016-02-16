@@ -28,55 +28,15 @@ public class MoxTabel extends MoxAgent {
         String listenerPrefix = "amqp.incoming";
         String senderPrefix = "amqp.outgoing";
 
-
-        HashMap<String, String> argMap = new HashMap<String, String>();
-        for (String arg : args) {
-            arg = arg.trim();
-            if (arg.startsWith("-")) {
-                arg = arg.substring(2);
-                String[] keyVal = arg.split("=", 2);
-                if (keyVal.length != 2) {
-                    throw new IllegalArgumentException("Parameter " +
-                            arg + " must be of the format -Dparam=value");
-                }
-                argMap.put(keyVal[0], keyVal[1]);
-            }
-        }
-
-
-        File propertiesFile = new File("moxtabel.properties");
-        String propertiesFilename = argMap.get("propertiesFile");
-
-        if (propertiesFilename == null) {
-            if (propertiesFile == null) {
-                System.err.println("properties file not set");
-                return;
-            } else if (!propertiesFile.canRead()) {
-                System.err.println("Cannot read from default properties file " + propertiesFile.getAbsolutePath());
-                return;
-            }
-        } else {
-            propertiesFile = new File(propertiesFilename);
-            if (!propertiesFile.exists()) {
-                System.err.println("Invalid parameter: properties file " + propertiesFile.getAbsolutePath() + " does not exist");
-                return;
-            } else if (!propertiesFile.canRead()) {
-                System.err.println("Invalid parameter: properties file " + propertiesFile.getAbsolutePath() + " exist, but is unreadable by this user");
-                return;
-            }
-        }
-
         this.listenerDefinition = new AmqpDefinition();
-        this.listenerDefinition.populateFromMap(argMap, listenerPrefix, true, true);
-        this.listenerDefinition.populateFromProperties(properties, listenerPrefix, false);
+        this.listenerDefinition.populateFromMap(this.commandLineArgs, listenerPrefix, true, true);
+        this.listenerDefinition.populateFromProperties(this.properties, listenerPrefix, false);
         this.listenerDefinition.populateFromDefaults(true, listenerPrefix);
 
         this.senderDefinition = new AmqpDefinition();
-        this.senderDefinition.populateFromMap(argMap, senderPrefix, true, true);
-        this.senderDefinition.populateFromProperties(properties, senderPrefix, false);
+        this.senderDefinition.populateFromMap(this.commandLineArgs, senderPrefix, true, true);
+        this.senderDefinition.populateFromProperties(this.properties, senderPrefix, false);
         this.senderDefinition.populateFromDefaults(true, senderPrefix);
-
-
     }
 
     protected String getDefaultPropertiesFileName() {

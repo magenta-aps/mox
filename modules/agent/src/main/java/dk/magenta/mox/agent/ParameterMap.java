@@ -39,6 +39,17 @@ public class ParameterMap<K,V> extends HashMap<K,ArrayList<V>> {
         return jsonObject;
     }
 
+    public void populateFromJSON(JSONObject jsonObject) {
+        for (String key : jsonObject.keySet()) {
+            JSONArray values = jsonObject.optJSONArray(key);
+            if (values != null) {
+                for (int i=0; i<values.length(); i++) {
+                    this.add((K) key, (V) values.get(i));
+                }
+            }
+        }
+    }
+
     public V getAtIndex(K key, int index) {
         if (this.containsKey(key)) {
             List<V> values = this.get(key);

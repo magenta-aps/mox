@@ -51,6 +51,12 @@
 
     <dependencies>
 
+        <dependency>
+            <groupId>dk.magenta.mox</groupId>
+            <artifactId>json</artifactId>
+            <version>1.0</version>
+        </dependency>
+
         <!-- JSON -->
         <dependency>
             <groupId>org.json</groupId>

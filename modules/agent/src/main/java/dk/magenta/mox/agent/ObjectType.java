@@ -1,8 +1,6 @@
-package dk.magenta.mox.moxrestfrontend;
+package dk.magenta.mox.agent;
 
-import dk.magenta.mox.agent.MessageInterface;
-import dk.magenta.mox.agent.MessageSender;
-import dk.magenta.mox.agent.ParameterMap;
+import dk.magenta.mox.agent.messages.*;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -50,13 +48,13 @@ public class ObjectType {
         public String basePath;
     }
 
-    private static final String COMMAND_CREATE = "create";
-    private static final String COMMAND_READ = "read";
-    private static final String COMMAND_SEARCH = "search";
-    private static final String COMMAND_LIST = "list";
-    private static final String COMMAND_UPDATE = "update";
-    private static final String COMMAND_PASSIVATE = "passivate";
-    private static final String COMMAND_DELETE = "delete";
+    public static final String COMMAND_CREATE = "create";
+    public static final String COMMAND_READ = "read";
+    public static final String COMMAND_SEARCH = "search";
+    public static final String COMMAND_LIST = "list";
+    public static final String COMMAND_UPDATE = "update";
+    public static final String COMMAND_PASSIVATE = "passivate";
+    public static final String COMMAND_DELETE = "delete";
 
     public ObjectType(String name) {
         this.name = name;
@@ -211,120 +209,44 @@ public class ObjectType {
     }
 
 
-
-
-
-    public Future<String> create(MessageSender sender, JSONObject data) throws IOException, OperationNotSupportedException {
-        return this.create(sender, data, null);
+/*
+    public CreateDocumentMessage create(String authorization, JSONObject data) {
+        return new CreateDocumentMessage(authorization, data);
     }
 
-    public Future<String> create(MessageSender sender, JSONObject data, String authorization) throws IOException, OperationNotSupportedException {
-        testOperationSupported(COMMAND_CREATE);
-        return this.sendCommand(sender, COMMAND_CREATE, null, data, authorization);
+    public ReadDocumentMessage read(String authorization, UUID uuid) {
+        return new ReadDocumentMessage(authorization, uuid);
     }
 
-    public Future<String> read(MessageSender sender, UUID uuid) throws IOException, OperationNotSupportedException {
-        return this.read(sender, uuid, null);
+    public SearchDocumentMessage search(ParameterMap<String, String> query, String authorization) {
+        return new SearchDocumentMessage(authorization, query);
     }
 
-    public Future<String> read(MessageSender sender, UUID uuid, String authorization) throws IOException, OperationNotSupportedException {
-        testOperationSupported(COMMAND_READ);
-        return this.sendCommand(sender, COMMAND_READ, uuid, null, authorization);
+    public ListDocumentMessage list(UUID uuid, String authorization) {
+        return new ListDocumentMessage(authorization, uuid);
     }
 
-    public Future<String> search(MessageSender sender, ParameterMap<String, String> query) throws IOException, OperationNotSupportedException {
-        return this.search(sender, query, null);
-    }
-    public Future<String> search(MessageSender sender, ParameterMap<String, String> query, String authorization) throws IOException, OperationNotSupportedException {
-        return this.search(sender, query.toJSON(), authorization);
-    }
-    public Future<String> search(MessageSender sender, JSONObject query) throws IOException, OperationNotSupportedException {
-        return this.search(sender, query, null);
-    }
-    public Future<String> search(MessageSender sender, JSONObject query, String authorization) throws IOException, OperationNotSupportedException {
-        testOperationSupported(COMMAND_SEARCH);
-        return this.sendCommand(sender, COMMAND_SEARCH, null, null, authorization, query);
+    public ListDocumentMessage list(List<UUID> uuids, String authorization) {
+        return new ListDocumentMessage(authorization, uuids);
     }
 
-    public Future<String> list(MessageSender sender, UUID uuid, String authorization) throws IOException, OperationNotSupportedException {
-        testOperationSupported(COMMAND_LIST);
-        JSONObject query = new JSONObject();
-        query.put("uuid", uuid.toString());
-        return this.sendCommand(sender, COMMAND_LIST, null, null, authorization, query);
+    public UpdateDocumentMessage update(UUID uuid, JSONObject data, String authorization) {
+        return new UpdateDocumentMessage(authorization, uuid, data);
     }
 
-    public Future<String> list(MessageSender sender, List<UUID> uuids, String authorization) throws IOException, OperationNotSupportedException {
-        testOperationSupported(COMMAND_LIST);
-        JSONObject query = new JSONObject();
-        JSONArray list = new JSONArray();
-        for (UUID uuid : uuids) {
-            list.put(uuid.toString());
-        }
-        query.put("uuid", list);
-        return this.sendCommand(sender, COMMAND_LIST, null, null, authorization, query);
+    public PassivateDocumentMessage passivate(UUID uuid, String note, String authorization) {
+        return new PassivateDocumentMessage(authorization, uuid, note);
     }
 
-
-    public Future<String> update(MessageSender sender, UUID uuid, JSONObject data) throws IOException, OperationNotSupportedException {
-        return this.update(sender, uuid, data, null);
+    public DeleteDocumentMessage delete(UUID uuid, String note, String authorization) throws IOException, OperationNotSupportedException {
+        return new DeleteDocumentMessage(authorization, uuid, note);
     }
-
-    public Future<String> update(MessageSender sender, UUID uuid, JSONObject data, String authorization) throws IOException, OperationNotSupportedException {
-        testOperationSupported(COMMAND_UPDATE);
-        return this.sendCommand(sender, COMMAND_UPDATE, uuid, data, authorization);
-    }
-
-
-    public Future<String> passivate(MessageSender sender, UUID uuid, String note) throws IOException, OperationNotSupportedException {
-        return this.passivate(sender, uuid, note, null);
-    }
-
-    public Future<String> passivate(MessageSender sender, UUID uuid, String note, String authorization) throws IOException, OperationNotSupportedException {
-        testOperationSupported(COMMAND_PASSIVATE);
-        return this.sendCommand(sender, COMMAND_PASSIVATE, uuid, this.getPassivateObject(note), authorization);
-    }
-    public JSONObject getPassivateObject(String note) {
-        JSONObject data = new JSONObject();
-        if (note == null) {
-            note = "";
-        }
-        try {
-            data.put("Note", note);
-            data.put("livscyklus", "Passiv");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return data;
-    }
-
-
-    public Future<String> delete(MessageSender sender, UUID uuid, String note) throws IOException, OperationNotSupportedException {
-        return this.delete(sender, uuid, note, null);
-    }
-
-    public Future<String> delete(MessageSender sender, UUID uuid, String note, String authorization) throws IOException, OperationNotSupportedException {
-        testOperationSupported(COMMAND_DELETE);
-
-        return this.sendCommand(sender, COMMAND_DELETE, uuid, this.getDeleteObject(note), authorization);
-    }
-
-    public JSONObject getDeleteObject(String note) {
-        JSONObject data = new JSONObject();
-        if (note == null) {
-            note = "";
-        }
-        try {
-            data.put("Note", note);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return data;
-    }
+*/
 
 
 
 
-
+/*
     public Future<String> sendCommand(MessageSender sender, String operationName, UUID uuid, JSONObject data) throws IOException {
         return this.sendCommand(sender, operationName, uuid, data, null, null);
     }
@@ -351,7 +273,7 @@ public class ObjectType {
             e.printStackTrace();
             return null;
         }
-    }
+    }*/
 
     private static String capitalize(String s) {
         return s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase();
