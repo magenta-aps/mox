@@ -1,6 +1,5 @@
 package dk.magenta.mox.moxrestfrontend;
 
-import dk.magenta.mox.agent.MoxAgent;
 import dk.magenta.mox.agent.AmqpDefinition;
 import dk.magenta.mox.agent.MessageReceiver;
 import dk.magenta.mox.agent.MoxAgent;
@@ -13,7 +12,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 
-public class MoxRestFrontend extends MoxObjectAgent {
+public class MoxRestFrontend extends MoxAgent {
 
     private String restInterface = null;
 
