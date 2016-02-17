@@ -1,4 +1,4 @@
-package dk.magenta.mox.agent;
+package dk.magenta.mox.moxrestfrontend;
 
 import dk.magenta.mox.agent.messages.*;
 import org.apache.log4j.Logger;
@@ -47,14 +47,6 @@ public class ObjectType {
         public String inheritFrom;
         public String basePath;
     }
-
-    public static final String COMMAND_CREATE = "create";
-    public static final String COMMAND_READ = "read";
-    public static final String COMMAND_SEARCH = "search";
-    public static final String COMMAND_LIST = "list";
-    public static final String COMMAND_UPDATE = "update";
-    public static final String COMMAND_PASSIVATE = "passivate";
-    public static final String COMMAND_DELETE = "delete";
 
     public ObjectType(String name) {
         this.name = name;
@@ -193,7 +185,15 @@ public class ObjectType {
             }
         }
 
-        String[] neededOperations = {COMMAND_CREATE, COMMAND_READ, COMMAND_SEARCH, COMMAND_LIST, COMMAND_UPDATE, COMMAND_PASSIVATE, COMMAND_DELETE};
+        String[] neededOperations = {
+                DocumentMessage.OPERATION_CREATE,
+                DocumentMessage.OPERATION_READ,
+                DocumentMessage.OPERATION_SEARCH,
+                DocumentMessage.OPERATION_LIST,
+                DocumentMessage.OPERATION_UPDATE,
+                DocumentMessage.OPERATION_PASSIVATE,
+                DocumentMessage.OPERATION_DELETE
+        };
         for (ObjectType objectType : objectTypes.values()) {
             for (String operation : neededOperations) {
                 if (!objectType.operations.containsKey(operation)) {

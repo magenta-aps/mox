@@ -48,7 +48,7 @@ public class MoxTabel extends MoxAgent {
         try {
             MessageReceiver receiver = new MessageReceiver(this.listenerDefinition, true);
             MessageSender sender = new MessageSender(this.senderDefinition);
-            receiver.run(new UploadedDocumentMessageHandler(sender, this.objectTypes));
+            receiver.run(new UploadedDocumentMessageHandler(sender));
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {

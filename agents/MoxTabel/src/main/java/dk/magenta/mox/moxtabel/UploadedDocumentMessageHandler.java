@@ -2,7 +2,6 @@ package dk.magenta.mox.moxtabel;
 
 import dk.magenta.mox.agent.MessageHandler;
 import dk.magenta.mox.agent.MessageSender;
-import dk.magenta.mox.agent.ObjectType;
 import dk.magenta.mox.agent.messages.*;
 import dk.magenta.mox.spreadsheet.ConvertedObject;
 import dk.magenta.mox.spreadsheet.SpreadsheetConverter;
@@ -10,7 +9,6 @@ import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import javax.naming.OperationNotSupportedException;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -24,13 +22,13 @@ import java.util.concurrent.*;
 public class UploadedDocumentMessageHandler implements MessageHandler {
 
     private MessageSender sender;
-    private Map<String, ObjectType> objectTypeMap;
+    //private Map<String, ObjectType> objectTypeMap;
     private final ExecutorService pool = Executors.newFixedThreadPool(10);
 
 
-    public UploadedDocumentMessageHandler(MessageSender sender, Map<String, ObjectType> objectTypeMap) {
+    public UploadedDocumentMessageHandler(MessageSender sender) {
         this.sender = sender;
-        this.objectTypeMap = objectTypeMap;
+        //this.objectTypeMap = objectTypeMap;
     }
 
     public Future<String> run(Headers headers, JSONObject jsonObject) {
