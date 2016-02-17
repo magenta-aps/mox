@@ -105,6 +105,7 @@ sudo a2ensite oio_rest
 sudo a2enmod ssl
 
 REPLACENAME="moxtest.magenta-aps.dk"
+cp "$DIR/oio_rest/settings.py.base" "$DIR/oio_rest/settings.py"
 sed -i "s/$REPLACENAME/$SERVERNAME/" "$DIR/oio_rest/settings.py"
 
 sudo mkdir -p /var/log/mox/oio_rest
