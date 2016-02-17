@@ -11,6 +11,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Logger;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -49,48 +50,75 @@ public class UploadServlet extends HttpServlet {
 
     private static boolean waitForAmqpResponses = false;
 
+    private Logger log = Logger.getLogger(UploadServlet.class);
+
     @Override
     public void init() throws ServletException {
-        ServletContext context = getServletContext();
-        File cacheFolder = new File((String) context.getAttribute(cacheFolderNameConfigKey));
-
-        if (!cacheFolder.isDirectory()) {
-            throw new ServletException("Configured cacheFolder '"+cacheFolder.getAbsolutePath()+"' is not a directory");
-        }
-        if (!cacheFolder.canWrite()) {
-            throw new ServletException("Configured cacheFolder '"+cacheFolder.getAbsolutePath()+"' is not writable");
-        }
-
-        DiskFileItemFactory fileFactory = new DiskFileItemFactory();
-        fileFactory.setRepository(cacheFolder);
-
-        this.uploader = new ServletFileUpload(fileFactory);
-
         try {
-            this.localAddress = InetAddress.getLocalHost();
-        } catch (UnknownHostException e) {
+            this.log.info("\n--------------------------------------------------------------------------------");
+            this.log.info("UploadServlet starting up");
+            ServletContext context = getServletContext();
+            File cacheFolder = new File((String) context.getAttribute(cacheFolderNameConfigKey));
+            this.log.info("Cache folder: " + cacheFolder.getAbsolutePath());
+
+            if (!cacheFolder.isDirectory()) {
+                throw new ServletException("Configured cacheFolder '" + cacheFolder.getAbsolutePath() + "' is not a directory");
+            }
+            if (!cacheFolder.canWrite()) {
+                throw new ServletException("Configured cacheFolder '" + cacheFolder.getAbsolutePath() + "' is not writable");
+            }
+
+            DiskFileItemFactory fileFactory = new DiskFileItemFactory();
+            this.log.info("DiskItemFileFactory created");
+            fileFactory.setRepository(cacheFolder);
+
+            this.uploader = new ServletFileUpload(fileFactory);
+            this.log.info("Upload handler created");
+
+            try {
+                this.localAddress = InetAddress.getLocalHost();
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            }
+
+            try {
+                this.log.info("Creating MessageSender instance");
+                this.messageSender = new MessageSender(
+                        context.getInitParameter("amqp.username"),
+                        context.getInitParameter("amqp.password"),
+                        context.getInitParameter("amqp.interface"),
+                        null,
+                        context.getInitParameter("amqp.queue")
+                );
+                this.log.info("MessageSender created, will send to " + this.messageSender.getHost() + ", queueName " + this.messageSender.getQueueName());
+            } catch (IOException e) {
+                throw new ServletException("Unable to initialize MessageSender", e);
+            } catch (TimeoutException e) {
+                throw new ServletException("Unable to initialize MessageSender", e);
+            }
+        } catch (ServletException e) {
             e.printStackTrace();
+            this.log.error("Servlet Exception", e);
+            throw e;
         }
+    }
 
-        try {
-            this.messageSender = new MessageSender(
-                    context.getInitParameter("amqp.username"),
-                    context.getInitParameter("amqp.password"),
-                    context.getInitParameter("amqp.interface"),
-                    null,
-                    context.getInitParameter("amqp.queue")
-            );
-        } catch (IOException e) {
-            throw new ServletException("Unable to initialize MessageSender", e);
-        } catch (TimeoutException e) {
-            throw new ServletException("Unable to initialize MessageSender", e);
+
+    @Override
+    public void destroy() {
+        super.destroy();
+        if (this.messageSender != null) {
+            this.messageSender.close();
         }
     }
 
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        this.log.info("----------------------------------------");
+        this.log.info("Receiving GET request");
         String fileName = request.getParameter("download");
         if (fileName != null && !fileName.equals("")) {
+            this.log.info("File '"+fileName+"' requested");
             File file = new File(request.getServletContext().getAttribute(cacheFolderNameConfigKey) + File.separator + fileName);
             if (!file.exists()) {
                 throw new ServletException("File doesn't exist on server.");
@@ -103,14 +131,18 @@ public class UploadServlet extends HttpServlet {
             response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
 
             ServletOutputStream os = response.getOutputStream();
+            this.log.info("Sending file '"+fileName+"'");
             IOUtils.copy(fis, os);
 
             os.flush();
             os.close();
             fis.close();
+            this.log.info("File '"+fileName+"' sent");
             return;
         }
 
+
+        this.log.info("Sending Upload UI");
         Writer out = response.getWriter();
         out.append("<html>\n" +
                 "<head></head>\n" +
@@ -123,10 +155,14 @@ public class UploadServlet extends HttpServlet {
                 "</form>\n" +
                 "</body>\n" +
                 "</html>");
+
+        this.log.info("Upload UI sent");
     }
 
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        this.log.info("----------------------------------------");
+        this.log.info("Receiving POST request");
         if (!ServletFileUpload.isMultipartContent(request)) {
             throw new ServletException("Content type is not multipart/form-data");
         }
@@ -165,6 +201,7 @@ public class UploadServlet extends HttpServlet {
                     if (fileItem.getFieldName().equals(fileKey)) {
                         File file = new File(request.getServletContext().getAttribute(cacheFolderNameConfigKey) + File.separator + fileItem.getName());
                         fileItem.write(file);
+                        this.log.info("Received file " + file.getAbsolutePath());
 
                         String relativePath = UPLOAD_SERVLET_URL + "?download=" + fileItem.getName();
 
@@ -183,6 +220,7 @@ public class UploadServlet extends HttpServlet {
             ArrayList<Future<String>> amqpResponses = new ArrayList<>();
             for (UploadedDocumentMessage message : messages) {
                 try {
+                    this.log.info("Sending message");
                     Future<String> amqpResponse = this.messageSender.send(message);
                     amqpResponses.add(amqpResponse);
                 } catch (InterruptedException e) {

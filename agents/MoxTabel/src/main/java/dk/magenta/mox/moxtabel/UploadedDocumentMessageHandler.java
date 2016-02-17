@@ -6,6 +6,7 @@ import dk.magenta.mox.agent.messages.*;
 import dk.magenta.mox.spreadsheet.ConvertedObject;
 import dk.magenta.mox.spreadsheet.SpreadsheetConverter;
 import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -24,6 +25,7 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
     private MessageSender sender;
     //private Map<String, ObjectType> objectTypeMap;
     private final ExecutorService pool = Executors.newFixedThreadPool(10);
+    protected Logger log = Logger.getLogger(UploadedDocumentMessageHandler.class);
 
 
     public UploadedDocumentMessageHandler(MessageSender sender) {
@@ -32,14 +34,16 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
     }
 
     public Future<String> run(Headers headers, JSONObject jsonObject) {
-        System.out.println("Reading a message " + headers.toString()+" -- "+jsonObject.toString());
+        this.log.info("Parsing message");
         String reference = headers.get(Message.HEADER_OBJECTREFERENCE).toString();
+        this.log.info("Reference: " + reference);
 
         String authorization = null;
 
         File tempFile = null;
         InputStream data = null;
         try {
+            this.log.info("Retrieving data");
             URL url = new URL(reference);
             URLConnection connection = url.openConnection();
             connection.connect();
@@ -52,6 +56,7 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
             IOUtils.copy(data, fileOutputStream);
             data.close();
             fileOutputStream.close();
+            this.log.info("Data retrieved ("+tempFile.length()+" bytes)");
 
             Map<String, Map<String, ConvertedObject>> convertedSpreadsheets = SpreadsheetConverter.convert(tempFile, contentType);
             try {
@@ -63,7 +68,8 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
             for (String sheetName : convertedSpreadsheets.keySet()) {
                 for (String objectId : convertedSpreadsheets.get(sheetName).keySet()) {
                     ConvertedObject object = convertedSpreadsheets.get(sheetName).get(objectId);
-
+                    this.log.info("----------------------------------------");
+                    this.log.info("Handling object (sheetName: "+sheetName+", objectId: "+objectId+")");
                     //ObjectType objectType = this.objectTypeMap.get(object.getSheetName());
                     String objectTypeName = object.getSheetName();
                     String operation = object.getOperation();
@@ -73,6 +79,8 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
                         uuid = UUID.fromString(object.getId());
                     } catch (IllegalArgumentException e) {
                     }
+                    this.log.info("Operation: "+operation);
+                    this.log.info("UUID: " + ((uuid == null) ? null : uuid.toString()));
 
                     DocumentMessage documentMessage = DocumentMessage.parse(headers, objectData);
                     switch (operation.trim().toLowerCase()) {
@@ -96,13 +104,17 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
                             break;
                     }
                     if (documentMessage != null) {
+                        this.log.info("Document message created. Sending...");
                         try {
                             Future<String> moxResponse = this.sender.send(documentMessage, true);
                             //Future<String> moxResponse = this.sender.send(objectType, operation, uuid, objectData, authorization);
                             moxResponses.put(filename + " : " + sheetName + " : " + objectId, moxResponse);
+                            this.log.info("Message sent, awaiting response");
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
+                    } else {
+                        this.log.info("Failed to create a document message");
                     }
                 }
             }

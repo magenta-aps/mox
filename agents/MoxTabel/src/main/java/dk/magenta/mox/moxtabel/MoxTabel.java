@@ -4,6 +4,7 @@ import dk.magenta.mox.agent.AmqpDefinition;
 import dk.magenta.mox.agent.MessageReceiver;
 import dk.magenta.mox.agent.MessageSender;
 import dk.magenta.mox.agent.MoxAgent;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,6 +17,7 @@ public class MoxTabel extends MoxAgent {
 
     private AmqpDefinition listenerDefinition;
     private AmqpDefinition senderDefinition;
+    private Logger log = Logger.getLogger(MoxTabel.class);
 
     public static void main(String[] args) {
         MoxTabel agent = new MoxTabel(args);
@@ -45,15 +47,33 @@ public class MoxTabel extends MoxAgent {
 
     @Override
     public void run() {
+        log.info("\n--------------------------------------------------------------------------------");
+        log.info("MoxTabel Starting");
+        log.info("Listening for messages from RabbitMQ service at " + this.listenerDefinition.getAmqpLocation() + ", queue name '" + this.listenerDefinition.getQueueName() + "'");
+        log.info("Successfully converted messages will be forwarded to the RabbitMQ service at " + this.senderDefinition.getAmqpLocation() + ", queue name '"+this.senderDefinition.getQueueName()+"'");
+        MessageReceiver messageReceiver = null;
+        MessageSender messageSender = null;
         try {
-            MessageReceiver receiver = new MessageReceiver(this.listenerDefinition, true);
-            MessageSender sender = new MessageSender(this.senderDefinition);
-            receiver.run(new UploadedDocumentMessageHandler(sender));
+            log.info("Creating MessageReceiver instance");
+            messageReceiver = new MessageReceiver(this.listenerDefinition, true);
+            log.info("Creating MessageSender instance");
+            messageSender = new MessageSender(this.senderDefinition);
+            log.info("Running MessageReceiver instance");
+            messageReceiver.run(new UploadedDocumentMessageHandler(messageSender));
+            log.info("MessageReceiver instance stopped on its own");
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        log.info("MoxTabel Shutting down");
+        if (messageReceiver != null) {
+            messageReceiver.close();
+        }
+        if (messageSender != null) {
+            messageSender.close();
+        }
+        log.info("--------------------------------------------------------------------------------\n");
     }
 
 }

@@ -9,9 +9,6 @@ import java.util.concurrent.*;
 
 import com.rabbitmq.client.QueueingConsumer;
 import dk.magenta.mox.agent.messages.Message;
-import org.json.*;
-
-import javax.naming.OperationNotSupportedException;
 
 
 public class MessageSender extends MessageInterface {
@@ -83,7 +80,7 @@ public class MessageSender extends MessageInterface {
     }
 
     public Future<String> send(Message message, boolean expectReply) throws IOException, InterruptedException {
-        logger.info("Sending message: \n"+message.getHeaders()+"\n"+message.getJSON().toString());
+        this.log.info("Sending message: \n"+message.getHeaders()+"\n"+message.getJSON().toString());
 
         String correlationId = UUID.randomUUID().toString();
         AMQP.BasicProperties properties = this.getStandardPropertyBuilder().headers(message.getHeaders()).contentType("application/json").correlationId(correlationId).build();
@@ -121,7 +118,7 @@ public class MessageSender extends MessageInterface {
                             }
                         } catch (InterruptedException e) {
                             e.printStackTrace();
-                            MessageSender.this.logger.error(e);
+                            MessageSender.this.log.error(e);
                         }
                     }
                     MessageSender.this.listening = false;
