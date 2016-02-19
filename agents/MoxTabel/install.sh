@@ -8,3 +8,6 @@ pushd $DIR
 mvn package
 popd
 
+sudo mkdir -p /var/log/mox
+sudo touch /var/log/mox/moxtabel.log
+

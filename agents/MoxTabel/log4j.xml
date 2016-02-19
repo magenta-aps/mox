@@ -2,8 +2,8 @@
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
 
-    <appender name="FILE" class="org.apache.log4j.FileAppender">
-    	<param name="File" value="/var/log/mox/spreadsheet.log" />
+	<appender name="FILE" class="org.apache.log4j.FileAppender">
+		<param name="File" value="/var/log/mox/moxtabel.log" />
 		<param name="immediateFlush" value="true"/>
 		<param name="threshold" value="ALL"/>
 		<param name="append" value="true"/>
@@ -12,9 +12,9 @@
 		</layout>
 	</appender>
 
-    <root>
-    	<level value="ALL" />
-        <appender-ref ref="FILE" />
-    </root>
+	<root>
+		<level value="ALL" />
+		<appender-ref ref="FILE" />
+	</root>
 
 </log4j:configuration>
