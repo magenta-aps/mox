@@ -28,6 +28,12 @@ public class MoxRestFrontend extends MoxAgent {
         super(args);
         this.restInterface = this.getSetting("rest.interface");
         this.objectTypeMap = ObjectType.load(this.properties);
+
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                MoxRestFrontend.this.shutdown();
+            }
+        });
     }
 
     public void run() {
@@ -57,5 +63,9 @@ public class MoxRestFrontend extends MoxAgent {
         log.info("--------------------------------------------------------------------------------\n");
     }
 
-
+    protected void shutdown() {
+        this.log.info("Received SIGINT");
+        this.log.info("MoxTabel shutting down");
+        log.info("--------------------------------------------------------------------------------\n");
+    }
 }

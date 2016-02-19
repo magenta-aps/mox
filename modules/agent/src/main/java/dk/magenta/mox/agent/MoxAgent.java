@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -17,7 +18,11 @@ public class MoxAgent extends MoxAgentBase {
     public AmqpDefinition getAmqpDefinition() {
         return amqpDefinition;
     }
-    
+
+    private ArrayList<MessageReceiver> messageReceivers = new ArrayList<>();
+    private ArrayList<MessageSender> messageSenders = new ArrayList<>();
+
+
     protected MoxAgent() {
         this.amqpDefinition = new AmqpDefinition();
 
@@ -54,11 +59,15 @@ public class MoxAgent extends MoxAgentBase {
     }
     
     protected MessageReceiver createMessageReceiver() throws IOException, TimeoutException {
-        return new MessageReceiver(this.amqpDefinition, true);
+        MessageReceiver receiver = new MessageReceiver(this.amqpDefinition, true);
+        this.messageReceivers.add(receiver);
+        return receiver;
     }
 
     protected MessageSender createMessageSender() throws IOException, TimeoutException {
-        return new MessageSender(this.amqpDefinition);
+        MessageSender sender = new MessageSender(this.amqpDefinition);
+        this.messageSenders.add(sender);
+        return sender;
     }
 
     public void run() {
@@ -69,6 +78,16 @@ public class MoxAgent extends MoxAgentBase {
     }
 
     protected void shutdown() {
+        this.cleanup();
+    }
 
+    protected void cleanup() {
+        for (MessageReceiver receiver : this.messageReceivers) {
+            receiver.stop();
+            receiver.close();
+        }
+        for (MessageSender sender : this.messageSenders) {
+            sender.close();
+        }
     }
 }
