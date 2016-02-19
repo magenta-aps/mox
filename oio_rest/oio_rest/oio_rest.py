@@ -102,16 +102,23 @@ class OIORestObject(object):
         return jsonify({'uuid': uuid}), 201
 
     @classmethod
+    def _get_args(cls, as_lists=False):
+        """
+        Convert arguments to lowercase, optionally getting them as lists.
+        """
+        return {to_lower_param(k): (request.args.get(k) if not as_lists else
+                                    request.args.getlist(k))
+                for k in request.args.keys()}
+
+    @classmethod
     @requires_auth
     def get_objects(cls):
         """
         LIST or SEARCH objects, depending on parameters.
         """
         # Convert arguments to lowercase, getting them as lists
-        list_args = {to_lower_param(k): request.args.getlist(k)
-                     for k in request.args.keys()}
-        args = {to_lower_param(k): request.args.get(k)
-                for k in request.args.keys()}
+        list_args = cls._get_args(True)
+        args = cls._get_args()
         virkning_fra = args.get('virkningfra', None)
         virkning_til = args.get('virkningtil', None)
         registreret_fra = args.get('registreretfra', None)
@@ -175,10 +182,23 @@ class OIORestObject(object):
         """
         READ a facet, return as JSON.
         """
+        args = cls._get_args()
+        virkning_fra = args.get('virkningfra', None)
+        virkning_til = args.get('virkningtil', None)
+        registreret_fra = args.get('registreretfra', None)
+        registreret_til = args.get('registrerettil', None)
 
-        object_list = db.list_objects(cls.__name__, [uuid], None, None,
-                                      None, None)
-        object = object_list[0]
+        if virkning_fra is None and virkning_til is None:
+            virkning_fra = datetime.datetime.now()
+            virkning_til = datetime.datetime.now()
+
+        object_list = db.list_objects(cls.__name__, [uuid], virkning_fra,
+                                      virkning_til, registreret_fra,
+                                      registreret_til)
+        try:
+            object = object_list[0]
+        except IndexError:
+            object = None
         return jsonify({uuid: object})
 
     @classmethod
@@ -203,12 +223,28 @@ class OIORestObject(object):
         # Get most common parameters if available.
         note = input.get("note", "")
         registration = cls.gather_registration(input)
+        exists = db.object_exists(cls.__name__, uuid)
+        deleted_or_passive = False
+        if exists:
+            livscyklus = db.get_life_cycle_code(uuid)
+            if (
+                livscyklus == db.Livscyklus.PASSIVERET.value or
+                livscyklus == db.Livscyklus.SLETTET.value
+            ):
+                deleted_or_passive = True
 
-        if not db.object_exists(cls.__name__, uuid):
+        if not exists:
             # Do import.
             db.create_or_import_object(cls.__name__, note,
                                        registration, uuid)
             return jsonify({'uuid': uuid}), 200
+        elif deleted_or_passive:
+            # Import.
+            db.update_object(cls.__name__, note, registration,
+                             uuid=uuid,
+                             life_cycle_code=db.Livscyklus.IMPORTERET.value)
+            return jsonify({'uuid': uuid}), 200
+
         else:
             "Edit or passivate."
             if input.get('livscyklus', '').lower() == 'passiv':

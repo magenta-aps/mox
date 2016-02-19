@@ -1,6 +1,6 @@
-from datetime import datetime
 import os
 from enum import Enum
+from datetime import datetime, timedelta
 
 import psycopg2
 
@@ -453,9 +453,9 @@ def passivate_object(class_name, note, registration, uuid):
     return output[0]
 
 
-def update_object(class_name, note, registration, uuid=None):
+def update_object(class_name, note, registration, uuid=None,
+                  life_cycle_code=Livscyklus.RETTET.value):
     """Update object with the partial data supplied."""
-    life_cycle_code = Livscyklus.RETTET.value
     user_ref = get_authenticated_user()
 
     registration = sql_convert_registration(registration, class_name)
@@ -726,3 +726,13 @@ def search_objects(class_name, uuid, registration,
 
     output = cursor.fetchone()
     return output
+
+
+def get_life_cycle_code(uuid):
+    n = datetime.now()
+    n1 = n + timedelta(seconds=1)
+    regs = list_objects('facet', [uuid], n, n1, n, n1)
+    reg = regs[0][0]
+    livscykluskode = reg['registreringer'][0]['livscykluskode']
+
+    return livscykluskode

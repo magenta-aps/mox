@@ -1,7 +1,9 @@
 package dk.magenta.mox.spreadsheet;
 
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.*;
 
+import java.io.File;
 import java.io.InputStream;
 
 /**
@@ -17,8 +19,14 @@ public class XlsxConverter extends XlsConverter {
     }
 
     public SpreadsheetConversion convert(InputStream data) throws Exception {
+        return this.convert(new XSSFWorkbook(data));
+    }
+    public SpreadsheetConversion convert(File data) throws Exception {
+        return this.convert((XSSFWorkbook) WorkbookFactory.create(data));
+    }
+
+    private SpreadsheetConversion convert(XSSFWorkbook document) throws Exception {
         SpreadsheetConversion spreadsheetConversion = new SpreadsheetConversion();
-        XSSFWorkbook document = new XSSFWorkbook(data);
         int sheetCount = document.getNumberOfSheets();
         for (int i = 0; i < sheetCount; i++) {
             XSSFSheet sheet = document.getSheetAt(i);

@@ -3,7 +3,9 @@ package dk.magenta.mox.spreadsheet;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 
+import java.io.File;
 import java.io.InputStream;
 
 /**
@@ -18,8 +20,14 @@ public class XlsConverter extends SpreadsheetConverter {
     }
 
     public SpreadsheetConversion convert(InputStream data) throws Exception {
+        return this.convert(new HSSFWorkbook(data));
+    }
+    public SpreadsheetConversion convert(File data) throws Exception {
+        return this.convert((HSSFWorkbook) WorkbookFactory.create(data));
+    }
+
+    private SpreadsheetConversion convert(HSSFWorkbook document) throws Exception {
         SpreadsheetConversion spreadsheetConversion = new SpreadsheetConversion();
-        HSSFWorkbook document = new HSSFWorkbook(data);
         for (int i = 0; i < document.getNumberOfSheets(); i++) {
             HSSFSheet sheet = document.getSheetAt(i);
             String sheetName = sheet.getSheetName();

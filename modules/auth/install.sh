@@ -1,24 +1,23 @@
 #!/bin/bash
 
+echo "Compiling auth module"
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-
-
-# Ubuntu 14.04 doesn't come with java 8
-apt-cache -q=2 show oracle-java8-installer 2>&1 >/dev/null
-if [[ $? > 0 ]]; then
-	sudo add-apt-repository ppa:webupd8team/java
-	sudo apt-get update
-	sudo apt-get -y install oracle-java8-installer
-fi
+ROOTDIR="/srv/mox"
 
 SYSTEM_PACKAGES=$(cat "$DIR/SYSTEM_DEPENDENCIES")
 for package in "${SYSTEM_PACKAGES[@]}"; do
 	sudo apt-get -y install $package
 done
 
-cd $DIR
+pushd "$DIR"
 mvn package
+popd
 
-cd "../../"
-ln -sf "modules/auth/auth.sh" "auth.sh"
+
+SERVERNAME="moxdev.magenta-aps.dk"
+REPLACENAME="moxtest.magenta-aps.dk"
+cp "$DIR/auth.properties.base" "$DIR/auth.properties"
+sed -i "s/$REPLACENAME/$SERVERNAME/" "$DIR/auth.properties"
+
+ln -sf "$DIR/auth.sh" "$ROOTDIR/auth.sh"
 

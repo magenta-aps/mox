@@ -1,23 +1,29 @@
 #!/usr/bin/env bash
 
-# TODO: bail if root
-UID=`id -u`
-if [ $UID == 0 ]; then
-	echo "Do not run as root"
-	exit 1;
-fi
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
-# Ubuntu 14.04 doesn't come with java 8
-apt-cache -q=2 show oracle-java8-installer 2>&1 >/dev/null
-if [[ $? > 0 ]]; then
-	sudo add-apt-repository ppa:webupd8team/java
-	sudo apt-get update
-	sudo apt-get -y install oracle-java8-installer
-fi
+JAVA_HOME="/usr/lib/jvm/java-8-oracle"
 
 SYSTEM_PACKAGES=$(cat "$DIR/SYSTEM_DEPENDENCIES")
 
 for package in "${SYSTEM_PACKAGES[@]}"; do
 	sudo apt-get -y install $package
 done
+
+
+
+# Install Tomcat apache connector
+SERVERNAME="moxdev.magenta-aps.dk"
+REPLACENAME="moxtest.magenta-aps.dk"
+
+echo "Setting up Tomcat connector for Apache"
+
+sudo cp "$DIR/server-setup/tomcat.conf" "/etc/apache2/sites-available/"
+sudo sed -i "s/$REPLACENAME/$SERVERNAME/" "/etc/apache2/sites-available/tomcat.conf"
+sudo a2ensite tomcat
+
+
+WORKERS_CONFIG="/etc/libapache2-mod-jk/workers.properties"
+sudo sed -i -r "s/workers.tomcat_home=.*/workers.tomcat_home=\/usr\/share\/tomcat7/" $WORKERS_CONFIG
+sudo service apache2 reload
 
