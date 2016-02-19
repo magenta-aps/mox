@@ -21,12 +21,6 @@ public class MoxAgent extends MoxAgentBase {
         return amqpDefinition;
     }
 
-    public static void main(String[] args) {
-        DOMConfigurator.configure("log4j.xml");
-        MoxAgent main = new MoxAgent(args);
-        main.run();
-    }
-
     protected MoxAgent() {
         this.amqpDefinition = new AmqpDefinition();
 

@@ -5,6 +5,7 @@ import dk.magenta.mox.agent.MessageReceiver;
 import dk.magenta.mox.agent.MessageSender;
 import dk.magenta.mox.agent.MoxAgent;
 import org.apache.log4j.Logger;
+import org.apache.log4j.xml.DOMConfigurator;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,6 +21,7 @@ public class MoxTabel extends MoxAgent {
     private Logger log = Logger.getLogger(MoxTabel.class);
 
     public static void main(String[] args) {
+        DOMConfigurator.configure("log4j.xml");
         MoxTabel agent = new MoxTabel(args);
         agent.run();
     }
