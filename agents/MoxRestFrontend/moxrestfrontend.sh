@@ -3,7 +3,7 @@
 DIR=$(dirname ${BASH_SOURCE[0]})
 
 PRECMD=""
-if [[ `whoami` ne "mox" ]]; then
+if [[ `whoami` != "mox" ]]; then
     PRECMD="sudo su mox "
 fi
 
