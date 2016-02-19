@@ -1,8 +1,5 @@
 package dk.magenta.mox.agent;
 
-
-import org.apache.log4j.xml.DOMConfigurator;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -22,7 +19,6 @@ public class MoxAgent extends MoxAgentBase {
     }
 
     public static void main(String[] args) {
-        DOMConfigurator.configure("log4j.xml");
         MoxAgent main = new MoxAgent(args);
         main.run();
     }
@@ -75,5 +71,9 @@ public class MoxAgent extends MoxAgentBase {
 
     private static JSONObject getJSONObjectFromFilename(String jsonFilename) throws FileNotFoundException, JSONException {
         return new JSONObject(new JSONTokener(new FileReader(new File(jsonFilename))));
+    }
+
+    protected void shutdown() {
+
     }
 }
