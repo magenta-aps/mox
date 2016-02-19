@@ -1,11 +1,13 @@
 #!/bin/bash
 
 DIR=$(dirname ${BASH_SOURCE[0]})
-PRECMD=""
-if [[ `whoami` != "mox" ]]; then
-    PRECMD="sudo su mox "
-fi
+COMMAND="java -cp target/MoxTabel-1.0.jar:target/dependency/* dk.magenta.mox.moxtabel.MoxTabel"
+AS_USER="mox"
 
 cd $DIR
-$PRECMD java -cp "target/MoxTabel-1.0.jar:target/dependency/*" dk.magenta.mox.moxtabel.MoxTabel
+if [[ `whoami` != "$AS_USER" ]]; then
+    sudo su $AS_USER -c "$COMMAND"
+else
+    $COMMAND
+fi
 cd - > /dev/null
