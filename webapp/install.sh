@@ -32,6 +32,6 @@ pushd $DIR
 mvn package
 popd
 if [[ -f "$DIR/target/mox.war" ]]; then
-	cp "$DIR/target/mox.war" "/var/lib/tomcat7/webapps"
+	sudo cp "$DIR/target/mox.war" "/var/lib/tomcat7/webapps"
 fi
 
