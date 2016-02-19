@@ -22,8 +22,16 @@ sudo cp "$DIR/server-setup/tomcat.conf" "/etc/apache2/sites-available/"
 sudo sed -i "s/$REPLACENAME/$SERVERNAME/" "/etc/apache2/sites-available/tomcat.conf"
 sudo a2ensite tomcat
 
-
 WORKERS_CONFIG="/etc/libapache2-mod-jk/workers.properties"
 sudo sed -i -r "s/workers.tomcat_home=.*/workers.tomcat_home=\/usr\/share\/tomcat7/" $WORKERS_CONFIG
 sudo service apache2 reload
+
+
+# Compile and install servlet
+pushd $DIR
+mvn package
+popd
+if [[ -f "$DIR/target/mox.war" ]]; then
+	cp "$DIR/target/mox.war" "/var/lib/tomcat7/webapps"
+fi
 
