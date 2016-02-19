@@ -41,6 +41,12 @@ public class MoxTabel extends MoxAgent {
         this.senderDefinition.populateFromMap(this.commandLineArgs, senderPrefix, true, true);
         this.senderDefinition.populateFromProperties(this.properties, senderPrefix, false);
         this.senderDefinition.populateFromDefaults(true, senderPrefix);
+
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                MoxTabel.this.shutdown();
+            }
+        });
     }
 
     protected String getDefaultPropertiesFileName() {
@@ -63,9 +69,7 @@ public class MoxTabel extends MoxAgent {
             log.info("Running MessageReceiver instance");
             messageReceiver.run(new UploadedDocumentMessageHandler(messageSender));
             log.info("MessageReceiver instance stopped on its own");
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
         log.info("MoxTabel Shutting down");
@@ -75,6 +79,11 @@ public class MoxTabel extends MoxAgent {
         if (messageSender != null) {
             messageSender.close();
         }
+        log.info("--------------------------------------------------------------------------------\n");
+    }
+
+    protected void shutdown() {
+        this.log.info("MoxTabel shutting down");
         log.info("--------------------------------------------------------------------------------\n");
     }
 
