@@ -10,4 +10,5 @@ popd
 
 sudo mkdir -p /var/log/mox
 sudo touch /var/log/mox/moxrestfrontend.log
+sudo chown mox /var/log/mox/moxrestfrontend.log
 
