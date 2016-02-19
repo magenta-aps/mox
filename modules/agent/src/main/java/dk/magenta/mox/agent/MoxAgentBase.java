@@ -78,7 +78,9 @@ public class MoxAgentBase {
     }
 
     protected void setPropertiesFile(String propertiesFileName) {
-        this.propertiesFile = new File(propertiesFileName);
+        if (propertiesFileName != null) {
+            this.propertiesFile = new File(propertiesFileName);
+        }
     }
 
     protected void loadProperties() throws IOException {
@@ -86,12 +88,11 @@ public class MoxAgentBase {
             this.properties = new Properties();
 
             if (this.commandLineArgs != null && this.propertiesFile == null) {
-                String propertiesFilename = this.commandLineArgs.getFirst("propertiesFile");
-                this.propertiesFile = new File(propertiesFilename);
+                this.setPropertiesFile(this.commandLineArgs.getFirst("propertiesFile"));
             }
 
             if (this.propertiesFile == null) {
-                this.propertiesFile = new File(this.getDefaultPropertiesFileName());
+                this.setPropertiesFile(this.getDefaultPropertiesFileName());
             }
 
             if (!this.propertiesFile.exists()) {
