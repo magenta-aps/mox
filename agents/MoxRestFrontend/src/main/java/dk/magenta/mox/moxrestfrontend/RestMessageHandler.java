@@ -142,8 +142,13 @@ public class RestMessageHandler implements MessageHandler {
                         final URL finalUrl = url;
                         final char[] data = jsonObject.toString().toCharArray();
                         return this.pool.submit(new Callable<String>() {
-                            public String call() throws IOException {
-                                String response = rest(method, finalUrl, data, authorization);
+                            public String call() {
+                                String response = null;
+                                try {
+                                    response = rest(method, finalUrl, data, authorization);
+                                } catch (IOException e) {
+                                    return Util.error(e);
+                                }
                                 RestMessageHandler.this.log.info("Response: " + response);
                                 return response;
                             }
