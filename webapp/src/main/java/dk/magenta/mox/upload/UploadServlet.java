@@ -44,7 +44,7 @@ public class UploadServlet extends HttpServlet {
     public static final String authKey = "authentication";
 
     private InetAddress localAddress;
-    private static Pattern hostnamePattern = Pattern.compile("[a-z]+://([a-z0-9\\-\\.]+)/.*", Pattern.CASE_INSENSITIVE);
+    private static Pattern hostnamePattern = Pattern.compile("[a-z]+://([a-z0-9\\-\\.:]+)/.*", Pattern.CASE_INSENSITIVE);
 
     private MessageSender messageSender;
 
@@ -170,9 +170,14 @@ public class UploadServlet extends HttpServlet {
         String protocol = request.getProtocol().replaceAll("/.*", "");
 
         String hostname;
+        int port = -1;
+
         Matcher m = hostnamePattern.matcher(request.getRequestURL().toString());
         if (m.find()) {
             hostname = m.group(1);
+            if (m.group(2) != null) {
+                port = Integer.parseInt(m.group(2).substring(1), 10);
+            }
         } else {
             hostname = this.localAddress.getHostName();
         }
@@ -210,7 +215,7 @@ public class UploadServlet extends HttpServlet {
                         out.write("<a href=\"" + relativePath + "\">Download " + fileItem.getName() + "</a>");
 
                         String path = this.getServletContext().getContextPath() + "/" + relativePath;
-                        UploadedDocumentMessage message = new UploadedDocumentMessage(fileItem.getName(), new URL(protocol, hostname, path), authorization);
+                        UploadedDocumentMessage message = new UploadedDocumentMessage(fileItem.getName(), new URL(protocol, hostname, port, path), authorization);
                         messages.add(message);
                     }
                 } catch (Exception e) {

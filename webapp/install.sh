@@ -10,7 +10,14 @@ for package in "${SYSTEM_PACKAGES[@]}"; do
 	sudo apt-get -y install $package
 done
 
+# Fix erroneous tomcat library path
+sudo ln -s /var/lib/tomcat7/common/ /usr/share/tomcat7/
+sudo ln -s /var/lib/tomcat7/server/ /usr/share/tomcat7/
+sudo ln -s /var/lib/tomcat7/shared/ /usr/share/tomcat7/
 
+sudo mkdir -p /var/log/mox
+sudo touch /var/log/mox/servlet.log
+sudo chown tomcat7 /var/log/mox/servlet.log
 
 # Install Tomcat apache connector
 SERVERNAME="moxdev.magenta-aps.dk"

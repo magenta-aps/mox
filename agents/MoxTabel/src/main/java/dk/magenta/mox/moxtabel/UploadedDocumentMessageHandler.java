@@ -143,10 +143,13 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
 
 
         } catch (MalformedURLException e) {
+            this.log.error("Invalid url", e);
             e.printStackTrace();
         } catch (IOException e) {
+            this.log.error("IOException", e);
             e.printStackTrace();
         } catch (Exception e) {
+            this.log.error("General Exception", e);
             e.printStackTrace();
         }
         return null;
