@@ -147,7 +147,7 @@ public class RestMessageHandler implements MessageHandler {
                                 try {
                                     response = rest(method, finalUrl, data, authorization);
                                 } catch (IOException e) {
-                                    return Util.error(e);
+                                    response = Util.error(e);
                                 }
                                 RestMessageHandler.this.log.info("Response: " + response);
                                 return response;

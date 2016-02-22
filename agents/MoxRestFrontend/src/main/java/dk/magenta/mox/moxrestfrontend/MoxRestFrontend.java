@@ -66,7 +66,7 @@ public class MoxRestFrontend extends MoxObjectAgent {
 
     protected void shutdown() {
         this.log.info("Received SIGINT");
-        this.log.info("MoxTabel shutting down");
+        this.log.info("MoxRestFrontend shutting down");
         log.info("--------------------------------------------------------------------------------\n");
     }
 }
