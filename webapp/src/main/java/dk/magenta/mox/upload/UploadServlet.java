@@ -44,7 +44,7 @@ public class UploadServlet extends HttpServlet {
     public static final String authKey = "authentication";
 
     private InetAddress localAddress;
-    private static Pattern hostnamePattern = Pattern.compile("[a-z]+://([a-z0-9\\-\\.:]+)/.*", Pattern.CASE_INSENSITIVE);
+    private static Pattern hostnamePattern = Pattern.compile("[a-z]+://([a-z0-9\\-\\.]+)(?::(\\d+))/.*", Pattern.CASE_INSENSITIVE);
 
     private MessageSender messageSender;
 
