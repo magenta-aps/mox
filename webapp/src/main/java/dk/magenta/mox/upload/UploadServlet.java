@@ -176,7 +176,7 @@ public class UploadServlet extends HttpServlet {
         if (m.find()) {
             hostname = m.group(1);
             if (m.group(2) != null) {
-                port = Integer.parseInt(m.group(2).substring(1), 10);
+                port = Integer.parseInt(m.group(2), 10);
             }
         } else {
             hostname = this.localAddress.getHostName();
