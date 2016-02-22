@@ -82,7 +82,7 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
                     this.log.info("Operation: "+operation);
                     this.log.info("UUID: " + ((uuid == null) ? null : uuid.toString()));
 
-                    DocumentMessage documentMessage = DocumentMessage.parse(headers, objectData);
+                    DocumentMessage documentMessage = null;
                     switch (operation.trim().toLowerCase()) {
                         case DocumentMessage.OPERATION_READ:
                             documentMessage = new ReadDocumentMessage(authorization, objectTypeName, uuid);
