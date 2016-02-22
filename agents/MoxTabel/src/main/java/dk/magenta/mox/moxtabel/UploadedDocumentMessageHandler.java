@@ -123,12 +123,13 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
             final HashMap<String, Future<String>> fMoxResponses = new HashMap<String, Future<String>>(moxResponses);
             return this.pool.submit(new Callable<String>() {
                 public String call() throws IOException {
-                    JSONArray collectedResponses = new JSONArray();
+                    JSONObject collectedResponses = new JSONObject();
 
                     for (String key : fMoxResponses.keySet()) {
                         Future<String> moxResponse = fMoxResponses.get(key);
                         try {
-                            collectedResponses.put(new JSONObject(moxResponse.get(30, TimeUnit.SECONDS)));
+                            collectedResponses.put(key, new JSONObject(moxResponse.get(30, TimeUnit.SECONDS)));
+                            UploadedDocumentMessageHandler.this.log.info("Response received");
                         } catch (InterruptedException e) {
                             //throw new ServletException("Interruption error when interfacing with rest interface through message queue.\nWhen uploading " + key, e);
                         } catch (ExecutionException e) {

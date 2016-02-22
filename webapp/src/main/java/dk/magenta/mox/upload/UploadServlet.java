@@ -48,7 +48,7 @@ public class UploadServlet extends HttpServlet {
 
     private MessageSender messageSender;
 
-    private static boolean waitForAmqpResponses = false;
+    private static boolean waitForAmqpResponses = true;
 
     private Logger log = Logger.getLogger(UploadServlet.class);
 
@@ -236,6 +236,7 @@ public class UploadServlet extends HttpServlet {
                 for (Future<String> amqpResponse : amqpResponses) {
                     try {
                         String realResponse = amqpResponse.get(30, TimeUnit.SECONDS);
+                        out.write(realResponse);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     } catch (ExecutionException e) {
