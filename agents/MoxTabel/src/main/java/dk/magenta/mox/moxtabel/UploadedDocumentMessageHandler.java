@@ -38,7 +38,7 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
         String reference = headers.get(Message.HEADER_OBJECTREFERENCE).toString();
         this.log.info("Reference: " + reference);
 
-        String authorization = null;
+        String authorization = (String) (headers.get(Message.HEADER_AUTHORIZATION));
 
         File tempFile = null;
         InputStream data = null;
@@ -130,14 +130,11 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
                         try {
                             collectedResponses.put(key, new JSONObject(moxResponse.get(30, TimeUnit.SECONDS)));
                             UploadedDocumentMessageHandler.this.log.info("Response received");
-                        } catch (InterruptedException e) {
+                        } catch (InterruptedException | ExecutionException | TimeoutException e) {
                             //throw new ServletException("Interruption error when interfacing with rest interface through message queue.\nWhen uploading " + key, e);
-                        } catch (ExecutionException e) {
-                            //throw new ServletException("Execution error when interfacing with rest interface through message queue.\nWhen uploading " + key, e);
-                        } catch (TimeoutException e) {
-                            //throw new ServletException("Timeout (30 seconds) when interfacing with rest interface through message queue.\nWhen uploading " + key, e);
                         }
                     }
+                    UploadedDocumentMessageHandler.this.log.info("Returning collected responses");
                     return collectedResponses.toString();
                 }
             });
