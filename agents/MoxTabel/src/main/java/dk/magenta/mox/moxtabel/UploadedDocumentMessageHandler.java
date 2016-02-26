@@ -39,7 +39,12 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
         String reference = headers.get(Message.HEADER_OBJECTREFERENCE).toString();
         this.log.info("Reference: " + reference);
 
-        String authorization = (String) (headers.get(Message.HEADER_AUTHORIZATION));
+        String authorization = null;
+        try {
+            authorization = (String) (headers.get(Message.HEADER_AUTHORIZATION));
+        } catch (Exception e) {
+            this.log.error("fail",e);
+        }
         this.log.info("Got authorization");
 
         File tempFile = null;
