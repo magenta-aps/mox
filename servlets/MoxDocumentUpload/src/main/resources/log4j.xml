@@ -3,7 +3,7 @@
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
 
     <appender name="FILE" class="org.apache.log4j.FileAppender">
-    	<param name="File" value="/var/log/mox/servlet.log" />
+    	<param name="File" value="/var/log/mox/moxdocumentupload.log" />
 		<param name="immediateFlush" value="true"/>
 		<param name="threshold" value="ALL"/>
 		<param name="append" value="true"/>

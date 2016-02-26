@@ -4,13 +4,13 @@
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
          version="3.1">
     <servlet>
-        <servlet-name>DocumentUpload</servlet-name>
+        <servlet-name>MoxDocumentUpload</servlet-name>
         <servlet-class>dk.magenta.mox.upload.UploadServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>DocumentUpload</servlet-name>
-        <url-pattern>/DocumentUpload</url-pattern>
+        <servlet-name>MoxDocumentUpload</servlet-name>
+        <url-pattern>/</url-pattern>
     </servlet-mapping>
 
     <security-constraint>

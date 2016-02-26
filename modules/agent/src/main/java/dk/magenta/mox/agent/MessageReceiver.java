@@ -7,6 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -85,8 +86,16 @@ public class MessageReceiver extends MessageInterface {
                     // Wait for a response from the callback and send it back to the original message sender
                     new Thread(new Runnable() {
                         public void run() {
+                            String responseString;
                             try {
-                                String responseString = response.get(30, TimeUnit.SECONDS); // This blocks while we wait for the callback to run. Hence the thread
+                                responseString = response.get(30, TimeUnit.SECONDS); // This blocks while we wait for the callback to run. Hence the thread
+                            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                                e.printStackTrace();
+                                responseString = Util.error(e);
+                            }
+                            MessageReceiver.this.log.info("Got a response from message handler. Relaying to sender.");
+                            MessageReceiver.this.log.info(responseString);
+                            try {
                                 MessageReceiver.this.getChannel().basicPublish("", replyTo, responseProperties, responseString.getBytes());
                             } catch (Exception e) {
                                 try {

@@ -35,16 +35,17 @@ public class UploadedDocumentMessage extends Message {
     }
 
     public static UploadedDocumentMessage parse(Headers headers, JSONObject data) {
-        String operationName = (String) headers.get(MessageInterface.HEADER_OPERATION);
+        String operationName = headers.optString(MessageInterface.HEADER_OPERATION);
         if ("upload".equalsIgnoreCase(operationName)) {
-            String authorization = (String) headers.get(MessageInterface.HEADER_AUTHORIZATION);
+            String authorization = headers.optString(MessageInterface.HEADER_AUTHORIZATION);
             if (data != null) {
-                JSONObject jsonObject = new JSONObject();
-                String filename = jsonObject.getString(KEY_FILENAME);
-                String retrievalUrl = jsonObject.getString(KEY_URL);
-                try {
-                    return new UploadedDocumentMessage(filename, retrievalUrl, authorization);
-                } catch (MalformedURLException e) {
+                String filename = data.optString(KEY_FILENAME);
+                String retrievalUrl = data.optString(KEY_URL);
+                if (retrievalUrl != null) {
+                    try {
+                        return new UploadedDocumentMessage(filename, retrievalUrl, authorization);
+                    } catch (MalformedURLException e) {
+                    }
                 }
             }
         }

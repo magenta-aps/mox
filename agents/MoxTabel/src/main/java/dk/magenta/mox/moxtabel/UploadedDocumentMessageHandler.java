@@ -2,6 +2,7 @@ package dk.magenta.mox.moxtabel;
 
 import dk.magenta.mox.agent.MessageHandler;
 import dk.magenta.mox.agent.MessageSender;
+import dk.magenta.mox.agent.exceptions.MissingHeaderException;
 import dk.magenta.mox.agent.messages.*;
 import dk.magenta.mox.spreadsheet.ConvertedObject;
 import dk.magenta.mox.spreadsheet.SpreadsheetConverter;
@@ -33,16 +34,19 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
         //this.objectTypeMap = objectTypeMap;
     }
 
+    @Override
     public Future<String> run(Headers headers, JSONObject jsonObject) {
         this.log.info("Parsing message");
-        String reference = headers.get(Message.HEADER_OBJECTREFERENCE).toString();
-        this.log.info("Reference: " + reference);
-
-        String authorization = null;
-
-        File tempFile = null;
-        InputStream data = null;
+        String reference = null;
         try {
+            reference = headers.getString(Message.HEADER_OBJECTREFERENCE);
+            this.log.info("Reference: " + reference);
+
+            String authorization = headers.getString(Message.HEADER_AUTHORIZATION);
+            this.log.info("Got authorization");
+
+            File tempFile = null;
+            InputStream data = null;
             this.log.info("Retrieving data");
             URL url = new URL(reference);
             URLConnection connection = url.openConnection();
@@ -82,7 +86,7 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
                     this.log.info("Operation: "+operation);
                     this.log.info("UUID: " + ((uuid == null) ? null : uuid.toString()));
 
-                    DocumentMessage documentMessage = DocumentMessage.parse(headers, objectData);
+                    DocumentMessage documentMessage = null;
                     switch (operation.trim().toLowerCase()) {
                         case DocumentMessage.OPERATION_READ:
                             documentMessage = new ReadDocumentMessage(authorization, objectTypeName, uuid);
@@ -123,20 +127,18 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
             final HashMap<String, Future<String>> fMoxResponses = new HashMap<String, Future<String>>(moxResponses);
             return this.pool.submit(new Callable<String>() {
                 public String call() throws IOException {
-                    JSONArray collectedResponses = new JSONArray();
+                    JSONObject collectedResponses = new JSONObject();
 
                     for (String key : fMoxResponses.keySet()) {
                         Future<String> moxResponse = fMoxResponses.get(key);
                         try {
-                            collectedResponses.put(new JSONObject(moxResponse.get(30, TimeUnit.SECONDS)));
-                        } catch (InterruptedException e) {
+                            collectedResponses.put(key, new JSONObject(moxResponse.get(30, TimeUnit.SECONDS)));
+                            UploadedDocumentMessageHandler.this.log.info("Response received");
+                        } catch (InterruptedException | ExecutionException | TimeoutException e) {
                             //throw new ServletException("Interruption error when interfacing with rest interface through message queue.\nWhen uploading " + key, e);
-                        } catch (ExecutionException e) {
-                            //throw new ServletException("Execution error when interfacing with rest interface through message queue.\nWhen uploading " + key, e);
-                        } catch (TimeoutException e) {
-                            //throw new ServletException("Timeout (30 seconds) when interfacing with rest interface through message queue.\nWhen uploading " + key, e);
                         }
                     }
+                    UploadedDocumentMessageHandler.this.log.info("Returning collected responses");
                     return collectedResponses.toString();
                 }
             });
@@ -148,6 +150,8 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
         } catch (IOException e) {
             this.log.error("IOException", e);
             e.printStackTrace();
+        } catch (MissingHeaderException e) {
+            this.log.error("Missing header in message", e);
         } catch (Exception e) {
             this.log.error("General Exception", e);
             e.printStackTrace();

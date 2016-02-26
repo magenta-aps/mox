@@ -31,11 +31,13 @@ public class CreateDocumentMessage extends DocumentMessage {
     }
 
     public static CreateDocumentMessage parse(Headers headers, JSONObject data) {
-        String operationName = (String) headers.get(MessageInterface.HEADER_OPERATION);
+        String operationName = headers.optString(MessageInterface.HEADER_OPERATION);
         if ("create".equalsIgnoreCase(operationName)) {
-            String authorization = (String) headers.get(MessageInterface.HEADER_AUTHORIZATION);
-            String objectType = (String) headers.get(Message.HEADER_OBJECTTYPE);
-            return new CreateDocumentMessage(authorization, objectType, data);
+            String authorization = headers.optString(MessageInterface.HEADER_AUTHORIZATION);
+            String objectType = headers.optString(Message.HEADER_OBJECTTYPE);
+            if (objectType != null) {
+                return new CreateDocumentMessage(authorization, objectType, data);
+            }
         }
         return null;
     }

@@ -38,7 +38,7 @@ import java.util.regex.Pattern;
 public class UploadServlet extends HttpServlet {
     private ServletFileUpload uploader = null;
 
-    public static final String UPLOAD_SERVLET_URL = "DocumentUpload";
+    public static final String UPLOAD_SERVLET_URL = "";
     public static final String cacheFolderNameConfigKey = "FILES_DIR";
     public static final String fileKey = "file";
     public static final String authKey = "authentication";
@@ -48,7 +48,7 @@ public class UploadServlet extends HttpServlet {
 
     private MessageSender messageSender;
 
-    private static boolean waitForAmqpResponses = false;
+    private static boolean waitForAmqpResponses = true;
 
     private Logger log = Logger.getLogger(UploadServlet.class);
 
@@ -147,7 +147,7 @@ public class UploadServlet extends HttpServlet {
         out.append("<html>\n" +
                 "<head></head>\n" +
                 "<body>\n" +
-                "<form action=\"DocumentUpload\" method=\"post\" enctype=\"multipart/form-data\">\n" +
+                "<form action=\"\" method=\"post\" enctype=\"multipart/form-data\">\n" +
                 "    Select File to Upload:<input type=\"file\" name=\""+ fileKey +"\">\n" +
                 "    <br/>\n" +
                 "    Token:<textarea name=\""+ authKey +"\"></textarea>" +
@@ -233,14 +233,12 @@ public class UploadServlet extends HttpServlet {
                 }
             }
             if (waitForAmqpResponses) {
+                out.write("<br/>Response:<br/>");
                 for (Future<String> amqpResponse : amqpResponses) {
                     try {
                         String realResponse = amqpResponse.get(30, TimeUnit.SECONDS);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
-                    } catch (TimeoutException e) {
+                        out.write(realResponse);
+                    } catch (InterruptedException | ExecutionException | TimeoutException e) {
                         e.printStackTrace();
                     }
                 }
