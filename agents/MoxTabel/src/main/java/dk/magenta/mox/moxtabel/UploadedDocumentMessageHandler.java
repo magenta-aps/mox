@@ -33,12 +33,14 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
         //this.objectTypeMap = objectTypeMap;
     }
 
+    @Override
     public Future<String> run(Headers headers, JSONObject jsonObject) {
         this.log.info("Parsing message");
         String reference = headers.get(Message.HEADER_OBJECTREFERENCE).toString();
         this.log.info("Reference: " + reference);
 
         String authorization = (String) (headers.get(Message.HEADER_AUTHORIZATION));
+        this.log.info("Got authorization");
 
         File tempFile = null;
         InputStream data = null;
