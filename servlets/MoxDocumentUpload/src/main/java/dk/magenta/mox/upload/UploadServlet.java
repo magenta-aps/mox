@@ -38,7 +38,7 @@ import java.util.regex.Pattern;
 public class UploadServlet extends HttpServlet {
     private ServletFileUpload uploader = null;
 
-    public static final String UPLOAD_SERVLET_URL = "DocumentUpload";
+    public static final String UPLOAD_SERVLET_URL = "";
     public static final String cacheFolderNameConfigKey = "FILES_DIR";
     public static final String fileKey = "file";
     public static final String authKey = "authentication";
@@ -147,7 +147,7 @@ public class UploadServlet extends HttpServlet {
         out.append("<html>\n" +
                 "<head></head>\n" +
                 "<body>\n" +
-                "<form action=\"DocumentUpload\" method=\"post\" enctype=\"multipart/form-data\">\n" +
+                "<form action=\"\" method=\"post\" enctype=\"multipart/form-data\">\n" +
                 "    Select File to Upload:<input type=\"file\" name=\""+ fileKey +"\">\n" +
                 "    <br/>\n" +
                 "    Token:<textarea name=\""+ authKey +"\"></textarea>" +
