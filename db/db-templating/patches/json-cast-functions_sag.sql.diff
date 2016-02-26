@@ -1,7 +1,7 @@
-*** ./generated-files/json-cast-functions_sag.sql	2015-08-12 15:31:03.332343284 +0200
---- ./patches/json-cast-functions_sag.org.sql	2015-08-12 15:36:37.696359937 +0200
+*** generated-files/json-cast-functions_sag.sql	2016-01-04 12:52:27.775054712 +0100
+--- patches/json-cast-functions_sag.org.sql	2016-01-04 12:00:53.247755162 +0100
 ***************
-*** 66,77 ****
+*** 66,82 ****
       ('{' || string_agg(   to_json(f.relType::text) || ':' || array_to_json(f.rel_json_arr,false) ,',') || '}')::json rel_json
       FROM
       (
@@ -13,8 +13,13 @@
         order by e.relType asc
       ) as f
     )
-    SELECT 
---- 66,77 ----
+!   SELECT 
+    row_to_json(FraTidspunkt.*) FraTidspunkt
+    ,row_to_json(TilTidspunkt.*) TilTidspunkt
+    ,($1.registrering).livscykluskode
+    ,($1.registrering).note
+    ,($1.registrering).brugerref
+--- 66,82 ----
       ('{' || string_agg(   to_json(f.relType::text) || ':' || array_to_json(f.rel_json_arr,false) ,',') || '}')::json rel_json
       FROM
       (
@@ -26,4 +31,36 @@
         order by e.relType asc
       ) as f
     )
-    SELECT 
+!   SELECT
+    row_to_json(FraTidspunkt.*) FraTidspunkt
+    ,row_to_json(TilTidspunkt.*) TilTidspunkt
+    ,($1.registrering).livscykluskode
+    ,($1.registrering).note
+    ,($1.registrering).brugerref
+***************
+*** 88,99 ****
+      '{}'::json
+      END relationer
+    FROM
+      (
+      SELECT
+!      (SELECT LOWER(($1.registrering).TimePeriod)) as TidsstempelDatoTid 
+!     ,(SELECT lower_inc(($1.registrering).TimePeriod)) as GraenseIndikator 
+      ) as  FraTidspunkt,
+      (
+      SELECT
+       (SELECT UPPER(($1.registrering).TimePeriod)) as TidsstempelDatoTid
+      ,(SELECT upper_inc(($1.registrering).TimePeriod)) as GraenseIndikator
+--- 88,99 ----
+      '{}'::json
+      END relationer
+    FROM
+      (
+      SELECT
+!      (SELECT LOWER(($1.registrering).TimePeriod)) as TidsstempelDatoTid
+!     ,(SELECT lower_inc(($1.registrering).TimePeriod)) as GraenseIndikator
+      ) as  FraTidspunkt,
+      (
+      SELECT
+       (SELECT UPPER(($1.registrering).TimePeriod)) as TidsstempelDatoTid
+      ,(SELECT upper_inc(($1.registrering).TimePeriod)) as GraenseIndikator

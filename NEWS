@@ -5,10 +5,16 @@ Hotfix:
 * Mox Advis should not crash if receiving one UUID as string.
 
 
-* Version 0.2.12, December 18, 2015
+* Version 0.2.12, January 4, 2016
 
 New in this version:
 
+* Read operation now supports registreringFra/Til parameters.
+* Update README documentation to fix typo and to explain that the
+  date range filters use the overlap operator.
+* Registrering JSON results now include the "TilTidspunkt" date range.
+  IMPORTANT: The script in db/updates/update-2016-01-04.sh should be run
+  (from the same directory) to update the database for this change.
 * Java components split into modules and ordered under that folder
 * Servlet architecture set up
 * Spreadsheet servlet begun

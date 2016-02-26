@@ -48,7 +48,14 @@ CASE current_reg_livscykluskode
 			WHEN SLETTET THEN return true;
 			WHEN RETTET THEN return false; 
 		END CASE;
-	WHEN SLETTET THEN return false; 
+	WHEN SLETTET THEN 
+		CASE new_reg_livscykluskode
+			WHEN IMPORTERET THEN return true;
+			WHEN OPSTAAET THEN return false;
+			WHEN PASSIVERET  THEN return false;
+			WHEN SLETTET THEN return false;
+			WHEN RETTET THEN return false; 
+                END CASE;
 	WHEN RETTET THEN
 		CASE new_reg_livscykluskode
 			WHEN IMPORTERET THEN return false;

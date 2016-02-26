@@ -21,7 +21,7 @@ public abstract class MessageInterface {
     private String exchange;
     private String queueName;
     private AMQP.Queue.DeclareOk queueResult;
-    protected Logger logger = Logger.getLogger(this.getClass());
+    protected Logger log = Logger.getLogger(this.getClass());
 
     public static final String HEADER_AUTHORIZATION = "autorisation";
     public static final String HEADER_MESSAGEID = "objektID";
@@ -31,6 +31,15 @@ public abstract class MessageInterface {
 
 
     private static HashMap<String, ConnectionFactory> connectionFactories = new HashMap<String, ConnectionFactory>();
+
+    public MessageInterface(AmqpDefinition amqpDefinition) throws IOException {
+        this(amqpDefinition.getUsername(),
+                amqpDefinition.getPassword(),
+                amqpDefinition.getAmqpLocation(),
+                amqpDefinition.getExchangeName(),
+                amqpDefinition.getQueueName());
+    }
+
     public MessageInterface(String host, String exchange, String queueName) throws IOException {
         this(null, null, host, exchange, queueName);
     }
@@ -77,6 +86,10 @@ public abstract class MessageInterface {
 
     public Channel getChannel() {
         return channel;
+    }
+
+    public String getHost() {
+        return this.connection.getAddress().getHostName();
     }
 
     public String getExchange() {

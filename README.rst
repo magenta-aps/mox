@@ -136,21 +136,24 @@ operation is that in the Import, an object with the corresponding UUID
 doesn't exist in the database. If it does, the PUT operation is
 interpreted as an Update.
 
-List/Search operation common parameters
----------------------------------------
+List/Search/Read operation common parameters
+--------------------------------------------
 
 All parameter names are case-insensitive.
 
-Both the list and search operations accept the following parameters: ::
+Both the list, search, and read operations accept the following parameters: ::
 
     &virkningFra=<datotid>&virkningTil=<datotid>
-    &registreretFra=<datotid>&registretTil=<datotid>
+    &registreretFra=<datotid>&registreretTil=<datotid>
 
 Where <datotid> is a date/time value.  Date and time input is accepted
 in almost any reasonable format, including ISO 8601.
 
 If these parameters are omitted, they default to the time of the search,
 giving the "actual state" as the results.
+
+The results that are returned are filtered by those that overlap with the
+given date/time ranges.
 
 Search operation
 ----------------
