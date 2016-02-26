@@ -158,7 +158,7 @@ public class RestMessageHandler implements MessageHandler {
         connection.setDoOutput(true);
         connection.setRequestProperty("Content-type", "application/json");
         if (authorization != null && !authorization.isEmpty()) {
-            connection.setRequestProperty("Authorization", authorization);
+            connection.setRequestProperty("Authorization", authorization.trim());
         }
         this.log.info("Sending message to REST interface: " + method + " " + url.toString());
         System.out.println("Sending message to REST interface: " + method + " " + url.toString() + " " + new String(payload));
