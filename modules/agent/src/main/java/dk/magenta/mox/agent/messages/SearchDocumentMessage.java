@@ -27,13 +27,15 @@ public class SearchDocumentMessage extends DocumentMessage {
     }
 
     public static SearchDocumentMessage parse(Headers headers, JSONObject data) {
-        String operationName = (String) headers.get(MessageInterface.HEADER_OPERATION);
+        String operationName = headers.optString(MessageInterface.HEADER_OPERATION);
         if ("search".equalsIgnoreCase(operationName)) {
-            String authorization = (String) headers.get(MessageInterface.HEADER_AUTHORIZATION);
-            String objectType = (String) headers.get(Message.HEADER_OBJECTTYPE);
-            ParameterMap<String, String> query = new ParameterMap<>();
-            query.populateFromJSON(data);
-            return new SearchDocumentMessage(authorization, objectType, query);
+            String authorization = headers.optString(MessageInterface.HEADER_AUTHORIZATION);
+            String objectType = headers.optString(Message.HEADER_OBJECTTYPE);
+            if (objectType != null) {
+                ParameterMap<String, String> query = new ParameterMap<>();
+                query.populateFromJSON(data);
+                return new SearchDocumentMessage(authorization, objectType, query);
+            }
         }
         return null;
     }

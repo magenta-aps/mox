@@ -44,19 +44,21 @@ public class ListDocumentMessage extends DocumentMessage {
     }
 
     public static ListDocumentMessage parse(Headers headers, JSONObject data) {
-        String operationName = (String) headers.get(MessageInterface.HEADER_OPERATION);
+        String operationName = headers.optString(MessageInterface.HEADER_OPERATION);
         if ("list".equalsIgnoreCase(operationName)) {
-            String authorization = (String) headers.get(MessageInterface.HEADER_AUTHORIZATION);
-            String objectType = (String) headers.get(Message.HEADER_OBJECTTYPE);
-            ArrayList<UUID> uuids = new ArrayList<>();
-            if (data != null) {
-                JSONObject jsonObject = new JSONObject(data);
-                JSONArray uuidList = jsonObject.optJSONArray("query");
-                for (int i=0; i<uuidList.length(); i++) {
-                    uuids.add(UUID.fromString(uuidList.getString(i)));
+            String authorization = headers.optString(MessageInterface.HEADER_AUTHORIZATION);
+            String objectType = headers.optString(Message.HEADER_OBJECTTYPE);
+            if (objectType != null) {
+                ArrayList<UUID> uuids = new ArrayList<>();
+                if (data != null) {
+                    JSONObject jsonObject = new JSONObject(data);
+                    JSONArray uuidList = jsonObject.optJSONArray("query");
+                    for (int i = 0; i < uuidList.length(); i++) {
+                        uuids.add(UUID.fromString(uuidList.getString(i)));
+                    }
                 }
+                return new ListDocumentMessage(authorization, objectType, uuids);
             }
-            return new ListDocumentMessage(authorization, objectType, uuids);
         }
         return null;
     }

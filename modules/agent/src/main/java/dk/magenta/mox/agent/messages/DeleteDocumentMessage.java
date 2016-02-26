@@ -41,17 +41,19 @@ public class DeleteDocumentMessage extends PassivateDocumentMessage {
     }
 
     public static DeleteDocumentMessage parse(Headers headers, JSONObject data) throws IllegalArgumentException {
-        String operationName = (String) headers.get(MessageInterface.HEADER_OPERATION);
+        String operationName = headers.optString(MessageInterface.HEADER_OPERATION);
         if ("delete".equalsIgnoreCase(operationName)) {
-            String authorization = (String) headers.get(MessageInterface.HEADER_AUTHORIZATION);
-            String uuid = (String) headers.get(MessageInterface.HEADER_MESSAGEID);
-            String objectType = (String) headers.get(Message.HEADER_OBJECTTYPE);
-            String note = null;
-            if (data != null) {
-                JSONObject jsonObject = new JSONObject(data);
-                note = jsonObject.optString("Note");
+            String authorization = headers.optString(MessageInterface.HEADER_AUTHORIZATION);
+            String uuid = headers.optString(MessageInterface.HEADER_MESSAGEID);
+            String objectType = headers.optString(Message.HEADER_OBJECTTYPE);
+            if (uuid != null && objectType != null) {
+                String note = null;
+                if (data != null) {
+                    JSONObject jsonObject = new JSONObject(data);
+                    note = jsonObject.optString("Note");
+                }
+                return new DeleteDocumentMessage(authorization, objectType, uuid, note);
             }
-            return new DeleteDocumentMessage(authorization, objectType, uuid, note);
         }
         return null;
     }

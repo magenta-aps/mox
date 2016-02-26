@@ -35,22 +35,24 @@ public abstract class DocumentMessage extends Message {
     }
 
     public static DocumentMessage parse(Headers headers, JSONObject data) {
-        String operationName = (String) headers.get(MessageInterface.HEADER_OPERATION);
-        switch (operationName.trim().toLowerCase()) {
-            case OPERATION_READ:
-                return ReadDocumentMessage.parse(headers, data);
-            case OPERATION_LIST:
-                return ListDocumentMessage.parse(headers, data);
-            case OPERATION_SEARCH:
-                return SearchDocumentMessage.parse(headers, data);
-            case OPERATION_CREATE:
-                return CreateDocumentMessage.parse(headers, data);
-            case OPERATION_UPDATE:
-                return UpdateDocumentMessage.parse(headers, data);
-            case OPERATION_PASSIVATE:
-                return PassivateDocumentMessage.parse(headers, data);
-            case OPERATION_DELETE:
-                return PassivateDocumentMessage.parse(headers, data);
+        String operationName = headers.optString(MessageInterface.HEADER_OPERATION);
+        if (operationName != null) {
+            switch (operationName.trim().toLowerCase()) {
+                case OPERATION_READ:
+                    return ReadDocumentMessage.parse(headers, data);
+                case OPERATION_LIST:
+                    return ListDocumentMessage.parse(headers, data);
+                case OPERATION_SEARCH:
+                    return SearchDocumentMessage.parse(headers, data);
+                case OPERATION_CREATE:
+                    return CreateDocumentMessage.parse(headers, data);
+                case OPERATION_UPDATE:
+                    return UpdateDocumentMessage.parse(headers, data);
+                case OPERATION_PASSIVATE:
+                    return PassivateDocumentMessage.parse(headers, data);
+                case OPERATION_DELETE:
+                    return PassivateDocumentMessage.parse(headers, data);
+            }
         }
         return null;
     }

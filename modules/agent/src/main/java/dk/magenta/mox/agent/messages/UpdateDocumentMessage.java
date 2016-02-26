@@ -45,12 +45,14 @@ public class UpdateDocumentMessage extends CreateDocumentMessage {
     }
 
     public static UpdateDocumentMessage parse(Headers headers, JSONObject data) {
-        String operationName = (String) headers.get(MessageInterface.HEADER_OPERATION);
+        String operationName = headers.optString(MessageInterface.HEADER_OPERATION);
         if ("update".equalsIgnoreCase(operationName)) {
-            String uuid = (String) headers.get(MessageInterface.HEADER_MESSAGEID);
-            String authorization = (String) headers.get(MessageInterface.HEADER_AUTHORIZATION);
-            String objectType = (String) headers.get(Message.HEADER_OBJECTTYPE);
-            return new UpdateDocumentMessage(authorization, objectType, uuid, data);
+            String authorization = headers.optString(MessageInterface.HEADER_AUTHORIZATION);
+            String uuid = headers.optString(MessageInterface.HEADER_MESSAGEID);
+            String objectType = headers.optString(Message.HEADER_OBJECTTYPE);
+            if (uuid != null && objectType != null) {
+                return new UpdateDocumentMessage(authorization, objectType, uuid, data);
+            }
         }
         return null;
     }

@@ -46,17 +46,19 @@ public class PassivateDocumentMessage extends InstanceDocumentMessage {
     }
 
     public static PassivateDocumentMessage parse(Headers headers, JSONObject data) throws IllegalArgumentException {
-        String operationName = (String) headers.get(MessageInterface.HEADER_OPERATION);
+        String operationName = headers.optString(MessageInterface.HEADER_OPERATION);
         if ("passivate".equalsIgnoreCase(operationName)) {
-            String authorization = (String) headers.get(MessageInterface.HEADER_AUTHORIZATION);
-            String uuid = (String) headers.get(MessageInterface.HEADER_MESSAGEID);
-            String objectType = (String) headers.get(Message.HEADER_OBJECTTYPE);
-            String note = null;
-            if (data != null) {
-                JSONObject jsonObject = new JSONObject(data);
-                note = jsonObject.optString("Note");
+            String authorization = headers.optString(MessageInterface.HEADER_AUTHORIZATION);
+            String uuid = headers.optString(MessageInterface.HEADER_MESSAGEID);
+            String objectType = headers.optString(Message.HEADER_OBJECTTYPE);
+            if (uuid != null && objectType != null) {
+                String note = null;
+                if (data != null) {
+                    JSONObject jsonObject = new JSONObject(data);
+                    note = jsonObject.optString("Note");
+                }
+                return new PassivateDocumentMessage(authorization, objectType, uuid, note);
             }
-            return new PassivateDocumentMessage(authorization, objectType, uuid, note);
         }
         return null;
     }
