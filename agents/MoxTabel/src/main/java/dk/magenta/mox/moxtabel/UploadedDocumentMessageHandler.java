@@ -2,6 +2,7 @@ package dk.magenta.mox.moxtabel;
 
 import dk.magenta.mox.agent.MessageHandler;
 import dk.magenta.mox.agent.MessageSender;
+import dk.magenta.mox.agent.exceptions.MissingHeaderException;
 import dk.magenta.mox.agent.messages.*;
 import dk.magenta.mox.spreadsheet.ConvertedObject;
 import dk.magenta.mox.spreadsheet.SpreadsheetConverter;
@@ -36,15 +37,16 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
     @Override
     public Future<String> run(Headers headers, JSONObject jsonObject) {
         this.log.info("Parsing message");
-        String reference = headers.getString(Message.HEADER_OBJECTREFERENCE);
-        this.log.info("Reference: " + reference);
-
-        String authorization = headers.getString(Message.HEADER_AUTHORIZATION);
-        this.log.info("Got authorization");
-
-        File tempFile = null;
-        InputStream data = null;
+        String reference = null;
         try {
+            reference = headers.getString(Message.HEADER_OBJECTREFERENCE);
+            this.log.info("Reference: " + reference);
+
+            String authorization = headers.getString(Message.HEADER_AUTHORIZATION);
+            this.log.info("Got authorization");
+
+            File tempFile = null;
+            InputStream data = null;
             this.log.info("Retrieving data");
             URL url = new URL(reference);
             URLConnection connection = url.openConnection();
@@ -148,6 +150,8 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
         } catch (IOException e) {
             this.log.error("IOException", e);
             e.printStackTrace();
+        } catch (MissingHeaderException e) {
+            this.log.error("Missing header in message", e);
         } catch (Exception e) {
             this.log.error("General Exception", e);
             e.printStackTrace();
