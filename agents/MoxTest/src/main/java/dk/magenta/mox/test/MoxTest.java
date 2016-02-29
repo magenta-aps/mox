@@ -88,10 +88,8 @@ public class MoxTest extends MoxAgent {
                 System.out.println("Expected response received");
             } else {
                 System.out.println("Result differs from the expected");
-                System.out.println(item.toString());
-                System.out.println(expected.toString());
             }
-        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
             e.printStackTrace();
         }
     }
@@ -115,7 +113,7 @@ public class MoxTest extends MoxAgent {
             }
             System.out.println(results.size() + " items found");
             return results;
-        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
             e.printStackTrace();
         }
         return null;
@@ -127,9 +125,12 @@ public class MoxTest extends MoxAgent {
             System.out.println("Updating facet, uuid: "+uuid.toString());
             Message message = new UpdateDocumentMessage(this.getAuthToken(), "facet", uuid, getJSONObjectFromFilename("data/facet/update.json"));
             String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
-            System.out.println("response: " + response);
-
-        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
+            JSONObject object = new JSONObject(response);
+            UUID result = UUID.fromString(object.getString("uuid"));
+            if (uuid.compareTo(result) == 0) {
+                System.out.println("Update succeeded");
+            }
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
             e.printStackTrace();
         }
     }
