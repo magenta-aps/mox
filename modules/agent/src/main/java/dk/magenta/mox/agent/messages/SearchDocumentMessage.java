@@ -18,8 +18,10 @@ public class SearchDocumentMessage extends DocumentMessage {
     }
 
     @Override
-    public JSONObject getJSON() {
-        return new JSONObject(this.query.toJSON());
+    public Headers getHeaders() {
+        Headers headers = super.getHeaders();
+        headers.put(Message.HEADER_QUERY, this.query.toJSON().toString());
+        return headers;
     }
 
     @Override

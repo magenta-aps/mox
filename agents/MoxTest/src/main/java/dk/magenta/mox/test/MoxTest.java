@@ -99,6 +99,8 @@ public class MoxTest extends MoxAgent {
             ParameterMap<String, String> query = new ParameterMap<>();
             query.populateFromJSON(getJSONObjectFromFilename("data/facet/search.json"));
             Message message = new SearchDocumentMessage(this.getAuthToken(), "facet", query);
+            System.out.println("Message headers: "+message.getHeaders());
+            System.out.println("Message body: "+message.getJSON());
             String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
             System.out.println("Response: "+response);
         } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
