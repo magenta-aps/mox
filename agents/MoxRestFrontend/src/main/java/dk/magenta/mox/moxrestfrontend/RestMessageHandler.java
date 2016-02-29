@@ -4,6 +4,7 @@ import dk.magenta.mox.agent.*;
 import dk.magenta.mox.agent.exceptions.InvalidObjectTypeException;
 import dk.magenta.mox.agent.exceptions.InvalidOperationException;
 import dk.magenta.mox.agent.messages.Headers;
+import dk.magenta.mox.agent.messages.Message;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -49,9 +50,9 @@ public class RestMessageHandler implements MessageHandler {
     public Future<String> run(Headers headers, JSONObject jsonObject) {
         this.log.info("Parsing message");
         try {
-            String objectTypeName = headers.getString(MessageInterface.HEADER_OBJECTTYPE).toLowerCase();
+            String objectTypeName = headers.getString(Message.HEADER_OBJECTTYPE).toLowerCase();
             this.log.info("objectTypeName: " + objectTypeName);
-            String operationName = headers.getString(MessageInterface.HEADER_OPERATION).toLowerCase();
+            String operationName = headers.getString(Message.HEADER_OPERATION).toLowerCase();
             this.log.info("operationName: " + operationName);
 
             ObjectType objectType = this.objectTypes.get(objectTypeName);
@@ -63,7 +64,7 @@ public class RestMessageHandler implements MessageHandler {
                     throw new InvalidOperationException(operationName);
                 } else {
 
-                    String query = headers.optString(MessageInterface.HEADER_QUERY);
+                    String query = headers.optString(Message.HEADER_QUERY);
                     HashMap<String, ArrayList<String>> queryMap = null;
                     if (query != null) {
                         this.log.info("query: " + query);
@@ -83,13 +84,13 @@ public class RestMessageHandler implements MessageHandler {
                         }
                     }
 
-                    final String authorization = headers.optString(MessageInterface.HEADER_AUTHORIZATION);
+                    final String authorization = headers.optString(Message.HEADER_AUTHORIZATION);
                     if (operationName != null) {
                         String path = operation.path;
                         if (path.contains("[uuid]")) {
-                            String uuid = headers.optString(MessageInterface.HEADER_MESSAGEID);
+                            String uuid = headers.optString(Message.HEADER_MESSAGEID);
                             if (uuid == null) {
-                                throw new IllegalArgumentException("Operation '" + operationName + "' requires a UUID to be set in the AMQP header '" + MessageInterface.HEADER_MESSAGEID + "'");
+                                throw new IllegalArgumentException("Operation '" + operationName + "' requires a UUID to be set in the AMQP header '" + Message.HEADER_MESSAGEID + "'");
                             }
                             path = path.replace("[uuid]", uuid);
                         }
