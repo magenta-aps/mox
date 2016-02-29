@@ -7,11 +7,14 @@ import dk.magenta.mox.agent.messages.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -92,20 +95,29 @@ public class MoxTest extends MoxAgent {
         }
     }
 
-    private void testFacetSearch() {
+    private List<UUID> testFacetSearch() {
         try {
             printDivider();
             System.out.println("Searching for facet");
             ParameterMap<String, String> query = new ParameterMap<>();
             query.populateFromJSON(getJSONObjectFromFilename("data/facet/search.json"));
             Message message = new SearchDocumentMessage(this.getAuthToken(), "facet", query);
-            System.out.println("Message headers: "+message.getHeaders());
-            System.out.println("Message body: "+message.getJSON());
             String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
-            System.out.println("Response: "+response);
+            JSONObject object = new JSONObject(response);
+            ArrayList<UUID> results = new ArrayList<>();
+            JSONArray array = object.getJSONArray("results");
+            try {
+                array = array.getJSONArray(0);
+            } catch (JSONException e) {}
+            for (int i=0; i<array.length(); i++) {
+                results.add(UUID.fromString(array.getString(i)));
+            }
+            System.out.println(results.size() + " items found");
+            return results;
         } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     private Headers getBaseHeaders() {
