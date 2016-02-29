@@ -1,11 +1,11 @@
 package dk.magenta.mox.test;
 
-import dk.magenta.mox.agent.MessageInterface;
 import dk.magenta.mox.agent.MessageSender;
 import dk.magenta.mox.agent.MoxAgent;
 import dk.magenta.mox.agent.messages.CreateDocumentMessage;
 import dk.magenta.mox.agent.messages.Headers;
 import dk.magenta.mox.agent.messages.Message;
+import dk.magenta.mox.agent.messages.ReadDocumentMessage;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
@@ -14,6 +14,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.*;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -40,7 +41,7 @@ public class MoxTest extends MoxAgent {
         }
     }
 
-    private void testFacetOpret() {
+    private UUID testFacetOpret() {
         try {
             Headers headers = this.getBaseHeaders();
             headers.put(Message.HEADER_OBJECTTYPE, "facet");
@@ -49,9 +50,24 @@ public class MoxTest extends MoxAgent {
             Message message = CreateDocumentMessage.parse(headers, payload);
             String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
             System.out.println("Response: "+response);
+            JSONObject object = new JSONObject(response);
+            UUID uuid = UUID.fromString(object.getString("uuid"));
+            return uuid;
         } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
         }
+        return null;
+    }
+
+    private void testFacetRead(UUID uuid) {
+        try {
+            Message message = new ReadDocumentMessage(this.getAuthToken(), "facet", uuid);
+            String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            System.out.println("Response: "+response);
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private Headers getBaseHeaders() {
