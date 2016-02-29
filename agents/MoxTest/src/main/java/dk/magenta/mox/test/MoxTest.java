@@ -74,7 +74,9 @@ public class MoxTest extends MoxAgent {
             String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
             JSONObject object = new JSONObject(response);
             JSONObject item = object.getJSONArray(uuid.toString()).getJSONObject(0);
-            if (item.similar(getJSONObjectFromFilename("data/facet/read_response.json"))) {
+            JSONObject expected = getJSONObjectFromFilename("data/facet/read_response.json");
+            expected.put("id", uuid.toString());
+            if (item.similar(expected)) {
                 System.out.println("Expected response received");
             } else {
                 System.out.println("Result differs from the expected");
