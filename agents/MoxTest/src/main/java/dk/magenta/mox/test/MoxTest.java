@@ -44,6 +44,7 @@ public class MoxTest extends MoxAgent {
 
     private UUID testFacetOpret() {
         try {
+            printDivider();
             System.out.println("Creating facet");
             Headers headers = this.getBaseHeaders();
             headers.put(Message.HEADER_OBJECTTYPE, "facet");
@@ -54,16 +55,19 @@ public class MoxTest extends MoxAgent {
             JSONObject object = new JSONObject(response);
             UUID uuid = UUID.fromString(object.getString("uuid"));
             System.out.println("Facet created, uuid: "+uuid.toString());
+            printDivider();
             return uuid;
         } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
             System.out.println("Failed creating");
             e.printStackTrace();
+            printDivider();
         }
         return null;
     }
 
     private void testFacetRead(UUID uuid) {
         try {
+            printDivider();
             System.out.println("Reading facet, uuid: "+uuid.toString());
             Message message = new ReadDocumentMessage(this.getAuthToken(), "facet", uuid);
             String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
@@ -71,6 +75,7 @@ public class MoxTest extends MoxAgent {
         } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
         }
+        printDivider();
     }
 
     private void testFacetSearch() {
@@ -84,6 +89,7 @@ public class MoxTest extends MoxAgent {
         } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
         }
+        printDivider();
     }
 
     private Headers getBaseHeaders() {
@@ -123,6 +129,10 @@ public class MoxTest extends MoxAgent {
 
     protected String getDefaultPropertiesFileName() {
         return "moxtest.properties";
+    }
+
+    private static void printDivider() {
+        System.out.println("---------------------------");
     }
 
 }

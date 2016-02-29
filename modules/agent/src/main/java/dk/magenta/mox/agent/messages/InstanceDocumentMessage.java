@@ -21,7 +21,7 @@ public abstract class InstanceDocumentMessage extends DocumentMessage {
 
     public Headers getHeaders() {
         Headers headers = super.getHeaders();
-        headers.put(Message.HEADER_MESSAGEID, this.uuid.toString());
+        headers.put(Message.HEADER_OBJECTID, this.uuid.toString());
         return headers;
     }
 }

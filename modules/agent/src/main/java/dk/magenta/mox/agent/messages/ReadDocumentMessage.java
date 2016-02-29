@@ -29,7 +29,7 @@ public class ReadDocumentMessage extends InstanceDocumentMessage {
         if (ReadDocumentMessage.OPERATION.equalsIgnoreCase(operationName)) {
             String authorization = headers.optString(Message.HEADER_AUTHORIZATION);
             String objectType = headers.optString(Message.HEADER_OBJECTTYPE);
-            String uuid = headers.optString(Message.HEADER_MESSAGEID);
+            String uuid = headers.optString(Message.HEADER_OBJECTID);
             if (uuid != null && objectType != null) {
                 return new ReadDocumentMessage(authorization, objectType, uuid);
             }
