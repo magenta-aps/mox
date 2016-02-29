@@ -1,8 +1,6 @@
 package dk.magenta.mox.agent.messages;
 
 
-import dk.magenta.mox.agent.MessageInterface;
-
 import java.util.UUID;
 
 /**
@@ -23,7 +21,7 @@ public abstract class InstanceDocumentMessage extends DocumentMessage {
 
     public Headers getHeaders() {
         Headers headers = super.getHeaders();
-        headers.put(MessageInterface.HEADER_MESSAGEID, this.uuid.toString());
+        headers.put(Message.HEADER_MESSAGEID, this.uuid.toString());
         return headers;
     }
 }

@@ -1,6 +1,5 @@
 package dk.magenta.mox.agent.messages;
 
-import dk.magenta.mox.agent.MessageInterface;
 import dk.magenta.mox.json.JSONObject;
 
 import java.util.UUID;
@@ -11,6 +10,8 @@ import java.util.UUID;
 public class DeleteDocumentMessage extends PassivateDocumentMessage {
 
     protected String note = "";
+
+    public static final String OPERATION = "delete";
 
     public DeleteDocumentMessage(String authorization, String objectType, UUID uuid, String note) {
         super(authorization, objectType, uuid, note);
@@ -41,10 +42,10 @@ public class DeleteDocumentMessage extends PassivateDocumentMessage {
     }
 
     public static DeleteDocumentMessage parse(Headers headers, JSONObject data) throws IllegalArgumentException {
-        String operationName = headers.optString(MessageInterface.HEADER_OPERATION);
+        String operationName = headers.optString(Message.HEADER_OPERATION);
         if ("delete".equalsIgnoreCase(operationName)) {
-            String authorization = headers.optString(MessageInterface.HEADER_AUTHORIZATION);
-            String uuid = headers.optString(MessageInterface.HEADER_MESSAGEID);
+            String authorization = headers.optString(Message.HEADER_AUTHORIZATION);
+            String uuid = headers.optString(Message.HEADER_MESSAGEID);
             String objectType = headers.optString(Message.HEADER_OBJECTTYPE);
             if (uuid != null && objectType != null) {
                 String note = null;

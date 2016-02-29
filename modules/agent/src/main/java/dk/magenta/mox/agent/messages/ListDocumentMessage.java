@@ -1,7 +1,5 @@
 package dk.magenta.mox.agent.messages;
 
-import dk.magenta.mox.agent.MessageInterface;
-import dk.magenta.mox.agent.ParameterMap;
 import dk.magenta.mox.json.JSONObject;
 import org.json.JSONArray;
 
@@ -15,6 +13,8 @@ import java.util.UUID;
 public class ListDocumentMessage extends DocumentMessage {
 
     protected ArrayList<UUID> uuids;
+
+    public static final String OPERATION = "list";
 
     public ListDocumentMessage(String authorization, String objectType, List<UUID> uuids) {
         super(authorization, objectType);
@@ -44,9 +44,9 @@ public class ListDocumentMessage extends DocumentMessage {
     }
 
     public static ListDocumentMessage parse(Headers headers, JSONObject data) {
-        String operationName = headers.optString(MessageInterface.HEADER_OPERATION);
-        if ("list".equalsIgnoreCase(operationName)) {
-            String authorization = headers.optString(MessageInterface.HEADER_AUTHORIZATION);
+        String operationName = headers.optString(Message.HEADER_OPERATION);
+        if (ListDocumentMessage.OPERATION.equalsIgnoreCase(operationName)) {
+            String authorization = headers.optString(Message.HEADER_AUTHORIZATION);
             String objectType = headers.optString(Message.HEADER_OBJECTTYPE);
             if (objectType != null) {
                 ArrayList<UUID> uuids = new ArrayList<>();

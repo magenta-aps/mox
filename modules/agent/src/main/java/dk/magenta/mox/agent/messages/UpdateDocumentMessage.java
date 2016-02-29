@@ -1,6 +1,5 @@
 package dk.magenta.mox.agent.messages;
 
-import dk.magenta.mox.agent.MessageInterface;
 import dk.magenta.mox.json.JSONObject;
 
 import java.util.UUID;
@@ -11,6 +10,8 @@ import java.util.UUID;
 public class UpdateDocumentMessage extends CreateDocumentMessage {
 
     protected UUID uuid;
+
+    public static final String OPERATION = "update";
 
     public UpdateDocumentMessage(String authorization, String objectType, UUID uuid, JSONObject data) {
         super(authorization, objectType, data);
@@ -35,7 +36,7 @@ public class UpdateDocumentMessage extends CreateDocumentMessage {
     @Override
     public Headers getHeaders() {
         Headers headers = super.getHeaders();
-        headers.put(MessageInterface.HEADER_MESSAGEID, this.uuid.toString());
+        headers.put(Message.HEADER_MESSAGEID, this.uuid.toString());
         return headers;
     }
 
@@ -45,10 +46,10 @@ public class UpdateDocumentMessage extends CreateDocumentMessage {
     }
 
     public static UpdateDocumentMessage parse(Headers headers, JSONObject data) {
-        String operationName = headers.optString(MessageInterface.HEADER_OPERATION);
-        if ("update".equalsIgnoreCase(operationName)) {
-            String authorization = headers.optString(MessageInterface.HEADER_AUTHORIZATION);
-            String uuid = headers.optString(MessageInterface.HEADER_MESSAGEID);
+        String operationName = headers.optString(Message.HEADER_OPERATION);
+        if (UpdateDocumentMessage.OPERATION.equalsIgnoreCase(operationName)) {
+            String authorization = headers.optString(Message.HEADER_AUTHORIZATION);
+            String uuid = headers.optString(Message.HEADER_MESSAGEID);
             String objectType = headers.optString(Message.HEADER_OBJECTTYPE);
             if (uuid != null && objectType != null) {
                 return new UpdateDocumentMessage(authorization, objectType, uuid, data);

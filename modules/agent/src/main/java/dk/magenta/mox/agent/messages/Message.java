@@ -20,6 +20,10 @@ public abstract class Message {
 
     public static final String HEADER_OBJECTTYPE_VALUE_DOCUMENT = "dokument";
 
+    //public static final String HEADER_MESSAGEID = "objektID";
+    public static final String HEADER_OPERATION = "operation";
+    public static final String HEADER_QUERY = "query";
+
     public static final long version = 1L;
 
     private String authorization;

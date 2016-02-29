@@ -1,6 +1,5 @@
 package dk.magenta.mox.agent.messages;
 
-import dk.magenta.mox.agent.MessageInterface;
 import dk.magenta.mox.json.JSONObject;
 
 /**
@@ -9,6 +8,8 @@ import dk.magenta.mox.json.JSONObject;
 public class CreateDocumentMessage extends DocumentMessage {
 
     protected JSONObject data;
+
+    public static final String OPERATION = "create";
 
     public CreateDocumentMessage(String authorization, String objectType, JSONObject data) {
         super(authorization, objectType);
@@ -31,9 +32,9 @@ public class CreateDocumentMessage extends DocumentMessage {
     }
 
     public static CreateDocumentMessage parse(Headers headers, JSONObject data) {
-        String operationName = headers.optString(MessageInterface.HEADER_OPERATION);
-        if ("create".equalsIgnoreCase(operationName)) {
-            String authorization = headers.optString(MessageInterface.HEADER_AUTHORIZATION);
+        String operationName = headers.optString(Message.HEADER_OPERATION);
+        if (CreateDocumentMessage.OPERATION.equalsIgnoreCase(operationName)) {
+            String authorization = headers.optString(Message.HEADER_AUTHORIZATION);
             String objectType = headers.optString(Message.HEADER_OBJECTTYPE);
             if (objectType != null) {
                 return new CreateDocumentMessage(authorization, objectType, data);

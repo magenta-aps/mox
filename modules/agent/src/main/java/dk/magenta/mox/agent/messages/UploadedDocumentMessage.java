@@ -1,6 +1,5 @@
 package dk.magenta.mox.agent.messages;
 
-import dk.magenta.mox.agent.MessageInterface;
 import dk.magenta.mox.json.JSONObject;
 
 import java.net.MalformedURLException;
@@ -13,6 +12,8 @@ public class UploadedDocumentMessage extends Message {
 
     public static final String KEY_FILENAME = "filename";
     public static final String KEY_URL = "url";
+
+    public static final String OPERATION = "upload";
 
     private String filename;
     private URL retrievalUrl;
@@ -35,9 +36,9 @@ public class UploadedDocumentMessage extends Message {
     }
 
     public static UploadedDocumentMessage parse(Headers headers, JSONObject data) {
-        String operationName = headers.optString(MessageInterface.HEADER_OPERATION);
-        if ("upload".equalsIgnoreCase(operationName)) {
-            String authorization = headers.optString(MessageInterface.HEADER_AUTHORIZATION);
+        String operationName = headers.optString(Message.HEADER_OPERATION);
+        if (UploadedDocumentMessage.OPERATION.equalsIgnoreCase(operationName)) {
+            String authorization = headers.optString(Message.HEADER_AUTHORIZATION);
             if (data != null) {
                 String filename = data.optString(KEY_FILENAME);
                 String retrievalUrl = data.optString(KEY_URL);

@@ -1,6 +1,5 @@
 package dk.magenta.mox.agent.messages;
 
-import dk.magenta.mox.agent.MessageInterface;
 import dk.magenta.mox.agent.ParameterMap;
 import dk.magenta.mox.json.JSONObject;
 
@@ -10,6 +9,8 @@ import dk.magenta.mox.json.JSONObject;
 public class SearchDocumentMessage extends DocumentMessage {
 
     protected ParameterMap<String, String> query;
+
+    public static final String OPERATION = "search";
 
     public SearchDocumentMessage(String authorization, String objectType, ParameterMap<String, String> query) {
         super(authorization, objectType);
@@ -27,9 +28,9 @@ public class SearchDocumentMessage extends DocumentMessage {
     }
 
     public static SearchDocumentMessage parse(Headers headers, JSONObject data) {
-        String operationName = headers.optString(MessageInterface.HEADER_OPERATION);
-        if ("search".equalsIgnoreCase(operationName)) {
-            String authorization = headers.optString(MessageInterface.HEADER_AUTHORIZATION);
+        String operationName = headers.optString(Message.HEADER_OPERATION);
+        if (SearchDocumentMessage.OPERATION.equalsIgnoreCase(operationName)) {
+            String authorization = headers.optString(Message.HEADER_AUTHORIZATION);
             String objectType = headers.optString(Message.HEADER_OBJECTTYPE);
             if (objectType != null) {
                 ParameterMap<String, String> query = new ParameterMap<>();

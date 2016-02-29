@@ -1,6 +1,5 @@
 package dk.magenta.mox.agent.messages;
 
-import dk.magenta.mox.agent.MessageInterface;
 import dk.magenta.mox.json.JSONObject;
 
 import java.util.UUID;
@@ -11,6 +10,8 @@ import java.util.UUID;
 public class PassivateDocumentMessage extends InstanceDocumentMessage {
 
     protected String note = "";
+
+    public static final String OPERATION = "passivate";
 
     public PassivateDocumentMessage(String authorization, String objectType, UUID uuid, String note) {
         super(authorization, objectType, uuid);
@@ -46,10 +47,10 @@ public class PassivateDocumentMessage extends InstanceDocumentMessage {
     }
 
     public static PassivateDocumentMessage parse(Headers headers, JSONObject data) throws IllegalArgumentException {
-        String operationName = headers.optString(MessageInterface.HEADER_OPERATION);
-        if ("passivate".equalsIgnoreCase(operationName)) {
-            String authorization = headers.optString(MessageInterface.HEADER_AUTHORIZATION);
-            String uuid = headers.optString(MessageInterface.HEADER_MESSAGEID);
+        String operationName = headers.optString(Message.HEADER_OPERATION);
+        if (PassivateDocumentMessage.OPERATION.equalsIgnoreCase(operationName)) {
+            String authorization = headers.optString(Message.HEADER_AUTHORIZATION);
+            String uuid = headers.optString(Message.HEADER_MESSAGEID);
             String objectType = headers.optString(Message.HEADER_OBJECTTYPE);
             if (uuid != null && objectType != null) {
                 String note = null;

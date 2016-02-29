@@ -1,6 +1,5 @@
 package dk.magenta.mox.agent.messages;
 
-import dk.magenta.mox.agent.MessageInterface;
 import dk.magenta.mox.json.JSONObject;
 
 /**
@@ -30,12 +29,12 @@ public abstract class DocumentMessage extends Message {
     public Headers getHeaders() {
         Headers headers = super.getHeaders();
         headers.put(Message.HEADER_OBJECTTYPE, this.objectType);
-        headers.put(MessageInterface.HEADER_OPERATION, this.getOperationName());
+        headers.put(Message.HEADER_OPERATION, this.getOperationName());
         return headers;
     }
 
     public static DocumentMessage parse(Headers headers, JSONObject data) {
-        String operationName = headers.optString(MessageInterface.HEADER_OPERATION);
+        String operationName = headers.optString(Message.HEADER_OPERATION);
         if (operationName != null) {
             switch (operationName.trim().toLowerCase()) {
                 case OPERATION_READ:
