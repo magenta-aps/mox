@@ -56,8 +56,9 @@ public class MoxTest extends MoxAgent {
             System.out.println("Response: "+response);
             JSONObject object = new JSONObject(response);
             UUID uuid = UUID.fromString(object.getString("uuid"));
+            System.out.println("Facet created, uuid: "+uuid.toString());
             return uuid;
-        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
             e.printStackTrace();
         }
         return null;
