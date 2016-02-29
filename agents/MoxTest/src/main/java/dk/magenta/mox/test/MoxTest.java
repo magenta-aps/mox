@@ -43,11 +43,15 @@ public class MoxTest extends MoxAgent {
 
     private UUID testFacetOpret() {
         try {
+            System.out.println("Creating facet");
             Headers headers = this.getBaseHeaders();
             headers.put(Message.HEADER_OBJECTTYPE, "facet");
             headers.put(Message.HEADER_OPERATION, CreateDocumentMessage.OPERATION);
             JSONObject payload = getJSONObjectFromFilename("data/facet_opret.json");
             Message message = CreateDocumentMessage.parse(headers, payload);
+            System.out.println("CreateMessage created");
+            System.out.println(message.getHeaders());
+            System.out.println(message.getJSON().toString());
             String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
             System.out.println("Response: "+response);
             JSONObject object = new JSONObject(response);
@@ -83,6 +87,7 @@ public class MoxTest extends MoxAgent {
     private String getAuthToken() {
         if (this.authToken == null) {
             try {
+                System.out.println("Getting authtoken");
                 Process authProcess = Runtime.getRuntime().exec(this.properties.getProperty("auth.command"));
                 InputStream processOutput = authProcess.getInputStream();
                 StringWriter writer = new StringWriter();
@@ -94,6 +99,7 @@ public class MoxTest extends MoxAgent {
                     if (index != -1) {
                         int endIndex = output.indexOf("\n", index);
                         this.authToken = output.substring(index, endIndex).trim();
+                        System.out.println("Authtoken obtained");
                     }
                 }
             } catch (IOException e) {
