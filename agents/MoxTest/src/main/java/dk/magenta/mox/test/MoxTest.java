@@ -63,6 +63,7 @@ public class MoxTest extends MoxAgent {
             JSONObject object = new JSONObject(response);
             UUID uuid = UUID.fromString(object.getString("uuid"));
             System.out.println("Facet created, uuid: "+uuid.toString());
+            System.out.println("Create succeeded");
             return uuid;
         } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
             System.out.println("Failed creating");
@@ -88,6 +89,7 @@ public class MoxTest extends MoxAgent {
 
             if (item.similar(expected)) {
                 System.out.println("Expected response received");
+                System.out.println("Read succeeded");
             } else {
                 System.out.println("Result differs from the expected");
             }
@@ -114,6 +116,9 @@ public class MoxTest extends MoxAgent {
                 results.add(UUID.fromString(array.getString(i)));
             }
             System.out.println(results.size() + " items found");
+            if (results.size()>0) {
+                System.out.println("Search succeeded");
+            }
             return results;
         } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
             e.printStackTrace();
