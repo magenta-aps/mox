@@ -28,14 +28,16 @@ public class ListDocumentMessage extends DocumentMessage {
     }
 
     @Override
-    public JSONObject getJSON() {
-        JSONObject object = super.getJSON();
+    public Headers getHeaders() {
+        Headers headers = super.getHeaders();
+        JSONObject object = new JSONObject();
         JSONArray uuidList = new JSONArray();
         for (UUID uuid : uuids) {
             uuidList.put(uuid.toString());
         }
-        object.put("query", uuidList);
-        return object;
+        object.put("uuid", uuidList);
+        headers.put(Message.HEADER_QUERY, object);
+        return headers;
     }
 
     @Override

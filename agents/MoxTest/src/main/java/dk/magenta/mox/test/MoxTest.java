@@ -133,6 +133,7 @@ public class MoxTest extends MoxAgent {
             System.out.println("Listing facets");
             Message message = new ListDocumentMessage(this.getAuthToken(), "facet", uuid);
             String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            System.out.println("response: "+response);
             JSONObject object = new JSONObject(response);
             JSONArray array = object.getJSONArray("results");
             try {
