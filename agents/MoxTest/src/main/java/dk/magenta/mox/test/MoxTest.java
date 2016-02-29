@@ -36,6 +36,7 @@ public class MoxTest extends MoxAgent {
             UUID facet = this.testFacetOpret();
             if (facet != null) {
                 this.testFacetRead(facet);
+                this.testFacetSearch();
             }
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();
@@ -49,7 +50,7 @@ public class MoxTest extends MoxAgent {
             Headers headers = this.getBaseHeaders();
             headers.put(Message.HEADER_OBJECTTYPE, "facet");
             headers.put(Message.HEADER_OPERATION, CreateDocumentMessage.OPERATION);
-            JSONObject payload = getJSONObjectFromFilename("data/facet_opret.json");
+            JSONObject payload = getJSONObjectFromFilename("data/facet/create.json");
             Message message = CreateDocumentMessage.parse(headers, payload);
             String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
             JSONObject object = new JSONObject(response);
@@ -71,7 +72,14 @@ public class MoxTest extends MoxAgent {
             System.out.println("Reading facet, uuid: "+uuid.toString());
             Message message = new ReadDocumentMessage(this.getAuthToken(), "facet", uuid);
             String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
-            System.out.println("Response: "+response);
+            JSONObject object = new JSONObject(response);
+            JSONObject item = object.getJSONArray(uuid.toString()).getJSONObject(0);
+            if (item.similar(getJSONObjectFromFilename("data/facet/read_response.json"))) {
+                System.out.println("Expected response received");
+            } else {
+                System.out.println("Result differs from the expected");
+                System.out.println(item.toString());
+            }
         } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
         }
@@ -82,7 +90,7 @@ public class MoxTest extends MoxAgent {
         try {
             System.out.println("Searching for facet");
             ParameterMap<String, String> query = new ParameterMap<>();
-            query.populateFromJSON(getJSONObjectFromFilename("data/facet_search.json"));
+            query.populateFromJSON(getJSONObjectFromFilename("data/facet/search.json"));
             Message message = new SearchDocumentMessage(this.getAuthToken(), "facet", query);
             String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
             System.out.println("Response: "+response);
