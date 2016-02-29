@@ -41,6 +41,7 @@ public class MoxTest extends MoxAgent {
                 this.testFacetRead(facet);
                 this.testFacetSearch();
                 this.testFacetUpdate(facet);
+                this.testFacetList(facet);
                 this.testFacetPassivate(facet);
                 this.testFacetDelete(facet);
             }
@@ -124,6 +125,28 @@ public class MoxTest extends MoxAgent {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private void testFacetList(UUID uuid) {
+        try {
+            printDivider();
+            System.out.println("Listing facets");
+            Message message = new ListDocumentMessage(this.getAuthToken(), "facet", uuid);
+            String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            JSONObject object = new JSONObject(response);
+            JSONArray array = object.getJSONArray("results");
+            try {
+                array = array.getJSONArray(0);
+            } catch (JSONException e) {}
+            for (int i=0; i<array.length(); i++) {
+                if (uuid.toString().equals(array.getString(i))) {
+                    System.out.println("List succeeded");
+                    return;
+                }
+            }
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void testFacetUpdate(UUID uuid) {
