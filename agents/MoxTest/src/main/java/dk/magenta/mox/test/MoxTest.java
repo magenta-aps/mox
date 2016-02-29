@@ -139,10 +139,14 @@ public class MoxTest extends MoxAgent {
     private void testFacetPassivate(UUID uuid) {
         try {
             printDivider();
-            System.out.println("Updating facet, uuid: "+uuid.toString());
+            System.out.println("Passivating facet, uuid: "+uuid.toString());
             Message message = new PassivateDocumentMessage(this.getAuthToken(), "facet", uuid);
             String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
-            System.out.println("Response: "+response);
+            JSONObject object = new JSONObject(response);
+            UUID result = UUID.fromString(object.getString("uuid"));
+            if (uuid.compareTo(result) == 0) {
+                System.out.println("Passivate succeeded");
+            }
         } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
             e.printStackTrace();
         }
