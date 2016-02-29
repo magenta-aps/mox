@@ -40,8 +40,8 @@ public class MoxTest extends MoxAgent {
             if (facet != null) {
                 this.testFacetRead(facet);
                 this.testFacetSearch();
-                this.testFacetUpdate(facet);
                 this.testFacetList(facet);
+                this.testFacetUpdate(facet);
                 this.testFacetPassivate(facet);
                 this.testFacetDelete(facet);
             }
@@ -133,16 +133,25 @@ public class MoxTest extends MoxAgent {
             System.out.println("Listing facets");
             Message message = new ListDocumentMessage(this.getAuthToken(), "facet", uuid);
             String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
-            System.out.println("response: "+response);
             JSONObject object = new JSONObject(response);
             JSONArray array = object.getJSONArray("results");
+
             try {
                 array = array.getJSONArray(0);
             } catch (JSONException e) {}
             for (int i=0; i<array.length(); i++) {
-                if (uuid.toString().equals(array.getString(i))) {
-                    System.out.println("List succeeded");
-                    return;
+                JSONObject item = array.getJSONObject(i);
+                if (uuid.toString().equals(item.getString("id"))) {
+                    JSONObject expected = getJSONObjectFromFilename("data/facet/read_response.json");
+                    // Update run-specific pieces of the object
+                    expected.put("id", uuid.toString());
+                    String timestamp = item.getJSONArray("registreringer").getJSONObject(0).getJSONObject("fratidspunkt").getString("tidsstempeldatotid");
+                    expected.getJSONArray("registreringer").getJSONObject(0).getJSONObject("fratidspunkt").put("tidsstempeldatotid", timestamp);
+                    if (item.similar(expected)) {
+                        System.out.println("List succeeded");
+                    } else {
+                        System.out.println("Returned object didn't match expected");
+                    }
                 }
             }
         } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
