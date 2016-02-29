@@ -1,9 +1,5 @@
 package dk.magenta.mox.agent;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.concurrent.TimeoutException;
@@ -71,10 +67,6 @@ public class MoxAgent extends MoxAgentBase {
     }
 
     public void run() {
-    }
-
-    private static JSONObject getJSONObjectFromFilename(String jsonFilename) throws FileNotFoundException, JSONException {
-        return new JSONObject(new JSONTokener(new FileReader(new File(jsonFilename))));
     }
 
     protected void shutdown() {
