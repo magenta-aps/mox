@@ -1,6 +1,7 @@
 package dk.magenta.mox.agent;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -41,16 +42,20 @@ public class ParameterMap<K,V> extends HashMap<K,ArrayList<V>> {
 
     public void populateFromJSON(JSONObject jsonObject) {
         for (String key : jsonObject.keySet()) {
-            JSONArray values = jsonObject.optJSONArray(key);
-            if (values != null) {
-                for (int i=0; i<values.length(); i++) {
-                    this.add((K) key, (V) values.get(i));
+            try {
+                JSONArray arrayValue = jsonObject.getJSONArray(key);
+                if (arrayValue != null) {
+                    for (int i=0; i<arrayValue.length(); i++) {
+                        this.add((K) key, (V) arrayValue.get(i));
+                    }
                 }
-            }
-            String stringValue = jsonObject.optString(key);
-            if (stringValue != null) {
-                this.add((K) key, (V) stringValue);
-            }
+            } catch (JSONException e) {}
+            try {
+                String stringValue = jsonObject.getString(key);
+                if (stringValue != null) {
+                    this.add((K) key, (V) stringValue);
+                }
+            } catch (JSONException e) {}
         }
     }
 
