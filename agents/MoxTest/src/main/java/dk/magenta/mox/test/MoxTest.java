@@ -73,7 +73,12 @@ public class MoxTest extends MoxAgent {
             JSONObject object = new JSONObject(response);
             JSONObject item = object.getJSONArray(uuid.toString()).getJSONObject(0);
             JSONObject expected = getJSONObjectFromFilename("data/facet/read_response.json");
+
+            // Update run-specific pieces of the object
             expected.put("id", uuid.toString());
+            String timestamp = item.getJSONArray("registreringer").getJSONObject(0).getJSONObject("fratidspunkt").getString("tidsstempeldatotid");
+            expected.getJSONArray("registreringer").getJSONObject(0).getJSONObject("fratidspunkt").put("tidsstempeldatotid", timestamp);
+
             if (item.similar(expected)) {
                 System.out.println("Expected response received");
             } else {
