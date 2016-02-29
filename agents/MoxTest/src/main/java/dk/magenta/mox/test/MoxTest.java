@@ -159,7 +159,6 @@ public class MoxTest extends MoxAgent {
             System.out.println("Deleting facet, uuid: "+uuid.toString());
             Message message = new DeleteDocumentMessage(this.getAuthToken(), "facet", uuid);
             String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
-            System.out.println("Response: "+response);
             JSONObject object = new JSONObject(response);
             UUID result = UUID.fromString(object.getString("uuid"));
             if (uuid.compareTo(result) == 0) {
