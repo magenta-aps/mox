@@ -36,7 +36,7 @@ public class ListDocumentMessage extends DocumentMessage {
             uuidList.put(uuid.toString());
         }
         object.put("uuid", uuidList);
-        headers.put(Message.HEADER_QUERY, object);
+        headers.put(Message.HEADER_QUERY, object.toString());
         return headers;
     }
 
