@@ -41,6 +41,7 @@ public class MoxTest extends MoxAgent {
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();
         }
+        System.exit(0);
     }
 
     private UUID testFacetOpret() {

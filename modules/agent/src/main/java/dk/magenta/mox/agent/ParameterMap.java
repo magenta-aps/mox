@@ -47,6 +47,10 @@ public class ParameterMap<K,V> extends HashMap<K,ArrayList<V>> {
                     this.add((K) key, (V) values.get(i));
                 }
             }
+            String stringValue = jsonObject.optString(key);
+            if (stringValue != null) {
+                this.add((K) key, (V) stringValue);
+            }
         }
     }
 
