@@ -23,7 +23,7 @@ public class ListDocumentMessage extends DocumentMessage {
 
     public ListDocumentMessage(String authorization, String objectType, UUID uuid) {
         super(authorization, objectType);
-        this.uuids = new ArrayList<>(uuids);
+        this.uuids = new ArrayList<>();
         this.uuids.add(uuid);
     }
 
