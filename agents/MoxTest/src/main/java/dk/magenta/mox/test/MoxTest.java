@@ -40,6 +40,7 @@ public class MoxTest extends MoxAgent {
             if (facet != null) {
                 this.testFacetRead(facet);
                 this.testFacetSearch();
+                this.testFacetUpdate(facet);
             }
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();
@@ -118,6 +119,19 @@ public class MoxTest extends MoxAgent {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private void testFacetUpdate(UUID uuid) {
+        try {
+            printDivider();
+            System.out.println("Updating facet, uuid: "+uuid.toString());
+            Message message = new UpdateDocumentMessage(this.getAuthToken(), "facet", uuid, getJSONObjectFromFilename("data/facet/update.json"));
+            String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            System.out.println("response: " + response);
+
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
+            e.printStackTrace();
+        }
     }
 
     private Headers getBaseHeaders() {
