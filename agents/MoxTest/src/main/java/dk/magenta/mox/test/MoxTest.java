@@ -2,10 +2,8 @@ package dk.magenta.mox.test;
 
 import dk.magenta.mox.agent.MessageSender;
 import dk.magenta.mox.agent.MoxAgent;
-import dk.magenta.mox.agent.messages.CreateDocumentMessage;
-import dk.magenta.mox.agent.messages.Headers;
-import dk.magenta.mox.agent.messages.Message;
-import dk.magenta.mox.agent.messages.ReadDocumentMessage;
+import dk.magenta.mox.agent.ParameterMap;
+import dk.magenta.mox.agent.messages.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
@@ -35,7 +33,10 @@ public class MoxTest extends MoxAgent {
         try {
             this.sender = this.createMessageSender();
 
-            this.testFacetOpret();
+            UUID facet = this.testFacetOpret();
+            if (facet != null) {
+                this.testFacetRead(facet);
+            }
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();
         }
@@ -49,16 +50,13 @@ public class MoxTest extends MoxAgent {
             headers.put(Message.HEADER_OPERATION, CreateDocumentMessage.OPERATION);
             JSONObject payload = getJSONObjectFromFilename("data/facet_opret.json");
             Message message = CreateDocumentMessage.parse(headers, payload);
-            System.out.println("CreateMessage created");
-            System.out.println(message.getHeaders());
-            System.out.println(message.getJSON().toString());
             String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
-            System.out.println("Response: "+response);
             JSONObject object = new JSONObject(response);
             UUID uuid = UUID.fromString(object.getString("uuid"));
             System.out.println("Facet created, uuid: "+uuid.toString());
             return uuid;
         } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
+            System.out.println("Failed creating");
             e.printStackTrace();
         }
         return null;
@@ -66,13 +64,26 @@ public class MoxTest extends MoxAgent {
 
     private void testFacetRead(UUID uuid) {
         try {
+            System.out.println("Reading facet, uuid: "+uuid.toString());
             Message message = new ReadDocumentMessage(this.getAuthToken(), "facet", uuid);
             String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
             System.out.println("Response: "+response);
         } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
         }
+    }
 
+    private void testFacetSearch() {
+        try {
+            System.out.println("Searching for facet");
+            ParameterMap<String, String> query = new ParameterMap<>();
+            query.populateFromJSON(getJSONObjectFromFilename("data/facet_search.json"));
+            Message message = new SearchDocumentMessage(this.getAuthToken(), "facet", query);
+            String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            System.out.println("Response: "+response);
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
+            e.printStackTrace();
+        }
     }
 
     private Headers getBaseHeaders() {
