@@ -46,7 +46,7 @@ public class MoxTest extends MoxAgent {
             Headers headers = this.getBaseHeaders();
             headers.put(Message.HEADER_OBJECTTYPE, "facet");
             headers.put(Message.HEADER_OPERATION, CreateDocumentMessage.OPERATION);
-            JSONObject payload = getJSONObjectFromFilename("test/facet_opret.json");
+            JSONObject payload = getJSONObjectFromFilename("data/facet_opret.json");
             Message message = CreateDocumentMessage.parse(headers, payload);
             String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
             System.out.println("Response: "+response);
