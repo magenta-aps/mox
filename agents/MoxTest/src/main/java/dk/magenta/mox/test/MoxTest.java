@@ -56,12 +56,10 @@ public class MoxTest extends MoxAgent {
             JSONObject object = new JSONObject(response);
             UUID uuid = UUID.fromString(object.getString("uuid"));
             System.out.println("Facet created, uuid: "+uuid.toString());
-            printDivider();
             return uuid;
         } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
             System.out.println("Failed creating");
             e.printStackTrace();
-            printDivider();
         }
         return null;
     }
@@ -81,15 +79,16 @@ public class MoxTest extends MoxAgent {
             } else {
                 System.out.println("Result differs from the expected");
                 System.out.println(item.toString());
+                System.out.println(expected.toString());
             }
         } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
         }
-        printDivider();
     }
 
     private void testFacetSearch() {
         try {
+            printDivider();
             System.out.println("Searching for facet");
             ParameterMap<String, String> query = new ParameterMap<>();
             query.populateFromJSON(getJSONObjectFromFilename("data/facet/search.json"));
@@ -99,7 +98,6 @@ public class MoxTest extends MoxAgent {
         } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
         }
-        printDivider();
     }
 
     private Headers getBaseHeaders() {
