@@ -41,6 +41,7 @@ public class MoxTest extends MoxAgent {
                 this.testFacetRead(facet);
                 this.testFacetSearch();
                 this.testFacetUpdate(facet);
+                this.testFacetPassivate(facet);
             }
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();
@@ -130,6 +131,18 @@ public class MoxTest extends MoxAgent {
             if (uuid.compareTo(result) == 0) {
                 System.out.println("Update succeeded");
             }
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void testFacetPassivate(UUID uuid) {
+        try {
+            printDivider();
+            System.out.println("Updating facet, uuid: "+uuid.toString());
+            Message message = new PassivateDocumentMessage(this.getAuthToken(), "facet", uuid);
+            String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            System.out.println("Response: "+response);
         } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
             e.printStackTrace();
         }
