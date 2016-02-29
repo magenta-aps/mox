@@ -42,6 +42,7 @@ public class MoxTest extends MoxAgent {
                 this.testFacetSearch();
                 this.testFacetUpdate(facet);
                 this.testFacetPassivate(facet);
+                this.testFacetDelete(facet);
             }
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();
