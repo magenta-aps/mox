@@ -41,6 +41,7 @@ public class MoxTest extends MoxAgent {
         try {
             this.sender = this.createMessageSender();
             this.testFacet();
+            this.testKlassifikation();
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();
         }
@@ -238,6 +239,201 @@ public class MoxTest extends MoxAgent {
     }
 
     //--------------------------------------------------------------------------
+
+    private void testKlassifikation() {
+        if (this.sender != null) {
+            try {
+                UUID klassifikation = this.testKlassifikationOpret();
+                if (klassifikation != null) {
+                    try {
+                        this.testKlassifikationRead(klassifikation);
+                        //this.testKlassifikationSearch();
+                        //this.testKlassifikationList(klassifikation);
+                        this.testKlassifikationUpdate(klassifikation);
+                        this.testKlassifikationPassivate(klassifikation);
+                    } catch (TestException e) {
+                    }
+                    this.testKlassifikationDelete(klassifikation);
+                }
+            } catch (TestException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private UUID testKlassifikationOpret() throws TestException {
+        try {
+            printDivider();
+            System.out.println("Creating klassifikation");
+            Headers headers = this.getBaseHeaders();
+            headers.put(Message.HEADER_OBJECTTYPE, "klassifikation");
+            headers.put(Message.HEADER_OPERATION, CreateDocumentMessage.OPERATION);
+            JSONObject payload = getJSONObjectFromFilename("data/klassifikation/create.json");
+            Message message = CreateDocumentMessage.parse(headers, payload);
+            String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            JSONObject object = new JSONObject(response);
+            UUID uuid = UUID.fromString(object.getString("uuid"));
+            System.out.println("Klassifikation created, uuid: "+uuid.toString());
+            System.out.println("Create succeeded");
+            return uuid;
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
+            System.out.println("Failed creating");
+            e.printStackTrace();
+            throw new TestException(e);
+        }
+    }
+
+    private void testKlassifikationRead(UUID uuid) throws TestException {
+        try {
+            printDivider();
+            System.out.println("Reading klassifikation, uuid: "+uuid.toString());
+            Message message = new ReadDocumentMessage(this.getAuthToken(), "klassifikation", uuid);
+            String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            System.out.println(response);
+            JSONObject object = new JSONObject(response);
+            JSONObject item = object.getJSONArray(uuid.toString()).getJSONObject(0);
+            /*
+            JSONObject expected = getJSONObjectFromFilename("data/klassifikation/read_response.json");
+
+            // Update run-specific pieces of the object
+            expected.put("id", uuid.toString());
+            String timestamp = item.getJSONArray("registreringer").getJSONObject(0).getJSONObject("fratidspunkt").getString("tidsstempeldatotid");
+            expected.getJSONArray("registreringer").getJSONObject(0).getJSONObject("fratidspunkt").put("tidsstempeldatotid", timestamp);
+
+            if (item.similar(expected)) {
+                System.out.println("Expected response received");
+                System.out.println("Read succeeded");
+            } else {
+                System.out.println("Result differs from the expected");
+                throw new TestException();
+            }*/
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
+            e.printStackTrace();
+            throw new TestException(e);
+        }
+    }
+/*
+    private List<UUID> testKlassifikationSearch() throws TestException {
+        try {
+            printDivider();
+            System.out.println("Searching for klassifikation");
+            ParameterMap<String, String> query = new ParameterMap<>();
+            query.populateFromJSON(getJSONObjectFromFilename("data/klassifikation/search.json"));
+            Message message = new SearchDocumentMessage(this.getAuthToken(), "klassifikation", query);
+            String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            JSONObject object = new JSONObject(response);
+            ArrayList<UUID> results = new ArrayList<>();
+            JSONArray array = object.getJSONArray("results");
+            try {
+                array = array.getJSONArray(0);
+            } catch (JSONException e) {}
+            for (int i=0; i<array.length(); i++) {
+                results.add(UUID.fromString(array.getString(i)));
+            }
+            System.out.println(results.size() + " items found");
+            if (results.size()>0) {
+                System.out.println("Search succeeded");
+            }
+            return results;
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
+            e.printStackTrace();
+            throw new TestException(e);
+        }
+    }
+
+    private void testKlassifikationList(UUID uuid) throws TestException {
+        try {
+            printDivider();
+            System.out.println("Listing klassifikations");
+            Message message = new ListDocumentMessage(this.getAuthToken(), "klassifikation", uuid);
+            String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            JSONObject object = new JSONObject(response);
+            JSONArray array = object.getJSONArray("results");
+
+            try {
+                array = array.getJSONArray(0);
+            } catch (JSONException e) {}
+            for (int i=0; i<array.length(); i++) {
+                JSONObject item = array.getJSONObject(i);
+                if (uuid.toString().equals(item.getString("id"))) {
+                    JSONObject expected = getJSONObjectFromFilename("data/klassifikation/read_response.json");
+                    // Update run-specific pieces of the object
+                    expected.put("id", uuid.toString());
+                    String timestamp = item.getJSONArray("registreringer").getJSONObject(0).getJSONObject("fratidspunkt").getString("tidsstempeldatotid");
+                    expected.getJSONArray("registreringer").getJSONObject(0).getJSONObject("fratidspunkt").put("tidsstempeldatotid", timestamp);
+                    if (item.similar(expected)) {
+                        System.out.println("List succeeded");
+                    } else {
+                        throw new TestException("Unexpected answer '" + item.toString() + "' (expected '"+expected.toString()+"')");
+                    }
+                }
+            }
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
+            e.printStackTrace();
+            throw new TestException(e);
+        }
+    }
+*/
+    private void testKlassifikationUpdate(UUID uuid) throws TestException {
+        try {
+            printDivider();
+            System.out.println("Updating klassifikation, uuid: "+uuid.toString());
+            Message message = new UpdateDocumentMessage(this.getAuthToken(), "klassifikation", uuid, getJSONObjectFromFilename("data/klassifikation/update.json"));
+            String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            JSONObject object = new JSONObject(response);
+            UUID result = UUID.fromString(object.getString("uuid"));
+            if (uuid.compareTo(result) == 0) {
+                System.out.println("Update succeeded");
+            } else {
+                throw new TestException("Unexpected answer '" + object.getString("uuid") + "' (expected '"+uuid.toString()+"')");
+            }
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
+            e.printStackTrace();
+            throw new TestException(e);
+        }
+    }
+
+    private void testKlassifikationPassivate(UUID uuid) throws TestException {
+        try {
+            printDivider();
+            System.out.println("Passivating klassifikation, uuid: "+uuid.toString());
+            Message message = new PassivateDocumentMessage(this.getAuthToken(), "klassifikation", uuid, "Passivate, please");
+            String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            JSONObject object = new JSONObject(response);
+            UUID result = UUID.fromString(object.getString("uuid"));
+            if (uuid.compareTo(result) == 0) {
+                System.out.println("Passivate succeeded");
+            } else {
+                throw new TestException("Unexpected answer '" + object.getString("uuid") + "' (expected '"+uuid.toString()+"')");
+            }
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
+            e.printStackTrace();
+            throw new TestException(e);
+        }
+    }
+
+    private void testKlassifikationDelete(UUID uuid) throws TestException {
+        try {
+            printDivider();
+            System.out.println("Deleting klassifikation, uuid: "+uuid.toString());
+            Message message = new DeleteDocumentMessage(this.getAuthToken(), "klassifikation", uuid, "Delete, please");
+            String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            JSONObject object = new JSONObject(response);
+            UUID result = UUID.fromString(object.getString("uuid"));
+            if (uuid.compareTo(result) == 0) {
+                System.out.println("Delete succeeded");
+            } else {
+                throw new TestException("Unexpected answer '" + object.getString("uuid") + "' (expected '"+uuid.toString()+"')");
+            }
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
+            e.printStackTrace();
+            throw new TestException(e);
+        }
+    }
+
+    //--------------------------------------------------------------------------
+
+
 
     private Headers getBaseHeaders() {
         Headers headers = new Headers();
