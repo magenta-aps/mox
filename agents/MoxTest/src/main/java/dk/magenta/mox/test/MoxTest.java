@@ -71,6 +71,7 @@ public class MoxTest extends MoxAgent {
     }
 
     private UUID testFacetOpret() throws TestException {
+        String response = null;
         try {
             printDivider();
             System.out.println("Creating facet");
@@ -79,13 +80,16 @@ public class MoxTest extends MoxAgent {
             headers.put(Message.HEADER_OPERATION, CreateDocumentMessage.OPERATION);
             JSONObject payload = getJSONObjectFromFilename("data/facet/create.json");
             Message message = CreateDocumentMessage.parse(headers, payload);
-            String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
             JSONObject object = new JSONObject(response);
             UUID uuid = UUID.fromString(object.getString("uuid"));
             System.out.println("Facet created, uuid: "+uuid.toString());
             System.out.println("Create succeeded");
             return uuid;
-        } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
+        } catch (JSONException e) {
+            System.out.println(response);
+            throw new TestException(e);
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
             System.out.println("Failed creating");
             e.printStackTrace();
             throw new TestException(e);
@@ -93,11 +97,12 @@ public class MoxTest extends MoxAgent {
     }
 
     private void testFacetRead(UUID uuid) throws TestException {
+        String response = null;
         try {
             printDivider();
             System.out.println("Reading facet, uuid: "+uuid.toString());
             Message message = new ReadDocumentMessage(this.getAuthToken(), "facet", uuid);
-            String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
             JSONObject object = new JSONObject(response);
             JSONObject item = object.getJSONArray(uuid.toString()).getJSONObject(0);
             JSONObject expected = getJSONObjectFromFilename("data/facet/read_response.json");
@@ -114,20 +119,24 @@ public class MoxTest extends MoxAgent {
                 System.out.println("Result differs from the expected");
                 throw new TestException();
             }
-        } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
+        } catch (JSONException e) {
+            System.out.println(response);
+            throw new TestException(e);
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
             throw new TestException(e);
         }
     }
 
     private List<UUID> testFacetSearch() throws TestException {
+        String response = null;
         try {
             printDivider();
             System.out.println("Searching for facet");
             ParameterMap<String, String> query = new ParameterMap<>();
             query.populateFromJSON(getJSONObjectFromFilename("data/facet/search.json"));
             Message message = new SearchDocumentMessage(this.getAuthToken(), "facet", query);
-            String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
             ArrayList<UUID> results = new ArrayList<>();
             JSONArray array;
             try {
@@ -148,26 +157,25 @@ public class MoxTest extends MoxAgent {
                 System.out.println("Search succeeded");
             }
             return results;
-        } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
+        } catch (JSONException e) {
+            System.out.println(response);
+            throw new TestException(e);
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
             throw new TestException(e);
         }
     }
 
     private void testFacetList(UUID uuid) throws TestException {
+        String response = null;
         try {
             printDivider();
             System.out.println("Listing facets");
             Message message = new ListDocumentMessage(this.getAuthToken(), "facet", uuid);
-            String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
             JSONArray array;
-            try {
                 JSONObject object = new JSONObject(response);
                 array = object.getJSONArray("results");
-            } catch (JSONException e) {
-                System.out.println(response);
-                throw new TestException(e);
-            }
             try {
                 array = array.getJSONArray(0);
             } catch (JSONException e) {}
@@ -186,18 +194,22 @@ public class MoxTest extends MoxAgent {
                     }
                 }
             }
-        } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
+        } catch (JSONException e) {
+            System.out.println(response);
+            throw new TestException(e);
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
             throw new TestException(e);
         }
     }
 
     private void testFacetUpdate(UUID uuid) throws TestException {
+        String response = null;
         try {
             printDivider();
             System.out.println("Updating facet, uuid: "+uuid.toString());
             Message message = new UpdateDocumentMessage(this.getAuthToken(), "facet", uuid, getJSONObjectFromFilename("data/facet/update.json"));
-            String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
             JSONObject object = new JSONObject(response);
             UUID result = UUID.fromString(object.getString("uuid"));
             if (uuid.compareTo(result) == 0) {
@@ -205,18 +217,22 @@ public class MoxTest extends MoxAgent {
             } else {
                 throw new TestException("Unexpected answer '" + object.getString("uuid") + "' (expected '"+uuid.toString()+"')");
             }
-        } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
+        } catch (JSONException e) {
+            System.out.println(response);
+            throw new TestException(e);
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
             throw new TestException(e);
         }
     }
 
     private void testFacetPassivate(UUID uuid) throws TestException {
+        String response = null;
         try {
             printDivider();
             System.out.println("Passivating facet, uuid: "+uuid.toString());
             Message message = new PassivateDocumentMessage(this.getAuthToken(), "facet", uuid, "Passivate, please");
-            String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
             JSONObject object = new JSONObject(response);
             UUID result = UUID.fromString(object.getString("uuid"));
             if (uuid.compareTo(result) == 0) {
@@ -224,18 +240,23 @@ public class MoxTest extends MoxAgent {
             } else {
                 throw new TestException("Unexpected answer '" + object.getString("uuid") + "' (expected '"+uuid.toString()+"')");
             }
-        } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
+        } catch (JSONException e) {
+            System.out.println(response);
+            throw new TestException(e);
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
             throw new TestException(e);
         }
     }
 
     private void testFacetDelete(UUID uuid) throws TestException {
+        String response = null;
         try {
             printDivider();
             System.out.println("Deleting facet, uuid: "+uuid.toString());
             Message message = new DeleteDocumentMessage(this.getAuthToken(), "facet", uuid, "Delete, please");
-            String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+
             JSONObject object = new JSONObject(response);
             UUID result = UUID.fromString(object.getString("uuid"));
             if (uuid.compareTo(result) == 0) {
@@ -243,7 +264,10 @@ public class MoxTest extends MoxAgent {
             } else {
                 throw new TestException("Unexpected answer '" + object.getString("uuid") + "' (expected '"+uuid.toString()+"')");
             }
-        } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
+        } catch (JSONException e) {
+            System.out.println(response);
+            throw new TestException(e);
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
             throw new TestException(e);
         }
@@ -273,6 +297,7 @@ public class MoxTest extends MoxAgent {
     }
 
     private UUID testKlassifikationOpret() throws TestException {
+        String response = null;
         try {
             printDivider();
             System.out.println("Creating klassifikation");
@@ -281,13 +306,16 @@ public class MoxTest extends MoxAgent {
             headers.put(Message.HEADER_OPERATION, CreateDocumentMessage.OPERATION);
             JSONObject payload = getJSONObjectFromFilename("data/klassifikation/create.json");
             Message message = CreateDocumentMessage.parse(headers, payload);
-            String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
             JSONObject object = new JSONObject(response);
             UUID uuid = UUID.fromString(object.getString("uuid"));
             System.out.println("Klassifikation created, uuid: "+uuid.toString());
             System.out.println("Create succeeded");
             return uuid;
-        } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
+        } catch (JSONException e) {
+            System.out.print(response);
+            throw new TestException(e);
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
             System.out.println("Failed creating");
             e.printStackTrace();
             throw new TestException(e);
@@ -295,11 +323,12 @@ public class MoxTest extends MoxAgent {
     }
 
     private void testKlassifikationRead(UUID uuid) throws TestException {
+        String response = null;
         try {
             printDivider();
             System.out.println("Reading klassifikation, uuid: "+uuid.toString());
             Message message = new ReadDocumentMessage(this.getAuthToken(), "klassifikation", uuid);
-            String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
             JSONObject object = new JSONObject(response);
             JSONObject item = object.getJSONArray(uuid.toString()).getJSONObject(0);
 
@@ -317,29 +346,28 @@ public class MoxTest extends MoxAgent {
                 System.out.println("Result differs from the expected");
                 throw new TestException();
             }
-        } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
+        } catch (JSONException e) {
+            System.out.print(response);
+            throw new TestException(e);
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
             throw new TestException(e);
         }
     }
 
     private List<UUID> testKlassifikationSearch() throws TestException {
+        String response = null;
         try {
             printDivider();
             System.out.println("Searching for klassifikation");
             ParameterMap<String, String> query = new ParameterMap<>();
             query.populateFromJSON(getJSONObjectFromFilename("data/klassifikation/search.json"));
             Message message = new SearchDocumentMessage(this.getAuthToken(), "klassifikation", query);
-            String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
             ArrayList<UUID> results = new ArrayList<>();
-            JSONArray array;
-            try {
-                JSONObject object = new JSONObject(response);
-                array = object.getJSONArray("results");
-            } catch (JSONException e) {
-                System.out.println(response);
-                throw new TestException(e);
-            }
+            JSONObject object = new JSONObject(response);
+            JSONArray array = object.getJSONArray("results");
+
             try {
                 array = array.getJSONArray(0);
             } catch (JSONException e) {}
@@ -351,26 +379,24 @@ public class MoxTest extends MoxAgent {
                 System.out.println("Search succeeded");
             }
             return results;
-        } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
+        } catch (JSONException e) {
+            System.out.print(response);
+            throw new TestException(e);
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
             throw new TestException(e);
         }
     }
 
     private void testKlassifikationList(UUID uuid) throws TestException {
+        String response = null;
         try {
             printDivider();
             System.out.println("Listing klassifikations");
             Message message = new ListDocumentMessage(this.getAuthToken(), "klassifikation", uuid);
-            String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
-            JSONArray array;
-            try {
-                JSONObject object = new JSONObject(response);
-                array = object.getJSONArray("results");
-            } catch (JSONException e) {
-                System.out.println(response);
-                throw new TestException(e);
-            }
+            response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            JSONObject object = new JSONObject(response);
+            JSONArray array = object.getJSONArray("results");
             try {
                 array = array.getJSONArray(0);
             } catch (JSONException e) {}
@@ -389,32 +415,33 @@ public class MoxTest extends MoxAgent {
                     }
                 }
             }
-        } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
+        } catch (JSONException e) {
+            System.out.print(response);
+            throw new TestException(e);
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
             throw new TestException(e);
         }
     }
 
     private void testKlassifikationUpdate(UUID uuid) throws TestException {
+        String response = null;
         try {
             printDivider();
             System.out.println("Updating klassifikation, uuid: "+uuid.toString());
             Message message = new UpdateDocumentMessage(this.getAuthToken(), "klassifikation", uuid, getJSONObjectFromFilename("data/klassifikation/update.json"));
-            String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
-            System.out.println(response);
-            try {
-                JSONObject object = new JSONObject(response);
-                UUID result = UUID.fromString(object.getString("uuid"));
+            response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            JSONObject object = new JSONObject(response);
+            UUID result = UUID.fromString(object.getString("uuid"));
 
-                if (uuid.compareTo(result) == 0) {
-                    System.out.println("Update succeeded");
-                } else {
-                    throw new TestException("Unexpected answer '" + object.getString("uuid") + "' (expected '"+uuid.toString()+"')");
-                }
-            } catch (JSONException e) {
-                System.out.print(response);
-                throw new TestException(e);
+            if (uuid.compareTo(result) == 0) {
+                System.out.println("Update succeeded");
+            } else {
+                throw new TestException("Unexpected answer '" + object.getString("uuid") + "' (expected '"+uuid.toString()+"')");
             }
+        } catch (JSONException e) {
+            System.out.print(response);
+            throw new TestException(e);
         } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
             throw new TestException(e);
@@ -422,30 +449,36 @@ public class MoxTest extends MoxAgent {
     }
 
     private void testKlassifikationPassivate(UUID uuid) throws TestException {
+        String response = null;
         try {
             printDivider();
             System.out.println("Passivating klassifikation, uuid: "+uuid.toString());
             Message message = new PassivateDocumentMessage(this.getAuthToken(), "klassifikation", uuid, "Passivate, please");
-            String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
             JSONObject object = new JSONObject(response);
             UUID result = UUID.fromString(object.getString("uuid"));
             if (uuid.compareTo(result) == 0) {
                 System.out.println("Passivate succeeded");
             } else {
-                throw new TestException("Unexpected answer '" + object.getString("uuid") + "' (expected '"+uuid.toString()+"')");
+                throw new TestException("Unexpected answer '" + object.getString("uuid") + "' (expected '" + uuid.toString() + "')");
             }
-        } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
+
+        } catch (JSONException e) {
+            System.out.println(response);
+            throw new TestException(e);
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
             throw new TestException(e);
         }
     }
 
     private void testKlassifikationDelete(UUID uuid) throws TestException {
+        String response = null;
         try {
             printDivider();
             System.out.println("Deleting klassifikation, uuid: "+uuid.toString());
             Message message = new DeleteDocumentMessage(this.getAuthToken(), "klassifikation", uuid, "Delete, please");
-            String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
             JSONObject object = new JSONObject(response);
             UUID result = UUID.fromString(object.getString("uuid"));
             if (uuid.compareTo(result) == 0) {
@@ -453,15 +486,16 @@ public class MoxTest extends MoxAgent {
             } else {
                 throw new TestException("Unexpected answer '" + object.getString("uuid") + "' (expected '"+uuid.toString()+"')");
             }
-        } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
+        } catch (JSONException e) {
+            System.out.println(response);
+            throw new TestException(e);
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
             throw new TestException(e);
         }
     }
 
     //--------------------------------------------------------------------------
-
-
 
     private Headers getBaseHeaders() {
         Headers headers = new Headers();
