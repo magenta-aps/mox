@@ -1,22 +1,16 @@
 {
-  "id": "a3707c82-4240-4bb6-a0d4-3327660aee8d",
+  "id": "15b9151d-1671-4b5a-8f68-954683077761",
   "registreringer": [
     {
       "attributter": {
-        "itsystemegenskaber": [
+        "brugeregenskaber": [
           {
-            "brugervendtnoegle": "OIO_REST",
-            "itsystemnavn": "OIOXML REST API",
-            "itsystemtype": "Kommunalt sys\u00e6\u00f8tem",
-            "konfigurationreference": [
-              "J\u00e5a",
-              "Ne\u00e6j",
-              "Ved ikke\u00f8"
-            ],
+            "brugernavn": "agger",
+            "brugervendtnoegle": "CKA",
             "virkning": {
-              "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+              "aktoerref": "cb904af2-83a1-11e5-b3b8-83a8f6a26e42",
               "aktoertypekode": "Bruger",
-              "from": "2014-05-19 12:02:32+02",
+              "from": "2015-01-01 00:00:00+01",
               "from_included": true,
               "to": "infinity",
               "to_included": false
@@ -27,46 +21,18 @@
       "brugerref": "10100ef4-0ac4-4bb1-aaee-3343fe017103",
       "fratidspunkt": {
         "graenseindikator": true,
-        "tidsstempeldatotid": "2016-03-04 13:29:41.527462+01"
+        "tidsstempeldatotid": "2016-03-04 13:35:46.353234+01"
       },
       "livscykluskode": "Opstaaet",
-      "note": "Nyt IT-system",
+      "note": "Test-bruger",
       "relationer": {
         "tilhoerer": [
           {
             "uuid": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
             "virkning": {
               "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
-              "aktoertypekode": "Bruger",
               "from": "2014-05-19 12:02:32+02",
               "from_included": true,
-              "notetekst": "Nothing to see here!",
-              "to": "infinity",
-              "to_included": false
-            }
-          }
-        ],
-        "tilknyttedeorganisationer": [
-          {
-            "uuid": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
-            "virkning": {
-              "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
-              "aktoertypekode": "Bruger",
-              "from": "2015-05-19 12:02:32+02",
-              "from_included": true,
-              "notetekst": "Nothing to see here!",
-              "to": "infinity",
-              "to_included": false
-            }
-          },
-          {
-            "uuid": "ef2713ee-1a38-4c23-8fcb-3c4331262194",
-            "virkning": {
-              "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
-              "aktoertypekode": "Bruger",
-              "from": "2014-05-19 12:02:32+02",
-              "from_included": true,
-              "notetekst": "Nothing to see here!",
               "to": "infinity",
               "to_included": false
             }
@@ -74,15 +40,13 @@
         ]
       },
       "tilstande": {
-        "itsystemgyldighed": [
+        "brugergyldighed": [
           {
             "gyldighed": "Aktiv",
             "virkning": {
               "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
-              "aktoertypekode": "Bruger",
-              "from": "2014-05-19 12:02:32+02",
+              "from": "2015-01-01 00:00:00+01",
               "from_included": true,
-              "notetekst": "Nothing to see here!",
               "to": "infinity",
               "to_included": false
             }

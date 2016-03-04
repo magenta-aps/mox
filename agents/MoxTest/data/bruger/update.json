@@ -1,9 +1,9 @@
 { 
-    "note": "Opdater itsystem",
+    "note": "Opdater bruger",
     "attributter": { 
         "klasseegenskaber": [ 
             {
-                "itsystemnavn": "OIOXML REST API",
+                "brugervendtnoegle": "CA",
                 "virkning": {
                     "from": "2014-05-22 12:02:32",
                     "to": "infinity",

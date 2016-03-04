@@ -44,6 +44,7 @@ public class MoxTest extends MoxAgent {
             this.testKlassifikation();
             this.testKlasse();
             this.testItsystem();
+            this.testBruger();
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();
         }
