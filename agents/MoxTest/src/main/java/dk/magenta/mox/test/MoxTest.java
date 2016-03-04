@@ -998,7 +998,6 @@ public class MoxTest extends MoxAgent {
             System.out.println("Reading bruger, uuid: "+uuid.toString());
             Message message = new ReadDocumentMessage(this.getAuthToken(), "bruger", uuid);
             response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
-            System.out.println(response);
             JSONObject object = new JSONObject(response);
             JSONObject item = object.getJSONArray(uuid.toString()).getJSONObject(0);
 
