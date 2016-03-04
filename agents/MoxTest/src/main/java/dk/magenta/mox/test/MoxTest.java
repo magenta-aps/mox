@@ -29,29 +29,47 @@ public class MoxTest extends MoxAgent {
     public static void main(String[] args) {
         DOMConfigurator.configure("log4j.xml");
         MoxTest moxTest = new MoxTest(args);
+        moxTest.run();
+        System.exit(0);
     }
 
     public MoxTest(String[] args) {
         super(args);
+    }
+
+    public void run() {
         try {
             this.sender = this.createMessageSender();
-
-            UUID facet = this.testFacetOpret();
-            if (facet != null) {
-                this.testFacetRead(facet);
-                this.testFacetSearch();
-                this.testFacetList(facet);
-                this.testFacetUpdate(facet);
-                this.testFacetPassivate(facet);
-                this.testFacetDelete(facet);
-            }
+            this.testFacet();
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();
         }
-        System.exit(0);
     }
 
-    private UUID testFacetOpret() {
+    //--------------------------------------------------------------------------
+
+    private void testFacet() {
+        if (this.sender != null) {
+            try {
+                UUID facet = this.testFacetOpret();
+                if (facet != null) {
+                    try {
+                        this.testFacetRead(facet);
+                        this.testFacetSearch();
+                        this.testFacetList(facet);
+                        this.testFacetUpdate(facet);
+                        this.testFacetPassivate(facet);
+                    } catch (TestException e) {
+                    }
+                    this.testFacetDelete(facet);
+                }
+            } catch (TestException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private UUID testFacetOpret() throws TestException {
         try {
             printDivider();
             System.out.println("Creating facet");
@@ -69,11 +87,11 @@ public class MoxTest extends MoxAgent {
         } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
             System.out.println("Failed creating");
             e.printStackTrace();
+            throw new TestException(e);
         }
-        return null;
     }
 
-    private void testFacetRead(UUID uuid) {
+    private void testFacetRead(UUID uuid) throws TestException {
         try {
             printDivider();
             System.out.println("Reading facet, uuid: "+uuid.toString());
@@ -93,13 +111,15 @@ public class MoxTest extends MoxAgent {
                 System.out.println("Read succeeded");
             } else {
                 System.out.println("Result differs from the expected");
+                throw new TestException();
             }
         } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
             e.printStackTrace();
+            throw new TestException(e);
         }
     }
 
-    private List<UUID> testFacetSearch() {
+    private List<UUID> testFacetSearch() throws TestException {
         try {
             printDivider();
             System.out.println("Searching for facet");
@@ -123,11 +143,11 @@ public class MoxTest extends MoxAgent {
             return results;
         } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
             e.printStackTrace();
+            throw new TestException(e);
         }
-        return null;
     }
 
-    private void testFacetList(UUID uuid) {
+    private void testFacetList(UUID uuid) throws TestException {
         try {
             printDivider();
             System.out.println("Listing facets");
@@ -150,16 +170,17 @@ public class MoxTest extends MoxAgent {
                     if (item.similar(expected)) {
                         System.out.println("List succeeded");
                     } else {
-                        System.out.println("Returned object didn't match expected");
+                        throw new TestException("Unexpected answer '" + item.toString() + "' (expected '"+expected.toString()+"')");
                     }
                 }
             }
         } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
             e.printStackTrace();
+            throw new TestException(e);
         }
     }
 
-    private void testFacetUpdate(UUID uuid) {
+    private void testFacetUpdate(UUID uuid) throws TestException {
         try {
             printDivider();
             System.out.println("Updating facet, uuid: "+uuid.toString());
@@ -169,43 +190,54 @@ public class MoxTest extends MoxAgent {
             UUID result = UUID.fromString(object.getString("uuid"));
             if (uuid.compareTo(result) == 0) {
                 System.out.println("Update succeeded");
+            } else {
+                throw new TestException("Unexpected answer '" + object.getString("uuid") + "' (expected '"+uuid.toString()+"')");
             }
         } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
             e.printStackTrace();
+            throw new TestException(e);
         }
     }
 
-    private void testFacetPassivate(UUID uuid) {
+    private void testFacetPassivate(UUID uuid) throws TestException {
         try {
             printDivider();
             System.out.println("Passivating facet, uuid: "+uuid.toString());
-            Message message = new PassivateDocumentMessage(this.getAuthToken(), "facet", uuid);
+            Message message = new PassivateDocumentMessage(this.getAuthToken(), "facet", uuid, "Passivate, please");
             String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
             JSONObject object = new JSONObject(response);
             UUID result = UUID.fromString(object.getString("uuid"));
             if (uuid.compareTo(result) == 0) {
                 System.out.println("Passivate succeeded");
+            } else {
+                throw new TestException("Unexpected answer '" + object.getString("uuid") + "' (expected '"+uuid.toString()+"')");
             }
         } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
             e.printStackTrace();
+            throw new TestException(e);
         }
     }
 
-    private void testFacetDelete(UUID uuid) {
+    private void testFacetDelete(UUID uuid) throws TestException {
         try {
             printDivider();
             System.out.println("Deleting facet, uuid: "+uuid.toString());
-            Message message = new DeleteDocumentMessage(this.getAuthToken(), "facet", uuid);
+            Message message = new DeleteDocumentMessage(this.getAuthToken(), "facet", uuid, "Delete, please");
             String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
             JSONObject object = new JSONObject(response);
             UUID result = UUID.fromString(object.getString("uuid"));
             if (uuid.compareTo(result) == 0) {
                 System.out.println("Delete succeeded");
+            } else {
+                throw new TestException("Unexpected answer '" + object.getString("uuid") + "' (expected '"+uuid.toString()+"')");
             }
         } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
             e.printStackTrace();
+            throw new TestException(e);
         }
     }
+
+    //--------------------------------------------------------------------------
 
     private Headers getBaseHeaders() {
         Headers headers = new Headers();
