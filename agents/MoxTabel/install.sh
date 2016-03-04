@@ -11,3 +11,10 @@ popd
 sudo mkdir -p /var/log/mox
 sudo touch /var/log/mox/moxtabel.log
 sudo chown mox /var/log/mox/moxtabel.log
+
+PROPERTIESFILENAME="moxtabel.properties"
+
+if [ ! -f "$DIR/$PROPERTIESFILENAME" ]; then
+	ln -s "$DIR/$PROPERTIESFILENAME.production" "$DIR/$PROPERTIESFILENAME"
+fi
+

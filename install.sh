@@ -79,6 +79,7 @@ $DIR/servlets/install.sh
 
 
 
+$DIR/servlets/MoxDocumentUpload/install.sh
 $DIR/agents/MoxTabel/install.sh
 $DIR/agents/MoxRestFrontend/install.sh
 

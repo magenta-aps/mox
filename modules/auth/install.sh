@@ -13,11 +13,9 @@ pushd "$DIR"
 mvn package
 popd
 
-
-SERVERNAME="moxdev.magenta-aps.dk"
-REPLACENAME="moxtest.magenta-aps.dk"
-cp "$DIR/auth.properties.base" "$DIR/auth.properties"
-sed -i "s/$REPLACENAME/$SERVERNAME/" "$DIR/auth.properties"
+if [ ! -f "$DIR/auth.properties" ]; then
+	ln -s "$DIR/auth.properties.production" "$DIR/auth.properties"
+fi
 
 ln -sf "$DIR/auth.sh" "$ROOTDIR/auth.sh"
 

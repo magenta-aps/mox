@@ -36,6 +36,10 @@ public class MoxRestFrontend extends MoxAgent {
         });
     }
 
+    protected String getDefaultPropertiesFileName() {
+        return "moxrestfrontend.properties";
+    }
+
     public void run() {
         log.info("\n--------------------------------------------------------------------------------");
         log.info("MoxRestFrontend Starting");

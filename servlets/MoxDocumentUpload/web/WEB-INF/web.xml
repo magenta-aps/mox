@@ -47,7 +47,7 @@
     </context-param>
     <context-param>
         <param-name>amqp.queue</param-name>
-        <param-value>uploaded</param-value>
+        <param-value>documentconvert</param-value>
     </context-param>
     <context-param>
         <param-name>amqp.username</param-name>
