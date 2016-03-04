@@ -43,6 +43,7 @@ public class MoxTest extends MoxAgent {
             this.testFacet();
             this.testKlassifikation();
             this.testKlasse();
+            this.testItsystem();
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();
         }
