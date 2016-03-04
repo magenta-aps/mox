@@ -1,0 +1,12 @@
+<VirtualHost *:80>
+
+ServerName referencedata.dk
+ServerAlias referencedata.dk
+
+DocumentRoot /var/www/html
+
+# Tomcat redirect
+JkMount /*.jsp ajp13_worker
+JkMount /mox/* ajp13_worker
+
+</VirtualHost>

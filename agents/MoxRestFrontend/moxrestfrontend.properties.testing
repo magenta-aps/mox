@@ -4,7 +4,7 @@
 amqp.interface = localhost:5672
 
 # The queueName to read commands from
-amqp.queueName = incoming
+amqp.queueName = converted
 
 # The credentials to use when authing to RabbitMQ
 amqp.username = guest
