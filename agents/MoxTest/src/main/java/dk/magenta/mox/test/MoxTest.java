@@ -128,9 +128,15 @@ public class MoxTest extends MoxAgent {
             query.populateFromJSON(getJSONObjectFromFilename("data/facet/search.json"));
             Message message = new SearchDocumentMessage(this.getAuthToken(), "facet", query);
             String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
-            JSONObject object = new JSONObject(response);
             ArrayList<UUID> results = new ArrayList<>();
-            JSONArray array = object.getJSONArray("results");
+            JSONArray array;
+            try {
+                JSONObject object = new JSONObject(response);
+                array = object.getJSONArray("results");
+            } catch (JSONException e) {
+                System.out.println(response);
+                throw new TestException(e);
+            }
             try {
                 array = array.getJSONArray(0);
             } catch (JSONException e) {}
@@ -154,9 +160,14 @@ public class MoxTest extends MoxAgent {
             System.out.println("Listing facets");
             Message message = new ListDocumentMessage(this.getAuthToken(), "facet", uuid);
             String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
-            JSONObject object = new JSONObject(response);
-            JSONArray array = object.getJSONArray("results");
-
+            JSONArray array;
+            try {
+                JSONObject object = new JSONObject(response);
+                array = object.getJSONArray("results");
+            } catch (JSONException e) {
+                System.out.println(response);
+                throw new TestException(e);
+            }
             try {
                 array = array.getJSONArray(0);
             } catch (JSONException e) {}
@@ -320,9 +331,15 @@ public class MoxTest extends MoxAgent {
             query.populateFromJSON(getJSONObjectFromFilename("data/klassifikation/search.json"));
             Message message = new SearchDocumentMessage(this.getAuthToken(), "klassifikation", query);
             String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
-            JSONObject object = new JSONObject(response);
             ArrayList<UUID> results = new ArrayList<>();
-            JSONArray array = object.getJSONArray("results");
+            JSONArray array;
+            try {
+                JSONObject object = new JSONObject(response);
+                array = object.getJSONArray("results");
+            } catch (JSONException e) {
+                System.out.println(response);
+                throw new TestException(e);
+            }
             try {
                 array = array.getJSONArray(0);
             } catch (JSONException e) {}
@@ -346,9 +363,14 @@ public class MoxTest extends MoxAgent {
             System.out.println("Listing klassifikations");
             Message message = new ListDocumentMessage(this.getAuthToken(), "klassifikation", uuid);
             String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
-            JSONObject object = new JSONObject(response);
-            JSONArray array = object.getJSONArray("results");
-
+            JSONArray array;
+            try {
+                JSONObject object = new JSONObject(response);
+                array = object.getJSONArray("results");
+            } catch (JSONException e) {
+                System.out.println(response);
+                throw new TestException(e);
+            }
             try {
                 array = array.getJSONArray(0);
             } catch (JSONException e) {}
@@ -379,14 +401,21 @@ public class MoxTest extends MoxAgent {
             System.out.println("Updating klassifikation, uuid: "+uuid.toString());
             Message message = new UpdateDocumentMessage(this.getAuthToken(), "klassifikation", uuid, getJSONObjectFromFilename("data/klassifikation/update.json"));
             String response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
-            JSONObject object = new JSONObject(response);
-            UUID result = UUID.fromString(object.getString("uuid"));
-            if (uuid.compareTo(result) == 0) {
-                System.out.println("Update succeeded");
-            } else {
-                throw new TestException("Unexpected answer '" + object.getString("uuid") + "' (expected '"+uuid.toString()+"')");
+            System.out.println(response);
+            try {
+                JSONObject object = new JSONObject(response);
+                UUID result = UUID.fromString(object.getString("uuid"));
+
+                if (uuid.compareTo(result) == 0) {
+                    System.out.println("Update succeeded");
+                } else {
+                    throw new TestException("Unexpected answer '" + object.getString("uuid") + "' (expected '"+uuid.toString()+"')");
+                }
+            } catch (JSONException e) {
+                System.out.print(response);
+                throw new TestException(e);
             }
-        } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
             throw new TestException(e);
         }
