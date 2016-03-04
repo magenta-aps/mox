@@ -497,6 +497,229 @@ public class MoxTest extends MoxAgent {
 
     //--------------------------------------------------------------------------
 
+    private void testKlasse() {
+        if (this.sender != null) {
+            try {
+                UUID klasse = this.testKlasseOpret();
+                if (klasse != null) {
+                    try {
+                        this.testKlasseRead(klasse);
+                        this.testKlasseSearch();
+                        this.testKlasseList(klasse);
+                        this.testKlasseUpdate(klasse);
+                        this.testKlassePassivate(klasse);
+                    } catch (TestException e) {
+                    }
+                    this.testKlasseDelete(klasse);
+                }
+            } catch (TestException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private UUID testKlasseOpret() throws TestException {
+        String response = null;
+        try {
+            printDivider();
+            System.out.println("Creating klasse");
+            Headers headers = this.getBaseHeaders();
+            headers.put(Message.HEADER_OBJECTTYPE, "klasse");
+            headers.put(Message.HEADER_OPERATION, CreateDocumentMessage.OPERATION);
+            JSONObject payload = getJSONObjectFromFilename("data/klasse/create.json");
+            Message message = CreateDocumentMessage.parse(headers, payload);
+            response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            JSONObject object = new JSONObject(response);
+            UUID uuid = UUID.fromString(object.getString("uuid"));
+            System.out.println("Klasse created, uuid: "+uuid.toString());
+            System.out.println("Create succeeded");
+            return uuid;
+        } catch (JSONException e) {
+            System.out.print(response);
+            throw new TestException(e);
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
+            System.out.println("Failed creating");
+            e.printStackTrace();
+            throw new TestException(e);
+        }
+    }
+
+    private void testKlasseRead(UUID uuid) throws TestException {
+        String response = null;
+        try {
+            printDivider();
+            System.out.println("Reading klasse, uuid: "+uuid.toString());
+            Message message = new ReadDocumentMessage(this.getAuthToken(), "klasse", uuid);
+            response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            System.out.println(response);
+            JSONObject object = new JSONObject(response);
+            JSONObject item = object.getJSONArray(uuid.toString()).getJSONObject(0);
+
+            JSONObject expected = getJSONObjectFromFilename("data/klasse/read_response.json");
+
+            // Update run-specific pieces of the object
+            expected.put("id", uuid.toString());
+            String timestamp = item.getJSONArray("registreringer").getJSONObject(0).getJSONObject("fratidspunkt").getString("tidsstempeldatotid");
+            expected.getJSONArray("registreringer").getJSONObject(0).getJSONObject("fratidspunkt").put("tidsstempeldatotid", timestamp);
+
+            if (item.similar(expected)) {
+                System.out.println("Expected response received");
+                System.out.println("Read succeeded");
+            } else {
+                System.out.println("Result differs from the expected");
+                throw new TestException();
+            }
+        } catch (JSONException e) {
+            System.out.print(response);
+            throw new TestException(e);
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
+            e.printStackTrace();
+            throw new TestException(e);
+        }
+    }
+
+    private List<UUID> testKlasseSearch() throws TestException {
+        String response = null;
+        try {
+            printDivider();
+            System.out.println("Searching for klasse");
+            ParameterMap<String, String> query = new ParameterMap<>();
+            query.populateFromJSON(getJSONObjectFromFilename("data/klasse/search.json"));
+            Message message = new SearchDocumentMessage(this.getAuthToken(), "klasse", query);
+            response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            ArrayList<UUID> results = new ArrayList<>();
+            JSONObject object = new JSONObject(response);
+            JSONArray array = object.getJSONArray("results");
+
+            try {
+                array = array.getJSONArray(0);
+            } catch (JSONException e) {}
+            for (int i=0; i<array.length(); i++) {
+                results.add(UUID.fromString(array.getString(i)));
+            }
+            System.out.println(results.size() + " items found");
+            if (results.size()>0) {
+                System.out.println("Search succeeded");
+            }
+            return results;
+        } catch (JSONException e) {
+            System.out.print(response);
+            throw new TestException(e);
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
+            e.printStackTrace();
+            throw new TestException(e);
+        }
+    }
+
+    private void testKlasseList(UUID uuid) throws TestException {
+        String response = null;
+        try {
+            printDivider();
+            System.out.println("Listing klasses");
+            Message message = new ListDocumentMessage(this.getAuthToken(), "klasse", uuid);
+            response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            JSONObject object = new JSONObject(response);
+            JSONArray array = object.getJSONArray("results");
+            try {
+                array = array.getJSONArray(0);
+            } catch (JSONException e) {}
+            for (int i=0; i<array.length(); i++) {
+                JSONObject item = array.getJSONObject(i);
+                if (uuid.toString().equals(item.getString("id"))) {
+                    JSONObject expected = getJSONObjectFromFilename("data/klasse/read_response.json");
+                    // Update run-specific pieces of the object
+                    expected.put("id", uuid.toString());
+                    String timestamp = item.getJSONArray("registreringer").getJSONObject(0).getJSONObject("fratidspunkt").getString("tidsstempeldatotid");
+                    expected.getJSONArray("registreringer").getJSONObject(0).getJSONObject("fratidspunkt").put("tidsstempeldatotid", timestamp);
+                    if (item.similar(expected)) {
+                        System.out.println("List succeeded");
+                    } else {
+                        throw new TestException("Unexpected answer '" + item.toString() + "' (expected '"+expected.toString()+"')");
+                    }
+                }
+            }
+        } catch (JSONException e) {
+            System.out.print(response);
+            throw new TestException(e);
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
+            e.printStackTrace();
+            throw new TestException(e);
+        }
+    }
+
+    private void testKlasseUpdate(UUID uuid) throws TestException {
+        String response = null;
+        try {
+            printDivider();
+            System.out.println("Updating klasse, uuid: "+uuid.toString());
+            Message message = new UpdateDocumentMessage(this.getAuthToken(), "klasse", uuid, getJSONObjectFromFilename("data/klasse/update.json"));
+            response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            JSONObject object = new JSONObject(response);
+            UUID result = UUID.fromString(object.getString("uuid"));
+
+            if (uuid.compareTo(result) == 0) {
+                System.out.println("Update succeeded");
+            } else {
+                throw new TestException("Unexpected answer '" + object.getString("uuid") + "' (expected '"+uuid.toString()+"')");
+            }
+        } catch (JSONException e) {
+            System.out.print(response);
+            throw new TestException(e);
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
+            e.printStackTrace();
+            throw new TestException(e);
+        }
+    }
+
+    private void testKlassePassivate(UUID uuid) throws TestException {
+        String response = null;
+        try {
+            printDivider();
+            System.out.println("Passivating klasse, uuid: "+uuid.toString());
+            Message message = new PassivateDocumentMessage(this.getAuthToken(), "klasse", uuid, "Passivate, please");
+            response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            JSONObject object = new JSONObject(response);
+            UUID result = UUID.fromString(object.getString("uuid"));
+            if (uuid.compareTo(result) == 0) {
+                System.out.println("Passivate succeeded");
+            } else {
+                throw new TestException("Unexpected answer '" + object.getString("uuid") + "' (expected '" + uuid.toString() + "')");
+            }
+
+        } catch (JSONException e) {
+            System.out.println(response);
+            throw new TestException(e);
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
+            e.printStackTrace();
+            throw new TestException(e);
+        }
+    }
+
+    private void testKlasseDelete(UUID uuid) throws TestException {
+        String response = null;
+        try {
+            printDivider();
+            System.out.println("Deleting klasse, uuid: "+uuid.toString());
+            Message message = new DeleteDocumentMessage(this.getAuthToken(), "klasse", uuid, "Delete, please");
+            response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
+            JSONObject object = new JSONObject(response);
+            UUID result = UUID.fromString(object.getString("uuid"));
+            if (uuid.compareTo(result) == 0) {
+                System.out.println("Delete succeeded");
+            } else {
+                throw new TestException("Unexpected answer '" + object.getString("uuid") + "' (expected '"+uuid.toString()+"')");
+            }
+        } catch (JSONException e) {
+            System.out.println(response);
+            throw new TestException(e);
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException e) {
+            e.printStackTrace();
+            throw new TestException(e);
+        }
+    }
+
+    //--------------------------------------------------------------------------
+
     private Headers getBaseHeaders() {
         Headers headers = new Headers();
         headers.put(Message.HEADER_AUTHORIZATION, this.getAuthToken());
