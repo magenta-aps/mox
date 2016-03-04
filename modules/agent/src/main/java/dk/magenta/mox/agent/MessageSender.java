@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 import com.rabbitmq.client.QueueingConsumer;
+import dk.magenta.mox.agent.messages.Message;
 import org.json.*;
 
 import javax.naming.OperationNotSupportedException;
@@ -22,6 +23,11 @@ public class MessageSender extends MessageInterface {
     private HashMap<String, SettableFuture<String>> responseExpectors = new HashMap<String, SettableFuture<String>>();
     private boolean listening = false;
 
+    public MessageSender(AmqpDefinition amqpDefinition) throws IOException {
+        super(amqpDefinition);
+        this.setup();
+    }
+
     public MessageSender(String username, String password, String host, String queue) throws IOException, TimeoutException {
         this(username, password, host, null, queue);
     }
@@ -30,6 +36,10 @@ public class MessageSender extends MessageInterface {
     }
     public MessageSender(String username, String password, String host, String exchange, String queue) throws IOException, TimeoutException {
         super(username, password, host, exchange, queue);
+        this.setup();
+    }
+
+    private void setup() throws IOException {
         this.replyQueue = this.getChannel().queueDeclare().getQueue();
         this.replyConsumer = new QueueingConsumer(this.getChannel());
         this.getChannel().basicConsume(this.replyQueue, true, this.replyConsumer);
@@ -89,6 +99,11 @@ public class MessageSender extends MessageInterface {
             headers.put(MessageInterface.HEADER_QUERY, query.toString());
         }
         return this.sendJSON(headers, data);
+    }
+
+    public Future<String> send(Message message) throws IOException, InterruptedException {
+        logger.info("Sending message: \n"+message.getHeaders()+"\n"+message.getJSON().toString());
+        return this.sendJSON(message.getHeaders(), message.getJSON());
     }
 
     public Future<String> sendJSON(Map<String, Object> headers, JSONObject jsonObject) throws IOException, InterruptedException {

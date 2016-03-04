@@ -2,6 +2,7 @@ package dk.magenta.mox.agent;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.QueueingConsumer;
+import dk.magenta.mox.agent.messages.Headers;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -17,14 +18,30 @@ public class MessageReceiver extends MessageInterface {
     private boolean running;
     private boolean sendReplies;
 
+    public MessageReceiver(AmqpDefinition amqpDefinition) throws IOException {
+        super(amqpDefinition);
+        this.setupConsumer();
+    }
+    public MessageReceiver(AmqpDefinition amqpDefinition, boolean sendReplies) throws IOException {
+        super(amqpDefinition);
+        this.sendReplies = sendReplies;
+        this.setupConsumer();
+    }
+
     public MessageReceiver(String host, String exchange, String queue, boolean sendReplies) throws IOException, TimeoutException {
         this(null, null, host, exchange, queue, sendReplies);
     }
     public MessageReceiver(String username, String password, String host, String exchange, String queue, boolean sendReplies) throws IOException, TimeoutException {
         super(username, password, host, exchange, queue);
+        this.setupConsumer();
+    }
+
+    private void setupConsumer() throws IOException {
         this.consumer = new QueueingConsumer(this.getChannel());
-        this.getChannel().basicConsume(queue, true, this.consumer);
-        this.sendReplies = sendReplies;
+        if (consumer == null) {
+            throw new IOException("Couldn't open listener");
+        }
+        this.getChannel().basicConsume(this.getQueueName(), true, this.consumer);
     }
 
     public void run(MessageHandler callback) throws InterruptedException {
@@ -52,7 +69,7 @@ public class MessageReceiver extends MessageInterface {
                 }
                 continue;
             }
-            final Future<String> response = callback.run(delivery.getProperties().getHeaders(), dataObject);
+            final Future<String> response = callback.run(new Headers(delivery.getProperties().getHeaders()), dataObject);
 
             if (this.sendReplies) {
                 if (response == null) {

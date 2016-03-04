@@ -1,1 +1,3 @@
 The PostgreSQL database for the Klassifikation hierarchy goes here.
+
+To upgrade the database, change into the the 'updates' folder and run each update script.
