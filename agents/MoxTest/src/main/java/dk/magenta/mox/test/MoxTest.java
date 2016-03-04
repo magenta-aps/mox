@@ -247,8 +247,8 @@ public class MoxTest extends MoxAgent {
                 if (klassifikation != null) {
                     try {
                         this.testKlassifikationRead(klassifikation);
-                        //this.testKlassifikationSearch();
-                        //this.testKlassifikationList(klassifikation);
+                        this.testKlassifikationSearch();
+                        this.testKlassifikationList(klassifikation);
                         this.testKlassifikationUpdate(klassifikation);
                         this.testKlassifikationPassivate(klassifikation);
                     } catch (TestException e) {
@@ -292,7 +292,7 @@ public class MoxTest extends MoxAgent {
             System.out.println(response);
             JSONObject object = new JSONObject(response);
             JSONObject item = object.getJSONArray(uuid.toString()).getJSONObject(0);
-            /*
+
             JSONObject expected = getJSONObjectFromFilename("data/klassifikation/read_response.json");
 
             // Update run-specific pieces of the object
@@ -306,13 +306,13 @@ public class MoxTest extends MoxAgent {
             } else {
                 System.out.println("Result differs from the expected");
                 throw new TestException();
-            }*/
+            }
         } catch (InterruptedException | IOException | ExecutionException | TimeoutException | JSONException e) {
             e.printStackTrace();
             throw new TestException(e);
         }
     }
-/*
+
     private List<UUID> testKlassifikationSearch() throws TestException {
         try {
             printDivider();
@@ -373,7 +373,7 @@ public class MoxTest extends MoxAgent {
             throw new TestException(e);
         }
     }
-*/
+
     private void testKlassifikationUpdate(UUID uuid) throws TestException {
         try {
             printDivider();
