@@ -42,6 +42,7 @@ public class MoxTest extends MoxAgent {
             this.sender = this.createMessageSender();
             this.testFacet();
             this.testKlassifikation();
+            this.testKlasse();
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();
         }
