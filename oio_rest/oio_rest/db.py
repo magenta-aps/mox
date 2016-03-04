@@ -728,10 +728,10 @@ def search_objects(class_name, uuid, registration,
     return output
 
 
-def get_life_cycle_code(uuid):
+def get_life_cycle_code(class_name, uuid):
     n = datetime.now()
     n1 = n + timedelta(seconds=1)
-    regs = list_objects('facet', [uuid], n, n1, n, n1)
+    regs = list_objects(class_name, [uuid], n, n1, n, n1)
     reg = regs[0][0]
     livscykluskode = reg['registreringer'][0]['livscykluskode']
 
