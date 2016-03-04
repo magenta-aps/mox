@@ -13,7 +13,7 @@ amqp.password = guest
 
 
 # The root path to the REST interface
-rest.interface = https://moxtest.magenta-aps.dk
+rest.interface = https://moxdev.magenta-aps.dk
 # rest.interface = http://localhost:5000
 
 # Recognized object types and how to put them into the REST interface
