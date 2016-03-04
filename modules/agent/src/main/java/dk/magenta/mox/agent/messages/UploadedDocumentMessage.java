@@ -1,18 +1,19 @@
 package dk.magenta.mox.agent.messages;
 
-import org.json.JSONObject;
+import dk.magenta.mox.json.JSONObject;
 
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by lars on 22-01-16.
  */
-public class UploadedDocumentMessage extends DocumentMessage {
+public class UploadedDocumentMessage extends Message {
 
     public static final String KEY_FILENAME = "filename";
     public static final String KEY_URL = "url";
+
+    public static final String OPERATION = "upload";
 
     private String filename;
     private URL retrievalUrl;
@@ -23,6 +24,10 @@ public class UploadedDocumentMessage extends DocumentMessage {
         this.retrievalUrl = retrievalUrl;
     }
 
+    public UploadedDocumentMessage(String filename, String retrievalUrl, String authorization) throws MalformedURLException {
+        this(filename, new URL(retrievalUrl), authorization);
+    }
+
     public JSONObject getJSON() {
         JSONObject object = super.getJSON();
         object.put(KEY_FILENAME, this.filename);
@@ -30,8 +35,28 @@ public class UploadedDocumentMessage extends DocumentMessage {
         return object;
     }
 
+    public static UploadedDocumentMessage parse(Headers headers, JSONObject data) {
+        String operationName = headers.optString(Message.HEADER_OPERATION);
+        if (UploadedDocumentMessage.OPERATION.equalsIgnoreCase(operationName)) {
+            String authorization = headers.optString(Message.HEADER_AUTHORIZATION);
+            if (data != null) {
+                String filename = data.optString(KEY_FILENAME);
+                String retrievalUrl = data.optString(KEY_URL);
+                if (retrievalUrl != null) {
+                    try {
+                        return new UploadedDocumentMessage(filename, retrievalUrl, authorization);
+                    } catch (MalformedURLException e) {
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
     public Headers getHeaders() {
         Headers headers = super.getHeaders();
+        headers.put(Message.HEADER_OBJECTTYPE, HEADER_OBJECTTYPE_VALUE_DOCUMENT);
         headers.put(Message.HEADER_TYPE, Message.HEADER_TYPE_VALUE_MANUAL);
         headers.put(Message.HEADER_OBJECTREFERENCE, this.retrievalUrl.toString());
         return headers;

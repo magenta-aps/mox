@@ -21,13 +21,7 @@ public abstract class MessageInterface {
     private String exchange;
     private String queueName;
     private AMQP.Queue.DeclareOk queueResult;
-    protected Logger logger = Logger.getLogger(this.getClass());
-
-    public static final String HEADER_AUTHORIZATION = "autorisation";
-    public static final String HEADER_MESSAGEID = "objektID";
-    public static final String HEADER_OBJECTTYPE = "objekttype";
-    public static final String HEADER_OPERATION = "operation";
-    public static final String HEADER_QUERY = "query";
+    protected Logger log = Logger.getLogger(this.getClass());
 
 
     private static HashMap<String, ConnectionFactory> connectionFactories = new HashMap<String, ConnectionFactory>();
@@ -86,6 +80,10 @@ public abstract class MessageInterface {
 
     public Channel getChannel() {
         return channel;
+    }
+
+    public String getHost() {
+        return this.connection.getAddress().getHostName();
     }
 
     public String getExchange() {

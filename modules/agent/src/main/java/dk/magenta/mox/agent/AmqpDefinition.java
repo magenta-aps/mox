@@ -207,6 +207,13 @@ public class AmqpDefinition {
         return value;
     }
 
+    public boolean populateFromMap(ParameterMap<String, String> map, String prefix, boolean overwrite, boolean print) {
+        return this.populateFromMap(map.getFirstMap(), prefix, overwrite, print);
+    }
+    public boolean populateFromMap(ParameterMap<String, String> map, String prefix, boolean overwrite, boolean print, int printIndent) {
+        return this.populateFromMap(map.getFirstMap(), prefix, overwrite, print, printIndent);
+    }
+
     //--------------------------------------------------------------------------
 
     private String formatValue(String key, String value, int printIndent, String prefix) {

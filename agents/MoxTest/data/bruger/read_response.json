@@ -1,0 +1,58 @@
+{
+  "id": "15b9151d-1671-4b5a-8f68-954683077761",
+  "registreringer": [
+    {
+      "attributter": {
+        "brugeregenskaber": [
+          {
+            "brugernavn": "agger",
+            "brugervendtnoegle": "CKA",
+            "virkning": {
+              "aktoerref": "cb904af2-83a1-11e5-b3b8-83a8f6a26e42",
+              "aktoertypekode": "Bruger",
+              "from": "2015-01-01 00:00:00+01",
+              "from_included": true,
+              "to": "infinity",
+              "to_included": false
+            }
+          }
+        ]
+      },
+      "brugerref": "10100ef4-0ac4-4bb1-aaee-3343fe017103",
+      "fratidspunkt": {
+        "graenseindikator": true,
+        "tidsstempeldatotid": "2016-03-04 13:35:46.353234+01"
+      },
+      "livscykluskode": "Opstaaet",
+      "note": "Test-bruger",
+      "relationer": {
+        "tilhoerer": [
+          {
+            "uuid": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+            "virkning": {
+              "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+              "from": "2014-05-19 12:02:32+02",
+              "from_included": true,
+              "to": "infinity",
+              "to_included": false
+            }
+          }
+        ]
+      },
+      "tilstande": {
+        "brugergyldighed": [
+          {
+            "gyldighed": "Aktiv",
+            "virkning": {
+              "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+              "from": "2015-01-01 00:00:00+01",
+              "from_included": true,
+              "to": "infinity",
+              "to_included": false
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
