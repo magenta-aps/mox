@@ -1,8 +1,8 @@
 package dk.magenta.mox.agent;
 
+import dk.magenta.mox.agent.messages.Headers;
 import org.json.JSONObject;
 
-import java.util.Map;
 import java.util.concurrent.Future;
 
 /**
@@ -10,7 +10,7 @@ import java.util.concurrent.Future;
  */
 public class PrintMessageHandler implements MessageHandler {
 
-    public Future<String> run(Map<String, Object> headers, JSONObject jsonObject) {
+    public Future<String> run(Headers headers, JSONObject jsonObject) {
         System.out.println("-------- Message received --------");
         System.out.println("headers:");
         if (headers == null || headers.isEmpty()) {

@@ -1,17 +1,35 @@
-* Version 0.2.12, December 18, 2015
+* Version 0.2.13, March 3, 2016
 
 New in this version:
 
-* Java components split into modules and ordered under that folder
-* Servlet architecture set up
-* Spreadsheet servlet begun
+* Reorganize Agents into distinct entities, with reusable classes
+  defined in depencency modules
+* Put server-specific config (development, testing, production)
+  in separate files, and symlink to them as needed
+* Set up demonstration servlet to receive file uploads
+* Rename message queues by their recipient
 
 
-* Version 0.2.11.1, February 15, 2016
+* Version 0.2.12.1, February 15, 2016
 
 Hotfix:
 
 * Mox Advis should not crash if receiving one UUID as string.
+
+
+* Version 0.2.12, January 4, 2016
+
+New in this version:
+
+* Read operation now supports registreringFra/Til parameters.
+* Update README documentation to fix typo and to explain that the
+  date range filters use the overlap operator.
+* Registrering JSON results now include the "TilTidspunkt" date range.
+  IMPORTANT: The script in db/updates/update-2016-01-04.sh should be run
+  (from the same directory) to update the database for this change.
+* Java components split into modules and ordered under that folder
+* Servlet architecture set up
+* Spreadsheet servlet begun
 
 
 * Version 0.2.11, December 10, 2015

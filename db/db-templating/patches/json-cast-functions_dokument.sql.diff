@@ -1,8 +1,23 @@
-*** ../generated-files/json-cast-functions_dokument.sql	2015-08-05 13:06:04.720885462 +0200
---- ../patches/json-cast-functions_dokument.org.sql	2015-08-05 13:09:44.204882995 +0200
+*** generated-files/json-cast-functions_dokument.sql	2016-01-04 14:29:36.632122829 +0100
+--- patches/json-cast-functions_dokument.org.sql	2016-01-04 12:03:42.703750207 +0100
 ***************
-*** 84,93 ****
---- 84,94 ----
+*** 85,99 ****
+    ,CASE WHEN coalesce(array_length($1.relationer,1),0)>0 THEN
+      (SELECT rel_json from rel)
+      ELSE
+      '{}'::json
+      END relationer
+    FROM
+      (
+      SELECT
+!      (SELECT LOWER(($1.registrering).TimePeriod)) as TidsstempelDatoTid 
+!     ,(SELECT lower_inc(($1.registrering).TimePeriod)) as GraenseIndikator 
+      ) as  FraTidspunkt,
+      (
+      SELECT
+       (SELECT UPPER(($1.registrering).TimePeriod)) as TidsstempelDatoTid
+      ,(SELECT upper_inc(($1.registrering).TimePeriod)) as GraenseIndikator
+--- 85,100 ----
     ,CASE WHEN coalesce(array_length($1.relationer,1),0)>0 THEN
       (SELECT rel_json from rel)
       ELSE
@@ -12,5 +27,10 @@
     FROM
       (
       SELECT
-       (SELECT LOWER(($1.registrering).TimePeriod)) as TidsstempelDatoTid 
-      ,(SELECT lower_inc(($1.registrering).TimePeriod)) as GraenseIndikator 
+!      (SELECT LOWER(($1.registrering).TimePeriod)) as TidsstempelDatoTid
+!     ,(SELECT lower_inc(($1.registrering).TimePeriod)) as GraenseIndikator
+      ) as  FraTidspunkt,
+      (
+      SELECT
+       (SELECT UPPER(($1.registrering).TimePeriod)) as TidsstempelDatoTid
+      ,(SELECT upper_inc(($1.registrering).TimePeriod)) as GraenseIndikator

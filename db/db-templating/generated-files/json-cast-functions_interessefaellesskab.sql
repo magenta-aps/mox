@@ -76,6 +76,7 @@ FROM
   )
   SELECT 
   row_to_json(FraTidspunkt.*) FraTidspunkt
+  ,row_to_json(TilTidspunkt.*) TilTidspunkt
   ,($1.registrering).livscykluskode
   ,($1.registrering).note
   ,($1.registrering).brugerref
@@ -91,7 +92,12 @@ FROM
     SELECT
      (SELECT LOWER(($1.registrering).TimePeriod)) as TidsstempelDatoTid 
     ,(SELECT lower_inc(($1.registrering).TimePeriod)) as GraenseIndikator 
-    ) as  FraTidspunkt
+    ) as  FraTidspunkt,
+    (
+    SELECT
+     (SELECT UPPER(($1.registrering).TimePeriod)) as TidsstempelDatoTid
+    ,(SELECT upper_inc(($1.registrering).TimePeriod)) as GraenseIndikator
+    ) as  TilTidspunkt
   
 
 )
@@ -104,7 +110,7 @@ END;
 $$ LANGUAGE plpgsql immutable;
 
 
---drop cast (InteressefaellesskabRegistreringType as json);
+drop cast if exists (InteressefaellesskabRegistreringType as json);
 create cast (InteressefaellesskabRegistreringType as json) with function actual_state._cast_InteressefaellesskabRegistreringType_to_json(InteressefaellesskabRegistreringType);
 
 
@@ -144,7 +150,7 @@ RETURN result;
 END;
 $$ LANGUAGE plpgsql immutable;
 
---drop cast (InteressefaellesskabType as json);
+drop cast if exists (InteressefaellesskabType as json);
 create cast (InteressefaellesskabType as json) with function actual_state._cast_interessefaellesskabType_to_json(InteressefaellesskabType); 
 
 
