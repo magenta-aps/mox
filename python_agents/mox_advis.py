@@ -1,4 +1,4 @@
-#!/usr/bin/env /srv/mox/python_agents/python-env/bin/python
+#!/usr/bin/env /home/mox/mox/python_agents/python-env/bin/python
 import zlib
 import base64
 import smtplib
@@ -110,6 +110,8 @@ class MOXAdvis(MOXAgent):
             logging.error("ERROR: No authentication present!")
             return
         uuids = properties.headers.get('query', None)
+        if isinstance(uuids, basestring):
+            uuids = [uuids]
         subject = properties.headers.get('subject', '')
         from_address = FROM_EMAIL
         # Validate SAML token
