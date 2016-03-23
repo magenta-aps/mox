@@ -1,4 +1,16 @@
-* Version 0.2.12.1, February 15, 2015
+* Version 0.2.13, March 3, 2016
+
+New in this version:
+
+* Reorganize Agents into distinct entities, with reusable classes
+  defined in depencency modules
+* Put server-specific config (development, testing, production)
+  in separate files, and symlink to them as needed
+* Set up demonstration servlet to receive file uploads
+* Rename message queues by their recipient
+
+
+* Version 0.2.12.1, February 15, 2016
 
 Hotfix:
 
