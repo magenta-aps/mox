@@ -44,7 +44,7 @@ public class UploadServlet extends HttpServlet {
     public static final String authKey = "authentication";
 
     private InetAddress localAddress;
-    private static Pattern hostnamePattern = Pattern.compile("[a-z]+://([a-z0-9\\-\\.]+)(?::(\\d+))/.*", Pattern.CASE_INSENSITIVE);
+    private static Pattern hostnamePattern = Pattern.compile("[a-z]+://([a-z0-9\\-\\.]+)(?::(\\d+))?/.*", Pattern.CASE_INSENSITIVE);
 
     private MessageSender messageSender;
 
@@ -179,7 +179,7 @@ public class UploadServlet extends HttpServlet {
                 port = Integer.parseInt(m.group(2), 10);
             }
         } else {
-            hostname = this.localAddress.getHostName();
+            hostname = this.localAddress.getCanonicalHostName();
         }
 
         response.setContentType("text/html");
