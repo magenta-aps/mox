@@ -108,8 +108,6 @@ public class ConvertedObject extends HashMap<String, String> {
             container.put("virkning", effectiveObject);
         }
 
-        System.out.println(json.toString(2));
-        System.out.println("\n\n\n\n");
         return json;
     }
 
