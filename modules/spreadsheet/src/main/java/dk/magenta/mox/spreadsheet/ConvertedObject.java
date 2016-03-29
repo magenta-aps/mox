@@ -42,7 +42,9 @@ public class ConvertedObject extends HashMap<String, String> {
                 }
 
                 if (path == null) {
-                    log.warn("No structure path for header " + key + " in sheet " + this.sheet.name);
+                    if (value != null && !value.isEmpty()) {
+                        log.warn("No structure path for header " + key + " in sheet " + this.sheet.name);
+                    }
                 } else {
                     String pathLevel1 = path.get(0);
 
@@ -55,8 +57,8 @@ public class ConvertedObject extends HashMap<String, String> {
                         } else if (key.equalsIgnoreCase("til")) {
                             effectiveObject.put("to", value);
                         }
-                    } else if (path.size() >= 2) {
-                        if (value != null && !value.isEmpty()) {
+                    } else if (value != null && !value.isEmpty()) {
+                        if (path.size() >= 2) {
 
                             String pathLevel2 = path.get(1);
                             List<String> subPath = path.subList(2, path.size());
@@ -93,12 +95,13 @@ public class ConvertedObject extends HashMap<String, String> {
                                         container = container.fetchJSONObject(pathKey);
                                     }
                                 }
+
+                            } else {
+                                log.warn("Unrecognized path: " + this.sheet.name + "." + id + " => " + path + " = " + value + ". Ignoring.");
                             }
                         } else {
-                            log.warn("Unrecognized path: " + this.sheet.name + "." + id + " => " + path + " = " + value + ". Ignoring.");
+                            log.warn("Unrecognized path length: " + this.sheet.name + "." + id + " => " + path + " = " + value + ". Path must have at least two parts.");
                         }
-                    } else {
-                        log.warn("Unrecognized path length: " + this.sheet.name + "." + id + " => " + path + " = " + value + ". Path must have at least two parts.");
                     }
                 }
 
