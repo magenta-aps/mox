@@ -49,6 +49,11 @@
             <artifactId>json</artifactId>
             <version>20141113</version>
         </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.4</version>
+        </dependency>
 
         <!-- For converting excel spreadsheets -->
         <dependency>
@@ -80,5 +85,6 @@
             <artifactId>log4j</artifactId>
             <version>1.2.17</version>
         </dependency>
+
     </dependencies>
 </project>
