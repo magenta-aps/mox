@@ -272,6 +272,11 @@
       "facettilhoerer",
       "uuid"
     ],
+    "FacetTilhorer":[
+      "relationer",
+      "facettilhoerer",
+      "uuid"
+    ],
     "Ansvarlig_type":[
       "relationer",
       "ansvarlig",
