@@ -7,6 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -54,12 +55,19 @@ public class MessageReceiver extends MessageInterface {
             final AMQP.BasicProperties deliveryProperties = delivery.getProperties();
             final AMQP.BasicProperties responseProperties = new AMQP.BasicProperties().builder().correlationId(deliveryProperties.getCorrelationId()).build();
             final String replyTo = deliveryProperties.getReplyTo();
+
             this.log.info("ReplyTo: " + deliveryProperties.getReplyTo());
             this.log.info("CorrelationId: " + deliveryProperties.getCorrelationId());
             this.log.info("MessageId: " + deliveryProperties.getMessageId());
             this.log.info("Headers: " + deliveryProperties.getHeaders());
-            String data = new String(delivery.getBody()).trim();
+            String data = "";
+            try {
+                data = new String(delivery.getBody(), "utf-8").trim();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
             this.log.info("Data: "+data);
+
             JSONObject dataObject;
             try {
                 dataObject = new JSONObject(data.isEmpty() ? "{}" : data);
