@@ -161,8 +161,7 @@ public class RestMessageHandler implements MessageHandler {
         if (authorization != null && !authorization.isEmpty()) {
             connection.setRequestProperty("Authorization", authorization.trim());
         }
-        this.log.info("Sending message to REST interface: " + method + " " + url.toString());
-        System.out.println("Sending message to REST interface: " + method + " " + url.toString() + " " + new String(payload));
+        this.log.info("Sending message to REST interface: " + method + " " + url.toString() + " " + new String(payload));
         try {
             if (!("GET".equalsIgnoreCase(method))) {
                 OutputStreamWriter out = new OutputStreamWriter(connection.getOutputStream());
@@ -177,6 +176,10 @@ public class RestMessageHandler implements MessageHandler {
             throw e;
         } catch (IOException e) {
             this.log.warn("IOException on request to "+method+" "+url.toString()+": "+e.getMessage());
+            String response = IOUtils.toString(connection.getInputStream());
+            if (response != null) {
+                this.log.warn(response);
+            }
             throw e;
         }
     }
