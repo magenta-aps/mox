@@ -193,49 +193,44 @@ public class UploadServlet extends HttpServlet {
 
         try {
 
-            HashMap<String, String> filenames = new HashMap<>();
-            FileItemIterator iter = uploader.getItemIterator(request);
-            while (iter.hasNext()) {
-                FileItemStream item = iter.next();
-                String fieldName = item.getFieldName();
-                InputStream stream = item.openStream();
-                if (item.isFormField()) {
-                    String fileName = Streams.asString(stream, "UTF-8");
-                    filenames.put(fieldName, fileName);
-                }
-            }
-
-            List<FileItem> fileItemsList = uploader.parseRequest(request);
-            Iterator<FileItem> fileItemsIterator = fileItemsList.iterator();
-
-            String authorization = null;
+            /*String authorization = null;
             while (fileItemsIterator.hasNext()) {
                 FileItem fileItem = fileItemsIterator.next();
                 if (authKey.equals(fileItem.getFieldName())) {
                     authorization = new String(fileItem.get());
                 }
-            }
-            fileItemsIterator = fileItemsList.iterator();
+            }*/
 
             ArrayList<UploadedDocumentMessage> messages = new ArrayList<>();
+            FileItemIterator fileItemsIterator = uploader.getItemIterator(request);
             while (fileItemsIterator.hasNext()) {
                 try {
-                    FileItem fileItem = fileItemsIterator.next();
-                    if (fileItem.getFieldName().equals(fileKey)) {
-                        String filename = filenames.get(fileItem.getFieldName());
-                        File file = new File(request.getServletContext().getAttribute(cacheFolderNameConfigKey) + File.separator + filename);
-                        fileItem.write(file);
-                        this.log.info("Received file " + file.getAbsolutePath());
+                    FileItemStream item = fileItemsIterator.next();
+                    InputStream stream = item.openStream();
+                    String fieldName = item.getFieldName();
+                    if (item.isFormField()) {
+                        String fieldValue = Streams.asString(stream, "UTF-8");
+                        log.info("got form field: " + fieldName + " = " + fieldValue);
+                    } else {
+                        if (fieldName.equals(fileKey)) {
+                            log.info("got file field: " + fieldName);
+                            log.info("name: "+item.getName());
 
-                        String relativePath = UPLOAD_SERVLET_URL + "?download=" + filename;
 
-                        out.write("File " + filename + " uploaded successfully.");
-                        out.write("<br/>");
-                        out.write("<a href=\"" + relativePath + "\">Download " + filename + "</a>");
+                            /*File file = new File(request.getServletContext().getAttribute(cacheFolderNameConfigKey) + File.separator + filename);
+                            fileItem.write(file);
+                            this.log.info("Received file " + file.getAbsolutePath());
 
-                        String path = this.getServletContext().getContextPath() + "/" + relativePath;
-                        UploadedDocumentMessage message = new UploadedDocumentMessage(filename, new URL(protocol, hostname, port, path), authorization);
-                        messages.add(message);
+                            String relativePath = UPLOAD_SERVLET_URL + "?download=" + filename;
+
+                            out.write("File " + filename + " uploaded successfully.");
+                            out.write("<br/>");
+                            out.write("<a href=\"" + relativePath + "\">Download " + filename + "</a>");
+
+                            String path = this.getServletContext().getContextPath() + "/" + relativePath;
+                            UploadedDocumentMessage message = new UploadedDocumentMessage(filename, new URL(protocol, hostname, port, path), authorization);
+                            messages.add(message);*/
+                        }
                     }
                 } catch (Exception e) {
                     out.write("Error when writing file to cache.");
