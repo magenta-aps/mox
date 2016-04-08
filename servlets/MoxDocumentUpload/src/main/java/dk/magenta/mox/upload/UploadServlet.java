@@ -7,9 +7,12 @@ package dk.magenta.mox.upload;
 import dk.magenta.mox.agent.MessageSender;
 import dk.magenta.mox.agent.messages.UploadedDocumentMessage;
 import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload.util.Streams;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
@@ -26,6 +29,7 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -73,6 +77,7 @@ public class UploadServlet extends HttpServlet {
             fileFactory.setRepository(cacheFolder);
 
             this.uploader = new ServletFileUpload(fileFactory);
+            this.uploader.setHeaderEncoding("UTF-8");
             this.log.info("Upload handler created");
 
             try {
@@ -187,6 +192,19 @@ public class UploadServlet extends HttpServlet {
         out.write("<html><head></head><body>");
 
         try {
+
+            HashMap<String, String> filenames = new HashMap<>();
+            FileItemIterator iter = uploader.getItemIterator(request);
+            while (iter.hasNext()) {
+                FileItemStream item = iter.next();
+                String fieldName = item.getFieldName();
+                InputStream stream = item.openStream();
+                if (item.isFormField()) {
+                    String fileName = Streams.asString(stream, "UTF-8");
+                    filenames.put(fieldName, fileName);
+                }
+            }
+
             List<FileItem> fileItemsList = uploader.parseRequest(request);
             Iterator<FileItem> fileItemsIterator = fileItemsList.iterator();
 
@@ -204,18 +222,19 @@ public class UploadServlet extends HttpServlet {
                 try {
                     FileItem fileItem = fileItemsIterator.next();
                     if (fileItem.getFieldName().equals(fileKey)) {
-                        File file = new File(request.getServletContext().getAttribute(cacheFolderNameConfigKey) + File.separator + fileItem.getName());
+                        String filename = filenames.get(fileItem.getFieldName());
+                        File file = new File(request.getServletContext().getAttribute(cacheFolderNameConfigKey) + File.separator + filename);
                         fileItem.write(file);
                         this.log.info("Received file " + file.getAbsolutePath());
 
-                        String relativePath = UPLOAD_SERVLET_URL + "?download=" + fileItem.getName();
+                        String relativePath = UPLOAD_SERVLET_URL + "?download=" + filename;
 
-                        out.write("File " + fileItem.getName() + " uploaded successfully.");
+                        out.write("File " + filename + " uploaded successfully.");
                         out.write("<br/>");
-                        out.write("<a href=\"" + relativePath + "\">Download " + fileItem.getName() + "</a>");
+                        out.write("<a href=\"" + relativePath + "\">Download " + filename + "</a>");
 
                         String path = this.getServletContext().getContextPath() + "/" + relativePath;
-                        UploadedDocumentMessage message = new UploadedDocumentMessage(fileItem.getName(), new URL(protocol, hostname, port, path), authorization);
+                        UploadedDocumentMessage message = new UploadedDocumentMessage(filename, new URL(protocol, hostname, port, path), authorization);
                         messages.add(message);
                     }
                 } catch (Exception e) {
