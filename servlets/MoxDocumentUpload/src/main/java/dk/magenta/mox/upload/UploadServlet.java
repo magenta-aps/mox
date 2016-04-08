@@ -7,29 +7,24 @@ package dk.magenta.mox.upload;
 import dk.magenta.mox.agent.MessageSender;
 import dk.magenta.mox.agent.messages.UploadedDocumentMessage;
 import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.fileupload.util.Streams;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -125,6 +120,7 @@ public class UploadServlet extends HttpServlet {
         if (fileName != null && !fileName.equals("")) {
             this.log.info("File '"+fileName+"' requested");
             File file = new File(request.getServletContext().getAttribute(cacheFolderNameConfigKey) + File.separator + fileName);
+            log.info("Getting file " + file.getCanonicalPath());
             if (!file.exists()) {
                 throw new ServletException("File doesn't exist on server.");
             }
@@ -152,7 +148,7 @@ public class UploadServlet extends HttpServlet {
         out.append("<html>\n" +
                 "<head></head>\n" +
                 "<body>\n" +
-                "<form action=\"\" method=\"post\" enctype=\"multipart/form-data\">\n" +
+                "<form action=\"\" method=\"post\" enctype=\"multipart/form-data\" accept-charset=\"UTF-8\">\n" +
                 "    Select File to Upload:<input type=\"file\" name=\""+ fileKey +"\">\n" +
                 "    <br/>\n" +
                 "    Token:<textarea name=\""+ authKey +"\"></textarea>" +
@@ -193,44 +189,42 @@ public class UploadServlet extends HttpServlet {
 
         try {
 
-            /*String authorization = null;
+            List<FileItem> fileItemsList = uploader.parseRequest(request);
+            Iterator<FileItem> fileItemsIterator = fileItemsList.iterator();
+
+            String authorization = null;
             while (fileItemsIterator.hasNext()) {
                 FileItem fileItem = fileItemsIterator.next();
                 if (authKey.equals(fileItem.getFieldName())) {
                     authorization = new String(fileItem.get());
                 }
-            }*/
+            }
+            fileItemsIterator = fileItemsList.iterator();
 
             ArrayList<UploadedDocumentMessage> messages = new ArrayList<>();
-            FileItemIterator fileItemsIterator = uploader.getItemIterator(request);
             while (fileItemsIterator.hasNext()) {
                 try {
-                    FileItemStream item = fileItemsIterator.next();
-                    InputStream stream = item.openStream();
-                    String fieldName = item.getFieldName();
-                    if (item.isFormField()) {
-                        String fieldValue = Streams.asString(stream, "UTF-8");
-                        log.info("got form field: " + fieldName + " = " + fieldValue);
-                    } else {
-                        if (fieldName.equals(fileKey)) {
-                            log.info("got file field: " + fieldName);
-                            log.info("name: "+item.getName());
+                    FileItem fileItem = fileItemsIterator.next();
+                    if (fileItem.getFieldName().equals(fileKey)) {
+                        String filename = fileItem.getName();
+                        File file = new File(request.getServletContext().getAttribute(cacheFolderNameConfigKey) + File.separator + filename);
+                        fileItem.write(file);
+                        this.log.info("Received file " + file.getAbsolutePath());
 
-
-                            /*File file = new File(request.getServletContext().getAttribute(cacheFolderNameConfigKey) + File.separator + filename);
-                            fileItem.write(file);
-                            this.log.info("Received file " + file.getAbsolutePath());
-
-                            String relativePath = UPLOAD_SERVLET_URL + "?download=" + filename;
-
-                            out.write("File " + filename + " uploaded successfully.");
-                            out.write("<br/>");
-                            out.write("<a href=\"" + relativePath + "\">Download " + filename + "</a>");
-
-                            String path = this.getServletContext().getContextPath() + "/" + relativePath;
-                            UploadedDocumentMessage message = new UploadedDocumentMessage(filename, new URL(protocol, hostname, port, path), authorization);
-                            messages.add(message);*/
+                        String encodedFilename = filename;
+                        try {
+                            encodedFilename = URLEncoder.encode(filename, "utf-8");
+                        } catch (UnsupportedEncodingException e) {
                         }
+                        String relativePath = UPLOAD_SERVLET_URL + "?download=" + encodedFilename;
+
+                        out.write("File " + filename + " uploaded successfully.");
+                        out.write("<br/>");
+                        out.write("<a href=\"" + relativePath + "\">Download " + filename + "</a>");
+
+                        String path = this.getServletContext().getContextPath() + "/" + relativePath;
+                        UploadedDocumentMessage message = new UploadedDocumentMessage(filename, new URL(protocol, hostname, port, path), authorization);
+                        messages.add(message);
                     }
                 } catch (Exception e) {
                     out.write("Error when writing file to cache.");
