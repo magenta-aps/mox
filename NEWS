@@ -1,3 +1,10 @@
+* Version 0.2.13.2, April 19, 2016
+
+Hotfix:
+
+* Place Tomcat dependencies where the installer can find them
+* Create settings.py soft link before running database installation.
+
 * Version 0.2.13.1, April 19, 2016
 
 Hotfix:
