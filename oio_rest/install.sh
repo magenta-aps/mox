@@ -74,7 +74,9 @@ else
 
 fi
 
-
+if [ ! -f "$DIR/oio_rest/settings.py" ]; then
+	ln -s "$DIR/oio_rest/settings.py.production" "$DIR/oio_rest/settings.py"
+fi
 
 # Install Database
 if [ ! -z $DB_INSTALL ]; then
@@ -102,9 +104,6 @@ sudo cp "$DIR/server-setup/oio_rest.conf" "/etc/apache2/sites-available/"
 sudo a2ensite oio_rest
 sudo a2enmod ssl
 
-if [ ! -f "$DIR/oio_rest/settings.py" ]; then
-	ln -s "$DIR/oio_rest/settings.py.production" "$DIR/oio_rest/settings.py"
-fi
 
 sudo mkdir -p /var/log/mox/oio_rest
 
