@@ -65,9 +65,9 @@ echo "Installing java modules"
 sudo apt-get -y install maven
 
 
+$DIR/modules/json/install.sh
 $DIR/modules/agent/install.sh
 $DIR/modules/auth/install.sh
-$DIR/modules/json/install.sh
 $DIR/modules/spreadsheet/install.sh
 
 
