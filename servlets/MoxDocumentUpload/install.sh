@@ -21,6 +21,6 @@ if [[ -f "$DIR/target/$WARFILE" ]]; then
         sudo rm "/var/lib/tomcat7/webapps/$WARFILE"
     fi
 	sudo cp "$DIR/target/$WARFILE" "/var/lib/tomcat7/webapps"
-	sudo cp "$DIR/target/$WARNAME/WEB-INF/lib/*.jar" "/var/lib/tomcat7/lib/mox/"
+	sudo cp $DIR/target/$WARNAME/WEB-INF/lib/*.jar "/var/lib/tomcat7/lib/mox/"
 fi
 

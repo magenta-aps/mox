@@ -1,1 +1,1 @@
-modules/auth/auth.sh
+/srv/mox/modules/auth/auth.sh
