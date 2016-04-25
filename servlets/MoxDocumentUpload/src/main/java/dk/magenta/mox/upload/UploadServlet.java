@@ -31,6 +31,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -140,32 +143,6 @@ public class UploadServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         this.log.info("----------------------------------------");
         this.log.info("Receiving GET request");
-        String fileName = request.getParameter("download");
-        if (fileName != null && !fileName.equals("")) {
-            this.log.info("File '"+fileName+"' requested");
-            File file = new File(request.getServletContext().getAttribute(cacheFolderNameConfigKey) + File.separator + fileName);
-            log.info("Getting file " + file.getCanonicalPath());
-            if (!file.exists()) {
-                throw new ServletException("File doesn't exist on server.");
-            }
-            ServletContext ctx = getServletContext();
-            InputStream fis = new FileInputStream(file);
-            String mimeType = ctx.getMimeType(file.getAbsolutePath());
-            response.setContentType(mimeType != null ? mimeType : "application/octet-stream");
-            response.setContentLength((int) file.length());
-            response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
-
-            ServletOutputStream os = response.getOutputStream();
-            this.log.info("Sending file '"+fileName+"'");
-            IOUtils.copy(fis, os);
-
-            os.flush();
-            os.close();
-            fis.close();
-            this.log.info("File '"+fileName+"' sent");
-            return;
-        }
-
 
         this.log.info("Sending Upload UI");
         Writer out = response.getWriter();
@@ -173,9 +150,9 @@ public class UploadServlet extends HttpServlet {
                 "<head></head>\n" +
                 "<body>\n" +
                 "<form action=\"\" method=\"post\" enctype=\"multipart/form-data\" accept-charset=\"UTF-8\">\n" +
-                "    Select File to Upload:<input type=\"file\" name=\""+ fileKey +"\">\n" +
+                "    Select File to Upload: <input type=\"file\" name=\"" + fileKey + "\">\n" +
                 "    <br/>\n" +
-                "    Token:<textarea name=\""+ authKey +"\"></textarea>" +
+                "    Token: <textarea name=\"" + authKey + "\"></textarea>" +
                 "    <input type=\"submit\" value=\"Upload\">\n" +
                 "</form>\n" +
                 "</body>\n" +
@@ -187,6 +164,7 @@ public class UploadServlet extends HttpServlet {
 
     /**
      * Returns the create document JSON string for a given document name.
+     *
      * @param documentName The filename of the document.
      * @return String
      */
@@ -205,21 +183,6 @@ public class UploadServlet extends HttpServlet {
         this.log.info("Receiving POST request");
         if (!ServletFileUpload.isMultipartContent(request)) {
             throw new ServletException("Content type is not multipart/form-data");
-        }
-
-        String protocol = request.getProtocol().replaceAll("/.*", "");
-
-        String hostname;
-        int port = -1;
-
-        Matcher m = hostnamePattern.matcher(request.getRequestURL().toString());
-        if (m.find()) {
-            hostname = m.group(1);
-            if (m.group(2) != null) {
-                port = Integer.parseInt(m.group(2), 10);
-            }
-        } else {
-            hostname = this.localAddress.getCanonicalHostName();
         }
 
         response.setContentType("text/html");
@@ -262,44 +225,47 @@ public class UploadServlet extends HttpServlet {
                                 "file for uploaded file.", e);
                     }
                     fileMap.put("file", tempFile);
-                    sendMultipartRest("POST", "/dokument/dokument", createDocumentJson.toString(), authorization, fileMap);
+                    String result = sendMultipartRest("POST",
+                            "/dokument/dokument", createDocumentJson.toString(), authorization, fileMap);
+                    JSONObject jsonResult = new JSONObject(result);
+                    String uuid = jsonResult.getString("uuid");
+
                     tempFile.delete();
 
                     out.write("Document " + filename + " uploaded " +
                             "successfully to OIO server.");
                     out.write("<br/>");
-//                    String path = this.getServletContext().getContextPath() + "/" + relativePath;
-//                    UploadedDocumentMessage message = new UploadedDocumentMessage(filename, new URL(protocol, hostname, port, path), authorization);
-//                    messages.add(message);
+                    UploadedDocumentMessage message = new UploadedDocumentMessage(uuid, authorization);
+                    messages.add(message);
                 }
             }
-//            ArrayList<Future<String>> amqpResponses = new ArrayList<>();
-//            for (UploadedDocumentMessage message : messages) {
-//                try {
-//                    this.log.info("Sending message");
-//                    Future<String> amqpResponse = this.messageSender.send(message);
-//                    amqpResponses.add(amqpResponse);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//            if (waitForAmqpResponses) {
-//                out.write("<br/>Response:<br/>");
-//                for (Future<String> amqpResponse : amqpResponses) {
-//                    try {
-//                        String realResponse = amqpResponse.get(30, TimeUnit.SECONDS);
-//                        out.write("<pre>");
-//                        out.write(realResponse);
-//                        out.write("</pre>");
-//                    } catch (InterruptedException | ExecutionException | TimeoutException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            }
+            ArrayList<Future<String>> amqpResponses = new ArrayList<>();
+            for (UploadedDocumentMessage message : messages) {
+                try {
+                    this.log.info("Sending message");
+                    Future<String> amqpResponse = this.messageSender.send(message);
+                    amqpResponses.add(amqpResponse);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (waitForAmqpResponses) {
+                out.write("<br/>Response:<br/>");
+                for (Future<String> amqpResponse : amqpResponses) {
+                    try {
+                        String realResponse = amqpResponse.get(30, TimeUnit.SECONDS);
+                        out.write("<pre>");
+                        out.write(realResponse);
+                        out.write("</pre>");
+                    } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
         } catch (FileUploadException e) {
             out.write("Exception in uploading file.");
             throw new ServletException(e);
-    }
+        }
         out.write("</body></html>");
     }
 
@@ -309,11 +275,15 @@ public class UploadServlet extends HttpServlet {
 
     /**
      * Make a multipart/form-data REST request with a JSON field.
+     *
+     * TODO: Move to RestClient.
      * @param method
      * @param path
-     * @param json The JSON to include in the field "json"
+     * @param json          The JSON to include in the field "json"
      * @param authorization
-     * @param files Mapping between partName => File to include in the body.
+     * @param files         Mapping between multipart entity field name (key)
+     *                      and File object (value)
+     *                      to include in the request body.
      * @return
      * @throws IOException
      */
@@ -353,10 +323,10 @@ public class UploadServlet extends HttpServlet {
             this.log.info(response);
             return response;
         } catch (ConnectException e) {
-            this.log.warn("The defined REST interface ("+method+" "+connection.getURL().getHost() + ":" + connection.getURL().getPort() + connection.getURL().getPath()+") does not answer.");
+            this.log.warn("The defined REST interface (" + method + " " + connection.getURL().getHost() + ":" + connection.getURL().getPort() + connection.getURL().getPath() + ") does not answer.");
             throw e;
         } catch (IOException e) {
-            this.log.warn("IOException on request to "+method+" "+url.toString()+": "+e.getMessage());
+            this.log.warn("IOException on request to " + method + " " + url.toString() + ": " + e.getMessage());
             String response = IOUtils.toString(connection.getInputStream());
             if (response != null) {
                 this.log.warn(response);

@@ -38,11 +38,11 @@ fi
 
 
 
-# Create the MOX content storage directory and give the mox user ownership
+# Create the MOX content storage directory and give the www-data user ownership
 MOX_STORAGE="/var/mox"
 echo "Creating MOX content storage directory"
 sudo mkdir -p "$MOX_STORAGE"
-sudo chown mox "$MOX_STORAGE"
+sudo chown www-data "$MOX_STORAGE"
 
 
 

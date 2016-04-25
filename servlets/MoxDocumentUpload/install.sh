@@ -13,6 +13,14 @@ sudo chown tomcat7 /var/log/mox/moxdocumentupload.log
 pushd $DIR
 mvn package
 popd
+
+PROPERTIESFILENAME="web/WEB-INF/web.xml"
+
+if [ ! -f "$DIR/$PROPERTIESFILENAME" ]; then
+        ln -s "$DIR/$PROPERTIESFILENAME.production" "$DIR/$PROPERTIESFILENAME"
+fi
+
+
 if [[ -f "$DIR/target/$WARFILE" ]]; then
     if [[ "x$WARNAME" != "x" && -d "/var/lib/tomcat7/webapps/$WARNAME" ]]; then
         sudo rm -r "/var/lib/tomcat7/webapps/$WARNAME"
