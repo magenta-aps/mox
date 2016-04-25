@@ -211,8 +211,6 @@ public class UploadServlet extends HttpServlet {
                     String mimetype = fileItem.getContentType();
                     JSONObject createDocumentJson = new JSONObject
                             (getCreateDocumentJson(filename, mimetype));
-                    out.write(createDocumentJson.toString());
-                    out.write("<br/>");
 
                     this.log.info("Received file " + filename);
 
