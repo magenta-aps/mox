@@ -176,7 +176,7 @@ Make sure the parameter ``rest.interface`` in
 ``agents/MoxRestFrontend/moxrestfrontend.properties`` is set to 
 `http://localhost:5000`. 
 
-Start the (AMGP) MOX REST frontend agent: ::
+Start the (AMQP) MOX REST frontend agent: ::
 
     sudo service moxrestfrontend start
 
