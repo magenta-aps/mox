@@ -42,10 +42,10 @@ rendering.
 Audience
 --------
 
-This is a technical guide. You're not expected to have a profound knowledge of
-the system as such to be able to install it, but you do have to know your way
-in a Bash prompt - you should be able to change the Apache configuration and
-e.g. disable or change the SSL certificate on your own.
+This is a technical guide. You are not expected to have a profound knowledge of
+the system as such, but you do have to know your way in a Bash prompt - you 
+should be able to change the Apache configuration and e.g. disable or change
+the SSL certificate on your own.
 
 Getting started
 ===============
@@ -145,7 +145,7 @@ These commands should get you up and running quickly on a machine with a
 completely new Ubuntu 14.04 Server Edition: ::
 
     sudo apt-get install git
-    sudo /srv
+    cd /srv
     sudo git clone https://github.com/magenta-aps/mox
     sudo chown -R <username>:<username> mox/
     cd mox
@@ -161,6 +161,9 @@ for a quick install as it means a lot of configuration files need to be
 changed. In a later version, the user will be prompted for the location and 
 the configuration will be generated accordingly.
 to the location desired by the users.
+
+**Note:** All commands, e.g. ``./test.sh``, are assumed to be issued from the
+installation root directory, by default ``/srv/mox``.
 
 Quick test
 ----------
@@ -194,7 +197,7 @@ This should give you a lot of output like this: ::
 
 **Note:** Currently, some of the tests will give the notice: "Result differs
 from the expected". This is due to a bug in the tests, i.e. you should not
-worry about this.
+worry about this - if you see output as described above, the system is working.
 
 For more advanced test or production setup, please study the rest of this 
 README and follow your organization's best practices.
