@@ -13,8 +13,7 @@ amqp.password = guest
 
 
 # The root path to the REST interface
-rest.interface = https://referencedata.dk
-# rest.interface = http://localhost:5000
+rest.interface = http://localhost:5000
 
 # Recognized object types and how to put them into the REST interface
 
