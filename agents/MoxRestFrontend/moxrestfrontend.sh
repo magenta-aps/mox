@@ -11,4 +11,3 @@ else
     $COMMAND
 fi
 cd - > /dev/null
-cd - > /dev/null
