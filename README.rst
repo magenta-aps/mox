@@ -1233,7 +1233,7 @@ we assume that this is not the configuration which the municipalities
 want to use in a production setting.
 
 Log in to the IDP with the credentials provided. The IDP could, e.g., be
-located at https://mox.magenta-aps.dk:9443/.
+located at https://moxtest.magenta-aps.dk:9443/.
 
 To create a new user, enter the "Configure" tab and select "Users and
 roles". Enter the user's first name, last name and email address.
@@ -1349,6 +1349,9 @@ Sending Messages on the Beskedfordeler
 
 Using the OIO Mox Library
 -------------------------
+
+**CAUTION! !!! This section is currently out of date!!! Please refer to the
+examples above for more up to date details.**
 
 This is located in the folder ``agent/`` in the Mox source code
 repository.
