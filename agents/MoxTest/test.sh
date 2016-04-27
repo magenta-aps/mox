@@ -1,5 +1,4 @@
 #!/bin/bash
-set -x
 
 SELF=${BASH_SOURCE[0]}
 DIR=$(dirname "$(test -L "$SELF" && readlink "$SELF" || echo "$SELF")")
@@ -9,9 +8,9 @@ AS_USER="mox"
 cd $DIR
 if [[ `whoami` != "$AS_USER" ]]
 then
-    echo $AS_USER 
-    echo $COMMAND   
     sudo -u $AS_USER $COMMAND
+else
+    $COMMAND
 fi
 
 cd - > /dev/null

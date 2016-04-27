@@ -3,7 +3,7 @@
 # The host and port of the REST interface
 rest.interface = https://referencedata.dk
 
-security.enabled = true
+security.enabled = false
 
 security.keystore.path = keystore/wso2carbon.jks
 security.keystore.password = wso2carbon
