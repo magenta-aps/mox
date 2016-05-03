@@ -14,3 +14,7 @@ oio_rest/dist
 *.iml
 **/target/
 */out/
+test.sh
+auth.sh
+agents/MoxRestFrontend/moxrestfrontend.properties
+agents/MoxTabel/moxtabel.properties

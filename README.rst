@@ -39,6 +39,14 @@ command: ::
 If you're reading this on Github, you're probably seeing the HTML
 rendering.
 
+Audience
+--------
+
+This is a technical guide. You are not expected to have a profound knowledge of
+the system as such, but you do have to know your way in a Bash prompt - you 
+should be able to change the Apache configuration and e.g. disable or change
+the SSL certificate on your own.
+
 Getting started
 ===============
 
@@ -77,11 +85,11 @@ To install the OIO REST API, run ``install.sh``
 **NOTICE:** If you need to initialize the postgresql database as well
 you need to run ``install.sh -d``. 
 
-**NOTE:** PostgreSQL must already be installed. PostgreSQL 9.3 or later
-is required.
+**NOTE:** PostgreSQL 9.3 or later is required. If PostgreSQL is not installed
+on your system already, it will be during installation.
 
-**CAUTION:** This will drop any existing mox database and any data in it
-will be lost.
+**CAUTION:** The -d option will drop any existing mox database and all data in
+it will be lost. No warning is issued.
 
 
 To run the API for testing or development purposes, run: ::
@@ -89,7 +97,7 @@ To run the API for testing or development purposes, run: ::
     oio_rest/oio_api.sh 
 
 Then, go to http://localhost:5000/site-map to see a map of all available
-URLs.
+URLs, assuming you're running this on your local machine.
 
 For deployment in production environments, please see the sample Apache
 deployment in the config/ folder.
@@ -97,27 +105,102 @@ deployment in the config/ folder.
 To run the OIO Rest Mox Agent (the one listening for messages and
 relaying them onwards to the REST interface), run: ::
 
-    agent/agent.sh
+    agents/MoxRestFrontend/moxrestfrontend.sh
+
+**NOTE:** You can start the agent in the background by running: ::
+
+    sudo service moxrestfrontend start
 
 To test sending messages through the agent, run: ::
 
-    agent/agent.sh sendtest
+    ./test.sh
+
+**NOTE:** The install script does not set up an IDP for SAML authentication,
+which is enabled by default. If you need to test without SAML authentication, 
+you will need to turn it off as described below. 
 
 To request a token for the username from the IdP and output it in
 base64-encoded gzipped format, run: ::
 
-    agent/agent.sh gettoken <username>
+    ./auth.sh -u <username> -p
 
 Insert your username in the command argument. You will be prompted to enter
 a password.
 
-If Saml authentication is turned on (i.e., if the parameter
+If SAML authentication is turned on (i.e., if the parameter
 ``USE_SAML_AUTHENTICATION`` in ``oio_rest/oio_rest/settings.py`` is
-`True`), the IDP must be configured correctly - see the corresponding
-sections below for instruction on how to do this.
+`True`, and the parameter ``security.enabled`` in 
+``modules/auth/auth.properties`` is `true`), the IDP must be configured
+correctly - see the corresponding sections below for instruction on how to do
+this.
 
 In ``config/etc/init`` you can find example init files for running the
 Mox Agent and the WSO2 Identity Server as daemons.
+
+
+Quick install
+-------------
+
+These commands should get you up and running quickly on a machine with a 
+completely new Ubuntu 14.04 Server Edition: ::
+
+    sudo apt-get install git
+    cd /srv
+    sudo git clone https://github.com/magenta-aps/mox
+    sudo chown -R <username>:<username> mox/
+    cd mox
+    ./install.sh -d
+
+**Note:** The <username> must belong to the sudo user you're using for the
+installation. We recommend creating a dedicated "mox" user and stripping its
+sudo rights when everything works.
+
+**Note:** This will install the system in ``srv/mox``. It is of course
+possible to install in any other location, but we do not recommend this 
+for a quick install as it means a lot of configuration files need to be 
+changed. In a later version, the user will be prompted for the location and 
+the configuration will be generated accordingly.
+to the location desired by the users.
+
+**Note:** All commands, e.g. ``./test.sh``, are assumed to be issued from the
+installation root directory, by default ``/srv/mox``.
+
+Quick test
+----------
+
+Make sure the parameters ``USE_SAML_AUTHENTICATION`` in 
+``oio_rest/oio_rest/settings.py`` and ``security.enabled`` in
+``modules/auth/auth.properties`` are  `False` and `false`, respectively.
+
+Make sure the parameter ``rest.interface`` in 
+``agents/MoxRestFrontend/moxrestfrontend.properties`` is set to 
+`http://localhost:5000`. 
+
+Start the (AMQP) MOX REST frontend agent: ::
+
+    sudo service moxrestfrontend start
+
+Start the REST API: ::
+
+    oio_rest/oio_api.sh
+
+Run the tests: ::
+
+    ./test.sh
+
+This should give you a lot of output like this: ::
+
+    Deleting bruger, uuid: 1e874f85-07e5-40e5-81ed-42f21fc3fc9e
+    Getting authtoken
+    127.0.0.1 - - [27/Apr/2016 15:55:09] "DELETE /organisation/bruger/1e874f85-07e5-40e5-81ed-42f21fc3fc9e HTTP/1.1" 200 -
+    Delete succeeded
+
+**Note:** Currently, some of the tests will give the notice: "Result differs
+from the expected". This is due to a bug in the tests, i.e. you should not
+worry about this - if you see output as described above, the system is working.
+
+For more advanced test or production setup, please study the rest of this 
+README and follow your organization's best practices.
 
 
 OIO REST API Notes
@@ -1150,7 +1233,7 @@ we assume that this is not the configuration which the municipalities
 want to use in a production setting.
 
 Log in to the IDP with the credentials provided. The IDP could, e.g., be
-located at https://mox.magenta-aps.dk:9443/.
+located at https://moxtest.magenta-aps.dk:9443/.
 
 To create a new user, enter the "Configure" tab and select "Users and
 roles". Enter the user's first name, last name and email address.
@@ -1266,6 +1349,9 @@ Sending Messages on the Beskedfordeler
 
 Using the OIO Mox Library
 -------------------------
+
+**CAUTION! !!! This section is currently out of date!!! Please refer to the
+examples above for more up to date details.**
 
 This is located in the folder ``agent/`` in the Mox source code
 repository.
