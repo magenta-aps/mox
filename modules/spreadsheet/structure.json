@@ -510,7 +510,7 @@
     ],
     "Gyldighed":[
       "tilstande",
-      "organisationgyldighed",
+      "organisationfunktiongyldighed",
       "gyldighed"
     ],
     "Opgaver":[
@@ -580,7 +580,7 @@
     ],
     "Gyldighed":[
       "tilstande",
-      "organisationgyldighed",
+      "brugergyldighed",
       "gyldighed"
     ],
 

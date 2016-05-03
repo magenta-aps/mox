@@ -87,11 +87,14 @@ public class RestClient {
             throw e;
         } catch (IOException e) {
             this.log.warn("IOException on request to " + method + " " + url.toString() + ": " + e.getMessage());
-            String response = IOUtils.toString(connection.getInputStream());
+            String response = IOUtils.toString(connection.getErrorStream());
             if (response != null) {
                 this.log.warn(response);
+                throw new IOException("IOException: Got error response: " +
+                        response, e);
+            } else {
+                throw e;
             }
-            throw e;
         }
     }
 }
