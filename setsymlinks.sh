@@ -14,6 +14,7 @@ if [ "x$ENVIRONMENT" != "x" ]; then
 		ln -sf "$DIR/agents/MoxRestFrontend/moxrestfrontend.properties.$ENVIRONMENT" "$DIR/agents/MoxRestFrontend/moxrestfrontend.properties"
 		ln -sf "$DIR/agents/MoxTabel/moxtabel.properties.$ENVIRONMENT" "$DIR/agents/MoxTabel/moxtabel.properties"
 		ln -sf "$DIR/oio_rest/oio_rest/settings.py.$ENVIRONMENT" "$DIR/oio_rest/oio_rest/settings.py"
+		ln -sf "$DIR/modules/auth/auth.properties.$ENVIRONMENT" "$DIR/modules/auth/auth.properties"
 	else
 		echo "Please precify either 'production', 'testing' or 'development'"
 	fi
