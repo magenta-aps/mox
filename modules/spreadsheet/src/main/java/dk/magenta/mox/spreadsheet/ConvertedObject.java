@@ -25,7 +25,7 @@ public class ConvertedObject extends HashMap<String, String> {
         this.operation = operation;
     }
 
-    public JSONObject getJSON() {
+    public JSONObject getJSON() throws Exception {
         JSONObject json = new JSONObject();
 
         Set<JSONObject> containers = new HashSet<JSONObject>();
@@ -38,7 +38,14 @@ public class ConvertedObject extends HashMap<String, String> {
 
                 if (path == null) {
                     Structure structure = Structure.allStructures.get(this.sheet.name);
-                    path = structure.get(key);
+                    if (structure == null) {
+                        log.error("No structure found in structure.json for " +
+                                "sheet name '" + this.sheet.name + "'");
+                        throw new Exception("No structure found in structure.json for " +
+                                "sheet name '" + this.sheet.name + "'");
+                    } else {
+                        path = structure.get(key);
+                    }
                 }
 
                 if (path == null) {

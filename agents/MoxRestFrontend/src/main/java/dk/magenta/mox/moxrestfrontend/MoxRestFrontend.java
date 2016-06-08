@@ -53,11 +53,7 @@ public class MoxRestFrontend extends MoxAgent {
             log.info("Running MessageReceiver instance");
             messageReceiver.run(new RestMessageHandler(this.restInterface, this.objectTypeMap));
             log.info("MessageReceiver instance stopped on its own");
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
+        } catch (InterruptedException | IOException | TimeoutException e) {
             e.printStackTrace();
         }
         log.info("MoxRestFrontend Shutting down");

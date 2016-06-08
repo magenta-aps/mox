@@ -7,15 +7,16 @@ import dk.magenta.mox.agent.MoxAgent;
 import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * Created by lars on 25-01-16.
  */
 public class MoxTabel extends MoxAgent {
 
+    private final URL restInterface;
     private AmqpDefinition listenerDefinition;
     private AmqpDefinition senderDefinition;
     private Logger log = Logger.getLogger(MoxTabel.class);
@@ -42,6 +43,13 @@ public class MoxTabel extends MoxAgent {
         this.senderDefinition.populateFromProperties(this.properties, senderPrefix, false);
         this.senderDefinition.populateFromDefaults(true, senderPrefix);
 
+
+        try {
+            this.restInterface = new URL(this.getSetting("rest.interface"));
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("Rest interface URL is malformed", e);
+        }
+
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 MoxTabel.this.shutdown();
@@ -67,7 +75,7 @@ public class MoxTabel extends MoxAgent {
             log.info("Creating MessageSender instance");
             messageSender = new MessageSender(this.senderDefinition);
             log.info("Running MessageReceiver instance");
-            messageReceiver.run(new UploadedDocumentMessageHandler(messageSender));
+            messageReceiver.run(new UploadedDocumentMessageHandler(messageSender, restInterface));
             log.info("MessageReceiver instance stopped on its own");
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
