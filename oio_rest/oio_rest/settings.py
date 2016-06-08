@@ -1,1 +1,0 @@
-/srv/mox/oio_rest/oio_rest/settings.py.production
