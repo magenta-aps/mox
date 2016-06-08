@@ -126,7 +126,6 @@ public class MoxTest extends MoxAgent {
             String timestamp = item.getJSONArray("registreringer").getJSONObject(0).getJSONObject("fratidspunkt").getString("tidsstempeldatotid");
             JSONObject firstReg = expected.getJSONArray("registreringer").getJSONObject(0);
             firstReg.getJSONObject("fratidspunkt").put("tidsstempeldatotid", timestamp);
-            firstReg.getJSONObject("tiltidspunkt").put("tidsstempeldatotid", "infinity");
 
             if (item.similar(expected)) {
                 System.out.println("Expected response received");

@@ -27,6 +27,10 @@
         "graenseindikator": true,
         "tidsstempeldatotid": "2016-02-29 13:18:52.444504+01"
       },
+      "tiltidspunkt": {
+        "graenseindikator": true,
+        "tidsstempeldatotid": "infinity"
+      },
       "livscykluskode": "Opstaaet",
       "note": "Ny facet",
       "relationer": {
