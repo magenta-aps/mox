@@ -139,7 +139,7 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
                         }
                     }
                     UploadedDocumentMessageHandler.this.log.info("Returning collected responses");
-                    return collectedResponses.toString();
+                    return collectedResponses.toString(2);
                 }
             });
 
