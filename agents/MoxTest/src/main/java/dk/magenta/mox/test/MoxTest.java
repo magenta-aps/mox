@@ -13,6 +13,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.*;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -38,15 +39,24 @@ public class MoxTest extends MoxAgent {
     }
 
     public void run() {
+        // Preliminary checks:
+        // Is RabbitMQ reachable?
         try {
             this.sender = this.createMessageSender();
+        } catch (ConnectException e) {
+            System.out.println("RabbitMQ server is not reachable with the given configuration");
+        } catch (IOException | TimeoutException e) {
+            e.printStackTrace();
+        }
+
+        // TODO: Is MoxRestFrontend running?
+
+        if (this.sender != null) {
             this.test("facet");
             this.test("klassifikation");
             this.test("klasse");
             this.test("itsystem");
             this.test("bruger");
-        } catch (IOException | TimeoutException e) {
-            e.printStackTrace();
         }
     }
 
