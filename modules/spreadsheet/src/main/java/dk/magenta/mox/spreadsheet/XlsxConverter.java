@@ -35,10 +35,12 @@ public class XlsxConverter extends XlsConverter {
                 SpreadsheetRow rowData = new SpreadsheetRow();
                 if (j >= sheet.getFirstRowNum()) {
                     XSSFRow row = sheet.getRow(j);
-                    int firstCell = row.getFirstCellNum();
-                    int lastCell = row.getLastCellNum();
-                    for (int k = 0; k < lastCell; k++) {
-                        rowData.add((k < firstCell) ? "" : getCellString(row.getCell(k)));
+                    if (row != null) {
+                        int firstCell = row.getFirstCellNum();
+                        int lastCell = row.getLastCellNum();
+                        for (int k = 0; k < lastCell; k++) {
+                            rowData.add((k < firstCell) ? "" : getCellString(row.getCell(k)));
+                        }
                     }
                 }
                 spreadsheetConversion.addRow(sheetName, rowData, j==0);

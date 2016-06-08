@@ -8,5 +8,6 @@ DocumentRoot /var/www/html
 # Tomcat redirect
 JkMount /*.jsp ajp13_worker
 JkMount /mox/* ajp13_worker
+JkMount /MoxDocumentUpload/* ajp13_worker
 
 </VirtualHost>
