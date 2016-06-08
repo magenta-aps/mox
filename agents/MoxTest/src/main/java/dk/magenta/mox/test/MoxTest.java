@@ -131,6 +131,8 @@ public class MoxTest extends MoxAgent {
                 System.out.println("Read succeeded");
             } else {
                 System.out.println("Result differs from the expected");
+                System.out.println(item.toString());
+                System.out.println(expected.toString());
                 throw new TestException();
             }
         } catch (JSONException e) {
