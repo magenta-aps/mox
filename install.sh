@@ -37,6 +37,8 @@ if [ $? -ne 0 ]; then
 fi
 
 
+# Setup symlinks
+./setsymlinks.sh
 
 # Install oio_rest
 echo "Installing oio_rest"
