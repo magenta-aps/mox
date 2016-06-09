@@ -92,8 +92,8 @@ To run the API for testing or development purposes, run: ::
 Then, go to http://localhost:5000/site-map to see a map of all available
 URLs, assuming you're running this on your local machine.
 
-For deployment in production environments, please see the sample Apache
-deployment in the config/ folder.
+The install.sh script creates an Apache VirtualHost for oio rest and 
+MoxDocumentUpload.
 
 To run the OIO Rest Mox Agent (the one listening for messages and
 relaying them onwards to the REST interface), run: ::
@@ -126,9 +126,6 @@ If SAML authentication is turned on (i.e., if the parameter
 ``modules/auth/auth.properties`` is `true`), the IDP must be configured
 correctly - see the corresponding sections below for instruction on how to do
 this.
-
-In ``config/etc/init`` you can find example init files for running the
-Mox Agent and the WSO2 Identity Server as daemons.
 
 
 Quick install
@@ -1210,6 +1207,9 @@ You need a STS (Security Token Service) running on your IdP.
 An open-source IdP is available from http://wso2.com/products/identity-server/
 and is useful for testing. Download the binary, and follow the instructions
 to run it.
+
+In the folder ``wso2/`` you can find an example init file for running the
+WSO2 Identity Server as a daemon.
 
 To configure a STS, follow the instructions on
 https://docs.wso2.com/display/IS500/Configuring+the+Identity+Server+to+Issue+Security+Tokens
