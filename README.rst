@@ -82,15 +82,8 @@ Installing
 
 To install the OIO REST API, run ``install.sh``
 
-**NOTICE:** If you need to initialize the postgresql database as well
-you need to run ``install.sh -d``. 
-
 **NOTE:** PostgreSQL 9.3 or later is required. If PostgreSQL is not installed
 on your system already, it will be during installation.
-
-**CAUTION:** The -d option will drop any existing mox database and all data in
-it will be lost. No warning is issued.
-
 
 To run the API for testing or development purposes, run: ::
 
@@ -149,7 +142,7 @@ completely new Ubuntu 14.04 Server Edition: ::
     sudo git clone https://github.com/magenta-aps/mox
     sudo chown -R <username>:<username> mox/
     cd mox
-    ./install.sh -d
+    ./install.sh
 
 **Note:** The <username> must belong to the sudo user you're using for the
 installation. We recommend creating a dedicated "mox" user and stripping its

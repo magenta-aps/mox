@@ -2,15 +2,11 @@
 
 while getopts ":ds" OPT; do
   case $OPT in
-  	d)
-		DB_INSTALL=1
-		;;
 	s)
 		SKIP_SYSTEM_DEPS=1
 		;;
 	*)
 		echo "Usage: $0 [-d] [-s]"
-		echo "	-d: Install and (re-)create the DB"
 		echo "	-s: Skip installing oio_rest API system dependencies"
 		exit 1;
 		;;
@@ -78,8 +74,19 @@ if [ ! -f "$DIR/oio_rest/settings.py" ]; then
 	ln -s "$DIR/oio_rest/settings.py.production" "$DIR/oio_rest/settings.py"
 fi
 
-# Install Database
-if [ ! -z $DB_INSTALL ]; then
+
+WIPE_DB=0
+if [[ -z `sudo -u postgres psql -Atqc '\list $MOX_DB'` ]]; then
+	echo "Database $MOX_DB already exists in PostgreSQL"
+	read -p "Do you want to overwrite it? (y/n): " -n 1 -r
+	echo
+	if [[ $REPLY =~ ^[Yy]$ ]]; then
+		WIPE_DB=1
+	fi
+fi
+
+if [ $WIPE_DB == 1 ]; then
+	# Install Database
 	source $VIRTUALENV/bin/activate
 	DB_FOLDER="$DIR/../db"
 
@@ -92,7 +99,6 @@ if [ ! -z $DB_INSTALL ]; then
 	cd "$DIR"
 	deactivate
 fi
-
 
 
 # Install WSGI service

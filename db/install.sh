@@ -3,7 +3,6 @@
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 echo "DIR=$DIR"
 
-
 echo "Installing database dependencies"
 SYSTEM_PACKAGES=$(cat "$DIR/SYSTEM_DEPENDENCIES")
 for package in "${SYSTEM_PACKAGES[@]}"; do

@@ -9,15 +9,11 @@ fi
 
 while getopts ":ds" OPT; do
   case $OPT in
-  	d)
-		DB_INSTALL=1
-		;;
 	s)
 		SKIP_SYSTEM_DEPS=1
 		;;
 	*)
 		echo "Usage: $0 [-d] [-s]"
-		echo "	-d: Install and (re-)create the DB"
 		echo "	-s: Skip installing oio_rest API system dependencies"
 		exit 1;
 		;;
