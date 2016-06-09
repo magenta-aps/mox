@@ -70,10 +70,6 @@ else
 
 fi
 
-if [ ! -f "$DIR/oio_rest/settings.py" ]; then
-	ln -s "$DIR/oio_rest/settings.py.production" "$DIR/oio_rest/settings.py"
-fi
-
 
 WIPE_DB=0
 if [[ -z `sudo -u postgres psql -Atqc '\list $MOX_DB'` ]]; then
