@@ -7,14 +7,18 @@ if [ `id -u` == 0 ]; then
 fi
 
 
-while getopts ":ds" OPT; do
+while getopts ":ys" OPT; do
   case $OPT in
 	s)
 		SKIP_SYSTEM_DEPS=1
 		;;
+	y)
+		ALWAYS_CONFIRM=1
+		;;
 	*)
-		echo "Usage: $0 [-d] [-s]"
+		echo "Usage: $0 [-y] [-s]"
 		echo "	-s: Skip installing oio_rest API system dependencies"
+		echo "	-y: Always confirm (yes) when prompted"
 		exit 1;
 		;;
 	esac
@@ -34,7 +38,7 @@ fi
 
 
 # Setup symlinks
-./setsymlinks.sh
+./setsymlinks.sh development
 
 # Install oio_rest
 echo "Installing oio_rest"

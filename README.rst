@@ -82,6 +82,14 @@ Installing
 
 To install the OIO REST API, run ``install.sh``
 
+By default, you will be prompted to reinstall the python virtualenv
+if it already exists, and reinstall/overwrite the database
+if it already exists.
+
+To always answer yes to these questions, pass the ``-y`` parameter.
+
+Run ``install.sh -h`` for a list of options.
+
 **NOTE:** PostgreSQL 9.3 or later is required. If PostgreSQL is not installed
 on your system already, it will be during installation.
 
