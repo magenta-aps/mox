@@ -71,6 +71,8 @@ $DIR/modules/auth/install.sh
 $DIR/modules/spreadsheet/install.sh
 
 
+sudo mkdir -p "/var/log/mox"
+
 
 echo "Installing Tomcat webservices"
 $DIR/servlets/install.sh
@@ -81,4 +83,5 @@ $DIR/servlets/MoxDocumentUpload/install.sh
 $DIR/agents/MoxTabel/install.sh
 $DIR/agents/MoxRestFrontend/install.sh
 $DIR/agents/MoxTest/install.sh
+
 

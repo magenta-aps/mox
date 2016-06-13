@@ -6,28 +6,31 @@ package dk.magenta.mox.upload;
 
 import dk.magenta.mox.agent.MessageSender;
 import dk.magenta.mox.agent.messages.UploadedDocumentMessage;
+import dk.magenta.mox.json.JSONObject;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.text.StrSubstitutor;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.entity.mime.content.StringBody;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
 import java.io.*;
-import java.net.InetAddress;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.net.*;
+import java.nio.charset.StandardCharsets;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -37,6 +40,8 @@ import java.util.regex.Pattern;
 
 public class UploadServlet extends HttpServlet {
     private ServletFileUpload uploader = null;
+    private static final String createDocumentJsonTemplatePath =
+            "/WEB-INF/json/create_document_template.json";
 
     public static final String UPLOAD_SERVLET_URL = "";
     public static final String cacheFolderNameConfigKey = "FILES_DIR";
@@ -44,13 +49,16 @@ public class UploadServlet extends HttpServlet {
     public static final String authKey = "authentication";
 
     private InetAddress localAddress;
-    private static Pattern hostnamePattern = Pattern.compile("[a-z]+://([a-z0-9\\-\\.]+)(?::(\\d+))/.*", Pattern.CASE_INSENSITIVE);
+    private static Pattern hostnamePattern = Pattern.compile("[a-z]+://([a-z0-9\\-\\.]+)(?::(\\d+))?/.*", Pattern.CASE_INSENSITIVE);
 
     private MessageSender messageSender;
 
     private static boolean waitForAmqpResponses = true;
 
     private Logger log = Logger.getLogger(UploadServlet.class);
+
+    private URL restInterfaceURL = null;
+    private String createDocumentJsonTemplateString;
 
     @Override
     public void init() throws ServletException {
@@ -60,6 +68,24 @@ public class UploadServlet extends HttpServlet {
             ServletContext context = getServletContext();
             File cacheFolder = new File((String) context.getAttribute(cacheFolderNameConfigKey));
             this.log.info("Cache folder: " + cacheFolder.getAbsolutePath());
+
+            try {
+                restInterfaceURL = new URL(context.getInitParameter("rest.interface"));
+            } catch (MalformedURLException e) {
+                throw new ServletException("Rest interface URL is malformed", e);
+            }
+
+            InputStream jsonInputStream = getServletContext()
+                    .getResourceAsStream(createDocumentJsonTemplatePath);
+            if (jsonInputStream == null) {
+                throw new ServletException("No JSON template found in WEB-INF"
+                        + createDocumentJsonTemplatePath);
+            }
+            try {
+                createDocumentJsonTemplateString = IOUtils.toString(jsonInputStream, StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             if (!cacheFolder.isDirectory()) {
                 throw new ServletException("Configured cacheFolder '" + cacheFolder.getAbsolutePath() + "' is not a directory");
@@ -73,6 +99,7 @@ public class UploadServlet extends HttpServlet {
             fileFactory.setRepository(cacheFolder);
 
             this.uploader = new ServletFileUpload(fileFactory);
+            this.uploader.setHeaderEncoding("UTF-8");
             this.log.info("Upload handler created");
 
             try {
@@ -116,41 +143,16 @@ public class UploadServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         this.log.info("----------------------------------------");
         this.log.info("Receiving GET request");
-        String fileName = request.getParameter("download");
-        if (fileName != null && !fileName.equals("")) {
-            this.log.info("File '"+fileName+"' requested");
-            File file = new File(request.getServletContext().getAttribute(cacheFolderNameConfigKey) + File.separator + fileName);
-            if (!file.exists()) {
-                throw new ServletException("File doesn't exist on server.");
-            }
-            ServletContext ctx = getServletContext();
-            InputStream fis = new FileInputStream(file);
-            String mimeType = ctx.getMimeType(file.getAbsolutePath());
-            response.setContentType(mimeType != null ? mimeType : "application/octet-stream");
-            response.setContentLength((int) file.length());
-            response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
-
-            ServletOutputStream os = response.getOutputStream();
-            this.log.info("Sending file '"+fileName+"'");
-            IOUtils.copy(fis, os);
-
-            os.flush();
-            os.close();
-            fis.close();
-            this.log.info("File '"+fileName+"' sent");
-            return;
-        }
-
 
         this.log.info("Sending Upload UI");
         Writer out = response.getWriter();
         out.append("<html>\n" +
                 "<head></head>\n" +
                 "<body>\n" +
-                "<form action=\"\" method=\"post\" enctype=\"multipart/form-data\">\n" +
-                "    Select File to Upload:<input type=\"file\" name=\""+ fileKey +"\">\n" +
+                "<form action=\"\" method=\"post\" enctype=\"multipart/form-data\" accept-charset=\"UTF-8\">\n" +
+                "    Select File to Upload: <input type=\"file\" name=\"" + fileKey + "\">\n" +
                 "    <br/>\n" +
-                "    Token:<textarea name=\""+ authKey +"\"></textarea>" +
+                "    Token: <textarea name=\"" + authKey + "\"></textarea>" +
                 "    <input type=\"submit\" value=\"Upload\">\n" +
                 "</form>\n" +
                 "</body>\n" +
@@ -160,6 +162,22 @@ public class UploadServlet extends HttpServlet {
     }
 
 
+    /**
+     * Returns the create document JSON string for a given document name.
+     *
+     * @param documentName The filename of the document.
+     * @return String
+     */
+    protected String getCreateDocumentJson(String documentName, String mimetype) {
+        Map<String, String> map = new HashMap<>();
+        map.put("titel", documentName);
+        map.put("beskrivelse", "MoxDokumentUpload");
+        map.put("mimetype", mimetype);
+        map.put("brugervendtnoegle", "brugervendtnoegle");
+        map.put("virkning.from", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT));
+        return StrSubstitutor.replace(createDocumentJsonTemplateString, map);
+    }
+
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         this.log.info("----------------------------------------");
         this.log.info("Receiving POST request");
@@ -167,26 +185,12 @@ public class UploadServlet extends HttpServlet {
             throw new ServletException("Content type is not multipart/form-data");
         }
 
-        String protocol = request.getProtocol().replaceAll("/.*", "");
-
-        String hostname;
-        int port = -1;
-
-        Matcher m = hostnamePattern.matcher(request.getRequestURL().toString());
-        if (m.find()) {
-            hostname = m.group(1);
-            if (m.group(2) != null) {
-                port = Integer.parseInt(m.group(2), 10);
-            }
-        } else {
-            hostname = this.localAddress.getHostName();
-        }
-
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();
         out.write("<html><head></head><body>");
 
         try {
+
             List<FileItem> fileItemsList = uploader.parseRequest(request);
             Iterator<FileItem> fileItemsIterator = fileItemsList.iterator();
 
@@ -201,25 +205,36 @@ public class UploadServlet extends HttpServlet {
 
             ArrayList<UploadedDocumentMessage> messages = new ArrayList<>();
             while (fileItemsIterator.hasNext()) {
-                try {
-                    FileItem fileItem = fileItemsIterator.next();
-                    if (fileItem.getFieldName().equals(fileKey)) {
-                        File file = new File(request.getServletContext().getAttribute(cacheFolderNameConfigKey) + File.separator + fileItem.getName());
-                        fileItem.write(file);
-                        this.log.info("Received file " + file.getAbsolutePath());
+                FileItem fileItem = fileItemsIterator.next();
+                if (fileItem.getFieldName().equals(fileKey)) {
+                    String filename = fileItem.getName();
+                    String mimetype = fileItem.getContentType();
+                    JSONObject createDocumentJson = new JSONObject
+                            (getCreateDocumentJson(filename, mimetype));
 
-                        String relativePath = UPLOAD_SERVLET_URL + "?download=" + fileItem.getName();
+                    this.log.info("Received file " + filename);
 
-                        out.write("File " + fileItem.getName() + " uploaded successfully.");
-                        out.write("<br/>");
-                        out.write("<a href=\"" + relativePath + "\">Download " + fileItem.getName() + "</a>");
-
-                        String path = this.getServletContext().getContextPath() + "/" + relativePath;
-                        UploadedDocumentMessage message = new UploadedDocumentMessage(fileItem.getName(), new URL(protocol, hostname, port, path), authorization);
-                        messages.add(message);
+                    HashMap<String, File> fileMap = new HashMap<>();
+                    File tempFile = File.createTempFile("tmp", ".temp");
+                    try {
+                        fileItem.write(tempFile);
+                    } catch (Exception e) {
+                        throw new ServletException("Cannot create temporary " +
+                                "file for uploaded file.", e);
                     }
-                } catch (Exception e) {
-                    out.write("Error when writing file to cache.");
+                    fileMap.put("file", tempFile);
+                    String result = sendMultipartRest("POST",
+                            "/dokument/dokument", createDocumentJson.toString(), authorization, fileMap);
+                    JSONObject jsonResult = new JSONObject(result);
+                    String uuid = jsonResult.getString("uuid");
+
+                    tempFile.delete();
+
+                    out.write("Document " + filename + " uploaded " +
+                            "successfully to OIO server.");
+                    out.write("<br/>");
+                    UploadedDocumentMessage message = new UploadedDocumentMessage(uuid, authorization);
+                    messages.add(message);
                 }
             }
             ArrayList<Future<String>> amqpResponses = new ArrayList<>();
@@ -237,7 +252,9 @@ public class UploadServlet extends HttpServlet {
                 for (Future<String> amqpResponse : amqpResponses) {
                     try {
                         String realResponse = amqpResponse.get(30, TimeUnit.SECONDS);
+                        out.write("<pre>");
                         out.write(realResponse);
+                        out.write("</pre>");
                     } catch (InterruptedException | ExecutionException | TimeoutException e) {
                         e.printStackTrace();
                     }
@@ -246,8 +263,74 @@ public class UploadServlet extends HttpServlet {
         } catch (FileUploadException e) {
             out.write("Exception in uploading file.");
             throw new ServletException(e);
-    }
+        }
         out.write("</body></html>");
+    }
+
+    private URL getURLforPath(String path) throws MalformedURLException {
+        return new URL(this.restInterfaceURL.getProtocol(), this.restInterfaceURL.getHost(), this.restInterfaceURL.getPort(), path);
+    }
+
+    /**
+     * Make a multipart/form-data REST request with a JSON field.
+     *
+     * TODO: Move to RestClient.
+     * @param method
+     * @param path
+     * @param json          The JSON to include in the field "json"
+     * @param authorization
+     * @param files         Mapping between multipart entity field name (key)
+     *                      and File object (value)
+     *                      to include in the request body.
+     * @return
+     * @throws IOException
+     */
+    private String sendMultipartRest(String method, String path, String json,
+                                     String authorization, Map<String, File>
+                                             files) throws IOException {
+        URL url = getURLforPath(path);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod(method);
+        connection.setConnectTimeout(30000);
+        connection.setDoOutput(true);
+        if (authorization != null && !authorization.isEmpty()) {
+            connection.setRequestProperty("Authorization", authorization.trim());
+        }
+
+        MultipartEntity multipartEntity = new MultipartEntity(HttpMultipartMode.STRICT);
+
+        // Add the files to the request
+        files.forEach((partName, file) -> {
+            FileBody fileBody = new FileBody(file);
+            multipartEntity.addPart(partName, fileBody);
+        });
+
+        multipartEntity.addPart("json", new StringBody(json,
+                "application/json", StandardCharsets.UTF_8));
+
+        connection.setRequestProperty("Content-Type", multipartEntity.getContentType().getValue());
+        try (OutputStream out = connection.getOutputStream()) {
+            multipartEntity.writeTo(out);
+        }
+        int status = connection.getResponseCode();
+        this.log.info("Response status code: " + status);
+        this.log.info("Sending message to REST interface: " + method + " " + url.toString() + " " + json);
+        try {
+            String response = IOUtils.toString(connection.getInputStream());
+            this.log.info("got response");
+            this.log.info(response);
+            return response;
+        } catch (ConnectException e) {
+            this.log.warn("The defined REST interface (" + method + " " + connection.getURL().getHost() + ":" + connection.getURL().getPort() + connection.getURL().getPath() + ") does not answer.");
+            throw e;
+        } catch (IOException e) {
+            this.log.warn("IOException on request to " + method + " " + url.toString() + ": " + e.getMessage());
+            String response = IOUtils.toString(connection.getInputStream());
+            if (response != null) {
+                this.log.warn(response);
+            }
+            throw e;
+        }
     }
 
 }

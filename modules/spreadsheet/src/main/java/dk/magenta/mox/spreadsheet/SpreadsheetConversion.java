@@ -58,7 +58,7 @@ public class SpreadsheetConversion {
     /**
      * Gets a sheet from internal map, creating it if it doesn't exist
      * */
-    private SheetData getSheet(String sheetName) {
+    public SheetData getSheet(String sheetName) {
         if (!this.sheets.containsKey(sheetName)) {
             SheetData sheet = new SheetData();
             sheet.name = sheetName;
