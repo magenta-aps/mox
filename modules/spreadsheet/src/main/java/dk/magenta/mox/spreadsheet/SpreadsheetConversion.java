@@ -134,7 +134,7 @@ public class SpreadsheetConversion {
             }
 
             String operation = row.get(sheet.headerOperationIndex);
-            
+
             if (id == null || id.isEmpty()) {
                 log.warn("No id for object row " + row);
             } else if (operation == null || operation.isEmpty()) {

@@ -64,6 +64,15 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
         }
     }
 
+    private class IdentifiedDocumentMessage {
+        public DocumentMessage documentMessage;
+        public String identifier;
+        public IdentifiedDocumentMessage(String identifier, DocumentMessage documentMessage) {
+            this.identifier = identifier;
+            this.documentMessage = documentMessage;
+        }
+    }
+
     /**
      * Return a simple representation of an OIO document given its UUID.
      *
@@ -142,15 +151,20 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
             }
 
             HashMap<String, Future<String>> moxResponses = new HashMap<String, Future<String>>();
+
+            ArrayList<ArrayList<IdentifiedDocumentMessage>> chains = new ArrayList<>();
+            int longestChainLength = 0;
+
             for (String sheetName : convertedSpreadsheets.keySet()) {
                 for (String objectId : convertedSpreadsheets.get(sheetName).keySet()) {
                     List<ConvertedObject> objects = convertedSpreadsheets.get(sheetName).get(objectId);
                     int i = 0;
+                    ArrayList<IdentifiedDocumentMessage> currentChain = new ArrayList<>();
                     for (ConvertedObject object : objects) {
                         i++;
+                        String identifier = reference + " : " + title + " : " + " : " + objectId;
                         this.log.info("----------------------------------------");
                         this.log.info("Handling object (sheetName: " + sheetName + ", objectId: " + objectId + " #" + i + ")");
-                        //ObjectType objectType = this.objectTypeMap.get(object.getSheetName());
                         String objectTypeName = object.getSheetName();
                         String operation = object.getOperation();
                         JSONObject objectData = object.getJSON();
@@ -184,20 +198,43 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
                                 break;
                         }
                         if (documentMessage != null) {
-                            this.log.info("Document message created. Sending...");
-                            try {
-                                Future<String> moxResponse = this.sender.send(documentMessage, true);
-                                //Future<String> moxResponse = this.sender.send(objectType, operation, uuid, objectData, authorization);
-                                moxResponses.put(reference + " : " + title + " : " + sheetName + " : " + objectId, moxResponse);
-                                this.log.info("Message sent, awaiting response");
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
+                            currentChain.add(new IdentifiedDocumentMessage(identifier, documentMessage));
+                        }
+                    }
+                    if (!currentChain.isEmpty()) {
+                        chains.add(currentChain);
+                        if (currentChain.size() > longestChainLength) {
+                            longestChainLength = currentChain.size();
                         }
                     }
                 }
             }
 
+            for (int i=0; i<longestChainLength; i++) {
+                ArrayList<Future<String>> waitees = new ArrayList<>();
+                for (List<IdentifiedDocumentMessage> chain : chains) {
+                    if (!chain.isEmpty()) {
+                        IdentifiedDocumentMessage identifiedDocumentMessage = chain.remove(0);
+                        try {
+                            Future<String> moxResponse = this.sender.send(identifiedDocumentMessage.documentMessage, true);
+                            //Future<String> moxResponse = this.sender.send(objectType, operation, uuid, objectData, authorization);
+                            moxResponses.put(identifiedDocumentMessage.identifier, moxResponse);
+                            this.log.info("Message sent, awaiting response");
+                            if (!chain.isEmpty()) {
+                                waitees.add(moxResponse);
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                if (!waitees.isEmpty()) {
+                    this.log.info("Waiting for "+waitees.size()+" responses");
+                    for (Future<String> waitee : waitees) {
+                        waitee.get();
+                    }
+                }
+            }
 
             final HashMap<String, Future<String>> fMoxResponses = new HashMap<String, Future<String>>(moxResponses);
             return this.pool.submit(new Callable<String>() {
