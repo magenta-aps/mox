@@ -134,7 +134,7 @@ public class SpreadsheetConversion {
             }
 
             String operation = row.get(sheet.headerOperationIndex);
-
+            
             if (id == null || id.isEmpty()) {
                 log.warn("No id for object row " + row);
             } else if (operation == null || operation.isEmpty()) {
@@ -142,6 +142,9 @@ public class SpreadsheetConversion {
             } else if (!operations.containsKey(operation) && !operations.containsValue(operation)) {
                 log.warn("Unrecognized operation for object row (id='" + id + "')");
             } else {
+                if (operations.containsKey(operation)) {
+                    operation = operations.get(operation);
+                }
                 ConvertedObject object = new ConvertedObject(sheet, id, operation);
                 ArrayList<ConvertedObject> objects = sheet.objects.get(id);
                 if (objects == null) {
@@ -153,11 +156,6 @@ public class SpreadsheetConversion {
                 for (int i = 0; i < row.size(); i++) {
                     String value = row.get(i);
                     String tag = headerRow.get(i);
-                    if (i == sheet.headerOperationIndex && tag.equalsIgnoreCase(operationHeaderName)) {
-                        if (operations.containsKey(value)) {
-                            operation = operations.get(value);
-                        }
-                    }
                     object.put(tag, value);
                 }
             }
