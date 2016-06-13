@@ -62,7 +62,7 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
             fileOutputStream.close();
             this.log.info("Data retrieved ("+tempFile.length()+" bytes)");
 
-            Map<String, Map<String, ConvertedObject>> convertedSpreadsheets = SpreadsheetConverter.convert(tempFile, contentType);
+            Map<String, Map<String, List<ConvertedObject>>> convertedSpreadsheets = SpreadsheetConverter.convert(tempFile, contentType);
             try {
                 tempFile.delete();
             } catch (SecurityException ex) {
@@ -71,54 +71,58 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
             HashMap<String, Future<String>> moxResponses = new HashMap<String, Future<String>>();
             for (String sheetName : convertedSpreadsheets.keySet()) {
                 for (String objectId : convertedSpreadsheets.get(sheetName).keySet()) {
-                    ConvertedObject object = convertedSpreadsheets.get(sheetName).get(objectId);
-                    this.log.info("----------------------------------------");
-                    this.log.info("Handling object (sheetName: "+sheetName+", objectId: "+objectId+")");
-                    //ObjectType objectType = this.objectTypeMap.get(object.getSheetName());
-                    String objectTypeName = object.getSheetName();
-                    String operation = object.getOperation();
-                    JSONObject objectData = object.getJSON();
-                    UUID uuid = null;
-                    try {
-                        uuid = UUID.fromString(object.getId());
-                    } catch (IllegalArgumentException e) {
-                    }
-                    this.log.info("Operation: "+operation);
-                    this.log.info("UUID: " + ((uuid == null) ? null : uuid.toString()));
-
-                    DocumentMessage documentMessage = null;
-                    switch (operation.trim().toLowerCase()) {
-                        case DocumentMessage.OPERATION_READ:
-                            documentMessage = new ReadDocumentMessage(authorization, objectTypeName, uuid);
-                            break;
-                        case DocumentMessage.OPERATION_LIST:
-                            documentMessage = new ListDocumentMessage(authorization, objectTypeName, uuid);
-                            break;
-                        case DocumentMessage.OPERATION_CREATE:
-                            documentMessage = new CreateDocumentMessage(authorization, objectTypeName, objectData);
-                            break;
-                        case DocumentMessage.OPERATION_UPDATE:
-                            documentMessage = new UpdateDocumentMessage(authorization, objectTypeName, uuid, objectData);
-                            break;
-                        case DocumentMessage.OPERATION_PASSIVATE:
-                            documentMessage = new PassivateDocumentMessage(authorization, objectTypeName, uuid);
-                            break;
-                        case DocumentMessage.OPERATION_DELETE:
-                            documentMessage = new DeleteDocumentMessage(authorization, objectTypeName, uuid);
-                            break;
-                    }
-                    if (documentMessage != null) {
-                        this.log.info("Document message created. Sending...");
+                    List<ConvertedObject> objects = convertedSpreadsheets.get(sheetName).get(objectId);
+                    int i=0;
+                    for (ConvertedObject object : objects) {
+                        i++;
+                        this.log.info("----------------------------------------");
+                        this.log.info("Handling object (sheetName: " + sheetName + ", objectId: " + objectId + " # " + i + ")");
+                        //ObjectType objectType = this.objectTypeMap.get(object.getSheetName());
+                        String objectTypeName = object.getSheetName();
+                        String operation = object.getOperation();
+                        JSONObject objectData = object.getJSON();
+                        UUID uuid = null;
                         try {
-                            Future<String> moxResponse = this.sender.send(documentMessage, true);
-                            //Future<String> moxResponse = this.sender.send(objectType, operation, uuid, objectData, authorization);
-                            moxResponses.put(filename + " : " + sheetName + " : " + objectId, moxResponse);
-                            this.log.info("Message sent, awaiting response");
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
+                            uuid = UUID.fromString(object.getId());
+                        } catch (IllegalArgumentException e) {
                         }
-                    } else {
-                        this.log.info("Failed to create a document message");
+                        this.log.info("Operation: " + operation);
+                        this.log.info("UUID: " + ((uuid == null) ? null : uuid.toString()));
+
+                        DocumentMessage documentMessage = null;
+                        switch (operation.trim().toLowerCase()) {
+                            case DocumentMessage.OPERATION_READ:
+                                documentMessage = new ReadDocumentMessage(authorization, objectTypeName, uuid);
+                                break;
+                            case DocumentMessage.OPERATION_LIST:
+                                documentMessage = new ListDocumentMessage(authorization, objectTypeName, uuid);
+                                break;
+                            case DocumentMessage.OPERATION_CREATE:
+                                documentMessage = new CreateDocumentMessage(authorization, objectTypeName, objectData);
+                                break;
+                            case DocumentMessage.OPERATION_UPDATE:
+                                documentMessage = new UpdateDocumentMessage(authorization, objectTypeName, uuid, objectData);
+                                break;
+                            case DocumentMessage.OPERATION_PASSIVATE:
+                                documentMessage = new PassivateDocumentMessage(authorization, objectTypeName, uuid);
+                                break;
+                            case DocumentMessage.OPERATION_DELETE:
+                                documentMessage = new DeleteDocumentMessage(authorization, objectTypeName, uuid);
+                                break;
+                        }
+                        if (documentMessage != null) {
+                            this.log.info("Document message created. Sending...");
+                            try {
+                                Future<String> moxResponse = this.sender.send(documentMessage, true);
+                                //Future<String> moxResponse = this.sender.send(objectType, operation, uuid, objectData, authorization);
+                                moxResponses.put(filename + " : " + sheetName + " : " + objectId, moxResponse);
+                                this.log.info("Message sent, awaiting response");
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            this.log.info("Failed to create a document message");
+                        }
                     }
                 }
             }

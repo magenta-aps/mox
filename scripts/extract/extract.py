@@ -195,6 +195,41 @@ def convert(row, structure, include_virkning=True):
             pass
     return converted
 
+def lifecycle(rows):
+    STATUS_CODE = 'Livscykluskode'
+    STATUS_CREATED = 'Opstaaet'
+    STATUS_UPDATED = 'Rettet'
+    STATUS_DELETED = 'Slettet'
+    STATUS_IMPORTED = 'Importeret'
+
+    ACTION_CODE = 'Operation'
+    ACTION_CREATE = 'opret'
+    ACTION_UPDATE = 'ret'
+    ACTION_DELETE = 'slet'
+
+    lifecycles_detected = set()
+    rows.sort(lambda a, b: a['Tidsstempel'] > b['Tidsstempel'])
+    for row in rows:
+        lifecycles_detected.add(row[STATUS_CODE])
+    rows[0][ACTION_CODE] = ACTION_CREATE
+    for row in rows[1:]:
+        row[ACTION_CODE] = ACTION_UPDATE
+    if STATUS_DELETED in lifecycles_detected:
+        deletion_note = ''
+        for row in rows:
+            if 'Note' in row:
+                deletion_note = row['Note']
+                del row['Note']
+        rows.append({
+            ACTION_CODE: ACTION_DELETE,
+            STATUS_CODE: STATUS_DELETED,
+            'Note': deletion_note,
+            'objektID': rows[0]['objektID'],
+            'Fra': rows[-1]['Fra'],
+            'Til': rows[-1]['Til']
+        })
+    return rows
+
 def csvrow(row, headers):
     line = []
     for header in headers:
@@ -206,13 +241,14 @@ def format(data):
     for objecttype_name, items in data.iteritems():
         rows = []
         structure = structure_collection[objecttype_name]
-        baseheaders = ['objektID', 'Fra', 'Til', 'BrugervendtNoegle']
+        baseheaders = ['Operation', 'objektID', 'Fra', 'Til', 'BrugervendtNoegle']
         otherheaders = []
         for item in items:
             id = item['id']
+            itemrows = []
             print "%d registreringer" % len(item['registreringer'])
             for registrering in item['registreringer']:
-                print registrering
+                registreringrows = []
 
                 print "------------------"
                 print "UNLIST"
@@ -239,10 +275,12 @@ def format(data):
                     row.update(converted_basedata)
                     row.update(rowpart)
                     row['objektID'] = id
-                    rows.append(row)
+                    registreringrows.append(row)
                     for key in row:
                         if key not in otherheaders and key not in baseheaders:
                             otherheaders.append(key)
+                itemrows.extend(lifecycle(registreringrows))
+            rows.extend(itemrows)
         otherheaders.sort()
         headers = baseheaders + otherheaders
 
@@ -251,13 +289,13 @@ def format(data):
         outfile = io.open("%s.csv" % objecttype_name, 'w')
         outfile.write(u','.join(headers))
 
-        lines = list(set([csvrow(row, headers) for row in rows]))
-        lines.sort()
+        lines = [csvrow(row, headers) for row in rows]
 
         for line in lines:
             outfile.write(u"\n" + line)
         outfile.close()
 
+"""
 objects = extract(
     "moxtest.magenta-aps.dk",
     "admin", "admin",
@@ -271,5 +309,6 @@ objects = extract(
         "bruger": "/organisation/bruger"
     }
 )
-#objects = json.load(open("data.json", 'r'))
+"""
+objects = json.load(open("data.json", 'r'))
 format(objects)
