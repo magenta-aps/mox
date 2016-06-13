@@ -64,10 +64,11 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
         }
     }
 
-    private class IdentifiedDocumentMessage {
+    private class MessageRequest {
         public DocumentMessage documentMessage;
         public String identifier;
-        public IdentifiedDocumentMessage(String identifier, DocumentMessage documentMessage) {
+        public Future<String> response;
+        public MessageRequest(String identifier, DocumentMessage documentMessage) {
             this.identifier = identifier;
             this.documentMessage = documentMessage;
         }
@@ -150,19 +151,16 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
             } catch (SecurityException ex) {
             }
 
-            HashMap<String, Future<String>> moxResponses = new HashMap<String, Future<String>>();
-
-            ArrayList<ArrayList<IdentifiedDocumentMessage>> chains = new ArrayList<>();
+            ArrayList<ArrayList<MessageRequest>> chains = new ArrayList<>();
             int longestChainLength = 0;
 
             for (String sheetName : convertedSpreadsheets.keySet()) {
                 for (String objectId : convertedSpreadsheets.get(sheetName).keySet()) {
                     List<ConvertedObject> objects = convertedSpreadsheets.get(sheetName).get(objectId);
                     int i = 0;
-                    ArrayList<IdentifiedDocumentMessage> currentChain = new ArrayList<>();
+                    ArrayList<MessageRequest> currentChain = new ArrayList<>();
                     for (ConvertedObject object : objects) {
                         i++;
-                        String identifier = reference + " : " + title + " : " + " : " + objectId;
                         this.log.info("----------------------------------------");
                         this.log.info("Handling object (sheetName: " + sheetName + ", objectId: " + objectId + " #" + i + ")");
                         String objectTypeName = object.getSheetName();
@@ -198,7 +196,8 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
                                 break;
                         }
                         if (documentMessage != null) {
-                            currentChain.add(new IdentifiedDocumentMessage(identifier, documentMessage));
+                            String identifier = reference + " : " + title + " : " + operation.trim().toLowerCase() + " : " + objectId;
+                            currentChain.add(new MessageRequest(identifier, documentMessage));
                         }
                     }
                     if (!currentChain.isEmpty()) {
@@ -210,18 +209,19 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
                 }
             }
 
+            ArrayList<MessageRequest> requests = new ArrayList<>();
             for (int i=0; i<longestChainLength; i++) {
-                ArrayList<Future<String>> waitees = new ArrayList<>();
-                for (List<IdentifiedDocumentMessage> chain : chains) {
+                ArrayList<MessageRequest> waitees = new ArrayList<>();
+                for (List<MessageRequest> chain : chains) {
                     if (!chain.isEmpty()) {
-                        IdentifiedDocumentMessage identifiedDocumentMessage = chain.remove(0);
+                        MessageRequest request = chain.remove(0);
                         try {
-                            Future<String> moxResponse = this.sender.send(identifiedDocumentMessage.documentMessage, true);
-                            //Future<String> moxResponse = this.sender.send(objectType, operation, uuid, objectData, authorization);
-                            moxResponses.put(identifiedDocumentMessage.identifier, moxResponse);
-                            this.log.info("Message sent, awaiting response");
+                            Future<String> moxResponse = this.sender.send(request.documentMessage, true);
+                            request.response = moxResponse;
+                            // moxResponses.put(request.identifier, moxResponse);
+                            requests.add(request);
                             if (!chain.isEmpty()) {
-                                waitees.add(moxResponse);
+                                waitees.add(request);
                             }
                         } catch (InterruptedException e) {
                             e.printStackTrace();
@@ -230,23 +230,27 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
                 }
                 if (!waitees.isEmpty()) {
                     this.log.info("Waiting for "+waitees.size()+" responses");
-                    for (Future<String> waitee : waitees) {
-                        waitee.get();
+                    for (MessageRequest waitee : waitees) {
+                        if (waitee.response != null) {
+                            waitee.response.get(30, TimeUnit.SECONDS);
+                        }
                     }
                 }
             }
 
-            final HashMap<String, Future<String>> fMoxResponses = new HashMap<String, Future<String>>(moxResponses);
+            //final HashMap<String, Future<String>> fMoxResponses = new HashMap<String, Future<String>>(moxResponses);
+            final List<MessageRequest> fRequests = new ArrayList<>(requests);
             return this.pool.submit(new Callable<String>() {
                 public String call() throws IOException {
                     JSONObject collectedResponses = new JSONObject();
 
-                    for (String key : fMoxResponses.keySet()) {
-                        Future<String> moxResponse = fMoxResponses.get(key);
+                    for (MessageRequest messageRequest : fRequests) {
                         try {
-                            collectedResponses.put(key, new JSONObject(moxResponse.get(30, TimeUnit.SECONDS)));
-                            UploadedDocumentMessageHandler.this.log.info("Response received");
+                            String realResponse = messageRequest.response.get(30, TimeUnit.SECONDS);
+                            collectedResponses.put(messageRequest.identifier, new JSONObject(realResponse));
+                            UploadedDocumentMessageHandler.this.log.info(messageRequest.identifier+" --- "+realResponse);
                         } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                            UploadedDocumentMessageHandler.this.log.info("Response failed: "+ e.getMessage());
                             //throw new ServletException("Interruption error when interfacing with rest interface through message queue.\nWhen uploading " + key, e);
                         }
                     }
@@ -254,6 +258,24 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
                     return collectedResponses.toString(2);
                 }
             });
+
+            /*return this.pool.submit(new Callable<String>() {
+                public String call() throws IOException {
+                    JSONObject collectedResponses = new JSONObject();
+
+                    for (String identifier : fMoxResponses.keySet()) {
+                        Future<String> moxResponse = fMoxResponses.get(identifier);
+                        try {
+                            collectedResponses.put(identifier, new JSONObject(moxResponse.get(30, TimeUnit.SECONDS)));
+                        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                            UploadedDocumentMessageHandler.this.log.info("Response failed: "+ e.getMessage());
+                            //throw new ServletException("Interruption error when interfacing with rest interface through message queue.\nWhen uploading " + key, e);
+                        }
+                    }
+                    UploadedDocumentMessageHandler.this.log.info("Returning collected responses");
+                    return collectedResponses.toString(2);
+                }
+            });*/
 
 
         } catch (MalformedURLException e) {
