@@ -232,7 +232,7 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
                     this.log.info("Waiting for "+waitees.size()+" responses");
                     for (MessageRequest waitee : waitees) {
                         if (waitee.response != null) {
-                            waitee.response.get(30, TimeUnit.SECONDS);
+                            waitee.response.get(60, TimeUnit.SECONDS);
                         }
                     }
                 }
@@ -246,9 +246,14 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
 
                     for (MessageRequest messageRequest : fRequests) {
                         try {
-                            String realResponse = messageRequest.response.get(30, TimeUnit.SECONDS);
+                            String realResponse = messageRequest.response.get(60, TimeUnit.SECONDS);
                             collectedResponses.put(messageRequest.identifier, new JSONObject(realResponse));
-                            UploadedDocumentMessageHandler.this.log.info(messageRequest.identifier+" --- "+realResponse);
+                            // UploadedDocumentMessageHandler.this.log.info(messageRequest.identifier+" --- "+realResponse);
+                            if (realResponse.contains("Got error response")) {
+                                UploadedDocumentMessageHandler.this.log.info("Failed " + messageRequest.identifier + " / " + realResponse);
+                            } else {
+                                UploadedDocumentMessageHandler.this.log.info("Successful "+messageRequest.identifier + " / " + realResponse);
+                            }
                         } catch (InterruptedException | ExecutionException | TimeoutException e) {
                             UploadedDocumentMessageHandler.this.log.info("Response failed: "+ e.getMessage());
                             //throw new ServletException("Interruption error when interfacing with rest interface through message queue.\nWhen uploading " + key, e);
@@ -258,25 +263,6 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
                     return collectedResponses.toString(2);
                 }
             });
-
-            /*return this.pool.submit(new Callable<String>() {
-                public String call() throws IOException {
-                    JSONObject collectedResponses = new JSONObject();
-
-                    for (String identifier : fMoxResponses.keySet()) {
-                        Future<String> moxResponse = fMoxResponses.get(identifier);
-                        try {
-                            collectedResponses.put(identifier, new JSONObject(moxResponse.get(30, TimeUnit.SECONDS)));
-                        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                            UploadedDocumentMessageHandler.this.log.info("Response failed: "+ e.getMessage());
-                            //throw new ServletException("Interruption error when interfacing with rest interface through message queue.\nWhen uploading " + key, e);
-                        }
-                    }
-                    UploadedDocumentMessageHandler.this.log.info("Returning collected responses");
-                    return collectedResponses.toString(2);
-                }
-            });*/
-
 
         } catch (MalformedURLException e) {
             this.log.error("Invalid url", e);

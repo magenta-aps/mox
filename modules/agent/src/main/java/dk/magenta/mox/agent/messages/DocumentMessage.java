@@ -33,6 +33,10 @@ public abstract class DocumentMessage extends Message {
         return headers;
     }
 
+    public String getObjectType() {
+        return objectType;
+    }
+
     public static DocumentMessage parse(Headers headers, JSONObject data) {
         String operationName = headers.optString(Message.HEADER_OPERATION);
         if (operationName != null) {
