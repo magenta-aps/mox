@@ -1,8 +1,15 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 import requests
 import json
 import io
+import cgi
+import os
+import sys
+import socket
+
+BASEPATH = os.path.dirname(os.path.realpath(sys.argv[0]))
 
 GET_TOKEN = "/get-token"
 
@@ -10,9 +17,65 @@ def extract(server, username, password, objecttypes, https=True):
 
     schema = "https://" if https else "http://"
 
+    token = get_token(schema, server, username, password)
+
+    request_counter = 0
+    """List objects"""
+    objects = {}
+    for objecttype_name, objecttype_url in objecttypes.iteritems():
+        # print "Listing objects of type %s" % objecttype_name
+        uuids = []
+        for parameterset in ["brugervendtnoegle=%", "livscykluskode=Slettet", "livscykluskode=Importeret"]:
+            list_request = requests.get(
+                "%s%s%s?%s" % (schema, server, objecttype_url, parameterset),
+                headers={
+                    "Authorization": token,
+                    "Content-type": "application/json"
+                }
+            )
+            try:
+                response = json.loads(list_request.text)
+                uuid_list = response.get("results")[0]
+                # print "%d %s items" % (len(uuid_list), objecttype_name)
+                uuids.extend(uuid_list)
+            except Exception as e:
+                print list_request.text
+                print e
+
+        objects[objecttype_name] = []
+        uuids = list(set(uuids))
+
+        chunksize = 20
+        chunks = [uuids[i:i+chunksize] for i in range(0, len(uuids), chunksize-1)]
+        # for uuid in uuids:
+        for chunk in chunks:
+            item_request = requests.get(
+                "%s%s%s?uuid=%s" % (schema, server, objecttype_url, "&uuid=".join(chunk)),
+                headers={
+                    "Authorization": token,
+                    "Content-type": "application/json"
+                }
+            )
+            try:
+                response = json.loads(item_request.text)
+                objects[objecttype_name].extend(response.get("results")[0])
+                # print len(objects[objecttype_name])
+            except Exception as e:
+                print "2"
+                print e
+
+            request_counter += 1
+            if request_counter % 20 == 0:
+                token = get_token(schema, server, username, password)
+
+    return objects
+
+
+
+def get_token(schema, server, username, password):
     """ Get a token from the server"""
     token_url = "%s%s%s" % (schema, server, GET_TOKEN)
-    print "Obtaining token from %s" % token_url
+    # print "Obtaining token from %s" % token_url
     token_request = requests.post(
         token_url,
         data={
@@ -29,54 +92,16 @@ def extract(server, username, password, objecttypes, https=True):
             message = token_request.text
         raise Exception(message)
     token = token_request.text.strip()
-    print "Token obtained"
-
-    """List objects"""
-    objects = {}
-    for objecttype_name, objecttype_url in objecttypes.iteritems():
-        print "Listing objects of type %s" % objecttype_name
-        uuids = []
-        for parameterset in ["brugervendtnoegle=%", "livscykluskode=Slettet"]:
-            list_request = requests.get(
-                "%s%s%s?%s" % (schema, server, objecttype_url, parameterset),
-                headers={
-                    "Authorization": token,
-                    "Content-type": "application/json"
-                }
-            )
-            try:
-                response = json.loads(list_request.text)
-                uuid_list = response.get("results")[0]
-                print "%d %s items" % (len(uuid_list), objecttype_name)
-                uuids.extend(uuid_list)
-            except Exception as e:
-                print e
-
-        objects[objecttype_name] = []
-        for uuid in uuids:
-            item_request = requests.get(
-                "%s%s%s/%s" % (schema, server, objecttype_url, uuid),
-                headers={
-                    "Authorization": token,
-                    "Content-type": "application/json"
-                }
-            )
-            try:
-                response = json.loads(item_request.text)
-                objects[objecttype_name].append(response.get(uuid)[0])
-            except Exception as e:
-                print e
-    return objects
+    # print "Token obtained"
+    return token
 
 
-
-
-def _unlist(data, path=[]):
+def unlist(data, path=[]):
     b = {}
     l = []
     if type(data) == dict:
         for key in data:
-            (basedata, listdata) = _unlist(data[key], path + [key])
+            (basedata, listdata) = unlist(data[key], path + [key])
             if basedata is not None:
                 b[key] = basedata
             if listdata is not None:
@@ -87,7 +112,7 @@ def _unlist(data, path=[]):
         return (b, l)
     elif type(data) == list:
         for item in data:
-            (basedata, listdata) = _unlist(item, path)
+            (basedata, listdata) = unlist(item, path)
             if basedata is not None:
                 l.append(basedata)
         return (None, l)
@@ -189,13 +214,13 @@ def convert(row, structure, include_virkning=True):
             if p == 'urn' and ptr.startswith('urn:'):
                 ptr = ptr[len('urn:'):]
             converted[key] = ptr
-            #print "SUCCESS: %s => %s" % (path, key)
+            ## print "SUCCESS: %s => %s" % (path, key)
         except:
-            #print "FAILURE: %s => %s" % (path, key)
+            ## print "FAILURE: %s => %s" % (path, key)
             pass
     return converted
 
-def lifecycle(rows):
+def fix_rowset(rows):
     STATUS_CODE = 'Livscykluskode'
     STATUS_CREATED = 'Opstaaet'
     STATUS_UPDATED = 'Rettet'
@@ -211,9 +236,18 @@ def lifecycle(rows):
     rows.sort(lambda a, b: a['Tidsstempel'] > b['Tidsstempel'])
     for row in rows:
         lifecycles_detected.add(row[STATUS_CODE])
-    rows[0][ACTION_CODE] = ACTION_CREATE
-    for row in rows[1:]:
+    for row in rows:
         row[ACTION_CODE] = ACTION_UPDATE
+
+    persistent_attributes = ['BrugervendtNoegle', 'Publiceret']
+    attribute_storage = {}
+    for row in rows:
+        for attribute in persistent_attributes:
+            if attribute in row:
+                attribute_storage[attribute] = row[attribute]
+            else:
+                row[attribute] = attribute_storage.get(attribute)
+
     if STATUS_DELETED in lifecycles_detected:
         deletion_note = ''
         for row in rows:
@@ -237,8 +271,10 @@ def csvrow(row, headers):
     return ','.join(["\"%s\"" % x for x in line])
 
 def format(data):
-    structure_collection = json.load(open("structure.json"))
+    output = {}
+    structure_collection = json.load(open(BASEPATH + "/structure.json"))
     for objecttype_name, items in data.iteritems():
+        # print "Type %s has %d objects" % (objecttype_name, len(items))
         rows = []
         structure = structure_collection[objecttype_name]
         baseheaders = ['Operation', 'objektID', 'Fra', 'Til', 'BrugervendtNoegle']
@@ -246,30 +282,34 @@ def format(data):
         for item in items:
             id = item['id']
             itemrows = []
-            print "%d registreringer" % len(item['registreringer'])
+            ## print "%d registreringer" % len(item['registreringer'])
             for registrering in item['registreringer']:
                 registreringrows = []
 
-                print "------------------"
-                print "UNLIST"
-                (basedata, listdata) = _unlist(registrering)
-                print "%d listdata items" % len(listdata)
+                ## print "------------------"
+                ## print "UNLIST"
+                (basedata, listdata) = unlist(registrering)
+                ## print "%d listdata items" % len(listdata)
 
-                print "------------------"
-                print "CONVERT"
+                ## print "------------------"
+                ## print "CONVERT"
+                if listdata is None:
+                    listdata = []
+                if basedata is None:
+                    basedata = {}
                 converted_listdata = [convert(item, structure) for item in listdata]
                 converted_basedata = convert(basedata, structure)
-                print "Base %s" % (converted_basedata)
-                for i in range(len(converted_listdata)):
-                    print "List %d %s" % (i, converted_listdata[i])
+                ## print "Base %s" % (converted_basedata)
+                #for i in range(len(converted_listdata)):
+                #    # print "List %d %s" % (i, converted_listdata[i])
 
-                print "------------------"
-                print "MERGE"
+                ## print "------------------"
+                ## print "MERGE"
                 merged = merge(converted_listdata)
-                print "%d merged listdata items" % len(merged)
+                ## print "%d merged listdata items" % len(merged)
 
-                print "------------------"
-                print "APPLY BASEDATA AND ID"
+                ## print "------------------"
+                ## print "APPLY BASEDATA AND ID"
                 for rowpart in merged:
                     row = {}
                     row.update(converted_basedata)
@@ -279,36 +319,75 @@ def format(data):
                     for key in row:
                         if key not in otherheaders and key not in baseheaders:
                             otherheaders.append(key)
-                itemrows.extend(lifecycle(registreringrows))
+                itemrows.extend(fix_rowset(registreringrows))
             rows.extend(itemrows)
         otherheaders.sort()
         headers = baseheaders + otherheaders
+        output[objecttype_name] = {'headers': headers, 'rows': rows}
+    return output
 
-        print "------------------"
-        print "WRITE TO OUTPUT FILE %s.csv" % objecttype_name
-        outfile = io.open("%s.csv" % objecttype_name, 'w')
-        outfile.write(u','.join(headers))
+def writefile(filename, data):
+    outfile = io.open(filename, 'w')
+    outfile.write(data)
+    outfile.close()
 
-        lines = [csvrow(row, headers) for row in rows]
 
-        for line in lines:
-            outfile.write(u"\n" + line)
-        outfile.close()
+OBJECTTYPE_MAP = {
+    "klassifikation": "/klassifikation/klassifikation",
+    "klasse": "/klassifikation/klasse",
+    "facet": "/klassifikation/facet",
+    "organisation": "/organisation/organisation",
+    "organisationenhed": "/organisation/organisationenhed",
+    "organisationfunktion": "/organisation/organisationfunktion",
+    "bruger": "/organisation/bruger"
+}
 
-"""
-objects = extract(
-    "moxtest.magenta-aps.dk",
-    "admin", "admin",
-    {
-        "klassifikation": "/klassifikation/klassifikation",
-        "klasse": "/klassifikation/klasse",
-        "facet": "/klassifikation/facet",
-        "organisation": "/organisation/organisation",
-        "organisationenhed": "/organisation/organisationenhed",
-        "organisationfunktion": "/organisation/organisationfunktion",
-        "bruger": "/organisation/bruger"
-    }
-)
-"""
-objects = json.load(open("data.json", 'r'))
-format(objects)
+def print_error(message):
+    print "Content-Type: text/plain\n\n"
+    print message
+
+def main():
+    try:
+        parameters = cgi.FieldStorage()
+        objecttype = None
+        username = None
+        password = None
+
+        if not parameters.has_key('type'):
+            return print_error("Please specify the 'type' parameter")
+        else:
+            objecttype = parameters['type'].value
+            if objecttype not in OBJECTTYPE_MAP:
+                return print_error("The type parameter must be one of the following: %s" % ", ".join(OBJECTTYPE_MAP.keys()))
+
+        if not parameters.has_key('username'):
+            return print_error("Please specify the 'username' parameter")
+        else:
+            username = parameters['username'].value
+
+        if not parameters.has_key('password'):
+            return print_error("Please specify the 'password' parameter")
+        else:
+            password = parameters['password'].value
+
+        if objecttype and username and password:
+            objects = extract(
+                socket.getfqdn(),
+                username, password,
+                {objecttype: OBJECTTYPE_MAP[objecttype]}
+            )
+            data = format(objects)
+            objectdata = data[objecttype]
+            filedata = u'\n'.join([u','.join(objectdata['headers'])] + [csvrow(row, objectdata['headers']) for row in objectdata['rows']])
+            headers = [
+                "Content-Type: text/csv; charset=utf-8",
+                "Content-Disposition: attachment; filename=\"%s.csv\"" % objecttype
+            ]
+            print "\n".join(headers) + "\n"
+            print filedata.encode("utf-8")
+            
+    except Exception as e:
+        print_error(e.message)
+
+main()
+
