@@ -7,18 +7,18 @@ if [ `id -u` == 0 ]; then
 fi
 
 
-while getopts ":ds" OPT; do
+while getopts ":ys" OPT; do
   case $OPT in
-  	d)
-		DB_INSTALL=1
-		;;
 	s)
 		SKIP_SYSTEM_DEPS=1
 		;;
+	y)
+		ALWAYS_CONFIRM=1
+		;;
 	*)
-		echo "Usage: $0 [-d] [-s]"
-		echo "	-d: Install and (re-)create the DB"
+		echo "Usage: $0 [-y] [-s]"
 		echo "	-s: Skip installing oio_rest API system dependencies"
+		echo "	-y: Always confirm (yes) when prompted"
 		exit 1;
 		;;
 	esac
@@ -37,6 +37,8 @@ if [ $? -ne 0 ]; then
 fi
 
 
+# Setup symlinks
+./setsymlinks.sh development
 
 # Install oio_rest
 echo "Installing oio_rest"

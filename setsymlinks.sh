@@ -15,8 +15,10 @@ if [ "x$ENVIRONMENT" != "x" ]; then
 		ln -sf "$DIR/agents/MoxTabel/moxtabel.properties.$ENVIRONMENT" "$DIR/agents/MoxTabel/moxtabel.properties"
 		ln -sf "$DIR/oio_rest/oio_rest/settings.py.$ENVIRONMENT" "$DIR/oio_rest/oio_rest/settings.py"
 		ln -sf "$DIR/modules/auth/auth.properties.$ENVIRONMENT" "$DIR/modules/auth/auth.properties"
+		ln -sf "$DIR/servlets/MoxDocumentUpload/web/WEB-INF/web.xml.$ENVIRONMENT" "$DIR/servlets/MoxDocumentUpload/web/WEB-INF/web.xml"
+                sudo ln -sf "$DIR/servlets/server-setup/tomcat.conf.$ENVIRONMENT" "/etc/apache2/sites-available/tomcat.conf"
 	else
-		echo "Please precify either 'production', 'testing' or 'development'"
+		echo "Please specify either 'production', 'testing' or 'development'"
 	fi
 fi
 

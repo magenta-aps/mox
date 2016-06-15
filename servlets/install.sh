@@ -16,14 +16,7 @@ sudo ln -sf /var/lib/tomcat7/server/ /usr/share/tomcat7/
 sudo ln -sf /var/lib/tomcat7/shared/ /usr/share/tomcat7/
 
 # Install Tomcat apache connector
-SERVERNAME="moxdev.magenta-aps.dk"
-REPLACENAME="moxtest.magenta-aps.dk"
-
 echo "Setting up Tomcat connector for Apache"
-
-if [ ! -f "/etc/apache2/sites-available/tomcat.conf" ]; then
-	sudo cp "$DIR/server-setup/tomcat.conf.production" "/etc/apache2/sites-available/tomcat.conf"
-fi
 
 sudo a2ensite tomcat
 
