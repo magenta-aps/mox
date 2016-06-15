@@ -17,12 +17,16 @@ public class Throttle {
     }
 
     public boolean willWait() {
-        return this.queue.remainingCapacity() > 0;
+        if (this.queue == null) {
+            return false;
+        } else {
+            return this.queue.remainingCapacity() > 0;
+        }
     }
 
     public void waitForIdle() throws InterruptedException {
-        if (this.executionCount > 0 && this.queue != null) {
-            this.queue.put(""); // Blocks if thew queue is full
+        if (this.queue != null) {
+            this.queue.put(""); // Blocks if the queue is full
         }
     }
 

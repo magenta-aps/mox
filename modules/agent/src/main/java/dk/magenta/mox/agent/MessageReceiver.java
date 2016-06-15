@@ -97,6 +97,7 @@ public class MessageReceiver extends MessageInterface {
                 this.log.info("Waiting for throttle");
             }
             this.throttle.waitForIdle();
+
             final Future<String> response = callback.run(new Headers(delivery.getProperties().getHeaders()), dataObject);
 
             if (this.sendReplies) {
@@ -115,11 +116,11 @@ public class MessageReceiver extends MessageInterface {
                             String responseString;
                             try {
                                 responseString = response.get(30, TimeUnit.SECONDS); // This blocks while we wait for the callback to run. Hence the thread
-                                MessageReceiver.this.throttle.yield();
                             } catch (InterruptedException | ExecutionException | TimeoutException e) {
                                 e.printStackTrace();
                                 responseString = Util.error(e);
                             }
+                            MessageReceiver.this.throttle.yield();
                             MessageReceiver.this.log.info("Got a response from message handler. Relaying to sender.");
                             MessageReceiver.this.log.info(responseString);
                             try {
