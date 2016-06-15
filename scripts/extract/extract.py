@@ -59,7 +59,6 @@ def extract(server, username, password, objecttypes, https=True):
             try:
                 response = json.loads(item_request.text)
                 objects[objecttype_name].extend(response.get("results")[0])
-                # print len(objects[objecttype_name])
             except Exception as e:
                 print "2"
                 print e
@@ -92,6 +91,7 @@ def get_token(schema, server, username, password):
             message = token_request.text
         raise Exception(message)
     token = token_request.text.strip()
+
     # print "Token obtained"
     return token
 
@@ -282,34 +282,34 @@ def format(data):
         for item in items:
             id = item['id']
             itemrows = []
-            ## print "%d registreringer" % len(item['registreringer'])
+            #print "%d registreringer" % len(item['registreringer'])
             for registrering in item['registreringer']:
                 registreringrows = []
 
-                ## print "------------------"
-                ## print "UNLIST"
+                #print "------------------"
+                #print "UNLIST"
                 (basedata, listdata) = unlist(registrering)
-                ## print "%d listdata items" % len(listdata)
+                #print "%d listdata items" % len(listdata)
 
-                ## print "------------------"
-                ## print "CONVERT"
+                #print "------------------"
+                #print "CONVERT"
                 if listdata is None:
                     listdata = []
                 if basedata is None:
                     basedata = {}
                 converted_listdata = [convert(item, structure) for item in listdata]
                 converted_basedata = convert(basedata, structure)
-                ## print "Base %s" % (converted_basedata)
+                #print "Base %s" % (converted_basedata)
                 #for i in range(len(converted_listdata)):
-                #    # print "List %d %s" % (i, converted_listdata[i])
+                #    print "List %d %s" % (i, converted_listdata[i])
 
-                ## print "------------------"
-                ## print "MERGE"
+                #print "------------------"
+                #print "MERGE"
                 merged = merge(converted_listdata)
-                ## print "%d merged listdata items" % len(merged)
+                #print "%d merged listdata items" % len(merged)
 
-                ## print "------------------"
-                ## print "APPLY BASEDATA AND ID"
+                #print "------------------"
+                #print "APPLY BASEDATA AND ID"
                 for rowpart in merged:
                     row = {}
                     row.update(converted_basedata)
