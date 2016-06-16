@@ -255,7 +255,6 @@ def fix_rowset(rows):
         lifecycles_detected.add(row[STATUS_CODE])
     for row in rows:
         row[ACTION_CODE] = ACTION_UPDATE
-
     if len(rows) > 1:
         persistent_attributes = ['BrugervendtNoegle', 'Publiceret']
         attribute_storage = {}
@@ -304,7 +303,7 @@ def format(data, mergelevel=1):
         # print "Type %s has %d objects" % (objecttype_name, len(items))
         rows = []
         structure = structure_collection[objecttype_name]
-        baseheaders = ['Operation', 'objektID', 'BrugervendtNoegle']
+        baseheaders = ['Operation', 'objektID', 'Fra', 'Til', 'BrugervendtNoegle']
         otherheaders = []
         for item in items:
             id = item['id']
@@ -323,10 +322,10 @@ def format(data, mergelevel=1):
 
                 if mergelevel == 0:
                     merged = converted_listdata
-                elif mergelevel == 1:
-                    merged = merge_standard(converted_listdata)
                 elif mergelevel == 2:
                     merged = merge_aggressive(converted_listdata)
+                else:
+                    merged = merge_standard(converted_listdata)
 
                 for rowpart in merged:
                     row = {}
@@ -334,11 +333,16 @@ def format(data, mergelevel=1):
                     row.update(rowpart)
                     row['objektID'] = id
                     registreringrows.append(row)
-                    for key in row:
-                        if key not in otherheaders and key not in baseheaders:
-                            otherheaders.append(key)
                 itemrows.extend(fix_rowset(registreringrows))
             rows.extend(itemrows)
+
+        for row in rows:
+            for key in row:
+                if key not in otherheaders:
+                    otherheaders.append(key)
+
+        baseheaders = [x for x in baseheaders if x in otherheaders]
+        otherheaders = [x for x in otherheaders if x not in baseheaders]
         otherheaders.sort()
         headers = baseheaders + otherheaders
         output[objecttype_name] = {'headers': headers, 'rows': rows}
