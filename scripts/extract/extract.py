@@ -410,13 +410,9 @@ def main():
                 username, password,
                 {objecttype: OBJECTTYPE_MAP[objecttype]}
             )
-            json.dump(objects, open("data.json", "w"), indent=2)
             data = format(objects, mergelevel)
             objectdata = data[objecttype]
             filedata = u'\n'.join([u','.join(objectdata['headers'])] + [csvrow(row, objectdata['headers']) for row in objectdata['rows']])
-
-            writefile("%s.csv" % objecttype, filedata)
-            return
 
             headers = [
                 "Content-Type: text/csv; charset=utf-8",
