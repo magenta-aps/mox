@@ -41,6 +41,8 @@ def extract(server, username, password, objecttypes, https=True):
             except Exception as e:
                 print list_request.text
                 print e
+                if 'No JSON object could be decoded' in e.message:
+                    print list_request.text
 
         objects[objecttype_name] = []
         uuids = list(set(uuids))
@@ -62,6 +64,8 @@ def extract(server, username, password, objecttypes, https=True):
             except Exception as e:
                 print "2"
                 print e
+                if 'No JSON object could be decoded' in e.message:
+                    print item_request.text
 
             request_counter += 1
             if request_counter % 20 == 0:
@@ -241,12 +245,17 @@ def fix_rowset(rows):
 
     persistent_attributes = ['BrugervendtNoegle', 'Publiceret']
     attribute_storage = {}
-    for row in rows:
-        for attribute in persistent_attributes:
+    for attribute in persistent_attributes:
+        for row in rows:
             if attribute in row:
-                attribute_storage[attribute] = row[attribute]
-            else:
-                row[attribute] = attribute_storage.get(attribute)
+                attribute_storage[row['Tidsstempel']] = {
+                    attribute: row[attribute]
+                }
+        for row in rows:
+            if attribute not in row:
+                timestamp = row['Tidsstempel']
+                if timestamp in attribute_storage and attribute in attribute_storage[timestamp]:
+                    row[attribute] = attribute_storage[timestamp][attribute]
 
     if STATUS_DELETED in lifecycles_detected:
         deletion_note = ''
@@ -390,4 +399,3 @@ def main():
         print_error(e.message)
 
 main()
-
