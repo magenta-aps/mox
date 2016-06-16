@@ -50,7 +50,7 @@ public class SpreadsheetConversion {
         public HashMap<String, ArrayList<String>> structure = new HashMap<String, ArrayList<String>>();
 
         // A collection of objects obtained from the spreadsheet
-        public HashMap<String, ConvertedObject> objects = new HashMap<String, ConvertedObject>();
+        public HashMap<String, ArrayList<ConvertedObject>> objects = new HashMap<String, ArrayList<ConvertedObject>>();
     }
 
     private HashMap<String, SheetData> sheets = new HashMap<String, SheetData>();
@@ -132,7 +132,9 @@ public class SpreadsheetConversion {
                     break;
                 }
             }
+
             String operation = row.get(sheet.headerOperationIndex);
+
             if (id == null || id.isEmpty()) {
                 log.warn("No id for object row " + row);
             } else if (operation == null || operation.isEmpty()) {
@@ -140,21 +142,20 @@ public class SpreadsheetConversion {
             } else if (!operations.containsKey(operation) && !operations.containsValue(operation)) {
                 log.warn("Unrecognized operation for object row (id='" + id + "')");
             } else {
+                if (operations.containsKey(operation)) {
+                    operation = operations.get(operation);
+                }
+                ConvertedObject object = new ConvertedObject(sheet, id, operation);
+                ArrayList<ConvertedObject> objects = sheet.objects.get(id);
+                if (objects == null) {
+                    objects = new ArrayList<>();
+                    sheet.objects.put(id, objects);
+                }
+                objects.add(object);
 
                 for (int i = 0; i < row.size(); i++) {
                     String value = row.get(i);
                     String tag = headerRow.get(i);
-
-                    ConvertedObject object = sheet.objects.get(id);
-                    if (i == sheet.headerOperationIndex && tag.equalsIgnoreCase(operationHeaderName)) {
-                        if (operations.containsKey(value)) {
-                            operation = operations.get(value);
-                        }
-                    }
-                    if (object == null) {
-                        object = new ConvertedObject(sheet, id, operation);
-                        sheet.objects.put(id, object);
-                    }
                     object.put(tag, value);
                 }
             }
@@ -173,12 +174,12 @@ public class SpreadsheetConversion {
         return null;
     }
 
-    public ConvertedObject getObject(String sheetName, String id) {
+    public List<ConvertedObject> getObjectRows(String sheetName, String id) {
         SheetData sheet = this.sheets.get(sheetName);
         if (sheet == null) {
             throw new IllegalArgumentException("Invalid sheet name '"+sheetName+"'; not found in loaded data. Valid sheet names are: " + this.getSheetNames());
         } else {
-            ConvertedObject convertedObject = sheet.objects.get(id);
+            List<ConvertedObject> convertedObject = sheet.objects.get(id);
             if (convertedObject == null) {
                 throw new IllegalArgumentException("Invalid object id '"+id+"'; not found in sheet '"+sheetName+"'. Valid object ids are: " + this.getObjectIds(sheetName));
             } else {
@@ -187,12 +188,12 @@ public class SpreadsheetConversion {
         }
     }
 
-    public Map<String, Map<String, ConvertedObject>> getConvertedObjects() {
-        HashMap<String, Map<String, ConvertedObject>> out = new HashMap<String, Map<String, ConvertedObject>>();
+    public Map<String, Map<String, List<ConvertedObject>>> getConvertedObjects() {
+        HashMap<String, Map<String, List<ConvertedObject>>> out = new HashMap<String, Map<String, List<ConvertedObject>>>();
         for (String sheetName : this.getSheetNames()) {
-            HashMap<String, ConvertedObject> sheetObjects = new HashMap<String, ConvertedObject>();
+            HashMap<String, List<ConvertedObject>> sheetObjects = new HashMap<String, List<ConvertedObject>>();
             for (String objectId : this.getObjectIds(sheetName)) {
-                sheetObjects.put(objectId, this.getObject(sheetName, objectId));
+                sheetObjects.put(objectId, this.getObjectRows(sheetName, objectId));
             }
             out.put(sheetName, sheetObjects);
         }

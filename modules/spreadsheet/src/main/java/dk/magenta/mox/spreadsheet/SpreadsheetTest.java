@@ -3,6 +3,7 @@ package dk.magenta.mox.spreadsheet;
 import dk.magenta.mox.json.JSONObject;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,13 +19,15 @@ public class SpreadsheetTest {
                 SpreadsheetConversion conversion;
                 try {
                     conversion = SpreadsheetConverter.getSpreadsheetConversion(file, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-                    Map<String, Map<String, ConvertedObject>> objects = conversion.getConvertedObjects();
+                    Map<String, Map<String, List<ConvertedObject>>> objects = conversion.getConvertedObjects();
 
                     for (String sheetname : objects.keySet()) {
                         for (String id : objects.get(sheetname).keySet()) {
-                            ConvertedObject object = objects.get(sheetname).get(id);
-                            object.getJSON();
-                            // System.out.println(sheetname+"/"+id+" : "+object.getJSON());
+                            List<ConvertedObject> objectList = objects.get(sheetname).get(id);
+                            for (ConvertedObject object : objectList) {
+                                object.getJSON();
+                                // System.out.println(sheetname+"/"+id+" : "+object.getJSON());
+                            }
                         }
                     }
 
