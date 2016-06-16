@@ -137,6 +137,7 @@ sudo cp "$DIR/server-setup/oio_rest.wsgi" "/var/www/wsgi/"
 sudo cp "$DIR/server-setup/oio_rest.conf" "/etc/apache2/sites-available/"
 sudo a2ensite oio_rest
 sudo a2enmod ssl
+sudo a2enmod cgi
 
 
 sudo mkdir -p /var/log/mox/oio_rest
