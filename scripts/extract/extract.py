@@ -25,7 +25,7 @@ def extract(server, username, password, objecttypes, https=True):
     for objecttype_name, objecttype_url in objecttypes.iteritems():
         # print "Listing objects of type %s" % objecttype_name
         uuids = []
-        for parameterset in ["brugervendtnoegle=%", "livscykluskode=Slettet", "livscykluskode=Importeret"]:
+        for parameterset in ["brugervendtnoegle=%", "livscykluskode=Importeret"]:
             list_request = requests.get(
                 "%s%s%s?%s" % (schema, server, objecttype_url, parameterset),
                 headers={
@@ -39,7 +39,6 @@ def extract(server, username, password, objecttypes, https=True):
                 # print "%d %s items" % (len(uuid_list), objecttype_name)
                 uuids.extend(uuid_list)
             except Exception as e:
-                print list_request.text
                 print e
                 if 'No JSON object could be decoded' in e.message:
                     print list_request.text
@@ -48,8 +47,7 @@ def extract(server, username, password, objecttypes, https=True):
         uuids = list(set(uuids))
 
         chunksize = 20
-        chunks = [uuids[i:i+chunksize] for i in range(0, len(uuids), chunksize-1)]
-        # for uuid in uuids:
+        chunks = [uuids[i:i+chunksize] for i in range(0, len(uuids), chunksize)]
         for chunk in chunks:
             item_request = requests.get(
                 "%s%s%s?uuid=%s" % (schema, server, objecttype_url, "&uuid=".join(chunk)),
@@ -62,7 +60,6 @@ def extract(server, username, password, objecttypes, https=True):
                 response = json.loads(item_request.text)
                 objects[objecttype_name].extend(response.get("results")[0])
             except Exception as e:
-                print "2"
                 print e
                 if 'No JSON object could be decoded' in e.message:
                     print item_request.text
@@ -70,9 +67,7 @@ def extract(server, username, password, objecttypes, https=True):
             request_counter += 1
             if request_counter % 20 == 0:
                 token = get_token(schema, server, username, password)
-
     return objects
-
 
 
 def get_token(schema, server, username, password):
@@ -134,6 +129,7 @@ def find_child(obj, key):
                 if retval:
                     return retval
 
+
 def shared_keys(obj1, obj2, exclude=[]):
     shared = []
     for key1 in obj1:
@@ -141,7 +137,8 @@ def shared_keys(obj1, obj2, exclude=[]):
             shared.append(key1)
     return shared
 
-def merge(listdata):
+
+def merge_standard(listdata):
     newlistdata = []
     taken = set()
     for i in range(len(listdata)):
@@ -169,18 +166,30 @@ def merge(listdata):
                             merge = True
             if merge:
                 newlistdata.append(merged)
-
     for i in range(len(listdata)):
         if i not in taken:
             newlistdata.append(listdata[i])
-
     return newlistdata
+
+
+def merge_aggressive(listdata):
+    newlistdata = {}
+    separator = "|"
+    for item in listdata:
+        for key,value in item.iteritems():
+            if key != "Til" and key != "Fra":
+                if key in newlistdata:
+                    newlistdata[key] += separator + value
+                else:
+                    newlistdata[key] = value
+    return [newlistdata]
 
 def fmt_date(date):
     if date and date != 'infinity':
         return date
     else:
         return ''
+
 
 def convert_virkning(virkning):
     obj = {
@@ -191,10 +200,12 @@ def convert_virkning(virkning):
         obj['Virkning_note'] = virkning['notetekst']
     return obj
 
+
 def compare_virkning(virkning1, virkning2):
     return \
         virkning1['to'] == virkning2['to'] and \
         virkning1['from'] == virkning2['from']
+
 
 def convert(row, structure, include_virkning=True):
     converted = {}
@@ -224,6 +235,7 @@ def convert(row, structure, include_virkning=True):
             pass
     return converted
 
+
 def fix_rowset(rows):
     STATUS_CODE = 'Livscykluskode'
     STATUS_CREATED = 'Opstaaet'
@@ -237,26 +249,29 @@ def fix_rowset(rows):
     ACTION_DELETE = 'slet'
 
     lifecycles_detected = set()
-    rows.sort(lambda a, b: a['Tidsstempel'] > b['Tidsstempel'])
+    if len(rows) > 1:
+        rows.sort(lambda a, b: a['Tidsstempel'] > b['Tidsstempel'])
     for row in rows:
         lifecycles_detected.add(row[STATUS_CODE])
     for row in rows:
         row[ACTION_CODE] = ACTION_UPDATE
 
-    persistent_attributes = ['BrugervendtNoegle', 'Publiceret']
-    attribute_storage = {}
-    for attribute in persistent_attributes:
-        for row in rows:
-            if attribute in row:
-                attribute_storage[row['Tidsstempel']] = {
-                    attribute: row[attribute]
-                }
-        for row in rows:
-            if attribute not in row:
-                timestamp = row['Tidsstempel']
-                if timestamp in attribute_storage and attribute in attribute_storage[timestamp]:
-                    row[attribute] = attribute_storage[timestamp][attribute]
+    if len(rows) > 1:
+        persistent_attributes = ['BrugervendtNoegle', 'Publiceret']
+        attribute_storage = {}
+        for attribute in persistent_attributes:
+            for row in rows:
+                if attribute in row:
+                    attribute_storage[row['Tidsstempel']] = {
+                        attribute: row[attribute]
+                    }
+            for row in rows:
+                if attribute not in row:
+                    timestamp = row['Tidsstempel']
+                    if timestamp in attribute_storage and attribute in attribute_storage[timestamp]:
+                        row[attribute] = attribute_storage[timestamp][attribute]
 
+    """
     if STATUS_DELETED in lifecycles_detected:
         deletion_note = ''
         for row in rows:
@@ -271,7 +286,9 @@ def fix_rowset(rows):
             'Fra': rows[-1]['Fra'],
             'Til': rows[-1]['Til']
         })
+    """
     return rows
+
 
 def csvrow(row, headers):
     line = []
@@ -279,46 +296,38 @@ def csvrow(row, headers):
         line.append(row.get(header,''))
     return ','.join(["\"%s\"" % x for x in line])
 
-def format(data):
+
+def format(data, mergelevel=1):
     output = {}
     structure_collection = json.load(open(BASEPATH + "/structure.json"))
     for objecttype_name, items in data.iteritems():
         # print "Type %s has %d objects" % (objecttype_name, len(items))
         rows = []
         structure = structure_collection[objecttype_name]
-        baseheaders = ['Operation', 'objektID', 'Fra', 'Til', 'BrugervendtNoegle']
+        baseheaders = ['Operation', 'objektID', 'BrugervendtNoegle']
         otherheaders = []
         for item in items:
             id = item['id']
             itemrows = []
-            #print "%d registreringer" % len(item['registreringer'])
             for registrering in item['registreringer']:
                 registreringrows = []
 
-                #print "------------------"
-                #print "UNLIST"
                 (basedata, listdata) = unlist(registrering)
-                #print "%d listdata items" % len(listdata)
 
-                #print "------------------"
-                #print "CONVERT"
                 if listdata is None:
                     listdata = []
                 if basedata is None:
                     basedata = {}
                 converted_listdata = [convert(item, structure) for item in listdata]
                 converted_basedata = convert(basedata, structure)
-                #print "Base %s" % (converted_basedata)
-                #for i in range(len(converted_listdata)):
-                #    print "List %d %s" % (i, converted_listdata[i])
 
-                #print "------------------"
-                #print "MERGE"
-                merged = merge(converted_listdata)
-                #print "%d merged listdata items" % len(merged)
+                if mergelevel == 0:
+                    merged = converted_listdata
+                elif mergelevel == 1:
+                    merged = merge_standard(converted_listdata)
+                elif mergelevel == 2:
+                    merged = merge_aggressive(converted_listdata)
 
-                #print "------------------"
-                #print "APPLY BASEDATA AND ID"
                 for rowpart in merged:
                     row = {}
                     row.update(converted_basedata)
@@ -334,6 +343,7 @@ def format(data):
         headers = baseheaders + otherheaders
         output[objecttype_name] = {'headers': headers, 'rows': rows}
     return output
+
 
 def writefile(filename, data):
     outfile = io.open(filename, 'w')
@@ -358,36 +368,56 @@ def print_error(message):
 def main():
     try:
         parameters = cgi.FieldStorage()
+
         objecttype = None
         username = None
         password = None
+        server = socket.getfqdn()
+        mergelevel = 1
 
-        if not parameters.has_key('type'):
-            return print_error("Please specify the 'type' parameter")
-        else:
-            objecttype = parameters['type'].value
-            if objecttype not in OBJECTTYPE_MAP:
-                return print_error("The type parameter must be one of the following: %s" % ", ".join(OBJECTTYPE_MAP.keys()))
+        if objecttype is None:
+            if not parameters.has_key('type'):
+                return print_error("Please specify the 'type' parameter")
+            else:
+                objecttype = parameters['type'].value
+                if objecttype not in OBJECTTYPE_MAP:
+                    return print_error("The type parameter must be one of the following: %s" % ", ".join(OBJECTTYPE_MAP.keys()))
 
-        if not parameters.has_key('username'):
-            return print_error("Please specify the 'username' parameter")
-        else:
-            username = parameters['username'].value
+        if username is None:
+            if not parameters.has_key('username'):
+                return print_error("Please specify the 'username' parameter")
+            else:
+                username = parameters['username'].value
 
-        if not parameters.has_key('password'):
-            return print_error("Please specify the 'password' parameter")
-        else:
-            password = parameters['password'].value
+        if password is None:
+            if not parameters.has_key('password'):
+                return print_error("Please specify the 'password' parameter")
+            else:
+                password = parameters['password'].value
+
+        if parameters.has_key('merge'):
+            m = parameters['merge'].value
+            try:
+                m = int(m)
+                if m in [0,1,2]:
+                    mergelevel = m
+            except:
+                return print_error("'merge' parameter must be 0, 1 or 2. Default is 1")
 
         if objecttype and username and password:
             objects = extract(
-                socket.getfqdn(),
+                server,
                 username, password,
                 {objecttype: OBJECTTYPE_MAP[objecttype]}
             )
-            data = format(objects)
+            json.dump(objects, open("data.json", "w"), indent=2)
+            data = format(objects, mergelevel)
             objectdata = data[objecttype]
             filedata = u'\n'.join([u','.join(objectdata['headers'])] + [csvrow(row, objectdata['headers']) for row in objectdata['rows']])
+
+            writefile("%s.csv" % objecttype, filedata)
+            return
+
             headers = [
                 "Content-Type: text/csv; charset=utf-8",
                 "Content-Disposition: attachment; filename=\"%s.csv\"" % objecttype
