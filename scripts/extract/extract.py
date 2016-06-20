@@ -31,7 +31,8 @@ def extract(server, username, password, objecttypes, https=True):
                 headers={
                     "Authorization": token,
                     "Content-type": "application/json"
-                }
+                },
+                verify=False
             )
             try:
                 response = json.loads(list_request.text)
@@ -39,9 +40,10 @@ def extract(server, username, password, objecttypes, https=True):
                 # print "%d %s items" % (len(uuid_list), objecttype_name)
                 uuids.extend(uuid_list)
             except Exception as e:
-                print e
+                msg = e.message
                 if 'No JSON object could be decoded' in e.message:
-                    print list_request.text
+                    msg += "\n%s" % list_request.text
+                raise Exception(msg)
 
         objects[objecttype_name] = []
         uuids = list(set(uuids))
@@ -54,15 +56,17 @@ def extract(server, username, password, objecttypes, https=True):
                 headers={
                     "Authorization": token,
                     "Content-type": "application/json"
-                }
+                },
+                verify=False
             )
             try:
                 response = json.loads(item_request.text)
                 objects[objecttype_name].extend(response.get("results")[0])
             except Exception as e:
-                print e
+                msg = e.message
                 if 'No JSON object could be decoded' in e.message:
-                    print item_request.text
+                    msg += "\n%s" % list_request.text
+                raise Exception(msg)
 
             request_counter += 1
             if request_counter % 20 == 0:
@@ -80,7 +84,8 @@ def get_token(schema, server, username, password):
             'username': username,
             'password': password,
             'sts': "https://%s:9443/services/wso2carbon-sts?wsdl" % server
-        }
+        },
+        verify=False
     )
     if not token_request.text.startswith("saml-gzipped"):
         try:
