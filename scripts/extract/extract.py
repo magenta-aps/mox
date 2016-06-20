@@ -293,7 +293,7 @@ def csvrow(row, headers):
     line = []
     for header in headers:
         line.append(row.get(header,''))
-    return ','.join(["\"%s\"" % x for x in line])
+    return ','.join(["\"%s\"" % x.replace('"', '""') for x in line])
 
 
 def format(data, mergelevel=1):
