@@ -1,4 +1,4 @@
-from onelogin.saml2.utils import OneLogin_Saml2_Utils
+from onelogin.saml2.utils import OneLogin_Saml2_Utils, print_xmlsec_errors
 from onelogin.saml2.response import OneLogin_Saml2_Response
 from defusedxml.lxml import fromstring
 from copy import deepcopy
