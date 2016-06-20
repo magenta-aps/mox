@@ -119,6 +119,11 @@ def unlist(data, path=[]):
             (basedata, listdata) = unlist(item, path)
             if basedata is not None:
                 l.append(basedata)
+            if listdata is not None:
+                for item in listdata:
+                    if 'virkning' not in item and 'virkning' in basedata:
+                        item['virkning'] = basedata['virkning']
+                    l.append(item)
         return (None, l)
     else:
         return (data, None)
@@ -214,6 +219,7 @@ def compare_virkning(virkning1, virkning2):
 
 def convert(row, structure, include_virkning=True):
     converted = {}
+    # print row
     for key in structure:
         path = structure[key]
         ptr = row
@@ -234,9 +240,9 @@ def convert(row, structure, include_virkning=True):
             if p == 'urn' and ptr.startswith('urn:'):
                 ptr = ptr[len('urn:'):]
             converted[key] = ptr
-            ## print "SUCCESS: %s => %s" % (path, key)
+            # print "SUCCESS: %s => %s" % (path, key)
         except:
-            ## print "FAILURE: %s => %s" % (path, key)
+            # print "FAILURE: %s => %s" % (path, key)
             pass
     return converted
 
@@ -312,6 +318,7 @@ def format(data, mergelevel=1):
         otherheaders = []
         for item in items:
             id = item['id']
+            print "item %s" % id
             itemrows = []
             for registrering in item['registreringer']:
                 registreringrows = []
@@ -375,11 +382,40 @@ def print_error(message):
     print message
 
 def main():
-    method = os.environ["REQUEST_METHOD"]
-    if method == "GET":
-        return get()
-    elif method == "POST":
-        return post()
+    if "REQUEST_METHOD" in os.environ:
+        method = os.environ["REQUEST_METHOD"]
+        if method == "GET":
+            return get()
+        elif method == "POST":
+            return post()
+    else:
+        direct_run()
+
+def direct_run():
+    # Running script directly
+    mergelevel = 0
+    server = "referencedata.dk"
+    username = "notreally"
+    password = "notreally"
+    for objecttype in OBJECTTYPE_MAP.keys():
+        filename = "%s_%s.json" % (server, objecttype)
+        if os.path.isfile(filename):
+            fp = open(filename, 'r')
+            objects = json.load(fp)
+            fp.close()
+        else:
+            objects = extract(
+                server,
+                username, password,
+                {objecttype: OBJECTTYPE_MAP[objecttype]}
+            )
+            fp = open(filename, 'w')
+            json.dump(objects, fp)
+            fp.close()
+        data = format(objects, mergelevel)
+        objectdata = data[objecttype]
+        filedata = u'\n'.join([u','.join(objectdata['headers'])] + [csvrow(row, objectdata['headers']) for row in objectdata['rows']])
+        writefile("%s.csv" % objecttype, filedata)
 
 def get():
     print "Content-Type: text/html\n\n"
