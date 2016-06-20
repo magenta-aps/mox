@@ -1,0 +1,6 @@
+Custom code, i.e. integrations to third party systems.
+
+We might want to move this to a separate repository, but for the moment
+all third party product or customer specific functionality should be
+placed here.
+
