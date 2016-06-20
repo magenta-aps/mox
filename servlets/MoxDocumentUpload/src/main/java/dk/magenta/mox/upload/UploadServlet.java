@@ -251,13 +251,13 @@ public class UploadServlet extends HttpServlet {
                 out.write("<br/>Response:<br/>");
                 for (Future<String> amqpResponse : amqpResponses) {
                     try {
-                        String realResponse = amqpResponse.get(300, TimeUnit.SECONDS);
+                        String realResponse = amqpResponse.get();
                         if (realResponse != null) {
                             out.write("<pre>");
                             out.write(realResponse);
                             out.write("</pre>");
                         }
-                    } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                    } catch (InterruptedException | ExecutionException e) {
                         e.printStackTrace();
                     }
                 }
