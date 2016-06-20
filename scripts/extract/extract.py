@@ -31,7 +31,8 @@ def extract(server, username, password, objecttypes, https=True):
                 headers={
                     "Authorization": token,
                     "Content-type": "application/json"
-                }
+                },
+                verify=False
             )
             try:
                 response = json.loads(list_request.text)
@@ -39,9 +40,10 @@ def extract(server, username, password, objecttypes, https=True):
                 # print "%d %s items" % (len(uuid_list), objecttype_name)
                 uuids.extend(uuid_list)
             except Exception as e:
-                print e
+                msg = e.message
                 if 'No JSON object could be decoded' in e.message:
-                    print list_request.text
+                    msg += "\n%s" % list_request.text
+                raise Exception(msg)
 
         objects[objecttype_name] = []
         uuids = list(set(uuids))
@@ -54,15 +56,17 @@ def extract(server, username, password, objecttypes, https=True):
                 headers={
                     "Authorization": token,
                     "Content-type": "application/json"
-                }
+                },
+                verify=False
             )
             try:
                 response = json.loads(item_request.text)
                 objects[objecttype_name].extend(response.get("results")[0])
             except Exception as e:
-                print e
+                msg = e.message
                 if 'No JSON object could be decoded' in e.message:
-                    print item_request.text
+                    msg += "\n%s" % list_request.text
+                raise Exception(msg)
 
             request_counter += 1
             if request_counter % 20 == 0:
@@ -80,7 +84,8 @@ def get_token(schema, server, username, password):
             'username': username,
             'password': password,
             'sts': "https://%s:9443/services/wso2carbon-sts?wsdl" % server
-        }
+        },
+        verify=False
     )
     if not token_request.text.startswith("saml-gzipped"):
         try:
@@ -370,6 +375,52 @@ def print_error(message):
     print message
 
 def main():
+    method = os.environ["REQUEST_METHOD"]
+    if method == "GET":
+        return get()
+    elif method == "POST":
+        return post()
+
+def get():
+    print "Content-Type: text/html\n\n"
+    print """
+    <html>
+        <head>
+            <title>Mox document extract</title>
+        </head>
+        <body>
+            <form method="POST">
+                <label for="username">Brugernavn: </label>
+                <input type="text" id="username" name="username"/><br/>
+
+                <label for="password">Password: </label>
+                <input type="password" id="password" name="password"/><br/>
+
+                <label for="type">Type: </label>
+                <select id="type" name="type">
+                    <option value="klassifikation">klassifikation</option>
+                    <option value="klasse">klasse</option>
+                    <option value="facet">facet</option>
+                    <option value="organisation">organisation</option>
+                    <option value="organisationenhed">organisationenhed</option>
+                    <option value="organisationfunktion">organisationfunktion</option>
+                    <option value="bruger">bruger</option>
+                </select><br/>
+
+                <label for="type">Merge level: </label>
+                <select id="merge" name="merge">
+                    <option value="0">No merge (0)</option>
+                    <option value="1">Partial merge (1)</option>
+                    <option value="2" selected="selected">Full merge (2)</option>
+                </select><br/>
+
+                <button type="submit">Hent data</button>
+            </form>
+        </body>
+    </html>
+    """
+
+def post():
     try:
         parameters = cgi.FieldStorage()
 
