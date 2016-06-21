@@ -8,6 +8,7 @@ import cgi
 import os
 import sys
 import socket
+import datetime
 
 BASEPATH = os.path.dirname(os.path.realpath(sys.argv[0]))
 
@@ -18,6 +19,8 @@ def extract(server, username, password, objecttypes, https=True):
     schema = "https://" if https else "http://"
 
     token = get_token(schema, server, username, password)
+
+    registerTime = datetime.datetime.today().date() + datetime.timedelta(days=1)
 
     request_counter = 0
     """List objects"""
@@ -51,8 +54,10 @@ def extract(server, username, password, objecttypes, https=True):
         chunksize = 20
         chunks = [uuids[i:i+chunksize] for i in range(0, len(uuids), chunksize)]
         for chunk in chunks:
+            url = "%s%s%s?registreretFra=%s&uuid=%s" % (schema, server, objecttype_url, registerTime, "&uuid=".join(chunk))
+            print url
             item_request = requests.get(
-                "%s%s%s?uuid=%s" % (schema, server, objecttype_url, "&uuid=".join(chunk)),
+                url,
                 headers={
                     "Authorization": token,
                     "Content-type": "application/json"
@@ -68,7 +73,7 @@ def extract(server, username, password, objecttypes, https=True):
                     msg += "\n%s" % list_request.text
                 raise Exception(msg)
 
-            request_counter += 1
+            request_counter += 1 # Rens for gamle registreringer
             if request_counter % 20 == 0:
                 token = get_token(schema, server, username, password)
     return objects
@@ -318,7 +323,6 @@ def format(data, mergelevel=1):
         otherheaders = []
         for item in items:
             id = item['id']
-            print "item %s" % id
             itemrows = []
             for registrering in item['registreringer']:
                 registreringrows = []
@@ -395,9 +399,10 @@ def direct_run():
     # Running script directly
     mergelevel = 0
     server = "referencedata.dk"
-    username = "notreally"
-    password = "notreally"
-    for objecttype in OBJECTTYPE_MAP.keys():
+    username = "Magenta"
+    password = "Tordenskjold"
+    #for objecttype in OBJECTTYPE_MAP.keys():
+    for objecttype in ["facet"]:
         filename = "%s_%s.json" % (server, objecttype)
         if os.path.isfile(filename):
             fp = open(filename, 'r')
