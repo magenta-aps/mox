@@ -8,6 +8,7 @@ import cgi
 import os
 import sys
 import socket
+import datetime
 
 BASEPATH = os.path.dirname(os.path.realpath(sys.argv[0]))
 
@@ -18,6 +19,8 @@ def extract(server, username, password, objecttypes, https=True):
     schema = "https://" if https else "http://"
 
     token = get_token(schema, server, username, password)
+
+    registerTime = datetime.datetime.today().date() + datetime.timedelta(days=1)
 
     request_counter = 0
     """List objects"""
@@ -31,7 +34,8 @@ def extract(server, username, password, objecttypes, https=True):
                 headers={
                     "Authorization": token,
                     "Content-type": "application/json"
-                }
+                },
+                verify=False
             )
             try:
                 response = json.loads(list_request.text)
@@ -39,9 +43,10 @@ def extract(server, username, password, objecttypes, https=True):
                 # print "%d %s items" % (len(uuid_list), objecttype_name)
                 uuids.extend(uuid_list)
             except Exception as e:
-                print e
+                msg = e.message
                 if 'No JSON object could be decoded' in e.message:
-                    print list_request.text
+                    msg += "\n%s" % list_request.text
+                raise Exception(msg)
 
         objects[objecttype_name] = []
         uuids = list(set(uuids))
@@ -49,22 +54,26 @@ def extract(server, username, password, objecttypes, https=True):
         chunksize = 20
         chunks = [uuids[i:i+chunksize] for i in range(0, len(uuids), chunksize)]
         for chunk in chunks:
+            url = "%s%s%s?registreretFra=%s&uuid=%s" % (schema, server, objecttype_url, registerTime, "&uuid=".join(chunk))
+            print url
             item_request = requests.get(
-                "%s%s%s?uuid=%s" % (schema, server, objecttype_url, "&uuid=".join(chunk)),
+                url,
                 headers={
                     "Authorization": token,
                     "Content-type": "application/json"
-                }
+                },
+                verify=False
             )
             try:
                 response = json.loads(item_request.text)
                 objects[objecttype_name].extend(response.get("results")[0])
             except Exception as e:
-                print e
+                msg = e.message
                 if 'No JSON object could be decoded' in e.message:
-                    print item_request.text
+                    msg += "\n%s" % list_request.text
+                raise Exception(msg)
 
-            request_counter += 1
+            request_counter += 1 # Rens for gamle registreringer
             if request_counter % 20 == 0:
                 token = get_token(schema, server, username, password)
     return objects
@@ -80,7 +89,8 @@ def get_token(schema, server, username, password):
             'username': username,
             'password': password,
             'sts': "https://%s:9443/services/wso2carbon-sts?wsdl" % server
-        }
+        },
+        verify=False
     )
     if not token_request.text.startswith("saml-gzipped"):
         try:
@@ -114,6 +124,11 @@ def unlist(data, path=[]):
             (basedata, listdata) = unlist(item, path)
             if basedata is not None:
                 l.append(basedata)
+            if listdata is not None:
+                for item in listdata:
+                    if 'virkning' not in item and 'virkning' in basedata:
+                        item['virkning'] = basedata['virkning']
+                    l.append(item)
         return (None, l)
     else:
         return (data, None)
@@ -209,6 +224,7 @@ def compare_virkning(virkning1, virkning2):
 
 def convert(row, structure, include_virkning=True):
     converted = {}
+    # print row
     for key in structure:
         path = structure[key]
         ptr = row
@@ -229,9 +245,9 @@ def convert(row, structure, include_virkning=True):
             if p == 'urn' and ptr.startswith('urn:'):
                 ptr = ptr[len('urn:'):]
             converted[key] = ptr
-            ## print "SUCCESS: %s => %s" % (path, key)
+            # print "SUCCESS: %s => %s" % (path, key)
         except:
-            ## print "FAILURE: %s => %s" % (path, key)
+            # print "FAILURE: %s => %s" % (path, key)
             pass
     return converted
 
@@ -370,6 +386,82 @@ def print_error(message):
     print message
 
 def main():
+    if "REQUEST_METHOD" in os.environ:
+        method = os.environ["REQUEST_METHOD"]
+        if method == "GET":
+            return get()
+        elif method == "POST":
+            return post()
+    else:
+        direct_run()
+
+def direct_run():
+    # Running script directly
+    mergelevel = 0
+    server = "referencedata.dk"
+    username = "Magenta"
+    password = "Tordenskjold"
+    #for objecttype in OBJECTTYPE_MAP.keys():
+    for objecttype in ["facet"]:
+        filename = "%s_%s.json" % (server, objecttype)
+        if os.path.isfile(filename):
+            fp = open(filename, 'r')
+            objects = json.load(fp)
+            fp.close()
+        else:
+            objects = extract(
+                server,
+                username, password,
+                {objecttype: OBJECTTYPE_MAP[objecttype]}
+            )
+            fp = open(filename, 'w')
+            json.dump(objects, fp)
+            fp.close()
+        data = format(objects, mergelevel)
+        objectdata = data[objecttype]
+        filedata = u'\n'.join([u','.join(objectdata['headers'])] + [csvrow(row, objectdata['headers']) for row in objectdata['rows']])
+        writefile("%s.csv" % objecttype, filedata)
+
+def get():
+    print "Content-Type: text/html\n\n"
+    print """
+    <html>
+        <head>
+            <title>Mox document extract</title>
+        </head>
+        <body>
+            <form method="POST">
+                <label for="username">Brugernavn: </label>
+                <input type="text" id="username" name="username"/><br/>
+
+                <label for="password">Password: </label>
+                <input type="password" id="password" name="password"/><br/>
+
+                <label for="type">Type: </label>
+                <select id="type" name="type">
+                    <option value="klassifikation">klassifikation</option>
+                    <option value="klasse">klasse</option>
+                    <option value="facet">facet</option>
+                    <option value="organisation">organisation</option>
+                    <option value="organisationenhed">organisationenhed</option>
+                    <option value="organisationfunktion">organisationfunktion</option>
+                    <option value="bruger">bruger</option>
+                </select><br/>
+
+                <label for="type">Merge level: </label>
+                <select id="merge" name="merge">
+                    <option value="0">No merge (0)</option>
+                    <option value="1">Partial merge (1)</option>
+                    <option value="2" selected="selected">Full merge (2)</option>
+                </select><br/>
+
+                <button type="submit">Hent data</button>
+            </form>
+        </body>
+    </html>
+    """
+
+def post():
     try:
         parameters = cgi.FieldStorage()
 
