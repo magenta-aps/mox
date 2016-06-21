@@ -111,16 +111,6 @@ public class JSONObject extends org.json.JSONObject {
         }
     }
 /*
-    public JSONObject extend(JSONObject other, boolean overwrite) {
-        for (String key : other.keySet()) {
-            if (this.has(key)) {
-
-            } else {
-                this.put(key, other.get(key));
-            }
-        }
-    }*/
-/*
     public Keytype type(String key) {
         if (!this.has(key)) {
             return Keytype.DOESNT_EXIST;
