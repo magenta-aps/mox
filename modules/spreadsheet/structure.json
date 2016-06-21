@@ -24,7 +24,7 @@
       "LovligeKombinationer":[
         "relationer",
         "lovligekombinationer",
-        "uuid"
+        "uuid|urn"
       ],
       "LovligeKombinationer_type":[
         "relationer",
@@ -34,7 +34,7 @@
       "Erstatter":[
         "relationer",
         "erstatter",
-        "uuid"
+        "uuid|urn"
       ],
       "Erstatter_type":[
         "relationer",
@@ -74,7 +74,7 @@
       "Mapninger":[
         "relationer",
         "mapninger",
-        "uuid"
+        "uuid|urn"
       ],
       "Mapninger_type":[
         "relationer",
@@ -89,7 +89,12 @@
       "Ejer":[
         "relationer",
         "ejer",
-        "uuid"
+        "uuid|urn"
+      ],
+      "Ejer_type":[
+        "relationer",
+        "ejer",
+        "objekttype"
       ],
       "BrugervendtNoegle":[
         "attributter",
@@ -101,15 +106,10 @@
         "klasseegenskaber",
         "retskildetekst"
       ],
-      "Ejer_type":[
-        "relationer",
-        "ejer",
-        "objekttype"
-      ],
       "Facet":[
         "relationer",
         "facet",
-        "uuid"
+        "uuid|urn"
       ],
       "Søgeord_kategori":[
         "attributter",
@@ -120,17 +120,17 @@
       "Tilfoejelser":[
         "relationer",
         "tilfoejelser",
-        "uuid"
+        "uuid|urn"
       ],
       "Tilfoejelser_type":[
         "relationer",
         "tilfoejelser",
-        "uuid"
+        "uuid|urn"
       ],
       "Sideordnede":[
         "relationer",
         "sideordnede",
-        "uuid"
+        "uuid|urn"
       ],
       "Sideordnede_type":[
         "relationer",
@@ -146,7 +146,7 @@
       "OverordnetKlasse":[
         "relationer",
         "overordnetklasse",
-        "uuid"
+        "uuid|urn"
       ],
       "OverordnetKlasse_type":[
         "relationer",
@@ -156,7 +156,7 @@
       "Redaktoerer":[
         "relationer",
         "redaktoerer",
-        "uuid"
+        "uuid|urn"
       ],
       "Facet_type":[
         "relationer",
@@ -196,7 +196,7 @@
       "Ansvarlig":[
         "relationer",
         "ansvarlig",
-        "uuid"
+        "uuid|urn"
       ]
     }
   },
@@ -230,7 +230,7 @@
       "Ejer":[
         "relationer",
         "ejer",
-        "uuid"
+        "uuid|urn"
       ],
       "Ansvarlig_type":[
         "relationer",
@@ -269,7 +269,7 @@
       "Ansvarlig":[
         "relationer",
         "ansvarlig",
-        "uuid"
+        "uuid|urn"
       ]
     }
   },
@@ -313,7 +313,7 @@
       "Redaktoerer":[
         "relationer",
         "redaktoerer",
-        "uuid"
+        "uuid|urn"
       ],
       "Beskrivelse":[
         "attributter",
@@ -323,17 +323,17 @@
       "Ejer":[
         "relationer",
         "ejer",
-        "uuid"
+        "uuid|urn"
       ],
       "FacetTilhoerer":[
         "relationer",
         "facettilhoerer",
-        "uuid"
+        "uuid|urn"
       ],
       "FacetTilhorer":[
         "relationer",
         "facettilhoerer",
-        "uuid"
+        "uuid|urn"
       ],
       "Ansvarlig_type":[
         "relationer",
@@ -387,7 +387,7 @@
       "Ansvarlig":[
         "relationer",
         "ansvarlig",
-        "uuid"
+        "uuid|urn"
       ]
     }
   },
@@ -415,7 +415,7 @@
       "Branche":[
         "relationer",
         "branche",
-        "uuid"
+        "uuid|urn"
       ],
       "Branche_type":[
         "relationer",
@@ -425,7 +425,7 @@
       "Enhedstype":[
         "relationer",
         "enhedstype",
-        "uuid"
+        "uuid|urn"
       ],
       "Enhedstype_type":[
         "relationer",
@@ -435,7 +435,7 @@
       "Overordnet":[
         "relationer",
         "overordnet",
-        "uuid"
+        "uuid|urn"
       ],
       "Overordnet_type":[
         "relationer",
@@ -445,7 +445,7 @@
       "Produktionsenhed":[
         "relationer",
         "produktionsenhed",
-        "uuid"
+        "uuid|urn"
       ],
       "Produktionsenhed_type":[
         "relationer",
@@ -455,7 +455,7 @@
       "Skatteenhed":[
         "relationer",
         "skatteenhed",
-        "uuid"
+        "uuid|urn"
       ],
       "Skatteenhed_type":[
         "relationer",
@@ -465,7 +465,7 @@
       "Tilhoerer":[
         "relationer",
         "tilhoerer",
-        "uuid"
+        "uuid|urn"
       ],
       "Tilhoerer_type":[
         "relationer",
@@ -476,7 +476,7 @@
       "Adresser":[
         "relationer",
         "adresser",
-        "uuid"
+        "uuid|urn"
       ],
       "Adresser_type":[
         "relationer",
@@ -486,7 +486,7 @@
       "Ansatte":[
         "relationer",
         "ansatte",
-        "uuid"
+        "uuid|urn"
       ],
       "Ansatte_type":[
         "relationer",
@@ -496,7 +496,7 @@
       "Opgaver":[
         "relationer",
         "opgaver",
-        "uuid"
+        "uuid|urn"
       ],
       "Opgaver_type":[
         "relationer",
@@ -506,7 +506,7 @@
       "TilknyttedeBrugere":[
         "relationer",
         "tilknyttedebrugere",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeBrugere_type":[
         "relationer",
@@ -516,7 +516,7 @@
       "TilknyttedeEnheder":[
         "relationer",
         "tilknyttedeenheder",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeEnheder_type":[
         "relationer",
@@ -526,7 +526,7 @@
       "TilknyttedeFunktioner":[
         "relationer",
         "tilknyttedefunktioner",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeFunktioner_type":[
         "relationer",
@@ -536,7 +536,7 @@
       "TilknyttedeInteressefaellesskaber":[
         "relationer",
         "tilknyttedeinteressefaellesskaber",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeInteressefaellesskaber_type":[
         "relationer",
@@ -546,7 +546,7 @@
       "TilknyttedeOrganisationer":[
         "relationer",
         "tilknyttedeorganisationer",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeOrganisationer_type":[
         "relationer",
@@ -556,7 +556,7 @@
       "TilknyttedePersoner":[
         "relationer",
         "tilknyttedepersoner",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedePersoner_type":[
         "relationer",
@@ -566,7 +566,7 @@
       "TilknyttedeItSystemer":[
         "relationer",
         "tilknyttedeitsystemer",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeItSystemer_type":[
         "relationer",
@@ -622,7 +622,7 @@
       "Branche":[
         "relationer",
         "branche",
-        "uuid"
+        "uuid|urn"
       ],
       "Branche_type":[
         "relationer",
@@ -632,7 +632,7 @@
       "Myndighed":[
         "relationer",
         "myndighed",
-        "uuid"
+        "uuid|urn"
       ],
       "Myndighed_type":[
         "relationer",
@@ -642,7 +642,7 @@
       "Myndighedstype":[
         "relationer",
         "myndighedstype",
-        "uuid"
+        "uuid|urn"
       ],
       "Myndighedstype_type":[
         "relationer",
@@ -652,7 +652,7 @@
       "Overordnet":[
         "relationer",
         "overordnet",
-        "uuid"
+        "uuid|urn"
       ],
       "Overordnet_type":[
         "relationer",
@@ -662,7 +662,7 @@
       "Produktionsenhed":[
         "relationer",
         "produktionsenhed",
-        "uuid"
+        "uuid|urn"
       ],
       "Produktionsenhed_type":[
         "relationer",
@@ -672,7 +672,7 @@
       "Skatteenhed":[
         "relationer",
         "skatteenhed",
-        "uuid"
+        "uuid|urn"
       ],
       "Skatteenhed_type":[
         "relationer",
@@ -682,7 +682,7 @@
       "Tilhoerer":[
         "relationer",
         "tilhoerer",
-        "uuid"
+        "uuid|urn"
       ],
       "Tilhoerer_type":[
         "relationer",
@@ -692,7 +692,7 @@
       "Virksomhed":[
         "relationer",
         "virksomhed",
-        "uuid"
+        "uuid|urn"
       ],
       "Virksomhed_type":[
         "relationer",
@@ -702,7 +702,7 @@
       "Virksomhedstype":[
         "relationer",
         "virksomhedstype",
-        "uuid"
+        "uuid|urn"
       ],
       "Virksomhedstype_type":[
         "relationer",
@@ -713,7 +713,7 @@
       "Adresser":[
         "relationer",
         "adresser",
-        "uuid"
+        "uuid|urn"
       ],
       "Adresser_type":[
         "relationer",
@@ -723,7 +723,7 @@
       "Ansatte":[
         "relationer",
         "ansatte",
-        "uuid"
+        "uuid|urn"
       ],
       "Ansatte_type":[
         "relationer",
@@ -733,7 +733,7 @@
       "Opgaver":[
         "relationer",
         "opgaver",
-        "uuid"
+        "uuid|urn"
       ],
       "Opgaver_type":[
         "relationer",
@@ -743,7 +743,7 @@
       "TilknyttedeBrugere":[
         "relationer",
         "tilknyttedebrugere",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeBrugere_type":[
         "relationer",
@@ -753,7 +753,7 @@
       "TilknyttedeEnheder":[
         "relationer",
         "tilknyttedeenheder",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeEnheder_type":[
         "relationer",
@@ -763,7 +763,7 @@
       "TilknyttedeFunktioner":[
         "relationer",
         "tilknyttedefunktioner",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeFunktioner_type":[
         "relationer",
@@ -773,7 +773,7 @@
       "TilknyttedeInteressefaellesskaber":[
         "relationer",
         "tilknyttedeinteressefaellesskaber",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeInteressefaellesskaber_type":[
         "relationer",
@@ -783,7 +783,7 @@
       "TilknyttedeOrganisationer":[
         "relationer",
         "tilknyttedeorganisationer",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeOrganisationer_type":[
         "relationer",
@@ -793,7 +793,7 @@
       "TilknyttedePersoner":[
         "relationer",
         "tilknyttedepersoner",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedePersoner_type":[
         "relationer",
@@ -803,7 +803,7 @@
       "TilknyttedeItSystemer":[
         "relationer",
         "tilknyttedeitsystemer",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeItSystemer_type":[
         "relationer",
@@ -855,7 +855,7 @@
       "OrganisatoriskFunktionstype":[
         "relationer",
         "organisatoriskfunktionstype",
-        "uuid"
+        "uuid|urn"
       ],
       "OrganisatoriskFunktionstype_type":[
         "relationer",
@@ -866,7 +866,7 @@
       "Adresser":[
         "relationer",
         "adresser",
-        "uuid"
+        "uuid|urn"
       ],
       "Adresser_type":[
         "relationer",
@@ -876,7 +876,7 @@
       "Opgaver":[
         "relationer",
         "opgaver",
-        "uuid"
+        "uuid|urn"
       ],
       "Opgaver_type":[
         "relationer",
@@ -886,7 +886,7 @@
       "TilknyttedeBrugere":[
         "relationer",
         "tilknyttedebrugere",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeBrugere_type":[
         "relationer",
@@ -896,7 +896,7 @@
       "TilknyttedeEnheder":[
         "relationer",
         "tilknyttedeenheder",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeEnheder_type":[
         "relationer",
@@ -906,7 +906,7 @@
       "TilknyttedeOrganisationer":[
         "relationer",
         "tilknyttedeorganisationer",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeOrganisationer_type":[
         "relationer",
@@ -916,7 +916,7 @@
       "TilknyttedeItSystemer":[
         "relationer",
         "tilknyttedeitsystemer",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeItSystemer_type":[
         "relationer",
@@ -926,7 +926,7 @@
       "TilknyttedeInteressefaellesskaber":[
         "relationer",
         "tilknyttedeinteressefaellesskaber",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeInteressefaellesskaber_type":[
         "relationer",
@@ -936,7 +936,7 @@
       "TilknyttedePersoner":[
         "relationer",
         "tilknyttedepersoner",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedePersoner_type":[
         "relationer",
@@ -993,7 +993,7 @@
       "Branche":[
         "relationer",
         "branche",
-        "uuid"
+        "uuid|urn"
       ],
       "Branche_type":[
         "relationer",
@@ -1003,7 +1003,7 @@
       "Interessefaellesskabstype_relation":[
         "relationer",
         "interessefaellesskabstype",
-        "uuid"
+        "uuid|urn"
       ],
       "Interessefaellesskabstype_relation_type":[
         "relationer",
@@ -1013,7 +1013,7 @@
       "Overordnet":[
         "relationer",
         "overordnet",
-        "uuid"
+        "uuid|urn"
       ],
       "Overordnet_type":[
         "relationer",
@@ -1023,13 +1023,13 @@
       "Tilhoerer":[
         "relationer",
         "tilhoerer",
-        "uuid"
+        "uuid|urn"
       ],
 
       "Adresser":[
         "relationer",
         "adresser",
-        "uuid"
+        "uuid|urn"
       ],
       "Adresser_type":[
         "relationer",
@@ -1039,7 +1039,7 @@
       "Opgaver":[
         "relationer",
         "opgaver",
-        "uuid"
+        "uuid|urn"
       ],
       "Opgaver_type":[
         "relationer",
@@ -1049,7 +1049,7 @@
       "TilknyttedeBrugere":[
         "relationer",
         "tilknyttedebrugere",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeBrugere_type":[
         "relationer",
@@ -1059,7 +1059,7 @@
       "TilknyttedeEnheder":[
         "relationer",
         "tilknyttedeenheder",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeEnheder_type":[
         "relationer",
@@ -1069,7 +1069,7 @@
       "TilknyttedeFunktioner":[
         "relationer",
         "tilknyttedefunktioner",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeFunktioner_type":[
         "relationer",
@@ -1079,7 +1079,7 @@
       "TilknyttedeInteressefaellesskaber":[
         "relationer",
         "tilknyttedeinteressefaellesskaber",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeInteressefaellesskaber_type":[
         "relationer",
@@ -1089,7 +1089,7 @@
       "TilknyttedeOrganisationer":[
         "relationer",
         "tilknyttedeorganisationer",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeOrganisationer_type":[
         "relationer",
@@ -1099,7 +1099,7 @@
       "TilknyttedePersoner":[
         "relationer",
         "tilknyttedepersoner",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedePersoner_type":[
         "relationer",
@@ -1109,7 +1109,7 @@
       "TilknyttedeItSystemer":[
         "relationer",
         "tilknyttedeitsystemer",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeItSystemer_type":[
         "relationer",
@@ -1170,7 +1170,7 @@
       "Tilhoerer":[
         "relationer",
         "tilhoerer",
-        "uuid"
+        "uuid|urn"
       ],
       "Tilhoerer_type":[
         "relationer",
@@ -1181,7 +1181,7 @@
       "Adresser":[
         "relationer",
         "adresser",
-        "uuid"
+        "uuid|urn"
       ],
       "Adresser_type":[
         "relationer",
@@ -1191,7 +1191,7 @@
       "Opgaver":[
         "relationer",
         "opgaver",
-        "uuid"
+        "uuid|urn"
       ],
       "Opgaver_type":[
         "relationer",
@@ -1201,7 +1201,7 @@
       "TilknyttedeBrugere":[
         "relationer",
         "tilknyttedebrugere",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeBrugere_type":[
         "relationer",
@@ -1211,7 +1211,7 @@
       "TilknyttedeEnheder":[
         "relationer",
         "tilknyttedeenheder",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeEnheder_type":[
         "relationer",
@@ -1221,7 +1221,7 @@
       "TilknyttedeFunktioner":[
         "relationer",
         "tilknyttedefunktioner",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeFunktioner_type":[
         "relationer",
@@ -1231,7 +1231,7 @@
       "TilknyttedeInteressefaellesskaber":[
         "relationer",
         "tilknyttedeinteressefaellesskaber",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeInteressefaellesskaber_type":[
         "relationer",
@@ -1241,7 +1241,7 @@
       "TilknyttedeOrganisationer":[
         "relationer",
         "tilknyttedeorganisationer",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeOrganisationer_type":[
         "relationer",
@@ -1251,7 +1251,7 @@
       "TilknyttedePersoner":[
         "relationer",
         "tilknyttedepersoner",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedePersoner_type":[
         "relationer",
@@ -1261,7 +1261,7 @@
       "TilknyttedeItSystemer":[
         "relationer",
         "tilknyttedeitsystemer",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeItSystemer_type":[
         "relationer",
@@ -1271,7 +1271,7 @@
       "Systemtyper":[
         "relationer",
         "systemtyper",
-        "uuid"
+        "uuid|urn"
       ],
       "Systemtyper_type":[
         "relationer",
@@ -1327,7 +1327,7 @@
       "Tilhoerer":[
         "relationer",
         "tilhoerer",
-        "uuid"
+        "uuid|urn"
       ],
       "Tilhoerer_type":[
         "relationer",
@@ -1338,7 +1338,7 @@
       "Adresser":[
         "relationer",
         "adresser",
-        "uuid"
+        "uuid|urn"
       ],
       "Adresser_type":[
         "relationer",
@@ -1348,7 +1348,7 @@
       "Brugertyper":[
         "relationer",
         "brugertyper",
-        "uuid"
+        "uuid|urn"
       ],
       "Brugertyper_type":[
         "relationer",
@@ -1358,7 +1358,7 @@
       "Opgaver":[
         "relationer",
         "opgaver",
-        "uuid"
+        "uuid|urn"
       ],
       "Opgaver_type":[
         "relationer",
@@ -1368,7 +1368,7 @@
       "TilknyttedeBrugere":[
         "relationer",
         "tilknyttedebrugere",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeBrugere_type":[
         "relationer",
@@ -1378,7 +1378,7 @@
       "TilknyttedeEnheder":[
         "relationer",
         "tilknyttedeenheder",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeEnheder_type":[
         "relationer",
@@ -1388,7 +1388,7 @@
       "TilknyttedeFunktioner":[
         "relationer",
         "tilknyttedefunktioner",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeFunktioner_type":[
         "relationer",
@@ -1398,7 +1398,7 @@
       "TilknyttedeInteressefaellesskaber":[
         "relationer",
         "tilknyttedeinteressefaellesskaber",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeInteressefaellesskaber_type":[
         "relationer",
@@ -1408,7 +1408,7 @@
       "TilknyttedeOrganisationer":[
         "relationer",
         "tilknyttedeorganisationer",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeOrganisationer_type":[
         "relationer",
@@ -1418,7 +1418,7 @@
       "TilknyttedePersoner":[
         "relationer",
         "tilknyttedepersoner",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedePersoner_type":[
         "relationer",
@@ -1428,7 +1428,7 @@
       "TilknyttedeItSystemer":[
         "relationer",
         "tilknyttedeitsystemer",
-        "uuid"
+        "uuid|urn"
       ],
       "TilknyttedeItSystemer_type":[
         "relationer",
