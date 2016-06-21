@@ -88,7 +88,9 @@ public class ConvertedObject extends ArrayList<HashMap<String, String>> {
             }
         }
         for (JSONObject container : effectiveContainers) {
-            container.extend(effectiveObject, true, false);
+            for (String key : effectiveObject.keySet()) {
+                container.put(key, effectiveObject.get(key));
+            }
         }
         return json;
     }
