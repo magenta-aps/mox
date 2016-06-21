@@ -148,19 +148,25 @@ public class SpreadsheetConversion {
                 if (operations.containsKey(operation)) {
                     operation = operations.get(operation);
                 }
-                ConvertedObject object = new ConvertedObject(sheet, id, operation);
                 ArrayList<ConvertedObject> objects = sheet.objects.get(id);
                 if (objects == null) {
                     objects = new ArrayList<>();
                     sheet.objects.put(id, objects);
                 }
-                objects.add(object);
-
-                for (int i = 0; i < row.size(); i++) {
-                    String value = row.get(i);
-                    String tag = headerRow.get(i);
-                    object.put(tag, value);
+                ConvertedObject object = null;
+                if (operation.equalsIgnoreCase("update")) {
+                    for (ConvertedObject o : objects) {
+                        if (o.getOperation().equalsIgnoreCase(operation)) {
+                            object = o;
+                            break;
+                        }
+                    }
                 }
+                if (object == null) {
+                    object = new ConvertedObject(sheet, id, operation);
+                    objects.add(object);
+                }
+                object.add(row.toMap(headerRow));
             }
         }
     }
@@ -205,24 +211,4 @@ public class SpreadsheetConversion {
         }
         return out;
     }
-
-    public JSONObject getObjectJSON(String objectType, String objectId) {
-        List<ConvertedObject> objectList = this.getObjectRows(objectType, objectId);
-        JSONObject sum = new JSONObject();
-        for (ConvertedObject object : objectList) {
-            //System.out.println(sheetname+"/"+id+" : "+object.getJSON());
-            JSONObject convertedRow = null;
-            try {
-                convertedRow = object.getJSON();
-                System.out.println("constituent:" + convertedRow.toString(2));
-                object.mergeJSON(sum, convertedRow, true, false, new StructurePath());
-            } catch (MissingStructureException e) {
-                e.printStackTrace();
-            }
-        }
-        System.out.println("-----------------------------");
-        System.out.println("SUM: "+sum.toString(2));
-        return sum;
-    }
-
 }

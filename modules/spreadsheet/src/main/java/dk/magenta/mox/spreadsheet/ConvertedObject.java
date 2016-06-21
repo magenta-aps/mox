@@ -9,9 +9,9 @@ import java.util.*;
 /**
  * Created by lars on 15-12-15.
  */
-public class ConvertedObject extends HashMap<String, String> {
+public class ConvertedObject extends ArrayList<HashMap<String, String>> {
 
-    public static final String EFFECT_INFINITY = "infinity";
+    private static final String EFFECT_INFINITY = "infinity";
     private static Logger log = Logger.getLogger(ConvertedObject.class);
 
     private SpreadsheetConversion.SheetData sheet;
@@ -28,62 +28,6 @@ public class ConvertedObject extends HashMap<String, String> {
         return this.sheet.structure;
     }
 
-    public JSONObject getJSON() throws MissingStructureException {
-        System.out.println("--------------------------------------------------");
-        JSONObject newjson = new JSONObject();
-
-        Set<JSONObject> newcontainers = new HashSet<JSONObject>();
-        JSONObject neweffectiveObject = new JSONObject();
-
-        for (String key : this.keySet()) {
-            if (!key.equalsIgnoreCase("operation")) {
-                String value = this.get(key);
-                StructurePath path = this.sheet.structure.getConversionPath(key);
-
-                if (path == null) {
-                    Structure structure = Structure.allStructures.get(this.sheet.name);
-                    if (structure == null) {
-                        log.error("No structure found in structure.json for " +
-                                "sheet name '" + this.sheet.name + "'");
-                        throw new MissingStructureException("No structure found in structure.json for " +
-                                "sheet name '" + this.sheet.name + "'");
-                    } else {
-                        path = structure.getConversionPath(key);
-                    }
-                }
-
-                if (path == null) {
-                    if (value != null && !value.isEmpty()) {
-                        log.warn("No structure path for header " + key + " in sheet " + this.sheet.name);
-                    }
-                } else {
-                    //System.out.println("----------------");
-                    //System.out.println("value: "+value);
-                    //System.out.println("path: "+path);
-
-                    if (path.get(0).equalsIgnoreCase("virkning")) {
-                        if (value == null || value.isEmpty()) {
-                            value = EFFECT_INFINITY;
-                        }
-                        this.sheet.structure.addConversion(neweffectiveObject, key, value);
-                    } else {
-                        if (value != null && !value.isEmpty()) {
-                            JSONObject leaf = this.sheet.structure.addConversion(newjson, key, value);
-                            if (!key.equalsIgnoreCase("objektID") && !key.equalsIgnoreCase("Søgeord_beskrivelse") && !key.equalsIgnoreCase("Søgeord_kategori") && !key.equalsIgnoreCase("Søgeord")) {
-                                newcontainers.add(leaf);
-                            }
-                        }
-                    }
-                }
-
-            }
-        }
-        for (JSONObject container : newcontainers) {
-            container.extend(neweffectiveObject, true, false);
-        }
-        return newjson;
-    }
-
     public String getOperation() {
         return this.operation;
     }
@@ -96,8 +40,77 @@ public class ConvertedObject extends HashMap<String, String> {
         return id;
     }
 
-    public JSONObject mergeJSON(JSONObject a, JSONObject b, boolean overwrite, boolean verbose, StructurePath currentPath) {
+
+    public JSONObject getItemJSON(int index) throws MissingStructureException {
+        JSONObject json = new JSONObject();
+
+        Set<JSONObject> effectiveContainers = new HashSet<JSONObject>();
+        JSONObject effectiveObject = new JSONObject();
+
+        HashMap<String, String> row = this.get(index);
+        String objectType = this.sheet.name;
+        Structure structure = this.getStructure();
+
+        for (String key : row.keySet()) {
+            if (!key.equalsIgnoreCase("operation")) {
+                String value = row.get(key);
+                StructurePath path = structure.getConversionPath(key);
+
+                if (path == null) {
+                    if (structure == null) {
+                        log.error("No structure found in structure.json for sheet name '" + objectType + "'");
+                        throw new MissingStructureException("No structure found in structure.json for sheet name '" + objectType + "'");
+                    } else {
+                        path = structure.getConversionPath(key);
+                    }
+                }
+
+                if (path == null) {
+                    if (value != null && !value.isEmpty()) {
+                        log.warn("No structure path for header " + key + " in sheet " + objectType);
+                    }
+                } else {
+                    if (path.get(0).equalsIgnoreCase("virkning")) {
+                        if (value == null || value.isEmpty()) {
+                            value = EFFECT_INFINITY;
+                        }
+                        structure.addConversion(effectiveObject, key, value);
+                    } else {
+                        if (value != null && !value.isEmpty()) {
+                            JSONObject leaf = structure.addConversion(json, key, value);
+                            if (!key.equalsIgnoreCase("objektID") && !key.equalsIgnoreCase("Søgeord_beskrivelse") && !key.equalsIgnoreCase("Søgeord_kategori") && !key.equalsIgnoreCase("Søgeord")) {
+                                effectiveContainers.add(leaf);
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+        for (JSONObject container : effectiveContainers) {
+            container.extend(effectiveObject, true, false);
+        }
+        return json;
+    }
+
+    public JSONObject getJSON() {
+        JSONObject sum = new JSONObject();
+        for (int i=0; i<this.size(); i++) {
+            try {
+                JSONObject convertedRow = this.getItemJSON(i);
+                ConvertedObject.mergeJSON(sum, convertedRow, true, null, this.getStructure(), false);
+            } catch (MissingStructureException e) {
+                e.printStackTrace();
+            }
+        }
+        return sum;
+    }
+
+    private static JSONObject mergeJSON(JSONObject a, JSONObject b, boolean overwrite, StructurePath currentPath, Structure structure, boolean verbose) {
         if (verbose) System.out.println("Adding "+b.toString()+"\nto "+a.toString());
+        if (currentPath == null) {
+            currentPath = new StructurePath();
+        }
         for (String key : b.keySet()) {
             StructurePath path = (StructurePath) currentPath.clone();
             path.add(key);
@@ -110,7 +123,7 @@ public class ConvertedObject extends HashMap<String, String> {
                     JSONObject otherChild = b.optJSONObject(key);
                     if (otherChild != null) {
                         if (verbose) System.out.println("Other object also has a sub-object here");
-                        this.mergeJSON(child, otherChild, overwrite, verbose, path);
+                        ConvertedObject.mergeJSON(child, otherChild, overwrite, path, structure, verbose);
                     } else {
                         if (verbose) System.out.println("Other object has a non-object here");
                         if (overwrite) {
@@ -122,7 +135,7 @@ public class ConvertedObject extends HashMap<String, String> {
                     if (achild != null) {
                         JSONArray otherChild = b.optJSONArray(key);
                         if (otherChild != null) {
-                            if (this.getStructure().isMergeList(path)) {
+                            if (structure.isMergeList(path)) {
                                 JSONObject crunch;
                                 if (achild.length() == 0) {
                                     crunch = new JSONObject();
@@ -131,7 +144,7 @@ public class ConvertedObject extends HashMap<String, String> {
                                     crunch = achild.getJSONObject(0);
                                 }
                                 for (int i=0; i<otherChild.length(); i++) {
-                                    this.mergeJSON(crunch, otherChild.getJSONObject(i), overwrite, verbose, path);
+                                    ConvertedObject.mergeJSON(crunch, otherChild.getJSONObject(i), overwrite, path, structure, verbose);
                                 }
 
                             } else {
@@ -147,8 +160,6 @@ public class ConvertedObject extends HashMap<String, String> {
                         a.put(key, b.get(key));
                     }
                 }
-
-
             } else {
                 if (verbose) System.out.println("Empty key, plain add");
                 a.put(key, b.get(key));
