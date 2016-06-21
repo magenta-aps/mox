@@ -18,16 +18,20 @@ public class SpreadsheetTest {
                 System.out.println("Parsing file " + file.getName());
                 SpreadsheetConversion conversion;
                 try {
-                    conversion = SpreadsheetConverter.getSpreadsheetConversion(file, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                    conversion = SpreadsheetConverter.getSpreadsheetConversion(file, "application/vnd.oasis.opendocument.spreadsheet");
                     Map<String, Map<String, List<ConvertedObject>>> objects = conversion.getConvertedObjects();
 
                     for (String sheetname : objects.keySet()) {
                         for (String id : objects.get(sheetname).keySet()) {
                             List<ConvertedObject> objectList = objects.get(sheetname).get(id);
+                            JSONObject sum = new JSONObject();
                             for (ConvertedObject object : objectList) {
-                                object.getJSON();
-                                // System.out.println(sheetname+"/"+id+" : "+object.getJSON());
+                                //System.out.println(sheetname+"/"+id+" : "+object.getJSON());
+                                JSONObject convertedRow = object.getJSON();
+                                System.out.println("constituent:" + convertedRow.toString(2));
+                                object.mergeJSON(sum, convertedRow, true, false, new StructurePath());
                             }
+                            System.out.println("SUM: "+sum.toString(2));
                         }
                     }
 

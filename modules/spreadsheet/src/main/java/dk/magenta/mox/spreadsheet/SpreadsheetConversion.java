@@ -1,6 +1,8 @@
 package dk.magenta.mox.spreadsheet;
 
+import dk.magenta.mox.json.JSONObject;
 import org.apache.log4j.Logger;
+import dk.magenta.mox.json.JSONArray;
 
 import java.util.*;
 
@@ -47,7 +49,7 @@ public class SpreadsheetConversion {
         public int headerOperationIndex = 0;
 
         // Key conversion: Maps spreadsheet column headers to json path
-        public HashMap<String, ArrayList<String>> structure = new HashMap<String, ArrayList<String>>();
+        public Structure structure;
 
         // A collection of objects obtained from the spreadsheet
         public HashMap<String, ArrayList<ConvertedObject>> objects = new HashMap<String, ArrayList<ConvertedObject>>();
@@ -62,6 +64,7 @@ public class SpreadsheetConversion {
         if (!this.sheets.containsKey(sheetName)) {
             SheetData sheet = new SheetData();
             sheet.name = sheetName;
+            sheet.structure = Structure.allStructures.get(sheetName);
             this.sheets.put(sheetName, sheet);
         }
         return this.sheets.get(sheetName);
@@ -74,7 +77,7 @@ public class SpreadsheetConversion {
         if (rowData != null && !rowData.isEmpty()) {
             if (sheetName.equalsIgnoreCase("besked")) {
             } else if (sheetName.equalsIgnoreCase("struktur")) {
-                this.addStructureRow(rowData);
+                //this.addStructureRow(rowData);
             } else if (sheetName.equalsIgnoreCase("lister")) {
             } else {
                 if (firstRow) {
@@ -89,13 +92,13 @@ public class SpreadsheetConversion {
     /**
      * Parses a structure row
      * */
-    private void addStructureRow(SpreadsheetRow row) {
+    /*private void addStructureRow(SpreadsheetRow row) {
         String objectTypeName = row.get(0);
         String spreadsheetKey = row.get(1);
         SheetData sheet = this.getSheet(objectTypeName);
         ArrayList<String> values = new ArrayList<String>(row.subList(2, row.size()));
         sheet.structure.put(spreadsheetKey, values);
-    }
+    }*/
 
     /**
      * Parses an object sheet header row
@@ -188,6 +191,9 @@ public class SpreadsheetConversion {
         }
     }
 
+    /*
+    * Return a mapping of ConvertedObjects by objecttype and objectId
+    * */
     public Map<String, Map<String, List<ConvertedObject>>> getConvertedObjects() {
         HashMap<String, Map<String, List<ConvertedObject>>> out = new HashMap<String, Map<String, List<ConvertedObject>>>();
         for (String sheetName : this.getSheetNames()) {
@@ -198,6 +204,25 @@ public class SpreadsheetConversion {
             out.put(sheetName, sheetObjects);
         }
         return out;
+    }
+
+    public JSONObject getObjectJSON(String objectType, String objectId) {
+        List<ConvertedObject> objectList = this.getObjectRows(objectType, objectId);
+        JSONObject sum = new JSONObject();
+        for (ConvertedObject object : objectList) {
+            //System.out.println(sheetname+"/"+id+" : "+object.getJSON());
+            JSONObject convertedRow = null;
+            try {
+                convertedRow = object.getJSON();
+                System.out.println("constituent:" + convertedRow.toString(2));
+                object.mergeJSON(sum, convertedRow, true, false, new StructurePath());
+            } catch (MissingStructureException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("-----------------------------");
+        System.out.println("SUM: "+sum.toString(2));
+        return sum;
     }
 
 }
