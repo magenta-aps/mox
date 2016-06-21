@@ -115,7 +115,7 @@
         "attributter",
         "klasseegenskaber",
         "soegeord",
-        "soegeordskategori"
+        "kategori"
       ],
       "Tilfoejelser":[
         "relationer",
@@ -141,7 +141,7 @@
         "attributter",
         "klasseegenskaber",
         "soegeord",
-        "soegeordidentifikator"
+        "soegeord"
       ],
       "OverordnetKlasse":[
         "relationer",
