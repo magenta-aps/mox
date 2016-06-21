@@ -8,6 +8,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by lars on 23-03-16.
@@ -86,6 +87,23 @@ public class Structure {
         return false;
     }
 
+    private String interpretPathBranch(String pathKey, String value) {
+        String[] pathKeys = pathKey.split("\\|");
+        for (String key : pathKeys) {
+            key = key.trim().toLowerCase();
+            try {
+                if (key.equals("uuid")) {
+                    UUID.fromString(value);
+                    return key;
+                }
+                if (key.equals("urn")) {
+                    return key;
+                }
+            } catch (Exception e) {}
+        }
+        return pathKey;
+    }
+
     public JSONObject addConversion(JSONObject base, String key, String value) {
         //System.out.println("------------------------");
         //System.out.println("base: "+base);
@@ -98,6 +116,9 @@ public class Structure {
 
             StructurePath subPath = path.subPath(i);
             String pathKey = path.get(i);
+            if (pathKey.contains("|")) {
+                pathKey = this.interpretPathBranch(pathKey, value);
+            }
             //System.out.println("pathKey: "+pathKey);
 
             if (i == path.size()-1) {
