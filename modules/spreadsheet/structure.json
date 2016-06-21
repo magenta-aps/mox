@@ -6,8 +6,13 @@
       ["attributter", "klasseegenskaber", "soegeord"],
       ["relationer", "facet"],
       ["relationer", "mapninger"],
+      ["relationer", "ansvarlig"],
+      ["relationer", "ejer"],
       ["relationer", "overordnetklasse"],
       ["relationer", "sideordnede"],
+      ["relationer", "tilfoejelser"],
+      ["relationer", "erstatter"],
+      ["relationer", "redaktoerer"],
       ["tilstande", "klassepubliceret"]
     ],
     "mergelists": [
