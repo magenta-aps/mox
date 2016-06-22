@@ -71,6 +71,7 @@ public class MoxAgentBase {
             this.commandLineArgs = new ParameterMap<>();
             for (String key : argMap.keySet()) {
                 this.commandLineArgs.put(key, argMap.get(key));
+                this.log.info("    " + key + " = " + argMap.get(key));
             }
         }
     }
@@ -108,6 +109,9 @@ public class MoxAgentBase {
             this.log.info("Loading config from '"+propertiesFile.getAbsolutePath()+"'");
             try {
                 properties.load(new FileInputStream(propertiesFile));
+                for (Object key : properties.keySet()) {
+                    this.log.info("    " + key + " = " + properties.get(key));
+                }
             } catch (IOException e) {
                 this.log.warn("Error loading from properties file " + propertiesFile.getAbsolutePath() + ": " + e.getMessage());
                 return;
