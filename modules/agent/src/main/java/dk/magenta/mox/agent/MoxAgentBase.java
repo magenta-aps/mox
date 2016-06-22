@@ -40,31 +40,25 @@ public class MoxAgentBase {
         if (this.commandLineArgs == null) {
             this.log.info("Reading command line arguments");
             HashMap<String, ArrayList<String>> argMap = new HashMap<>();
-            for (String arg : commandlineArgs) {
-                try {
-                    arg = arg.trim();
-                    String key, value;
-                    if (arg.startsWith("-")) {
-                        arg = arg.substring(2);
-                        String[] keyVal = arg.split("=", 2);
-                        if (keyVal.length != 2) {
-                            throw new IllegalArgumentException("Parameter " +
-                                    arg + " must be of the format -Dparam=value");
+            String currentKey = null;
+            for (int i=0; i<commandlineArgs.length; i++) {
+                String arg = commandlineArgs[i].trim();
+                if (arg.startsWith("--")) {
+                    currentKey = arg.substring(2);
+                } else if (arg.startsWith("-")) {
+                    currentKey = arg.substring(1);
+                } else {
+                    if (currentKey != null) {
+                        if (!argMap.containsKey(currentKey)) {
+                            argMap.put(currentKey, new ArrayList<>());
                         }
-                        key = keyVal[0];
-                        value = keyVal[1];
-                    } else if (!arg.isEmpty()) {
-                        key = COMMAND_ARG_KEY;
-                        value = arg;
-                    } else {
-                        continue;
+                        argMap.get(currentKey).add(arg);
                     }
-                    if (!argMap.containsKey(key)) {
-                        argMap.put(key, new ArrayList<>());
-                    }
-                    argMap.get(key).add(value);
-                } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
+                }
+            }
+            if (currentKey != null) {
+                if (!argMap.containsKey(currentKey)) {
+                    argMap.put(currentKey, new ArrayList<>());
                 }
             }
 
