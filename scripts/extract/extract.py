@@ -401,8 +401,8 @@ def direct_run():
     # Running script directly
     mergelevel = 0
     server = "referencedata.dk"
-    username = "Magenta"
-    password = "Tordenskjold"
+    username = "notreally"
+    password = "notreally"
     for objecttype in OBJECTTYPE_MAP.keys():
         filename = "%s_%s.json" % (server, objecttype)
         if os.path.isfile(filename):
