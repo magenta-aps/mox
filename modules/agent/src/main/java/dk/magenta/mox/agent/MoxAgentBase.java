@@ -18,10 +18,7 @@ public class MoxAgentBase {
     protected ParameterMap<String, String> defaults = null;
     protected Logger log = Logger.getLogger(MoxAgentBase.class);
 
-    private File propertiesFile;
-
-    protected static final String COMMAND_ARG_KEY = "__commands__";
-
+    private ArrayList<File> propertiesFiles = new ArrayList<>();
 
     protected MoxAgentBase() {
     }
@@ -75,9 +72,16 @@ public class MoxAgentBase {
         return "agent.properties";
     }
 
-    protected void setPropertiesFile(String propertiesFileName) {
+    protected void addPropertiesFiles(String propertiesFileName) throws IOException {
         if (propertiesFileName != null) {
-            this.propertiesFile = new File(propertiesFileName);
+            File propertiesFile = new File(propertiesFileName);
+            if (!propertiesFile.exists()) {
+                throw new FileNotFoundException(propertiesFile.getAbsolutePath()+ "doesn't exist");
+            }
+            if (!propertiesFile.canRead()) {
+                throw new IOException(propertiesFile.getAbsolutePath()+" is not readable");
+            }
+            this.propertiesFiles.add(propertiesFile);
         }
     }
 
@@ -85,30 +89,27 @@ public class MoxAgentBase {
         if (this.properties == null) {
             this.properties = new Properties();
 
-            if (this.commandLineArgs != null && this.propertiesFile == null) {
-                this.setPropertiesFile(this.commandLineArgs.getFirst("propertiesFile"));
-            }
-
-            if (this.propertiesFile == null) {
-                this.setPropertiesFile(this.getDefaultPropertiesFileName());
-            }
-
-            if (!this.propertiesFile.exists()) {
-                throw new FileNotFoundException(this.propertiesFile.getAbsolutePath()+ "doesn't exist");
-            }
-            if (!this.propertiesFile.canRead()) {
-                throw new IOException(this.propertiesFile.getAbsolutePath()+" is not readable");
-            }
-
-            this.log.info("Loading config from '"+propertiesFile.getAbsolutePath()+"'");
-            try {
-                properties.load(new FileInputStream(propertiesFile));
-                for (Object key : properties.keySet()) {
-                    this.log.info("    " + key + " = " + properties.get(key));
+            if (this.commandLineArgs != null) {
+                for (String filename : this.commandLineArgs.get("propertiesFiles")) {
+                    this.addPropertiesFiles(filename);
                 }
-            } catch (IOException e) {
-                this.log.warn("Error loading from properties file " + propertiesFile.getAbsolutePath() + ": " + e.getMessage());
-                return;
+            }
+
+            if (this.propertiesFiles.isEmpty()) {
+                this.addPropertiesFiles(this.getDefaultPropertiesFileName());
+            }
+
+            for (File propertiesFile : this.propertiesFiles) {
+                this.log.info("Loading config from '" + propertiesFile.getAbsolutePath() + "'");
+                try {
+                    properties.load(new FileInputStream(propertiesFile));
+                    for (Object key : properties.keySet()) {
+                        this.log.info("    " + key + " = " + properties.get(key));
+                    }
+                } catch (IOException e) {
+                    this.log.warn("Error loading from properties file " + propertiesFile.getAbsolutePath() + ": " + e.getMessage());
+                    return;
+                }
             }
         }
     }
