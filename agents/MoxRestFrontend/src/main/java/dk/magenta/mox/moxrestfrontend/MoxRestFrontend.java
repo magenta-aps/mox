@@ -40,6 +40,10 @@ public class MoxRestFrontend extends MoxAgent {
         return "moxrestfrontend.properties";
     }
 
+    protected String getAmqpPrefix() {
+        return "moxrestfrontend.amqp";
+    }
+
     public void run() {
         log.info("\n--------------------------------------------------------------------------------");
         log.info("MoxRestFrontend Starting");

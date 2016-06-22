@@ -102,14 +102,12 @@ public class MoxAgentBase {
                 throw new IOException(this.propertiesFile.getAbsolutePath()+" is not readable");
             }
 
-            if (this.propertiesFile.canRead()) {
-                System.out.println("Loading config from '"+propertiesFile.getAbsolutePath()+"'");
-                try {
-                    properties.load(new FileInputStream(propertiesFile));
-                } catch (IOException e) {
-                    System.err.println("Error loading from properties file " + propertiesFile.getAbsolutePath() + ": " + e.getMessage());
-                    return;
-                }
+            System.out.println("Loading config from '"+propertiesFile.getAbsolutePath()+"'");
+            try {
+                properties.load(new FileInputStream(propertiesFile));
+            } catch (IOException e) {
+                System.err.println("Error loading from properties file " + propertiesFile.getAbsolutePath() + ": " + e.getMessage());
+                return;
             }
         }
     }
@@ -120,6 +118,8 @@ public class MoxAgentBase {
             this.defaults = new ParameterMap<>();
         }
     }
+
+    //--------------------------------------------------------------------------
 
     public String getSetting(String key) {
         String value = this.commandLineArgs.getFirst(key);
