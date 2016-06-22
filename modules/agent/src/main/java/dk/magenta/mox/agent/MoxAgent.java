@@ -21,28 +21,20 @@ public class MoxAgent extends MoxAgentBase {
 
     protected MoxAgent() {
         this.amqpDefinition = new AmqpDefinition();
-
-        String prefix = "amqp";
-
-        try {
-            this.loadProperties();
-            this.amqpDefinition.populateFromProperties(this.properties, prefix, false, true);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        this.loadDefaults();
-        this.amqpDefinition.populateFromDefaults(true, prefix);
+        this.populateDefinitions("amqp");
     }
 
     public MoxAgent(String[] args) {
-
         this.amqpDefinition = new AmqpDefinition();
         String prefix = "amqp";
 
         this.loadArgs(args);
         this.amqpDefinition.populateFromMap(this.commandLineArgs, prefix, true, true);
 
+        this.populateDefinitions(prefix);
+    }
+
+    protected void populateDefinitions(String prefix) {
         try {
             this.loadProperties();
             this.amqpDefinition.populateFromProperties(this.properties, prefix, false, true);

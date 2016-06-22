@@ -4,23 +4,23 @@
 rest.interface = https://referencedata.dk
 
 # The host and port of the RabbitMQ service
-amqp.incoming.interface = localhost:5672
+moxtabel.amqp.incoming.interface = localhost:5672
 
 # The queueName to read commands from
-amqp.incoming.queueName = documentconvert
+moxtabel.amqp.incoming.queueName = documentconvert
 
 # The credentials to use when authing to RabbitMQ
-amqp.incoming.username = guest
-amqp.incoming.password = guest
+moxtabel.amqp.incoming.username = guest
+moxtabel.amqp.incoming.password = guest
 
 
 # The host and port of the RabbitMQ service
-amqp.outgoing.interface = localhost:5672
+moxtabel.amqp.outgoing.interface = localhost:5672
 
 # The queueName to send messages to
-amqp.outgoing.queueName = rest
+moxtabel.amqp.outgoing.queueName = rest
 
 # The credentials to use when authing to RabbitMQ
-amqp.outgoing.username = guest
-amqp.outgoing.password = guest
+moxtabel.amqp.outgoing.username = guest
+moxtabel.amqp.outgoing.password = guest
 

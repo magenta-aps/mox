@@ -30,8 +30,8 @@ public class MoxTabel extends MoxAgent {
     public MoxTabel(String[] args) {
         super(args);
 
-        String listenerPrefix = "amqp.incoming";
-        String senderPrefix = "amqp.outgoing";
+        String listenerPrefix = "moxtabel.amqp.incoming";
+        String senderPrefix = "moxtabel.amqp.outgoing";
 
         this.listenerDefinition = new AmqpDefinition();
         this.listenerDefinition.populateFromMap(this.commandLineArgs, listenerPrefix, true, true);
