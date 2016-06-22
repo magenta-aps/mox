@@ -1,7 +1,7 @@
 #!/bin/bash
 
 DIR=$(dirname ${BASH_SOURCE[0]})
-COMMAND="java -cp target/MoxRestFrontend-1.0.jar:target/dependency/* -DpropertiesFile=/srv/mox/mox.conf dk.magenta.mox.moxrestfrontend.MoxRestFrontend"
+COMMAND="java -cp target/MoxRestFrontend-1.0.jar:target/dependency/* dk.magenta.mox.moxrestfrontend.MoxRestFrontend --propertiesFile /srv/mox/mox.conf"
 AS_USER="mox"
 
 cd $DIR
