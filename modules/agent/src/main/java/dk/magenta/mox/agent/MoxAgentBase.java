@@ -28,6 +28,7 @@ public class MoxAgentBase {
         try {
             this.loadProperties();
         } catch (IOException e) {
+            this.log.error(e);
             e.printStackTrace();
         }
         this.loadDefaults();
@@ -90,8 +91,11 @@ public class MoxAgentBase {
             this.properties = new Properties();
 
             if (this.commandLineArgs != null) {
-                for (String filename : this.commandLineArgs.get("propertiesFiles")) {
-                    this.addPropertiesFiles(filename);
+                List<String> propertiesFilenames = this.commandLineArgs.get("propertiesFiles");
+                if (propertiesFilenames != null) {
+                    for (String filename : propertiesFilenames) {
+                        this.addPropertiesFiles(filename);
+                    }
                 }
             }
 
