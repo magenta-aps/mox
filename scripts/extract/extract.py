@@ -356,6 +356,8 @@ def format(data, mergelevel=1):
             for key in row:
                 if key not in otherheaders:
                     otherheaders.append(key)
+            # Kill the operation cell
+            row['Operation'] = ''
 
         baseheaders = [x for x in baseheaders if x in otherheaders]
         otherheaders = [x for x in otherheaders if x not in baseheaders]
