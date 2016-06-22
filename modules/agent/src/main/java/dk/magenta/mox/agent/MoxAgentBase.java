@@ -1,5 +1,7 @@
 package dk.magenta.mox.agent;
 
+import org.apache.log4j.Logger;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,6 +16,7 @@ public class MoxAgentBase {
     protected ParameterMap<String, String> commandLineArgs = null;
     protected Properties properties = null;
     protected ParameterMap<String, String> defaults = null;
+    protected Logger log = Logger.getLogger(MoxAgentBase.class);
 
     private File propertiesFile;
 
@@ -35,7 +38,7 @@ public class MoxAgentBase {
 
     protected void loadArgs(String[] commandlineArgs) {
         if (this.commandLineArgs == null) {
-            System.out.println("Reading command line arguments");
+            this.log.info("Reading command line arguments");
             HashMap<String, ArrayList<String>> argMap = new HashMap<>();
             for (String arg : commandlineArgs) {
                 try {
@@ -102,11 +105,11 @@ public class MoxAgentBase {
                 throw new IOException(this.propertiesFile.getAbsolutePath()+" is not readable");
             }
 
-            System.out.println("Loading config from '"+propertiesFile.getAbsolutePath()+"'");
+            this.log.info("Loading config from '"+propertiesFile.getAbsolutePath()+"'");
             try {
                 properties.load(new FileInputStream(propertiesFile));
             } catch (IOException e) {
-                System.err.println("Error loading from properties file " + propertiesFile.getAbsolutePath() + ": " + e.getMessage());
+                this.log.warn("Error loading from properties file " + propertiesFile.getAbsolutePath() + ": " + e.getMessage());
                 return;
             }
         }
@@ -114,7 +117,7 @@ public class MoxAgentBase {
 
     protected void loadDefaults() {
         if (this.defaults == null) {
-            System.out.println("Loading defaults");
+            this.log.info("Loading defaults");
             this.defaults = new ParameterMap<>();
         }
     }

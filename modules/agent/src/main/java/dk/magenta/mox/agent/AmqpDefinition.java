@@ -1,5 +1,7 @@
 package dk.magenta.mox.agent;
 
+import org.apache.log4j.Logger;
+
 import java.util.Map;
 import java.util.Properties;
 
@@ -12,6 +14,7 @@ public class AmqpDefinition {
     private String amqpLocation;
     private String exchangeName;
     private String queueName;
+    private Logger log = Logger.getLogger(AmqpDefinition.class);
 
     public AmqpDefinition() {
 
@@ -138,7 +141,7 @@ public class AmqpDefinition {
         String value = properties.getProperty(key);
         if (value != null) {
             if (print) {
-                System.out.println(this.repeat(printIndent, ' ') + key + " = " + (secret ? "****" : value));
+                this.log.info(this.repeat(printIndent, ' ') + key + " = " + (secret ? "****" : value));
             }
         }
         return value;
@@ -154,12 +157,12 @@ public class AmqpDefinition {
         boolean changed = false;
         if (this.amqpLocation == null) {
             this.amqpLocation = "localhost:5672";
-            System.out.println(this.formatValue("amqpLocation", this.amqpLocation, printIndent, prefix));
+            this.log.info(this.formatValue("amqpLocation", this.amqpLocation, printIndent, prefix));
             changed = true;
         }
         if (this.queueName == null) {
             this.queueName = "incoming";
-            System.out.println(this.formatValue("queueName", this.queueName, printIndent, prefix));
+            this.log.info(this.formatValue("queueName", this.queueName, printIndent, prefix));
             changed = true;
         }
         return changed;
@@ -215,7 +218,7 @@ public class AmqpDefinition {
         String value = map.get(key);
         if (value != null) {
             if (print) {
-                System.out.println(this.repeat(printIndent, ' ') + key + " = " + (secret ? "****" : value));
+                this.log.info(this.repeat(printIndent, ' ') + key + " = " + (secret ? "****" : value));
             }
         }
         return value;
