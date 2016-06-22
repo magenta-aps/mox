@@ -18,15 +18,13 @@ public class SpreadsheetTest {
                 System.out.println("Parsing file " + file.getName());
                 SpreadsheetConversion conversion;
                 try {
-                    conversion = SpreadsheetConverter.getSpreadsheetConversion(file, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                    conversion = SpreadsheetConverter.getSpreadsheetConversion(file, "application/vnd.oasis.opendocument.spreadsheet");
                     Map<String, Map<String, List<ConvertedObject>>> objects = conversion.getConvertedObjects();
 
-                    for (String sheetname : objects.keySet()) {
-                        for (String id : objects.get(sheetname).keySet()) {
-                            List<ConvertedObject> objectList = objects.get(sheetname).get(id);
+                    for (Map<String, List<ConvertedObject>> sheetObjects : objects.values()) {
+                        for (List<ConvertedObject> objectList : sheetObjects.values()) {
                             for (ConvertedObject object : objectList) {
-                                object.getJSON();
-                                // System.out.println(sheetname+"/"+id+" : "+object.getJSON());
+                                System.out.println("SUM: " + object.getJSON().toString(2));
                             }
                         }
                     }
