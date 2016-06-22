@@ -23,4 +23,5 @@ sudo a2ensite tomcat
 WORKERS_CONFIG="/etc/libapache2-mod-jk/workers.properties"
 sudo sed -i -r "s/workers.tomcat_home=.*/workers.tomcat_home=\/usr\/share\/tomcat7/" $WORKERS_CONFIG
 sudo service apache2 reload
+sudo service tomcat7 restart
 

@@ -86,4 +86,10 @@ public class JSONArray extends org.json.JSONArray {
         }
     }
 
+    public void addAll(JSONArray other) {
+        for (int i=0; i<other.length(); i++) {
+            this.put(other.get(i));
+        }
+    }
+
 }
