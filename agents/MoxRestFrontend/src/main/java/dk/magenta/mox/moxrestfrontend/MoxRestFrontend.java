@@ -37,6 +37,14 @@ public class MoxRestFrontend extends MoxObjectAgent {
         });
     }
 
+    protected String getDefaultPropertiesFileName() {
+        return "moxrestfrontend.properties";
+    }
+
+    protected String getAmqpPrefix() {
+        return "moxrestfrontend.amqp";
+    }
+
     public void run() {
         log.info("\n--------------------------------------------------------------------------------");
         log.info("MoxRestFrontend Starting");
