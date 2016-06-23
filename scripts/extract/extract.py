@@ -55,7 +55,6 @@ def extract(server, username, password, objecttypes, https=True):
         chunks = [uuids[i:i+chunksize] for i in range(0, len(uuids), chunksize)]
         for chunk in chunks:
             url = "%s%s%s?registreretFra=%s&uuid=%s" % (schema, server, objecttype_url, registerTime, "&uuid=".join(chunk))
-            print url
             item_request = requests.get(
                 url,
                 headers={
