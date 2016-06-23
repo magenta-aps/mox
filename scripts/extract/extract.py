@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import warnings
 
 import requests
 import json
@@ -9,13 +10,50 @@ import os
 import sys
 import socket
 import datetime
+import threading
 
 BASEPATH = os.path.dirname(os.path.realpath(sys.argv[0]))
 
 GET_TOKEN = "/get-token"
 
-def extract(server, username, password, objecttypes, https=True):
 
+class ChunkGet(threading.Thread):
+
+    results = []
+    def __init__(self, url, token):
+        super(ChunkGet, self).__init__()
+        self.url = url
+        self.token = token
+
+    def get_results(self):
+        return self.results
+
+    def run(self):
+        item_request = requests.get(
+            self.url,
+            headers={
+                "Authorization": self.token,
+                "Content-type": "application/json"
+            },
+            verify=False
+        )
+        try:
+            response = json.loads(item_request.text)
+            if response is not None:
+                self.results = response.get("results")
+                if self.results is None:
+                    raise Exception("Response is None")
+            else:
+                raise Exception("Response is None")
+        except Exception as e:
+            msg = e.message
+            if 'No JSON object could be decoded' in e.message:
+                msg += "\n%s" % item_request.text
+            raise Exception(msg)
+
+
+
+def extract(server, username, password, objecttypes, https=True, load_threaded=10):
     schema = "https://" if https else "http://"
 
     token = get_token(schema, server, username, password)
@@ -23,7 +61,6 @@ def extract(server, username, password, objecttypes, https=True):
     registerTime = datetime.datetime.today().date() + datetime.timedelta(days=1)
 
     request_counter = 0
-    """List objects"""
     objects = {}
     for objecttype_name, objecttype_url in objecttypes.iteritems():
         # print "Listing objects of type %s" % objecttype_name
@@ -50,32 +87,56 @@ def extract(server, username, password, objecttypes, https=True):
 
         objects[objecttype_name] = []
         uuids = list(set(uuids))
-
         chunksize = 20
         chunks = [uuids[i:i+chunksize] for i in range(0, len(uuids), chunksize)]
-        for chunk in chunks:
-            url = "%s%s%s?registreretFra=%s&uuid=%s" % (schema, server, objecttype_url, registerTime, "&uuid=".join(chunk))
-            print url
-            item_request = requests.get(
-                url,
-                headers={
-                    "Authorization": token,
-                    "Content-type": "application/json"
-                },
-                verify=False
-            )
-            try:
-                response = json.loads(item_request.text)
-                objects[objecttype_name].extend(response.get("results")[0])
-            except Exception as e:
-                msg = e.message
-                if 'No JSON object could be decoded' in e.message:
-                    msg += "\n%s" % list_request.text
-                raise Exception(msg)
 
-            request_counter += 1 # Rens for gamle registreringer
-            if request_counter % 20 == 0:
-                token = get_token(schema, server, username, password)
+        if load_threaded is not None and load_threaded > 0:
+            loaders = []
+            for chunk in chunks:
+                url = "%s%s%s?registreretFra=%s&uuid=%s" % (schema, server, objecttype_url, registerTime, "&uuid=".join(chunk))
+                loader = ChunkGet(url, token)
+                loaders.append(loader)
+
+            loader_chunk_size = load_threaded
+            loader_chunks = [loaders[i:i+loader_chunk_size] for i in range(0, len(loaders), loader_chunk_size)]
+            chunks_processed = 0
+            for loader_chunk in loader_chunks:
+                for loader in loader_chunk:
+                    loader.start()
+                for loader in loader_chunk:
+                    loader.join()
+                chunks_processed += 1
+
+            for loader in loaders:
+                results = loader.get_results()
+                for result in results:
+                    # print "there are %d results" % len(result)
+                    objects[objecttype_name].extend(result)
+        else:
+            for chunk in chunks:
+                url = "%s%s%s?registreretFra=%s&uuid=%s" % (schema, server, objecttype_url, registerTime, "&uuid=".join(chunk))
+
+                item_request = requests.get(
+                    url,
+                    headers={
+                        "Authorization": token,
+                        "Content-type": "application/json"
+                    },
+                    verify=False
+                )
+                try:
+                    response = json.loads(item_request.text)
+                    objects[objecttype_name].extend(response.get("results")[0])
+                except Exception as e:
+                    msg = e.message
+                    if 'No JSON object could be decoded' in e.message:
+                        msg += "\n%s" % item_request.text
+                    raise Exception(msg)
+
+                request_counter += 1 # Rens for gamle registreringer
+                if request_counter % 20 == 0:
+                    token = get_token(schema, server, username, password)
+
     return objects
 
 
@@ -403,6 +464,7 @@ def direct_run():
     server = "referencedata.dk"
     username = "notreally"
     password = "notreally"
+    warnings.filterwarnings("ignore")
     for objecttype in OBJECTTYPE_MAP.keys():
         filename = "%s_%s.json" % (server, objecttype)
         if os.path.isfile(filename):
@@ -413,7 +475,8 @@ def direct_run():
             objects = extract(
                 server,
                 username, password,
-                {objecttype: OBJECTTYPE_MAP[objecttype]}
+                {objecttype: OBJECTTYPE_MAP[objecttype]},
+                load_threaded=20
             )
             fp = open(filename, 'w')
             json.dump(objects, fp)
