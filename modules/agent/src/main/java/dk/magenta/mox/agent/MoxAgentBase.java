@@ -73,7 +73,7 @@ public class MoxAgentBase {
         return "agent.properties";
     }
 
-    protected void addPropertiesFiles(String propertiesFileName) throws IOException {
+    protected void addPropertiesFile(String propertiesFileName) throws IOException {
         if (propertiesFileName != null) {
             File propertiesFile = new File(propertiesFileName);
             if (!propertiesFile.exists()) {
@@ -94,13 +94,13 @@ public class MoxAgentBase {
                 List<String> propertiesFilenames = this.commandLineArgs.get("propertiesFiles");
                 if (propertiesFilenames != null) {
                     for (String filename : propertiesFilenames) {
-                        this.addPropertiesFiles(filename);
+                        this.addPropertiesFile(filename);
                     }
                 }
             }
 
             if (this.propertiesFiles.isEmpty()) {
-                this.addPropertiesFiles(this.getDefaultPropertiesFileName());
+                this.addPropertiesFile(this.getDefaultPropertiesFileName());
             }
 
             for (File propertiesFile : this.propertiesFiles) {
