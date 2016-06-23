@@ -37,7 +37,7 @@ public class MoxRestFrontend extends MoxAgent {
     }
 
     protected String getDefaultPropertiesFileName() {
-        return "moxrestfrontend.properties";
+        return "moxrestfrontend.conf";
     }
 
     protected String getAmqpPrefix() {
