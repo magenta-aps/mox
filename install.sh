@@ -27,7 +27,17 @@ done
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 echo "DIR=$DIR"
 
+DOMAIN=`hostname --fqdn`
 
+read -p "Domain [$DOMAIN]: " -r
+echo
+if [[ "x$REPLY" != "x" ]]; then
+	DOMAIN=$REPLY
+fi
+
+echo $DOMAIN
+
+exit
 
 # Add system user if none exists
 getent passwd mox

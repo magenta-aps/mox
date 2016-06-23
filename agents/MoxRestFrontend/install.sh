@@ -19,4 +19,3 @@ if [ ! -f "$DIR/$PROPERTIESFILENAME" ]; then
 fi
 
 sudo service moxrestfrontend restart
-
