@@ -29,6 +29,9 @@ ServerAlias moxdev.magenta-aps.dk
         AddHandler cgi-script .py
     </Directory>
 
+    # Tomcat redirect
+    JkMount /MoxDocumentUpload/* ajp13_worker
+
     CustomLog /var/log/mox/oio_rest/access.log combined
     ErrorLog /var/log/mox/oio_rest/error.log
 
