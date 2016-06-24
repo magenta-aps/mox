@@ -56,7 +56,12 @@ public class XlsConverter extends SpreadsheetConverter {
                 if (DateUtil.isCellDateFormatted(cell)) {
                     return dateFormat.format(DateUtil.getJavaDate(cell.getNumericCellValue()));
                 } else {
-                    return "" + cell.getNumericCellValue();
+                    double value = cell.getNumericCellValue();
+                    if (value == Math.floor(value)) {
+                        return String.valueOf((long) value);
+                    } else {
+                        return String.valueOf(value);
+                    }
                 }
             } else if (cellType == Cell.CELL_TYPE_BOOLEAN) {
                 return "" + cell.getBooleanCellValue();
