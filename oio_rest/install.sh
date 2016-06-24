@@ -134,7 +134,7 @@ echo "Setting up oio_rest WSGI service for Apache"
 sudo mkdir -p /var/www/wsgi
 sudo cp "$DIR/server-setup/oio_rest.wsgi" "/var/www/wsgi/"
 
-sudo cp "$DIR/server-setup/oio_rest.conf" "/etc/apache2/sites-available/"
+sudo cp "$DIR/server-setup/oio_rest.conf.production" "/etc/apache2/sites-available/"
 sudo a2ensite oio_rest
 sudo a2enmod ssl
 sudo a2enmod cgi
