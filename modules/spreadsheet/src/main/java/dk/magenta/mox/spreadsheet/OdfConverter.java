@@ -28,13 +28,16 @@ public class OdfConverter extends SpreadsheetConverter {
 
     private SpreadsheetConversion convert(SpreadsheetDocument document) throws Exception {
         SpreadsheetConversion spreadsheetConversion = new SpreadsheetConversion();
-        for (int i = 0; i < document.getSheetCount(); i++) {
+        int sheetCount = document.getSheetCount();
+        for (int i = 0; i < sheetCount; i++) {
             Table sheet = document.getSheetByIndex(i);
             String sheetName = sheet.getTableName();
-            for (int j = 0; j < sheet.getRowCount(); j++) {
+            int rowCount = sheet.getRowCount();
+            for (int j = 0; j < rowCount; j++) {
                 Row row = sheet.getRowByIndex(j);
-                SpreadsheetRow rowData = new SpreadsheetRow();
-                for (int k = 0; k < row.getCellCount(); k++) {
+                SpreadsheetRow rowData = new SpreadsheetRow(row.getCellCount());
+                int cellCount = row.getCellCount();
+                for (int k = 0; k < cellCount; k++) {
                     Cell cell = row.getCellByIndex(k);
                     rowData.add(getCellString(cell));
                 }

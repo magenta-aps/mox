@@ -54,15 +54,14 @@ public class ConvertedObject extends ArrayList<HashMap<String, String>> {
         for (String key : row.keySet()) {
             if (!key.equalsIgnoreCase("operation")) {
                 String value = row.get(key);
+                if (structure == null) {
+                    log.error("No structure found in structure.json for sheet name '" + objectType + "'");
+                    throw new MissingStructureException("No structure found in structure.json for sheet name '" + objectType + "'");
+                }
                 StructurePath path = structure.getConversionPath(key);
 
                 if (path == null) {
-                    if (structure == null) {
-                        log.error("No structure found in structure.json for sheet name '" + objectType + "'");
-                        throw new MissingStructureException("No structure found in structure.json for sheet name '" + objectType + "'");
-                    } else {
-                        path = structure.getConversionPath(key);
-                    }
+                    path = structure.getConversionPath(key);
                 }
 
                 if (path == null) {
