@@ -31,9 +31,11 @@ public class XlsConverter extends SpreadsheetConverter {
         for (int i = 0; i < document.getNumberOfSheets(); i++) {
             HSSFSheet sheet = document.getSheetAt(i);
             String sheetName = sheet.getSheetName();
-            for (int j = 0; j <= sheet.getLastRowNum(); j++) {
+            int rowCount = sheet.getLastRowNum() + 1;
+            int firstRowIndex = sheet.getFirstRowNum();
+            for (int j = 0; j < rowCount; j++) {
                 SpreadsheetRow rowData = new SpreadsheetRow();
-                if (j >= sheet.getFirstRowNum()) {
+                if (j >= firstRowIndex) {
                     HSSFRow row = sheet.getRow(j);
                     int firstCell = row.getFirstCellNum();
                     int lastCell = row.getLastCellNum();
