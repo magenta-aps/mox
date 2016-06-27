@@ -15,7 +15,8 @@ public class SpreadsheetTest {
         for (String filename : args) {
             File file = new File(filename);
             if (file.exists() && file.canRead()) {
-                System.out.println("Parsing file " + file.getName());
+                // String canonicalFilename = file.getName();
+                // String extension = canonicalFilename.contains(".") ? canonicalFilename.substring(canonicalFilename.lastIndexOf(".")) : "";
                 SpreadsheetConversion conversion;
                 try {
                     conversion = SpreadsheetConverter.getSpreadsheetConversion(file, "application/vnd.oasis.opendocument.spreadsheet");

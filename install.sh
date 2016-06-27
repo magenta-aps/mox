@@ -36,7 +36,7 @@ fi
 
 
 # Setup symlinks
-./setsymlinks.sh development
+./setsymlinks.sh production
 
 # Install oio_rest
 echo "Installing oio_rest"
