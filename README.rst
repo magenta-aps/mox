@@ -236,6 +236,36 @@ giving the "actual state" as the results.
 The results that are returned are filtered by those that overlap with the
 given date/time ranges.
 
+List operation
+--------------
+
+A GET request is interpreted as a list operation if, apart from date
+ranges as specified above, only UUIDs are specified.
+
+It's possible to *access* a single object at its URL, e.g.: ::
+
+    https://referencedata.dk/klassifikation/klasse/1ab754c7-7126-494e-8a4d-9ee3054709fa
+
+
+It's also possible to use a slightly different syntax to *list* objects,
+e.g.: ::
+
+    https://referencedata.dk/klassifikation/klasse?uuid=1ab754c7-7126-494e-8a4d-9ee3054709fa
+
+The point of the last operation is that it is possible to list more than
+one UUID. Accessing the following URL will, for instance, retrieve the
+contents of three objects of the type Klasse: ::
+
+   curl -H "Authorization: $AUTH_TOKEN" 'https://referencedata.dk/klassifikation/klasse?uuid=1ab754c7-7126-494e-8a4d-9ee3054709fa&uuid=a75af34e-1ce3-44d5-ae9a-76f246fd4b10&uuid=77cd9b29-ef12-418b-bde4-6703aea007e3' 
+
+That is, each UUID is specified by a separate "&uuid=" clause.
+
+There is no built-in limit to how many objects can be listed in this
+way, but it is often considered a best practice to limit URIs to a
+length of about 2000 characters. Thus, we recommend that you attempt to
+list a maximum of 45 objects in each request.
+
+
 Search operation
 ----------------
 
