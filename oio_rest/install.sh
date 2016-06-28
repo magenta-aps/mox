@@ -140,6 +140,7 @@ sudo a2ensite oio_rest
 sudo a2enmod ssl
 sudo a2enmod cgi
 
+sudo service apache2 restart
 
 sudo mkdir -p /var/log/mox/oio_rest
 
