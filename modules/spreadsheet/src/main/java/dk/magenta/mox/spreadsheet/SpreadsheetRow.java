@@ -8,6 +8,13 @@ import java.util.HashMap;
  */
 public class SpreadsheetRow extends ArrayList<String> {
 
+    public SpreadsheetRow() {
+        super();
+    }
+    public SpreadsheetRow(int capacity) {
+        super(capacity);
+    }
+
     public boolean isEmpty() {
         if (!super.isEmpty()) {
             for (String s : this) {

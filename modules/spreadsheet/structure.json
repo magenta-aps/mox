@@ -4,15 +4,16 @@
       ["registreringer"],
       ["attributter", "klasseegenskaber"],
       ["attributter", "klasseegenskaber", "soegeord"],
-      ["relationer", "facet"],
-      ["relationer", "mapninger"],
       ["relationer", "ansvarlig"],
       ["relationer", "ejer"],
+      ["relationer", "erstatter"],
+      ["relationer", "facet"],
+      ["relationer", "lovligekombinationer"],
+      ["relationer", "mapninger"],
       ["relationer", "overordnetklasse"],
+      ["relationer", "redaktoerer"],
       ["relationer", "sideordnede"],
       ["relationer", "tilfoejelser"],
-      ["relationer", "erstatter"],
-      ["relationer", "redaktoerer"],
       ["tilstande", "klassepubliceret"]
     ],
     "mergelists": [
@@ -21,157 +22,8 @@
       ["tilstande", "klassepubliceret"]
     ],
     "conversion": {
-      "Kontekst":[
-        "kontekst",
-        "klasseegenskaber",
-        "facet"
-      ],
-      "LovligeKombinationer":[
-        "relationer",
-        "lovligekombinationer",
-        "uuid|urn"
-      ],
-      "LovligeKombinationer_type":[
-        "relationer",
-        "lovligekombinationer",
-        "objekttype"
-      ],
-      "Erstatter":[
-        "relationer",
-        "erstatter",
-        "uuid|urn"
-      ],
-      "Erstatter_type":[
-        "relationer",
-        "erstatter",
-        "objekttype"
-      ],
-      "Søgeord_beskrivelse":[
-        "attributter",
-        "klasseegenskaber",
-        "soegeord",
-        "beskrivelse"
-      ],
-      "Aendringsnotat":[
-        "attributter",
-        "klasseegenskaber",
-        "aendringsnotat"
-      ],
-      "Eksempel":[
-        "attributter",
-        "klasseegenskaber",
-        "eksempel"
-      ],
-      "Redaktoerer_type":[
-        "relationer",
-        "redaktoerer",
-        "objekttype"
-      ],
-      "Operation":[
-        "registrering",
-        "operation"
-      ],
-      "Omfang":[
-        "attributter",
-        "klasseegenskaber",
-        "omfang"
-      ],
-      "Mapninger":[
-        "relationer",
-        "mapninger",
-        "uuid|urn"
-      ],
-      "Mapninger_type":[
-        "relationer",
-        "mapninger",
-        "objekttype"
-      ],
-      "Beskrivelse":[
-        "attributter",
-        "klasseegenskaber",
-        "beskrivelse"
-      ],
-      "Ejer":[
-        "relationer",
-        "ejer",
-        "uuid|urn"
-      ],
-      "Ejer_type":[
-        "relationer",
-        "ejer",
-        "objekttype"
-      ],
-      "BrugervendtNoegle":[
-        "attributter",
-        "klasseegenskaber",
-        "brugervendtnoegle"
-      ],
-      "Retskilde":[
-        "attributter",
-        "klasseegenskaber",
-        "retskildetekst"
-      ],
-      "Facet":[
-        "relationer",
-        "facet",
-        "uuid|urn"
-      ],
-      "Søgeord_kategori":[
-        "attributter",
-        "klasseegenskaber",
-        "soegeord",
-        "kategori"
-      ],
-      "Tilfoejelser":[
-        "relationer",
-        "tilfoejelser",
-        "uuid|urn"
-      ],
-      "Tilfoejelser_type":[
-        "relationer",
-        "tilfoejelser",
-        "uuid|urn"
-      ],
-      "Sideordnede":[
-        "relationer",
-        "sideordnede",
-        "uuid|urn"
-      ],
-      "Sideordnede_type":[
-        "relationer",
-        "sideordnede",
-        "objekttype"
-      ],
-      "Søgeord":[
-        "attributter",
-        "klasseegenskaber",
-        "soegeord",
-        "soegeord"
-      ],
-      "OverordnetKlasse":[
-        "relationer",
-        "overordnetklasse",
-        "uuid|urn"
-      ],
-      "OverordnetKlasse_type":[
-        "relationer",
-        "overordnetklasse",
-        "objekttype"
-      ],
-      "Redaktoerer":[
-        "relationer",
-        "redaktoerer",
-        "uuid|urn"
-      ],
-      "Facet_type":[
-        "relationer",
-        "facet",
-        "objekttype"
-      ],
-      "Ansvarlig_type":[
-        "relationer",
-        "ansvarlig",
-        "objekttype"
+      "objektID":[
+        "id"
       ],
       "Fra":[
         "virkning",
@@ -195,19 +47,199 @@
         "klassepubliceret",
         "publiceret"
       ],
-      "objektID":[
-        "id"
+      "Kontekst":[
+        "kontekst",
+        "klasseegenskaber",
+        "facet"
+      ],
+      "Aendringsnotat":[
+        "attributter",
+        "klasseegenskaber",
+        "aendringsnotat"
+      ],
+      "Eksempel":[
+        "attributter",
+        "klasseegenskaber",
+        "eksempel"
+      ],
+      "Operation":[
+        "operation"
+      ],
+      "Omfang":[
+        "attributter",
+        "klasseegenskaber",
+        "omfang"
+      ],
+      "Beskrivelse":[
+        "attributter",
+        "klasseegenskaber",
+        "beskrivelse"
+      ],
+      "BrugervendtNoegle":[
+        "attributter",
+        "klasseegenskaber",
+        "brugervendtnoegle"
+      ],
+      "Retskilde":[
+        "attributter",
+        "klasseegenskaber",
+        "retskildetekst"
+      ],
+      "Søgeord":[
+        "attributter",
+        "klasseegenskaber",
+        "soegeord",
+        "soegeord"
+      ],
+      "Søgeord_kategori":[
+        "attributter",
+        "klasseegenskaber",
+        "soegeord",
+        "kategori"
+      ],
+      "Søgeord_beskrivelse":[
+        "attributter",
+        "klasseegenskaber",
+        "soegeord",
+        "beskrivelse"
       ],
       "Ansvarlig":[
         "relationer",
         "ansvarlig",
+        "uuid|urn"
+      ],
+      "Ansvarlig_type":[
+        "relationer",
+        "ansvarlig",
+        "objekttype"
+      ],
+      "Ejer":[
+        "relationer",
+        "ejer",
+        "uuid|urn"
+      ],
+      "Ejer_type":[
+        "relationer",
+        "ejer",
+        "objekttype"
+      ],
+      "Erstatter":[
+        "relationer",
+        "erstatter",
+        "uuid|urn"
+      ],
+      "Erstatter_type":[
+        "relationer",
+        "erstatter",
+        "objekttype"
+      ],
+      "Facet":[
+        "relationer",
+        "facet",
+        "uuid|urn"
+      ],
+      "Facet_type":[
+        "relationer",
+        "facet",
+        "objekttype"
+      ],
+      "LovligeKombinationer":[
+        "relationer",
+        "lovligekombinationer",
+        "uuid|urn"
+      ],
+      "LovligeKombinationer_type":[
+        "relationer",
+        "lovligekombinationer",
+        "objekttype"
+      ],
+      "Mapninger":[
+        "relationer",
+        "mapninger",
+        "uuid|urn"
+      ],
+      "Mapninger_type":[
+        "relationer",
+        "mapninger",
+        "objekttype"
+      ],
+      "OverordnetKlasse":[
+        "relationer",
+        "overordnetklasse",
+        "uuid|urn"
+      ],
+      "OverordnetKlasse_type":[
+        "relationer",
+        "overordnetklasse",
+        "objekttype"
+      ],
+      "Redaktoerer":[
+        "relationer",
+        "redaktoerer",
+        "uuid|urn"
+      ],
+      "Redaktoerer_type":[
+        "relationer",
+        "redaktoerer",
+        "objekttype"
+      ],
+      "Sideordnede":[
+        "relationer",
+        "sideordnede",
+        "uuid|urn"
+      ],
+      "Sideordnede_type":[
+        "relationer",
+        "sideordnede",
+        "objekttype"
+      ],
+      "Tilfoejelser":[
+        "relationer",
+        "tilfoejelser",
+        "uuid|urn"
+      ],
+      "Tilfoejelser_type":[
+        "relationer",
+        "tilfoejelser",
         "uuid|urn"
       ]
     }
   },
 
   "klassifikation":{
+    "lists": [
+      ["registreringer"],
+      ["attributter", "klassifikationegenskaber"],
+      ["relationer", "ansvarlig"],
+      ["relationer", "ejer"],
+      ["tilstande", "klassifikationpubliceret"]
+    ],
+    "mergelists": [
+      ["registreringer"],
+      ["attributter", "klassifikationegenskaber"],
+      ["tilstande", "klassifikationpubliceret"]
+    ],
     "conversion": {
+      "objektID":[
+        "id"
+      ],
+      "Fra":[
+        "virkning",
+        "from"
+      ],
+      "Til":[
+        "virkning",
+        "to"
+      ],
+      "Note":[
+        "registrering",
+        "note"
+      ],
+      "Publiceret":[
+        "tilstande",
+        "klassifikationpubliceret",
+        "publiceret"
+      ],
       "Kontekst":[
         "kontekst",
         "klassifikationegenskaber",
@@ -219,7 +251,6 @@
         "kaldenavn"
       ],
       "Operation":[
-        "registrering",
         "operation"
       ],
       "Ophavsret":[
@@ -232,9 +263,9 @@
         "klassifikationegenskaber",
         "beskrivelse"
       ],
-      "Ejer":[
+      "Ansvarlig":[
         "relationer",
-        "ejer",
+        "ansvarlig",
         "uuid|urn"
       ],
       "Ansvarlig_type":[
@@ -242,67 +273,68 @@
         "ansvarlig",
         "objekttype"
       ],
-      "Fra":[
-        "virkning"
-      ],
-      "BrugervendtNoegle":[
-        "attributter",
-        "klassifikationegenskaber",
-        "brugervendtnoegle"
-      ],
-      "Til":[
-        "virkning"
-      ],
-      "Note":[
-        "registrering",
-        "note"
-      ],
-      "Publiceret":[
-        "tilstande",
-        "klassifikationpubliceret",
-        "publiceret"
-      ],
-      "objektID":[
-        "registrering",
-        "id"
+      "Ejer":[
+        "relationer",
+        "ejer",
+        "uuid|urn"
       ],
       "Ejer_type":[
         "relationer",
         "ejer",
         "objekttype"
       ],
-      "Ansvarlig":[
-        "relationer",
-        "ansvarlig",
-        "uuid|urn"
+      "BrugervendtNoegle":[
+        "attributter",
+        "klassifikationegenskaber",
+        "brugervendtnoegle"
       ]
     }
   },
 
   "facet":{
+    "lists": [
+      ["registreringer"],
+      ["attributter", "facetegenskaber"],
+      ["attributter", "facetegenskaber", "soegeord"],
+      ["relationer", "ansvarlig"],
+      ["relationer", "ejer"],
+      ["relationer", "tilfoejelser"],
+      ["relationer", "redaktoerer"],
+      ["relationer", "facettilhoerer"],
+      ["tilstande", "facetpubliceret"]
+    ],
+    "mergelists": [
+      ["registreringer"],
+      ["attributter", "facetegenskaber"],
+      ["tilstande", "facetpubliceret"]
+    ],
     "conversion": {
+      "objektID":[
+        "id"
+      ],
+      "Fra":[
+        "virkning",
+        "from"
+      ],
+      "Til":[
+        "virkning",
+        "to"
+      ],
+      "Note":[
+        "registrering",
+        "note"
+      ],
       "Kontekst":[
         "kontekst",
         "facetegenskaber",
         "facettilhoerer"
-      ],
-      "Redaktoerer_type":[
-        "relationer",
-        "redaktoerer",
-        "objekttype"
       ],
       "Plan":[
         "attributter",
         "facetegenskaber",
         "plan"
       ],
-      "FacetTilhoerer_type":[
-        "relationer",
-        "facettilhoerer",
-        "objekttype"
-      ],
       "Operation":[
-        "registrering",
         "operation"
       ],
       "PlanIdentifikator":[
@@ -315,29 +347,14 @@
         "facetegenskaber",
         "ophavsret"
       ],
-      "Redaktoerer":[
-        "relationer",
-        "redaktoerer",
-        "uuid|urn"
-      ],
       "Beskrivelse":[
         "attributter",
         "facetegenskaber",
         "beskrivelse"
       ],
-      "Ejer":[
+      "Ansvarlig":[
         "relationer",
-        "ejer",
-        "uuid|urn"
-      ],
-      "FacetTilhoerer":[
-        "relationer",
-        "facettilhoerer",
-        "uuid|urn"
-      ],
-      "FacetTilhorer":[
-        "relationer",
-        "facettilhoerer",
+        "ansvarlig",
         "uuid|urn"
       ],
       "Ansvarlig_type":[
@@ -345,20 +362,45 @@
         "ansvarlig",
         "objekttype"
       ],
-      "Fra":[
-        "virkning"
+      "Ejer":[
+        "relationer",
+        "ejer",
+        "uuid|urn"
+      ],
+      "Ejer_type":[
+        "relationer",
+        "ejer",
+        "objekttype"
+      ],
+      "FacetTilhoerer":[
+        "relationer",
+        "facettilhoerer",
+        "uuid|urn"
+      ],
+      "FacetTilhoerer_type":[
+        "relationer",
+        "facettilhoerer",
+        "objekttype"
+      ],
+      "FacetTilhorer":[
+        "relationer",
+        "facettilhoerer",
+        "uuid|urn"
+      ],
+      "Redaktoerer":[
+        "relationer",
+        "redaktoerer",
+        "uuid|urn"
+      ],
+      "Redaktoerer_type":[
+        "relationer",
+        "redaktoerer",
+        "objekttype"
       ],
       "BrugervendtNoegle":[
         "attributter",
         "facetegenskaber",
         "brugervendtnoegle"
-      ],
-      "Til":[
-        "virkning"
-      ],
-      "Note":[
-        "registrering",
-        "note"
       ],
       "Supplement":[
         "attributter",
@@ -375,30 +417,59 @@
         "facetegenskaber",
         "retskilde"
       ],
-      "objektID":[
-        "registrering",
-        "id"
-      ],
-      "Ejer_type":[
-        "relationer",
-        "ejer",
-        "objekttype"
-      ],
       "Opbygning":[
         "attributter",
         "facetegenskaber",
         "opbygning"
-      ],
-      "Ansvarlig":[
-        "relationer",
-        "ansvarlig",
-        "uuid|urn"
       ]
     }
   },
 
   "organisationenhed":{
+    "lists": [
+      ["registreringer"],
+      ["attributter", "klasseegenskaber"],
+      ["attributter", "klasseegenskaber", "soegeord"],
+      ["relationer", "adresser"],
+      ["relationer", "ansatte"],
+      ["relationer", "branche"],
+      ["relationer", "enhedstype"],
+      ["relationer", "facet"],
+      ["relationer", "opgaver"],
+      ["relationer", "overordnet"],
+      ["relationer", "produktionsenhed"],
+      ["relationer", "skatteenhed"],
+      ["relationer", "tilhoerer"],
+      ["relationer", "tilknyttedebrugere"],
+      ["relationer", "tilknyttedeenheder"],
+      ["relationer", "tilknyttedefunktioner"],
+      ["relationer", "tilknyttedeinteressefaellesskaber"],
+      ["relationer", "tilknyttedeorganisationer"],
+      ["relationer", "tilknyttedepersoner"],
+      ["relationer", "tilknyttedeitsystemer"],
+      ["tilstande", "organisationenhedpubliceret"]
+    ],
+    "mergelists": [
+      ["registreringer"],
+      ["attributter", "organisationenhedegenskaber"],
+      ["tilstande", "organisationenhedpubliceret"]
+    ],
     "conversion": {
+      "Fra":[
+        "virkning",
+        "from"
+      ],
+      "Til":[
+        "virkning",
+        "to"
+      ],
+      "Note":[
+        "registrering",
+        "note"
+      ],
+      "objektID":[
+        "id"
+      ],
       "BrugervendtNoegle":[
         "attributter",
         "organisationenhedegenskaber",
@@ -409,14 +480,11 @@
         "organisationenhedegenskaber",
         "enhedsnavn"
       ],
-
       "Gyldighed":[
         "tilstande",
         "organisationenhedgyldighed",
         "gyldighed"
       ],
-
-
       "Branche":[
         "relationer",
         "branche",
@@ -578,30 +646,62 @@
         "tilknyttedeitsystemer",
         "objekttype"
       ],
-
       "Operation":[
-        "registrering",
         "operation"
-      ],
-      "Fra":[
-        "virkning"
-      ],
-      "Til":[
-        "virkning"
-      ],
-      "Note":[
-        "registrering",
-        "note"
-      ],
-      "objektID":[
-        "registrering",
-        "id"
       ]
     }
   },
 
   "organisation":{
+    "lists": [
+      ["registreringer"],
+      ["attributter", "klasseegenskaber"],
+      ["attributter", "klasseegenskaber", "soegeord"],
+      ["relationer", "adresser"],
+      ["relationer", "ansatte"],
+      ["relationer", "branche"],
+      ["relationer", "myndighed"],
+      ["relationer", "myndighedstype"],
+      ["relationer", "opgaver"],
+      ["relationer", "overordnet"],
+      ["relationer", "produktionsenhed"],
+      ["relationer", "skatteenhed"],
+      ["relationer", "tilhoerer"],
+      ["relationer", "virksomhed"],
+      ["relationer", "virksomhedstype"],
+      ["relationer", "tilknyttedebrugere"],
+      ["relationer", "tilknyttedeenheder"],
+      ["relationer", "tilknyttedefunktioner"],
+      ["relationer", "tilknyttedeinteressefaellesskaber"],
+      ["relationer", "tilknyttedeorganisationer"],
+      ["relationer", "tilknyttedepersoner"],
+      ["relationer", "tilknyttedeitsystemer"],
+      ["tilstande", "organisationpubliceret"]
+    ],
+    "mergelists": [
+      ["registreringer"],
+      ["attributter", "organisationegenskaber"],
+      ["tilstande", "organisationpubliceret"]
+    ],
     "conversion": {
+      "objektID":[
+        "id"
+      ],
+      "Operation":[
+        "operation"
+      ],
+      "Fra":[
+        "virkning",
+        "from"
+      ],
+      "Til":[
+        "virkning",
+        "to"
+      ],
+      "Note":[
+        "registrering",
+        "note"
+      ],
       "BrugervendtNoegle":[
         "attributter",
         "organisationegenskaber",
@@ -617,13 +717,31 @@
         "organisationegenskaber",
         "organisationsnavn"
       ],
-
       "Gyldighed":[
         "tilstande",
         "organisationgyldighed",
         "gyldighed"
       ],
-
+      "Adresser":[
+        "relationer",
+        "adresser",
+        "uuid|urn"
+      ],
+      "Adresser_type":[
+        "relationer",
+        "adresser",
+        "objekttype"
+      ],
+      "Ansatte":[
+        "relationer",
+        "ansatte",
+        "uuid|urn"
+      ],
+      "Ansatte_type":[
+        "relationer",
+        "ansatte",
+        "objekttype"
+      ],
       "Branche":[
         "relationer",
         "branche",
@@ -652,6 +770,16 @@
       "Myndighedstype_type":[
         "relationer",
         "myndighedstype",
+        "objekttype"
+      ],
+      "Opgaver":[
+        "relationer",
+        "opgaver",
+        "uuid|urn"
+      ],
+      "Opgaver_type":[
+        "relationer",
+        "opgaver",
         "objekttype"
       ],
       "Overordnet":[
@@ -694,57 +822,6 @@
         "tilhoerer",
         "objekttype"
       ],
-      "Virksomhed":[
-        "relationer",
-        "virksomhed",
-        "uuid|urn"
-      ],
-      "Virksomhed_type":[
-        "relationer",
-        "virksomhed",
-        "objekttype"
-      ],
-      "Virksomhedstype":[
-        "relationer",
-        "virksomhedstype",
-        "uuid|urn"
-      ],
-      "Virksomhedstype_type":[
-        "relationer",
-        "virksomhedstype",
-        "objekttype"
-      ],
-
-      "Adresser":[
-        "relationer",
-        "adresser",
-        "uuid|urn"
-      ],
-      "Adresser_type":[
-        "relationer",
-        "adresser",
-        "objekttype"
-      ],
-      "Ansatte":[
-        "relationer",
-        "ansatte",
-        "uuid|urn"
-      ],
-      "Ansatte_type":[
-        "relationer",
-        "ansatte",
-        "objekttype"
-      ],
-      "Opgaver":[
-        "relationer",
-        "opgaver",
-        "uuid|urn"
-      ],
-      "Opgaver_type":[
-        "relationer",
-        "opgaver",
-        "objekttype"
-      ],
       "TilknyttedeBrugere":[
         "relationer",
         "tilknyttedebrugere",
@@ -816,29 +893,68 @@
         "objekttype"
       ],
 
-
+      "Virksomhed":[
+        "relationer",
+        "virksomhed",
+        "uuid|urn"
+      ],
+      "Virksomhed_type":[
+        "relationer",
+        "virksomhed",
+        "objekttype"
+      ],
+      "Virksomhedstype":[
+        "relationer",
+        "virksomhedstype",
+        "uuid|urn"
+      ],
+      "Virksomhedstype_type":[
+        "relationer",
+        "virksomhedstype",
+        "objekttype"
+      ]
+    }
+  },
+  "organisationfunktion":{
+    "lists": [
+      ["registreringer"],
+      ["attributter", "klasseegenskaber"],
+      ["attributter", "klasseegenskaber", "soegeord"],
+      ["relationer", "adresser"],
+      ["relationer", "opgaver"],
+      ["relationer", "organisatoriskfunktionstype"],
+      ["relationer", "tilknyttedebrugere"],
+      ["relationer", "tilknyttedeenheder"],
+      ["relationer", "tilknyttedeinteressefaellesskaber"],
+      ["relationer", "tilknyttedeorganisationer"],
+      ["relationer", "tilknyttedepersoner"],
+      ["relationer", "tilknyttedeitsystemer"],
+      ["tilstande", "organisationfunktionpubliceret"]
+    ],
+    "mergelists": [
+      ["registreringer"],
+      ["attributter", "organisationfunktionegenskaber"],
+      ["tilstande", "organisationfunktionpubliceret"]
+    ],
+    "conversion": {
+      "objektID":[
+        "id"
+      ],
       "Operation":[
-        "registrering",
         "operation"
       ],
       "Fra":[
-        "virkning"
+        "virkning",
+        "from"
       ],
       "Til":[
-        "virkning"
+        "virkning",
+        "to"
       ],
       "Note":[
         "registrering",
         "note"
       ],
-      "objektID":[
-        "registrering",
-        "id"
-      ]
-    }
-  },
-  "organisationfunktion":{
-    "conversion": {
       "BrugervendtNoegle":[
         "attributter",
         "organisationfunktionegenskaber",
@@ -849,25 +965,11 @@
         "organisationfunktionegenskaber",
         "funktionsnavn"
       ],
-
       "Gyldighed":[
         "tilstande",
         "organisationfunktiongyldighed",
         "gyldighed"
       ],
-
-
-      "OrganisatoriskFunktionstype":[
-        "relationer",
-        "organisatoriskfunktionstype",
-        "uuid|urn"
-      ],
-      "OrganisatoriskFunktionstype_type":[
-        "relationer",
-        "organisatoriskfunktionstype",
-        "objekttype"
-      ],
-
       "Adresser":[
         "relationer",
         "adresser",
@@ -876,6 +978,16 @@
       "Adresser_type":[
         "relationer",
         "adresser",
+        "objekttype"
+      ],
+      "OrganisatoriskFunktionstype":[
+        "relationer",
+        "organisatoriskfunktionstype",
+        "uuid|urn"
+      ],
+      "OrganisatoriskFunktionstype_type":[
+        "relationer",
+        "organisatoriskfunktionstype",
         "objekttype"
       ],
       "Opgaver":[
@@ -947,31 +1059,54 @@
         "relationer",
         "tilknyttedepersoner",
         "objekttype"
-      ],
-
-      "Operation":[
-        "registrering",
-        "operation"
-      ],
-      "Fra":[
-        "virkning"
-      ],
-      "Til":[
-        "virkning"
-      ],
-      "Note":[
-        "registrering",
-        "note"
-      ],
-      "objektID":[
-        "registrering",
-        "id"
       ]
     }
   },
 
   "interessefaellesskab":{
+    "lists": [
+      ["registreringer"],
+      ["attributter", "klasseegenskaber"],
+      ["attributter", "klasseegenskaber", "soegeord"],
+      ["relationer", "branche"],
+      ["relationer", "adresser"],
+      ["relationer", "opgaver"],
+      ["relationer", "interessefaellesskabstype"],
+      ["relationer", "overordnet"],
+      ["relationer", "tilknyttedebrugere"],
+      ["relationer", "tilknyttedeenheder"],
+      ["relationer", "tilknyttedefunktioner"],
+      ["relationer", "tilknyttedeinteressefaellesskaber"],
+      ["relationer", "tilknyttedeorganisationer"],
+      ["relationer", "tilknyttedepersoner"],
+      ["relationer", "tilknyttedeitsystemer"],
+      ["relationer", "tilhoerer"],
+      ["tilstande", "interessefaellesskabpubliceret"]
+    ],
+    "mergelists": [
+      ["registreringer"],
+      ["attributter", "interessefaellesskabegenskaber"],
+      ["tilstande", "interessefaellesskabpubliceret"]
+    ],
     "conversion": {
+      "objektID":[
+        "id"
+      ],
+      "Operation":[
+        "operation"
+      ],
+      "Fra":[
+        "virkning",
+        "from"
+      ],
+      "Til":[
+        "virkning",
+        "to"
+      ],
+      "Note":[
+        "registrering",
+        "note"
+      ],
       "BrugervendtNoegle":[
         "attributter",
         "interessefaellesskabegenskaber",
@@ -987,14 +1122,21 @@
         "interessefaellesskabegenskaber",
         "interessefaellesskabstype"
       ],
-
       "Gyldighed":[
         "tilstande",
         "interessefaellesskabgyldighed",
         "gyldighed"
       ],
-
-
+      "Adresser":[
+        "relationer",
+        "adresser",
+        "uuid|urn"
+      ],
+      "Adresser_type":[
+        "relationer",
+        "adresser",
+        "objekttype"
+      ],
       "Branche":[
         "relationer",
         "branche",
@@ -1015,6 +1157,16 @@
         "interessefaellesskabstype",
         "objekttype"
       ],
+      "Opgaver":[
+        "relationer",
+        "opgaver",
+        "uuid|urn"
+      ],
+      "Opgaver_type":[
+        "relationer",
+        "opgaver",
+        "objekttype"
+      ],
       "Overordnet":[
         "relationer",
         "overordnet",
@@ -1030,25 +1182,9 @@
         "tilhoerer",
         "uuid|urn"
       ],
-
-      "Adresser":[
+      "Tilhoerer_type":[
         "relationer",
-        "adresser",
-        "uuid|urn"
-      ],
-      "Adresser_type":[
-        "relationer",
-        "adresser",
-        "objekttype"
-      ],
-      "Opgaver":[
-        "relationer",
-        "opgaver",
-        "uuid|urn"
-      ],
-      "Opgaver_type":[
-        "relationer",
-        "opgaver",
+        "tilhoerer",
         "objekttype"
       ],
       "TilknyttedeBrugere":[
@@ -1120,31 +1256,52 @@
         "relationer",
         "tilknyttedeitsystemer",
         "objekttype"
-      ],
-
-      "Operation":[
-        "registrering",
-        "operation"
-      ],
-      "Fra":[
-        "virkning"
-      ],
-      "Til":[
-        "virkning"
-      ],
-      "Note":[
-        "registrering",
-        "note"
-      ],
-      "objektID":[
-        "registrering",
-        "id"
       ]
     }
   },
 
   "itsystem":{
+    "lists": [
+      ["registreringer"],
+      ["attributter", "klasseegenskaber"],
+      ["attributter", "klasseegenskaber", "soegeord"],
+      ["relationer", "adresser"],
+      ["relationer", "opgaver"],
+      ["relationer", "systemtyper"],
+      ["relationer", "tilknyttedebrugere"],
+      ["relationer", "tilknyttedeenheder"],
+      ["relationer", "tilknyttedefunktioner"],
+      ["relationer", "tilknyttedeinteressefaellesskaber"],
+      ["relationer", "tilknyttedeorganisationer"],
+      ["relationer", "tilknyttedepersoner"],
+      ["relationer", "tilknyttedeitsystemer"],
+      ["relationer", "tilhoerer"],
+      ["tilstande", "interessefaellesskabpubliceret"]
+    ],
+    "mergelists": [
+      ["registreringer"],
+      ["attributter", "interessefaellesskabegenskaber"],
+      ["tilstande", "interessefaellesskabpubliceret"]
+    ],
     "conversion": {
+      "objektID":[
+        "id"
+      ],
+      "Operation":[
+        "operation"
+      ],
+      "Fra":[
+        "virkning",
+        "from"
+      ],
+      "Til":[
+        "virkning",
+        "to"
+      ],
+      "Note":[
+        "registrering",
+        "note"
+      ],
       "BrugervendtNoegle":[
         "attributter",
         "itsystemegenskaber",
@@ -1171,18 +1328,6 @@
         "itsystemgyldighed",
         "gyldighed"
       ],
-
-      "Tilhoerer":[
-        "relationer",
-        "tilhoerer",
-        "uuid|urn"
-      ],
-      "Tilhoerer_type":[
-        "relationer",
-        "tilhoerer",
-        "objekttype"
-      ],
-
       "Adresser":[
         "relationer",
         "adresser",
@@ -1201,6 +1346,26 @@
       "Opgaver_type":[
         "relationer",
         "opgaver",
+        "objekttype"
+      ],
+      "Systemtyper":[
+        "relationer",
+        "systemtyper",
+        "uuid|urn"
+      ],
+      "Systemtyper_type":[
+        "relationer",
+        "systemtyper",
+        "objekttype"
+      ],
+      "Tilhoerer":[
+        "relationer",
+        "tilhoerer",
+        "uuid|urn"
+      ],
+      "Tilhoerer_type":[
+        "relationer",
+        "tilhoerer",
         "objekttype"
       ],
       "TilknyttedeBrugere":[
@@ -1272,41 +1437,53 @@
         "relationer",
         "tilknyttedeitsystemer",
         "objekttype"
-      ],
-      "Systemtyper":[
-        "relationer",
-        "systemtyper",
-        "uuid|urn"
-      ],
-      "Systemtyper_type":[
-        "relationer",
-        "systemtyper",
-        "objekttype"
-      ],
-
-      "Operation":[
-        "registrering",
-        "operation"
-      ],
-      "Fra":[
-        "virkning"
-      ],
-      "Til":[
-        "virkning"
-      ],
-      "Note":[
-        "registrering",
-        "note"
-      ],
-      "objektID":[
-        "registrering",
-        "id"
       ]
     }
   },
 
   "bruger":{
+    "lists": [
+      ["registreringer"],
+      ["attributter", "klasseegenskaber"],
+      ["attributter", "klasseegenskaber", "soegeord"],
+      ["relationer", "adresser"],
+      ["relationer", "opgaver"],
+      ["relationer", "brugertyper"],
+      ["relationer", "tilknyttedebrugere"],
+      ["relationer", "tilknyttedeenheder"],
+      ["relationer", "tilknyttedefunktioner"],
+      ["relationer", "tilknyttedeinteressefaellesskaber"],
+      ["relationer", "tilknyttedeorganisationer"],
+      ["relationer", "tilknyttedepersoner"],
+      ["relationer", "tilknyttedeitsystemer"],
+      ["relationer", "tilhoerer"],
+      ["tilstande", "interessefaellesskabpubliceret"]
+    ],
+    "mergelists": [
+      ["registreringer"],
+      ["attributter", "interessefaellesskabegenskaber"],
+      ["tilstande", "interessefaellesskabpubliceret"]
+    ],
     "conversion": {
+      "objektID":[
+        "registrering",
+        "id"
+      ],
+      "Operation":[
+        "operation"
+      ],
+      "Fra":[
+        "virkning",
+        "from"
+      ],
+      "Til":[
+        "virkning",
+        "to"
+      ],
+      "Note":[
+        "registrering",
+        "note"
+      ],
       "BrugervendtNoegle":[
         "attributter",
         "brugeregenskaber",
@@ -1322,24 +1499,11 @@
         "brugeregenskaber",
         "brugertype"
       ],
-
       "Gyldighed":[
         "tilstande",
         "brugergyldighed",
         "gyldighed"
       ],
-
-      "Tilhoerer":[
-        "relationer",
-        "tilhoerer",
-        "uuid|urn"
-      ],
-      "Tilhoerer_type":[
-        "relationer",
-        "tilhoerer",
-        "objekttype"
-      ],
-
       "Adresser":[
         "relationer",
         "adresser",
@@ -1370,6 +1534,16 @@
         "opgaver",
         "objekttype"
       ],
+      "Tilhoerer":[
+        "relationer",
+        "tilhoerer",
+        "uuid|urn"
+      ],
+      "Tilhoerer_type":[
+        "relationer",
+        "tilhoerer",
+        "objekttype"
+      ],
       "TilknyttedeBrugere":[
         "relationer",
         "tilknyttedebrugere",
@@ -1439,25 +1613,6 @@
         "relationer",
         "tilknyttedeitsystemer",
         "objekttype"
-      ],
-
-      "Operation":[
-        "registrering",
-        "operation"
-      ],
-      "Fra":[
-        "virkning"
-      ],
-      "Til":[
-        "virkning"
-      ],
-      "Note":[
-        "registrering",
-        "note"
-      ],
-      "objektID":[
-        "registrering",
-        "id"
       ]
     }
   }

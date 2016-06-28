@@ -1,7 +1,7 @@
 # Connection parameters
 
 # The host and port of the REST interface
-rest.interface = http://localhost:5000
+rest.interface = https://referencedata.dk
 
 security.enabled = true
 

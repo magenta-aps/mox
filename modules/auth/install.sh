@@ -19,3 +19,8 @@ fi
 
 ln -sf "$DIR/auth.sh" "$ROOTDIR/auth.sh"
 
+LOGFILE="/var/log/mox/auth.log"
+sudo touch $LOGFILE
+sudo chown mox $LOGFILE
+sudo chmod 664 $LOGFILE
+

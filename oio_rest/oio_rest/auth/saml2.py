@@ -150,71 +150,71 @@ def validate_sign(xml, cert=None, fingerprint=None, fingerprintalg='sha1', valid
     :type: bool
     """
     try:
-       if xml is None or xml == '':
-           raise Exception('Empty string supplied as input')
-       elif isinstance(xml, etree._Element):
-           elem = xml
-       elif isinstance(xml, Document):
-           xml = xml.toxml()
-           elem = fromstring(str(xml))
-       elif isinstance(xml, Element):
-           xml.setAttributeNS(
-               unicode(OneLogin_Saml2_Constants.NS_SAMLP),
-               'xmlns:samlp',
-               unicode(OneLogin_Saml2_Constants.NS_SAMLP)
-           )
-           xml.setAttributeNS(
-               unicode(OneLogin_Saml2_Constants.NS_SAML),
-               'xmlns:saml',
-               unicode(OneLogin_Saml2_Constants.NS_SAML)
-           )
-           xml = xml.toxml()
-           elem = fromstring(str(xml))
-       elif isinstance(xml, basestring):
-           elem = fromstring(str(xml))
-       else:
-           raise Exception('Error parsing xml string')
+        if xml is None or xml == '':
+            raise Exception('Empty string supplied as input')
+        elif isinstance(xml, etree._Element):
+            elem = xml
+        elif isinstance(xml, Document):
+            xml = xml.toxml()
+            elem = fromstring(str(xml))
+        elif isinstance(xml, Element):
+            xml.setAttributeNS(
+                unicode(OneLogin_Saml2_Constants.NS_SAMLP),
+                'xmlns:samlp',
+                unicode(OneLogin_Saml2_Constants.NS_SAMLP)
+            )
+            xml.setAttributeNS(
+                unicode(OneLogin_Saml2_Constants.NS_SAML),
+                'xmlns:saml',
+                unicode(OneLogin_Saml2_Constants.NS_SAML)
+            )
+            xml = xml.toxml()
+            elem = fromstring(str(xml))
+        elif isinstance(xml, basestring):
+            elem = fromstring(str(xml))
+        else:
+            raise Exception('Error parsing xml string')
 
-       if debug:
-           xmlsec.set_error_callback(print_xmlsec_errors)
+        if debug:
+            xmlsec.set_error_callback(print_xmlsec_errors)
 
-       xmlsec.addIDs(elem, ["ID"])
+        xmlsec.addIDs(elem, ["ID"])
 
-       signature_nodes = OneLogin_Saml2_Utils.query(elem, '//ds:Signature')
+        signature_nodes = OneLogin_Saml2_Utils.query(elem, '//ds:Signature')
 
-       if len(signature_nodes) > 0:
-           signature_node = signature_nodes[0]
+        if len(signature_nodes) > 0:
+            signature_node = signature_nodes[0]
 
-           if (cert is None or cert == '') and fingerprint:
-               x509_certificate_nodes = OneLogin_Saml2_Utils.query(signature_node, '//ds:Signature/ds:KeyInfo/ds:X509Data/ds:X509Certificate')
-               if len(x509_certificate_nodes) > 0:
-                   x509_certificate_node = x509_certificate_nodes[0]
-                   x509_cert_value = x509_certificate_node.text
-                   x509_fingerprint_value = OneLogin_Saml2_Utils.calculate_x509_fingerprint(x509_cert_value, fingerprintalg)
-                   if fingerprint == x509_fingerprint_value:
-                       cert = OneLogin_Saml2_Utils.format_cert(x509_cert_value)
+            if (cert is None or cert == '') and fingerprint:
+                x509_certificate_nodes = OneLogin_Saml2_Utils.query(signature_node, '//ds:Signature/ds:KeyInfo/ds:X509Data/ds:X509Certificate')
+                if len(x509_certificate_nodes) > 0:
+                    x509_certificate_node = x509_certificate_nodes[0]
+                    x509_cert_value = x509_certificate_node.text
+                    x509_fingerprint_value = OneLogin_Saml2_Utils.calculate_x509_fingerprint(x509_cert_value, fingerprintalg)
+                    if fingerprint == x509_fingerprint_value:
+                        cert = OneLogin_Saml2_Utils.format_cert(x509_cert_value)
 
-           if cert is None or cert == '':
-               return False
+            if cert is None or cert == '':
+                return False
 
-           dsig_ctx = xmlsec.DSigCtx()
+            dsig_ctx = xmlsec.DSigCtx()
 
-           file_cert = OneLogin_Saml2_Utils.write_temp_file(cert)
+            file_cert = OneLogin_Saml2_Utils.write_temp_file(cert)
 
-           if validatecert:
-               mngr = xmlsec.KeysMngr()
-               mngr.loadCert(file_cert.name, xmlsec.KeyDataFormatCertPem, xmlsec.KeyDataTypeTrusted)
-               dsig_ctx = xmlsec.DSigCtx(mngr)
-           else:
-               dsig_ctx = xmlsec.DSigCtx()
-               dsig_ctx.signKey = xmlsec.Key.load(file_cert.name, xmlsec.KeyDataFormatCertPem, None)
+            if validatecert:
+                mngr = xmlsec.KeysMngr()
+                mngr.loadCert(file_cert.name, xmlsec.KeyDataFormatCertPem, xmlsec.KeyDataTypeTrusted)
+                dsig_ctx = xmlsec.DSigCtx(mngr)
+            else:
+                dsig_ctx = xmlsec.DSigCtx()
+                dsig_ctx.signKey = xmlsec.Key.load(file_cert.name, xmlsec.KeyDataFormatCertPem, None)
 
-           file_cert.close()
+            file_cert.close()
 
-           dsig_ctx.setEnabledKeyData([xmlsec.KeyDataX509])
-           dsig_ctx.verify(signature_node)
-           return True
-       else:
-           return False
+            dsig_ctx.setEnabledKeyData([xmlsec.KeyDataX509])
+            dsig_ctx.verify(signature_node)
+            return True
+        else:
+            return False
     except Exception:
-       return False
+        return False
