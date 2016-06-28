@@ -108,44 +108,48 @@ public class Main {
         }
 
         for (String filename : this.propertiesFileNames) {
-            File propertiesFile = new File(filename);
-            if (!propertiesFile.exists()) {
-                System.err.println("Invalid parameter: properties file " + propertiesFile.getAbsolutePath() + " does not exist");
-                return;
-            } else if (!propertiesFile.canRead()) {
-                System.err.println("Invalid parameter: properties file " + propertiesFile.getAbsolutePath() + " exist, but is unreadable by this user");
-                return;
+            if (filename != null) {
+                File propertiesFile = new File(filename);
+                if (!propertiesFile.exists()) {
+                    System.err.println("Invalid parameter: properties file " + propertiesFile.getAbsolutePath() + " does not exist");
+                    return;
+                } else if (!propertiesFile.canRead()) {
+                    System.err.println("Invalid parameter: properties file " + propertiesFile.getAbsolutePath() + " exist, but is unreadable by this user");
+                    return;
+                }
             }
         }
 
         properties = new Properties();
         for (String filename : this.propertiesFileNames) {
-            File propertiesFile = new File(filename);
-            if (propertiesFile.canRead()) {
-                try {
-                    properties.load(new FileInputStream(propertiesFile));
-                } catch (IOException e) {
-                    System.err.println("Error loading from properties file " + propertiesFile.getAbsolutePath() + ": " + e.getMessage());
-                    return;
-                }
-                if (this.username == null || this.password == null || this.restInterface == null || this.stsAddress == null) {
-                    this.print("Reading properties file " + propertiesFile.getAbsolutePath());
+            if (filename != null) {
+                File propertiesFile = new File(filename);
+                if (propertiesFile.canRead()) {
+                    try {
+                        properties.load(new FileInputStream(propertiesFile));
+                    } catch (IOException e) {
+                        System.err.println("Error loading from properties file " + propertiesFile.getAbsolutePath() + ": " + e.getMessage());
+                        return;
+                    }
+                    if (this.username == null || this.password == null || this.restInterface == null || this.stsAddress == null) {
+                        this.print("Reading properties file " + propertiesFile.getAbsolutePath());
 
-                    if (this.username == null) {
-                        this.username = properties.getProperty("security.user.name");
-                        this.print("    username = " + this.username);
-                    }
-                    if (this.password == null) {
-                        this.password = properties.getProperty("security.user.password");
-                        this.print("    password = ***");
-                    }
-                    if (this.restInterface == null) {
-                        this.restInterface = properties.getProperty("rest.interface");
-                        this.print("    restInterface = " + this.restInterface);
-                    }
-                    if (this.stsAddress == null) {
-                        this.stsAddress = properties.getProperty("security.sts.address");
-                        this.print("    stsAddress = " + this.stsAddress);
+                        if (this.username == null) {
+                            this.username = properties.getProperty("security.user.name");
+                            this.print("    username = " + this.username);
+                        }
+                        if (this.password == null) {
+                            this.password = properties.getProperty("security.user.password");
+                            this.print("    password = ***");
+                        }
+                        if (this.restInterface == null) {
+                            this.restInterface = properties.getProperty("rest.interface");
+                            this.print("    restInterface = " + this.restInterface);
+                        }
+                        if (this.stsAddress == null) {
+                            this.stsAddress = properties.getProperty("security.sts.address");
+                            this.print("    stsAddress = " + this.stsAddress);
+                        }
                     }
                 }
             }
