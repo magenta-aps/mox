@@ -100,3 +100,5 @@ $DIR/agents/MoxTabel/install.sh
 $DIR/agents/MoxRestFrontend/install.sh
 $DIR/agents/MoxTest/install.sh
 
+sudo chown -R mox:mox $DIR
+
