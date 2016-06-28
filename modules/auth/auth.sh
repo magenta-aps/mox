@@ -9,13 +9,7 @@ if [[ ! -d "$DIR" ]]; then
 	DIR="/srv/mox/modules/auth"
 fi
 
-if [[ -z $@ ]]; then
-  args="listen"
-else
-  args="$@"
-fi
+pushd $DIR
+java -cp "target/auth-1.0.jar:target/dependency/*" dk.magenta.mox.auth.Main -p "$DIR/auth.properties" -p "/srv/mox/mox.conf" $@
+popd
 
-
-cd $DIR
-java -cp "target/auth-1.0.jar:target/dependency/*" dk.magenta.mox.auth.Main $args
-cd - > /dev/null
