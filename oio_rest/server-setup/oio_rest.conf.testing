@@ -9,8 +9,8 @@ DocumentRoot /var/www/html
 
 <VirtualHost *:443>
 
-ServerName moxtest.magenta-aps.dk
-ServerAlias moxtest.magenta-aps.dk
+    ServerName moxtest.magenta-aps.dk
+    ServerAlias moxtest.magenta-aps.dk
 
     SSLEngine On
     SSLProtocol All -SSLv2 -SSLv3
@@ -18,6 +18,8 @@ ServerAlias moxtest.magenta-aps.dk
     SSLCertificateFile /etc/apache2/ssl/magenta-aps.dk.crt
     SSLCertificateKeyFile /etc/apache2/ssl/magenta-aps.dk.key
     SSLCACertificateFile /etc/apache2/ssl/intermediate.crt
+
+    TimeOut 1200
 
     Alias /oio /srv/mox/scripts/
     <Directory "/srv/mox/scripts">
