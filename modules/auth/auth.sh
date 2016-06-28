@@ -10,6 +10,6 @@ if [[ ! -d "$DIR" ]]; then
 fi
 
 pushd $DIR
-java -cp "target/auth-1.0.jar:target/dependency/*" dk.magenta.mox.auth.Main -p "$DIR/auth.properties" -p "/srv/mox/mox.conf" $@
+java -cp "target/auth-1.0.jar:target/dependency/*" dk.magenta.mox.auth.Main -f "$DIR/auth.properties" -f "/srv/mox/mox.conf" $@
 popd
 
