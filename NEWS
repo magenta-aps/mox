@@ -3,7 +3,10 @@
 New in this version:
 
 * Service to extract data to csv files
-* Enhanced upload of spreadsheets
+* Enhanced upload of spreadsheets, where multiple update rows merge into one update
+* Bugfix: Tolerate ods files that Apache ODF Toolkit can't parse
+* Bugfix: Parse excel numbers as strings, not doubles (to avoid scientific notation)
+* Configuration using environment-specific files and symlinks
 
 
 * Version 0.2.13.3, April 27, 2016
