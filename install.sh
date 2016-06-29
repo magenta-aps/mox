@@ -52,7 +52,7 @@ sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$DIR/$CONFIGFILENAME"
 # Install oio_rest
 echo "Installing oio_rest"
 echo "$DIR/oio_rest/install.sh $@"
-$DIR/oio_rest/install.sh "$@"
+$DIR/oio_rest/install.sh "$@" -d $DOMAIN
 
 
 
