@@ -97,6 +97,11 @@ if [ $CREATE_VIRTUALENV == 1 ]; then
 fi
 
 
+SETTINGS_FILENAME="oio_rest/settings.py"
+sudo cp "$SETTINGS_FILENAME.base" "$SETTINGS_FILENAME"
+sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$SETTINGS_FILENAME"
+
+
 DB_FOLDER="$DIR/../db"
 
 source $DB_FOLDER/config.sh
@@ -138,6 +143,7 @@ echo "Setting up oio_rest WSGI service for Apache"
 sudo mkdir -p /var/www/wsgi
 sudo cp "$DIR/server-setup/oio_rest.wsgi" "/var/www/wsgi/"
 
+# Setup apache site config
 CONFIGFILENAME="oio_rest.conf"
 CONFIGDIR="$DIR/server-setup"
 sudo cp "$CONFIGDIR/$CONFIGFILENAME.base" "$CONFIGDIR/$CONFIGFILENAME"

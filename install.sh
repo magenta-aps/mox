@@ -27,7 +27,7 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 echo "DIR=$DIR"
 
 DOMAIN="referencedata.dk"
-read -p "Domain: [$DOMAIN]" -r
+read -p "Domain: [$DOMAIN] " -r
 echo
 if [[ "x$REPLY" != "x" ]]; then
 	DOMAIN="$REPLY"
@@ -39,9 +39,6 @@ if [ $? -ne 0 ]; then
 	echo "Creating system user 'mox'"
 	sudo useradd mox
 fi
-
-# Setup symlinks
-./setsymlinks.sh $ENVIRONMENT
 
 CONFIGFILENAME="mox.conf"
 # Setup common config
