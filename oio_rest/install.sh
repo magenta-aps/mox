@@ -98,8 +98,8 @@ fi
 
 
 SETTINGS_FILENAME="oio_rest/settings.py"
-sudo cp "$SETTINGS_FILENAME.base" "$SETTINGS_FILENAME"
-sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$SETTINGS_FILENAME"
+sudo cp "$DIR/$SETTINGS_FILENAME.base" "$DIR/$SETTINGS_FILENAME"
+sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$DIR/$SETTINGS_FILENAME"
 
 
 DB_FOLDER="$DIR/../db"
