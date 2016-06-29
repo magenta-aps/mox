@@ -142,7 +142,7 @@ CONFIGFILENAME="oio_rest.conf"
 CONFIGDIR="$DIR/server-setup"
 sudo cp "$CONFIGDIR/$CONFIGFILENAME.base" "$CONFIGDIR/$CONFIGFILENAME"
 sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$CONFIGDIR/$CONFIGFILENAME"
-ln -sf "$CONFIGDIR/$CONFIGFILENAME" "/etc/apache2/sites-available/$CONFIGFILENAME"
+sudo ln -sf "$CONFIGDIR/$CONFIGFILENAME" "/etc/apache2/sites-available/$CONFIGFILENAME"
 sudo a2ensite oio_rest
 sudo a2enmod ssl
 sudo a2enmod cgi

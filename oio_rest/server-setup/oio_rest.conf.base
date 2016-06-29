@@ -27,10 +27,6 @@
 	RewriteEngine			on
 	RewriteRule			"^/$" "/info/" [R]
 	# Redirect from www. to /       # Really redirect all but ${domain}
-#	RewriteCond			%{HTTP_HOST} !^referencedata\.dk
-#	RewriteCond			%{HTTP_HOST} !^refdata\.dk
-#	RewriteRule			^/(.*)$ https://${domain}/$1 [R=301,L]
-##	RewriteRule			^/(.*)$ http://${domain}/$1 [R=301,L]
 
 	Alias				/info /var/www/html/
 	<Directory /var/www/html>
@@ -48,7 +44,7 @@
 		AddHandler		cgi-script .py
 	</Directory>
 
-# Tomcat redirect
+    # Tomcat redirect
 	JkMount				/MoxDocumentUpload/* ajp13_worker
 
 	CustomLog			/var/log/mox/oio_rest/access.log combined
