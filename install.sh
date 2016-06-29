@@ -42,7 +42,7 @@ fi
 
 CONFIGFILENAME="mox.conf"
 # Setup common config
-cp "$DIR/$CONFIGFILENAME.base" "$DIR/$CONFIGFILENAME"
+cp --remove-destination "$DIR/$CONFIGFILENAME.base" "$DIR/$CONFIGFILENAME"
 sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$DIR/$CONFIGFILENAME"
 
 

@@ -11,14 +11,14 @@ sudo chown tomcat7 /var/log/mox/moxdocumentupload.log
 
 # Compile and install servlet
 pushd $DIR
-# mvn package
+mvn package
 popd
 
-PROPERTIESFILENAME="web/WEB-INF/web.xml"
+CONFIGFILENAME="web/WEB-INF/web.xml"
 DOMAIN=$1
 
-cp "$DIR/$PROPERTIESFILENAME.base" "$DIR/$PROPERTIESFILENAME"
-sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$DIR/$PROPERTIESFILENAME"
+cp --remove-destination "$DIR/$CONFIGFILENAME.base" "$DIR/$CONFIGFILENAME"
+sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$DIR/$CONFIGFILENAME"
 
 if [[ -f "$DIR/target/$WARFILE" ]]; then
     if [[ "x$WARNAME" != "x" && -d "/var/lib/tomcat7/webapps/$WARNAME" ]]; then
