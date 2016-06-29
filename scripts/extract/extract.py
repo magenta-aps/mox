@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import warnings
 
 import requests
 import json
@@ -8,19 +9,58 @@ import cgi
 import os
 import sys
 import socket
+import datetime
+import threading
 
 BASEPATH = os.path.dirname(os.path.realpath(sys.argv[0]))
 
 GET_TOKEN = "/get-token"
 
-def extract(server, username, password, objecttypes, https=True):
 
+class ChunkGet(threading.Thread):
+
+    results = []
+    def __init__(self, url, token):
+        super(ChunkGet, self).__init__()
+        self.url = url
+        self.token = token
+
+    def get_results(self):
+        return self.results
+
+    def run(self):
+        item_request = requests.get(
+            self.url,
+            headers={
+                "Authorization": self.token,
+                "Content-type": "application/json"
+            },
+            verify=False
+        )
+        try:
+            response = json.loads(item_request.text)
+            if response is not None:
+                self.results = response.get("results")
+                if self.results is None:
+                    raise Exception("Response is None")
+            else:
+                raise Exception("Response is None")
+        except Exception as e:
+            msg = e.message
+            if 'No JSON object could be decoded' in e.message:
+                msg += "\n%s" % item_request.text
+            raise Exception(msg)
+
+
+
+def extract(server, username, password, objecttypes, https=True, load_threaded=10):
     schema = "https://" if https else "http://"
 
     token = get_token(schema, server, username, password)
 
+    registerTime = datetime.datetime.today().date() + datetime.timedelta(days=1)
+
     request_counter = 0
-    """List objects"""
     objects = {}
     for objecttype_name, objecttype_url in objecttypes.iteritems():
         # print "Listing objects of type %s" % objecttype_name
@@ -31,7 +71,8 @@ def extract(server, username, password, objecttypes, https=True):
                 headers={
                     "Authorization": token,
                     "Content-type": "application/json"
-                }
+                },
+                verify=False
             )
             try:
                 response = json.loads(list_request.text)
@@ -39,34 +80,63 @@ def extract(server, username, password, objecttypes, https=True):
                 # print "%d %s items" % (len(uuid_list), objecttype_name)
                 uuids.extend(uuid_list)
             except Exception as e:
-                print e
+                msg = e.message
                 if 'No JSON object could be decoded' in e.message:
-                    print list_request.text
+                    msg += "\n%s" % list_request.text
+                raise Exception(msg)
 
         objects[objecttype_name] = []
         uuids = list(set(uuids))
-
         chunksize = 20
         chunks = [uuids[i:i+chunksize] for i in range(0, len(uuids), chunksize)]
-        for chunk in chunks:
-            item_request = requests.get(
-                "%s%s%s?uuid=%s" % (schema, server, objecttype_url, "&uuid=".join(chunk)),
-                headers={
-                    "Authorization": token,
-                    "Content-type": "application/json"
-                }
-            )
-            try:
-                response = json.loads(item_request.text)
-                objects[objecttype_name].extend(response.get("results")[0])
-            except Exception as e:
-                print e
-                if 'No JSON object could be decoded' in e.message:
-                    print item_request.text
 
-            request_counter += 1
-            if request_counter % 20 == 0:
-                token = get_token(schema, server, username, password)
+        if load_threaded is not None and load_threaded > 0:
+            loaders = []
+            for chunk in chunks:
+                url = "%s%s%s?registreretFra=%s&uuid=%s" % (schema, server, objecttype_url, registerTime, "&uuid=".join(chunk))
+                loader = ChunkGet(url, token)
+                loaders.append(loader)
+
+            loader_chunk_size = load_threaded
+            loader_chunks = [loaders[i:i+loader_chunk_size] for i in range(0, len(loaders), loader_chunk_size)]
+            chunks_processed = 0
+            for loader_chunk in loader_chunks:
+                for loader in loader_chunk:
+                    loader.start()
+                for loader in loader_chunk:
+                    loader.join()
+                chunks_processed += 1
+
+            for loader in loaders:
+                results = loader.get_results()
+                for result in results:
+                    # print "there are %d results" % len(result)
+                    objects[objecttype_name].extend(result)
+        else:
+            for chunk in chunks:
+                url = "%s%s%s?registreretFra=%s&uuid=%s" % (schema, server, objecttype_url, registerTime, "&uuid=".join(chunk))
+
+                item_request = requests.get(
+                    url,
+                    headers={
+                        "Authorization": token,
+                        "Content-type": "application/json"
+                    },
+                    verify=False
+                )
+                try:
+                    response = json.loads(item_request.text)
+                    objects[objecttype_name].extend(response.get("results")[0])
+                except Exception as e:
+                    msg = e.message
+                    if 'No JSON object could be decoded' in e.message:
+                        msg += "\n%s" % item_request.text
+                    raise Exception(msg)
+
+                request_counter += 1 # Rens for gamle registreringer
+                if request_counter % 20 == 0:
+                    token = get_token(schema, server, username, password)
+
     return objects
 
 
@@ -80,7 +150,8 @@ def get_token(schema, server, username, password):
             'username': username,
             'password': password,
             'sts': "https://%s:9443/services/wso2carbon-sts?wsdl" % server
-        }
+        },
+        verify=False
     )
     if not token_request.text.startswith("saml-gzipped"):
         try:
@@ -114,6 +185,11 @@ def unlist(data, path=[]):
             (basedata, listdata) = unlist(item, path)
             if basedata is not None:
                 l.append(basedata)
+            if listdata is not None:
+                for item in listdata:
+                    if 'virkning' not in item and 'virkning' in basedata:
+                        item['virkning'] = basedata['virkning']
+                    l.append(item)
         return (None, l)
     else:
         return (data, None)
@@ -209,6 +285,7 @@ def compare_virkning(virkning1, virkning2):
 
 def convert(row, structure, include_virkning=True):
     converted = {}
+    # print row
     for key in structure:
         path = structure[key]
         ptr = row
@@ -229,9 +306,9 @@ def convert(row, structure, include_virkning=True):
             if p == 'urn' and ptr.startswith('urn:'):
                 ptr = ptr[len('urn:'):]
             converted[key] = ptr
-            ## print "SUCCESS: %s => %s" % (path, key)
+            # print "SUCCESS: %s => %s" % (path, key)
         except:
-            ## print "FAILURE: %s => %s" % (path, key)
+            # print "FAILURE: %s => %s" % (path, key)
             pass
     return converted
 
@@ -340,6 +417,8 @@ def format(data, mergelevel=1):
             for key in row:
                 if key not in otherheaders:
                     otherheaders.append(key)
+            # Kill the operation cell
+            row['Operation'] = ''
 
         baseheaders = [x for x in baseheaders if x in otherheaders]
         otherheaders = [x for x in otherheaders if x not in baseheaders]
@@ -370,6 +449,83 @@ def print_error(message):
     print message
 
 def main():
+    if "REQUEST_METHOD" in os.environ:
+        method = os.environ["REQUEST_METHOD"]
+        if method == "GET":
+            return get()
+        elif method == "POST":
+            return post()
+    else:
+        direct_run()
+
+def direct_run():
+    # Running script directly
+    mergelevel = 0
+    server = "referencedata.dk"
+    username = "notreally"
+    password = "notreally"
+    warnings.filterwarnings("ignore")
+    for objecttype in OBJECTTYPE_MAP.keys():
+        filename = "%s_%s.json" % (server, objecttype)
+        if os.path.isfile(filename):
+            fp = open(filename, 'r')
+            objects = json.load(fp)
+            fp.close()
+        else:
+            objects = extract(
+                server,
+                username, password,
+                {objecttype: OBJECTTYPE_MAP[objecttype]},
+                load_threaded=20
+            )
+            fp = open(filename, 'w')
+            json.dump(objects, fp)
+            fp.close()
+        data = format(objects, mergelevel)
+        objectdata = data[objecttype]
+        filedata = u'\n'.join([u','.join(objectdata['headers'])] + [csvrow(row, objectdata['headers']) for row in objectdata['rows']])
+        writefile("%s.csv" % objecttype, filedata)
+
+def get():
+    print "Content-Type: text/html\n\n"
+    print """
+    <html>
+        <head>
+            <title>Mox document extract</title>
+        </head>
+        <body>
+            <form method="POST">
+                <label for="username">Brugernavn: </label>
+                <input type="text" id="username" name="username"/><br/>
+
+                <label for="password">Password: </label>
+                <input type="password" id="password" name="password"/><br/>
+
+                <label for="type">Type: </label>
+                <select id="type" name="type">
+                    <option value="klassifikation">klassifikation</option>
+                    <option value="klasse">klasse</option>
+                    <option value="facet">facet</option>
+                    <option value="organisation">organisation</option>
+                    <option value="organisationenhed">organisationenhed</option>
+                    <option value="organisationfunktion">organisationfunktion</option>
+                    <option value="bruger">bruger</option>
+                </select><br/>
+
+                <label for="type">Merge level: </label>
+                <select id="merge" name="merge">
+                    <option value="0">No merge (0)</option>
+                    <option value="1">Partial merge (1)</option>
+                    <option value="2" selected="selected">Full merge (2)</option>
+                </select><br/>
+
+                <button type="submit">Hent data</button>
+            </form>
+        </body>
+    </html>
+    """
+
+def post():
     try:
         parameters = cgi.FieldStorage()
 

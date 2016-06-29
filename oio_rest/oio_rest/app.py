@@ -58,7 +58,7 @@ def get_token():
         if send_pwd_with_ipc:
             params.append('-p')
         else:
-            params.extend(['-p', password]);
+            params.extend(['-p', password])
 
         child = pexpect.spawn(
             os.path.join(MOX_BASE_DIR, 'auth.sh') +
