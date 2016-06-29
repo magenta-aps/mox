@@ -54,7 +54,7 @@ søgefeltet, hvis du finder listen uoverskuelig.
 Vælg "User Profile" for at redigere brugerprofilen. Udfyld felterne
 "First Name", "Last Name", "Email" og "URL".
 
-I feltet URL *skal* der stå et UUID, som er brugerens UUID i
+I feltet URL *skal* der stå en UUID, som er brugerens UUID i
 Organisation. Hvis brugeren endnu ikke eksisterer i Organisation, kan du
 oprette den med det regneark, der er udleveret af Leif Lodahl. Hvis
 brugeren af en eller anden grund  ikke skal oprettes i Organisation, kan

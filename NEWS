@@ -7,6 +7,10 @@ New in this version:
 * Bugfix: Tolerate ods files that Apache ODF Toolkit can't parse
 * Bugfix: Parse excel numbers as strings, not doubles (to avoid scientific notation)
 * Configuration using environment-specific files and symlinks
+* User documentation added with instructions for user management in WSO2
+* Technical documentation updated with LIST operation
+* Role-based access control implemented in WSO2
+* Thorough documentation of how to use REST interface (examples in curl)
 
 
 * Version 0.2.13.3, April 27, 2016
