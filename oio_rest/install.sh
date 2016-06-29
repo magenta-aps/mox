@@ -9,9 +9,9 @@ while getopts ":ysd:" OPT; do
         y)
                 ALWAYS_CONFIRM=1
                 ;;
-		d)
-				DOMAIN="$OPTARG"
-				;;
+        d)
+                DOMAIN="$OPTARG"
+                ;;
         *)
                 echo "Usage: $0 [-y] [-s] [-d domain]"
                 echo "  -s: Skip installing oio_rest API system dependencies"
@@ -139,9 +139,10 @@ sudo mkdir -p /var/www/wsgi
 sudo cp "$DIR/server-setup/oio_rest.wsgi" "/var/www/wsgi/"
 
 CONFIGFILENAME="oio_rest.conf"
-sudo cp "$DIR/server-setup/$CONFIGFILENAME.base" "$DIR/server-setup/$CONFIGFILENAME"
-sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$DIR/$CONFIGFILENAME"
-ln -sf "$DIR/server-setup/$CONFIGFILENAME" "/etc/apache2/sites-available/$CONFIGFILENAME"
+CONFIGDIR="$DIR/server-setup"
+sudo cp "$CONFIGDIR/$CONFIGFILENAME.base" "$CONFIGDIR/$CONFIGFILENAME"
+sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$CONFIGDIR/$CONFIGFILENAME"
+ln -sf "$CONFIGDIR/$CONFIGFILENAME" "/etc/apache2/sites-available/$CONFIGFILENAME"
 sudo a2ensite oio_rest
 sudo a2enmod ssl
 sudo a2enmod cgi
