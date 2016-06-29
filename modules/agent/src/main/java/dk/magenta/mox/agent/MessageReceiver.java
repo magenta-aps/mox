@@ -7,16 +7,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.io.UnsupportedEncodingException;
+import java.util.concurrent.*;
 
 public class MessageReceiver extends MessageInterface {
 
     private QueueingConsumer consumer;
     private boolean running;
     private boolean sendReplies;
+    private Throttle throttle = new Throttle(0);
 
     public MessageReceiver(AmqpDefinition amqpDefinition) throws IOException {
         super(amqpDefinition);
@@ -34,6 +33,20 @@ public class MessageReceiver extends MessageInterface {
     public MessageReceiver(String username, String password, String host, String exchange, String queue, boolean sendReplies) throws IOException, TimeoutException {
         super(username, password, host, exchange, queue);
         this.setupConsumer();
+    }
+
+    public int getThrottleSize() {
+        return this.throttle.executionCount;
+    }
+
+    public void setThrottleSize(int throttle) {
+        if (this.getThrottleSize() > 0) {
+            throw new IllegalArgumentException("Throttle already set once");
+        }
+        if (throttle < 0) {
+            throttle = 0;
+        }
+        this.throttle = new Throttle(throttle);
     }
 
     private void setupConsumer() throws IOException {
@@ -54,12 +67,19 @@ public class MessageReceiver extends MessageInterface {
             final AMQP.BasicProperties deliveryProperties = delivery.getProperties();
             final AMQP.BasicProperties responseProperties = new AMQP.BasicProperties().builder().correlationId(deliveryProperties.getCorrelationId()).build();
             final String replyTo = deliveryProperties.getReplyTo();
+
             this.log.info("ReplyTo: " + deliveryProperties.getReplyTo());
             this.log.info("CorrelationId: " + deliveryProperties.getCorrelationId());
             this.log.info("MessageId: " + deliveryProperties.getMessageId());
             this.log.info("Headers: " + deliveryProperties.getHeaders());
-            String data = new String(delivery.getBody()).trim();
+            String data = "";
+            try {
+                data = new String(delivery.getBody(), "utf-8").trim();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
             this.log.info("Data: "+data);
+
             JSONObject dataObject;
             try {
                 dataObject = new JSONObject(data.isEmpty() ? "{}" : data);
@@ -72,10 +92,17 @@ public class MessageReceiver extends MessageInterface {
                 }
                 continue;
             }
+
+            if (this.throttle.willWait()) {
+                this.log.info("Waiting for throttle");
+            }
+            this.throttle.waitForIdle();
+
             final Future<String> response = callback.run(new Headers(delivery.getProperties().getHeaders()), dataObject);
 
             if (this.sendReplies) {
                 if (response == null) {
+                    this.throttle.yield();
                     try {
                         this.log.info("Handler returned nothing. Informing sender.");
                         this.getChannel().basicPublish("", replyTo, responseProperties, "No response".getBytes());
@@ -93,6 +120,7 @@ public class MessageReceiver extends MessageInterface {
                                 e.printStackTrace();
                                 responseString = Util.error(e);
                             }
+                            MessageReceiver.this.throttle.yield();
                             MessageReceiver.this.log.info("Got a response from message handler. Relaying to sender.");
                             MessageReceiver.this.log.info(responseString);
                             try {

@@ -13,6 +13,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.*;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -38,15 +39,24 @@ public class MoxTest extends MoxAgent {
     }
 
     public void run() {
+        // Preliminary checks:
+        // Is RabbitMQ reachable?
         try {
             this.sender = this.createMessageSender();
+        } catch (ConnectException e) {
+            System.out.println("RabbitMQ server is not reachable with the given configuration");
+        } catch (IOException | TimeoutException e) {
+            e.printStackTrace();
+        }
+
+        // TODO: Is MoxRestFrontend running?
+
+        if (this.sender != null) {
             this.test("facet");
             this.test("klassifikation");
             this.test("klasse");
             this.test("itsystem");
             this.test("bruger");
-        } catch (IOException | TimeoutException e) {
-            e.printStackTrace();
         }
     }
 
@@ -114,13 +124,16 @@ public class MoxTest extends MoxAgent {
             // Update run-specific pieces of the object
             expected.put("id", uuid.toString());
             String timestamp = item.getJSONArray("registreringer").getJSONObject(0).getJSONObject("fratidspunkt").getString("tidsstempeldatotid");
-            expected.getJSONArray("registreringer").getJSONObject(0).getJSONObject("fratidspunkt").put("tidsstempeldatotid", timestamp);
+            JSONObject firstReg = expected.getJSONArray("registreringer").getJSONObject(0);
+            firstReg.getJSONObject("fratidspunkt").put("tidsstempeldatotid", timestamp);
 
             if (item.similar(expected)) {
                 System.out.println("Expected response received");
                 System.out.println("Read succeeded");
             } else {
                 System.out.println("Result differs from the expected");
+                System.out.println(item.toString());
+                System.out.println(expected.toString());
                 throw new TestException();
             }
         } catch (JSONException e) {

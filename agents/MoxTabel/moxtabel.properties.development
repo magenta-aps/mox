@@ -1,5 +1,8 @@
 # Connection parameters
 
+# The base URL of the OIO rest interface
+rest.interface = https://moxdev.magenta-aps.dk
+
 # The host and port of the RabbitMQ service
 amqp.incoming.interface = localhost:5672
 

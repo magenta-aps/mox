@@ -8,7 +8,7 @@
 		<param name="threshold" value="ALL"/>
 		<param name="append" value="true"/>
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="conversionPattern" value="%m%n"/>
+			<param name="conversionPattern" value="[%d] %m%n"/>
 		</layout>
 	</appender>
 

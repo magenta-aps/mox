@@ -18,3 +18,4 @@ if [ ! -f "$DIR/$PROPERTIESFILENAME" ]; then
 	ln -s "$DIR/$PROPERTIESFILENAME.production" "$DIR/$PROPERTIESFILENAME"
 fi
 
+sudo service moxrestfrontend restart

@@ -29,6 +29,9 @@
         "graenseindikator": true,
         "tidsstempeldatotid": "2016-03-04 13:29:41.527462+01"
       },
+      "tiltidspunkt": {
+        "tidsstempeldatotid": "infinity"
+      },
       "livscykluskode": "Opstaaet",
       "note": "Nyt IT-system",
       "relationer": {

@@ -82,15 +82,16 @@ Installing
 
 To install the OIO REST API, run ``install.sh``
 
-**NOTICE:** If you need to initialize the postgresql database as well
-you need to run ``install.sh -d``. 
+By default, you will be prompted to reinstall the python virtualenv
+if it already exists, and reinstall/overwrite the database
+if it already exists.
+
+To always answer yes to these questions, pass the ``-y`` parameter.
+
+Run ``install.sh -h`` for a list of options.
 
 **NOTE:** PostgreSQL 9.3 or later is required. If PostgreSQL is not installed
 on your system already, it will be during installation.
-
-**CAUTION:** The -d option will drop any existing mox database and all data in
-it will be lost. No warning is issued.
-
 
 To run the API for testing or development purposes, run: ::
 
@@ -99,8 +100,8 @@ To run the API for testing or development purposes, run: ::
 Then, go to http://localhost:5000/site-map to see a map of all available
 URLs, assuming you're running this on your local machine.
 
-For deployment in production environments, please see the sample Apache
-deployment in the config/ folder.
+The install.sh script creates an Apache VirtualHost for oio rest and 
+MoxDocumentUpload.
 
 To run the OIO Rest Mox Agent (the one listening for messages and
 relaying them onwards to the REST interface), run: ::
@@ -134,9 +135,6 @@ If SAML authentication is turned on (i.e., if the parameter
 correctly - see the corresponding sections below for instruction on how to do
 this.
 
-In ``config/etc/init`` you can find example init files for running the
-Mox Agent and the WSO2 Identity Server as daemons.
-
 
 Quick install
 -------------
@@ -149,7 +147,7 @@ completely new Ubuntu 14.04 Server Edition: ::
     sudo git clone https://github.com/magenta-aps/mox
     sudo chown -R <username>:<username> mox/
     cd mox
-    ./install.sh -d
+    ./install.sh
 
 **Note:** The <username> must belong to the sudo user you're using for the
 installation. We recommend creating a dedicated "mox" user and stripping its
@@ -237,6 +235,36 @@ giving the "actual state" as the results.
 
 The results that are returned are filtered by those that overlap with the
 given date/time ranges.
+
+List operation
+--------------
+
+A GET request is interpreted as a list operation if, apart from date
+ranges as specified above, only UUIDs are specified.
+
+It's possible to *access* a single object at its URL, e.g.: ::
+
+    https://referencedata.dk/klassifikation/klasse/1ab754c7-7126-494e-8a4d-9ee3054709fa
+
+
+It's also possible to use a slightly different syntax to *list* objects,
+e.g.: ::
+
+    https://referencedata.dk/klassifikation/klasse?uuid=1ab754c7-7126-494e-8a4d-9ee3054709fa
+
+The point of the last operation is that it is possible to list more than
+one UUID. Accessing the following URL will, for instance, retrieve the
+contents of three objects of the type Klasse: ::
+
+   curl -H "Authorization: $AUTH_TOKEN" 'https://referencedata.dk/klassifikation/klasse?uuid=1ab754c7-7126-494e-8a4d-9ee3054709fa&uuid=a75af34e-1ce3-44d5-ae9a-76f246fd4b10&uuid=77cd9b29-ef12-418b-bde4-6703aea007e3' 
+
+That is, each UUID is specified by a separate "&uuid=" clause.
+
+There is no built-in limit to how many objects can be listed in this
+way, but it is often considered a best practice to limit URIs to a
+length of about 2000 characters. Thus, we recommend that you attempt to
+list a maximum of 45 objects in each request.
+
 
 Search operation
 ----------------
@@ -1217,6 +1245,9 @@ You need a STS (Security Token Service) running on your IdP.
 An open-source IdP is available from http://wso2.com/products/identity-server/
 and is useful for testing. Download the binary, and follow the instructions
 to run it.
+
+In the folder ``wso2/`` you can find an example init file for running the
+WSO2 Identity Server as a daemon.
 
 To configure a STS, follow the instructions on
 https://docs.wso2.com/display/IS500/Configuring+the+Identity+Server+to+Issue+Security+Tokens

@@ -1,0 +1,3 @@
+Install WSO2 Identity Server 5.0.0.
+
+Then, copy the wso2.conf script to /etc/init so that it starts on boot.

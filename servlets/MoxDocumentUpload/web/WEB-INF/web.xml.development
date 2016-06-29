@@ -42,6 +42,10 @@
         <param-value>cache</param-value>
     </context-param>
     <context-param>
+        <param-name>rest.interface</param-name>
+        <param-value>https://moxdev.magenta-aps.dk</param-value>
+    </context-param>
+    <context-param>
         <param-name>amqp.interface</param-name>
         <param-value>localhost:5672</param-value>
     </context-param>

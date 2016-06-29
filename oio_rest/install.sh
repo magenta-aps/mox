@@ -1,20 +1,21 @@
 #!/bin/bash
 
-while getopts ":ds" OPT; do
+
+while getopts ":ys" OPT; do
   case $OPT in
-  	d)
-		DB_INSTALL=1
-		;;
-	s)
-		SKIP_SYSTEM_DEPS=1
-		;;
-	*)
-		echo "Usage: $0 [-d] [-s]"
-		echo "	-d: Install and (re-)create the DB"
-		echo "	-s: Skip installing oio_rest API system dependencies"
-		exit 1;
-		;;
-	esac
+        s)
+                SKIP_SYSTEM_DEPS=1
+                ;;
+        y)
+                ALWAYS_CONFIRM=1
+                ;;
+        *)
+                echo "Usage: $0 [-y] [-s]"
+                echo "  -s: Skip installing oio_rest API system dependencies"
+                echo "  -y: Always confirm (yes) when prompted"
+                exit 1;
+                ;;
+        esac
 done
 
 # Get the folder of this script
@@ -38,50 +39,84 @@ fi
 
 
 
-# Create the MOX content storage directory and give the mox user ownership
+# Create the MOX content storage directory and give the www-data user ownership
 MOX_STORAGE="/var/mox"
 echo "Creating MOX content storage directory"
 sudo mkdir -p "$MOX_STORAGE"
-sudo chown mox "$MOX_STORAGE"
+sudo chown www-data "$MOX_STORAGE"
 
 
 
 # Setup and start virtual environment
 VIRTUALENV="$DIR/python-env"
 
-echo "Setting up virtual enviroment '$VIRTUALENV'"
+CREATE_VIRTUALENV=0
+
 if [ -d $VIRTUALENV ]; then
-	echo "$VIRTUALENV already existed. Removing."
-	rm -rf $VIRTUALENV
-fi
-
-echo "Creating virtual enviroment '$VIRTUALENV'"
-virtualenv $VIRTUALENV
-
-if [ ! -d $VIRTUALENV ]; then
-	echo "Failed creating virtual environment!"
-	exit 1
+	if [ -z $ALWAYS_CONFIRM ]; then
+		echo "$VIRTUALENV already existed."
+		read -p "Do you want to reinstall it? (y/n): " -n 1 -r
+		echo
+		if [[ $REPLY =~ ^[Yy]$ ]]; then
+			CREATE_VIRTUALENV=1
+		else
+			CREATE_VIRTUALENV=0
+		fi
+	else
+		CREATE_VIRTUALENV=1
+	fi
+	if [ $CREATE_VIRTUALENV == 1 ]; then
+		rm -rf $VIRTUALENV
+	fi
 else
-	echo "Virtual environment created. Starting..."
-	source $VIRTUALENV/bin/activate
-
-	pushd "$DIR"
-	python setup.py develop
-	popd
-
-	echo "Stopping virtual environment"
-	deactivate
-
+	CREATE_VIRTUALENV=1
 fi
 
-if [ ! -f "$DIR/oio_rest/settings.py" ]; then
-	ln -s "$DIR/oio_rest/settings.py.production" "$DIR/oio_rest/settings.py"
+if [ $CREATE_VIRTUALENV == 1 ]; then
+	echo "Creating virtual enviroment '$VIRTUALENV'"
+	virtualenv $VIRTUALENV
+
+	if [ ! -d $VIRTUALENV ]; then
+		echo "Failed creating virtual environment!"
+		exit 1
+	else
+		echo "Virtual environment created. Starting..."
+		source $VIRTUALENV/bin/activate
+
+		pushd "$DIR"
+		python setup.py develop
+		popd
+
+		echo "Stopping virtual environment"
+		deactivate
+	fi
 fi
 
-# Install Database
-if [ ! -z $DB_INSTALL ]; then
+
+DB_FOLDER="$DIR/../db"
+
+source $DB_FOLDER/config.sh
+
+WIPE_DB=0
+
+if [ ! -z $ALWAYS_CONFIRM ]; then
+	WIPE_DB=1
+else
+	if [[ (! -z `command -v psql`) && (! -z `sudo -u postgres psql -Atqc "\list $MOX_DB"`) ]]; then
+		echo "Database $MOX_DB already exists in PostgreSQL"
+		read -p "Do you want to overwrite it? (y/n): " -n 1 -r
+		echo
+		if [[ $REPLY =~ ^[Yy]$ ]]; then
+			WIPE_DB=1
+		fi
+	else
+		echo "DB does not exist!"
+	fi
+fi
+
+if [ $WIPE_DB == 1 ]; then
+	# Install Database
 	source $VIRTUALENV/bin/activate
-	DB_FOLDER="$DIR/../db"
 
 	echo "Installing database"
 
@@ -94,16 +129,18 @@ if [ ! -z $DB_INSTALL ]; then
 fi
 
 
-
 # Install WSGI service
 echo "Setting up oio_rest WSGI service for Apache"
 sudo mkdir -p /var/www/wsgi
 sudo cp "$DIR/server-setup/oio_rest.wsgi" "/var/www/wsgi/"
 
-sudo cp "$DIR/server-setup/oio_rest.conf" "/etc/apache2/sites-available/"
+# setsymlinks.sh does this now
+# sudo cp "$DIR/server-setup/oio_rest.conf.production" "/etc/apache2/sites-available/oio_rest.conf"
 sudo a2ensite oio_rest
 sudo a2enmod ssl
+sudo a2enmod cgi
 
+sudo service apache2 restart
 
 sudo mkdir -p /var/log/mox/oio_rest
 

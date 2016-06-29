@@ -1,6 +1,9 @@
 package dk.magenta.mox.json;
 
+import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
+
+import java.io.*;
 
 /**
  * Created by lars on 30-11-15.
@@ -18,6 +21,22 @@ public class JSONObject extends org.json.JSONObject {
         for (String key : json.keySet()) {
             this.put(key, json.get(key));
         }
+    }
+    public JSONObject(InputStream input, String encoding) throws IOException {
+        super();
+        StringWriter writer = new StringWriter();
+        IOUtils.copy(input, writer, encoding);
+        String json = writer.toString();
+        org.json.JSONObject obj = new org.json.JSONObject(json);
+        for (String key : obj.keySet()) {
+            this.put(key, obj.get(key));
+        }
+    }
+    public JSONObject(InputStream input) throws IOException {
+        this(input, "utf-8");
+    }
+    public JSONObject(File input) throws IOException {
+        this(new FileInputStream(input));
     }
 
     public enum Keytype {
@@ -52,33 +71,45 @@ public class JSONObject extends org.json.JSONObject {
 
     @Override
     public JSONObject getJSONObject(String key) {
-        return (JSONObject) super.getJSONObject(key);
+        org.json.JSONObject object = super.getJSONObject(key);
+        if (object instanceof JSONObject) {
+            return (JSONObject) object;
+        } else {
+            JSONObject con = new JSONObject(object);
+            this.put(key, con);
+            return con;
+        }
     }
 
     @Override
     public JSONArray getJSONArray(String key) {
-        return (JSONArray) super.getJSONArray(key);
+        org.json.JSONArray array = super.getJSONArray(key);
+        if (array instanceof JSONArray) {
+            return (JSONArray) array;
+        } else {
+            JSONArray con = new JSONArray(array);
+            this.put(key, con);
+            return con;
+        }
     }
 
     @Override
     public JSONObject optJSONObject(String key) {
-        return (JSONObject) super.optJSONObject(key);
+        try {
+            return this.getJSONObject(key);
+        } catch (JSONException e) {
+            return null;
+        }
     }
 
     @Override
     public JSONArray optJSONArray(String key) {
-        return (JSONArray) super.optJSONArray(key);
-    }
-/*
-    public JSONObject extend(JSONObject other, boolean overwrite) {
-        for (String key : other.keySet()) {
-            if (this.has(key)) {
-
-            } else {
-                this.put(key, other.get(key));
-            }
+        try {
+            return this.getJSONArray(key);
+        } catch (JSONException e) {
+            return null;
         }
-    }*/
+    }
 /*
     public Keytype type(String key) {
         if (!this.has(key)) {

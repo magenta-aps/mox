@@ -5,14 +5,13 @@ import dk.magenta.mox.agent.exceptions.InvalidObjectTypeException;
 import dk.magenta.mox.agent.exceptions.InvalidOperationException;
 import dk.magenta.mox.agent.messages.Headers;
 import dk.magenta.mox.agent.messages.Message;
-import org.apache.commons.io.IOUtils;
+import dk.magenta.mox.agent.rest.RestClient;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,26 +23,19 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public class RestMessageHandler implements MessageHandler {
-
-    private URL url;
+    public Logger log = Logger.getLogger(RestMessageHandler.class);
+    private RestClient restClient;
     private Map<String, ObjectType> objectTypes;
     private final ExecutorService pool = Executors.newFixedThreadPool(10);
-    protected Logger log = Logger.getLogger(RestMessageHandler.class);
 
     public RestMessageHandler(String host, Map<String, ObjectType> objectTypes) throws MalformedURLException {
         this(new URL(host), objectTypes);
     }
 
-    public RestMessageHandler(String protocol, String host, int port, Map<String, ObjectType> objectTypes) throws MalformedURLException {
-        this(new URL(protocol, host, port, ""), objectTypes);
-    }
-
-    public RestMessageHandler(URL host, Map<String, ObjectType> objectTypes) {
-        try {
-            this.url = new URL(host.getProtocol(), host.getHost(), host.getPort(), "/");
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
+    public RestMessageHandler(URL host, Map<String, ObjectType> objectTypes) throws MalformedURLException {
+        this.restClient = new RestClient(new URL(host.getProtocol(),
+                host.getHost(),
+                host.getPort(), "/"));
         this.objectTypes = objectTypes;
     }
 
@@ -98,7 +90,7 @@ public class RestMessageHandler implements MessageHandler {
 
                         try {
                             if (queryMap == null) {
-                                url = this.getURLforPath(path);
+                                url = restClient.getURLforPath(path);
                             } else {
                                 StringJoiner parameters = new StringJoiner("&");
                                 for (String key : queryMap.keySet()) {
@@ -107,7 +99,7 @@ public class RestMessageHandler implements MessageHandler {
                                         parameters.add(key + "=" + item);
                                     }
                                 }
-                                url = new URI(this.url.getProtocol(), null, this.url.getHost(), this.url.getPort(), path, parameters.toString(), null).toURL();
+                                url = new URI(this.restClient.url.getProtocol(), null, this.restClient.url.getHost(), this.restClient.url.getPort(), path, parameters.toString(), null).toURL();
                             }
                         } catch (MalformedURLException e) {
                             return Util.futureError(e);
@@ -122,7 +114,7 @@ public class RestMessageHandler implements MessageHandler {
                             public String call() {
                                 String response = null;
                                 try {
-                                    response = rest(method, finalUrl, data, authorization);
+                                    response = restClient.rest(method, finalUrl, data, authorization);
                                 } catch (IOException e) {
                                     response = Util.error(e);
                                 }
@@ -137,47 +129,6 @@ public class RestMessageHandler implements MessageHandler {
         } catch (Exception e) {
             this.log.error(e);
             return Util.futureError(e);
-        }
-    }
-
-    private URL getURLforPath(String path) throws MalformedURLException {
-        return new URL(this.url.getProtocol(), this.url.getHost(), this.url.getPort(), path);
-    }
-
-    private String rest(String method, String path, char[] payload) throws IOException {
-        return this.rest(method, path, payload, null);
-    }
-
-    private String rest(String method, String path, char[] payload, String authorization) throws IOException {
-        return this.rest(method, this.getURLforPath(path), payload, authorization);
-    }
-    private String rest(String method, URL url, char[] payload, String authorization) throws IOException {
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod(method);
-        connection.setConnectTimeout(30000);
-
-        connection.setDoOutput(true);
-        connection.setRequestProperty("Content-type", "application/json");
-        if (authorization != null && !authorization.isEmpty()) {
-            connection.setRequestProperty("Authorization", authorization.trim());
-        }
-        this.log.info("Sending message to REST interface: " + method + " " + url.toString());
-        System.out.println("Sending message to REST interface: " + method + " " + url.toString() + " " + new String(payload));
-        try {
-            if (!("GET".equalsIgnoreCase(method))) {
-                OutputStreamWriter out = new OutputStreamWriter(connection.getOutputStream());
-                out.write(payload);
-                out.close();
-            }
-            String response = IOUtils.toString(connection.getInputStream());
-            this.log.info("got response");
-            return response;
-        } catch (ConnectException e) {
-            this.log.warn("The defined REST interface ("+method+" "+connection.getURL().getHost() + ":" + connection.getURL().getPort() + connection.getURL().getPath()+") does not answer.");
-            throw e;
-        } catch (IOException e) {
-            this.log.warn("IOException on request to "+method+" "+url.toString()+": "+e.getMessage());
-            throw e;
         }
     }
 }
