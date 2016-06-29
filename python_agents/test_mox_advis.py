@@ -28,7 +28,7 @@ uuid_doesnt_exist = '10100ef4-0ac4-4bb1-aaee-3343f6666666'
 uuid_no_address = '431607f7-e764-4b1a-917f-2c08a2df0e59'
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(
-        host=AMQP_SERVER))
+    host=AMQP_SERVER))
 channel = connection.channel()
 
 channel.queue_declare(queue=MOX_ADVIS_QUEUE, durable=True)
