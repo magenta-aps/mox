@@ -26,23 +26,12 @@ done
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 echo "DIR=$DIR"
 
-ENVIRONMENT=""
-while [[ $ENVIRONMENT == "" ]]
-do
-	echo "Installation type"
-	echo "[1] production"
-	echo "[2] testing"
-	echo "[3] development"
-	read -p "Enter type: [1]" -n 1 -r
-	echo
-	if [[ $REPLY =~ ^[1]$ ]]; then
-		ENVIRONMENT="production"
-	elif [[ $REPLY =~ ^[2]$ ]]; then
-		ENVIRONMENT="testing"
-	elif [[ $REPLY =~ ^[3]$ ]]; then
-		ENVIRONMENT="development"
-	fi
-done
+DOMAIN="referencedata.dk"
+read -p "Domain: [$DOMAIN]" -r
+echo
+if [[ "x$REPLY" != "x" ]]; then
+	DOMAIN="$REPLY"
+fi
 
 # Add system user if none exists
 getent passwd mox
@@ -53,6 +42,12 @@ fi
 
 # Setup symlinks
 ./setsymlinks.sh $ENVIRONMENT
+
+CONFIGFILENAME="mox.conf"
+# Setup common config
+cp "$DIR/$CONFIGFILENAME.base" "$DIR/$CONFIGFILENAME"
+sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$DIR/$CONFIGFILENAME"
+
 
 # Install oio_rest
 echo "Installing oio_rest"
@@ -91,7 +86,7 @@ sudo mkdir -p "/var/log/mox"
 
 
 echo "Installing Tomcat webservices"
-$DIR/servlets/install.sh
+$DIR/servlets/install.sh "$DOMAIN"
 
 
 

@@ -12,7 +12,7 @@ if [ "x$ENVIRONMENT" != "x" ]; then
 		echo "Usage: $0 [production|testing|development]"
 	elif [ $ENVIRONMENT == "development" -o $ENVIRONMENT == "testing" -o $ENVIRONMENT == "production" ]; then
 		ln -sf "$DIR/oio_rest/oio_rest/settings.py.$ENVIRONMENT" "$DIR/oio_rest/oio_rest/settings.py"
-		ln -sf "$DIR/servlets/MoxDocumentUpload/web/WEB-INF/web.xml.$ENVIRONMENT" "$DIR/servlets/MoxDocumentUpload/web/WEB-INF/web.xml"
+		# ln -sf "$DIR/servlets/MoxDocumentUpload/web/WEB-INF/web.xml.$ENVIRONMENT" "$DIR/servlets/MoxDocumentUpload/web/WEB-INF/web.xml"
 		# sudo ln -sf "$DIR/servlets/server-setup/tomcat.conf.$ENVIRONMENT" "/etc/apache2/sites-available/tomcat.conf"
 		sudo ln -sf "$DIR/oio_rest/server-setup/oio_rest.conf.$ENVIRONMENT" "/etc/apache2/sites-available/oio_rest.conf"
 	else
