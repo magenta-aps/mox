@@ -39,6 +39,9 @@
         "graenseindikator": true,
         "tidsstempeldatotid": "2016-03-04 13:20:29.238968+01"
       },
+      "tiltidspunkt": {
+        "tidsstempeldatotid": "infinity"
+      },
       "livscykluskode": "Opstaaet",
       "note": "Ny klasse",
       "relationer": {

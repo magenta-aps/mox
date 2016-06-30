@@ -64,6 +64,16 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
         }
     }
 
+    private class MessageRequest {
+        public DocumentMessage documentMessage;
+        public String identifier;
+        public Future<String> response;
+        public MessageRequest(String identifier, DocumentMessage documentMessage) {
+            this.identifier = identifier;
+            this.documentMessage = documentMessage;
+        }
+    }
+
     /**
      * Return a simple representation of an OIO document given its UUID.
      *
@@ -135,79 +145,117 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
             fileOutputStream.close();
             this.log.info("Contents retrieved (" + tempFile.length() + " bytes)");
 
-            Map<String, Map<String, ConvertedObject>> convertedSpreadsheets = SpreadsheetConverter.convert(tempFile, contentType);
+            Map<String, Map<String, List<ConvertedObject>>> convertedSpreadsheets = SpreadsheetConverter.convert(tempFile, contentType);
             try {
                 tempFile.delete();
             } catch (SecurityException ex) {
             }
 
-            HashMap<String, Future<String>> moxResponses = new HashMap<String, Future<String>>();
+            ArrayList<ArrayList<MessageRequest>> chains = new ArrayList<>();
+            int longestChainLength = 0;
+
             for (String sheetName : convertedSpreadsheets.keySet()) {
                 for (String objectId : convertedSpreadsheets.get(sheetName).keySet()) {
-                    ConvertedObject object = convertedSpreadsheets.get(sheetName).get(objectId);
-                    this.log.info("----------------------------------------");
-                    this.log.info("Handling object (sheetName: " + sheetName + ", objectId: " + objectId + ")");
-                    //ObjectType objectType = this.objectTypeMap.get(object.getSheetName());
-                    String objectTypeName = object.getSheetName();
-                    String operation = object.getOperation();
-                    JSONObject objectData = object.getJSON();
-                    UUID uuid = null;
-                    try {
-                        uuid = UUID.fromString(object.getId());
-                    } catch (IllegalArgumentException e) {
-                    }
-                    this.log.info("Operation: " + operation);
-                    this.log.info("UUID: " + ((uuid == null) ? null : uuid.toString()));
-
-                    DocumentMessage documentMessage = null;
-                    switch (operation.trim().toLowerCase()) {
-                        case DocumentMessage.OPERATION_READ:
-                            documentMessage = new ReadDocumentMessage(authorization, objectTypeName, uuid);
-                            break;
-                        case DocumentMessage.OPERATION_LIST:
-                            documentMessage = new ListDocumentMessage(authorization, objectTypeName, uuid);
-                            break;
-                        case DocumentMessage.OPERATION_CREATE:
-                            documentMessage = new CreateDocumentMessage(authorization, objectTypeName, objectData);
-                            break;
-                        case DocumentMessage.OPERATION_UPDATE:
-                            documentMessage = new UpdateDocumentMessage(authorization, objectTypeName, uuid, objectData);
-                            break;
-                        case DocumentMessage.OPERATION_PASSIVATE:
-                            documentMessage = new PassivateDocumentMessage(authorization, objectTypeName, uuid);
-                            break;
-                        case DocumentMessage.OPERATION_DELETE:
-                            documentMessage = new DeleteDocumentMessage(authorization, objectTypeName, uuid);
-                            break;
-                    }
-                    if (documentMessage != null) {
-                        this.log.info("Document message created. Sending...");
+                    List<ConvertedObject> objects = convertedSpreadsheets.get(sheetName).get(objectId);
+                    int i = 0;
+                    ArrayList<MessageRequest> currentChain = new ArrayList<>();
+                    for (ConvertedObject object : objects) {
+                        i++;
+                        this.log.info("----------------------------------------");
+                        this.log.info("Handling object (sheetName: " + sheetName + ", objectId: " + objectId + " #" + i + ")");
+                        String objectTypeName = object.getSheetName();
+                        String operation = object.getOperation();
+                        JSONObject objectData = object.getJSON();
+                        UUID uuid = null;
                         try {
-                            Future<String> moxResponse = this.sender.send(documentMessage, true);
-                            //Future<String> moxResponse = this.sender.send(objectType, operation, uuid, objectData, authorization);
-                            moxResponses.put(reference + " : " + title + " : " + sheetName + " : " + objectId, moxResponse);
-                            this.log.info("Message sent, awaiting response");
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
+                            uuid = UUID.fromString(object.getId());
+                        } catch (IllegalArgumentException e) {
                         }
-                    } else {
-                        this.log.info("Failed to create a document message");
+                        this.log.info("Operation: " + operation);
+                        this.log.info("UUID: " + ((uuid == null) ? null : uuid.toString()));
+
+                        DocumentMessage documentMessage = null;
+                        switch (operation.trim().toLowerCase()) {
+                            case DocumentMessage.OPERATION_READ:
+                                documentMessage = new ReadDocumentMessage(authorization, objectTypeName, uuid);
+                                break;
+                            case DocumentMessage.OPERATION_LIST:
+                                documentMessage = new ListDocumentMessage(authorization, objectTypeName, uuid);
+                                break;
+                            case DocumentMessage.OPERATION_CREATE:
+                                documentMessage = new CreateDocumentMessage(authorization, objectTypeName, objectData);
+                                break;
+                            case DocumentMessage.OPERATION_UPDATE:
+                                documentMessage = new UpdateDocumentMessage(authorization, objectTypeName, uuid, objectData);
+                                break;
+                            case DocumentMessage.OPERATION_PASSIVATE:
+                                documentMessage = new PassivateDocumentMessage(authorization, objectTypeName, uuid);
+                                break;
+                            case DocumentMessage.OPERATION_DELETE:
+                                documentMessage = new DeleteDocumentMessage(authorization, objectTypeName, uuid);
+                                break;
+                        }
+                        if (documentMessage != null) {
+                            String identifier = reference + " : " + title + " : " + operation.trim().toLowerCase() + " : " + objectId;
+                            currentChain.add(new MessageRequest(identifier, documentMessage));
+                        }
+                    }
+                    if (!currentChain.isEmpty()) {
+                        chains.add(currentChain);
+                        if (currentChain.size() > longestChainLength) {
+                            longestChainLength = currentChain.size();
+                        }
                     }
                 }
             }
 
+            ArrayList<MessageRequest> requests = new ArrayList<>();
+            for (int i=0; i<longestChainLength; i++) {
+                ArrayList<MessageRequest> waitees = new ArrayList<>();
+                for (List<MessageRequest> chain : chains) {
+                    if (!chain.isEmpty()) {
+                        MessageRequest request = chain.remove(0);
+                        try {
+                            Future<String> moxResponse = this.sender.send(request.documentMessage, true);
+                            request.response = moxResponse;
+                            // moxResponses.put(request.identifier, moxResponse);
+                            requests.add(request);
+                            if (!chain.isEmpty()) {
+                                waitees.add(request);
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                if (!waitees.isEmpty()) {
+                    this.log.info("Waiting for "+waitees.size()+" responses");
+                    for (MessageRequest waitee : waitees) {
+                        if (waitee.response != null) {
+                            waitee.response.get(60, TimeUnit.SECONDS);
+                        }
+                    }
+                }
+            }
 
-            final HashMap<String, Future<String>> fMoxResponses = new HashMap<String, Future<String>>(moxResponses);
+            //final HashMap<String, Future<String>> fMoxResponses = new HashMap<String, Future<String>>(moxResponses);
+            final List<MessageRequest> fRequests = new ArrayList<>(requests);
             return this.pool.submit(new Callable<String>() {
                 public String call() throws IOException {
                     JSONObject collectedResponses = new JSONObject();
 
-                    for (String key : fMoxResponses.keySet()) {
-                        Future<String> moxResponse = fMoxResponses.get(key);
+                    for (MessageRequest messageRequest : fRequests) {
                         try {
-                            collectedResponses.put(key, new JSONObject(moxResponse.get(30, TimeUnit.SECONDS)));
-                            UploadedDocumentMessageHandler.this.log.info("Response received");
+                            String realResponse = messageRequest.response.get(60, TimeUnit.SECONDS);
+                            collectedResponses.put(messageRequest.identifier, new JSONObject(realResponse));
+                            // UploadedDocumentMessageHandler.this.log.info(messageRequest.identifier+" --- "+realResponse);
+                            if (realResponse.contains("Got error response")) {
+                                UploadedDocumentMessageHandler.this.log.info("Failed " + messageRequest.identifier + " / " + realResponse);
+                            } else {
+                                UploadedDocumentMessageHandler.this.log.info("Successful "+messageRequest.identifier + " / " + realResponse);
+                            }
                         } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                            UploadedDocumentMessageHandler.this.log.info("Response failed: "+ e.getMessage());
                             //throw new ServletException("Interruption error when interfacing with rest interface through message queue.\nWhen uploading " + key, e);
                         }
                     }
@@ -215,7 +263,6 @@ public class UploadedDocumentMessageHandler implements MessageHandler {
                     return collectedResponses.toString(2);
                 }
             });
-
 
         } catch (MalformedURLException e) {
             this.log.error("Invalid url", e);

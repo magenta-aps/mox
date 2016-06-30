@@ -3,6 +3,7 @@ package dk.magenta.mox.spreadsheet;
 import dk.magenta.mox.json.JSONObject;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -14,17 +15,18 @@ public class SpreadsheetTest {
         for (String filename : args) {
             File file = new File(filename);
             if (file.exists() && file.canRead()) {
-                System.out.println("Parsing file " + file.getName());
+                // String canonicalFilename = file.getName();
+                // String extension = canonicalFilename.contains(".") ? canonicalFilename.substring(canonicalFilename.lastIndexOf(".")) : "";
                 SpreadsheetConversion conversion;
                 try {
-                    conversion = SpreadsheetConverter.getSpreadsheetConversion(file, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-                    Map<String, Map<String, ConvertedObject>> objects = conversion.getConvertedObjects();
+                    conversion = SpreadsheetConverter.getSpreadsheetConversion(file, "application/vnd.oasis.opendocument.spreadsheet");
+                    Map<String, Map<String, List<ConvertedObject>>> objects = conversion.getConvertedObjects();
 
-                    for (String sheetname : objects.keySet()) {
-                        for (String id : objects.get(sheetname).keySet()) {
-                            ConvertedObject object = objects.get(sheetname).get(id);
-                            object.getJSON();
-                            // System.out.println(sheetname+"/"+id+" : "+object.getJSON());
+                    for (Map<String, List<ConvertedObject>> sheetObjects : objects.values()) {
+                        for (List<ConvertedObject> objectList : sheetObjects.values()) {
+                            for (ConvertedObject object : objectList) {
+                                System.out.println("SUM: " + object.getJSON().toString(2));
+                            }
                         }
                     }
 

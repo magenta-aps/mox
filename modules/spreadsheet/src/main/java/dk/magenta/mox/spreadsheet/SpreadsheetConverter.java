@@ -78,7 +78,7 @@ public abstract class SpreadsheetConverter {
         return converter.convert(data);
     }
 
-    public static Map<String, Map<String, ConvertedObject>> convert(InputStream data, String contentType) throws Exception {
+    public static Map<String, Map<String, List<ConvertedObject>>> convert(InputStream data, String contentType) throws Exception {
         return getSpreadsheetConversion(data, contentType).getConvertedObjects();
     }
 
@@ -87,7 +87,7 @@ public abstract class SpreadsheetConverter {
         return converter.convert(data);
     }
 
-    public static Map<String, Map<String, ConvertedObject>> convert(File data, String contentType) throws Exception {
+    public static Map<String, Map<String, List<ConvertedObject>>> convert(File data, String contentType) throws Exception {
         return getSpreadsheetConversion(data, contentType).getConvertedObjects();
     }
 
