@@ -18,3 +18,4 @@ test.sh
 auth.sh
 agents/MoxRestFrontend/moxrestfrontend.properties
 agents/MoxTabel/moxtabel.properties
+servlets/MoxDocumentUpload/web/WEB-INF/web.xml

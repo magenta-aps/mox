@@ -35,7 +35,7 @@ DO_ENABLE_RESTRICTIONS = True
 
 # The module which implements the authorization restrictions.
 # Must be present in sys.path.
-AUTH_RESTRICTION_MODULE = 'oio_rest.auth.restrictions'
+AUTH_RESTRICTION_MODULE = 'oio_rest.auth.wso_restrictions'
 # The name of the function which retrieves the restrictions.
 # Must be present in AUTH_RESTRICTION_MODULE and have the correct signature.
 AUTH_RESTRICTION_FUNCTION = 'get_auth_restrictions'
