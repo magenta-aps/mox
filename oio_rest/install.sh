@@ -1,7 +1,7 @@
 #!/bin/bash
 
-
-while getopts ":ys" OPT; do
+DOMAIN="referencedata.dk"
+while getopts ":ysd:" OPT; do
   case $OPT in
         s)
                 SKIP_SYSTEM_DEPS=1
@@ -9,10 +9,14 @@ while getopts ":ys" OPT; do
         y)
                 ALWAYS_CONFIRM=1
                 ;;
+        d)
+                DOMAIN="$OPTARG"
+                ;;
         *)
-                echo "Usage: $0 [-y] [-s]"
+                echo "Usage: $0 [-y] [-s] [-d domain]"
                 echo "  -s: Skip installing oio_rest API system dependencies"
                 echo "  -y: Always confirm (yes) when prompted"
+				echo "  -d: Specify domain"
                 exit 1;
                 ;;
         esac
@@ -93,6 +97,11 @@ if [ $CREATE_VIRTUALENV == 1 ]; then
 fi
 
 
+SETTINGS_FILENAME="oio_rest/settings.py"
+sudo cp --remove-destination "$DIR/$SETTINGS_FILENAME.base" "$DIR/$SETTINGS_FILENAME"
+sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$DIR/$SETTINGS_FILENAME"
+
+
 DB_FOLDER="$DIR/../db"
 
 source $DB_FOLDER/config.sh
@@ -132,10 +141,14 @@ fi
 # Install WSGI service
 echo "Setting up oio_rest WSGI service for Apache"
 sudo mkdir -p /var/www/wsgi
-sudo cp "$DIR/server-setup/oio_rest.wsgi" "/var/www/wsgi/"
+sudo cp --remove-destination "$DIR/server-setup/oio_rest.wsgi" "/var/www/wsgi/"
 
-# setsymlinks.sh does this now
-# sudo cp "$DIR/server-setup/oio_rest.conf.production" "/etc/apache2/sites-available/oio_rest.conf"
+# Setup apache site config
+CONFIGFILENAME="oio_rest.conf"
+CONFIGDIR="$DIR/server-setup"
+sudo cp --remove-destination "$CONFIGDIR/$CONFIGFILENAME.base" "$CONFIGDIR/$CONFIGFILENAME"
+sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$CONFIGDIR/$CONFIGFILENAME"
+sudo ln -sf "$CONFIGDIR/$CONFIGFILENAME" "/etc/apache2/sites-available/$CONFIGFILENAME"
 sudo a2ensite oio_rest
 sudo a2enmod ssl
 sudo a2enmod cgi

@@ -18,53 +18,53 @@ public class MoxAgent extends MoxAgentBase {
     private ArrayList<MessageReceiver> messageReceivers = new ArrayList<>();
     private ArrayList<MessageSender> messageSenders = new ArrayList<>();
 
-
     protected MoxAgent() {
-        this.amqpDefinition = new AmqpDefinition();
-
-        String prefix = "amqp";
-
+        this.loadDefaults();
         try {
             this.loadProperties();
-            this.amqpDefinition.populateFromProperties(this.properties, prefix, false, true);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        this.loadDefaults();
-        this.amqpDefinition.populateFromDefaults(true, prefix);
+        this.amqpDefinition = new AmqpDefinition(this.commandLineArgs, this.properties, this.getAmqpPrefix(), true);
     }
 
     public MoxAgent(String[] args) {
 
-        this.amqpDefinition = new AmqpDefinition();
-        String prefix = "amqp";
-
+        this.loadDefaults();
         this.loadArgs(args);
-        this.amqpDefinition.populateFromMap(this.commandLineArgs, prefix, true, true);
-
         try {
             this.loadProperties();
-            this.amqpDefinition.populateFromProperties(this.properties, prefix, false, true);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        this.loadDefaults();
-        this.amqpDefinition.populateFromDefaults(true, prefix);
+        this.amqpDefinition = new AmqpDefinition(this.commandLineArgs, this.properties, this.getAmqpPrefix(), true);
+    }
+
+    protected String getAmqpPrefix() {
+        return "amqp";
     }
     
-    protected MessageReceiver createMessageReceiver() throws IOException, TimeoutException {
-        MessageReceiver receiver = new MessageReceiver(this.amqpDefinition, true);
+    protected MessageReceiver createMessageReceiver(AmqpDefinition amqpDefinition) throws IOException, TimeoutException {
+        MessageReceiver receiver = new MessageReceiver(amqpDefinition, true);
         this.messageReceivers.add(receiver);
         return receiver;
     }
 
-    protected MessageSender createMessageSender() throws IOException, TimeoutException {
-        MessageSender sender = new MessageSender(this.amqpDefinition);
+    protected MessageSender createMessageSender(AmqpDefinition amqpDefinition) throws IOException, TimeoutException {
+        MessageSender sender = new MessageSender(amqpDefinition);
         this.messageSenders.add(sender);
         return sender;
     }
+
+    protected MessageReceiver createMessageReceiver() throws IOException, TimeoutException {
+        return this.createMessageReceiver(this.amqpDefinition);
+    }
+    protected MessageSender createMessageSender() throws IOException, TimeoutException {
+        return this.createMessageSender(this.amqpDefinition);
+    }
+
 
     public void run() {
     }

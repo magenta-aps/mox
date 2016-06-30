@@ -14,12 +14,11 @@ pushd $DIR
 mvn package
 popd
 
-PROPERTIESFILENAME="web/WEB-INF/web.xml"
+CONFIGFILENAME="web/WEB-INF/web.xml"
+DOMAIN=$1
 
-if [ ! -f "$DIR/$PROPERTIESFILENAME" ]; then
-        ln -s "$DIR/$PROPERTIESFILENAME.production" "$DIR/$PROPERTIESFILENAME"
-fi
-
+cp --remove-destination "$DIR/$CONFIGFILENAME.base" "$DIR/$CONFIGFILENAME"
+sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$DIR/$CONFIGFILENAME"
 
 if [[ -f "$DIR/target/$WARFILE" ]]; then
     if [[ "x$WARNAME" != "x" && -d "/var/lib/tomcat7/webapps/$WARNAME" ]]; then

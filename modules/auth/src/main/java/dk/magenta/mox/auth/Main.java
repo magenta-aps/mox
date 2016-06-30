@@ -15,13 +15,13 @@ import java.util.zip.GZIPOutputStream;
 public class Main {
     public static Properties properties;
 
-    boolean printHelp = false;
-    boolean silent = false;
-    String username = null;
-    String password = null;
-    String restInterface = null;
-    String propertiesFileName = null;
-    String stsAddress = null;
+    private boolean printHelp = false;
+    private boolean silent = false;
+    private String username = null;
+    private String password = null;
+    private String restInterface = null;
+    private ArrayList<String> propertiesFileNames = new ArrayList<>();
+    private String stsAddress = null;
 
     public static void main(String[] args) {
         DOMConfigurator.configure("log4j.xml");
@@ -52,15 +52,15 @@ public class Main {
     }
 
     private void loadArgs(String[] argv) {
-        HashMap<String, String> argMap = new HashMap<>();
+        ParameterMap<String, String> argMap = new ParameterMap<>();
         String currentKey = null;
         for (String a : argv) {
             String arg = a.trim();
             if (arg.startsWith("-")) {
                 currentKey = arg.replace("-", "");
-                argMap.put(currentKey, null);
+                argMap.add(currentKey, null);
             } else {
-                argMap.put(currentKey, arg);
+                argMap.add(currentKey, arg);
             }
         }
 
@@ -72,11 +72,11 @@ public class Main {
             this.silent = true;
         }
         if (argMap.containsKey("u")) {
-            this.username = argMap.get("u");
+            this.username = argMap.getFirst("u");
             this.print("    username = " + this.username);
         }
         if (argMap.containsKey("p")) {
-            this.password = argMap.get("p");
+            this.password = argMap.getFirst("p");
             if (this.password == null) {
                 this.password = new String(System.console().readPassword("Password: "));
             } else {
@@ -84,62 +84,73 @@ public class Main {
             }
         }
         if (argMap.containsKey("i")) {
-            this.restInterface = argMap.get("i");
+            this.restInterface = argMap.getFirst("i");
             this.print("    restInterface = " + this.restInterface);
         }
         if (argMap.containsKey("f")) {
-            this.propertiesFileName = argMap.get("f");
-            this.print("    propertiesFilename = " + this.propertiesFileName);
+            this.propertiesFileNames = argMap.get("f");
+            this.print("    propertiesFilename = " + this.propertiesFileNames);
         }
         if (argMap.containsKey("a")) {
-            this.stsAddress = argMap.get("a");
+            this.stsAddress = argMap.getFirst("a");
             this.print("    stsAddress = " + this.stsAddress);
         }
     }
 
     private void loadPropertiesFile() {
 
-        if (this.propertiesFileName == null) {
-            this.propertiesFileName = "auth.properties";
+        if (this.propertiesFileNames.isEmpty()) {
+            this.propertiesFileNames.add("auth.properties");
             this.print("Loading default");
-            this.print("    propertiesFilename = " + this.propertiesFileName);
+            for (String filename : this.propertiesFileNames) {
+                this.print("    propertiesFilename = " + filename);
+            }
         }
 
-        File propertiesFile = new File(this.propertiesFileName);
-        if (!propertiesFile.exists()) {
-            System.err.println("Invalid parameter: properties file " + propertiesFile.getAbsolutePath() + " does not exist");
-            return;
-        } else if (!propertiesFile.canRead()) {
-            System.err.println("Invalid parameter: properties file " + propertiesFile.getAbsolutePath() + " exist, but is unreadable by this user");
-            return;
+        for (String filename : this.propertiesFileNames) {
+            if (filename != null) {
+                File propertiesFile = new File(filename);
+                if (!propertiesFile.exists()) {
+                    System.err.println("Invalid parameter: properties file " + propertiesFile.getAbsolutePath() + " does not exist");
+                    return;
+                } else if (!propertiesFile.canRead()) {
+                    System.err.println("Invalid parameter: properties file " + propertiesFile.getAbsolutePath() + " exist, but is unreadable by this user");
+                    return;
+                }
+            }
         }
 
         properties = new Properties();
-        if (propertiesFile.canRead()) {
-            try {
-                properties.load(new FileInputStream(propertiesFile));
-            } catch (IOException e) {
-                System.err.println("Error loading from properties file " + propertiesFile.getAbsolutePath() + ": " + e.getMessage());
-                return;
-            }
-            if (this.username == null || this.password == null || this.restInterface == null || this.stsAddress == null) {
-                this.print("Reading properties file " + propertiesFile.getAbsolutePath());
+        for (String filename : this.propertiesFileNames) {
+            if (filename != null) {
+                File propertiesFile = new File(filename);
+                if (propertiesFile.canRead()) {
+                    try {
+                        properties.load(new FileInputStream(propertiesFile));
+                    } catch (IOException e) {
+                        System.err.println("Error loading from properties file " + propertiesFile.getAbsolutePath() + ": " + e.getMessage());
+                        return;
+                    }
+                    if (this.username == null || this.password == null || this.restInterface == null || this.stsAddress == null) {
+                        this.print("Reading properties file " + propertiesFile.getAbsolutePath());
 
-                if (this.username == null) {
-                    this.username = properties.getProperty("security.user.name");
-                    this.print("    username = " + this.username);
-                }
-                if (this.password == null) {
-                    this.password = properties.getProperty("security.user.password");
-                    this.print("    password = ***");
-                }
-                if (this.restInterface == null) {
-                    this.restInterface = properties.getProperty("rest.interface");
-                    this.print("    restInterface = " + this.restInterface);
-                }
-                if (this.stsAddress == null) {
-                    this.stsAddress = properties.getProperty("security.sts.address");
-                    this.print("    stsAddress = " + this.stsAddress);
+                        if (this.username == null) {
+                            this.username = properties.getProperty("security.user.name");
+                            this.print("    username = " + this.username);
+                        }
+                        if (this.password == null) {
+                            this.password = properties.getProperty("security.user.password");
+                            this.print("    password = ***");
+                        }
+                        if (this.restInterface == null) {
+                            this.restInterface = properties.getProperty("rest.interface");
+                            this.print("    restInterface = " + this.restInterface);
+                        }
+                        if (this.stsAddress == null) {
+                            this.stsAddress = properties.getProperty("security.sts.address");
+                            this.print("    stsAddress = " + this.stsAddress);
+                        }
+                    }
                 }
             }
         }
@@ -173,8 +184,6 @@ public class Main {
             String encodedAuthtoken = "saml-gzipped " + base64encode(gzip(authtoken));
             System.out.println(encodedAuthtoken);
 
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (SecurityTokenException e) {
