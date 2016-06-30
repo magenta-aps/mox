@@ -1,49 +1,73 @@
 <VirtualHost *:80>
 
-ServerName referencedata.dk
-ServerAlias referencedata.dk
+	ServerName			referencedata.dk
+	ServerAlias			referencedata.dk
+	ServerAlias			www.referencedata.dk
 
-DocumentRoot /var/www/html
+	RewriteEngine			on
+
+	RewriteCond			%{HTTPS} off
+	RewriteRule			(.*) https://referencedata.dk%{REQUEST_URI} [R,L]
+
+	DocumentRoot			/var/www/html/test
 
 </VirtualHost>
 
 <VirtualHost *:443>
 
-    ServerName referencedata.dk
-    ServerAlias referencedata.dk
+	ServerName			referencedata.dk
+	ServerAlias			referencedata.dk
+	ServerAlias			www.referencedata.dk
 
-    SSLEngine On
-    SSLProtocol All -SSLv2 -SSLv3
+	TimeOut	1200
 
-    SSLCertificateFile /etc/apache2/ssl/magenta-aps.dk.crt
-    SSLCertificateKeyFile /etc/apache2/ssl/magenta-aps.dk.key
-    SSLCACertificateFile /etc/apache2/ssl/intermediate.crt
+	DocumentRoot			/var/www/html
 
-    TimeOut 1200
+	SSLEngine			On
+	SSLProtocol			All -SSLv2 -SSLv3
 
-    Alias /oio /srv/mox/scripts/
-    <Directory "/srv/mox/scripts">
-        AllowOverride All
-        Require all granted
-        Options +ExecCGI
-        Allow from all
-        Order allow,deny
-        AddHandler cgi-script .py
-    </Directory>
+	SSLCertificateFile		/etc/apache2/certs/www.referencedata.dk.crt
+	SSLCertificateKeyFile		/etc/apache2/certs/www.referencedata.dk.key
+	SSLCACertificateFile		/etc/apache2/certs/intermediate.www.referencedata.dk.crt
 
-    # Tomcat redirect
-    JkMount /MoxDocumentUpload/* ajp13_worker
+	# Redirect / to /info/ 
+	RewriteEngine			on
+	RewriteRule			"^/$" "/info/" [R]
 
-    CustomLog /var/log/mox/oio_rest/access.log combined
-    ErrorLog /var/log/mox/oio_rest/error.log
+	Alias				/info /var/www/refdata/
+	<Directory /var/www/refdata>
+		AllowOverride		All
+		Require			all granted
+	</Directory>
+	<Directory /var/www/html>
+		AllowOverride		All
+		Require			all granted
+	</Directory>
 
-    WSGIDaemonProcess oio_rest user=www-data group=www-data threads=5
-    WSGIScriptAlias / /var/www/wsgi/oio_rest.wsgi
-    WSGIPassAuthorization On
+	Alias				/oio /srv/mox/scripts/
+	<Directory "/srv/mox/scripts">
+		AllowOverride		All
+		Require			all granted
+		Options			+ExecCGI
+		Allow			from all
+		Order			allow,deny
+		AddHandler		cgi-script .py
+	</Directory>
 
-    <Directory /var/www/wsgi >
-        WSGIProcessGroup oio_rest
-        WSGIApplicationGroup %{GLOBAL}
-        require all granted
-    </Directory>
+# Tomcat redirect
+	JkMount				/MoxDocumentUpload/* ajp13_worker
+
+	CustomLog			/var/log/mox/oio_rest/access.log combined
+	ErrorLog			/var/log/mox/oio_rest/error.log
+
+	WSGIDaemonProcess		oio_rest user=www-data group=www-data threads=5
+	WSGIScriptAlias			/ /var/www/wsgi/oio_rest.wsgi
+	WSGIPassAuthorization		On
+
+	<Directory /var/www/wsgi>
+		WSGIProcessGroup	oio_rest
+		WSGIApplicationGroup	%{GLOBAL}
+		require			all granted
+	</Directory>
+
 </VirtualHost>
