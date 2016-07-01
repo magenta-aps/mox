@@ -24,8 +24,8 @@ while getopts ":ys" OPT; do
 done
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-echo "DIR=$DIR"
 
+# Query for hostname
 DOMAIN=`hostname --fqdn`
 read -p "Domain: [$DOMAIN] " -r
 echo
@@ -40,20 +40,19 @@ if [ $? -ne 0 ]; then
 	sudo useradd mox
 fi
 
-CONFIGFILENAME="mox.conf"
+# Create log dir
+echo "Creating log dir"
+sudo mkdir -p "/var/log/mox"
+
 # Setup common config
+CONFIGFILENAME="mox.conf"
 cp --remove-destination "$DIR/$CONFIGFILENAME.base" "$DIR/$CONFIGFILENAME"
 sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$DIR/$CONFIGFILENAME"
-
 
 # Install oio_rest
 echo "Installing oio_rest"
 echo "$DIR/oio_rest/install.sh $@"
 $DIR/oio_rest/install.sh "$@" -d $DOMAIN
-
-# Create log dir
-echo "Creating log dir"
-sudo mkdir -p "/var/log/mox"
 
 # Ubuntu 14.04 doesn't come with java 8
 sudo apt-cache -q=2 show oracle-java8-installer 2>&1 >/dev/null
@@ -65,19 +64,23 @@ fi
 export JAVA_HOME="/usr/lib/jvm/java-8-oracle/"
 sudo ln -sf "/usr/lib/jvm/java-8-oracle/" "/usr/lib/jvm/default-java"
 
-echo "Installing java modules"
+# Install Maven
+echo "Installing Maven"
 sudo apt-get -y install maven
 
+# Compile modules
 echo "Installing java modules"
 $DIR/modules/json/install.sh
 $DIR/modules/agent/install.sh
 $DIR/modules/auth/install.sh
 $DIR/modules/spreadsheet/install.sh
 
+# Install servlet
 echo "Installing Tomcat webservices"
 $DIR/servlets/install.sh
 $DIR/servlets/MoxDocumentUpload/install.sh "$DOMAIN"
 
+# Compile agents
 echo "Installing Agents"
 $DIR/agents/MoxTabel/install.sh
 $DIR/agents/MoxRestFrontend/install.sh
