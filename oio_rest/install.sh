@@ -102,7 +102,7 @@ sudo cp --remove-destination "$DIR/$SETTINGS_FILENAME.base" "$DIR/$SETTINGS_FILE
 sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$DIR/$SETTINGS_FILENAME"
 
 
-DB_FOLDER="$DIR/../db"
+DB_FOLDER="$MOXDIR/db"
 
 source $DB_FOLDER/config.sh
 

@@ -50,7 +50,4 @@
 		AddHandler		cgi-script .py
 	</Directory>
 
-    # Tomcat redirect
-	JkMount				/MoxDocumentUpload/* ajp13_worker
-
 </VirtualHost>
