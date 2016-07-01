@@ -51,13 +51,9 @@ echo "Installing oio_rest"
 echo "$DIR/oio_rest/install.sh $@"
 $DIR/oio_rest/install.sh "$@" -d $DOMAIN
 
-
-
 # Create log dir
 echo "Creating log dir"
 sudo mkdir -p "/var/log/mox"
-
-
 
 # Ubuntu 14.04 doesn't come with java 8
 sudo apt-cache -q=2 show oracle-java8-installer 2>&1 >/dev/null
@@ -72,20 +68,17 @@ sudo ln -sf "/usr/lib/jvm/java-8-oracle/" "/usr/lib/jvm/default-java"
 echo "Installing java modules"
 sudo apt-get -y install maven
 
-
+echo "Installing java modules"
 $DIR/modules/json/install.sh
 $DIR/modules/agent/install.sh
 $DIR/modules/auth/install.sh
 $DIR/modules/spreadsheet/install.sh
 
-
-sudo mkdir -p "/var/log/mox"
-
-
 echo "Installing Tomcat webservices"
 $DIR/servlets/install.sh
 $DIR/servlets/MoxDocumentUpload/install.sh "$DOMAIN"
 
+echo "Installing Agents"
 $DIR/agents/MoxTabel/install.sh
 $DIR/agents/MoxRestFrontend/install.sh
 $DIR/agents/MoxTest/install.sh
