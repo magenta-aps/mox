@@ -33,7 +33,9 @@ sudo cp --remove-destination "$DIR/$CONFIGFILENAME.base" "$DIR/$CONFIGFILENAME"
 sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$DIR/$CONFIGFILENAME"
 sudo ln -sf "$DIR/$CONFIGFILENAME" "/etc/apache2/sites-available/$CONFIGFILENAME"
 sudo a2ensite mox
+sudo a2dissite oio_rest
 sudo a2enmod ssl
+sudo rm "/etc/apache2/sites-available/oio_rest.conf"
 
 sudo service apache2 restart
 
