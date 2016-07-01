@@ -84,6 +84,8 @@ echo "Installing Tomcat webservices"
 $DIR/servlets/install.sh
 $DIR/servlets/MoxDocumentUpload/install.sh "$DOMAIN"
 
+$DIR/scripts/install.sh
+
 # Compile agents
 echo "Installing Agents"
 $DIR/agents/MoxTabel/install.sh
