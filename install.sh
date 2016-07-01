@@ -49,6 +49,10 @@ CONFIGFILENAME="mox.conf"
 cp --remove-destination "$DIR/$CONFIGFILENAME.base" "$DIR/$CONFIGFILENAME"
 sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$DIR/$CONFIGFILENAME"
 
+# Setup apache virtualhost
+echo "Setting up apache virtualhost"
+$DIR/apache/install.sh -d $DOMAIN
+
 # Install oio_rest
 echo "Installing oio_rest"
 echo "$DIR/oio_rest/install.sh $@"
