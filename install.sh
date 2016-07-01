@@ -26,7 +26,7 @@ done
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 echo "DIR=$DIR"
 
-DOMAIN="referencedata.dk"
+DOMAIN=`hostname --fqdn`
 read -p "Domain: [$DOMAIN] " -r
 echo
 if [[ "x$REPLY" != "x" ]]; then
