@@ -4,9 +4,9 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 sudo cp "$DIR/setup/moxtabel.conf" /etc/init/
 
-pushd $DIR
-mvn package
-popd
+pushd "$DIR" > /dev/null
+mvn package --quiet -Dmaven.test.skip=true
+popd > /dev/null
 
 sudo mkdir -p /var/log/mox
 sudo touch /var/log/mox/moxtabel.log

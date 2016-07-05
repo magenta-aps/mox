@@ -10,9 +10,9 @@ sudo touch /var/log/mox/moxdocumentupload.log
 sudo chown tomcat7 /var/log/mox/moxdocumentupload.log
 
 # Compile and install servlet
-pushd $DIR
-mvn package
-popd
+pushd "$DIR" > /dev/null
+mvn package --quiet -Dmaven.test.skip=true
+popd > /dev/null
 
 CONFIGFILENAME="web/WEB-INF/web.xml"
 DOMAIN=$1

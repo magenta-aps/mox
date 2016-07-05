@@ -12,13 +12,17 @@ import java.util.Map;
  */
 public class ParameterMap<K,V> extends HashMap<K,ArrayList<V>> {
 
-    public void add(K key, V value) {
+	public ArrayList<V> add(K key) {
         ArrayList<V> list = this.get(key);
         if (list == null) {
             list = new ArrayList<V>();
             this.put(key, list);
         }
-        list.add(value);
+		return list;
+    }
+
+    public void add(K key, V value) {
+        this.add(key).add(value);
     }
 
     public V getAtIndex(K key, int index) {

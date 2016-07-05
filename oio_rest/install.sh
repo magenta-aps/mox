@@ -24,7 +24,7 @@ done
 
 # Get the folder of this script
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-echo "DIR=$DIR"
+MOXDIR="$DIR/.."
 
 
 
@@ -102,7 +102,7 @@ sudo cp --remove-destination "$DIR/$SETTINGS_FILENAME.base" "$DIR/$SETTINGS_FILE
 sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$DIR/$SETTINGS_FILENAME"
 
 
-DB_FOLDER="$DIR/../db"
+DB_FOLDER="$MOXDIR/db"
 
 source $DB_FOLDER/config.sh
 
@@ -142,18 +142,7 @@ fi
 echo "Setting up oio_rest WSGI service for Apache"
 sudo mkdir -p /var/www/wsgi
 sudo cp --remove-destination "$DIR/server-setup/oio_rest.wsgi" "/var/www/wsgi/"
-
-# Setup apache site config
-CONFIGFILENAME="oio_rest.conf"
-CONFIGDIR="$DIR/server-setup"
-sudo cp --remove-destination "$CONFIGDIR/$CONFIGFILENAME.base" "$CONFIGDIR/$CONFIGFILENAME"
-sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$CONFIGDIR/$CONFIGFILENAME"
-sudo ln -sf "$CONFIGDIR/$CONFIGFILENAME" "/etc/apache2/sites-available/$CONFIGFILENAME"
-sudo a2ensite oio_rest
-sudo a2enmod ssl
-sudo a2enmod cgi
-
-sudo service apache2 restart
+sudo $MOXDIR/apache/set_include.sh -a "$DIR/server-setup/oio_rest.conf"
 
 sudo mkdir -p /var/log/mox/oio_rest
 
