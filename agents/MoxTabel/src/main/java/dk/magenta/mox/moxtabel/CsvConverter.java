@@ -1,8 +1,6 @@
-package dk.magenta.mox.spreadsheet;
+package dk.magenta.mox.moxtabel;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 import java.util.Scanner;
 
 /**
