@@ -58,7 +58,7 @@ public class Main {
             String arg = a.trim();
             if (arg.startsWith("-")) {
                 currentKey = arg.replace("-", "");
-                argMap.add(currentKey, null);
+                argMap.add(currentKey);
             } else {
                 argMap.add(currentKey, arg);
             }
