@@ -4,7 +4,7 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 FOLDERS="modules/agent modules/json modules/spreadsheet agents/MoxTabel agents/MoxRestFrontend servlets/MoxDocumentUpload"
 for FOLDER in $FOLDERS; do
-	pushd "$DIR/$FOLDER"
+	pushd "$DIR/$FOLDER" > /dev/null
 	./install.sh
-	popd
+	popd > /dev/null
 done

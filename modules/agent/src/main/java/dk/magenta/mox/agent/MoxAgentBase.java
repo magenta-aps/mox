@@ -1,5 +1,7 @@
 package dk.magenta.mox.agent;
 
+import org.apache.log4j.Logger;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,11 +16,9 @@ public class MoxAgentBase {
     protected ParameterMap<String, String> commandLineArgs = null;
     protected Properties properties = null;
     protected ParameterMap<String, String> defaults = null;
+    protected Logger log = Logger.getLogger(MoxAgentBase.class);
 
-    private File propertiesFile;
-
-    protected static final String COMMAND_ARG_KEY = "__commands__";
-
+    private ArrayList<File> propertiesFiles = new ArrayList<>();
 
     protected MoxAgentBase() {
     }
@@ -28,6 +28,7 @@ public class MoxAgentBase {
         try {
             this.loadProperties();
         } catch (IOException e) {
+            this.log.error(e);
             e.printStackTrace();
         }
         this.loadDefaults();
@@ -35,39 +36,34 @@ public class MoxAgentBase {
 
     protected void loadArgs(String[] commandlineArgs) {
         if (this.commandLineArgs == null) {
-            System.out.println("Reading command line arguments");
+            this.log.info("Reading command line arguments");
             HashMap<String, ArrayList<String>> argMap = new HashMap<>();
-            for (String arg : commandlineArgs) {
-                try {
-                    arg = arg.trim();
-                    String key, value;
-                    if (arg.startsWith("-")) {
-                        arg = arg.substring(2);
-                        String[] keyVal = arg.split("=", 2);
-                        if (keyVal.length != 2) {
-                            throw new IllegalArgumentException("Parameter " +
-                                    arg + " must be of the format -Dparam=value");
+            String currentKey = null;
+            for (int i=0; i<commandlineArgs.length; i++) {
+                String arg = commandlineArgs[i].trim();
+                if (arg.startsWith("--")) {
+                    currentKey = arg.substring(2);
+                } else if (arg.startsWith("-")) {
+                    currentKey = arg.substring(1);
+                } else {
+                    if (currentKey != null) {
+                        if (!argMap.containsKey(currentKey)) {
+                            argMap.put(currentKey, new ArrayList<>());
                         }
-                        key = keyVal[0];
-                        value = keyVal[1];
-                    } else if (!arg.isEmpty()) {
-                        key = COMMAND_ARG_KEY;
-                        value = arg;
-                    } else {
-                        continue;
+                        argMap.get(currentKey).add(arg);
                     }
-                    if (!argMap.containsKey(key)) {
-                        argMap.put(key, new ArrayList<>());
-                    }
-                    argMap.get(key).add(value);
-                } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
+                }
+            }
+            if (currentKey != null) {
+                if (!argMap.containsKey(currentKey)) {
+                    argMap.put(currentKey, new ArrayList<>());
                 }
             }
 
             this.commandLineArgs = new ParameterMap<>();
             for (String key : argMap.keySet()) {
                 this.commandLineArgs.put(key, argMap.get(key));
+                this.log.info("    " + key + " = " + argMap.get(key));
             }
         }
     }
@@ -77,9 +73,16 @@ public class MoxAgentBase {
         return "agent.properties";
     }
 
-    protected void setPropertiesFile(String propertiesFileName) {
+    protected void addPropertiesFile(String propertiesFileName) throws IOException {
         if (propertiesFileName != null) {
-            this.propertiesFile = new File(propertiesFileName);
+            File propertiesFile = new File(propertiesFileName);
+            if (!propertiesFile.exists()) {
+                throw new FileNotFoundException(propertiesFile.getAbsolutePath()+ "doesn't exist");
+            }
+            if (!propertiesFile.canRead()) {
+                throw new IOException(propertiesFile.getAbsolutePath()+" is not readable");
+            }
+            this.propertiesFiles.add(propertiesFile);
         }
     }
 
@@ -87,27 +90,28 @@ public class MoxAgentBase {
         if (this.properties == null) {
             this.properties = new Properties();
 
-            if (this.commandLineArgs != null && this.propertiesFile == null) {
-                this.setPropertiesFile(this.commandLineArgs.getFirst("propertiesFile"));
+            if (this.commandLineArgs != null) {
+                List<String> propertiesFilenames = this.commandLineArgs.get("propertiesFiles");
+                if (propertiesFilenames != null) {
+                    for (String filename : propertiesFilenames) {
+                        this.addPropertiesFile(filename);
+                    }
+                }
             }
 
-            if (this.propertiesFile == null) {
-                this.setPropertiesFile(this.getDefaultPropertiesFileName());
+            if (this.propertiesFiles.isEmpty()) {
+                this.addPropertiesFile(this.getDefaultPropertiesFileName());
             }
 
-            if (!this.propertiesFile.exists()) {
-                throw new FileNotFoundException(this.propertiesFile.getAbsolutePath()+ "doesn't exist");
-            }
-            if (!this.propertiesFile.canRead()) {
-                throw new IOException(this.propertiesFile.getAbsolutePath()+" is not readable");
-            }
-
-            if (this.propertiesFile.canRead()) {
-                System.out.println("Loading config from '"+propertiesFile.getAbsolutePath()+"'");
+            for (File propertiesFile : this.propertiesFiles) {
+                this.log.info("Loading config from '" + propertiesFile.getAbsolutePath() + "'");
                 try {
                     properties.load(new FileInputStream(propertiesFile));
+                    for (Object key : properties.keySet()) {
+                        this.log.info("    " + key + " = " + properties.get(key));
+                    }
                 } catch (IOException e) {
-                    System.err.println("Error loading from properties file " + propertiesFile.getAbsolutePath() + ": " + e.getMessage());
+                    this.log.warn("Error loading from properties file " + propertiesFile.getAbsolutePath() + ": " + e.getMessage());
                     return;
                 }
             }
@@ -116,10 +120,12 @@ public class MoxAgentBase {
 
     protected void loadDefaults() {
         if (this.defaults == null) {
-            System.out.println("Loading defaults");
+            this.log.info("Loading defaults");
             this.defaults = new ParameterMap<>();
         }
     }
+
+    //--------------------------------------------------------------------------
 
     public String getSetting(String key) {
         String value = this.commandLineArgs.getFirst(key);
