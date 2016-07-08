@@ -173,6 +173,14 @@ public class Main {
             System.out.println("Error: password not set");
             System.exit(1);
         }
+        if (this.restInterface == null) {
+            System.out.println("Error: restInterface not set");
+            System.exit(1);
+        }
+        if (this.stsAddress == null) {
+            System.out.println("Error: stsAddress not set");
+            System.exit(1);
+        }
 
         properties.setProperty("security.user.name", this.username);
         properties.setProperty("security.user.password", this.password);
