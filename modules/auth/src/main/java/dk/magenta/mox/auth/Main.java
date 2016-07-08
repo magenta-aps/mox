@@ -165,6 +165,15 @@ public class Main {
         }
         this.loadPropertiesFile();
 
+        if (this.username == null) {
+            System.out.println("Error: username not set");
+            System.exit(1);
+        }
+        if (this.password == null) {
+            System.out.println("Error: password not set");
+            System.exit(1);
+        }
+
         properties.setProperty("security.user.name", this.username);
         properties.setProperty("security.user.password", this.password);
         properties.setProperty("security.sts.address", this.stsAddress);
