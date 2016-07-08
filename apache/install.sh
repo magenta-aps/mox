@@ -34,6 +34,7 @@ sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$DIR/$CONFIGFILENAME"
 sudo ln -sf "$DIR/$CONFIGFILENAME" "/etc/apache2/sites-available/$CONFIGFILENAME"
 sudo a2ensite mox
 sudo a2enmod ssl
+sudo a2enmod rewrite
 if [ -L /etc/apache2/sites-enabled/oio_rest.conf ]; then
 	sudo a2dissite --quiet oio_rest
 fi
