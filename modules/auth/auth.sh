@@ -9,7 +9,6 @@ if [[ ! -d "$DIR" ]]; then
 	DIR="/srv/mox/modules/auth"
 fi
 
-pushd $DIR
+pushd $DIR > /dev/null
 java -cp "target/auth-1.0.jar:target/dependency/*" dk.magenta.mox.auth.Main -f "$DIR/auth.properties" -f "/srv/mox/mox.conf" $@
-popd
-
+popd > /dev/null
