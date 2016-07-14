@@ -1444,6 +1444,7 @@
   "bruger":{
     "lists": [
       ["registreringer"],
+      ["tilstande", "brugergyldighed"],
       ["attributter", "brugeregenskaber"],
       ["relationer", "adresser"],
       ["relationer", "opgaver"],
@@ -1459,7 +1460,8 @@
     ],
     "mergelists": [
       ["registreringer"],
-      ["attributter", "brugeregenskaber"]
+      ["attributter", "brugeregenskaber"],
+      ["tilstande", "brugergyldighed"]
     ],
     "conversion": {
       "objektID":[
