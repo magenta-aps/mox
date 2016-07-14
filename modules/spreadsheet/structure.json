@@ -1444,8 +1444,7 @@
   "bruger":{
     "lists": [
       ["registreringer"],
-      ["attributter", "klasseegenskaber"],
-      ["attributter", "klasseegenskaber", "soegeord"],
+      ["attributter", "brugeregenskaber"],
       ["relationer", "adresser"],
       ["relationer", "opgaver"],
       ["relationer", "brugertyper"],
@@ -1456,13 +1455,11 @@
       ["relationer", "tilknyttedeorganisationer"],
       ["relationer", "tilknyttedepersoner"],
       ["relationer", "tilknyttedeitsystemer"],
-      ["relationer", "tilhoerer"],
-      ["tilstande", "interessefaellesskabpubliceret"]
+      ["relationer", "tilhoerer"]
     ],
     "mergelists": [
       ["registreringer"],
-      ["attributter", "interessefaellesskabegenskaber"],
-      ["tilstande", "interessefaellesskabpubliceret"]
+      ["attributter", "brugeregenskaber"]
     ],
     "conversion": {
       "objektID":[
