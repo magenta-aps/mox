@@ -10,7 +10,8 @@ INCLUDEENDMARKER="### MOX INCLUDE END ###"
 ADD_FILES=""
 REMOVE_FILES=""
 QUIET=0
-while getopts "a:r:q" OPT; do
+LAST=0
+while getopts "a:r:ql" OPT; do
   case $OPT in
 	a)
 		ADD_FILES="$ADD_FILES $OPTARG"
@@ -20,6 +21,9 @@ while getopts "a:r:q" OPT; do
 		;;
 	q)
 		QUIET=1
+		;;
+	l)
+		LAST=1
 		;;
 	*)
 		echo "Usage: $0 [-a file] [-r file]"
@@ -61,8 +65,13 @@ for INCLUDEFILE in $ADD_FILES; do
 		exit 0
 	fi
 
-	REPLACELINE="$INCLUDELINE\n$INCLUDEENDMARKER"
-	sed -i -e "s/${INCLUDEENDMARKER}/${REPLACELINE//\//\\/}/" "$CONFIGFILE"
+	if [ $LAST ]; then
+		REPLACELINE="$INCLUDELINE\n$INCLUDEENDMARKER"
+		sed -i -e "s/${INCLUDEENDMARKER}/${REPLACELINE//\//\\/}/" "$CONFIGFILE"
+	else
+		REPLACELINE="$INCLUDEBEGINMARKER\n$INCLUDELINE"
+		sed -i -e "s/${INCLUDEBEGINMARKER}/${REPLACELINE//\//\\/}/" "$CONFIGFILE"
+	fi
 done
 
 
