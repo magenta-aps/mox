@@ -1,6 +1,7 @@
 #!/bin/bash
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+MOXDIR="$DIR/../.."
 
 # Setup and start virtual environment
 VIRTUALENV="$DIR/python-env"
