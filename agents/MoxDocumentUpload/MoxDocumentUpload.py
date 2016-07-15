@@ -6,12 +6,13 @@ from werkzeug.utils import secure_filename
 import requests
 import json
 from requests_toolbelt.multipart.encoder import MultipartEncoder
+from custom_exceptions import NoSuchJob
 
-from moxamqp import UploadedDocumentMessage
+from moxamqp import MessageSender, UploadedDocumentMessage
 
 DIR = os.path.dirname(os.path.realpath(__file__))
 
-REST_INTERFACE = "https://moxtest.magenta-aps.dk"
+REST_INTERFACE = "https://moxdev.magenta-aps.dk"
 
 ALLOWED_EXTENSIONS = set(['ods', 'xls', 'xlsx'])
 
@@ -76,6 +77,9 @@ def getCreateDocumentJson(documentName, mimetype):
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = '/tmp'
 
+sender = MessageSender("guest", "guest", "localhost:5672", "documentconvert")
+
+
 @app.route('/', methods=['GET','POST'])
 def upload():
     if request.method == 'GET':
@@ -102,37 +106,58 @@ def upload():
         if not authorization or len(authorization) == 0:
             raise UnauthorizedException("Authtoken missing")
 
-        # Save file to cache
+        ## Save file to cache ##
         filename = secure_filename(file.filename)
         destfilepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(destfilepath)
 
-        url = REST_INTERFACE + "/dokument/dokument"
-        headers = {"Authorization": authorization}
 
+        ## Send file to document service ##
+        url = REST_INTERFACE + "/dokument/dokument"
         data = MultipartEncoder(
             fields={
                 'json': getCreateDocumentJson(filename, file.mimetype),
                 'file': (filename, open(destfilepath, 'rb'), file.mimetype)
             }
         )
+        headers = {
+            "Authorization": authorization,
+            "Content-Type": data.content_type
+        }
         response = requests.post(url, headers=headers, data=data)
-        if response.status_code != 200:
+        if response.status_code != 200 and response.status_code != 201:
             raise ServiceException("Error in document service: %s" % response.text)
-
         try:
             responseJson = json.loads(response.text)
-        except:
+        except ValueError:
             raise ServiceException("Failed to parse document service response")
-
         if 'uuid' not in responseJson:
             raise ServiceException("Document service didn't return a uuid")
-
         uuid = responseJson['uuid']
 
         amqpMessage = UploadedDocumentMessage(uuid, authorization)
+        jobId = sender.send(amqpMessage)
+        jobObject = {'jobId': jobId}
 
-        return redirect(request.url)
+        return render_template('waiter.html', **jobObject)
+
+@app.route('/status')
+def checkStatus():
+    jobId = request.args.get('jobId')
+    if jobId is None:
+        raise ServiceException("Missing jobId")
+    try:
+        status = sender.getJobStatus(jobId)
+    except NoSuchJob as e:
+        raise ServiceException("Incorrect jobId '%s'" % e.message)
+    if status is not None:
+        try:
+            data = json.loads(status)
+            return jsonify({'response': data})
+        except ValueError:
+            return jsonify({'response': status})
+    else:
+        return jsonify({})
 
 @app.errorhandler(MoxFlaskException)
 def handle_error(error):
