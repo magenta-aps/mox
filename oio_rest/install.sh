@@ -136,7 +136,7 @@ fi
 echo "Setting up oio_rest WSGI service for Apache"
 sudo mkdir -p /var/www/wsgi
 sudo cp --remove-destination "$DIR/server-setup/oio_rest.wsgi" "/var/www/wsgi/"
-sudo $MOXDIR/apache/set_include.sh -a "$DIR/server-setup/oio_rest.conf"
+sudo $MOXDIR/apache/set_include.sh -a "$DIR/server-setup/oio_rest.conf" -l
 
 sudo mkdir -p /var/log/mox/oio_rest
 
