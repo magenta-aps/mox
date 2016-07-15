@@ -46,3 +46,9 @@ if [ $CREATE_VIRTUALENV == 1 ]; then
 		deactivate
 	fi
 fi
+
+# Install WSGI service
+echo "Setting up moxdocumentupload WSGI service for Apache"
+sudo mkdir -p /var/www/wsgi
+sudo cp --remove-destination "$DIR/setup/moxdocumentupload.wsgi" "/var/www/wsgi/"
+sudo $MOXDIR/apache/set_include.sh -a "$DIR/setup/moxdocumentupload.conf"
