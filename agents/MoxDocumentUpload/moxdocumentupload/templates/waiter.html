@@ -11,7 +11,7 @@
                 var poller = setInterval(function(){
                     console.log("getting /moxdocumentupload/status?jobId="+jobId);
                     $.get({
-                        url: "/moxdocumentupload/status",
+                        url: "status",
                         data: {'jobId': jobId},
                         dataType: "json",
                         success: function(responseObject, status, jqXHR){

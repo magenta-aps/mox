@@ -121,6 +121,7 @@ def upload():
             "Content-Type": data.content_type
         }
         response = requests.post(url, headers=headers, data=data)
+        os.remove(destfilepath)
         if response.status_code != 200 and response.status_code != 201:
             raise ServiceException("Error in document service: %s" % response.text)
         try:
