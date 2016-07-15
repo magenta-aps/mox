@@ -2,7 +2,6 @@ import amqp
 import uuid
 import json
 import time
-from custom_exceptions import NoSuchJob
 
 class Message(object):
 
@@ -132,3 +131,8 @@ class MessageSender(MessageInterface):
             raise NoSuchJob(replyQueue)
         if reply is not None:
             return reply.body
+
+class NoSuchJob(Exception):
+    def __init__(self, message):
+        super(NoSuchJob, self).__init__(message)
+

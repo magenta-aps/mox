@@ -6,9 +6,8 @@ from werkzeug.utils import secure_filename
 import requests
 import json
 from requests_toolbelt.multipart.encoder import MultipartEncoder
-from custom_exceptions import NoSuchJob
 
-from moxamqp import MessageSender, UploadedDocumentMessage
+from moxamqp import MessageSender, UploadedDocumentMessage, NoSuchJob
 
 DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -19,11 +18,9 @@ ALLOWED_EXTENSIONS = set(['ods', 'xls', 'xlsx'])
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
-templatefile = open("%s/createDocument.json" % DIR, "r")
+templatefile = open("%s/templates/createDocument.json" % DIR, "r")
 CREATE_DOCUMENT_JSON = templatefile.read()
 templatefile.close()
-
-
 
 
 class MoxFlaskException(Exception):
@@ -106,13 +103,12 @@ def upload():
         if not authorization or len(authorization) == 0:
             raise UnauthorizedException("Authtoken missing")
 
-        ## Save file to cache ##
+        # Save file to cache
         filename = secure_filename(file.filename)
         destfilepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(destfilepath)
 
-
-        ## Send file to document service ##
+        # Send file to document service
         url = REST_INTERFACE + "/dokument/dokument"
         data = MultipartEncoder(
             fields={
@@ -135,21 +131,23 @@ def upload():
             raise ServiceException("Document service didn't return a uuid")
         uuid = responseJson['uuid']
 
+        # Send AMQP message detailing the upload
         amqpMessage = UploadedDocumentMessage(uuid, authorization)
         jobId = sender.send(amqpMessage)
-        jobObject = {'jobId': jobId}
 
+        # Send http response
+        jobObject = {'jobId': jobId}
         return render_template('waiter.html', **jobObject)
 
 @app.route('/status')
 def checkStatus():
     jobId = request.args.get('jobId')
     if jobId is None:
-        raise ServiceException("Missing jobId")
+        raise BadRequestException("Missing jobId")
     try:
         status = sender.getJobStatus(jobId)
     except NoSuchJob as e:
-        raise ServiceException("Incorrect jobId '%s'" % e.message)
+        raise NotFoundException("Incorrect jobId '%s'" % e.message)
     if status is not None:
         try:
             data = json.loads(status)
