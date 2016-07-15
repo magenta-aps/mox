@@ -1,7 +1,7 @@
 #!/bin/bash
 
-
-while getopts ":ys" OPT; do
+DOMAIN="referencedata.dk"
+while getopts ":ysd:" OPT; do
   case $OPT in
         s)
                 SKIP_SYSTEM_DEPS=1
@@ -9,10 +9,14 @@ while getopts ":ys" OPT; do
         y)
                 ALWAYS_CONFIRM=1
                 ;;
+        d)
+                DOMAIN="$OPTARG"
+                ;;
         *)
-                echo "Usage: $0 [-y] [-s]"
+                echo "Usage: $0 [-y] [-s] [-d domain]"
                 echo "  -s: Skip installing oio_rest API system dependencies"
                 echo "  -y: Always confirm (yes) when prompted"
+				echo "  -d: Specify domain"
                 exit 1;
                 ;;
         esac
@@ -20,7 +24,7 @@ done
 
 # Get the folder of this script
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-echo "DIR=$DIR"
+MOXDIR="$DIR/.."
 
 
 
@@ -93,7 +97,12 @@ if [ $CREATE_VIRTUALENV == 1 ]; then
 fi
 
 
-DB_FOLDER="$DIR/../db"
+SETTINGS_FILENAME="oio_rest/settings.py"
+sudo cp --remove-destination "$DIR/$SETTINGS_FILENAME.base" "$DIR/$SETTINGS_FILENAME"
+sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$DIR/$SETTINGS_FILENAME"
+
+
+DB_FOLDER="$MOXDIR/db"
 
 source $DB_FOLDER/config.sh
 
@@ -132,15 +141,8 @@ fi
 # Install WSGI service
 echo "Setting up oio_rest WSGI service for Apache"
 sudo mkdir -p /var/www/wsgi
-sudo cp "$DIR/server-setup/oio_rest.wsgi" "/var/www/wsgi/"
-
-# setsymlinks.sh does this now
-# sudo cp "$DIR/server-setup/oio_rest.conf.production" "/etc/apache2/sites-available/oio_rest.conf"
-sudo a2ensite oio_rest
-sudo a2enmod ssl
-sudo a2enmod cgi
-
-sudo service apache2 restart
+sudo cp --remove-destination "$DIR/server-setup/oio_rest.wsgi" "/var/www/wsgi/"
+sudo $MOXDIR/apache/set_include.sh -a "$DIR/server-setup/oio_rest.conf"
 
 sudo mkdir -p /var/log/mox/oio_rest
 

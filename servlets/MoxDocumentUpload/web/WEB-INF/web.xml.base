@@ -43,7 +43,7 @@
     </context-param>
     <context-param>
         <param-name>rest.interface</param-name>
-        <param-value>https://moxdev.magenta-aps.dk</param-value>
+        <param-value>https://${domain}</param-value>
     </context-param>
     <context-param>
         <param-name>amqp.interface</param-name>
