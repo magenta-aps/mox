@@ -9,7 +9,6 @@
             var jobId = {{ jobId|tojson }};
             if (jobId) {
                 var poller = setInterval(function(){
-                    console.log("getting /moxdocumentupload/status?jobId="+jobId);
                     $.get({
                         url: "status",
                         data: {'jobId': jobId},

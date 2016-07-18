@@ -3,6 +3,14 @@ rest.interface = https://${domain}
 
 
 
+## MoxDocumentUpload Configuration ##
+
+moxdocumentupload.amqp.interface = localhost:5672
+moxdocumentupload.amqp.queueName = documentconvert
+moxdocumentupload.amqp.username = guest
+moxdocumentupload.amqp.password = guest
+
+
 
 ## MoxTabel Configuration ##
 
