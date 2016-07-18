@@ -26,6 +26,7 @@ setup(
         'requests-toolbelt==0.6.2',
         'werkzeug==0.11.10',
         'amqp==2.0.3',
-        'promise==0.4.2'
+        'promise==0.4.2',
+        'config==0.3.9'
     ]
 )
