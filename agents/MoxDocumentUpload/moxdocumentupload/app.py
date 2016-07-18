@@ -8,12 +8,14 @@ import json
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 from moxamqp import MessageSender, UploadedDocumentMessage, NoSuchJob
+from config import read_properties_file
 
 DIR = os.path.dirname(os.path.realpath(__file__))
 
-REST_INTERFACE = "https://moxdev.magenta-aps.dk"
+config = read_properties_file("/srv/mox/mox.conf")
 
 ALLOWED_EXTENSIONS = set(['ods', 'xls', 'xlsx'])
+
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
@@ -74,7 +76,11 @@ def getCreateDocumentJson(documentName, mimetype):
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = '/tmp'
 
-sender = MessageSender("guest", "guest", "localhost:5672", "documentconvert")
+sender = MessageSender(
+    config.get("moxdocumentupload.amqp.username"),
+    config.get("moxdocumentupload.amqp.password"),
+    config.get("moxdocumentupload.amqp.interface"),
+    config.get("moxdocumentupload.amqp.queueName"))
 
 
 @app.route('/', methods=['GET','POST'])
@@ -109,7 +115,7 @@ def upload():
         file.save(destfilepath)
 
         # Send file to document service
-        url = REST_INTERFACE + "/dokument/dokument"
+        url = config.get("rest.interface") + "/dokument/dokument"
         data = MultipartEncoder(
             fields={
                 'json': getCreateDocumentJson(filename, file.mimetype),
