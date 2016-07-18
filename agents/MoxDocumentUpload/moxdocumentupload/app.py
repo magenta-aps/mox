@@ -95,6 +95,7 @@ def upload():
             return redirect(request.url)
         file = request.files['file']
         authorization = request.form['token']
+        output = request.form.get("output", "html")
 
         if not file:
             raise BadRequestException("No file submitted")
@@ -144,7 +145,10 @@ def upload():
 
         # Send http response
         jobObject = {'jobId': jobId}
-        return render_template('waiter.html', **jobObject)
+        if output == 'json':
+            return jsonify(jobObject)
+        elif output == 'html':
+            return render_template('waiter.html', **jobObject)
 
 @app.route('/status')
 def checkStatus():
