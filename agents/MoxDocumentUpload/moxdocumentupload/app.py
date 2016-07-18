@@ -8,7 +8,7 @@ import json
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 from moxamqp import MessageSender, UploadedDocumentMessage, NoSuchJob
-from config import read_properties_file
+from moxconfig import read_properties_file
 
 DIR = os.path.dirname(os.path.realpath(__file__))
 
