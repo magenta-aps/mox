@@ -1,6 +1,3 @@
-/**
- * Created by lars on 18-07-16.
- */
 var pollJob = function(jobId, callback) {
     if (jobId && callback) {
         var poller = setInterval(function(){
