@@ -9,9 +9,9 @@ for package in "${SYSTEM_PACKAGES[@]}"; do
 	sudo apt-get -y install $package
 done
 
-pushd "$DIR"
-mvn package
-popd
+pushd "$DIR" > /dev/null
+mvn package --quiet -Dmaven.test.skip=true
+popd > /dev/null
 
 if [ ! -f "$DIR/auth.properties" ]; then
 	ln -s "$DIR/auth.properties.production" "$DIR/auth.properties"
