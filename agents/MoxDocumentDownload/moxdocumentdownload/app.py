@@ -18,6 +18,43 @@ GET_TOKEN = "/get-token"
 
 app = Flask(__name__)
 
+
+
+class MoxFlaskException(Exception):
+    status_code = None  # Please supply in subclass!
+
+    def __init__(self, message, payload=None):
+        super(MoxFlaskException, self).__init__()
+        self.message = message
+        self.payload = payload
+
+    def to_dict(self):
+        rv = dict(self.payload or ())
+        rv['message'] = self.message
+        return rv
+
+
+class NotAllowedException(MoxFlaskException):
+    status_code = 403
+
+
+class NotFoundException(MoxFlaskException):
+    status_code = 404
+
+
+class UnauthorizedException(MoxFlaskException):
+    status_code = 401
+
+
+class BadRequestException(MoxFlaskException):
+    status_code = 400
+
+
+class ServiceException(MoxFlaskException):
+    status_code = 500
+
+
+
 class ChunkGet(threading.Thread):
 
     results = []
@@ -84,7 +121,7 @@ def extract(server, username, password, objecttypes, https=True, load_threaded=1
                 msg = e.message
                 if 'No JSON object could be decoded' in e.message:
                     msg += "\n%s" % list_request.text
-                raise Exception(msg)
+                raise ServiceException(msg)
 
         objects[objecttype_name] = []
         uuids = list(set(uuids))
@@ -132,7 +169,7 @@ def extract(server, username, password, objecttypes, https=True, load_threaded=1
                     msg = e.message
                     if 'No JSON object could be decoded' in e.message:
                         msg += "\n%s" % item_request.text
-                    raise Exception(msg)
+                    raise ServiceException(msg)
 
                 request_counter += 1 # Rens for gamle registreringer
                 if request_counter % 20 == 0:
@@ -160,11 +197,12 @@ def get_token(schema, server, username, password):
             message = object.get("message")
         except ValueError:
             message = token_request.text
-        raise Exception(message)
-    token = token_request.text.strip()
+        if "invalid username or password" in message:
+            print "wrong pw"
+            raise NotAllowedException(message)
+        raise ServiceException(message)
 
-    # print "Token obtained"
-    return token
+    return token_request.text.strip()
 
 
 def unlist(data, path=[]):
@@ -445,39 +483,6 @@ OBJECTTYPE_MAP = {
 
 
 
-class MoxFlaskException(Exception):
-    status_code = None  # Please supply in subclass!
-
-    def __init__(self, message, payload=None):
-        super(MoxFlaskException, self).__init__()
-        self.message = message
-        self.payload = payload
-
-    def to_dict(self):
-        rv = dict(self.payload or ())
-        rv['message'] = self.message
-        return rv
-
-
-class NotAllowedException(MoxFlaskException):
-    status_code = 403
-
-
-class NotFoundException(MoxFlaskException):
-    status_code = 404
-
-
-class UnauthorizedException(MoxFlaskException):
-    status_code = 401
-
-
-class BadRequestException(MoxFlaskException):
-    status_code = 400
-
-
-class ServiceException(MoxFlaskException):
-    status_code = 500
-
 
 def print_error(message):
     print "Content-Type: text/plain\n\n"
@@ -492,42 +497,42 @@ def main():
     if request.method == 'GET':
         return render_template('form.html')
     elif request.method == 'POST':
+        require_parameter('type')
+        objecttype = request.form['type']
+        if objecttype not in OBJECTTYPE_MAP:
+            raise BadRequestException("The type parameter must be one of the following: %s" % ", ".join(OBJECTTYPE_MAP.keys()))
+
+        require_parameter('username')
+        username = request.form['username']
+
+        require_parameter('password')
+        password = request.form['password']
+
+        mergelevel = request.form.get('merge', 1)
         try:
-            require_parameter('type')
-            objecttype = request.form['type']
-            if objecttype not in OBJECTTYPE_MAP:
-                raise BadRequestException("The type parameter must be one of the following: %s" % ", ".join(OBJECTTYPE_MAP.keys()))
-
-            require_parameter('username')
-            username = request.form['username']
-
-            require_parameter('password')
-            password = request.form['password']
-
-            mergelevel = request.form.get('merge', 1)
-            try:
-                mergelevel = int(mergelevel)
-                if mergelevel not in [0, 1, 2]:
-                    raise BadRequestException("'merge' parameter must be 0, 1 or 2. Default is 1")
-            except ValueError:
+            mergelevel = int(mergelevel)
+            if mergelevel not in [0, 1, 2]:
                 raise BadRequestException("'merge' parameter must be 0, 1 or 2. Default is 1")
+        except ValueError:
+            raise BadRequestException("'merge' parameter must be 0, 1 or 2. Default is 1")
 
-            server = socket.getfqdn()
-            objects = extract(
-                server,
-                username, password,
-                {objecttype: OBJECTTYPE_MAP[objecttype]}
-            )
-            data = format(objects, mergelevel)
-            objectdata = data[objecttype]
-            filedata = u'\n'.join([u','.join(objectdata['headers'])] + [csvrow(row, objectdata['headers']) for row in objectdata['rows']])
+        server = socket.getfqdn()
+        objects = extract(
+            server,
+            username, password,
+            {objecttype: OBJECTTYPE_MAP[objecttype]}
+        )
+        data = format(objects, mergelevel)
+        objectdata = data[objecttype]
+        filedata = u'\n'.join([u','.join(objectdata['headers'])] + [csvrow(row, objectdata['headers']) for row in objectdata['rows']])
 
-            headers = [
-                "Content-Type: text/csv; charset=utf-8",
-                "Content-Disposition: attachment; filename=\"%s.csv\"" % objecttype
-            ]
-            print "\n".join(headers) + "\n"
-            print filedata.encode("utf-8")
+        headers = [
+            "Content-Type: text/csv; charset=utf-8",
+            "Content-Disposition: attachment; filename=\"%s.csv\"" % objecttype
+        ]
+        print "\n".join(headers) + "\n"
+        print filedata.encode("utf-8")
 
-        except Exception as e:
-            print_error(e.message)
+@app.errorhandler(MoxFlaskException)
+def handle_error(error):
+    return error.message, error.status_code
