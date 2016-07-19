@@ -494,17 +494,17 @@ def main():
     elif request.method == 'POST':
         try:
             require_parameter('type')
-            objecttype = request.form['type'].value
+            objecttype = request.form['type']
             if objecttype not in OBJECTTYPE_MAP:
                 raise BadRequestException("The type parameter must be one of the following: %s" % ", ".join(OBJECTTYPE_MAP.keys()))
 
             require_parameter('username')
-            username = request.form['username'].value
+            username = request.form['username']
 
             require_parameter('password')
-            password = request.form['password'].value
+            password = request.form['password']
 
-            mergelevel = request.form.get('merge', 1).value
+            mergelevel = request.form.get('merge', 1)
             try:
                 mergelevel = int(mergelevel)
                 if mergelevel not in [0, 1, 2]:
