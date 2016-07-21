@@ -83,14 +83,12 @@ $DIR/modules/spreadsheet/install.sh
 echo "Installing Tomcat webservices"
 $DIR/servlets/install.sh
 $DIR/servlets/MoxDocumentUpload/install.sh "$DOMAIN"
-$DIR/agents/MoxDocumentDownload/install.sh
-
-$DIR/scripts/install.sh
 
 # Compile agents
 echo "Installing Agents"
 $DIR/agents/MoxTabel/install.sh
 $DIR/agents/MoxRestFrontend/install.sh
+$DIR/agents/MoxDocumentDownload/install.sh
 $DIR/agents/MoxTest/install.sh
 
 sudo chown -R mox:mox $DIR
