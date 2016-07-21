@@ -52,6 +52,7 @@ public class UploadedDocumentMessage extends Message {
     public Headers getHeaders() {
         Headers headers = super.getHeaders();
         headers.put(Message.HEADER_OBJECTTYPE, HEADER_OBJECTTYPE_VALUE_DOCUMENT);
+        headers.put(Message.HEADER_OPERATION, OPERATION);
         headers.put(Message.HEADER_TYPE, Message.HEADER_TYPE_VALUE_MANUAL);
         headers.put(Message.HEADER_OBJECTREFERENCE, this.retrievalUUID.toString());
         return headers;

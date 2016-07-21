@@ -86,6 +86,8 @@ $DIR/agents/MoxDocumentUpload/install.sh
 $DIR/agents/MoxDocumentDownload/install.sh
 $DIR/agents/MoxTest/install.sh
 
+$DIR/wso2/install.sh "$DOMAIN"
+
 sudo chown -R mox:mox $DIR
 sudo service apache2 reload
 
