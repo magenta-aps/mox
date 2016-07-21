@@ -92,9 +92,7 @@ $DIR/agents/MoxTabel/install.sh
 $DIR/agents/MoxRestFrontend/install.sh
 $DIR/agents/MoxTest/install.sh
 
-
-sudo NODEBUG=1 $DIR/wso2/confWSO2cert.sh "$DOMAIN"
-
+$DIR/wso2/install.sh "$DOMAIN"
 
 sudo chown -R mox:mox $DIR
 sudo service apache2 reload
