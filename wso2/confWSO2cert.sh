@@ -19,7 +19,7 @@ NOW=$(date +"%Y%m%d.%H%M%S")
 MOXDIR="/srv/mox"
 
 DOMAIN=$1
-$DOMAIN_DEF=$(hostname --fqdn)
+DOMAIN_DEF=$(hostname --fqdn)
 CERTIFICATE_DEF=/etc/apache2/certs/magenta-aps.dk.crt
 PRIVATE_KEY_DEF=/etc/apache2/certs/magenta-aps.dk.key
 PASSOUT_DEF=wso2carbon
@@ -31,7 +31,7 @@ CLIENT_KEYSTORE_DEF=/opt/wso2is-5.0.0/repository/resources/security/client-trust
 CARBON_XML=/opt/wso2is-5.0.0/repository/conf/carbon.xml
 SECRET_CONF=/opt/wso2is-5.0.0/repository/conf/security/secret-conf.properties
 MOX_AUTH_CONFIG="${MOXDIR}/modules/auth/auth.properties"
-MOX_OIO_CONFIG="${MOXDIR}/oio_rest/settings.py"
+MOX_OIO_CONFIG="${MOXDIR}/oio_rest/oio_rest/settings.py"
 
 
 function build_expect1_script() {
@@ -166,108 +166,60 @@ EOF
 
 # Setup variables
 
-QUIT=FALSE
-while [ "${QUIT}" == "FALSE" ]
-do
-	/bin/echo
-	read -p "Domain name [${DOMAIN_DEF}]: " ANSWER
-	DOMAIN=${ANSWER:-$DOMAIN_DEF}
-	/bin/echo "DOMAIN: " ${DOMAIN}
-	if [[ -n "${DOMAIN}" ]]
-	then
-		QUIT=TRUE
-	fi
-done
+if [[ -z "$DOMAIN" ]]; then
+echo "domain is not set"
+	QUIT="FALSE"
+else
+echo "domain is set"
+	QUIT="TRUE"
+fi
 
-QUIT=FALSE
-while [ "${QUIT}" == "FALSE" ]
-do
-	/bin/echo
-	read -p "Path for certificate [${CERTIFICATE_DEF}]: " ANSWER
-	CERTIFICATE=${ANSWER:-$CERTIFICATE_DEF}
-	/bin/echo "CERTIFICATE: " ${CERTIFICATE}
-	if [[ -f "${CERTIFICATE}" ]]
-	then
-		QUIT=TRUE
-	else
-		/bin/echo "${CERTIFICATE} is not a file"
-	fi
-done
 
-QUIT=FALSE
-while [ "${QUIT}" == "FALSE" ]
-do
-	/bin/echo
-	read -p "Path for certificate private key [${PRIVATE_KEY_DEF}]: " ANSWER
-	PRIVATE_KEY=${ANSWER:-$PRIVATE_KEY_DEF}
-	/bin/echo "PRIVATE_KEY: " ${PRIVATE_KEY}
-	if [[ -f "${PRIVATE_KEY}" ]]
-	then
-		QUIT=TRUE
-	else
-		/bin/echo "${PRIVATE_KEY} is not a file"
-	fi
-done
+function prompt_var() {
+	varname=$1
+	default=$2
+	promptmsg=$3
+	errormsg=$4
+	checkfile=$5
+	
+	QUIT=false
+	while ! $QUIT
+	do
+		/bin/echo
+		read -p "${promptmsg} [${default}]: " ANSWER
+		VALUE=${ANSWER:-$default}
+		/bin/echo "${promptmsg}: " ${VALUE}
 
-QUIT=FALSE
-while [ "${QUIT}" == "FALSE" ]
-do
-	/bin/echo
-	read -p "Password for certificate/key_trust_stores [${PASSOUT_DEF}]: " ANSWER
-	PASSOUT=${ANSWER:-$PASSOUT_DEF}
-	/bin/echo "PASSOUT: " ${PASSOUT}
-	if [[ -n "${PASSOUT}" ]]
-	then
-		QUIT=TRUE
-	else
-		/bin/echo "Password must not be empty"
-	fi
-done
+		if [ "${checkfile}" = true ]; then
+			if [[ -f "${VALUE}" ]]
+			then
+				QUIT=true
+			else
+				/bin/echo "${errormsg}"
+			fi
+		else 
+			if [[ -n "${VALUE}" ]]
+			then
+				QUIT=true
+			else
+				/bin/echo "${errormsg}"
+			fi
+		fi
+	done
+	eval "$varname='${VALUE}'"
+}
 
-QUIT=FALSE
-while [ "${QUIT}" == "FALSE" ]
-do
-	/bin/echo
-	read -p "Path for new keystore [${NEW_KEYSTORE_DEF}]: " ANSWER
-	NEW_KEYSTORE=${ANSWER:-$NEW_KEYSTORE_DEF}
-	/bin/echo "NEW_KEYSTORE: " ${NEW_KEYSTORE}
-	if [[ -n "${NEW_KEYSTORE}" ]]
-	then
-		QUIT=TRUE
-	else
-		/bin/echo "Name of new keystore must not be empty"
-	fi
-done
+if [[ -z "${DOMAIN}" ]]
+then
+	prompt_var DOMAIN "${DOMAIN_DEF}" "Domain name" "Empty domain" false
+fi
+prompt_var CERTIFICATE "${CERTIFICATE_DEF}" "Path for certificate" "Not a file" true
+prompt_var PRIVATE_KEY "${PRIVATE_KEY_DEF}" "Path for certificate private key" "Not a file" true
+prompt_var PASSOUT "${PASSOUT_DEF}" "Password for certificate/key_trust_stores" "Password must not be empty" false
+prompt_var NEW_KEYSTORE "${NEW_KEYSTORE_DEF}" "Path for new keystore" "Name of new keystore must not be empty" true
+prompt_var KEY_ALIAS "${KEY_ALIAS_DEF}" "Name for keyalias" "Alias must not be empty" false
+prompt_var CLIENT_KEYSTORE "${CLIENT_KEYSTORE_DEF}" "Path for client truststore" "Not a file" true
 
-QUIT=FALSE
-while [ "${QUIT}" == "FALSE" ]
-do
-	/bin/echo
-	read -p "Name for keyalias [${KEY_ALIAS_DEF}]: " ANSWER
-	KEY_ALIAS=${ANSWER:-$KEY_ALIAS_DEF}
-	/bin/echo "KEY_ALIAS: " ${KEY_ALIAS}
-	if [[ -n "${KEY_ALIAS}" ]]
-	then
-		QUIT=TRUE
-	else
-		/bin/echo "Alias must not be empty"
-	fi
-done
-
-QUIT=FALSE
-while [ "${QUIT}" == "FALSE" ]
-do
-	/bin/echo
-	read -p "Path for client truststore [${CLIENT_KEYSTORE_DEF}]: " ANSWER
-	CLIENT_KEYSTORE=${ANSWER:-$CLIENT_KEYSTORE_DEF}
-	/bin/echo "CLIENT_KEYSTORE: " ${CLIENT_KEYSTORE}
-	if [[ -f "${CLIENT_KEYSTORE}" ]]
-	then
-		QUIT=TRUE
-	else
-		/bin/echo "${CLIENT_KEYSTORE} is not a file"
-	fi
-done
 
 CERTIFICATE_PKCS12=${CERTIFICATE%*.crt}.pfx
 CERTIFICATE_PKCS12=${CERTIFICATE_PKCS12##*/}
@@ -332,6 +284,23 @@ then
 # Backup old configuration files
 	/bin/echo /bin/cp -p ${CARBON_XML} ${CARBON_XML}.${NOW}
 	/bin/echo /bin/cp -p ${SECRET_CONF} ${SECRET_CONF}.${NOW}
+
+echo "cert: ${CERTIFICATE}"
+
+# Update auth.properties with new values
+	/bin/echo sed -r -e "s|^security.keystore.path.*$|security.keystore.path = ${NEW_KEYSTORE}|" \
+       -e "s|^security.keystore.password.*$|security.keystore.password = ${PASSOUT}|" \
+       -e "s|^security.user.cert.alias.*$|security.user.cert.alias = ${KEY_ALIAS}|" \
+       -e "s|^security.user.cert.password.*$|security.user.cert.password = ${PASSOUT}|" \
+       ${MOX_AUTH_CONFIG} > ${MOX_AUTH_CONFIG}.$$
+
+# Update oio settings.py with new values
+	/bin/echo sed -r -e "s|^SAML_MOX_ENTITY_ID.*$|SAML_MOX_ENTITY_ID = 'https://${DOMAIN}'|" \
+       -e "s|^SAML_IDP_URL.*$|SAML_IDP_URL = 'https://${DOMAIN}:9443/services/wso2carbon-sts?wsdl'|" \
+       -e "s|^SAML_IDP_ENTITY_ID.*$|SAML_IDP_ENTITY_ID = '${DOMAIN}'|" \
+       -e "s|^SAML_IDP_CERTIFICATE.*$|SAML_IDP_CERTIFICATE = '${CERTIFICATE}'|" \
+       "${MOX_OIO_CONFIG}" > ${MOX_OIO_CONFIG}.$$
+
 else
 # Extract convert certificate to pkcs12 format with alias KEY_ALIAS
 	/bin/echo step 1
@@ -412,12 +381,13 @@ fi
 
 
 # Customize configuration files
-awk -v NKS=${NEW_KEYSTORE} -v PWD=${PASSOUT} -v ALIAS=${KEY_ALIAS} -v CKS=${CLIENT_KEYSTORE} -v DMN=${DOMAIN}'
+awk -v NKS=${NEW_KEYSTORE} -v PWD=${PASSOUT} -v ALIAS=${KEY_ALIAS} -v CKS=${CLIENT_KEYSTORE} -v DMN=${DOMAIN} '
 BEGIN				{
 				printline=1;
 				}
-/<HostName>.*</HostName>/ {
-				printf("<HostName>%s</HostName>", DMN);
+/<HostName>.*<\/HostName>/ {
+				printf("\t<HostName>%s</HostName>\n", DMN);
+				printline=0;
                 }
 /<KeyStore>/,/<\/KeyStore>/	{
 				if (index($0, "<Location>"))
@@ -498,17 +468,17 @@ fi
 
 
 # Update auth.properties with new values
-sed -r -e "s/^security.keystore.path.*$/security.keystore.path = ${NEW_KEYSTORE}/" \
-       -e "s/^security.keystore.password.*$/security.keystore.password = ${PASSOUT}/" \
-       -e "s/^security.user.cert.alias.*$/security.user.cert.alias = ${KEY_ALIAS}/" \
-       -e "s/^security.user.cert.password.*$/security.user.cert.password = ${PASSOUT}/" \
+sed -r -e "s|^security.keystore.path.*$|security.keystore.path = ${NEW_KEYSTORE}|" \
+       -e "s|^security.keystore.password.*$|security.keystore.password = ${PASSOUT}|" \
+       -e "s|^security.user.cert.alias.*$|security.user.cert.alias = ${KEY_ALIAS}|" \
+       -e "s|^security.user.cert.password.*$|security.user.cert.password = ${PASSOUT}|" \
        ${MOX_AUTH_CONFIG} > ${MOX_AUTH_CONFIG}.$$
 
 # Update oio settings.py with new values
-sed -r -e "s|^SAML_MOX_ENTITY_ID.*$|'https://${DOMAIN}'|" \
-       -e "s|^SAML_IDP_URL.*$|'https://${DOMAIN}:9443/services/wso2carbon-sts?wsdl')|" \
-       -e "s|^SAML_IDP_ENTITY_ID.*$|'${DOMAIN}'|" \
-       -e "s|^SAML_IDP_CERTIFICATE.*$|'${CERTIFICATE}'|" \
+sed -r -e "s|^SAML_MOX_ENTITY_ID.*$|SAML_MOX_ENTITY_ID = 'https://${DOMAIN}'|" \
+       -e "s|^SAML_IDP_URL.*$|SAML_IDP_URL = 'https://${DOMAIN}:9443/services/wso2carbon-sts?wsdl'|" \
+       -e "s|^SAML_IDP_ENTITY_ID.*$|SAML_IDP_ENTITY_ID = '${DOMAIN}'|" \
+       -e "s|^SAML_IDP_CERTIFICATE.*$|SAML_IDP_CERTIFICATE = '${CERTIFICATE}'|" \
        "${MOX_OIO_CONFIG}" > ${MOX_OIO_CONFIG}.$$
 
 if [ -z "$NODEBUG" ]
@@ -522,7 +492,7 @@ else
 	/bin/cp -p ${MOX_OIO_CONFIG}.$$ ${MOX_OIO_CONFIG}
 fi
 /bin/rm ${MOX_AUTH_CONFIG}.$$
-
+/bin/rm ${MOX_OIO_CONFIG}.$$
 
 
 
