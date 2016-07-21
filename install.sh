@@ -77,7 +77,6 @@ echo "Installing java modules"
 $DIR/modules/json/install.sh
 $DIR/modules/agent/install.sh
 $DIR/modules/auth/install.sh
-$DIR/modules/spreadsheet/install.sh
 
 # Install servlet
 echo "Installing Tomcat webservices"
