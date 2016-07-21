@@ -50,6 +50,7 @@ fi
 
 # Install WSGI service
 echo "Setting up moxdocumentdownload WSGI service for Apache"
-sudo mkdir -p /var/www/wsgi
+sudo mkdir --parents /var/www/wsgi
 sudo cp --remove-destination "$DIR/setup/moxdocumentdownload.wsgi" "/var/www/wsgi/"
 sudo $MOXDIR/apache/set_include.sh -a "$DIR/setup/moxdocumentdownload.conf"
+
