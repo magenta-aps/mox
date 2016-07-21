@@ -78,8 +78,6 @@ $DIR/modules/json/install.sh
 $DIR/modules/agent/install.sh
 $DIR/modules/auth/install.sh
 
-$DIR/scripts/install.sh
-
 # Compile agents
 echo "Installing Agents"
 $DIR/agents/MoxTabel/install.sh
