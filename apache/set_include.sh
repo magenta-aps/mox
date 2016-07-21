@@ -65,7 +65,7 @@ for INCLUDEFILE in $ADD_FILES; do
 		exit 0
 	fi
 
-	if [ $LAST ]; then
+	if [ $LAST -eq 1 ]; then
 		REPLACELINE="$INCLUDELINE\n$INCLUDEENDMARKER"
 		sed -i -e "s/${INCLUDEENDMARKER}/${REPLACELINE//\//\\/}/" "$CONFIGFILE"
 	else
