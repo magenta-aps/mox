@@ -83,6 +83,7 @@ $DIR/modules/spreadsheet/install.sh
 echo "Installing Tomcat webservices"
 $DIR/servlets/install.sh
 $DIR/servlets/MoxDocumentUpload/install.sh "$DOMAIN"
+$DIR/servlets/MoxDocumentDownload/install.sh
 
 $DIR/scripts/install.sh
 
