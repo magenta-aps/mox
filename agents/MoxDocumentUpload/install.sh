@@ -22,7 +22,7 @@ if [ -d $VIRTUALENV ]; then
 		CREATE_VIRTUALENV=1
 	fi
 	if [ $CREATE_VIRTUALENV == 1 ]; then
-		rm -rf $VIRTUALENV
+		rm --recursive --force $VIRTUALENV
 	fi
 else
 	CREATE_VIRTUALENV=1
@@ -50,6 +50,7 @@ fi
 
 # Install WSGI service
 echo "Setting up moxdocumentupload WSGI service for Apache"
-sudo mkdir -p /var/www/wsgi
+sudo mkdir --parents /var/www/wsgi
 sudo cp --remove-destination "$DIR/setup/moxdocumentupload.wsgi" "/var/www/wsgi/"
 sudo $MOXDIR/apache/set_include.sh -a "$DIR/setup/moxdocumentupload.conf"
+
