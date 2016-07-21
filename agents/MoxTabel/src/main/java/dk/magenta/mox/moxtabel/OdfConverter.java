@@ -1,4 +1,4 @@
-package dk.magenta.mox.spreadsheet;
+package dk.magenta.mox.moxtabel;
 /*
 import org.odftoolkit.simple.SpreadsheetDocument;
 import org.odftoolkit.simple.table.Cell;
@@ -10,7 +10,6 @@ import org.apache.log4j.Logger;
 import org.jopendocument.dom.spreadsheet.*;
 
 import java.io.File;
-import java.io.InputStream;
 
 /**
  * Created by lars on 26-11-15.

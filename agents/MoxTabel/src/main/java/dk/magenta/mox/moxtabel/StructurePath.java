@@ -1,4 +1,4 @@
-package dk.magenta.mox.spreadsheet;
+package dk.magenta.mox.moxtabel;
 
 import dk.magenta.mox.json.JSONArray;
 

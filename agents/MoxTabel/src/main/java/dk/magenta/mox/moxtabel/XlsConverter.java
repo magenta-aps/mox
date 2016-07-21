@@ -1,4 +1,4 @@
-package dk.magenta.mox.spreadsheet;
+package dk.magenta.mox.moxtabel;
 
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.Cell;

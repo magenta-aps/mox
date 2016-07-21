@@ -5,16 +5,54 @@ import warnings
 import requests
 import json
 import io
-import cgi
 import os
 import sys
 import socket
 import datetime
 import threading
+from flask import Flask, render_template, request
 
 BASEPATH = os.path.dirname(os.path.realpath(sys.argv[0]))
 
 GET_TOKEN = "/get-token"
+
+app = Flask(__name__)
+
+
+
+class MoxFlaskException(Exception):
+    status_code = None  # Please supply in subclass!
+
+    def __init__(self, message, payload=None):
+        super(MoxFlaskException, self).__init__()
+        self.message = message
+        self.payload = payload
+
+    def to_dict(self):
+        rv = dict(self.payload or ())
+        rv['message'] = self.message
+        return rv
+
+
+class NotAllowedException(MoxFlaskException):
+    status_code = 403
+
+
+class NotFoundException(MoxFlaskException):
+    status_code = 404
+
+
+class UnauthorizedException(MoxFlaskException):
+    status_code = 401
+
+
+class BadRequestException(MoxFlaskException):
+    status_code = 400
+
+
+class ServiceException(MoxFlaskException):
+    status_code = 500
+
 
 
 class ChunkGet(threading.Thread):
@@ -83,7 +121,7 @@ def extract(server, username, password, objecttypes, https=True, load_threaded=1
                 msg = e.message
                 if 'No JSON object could be decoded' in e.message:
                     msg += "\n%s" % list_request.text
-                raise Exception(msg)
+                raise ServiceException(msg)
 
         objects[objecttype_name] = []
         uuids = list(set(uuids))
@@ -131,7 +169,7 @@ def extract(server, username, password, objecttypes, https=True, load_threaded=1
                     msg = e.message
                     if 'No JSON object could be decoded' in e.message:
                         msg += "\n%s" % item_request.text
-                    raise Exception(msg)
+                    raise ServiceException(msg)
 
                 request_counter += 1 # Rens for gamle registreringer
                 if request_counter % 20 == 0:
@@ -159,11 +197,12 @@ def get_token(schema, server, username, password):
             message = object.get("message")
         except ValueError:
             message = token_request.text
-        raise Exception(message)
-    token = token_request.text.strip()
+        if "invalid username or password" in message:
+            print "wrong pw"
+            raise NotAllowedException(message)
+        raise ServiceException(message)
 
-    # print "Token obtained"
-    return token
+    return token_request.text.strip()
 
 
 def unlist(data, path=[]):
@@ -306,9 +345,7 @@ def convert(row, structure, include_virkning=True):
             if p == 'urn' and ptr.startswith('urn:'):
                 ptr = ptr[len('urn:'):]
             converted[key] = ptr
-            # print "SUCCESS: %s => %s" % (path, key)
         except:
-            # print "FAILURE: %s => %s" % (path, key)
             pass
     return converted
 
@@ -444,144 +481,58 @@ OBJECTTYPE_MAP = {
     "bruger": "/organisation/bruger"
 }
 
+
+
+
 def print_error(message):
     print "Content-Type: text/plain\n\n"
     print message
 
-def main():
-    if "REQUEST_METHOD" in os.environ:
-        method = os.environ["REQUEST_METHOD"]
-        if method == "GET":
-            return get()
-        elif method == "POST":
-            return post()
-    else:
-        direct_run()
+def require_parameter(parametername):
+    if parametername not in request.form:
+        raise BadRequestException("Please specify the '%s' parameter" % parametername)
 
-def direct_run():
-    # Running script directly
-    mergelevel = 0
-    server = "referencedata.dk"
-    username = "notreally"
-    password = "notreally"
-    warnings.filterwarnings("ignore")
-    for objecttype in OBJECTTYPE_MAP.keys():
-        filename = "%s_%s.json" % (server, objecttype)
-        if os.path.isfile(filename):
-            fp = open(filename, 'r')
-            objects = json.load(fp)
-            fp.close()
-        else:
-            objects = extract(
-                server,
-                username, password,
-                {objecttype: OBJECTTYPE_MAP[objecttype]},
-                load_threaded=20
-            )
-            fp = open(filename, 'w')
-            json.dump(objects, fp)
-            fp.close()
+@app.route('/', methods=['GET', 'POST'])
+def main():
+    if request.method == 'GET':
+        return render_template('form.html')
+    elif request.method == 'POST':
+        require_parameter('type')
+        objecttype = request.form['type']
+        if objecttype not in OBJECTTYPE_MAP:
+            raise BadRequestException("The type parameter must be one of the following: %s" % ", ".join(OBJECTTYPE_MAP.keys()))
+
+        require_parameter('username')
+        username = request.form['username']
+
+        require_parameter('password')
+        password = request.form['password']
+
+        mergelevel = request.form.get('merge', 1)
+        try:
+            mergelevel = int(mergelevel)
+            if mergelevel not in [0, 1, 2]:
+                raise BadRequestException("'merge' parameter must be 0, 1 or 2. Default is 1")
+        except ValueError:
+            raise BadRequestException("'merge' parameter must be 0, 1 or 2. Default is 1")
+
+        server = socket.getfqdn()
+        objects = extract(
+            server,
+            username, password,
+            {objecttype: OBJECTTYPE_MAP[objecttype]}
+        )
         data = format(objects, mergelevel)
         objectdata = data[objecttype]
         filedata = u'\n'.join([u','.join(objectdata['headers'])] + [csvrow(row, objectdata['headers']) for row in objectdata['rows']])
-        writefile("%s.csv" % objecttype, filedata)
 
-def get():
-    print "Content-Type: text/html\n\n"
-    print """
-    <html>
-        <head>
-            <title>Mox document extract</title>
-        </head>
-        <body>
-            <form method="POST">
-                <label for="username">Brugernavn: </label>
-                <input type="text" id="username" name="username"/><br/>
+        headers = [
+            "Content-Type: text/csv; charset=utf-8",
+            "Content-Disposition: attachment; filename=\"%s.csv\"" % objecttype
+        ]
+        print "\n".join(headers) + "\n"
+        print filedata.encode("utf-8")
 
-                <label for="password">Password: </label>
-                <input type="password" id="password" name="password"/><br/>
-
-                <label for="type">Type: </label>
-                <select id="type" name="type">
-                    <option value="klassifikation">klassifikation</option>
-                    <option value="klasse">klasse</option>
-                    <option value="facet">facet</option>
-                    <option value="organisation">organisation</option>
-                    <option value="organisationenhed">organisationenhed</option>
-                    <option value="organisationfunktion">organisationfunktion</option>
-                    <option value="bruger">bruger</option>
-                </select><br/>
-
-                <label for="type">Merge level: </label>
-                <select id="merge" name="merge">
-                    <option value="0">No merge (0)</option>
-                    <option value="1">Partial merge (1)</option>
-                    <option value="2" selected="selected">Full merge (2)</option>
-                </select><br/>
-
-                <button type="submit">Hent data</button>
-            </form>
-        </body>
-    </html>
-    """
-
-def post():
-    try:
-        parameters = cgi.FieldStorage()
-
-        objecttype = None
-        username = None
-        password = None
-        server = socket.getfqdn()
-        mergelevel = 1
-
-        if objecttype is None:
-            if not parameters.has_key('type'):
-                return print_error("Please specify the 'type' parameter")
-            else:
-                objecttype = parameters['type'].value
-                if objecttype not in OBJECTTYPE_MAP:
-                    return print_error("The type parameter must be one of the following: %s" % ", ".join(OBJECTTYPE_MAP.keys()))
-
-        if username is None:
-            if not parameters.has_key('username'):
-                return print_error("Please specify the 'username' parameter")
-            else:
-                username = parameters['username'].value
-
-        if password is None:
-            if not parameters.has_key('password'):
-                return print_error("Please specify the 'password' parameter")
-            else:
-                password = parameters['password'].value
-
-        if parameters.has_key('merge'):
-            m = parameters['merge'].value
-            try:
-                m = int(m)
-                if m in [0,1,2]:
-                    mergelevel = m
-            except:
-                return print_error("'merge' parameter must be 0, 1 or 2. Default is 1")
-
-        if objecttype and username and password:
-            objects = extract(
-                server,
-                username, password,
-                {objecttype: OBJECTTYPE_MAP[objecttype]}
-            )
-            data = format(objects, mergelevel)
-            objectdata = data[objecttype]
-            filedata = u'\n'.join([u','.join(objectdata['headers'])] + [csvrow(row, objectdata['headers']) for row in objectdata['rows']])
-
-            headers = [
-                "Content-Type: text/csv; charset=utf-8",
-                "Content-Disposition: attachment; filename=\"%s.csv\"" % objecttype
-            ]
-            print "\n".join(headers) + "\n"
-            print filedata.encode("utf-8")
-            
-    except Exception as e:
-        print_error(e.message)
-
-main()
+@app.errorhandler(MoxFlaskException)
+def handle_error(error):
+    return error.message, error.status_code
