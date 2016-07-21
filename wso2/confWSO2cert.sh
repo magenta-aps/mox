@@ -188,7 +188,6 @@ function prompt_var() {
 		/bin/echo
 		read -p "${promptmsg} [${default}]: " ANSWER
 		VALUE=${ANSWER:-$default}
-		/bin/echo "${promptmsg}: " ${VALUE}
 
 		if [ "${checkfile}" = true ]; then
 			if [[ -f "${VALUE}" ]]
@@ -354,7 +353,7 @@ else
 # If public key is already present in client-truststore it has to be removed
 	/bin/echo step 6
 	/usr/bin/keytool -list -alias ${KEY_ALIAS} -keystore ${CLIENT_KEYSTORE} -storepass ${PASSOUT} | grep -qs "${KEY_ALIAS}"
-	if [ $? -ne 0 ]
+	if [ $? -eq 0 ]
 	then
 		/bin/echo "Removing current key ${KEY_ALIAS}"
 		/usr/bin/keytool -delete -alias ${KEY_ALIAS} -keystore ${CLIENT_KEYSTORE} -storepass ${PASSOUT}
