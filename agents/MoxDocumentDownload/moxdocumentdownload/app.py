@@ -10,7 +10,7 @@ import sys
 import socket
 import datetime
 import threading
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, make_response
 
 BASEPATH = os.path.dirname(os.path.realpath(sys.argv[0]))
 
@@ -530,8 +530,10 @@ def main():
             "Content-Type: text/csv; charset=utf-8",
             "Content-Disposition: attachment; filename=\"%s.csv\"" % objecttype
         ]
-        print "\n".join(headers) + "\n"
-        print filedata.encode("utf-8")
+        response = make_response(filedata)
+        response.headers['Content-Type'] = 'text/csv; charset=utf-8'
+        response.headers['Content-Disposition'] = "attachment; filename=\"%s.csv\"" % objecttype
+        return response
 
 @app.errorhandler(MoxFlaskException)
 def handle_error(error):
