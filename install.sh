@@ -42,12 +42,12 @@ fi
 
 # Create log dir
 echo "Creating log dir"
-sudo mkdir -p "/var/log/mox"
+sudo mkdir --parents "/var/log/mox"
 
 # Setup common config
 CONFIGFILENAME="mox.conf"
 cp --remove-destination "$DIR/$CONFIGFILENAME.base" "$DIR/$CONFIGFILENAME"
-sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$DIR/$CONFIGFILENAME"
+sed --in-place --expression="s/$\{domain\}/${DOMAIN//\//\\/}/" "$DIR/$CONFIGFILENAME"
 
 # Setup apache virtualhost
 echo "Setting up apache virtualhost"
@@ -63,14 +63,14 @@ sudo apt-cache -q=2 show oracle-java8-installer 2>&1 >/dev/null
 if [[ $? > 0 ]]; then
 	sudo add-apt-repository ppa:webupd8team/java
 	sudo apt-get update
-	sudo apt-get -y install oracle-java8-installer
+	sudo apt-get --yes --quiet install oracle-java8-installer
 fi
 export JAVA_HOME="/usr/lib/jvm/java-8-oracle/"
-sudo ln -sf "/usr/lib/jvm/java-8-oracle/" "/usr/lib/jvm/default-java"
+sudo ln --symbolic --force "/usr/lib/jvm/java-8-oracle/" "/usr/lib/jvm/default-java"
 
 # Install Maven
 echo "Installing Maven"
-sudo apt-get -y install maven
+sudo apt-get --yes --quiet install maven
 
 # Compile modules
 echo "Installing java modules"
@@ -88,6 +88,6 @@ $DIR/agents/MoxTest/install.sh
 
 $DIR/wso2/install.sh "$DOMAIN"
 
-sudo chown -R mox:mox $DIR
+sudo chown --recursive mox:mox $DIR
 sudo service apache2 reload
 
