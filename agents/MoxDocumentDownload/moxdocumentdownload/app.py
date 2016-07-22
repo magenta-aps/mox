@@ -412,7 +412,7 @@ def csvrow(row, headers):
 
 def format(data, mergelevel=1):
     output = {}
-    structure_collection = json.load(open(BASEPATH + "/structure.json"))
+    structure_collection = json.load(app.open_instance_resource("structure.json"))
     for objecttype_name, items in data.iteritems():
         # print "Type %s has %d objects" % (objecttype_name, len(items))
         rows = []
@@ -499,6 +499,7 @@ def main():
     elif request.method == 'POST':
         require_parameter('type')
         objecttype = request.form['type']
+        print objecttype
         if objecttype not in OBJECTTYPE_MAP:
             raise BadRequestException("The type parameter must be one of the following: %s" % ", ".join(OBJECTTYPE_MAP.keys()))
 
@@ -534,6 +535,7 @@ def main():
         response.headers['Content-Type'] = 'text/csv; charset=utf-8'
         response.headers['Content-Disposition'] = "attachment; filename=\"%s.csv\"" % objecttype
         return response
+
 
 @app.errorhandler(MoxFlaskException)
 def handle_error(error):
