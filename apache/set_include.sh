@@ -67,10 +67,10 @@ for INCLUDEFILE in $ADD_FILES; do
 
 	if [ $LAST -eq 1 ]; then
 		REPLACELINE="$INCLUDELINE\n$INCLUDEENDMARKER"
-		sed --in-place --expression="s/${INCLUDEENDMARKER}/${REPLACELINE//\//\\/}/" "$CONFIGFILE"
+		sed --in-place --expression="s|${INCLUDEENDMARKER}|${REPLACELINE}|" "$CONFIGFILE"
 	else
 		REPLACELINE="$INCLUDEBEGINMARKER\n$INCLUDELINE"
-		sed --in-place --expression="s/${INCLUDEBEGINMARKER}/${REPLACELINE//\//\\/}/" "$CONFIGFILE"
+		sed --in-place --expression="s|${INCLUDEBEGINMARKER}|${REPLACELINE}|" "$CONFIGFILE"
 	fi
 done
 
@@ -86,5 +86,5 @@ for INCLUDEFILE in $REMOVE_FILES; do
 	fi
 
 	SEARCHLINE="$INCLUDELINE"
-	sed --in-place --expression="/${SEARCHLINE//\//\\/}/d" "$CONFIGFILE"
+	sed --in-place --expression="|${SEARCHLINE}|d" "$CONFIGFILE"
 done
