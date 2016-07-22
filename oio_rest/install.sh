@@ -37,7 +37,7 @@ if [ -z $SKIP_SYSTEM_DEPS ]; then
 	SYSTEM_PACKAGES=$(cat "$DIR/SYSTEM_DEPENDENCIES")
 
 	for package in "${SYSTEM_PACKAGES[@]}"; do
-		sudo apt-get -y install $package
+		sudo apt-get --yes --quiet install $package
 	done
 fi
 
@@ -46,7 +46,7 @@ fi
 # Create the MOX content storage directory and give the www-data user ownership
 MOX_STORAGE="/var/mox"
 echo "Creating MOX content storage directory"
-sudo mkdir -p "$MOX_STORAGE"
+sudo mkdir --parents "$MOX_STORAGE"
 sudo chown www-data "$MOX_STORAGE"
 
 
@@ -70,7 +70,7 @@ if [ -d $VIRTUALENV ]; then
 		CREATE_VIRTUALENV=1
 	fi
 	if [ $CREATE_VIRTUALENV == 1 ]; then
-		rm -rf $VIRTUALENV
+		rm --recursive --force $VIRTUALENV
 	fi
 else
 	CREATE_VIRTUALENV=1
@@ -99,7 +99,7 @@ fi
 
 SETTINGS_FILENAME="oio_rest/settings.py"
 sudo cp --remove-destination "$DIR/$SETTINGS_FILENAME.base" "$DIR/$SETTINGS_FILENAME"
-sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$DIR/$SETTINGS_FILENAME"
+sed --in-place --expression="s/$\{domain\}/${DOMAIN//\//\\/}/" "$DIR/$SETTINGS_FILENAME"
 
 
 DB_FOLDER="$MOXDIR/db"
@@ -140,9 +140,9 @@ fi
 
 # Install WSGI service
 echo "Setting up oio_rest WSGI service for Apache"
-sudo mkdir -p /var/www/wsgi
+sudo mkdir --parents /var/www/wsgi
 sudo cp --remove-destination "$DIR/server-setup/oio_rest.wsgi" "/var/www/wsgi/"
 sudo $MOXDIR/apache/set_include.sh -a "$DIR/server-setup/oio_rest.conf"
 
-sudo mkdir -p /var/log/mox/oio_rest
+sudo mkdir --parents /var/log/mox/oio_rest
 

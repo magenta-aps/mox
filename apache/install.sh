@@ -23,15 +23,15 @@ if [ -z $SKIP_SYSTEM_DEPS ]; then
 	SYSTEM_PACKAGES=$(cat "$DIR/SYSTEM_DEPENDENCIES")
 
 	for package in "${SYSTEM_PACKAGES[@]}"; do
-		sudo apt-get -y install $package
+		sudo apt-get --yes --quiet install $package
 	done
 fi
 
 # Setup apache site config
 CONFIGFILENAME="mox.conf"
 sudo cp --remove-destination "$DIR/$CONFIGFILENAME.base" "$DIR/$CONFIGFILENAME"
-sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$DIR/$CONFIGFILENAME"
-sudo ln -sf "$DIR/$CONFIGFILENAME" "/etc/apache2/sites-available/$CONFIGFILENAME"
+sed --in-place --expression="s/$\{domain\}/${DOMAIN//\//\\/}/" "$DIR/$CONFIGFILENAME"
+sudo ln --symbolic --force "$DIR/$CONFIGFILENAME" "/etc/apache2/sites-available/$CONFIGFILENAME"
 sudo a2ensite mox
 sudo a2enmod ssl
 sudo a2enmod rewrite

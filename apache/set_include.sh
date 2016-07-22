@@ -30,14 +30,14 @@ while getopts "a:r:q" OPT; do
 	esac
 done
 
-if ! grep -Fq "$INCLUDEBEGINMARKER" "$CONFIGFILE"; then
+if ! grep --fixed-strings --quiet "$INCLUDEBEGINMARKER" "$CONFIGFILE"; then
 	if [ ! $QUIET ]; then
 		echo "Begin marker not found"
 	fi
 	exit 1
 fi
 
-if ! grep -Fq "$INCLUDEENDMARKER" "$CONFIGFILE"; then
+if ! grep --fixed-strings --quiet "$INCLUDEENDMARKER" "$CONFIGFILE"; then
 	if [ ! $QUIET ]; then
 		echo "End marker not found"
 	fi
@@ -54,7 +54,7 @@ for INCLUDEFILE in $ADD_FILES; do
 		exit 1
 	fi
 
-	if grep -Fq "$INCLUDELINE" "$CONFIGFILE"; then
+	if grep --fixed-strings --quiet "$INCLUDELINE" "$CONFIGFILE"; then
 		if [ ! $QUIET ]; then
 			echo "File $INCLUDEFILE is already included"
 		fi
@@ -62,14 +62,14 @@ for INCLUDEFILE in $ADD_FILES; do
 	fi
 
 	REPLACELINE="$INCLUDELINE\n$INCLUDEENDMARKER"
-	sed -i -e "s/${INCLUDEENDMARKER}/${REPLACELINE//\//\\/}/" "$CONFIGFILE"
+	sed --in-place --expression="s/${INCLUDEENDMARKER}/${REPLACELINE//\//\\/}/" "$CONFIGFILE"
 done
 
 
 for INCLUDEFILE in $REMOVE_FILES; do
 	INCLUDELINE="Include $INCLUDEFILE"
 
-	if ! grep -Fq "$INCLUDELINE" "$CONFIGFILE"; then
+	if ! grep --fixed-strings --quiet "$INCLUDELINE" "$CONFIGFILE"; then
 		if [ ! $QUIET ]; then
 			echo "File $INCLUDEFILE is not included"
 		fi
@@ -77,5 +77,5 @@ for INCLUDEFILE in $REMOVE_FILES; do
 	fi
 
 	SEARCHLINE="$INCLUDELINE"
-	sed -i -e "/${SEARCHLINE//\//\\/}/d" "$CONFIGFILE"
+	sed --in-place --expression="/${SEARCHLINE//\//\\/}/d" "$CONFIGFILE"
 done
