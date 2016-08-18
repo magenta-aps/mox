@@ -1,7 +1,9 @@
 #!/bin/bash
 
 DIR=$(dirname ${BASH_SOURCE[0]})
-COMMAND="java -cp target/MoxRestFrontend-1.0.jar:target/dependency/* dk.magenta.mox.moxrestfrontend.MoxRestFrontend"
+MOXDIR="$DIR/../.."
+source $MOXDIR/variables.sh
+COMMAND="$CMD_JAVA -cp target/MoxRestFrontend-1.0.jar:target/dependency/* dk.magenta.mox.moxrestfrontend.MoxRestFrontend"
 AS_USER="mox"
 
 cd $DIR

@@ -2,7 +2,9 @@
 
 SELF=${BASH_SOURCE[0]}
 DIR=$(dirname "$(test -L "$SELF" && readlink "$SELF" || echo "$SELF")")
-COMMAND="java -cp target/MoxTest-1.0.jar:target/dependency/* dk.magenta.mox.test.MoxTest"
+MOXDIR="$DIR/../.."
+source $MOXDIR/variables.sh
+COMMAND="$CMD_JAVA -cp target/MoxTest-1.0.jar:target/dependency/* dk.magenta.mox.test.MoxTest"
 AS_USER="mox"
 
 cd $DIR
