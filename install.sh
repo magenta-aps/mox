@@ -65,17 +65,30 @@ $DIR/oio_rest/install.sh "$@"
 echo "Creating log dir"
 sudo mkdir -p "/var/log/mox"
 
-
-
-# Ubuntu 14.04 doesn't come with java 8
-sudo apt-cache -q=2 show oracle-java8-installer 2>&1 >/dev/null
-if [[ $? > 0 ]]; then
-	sudo add-apt-repository ppa:webupd8team/java
-	sudo apt-get update
-	sudo apt-get -y install oracle-java8-installer
+JAVA_HIGHEST_VERSION=0
+JAVA_VERSION_NEEDED=8
+regex=".*/java-([0-9]+).*"
+files=`find /usr/lib -wholename '*/bin/java' -perm -a=x -type f`
+for f in $files; do
+	if [[ $f =~ $regex ]]; then
+		version="${BASH_REMATCH[1]}"
+		if [[ $version > $JAVA_HIGHEST_VERSION ]]; then
+			JAVA_HIGHEST_VERSION=$version
+		fi
+    fi
+done
+if [ $JAVA_HIGHEST_VERSION -ge $JAVA_VERSION_NEEDED ]; then
+	echo "Java is installed in version $JAVA_HIGHEST_VERSION"
+else
+	echo "Installing java in version $JAVA_VERSION_NEEDED"
+	sudo apt-cache -q=2 show "openjdk-$JAVA_VERSION_NEEDED-jdk" 2>&1 > /dev/null
+	if [[ $? > 0 ]]; then
+		# openjdk is not available in the version we want
+		sudo add-apt-repository ppa:openjdk-r/ppa
+		sudo apt-get update
+	fi
+	sudo apt-get -y install "openjdk-$JAVA_VERSION_NEEDED-jdk"
 fi
-export JAVA_HOME="/usr/lib/jvm/java-8-oracle/"
-sudo ln -sf "/usr/lib/jvm/java-8-oracle/" "/usr/lib/jvm/default-java"
 
 echo "Installing java modules"
 sudo apt-get -y install maven
