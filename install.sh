@@ -64,6 +64,8 @@ $DIR/oio_rest/install.sh "$@" -d $DOMAIN
 
 JAVA_HIGHEST_VERSION=0
 JAVA_VERSION_NEEDED=8
+JAVA_HIGHEST_VERSION_DIR=""
+SHELL_VARIABLES_FILE="$DIR/variables.sh"
 regex=".*/java-([0-9]+).*"
 files=`find /usr/lib -wholename '*/bin/javac' -perm -a=x -type f`
 for f in $files; do
@@ -71,6 +73,7 @@ for f in $files; do
 		version="${BASH_REMATCH[1]}"
 		if [[ $version > $JAVA_HIGHEST_VERSION ]]; then
 			JAVA_HIGHEST_VERSION=$version
+			JAVA_HIGHEST_VERSION_DIR=$(readlink -m "$f/../..")
 		fi
     fi
 done
@@ -85,8 +88,18 @@ else
 		sudo apt-get update > /dev/null
 	fi
 	sudo apt-get --yes --quiet install "openjdk-$JAVA_VERSION_NEEDED-jdk"
-	sudo update-alternatives --set javac /usr/lib/jvm/java-8-openjdk-amd64/bin/javac
 fi
+if [[ "x$JAVA_HIGHEST_VERSION_DIR" != "x" ]]; then
+	sed -r -e "s|^CMD_JAVA=.*$|CMD_JAVA=$JAVA_HIGHEST_VERSION_DIR/bin/java|" \
+       -e "s|^CMD_JAVAC=.*$|CMD_JAVAC=$JAVA_HIGHEST_VERSION_DIR/bin/javac|" \
+       ${SHELL_VARIABLES_FILE} > ${SHELL_VARIABLES_FILE}.$$
+fi
+if [[ -f ${SHELL_VARIABLES_FILE} ]]; then
+	/bin/mv ${SHELL_VARIABLES_FILE}.$$ ${SHELL_VARIABLES_FILE}
+fi
+
+OLD_JAVA_HOME="$JAVA_HOME"
+JAVA_HOME="$JAVA_HIGHEST_VERSION_DIR"
 
 # Install Maven
 echo "Installing Maven"
@@ -105,6 +118,8 @@ $DIR/agents/MoxRestFrontend/install.sh
 $DIR/agents/MoxDocumentUpload/install.sh
 $DIR/agents/MoxDocumentDownload/install.sh
 $DIR/agents/MoxTest/install.sh
+
+JAVA_HOME="$OLD_JAVA_HOME"
 
 sudo chown --recursive mox:mox $DIR
 sudo service apache2 reload
