@@ -65,7 +65,7 @@ $DIR/oio_rest/install.sh "$@" -d $DOMAIN
 JAVA_HIGHEST_VERSION=0
 JAVA_VERSION_NEEDED=8
 regex=".*/java-([0-9]+).*"
-files=`find /usr/lib -wholename '*/bin/java' -perm -a=x -type f`
+files=`find /usr/lib -wholename '*/bin/javac' -perm -a=x -type f`
 for f in $files; do
 	if [[ $f =~ $regex ]]; then
 		version="${BASH_REMATCH[1]}"
@@ -78,13 +78,14 @@ if [ $JAVA_HIGHEST_VERSION -ge $JAVA_VERSION_NEEDED ]; then
 	echo "Java is installed in version $JAVA_HIGHEST_VERSION"
 else
 	echo "Installing java in version $JAVA_VERSION_NEEDED"
-	sudo apt-cache -q=2 show "openjdk-$JAVA_VERSION_NEEDED-jdk" 2>&1 > /dev/null
+	sudo apt-cache -q=2 show "openjdk-$JAVA_VERSION_NEEDED-jdk" 2> /dev/null 1> /dev/null
 	if [[ $? > 0 ]]; then
 		# openjdk is not available in the version we want
 		sudo add-apt-repository ppa:openjdk-r/ppa
-		sudo apt-get update
+		sudo apt-get update > /dev/null
 	fi
-	sudo apt-get -y install "openjdk-$JAVA_VERSION_NEEDED-jdk"
+	sudo apt-get --yes --quiet install "openjdk-$JAVA_VERSION_NEEDED-jdk"
+	sudo update-alternatives --set javac /usr/lib/jvm/java-8-openjdk-amd64/bin/javac
 fi
 
 # Install Maven
