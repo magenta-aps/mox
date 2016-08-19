@@ -5,11 +5,13 @@
 
 SELF=${BASH_SOURCE[0]}
 DIR=$(dirname "$(test -L "$SELF" && readlink "$SELF" || echo "$SELF")")
+MOXDIR="$DIR/../.."
+source $MOXDIR/variables.sh
 if [[ ! -d "$DIR" ]]; then
 	DIR="/srv/mox/modules/auth"
 fi
 
 pushd $DIR
-java -cp "target/auth-1.0.jar:target/dependency/*" dk.magenta.mox.auth.Main -f "$DIR/auth.properties" -f "/srv/mox/mox.conf" $@
+$CMD_JAVA -cp "target/auth-1.0.jar:target/dependency/*" dk.magenta.mox.auth.Main -f "$DIR/auth.properties" -f "/srv/mox/mox.conf" $@
 popd
 
