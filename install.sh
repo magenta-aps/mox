@@ -24,25 +24,14 @@ while getopts ":ys" OPT; do
 done
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-echo "DIR=$DIR"
 
-ENVIRONMENT=""
-while [[ $ENVIRONMENT == "" ]]
-do
-	echo "Installation type"
-	echo "[1] production"
-	echo "[2] testing"
-	echo "[3] development"
-	read -p "Enter type: [1]" -n 1 -r
-	echo
-	if [[ $REPLY =~ ^[1]$ ]]; then
-		ENVIRONMENT="production"
-	elif [[ $REPLY =~ ^[2]$ ]]; then
-		ENVIRONMENT="testing"
-	elif [[ $REPLY =~ ^[3]$ ]]; then
-		ENVIRONMENT="development"
-	fi
-done
+# Query for hostname
+DOMAIN=`hostname --fqdn`
+read -p "Domain: [$DOMAIN] " -r
+echo
+if [[ "x$REPLY" != "x" ]]; then
+	DOMAIN="$REPLY"
+fi
 
 # Add system user if none exists
 getent passwd mox
@@ -51,21 +40,23 @@ if [ $? -ne 0 ]; then
 	sudo useradd mox
 fi
 
-# Setup symlinks
-./setsymlinks.sh $ENVIRONMENT
-
-# Install oio_rest
-echo "Installing oio_rest"
-echo "$DIR/oio_rest/install.sh $@"
-$DIR/oio_rest/install.sh "$@"
-
-
-
 # Create log dir
 echo "Creating log dir"
 sudo mkdir -p "/var/log/mox"
 
+# Setup common config
+CONFIGFILENAME="mox.conf"
+cp --remove-destination "$DIR/$CONFIGFILENAME.base" "$DIR/$CONFIGFILENAME"
+sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$DIR/$CONFIGFILENAME"
 
+# Setup apache virtualhost
+echo "Setting up apache virtualhost"
+$DIR/apache/install.sh -d $DOMAIN
+
+# Install oio_rest
+echo "Installing oio_rest"
+echo "$DIR/oio_rest/install.sh $@"
+$DIR/oio_rest/install.sh "$@" -d $DOMAIN
 
 # Ubuntu 14.04 doesn't come with java 8
 sudo apt-cache -q=2 show oracle-java8-installer 2>&1 >/dev/null
@@ -77,28 +68,29 @@ fi
 export JAVA_HOME="/usr/lib/jvm/java-8-oracle/"
 sudo ln -sf "/usr/lib/jvm/java-8-oracle/" "/usr/lib/jvm/default-java"
 
-echo "Installing java modules"
+# Install Maven
+echo "Installing Maven"
 sudo apt-get -y install maven
 
-
+# Compile modules
+echo "Installing java modules"
 $DIR/modules/json/install.sh
 $DIR/modules/agent/install.sh
 $DIR/modules/auth/install.sh
-$DIR/modules/spreadsheet/install.sh
 
-
-sudo mkdir -p "/var/log/mox"
-
-
+# Install servlet
 echo "Installing Tomcat webservices"
 $DIR/servlets/install.sh
+$DIR/servlets/MoxDocumentUpload/install.sh "$DOMAIN"
 
+$DIR/scripts/install.sh
 
-
-$DIR/servlets/MoxDocumentUpload/install.sh
+# Compile agents
+echo "Installing Agents"
 $DIR/agents/MoxTabel/install.sh
 $DIR/agents/MoxRestFrontend/install.sh
 $DIR/agents/MoxTest/install.sh
 
 sudo chown -R mox:mox $DIR
+sudo service apache2 reload
 

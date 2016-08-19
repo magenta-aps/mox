@@ -30,19 +30,11 @@ public class MoxTabel extends MoxAgent {
     public MoxTabel(String[] args) {
         super(args);
 
-        String listenerPrefix = "amqp.incoming";
-        String senderPrefix = "amqp.outgoing";
+        String listenerPrefix = this.getAmqpPrefix() + ".incoming";
+        String senderPrefix = this.getAmqpPrefix() + ".outgoing";
 
-        this.listenerDefinition = new AmqpDefinition();
-        this.listenerDefinition.populateFromMap(this.commandLineArgs, listenerPrefix, true, true);
-        this.listenerDefinition.populateFromProperties(this.properties, listenerPrefix, false);
-        this.listenerDefinition.populateFromDefaults(true, listenerPrefix);
-
-        this.senderDefinition = new AmqpDefinition();
-        this.senderDefinition.populateFromMap(this.commandLineArgs, senderPrefix, true, true);
-        this.senderDefinition.populateFromProperties(this.properties, senderPrefix, false);
-        this.senderDefinition.populateFromDefaults(true, senderPrefix);
-
+        this.listenerDefinition = new AmqpDefinition(this.commandLineArgs, this.properties, listenerPrefix, true);
+        this.senderDefinition = new AmqpDefinition(this.commandLineArgs, this.properties, senderPrefix, true);
 
         try {
             this.restInterface = new URL(this.getSetting("rest.interface"));
@@ -55,6 +47,10 @@ public class MoxTabel extends MoxAgent {
                 MoxTabel.this.shutdown();
             }
         });
+    }
+
+    protected String getAmqpPrefix() {
+        return "moxtabel.amqp";
     }
 
     protected String getDefaultPropertiesFileName() {

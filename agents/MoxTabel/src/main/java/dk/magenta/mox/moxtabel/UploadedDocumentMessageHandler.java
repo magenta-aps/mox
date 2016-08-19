@@ -5,8 +5,6 @@ import dk.magenta.mox.agent.MessageSender;
 import dk.magenta.mox.agent.exceptions.MissingHeaderException;
 import dk.magenta.mox.agent.messages.*;
 import dk.magenta.mox.agent.rest.RestClient;
-import dk.magenta.mox.spreadsheet.ConvertedObject;
-import dk.magenta.mox.spreadsheet.SpreadsheetConverter;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
