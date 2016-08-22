@@ -50,8 +50,11 @@ cp --remove-destination "$DIR/$CONFIGFILENAME.base" "$DIR/$CONFIGFILENAME"
 sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$DIR/$CONFIGFILENAME"
 
 # Setup apache virtualhost
-echo "Setting up apache virtualhost"
+echo "Setting up Apache virtualhost"
 $DIR/apache/install.sh -d $DOMAIN
+
+echo "Setting up Identity Server"
+$DIR/wso2/install.sh "$DOMAIN"
 
 # Install oio_rest
 echo "Installing oio_rest"

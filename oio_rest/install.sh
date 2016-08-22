@@ -96,12 +96,6 @@ if [ $CREATE_VIRTUALENV == 1 ]; then
 	fi
 fi
 
-
-SETTINGS_FILENAME="oio_rest/settings.py"
-sudo cp --remove-destination "$DIR/$SETTINGS_FILENAME.base" "$DIR/$SETTINGS_FILENAME"
-sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$DIR/$SETTINGS_FILENAME"
-
-
 DB_FOLDER="$MOXDIR/db"
 
 source $DB_FOLDER/config.sh
