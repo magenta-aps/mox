@@ -37,7 +37,9 @@ sudo a2enmod rewrite
 if [ -L /etc/apache2/sites-enabled/oio_rest.conf ]; then
 	sudo a2dissite --quiet oio_rest
 fi
-sudo rm --force "/etc/apache2/sites-available/oio_rest.conf"
+if [ -f /etc/apache2/sites-enabled/oio_rest.conf ]; then
+	sudo rm --force "/etc/apache2/sites-available/oio_rest.conf"
+fi
 
 sudo service apache2 restart
 
