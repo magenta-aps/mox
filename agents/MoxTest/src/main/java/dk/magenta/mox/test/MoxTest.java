@@ -95,11 +95,15 @@ public class MoxTest extends MoxAgent {
             JSONObject payload = getJSONObjectFromFilename("data/"+name+"/create.json");
             Message message = CreateDocumentMessage.parse(headers, payload);
             response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
-            JSONObject object = new JSONObject(response);
-            UUID uuid = UUID.fromString(object.getString("uuid"));
-            System.out.println(name+" created, uuid: "+uuid.toString());
-            System.out.println("Create succeeded");
-            return uuid;
+            if (response == null) {
+                throw new TestException("Got null response from sender");
+            } else {
+                JSONObject object = new JSONObject(response);
+                UUID uuid = UUID.fromString(object.getString("uuid"));
+                System.out.println(name + " created, uuid: " + uuid.toString());
+                System.out.println("Create succeeded");
+                return uuid;
+            }
         } catch (JSONException e) {
             System.out.println(response);
             throw new TestException(e);
@@ -117,24 +121,28 @@ public class MoxTest extends MoxAgent {
             System.out.println("Reading "+name+", uuid: "+uuid.toString());
             Message message = new ReadDocumentMessage(this.getAuthToken(), name, uuid);
             response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
-            JSONObject object = new JSONObject(response);
-            JSONObject item = object.getJSONArray(uuid.toString()).getJSONObject(0);
-            JSONObject expected = getJSONObjectFromFilename("data/"+name+"/read_response.json");
-
-            // Update run-specific pieces of the object
-            expected.put("id", uuid.toString());
-            String timestamp = item.getJSONArray("registreringer").getJSONObject(0).getJSONObject("fratidspunkt").getString("tidsstempeldatotid");
-            JSONObject firstReg = expected.getJSONArray("registreringer").getJSONObject(0);
-            firstReg.getJSONObject("fratidspunkt").put("tidsstempeldatotid", timestamp);
-
-            if (item.similar(expected)) {
-                System.out.println("Expected response received");
-                System.out.println("Read succeeded");
+            if (response == null) {
+                throw new TestException("Got null response from sender");
             } else {
-                System.out.println("Result differs from the expected");
-                System.out.println(item.toString());
-                System.out.println(expected.toString());
-                throw new TestException();
+                JSONObject object = new JSONObject(response);
+                JSONObject item = object.getJSONArray(uuid.toString()).getJSONObject(0);
+                JSONObject expected = getJSONObjectFromFilename("data/" + name + "/read_response.json");
+
+                // Update run-specific pieces of the object
+                expected.put("id", uuid.toString());
+                String timestamp = item.getJSONArray("registreringer").getJSONObject(0).getJSONObject("fratidspunkt").getString("tidsstempeldatotid");
+                JSONObject firstReg = expected.getJSONArray("registreringer").getJSONObject(0);
+                firstReg.getJSONObject("fratidspunkt").put("tidsstempeldatotid", timestamp);
+
+                if (item.similar(expected)) {
+                    System.out.println("Expected response received");
+                    System.out.println("Read succeeded");
+                } else {
+                    System.out.println("Result differs from the expected");
+                    System.out.println(item.toString());
+                    System.out.println(expected.toString());
+                    throw new TestException();
+                }
             }
         } catch (JSONException e) {
             System.out.println(response);
@@ -154,26 +162,31 @@ public class MoxTest extends MoxAgent {
             query.populateFromJSON(getJSONObjectFromFilename("data/"+name+"/search.json"));
             Message message = new SearchDocumentMessage(this.getAuthToken(), name, query);
             response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
-            ArrayList<UUID> results = new ArrayList<>();
-            JSONArray array;
-            try {
-                JSONObject object = new JSONObject(response);
-                array = object.getJSONArray("results");
-            } catch (JSONException e) {
-                System.out.println(response);
-                throw new TestException(e);
+            if (response == null) {
+                throw new TestException("Got null response from sender");
+            } else {
+                ArrayList<UUID> results = new ArrayList<>();
+                JSONArray array;
+                try {
+                    JSONObject object = new JSONObject(response);
+                    array = object.getJSONArray("results");
+                } catch (JSONException e) {
+                    System.out.println(response);
+                    throw new TestException(e);
+                }
+                try {
+                    array = array.getJSONArray(0);
+                } catch (JSONException e) {
+                }
+                for (int i = 0; i < array.length(); i++) {
+                    results.add(UUID.fromString(array.getString(i)));
+                }
+                System.out.println(results.size() + " items found");
+                if (results.size() > 0) {
+                    System.out.println("Search succeeded");
+                }
+                return results;
             }
-            try {
-                array = array.getJSONArray(0);
-            } catch (JSONException e) {}
-            for (int i=0; i<array.length(); i++) {
-                results.add(UUID.fromString(array.getString(i)));
-            }
-            System.out.println(results.size() + " items found");
-            if (results.size()>0) {
-                System.out.println("Search succeeded");
-            }
-            return results;
         } catch (JSONException e) {
             System.out.println(response);
             throw new TestException(e);
@@ -190,24 +203,29 @@ public class MoxTest extends MoxAgent {
             System.out.println("Listing "+name+" items");
             Message message = new ListDocumentMessage(this.getAuthToken(), name, uuid);
             response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
-            JSONArray array;
-            JSONObject object = new JSONObject(response);
-            array = object.getJSONArray("results");
-            try {
-                array = array.getJSONArray(0);
-            } catch (JSONException e) {}
-            for (int i=0; i<array.length(); i++) {
-                JSONObject item = array.getJSONObject(i);
-                if (uuid.toString().equals(item.getString("id"))) {
-                    JSONObject expected = getJSONObjectFromFilename("data/"+name+"/read_response.json");
-                    // Update run-specific pieces of the object
-                    expected.put("id", uuid.toString());
-                    String timestamp = item.getJSONArray("registreringer").getJSONObject(0).getJSONObject("fratidspunkt").getString("tidsstempeldatotid");
-                    expected.getJSONArray("registreringer").getJSONObject(0).getJSONObject("fratidspunkt").put("tidsstempeldatotid", timestamp);
-                    if (item.similar(expected)) {
-                        System.out.println("List succeeded");
-                    } else {
-                        throw new TestException("Unexpected answer '" + item.toString() + "' (expected '"+expected.toString()+"')");
+            if (response == null) {
+                throw new TestException("Got null response from sender");
+            } else {
+                JSONArray array;
+                JSONObject object = new JSONObject(response);
+                array = object.getJSONArray("results");
+                try {
+                    array = array.getJSONArray(0);
+                } catch (JSONException e) {
+                }
+                for (int i = 0; i < array.length(); i++) {
+                    JSONObject item = array.getJSONObject(i);
+                    if (uuid.toString().equals(item.getString("id"))) {
+                        JSONObject expected = getJSONObjectFromFilename("data/" + name + "/read_response.json");
+                        // Update run-specific pieces of the object
+                        expected.put("id", uuid.toString());
+                        String timestamp = item.getJSONArray("registreringer").getJSONObject(0).getJSONObject("fratidspunkt").getString("tidsstempeldatotid");
+                        expected.getJSONArray("registreringer").getJSONObject(0).getJSONObject("fratidspunkt").put("tidsstempeldatotid", timestamp);
+                        if (item.similar(expected)) {
+                            System.out.println("List succeeded");
+                        } else {
+                            throw new TestException("Unexpected answer '" + item.toString() + "' (expected '" + expected.toString() + "')");
+                        }
                     }
                 }
             }
@@ -227,12 +245,16 @@ public class MoxTest extends MoxAgent {
             System.out.println("Updating "+name+", uuid: "+uuid.toString());
             Message message = new UpdateDocumentMessage(this.getAuthToken(), name, uuid, getJSONObjectFromFilename("data/"+name+"/update.json"));
             response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
-            JSONObject object = new JSONObject(response);
-            UUID result = UUID.fromString(object.getString("uuid"));
-            if (uuid.compareTo(result) == 0) {
-                System.out.println("Update succeeded");
+            if (response == null) {
+                throw new TestException("Got null response from sender");
             } else {
-                throw new TestException("Unexpected answer '" + object.getString("uuid") + "' (expected '"+uuid.toString()+"')");
+                JSONObject object = new JSONObject(response);
+                UUID result = UUID.fromString(object.getString("uuid"));
+                if (uuid.compareTo(result) == 0) {
+                    System.out.println("Update succeeded");
+                } else {
+                    throw new TestException("Unexpected answer '" + object.getString("uuid") + "' (expected '" + uuid.toString() + "')");
+                }
             }
         } catch (JSONException e) {
             System.out.println(response);
@@ -250,12 +272,16 @@ public class MoxTest extends MoxAgent {
             System.out.println("Passivating "+name+", uuid: "+uuid.toString());
             Message message = new PassivateDocumentMessage(this.getAuthToken(), name, uuid, "Passivate, please");
             response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
-            JSONObject object = new JSONObject(response);
-            UUID result = UUID.fromString(object.getString("uuid"));
-            if (uuid.compareTo(result) == 0) {
-                System.out.println("Passivate succeeded");
+            if (response == null) {
+                throw new TestException("Got null response from sender");
             } else {
-                throw new TestException("Unexpected answer '" + object.getString("uuid") + "' (expected '"+uuid.toString()+"')");
+                JSONObject object = new JSONObject(response);
+                UUID result = UUID.fromString(object.getString("uuid"));
+                if (uuid.compareTo(result) == 0) {
+                    System.out.println("Passivate succeeded");
+                } else {
+                    throw new TestException("Unexpected answer '" + object.getString("uuid") + "' (expected '" + uuid.toString() + "')");
+                }
             }
         } catch (JSONException e) {
             System.out.println(response);
@@ -273,13 +299,16 @@ public class MoxTest extends MoxAgent {
             System.out.println("Deleting "+name+", uuid: "+uuid.toString());
             Message message = new DeleteDocumentMessage(this.getAuthToken(), name, uuid, "Delete, please");
             response = this.sender.send(message, true).get(30, TimeUnit.SECONDS);
-
-            JSONObject object = new JSONObject(response);
-            UUID result = UUID.fromString(object.getString("uuid"));
-            if (uuid.compareTo(result) == 0) {
-                System.out.println("Delete succeeded");
+            if (response == null) {
+                throw new TestException("Got null response from sender");
             } else {
-                throw new TestException("Unexpected answer '" + object.getString("uuid") + "' (expected '"+uuid.toString()+"')");
+                JSONObject object = new JSONObject(response);
+                UUID result = UUID.fromString(object.getString("uuid"));
+                if (uuid.compareTo(result) == 0) {
+                    System.out.println("Delete succeeded");
+                } else {
+                    throw new TestException("Unexpected answer '" + object.getString("uuid") + "' (expected '" + uuid.toString() + "')");
+                }
             }
         } catch (JSONException e) {
             System.out.println(response);
