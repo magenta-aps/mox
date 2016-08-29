@@ -45,11 +45,11 @@ echo "Creating log dir"
 sudo mkdir -p "/var/log/mox"
 
 # Config files that may be altered during install should be copied from git, but not themselves be present there
-CONFIGFILENAME="$DIR/mox.conf"
-cp --remove-destination "$CONFIGFILENAME.base" "$CONFIGFILENAME"
+MOX_CONFIG="$DIR/mox.conf"
+cp --remove-destination "$MOX_CONFIG.base" "$MOX_CONFIG"
 
-SHELL_VARIABLES_FILE="$DIR/variables.sh"
-cp --remove-destination "$SHELL_VARIABLES_FILE.base" "$SHELL_VARIABLES_FILE"
+SHELL_CONFIG="$DIR/variables.sh"
+cp --remove-destination "$SHELL_CONFIG.base" "$SHELL_CONFIG"
 
 AUTH_CONFIG="$DIR/modules/auth/auth.properties"
 cp --remove-destination "$AUTH_CONFIG.base" "$AUTH_CONFIG"
@@ -57,8 +57,12 @@ cp --remove-destination "$AUTH_CONFIG.base" "$AUTH_CONFIG"
 OIO_REST_CONFIG="$DIR/oio_rest/oio_rest/settings.py"
 cp --remove-destination "$OIO_REST_CONFIG.base" "$OIO_REST_CONFIG"
 
+APACHE_CONFIG="$DIR/apache/mox.conf"
+cp --remove-destination "$APACHE_CONFIG.base" "$APACHE_CONFIG"
+
+
 # Setup common config
-sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$CONFIGFILENAME"
+sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$MOX_CONFIG"
 
 # Setup apache virtualhost
 echo "Setting up Apache virtualhost"
@@ -102,10 +106,10 @@ fi
 if [[ "x$JAVA_HIGHEST_VERSION_DIR" != "x" ]]; then
 	sed -r -e "s|^CMD_JAVA=.*$|CMD_JAVA=$JAVA_HIGHEST_VERSION_DIR/bin/java|" \
        -e "s|^CMD_JAVAC=.*$|CMD_JAVAC=$JAVA_HIGHEST_VERSION_DIR/bin/javac|" \
-       ${SHELL_VARIABLES_FILE} > ${SHELL_VARIABLES_FILE}.$$
+       ${SHELL_CONFIG} > ${SHELL_CONFIG}.$$
 fi
-if [[ -f ${SHELL_VARIABLES_FILE}.$$ ]]; then
-	/bin/mv ${SHELL_VARIABLES_FILE}.$$ ${SHELL_VARIABLES_FILE}
+if [[ -f ${SHELL_CONFIG}.$$ ]]; then
+	/bin/mv ${SHELL_CONFIG}.$$ ${SHELL_CONFIG}
 fi
 
 OLD_JAVA_HOME="$JAVA_HOME"
