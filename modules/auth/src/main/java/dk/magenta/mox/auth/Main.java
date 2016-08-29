@@ -41,7 +41,7 @@ public class Main {
         System.out.println("Mox auth authentication interface");
         System.out.println("---------------------------");
         System.out.println("Will interface with a WSO2 server with a username and password, to obtain a valid authtoken");
-        System.out.println("Usage: java -cp \"target/auth-1.0.jar:target/dependency/*\" dk.magenta.mox.auth.Main [-s] [-u username] [-p password] [-i interface] [-f propertiesfile] [-a stsAddress]\n");
+        System.out.println("Usage: java -cp \"target/auth-1.0.jar:target/dependency/*\" dk.magenta.mox.auth.Main [-s] [-u username] [-p password] [-i interface] [-f propertiesfile]\n");
         return;
     }
 
@@ -90,10 +90,6 @@ public class Main {
         if (argMap.containsKey("f")) {
             this.propertiesFileNames = argMap.get("f");
             this.print("    propertiesFilename = " + this.propertiesFileNames);
-        }
-        if (argMap.containsKey("a")) {
-            this.stsAddress = argMap.getFirst("a");
-            this.print("    stsAddress = " + this.stsAddress);
         }
     }
 
@@ -233,5 +229,4 @@ public class Main {
     private static String base64encode(byte[] data) {
         return Base64.getEncoder().encodeToString(data);
     }
-
 }

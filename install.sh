@@ -94,7 +94,7 @@ if [[ "x$JAVA_HIGHEST_VERSION_DIR" != "x" ]]; then
        -e "s|^CMD_JAVAC=.*$|CMD_JAVAC=$JAVA_HIGHEST_VERSION_DIR/bin/javac|" \
        ${SHELL_VARIABLES_FILE} > ${SHELL_VARIABLES_FILE}.$$
 fi
-if [[ -f ${SHELL_VARIABLES_FILE} ]]; then
+if [[ -f ${SHELL_VARIABLES_FILE}.$$ ]]; then
 	/bin/mv ${SHELL_VARIABLES_FILE}.$$ ${SHELL_VARIABLES_FILE}
 fi
 
