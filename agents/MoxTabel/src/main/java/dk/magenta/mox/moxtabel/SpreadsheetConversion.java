@@ -1,8 +1,6 @@
-package dk.magenta.mox.spreadsheet;
+package dk.magenta.mox.moxtabel;
 
-import dk.magenta.mox.json.JSONObject;
 import org.apache.log4j.Logger;
-import dk.magenta.mox.json.JSONArray;
 
 import java.util.*;
 

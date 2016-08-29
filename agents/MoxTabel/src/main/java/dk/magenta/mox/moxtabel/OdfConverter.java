@@ -1,4 +1,4 @@
-package dk.magenta.mox.spreadsheet;
+package dk.magenta.mox.moxtabel;
 /*
 import org.odftoolkit.simple.SpreadsheetDocument;
 import org.odftoolkit.simple.table.Cell;
@@ -10,7 +10,6 @@ import org.apache.log4j.Logger;
 import org.jopendocument.dom.spreadsheet.*;
 
 import java.io.File;
-import java.io.InputStream;
 
 /**
  * Created by lars on 26-11-15.
@@ -40,21 +39,23 @@ public class OdfConverter extends SpreadsheetConverter {
             int emptyRows = 0;
             for (int j = 0; j < rowCount; j++) {
                 SpreadsheetRow rowData = new SpreadsheetRow(columnCount);
+                boolean emptyRow = true;
                 for (int k = 0; k < columnCount; k++) {
                     Cell cell;
                     cell = sheet.getImmutableCellAt(k, j);
                     String contents = getCellString(cell);
-                    if (contents == null || contents.isEmpty()) {
-                        emptyRows++;
-                    } else {
-                        emptyRows = 0;
+                    if (emptyRow && contents != null && !contents.isEmpty()) {
+                        emptyRow = false;
                     }
                     rowData.add(contents);
                 }
-                if (emptyRows == 0) {
+                if (emptyRow) {
+                    emptyRows++;
+                    if (emptyRows >= 100) {
+                        break;
+                    }
+                } else {
                     spreadsheetConversion.addRow(sheetName, rowData, j == 0);
-                } else if (emptyRows >= 10) {
-                    break;
                 }
             }
         }

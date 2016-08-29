@@ -1,6 +1,4 @@
-package dk.magenta.mox.spreadsheet;
-
-import dk.magenta.mox.json.JSONObject;
+package dk.magenta.mox.moxtabel;
 
 import java.io.File;
 import java.util.List;
