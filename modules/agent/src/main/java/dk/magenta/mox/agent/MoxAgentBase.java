@@ -91,7 +91,7 @@ public class MoxAgentBase {
             this.properties = new Properties();
 
             if (this.commandLineArgs != null) {
-                List<String> propertiesFilenames = this.commandLineArgs.get("propertiesFiles");
+                List<String> propertiesFilenames = this.commandLineArgs.get("propertiesFile");
                 if (propertiesFilenames != null) {
                     for (String filename : propertiesFilenames) {
                         this.addPropertiesFile(filename);

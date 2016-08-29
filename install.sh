@@ -50,23 +50,56 @@ cp --remove-destination "$DIR/$CONFIGFILENAME.base" "$DIR/$CONFIGFILENAME"
 sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$DIR/$CONFIGFILENAME"
 
 # Setup apache virtualhost
-echo "Setting up apache virtualhost"
+echo "Setting up Apache virtualhost"
 $DIR/apache/install.sh -d $DOMAIN
+
+echo "Setting up Identity Server"
+$DIR/wso2/install.sh "$DOMAIN"
 
 # Install oio_rest
 echo "Installing oio_rest"
 echo "$DIR/oio_rest/install.sh $@"
 $DIR/oio_rest/install.sh "$@" -d $DOMAIN
 
-# Ubuntu 14.04 doesn't come with java 8
-sudo apt-cache -q=2 show oracle-java8-installer 2>&1 >/dev/null
-if [[ $? > 0 ]]; then
-	sudo add-apt-repository ppa:webupd8team/java
-	sudo apt-get update
-	sudo apt-get -y install oracle-java8-installer
+
+JAVA_HIGHEST_VERSION=0
+JAVA_VERSION_NEEDED=8
+JAVA_HIGHEST_VERSION_DIR=""
+SHELL_VARIABLES_FILE="$DIR/variables.sh"
+regex=".*/java-([0-9]+).*"
+files=`find /usr/lib -wholename '*/bin/javac' -perm -a=x -type f`
+for f in $files; do
+	if [[ $f =~ $regex ]]; then
+		version="${BASH_REMATCH[1]}"
+		if [[ $version > $JAVA_HIGHEST_VERSION ]]; then
+			JAVA_HIGHEST_VERSION=$version
+			JAVA_HIGHEST_VERSION_DIR=$(readlink -m "$f/../..")
+		fi
+    fi
+done
+if [ $JAVA_HIGHEST_VERSION -ge $JAVA_VERSION_NEEDED ]; then
+	echo "Java is installed in version $JAVA_HIGHEST_VERSION"
+else
+	echo "Installing java in version $JAVA_VERSION_NEEDED"
+	sudo apt-cache -q=2 show "openjdk-$JAVA_VERSION_NEEDED-jdk" 2> /dev/null 1> /dev/null
+	if [[ $? > 0 ]]; then
+		# openjdk is not available in the version we want
+		sudo add-apt-repository ppa:openjdk-r/ppa
+		sudo apt-get update > /dev/null
+	fi
+	sudo apt-get --yes --quiet install "openjdk-$JAVA_VERSION_NEEDED-jdk"
 fi
-export JAVA_HOME="/usr/lib/jvm/java-8-oracle/"
-sudo ln -sf "/usr/lib/jvm/java-8-oracle/" "/usr/lib/jvm/default-java"
+if [[ "x$JAVA_HIGHEST_VERSION_DIR" != "x" ]]; then
+	sed -r -e "s|^CMD_JAVA=.*$|CMD_JAVA=$JAVA_HIGHEST_VERSION_DIR/bin/java|" \
+       -e "s|^CMD_JAVAC=.*$|CMD_JAVAC=$JAVA_HIGHEST_VERSION_DIR/bin/javac|" \
+       ${SHELL_VARIABLES_FILE} > ${SHELL_VARIABLES_FILE}.$$
+fi
+if [[ -f ${SHELL_VARIABLES_FILE}.$$ ]]; then
+	/bin/mv ${SHELL_VARIABLES_FILE}.$$ ${SHELL_VARIABLES_FILE}
+fi
+
+OLD_JAVA_HOME="$JAVA_HOME"
+JAVA_HOME="$JAVA_HIGHEST_VERSION_DIR"
 
 # Install Maven
 echo "Installing Maven"
@@ -77,7 +110,6 @@ echo "Installing java modules"
 $DIR/modules/json/install.sh
 $DIR/modules/agent/install.sh
 $DIR/modules/auth/install.sh
-$DIR/modules/spreadsheet/install.sh
 
 # Install servlet
 echo "Installing Tomcat webservices"
@@ -90,6 +122,8 @@ $DIR/agents/MoxTabel/install.sh
 $DIR/agents/MoxRestFrontend/install.sh
 $DIR/agents/MoxDocumentDownload/install.sh
 $DIR/agents/MoxTest/install.sh
+
+JAVA_HOME="$OLD_JAVA_HOME"
 
 sudo chown -R mox:mox $DIR
 sudo service apache2 reload
