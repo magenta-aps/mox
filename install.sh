@@ -44,10 +44,21 @@ fi
 echo "Creating log dir"
 sudo mkdir -p "/var/log/mox"
 
+# Config files that may be altered during install should be copied from git, but not themselves be present there
+CONFIGFILENAME="$DIR/mox.conf"
+cp --remove-destination "$CONFIGFILENAME.base" "$CONFIGFILENAME"
+
+SHELL_VARIABLES_FILE="$DIR/variables.sh"
+cp --remove-destination "$SHELL_VARIABLES_FILE.base" "$SHELL_VARIABLES_FILE"
+
+AUTH_CONFIG="$DIR/modules/auth/auth.properties"
+cp --remove-destination "$AUTH_CONFIG.base" "$AUTH_CONFIG"
+
+OIO_REST_CONFIG="$DIR/oio_rest/oio_rest/settings.py"
+cp --remove-destination "$OIO_REST_CONFIG.base" "$OIO_REST_CONFIG"
+
 # Setup common config
-CONFIGFILENAME="mox.conf"
-cp --remove-destination "$DIR/$CONFIGFILENAME.base" "$DIR/$CONFIGFILENAME"
-sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$DIR/$CONFIGFILENAME"
+sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$CONFIGFILENAME"
 
 # Setup apache virtualhost
 echo "Setting up Apache virtualhost"
@@ -65,7 +76,6 @@ $DIR/oio_rest/install.sh "$@" -d $DOMAIN
 JAVA_HIGHEST_VERSION=0
 JAVA_VERSION_NEEDED=8
 JAVA_HIGHEST_VERSION_DIR=""
-SHELL_VARIABLES_FILE="$DIR/variables.sh"
 regex=".*/java-([0-9]+).*"
 files=`find /usr/lib -wholename '*/bin/javac' -perm -a=x -type f`
 for f in $files; do
