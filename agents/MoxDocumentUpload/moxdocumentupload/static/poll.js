@@ -7,14 +7,18 @@ var pollJob = function(jobId, callback) {
                 dataType: "json",
                 success: function(responseObject, status, jqXHR){
                     if (responseObject && 'response' in responseObject) {
-                        var serviceResponse = responseObject.response;
-                        if (typeof(serviceResponse)=="string") {
-                            try {
-                                serviceResponse = JSON.parse(serviceResponse);
-                            } catch (e) {}
-                        }
-                        if (typeof(serviceResponse)=="object") {
-                            callback(serviceResponse);
+                        try {
+                            var serviceResponse = responseObject.response;
+                            if (typeof(serviceResponse) == "string") {
+                                try {
+                                    serviceResponse = JSON.parse(serviceResponse);
+                                } catch (e) {
+                                }
+                            }
+                            if (typeof(serviceResponse) == "object") {
+                                callback(serviceResponse);
+                            }
+                        } catch (e) {
                         }
                         clearInterval(poller);
                         poller = null;
