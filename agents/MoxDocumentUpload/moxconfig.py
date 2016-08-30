@@ -10,6 +10,7 @@ def read_properties_file(file_path):
         config.seek(0, os.SEEK_SET)
 
         cp = ConfigParser.SafeConfigParser()
+        cp.optionxform = str
         cp.readfp(config)
 
         return dict(cp.items('dummy_section'))

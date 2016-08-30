@@ -9,9 +9,9 @@
         (function () {
             var jobId = {{ jobId|tojson }};
             var handleResponse = function(response) {
-                for (var id in serviceResponse) {
+                for (var id in response) {
                     var responseNode = $("<p>");
-                    responseNode.text("uuid: " + serviceResponse[id].uuid);
+                    responseNode.text("uuid: " + response[id].uuid);
                     $("#responseContainer").append(responseNode);
                 }
             };
