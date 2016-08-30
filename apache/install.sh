@@ -28,10 +28,10 @@ if [ -z $SKIP_SYSTEM_DEPS ]; then
 fi
 
 # Setup apache site config
-CONFIGFILENAME="mox.conf"
-sudo cp --remove-destination "$DIR/$CONFIGFILENAME.base" "$DIR/$CONFIGFILENAME"
-sed --in-place --expression="s|\${domain}|${DOMAIN}|" "$DIR/$CONFIGFILENAME"
-sudo ln --symbolic --force "$DIR/$CONFIGFILENAME" "/etc/apache2/sites-available/$CONFIGFILENAME"
+CONFIGFILENAME="$DIR/mox.conf"
+sed --in-place --expression="s|\${domain}|${DOMAIN}|" "$CONFIGFILENAME"
+sudo ln --symbolic --force "$CONFIGFILENAME" "/etc/apache2/sites-available/mox.conf"
+
 sudo a2ensite mox
 sudo a2enmod ssl
 sudo a2enmod rewrite

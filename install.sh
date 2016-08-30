@@ -44,10 +44,25 @@ fi
 echo "Creating log dir"
 sudo mkdir --parents "/var/log/mox"
 
+# Config files that may be altered during install should be copied from git, but not themselves be present there
+MOX_CONFIG="$DIR/mox.conf"
+cp --remove-destination "$MOX_CONFIG.base" "$MOX_CONFIG"
+
+SHELL_CONFIG="$DIR/variables.sh"
+cp --remove-destination "$SHELL_CONFIG.base" "$SHELL_CONFIG"
+
+AUTH_CONFIG="$DIR/modules/auth/auth.properties"
+cp --remove-destination "$AUTH_CONFIG.base" "$AUTH_CONFIG"
+
+OIO_REST_CONFIG="$DIR/oio_rest/oio_rest/settings.py"
+cp --remove-destination "$OIO_REST_CONFIG.base" "$OIO_REST_CONFIG"
+
+APACHE_CONFIG="$DIR/apache/mox.conf"
+cp --remove-destination "$APACHE_CONFIG.base" "$APACHE_CONFIG"
+
 # Setup common config
 CONFIGFILENAME="mox.conf"
-cp --remove-destination "$DIR/$CONFIGFILENAME.base" "$DIR/$CONFIGFILENAME"
-sed --in-place --expression="s|\${domain}|${DOMAIN}|" "$DIR/$CONFIGFILENAME"
+sed --in-place --expression="s|\${domain}|${DOMAIN}|" "$MOX_CONFIG"
 
 # Setup apache virtualhost
 echo "Setting up Apache virtualhost"
@@ -65,7 +80,6 @@ $DIR/oio_rest/install.sh "$@" -d $DOMAIN
 JAVA_HIGHEST_VERSION=0
 JAVA_VERSION_NEEDED=8
 JAVA_HIGHEST_VERSION_DIR=""
-SHELL_VARIABLES_FILE="$DIR/variables.sh"
 regex=".*/java-([0-9]+).*"
 files=`find /usr/lib -wholename '*/bin/javac' -perm -a=x -type f`
 for f in $files; do
@@ -92,10 +106,10 @@ fi
 if [[ "x$JAVA_HIGHEST_VERSION_DIR" != "x" ]]; then
 	sed -r -e "s|^CMD_JAVA=.*$|CMD_JAVA=$JAVA_HIGHEST_VERSION_DIR/bin/java|" \
        -e "s|^CMD_JAVAC=.*$|CMD_JAVAC=$JAVA_HIGHEST_VERSION_DIR/bin/javac|" \
-       ${SHELL_VARIABLES_FILE} > ${SHELL_VARIABLES_FILE}.$$
+       ${SHELL_CONFIG} > ${SHELL_CONFIG}.$$
 fi
-if [[ -f ${SHELL_VARIABLES_FILE}.$$ ]]; then
-	/bin/mv ${SHELL_VARIABLES_FILE}.$$ ${SHELL_VARIABLES_FILE}
+if [[ -f ${SHELL_CONFIG}.$$ ]]; then
+	/bin/mv ${SHELL_CONFIG}.$$ ${SHELL_CONFIG}
 fi
 
 OLD_JAVA_HOME="$JAVA_HOME"
