@@ -1,0 +1,21 @@
+*** ./generated-files/as_search_aktivitet.sql	2016-10-08 15:04:00.000000000 +0200
+--- ./patches/as_search_aktivitet.org.sql	2016-10-08 14:14:16.000000000 +0200
+***************
+*** 776,785 ****
+--- 776,791 ----
+  					relationTypeObj.urn IS NULL
+  					OR
+  					relationTypeObj.urn = a.rel_maal_urn
+  				)
+  				AND
++ 				(
++  					relationTypeObj.indeks IS NULL
++  					OR
++  					relationTypeObj.indeks = a.rel_index
++  				)
++ 				AND
+  						(
+  				(registreringObj.registrering) IS NULL 
+  				OR
+  				(
+  					(

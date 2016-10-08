@@ -273,7 +273,34 @@ DATABASE_STRUCTURE = {
                                      "andredokumenter", "andreklasser",
                                      "andrebehandlere", "parter",
                                      "kopiparter", "tilknyttedesager"]
+    },
+
+     "aktivitet": {
+        "attributter": {
+            "egenskaber": [
+                "brugervendtnoegle","aktivitetnavn","beskrivelse","starttidspunkt","sluttidspunkt","tidsforbrug","formaal"]
+        },
+        "attributter_type_override": {
+            "egenskaber": {
+                "starttidspunkt": "timestamptz",
+                "sluttidspunkt": "timestamptz",
+                "tidsforbrug":"tstzrange"
+                }
+            },
+
+        "tilstande": {
+            "status": ["Inaktiv", "Aktiv","Aflyst"],
+            "publiceret": ["Publiceret", "IkkePubliceret","Normal"]
+        },
+        "relationer_nul_til_en": ["aktivitetstype","emne","foelsomhedklasse",
+                                "ansvarligklasse","rekvirentklasse","ansvarlig","tilhoerer" ],
+        "relationer_nul_til_mange": ["udfoererklasse","deltagerklasse","objektklasse",
+                                     "resultatklasse","grundlagklasse","facilitetklasse","adresse",
+                                     "geoobjekt","position","facilitet","lokale","aktivitetdokument",
+                                     "aktivitetgrundlag","aktivitetresultat","udfoerer","deltager"]
     }
+
+
 
 }
 

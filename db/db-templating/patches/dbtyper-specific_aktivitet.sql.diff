@@ -1,0 +1,49 @@
+*** ./generated-files/dbtyper-specific_aktivitet.sql	2016-10-08 15:03:59.000000000 +0200
+--- ./patches/dbtyper-specific_aktivitet.org.sql	2016-10-08 13:01:44.000000000 +0200
+***************
+*** 43,53 ****
+  CREATE TYPE AktivitetRelationType AS (
+    relType AktivitetRelationKode,
+    virkning Virkning,
+    uuid uuid,
+    urn  text,
+!   objektType text 
+  )
+  ;
+  
+  CREATE TYPE AktivitetRegistreringType AS
+  (
+--- 43,54 ----
+  CREATE TYPE AktivitetRelationType AS (
+    relType AktivitetRelationKode,
+    virkning Virkning,
+    uuid uuid,
+    urn  text,
+!   objektType text,
+!   indeks int
+  )
+  ;
+  
+  CREATE TYPE AktivitetRegistreringType AS
+  (
+***************
+*** 62,68 ****
+  (
+    id uuid,
+    registrering AktivitetRegistreringType[]
+  );  
+  
+! 
+  
+--- 63,73 ----
+  (
+    id uuid,
+    registrering AktivitetRegistreringType[]
+  );  
+  
+!  CREATE Type _AktivitetRelationMaxIndex AS
+!  (
+!    relType AktivitetRelationKode,
+!    indeks int
+!  );
+  
