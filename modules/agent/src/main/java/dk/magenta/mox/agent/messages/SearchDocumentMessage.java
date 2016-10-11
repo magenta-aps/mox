@@ -1,7 +1,7 @@
 package dk.magenta.mox.agent.messages;
 
 import dk.magenta.mox.agent.ParameterMap;
-import dk.magenta.mox.json.JSONObject;
+import dk.magenta.mox.agent.json.JSONObject;
 
 /**
  * Created by lars on 15-02-16.

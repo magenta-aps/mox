@@ -1,7 +1,7 @@
 package dk.magenta.mox.agent.messages;
 
-import dk.magenta.mox.json.JSONObject;
-import org.json.JSONArray;
+import dk.magenta.mox.agent.json.JSONArray;
+import dk.magenta.mox.agent.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
