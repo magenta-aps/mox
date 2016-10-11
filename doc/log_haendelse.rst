@@ -1,0 +1,167 @@
+Specifikation af serviceinterface for LogHændelse
+=================================================
+
+Overordnet sammendrag
++++++++++++++++++++++
+
+Tjenesten LogHændelse bruges til at implementere en benyttelseslog for
+rammearkitekturservices som Organisation, Klassifikation, Sag, Dokument,
+Tilstand, Aktivitet og Indsats - i det hele taget alle
+rammearkitektur-services, som følger OIO- og MOX-protokollerne og udsender
+standardiserede notifikationer om tilgang til databaserne over AMQP.
+
+Tjenesten kan også bruges af services uden for rammearkitekturen; den eneste
+betingelse er, at de skal sende log-oplysningerne i et standardiseret format,
+specifikt som AMQP-beskeder til en nærmere angivet kø eller exhange.
+
+Logningen foregår ved, at logservicen lytter på den AMQP-exchange eller -kø,
+hvortil notifikationerne fra de tjenester, der skal logges, bliver sendt.
+
+Hvert objekt i tjenesten LogHændelse indeholder samtlige oplysninger, der skal
+logges i forbindelse med benyttelsen af tjenesterne.
+
+Det drejer sig først og fremmest om 
+
+* *service-ID* (kan være tjenestens navn - er det ikke entydigt nok, kan det
+  være UUID eller brugervendt nøgle for det IT-System, der repræsenterer
+  servicen).
+
+* *tidspunkt* for den hændelse, der logges.
+
+* *operation*, der udføres - for rammearkitekturen søg, læs, ret, slet eller
+  passivér.
+
+* *objekttype* - altså navnet på den type, for hvilken hændelsen logges.
+
+* *objekt*, for hvilket logningen foretages. Dette kan sammen med objekttypen
+  og tjenestens navn eller ID entydigt bruges til at identificere og fremfinde
+  det objekt, som logningen gælder.
+
+* *bruger* - den bruger, der foretog den handling, der logges.
+
+* *brugerrolle* - den brugerrolle, som brugeren har benyttet for at få adgang
+  til at udføre den pågældende handling.
+
+* *returkode* - svarkoden fra servicen, altså f.eks. 200, 404, 403, 500.
+
+* *returtekst* - fejlmeddelelse fra serveren i tilfælde af, at noget gik galt.
+
+* *note* - såfremt notefelterne på eventuelle nye registreringer eller
+  virkningsperioder er udfyldt, kopieres de til notefeltet på LogHændelsen.
+
+
+Autentikering
++++++++++++++
+
+Log-servicen kunne i princippet genbruge SAML-tokens fra de oprindelige
+hændelser og oprette loghændelserne på vegne af denne bruger.
+
+Logning må imidlertid opfattes som en systemfunktion, og det vil derfor være
+passende, at netop denne funktion udføres af en systembruger. I øvrigt
+videresendes SAML-token ikke med de databasenotifikationer, der er kilden til
+loghændelserne.
+
+Autentikering foregår altså ved, at der i den IdP, der styrer adgangen til
+LogHændelse, oprettes en systembruger, der har adgang til at oprette objekter i
+tjenesten, og efter behov en række andre, der kun har adgang til at læse.
+
+Den (eller de) MOX-agent(-er), der lytter på de notifikationer, der skal
+logges, konfigureres derefter med den relevante systembruger. Når der skal
+logges, hentes et SAML-token, som bruges til at autentikere op mod
+REST-interfacet.
+
+Da de indkommende AMQP-beskeder dermed ikke autentikeres, kan det overvejes,
+hvordan man sikrer mod indsættelse af falske log-beskeder. For det første kan
+man begrænse brugerne af AMQP-beskedfordeleren til netop de services, der
+logges, og lade dem identificere sig på passende vis. Alternativt kan man
+overveje at oprette individuelle systembrugere for de enkelte LoRa-services.
+Sammen med hver notifikation vil der i givet fald udsendes et gyldigt
+SAML-token, der identificerer den pågældende service.
+
+
+Attributter
++++++++++++
+
+En LogHændelse har følgende attributter:
+
+* service
+
+* tidspunkt (bemærk, dette kan være tidligere end virkning og registrering for
+  log-objektet)
+
+* operation 
+
+* objekttype
+
+* returkode
+
+* returtekst
+
+* note
+
+
+Tilstande
++++++++++
+
+Umiddelbart kan det antages, at en LogHændelse skabes én gang, hvorefter den
+aldrig ændres. Objektet har derfor måske ikke brug for tilstande.
+
+Omvendt kan der måske være brug for at slette hændelser, der ved en fejltagelse
+er logget for f.eks. en forkert service, eller for at ændre et notefelt, hvis
+der ved en fejltagelse er kommet fortrolige data med ud.
+
+Vi kunne derfor måske have én tilstand:
+
+* Rettet - en angivelse af, om LogHændelsen er blevet ændret, siden den blev
+  registreret. Værdimængden ville blot være Ja og Nej.
+
+
+Relationer
+++++++++++
+
+En LogHændelse har relationer til ganske få andre objekter.
+
+Dybest set repræsenterer en LogHændelse en registrering af en *handling* udført
+af en *bruger*, der har fået lov eller er blevet afvist i forhold til en
+*brugerrolle*.
+
+*Handlingen* er én af de operationer, der er beskrevet under de generelle
+egenskaber for OIO-standardernes objekter. Den implementeres ikke som en
+objektreference, men som et tekstfelt, hvis værdimængde i praksis er begrænset
+til en simpel enumeration af de mulige operationer. Der foretages ingen
+validering af dette, eftersom det også skal være muligt at logge hændelser for
+services, der ikke er en del af OIO-systemet.
+
+*Brugeren* er en reference til Bruger-objektet i Organisation. 
+
+*Brugerrollen* er en reference til Klassifikation. I nogle tilfælde kan 
+brugerens adgangsrettigheder være beskrevet af roller, der er oprettet ad
+hoc på IdP'en og ikke er mappet i klassifikation, og i sådanne tilfælde kan
+rollen angives ved en URN på formen "rolle:oprindelse:rollenavn". Hvis
+rollerne senere oprettes i Klassifikation, skal URN'en kunne bruges til at
+slå rollen op dér.
+
+
+LogHændelse har dermed følgende til-én-relationer:
+
+* *objekt* - det objekt, som logningen gælder. UUID eller URN.
+
+* *bruger* - den bruger, der har udført den handling, der logges. UUID eller
+  URN. Reference til typen Bruger i Organisation.
+
+* *brugerrolle* - den rolle, som er brugt til at give brugeren adgang (eller
+  ej). Reference til Klassifikation. Såfremt brugerrollerne er ad hoc og ikke
+  oprettet i Klassifikation, hvilket p.t. er tilfældet på referencedata.dk, kan
+  angives en URN.
+
+
+Operationer
++++++++++++
+
+Log-servicen vil tilbyde de samme operationer som de øvrige LoRa-services. Det
+kan dog overvejes, om rettighedsstyringen skal begrænse skriveoperationerne, så
+det kun er de operationer, der giver mening for denne tjeneste, der skal
+tillades.
+
+
+
