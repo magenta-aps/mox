@@ -1,5 +1,5 @@
-Specifikation af serviceinterface for LogHændelse
-=================================================
+Request For Comments: Specifikation af serviceinterface for LogHændelse
+=======================================================================
 
 Overordnet sammendrag
 +++++++++++++++++++++
@@ -47,7 +47,9 @@ Det drejer sig først og fremmest om
 * *returtekst* - fejlmeddelelse fra serveren i tilfælde af, at noget gik galt.
 
 * *note* - såfremt notefelterne på eventuelle nye registreringer eller
-  virkningsperioder er udfyldt, kopieres de til notefeltet på LogHændelsen.
+  virkningsperioder er udfyldt, kan disse kopieres til notefeltet på
+  LogHændelsen. Det vil selvfølgelig være helt op til de services, der bruger
+  LogHændelse, hvad der skal stå i dette notefelt.
 
 
 Autentikering
