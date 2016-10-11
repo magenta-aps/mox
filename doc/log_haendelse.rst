@@ -58,27 +58,30 @@ Autentikering
 Log-servicen kunne i princippet genbruge SAML-tokens fra de oprindelige
 hændelser og oprette loghændelserne på vegne af denne bruger.
 
-Logning må imidlertid opfattes som en systemfunktion, og det vil derfor være
-passende, at netop denne funktion udføres af en systembruger. I øvrigt
-videresendes SAML-token ikke med de databasenotifikationer, der er kilden til
-loghændelserne.
+Logning må imidlertid opfattes som et særskilt ansvarsområde, og det vil
+derfor være passende, om denne funktion varetages af en bruger med en særlig 
+rolle, som vi kunne kalde Logningsansvarlig. 
 
-Autentikering foregår altså ved, at der i den IdP, der styrer adgangen til
-LogHændelse, oprettes en systembruger, der har adgang til at oprette objekter i
-tjenesten, og efter behov en række andre, der kun har adgang til at læse.
+Autentikering foregår altså ved, at der for hver af de services, der har adgang
+til at bruge LogHændelse, oprettes en bruger, der har rollen Logningsansvarlig
+for netop denne hændelse. Når en tjeneste ønsker at logge en hændelse, skal den
+danne et SAML-token for dens Logansvarlige bruger og medsende som
+autentikering.
 
-Den (eller de) MOX-agent(-er), der lytter på de notifikationer, der skal
-logges, konfigureres derefter med den relevante systembruger. Når der skal
-logges, hentes et SAML-token, som bruges til at autentikere op mod
-REST-interfacet.
+Når LogHændelse modtager log-beskeden vil den først validere, at det
+indkommende token er gyldigt, at det er udstedt for IdP'en for den service, der
+logges for, og at den bruger, der autentikeres, faktisk er Logningsansvarlig.
 
-Da de indkommende AMQP-beskeder dermed ikke autentikeres, kan det overvejes,
-hvordan man sikrer mod indsættelse af falske log-beskeder. For det første kan
-man begrænse brugerne af AMQP-beskedfordeleren til netop de services, der
-logges, og lade dem identificere sig på passende vis. Alternativt kan man
-overveje at oprette individuelle systembrugere for de enkelte LoRa-services.
-Sammen med hver notifikation vil der i givet fald udsendes et gyldigt
-SAML-token, der identificerer den pågældende service.
+Et interessant aspekt af denne protokol er, at LogHændelse-tjenesten ved
+logning ikke autentikerer en af sine egne bruger, men en af klienttjenestens.
+Dette volder dog ingen vanskeligheder og kræver ikke en fælles brugerdatabase;
+det kræver kun, at den pågældende IdPs offentlige nøgle registreres på
+LogHændelse-tjenesten sammen med en identifikation af servicen.
+
+Af hensyn til performance og fleksibilitet vil det være en stor fordel, om 
+brugerrollerne medtages i de SAML-tokens, der genereres, så log-tjenesten ikke
+behøver at "kalde tilbage" for at verificere, at brugeren har den rigtige
+rolle.
 
 
 Attributter
