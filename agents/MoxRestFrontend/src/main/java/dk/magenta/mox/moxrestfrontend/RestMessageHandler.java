@@ -3,13 +3,12 @@ package dk.magenta.mox.moxrestfrontend;
 import dk.magenta.mox.agent.*;
 import dk.magenta.mox.agent.exceptions.InvalidObjectTypeException;
 import dk.magenta.mox.agent.exceptions.InvalidOperationException;
+import dk.magenta.mox.agent.json.JSONArray;
+import dk.magenta.mox.agent.json.JSONObject;
 import dk.magenta.mox.agent.messages.Headers;
 import dk.magenta.mox.agent.messages.Message;
 import dk.magenta.mox.agent.rest.RestClient;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.*;
@@ -69,7 +68,7 @@ public class RestMessageHandler implements MessageHandler {
                                 for (int i = 0; i < array.length(); i++) {
                                     list.add(array.optString(i));
                                 }
-                            } catch (JSONException e) {
+                            } catch (org.json.JSONException e) {
                                 list.add(queryObject.optString(key));
                             }
                             queryMap.put(key, list);

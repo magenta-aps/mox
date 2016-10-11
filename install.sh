@@ -121,7 +121,6 @@ sudo apt-get --yes --quiet install maven
 
 # Compile modules
 echo "Installing java modules"
-$DIR/modules/json/install.sh
 $DIR/modules/agent/install.sh
 $DIR/modules/auth/install.sh
 

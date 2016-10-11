@@ -1,7 +1,7 @@
 package dk.magenta.mox.agent;
 
+import dk.magenta.mox.agent.json.JSONObject;
 import dk.magenta.mox.agent.messages.Headers;
-import org.json.JSONObject;
 
 import java.util.concurrent.Future;
 

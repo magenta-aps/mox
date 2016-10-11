@@ -1,4 +1,4 @@
-package dk.magenta.mox.json;
+package dk.magenta.mox.agent.json;
 
 import org.json.JSONException;
 

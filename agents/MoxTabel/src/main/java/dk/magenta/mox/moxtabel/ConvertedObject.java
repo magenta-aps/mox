@@ -1,7 +1,7 @@
 package dk.magenta.mox.moxtabel;
 
-import dk.magenta.mox.json.JSONArray;
-import dk.magenta.mox.json.JSONObject;
+import dk.magenta.mox.agent.json.JSONArray;
+import dk.magenta.mox.agent.json.JSONObject;
 import org.apache.log4j.Logger;
 
 import java.util.*;

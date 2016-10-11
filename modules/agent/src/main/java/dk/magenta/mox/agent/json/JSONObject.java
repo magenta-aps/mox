@@ -1,12 +1,8 @@
-package dk.magenta.mox.json;
+package dk.magenta.mox.agent.json;
 
 import org.apache.commons.io.IOUtils;
-import org.json.JSONException;
 
 import java.io.*;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
 
 /**
  * Created by lars on 30-11-15.
@@ -100,7 +96,7 @@ public class JSONObject extends org.json.JSONObject {
     public JSONObject optJSONObject(String key) {
         try {
             return this.getJSONObject(key);
-        } catch (JSONException e) {
+        } catch (org.json.JSONException e) {
             return null;
         }
     }
@@ -109,7 +105,7 @@ public class JSONObject extends org.json.JSONObject {
     public JSONArray optJSONArray(String key) {
         try {
             return this.getJSONArray(key);
-        } catch (JSONException e) {
+        } catch (org.json.JSONException e) {
             return null;
         }
     }
