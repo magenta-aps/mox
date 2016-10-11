@@ -2,9 +2,8 @@ package dk.magenta.mox.agent;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.QueueingConsumer;
+import dk.magenta.mox.agent.json.JSONObject;
 import dk.magenta.mox.agent.messages.Headers;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -83,7 +82,7 @@ public class MessageReceiver extends MessageInterface {
             JSONObject dataObject;
             try {
                 dataObject = new JSONObject(data.isEmpty() ? "{}" : data);
-            } catch (JSONException e) {
+            } catch (org.json.JSONException e) {
                 this.log.info("Message body could not be parsed as JSON.\nReturning error message back to sender.");
                 try {
                     MessageReceiver.this.getChannel().basicPublish("", replyTo, responseProperties, Util.error(e).getBytes());

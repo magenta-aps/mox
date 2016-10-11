@@ -1,6 +1,6 @@
 package dk.magenta.mox.agent;
 
-import org.json.JSONObject;
+import dk.magenta.mox.agent.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;

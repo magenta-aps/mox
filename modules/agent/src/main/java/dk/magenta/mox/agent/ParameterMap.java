@@ -1,8 +1,8 @@
 package dk.magenta.mox.agent;
 
-import org.json.JSONArray;
+import dk.magenta.mox.agent.json.JSONArray;
+import dk.magenta.mox.agent.json.JSONObject;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
