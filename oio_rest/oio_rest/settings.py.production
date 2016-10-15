@@ -274,6 +274,25 @@ DATABASE_STRUCTURE = {
                                      "andrebehandlere", "parter",
                                      "kopiparter", "tilknyttedesager"]
     }
+    ,
+    "indsats": {
+        "attributter": {
+            "egenskaber": [
+                "brugervendtnoegle","beskrivelse","starttidspunkt","sluttidspunkt"]
+        },
+        "attributter_type_override": {
+            "egenskaber": {
+                "starttidspunkt": "timestamptz",
+                "sluttidspunkt": "timestamptz",
+                }
+        },
+        "tilstande": {
+            "fremdrift": ["Uoplyst","Visiteret","Disponeret","Leveret","Vurderet"],
+            "publiceret": ["Publiceret", "IkkePubliceret","Normal"]
+        },
+        "relationer_nul_til_en": ["indsatsmodtager","indsatstype"],
+        "relationer_nul_til_mange": ["indsatskvalitet","indsatsaktoer","samtykke","indsatssag","indsatsdokument"]
+}
 
 }
 

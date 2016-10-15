@@ -1,0 +1,49 @@
+*** ./generated-files/dbtyper-specific_indsats.sql	2016-10-15 11:37:10.000000000 +0200
+--- ./patches/dbtyper-specific_indsats.org.sql	2016-10-15 12:07:18.000000000 +0200
+***************
+*** 40,50 ****
+  CREATE TYPE IndsatsRelationType AS (
+    relType IndsatsRelationKode,
+    virkning Virkning,
+    uuid uuid,
+    urn  text,
+!   objektType text 
+  )
+  ;
+  
+  CREATE TYPE IndsatsRegistreringType AS
+  (
+--- 40,51 ----
+  CREATE TYPE IndsatsRelationType AS (
+    relType IndsatsRelationKode,
+    virkning Virkning,
+    uuid uuid,
+    urn  text,
+!   objektType text,
+! indeks int 
+  )
+  ;
+  
+  CREATE TYPE IndsatsRegistreringType AS
+  (
+***************
+*** 59,65 ****
+  (
+    id uuid,
+    registrering IndsatsRegistreringType[]
+  );  
+  
+! 
+  
+--- 60,70 ----
+  (
+    id uuid,
+    registrering IndsatsRegistreringType[]
+  );  
+  
+!  CREATE Type _IndsatsRelationMaxIndex AS
+!  (
+!    relType IndsatsRelationKode,
+!    indeks int
+!  );
+  

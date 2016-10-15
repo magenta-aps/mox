@@ -1,0 +1,23 @@
+*** ./generated-files/tbls-specific_indsats.sql	2016-10-15 11:37:11.000000000 +0200
+--- ./patches/tbls-specific_indsats.org.sql	2016-10-15 12:11:43.000000000 +0200
+***************
+*** 313,328 ****
+--- 313,330 ----
+    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
+    rel_maal_uuid uuid NULL, --we have to allow null values (for now at least), as it is needed to be able to clear/overrule previous registered relations.
+    rel_maal_urn text null,
+    rel_type IndsatsRelationKode not null,
+    objekt_type text null,
++  rel_index int null,
+   CONSTRAINT indsats_relation_forkey_indsatsregistrering  FOREIGN KEY (indsats_registrering_id) REFERENCES indsats_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
+   CONSTRAINT indsats_relation_pkey PRIMARY KEY (id),
+   CONSTRAINT indsats_relation_no_virkning_overlap EXCLUDE USING gist (indsats_registrering_id WITH =, _as_convert_indsats_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('indsatskvalitet'::IndsatsRelationKode ) AND rel_type<>('indsatsaktoer'::IndsatsRelationKode ) AND rel_type<>('samtykke'::IndsatsRelationKode ) AND rel_type<>('indsatssag'::IndsatsRelationKode ) AND rel_type<>('indsatsdokument'::IndsatsRelationKode )) ,-- no overlapping virkning except for 0..n --relations
+   CONSTRAINT indsats_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
+  );
+  
++ CREATE UNIQUE INDEX indsats_relation_unique_index_within_type  ON indsats_relation (indsats_registrering_id,rel_type,rel_index) WHERE ( rel_type IN ('indsatskvalitet'::IndsatsRelationKode,'indsatsaktoer'::IndsatsRelationKode,'samtykke'::IndsatsRelationKode,'indsatssag'::IndsatsRelationKode,'indsatsdokument'::IndsatsRelationKode));
+  
+  CREATE INDEX indsats_relation_idx_rel_maal_obj_uuid
+    ON indsats_relation
+    USING btree
+    (rel_type,objekt_type,rel_maal_uuid);

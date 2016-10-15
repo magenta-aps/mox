@@ -1,0 +1,21 @@
+*** ./generated-files/as_search_indsats.sql	2016-10-15 11:37:11.000000000 +0200
+--- ./patches/as_search_indsats.org.sql	2016-10-15 11:59:51.000000000 +0200
+***************
+*** 755,764 ****
+--- 755,770 ----
+  					relationTypeObj.urn IS NULL
+  					OR
+  					relationTypeObj.urn = a.rel_maal_urn
+  				)
+  				AND
++ 				(
++  					relationTypeObj.indeks IS NULL
++  					OR
++  					relationTypeObj.indeks = a.rel_index
++  				)
++ 				AND
+  						(
+  				(registreringObj.registrering) IS NULL 
+  				OR
+  				(
+  					(
