@@ -1,5 +1,5 @@
-*** ./generated-files/dbtyper-specific_tilstand.sql	2016-10-15 09:39:43.000000000 +0200
---- ./patches/dbtyper-specific_tilstand.org.sql	2016-10-15 10:21:27.000000000 +0200
+*** ./generated-files/dbtyper-specific_tilstand.sql	2016-10-15 12:52:58.000000000 +0200
+--- ./patches/dbtyper-specific_tilstand.org.sql	2016-10-15 12:32:25.000000000 +0200
 ***************
 *** 38,48 ****
   CREATE TYPE TilstandRelationType AS (
@@ -26,3 +26,19 @@
   
   CREATE TYPE TilstandRegistreringType AS
   (
+***************
+*** 57,63 ****
+--- 58,70 ----
+  (
+    id uuid,
+    registrering TilstandRegistreringType[]
+  );  
+  
++  CREATE Type _TilstandRelationMaxIndex AS
++  (
++    relType TilstandRelationKode,
++    indeks int
++  );
++ 
+  
+  

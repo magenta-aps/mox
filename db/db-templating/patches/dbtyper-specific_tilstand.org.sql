@@ -60,5 +60,11 @@ CREATE TYPE TilstandType AS
   registrering TilstandRegistreringType[]
 );  
 
+ CREATE Type _TilstandRelationMaxIndex AS
+ (
+   relType TilstandRelationKode,
+   indeks int
+ );
+
 
 
