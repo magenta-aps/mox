@@ -273,7 +273,20 @@ DATABASE_STRUCTURE = {
                                      "andredokumenter", "andreklasser",
                                      "andrebehandlere", "parter",
                                      "kopiparter", "tilknyttedesager"]
-    }
+    },
+
+    "tilstand": {
+        "attributter": {
+            "egenskaber": [
+                "brugervendtnoegle","beskrivelse"]
+        },
+        "tilstande": {
+            "status": ["Inaktiv", "Aktiv"],
+            "publiceret": ["Publiceret", "IkkePubliceret","Normal"]
+        },
+        "relationer_nul_til_en": ["tilstandsobjekt","tilstandstype"],
+        "relationer_nul_til_mange": ["tilstandsvaerdi","begrundelse","tilstandskvalitet","tilstandsvurdering","tilstandsaktoer","tilstandsudstyr","samtykke","tilstandsdokument"]
+        }
 
 }
 

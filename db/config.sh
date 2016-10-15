@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SUPER_USER="postgres"
+
 # Where to create the MOX database
 MOX_DB="mox"
 
