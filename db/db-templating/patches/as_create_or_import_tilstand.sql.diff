@@ -1,0 +1,112 @@
+*** ./generated-files/as_create_or_import_tilstand.sql	2016-10-15 09:39:44.000000000 +0200
+--- ./patches/as_create_or_import_tilstand.org.sql	2016-10-15 10:03:08.000000000 +0200
+***************
+*** 23,32 ****
+--- 23,36 ----
+    tilstand_tils_status_obj tilstandStatusTilsType;
+    tilstand_tils_publiceret_obj tilstandPubliceretTilsType;
+    
+    tilstand_relationer TilstandRelationType;
+    auth_filtered_uuids uuid[];
++   tilstand_relation_kode tilstandRelationKode;
++   tilstand_uuid_underscores text;
++   tilstand_rel_seq_name text;
++   tilstand_rel_type_cardinality_unlimited tilstandRelationKode[]:=ARRAY['tilstandsvaerdi'::TilstandRelationKode,'begrundelse'::TilstandRelationKode,'tilstandskvalitet'::TilstandRelationKode,'tilstandsvurdering'::TilstandRelationKode,'tilstandsaktoer'::TilstandRelationKode,'tilstandsudstyr'::TilstandRelationKode,'samtykke'::TilstandRelationKode,'tilstandsdokument'::TilstandRelationKode]::TilstandRelationKode[];
+  BEGIN
+  
+  IF tilstand_uuid IS NULL THEN
+      LOOP
+      tilstand_uuid:=uuid_generate_v4();
+***************
+*** 160,187 ****
+  END IF;
+  
+  /*********************************/
+  --Insert relations
+  
+      INSERT INTO tilstand_relation (
+        tilstand_registrering_id,
+        virkning,
+        rel_maal_uuid,
+        rel_maal_urn,
+        rel_type,
+!       objekt_type
+      )
+      SELECT
+        tilstand_registrering_id,
+        a.virkning,
+        a.uuid,
+        a.urn,
+        a.relType,
+!       a.objektType
+      FROM unnest(tilstand_registrering.relationer) a
+!   ;
+  
+  
+  /*** Verify that the object meets the stipulated access allowed criteria  ***/
+  /*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
+  auth_filtered_uuids:=_as_filter_unauth_tilstand(array[tilstand_uuid]::uuid[],auth_criteria_arr); 
+  IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[tilstand_uuid]) THEN
+--- 164,225 ----
+  END IF;
+  
+  /*********************************/
+  --Insert relations
+  
++ IF coalesce(array_length(tilstand_registrering.relationer,1),0)>0 THEN
++ 
++ --Create temporary sequences
++ tilstand_uuid_underscores:=replace(tilstand_uuid::text, '-', '_');
++ 
++ FOREACH tilstand_relation_kode IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(tilstand_registrering.relationer) a WHERE a.RelType = any (tilstand_rel_type_cardinality_unlimited))
++   LOOP
++   tilstand_rel_seq_name := 'tilstand_rel_' || tilstand_relation_kode::text || tilstand_uuid_underscores;
++ 
++   EXECUTE 'CREATE TEMPORARY SEQUENCE ' || tilstand_rel_seq_name || '
++   INCREMENT 1
++   MINVALUE 1
++   MAXVALUE 9223372036854775807
++   START 1
++   CACHE 1;';
++ 
++ END LOOP;
++ 
+      INSERT INTO tilstand_relation (
+        tilstand_registrering_id,
+        virkning,
+        rel_maal_uuid,
+        rel_maal_urn,
+        rel_type,
+!       objekt_type,
+!       rel_index
+      )
+      SELECT
+        tilstand_registrering_id,
+        a.virkning,
+        a.uuid,
+        a.urn,
+        a.relType,
+!       a.objektType,
+!         CASE WHEN a.relType = any (tilstand_rel_type_cardinality_unlimited) THEN --rel_index
+!         nextval('tilstand_rel_' || a.relType::text || tilstand_uuid_underscores)
+!         ELSE 
+!         NULL
+!         END
+      FROM unnest(tilstand_registrering.relationer) a
+!     ;
+! 
+! 
+! --Drop temporary sequences
+! FOREACH tilstand_relation_kode IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(tilstand_registrering.relationer) a WHERE a.RelType = any (tilstand_rel_type_cardinality_unlimited))
+!   LOOP
+!   tilstand_rel_seq_name := 'tilstand_rel_' || tilstand_relation_kode::text || tilstand_uuid_underscores;
+!   EXECUTE 'DROP  SEQUENCE ' || tilstand_rel_seq_name || ';';
+! END LOOP;
+! 
+  
++ END IF;
+  
+  /*** Verify that the object meets the stipulated access allowed criteria  ***/
+  /*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
+  auth_filtered_uuids:=_as_filter_unauth_tilstand(array[tilstand_uuid]::uuid[],auth_criteria_arr); 
+  IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[tilstand_uuid]) THEN

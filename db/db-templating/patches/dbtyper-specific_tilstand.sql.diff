@@ -1,0 +1,28 @@
+*** ./generated-files/dbtyper-specific_tilstand.sql	2016-10-15 09:39:43.000000000 +0200
+--- ./patches/dbtyper-specific_tilstand.org.sql	2016-10-15 10:21:27.000000000 +0200
+***************
+*** 38,48 ****
+  CREATE TYPE TilstandRelationType AS (
+    relType TilstandRelationKode,
+    virkning Virkning,
+    uuid uuid,
+    urn  text,
+!   objektType text 
+  )
+  ;
+  
+  CREATE TYPE TilstandRegistreringType AS
+  (
+--- 38,49 ----
+  CREATE TYPE TilstandRelationType AS (
+    relType TilstandRelationKode,
+    virkning Virkning,
+    uuid uuid,
+    urn  text,
+!   objektType text,
+!   indeks int
+  )
+  ;
+  
+  CREATE TYPE TilstandRegistreringType AS
+  (

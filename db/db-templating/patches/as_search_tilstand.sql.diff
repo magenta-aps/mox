@@ -1,0 +1,21 @@
+*** ./generated-files/as_search_tilstand.sql	2016-10-15 09:39:44.000000000 +0200
+--- ./patches/as_search_tilstand.org.sql	2016-10-15 10:12:03.000000000 +0200
+***************
+*** 741,750 ****
+--- 741,756 ----
+  					relationTypeObj.urn IS NULL
+  					OR
+  					relationTypeObj.urn = a.rel_maal_urn
+  				)
+  				AND
++ 				(
++  					relationTypeObj.indeks IS NULL
++  					OR
++  					relationTypeObj.indeks = a.rel_index
++  				)
++ 				AND
+  						(
+  				(registreringObj.registrering) IS NULL 
+  				OR
+  				(
+  					(

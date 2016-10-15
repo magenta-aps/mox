@@ -1,0 +1,38 @@
+*** ./generated-files/as_list_tilstand.sql	2016-10-15 09:39:44.000000000 +0200
+--- ./patches/as_list_tilstand.org.sql	2016-10-15 10:05:43.000000000 +0200
+***************
+*** 62,77 ****
+  		ROW (
+  				b.rel_type,
+  				b.virkning,
+  				b.rel_maal_uuid,
+  				b.rel_maal_urn,
+! 				b.objekt_type 
+  			):: TilstandRelationType
+  		ELSE
+  		NULL
+  		END
+! 		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.objekt_type,b.virkning
+  	)) TilstandRelationArr
+  	FROM
+  	(
+  			SELECT
+  			a.tilstand_id,
+--- 62,78 ----
+  		ROW (
+  				b.rel_type,
+  				b.virkning,
+  				b.rel_maal_uuid,
+  				b.rel_maal_urn,
+! 				b.objekt_type,
+!  				b.rel_indeks 
+  			):: TilstandRelationType
+  		ELSE
+  		NULL
+  		END
+! 		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.objekt_type,b.rel_indeks,b.virkning
+  	)) TilstandRelationArr
+  	FROM
+  	(
+  			SELECT
+  			a.tilstand_id,
