@@ -1,14 +1,13 @@
+# -*- coding: utf-8 -*-
 import os
 
-from agent.amqp import MessageListener, NoSuchJob
-from agent.config import read_properties_file
-from mwclient import Site
-from mwclient.errors import LoginError
-from requests.exceptions import HTTPError
-from pprint import pprint
-from inspect import getmembers
+from agent.amqp import MessageListener
+from SeMaWi import Semawi
+from PyLoRA import Lora
 
 DIR = os.path.dirname(os.path.realpath(__file__))
+
+from templates import ItSystemConverter
 
 # config = read_properties_file("/srv/mox/mox.conf")
 
@@ -18,8 +17,6 @@ class MoxWiki(MessageListener):
 
         https = False
         address = 'semawi.magenta.dk'
-        api_path = '/'
-        agent = 'MoxWiki run by User:Xyz'
         # consumer_token='my_consumer_token',
         # consumer_secret='my_consumer_secret',
         # access_token='my_access_token',
@@ -27,33 +24,15 @@ class MoxWiki(MessageListener):
         username='SeMaWi'
         password='SeMaWiSeMaWi'
 
-        try:
-            self.site = Site(
-                (
-                    'https' if https else 'http',
-                    address
-                ),
-                path=api_path,
-                clients_useragent=agent,
-                max_retries=5,
-                # consumer_token=consumer_token,
-                # consumer_secret=consumer_secret,
-                # access_token=access_token,
-                # access_secret=access_secret
-            )
-        except HTTPError as error:
-            status = error.response.status_code
-            if status == 404:
-                raise Exception("%s. api_path is set to %s. Are you sure this is correct?" % (unicode(error), api_path))
-            raise error
+        self.semawi = Semawi(address, username, password, https=False)
+        self.lora = Lora('https://moxtest.magenta-aps.dk')
 
-        try:
-            self.site.login(username, password)
-        except LoginError as e:
-            raise e
-
-    def wikitest(self):
-        pass
+        for itsystem in self.lora.itsystemer:
+            pagename = itsystem.brugervendtnoegle
+            pagetext = unicode(ItSystemConverter(itsystem))
+            print pagetext
+            page = self.semawi.site.Pages[pagename]
+            page.save(pagetext, summary="imported from LoRA instance %s" % self.lora.host)
 
     def callback(self, channel, method, properties, body):
         print "got message %s" % unicode(body)
