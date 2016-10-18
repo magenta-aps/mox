@@ -1,6 +1,6 @@
-from amqp import MessageInterface, MessageSender
-from amqp import NoSuchJob
+from amqpclient import MessageInterface, MessageSender
+from amqpclient import NoSuchJob
 
-from config import read_properties_file
+from config import read_properties_files
 
 from message import Message, UploadedDocumentMessage

@@ -7,6 +7,7 @@ import time
 class MessageInterface(object):
     def __init__(self, username, password, host, queue, exchange=''):
 
+        print host
         if ":" not in host:
             host += ":5672"
 
@@ -66,10 +67,10 @@ class MessageSender(MessageInterface):
             return reply.body
 
 
-class MessageListener(object):
+class MessageListener(MessageInterface):
 
-    def __init__(self, username, password, host, queue, exchange=''):
-        super(MessageSender, self).__init__(username, password, host, queue, exchange)
+    def __init__(self, username, password, host, queue):
+        super(MessageListener, self).__init__(username, password, host, queue)
 
     def callback(self, channel, method, properties, body):
         """Generic callback function for MOX agents."""

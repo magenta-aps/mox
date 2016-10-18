@@ -1,7 +1,5 @@
 # encoding: utf-8
 from setuptools import setup, find_packages
-import sys
-import os
 
 version = '0.0.1'
 authors = 'Lars Peter Thomsen'
@@ -22,6 +20,7 @@ setup(
     install_requires=[
         # -*- Extra requirements: -*-
         'promise==0.4.2',
-        'mwclient==0.8.1'
+        'mwclient==0.8.1',
+        'amqp==2.1.1',
     ]
 )

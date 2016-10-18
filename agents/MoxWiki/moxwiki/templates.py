@@ -39,3 +39,34 @@ class ItSystemConverter(SemaWiConverter):
             u'SystemImplementsPrinciples': '',
             u'AarligeOmkostninger': ''
         }
+
+
+class BrugerConverter(SemaWiConverter):
+    objecttype = "Bruger"
+
+    def __init__(self, bruger):
+        self.converted = {
+            u'Navn': bruger.navn,
+            u'Nummer': bruger.id,
+            u'Status': '',
+            u'Ejer': '',
+            u'Administrator': '',
+            u'Budgetansvarlig': '',
+            u'Målgruppe': '',
+            u'MålgruppeOE': '',
+            u'Leverandør': '',
+            u'Driftsleverandør': '',
+            u'Driftsplacering': '',
+            u'PersonfølsomInfo': '',
+            u'AnmeldtDatatilsynet': '',
+            u'PersonfølsomType': '',
+            u'Afhængigheder': '',
+            u'IDMVenligt': '',
+            u'Dokumentation': '',
+            u'KLE': '',
+            u'URL': '',
+            u'Geodata': '',
+            u'SystemImplementsPrinciples': '',
+            u'AarligeOmkostninger': ''
+        }
+

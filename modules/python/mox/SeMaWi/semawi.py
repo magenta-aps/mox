@@ -2,14 +2,17 @@
 # coding=utf-8
 
 import mwclient
+from urlparse import urlparse
 
 
 class Semawi(object):
 
-    def __init__(self, host, username, password, https=True):
+    def __init__(self, host, username, password):
+        parsed_url = urlparse(host)
         self.host = host
+
         self.site = mwclient.Site(
-            ('https' if https else 'http', self.host),
+            (parsed_url.scheme, parsed_url.netloc),
             path='/'
         )
         self.username = username
