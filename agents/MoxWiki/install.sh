@@ -2,6 +2,7 @@
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 MOXDIR="$DIR/../.."
+MODULES_BASE="$MOXDIR/modules/python"
 
 # Setup and start virtual environment
 VIRTUALENV="$DIR/python-env"
@@ -41,6 +42,7 @@ if [ $CREATE_VIRTUALENV == 1 ]; then
 
 		pushd "$DIR"
 		python setup.py develop
+		ln --symbolic $MODULES_BASE/mox $VIRTUALENV/local/mox
 		popd
 
 		echo "Stopping virtual environment"

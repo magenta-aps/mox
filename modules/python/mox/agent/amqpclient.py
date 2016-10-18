@@ -1,23 +1,24 @@
-import amqp
+import pika
 import uuid
 import json
 import time
 
 
 class MessageInterface(object):
-    def __init__(self, username, password, host, queue, exchange=''):
+    def __init__(self, username, password, host, queue, exchange='', queue_parameters={}):
 
-        print host
-        if ":" not in host:
-            host += ":5672"
+        #if ":" not in host:
+        #    host += ":5672"
 
         self.queue = queue
         self.exchange = exchange
-        self.connection = amqp.Connection(host, username, password)
-        self.connection.connect()
-        self.channel = amqp.Channel(self.connection)
-        self.channel.open()
-        self.channel.queue_declare(queue, durable=False, exclusive=False, auto_delete=False)
+        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=host, credentials=pika.PlainCredentials(username, password)))
+        self.channel = self.connection.channel()
+
+        parameters = {'durable': False, 'exclusive': False, 'auto_delete': False}
+        parameters.update(queue_parameters)
+
+        self.channel.queue_declare(queue, **parameters)
 
 
 class MessageSender(MessageInterface):
@@ -69,8 +70,8 @@ class MessageSender(MessageInterface):
 
 class MessageListener(MessageInterface):
 
-    def __init__(self, username, password, host, queue):
-        super(MessageListener, self).__init__(username, password, host, queue)
+    def __init__(self, username, password, host, queue, queue_parameters={}):
+        super(MessageListener, self).__init__(username, password, host, queue, None, queue_parameters)
 
     def callback(self, channel, method, properties, body):
         """Generic callback function for MOX agents."""
@@ -84,8 +85,9 @@ class MessageListener(MessageInterface):
             return
         
         print ' [*] Waiting for messages. To exit press CTRL+C'
-        channel.basic_qos(prefetch_count=1)
-        channel.basic_consume(queue=self.queue, callback=self.callback, no_ack=True)
+        self.channel.basic_qos(prefetch_count=1)
+        self.channel.basic_consume(self.callback, queue=self.queue, no_ack=True)
+        self.channel.start_consuming()
 
 
 class NoSuchJob(Exception):
