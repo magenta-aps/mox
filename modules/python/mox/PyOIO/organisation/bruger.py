@@ -38,7 +38,7 @@ class Bruger(OIOEntity):
         for registrering in self.registreringer:
             for egenskab in registrering.attributter.brugeregenskaber:
                 if hasattr(egenskab, 'brugervendtnoegle'):
-                    return egenskab['brugervendtnoegle']
+                    return egenskab.brugervendtnoegle
 
 
 class BrugerRegistrering(object):

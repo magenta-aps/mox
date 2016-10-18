@@ -43,14 +43,14 @@ class ItSystem(OIOEntity):
         for registrering in self.registreringer:
             for egenskab in registrering.attributter['itsystemegenskaber']:
                 if hasattr(egenskab, 'brugervendtnoegle'):
-                    return egenskab['brugervendtnoegle']
+                    return egenskab.brugervendtnoegle
 
     @property
     def itsystemnavn(self):
         for registrering in self.registreringer:
             for egenskab in registrering.attributter['itsystemegenskaber']:
                 if hasattr(egenskab, 'itsystemnavn'):
-                    return egenskab['itsystemnavn']
+                    return egenskab.itsystemnavn
 
 
 class ItSystemRegistrering(object):
