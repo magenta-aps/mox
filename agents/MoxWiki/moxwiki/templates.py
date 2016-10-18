@@ -16,7 +16,7 @@ class ItSystemConverter(SemaWiConverter):
 
     def __init__(self, itsystem):
         self.converted = {
-            u'Navn': itsystem.navn,
+            u'Navn': itsystem.itsystemnavn,
             u'Nummer': itsystem.id,
             u'Status': '',
             u'Ejer': '',
@@ -46,7 +46,7 @@ class BrugerConverter(SemaWiConverter):
 
     def __init__(self, bruger):
         self.converted = {
-            u'Navn': bruger.navn,
+            u'Navn': bruger.brugervendtnoegle,
             u'Nummer': bruger.id,
             u'Status': '',
             u'Ejer': '',
