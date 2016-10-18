@@ -27,29 +27,34 @@ class MoxWiki(MessageListener):
             amqp_username = config['moxwiki.amqp.username']
             amqp_password = config['moxwiki.amqp.password']
             amqp_queue = config['moxwiki.amqp.queue']
+
+            rest_host = config['moxwiki.rest.host']
+            rest_username = config['moxwiki.rest.username']
+            rest_password = config['moxwiki.rest.password']
         except KeyError as e:
             raise MissingConfigKeyError(str(e))
 
         parsed_amqp_host = urlparse(amqp_host)
-        super(MoxWiki, self).__init__(amqp_username, amqp_password, parsed_amqp_host.netloc, amqp_queue)
+
+        super(MoxWiki, self).__init__(amqp_username, amqp_password, parsed_amqp_host.netloc, amqp_queue, queue_parameters={'durable': True})
 
         self.semawi = Semawi(wiki_host, wiki_username, wiki_password)
-        self.lora = Lora(amqp_host, amqp_username, amqp_password)
+        self.lora = Lora(rest_host, rest_username, rest_password)
 
-        for itsystem in self.lora.itsystemer:
-            self.update('ItSystem', itsystem.id, True)
+        # for itsystem in self.lora.itsystemer:
+        #     self.update('ItSystem', itsystem.id, True)
         # for user in self.lora.brugere:
         #     self.update('Bruger', user.id, True)
+        self.run()
 
     convertermap = {
         'ItSystem': ItSystemConverter,
         'Bruger': BrugerConverter
     }
 
-
     def callback(self, channel, method, properties, body):
         headers = properties.headers
-        messagetype =headers.get("beskedtype")
+        messagetype = headers.get("beskedtype")
 
         if messagetype is not None:
             objecttype = headers.get("objekttype")

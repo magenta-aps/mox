@@ -21,6 +21,6 @@ setup(
         # -*- Extra requirements: -*-
         'promise==0.4.2',
         'mwclient==0.8.1',
-        'amqp==2.1.1',
+        'pika==0.10.0',
     ]
 )
