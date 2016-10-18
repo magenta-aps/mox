@@ -48,7 +48,7 @@ class MoxWiki(MessageListener):
         self.run()
 
     convertermap = {
-        'ItSystem': ItSystemConverter,
+        'Itsystem': ItSystemConverter,
         'Bruger': BrugerConverter
     }
 
