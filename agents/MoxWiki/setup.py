@@ -22,5 +22,10 @@ setup(
         'promise==0.4.2',
         'mwclient==0.8.1',
         'pika==0.10.0',
+
+        # These are to satisfy the requests module with SSL support
+        'pyOpenSSL',
+        'ndg-httpsclient',
+        'pyasn1'
     ]
 )
