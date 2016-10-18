@@ -16,6 +16,11 @@ class OIOEntity(object):
         response = requests.get(self.host + self.get_path(), headers=headers)
         jsondata = json.loads(response.text)
         self.json = jsondata[self.id][0]
+        print self.json
 
     def get_path(self):
+        raise NotImplementedError
+
+    @property
+    def brugervendtnoegle(self):
         raise NotImplementedError

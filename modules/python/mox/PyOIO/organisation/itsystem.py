@@ -28,11 +28,6 @@ class ItSystem(OIOEntity):
         for registrering in self.json['registreringer']:
             self.registreringer.append(ItSystemRegistrering(registrering))
 
-        first_registrering = self.registreringer[0]
-        system_properties = first_registrering.itsystemegenskaber[0]
-        self.brugervendtnoegle = system_properties.brugervendtnoegle
-        self.navn = system_properties.itsystemnavn
-
     def __repr__(self):
         # TODO not ideal, but don't think more is pragmatically needed
         return "ItSystem(%s)" % self.id
@@ -42,6 +37,20 @@ class ItSystem(OIOEntity):
 
     def get_path(self):
         return "/organisation/itsystem/%s" % self.id
+
+    @property
+    def brugervendtnoegle(self):
+        for registrering in self.registreringer:
+            for egenskab in registrering.attributter.brugeregenskaber:
+                if hasattr(egenskab, 'brugervendtnoegle'):
+                    return egenskab['brugervendtnoegle']
+
+    @property
+    def itsystemnavn(self):
+        for registrering in self.registreringer:
+            for egenskab in registrering.attributter.brugeregenskaber:
+                if hasattr(egenskab, 'itsystemnavn'):
+                    return egenskab['itsystemnavn']
 
 
 class ItSystemRegistrering(object):

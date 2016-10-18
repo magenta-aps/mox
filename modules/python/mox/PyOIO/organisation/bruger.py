@@ -33,6 +33,13 @@ class Bruger(OIOEntity):
     def get_path(self):
         return "/organisation/bruger/%s" % self.id
 
+    @property
+    def brugervendtnoegle(self):
+        for registrering in self.registreringer:
+            for egenskab in registrering.attributter.brugeregenskaber:
+                if hasattr(egenskab, 'brugervendtnoegle'):
+                    return egenskab['brugervendtnoegle']
+
 
 class BrugerRegistrering(object):
 

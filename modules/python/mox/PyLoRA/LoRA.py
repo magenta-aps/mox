@@ -9,7 +9,7 @@ from PyOIO.OIOCommon.exceptions import InvalidUUIDException, InvalidObjectTypeEx
 class Lora(object):
     """A Lora object represents a single running instance of the LoRa service.
     """
-    objecttypes = {'ItSystem': ItSystem, 'Bruger': Bruger}
+    objecttypes = {'Itsystem': ItSystem, 'Bruger': Bruger}
     itsystemer = []
     brugere = []
     items = {}
