@@ -3,6 +3,7 @@
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 MOXDIR="$DIR/../.."
 MODULES_BASE="$MOXDIR/modules/python"
+PACKAGE_BASE="$DIR/moxwiki"
 
 # Setup and start virtual environment
 VIRTUALENV="$DIR/python-env"
@@ -49,3 +50,9 @@ if [ $CREATE_VIRTUALENV == 1 ]; then
 		deactivate
 	fi
 fi
+
+
+CONFIG="$PACKAGE_BASE/settings.conf"
+
+sed -r -e "s|^moxwiki.wiki.host.*$|moxwiki.wiki.host = ${WIKI_HOST}|" ${CONFIG} > ${CONFIG}.$$
+cp -p ${CONFIG}.$$ ${CONFIG}
