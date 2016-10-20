@@ -5,6 +5,9 @@ import shutil
 import subprocess
 import random
 
+# ------------------------------------------------------------------------------
+
+
 class Config(object):
     def __init__(self, file, create=True):
         self.file = file
@@ -78,7 +81,8 @@ class ConfigCreationException(Exception):
     def __init__(self, filename):
         super(ConfigCreationException, self).__init__("File %s can not be created" % filename)
 
-#-------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+
 
 # Gets a single character from standard input.  Does not echo to the screen.
 class _Getch:
@@ -117,7 +121,8 @@ class _GetchWindows:
 
 getch = _Getch()
 
-#-------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+
 
 class VirtualEnv(object):
 
@@ -141,6 +146,7 @@ class VirtualEnv(object):
                 while answer != 'y' and answer != 'n':
                     answer = getch()
                 create = (answer == 'y')
+                print answer
         else:
             create = True
 
