@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import os
-from urlparse import urlparse
 
 from agent.amqpclient import MessageListener
 from agent.config import read_properties_files, MissingConfigKeyError
@@ -34,9 +33,7 @@ class MoxWiki(MessageListener):
         except KeyError as e:
             raise MissingConfigKeyError(str(e))
 
-        parsed_amqp_host = urlparse(amqp_host)
-
-        super(MoxWiki, self).__init__(amqp_username, amqp_password, parsed_amqp_host.netloc, amqp_queue, queue_parameters={'durable': True})
+        super(MoxWiki, self).__init__(amqp_username, amqp_password, amqp_host, amqp_queue, queue_parameters={'durable': True})
 
         self.semawi = Semawi(wiki_host, wiki_username, wiki_password)
         self.lora = Lora(rest_host, rest_username, rest_password)
