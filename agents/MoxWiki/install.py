@@ -58,16 +58,16 @@ config_map = {
 }
 config = Config(configfile)
 
-for key in config_map:
+for (argkey, confkey) in sorted(config_map.iteritems()):
     value = None
-    if hasattr(args, key):
-        value = getattr(args, key)
+    if hasattr(args, argkey):
+        value = getattr(args, argkey)
     if value is None:
         # Not good. We must have these values. Prompt the user
-        value = raw_input("%s = " % key)
+        value = raw_input("%s = " % confkey)
     else:
-        print "%s = %s" % (key, value)
-    config.set(config_map[key], value)
+        print "%s = %s" % (confkey, value)
+    config.set(confkey, value)
 
 config.save()
 
