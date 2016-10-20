@@ -18,17 +18,17 @@ parser.add_argument('-y', '--overwrite-virtualenv', action='store_true')
 parser.add_argument('-n', '--keep-virtualenv', action='store_true')
 
 parser.add_argument('--wiki-host', action='store', default="http://%s" % domain)
-parser.add_argument('--wiki-user', action='store', default='SeMaWi')
-parser.add_argument('--wiki-pass', action='store', default='SeMaWiSeMaWi')
+parser.add_argument('--wiki-user', action='store')
+parser.add_argument('--wiki-pass', action='store')
 
-parser.add_argument('--amqp-host', action='store', default='http://moxtest.magenta-aps.dk')
-parser.add_argument('--amqp-user', action='store', default='guest')
-parser.add_argument('--amqp-pass', action='store', default='guest')
-parser.add_argument('--amqp-queue', action='store', default='notifications')
+parser.add_argument('--amqp-host', action='store')
+parser.add_argument('--amqp-user', action='store')
+parser.add_argument('--amqp-pass', action='store')
+parser.add_argument('--amqp-queue', action='store')
 
 parser.add_argument('--rest-host', action='store', default="http://%s" % domain)
-parser.add_argument('--rest-user', action='store', default='admin')
-parser.add_argument('--rest-pass', action='store', default='admin')
+parser.add_argument('--rest-user', action='store')
+parser.add_argument('--rest-pass', action='store')
 
 args = parser.parse_args()
 
@@ -59,7 +59,15 @@ config_map = {
 config = Config(configfile)
 
 for key in config_map:
+    value = None
     if hasattr(args, key):
-        config.set(config_map[key], getattr(args, key))
+        value = getattr(args, key)
+    if value is None:
+        # Not good. We must have these values. Prompt the user
+        value = raw_input("%s = " % key)
+    else:
+        print "%s = %s" % (key, value)
+    config.set(config_map[key], value)
+
 
 config.save()

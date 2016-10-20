@@ -33,6 +33,14 @@ if [[ "x$REPLY" != "x" ]]; then
 	DOMAIN="$REPLY"
 fi
 
+AMQP_HOST="$DOMAIN"
+AMQP_USER="guest"
+AMQP_PASS="guest"
+
+REST_HOST="http://$DOMAIN"
+REST_USER="admin"
+REST_PASS="admin"
+
 # Add system user if none exists
 getent passwd mox
 if [ $? -ne 0 ]; then 
@@ -137,6 +145,7 @@ echo "Installing Agents"
 $DIR/agents/MoxTabel/install.sh
 $DIR/agents/MoxRestFrontend/install.sh
 $DIR/agents/MoxTest/install.sh
+$DIR/agents/MoxWiki/install.py --wiki-host "http://$DOMAIN" --wiki-user "SeMaWi" --wiki-pass "SeMaWiSeMaWi" --amqp-host "$DOMAIN" --amqp-user "$AMQP_USER" --amqp-pass "$AMQP_PASS" --amqp-queue "notifications" --rest-host "$REST_HOST" --rest-user "$REST_USER" --rest-pass "$REST_PASS"
 
 JAVA_HOME="$OLD_JAVA_HOME"
 
