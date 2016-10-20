@@ -69,5 +69,9 @@ for key in config_map:
         print "%s = %s" % (key, value)
     config.set(config_map[key], value)
 
-
 config.save()
+
+# ------------------------------------------------------------------------------
+
+proc = subprocess.Popen(['sudo', 'cp', "%s/setup/moxwiki.conf" % DIR, '/etc/init/'])
+proc.wait()
