@@ -12,7 +12,7 @@ DIR = os.path.dirname(os.path.realpath(__file__))
 
 from templates import ItSystemConverter, BrugerConverter
 
-config = read_properties_files("/srv/mox/mox.conf", "settings.conf")
+config = read_properties_files("/srv/mox/mox.conf", DIR + "/settings.conf")
 
 class MoxWiki(MessageListener):
 
