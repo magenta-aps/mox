@@ -3,6 +3,7 @@
 import argparse
 import os
 import sys
+import shutil
 import subprocess
 from socket import gethostname
 from installutils import Config, VirtualEnv
@@ -37,8 +38,8 @@ args = parser.parse_args()
 virtualenv = VirtualEnv(DIR + "/python-env")
 created = virtualenv.create(args.overwrite_virtualenv, args.keep_virtualenv)
 if created:
-    subprocess.call(['ln', '--symbolic', '--force', MODULES_DIR + "/mox", virtualenv.environment_dir + "/local/mox"])
     virtualenv.run("python " + DIR + "/setup.py develop")
+    shutil.copyfile(MOXDIR + "/modules/python/mox/mox.pth", virtualenv.environment_dir + "/lib/python2.7/site-packages/mox.pth")
 
 # ------------------------------------------------------------------------------
 
