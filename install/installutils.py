@@ -134,7 +134,6 @@ class VirtualEnv(object):
         if os.path.isdir(self.environment_dir):
             self.exists = True
             if always_overwrite:
-                shutil.rmtree(self.environment_dir)
                 create = True
             elif never_overwrite:
                 create = False
@@ -147,6 +146,8 @@ class VirtualEnv(object):
                     answer = getch()
                 create = (answer == 'y')
                 print answer
+            if create:
+                shutil.rmtree(self.environment_dir)
         else:
             create = True
 
