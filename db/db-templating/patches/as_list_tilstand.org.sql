@@ -65,12 +65,13 @@ FROM
 				b.rel_maal_uuid,
 				b.rel_maal_urn,
 				b.objekt_type,
- 				b.rel_indeks 
+ 				b.rel_indeks,
+				b.tilstand_vaerdi_attr  
 			):: TilstandRelationType
 		ELSE
 		NULL
 		END
-		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.objekt_type,b.rel_indeks,b.virkning
+		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.objekt_type,b.rel_indeks,b.tilstand_vaerdi_attr,b.virkning
 	)) TilstandRelationArr
 	FROM
 	(

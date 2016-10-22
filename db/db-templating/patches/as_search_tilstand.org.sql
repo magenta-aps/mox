@@ -749,6 +749,25 @@ ELSE
  					relationTypeObj.indeks = a.rel_index
  				)
 				AND
+				(
+				relationTypeObj.tilstandsVaerdiAttr IS NULL
+				OR
+				(
+					(
+						(relationTypeObj.tilstandsVaerdiAttr).nominelVaerdi IS NULL
+						OR
+						(a.tilstandsVaerdiAttr).nominelVaerdi ILIKE (relationTypeObj.tilstandsVaerdiAttr).nominelVaerdi
+					)
+					AND
+					(
+						(relationTypeObj.tilstandsVaerdiAttr).forventet IS NULL
+						OR
+						(a.tilstandsVaerdiAttr).forventet = (relationTypeObj.tilstandsVaerdiAttr).forventet
+					)
+		
+				)
+				)
+				AND
 						(
 				(registreringObj.registrering) IS NULL 
 				OR

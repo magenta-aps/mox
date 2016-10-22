@@ -191,7 +191,8 @@ END LOOP;
       rel_maal_urn,
       rel_type,
       objekt_type,
-      rel_index
+      rel_index,
+      tilstand_vaerdi_attr
     )
     SELECT
       tilstand_registrering_id,
@@ -204,7 +205,19 @@ END LOOP;
         nextval('tilstand_rel_' || a.relType::text || tilstand_uuid_underscores)
         ELSE 
         NULL
-        END
+        END,
+     CASE
+        WHEN 
+          ( NOT (a.tilstandsVaerdiAttr IS NULL))
+          AND 
+          (
+            (a.tilstandsVaerdiAttr).forventet IS NOT NULL
+            OR
+            (a.tilstandsVaerdiAttr).nominelVaerdi IS NOT NULL
+          ) THEN a.tilstandsVaerdiAttr
+        ELSE
+        NULL
+      END
     FROM unnest(tilstand_registrering.relationer) a
     ;
 

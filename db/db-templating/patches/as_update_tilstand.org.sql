@@ -138,7 +138,8 @@ END LOOP;
               rel_maal_urn,
                 rel_type,
                   objekt_type,
-                    rel_index
+                    rel_index,
+                      tilstand_vaerdi_attr
       )
       SELECT
         new_tilstand_registrering.id,
@@ -156,7 +157,19 @@ END LOOP;
                       END
                     ELSE
                     NULL
-                    END
+                    END,
+                      CASE
+                        WHEN 
+                         ( NOT (a.tilstand_vaerdi_attr IS NULL))
+                         AND 
+                         (
+                           (a.tilstand_vaerdi_attr).forventet IS NOT NULL
+                           OR
+                           (a.tilstand_vaerdi_attr).nominelVaerdi IS NOT NULL
+                         ) THEN a.tilstand_vaerdi_attr
+                        ELSE
+                        NULL
+                      END
       FROM unnest(relationer) as a
       LEFT JOIN tilstand_relation b on a.relType = any (tilstand_rel_type_cardinality_unlimited) and b.tilstand_registrering_id=prev_tilstand_registrering.id and a.relType=b.rel_type and a.indeks=b.rel_index
     ;
@@ -186,7 +199,8 @@ END LOOP;
               rel_maal_urn,
                 rel_type,
                   objekt_type,
-                    rel_index          
+                    rel_index,
+                      tilstand_vaerdi_attr          
       )
     SELECT 
         new_tilstand_registrering.id, 
@@ -200,7 +214,8 @@ END LOOP;
               a.rel_maal_urn,
                 a.rel_type,
                   a.objekt_type,
-                    NULL--a.rel_index, rel_index is not to be used for 0..1 relations        
+                    NULL,--a.rel_index, rel_index is not to be used for 0..1 relations    
+                      a.tilstand_vaerdi_attr    
     FROM
     (
       --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to _subtract_tstzrange_arr on the relations of the previous registrering 
@@ -229,9 +244,7 @@ END LOOP;
                     rel_type,
                       objekt_type,
                         rel_index,
-                          rel_type_spec,
-                            journal_notat,
-                              journal_dokument_attr
+                          tilstand_vaerdi_attr
           )
       SELECT 
             new_tilstand_registrering.id,
@@ -241,9 +254,7 @@ END LOOP;
                     a.rel_type,
                       a.objekt_type,
                         a.rel_index,
-                          a.rel_type_spec,
-                            a.journal_notat,
-                              a.journal_dokument_attr
+                          a.tilstand_vaerdi_attr
       FROM tilstand_relation a
       LEFT JOIN tilstand_relation b on b.tilstand_registrering_id=new_tilstand_registrering.id and b.rel_type=a.rel_type and b.rel_index=a.rel_index
       WHERE a.tilstand_registrering_id=prev_tilstand_registrering.id 

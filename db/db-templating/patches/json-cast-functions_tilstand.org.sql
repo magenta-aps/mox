@@ -75,8 +75,8 @@ FROM
     (
       SELECT
       e.relType,
-      array_agg( _json_object_delete_keys(row_to_json(ROW(e.relType,e.virkning,e.uuid,e.urn,e.objektType,e.indeks)::TilstandRelationType),ARRAY['reltype']::text[])) rel_json_arr
-      from unnest($1.relationer) e(relType,virkning,uuid,urn,objektType,indeks) 
+      array_agg( _json_object_delete_keys(row_to_json(ROW(e.relType,e.virkning,e.uuid,e.urn,e.objektType,e.indeks,e.tilstandsVaerdiAttr)::TilstandRelationType),ARRAY['reltype']::text[])) rel_json_arr
+      from unnest($1.relationer) e(relType,virkning,uuid,urn,objektType,indeks,tilstandsVaerdiAttr) 
       group by e.relType
       order by e.relType asc
     ) as f

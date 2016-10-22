@@ -1,7 +1,14 @@
-*** ./generated-files/dbtyper-specific_tilstand.sql	2016-10-15 12:52:58.000000000 +0200
---- ./patches/dbtyper-specific_tilstand.org.sql	2016-10-15 12:32:25.000000000 +0200
+*** ./generated-files/dbtyper-specific_tilstand.sql	2016-10-22 10:02:59.000000000 +0200
+--- ./patches/dbtyper-specific_tilstand.org.sql	2016-10-21 15:50:18.000000000 +0200
 ***************
-*** 38,48 ****
+*** 31,48 ****
+  beskrivelse text,
+   virkning Virkning
+  );
+  
+  
+  CREATE TYPE TilstandRelationKode AS ENUM  ('tilstandsobjekt','tilstandstype','tilstandsvaerdi','begrundelse','tilstandskvalitet','tilstandsvurdering','tilstandsaktoer','tilstandsudstyr','samtykke','tilstandsdokument');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_tilstand_relation_kode_to_txt is invoked.
+  
   CREATE TYPE TilstandRelationType AS (
     relType TilstandRelationKode,
     virkning Virkning,
@@ -13,14 +20,27 @@
   
   CREATE TYPE TilstandRegistreringType AS
   (
---- 38,49 ----
+--- 31,55 ----
+  beskrivelse text,
+   virkning Virkning
+  );
+  
+  
++ CREATE TYPE TilstandsVaerdiRelationAttrType AS (
++   forventet boolean,
++   nominelVaerdi text
++ );
++ 
+  CREATE TYPE TilstandRelationKode AS ENUM  ('tilstandsobjekt','tilstandstype','tilstandsvaerdi','begrundelse','tilstandskvalitet','tilstandsvurdering','tilstandsaktoer','tilstandsudstyr','samtykke','tilstandsdokument');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_tilstand_relation_kode_to_txt is invoked.
+  
   CREATE TYPE TilstandRelationType AS (
     relType TilstandRelationKode,
     virkning Virkning,
     uuid uuid,
     urn  text,
 !   objektType text,
-!   indeks int
+!   indeks int,
+!   tilstandsVaerdiAttr TilstandsVaerdiRelationAttrType
   )
   ;
   
@@ -28,7 +48,7 @@
   (
 ***************
 *** 57,63 ****
---- 58,70 ----
+--- 64,76 ----
   (
     id uuid,
     registrering TilstandRegistreringType[]

@@ -33,6 +33,11 @@ beskrivelse text,
 );
 
 
+CREATE TYPE TilstandsVaerdiRelationAttrType AS (
+  forventet boolean,
+  nominelVaerdi text
+);
+
 CREATE TYPE TilstandRelationKode AS ENUM  ('tilstandsobjekt','tilstandstype','tilstandsvaerdi','begrundelse','tilstandskvalitet','tilstandsvurdering','tilstandsaktoer','tilstandsudstyr','samtykke','tilstandsdokument');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_tilstand_relation_kode_to_txt is invoked.
 
 CREATE TYPE TilstandRelationType AS (
@@ -41,7 +46,8 @@ CREATE TYPE TilstandRelationType AS (
   uuid uuid,
   urn  text,
   objektType text,
-  indeks int
+  indeks int,
+  tilstandsVaerdiAttr TilstandsVaerdiRelationAttrType
 )
 ;
 
