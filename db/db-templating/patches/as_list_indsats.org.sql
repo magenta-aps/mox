@@ -65,12 +65,12 @@ FROM
 				b.rel_maal_uuid,
 				b.rel_maal_urn,
 				b.objekt_type,
- 				b.rel_indeks 
+ 				b.rel_index 
 			):: IndsatsRelationType
 		ELSE
 		NULL
 		END
-		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.objekt_type,b.rel_indeks,b.virkning
+		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.objekt_type,b.rel_index,b.virkning
 	)) IndsatsRelationArr
 	FROM
 	(
