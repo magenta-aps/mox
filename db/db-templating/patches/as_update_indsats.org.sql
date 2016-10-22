@@ -227,10 +227,7 @@ END LOOP;
                   rel_maal_urn,
                     rel_type,
                       objekt_type,
-                        rel_index,
-                          rel_type_spec,
-                            journal_notat,
-                              journal_dokument_attr
+                        rel_index
           )
       SELECT 
             new_indsats_registrering.id,
@@ -239,10 +236,7 @@ END LOOP;
                   a.rel_maal_urn,
                     a.rel_type,
                       a.objekt_type,
-                        a.rel_index,
-                          a.rel_type_spec,
-                            a.journal_notat,
-                              a.journal_dokument_attr
+                        a.rel_index
       FROM indsats_relation a
       LEFT JOIN indsats_relation b on b.indsats_registrering_id=new_indsats_registrering.id and b.rel_type=a.rel_type and b.rel_index=a.rel_index
       WHERE a.indsats_registrering_id=prev_indsats_registrering.id 
