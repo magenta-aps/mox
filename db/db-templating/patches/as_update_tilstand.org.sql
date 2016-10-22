@@ -160,6 +160,7 @@ END LOOP;
                     END,
                       CASE
                         WHEN 
+                        a.relType='tilstandsvaerdi' AND
                          ( NOT (a.tilstand_vaerdi_attr IS NULL))
                          AND 
                          (

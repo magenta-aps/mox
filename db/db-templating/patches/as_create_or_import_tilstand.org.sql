@@ -207,7 +207,7 @@ END LOOP;
         NULL
         END,
      CASE
-        WHEN 
+        WHEN a.relType='tilstandsvaerdi' AND
           ( NOT (a.tilstandsVaerdiAttr IS NULL))
           AND 
           (

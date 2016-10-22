@@ -1,5 +1,5 @@
-*** ./generated-files/as_create_or_import_tilstand.sql	2016-10-22 10:03:00.000000000 +0200
---- ./patches/as_create_or_import_tilstand.org.sql	2016-10-22 09:40:12.000000000 +0200
+*** ./generated-files/as_create_or_import_tilstand.sql	2016-10-22 10:51:46.000000000 +0200
+--- ./patches/as_create_or_import_tilstand.org.sql	2016-10-22 10:46:55.000000000 +0200
 ***************
 *** 23,32 ****
 --- 23,36 ----
@@ -94,7 +94,7 @@
 !         NULL
 !         END,
 !      CASE
-!         WHEN 
+!         WHEN a.relType='tilstandsvaerdi' AND
 !           ( NOT (a.tilstandsVaerdiAttr IS NULL))
 !           AND 
 !           (
