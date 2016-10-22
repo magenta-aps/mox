@@ -202,7 +202,8 @@ END LOOP;
       rel_maal_urn,
       rel_type,
       objekt_type,
-      rel_index
+      rel_index,
+      aktoer_attr
     )
     SELECT
       aktivitet_registrering_id,
@@ -215,6 +216,24 @@ END LOOP;
         nextval('aktivitet_rel_' || a.relType::text || aktivitet_uuid_underscores)
         ELSE 
         NULL
+        END,
+        CASE 
+          WHEN a.relType =('udfoerer'::AktivitetRelationKode)  OR rel_type=('deltager'::AktivitetRelationKode) OR rel_type=('ansvarlig'::AktivitetRelationKode) 
+          AND NOT (a.aktoerAttr IS NULL)
+          AND (
+            (a.aktoerAttr).obligatorik IS NOT NULL
+            OR
+            (a.aktoerAttr).accepteret IS NOT NULL
+            OR
+              (
+                (a.aktoerAttr).repraesentation_uuid IS NOT NULL
+                OR
+                ((a.aktoerAttr).repraesentation_urn IS NOT NULL AND (a.aktoerAttr).repraesentation_urn<>'')
+              )
+            ) 
+          THEN a.aktoerAttr
+          ELSE
+          NULL
         END
     FROM unnest(aktivitet_registrering.relationer) a
     ;

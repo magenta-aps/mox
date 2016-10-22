@@ -1,8 +1,8 @@
-*** ./generated-files/as_search_aktivitet.sql	2016-10-08 15:04:00.000000000 +0200
---- ./patches/as_search_aktivitet.org.sql	2016-10-08 14:14:16.000000000 +0200
+*** ./generated-files/as_search_aktivitet.sql	2016-10-22 13:41:14.000000000 +0200
+--- ./patches/as_search_aktivitet.org.sql	2016-10-22 13:15:53.000000000 +0200
 ***************
 *** 776,785 ****
---- 776,791 ----
+--- 776,821 ----
   					relationTypeObj.urn IS NULL
   					OR
   					relationTypeObj.urn = a.rel_maal_urn
@@ -14,8 +14,96 @@
 +  					relationTypeObj.indeks = a.rel_index
 +  				)
 + 				AND
++ 				(
++ 					relationTypeObj.aktoerAttr IS NULL
++ 					OR
++ 					(
++ 						(
++ 							(relationTypeObj.aktoerAttr).obligatorik IS NULL
++ 							OR
++ 							(relationTypeObj.aktoerAttr).obligatorik = (a.aktoer_attr).obligatorik					
++ 						)
++ 						AND
++ 						(
++ 							(relationTypeObj.aktoerAttr).accepteret IS NULL
++ 							OR
++ 							(relationTypeObj.aktoerAttr).accepteret = (a.aktoer_attr).accepteret
++ 						)
++ 						AND
++ 						(
++ 							(relationTypeObj.aktoerAttr).repraesentation_uuid IS NULL
++ 							OR
++ 							(relationTypeObj.aktoerAttr).repraesentation_uuid = (a.aktoer_attr).repraesentation_uuid
++ 						)
++ 						AND
++ 						(
++ 							(relationTypeObj.aktoerAttr).repraesentation_urn IS NULL
++ 							OR
++ 							(relationTypeObj.aktoerAttr).repraesentation_urn = (a.aktoer_attr).repraesentation_urn
++ 						)
++ 					)
++ 				) 
++ 				AND
   						(
   				(registreringObj.registrering) IS NULL 
   				OR
   				(
   					(
+***************
+*** 864,874 ****
+  			SELECT DISTINCT
+  			b.aktivitet_id 
+  			FROM  aktivitet_relation a
+  			JOIN aktivitet_registrering b on a.aktivitet_registrering_id=b.id
+  			WHERE
+! 			anyuuid = a.rel_maal_uuid
+  			AND
+  			(
+  				virkningSoeg IS NULL
+  				OR
+  				virkningSoeg && (a.virkning).TimePeriod
+--- 900,914 ----
+  			SELECT DISTINCT
+  			b.aktivitet_id 
+  			FROM  aktivitet_relation a
+  			JOIN aktivitet_registrering b on a.aktivitet_registrering_id=b.id
+  			WHERE
+! 			(
+! 				anyuuid = a.rel_maal_uuid
+! 			OR  
+! 				((NOT (a.aktoer_attr IS NULL)) AND anyuuid = (a.aktoer_attr).repraesentation_uuid
+! 			)
+  			AND
+  			(
+  				virkningSoeg IS NULL
+  				OR
+  				virkningSoeg && (a.virkning).TimePeriod
+***************
+*** 959,969 ****
+  			SELECT DISTINCT
+  			b.aktivitet_id 
+  			FROM  aktivitet_relation a
+  			JOIN aktivitet_registrering b on a.aktivitet_registrering_id=b.id
+  			WHERE
+! 			anyurn = a.rel_maal_urn
+  			AND
+  			(
+  				virkningSoeg IS NULL
+  				OR
+  				virkningSoeg && (a.virkning).TimePeriod
+--- 999,1013 ----
+  			SELECT DISTINCT
+  			b.aktivitet_id 
+  			FROM  aktivitet_relation a
+  			JOIN aktivitet_registrering b on a.aktivitet_registrering_id=b.id
+  			WHERE
+! 			(
+! 				anyurn = a.rel_maal_urn
+! 				OR 
+! 				((NOT (a.aktoer_attr IS NULL)) AND anyurn = (a.aktoer_attr).repraesentation_urn)
+! 			)
+  			AND
+  			(
+  				virkningSoeg IS NULL
+  				OR
+  				virkningSoeg && (a.virkning).TimePeriod

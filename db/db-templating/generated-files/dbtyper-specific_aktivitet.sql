@@ -40,13 +40,26 @@ formaal text,
 
 CREATE TYPE AktivitetRelationKode AS ENUM  ('aktivitetstype','emne','foelsomhedklasse','ansvarligklasse','rekvirentklasse','ansvarlig','tilhoerer','udfoererklasse','deltagerklasse','objektklasse','resultatklasse','grundlagklasse','facilitetklasse','adresse','geoobjekt','position','facilitet','lokale','aktivitetdokument','aktivitetgrundlag','aktivitetresultat','udfoerer','deltager');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_aktivitet_relation_kode_to_txt is invoked.
 
+CREATE TYPE AktivitetAktoerAttrObligatorikKode AS ENUM ('noedvendig','valgfri');
+
+CREATE TYPE AktivitetAktoerAttrAccepteretKode AS ENUM ('accepteret','foreloebigt','afslaaet');
+
+CREATE TYPE  AktivitetAktoerAttr AS (
+  obligatorik AktivitetAktoerAttrObligatorikKode,
+  accepteret AktivitetAktoerAttrAccepteretKode,
+  repraesentation_uuid uuid,
+  repraesentation_urn text 
+);
+
+
 CREATE TYPE AktivitetRelationType AS (
   relType AktivitetRelationKode,
   virkning Virkning,
   uuid uuid,
   urn  text,
   objektType text,
-  indeks int
+  indeks int,
+  aktoerAttr AktivitetAktoerAttr
 )
 ;
 
@@ -71,3 +84,6 @@ CREATE TYPE AktivitetType AS
    indeks int
  );
 
+--we'll add two small functions here, that will help with placing CHECK CONSTRAINT on the composite type AktivitetAktoerAttr in the db-table.
+CREATE OR REPLACE FUNCTION _aktivitet_aktoer_attr_repr_uuid_to_text(AktivitetAktoerAttr) RETURNS TEXT AS 'SELECT $1.repraesentation_uuid::TEXT' LANGUAGE sql IMMUTABLE;
+CREATE OR REPLACE FUNCTION _aktivitet_aktoer_attr_repr_urn_to_text(AktivitetAktoerAttr) RETURNS TEXT AS 'SELECT NULLIF($1.repraesentation_urn::TEXT,'''') ' LANGUAGE sql IMMUTABLE;

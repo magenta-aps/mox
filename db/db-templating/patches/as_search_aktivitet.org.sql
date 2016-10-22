@@ -784,6 +784,36 @@ ELSE
  					relationTypeObj.indeks = a.rel_index
  				)
 				AND
+				(
+					relationTypeObj.aktoerAttr IS NULL
+					OR
+					(
+						(
+							(relationTypeObj.aktoerAttr).obligatorik IS NULL
+							OR
+							(relationTypeObj.aktoerAttr).obligatorik = (a.aktoer_attr).obligatorik					
+						)
+						AND
+						(
+							(relationTypeObj.aktoerAttr).accepteret IS NULL
+							OR
+							(relationTypeObj.aktoerAttr).accepteret = (a.aktoer_attr).accepteret
+						)
+						AND
+						(
+							(relationTypeObj.aktoerAttr).repraesentation_uuid IS NULL
+							OR
+							(relationTypeObj.aktoerAttr).repraesentation_uuid = (a.aktoer_attr).repraesentation_uuid
+						)
+						AND
+						(
+							(relationTypeObj.aktoerAttr).repraesentation_urn IS NULL
+							OR
+							(relationTypeObj.aktoerAttr).repraesentation_urn = (a.aktoer_attr).repraesentation_urn
+						)
+					)
+				) 
+				AND
 						(
 				(registreringObj.registrering) IS NULL 
 				OR
@@ -872,7 +902,11 @@ IF coalesce(array_length(anyuuidArr ,1),0)>0 THEN
 			FROM  aktivitet_relation a
 			JOIN aktivitet_registrering b on a.aktivitet_registrering_id=b.id
 			WHERE
-			anyuuid = a.rel_maal_uuid
+			(
+				anyuuid = a.rel_maal_uuid
+			OR  
+				((NOT (a.aktoer_attr IS NULL)) AND anyuuid = (a.aktoer_attr).repraesentation_uuid
+			)
 			AND
 			(
 				virkningSoeg IS NULL
@@ -967,7 +1001,11 @@ IF coalesce(array_length(anyurnArr ,1),0)>0 THEN
 			FROM  aktivitet_relation a
 			JOIN aktivitet_registrering b on a.aktivitet_registrering_id=b.id
 			WHERE
-			anyurn = a.rel_maal_urn
+			(
+				anyurn = a.rel_maal_urn
+				OR 
+				((NOT (a.aktoer_attr IS NULL)) AND anyurn = (a.aktoer_attr).repraesentation_urn)
+			)
 			AND
 			(
 				virkningSoeg IS NULL

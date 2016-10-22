@@ -1,5 +1,5 @@
-*** ./generated-files/as_create_or_import_aktivitet.sql	2016-10-08 15:04:00.000000000 +0200
---- ./patches/as_create_or_import_aktivitet.org.sql	2016-10-08 14:12:50.000000000 +0200
+*** ./generated-files/as_create_or_import_aktivitet.sql	2016-10-22 13:41:13.000000000 +0200
+--- ./patches/as_create_or_import_aktivitet.org.sql	2016-10-22 12:50:45.000000000 +0200
 ***************
 *** 23,32 ****
 --- 23,37 ----
@@ -47,7 +47,7 @@
   /*** Verify that the object meets the stipulated access allowed criteria  ***/
   /*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
   auth_filtered_uuids:=_as_filter_unauth_aktivitet(array[aktivitet_uuid]::uuid[],auth_criteria_arr); 
---- 175,236 ----
+--- 175,255 ----
   END IF;
   
   /*********************************/
@@ -78,7 +78,8 @@
         rel_maal_urn,
         rel_type,
 !       objekt_type,
-!       rel_index
+!       rel_index,
+!       aktoer_attr
       )
       SELECT
         aktivitet_registrering_id,
@@ -91,6 +92,24 @@
 !         nextval('aktivitet_rel_' || a.relType::text || aktivitet_uuid_underscores)
 !         ELSE 
 !         NULL
+!         END,
+!         CASE 
+!           WHEN a.relType =('udfoerer'::AktivitetRelationKode)  OR rel_type=('deltager'::AktivitetRelationKode) OR rel_type=('ansvarlig'::AktivitetRelationKode) 
+!           AND NOT (a.aktoerAttr IS NULL)
+!           AND (
+!             (a.aktoerAttr).obligatorik IS NOT NULL
+!             OR
+!             (a.aktoerAttr).accepteret IS NOT NULL
+!             OR
+!               (
+!                 (a.aktoerAttr).repraesentation_uuid IS NOT NULL
+!                 OR
+!                 ((a.aktoerAttr).repraesentation_urn IS NOT NULL AND (a.aktoerAttr).repraesentation_urn<>'')
+!               )
+!             ) 
+!           THEN a.aktoerAttr
+!           ELSE
+!           NULL
 !         END
       FROM unnest(aktivitet_registrering.relationer) a
 !     ;

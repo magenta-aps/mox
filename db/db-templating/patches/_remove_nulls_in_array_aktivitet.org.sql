@@ -109,7 +109,7 @@ $$
    IF inputArr IS NOT NULL THEN
     FOREACH element IN ARRAY  inputArr
     LOOP
-      IF element IS NULL OR ( element.relType IS NULL AND element.uuid IS NULL AND element.urn IS NULL AND element.objektType IS NULL AND element.indeks IS NULL AND element.virkning IS NULL  ) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+      IF element IS NULL OR ( element.relType IS NULL AND element.uuid IS NULL AND element.urn IS NULL AND element.objektType IS NULL AND element.indeks IS NULL AND (element.aktoerAttr IS NULL OR ((element.aktoerAttr).obligatorik IS NULL AND (element.aktoerAttr).accepteret IS NULL AND (element.aktoerAttr).repraesentation_uuid IS NULL AND (element.aktoerAttr).repraesentation_urn IS NULL    )) AND element.virkning IS NULL  ) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
       --RAISE DEBUG 'Skipping element';
       ELSE
       result:=array_append(result,element);

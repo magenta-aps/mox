@@ -1,5 +1,5 @@
-*** ./generated-files/as_update_aktivitet.sql	2016-10-08 15:03:59.000000000 +0200
---- ./patches/as_update_aktivitet.org.sql	2016-10-08 14:49:40.000000000 +0200
+*** ./generated-files/as_update_aktivitet.sql	2016-10-22 13:41:13.000000000 +0200
+--- ./patches/as_update_aktivitet.org.sql	2016-10-22 13:23:37.000000000 +0200
 ***************
 *** 36,45 ****
 --- 36,50 ----
@@ -79,7 +79,7 @@
           new_aktivitet_registrering.id, 
             ROW(
               c.tz_range_leftover,
---- 72,193 ----
+--- 72,214 ----
     END IF;   
   END IF;
   
@@ -113,13 +113,13 @@
 + 
 + --Create temporary sequences
 + aktivitet_uuid_underscores:=replace(aktivitet_uuid::text, '-', '_');
-+ 
+  
 + FOREACH aktivitet_relation_navn IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(relationer) a WHERE a.RelType = any (aktivitet_rel_type_cardinality_unlimited))
 +   LOOP
 +   aktivitet_rel_seq_name := 'aktivitet_rel_' || aktivitet_relation_navn::text || aktivitet_uuid_underscores;
 + 
 +   rel_type_max_index_prev_rev:=null;
-  
++ 
 +   SELECT 
 +     a.indeks into rel_type_max_index_prev_rev
 +   FROM
@@ -148,7 +148,8 @@
                 rel_maal_urn,
                   rel_type,
 !                   objekt_type,
-!                     rel_index
+!                     rel_index,
+!                       aktoer_attr
         )
         SELECT
           new_aktivitet_registrering.id,
@@ -166,7 +167,25 @@
 !                       END
 !                     ELSE
 !                     NULL
-!                     END
+!                     END,
+!                     CASE 
+!                   WHEN a.relType =('udfoerer'::AktivitetRelationKode)  OR rel_type=('deltager'::AktivitetRelationKode) OR rel_type=('ansvarlig'::AktivitetRelationKode) 
+!                   AND NOT (a.aktoerAttr IS NULL)
+!                   AND (
+!                     (a.aktoerAttr).obligatorik IS NOT NULL
+!                     OR
+!                     (a.aktoerAttr).accepteret IS NOT NULL
+!                     OR
+!                       (
+!                         (a.aktoerAttr).repraesentation_uuid IS NOT NULL
+!                         OR
+!                         ((a.aktoerAttr).repraesentation_urn IS NOT NULL AND (a.aktoerAttr).repraesentation_urn<>'')
+!                       )
+!                     ) 
+!                   THEN a.aktoerAttr
+!                   ELSE
+!                   NULL
+!                 END
         FROM unnest(relationer) as a
 +       LEFT JOIN aktivitet_relation b on a.relType = any (aktivitet_rel_type_cardinality_unlimited) and b.aktivitet_registrering_id=prev_aktivitet_registrering.id and a.relType=b.rel_type and a.indeks=b.rel_index
       ;
@@ -196,7 +215,9 @@
                 rel_maal_urn,
                   rel_type,
 !                   objekt_type,
-!                     rel_index          
+!                     rel_index,
+!                       aktoer_attr
+! 
         )
       SELECT 
           new_aktivitet_registrering.id, 
@@ -215,14 +236,15 @@
         --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to _subtract_tstzrange_arr on the relations of the previous registrering 
         SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
         FROM aktivitet_relation b
---- 196,207 ----
+--- 217,229 ----
                 (a.virkning).NoteTekst
             ) :: virkning,
               a.rel_maal_uuid,
                 a.rel_maal_urn,
                   a.rel_type,
 !                   a.objekt_type,
-!                     NULL--a.rel_index, rel_index is not to be used for 0..1 relations        
+!                     NULL,--a.rel_index, rel_index is not to be used for 0..1 relations     
+!                       a.aktoer_attr
       FROM
       (
         --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to _subtract_tstzrange_arr on the relations of the previous registrering 
@@ -274,7 +296,7 @@
   
   END IF;
   /**********************/
---- 217,257 ----
+--- 239,275 ----
       ;
     END LOOP;
   
@@ -289,9 +311,7 @@
                       rel_type,
 !                       objekt_type,
 !                         rel_index,
-!                           rel_type_spec,
-!                             journal_notat,
-!                               journal_dokument_attr
+!                           aktoer_attr
             )
         SELECT 
               new_aktivitet_registrering.id,
@@ -301,9 +321,7 @@
 !                     a.rel_type,
 !                       a.objekt_type,
 !                         a.rel_index,
-!                           a.rel_type_spec,
-!                             a.journal_notat,
-!                               a.journal_dokument_attr
+!                           a.aktoer_attr
 !       FROM aktivitet_relation a
 !       LEFT JOIN aktivitet_relation b on b.aktivitet_registrering_id=new_aktivitet_registrering.id and b.rel_type=a.rel_type and b.rel_index=a.rel_index
 !       WHERE a.aktivitet_registrering_id=prev_aktivitet_registrering.id 

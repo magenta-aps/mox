@@ -137,7 +137,8 @@ END LOOP;
               rel_maal_urn,
                 rel_type,
                   objekt_type,
-                    rel_index
+                    rel_index,
+                      aktoer_attr
       )
       SELECT
         new_aktivitet_registrering.id,
@@ -155,7 +156,25 @@ END LOOP;
                       END
                     ELSE
                     NULL
-                    END
+                    END,
+                    CASE 
+                  WHEN a.relType =('udfoerer'::AktivitetRelationKode)  OR rel_type=('deltager'::AktivitetRelationKode) OR rel_type=('ansvarlig'::AktivitetRelationKode) 
+                  AND NOT (a.aktoerAttr IS NULL)
+                  AND (
+                    (a.aktoerAttr).obligatorik IS NOT NULL
+                    OR
+                    (a.aktoerAttr).accepteret IS NOT NULL
+                    OR
+                      (
+                        (a.aktoerAttr).repraesentation_uuid IS NOT NULL
+                        OR
+                        ((a.aktoerAttr).repraesentation_urn IS NOT NULL AND (a.aktoerAttr).repraesentation_urn<>'')
+                      )
+                    ) 
+                  THEN a.aktoerAttr
+                  ELSE
+                  NULL
+                END
       FROM unnest(relationer) as a
       LEFT JOIN aktivitet_relation b on a.relType = any (aktivitet_rel_type_cardinality_unlimited) and b.aktivitet_registrering_id=prev_aktivitet_registrering.id and a.relType=b.rel_type and a.indeks=b.rel_index
     ;
@@ -185,7 +204,9 @@ END LOOP;
               rel_maal_urn,
                 rel_type,
                   objekt_type,
-                    rel_index          
+                    rel_index,
+                      aktoer_attr
+
       )
     SELECT 
         new_aktivitet_registrering.id, 
@@ -199,7 +220,8 @@ END LOOP;
               a.rel_maal_urn,
                 a.rel_type,
                   a.objekt_type,
-                    NULL--a.rel_index, rel_index is not to be used for 0..1 relations        
+                    NULL,--a.rel_index, rel_index is not to be used for 0..1 relations     
+                      a.aktoer_attr
     FROM
     (
       --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to _subtract_tstzrange_arr on the relations of the previous registrering 
@@ -228,9 +250,7 @@ END LOOP;
                     rel_type,
                       objekt_type,
                         rel_index,
-                          rel_type_spec,
-                            journal_notat,
-                              journal_dokument_attr
+                          aktoer_attr
           )
       SELECT 
             new_aktivitet_registrering.id,
@@ -240,9 +260,7 @@ END LOOP;
                     a.rel_type,
                       a.objekt_type,
                         a.rel_index,
-                          a.rel_type_spec,
-                            a.journal_notat,
-                              a.journal_dokument_attr
+                          a.aktoer_attr
       FROM aktivitet_relation a
       LEFT JOIN aktivitet_relation b on b.aktivitet_registrering_id=new_aktivitet_registrering.id and b.rel_type=a.rel_type and b.rel_index=a.rel_index
       WHERE a.aktivitet_registrering_id=prev_aktivitet_registrering.id 
