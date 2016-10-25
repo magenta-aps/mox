@@ -18,3 +18,8 @@ class InvalidObjectTypeException(InvalidOIOException):
 class TokenException(Exception):
     def __init__(self, message):
         super(TokenException, self).__init__(message)
+
+
+class ItemNotFoundException(Exception):
+    def __init__(self, uuid, objecttype, url):
+        super(ItemNotFoundException, self).__init__("Item %s not found as a %s (tried %s)" % (uuid, objecttype, url))

@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from PyOIO.OIOCommon.util import parse_time
+
 class Virkning(object):
     """ Virkning is a fairly broadly used class. Its purpose when attached to
     metadata is to lend the metadata bitemporality.
@@ -14,18 +16,21 @@ class Virkning(object):
         self.aktoerref = json.get('aktoerref')
         self.aktoertypekode = json.get('aktoertypekode')
 
-        self.virkning_from = json['from']
-        self.virkning_from_included = json.get('from_included')
+        self.from_time = parse_time(json['from'])
+        self.from_included = json.get('from_included')
 
-        self.virkning_to = json['to']
-        self.virkning_to_included = json.get('to_included')
+        self.to_time = parse_time(json['to'])
+        self.to_included = json.get('to_included')
 
         self.notetekst = json.get('notetekst')
 
         # TODO timestamps for virkning_from and virkning_to
 
+    def in_effect(self, time):
+        return self.from_time < time and time < self.to_time
+
     def __repr__(self):
-        return 'Virkning(%s, %s)' % (self.virkning_from, self.virkning_to)
+        return 'Virkning(%s, %s)' % (self.from_time, self.to_time)
 
     def __str__(self):
-        return 'Virkning: %s - %s' % (self.virkning_from, self.virkning_to)
+        return 'Virkning: %s - %s' % (self.from_time, self.to_time)
