@@ -26,6 +26,8 @@ Det drejer sig først og fremmest om
   være UUID eller brugervendt nøgle for det IT-System, der repræsenterer
   servicen).
 
+* *klasse* - den type objekt, som hændelsen gælder.
+
 * *tidspunkt* for den hændelse, der logges.
 
 * *operation*, der udføres - for rammearkitekturen søg, læs, ret, slet eller
@@ -91,6 +93,8 @@ En LogHændelse har følgende attributter:
 
 * service
 
+* klasse
+
 * tidspunkt (bemærk, dette kan være tidligere end virkning og registrering for
   log-objektet)
 
@@ -135,7 +139,9 @@ egenskaber for OIO-standardernes objekter. Den implementeres ikke som en
 objektreference, men som et tekstfelt, hvis værdimængde i praksis er begrænset
 til en simpel enumeration af de mulige operationer. Der foretages ingen
 validering af dette, eftersom det også skal være muligt at logge hændelser for
-services, der ikke er en del af OIO-systemet.
+services, der ikke er en del af OIO-systemet. Handlingen kunne med andre ord
+have været en reference til Klasse, men implemtenteres i stedet som tekstfeltet
+*operation*.
 
 *Brugeren* er en reference til Bruger-objektet i Organisation. 
 

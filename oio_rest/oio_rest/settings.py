@@ -272,6 +272,17 @@ DATABASE_STRUCTURE = {
                                      "andredokumenter", "andreklasser",
                                      "andrebehandlere", "parter",
                                      "kopiparter", "tilknyttedesager"]
+    },
+
+    "loghaendelse": {
+        "attributter": { 
+            "egenskaber": ["service", "klasse", "tidspunkt", "operation", "objekttype",
+                           "returkode", "returtekst", "note"]
+                },
+        "tilstande": {
+        },
+        "relationer_nul_til_en": ["objekt", "bruger", "brugerrolle"]
+
     }
 
 }
