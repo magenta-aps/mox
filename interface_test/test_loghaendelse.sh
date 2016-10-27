@@ -28,8 +28,11 @@ echo "Oprettet LogHændelse: $uuid"
 import_uuid=$(uuidgen)
 
 
-#curl -k -sH "Content-Type: application/json" -X PUT -d "$(cat $DIR/test_data/klasse_opdater.json)" $HOST_URL/klassifikation/klasse/$uuid
+curl -k -sH "Content-Type: application/json" -X PUT -d "$(cat $DIR/test_data/loghaendelse_opdater.json)" $HOST_URL/log/loghaendelse/$uuid
 
+# Delete the LogHændelse. 
+
+curl -k -sH "Content-Type: application/json"  -X DELETE -d "$(cat $DIR/test_data/loghaendelse_slet.json)" $HOST_URL/log/loghaendelse/$uuid
 
 
 # List klasser
