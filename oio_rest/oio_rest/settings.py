@@ -26,11 +26,11 @@ SAML_IDP_URL = ("https://${domain}:9443/services/wso2carbon-sts?wsdl")
 SAML_IDP_CERTIFICATE = "test_auth_data/idp-certificate.pem"
 
 # Whether to enable SAML authentication
-USE_SAML_AUTHENTICATION = True
+USE_SAML_AUTHENTICATION = False
 
 # Whether authorization is enabled - if not, the restrictions module is not
 # called.
-DO_ENABLE_RESTRICTIONS = True
+DO_ENABLE_RESTRICTIONS = False
 
 # The module which implements the authorization restrictions.
 # Must be present in sys.path.
@@ -280,8 +280,11 @@ DATABASE_STRUCTURE = {
                            "returkode", "returtekst", "note"]
                 },
         "tilstande": {
+            "gyldighed": ["Aktiv", "Inaktiv"]
         },
-        "relationer_nul_til_en": ["objekt", "bruger", "brugerrolle"]
+        "relationer_nul_til_en": ["objekt", "bruger", "brugerrolle"], 
+
+        "relationer_nul_til_mange": []
 
     }
 

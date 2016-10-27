@@ -20,6 +20,7 @@ CREATE OR REPLACE FUNCTION as_update_loghaendelse(
   note text,
   livscykluskode Livscykluskode,           
   attrEgenskaber LoghaendelseEgenskaberAttrType[],
+  tilsGyldighed LoghaendelseGyldighedTilsType[],
   relationer LoghaendelseRelationType[],
   lostUpdatePreventionTZ TIMESTAMPTZ = null,
   auth_criteria_arr LoghaendelseRegistreringType[]=null
@@ -188,6 +189,68 @@ ELSE
 END IF;
 /**********************/
 -- handle tilstande (states)
+
+IF tilsGyldighed IS NOT NULL AND coalesce(array_length(tilsGyldighed,1),0)=0 THEN
+--raise debug 'Skipping [Gyldighed] as it is explicit set to empty array';
+ELSE
+  --1) Insert tilstande/states given as part of this update
+  --2) Insert tilstande/states of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
+
+  /********************************************/
+  --loghaendelse_tils_gyldighed
+  /********************************************/
+
+  --Ad 1)
+
+  INSERT INTO loghaendelse_tils_gyldighed (
+          virkning,
+            gyldighed,
+              loghaendelse_registrering_id
+  ) 
+  SELECT
+          a.virkning,
+            a.gyldighed,
+              new_loghaendelse_registrering.id
+  FROM
+  unnest(tilsGyldighed) as a
+  ;
+   
+
+  --Ad 2
+
+  INSERT INTO loghaendelse_tils_gyldighed (
+          virkning,
+            gyldighed,
+              loghaendelse_registrering_id
+  )
+  SELECT 
+          ROW(
+            c.tz_range_leftover,
+              (a.virkning).AktoerRef,
+              (a.virkning).AktoerTypeKode,
+              (a.virkning).NoteTekst
+          ) :: virkning,
+            a.gyldighed,
+              new_loghaendelse_registrering.id
+  FROM
+  (
+   --build an array of the timeperiod of the virkning of the loghaendelse_tils_gyldighed of the new registrering to pass to _subtract_tstzrange_arr on the loghaendelse_tils_gyldighed of the previous registrering 
+      SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
+      FROM loghaendelse_tils_gyldighed b
+      WHERE 
+            b.loghaendelse_registrering_id=new_loghaendelse_registrering.id
+  ) d
+    JOIN loghaendelse_tils_gyldighed a ON true  
+    JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
+    WHERE a.loghaendelse_registrering_id=prev_loghaendelse_registrering.id     
+  ;
+
+
+/**********************/
+
+END IF;
+
+
 /**********************/
 --Handle attributter (attributes) 
 
@@ -385,6 +448,7 @@ END IF;
 
 read_new_loghaendelse_reg:=ROW(
 ROW(null,(read_new_loghaendelse.registrering[1].registrering).livscykluskode,null,null)::registreringBase,
+(read_new_loghaendelse.registrering[1]).tilsGyldighed ,
 (read_new_loghaendelse.registrering[1]).attrEgenskaber ,
 (read_new_loghaendelse.registrering[1]).relationer 
 )::loghaendelseRegistreringType
@@ -392,6 +456,7 @@ ROW(null,(read_new_loghaendelse.registrering[1].registrering).livscykluskode,nul
 
 read_prev_loghaendelse_reg:=ROW(
 ROW(null,(read_prev_loghaendelse.registrering[1].registrering).livscykluskode,null,null)::registreringBase,
+(read_prev_loghaendelse.registrering[1]).tilsGyldighed ,
 (read_prev_loghaendelse.registrering[1]).attrEgenskaber ,
 (read_prev_loghaendelse.registrering[1]).relationer 
 )::loghaendelseRegistreringType

@@ -13,6 +13,34 @@ NOTICE: This file is auto-generated using the script: apply-template.py loghaend
 
 
 
+CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr LoghaendelseGyldighedTilsType[])
+  RETURNS LoghaendelseGyldighedTilsType[] AS
+  $$
+  DECLARE result LoghaendelseGyldighedTilsType[];
+  DECLARE element LoghaendelseGyldighedTilsType;
+  BEGIN
+
+ IF inputArr IS NOT NULL THEN
+    FOREACH element IN ARRAY  inputArr
+    LOOP
+      IF element IS NULL OR (( element.gyldighed IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+     -- RAISE DEBUG 'Skipping element';
+      ELSE 
+      result:=array_append(result,element);
+      END IF;
+    END LOOP;
+  ELSE
+    return null;  
+  END IF;
+
+  RETURN result;
+
+  END;
+ 
+ $$ LANGUAGE plpgsql IMMUTABLE
+;
+
+
 CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr LoghaendelseEgenskaberAttrType[])
   RETURNS LoghaendelseEgenskaberAttrType[] AS
   $$

@@ -116,11 +116,14 @@ def main():
     from organisation import OrganisationsHierarki
     from sag import SagsHierarki
     from dokument import DokumentHierarki
+    from log import LogHierarki
 
     KlassifikationsHierarki.setup_api(base_url=BASE_URL, flask=app)
+    LogHierarki.setup_api(base_url=BASE_URL, flask=app)
     SagsHierarki.setup_api(base_url=BASE_URL, flask=app)
     OrganisationsHierarki.setup_api(base_url=BASE_URL, flask=app)
     DokumentHierarki.setup_api(base_url=BASE_URL, flask=app)
+
 
     app.run(debug=True)
 

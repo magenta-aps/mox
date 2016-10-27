@@ -11,6 +11,13 @@ NOTICE: This file is auto-generated using the script: apply-template.py loghaend
 
 --create custom type sans db-ids to be able to do "clean" function signatures "for the outside world".
 
+CREATE TYPE LoghaendelseGyldighedTils AS ENUM ('Aktiv','Inaktiv',''); --'' means undefined (which is needed to clear previous defined tilstand_values in an already registered virksnings-periode)
+
+CREATE TYPE LoghaendelseGyldighedTilsType AS (
+    virkning Virkning,
+    gyldighed LoghaendelseGyldighedTils
+)
+;
 
 CREATE TYPE LoghaendelseEgenskaberAttrType AS (
 service text,
@@ -39,6 +46,7 @@ CREATE TYPE LoghaendelseRelationType AS (
 CREATE TYPE LoghaendelseRegistreringType AS
 (
 registrering RegistreringBase,
+tilsGyldighed LoghaendelseGyldighedTilsType[],
 attrEgenskaber LoghaendelseEgenskaberAttrType[],
 relationer LoghaendelseRelationType[]
 );

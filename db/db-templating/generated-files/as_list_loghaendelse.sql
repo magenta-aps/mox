@@ -39,6 +39,7 @@ ROW(
 	array_agg(
 		ROW (
 			a.registrering,
+			a.LoghaendelseTilsGyldighedArr,
 			a.LoghaendelseAttrEgenskaberArr,
 			a.LoghaendelseRelationArr
 		)::LoghaendelseRegistreringType
@@ -52,6 +53,7 @@ FROM
 	a.loghaendelse_registrering_id,
 	a.registrering,
 	a.LoghaendelseAttrEgenskaberArr,
+	a.LoghaendelseTilsGyldighedArr,
 	_remove_nulls_in_array(array_agg(
 		CASE
 		WHEN b.id is not null THEN
@@ -69,6 +71,25 @@ FROM
 	)) LoghaendelseRelationArr
 	FROM
 	(
+			SELECT
+			a.loghaendelse_id,
+			a.loghaendelse_registrering_id,
+			a.registrering,
+			a.LoghaendelseAttrEgenskaberArr,
+			_remove_nulls_in_array(array_agg
+				(
+					CASE
+					WHEN b.id is not null THEN 
+					ROW(
+						b.virkning,
+						b.gyldighed
+						) ::LoghaendelseGyldighedTilsType
+					ELSE NULL
+					END
+					order by b.gyldighed,b.virkning
+				)) LoghaendelseTilsGyldighedArr		
+			FROM
+			(
 					SELECT
 					a.loghaendelse_id,
 					a.loghaendelse_registrering_id,
@@ -106,7 +127,14 @@ FROM
 					GROUP BY 
 					a.loghaendelse_id,
 					a.loghaendelse_registrering_id,
-					a.registrering
+					a.registrering	
+			) as a
+			LEFT JOIN loghaendelse_tils_gyldighed as b ON b.loghaendelse_registrering_id=a.loghaendelse_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
+			GROUP BY 
+			a.loghaendelse_id,
+			a.loghaendelse_registrering_id,
+			a.registrering,
+			a.LoghaendelseAttrEgenskaberArr
 	) as a
 	LEFT JOIN loghaendelse_relation b ON b.loghaendelse_registrering_id=a.loghaendelse_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given
 	GROUP BY
@@ -114,6 +142,7 @@ FROM
 	a.loghaendelse_registrering_id,
 	a.registrering,
 	a.LoghaendelseAttrEgenskaberArr,
+	a.LoghaendelseTilsGyldighedArr
 ) as a
 WHERE a.loghaendelse_id IS NOT NULL
 GROUP BY 

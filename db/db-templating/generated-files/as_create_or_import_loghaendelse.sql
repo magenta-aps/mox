@@ -20,6 +20,7 @@ DECLARE
   loghaendelse_registrering_id bigint;
   loghaendelse_attr_egenskaber_obj loghaendelseEgenskaberAttrType;
   
+  loghaendelse_tils_gyldighed_obj loghaendelseGyldighedTilsType;
   
   loghaendelse_relationer LoghaendelseRelationType;
   auth_filtered_uuids uuid[];
@@ -122,6 +123,29 @@ END IF;
 /*********************************/
 --Insert states (tilstande)
 
+
+--Verification
+--For now all declared states are mandatory.
+IF coalesce(array_length(loghaendelse_registrering.tilsGyldighed, 1),0)<1  THEN
+  RAISE EXCEPTION 'Savner påkraevet tilstand [gyldighed] for loghaendelse. Oprettelse afbrydes.' USING ERRCODE='MO400';
+END IF;
+
+IF loghaendelse_registrering.tilsGyldighed IS NOT NULL AND coalesce(array_length(loghaendelse_registrering.tilsGyldighed,1),0)>0 THEN
+  FOREACH loghaendelse_tils_gyldighed_obj IN ARRAY loghaendelse_registrering.tilsGyldighed
+  LOOP
+
+    INSERT INTO loghaendelse_tils_gyldighed (
+      virkning,
+      gyldighed,
+      loghaendelse_registrering_id
+    )
+    SELECT
+      loghaendelse_tils_gyldighed_obj.virkning,
+      loghaendelse_tils_gyldighed_obj.gyldighed,
+      loghaendelse_registrering_id;
+
+  END LOOP;
+END IF;
 
 /*********************************/
 --Insert relations

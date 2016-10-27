@@ -29,6 +29,7 @@ DECLARE
 	--to_be_applyed_filter_uuids uuid[]; 
 	attrEgenskaberTypeObj LoghaendelseEgenskaberAttrType;
 	
+  	tilsGyldighedTypeObj LoghaendelseGyldighedTilsType;
 	relationTypeObj LoghaendelseRelationType;
 	anyAttrValue text;
 	anyuuid uuid;
@@ -433,6 +434,139 @@ END IF;
 --RAISE DEBUG 'registrering,%',registreringObj;
 
 
+--/**********************************************************//
+--Filtration on state: Gyldighed
+--/**********************************************************//
+IF registreringObj IS NULL OR (registreringObj).tilsGyldighed IS NULL THEN
+	--RAISE DEBUG 'as_search_loghaendelse: skipping filtration on tilsGyldighed';
+ELSE
+	IF (coalesce(array_length(loghaendelse_candidates,1),0)>0 OR loghaendelse_candidates_is_initialized IS FALSE ) THEN 
+
+		FOREACH tilsGyldighedTypeObj IN ARRAY registreringObj.tilsGyldighed
+		LOOP
+			loghaendelse_candidates:=array(
+			SELECT DISTINCT
+			b.loghaendelse_id 
+			FROM  loghaendelse_tils_gyldighed a
+			JOIN loghaendelse_registrering b on a.loghaendelse_registrering_id=b.id
+			WHERE
+				(
+					tilsGyldighedTypeObj.virkning IS NULL
+					OR
+					(
+						(
+					 		(tilsGyldighedTypeObj.virkning).TimePeriod IS NULL 
+							OR
+							(tilsGyldighedTypeObj.virkning).TimePeriod && (a.virkning).TimePeriod
+						)
+						AND
+						(
+								(tilsGyldighedTypeObj.virkning).AktoerRef IS NULL OR (tilsGyldighedTypeObj.virkning).AktoerRef=(a.virkning).AktoerRef
+						)
+						AND
+						(
+								(tilsGyldighedTypeObj.virkning).AktoerTypeKode IS NULL OR (tilsGyldighedTypeObj.virkning).AktoerTypeKode=(a.virkning).AktoerTypeKode
+						)
+						AND
+						(
+								(tilsGyldighedTypeObj.virkning).NoteTekst IS NULL OR (a.virkning).NoteTekst ILIKE (tilsGyldighedTypeObj.virkning).NoteTekst
+						)
+					)
+				)
+				AND
+				(
+					(NOT ((tilsGyldighedTypeObj.virkning) IS NULL OR (tilsGyldighedTypeObj.virkning).TimePeriod IS NULL)) --we have already filtered on virkning above
+					OR
+					(
+						virkningSoeg IS NULL
+						OR
+						virkningSoeg && (a.virkning).TimePeriod
+					)
+				)
+				AND
+				(
+					tilsGyldighedTypeObj.gyldighed IS NULL
+					OR
+					tilsGyldighedTypeObj.gyldighed = a.gyldighed
+				)
+				AND
+						(
+				(registreringObj.registrering) IS NULL 
+				OR
+				(
+					(
+						(registreringObj.registrering).timeperiod IS NULL 
+						OR
+						(registreringObj.registrering).timeperiod && (b.registrering).timeperiod
+					)
+					AND
+					(
+						(registreringObj.registrering).livscykluskode IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode = (b.registrering).livscykluskode 		
+					) 
+					AND
+					(
+						(registreringObj.registrering).brugerref IS NULL
+						OR
+						(registreringObj.registrering).brugerref = (b.registrering).brugerref
+					)
+					AND
+					(
+						(registreringObj.registrering).note IS NULL
+						OR
+						(b.registrering).note ILIKE (registreringObj.registrering).note
+					)
+			)
+		)
+		AND
+		(
+			(
+				((b.registrering).livscykluskode <> 'Slettet'::Livscykluskode )
+				AND
+					(
+						(registreringObj.registrering) IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode IS NULL 
+					)
+			)
+			OR
+			(
+				(NOT ((registreringObj.registrering) IS NULL))
+				AND
+				(registreringObj.registrering).livscykluskode IS NOT NULL 
+			)
+		)
+		AND
+		(
+			(
+			  (
+			  	(registreringObj.registrering) IS NULL
+			  	OR
+			  	(registreringObj.registrering).timeperiod IS NULL
+			  )
+			  AND
+			  upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ
+			)  	
+		OR
+			(
+				(NOT ((registreringObj.registrering) IS NULL))
+				AND
+				((registreringObj.registrering).timeperiod IS NOT NULL)
+			)
+		)
+		AND
+		( (NOT loghaendelse_candidates_is_initialized) OR b.loghaendelse_id = ANY (loghaendelse_candidates) )
+
+	);
+			
+
+			loghaendelse_candidates_is_initialized:=true;
+			
+
+		END LOOP;
+	END IF;
+END IF;
 
 /*
 --relationer LoghaendelseRelationType[]

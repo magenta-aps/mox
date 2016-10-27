@@ -22,6 +22,7 @@ DECLARE
 	--to_be_applyed_filter_uuids uuid[]; 
 	attrEgenskaberTypeObj LoghaendelseEgenskaberAttrType;
 	
+  	tilsGyldighedTypeObj LoghaendelseGyldighedTilsType;
 	relationTypeObj LoghaendelseRelationType;
 	registreringObj LoghaendelseRegistreringType;
 	actual_virkning TIMESTAMPTZ:=current_timestamp;
@@ -130,6 +131,34 @@ END IF;
 --RAISE DEBUG 'registrering,%',registreringObj;
 
 
+--/**********************************************************//
+--Filtration on state: Gyldighed
+--/**********************************************************//
+IF registreringObj IS NULL OR (registreringObj).tilsGyldighed IS NULL THEN
+	--RAISE DEBUG 'as_search_loghaendelse: skipping filtration on tilsGyldighed';
+ELSE
+	IF coalesce(array_length(loghaendelse_candidates,1),0)>0 THEN 
+
+		FOREACH tilsGyldighedTypeObj IN ARRAY registreringObj.tilsGyldighed
+		LOOP
+			loghaendelse_candidates:=array(
+			SELECT DISTINCT
+			b.loghaendelse_id 
+			FROM  loghaendelse_tils_gyldighed a
+			JOIN loghaendelse_registrering b on a.loghaendelse_registrering_id=b.id and upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ 
+			WHERE
+				(
+					tilsGyldighedTypeObj.gyldighed IS NULL
+					OR
+					tilsGyldighedTypeObj.gyldighed = a.gyldighed
+				)
+				AND b.loghaendelse_id = ANY (loghaendelse_candidates)
+				AND (a.virkning).TimePeriod @> actual_virkning
+	);
+			
+		END LOOP;
+	END IF;
+END IF;
 
 /*
 --relationer LoghaendelseRelationType[]

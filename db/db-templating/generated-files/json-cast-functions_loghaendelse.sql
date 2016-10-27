@@ -52,6 +52,13 @@ FROM
       ( 
         SELECT 
         
+        CASE 
+        WHEN coalesce(array_length($1.tilsGyldighed,1),0)>0 THEN to_json($1.tilsGyldighed) 
+        ELSE 
+        NULL
+        END loghaendelsegyldighed
+        
+        
       ) as d
   ),
   rel as (

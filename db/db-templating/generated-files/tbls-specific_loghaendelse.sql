@@ -240,6 +240,61 @@ CREATE INDEX loghaendelse_attr_egenskaber_pat_virkning_notetekst
 
 
 
+CREATE SEQUENCE loghaendelse_tils_gyldighed_id_seq
+  INCREMENT 1
+  MINVALUE 1
+  MAXVALUE 9223372036854775807
+  START 1
+  CACHE 1;
+ALTER TABLE loghaendelse_tils_gyldighed_id_seq
+  OWNER TO mox;
+
+
+CREATE TABLE loghaendelse_tils_gyldighed
+(
+  id bigint NOT NULL DEFAULT nextval('loghaendelse_tils_gyldighed_id_seq'::regclass),
+  virkning Virkning  NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
+  gyldighed LoghaendelseGyldighedTils NOT NULL, 
+  loghaendelse_registrering_id bigint not null,
+  CONSTRAINT loghaendelse_tils_gyldighed_pkey PRIMARY KEY (id),
+  CONSTRAINT loghaendelse_tils_gyldighed_forkey_loghaendelseregistrering  FOREIGN KEY (loghaendelse_registrering_id) REFERENCES loghaendelse_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT loghaendelse_tils_gyldighed_exclude_virkning_overlap EXCLUDE USING gist (loghaendelse_registrering_id WITH =, _composite_type_to_time_range(virkning) WITH &&)
+)
+ 
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE loghaendelse_tils_gyldighed
+  OWNER TO mox;
+
+CREATE INDEX loghaendelse_tils_gyldighed_idx_gyldighed
+  ON loghaendelse_tils_gyldighed
+  USING btree
+  (gyldighed);
+  
+
+CREATE INDEX loghaendelse_tils_gyldighed_idx_virkning_aktoerref
+  ON loghaendelse_tils_gyldighed
+  USING btree
+  (((virkning).aktoerref));
+
+CREATE INDEX loghaendelse_tils_gyldighed_idx_virkning_aktoertypekode
+  ON loghaendelse_tils_gyldighed
+  USING btree
+  (((virkning).aktoertypekode));
+
+CREATE INDEX loghaendelse_tils_gyldighed_idx_virkning_notetekst
+  ON loghaendelse_tils_gyldighed
+  USING btree
+  (((virkning).notetekst));
+
+CREATE INDEX loghaendelse_tils_gyldighed_pat_virkning_notetekst
+  ON loghaendelse_tils_gyldighed
+  USING gin
+  (((virkning).notetekst) gin_trgm_ops);
+
+  
+
 /****************************************************************************************************/
 
 CREATE SEQUENCE loghaendelse_relation_id_seq
