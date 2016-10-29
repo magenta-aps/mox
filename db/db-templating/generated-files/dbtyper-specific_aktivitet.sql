@@ -32,7 +32,7 @@ aktivitetnavn text,
 beskrivelse text,
 starttidspunkt timestamptz,
 sluttidspunkt timestamptz,
-tidsforbrug tstzrange,
+tidsforbrug interval(0),
 formaal text,
  virkning Virkning
 );

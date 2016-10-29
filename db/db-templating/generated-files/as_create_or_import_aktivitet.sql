@@ -218,7 +218,7 @@ END LOOP;
         NULL
         END,
         CASE 
-          WHEN a.relType =('udfoerer'::AktivitetRelationKode)  OR rel_type=('deltager'::AktivitetRelationKode) OR rel_type=('ansvarlig'::AktivitetRelationKode) 
+          WHEN a.relType =('udfoerer'::AktivitetRelationKode)  OR a.relType=('deltager'::AktivitetRelationKode) OR a.relType=('ansvarlig'::AktivitetRelationKode) 
           AND NOT (a.aktoerAttr IS NULL)
           AND (
             (a.aktoerAttr).obligatorik IS NOT NULL

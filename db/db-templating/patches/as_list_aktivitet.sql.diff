@@ -1,5 +1,5 @@
-*** ./generated-files/as_list_aktivitet.sql	2016-10-22 13:41:14.000000000 +0200
---- ./patches/as_list_aktivitet.org.sql	2016-10-22 12:54:05.000000000 +0200
+*** ./generated-files/as_list_aktivitet.sql	2016-10-29 09:35:35.000000000 +0200
+--- ./patches/as_list_aktivitet.org.sql	2016-10-28 16:30:32.000000000 +0200
 ***************
 *** 62,77 ****
   		ROW (
@@ -25,13 +25,13 @@
   				b.rel_maal_uuid,
   				b.rel_maal_urn,
 ! 				b.objekt_type,
-! 				b.rel_indeks,
+! 				b.rel_index,
 ! 				b.aktoer_attr 
   			):: AktivitetRelationType
   		ELSE
   		NULL
   		END
-! 		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.objekt_type,b.rel_indeks,b.aktoer_attr,b.virkning
+! 		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.objekt_type,b.rel_index,b.aktoer_attr,b.virkning
   	)) AktivitetRelationArr
   	FROM
   	(

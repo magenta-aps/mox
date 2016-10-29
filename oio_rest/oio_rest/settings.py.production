@@ -284,7 +284,7 @@ DATABASE_STRUCTURE = {
             "egenskaber": {
                 "starttidspunkt": "timestamptz",
                 "sluttidspunkt": "timestamptz",
-                "tidsforbrug":"tstzrange"
+                "tidsforbrug":"interval(0)"
                 }
             },
 

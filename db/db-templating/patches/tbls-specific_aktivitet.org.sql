@@ -108,7 +108,7 @@ CREATE TABLE aktivitet_attr_egenskaber
    beskrivelse text null, 
    starttidspunkt timestamptz null, 
    sluttidspunkt timestamptz null, 
-   tidsforbrug tstzrange null, 
+   tidsforbrug interval(0) null, 
    formaal text null, 
    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
   aktivitet_registrering_id bigint not null,

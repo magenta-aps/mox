@@ -32,6 +32,8 @@ sudo -u $SUPER_USER psql -d $MOX_DB -c "SELECT amqp.exchange_declare(1, 'mox.not
 psql -d $MOX_DB -U $MOX_DB_USER -c "CREATE SCHEMA actual_state AUTHORIZATION $MOX_DB_USER "
 sudo -u $SUPER_USER psql -c "ALTER database $MOX_DB SET search_path TO actual_state,public;"
 sudo -u $SUPER_USER psql -c "ALTER database mox SET DATESTYLE to 'ISO, YMD';" #Please notice that the db-tests are run, using a different datestyle
+sudo -u $SUPER_USER psql -c "ALTER database mox SET INTERVALSTYLE to 'sql_standard';" 
+
 psql -d $MOX_DB -U $MOX_DB_USER -c "CREATE SCHEMA test AUTHORIZATION $MOX_DB_USER "
 psql -d $MOX_DB -U $MOX_DB_USER -f basis/common_types.sql
 psql -d $MOX_DB -U $MOX_DB_USER -f funcs/_index_helper_funcs.sql
@@ -87,6 +89,7 @@ patch --fuzz=3 -i  ../patches/as_create_or_import_aktivitet.sql.diff
 patch --fuzz=3 -i  ../patches/as_update_aktivitet.sql.diff
 patch --fuzz=3 -i  ../patches/json-cast-functions_aktivitet.sql.diff
 patch --fuzz=3 -i  ../patches/as_search_aktivitet.sql.diff
+
 
 cd ..
 
@@ -159,6 +162,9 @@ psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_create_or_import_dokument.sql
 psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_list_dokument.sql
 psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_update_dokument.sql
 psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_search_dokument.sql
+#aktivitet
+psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_create_or_import_aktivitet.sql
+
 
 popd
 

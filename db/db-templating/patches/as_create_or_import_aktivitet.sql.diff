@@ -1,5 +1,5 @@
-*** ./generated-files/as_create_or_import_aktivitet.sql	2016-10-22 13:41:13.000000000 +0200
---- ./patches/as_create_or_import_aktivitet.org.sql	2016-10-22 12:50:45.000000000 +0200
+*** ./generated-files/as_create_or_import_aktivitet.sql	2016-10-29 09:35:35.000000000 +0200
+--- ./patches/as_create_or_import_aktivitet.org.sql	2016-10-28 16:27:35.000000000 +0200
 ***************
 *** 23,32 ****
 --- 23,37 ----
@@ -94,7 +94,7 @@
 !         NULL
 !         END,
 !         CASE 
-!           WHEN a.relType =('udfoerer'::AktivitetRelationKode)  OR rel_type=('deltager'::AktivitetRelationKode) OR rel_type=('ansvarlig'::AktivitetRelationKode) 
+!           WHEN a.relType =('udfoerer'::AktivitetRelationKode)  OR a.relType=('deltager'::AktivitetRelationKode) OR a.relType=('ansvarlig'::AktivitetRelationKode) 
 !           AND NOT (a.aktoerAttr IS NULL)
 !           AND (
 !             (a.aktoerAttr).obligatorik IS NOT NULL

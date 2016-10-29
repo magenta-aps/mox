@@ -65,13 +65,13 @@ FROM
 				b.rel_maal_uuid,
 				b.rel_maal_urn,
 				b.objekt_type,
-				b.rel_indeks,
+				b.rel_index,
 				b.aktoer_attr 
 			):: AktivitetRelationType
 		ELSE
 		NULL
 		END
-		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.objekt_type,b.rel_indeks,b.aktoer_attr,b.virkning
+		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.objekt_type,b.rel_index,b.aktoer_attr,b.virkning
 	)) AktivitetRelationArr
 	FROM
 	(
