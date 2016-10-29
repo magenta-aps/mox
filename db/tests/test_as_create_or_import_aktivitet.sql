@@ -20,6 +20,8 @@ DECLARE
 	virkResultatklasse2 Virkning;
 	virkDeltagerklasse1 Virkning;
 	virkDeltagerklasse2 Virkning;
+	virkUdfoerer1 Virkning;
+	virkUdfoerer2 Virkning;
 	virkPubliceret Virkning;
 	virkStatus Virkning;
 	aktivitetEgenskab aktivitetEgenskaberAttrType;
@@ -31,7 +33,9 @@ DECLARE
 	aktivitetRelResultatklasse2 aktivitetRelationType;
 	aktivitetRelDeltagerklasse1 aktivitetRelationType;
 	aktivitetRelDeltagerklasse2 aktivitetRelationType;
-	
+	aktivitetRelUdfoerer1 aktivitetRelationType;
+	aktivitetRelUdfoerer2 aktivitetRelationType;
+
 	uuidAnsvarligklasse uuid :='f7109356-e87e-4b10-ad5d-36de6e3ee09f'::uuid;
 	uuidResultatklasse1 uuid :='b7160ce6-ac92-4752-9e82-f17d9e1e52ce'::uuid;
 
@@ -40,7 +44,12 @@ DECLARE
 	urnResultatklasse2 text:='urn:isbn:0451450523'::text;
 	uuidDeltagerklasse1 uuid :='f7109356-e87e-4b10-ad5d-36de6e3ee09d'::uuid;
 	uuidDeltagerklasse2 uuid :='28533179-fedb-4aa7-8902-ab34a219eed1'::uuid;
+	uuidUdfoerer1  uuid :='884d99f6-568f-4772-8766-fac6d40f9cb0'::uuid;
+	uuidUdfoerer2  uuid :='b6bb8e41-b47b-4420-b2a3-d1c38d86a1ad'::uuid;
 	uuidRegistrering uuid :='1f368584-4c3e-4ba4-837b-da2b1eee37c9'::uuid;
+	repraesentation_uuid uuid :='0e3ed41a-08f2-4967-8689-dce625f93029'::uuid;
+	repraesentation_urn text :='isbn:97800232324'::text;
+
 	actual_publiceret_virk virkning;
 	actual_publiceret_value aktivitetStatusTils;
 	actual_publiceret aktivitetStatusTilsType;
@@ -73,6 +82,22 @@ virkAnsvarligklasse :=	ROW (
           uuid_generate_v4(),
           'Bruger',
           'NoteEx2'
+          ) :: Virkning
+;
+
+virkUdfoerer1 :=	ROW (
+	'[2015-05-11, infinity)' :: TSTZRANGE,
+          uuid_generate_v4(),
+          'Bruger',
+          'NoteEx342'
+          ) :: Virkning
+;
+
+virkUdfoerer2 :=	ROW (
+	'[2016-04-12, infinity)' :: TSTZRANGE,
+          uuid_generate_v4(),
+          'Bruger',
+          'NoteEx350'
           ) :: Virkning
 ;
 
@@ -134,6 +159,39 @@ aktivitetRelAnsvarligklasse := ROW (
 	,'Klasse'
 	,567 --NOTICE: Should be replace in by import function
 	,null --aktoerAttr
+) :: aktivitetRelationType
+;
+
+aktivitetRelUdfoerer1 := ROW (
+	'udfoerer'::aktivitetRelationKode
+	,virkUdfoerer1
+	,uuidUdfoerer1
+	,null
+	,'Person'
+	,3 --NOTICE: Should be replace in by import function
+	,ROW (
+		 'valgfri'::AktivitetAktoerAttrObligatorikKode,
+  		'foreloebigt'::AktivitetAktoerAttrAccepteretKode,
+  repraesentation_uuid,
+  null 
+	)::AktivitetAktoerAttr
+) :: aktivitetRelationType
+;
+
+
+aktivitetRelUdfoerer2 := ROW (
+	'udfoerer'::aktivitetRelationKode
+	,virkUdfoerer2
+	,uuidUdfoerer2
+	,null
+	,'Person'
+	,3 --NOTICE: Should be replace in by import function
+	,ROW (
+		 'noedvendig'::AktivitetAktoerAttrObligatorikKode,
+  		'accepteret'::AktivitetAktoerAttrAccepteretKode,
+  null,
+  repraesentation_urn
+	)::AktivitetAktoerAttr
 ) :: aktivitetRelationType
 ;
 
@@ -237,7 +295,7 @@ registrering := ROW (
 	ARRAY[aktivitetStatus]::aktivitetStatusTilsType[],
 	ARRAY[aktivitetPubliceret]::AktivitetPubliceretTilsType[],
 ARRAY[aktivitetEgenskab,aktivitetEgenskab2]::aktivitetEgenskaberAttrType[],
-ARRAY[aktivitetRelAnsvarligklasse,aktivitetRelResultatklasse1,aktivitetRelResultatklasse2,aktivitetRelDeltagerklasse1,aktivitetRelDeltagerklasse2]) :: aktivitetRegistreringType
+ARRAY[aktivitetRelAnsvarligklasse,aktivitetRelResultatklasse1,aktivitetRelResultatklasse2,aktivitetRelDeltagerklasse1,aktivitetRelDeltagerklasse2,aktivitetRelUdfoerer1,aktivitetRelUdfoerer2]) :: aktivitetRegistreringType
 ;
 
 
@@ -272,6 +330,36 @@ expected_aktivitet1:=ROW(
 				,2 --NOTICE: Should be replace in by import function
 				,ROW (null,null,null,null)::AktivitetAktoerAttr   --NOTICE: empty composites will be removed in python layer --aktoerAttr
 			) :: aktivitetRelationType
+			,
+			ROW (
+					'udfoerer'::aktivitetRelationKode
+					,virkUdfoerer1
+					,uuidUdfoerer1
+					,null
+					,'Person'
+					,1 --NOTICE: was replaced by import function
+					,ROW (
+						'valgfri'::AktivitetAktoerAttrObligatorikKode,
+						'foreloebigt'::AktivitetAktoerAttrAccepteretKode,
+				repraesentation_uuid,
+				null 
+					)::AktivitetAktoerAttr
+				) :: aktivitetRelationType
+				,
+				ROW (
+					'udfoerer'::aktivitetRelationKode
+					,virkUdfoerer2
+					,uuidUdfoerer2
+					,null
+					,'Person'
+					,2 --NOTICE: Was replaced in by import function
+					,ROW (
+						'noedvendig'::AktivitetAktoerAttrObligatorikKode,
+						'accepteret'::AktivitetAktoerAttrAccepteretKode,
+				null,
+				repraesentation_urn
+					)::AktivitetAktoerAttr
+				) :: aktivitetRelationType
 				,
 				ROW (
 					'resultatklasse'::aktivitetRelationKode,
@@ -291,8 +379,8 @@ expected_aktivitet1:=ROW(
 				'Klasse'
 				,1 --NOTICE: Was replaced  by import function
 				,ROW (null,null,null,null)::AktivitetAktoerAttr  --aktoerAttr
-			) :: aktivitetRelationType
-			,
+			) :: aktivitetRelationType,
+
 				ROW (
 				'ansvarligklasse'::aktivitetRelationKode
 				,virkAnsvarligklasse
