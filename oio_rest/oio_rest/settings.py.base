@@ -32,6 +32,9 @@ USE_SAML_AUTHENTICATION = True
 # called.
 DO_ENABLE_RESTRICTIONS = True
 
+# SAML user ID attribute -- default is for WSO2
+SAML_USER_ID_ATTIBUTE = 'http://wso2.org/claims/url'
+
 # The module which implements the authorization restrictions.
 # Must be present in sys.path.
 AUTH_RESTRICTION_MODULE = 'oio_rest.auth.wso_restrictions'

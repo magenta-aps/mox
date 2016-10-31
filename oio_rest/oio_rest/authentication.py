@@ -5,10 +5,12 @@ from flask import request
 from custom_exceptions import UnauthorizedException
 import zlib
 import json
+import uuid
 
 from auth.saml2 import Saml2_Assertion
 from settings import SAML_IDP_CERTIFICATE, SAML_MOX_ENTITY_ID
 from settings import SAML_IDP_ENTITY_ID, USE_SAML_AUTHENTICATION
+from settings import SAML_USER_ID_ATTIBUTE
 
 # Read the IdP certificate file into memory
 with open(os.path.join(os.path.dirname(os.path.realpath(__file__)),
@@ -65,9 +67,17 @@ def check_saml_authentication():
 
         # Add the username and SAML attributes to the request object
         request.saml_attributes = assertion.get_attributes()
-        request.saml_user_id = request.saml_attributes[
-            'http://wso2.org/claims/url'
+
+        userid = request.saml_attributes[
+            SAML_USER_ID_ATTIBUTE
         ][0]
+
+        # Active Directory sends the UUID as a Base64-encoded string
+        if len(userid) == 24:
+            userid = str(uuid.UUID(bytes_le=b64decode(userid)))
+
+        request.saml_user_id = userid
+
         print "UUID", request.saml_user_id
         print "SAML ATTRIBUTES", json.dumps(request.saml_attributes, indent=2)
         # print "TOKEN: ", token
