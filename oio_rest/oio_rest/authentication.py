@@ -4,6 +4,8 @@ import os
 from flask import request
 from custom_exceptions import UnauthorizedException
 import zlib
+import json
+
 from auth.saml2 import Saml2_Assertion
 from settings import SAML_IDP_CERTIFICATE, SAML_MOX_ENTITY_ID
 from settings import SAML_IDP_ENTITY_ID, USE_SAML_AUTHENTICATION
@@ -66,8 +68,8 @@ def check_saml_authentication():
         request.saml_user_id = request.saml_attributes[
             'http://wso2.org/claims/url'
         ][0]
-        print "SAML ATTRIBUTES", request.saml_attributes
         print "UUID", request.saml_user_id
+        print "SAML ATTRIBUTES", json.dumps(request.saml_attributes, indent=2)
         # print "TOKEN: ", token
     except Exception as e:
         errmsg = "SAML token validation failed: %s" % e.message
