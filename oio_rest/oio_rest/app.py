@@ -9,7 +9,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from custom_exceptions import OIOFlaskException
 from custom_exceptions import UnauthorizedException, BadRequestException
-from auth import wso2
+from auth import adfs, wso2
 import settings
 
 app = Flask(__name__)
@@ -50,7 +50,12 @@ def get_token():
                                       "required")
 
         try:
-            text = wso2.get_packed_token(username, password, sts)
+            if settings.USE_SIMPLE_SAML:
+                text = adfs.get_packed_token(username, password,
+                                             settings.SAML_IDP_URL,
+                                             settings.SAML_MOX_ENTITY_ID)
+            else:
+                text = wso2.get_packed_token(username, password, sts)
         except Exception as e:
             traceback.print_exc()
             raise UnauthorizedException(e.args[0])

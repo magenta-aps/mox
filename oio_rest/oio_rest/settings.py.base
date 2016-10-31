@@ -25,6 +25,9 @@ SAML_IDP_URL = ("https://${domain}:9443/services/wso2carbon-sts?wsdl")
 # The public certificate file of the IdP, in PEM-format.
 SAML_IDP_CERTIFICATE = "test_auth_data/idp-certificate.pem"
 
+# Use simple, ADFS-compatible SAML authentication
+USE_SIMPLE_SAML = False
+
 # Whether to enable SAML authentication
 USE_SAML_AUTHENTICATION = True
 
