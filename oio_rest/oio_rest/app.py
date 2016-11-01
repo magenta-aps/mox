@@ -125,7 +125,7 @@ def main():
     DokumentHierarki.setup_api(base_url=BASE_URL, flask=app)
 
 
-    app.run(debug=True)
+    app.run(host='192.168.122.65', debug=True)
 
 
 if __name__ == '__main__':
