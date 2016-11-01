@@ -2,24 +2,31 @@
 from collections import OrderedDict
 
 class SemaWiConverter(object):
-    converted = {}
     objecttype = ""
+    map = {}
 
-    def __unicode__(self):
+    def __init__(self, entity):
+        self.entity = entity
+
+    def converted(self):
         return "{{%s\n}}" % "\n|".join(
-            [self.objecttype] + ["%s=%s" % (item[0], item[1]) for item in self.converted.items()]
+            [self.objecttype] + ["%s=%s" % (item[0], item[1]) for item in self.map.items()]
         )
 
 
 class ItSystemConverter(SemaWiConverter):
     objecttype = "System"
 
+
+
     def __init__(self, itsystem):
-        self.converted = {
-            u'Navn': itsystem.itsystemnavn,
+        super(ItSystemConverter, self).__init__(itsystem)
+
+        self.map = {
+            u'Navn': itsystem.current.itsystemnavn,
             u'Nummer': itsystem.id,
             u'Status': '',
-            u'Ejer': '',
+            u'Ejer': itsystem.current.tilhoerer_bruger,
             u'Administrator': '',
             u'Budgetansvarlig': '',
             u'Målgruppe': '',
@@ -45,7 +52,8 @@ class BrugerConverter(SemaWiConverter):
     objecttype = "Bruger"
 
     def __init__(self, bruger):
-        self.converted = {
+        super(BrugerConverter, self).__init__(bruger)
+        self.map = {
             u'Navn': bruger.brugervendtnoegle,
             u'Nummer': bruger.id,
             u'Status': '',

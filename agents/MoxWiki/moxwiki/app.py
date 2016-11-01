@@ -3,10 +3,12 @@
 import os
 
 from agent.amqpclient import MessageListener
+from agent.message import NotificationMessage
 from agent.config import read_properties_files, MissingConfigKeyError
 from SeMaWi import Semawi
 from PyLoRA import Lora
 from PyOIO.OIOCommon.exceptions import InvalidOIOException
+from PyOIO.OIOCommon import OIORelation
 
 DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -34,16 +36,24 @@ class MoxWiki(MessageListener):
         except KeyError as e:
             raise MissingConfigKeyError(str(e))
 
-        super(MoxWiki, self).__init__(amqp_username, amqp_password, amqp_host, amqp_queue, queue_parameters={'durable': True})
+        # super(MoxWiki, self).__init__(amqp_username, amqp_password, amqp_host, amqp_queue, queue_parameters={'durable': True})
 
         self.semawi = Semawi(wiki_host, wiki_username, wiki_password)
         self.lora = Lora(rest_host, rest_username, rest_password)
 
-        # for itsystem in self.lora.itsystemer:
-        #     self.update('ItSystem', itsystem.id, True)
-        # for user in self.lora.brugere:
-        #     self.update('Bruger', user.id, True)
-        self.run()
+        self.accepted_object_types = ['bruger', 'interessefaellesskab', 'itsystem', 'organisation', 'organisationenhed', 'organisationfunktion']
+
+
+    def test(self):
+
+        # print "brugervendtnoegle: %s" % self.lora.itsystemer['1706778e-30ff-410a-ad31-a9bb14c6c2b5'].current.brugervendtnoegle
+        # print "itsystemnavn: %s" % self.lora.itsystemer['1706778e-30ff-410a-ad31-a9bb14c6c2b5'].current.itsystemnavn
+        # print "itsystemtype: %s" % self.lora.itsystemer['1706778e-30ff-410a-ad31-a9bb14c6c2b5'].current.itsystemtype
+        # print "livscykluskode: %s" % self.lora.itsystemer['1706778e-30ff-410a-ad31-a9bb14c6c2b5'].current.livscykluskode
+        # print "tilhoerer: %s" % self.lora.itsystemer['1706778e-30ff-410a-ad31-a9bb14c6c2b5'].current.relationer.get(OIORelation.TYPE_TILHOERER).current
+        #for uuid, itsystem in self.lora.itsystemer.iteritems():
+        print self.lora.all_items['1706778e-30ff-410a-ad31-a9bb14c6c2b5'].json
+        self.update('Itsystem', '1706778e-30ff-410a-ad31-a9bb14c6c2b5', True)
 
     convertermap = {
         'Itsystem': ItSystemConverter,
@@ -51,36 +61,51 @@ class MoxWiki(MessageListener):
     }
 
     def callback(self, channel, method, properties, body):
-        headers = properties.headers
-        messagetype = headers.get("beskedtype")
-
-        if messagetype is not None:
-            objecttype = headers.get("objekttype")
-            lifycyclecode = headers.get("livscykluskode")
-            objectid = headers.get("objektID")
-            messagetype = messagetype.lower()
-            if messagetype == 'notification':
+        message = NotificationMessage.parse(properties.headers, body)
+        if message:
+            print "Got a notification"
+            if message.objecttype in self.accepted_object_types:
+                print "Object type '%s' accepted" % message.objecttype
                 try:
-                    if lifycyclecode == 'Slettet':
-                        self.delete(objecttype, objectid)
+                    if message.lifecyclecode == 'Slettet':
+                        print "lifecyclecode is '%s', performing delete" % message.lifecyclecode
+                        self.delete(message.objecttype, message.objectid)
                     else:
-                        self.update(objecttype, objectid)
+                        print "lifecyclecode is '%s', performing update" % message.lifecyclecode
+                        self.update(message.objecttype, message.objectid)
                 except InvalidOIOException as e:
                     print e
+            else:
+                print "Object type '%s' rejected" % message.objecttype
 
     def update(self, objecttype, objectid, accept_cached=False):
-        instance = self.lora.get_object(objecttype, objectid, not accept_cached)
-        converter = self.convertermap[objecttype]
-        pagename = instance.brugervendtnoegle
-        pagetext = unicode(converter(instance))
+        instance = self.lora.get_object(objectid, objecttype, not accept_cached)
+        title = instance.current.brugervendtnoegle
+        pagename = "%s_%s" % (title, objectid)
         page = self.semawi.site.Pages[pagename]
-        page.save(pagetext, summary="Imported from LoRA instance %s" % self.lora.host)
+
+        if not page.exists:
+            previous_registrering = instance.current.before
+            if previous_registrering:
+                old_title = previous_registrering.brugervendtnoegle
+                old_pagename = "%s_%s" % (old_title, objectid)
+                old_page = self.semawi.site.Pages[old_pagename]
+                if old_page.exists:
+                    print "Moving wiki page %s to %s" % (old_pagename, pagename)
+                    old_page.move(pagename, reason="LoRa object %s has changed name from %s to %s" % (objectid, old_title, title))
+
+        converter = self.convertermap[objecttype]
+        pagetext = unicode(converter(instance))
+        print pagetext
+        #
+        #page.save(pagetext, summary="Imported from LoRA instance %s" % self.lora.host)
 
     def delete(self, objecttype, objectid):
-        instance = self.lora.get_object(objecttype, objectid)
-        pagename = instance.brugervendtnoegle
-        page = self.semawi.site.Pages[pagename]
-        page.delete(reason="Deleted in LoRa instance %s" % self.lora.host)
+        instance = self.lora.get_object(objectid, objecttype)
+        pagename = "%s_%s" % (instance.current.brugervendtnoegle, objectid)
+        #page = self.semawi.site.Pages[pagename]
+        #page.delete(reason="Deleted in LoRa instance %s" % self.lora.host)
 
 
 main = MoxWiki()
+main.test()

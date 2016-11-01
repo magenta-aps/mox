@@ -102,10 +102,11 @@ class Lora(object):
             try:
                 item.load()
             except ItemNotFoundException:
-                print "It's not a %s" % otype
+                # print "It's not a %s" % otype
                 continue
 
             if refresh_cache:
                 self.all_items[uuid] = item
                 self.items_by_class[otype][uuid] = item
             return item
+        print "Object %s not found" % uuid

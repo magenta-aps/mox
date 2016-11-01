@@ -42,18 +42,22 @@ class OIOEntity(object):
 
     def load(self):
         self._loading = True
-        print "Load %s" % self.path
+        # print "Load %s" % self.path
         response = requests.get(self.lora.host + self.path, headers=self.get_headers())
         if response.status_code == 200:
             jsondata = json.loads(response.text)
             if jsondata[self.id] is None:
                 raise ItemNotFoundException(self.id, self.ENTITY_CLASS, self.path)
+            print "Load %s" % self.path
             self.json = jsondata[self.id][0]
         elif response.status_code == 404:
             raise ItemNotFoundException(self.id, self.ENTITY_CLASS, self.path)
         else:
             print "got error %d" % response.status_code
             pass
+
+    def sort_registreringer(self):
+        self.registreringer.sort(key=lambda registrering: registrering.from_time)
 
     def ensure_load(self):
         if not self._loaded:
@@ -62,6 +66,7 @@ class OIOEntity(object):
     def loaded(self):
         self._loaded = True
         self._loading = False
+        self.sort_registreringer()
 
     # def __getattribute__(self, name):
     #     print "getattr %s" % name
@@ -83,6 +88,20 @@ class OIOEntity(object):
     @property
     def current(self):
         return self.get_registrering(datetime.now(pytz.utc))
+
+    def before(self, registrering=None):
+        if registrering is None:
+            registrering = self.current
+        index = self.registreringer.index(registrering)
+        if index > 0:
+            return self.registreringer[index - 1]
+
+    def after(self, registrering=None):
+        if registrering is None:
+            registrering = self.current
+        index = self.registreringer.index(registrering)
+        if index > -1 and index < len(self.registreringer) - 1:
+            return self.registreringer[index + 1]
 
 
 class OIORegistrering(object):
@@ -165,3 +184,11 @@ class OIORegistrering(object):
             for relation in tilhoerer
             if relation.item is not None and relation.item.ENTITY_CLASS == Bruger.ENTITY_CLASS
         ]
+
+    @property
+    def before(self):
+        return self.entity.before(self)
+
+    @property
+    def after(self):
+        return self.entity.after(self)

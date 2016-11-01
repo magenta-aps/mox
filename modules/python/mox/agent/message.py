@@ -2,6 +2,7 @@ class Message(object):
 
     HEADER_AUTHORIZATION = "autorisation"
     HEADER_MESSAGEID = "beskedID"
+    HEADER_MESSAGETYPE = "beskedtype"
     HEADER_MESSAGEVERSION = "beskedversion"
     HEADER_OBJECTREFERENCE = "objektreference"
     HEADER_OBJECTTYPE = "objekttype"
@@ -12,26 +13,38 @@ class Message(object):
 
     HEADER_OBJECTID = "objektID"
     HEADER_OPERATION = "operation"
+    HEADER_LIFECYCLE_CODE = "livscykluskode"
 
     version = 1
     operation = ""
 
-    def __init__(self, authorization):
-        self.authorization = authorization
+    def __init__(self):
+        pass
 
     def getData(self):
         return {}
 
     def getHeaders(self):
         return {
-            Message.HEADER_AUTHORIZATION: self.authorization,
             Message.HEADER_MESSAGEID: str(uuid.uuid4()),
             Message.HEADER_MESSAGEVERSION: self.version,
             Message.HEADER_OPERATION: self.operation
         }
 
 
-class UploadedDocumentMessage(Message):
+class AuthorizedMessage(Message):
+
+    def __init__(self, authorization):
+        super(AuthorizedMessage, self).__init__()
+        self.authorization = authorization
+
+    def getHeaders(self):
+        object = super(AuthorizedMessage, self).getHeaders()
+        object[Message.HEADER_AUTHORIZATION] = self.authorization
+        return object
+
+
+class UploadedDocumentMessage(AuthorizedMessage):
 
     KEY_UUID = "uuid"
     operation = "upload"
@@ -61,3 +74,33 @@ class UploadedDocumentMessage(Message):
             if authorization is not None and uuid is not None:
                 return UploadedDocumentMessage(uuid, authorization)
 
+
+"""
+An message saying that an object has been updated in the database
+"""
+class NotificationMessage(Message):
+    def __init__(self, objectid, objecttype, lifecyclecode):
+        super(NotificationMessage, self).__init__()
+        self.objectid = objectid
+        self.objecttype = objecttype
+        self.lifecyclecode = lifecyclecode
+
+    def getHeaders(self):
+        headers = super(NotificationMessage, self).getHeaders()
+        headers[Message.HEADER_MESSAGETYPE] = 'notification'
+        headers[Message.HEADER_OBJECTID] = self.objectid
+        headers[Message.HEADER_OBJECTTYPE] = self.objecttype
+        headers[Message.HEADER_LIFECYCLE_CODE] = self.lifecyclecode
+        return headers
+
+    @staticmethod
+    def parse(headers, data=None):
+        type = headers[Message.HEADER_MESSAGETYPE]
+        if type and type.lower() == 'notification':
+            try:
+                objectid = headers.get[Message.HEADER_OBJECTID]
+                objecttype = headers.get[Message.HEADER_OBJECTTYPE]
+                lifecyclecode = headers.get[Message.HEADER_LIFECYCLE_CODE]
+                return NotificationMessage(objectid, objecttype, lifecyclecode)
+            except KeyError:
+                pass
