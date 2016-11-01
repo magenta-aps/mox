@@ -10,8 +10,8 @@ import settings
 from utils.build_registration import build_registration, to_lower_param
 
 
-# Just a helper during debug
 from authentication import requires_auth
+from log_client import log_this
 
 
 def j(t):
@@ -88,6 +88,7 @@ class OIORestObject(object):
 
     @classmethod
     @requires_auth
+    @log_this
     def create_object(cls):
         """
         CREATE object, generate new UUID.
@@ -112,6 +113,7 @@ class OIORestObject(object):
 
     @classmethod
     @requires_auth
+    @log_this
     def get_objects(cls):
         """
         LIST or SEARCH objects, depending on parameters.
@@ -178,6 +180,7 @@ class OIORestObject(object):
 
     @classmethod
     @requires_auth
+    @log_this
     def get_object(cls, uuid):
         """
         READ a facet, return as JSON.
@@ -213,6 +216,7 @@ class OIORestObject(object):
 
     @classmethod
     @requires_auth
+    @log_this
     def put_object(cls, uuid):
         """
         UPDATE, IMPORT or PASSIVIZE an  object.
@@ -263,6 +267,7 @@ class OIORestObject(object):
 
     @classmethod
     @requires_auth
+    @log_this
     def delete_object(cls, uuid):
         # Delete facet
         input = cls.get_json()
