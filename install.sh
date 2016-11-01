@@ -37,7 +37,7 @@ AMQP_HOST="$DOMAIN"
 AMQP_USER="guest"
 AMQP_PASS="guest"
 
-REST_HOST="http://$DOMAIN"
+REST_HOST="https://$DOMAIN"
 REST_USER="admin"
 REST_PASS="admin"
 
