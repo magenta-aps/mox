@@ -98,8 +98,8 @@ class MoxWiki(MessageListener):
         converter = self.convertermap[objecttype]
         pagetext = converter(instance).converted()
         print pagetext
-        #
-        #page.save(pagetext, summary="Imported from LoRA instance %s" % self.lora.host)
+        # if pagetext != page.text():
+        #    page.save(pagetext, summary="Imported from LoRA instance %s" % self.lora.host)
 
     def delete(self, objecttype, objectid):
         instance = self.lora.get_object(objectid, objecttype)
