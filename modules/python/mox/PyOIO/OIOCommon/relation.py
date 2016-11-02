@@ -38,6 +38,8 @@ class OIORelation(Item):
     TYPE_OPGAVE = 'opgaver'
     TYPE_SYSTEMTYPE = 'systemtyper'
     TYPE_ADRESSE = 'adresser'
+    TYPE_VIRKSOMHED = 'virksomhed'
+    TYPE_ORGANISATIONFUNKTIONSTYPE = 'organisatoriskfunktionstype'
 
     types = [
         TYPE_TILHOERER, TYPE_ORGANISATION, TYPE_ENHED, TYPE_FUNKTION,

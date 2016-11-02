@@ -22,12 +22,10 @@ class Organisation(OIOEntity):
         """
         super(Organisation, self).__init__(lora, id)
 
-    def load(self):
-        super(Organisation, self).load()
+    def parse_json(self):
         self.registreringer = []
         for index, registrering in enumerate(self.json['registreringer']):
             self.registreringer.append(OrganisationRegistrering(self, index, registrering))
-        self.loaded()
 
     @staticmethod
     def basepath():

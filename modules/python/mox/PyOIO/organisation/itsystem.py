@@ -28,15 +28,12 @@ class ItSystem(OIOEntity):
         """
         super(ItSystem, self).__init__(lora, id)
 
-    def load(self):
-        super(ItSystem, self).load()
+    def parse_json(self):
         if 'registreringer' not in self.json or len(self.json.get('registreringer')) == 0:
             raise InvalidOIOException("Item %s has no registreringer" % self.id)
-
         self.registreringer = []
         for index,registrering in enumerate(self.json['registreringer']):
             self.registreringer.append(ItSystemRegistrering(self, registrering, index))
-        self.loaded()
 
     @staticmethod
     def basepath():
@@ -65,10 +62,6 @@ class ItSystemRegistrering(OIORegistrering):
 
 
     # ---- Egenskaber ----
-
-    @property
-    def brugervendtnoegle(self):
-        return self.get_egenskab('brugervendtnoegle')
 
     @property
     def itsystemnavn(self):

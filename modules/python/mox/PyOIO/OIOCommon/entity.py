@@ -5,6 +5,8 @@ from datetime import datetime
 from PyOIO.OIOCommon import OIORelation
 from PyOIO.OIOCommon.util import parse_time
 from PyOIO.OIOCommon.exceptions import ItemNotFoundException
+# from PyOIO.organisation.bruger import Bruger
+# from PyOIO.organisation.organisation import Organisation
 
 def requires_load(func):
     def func_wrapper(self, *args, **kwargs):
@@ -22,9 +24,9 @@ class OIOEntity(object):
         self.id = id
         self.lora = lora
         self.json = {}
-        self.registreringer = []
         self._loaded = False
         self._loading = False
+        self.registreringer = []
 
     def __repr__(self):
         return '%s(%s)' % (self.ENTITY_CLASS, self.id)
@@ -50,11 +52,16 @@ class OIOEntity(object):
                 raise ItemNotFoundException(self.id, self.ENTITY_CLASS, self.path)
             print "Load %s" % self.path
             self.json = jsondata[self.id][0]
+            self.parse_json()
+            self.loaded()
         elif response.status_code == 404:
             raise ItemNotFoundException(self.id, self.ENTITY_CLASS, self.path)
         else:
             print "got error %d" % response.status_code
             pass
+
+    def parse_json(self):
+        pass
 
     def sort_registreringer(self):
         self.registreringer.sort(key=lambda registrering: registrering.from_time)
@@ -126,6 +133,7 @@ class OIORegistrering(object):
         to_time = data.get('tiltidspunkt',{}).get('tidsstempeldatotid')
         if to_time:
             self.to_time = parse_time(to_time)
+        self.created_by = Bruger(self.lora, data['brugerref'])
 
     def __repr__(self):
         return '%sRegistrering("%s", %s)' % (self.entity.ENTITY_CLASS, self.entity.id, self.registrering_number)
@@ -153,6 +161,10 @@ class OIORegistrering(object):
         self.attributter[self.entity.EGENSKABER_KEY] = egenskaber
 
     @property
+    def brugervendtnoegle(self):
+        return self.get_egenskab('brugervendtnoegle')
+
+    @property
     def gyldighed(self):
         return self.tilstande[self.entity.GYLDIGHED_KEY]
 
@@ -166,23 +178,13 @@ class OIORegistrering(object):
     def set_relationer(self, relationer):
         self._relationer = relationer
 
-
-    @property
-    def tilhoerer_organisation(self):
+    def tilhoerer(self, entity_class=None):
         tilhoerer = self.relationer.get(OIORelation.TYPE_TILHOERER).current
         return [
             relation.item
             for relation in tilhoerer
-            if relation.item is not None and relation.item.ENTITY_CLASS == Organisation.ENTITY_CLASS
-        ]
-
-    @property
-    def tilhoerer_bruger(self):
-        tilhoerer = self.relationer.get(OIORelation.TYPE_TILHOERER).current
-        return [
-            relation.item
-            for relation in tilhoerer
-            if relation.item is not None and relation.item.ENTITY_CLASS == Bruger.ENTITY_CLASS
+            if relation.item is not None and
+            (entity_class is None or relation.item.ENTITY_CLASS == entity_class)
         ]
 
     @property

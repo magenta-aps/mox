@@ -14,7 +14,8 @@ DIR = os.path.dirname(os.path.realpath(__file__))
 
 from templates import ItSystemConverter, BrugerConverter
 
-config = read_properties_files("/srv/mox/mox.conf", DIR + "/settings.conf")
+configfile = DIR + "/settings.conf"
+config = read_properties_files("/srv/mox/mox.conf", configfile)
 
 class MoxWiki(MessageListener):
 
@@ -95,7 +96,7 @@ class MoxWiki(MessageListener):
                     old_page.move(pagename, reason="LoRa object %s has changed name from %s to %s" % (objectid, old_title, title))
 
         converter = self.convertermap[objecttype]
-        pagetext = unicode(converter(instance))
+        pagetext = converter(instance).converted()
         print pagetext
         #
         #page.save(pagetext, summary="Imported from LoRA instance %s" % self.lora.host)

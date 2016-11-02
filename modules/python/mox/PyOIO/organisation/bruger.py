@@ -23,12 +23,10 @@ class Bruger(OIOEntity):
         """
         super(Bruger, self).__init__(lora, id)
 
-    def load(self):
-        super(Bruger, self).load()
+    def parse_json(self):
         self.registreringer = []
         for index, registrering in enumerate(self.json['registreringer']):
             self.registreringer.append(BrugerRegistrering(self, index, registrering))
-        self.loaded()
 
     @staticmethod
     def basepath():

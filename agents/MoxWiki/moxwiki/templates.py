@@ -26,7 +26,7 @@ class ItSystemConverter(SemaWiConverter):
             u'Navn': itsystem.current.itsystemnavn,
             u'Nummer': itsystem.id,
             u'Status': '',
-            u'Ejer': itsystem.current.tilhoerer_bruger,
+            u'Ejer': itsystem.current.tilhoerer,
             u'Administrator': '',
             u'Budgetansvarlig': '',
             u'Målgruppe': '',
