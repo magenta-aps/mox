@@ -2,11 +2,13 @@ import pytz
 from datetime import datetime
 from virkning import Virkning
 
+
 class Item(object):
 
     def __init__(self, registrering, data):
         self.registrering = registrering
         self.virkning = Virkning(data['virkning'])
+
 
 class ItemContainer(list):
 

@@ -154,7 +154,7 @@ class OIORegistrering(object):
         self._relationer = OIORelationContainer.from_json(
             self, self.json['relationer']
         )
-        self.attributter[self.entity.EGENSKABER_KEY] = OIOEgenskabContainer.from_json(
+        self.egenskaber = OIOEgenskabContainer.from_json(
             self, self.json['attributter'][self.entity.EGENSKABER_KEY], self.entity._egenskab_class
         )
 
@@ -172,14 +172,11 @@ class OIORegistrering(object):
     def in_effect(self, time):
         return self.from_time < time and time < self.to_time
 
-    def get_egenskab(self, name):
-        for egenskab in self.egenskaber:
+    def get_egenskab(self, name, must_be_current=True):
+        egenskaber = self.egenskaber.current if must_be_current else self.egenskaber
+        for egenskab in egenskaber:
             if hasattr(egenskab, name):
                 return getattr(egenskab, name)
-
-    @property
-    def egenskaber(self):
-        return self.attributter[self.entity.EGENSKABER_KEY]
 
     @property
     def brugervendtnoegle(self):
