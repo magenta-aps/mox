@@ -4,9 +4,11 @@ import pytz
 from datetime import datetime
 from PyOIO.OIOCommon import OIORelation
 from PyOIO.OIOCommon.util import parse_time
-from PyOIO.OIOCommon.exceptions import ItemNotFoundException
-# from PyOIO.organisation.bruger import Bruger
-# from PyOIO.organisation.organisation import Organisation
+from PyOIO.OIOCommon.exceptions import ItemNotFoundException, InvalidOIOException
+
+from PyOIO.OIOCommon.gyldighed import OIOGyldighedContainer
+from PyOIO.OIOCommon.relation import OIORelationContainer
+from PyOIO.OIOCommon.egenskab import OIOEgenskabContainer
 
 def requires_load(func):
     def func_wrapper(self, *args, **kwargs):
@@ -19,6 +21,8 @@ class OIOEntity(object):
     ENTITY_CLASS = "OIOEntity"
     EGENSKABER_KEY = 'egenskaber'
     GYLDIGHED_KEY = 'gyldighed'
+
+    _registrering_class = None
 
     def __init__(self, lora, id):
         self.id = id
@@ -33,6 +37,18 @@ class OIOEntity(object):
 
     def __str__(self):
         return '%s: %s' % (self.ENTITY_CLASS, self.id)
+
+    @classmethod
+    def registrering_class(cls, registrering_class):
+        cls._registrering_class = registrering_class
+        registrering_class._entity_class = cls
+        return registrering_class
+
+    @classmethod
+    def egenskab_class(cls, egenskab_class):
+        cls._egenskab_class = egenskab_class
+        egenskab_class._entity_class = cls
+        return egenskab_class
 
     @staticmethod
     def basepath():
@@ -61,7 +77,11 @@ class OIOEntity(object):
             pass
 
     def parse_json(self):
-        pass
+        if 'registreringer' not in self.json or len(self.json.get('registreringer')) == 0:
+            raise InvalidOIOException("Item %s has no registreringer" % self.id)
+        self.registreringer = []
+        for index, registrering in enumerate(self.json['registreringer']):
+            self.registreringer.append(self._registrering_class(self, registrering, index))
 
     def sort_registreringer(self):
         self.registreringer.sort(key=lambda registrering: registrering.from_time)
@@ -74,14 +94,6 @@ class OIOEntity(object):
         self._loaded = True
         self._loading = False
         self.sort_registreringer()
-
-    # def __getattribute__(self, name):
-    #     print "getattr %s" % name
-    #     if name not in ['id','lora','json','_loaded','_loading','']:
-    #         if not self._loaded and not self._loading:
-    #             self.load()
-    #     return super(OIOEntity, self).__getattribute__(name)
-
 
     def get_headers(self):
         return self.lora.get_headers()
@@ -111,6 +123,7 @@ class OIOEntity(object):
             return self.registreringer[index + 1]
 
 
+@OIOEntity.registrering_class
 class OIORegistrering(object):
 
     TIME_INFINITY = 'infinity'
@@ -133,7 +146,18 @@ class OIORegistrering(object):
         to_time = data.get('tiltidspunkt',{}).get('tidsstempeldatotid')
         if to_time:
             self.to_time = parse_time(to_time)
-        self.created_by = Bruger(self.lora, data['brugerref'])
+        # self.created_by = Bruger(self.lora, data['brugerref'])
+
+        self.tilstande[self.entity.GYLDIGHED_KEY] = OIOGyldighedContainer.from_json(
+            self, self.json['tilstande'][self.entity.GYLDIGHED_KEY]
+        )
+        self._relationer = OIORelationContainer.from_json(
+            self, self.json['relationer']
+        )
+        self.attributter[self.entity.EGENSKABER_KEY] = OIOEgenskabContainer.from_json(
+            self, self.json['attributter'][self.entity.EGENSKABER_KEY], self.entity._egenskab_class
+        )
+
 
     def __repr__(self):
         return '%sRegistrering("%s", %s)' % (self.entity.ENTITY_CLASS, self.entity.id, self.registrering_number)
@@ -157,9 +181,6 @@ class OIORegistrering(object):
     def egenskaber(self):
         return self.attributter[self.entity.EGENSKABER_KEY]
 
-    def set_egenskaber(self, egenskaber):
-        self.attributter[self.entity.EGENSKABER_KEY] = egenskaber
-
     @property
     def brugervendtnoegle(self):
         return self.get_egenskab('brugervendtnoegle')
@@ -168,15 +189,9 @@ class OIORegistrering(object):
     def gyldighed(self):
         return self.tilstande[self.entity.GYLDIGHED_KEY]
 
-    def set_gyldighed(self, gyldighed):
-        self.tilstande[self.entity.GYLDIGHED_KEY] = gyldighed
-
     @property
     def relationer(self):
         return self._relationer
-
-    def set_relationer(self, relationer):
-        self._relationer = relationer
 
     def tilhoerer(self, entity_class=None):
         tilhoerer = self.relationer.get(OIORelation.TYPE_TILHOERER).current

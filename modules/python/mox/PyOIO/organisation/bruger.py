@@ -23,26 +23,17 @@ class Bruger(OIOEntity):
         """
         super(Bruger, self).__init__(lora, id)
 
-    def parse_json(self):
-        self.registreringer = []
-        for index, registrering in enumerate(self.json['registreringer']):
-            self.registreringer.append(BrugerRegistrering(self, index, registrering))
-
     @staticmethod
     def basepath():
         return "/organisation/bruger"
 
 
+@Bruger.registrering_class
 class BrugerRegistrering(OIORegistrering):
-
-    def __init__(self, bruger, registrering_number, data):
-        super(BrugerRegistrering, self).__init__(bruger, data, registrering_number)
-
-        self.set_egenskaber(BrugerEgenskabContainer.from_json(self, self.json['attributter'][Bruger.EGENSKABER_KEY]))
-        self.set_gyldighed(OIOGyldighedContainer.from_json(self, self.json['tilstande'][Bruger.GYLDIGHED_KEY]))
-        self.set_relationer(OIORelationContainer.from_json(self, self.json['relationer']))
+    pass
 
 
+@Bruger.egenskab_class
 class BrugerEgenskab(OIOEgenskab):
 
     def __init__(self, registrering, data):
@@ -53,13 +44,3 @@ class BrugerEgenskab(OIOEgenskab):
     @property
     def name(self):
         return self.brugernavn
-
-
-class BrugerEgenskabContainer(OIOEgenskabContainer):
-
-    @staticmethod
-    def from_json(registrering, data):
-        egenskaber = BrugerEgenskabContainer()
-        for egenskab in data:
-            egenskaber.append(BrugerEgenskab(registrering, egenskab))
-        return egenskaber

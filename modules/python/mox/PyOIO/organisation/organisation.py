@@ -22,26 +22,17 @@ class Organisation(OIOEntity):
         """
         super(Organisation, self).__init__(lora, id)
 
-    def parse_json(self):
-        self.registreringer = []
-        for index, registrering in enumerate(self.json['registreringer']):
-            self.registreringer.append(OrganisationRegistrering(self, index, registrering))
-
     @staticmethod
     def basepath():
         return "/organisation/organisation"
 
 
+@Organisation.registrering_class
 class OrganisationRegistrering(OIORegistrering):
-
-    def __init__(self, organisation, registrering_number, data):
-        super(OrganisationRegistrering, self).__init__(organisation, data, registrering_number)
-
-        self.set_egenskaber(OrganisationEgenskabContainer.from_json(self, self.json['attributter'][Organisation.EGENSKABER_KEY]))
-        self.set_gyldighed(OIOGyldighedContainer.from_json(self, self.json['tilstande'][Organisation.GYLDIGHED_KEY]))
-        self.set_relationer(OIORelationContainer.from_json(self, self.json['relationer']))
+    pass
 
 
+@Organisation.egenskab_class
 class OrganisationEgenskab(OIOEgenskab):
 
     def __init__(self, registrering, data):
@@ -51,13 +42,3 @@ class OrganisationEgenskab(OIOEgenskab):
     @property
     def name(self):
         return self.organisationsnavn
-
-
-class OrganisationEgenskabContainer(OIOEgenskabContainer):
-
-    @staticmethod
-    def from_json(registrering, data):
-        egenskaber = OrganisationEgenskabContainer()
-        for egenskab in data:
-            egenskaber.append(OrganisationEgenskab(registrering, egenskab))
-        return egenskaber

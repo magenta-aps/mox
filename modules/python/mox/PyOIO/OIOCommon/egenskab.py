@@ -17,4 +17,10 @@ class OIOEgenskab(Item):
 
 
 class OIOEgenskabContainer(ItemContainer):
-    pass
+
+    @staticmethod
+    def from_json(registrering, data, egenskab_class):
+        egenskaber = OIOEgenskabContainer()
+        for egenskab in data:
+            egenskaber.append(egenskab_class(registrering, egenskab))
+        return egenskaber

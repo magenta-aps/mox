@@ -22,43 +22,24 @@ class Klasse(OIOEntity):
         """
         super(Klasse, self).__init__(lora, id)
 
-    def parse_json(self):
-        self.registreringer = []
-        for index, registrering in enumerate(self.json['registreringer']):
-            self.registreringer.append(KlasseRegistrering(self, index, registrering))
-
     @staticmethod
     def basepath():
         return "/klassifikation/klasse"
 
 
+@Klasse.registrering_class
 class KlasseRegistrering(OIORegistrering):
-
-    def __init__(self, klasse, registrering_number, data):
-        super(KlasseRegistrering, self).__init__(klasse, data, registrering_number)
-
-        self.set_egenskaber(KlasseEgenskabContainer.from_json(self, self.json['attributter'][Klasse.EGENSKABER_KEY]))
-        self.set_gyldighed(OIOGyldighedContainer.from_json(self, self.json['tilstande'][Klasse.GYLDIGHED_KEY]))
-        self.set_relationer(OIORelationContainer.from_json(self, self.json['relationer']))
+    pass
 
 
+@Klasse.egenskab_class
 class KlasseEgenskab(OIOEgenskab):
 
     def __init__(self, registrering, data):
         super(KlasseEgenskab, self).__init__(registrering, data)
-        self.klassesnavn = data.get('klassesnavn') # 0..1
-        self.klassestype = data.get('klassestype') # 0..1
+        self.klassenavn = data.get('klassenavn') # 0..1
+        self.klassetype = data.get('klassetype') # 0..1
 
     @property
     def name(self):
-        return self.klassesnavn
-
-
-class KlasseEgenskabContainer(OIOEgenskabContainer):
-
-    @staticmethod
-    def from_json(registrering, data):
-        egenskaber = KlasseEgenskabContainer()
-        for egenskab in data:
-            egenskaber.append(KlasseEgenskab(registrering, egenskab))
-        return egenskaber
+        return self.klassenavn

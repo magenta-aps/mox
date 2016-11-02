@@ -28,18 +28,12 @@ class ItSystem(OIOEntity):
         """
         super(ItSystem, self).__init__(lora, id)
 
-    def parse_json(self):
-        if 'registreringer' not in self.json or len(self.json.get('registreringer')) == 0:
-            raise InvalidOIOException("Item %s has no registreringer" % self.id)
-        self.registreringer = []
-        for index,registrering in enumerate(self.json['registreringer']):
-            self.registreringer.append(ItSystemRegistrering(self, registrering, index))
-
     @staticmethod
     def basepath():
         return "/organisation/itsystem"
 
 
+@ItSystem.registrering_class
 class ItSystemRegistrering(OIORegistrering):
     """It-system registrering
     from: Specifikation af serviceinterface for Organisation. Version 1.1
@@ -51,14 +45,6 @@ class ItSystemRegistrering(OIORegistrering):
     The ItSystem class will contain a list of 1..N of these.
 
     """
-
-
-    def __init__(self, itsystem, data, registrering_number):
-        super(ItSystemRegistrering, self).__init__(itsystem, data, registrering_number)
-
-        self.set_egenskaber(ItSystemEgenskabContainer.from_json(self, self.json['attributter'][ItSystem.EGENSKABER_KEY]))
-        self.set_gyldighed(OIOGyldighedContainer.from_json(self, self.json['tilstande']['itsystemgyldighed']))
-        self.set_relationer(OIORelationContainer.from_json(self, self.json['relationer']))
 
 
     # ---- Egenskaber ----
@@ -78,6 +64,7 @@ class ItSystemRegistrering(OIORegistrering):
         return self.tilstande['itsystemgyldighed']
 
 
+@ItSystem.egenskab_class
 class ItSystemEgenskab(OIOEgenskab):
 
     def __init__(self, registrering, data):
@@ -89,12 +76,3 @@ class ItSystemEgenskab(OIOEgenskab):
     @property
     def name(self):
         return self.itsystemnavn
-
-class ItSystemEgenskabContainer(OIOEgenskabContainer):
-
-    @staticmethod
-    def from_json(registrering, data):
-        egenskaber = ItSystemEgenskabContainer()
-        for egenskab in data:
-            egenskaber.append(ItSystemEgenskab(registrering, egenskab))
-        return egenskaber
