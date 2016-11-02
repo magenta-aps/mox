@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
 from PyOIO.OIOCommon import Virkning, OIOEntity, OIORegistrering, InvalidOIOException, requires_load
-from PyOIO.OIOCommon import OIORelation, OIORelationContainer
 from PyOIO.OIOCommon import OIOEgenskab, OIOEgenskabContainer
-from PyOIO.OIOCommon import OIOGyldighed, OIOGyldighedContainer
 
 
 class Organisation(OIOEntity):
@@ -29,7 +27,14 @@ class Organisation(OIOEntity):
 
 @Organisation.registrering_class
 class OrganisationRegistrering(OIORegistrering):
-    pass
+
+    @property
+    def organisationsnavn(self):
+        return self.get_egenskab('organisationsnavn')
+
+    @property
+    def name(self):
+        return self.organisationsnavn
 
 
 @Organisation.egenskab_class
@@ -37,7 +42,7 @@ class OrganisationEgenskab(OIOEgenskab):
 
     def __init__(self, registrering, data):
         super(OrganisationEgenskab, self).__init__(registrering, data)
-        self.organisationsnavn = data.get('organisationsnavn') # 0..1
+        self.organisationsnavn = data.get('organisationsnavn')
 
     @property
     def name(self):

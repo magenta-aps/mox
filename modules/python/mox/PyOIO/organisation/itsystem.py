@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 
 from PyOIO.OIOCommon import Virkning, OIOEntity, OIORegistrering, InvalidOIOException, requires_load
-from PyOIO.OIOCommon import OIORelation, OIORelationContainer
 from PyOIO.OIOCommon import OIOEgenskab, OIOEgenskabContainer
-from PyOIO.OIOCommon import OIOGyldighed, OIOGyldighedContainer
-# from . import Bruger, Organisation
+
 
 class ItSystem(OIOEntity):
     """It-system
@@ -43,9 +41,7 @@ class ItSystemRegistrering(OIORegistrering):
     contained in these.
 
     The ItSystem class will contain a list of 1..N of these.
-
     """
-
 
     # ---- Egenskaber ----
 
@@ -54,14 +50,20 @@ class ItSystemRegistrering(OIORegistrering):
         return self.get_egenskab('itsystemnavn')
 
     @property
+    def name(self):
+        return self.itsystemnavn
+
+    @property
     def itsystemtype(self):
         return self.get_egenskab('itsystemtype')
 
-    # ---- Tilstande ----
+    @property
+    def type(self):
+        return self.itsystemtype
 
     @property
-    def itsystemgyldighed(self):
-        return self.tilstande['itsystemgyldighed']
+    def konfigurationreference(self):
+        return self.get_egenskab('konfigurationreference')
 
 
 @ItSystem.egenskab_class

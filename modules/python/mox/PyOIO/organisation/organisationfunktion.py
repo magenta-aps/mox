@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
 from PyOIO.OIOCommon import Virkning, OIOEntity, OIORegistrering, InvalidOIOException, requires_load
-from PyOIO.OIOCommon import OIORelation, OIORelationContainer
 from PyOIO.OIOCommon import OIOEgenskab, OIOEgenskabContainer
-from PyOIO.OIOCommon import OIOGyldighed, OIOGyldighedContainer
 
 
 class OrganisationFunktion(OIOEntity):
@@ -34,32 +32,25 @@ class OrganisationFunktion(OIOEntity):
         return "/organisation/organisationfunktion"
 
 
+@OrganisationFunktion.registrering_class
 class OrganisationFunktionRegistrering(OIORegistrering):
 
-    def __init__(self, organisationfunktion, registrering_number, data):
-        super(OrganisationFunktionRegistrering, self).__init__(organisationfunktion, data, registrering_number)
-
-        self.set_egenskaber(OrganisationFunktionEgenskabContainer.from_json(self, self.json['attributter'][OrganisationFunktion.EGENSKABER_KEY]))
-        self.set_gyldighed(OIOGyldighedContainer.from_json(self, self.json['tilstande'][OrganisationFunktion.GYLDIGHED_KEY]))
-        self.set_relationer(OIORelationContainer.from_json(self, self.json['relationer']))
-
-
-class OrganisationFunktionEgenskab(OIOEgenskab):
-
-    def __init__(self, registrering, data):
-        super(OrganisationFunktionEgenskab, self).__init__(registrering, data)
-        self.funktionsnavn = data.get('funktionsnavn') # 0..1
+    @property
+    def funktionsnavn(self):
+        return self.get_egenskab('funktionsnavn')
 
     @property
     def name(self):
         return self.funktionsnavn
 
 
-class OrganisationFunktionEgenskabContainer(OIOEgenskabContainer):
+@OrganisationFunktion.egenskab_class
+class OrganisationFunktionEgenskab(OIOEgenskab):
 
-    @staticmethod
-    def from_json(registrering, data):
-        egenskaber = OrganisationFunktionEgenskabContainer()
-        for egenskab in data:
-            egenskaber.append(OrganisationFunktionEgenskab(registrering, egenskab))
-        return egenskaber
+    def __init__(self, registrering, data):
+        super(OrganisationFunktionEgenskab, self).__init__(registrering, data)
+        self.funktionsnavn = data.get('funktionsnavn')
+
+    @property
+    def name(self):
+        return self.funktionsnavn

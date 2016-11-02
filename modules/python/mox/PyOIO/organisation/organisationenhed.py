@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
 from PyOIO.OIOCommon import Virkning, OIOEntity, OIORegistrering, InvalidOIOException, requires_load
-from PyOIO.OIOCommon import OIORelation, OIORelationContainer
 from PyOIO.OIOCommon import OIOEgenskab, OIOEgenskabContainer
-from PyOIO.OIOCommon import OIOGyldighed, OIOGyldighedContainer
 
 
 class OrganisationEnhed(OIOEntity):
@@ -34,32 +32,26 @@ class OrganisationEnhed(OIOEntity):
         return "/organisation/organisationenhed"
 
 
+@OrganisationEnhed.registrering_class
 class OrganisationEnhedRegistrering(OIORegistrering):
 
-    def __init__(self, organisationenhed, registrering_number, data):
-        super(OrganisationEnhedRegistrering, self).__init__(organisationenhed, data, registrering_number)
-
-        self.set_egenskaber(OrganisationEnhedEgenskabContainer.from_json(self, self.json['attributter'][OrganisationEnhed.EGENSKABER_KEY]))
-        self.set_gyldighed(OIOGyldighedContainer.from_json(self, self.json['tilstande'][OrganisationEnhed.GYLDIGHED_KEY]))
-        self.set_relationer(OIORelationContainer.from_json(self, self.json['relationer']))
-
-
-class OrganisationEnhedEgenskab(OIOEgenskab):
-
-    def __init__(self, registrering, data):
-        super(OrganisationEnhedEgenskab, self).__init__(registrering, data)
-        self.enhedsnavn = data.get('enhedsnavn') # 0..1
+    @property
+    def enhedsnavn(self):
+        return self.get_egenskab('enhedsnavn')
 
     @property
     def name(self):
         return self.enhedsnavn
 
 
-class OrganisationEnhedEgenskabContainer(OIOEgenskabContainer):
+@OrganisationEnhed.egenskab_class
+class OrganisationEnhedEgenskab(OIOEgenskab):
 
-    @staticmethod
-    def from_json(registrering, data):
-        egenskaber = OrganisationEnhedEgenskabContainer()
-        for egenskab in data:
-            egenskaber.append(OrganisationEnhedEgenskab(registrering, egenskab))
-        return egenskaber
+    def __init__(self, registrering, data):
+        super(OrganisationEnhedEgenskab, self).__init__(registrering, data)
+        self.enhedsnavn = data.get('enhedsnavn')
+
+    @property
+    def name(self):
+        return self.enhedsnavn
+

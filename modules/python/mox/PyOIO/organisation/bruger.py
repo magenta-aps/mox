@@ -1,15 +1,12 @@
 #!/usr/bin/env python
 
 from PyOIO.OIOCommon import Virkning, OIOEntity, OIORegistrering
-from PyOIO.OIOCommon import OIORelationContainer
 from PyOIO.OIOCommon import OIOEgenskab, OIOEgenskabContainer
-from PyOIO.OIOCommon import OIOGyldighedContainer
 
 
 class Bruger(OIOEntity):
     """Represents the OIO information model 1.1 Bruger
     https://digitaliser.dk/resource/991439
-
     """
 
     ENTITY_CLASS = 'Bruger'
@@ -30,7 +27,22 @@ class Bruger(OIOEntity):
 
 @Bruger.registrering_class
 class BrugerRegistrering(OIORegistrering):
-    pass
+
+    @property
+    def brugernavn(self):
+        return self.get_egenskab('brugernavn')
+
+    @property
+    def name(self):
+        return self.brugernavn
+
+    @property
+    def brugertype(self):
+        return self.get_egenskab('brugertype')
+
+    @property
+    def type(self):
+        return self.brugertype
 
 
 @Bruger.egenskab_class
@@ -38,7 +50,7 @@ class BrugerEgenskab(OIOEgenskab):
 
     def __init__(self, registrering, data):
         super(BrugerEgenskab, self).__init__(registrering, data)
-        self.brugernavn = data['brugernavn'] # 0..1
+        self.brugernavn = data['brugernavn']
         self.brugertype = data.get('brugertype')
 
     @property

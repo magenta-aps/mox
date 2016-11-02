@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
 from PyOIO.OIOCommon import Virkning, OIOEntity, OIORegistrering, InvalidOIOException, requires_load
-from PyOIO.OIOCommon import OIORelation, OIORelationContainer
 from PyOIO.OIOCommon import OIOEgenskab, OIOEgenskabContainer
-from PyOIO.OIOCommon import OIOGyldighed, OIOGyldighedContainer
 
 
 class Klasse(OIOEntity):
@@ -29,7 +27,23 @@ class Klasse(OIOEntity):
 
 @Klasse.registrering_class
 class KlasseRegistrering(OIORegistrering):
-    pass
+
+    @property
+    def klassenavn(self):
+        return self.get_egenskab('klassenavn')
+
+    @property
+    def name(self):
+        return self.klassenavn
+
+    @property
+    def klassetype(self):
+        return self.get_egenskab('klassetype')
+
+    @property
+    def type(self):
+        return self.klassetype
+
 
 
 @Klasse.egenskab_class
