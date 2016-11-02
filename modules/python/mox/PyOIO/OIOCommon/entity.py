@@ -148,7 +148,7 @@ class OIORegistrering(object):
             self.to_time = parse_time(to_time)
         # self.created_by = Bruger(self.lora, data['brugerref'])
 
-        self.tilstande[self.entity.GYLDIGHED_KEY] = OIOGyldighedContainer.from_json(
+        self.gyldigheder = OIOGyldighedContainer.from_json(
             self, self.json['tilstande'][self.entity.GYLDIGHED_KEY]
         )
         self._relationer = OIORelationContainer.from_json(
@@ -181,10 +181,6 @@ class OIORegistrering(object):
     @property
     def brugervendtnoegle(self):
         return self.get_egenskab('brugervendtnoegle')
-
-    @property
-    def gyldighed(self):
-        return self.tilstande[self.entity.GYLDIGHED_KEY]
 
     @property
     def relationer(self):
