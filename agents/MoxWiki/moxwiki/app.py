@@ -8,11 +8,11 @@ from agent.config import read_properties_files, MissingConfigKeyError
 from SeMaWi import Semawi
 from PyLoRA import Lora
 from PyOIO.OIOCommon.exceptions import InvalidOIOException
-from PyOIO.organisation import ItSystem
+from PyOIO.organisation import Bruger, ItSystem
 
 DIR = os.path.dirname(os.path.realpath(__file__))
 
-from templates import ItSystemConverter, BrugerConverter
+from templates import BrugerConverter, InteressefaellesskabConverter, ItSystemConverter, OrganisationConverter, OrganisationEnhedConverter, OrganisationFunktionConverter
 
 configfile = DIR + "/settings.conf"
 config = read_properties_files("/srv/mox/mox.conf", configfile)
@@ -58,8 +58,12 @@ class MoxWiki(MessageListener):
         self.update('Itsystem', '1706778e-30ff-410a-ad31-a9bb14c6c2b5', True)
 
     convertermap = {
+        'Bruger': BrugerConverter,
         'Itsystem': ItSystemConverter,
-        'Bruger': BrugerConverter
+        'Interessefaellesskab': InteressefaellesskabConverter,
+        'Organisation': OrganisationConverter,
+        'OrganisationEnhed': OrganisationEnhedConverter,
+        'OrganisationFunktion': OrganisationFunktionConverter,
     }
 
     def callback(self, channel, method, properties, body):
