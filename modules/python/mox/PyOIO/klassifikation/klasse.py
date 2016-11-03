@@ -29,20 +29,12 @@ class Klasse(OIOEntity):
 class KlasseRegistrering(OIORegistrering):
 
     @property
-    def klassenavn(self):
-        return self.get_egenskab('klassenavn')
+    def beskrivelse(self):
+        return self.get_egenskab('beskrivelse')
 
     @property
-    def name(self):
-        return self.klassenavn
-
-    @property
-    def klassetype(self):
-        return self.get_egenskab('klassetype')
-
-    @property
-    def type(self):
-        return self.klassetype
+    def titel(self):
+        return self.get_egenskab('titel')
 
 
 
@@ -51,8 +43,10 @@ class KlasseEgenskab(OIOEgenskab):
 
     def __init__(self, registrering, data):
         super(KlasseEgenskab, self).__init__(registrering, data)
-        self.klassenavn = data.get('klassenavn') # 0..1
-        self.klassetype = data.get('klassetype') # 0..1
+        self.beskrivelse = data.get('beskrivelse')
+        self.titel = data.get('titel')
+        self.eksempel = data.get('eksempel')
+        self.omfang = data.get('omfang')
 
     @property
     def name(self):

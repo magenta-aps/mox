@@ -183,6 +183,10 @@ class OIORegistrering(object):
         return self.get_egenskab('brugervendtnoegle')
 
     @property
+    def name(self):
+        return self.brugervendtnoegle
+
+    @property
     def relationer(self):
         return self._relationer
 
