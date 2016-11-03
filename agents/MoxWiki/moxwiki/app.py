@@ -8,7 +8,7 @@ from agent.config import read_properties_files, MissingConfigKeyError
 from SeMaWi import Semawi
 from PyLoRA import Lora
 from PyOIO.OIOCommon.exceptions import InvalidOIOException
-from PyOIO.OIOCommon import OIORelation
+from PyOIO.organisation import ItSystem
 
 DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -53,6 +53,7 @@ class MoxWiki(MessageListener):
         # print "livscykluskode: %s" % self.lora.itsystemer['1706778e-30ff-410a-ad31-a9bb14c6c2b5'].current.livscykluskode
         # print "tilhoerer: %s" % self.lora.itsystemer['1706778e-30ff-410a-ad31-a9bb14c6c2b5'].current.relationer.get(OIORelation.TYPE_TILHOERER).current
         #for uuid, itsystem in self.lora.itsystemer.iteritems():
+        self.lora.load_all_of_type(ItSystem)
         print self.lora.all_items['1706778e-30ff-410a-ad31-a9bb14c6c2b5'].json
         self.update('Itsystem', '1706778e-30ff-410a-ad31-a9bb14c6c2b5', True)
 

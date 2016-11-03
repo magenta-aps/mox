@@ -61,7 +61,7 @@ class OIOEntity(object):
     def load(self):
         self._loading = True
         # print "Load %s" % self.path
-        response = requests.get(self.lora.host + self.path, headers=self.get_headers())
+        response = self.lora.request(self.lora.host + self.path, headers=self.get_headers())
         if response.status_code == 200:
             jsondata = json.loads(response.text)
             if jsondata[self.id] is None:

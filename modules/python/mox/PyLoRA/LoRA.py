@@ -3,8 +3,9 @@
 import requests
 import json
 from uuid import UUID
+from PyOIO.OIOCommon.entity import OIOEntity
 from PyOIO.organisation import Bruger, Interessefaellesskab, ItSystem, Organisation, OrganisationEnhed, OrganisationFunktion
-from PyOIO.OIOCommon.exceptions import InvalidUUIDException, InvalidObjectTypeException, TokenException, ItemNotFoundException
+from PyOIO.OIOCommon.exceptions import InvalidUUIDException, InvalidObjectTypeException, TokenException, ItemNotFoundException, RestAccessException
 
 class Lora(object):
     """A Lora object represents a single running instance of the LoRa service.
@@ -21,10 +22,14 @@ class Lora(object):
     def __init__(self, host, username, password):
         """ Args:
         host:   string - the hostname of the LoRa instance
+        username:   string - the username to authenticate as
+        password:   string - the corresponding password
         """
         self.host = host
 
-        self.token = self.get_token(username, password)
+        self.username = username
+        self.password = password
+        self.obtain_token()
         self.object_map = {
             cls.ENTITY_CLASS: cls for cls in self.objecttypes
         }
@@ -33,15 +38,18 @@ class Lora(object):
             key: {} for key in self.object_map.keys()
         }
 
-        # self.load_type(Bruger.ENTITY_CLASS)
-        self.load_type(ItSystem.ENTITY_CLASS)
+    def __repr__(self):
+        return 'Lora("%s")' % (self.host)
 
-    def get_token(self, username, password):
+    def __str__(self):
+        return 'Lora: %s' % (self.host)
+
+    def obtain_token(self):
         response = requests.post(
             self.host + "/get-token",
             data={
-                'username': username,
-                'password': password,
+                'username': self.username,
+                'password': self.password,
                 'sts': self.host + ":9443/services/wso2carbon-sts?wsdl"
             }
         )
@@ -51,34 +59,42 @@ class Lora(object):
             except ValueError:
                 errormessage = response.text
             raise TokenException(errormessage)
-
-        return response.text
+        self.token = response.text
 
     def get_headers(self):
         return {'authorization': self.token}
 
-    def load_type(self, objecttype):
+    def request(self, url, method='GET', **kwargs):
+        method = method.upper()
+        if 'headers' not in kwargs:
+            kwargs['headers'] = {}
+        kwargs['headers'].update(self.get_headers())
+        response = requests.request(method, url, **kwargs)
+        if response.status_code == 401:
+            # Token may be expired. Get a new one and try again
+            self.obtain_token()
+            kwargs['headers'].update(self.get_headers())
+            response = requests.request(method, url, **kwargs)
+            if response.status_code == 401:
+                # Failed with a new token. Bail
+                raise RestAccessException(response.text)
+        return response
+
+    def load_all_of_type(self, objecttype):
+        if issubclass(objecttype, OIOEntity):
+            objecttype = objecttype.ENTITY_CLASS
         objectclass = self.object_map[objecttype]
         url = self.host + objectclass.basepath() + "?search"
-        response = requests.get(url, headers=self.get_headers())
+        response = self.request(url, headers=self.get_headers())
         data = json.loads(response.text)
         guids = data['results'][0]
         for guid in guids:
             self.get_object(guid, objecttype, True, True)
 
-    @property
-    def itsystemer(self):
-        return self.items_by_class[ItSystem.ENTITY_CLASS]
-
-    @property
-    def brugere(self):
-        return self.items_by_class[ItSystem.ENTITY_CLASS]
-
-    def __repr__(self):
-        return 'Lora("%s")' % (self.host)
-
-    def __str__(self):
-        return 'Lora: %s' % (self.host)
+    def get_by_objecttype(self, objecttype):
+        if issubclass(objecttype, OIOEntity):
+            objecttype = objecttype.ENTITY_CLASS
+        return self.items_by_class[objecttype]
 
     def get_object(self, uuid, objecttype=None, force_refresh=False, refresh_cache=True):
         try:

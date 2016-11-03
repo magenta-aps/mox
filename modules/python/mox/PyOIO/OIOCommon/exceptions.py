@@ -1,6 +1,14 @@
+import json
+
+
+def load_json_message(message):
+    try:
+        return json.loads(message)['message']
+    except ValueError:
+        return message
+
 
 class InvalidOIOException(Exception):
-
     def __init__(self, e):
         super(InvalidOIOException, self).__init__('Invalid OIO: %s' % e)
 
@@ -17,9 +25,15 @@ class InvalidObjectTypeException(InvalidOIOException):
 
 class TokenException(Exception):
     def __init__(self, message):
-        super(TokenException, self).__init__(message)
+        super(TokenException, self).__init__(load_json_message(message))
 
 
 class ItemNotFoundException(Exception):
     def __init__(self, uuid, objecttype, url):
         super(ItemNotFoundException, self).__init__("Item %s not found as a %s (tried %s)" % (uuid, objecttype, url))
+
+
+class RestAccessException(Exception):
+    def __init__(self, message):
+        super(RestAccessException, self).__init__(load_json_message(message))
+
