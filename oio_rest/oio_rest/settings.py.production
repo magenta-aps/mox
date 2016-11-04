@@ -275,29 +275,35 @@ DATABASE_STRUCTURE = {
                                      "kopiparter", "tilknyttedesager"]
     },
 
-     "aktivitet": {
+    "aktivitet": {
         "attributter": {
             "egenskaber": [
-                "brugervendtnoegle","aktivitetnavn","beskrivelse","starttidspunkt","sluttidspunkt","tidsforbrug","formaal"]
+                "brugervendtnoegle", "aktivitetnavn", "beskrivelse",
+                "starttidspunkt", "sluttidspunkt", "tidsforbrug", "formaal"
+            ]
         },
         "attributter_type_override": {
             "egenskaber": {
                 "starttidspunkt": "timestamptz",
                 "sluttidspunkt": "timestamptz",
-                "tidsforbrug":"interval(0)"
-                }
-            },
+                "tidsforbrug": "interval(0)"
+             }
+         },
 
         "tilstande": {
-            "status": ["Inaktiv", "Aktiv","Aflyst"],
-            "publiceret": ["Publiceret", "IkkePubliceret","Normal"]
+            "status": ["Inaktiv", "Aktiv", "Aflyst"],
+            "publiceret": ["Publiceret", "IkkePubliceret", "Normal"]
         },
-        "relationer_nul_til_en": ["aktivitetstype","emne","foelsomhedklasse",
-                                "ansvarligklasse","rekvirentklasse","ansvarlig","tilhoerer" ],
-        "relationer_nul_til_mange": ["udfoererklasse","deltagerklasse","objektklasse",
-                                     "resultatklasse","grundlagklasse","facilitetklasse","adresse",
-                                     "geoobjekt","position","facilitet","lokale","aktivitetdokument",
-                                     "aktivitetgrundlag","aktivitetresultat","udfoerer","deltager"]
+        "relationer_nul_til_en": ["aktivitetstype", "emne", "foelsomhedklasse",
+                                  "ansvarligklasse", "rekvirentklasse",
+                                  "ansvarlig", "tilhoerer"],
+        "relationer_nul_til_mange": [
+            "udfoererklasse", "deltagerklasse", "objektklasse",
+            "resultatklasse", "grundlagklasse", "facilitetklasse", "adresse",
+            "geoobjekt", "position", "facilitet", "lokale",
+            "aktivitetdokument", "aktivitetgrundlag", "aktivitetresultat",
+            "udfoerer", "deltager"
+        ]
     }
 
 
