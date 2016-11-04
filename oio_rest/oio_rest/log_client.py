@@ -1,11 +1,15 @@
 from datetime import datetime
 from settings import BASE_URL
+
+import pika
+import requests
+import json
+
 # This is the URL of the RabbitMQ server to which we send the log messages.
 
-LOG_SERVICE_URL = 'http://127.0.0.15672'
 
-def log_service_call(service_name, class_name, time, operation, return_code,
-                     msg, note, user_uuid, role_uuid, object_uuid):
+def log_service_call(log_destination, service_name, class_name, time,
+                     operation, return_code, msg, note, user_uuid, role_uuid, object_uuid):
     """Log a call to a LoRa service."""
 
     # Virkning for all virkning periods.
@@ -18,7 +22,7 @@ def log_service_call(service_name, class_name, time, operation, return_code,
     }
     logevent_dict = {
         "note": BASE_URL, 
-        "attributter" {
+        "attributter": {
             "loghaendelsesegenskaber": [
                 {
                     "service": service_name, 
@@ -45,7 +49,7 @@ def log_service_call(service_name, class_name, time, operation, return_code,
                 {
                     "uuid": object_uuid,
                     "virkning": virkning
-                } if object_uuid
+                }
             ],
             "bruger": [
                 {
@@ -63,5 +67,27 @@ def log_service_call(service_name, class_name, time, operation, return_code,
     }
 
     # Get auth token if auth enabled
-    # Send AMQP message to LOG_SERVICE_URL
-½
+    pass  # Start with no authorization.    # Send AMQP message to LOG_SERVICE_URL
+
+    connection = pika.BlockingConnection(pika.ConnectionParameters(
+        host=LOG_AMQP_SERVER
+    ))
+    channel = connection.channel()
+    channel.queue_declare(queue=LOG_QUEUE, durable=True)
+
+    message = json.dumps(logevent_dict)
+    subject = "Log-besked"
+
+
+    channel.basic_publish(
+        exchange='',
+        routing_key=LOG_QUEUE,
+        body=message,
+        properties=pika.BasicProperties(
+            content_type='application/json',
+            delivery_mode=2,
+            headers={  # 'autorisation': saml_token,
+                     'operation': 'create',
+                     'objekttype': 'LogHaendelse',
+                    }
+        ))

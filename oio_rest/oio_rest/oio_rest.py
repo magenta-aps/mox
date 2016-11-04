@@ -1,6 +1,7 @@
 """Superclasses for OIO objects and object hierarchies."""
 import json
 import datetime
+import urlparse
 
 from flask import jsonify, request
 from custom_exceptions import BadRequestException
@@ -11,11 +12,37 @@ from utils.build_registration import build_registration, to_lower_param
 
 
 from authentication import requires_auth
-from log_client import log_this
+from log_client import log_service_call
 
+# TODO: Move to settings
+LOG_AMQP_SERVER = 'localhost'
+LOG_QUEUE = 'rest'
+
+SERVICE_LOG_DESTINATIONS = {
+    "Klassifikation": (LOG_AMQP_SERVER, LOG_QUEUE), 
+    "Organisation": (LOG_AMQP_SERVER, LOG_QUEUE), 
+    "Sag": (LOG_AMQP_SERVER, LOG_QUEUE), 
+    "Document": (LOG_AMQP_SERVER, LOG_QUEUE), 
+    "Log": None
+}
 
 def j(t):
     return jsonify(output=t)
+
+
+def get_service_name():
+    'Get the hierarchy of the present method call from the request URL'
+    u = urlparse.urlparse(request.url)
+    service_name = u.path[-2].capitalize()
+    return service_name
+
+
+def get_class_name():
+    'Get the hierarchy of the present method call from the request URL'
+    u = urlparse.urlparse(request.url)
+    class_name = u.path[-1].capitalize()
+    return class_name
+
 
 
 class Registration(object):
@@ -88,7 +115,6 @@ class OIORestObject(object):
 
     @classmethod
     @requires_auth
-    @log_this
     def create_object(cls):
         """
         CREATE object, generate new UUID.
@@ -113,7 +139,6 @@ class OIORestObject(object):
 
     @classmethod
     @requires_auth
-    @log_this
     def get_objects(cls):
         """
         LIST or SEARCH objects, depending on parameters.
@@ -180,7 +205,6 @@ class OIORestObject(object):
 
     @classmethod
     @requires_auth
-    @log_this
     def get_object(cls, uuid):
         """
         READ a facet, return as JSON.
@@ -216,7 +240,6 @@ class OIORestObject(object):
 
     @classmethod
     @requires_auth
-    @log_this
     def put_object(cls, uuid):
         """
         UPDATE, IMPORT or PASSIVIZE an  object.
@@ -267,7 +290,6 @@ class OIORestObject(object):
 
     @classmethod
     @requires_auth
-    @log_this
     def delete_object(cls, uuid):
         # Delete facet
         input = cls.get_json()
