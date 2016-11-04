@@ -34,7 +34,9 @@ setup(
         'psycopg2==2.6',
         'wsgiref==0.1.2',
         'python-saml==2.1.3',
-        'pexpect==3.3'
+        'pexpect==3.3',
+        'pika',
+        'requests'
     ],
     entry_points={
         # -*- Entry points: -*-
