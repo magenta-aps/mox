@@ -24,6 +24,7 @@ setup(
         'pika==0.10.0',
         'python-dateutil==2.5.3',
         'pytz==2016.7',
+        'jinja2',
 
         # These are to satisfy the requests module with SSL support
         'pyOpenSSL',
