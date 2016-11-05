@@ -6,6 +6,7 @@ from uuid import UUID
 from PyOIO.OIOCommon.entity import OIOEntity
 from PyOIO.organisation import Bruger, Interessefaellesskab, ItSystem, Organisation, OrganisationEnhed, OrganisationFunktion
 from PyOIO.OIOCommon.exceptions import InvalidUUIDException, InvalidObjectTypeException, TokenException, ItemNotFoundException, RestAccessException
+import pylru
 
 class Lora(object):
     """A Lora object represents a single running instance of the LoRa service.
@@ -33,10 +34,7 @@ class Lora(object):
         self.object_map = {
             cls.ENTITY_CLASS: cls for cls in self.objecttypes
         }
-        self.all_items = {}
-        self.items_by_class = {
-            key: {} for key in self.object_map.keys()
-        }
+        self.all_items = pylru.lrucache(10000)
 
     def __repr__(self):
         return 'Lora("%s")' % (self.host)
@@ -91,11 +89,6 @@ class Lora(object):
         for guid in guids:
             self.get_object(guid, objecttype, True, True)
 
-    def get_by_objecttype(self, objecttype):
-        if issubclass(objecttype, OIOEntity):
-            objecttype = objecttype.ENTITY_CLASS
-        return self.items_by_class[objecttype]
-
     def get_object(self, uuid, objecttype=None, force_refresh=False, refresh_cache=True):
         try:
             UUID(uuid)
@@ -123,6 +116,5 @@ class Lora(object):
 
             if refresh_cache:
                 self.all_items[uuid] = item
-                self.items_by_class[otype][uuid] = item
             return item
         print "Object %s not found" % uuid

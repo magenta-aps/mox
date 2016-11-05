@@ -25,6 +25,7 @@ setup(
         'python-dateutil==2.5.3',
         'pytz==2016.7',
         'jinja2',
+        'pylru',
 
         # These are to satisfy the requests module with SSL support
         'pyOpenSSL',

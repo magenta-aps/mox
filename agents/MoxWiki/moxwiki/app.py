@@ -42,7 +42,7 @@ class MoxWiki(MessageListener):
 
         # super(MoxWiki, self).__init__(amqp_username, amqp_password, amqp_host, amqp_queue, queue_parameters={'durable': True})
 
-        # self.semawi = Semawi(wiki_host, wiki_username, wiki_password)
+        self.semawi = Semawi(wiki_host, wiki_username, wiki_password)
         self.lora = Lora(rest_host, rest_username, rest_password)
 
         self.accepted_object_types = ['bruger', 'interessefaellesskab', 'itsystem', 'organisation', 'organisationenhed', 'organisationfunktion']
