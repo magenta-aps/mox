@@ -32,6 +32,11 @@ clearable_boolean5 ClearableBoolean;
 clearable_boolean6 ClearableBoolean;
 clearable_boolean7 ClearableBoolean;
 
+clearable_Timestamptz1 ClearableTimestamptz;
+clearable_Timestamptz2 ClearableTimestamptz;
+clearable_Timestamptz3 ClearableTimestamptz;
+clearable_Timestamptz4 ClearableTimestamptz;
+clearable_Timestamptz5 ClearableTimestamptz;
 
 BEGIN
 
@@ -75,6 +80,18 @@ RETURN NEXT ok( clearable_boolean4=false,'ClearableBoolean->boolean cast test #4
 RETURN NEXT ok( clearable_boolean5=true,'ClearableBoolean->boolean cast test #5');
 RETURN NEXT ok( clearable_boolean6 IS NULL,'ClearableBoolean->boolean cast test #6');
 RETURN NEXT ok( NOT (clearable_boolean7 IS NULL),'ClearableBoolean->boolean cast test #7');
+
+clearable_timestamptz1:= ROW ('2015-06-01 14:10'::timestamptz,true)::ClearableTimestamptz;
+clearable_timestamptz2:= ROW ('2015-07-02 08:10'::timestamptz,false)::ClearableTimestamptz;
+clearable_timestamptz3:= ROW ('2015-08-03 09:00'::timestamptz,null)::ClearableTimestamptz;
+clearable_timestamptz4:= ROW (null,null)::ClearableDate;
+
+RETURN NEXT ok(clearable_timestamptz1='2015-06-01 14:10'::timestamptz,'ClearableTimestamptz->timestamptz cast test #1');
+RETURN NEXT ok(clearable_timestamptz2='2015-07-02 08:10'::timestamptz,'ClearableTimestamptz->timestamptz cast test #2');
+RETURN NEXT ok(clearable_timestamptz3='2015-08-03 09:00'::timestamptz,'ClearableTimestamptz->timestamptz cast test #3');
+RETURN NEXT ok(clearable_timestamptz4 IS NULL,'ClearableTimestamptz->timestamptz cast test #4');
+RETURN NEXT ok(clearable_timestamptz3>'2015-08-02'::timestamptz,'ClearableTimestamptz->timestamptz cast test #5');
+RETURN NEXT ok(clearable_timestamptz3<'2015-08-04'::timestamptz,'ClearableTimestamptz->timestamptz cast test #6');
 
 /**/
 
@@ -124,6 +141,16 @@ END;
 
 /**/
 
+clearable_Timestamptz5:=(''::text)::ClearableTimestamptz;
+RETURN NEXT ok(clearable_Timestamptz5.value IS NULL AND clearable_Timestamptz5.cleared=true,'text->ClearableTimestamptz #1');
+RETURN NEXT ok( (null::text)::ClearableTimestamptz IS NULL, 'text->ClearableTimestamptz #2');
+
+BEGIN 
+clearable_Timestamptz5:=('test'::text)::ClearableTimestamptz;
+	RETURN NEXT ok(false,'text->ClearableTimestamptz #3 DOES NOT throw exception as it should');
+EXCEPTION  WHEN data_exception THEN
+	RETURN NEXT ok(true,'text->ClearableTimestamptz #3 (throws exception as it should');
+END;
 
 
 

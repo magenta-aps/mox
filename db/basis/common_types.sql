@@ -62,7 +62,10 @@ CREATE TYPE ClearableBoolean AS (
   cleared boolean
 );
 
-
+CREATE TYPE ClearableTimestamptz AS (
+  value timestamptz,
+  cleared boolean
+);
 
 CREATE OR REPLACE FUNCTION actual_state._cast_ClearableInt_to_int( clearable_int ClearableInt) 
 
@@ -283,4 +286,78 @@ END;
 $$ LANGUAGE plpgsql immutable;
 
 create cast (text as ClearableBoolean) with function actual_state._cast_text_to_ClearableBoolean(text) as implicit; 
+
+
+/**************************************************************************/
+
+CREATE OR REPLACE FUNCTION actual_state._cast_ClearableTimestamptz_to_timestamptz( clearable_timestamptz ClearableTimestamptz) 
+
+RETURNS
+timestamptz
+AS 
+$$
+DECLARE 
+BEGIN
+
+IF clearable_timestamptz IS NULL THEN
+  RETURN NULL;
+ELSE
+  RETURN clearable_timestamptz.value;
+END IF;
+
+END;
+$$ LANGUAGE plpgsql immutable;
+
+
+create cast (ClearableTimestamptz as timestamptz)  with function actual_state._cast_ClearableTimestamptz_to_timestamptz(ClearableTimestamptz) as implicit; 
+
+
+
+CREATE OR REPLACE FUNCTION actual_state._cast_timestamptz_to_ClearableTimestamptz( timestamptz_value timestamptz) 
+
+RETURNS
+ClearableTimestamptz
+AS 
+$$
+DECLARE 
+BEGIN
+
+IF timestamptz_value IS NULL THEN
+  RETURN NULL;
+ELSE
+  RETURN ROW(timestamptz_value,null)::ClearableTimestamptz;
+END IF;
+
+END;
+$$ LANGUAGE plpgsql immutable;
+
+create cast (timestamptz as ClearableTimestamptz) with function actual_state._cast_timestamptz_to_ClearableTimestamptz(timestamptz) as implicit; 
+
+
+
+
+CREATE OR REPLACE FUNCTION actual_state._cast_text_to_ClearableTimestamptz( text_value text) 
+
+RETURNS
+ClearableTimestamptz
+AS 
+$$
+DECLARE 
+BEGIN
+
+IF text_value IS NULL THEN
+  RETURN NULL;
+ELSE
+  IF text_value<>'' THEN 
+    RAISE EXCEPTION 'Unable to cast text value [%] to ClearableTimestamptz. Only empty text is allowed (or null).',text_value USING ERRCODE = 22000;
+  ELSE
+    RETURN ROW(null,true)::ClearableTimestamptz;
+  END IF;
+  
+END IF;
+
+END;
+$$ LANGUAGE plpgsql immutable;
+
+create cast (text as ClearableTimestamptz) with function actual_state._cast_text_to_ClearableTimestamptz(text) as implicit; 
 

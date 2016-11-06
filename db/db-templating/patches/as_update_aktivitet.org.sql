@@ -448,9 +448,13 @@ IF attrEgenskaber IS NOT null THEN
     coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
     coalesce(attrEgenskaberObj.aktivitetnavn,a.aktivitetnavn),
     coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
-    coalesce(attrEgenskaberObj.starttidspunkt,a.starttidspunkt),
-    coalesce(attrEgenskaberObj.sluttidspunkt,a.sluttidspunkt),
-    coalesce(attrEgenskaberObj.tidsforbrug,a.tidsforbrug),
+    CASE WHEN ((attrEgenskaberObj.starttidspunkt).cleared) THEN NULL 
+        ELSE coalesce((attrEgenskaberObj.starttidspunkt).value,a.starttidspunkt)
+        END,
+    CASE WHEN ((attrEgenskaberObj.sluttidspunkt).cleared) THEN NULL 
+        ELSE coalesce((attrEgenskaberObj.sluttidspunkt).value,a.sluttidspunkt)
+        END,
+    coalesce(attrEgenskaberObj.tidsforbrug,a.tidsforbrug), --TODO Clearable
     coalesce(attrEgenskaberObj.formaal,a.formaal),
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,

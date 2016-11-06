@@ -30,6 +30,7 @@ DECLARE
 	virkStatus1B Virkning;
 	aktivitetEgenskab aktivitetEgenskaberAttrType;
 	aktivitetEgenskab2 aktivitetEgenskaberAttrType;
+	aktivitetEgenskab2B aktivitetEgenskaberAttrType;
 	aktivitetStatus aktivitetStatusTilsType;
 	aktivitetStatus1B aktivitetStatusTilsType;
 	aktivitetPubliceret aktivitetPubliceretTilsType;
@@ -408,10 +409,23 @@ virkStatus1B,
 ;
 
 
+aktivitetEgenskab2B := ROW (
+ null, --'aktivitet_2_brugervendtnoegle',
+ null, --'aktivitet_2_aktivitetnavn',
+ null,--'aktivitet_2_beskrivelse',
+ ''::text,  --'starttidspunkt_aktivitet_1' --text
+null, --'2017-02-27 12:00'::timestamptz, -- sluttidspunkt,
+ null,-- INTERVAL '0000-00 01 04:00:01.0', --tidsforbrug
+ null--'aktivitet_2_formaal'
+,virkEgenskaber2
+) :: aktivitetEgenskaberAttrType
+;
+
+
 update_reg_id_1:=as_update_aktivitet(
   new_uuid1, '5f368584-4c3e-4ba4-837b-da2b1eee37c4'::uuid,'Test update 20'::text,
   'Rettet'::Livscykluskode,          
-  null,
+  array[aktivitetEgenskab2B]::aktivitetEgenskaberAttrType[],
    array[aktivitetStatus1B]::aktivitetStatusTilsType[],
  null,
   array[aktivitetRelUdfoerer2B,aktivitetRelUdfoerer3,aktivitetRelGeoobjekt]::AktivitetRelationType[]
@@ -455,7 +469,18 @@ expected_aktivitet1:=ROW(
 				):: aktivitetStatusTilsType
 			]::aktivitetStatusTilsType[]
 			,ARRAY[aktivitetPubliceret]::aktivitetPubliceretTilsType[]
-			,ARRAY[aktivitetEgenskab,aktivitetEgenskab2]::aktivitetEgenskaberAttrType[]
+			,ARRAY[aktivitetEgenskab,
+							ROW (
+				'aktivitet_2_brugervendtnoegle',
+				'aktivitet_2_aktivitetnavn',
+				'aktivitet_2_beskrivelse',
+				Row(null,null)::ClearableTimestamptz,  --was cleared
+				'2017-02-27 12:00'::timestamptz, -- sluttidspunkt,
+				INTERVAL '0000-00 01 04:00:01.0', --tidsforbrug
+				'aktivitet_2_formaal'
+				,virkEgenskaber2
+				) :: aktivitetEgenskaberAttrType
+			]::aktivitetEgenskaberAttrType[]
 			,ARRAY[
 					ROW ( --Notice: Was added
 						'geoobjekt'::aktivitetRelationKode

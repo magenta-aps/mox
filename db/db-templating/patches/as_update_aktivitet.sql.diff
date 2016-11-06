@@ -1,5 +1,5 @@
-*** ./generated-files/as_update_aktivitet.sql	2016-10-22 13:41:13.000000000 +0200
---- ./patches/as_update_aktivitet.org.sql	2016-10-22 13:23:37.000000000 +0200
+*** ./generated-files/as_update_aktivitet.sql	2016-11-06 20:38:27.000000000 +0100
+--- ./patches/as_update_aktivitet.org.sql	2016-11-06 20:37:22.000000000 +0100
 ***************
 *** 36,45 ****
 --- 36,50 ----
@@ -334,3 +334,36 @@
   
   END IF;
   /**********************/
+***************
+*** 362,374 ****
+    )
+    SELECT
+      coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+      coalesce(attrEgenskaberObj.aktivitetnavn,a.aktivitetnavn),
+      coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
+!     coalesce(attrEgenskaberObj.starttidspunkt,a.starttidspunkt),
+!     coalesce(attrEgenskaberObj.sluttidspunkt,a.sluttidspunkt),
+!     coalesce(attrEgenskaberObj.tidsforbrug,a.tidsforbrug),
+      coalesce(attrEgenskaberObj.formaal,a.formaal),
+  	ROW (
+  	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
+  	  (attrEgenskaberObj.virkning).AktoerRef,
+  	  (attrEgenskaberObj.virkning).AktoerTypeKode,
+--- 446,462 ----
+    )
+    SELECT
+      coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+      coalesce(attrEgenskaberObj.aktivitetnavn,a.aktivitetnavn),
+      coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
+!     CASE WHEN ((attrEgenskaberObj.starttidspunkt).cleared) THEN NULL 
+!         ELSE coalesce((attrEgenskaberObj.starttidspunkt).value,a.starttidspunkt)
+!         END,
+!     CASE WHEN ((attrEgenskaberObj.sluttidspunkt).cleared) THEN NULL 
+!         ELSE coalesce((attrEgenskaberObj.sluttidspunkt).value,a.sluttidspunkt)
+!         END,
+!     coalesce(attrEgenskaberObj.tidsforbrug,a.tidsforbrug), --TODO Clearable
+      coalesce(attrEgenskaberObj.formaal,a.formaal),
+  	ROW (
+  	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
+  	  (attrEgenskaberObj.virkning).AktoerRef,
+  	  (attrEgenskaberObj.virkning).AktoerTypeKode,
