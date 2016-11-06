@@ -454,7 +454,9 @@ IF attrEgenskaber IS NOT null THEN
     CASE WHEN ((attrEgenskaberObj.sluttidspunkt).cleared) THEN NULL 
         ELSE coalesce((attrEgenskaberObj.sluttidspunkt).value,a.sluttidspunkt)
         END,
-    coalesce(attrEgenskaberObj.tidsforbrug,a.tidsforbrug), --TODO Clearable
+    CASE WHEN ((attrEgenskaberObj.tidsforbrug).cleared) THEN NULL 
+        ELSE coalesce((attrEgenskaberObj.tidsforbrug).value,a.tidsforbrug)
+        END,
     coalesce(attrEgenskaberObj.formaal,a.formaal),
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,

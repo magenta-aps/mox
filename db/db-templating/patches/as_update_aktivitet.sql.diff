@@ -1,5 +1,5 @@
-*** ./generated-files/as_update_aktivitet.sql	2016-11-06 20:38:27.000000000 +0100
---- ./patches/as_update_aktivitet.org.sql	2016-11-06 20:37:22.000000000 +0100
+*** ./generated-files/as_update_aktivitet.sql	2016-11-06 21:21:45.000000000 +0100
+--- ./patches/as_update_aktivitet.org.sql	2016-11-06 21:20:32.000000000 +0100
 ***************
 *** 36,45 ****
 --- 36,50 ----
@@ -349,7 +349,7 @@
   	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
   	  (attrEgenskaberObj.virkning).AktoerRef,
   	  (attrEgenskaberObj.virkning).AktoerTypeKode,
---- 446,462 ----
+--- 446,464 ----
     )
     SELECT
       coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
@@ -361,7 +361,9 @@
 !     CASE WHEN ((attrEgenskaberObj.sluttidspunkt).cleared) THEN NULL 
 !         ELSE coalesce((attrEgenskaberObj.sluttidspunkt).value,a.sluttidspunkt)
 !         END,
-!     coalesce(attrEgenskaberObj.tidsforbrug,a.tidsforbrug), --TODO Clearable
+!     CASE WHEN ((attrEgenskaberObj.tidsforbrug).cleared) THEN NULL 
+!         ELSE coalesce((attrEgenskaberObj.tidsforbrug).value,a.tidsforbrug)
+!         END,
       coalesce(attrEgenskaberObj.formaal,a.formaal),
   	ROW (
   	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,

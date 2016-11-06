@@ -32,7 +32,7 @@ aktivitetnavn text,
 beskrivelse text,
 starttidspunkt ClearableTimestamptz,
 sluttidspunkt ClearableTimestamptz,
-tidsforbrug interval(0),
+tidsforbrug ClearableInterval,
 formaal text,
  virkning Virkning
 );

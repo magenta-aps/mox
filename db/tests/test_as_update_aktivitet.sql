@@ -415,7 +415,7 @@ aktivitetEgenskab2B := ROW (
  null,--'aktivitet_2_beskrivelse',
  ''::text,  --'starttidspunkt_aktivitet_1' --text
 null, --'2017-02-27 12:00'::timestamptz, -- sluttidspunkt,
- null,-- INTERVAL '0000-00 01 04:00:01.0', --tidsforbrug
+ ''::text,-- INTERVAL '0000-00 01 04:00:01.0', --tidsforbrug
  null--'aktivitet_2_formaal'
 ,virkEgenskaber2
 ) :: aktivitetEgenskaberAttrType
@@ -476,7 +476,7 @@ expected_aktivitet1:=ROW(
 				'aktivitet_2_beskrivelse',
 				Row(null,null)::ClearableTimestamptz,  --was cleared
 				'2017-02-27 12:00'::timestamptz, -- sluttidspunkt,
-				INTERVAL '0000-00 01 04:00:01.0', --tidsforbrug
+				Row(null,null)::ClearableInterval, --was cleared
 				'aktivitet_2_formaal'
 				,virkEgenskaber2
 				) :: aktivitetEgenskaberAttrType

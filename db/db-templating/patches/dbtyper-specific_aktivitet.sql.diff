@@ -1,5 +1,5 @@
-*** ./generated-files/dbtyper-specific_aktivitet.sql	2016-11-06 20:08:51.000000000 +0100
---- ./patches/dbtyper-specific_aktivitet.org.sql	2016-11-06 20:06:53.000000000 +0100
+*** ./generated-files/dbtyper-specific_aktivitet.sql	2016-11-06 21:15:33.000000000 +0100
+--- ./patches/dbtyper-specific_aktivitet.org.sql	2016-11-06 21:13:59.000000000 +0100
 ***************
 *** 28,53 ****
   
@@ -9,7 +9,7 @@
   beskrivelse text,
 ! starttidspunkt timestamptz,
 ! sluttidspunkt timestamptz,
-  tidsforbrug interval(0),
+! tidsforbrug interval(0),
   formaal text,
    virkning Virkning
   );
@@ -36,7 +36,7 @@
   beskrivelse text,
 ! starttidspunkt ClearableTimestamptz,
 ! sluttidspunkt ClearableTimestamptz,
-  tidsforbrug interval(0),
+! tidsforbrug ClearableInterval,
   formaal text,
    virkning Virkning
   );

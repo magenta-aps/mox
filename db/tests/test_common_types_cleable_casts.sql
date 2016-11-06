@@ -38,6 +38,12 @@ clearable_Timestamptz3 ClearableTimestamptz;
 clearable_Timestamptz4 ClearableTimestamptz;
 clearable_Timestamptz5 ClearableTimestamptz;
 
+clearable_interval1 ClearableInterval;
+clearable_interval2 ClearableInterval;
+clearable_interval3 ClearableInterval;
+clearable_interval4 ClearableInterval;
+clearable_interval5 ClearableInterval;
+
 BEGIN
 
 clearable_int1:= ROW (10,true)::ClearableInt;
@@ -93,6 +99,17 @@ RETURN NEXT ok(clearable_timestamptz4 IS NULL,'ClearableTimestamptz->timestamptz
 RETURN NEXT ok(clearable_timestamptz3>'2015-08-02'::timestamptz,'ClearableTimestamptz->timestamptz cast test #5');
 RETURN NEXT ok(clearable_timestamptz3<'2015-08-04'::timestamptz,'ClearableTimestamptz->timestamptz cast test #6');
 
+clearable_interval1:= ROW ('0001-00 03 00:00:02.0'::interval(0),true)::ClearableInterval;
+clearable_interval2:= ROW ('0002-00 00 00:00:00.0'::interval(0),false)::ClearableInterval;
+clearable_interval3:= ROW ('0001-02 04 00:00:00.0'::interval(0),null)::ClearableInterval;
+clearable_interval4:= ROW (null,null)::ClearableInterval;
+
+RETURN NEXT ok(clearable_Interval1='0001-00 03 00:00:02.0'::interval(0),'ClearableInterval->Interval cast test #1');
+RETURN NEXT ok(clearable_Interval2='0002-00 00 00:00:00.0'::interval(0),'ClearableInterval->Interval cast test #2');
+RETURN NEXT ok(clearable_Interval3='0001-02 04 00:00:00.0'::interval(0),'ClearableInterval->Interval cast test #3');
+RETURN NEXT ok(clearable_Interval4 IS NULL,'ClearableInterval->Interval cast test #4');
+RETURN NEXT ok(clearable_Interval3>'0000-11 04 00:00:00.0'::Interval(0),'ClearableInterval->Interval cast test #5');
+RETURN NEXT ok(clearable_Interval3<'0001-02 05 00:00:00.0'::Interval(0),'ClearableInterval->Interval cast test #6');
 /**/
 
 RETURN NEXT ok( (20::ClearableInt).value=20 and (20::ClearableInt).cleared is null ,'int->ClearableInt test #1');
@@ -152,7 +169,20 @@ EXCEPTION  WHEN data_exception THEN
 	RETURN NEXT ok(true,'text->ClearableTimestamptz #3 (throws exception as it should');
 END;
 
+/**/
 
+clearable_Interval5:=(''::text)::ClearableInterval;
+RETURN NEXT ok(clearable_Interval5.value IS NULL AND clearable_Interval5.cleared=true,'text->ClearableInterval #1');
+RETURN NEXT ok( (null::text)::ClearableInterval IS NULL, 'text->ClearableInterval #2');
+
+BEGIN 
+clearable_Interval5:=('test'::text)::ClearableInterval;
+	RETURN NEXT ok(false,'text->ClearableInterval #3 DOES NOT throw exception as it should');
+EXCEPTION  WHEN data_exception THEN
+	RETURN NEXT ok(true,'text->ClearableInterval #3 (throws exception as it should');
+END;
+
+/**/
 
 
 

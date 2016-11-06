@@ -67,6 +67,14 @@ CREATE TYPE ClearableTimestamptz AS (
   cleared boolean
 );
 
+
+CREATE TYPE ClearableInterval AS (
+  value interval(0),
+  cleared boolean
+);
+
+/****************************************/
+
 CREATE OR REPLACE FUNCTION actual_state._cast_ClearableInt_to_int( clearable_int ClearableInt) 
 
 RETURNS
@@ -361,3 +369,80 @@ $$ LANGUAGE plpgsql immutable;
 
 create cast (text as ClearableTimestamptz) with function actual_state._cast_text_to_ClearableTimestamptz(text) as implicit; 
 
+/**************************************************************************/
+
+CREATE OR REPLACE FUNCTION actual_state._cast_ClearableInterval_to_interval( clearable_interval ClearableInterval) 
+
+RETURNS
+interval(0)
+AS 
+$$
+DECLARE 
+BEGIN
+
+IF clearable_interval IS NULL THEN
+  RETURN NULL;
+ELSE
+  RETURN clearable_interval.value;
+END IF;
+
+END;
+$$ LANGUAGE plpgsql immutable;
+
+
+create cast (ClearableInterval as interval(0) )  with function actual_state._cast_ClearableInterval_to_interval(ClearableInterval) as implicit; 
+
+
+
+CREATE OR REPLACE FUNCTION actual_state._cast_interval_to_ClearableInterval( interval_value interval(0)) 
+
+RETURNS
+ClearableInterval
+AS 
+$$
+DECLARE 
+BEGIN
+
+IF interval_value IS NULL THEN
+  RETURN NULL;
+ELSE
+  RETURN ROW(interval_value,null)::ClearableInterval;
+END IF;
+
+END;
+$$ LANGUAGE plpgsql immutable;
+
+create cast (interval(0) as ClearableInterval) with function actual_state._cast_interval_to_ClearableInterval(interval) as implicit; 
+
+
+
+
+CREATE OR REPLACE FUNCTION actual_state._cast_text_to_ClearableInterval( text_value text) 
+
+RETURNS
+ClearableInterval
+AS 
+$$
+DECLARE 
+BEGIN
+
+IF text_value IS NULL THEN
+  RETURN NULL;
+ELSE
+  IF text_value<>'' THEN 
+    RAISE EXCEPTION 'Unable to cast text value [%] to ClearableInterval. Only empty text is allowed (or null).',text_value USING ERRCODE = 22000;
+  ELSE
+    RETURN ROW(null,true)::ClearableInterval;
+  END IF;
+  
+END IF;
+
+END;
+$$ LANGUAGE plpgsql immutable;
+
+create cast (text as ClearableInterval) with function actual_state._cast_text_to_ClearableInterval(text) as implicit; 
+
+
+
+
+/**************************************************************************/
