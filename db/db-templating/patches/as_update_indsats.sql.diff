@@ -1,5 +1,5 @@
-*** ./generated-files/as_update_indsats.sql	2016-10-22 14:43:22.000000000 +0200
---- ./patches/as_update_indsats.org.sql	2016-10-22 14:41:19.000000000 +0200
+*** ./generated-files/as_update_indsats.sql	2016-11-06 21:50:12.000000000 +0100
+--- ./patches/as_update_indsats.org.sql	2016-11-06 21:49:18.000000000 +0100
 ***************
 *** 36,45 ****
 --- 36,50 ----
@@ -310,3 +310,34 @@
   
   END IF;
   /**********************/
+***************
+*** 358,369 ****
+      ,indsats_registrering_id
+    )
+    SELECT
+      coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+      coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
+!     coalesce(attrEgenskaberObj.starttidspunkt,a.starttidspunkt),
+!     coalesce(attrEgenskaberObj.sluttidspunkt,a.sluttidspunkt),
+  	ROW (
+  	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
+  	  (attrEgenskaberObj.virkning).AktoerRef,
+  	  (attrEgenskaberObj.virkning).AktoerTypeKode,
+  	  (attrEgenskaberObj.virkning).NoteTekst
+--- 418,433 ----
+      ,indsats_registrering_id
+    )
+    SELECT
+      coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+      coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
+!     CASE WHEN ((attrEgenskaberObj.starttidspunkt).cleared) THEN NULL 
+!         ELSE coalesce((attrEgenskaberObj.starttidspunkt).value,a.starttidspunkt)
+!         END,
+!     CASE WHEN ((attrEgenskaberObj.sluttidspunkt).cleared) THEN NULL 
+!         ELSE coalesce((attrEgenskaberObj.sluttidspunkt).value,a.sluttidspunkt)
+!         END,
+  	ROW (
+  	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
+  	  (attrEgenskaberObj.virkning).AktoerRef,
+  	  (attrEgenskaberObj.virkning).AktoerTypeKode,
+  	  (attrEgenskaberObj.virkning).NoteTekst

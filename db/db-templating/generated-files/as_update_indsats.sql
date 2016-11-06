@@ -420,8 +420,12 @@ IF attrEgenskaber IS NOT null THEN
   SELECT
     coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
     coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
-    coalesce(attrEgenskaberObj.starttidspunkt,a.starttidspunkt),
-    coalesce(attrEgenskaberObj.sluttidspunkt,a.sluttidspunkt),
+    CASE WHEN ((attrEgenskaberObj.starttidspunkt).cleared) THEN NULL 
+        ELSE coalesce((attrEgenskaberObj.starttidspunkt).value,a.starttidspunkt)
+        END,
+    CASE WHEN ((attrEgenskaberObj.sluttidspunkt).cleared) THEN NULL 
+        ELSE coalesce((attrEgenskaberObj.sluttidspunkt).value,a.sluttidspunkt)
+        END,
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
 	  (attrEgenskaberObj.virkning).AktoerRef,

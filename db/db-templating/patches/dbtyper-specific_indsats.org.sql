@@ -29,8 +29,8 @@ CREATE TYPE IndsatsFremdriftTilsType AS (
 CREATE TYPE IndsatsEgenskaberAttrType AS (
 brugervendtnoegle text,
 beskrivelse text,
-starttidspunkt timestamptz,
-sluttidspunkt timestamptz,
+starttidspunkt ClearableTimestamptz,
+sluttidspunkt ClearableTimestamptz,
  virkning Virkning
 );
 
