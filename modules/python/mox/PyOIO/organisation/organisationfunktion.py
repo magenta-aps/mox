@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from PyOIO.OIOCommon import Virkning, OIOEntity, OIORegistrering, InvalidOIOException, requires_load
+from PyOIO.OIOCommon import OIOEntity
 
 
 class OrganisationFunktion(OIOEntity):

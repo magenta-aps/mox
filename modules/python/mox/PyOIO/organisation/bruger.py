@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from PyOIO.OIOCommon import Virkning, OIOEntity, OIORegistrering
+from PyOIO.OIOCommon import OIOEntity
 
 
 class Bruger(OIOEntity):
