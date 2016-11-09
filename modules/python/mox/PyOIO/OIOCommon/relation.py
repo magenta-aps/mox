@@ -1,4 +1,3 @@
-from virkning import Virkning
 from data import Item, ItemContainer
 
 class OIORelationContainer(object):
@@ -24,6 +23,18 @@ class OIORelationContainer(object):
 
     def get(self, key, default=None):
         return self.items.get(key, default)
+
+    def __getattr__(self, name):
+        if name in OIORelation.types:
+            map = {}
+            for relation in self.get(name):
+                if relation.item:
+                    entity_class = relation.item.ENTITY_CLASS
+                    if entity_class not in map:
+                        map[entity_class] = []
+                    map[entity_class].append(relation.item)
+            return map
+
 
 class OIORelation(Item):
 

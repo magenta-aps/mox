@@ -12,6 +12,7 @@ class Bruger(OIOEntity):
     ENTITY_CLASS = 'Bruger'
     EGENSKABER_KEY = 'brugeregenskaber'
     GYLDIGHED_KEY = 'brugergyldighed'
+    basepath = '/organisation/bruger'
 
     def __init__(self, lora, id):
         """ Args:
@@ -19,10 +20,6 @@ class Bruger(OIOEntity):
         ID:     string - the GUID uniquely representing the Bruger
         """
         super(Bruger, self).__init__(lora, id)
-
-    @staticmethod
-    def basepath():
-        return "/organisation/bruger"
 
 
 @Bruger.registrering_class

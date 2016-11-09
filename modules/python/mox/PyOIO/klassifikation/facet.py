@@ -12,6 +12,7 @@ class Facet(OIOEntity):
     ENTITY_CLASS = 'Facet'
     EGENSKABER_KEY = 'facetegenskaber'
     GYLDIGHED_KEY = 'facetgyldighed'
+    basepath = '/klassifikation/facet'
 
     def __init__(self, lora, id):
         """ Args:
@@ -19,10 +20,6 @@ class Facet(OIOEntity):
         ID:     string - the GUID uniquely representing the Facet
         """
         super(Facet, self).__init__(lora, id)
-
-    @staticmethod
-    def basepath():
-        return "/klassifikation/facet"
 
 
 @Facet.registrering_class

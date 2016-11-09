@@ -12,6 +12,7 @@ class Organisation(OIOEntity):
     ENTITY_CLASS = 'Organisation'
     EGENSKABER_KEY = 'organisationegenskaber'
     GYLDIGHED_KEY = 'organisationgyldighed'
+    basepath = '/organisation/organisation'
 
     def __init__(self, lora, id):
         """ Args:
@@ -19,10 +20,6 @@ class Organisation(OIOEntity):
         ID:     string - the GUID uniquely representing the Organisation
         """
         super(Organisation, self).__init__(lora, id)
-
-    @staticmethod
-    def basepath():
-        return "/organisation/organisation"
 
 
 @Organisation.registrering_class

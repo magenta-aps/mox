@@ -50,13 +50,9 @@ class OIOEntity(object):
         egenskab_class._entity_class = cls
         return egenskab_class
 
-    @staticmethod
-    def basepath():
-        raise NotImplementedError
-
     @property
     def path(self):
-        return "%s/%s" % (self.basepath(), self.id)
+        return "%s/%s" % (self.basepath, self.id)
 
     def load(self):
         self._loading = True
@@ -172,6 +168,18 @@ class OIORegistrering(object):
     def in_effect(self, time):
         return self.from_time < time and time < self.to_time
 
+    def get_gyldighed(self, time=None):
+        if time is None:
+            return self.gyldigheder.current.gyldighed
+        else:
+            gyldighed_items = self.gyldigheder.at(time)
+            if len(gyldighed_items):
+                return gyldighed_items[0]
+
+    @property
+    def gyldighed(self):
+        return self.get_gyldighed()
+
     def get_egenskab(self, name, must_be_current=True):
         egenskaber = self.egenskaber.current if must_be_current else self.egenskaber
         for egenskab in egenskaber:
@@ -190,15 +198,6 @@ class OIORegistrering(object):
     def relationer(self):
         return self._relationer
 
-    def tilhoerer(self, entity_class=None):
-        tilhoerer = self.relationer.get(OIORelation.TYPE_TILHOERER).current
-        return [
-            relation.item
-            for relation in tilhoerer
-            if relation.item is not None and
-            (entity_class is None or relation.item.ENTITY_CLASS == entity_class)
-        ]
-
     @property
     def before(self):
         return self.entity.before(self)
@@ -206,3 +205,7 @@ class OIORegistrering(object):
     @property
     def after(self):
         return self.entity.after(self)
+
+    def __getattr__(self, item):
+        if item in OIORelation.types:
+            return getattr(self._relationer, item)

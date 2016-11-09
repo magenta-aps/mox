@@ -82,7 +82,7 @@ class Lora(object):
         if issubclass(objecttype, OIOEntity):
             objecttype = objecttype.ENTITY_CLASS
         objectclass = self.object_map[objecttype]
-        url = self.host + objectclass.basepath() + "?search"
+        url = self.host + objectclass.basepath + "?search"
         response = self.request(url, headers=self.get_headers())
         data = json.loads(response.text)
         guids = data['results'][0]

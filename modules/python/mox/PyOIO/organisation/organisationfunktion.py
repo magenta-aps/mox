@@ -12,6 +12,7 @@ class OrganisationFunktion(OIOEntity):
     ENTITY_CLASS = 'OrganisationFunktion'
     EGENSKABER_KEY = 'organisationfunktionegenskaber'
     GYLDIGHED_KEY = 'organisationfunktiongyldighed'
+    basepath = '/organisation/organisationfunktion'
 
     def __init__(self, lora, id):
         """ Args:
@@ -26,10 +27,6 @@ class OrganisationFunktion(OIOEntity):
         for index, registrering in enumerate(self.json['registreringer']):
             self.registreringer.append(OrganisationFunktionRegistrering(self, index, registrering))
         self.loaded()
-
-    @staticmethod
-    def basepath():
-        return "/organisation/organisationfunktion"
 
 
 @OrganisationFunktion.registrering_class

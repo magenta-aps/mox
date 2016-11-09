@@ -12,6 +12,7 @@ class Klasse(OIOEntity):
     ENTITY_CLASS = 'Klasse'
     EGENSKABER_KEY = 'klasseegenskaber'
     GYLDIGHED_KEY = 'klassegyldighed'
+    basepath = '/klassifikation/klasse'
 
     def __init__(self, lora, id):
         """ Args:
@@ -19,10 +20,6 @@ class Klasse(OIOEntity):
         ID:     string - the GUID uniquely representing the Klasse
         """
         super(Klasse, self).__init__(lora, id)
-
-    @staticmethod
-    def basepath():
-        return "/klassifikation/klasse"
 
 
 @Klasse.registrering_class

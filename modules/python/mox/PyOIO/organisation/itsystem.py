@@ -17,6 +17,7 @@ class ItSystem(OIOEntity):
     ENTITY_CLASS = 'Itsystem'
     EGENSKABER_KEY = 'itsystemegenskaber'
     GYLDIGHED_KEY = 'itsystemgyldighed'
+    basepath = '/organisation/itsystem'
 
     def __init__(self, lora, id):
         """
@@ -25,10 +26,6 @@ class ItSystem(OIOEntity):
         ID:     string - the GUID uniquely representing the ItSystem
         """
         super(ItSystem, self).__init__(lora, id)
-
-    @staticmethod
-    def basepath():
-        return "/organisation/itsystem"
 
 
 @ItSystem.registrering_class

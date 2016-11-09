@@ -12,6 +12,7 @@ class Interessefaellesskab(OIOEntity):
     ENTITY_CLASS = 'Interessefaellesskab'
     EGENSKABER_KEY = 'interessefaellesskabegenskaber'
     GYLDIGHED_KEY = 'interessefaellesskabgyldighed'
+    basepath = '/organisation/interessefaellesskab'
 
     def __init__(self, lora, id):
         """ Args:
@@ -26,10 +27,6 @@ class Interessefaellesskab(OIOEntity):
         for index, registrering in enumerate(self.json['registreringer']):
             self.registreringer.append(InteressefaellesskabRegistrering(self, index, registrering))
         self.loaded()
-
-    @staticmethod
-    def basepath():
-        return "/organisation/interessefaellesskab"
 
 
 @Interessefaellesskab.registrering_class
