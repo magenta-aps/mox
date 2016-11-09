@@ -14,15 +14,13 @@ class Klassifikation(OIOEntity):
     GYLDIGHED_KEY = 'klassifikationgyldighed'
     basepath = '/klassifikation/klassifikation'
 
-    egenskaber_keys = ['klassifikationkaldenavn', 'klassifikationbeskrivelse', 'klassifikationophavsret']
+    egenskaber_keys = OIOEntity.egenskaber_keys + ['klassifikationkaldenavn', 'klassifikationbeskrivelse', 'klassifikationophavsret']
+    name_key = 'klassifikationkaldenavn'
 
 
 @Klassifikation.registrering_class
 class KlassifikationRegistrering(OIORegistrering):
-
-    @property
-    def name(self):
-        return self.klassifikationkaldenavn
+    pass
 
 
 @Klassifikation.egenskab_class

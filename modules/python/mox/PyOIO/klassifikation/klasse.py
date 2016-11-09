@@ -14,7 +14,8 @@ class Klasse(OIOEntity):
     GYLDIGHED_KEY = 'klassegyldighed'
     basepath = '/klassifikation/klasse'
 
-    egenskaber_keys = ['klassebeskrivelse', 'klassetitel', 'klasseeksempel', 'klasseomfang', 'aendringsnotat', 'retskilde']
+    egenskaber_keys = OIOEntity.egenskaber_keys + ['klassebeskrivelse', 'klassetitel', 'klasseeksempel', 'klasseomfang', 'aendringsnotat', 'retskilde']
+    name_key = 'klassetitel'
 
 
 @Klasse.registrering_class

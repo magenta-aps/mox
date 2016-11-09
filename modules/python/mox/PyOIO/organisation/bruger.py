@@ -14,19 +14,14 @@ class Bruger(OIOEntity):
     GYLDIGHED_KEY = 'brugergyldighed'
     basepath = '/organisation/bruger'
 
-    egenskaber_keys = ['brugernavn', 'brugertype']
+    egenskaber_keys = OIOEntity.egenskaber_keys + ['brugernavn', 'brugertype']
+    name_key = 'brugernavn'
+    type_key = 'brugertype'
 
 
 @Bruger.registrering_class
 class BrugerRegistrering(OIORegistrering):
-
-    @property
-    def name(self):
-        return self.brugernavn
-
-    @property
-    def type(self):
-        return self.brugertype
+    pass
 
 
 @Bruger.egenskab_class

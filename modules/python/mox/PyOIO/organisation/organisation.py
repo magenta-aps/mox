@@ -14,15 +14,13 @@ class Organisation(OIOEntity):
     GYLDIGHED_KEY = 'organisationgyldighed'
     basepath = '/organisation/organisation'
 
-    egenskaber_keys = ['organisationsnavn']
+    egenskaber_keys = OIOEntity.egenskaber_keys + ['organisationsnavn']
+    name_key = 'organisationsnavn'
 
 
 @Organisation.registrering_class
 class OrganisationRegistrering(OIORegistrering):
-
-    @property
-    def name(self):
-        return self.organisationsnavn
+    pass
 
 
 @Organisation.egenskab_class

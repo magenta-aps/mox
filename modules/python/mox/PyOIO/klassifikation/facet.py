@@ -14,35 +14,12 @@ class Facet(OIOEntity):
     GYLDIGHED_KEY = 'facetgyldighed'
     basepath = '/klassifikation/facet'
 
-    egenskaber_keys = ['facetbeskrivelse', 'facetplan', 'facetopbygning', 'facetophavsret', 'facetsupplement', 'retskilde']
+    egenskaber_keys = OIOEntity.egenskaber_keys + ['facetbeskrivelse', 'facetplan', 'facetopbygning', 'facetophavsret', 'facetsupplement', 'retskilde']
 
 
 @Facet.registrering_class
 class FacetRegistrering(OIORegistrering):
-
-    @property
-    def facetbeskrivelse(self):
-        return self.get_egenskab('facetbeskrivelse')
-
-    @property
-    def facetplan(self):
-        return self.get_egenskab('facetplan')
-
-    @property
-    def facetopbygning(self):
-        return self.get_egenskab('facetopbygning')
-
-    @property
-    def facetophavsret(self):
-        return self.get_egenskab('facetophavsret')
-
-    @property
-    def facetsupplement(self):
-        return self.get_egenskab('facetsupplement')
-
-    @property
-    def retskilde(self):
-        return self.get_egenskab('retskilde')
+    pass
 
 
 @Facet.egenskab_class

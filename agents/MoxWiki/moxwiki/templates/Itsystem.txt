@@ -1,6 +1,6 @@
 {{ begin }}System
 |Navn={{ object.current.brugervendtnoegle }}
-|ITsystemNavn={{ object.current.itsystemnavn }}
+|ITsystemNavn={{ object.current.name }}
 |Konfigurationsreference={{ object.current.konfigurationreference }}
 |It-systemtype={{ object.current.itsystemtype }}
 |Nummer={{ object.id }}

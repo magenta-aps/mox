@@ -22,6 +22,9 @@ class OIOEntity(object):
     EGENSKABER_KEY = 'egenskaber'
     GYLDIGHED_KEY = 'gyldighed'
 
+    egenskaber_keys = ['brugervendtnoegle']
+    name_key = 'brugervendtnoegle'
+
     _registrering_class = None
 
     def __init__(self, lora, id):
@@ -187,12 +190,13 @@ class OIORegistrering(object):
                 return getattr(egenskab, name)
 
     @property
-    def brugervendtnoegle(self):
-        return self.get_egenskab('brugervendtnoegle')
+    def name(self):
+        return getattr(self, self.entity.name_key, None)
 
     @property
-    def name(self):
-        return self.brugervendtnoegle
+    def type(self):
+        if hasattr(self.entity, 'type_key'):
+            return getattr(self, self.entity.type_key, None)
 
     @property
     def relationer(self):
@@ -207,9 +211,7 @@ class OIORegistrering(object):
         return self.entity.after(self)
 
     def __getattr__(self, name):
-        print name
         if name in OIORelation.types:
             return getattr(self._relationer, name)
-
         if name in self.entity.egenskaber_keys:
             return self.get_egenskab(name)

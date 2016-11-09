@@ -19,7 +19,9 @@ class ItSystem(OIOEntity):
     GYLDIGHED_KEY = 'itsystemgyldighed'
     basepath = '/organisation/itsystem'
 
-    egenskaber_keys = ['itsystemnavn', 'itsystemtype', 'konfigurationreference']
+    egenskaber_keys = OIOEntity.egenskaber_keys + ['itsystemnavn', 'itsystemtype', 'konfigurationreference']
+    name_key = 'itsystemnavn'
+    type_key = 'itsystemtype'
 
 
 @ItSystem.registrering_class
@@ -33,16 +35,7 @@ class ItSystemRegistrering(OIORegistrering):
 
     The ItSystem class will contain a list of 1..N of these.
     """
-
-    # ---- Egenskaber ----
-
-    @property
-    def name(self):
-        return self.itsystemnavn
-
-    @property
-    def type(self):
-        return self.itsystemtype
+    pass
 
 
 @ItSystem.egenskab_class
