@@ -13,14 +13,11 @@ class OrganisationFunktion(OIOEntity):
     EGENSKABER_KEY = 'organisationfunktionegenskaber'
     GYLDIGHED_KEY = 'organisationfunktiongyldighed'
     basepath = '/organisation/organisationfunktion'
+    egenskaber_keys = ['funktionsnavn']
 
 
 @OrganisationFunktion.registrering_class
 class OrganisationFunktionRegistrering(OIORegistrering):
-
-    @property
-    def funktionsnavn(self):
-        return self.get_egenskab('funktionsnavn')
 
     @property
     def name(self):

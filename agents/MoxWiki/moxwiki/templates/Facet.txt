@@ -10,5 +10,5 @@
 |Ejer={{ object.current.ejer.Aktoer.current.brugervendtnoegle }}
 |Ansvarlig={{ object.current.ansvarlig.Aktoer.current.brugervendtnoegle }}
 |Redaktoer={{ object.current.redaktoer.Aktoer.current.brugervendtnoegle }}
-|FacetTilhoer={{ object.current.facettilhoer.Klassifikation }}
+|FacetTilhoer={{ object.current.facettilhoer.Klassifikation }
 {{ end }}

@@ -14,6 +14,8 @@ class OrganisationEnhed(OIOEntity):
     GYLDIGHED_KEY = 'organisationenhedgyldighed'
     basepath = '/organisation/organisationenhed'
 
+    egenskaber_keys = ['enhedsnavn']
+
 
 @OrganisationEnhed.registrering_class
 class OrganisationEnhedRegistrering(OIORegistrering):

@@ -14,6 +14,8 @@ class Facet(OIOEntity):
     GYLDIGHED_KEY = 'facetgyldighed'
     basepath = '/klassifikation/facet'
 
+    egenskaber_keys = ['facetbeskrivelse', 'facetplan', 'facetopbygning', 'facetophavsret', 'facetsupplement', 'retskilde']
+
 
 @Facet.registrering_class
 class FacetRegistrering(OIORegistrering):

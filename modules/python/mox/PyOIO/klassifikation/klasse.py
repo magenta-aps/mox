@@ -14,34 +14,12 @@ class Klasse(OIOEntity):
     GYLDIGHED_KEY = 'klassegyldighed'
     basepath = '/klassifikation/klasse'
 
+    egenskaber_keys = ['klassebeskrivelse', 'klassetitel', 'klasseeksempel', 'klasseomfang', 'aendringsnotat', 'retskilde']
+
 
 @Klasse.registrering_class
 class KlasseRegistrering(OIORegistrering):
-
-    @property
-    def klassebeskrivelse(self):
-        return self.get_egenskab('klassebeskrivelse')
-
-    @property
-    def klassetitel(self):
-        return self.get_egenskab('klassetitel')
-
-    @property
-    def klasseeksempel(self):
-        return self.get_egenskab('klasseeksempel')
-
-    @property
-    def klasseomfang(self):
-        return self.get_egenskab('klasseomfang')
-
-    @property
-    def aendringsnotat(self):
-        return self.get_egenskab('aendringsnotat')
-
-    @property
-    def retskilde(self):
-        return self.get_egenskab('retskilde')
-
+    pass
 
 
 @Klasse.egenskab_class

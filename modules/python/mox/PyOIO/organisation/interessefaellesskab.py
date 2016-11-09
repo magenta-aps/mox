@@ -14,21 +14,15 @@ class Interessefaellesskab(OIOEntity):
     GYLDIGHED_KEY = 'interessefaellesskabgyldighed'
     basepath = '/organisation/interessefaellesskab'
 
+    egenskaber_keys = ['interessefaellesskabsnavn', 'interessefaellesskabstype']
+
 
 @Interessefaellesskab.registrering_class
 class InteressefaellesskabRegistrering(OIORegistrering):
 
     @property
-    def interessefaellesskabsnavn(self):
-        return self.get_egenskab('interessefaellesskabsnavn')
-
-    @property
     def name(self):
         return self.interessefaellesskabsnavn
-
-    @property
-    def interessefaellesskabstype(self):
-        return self.get_egenskab('interessefaellesskabstype')
 
     @property
     def type(self):

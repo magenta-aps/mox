@@ -27,7 +27,7 @@ class OIORelationContainer(object):
     def __getattr__(self, name):
         if name in OIORelation.types:
             map = {}
-            for relation in self.get(name):
+            for relation in self.get(name, []):
                 if relation.item:
                     entity_class = relation.item.ENTITY_CLASS
                     if entity_class not in map:

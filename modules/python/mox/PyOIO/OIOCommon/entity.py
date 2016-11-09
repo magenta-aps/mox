@@ -206,6 +206,10 @@ class OIORegistrering(object):
     def after(self):
         return self.entity.after(self)
 
-    def __getattr__(self, item):
-        if item in OIORelation.types:
-            return getattr(self._relationer, item)
+    def __getattr__(self, name):
+        print name
+        if name in OIORelation.types:
+            return getattr(self._relationer, name)
+
+        if name in self.entity.egenskaber_keys:
+            return self.get_egenskab(name)
