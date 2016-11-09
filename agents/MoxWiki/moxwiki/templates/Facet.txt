@@ -1,0 +1,14 @@
+{{ begin }}Facet
+|Navn={{ object.current.brugervendtnoegle }}
+|Beskrivelse={{ object.current.facetbeskrivelse }}
+|Publiceret={{ object.current.publiceret }}
+|Nummer={{ object.current.facetplan }}
+|Opbygning={{ object.current.facetopbygning }}
+|Ophavsret={{ object.current.facetophavsret }}
+|Supplement={{ object.current.facetsupplement }}
+|Retskilde={{ object.current.retskilde }}
+|Ejer={{ object.current.ejer.Aktoer.current.brugervendtnoegle }}
+|Ansvarlig={{ object.current.ansvarlig.Aktoer.current.brugervendtnoegle }}
+|Redaktoer={{ object.current.redaktoer.Aktoer.current.brugervendtnoegle }}
+|FacetTilhoer={{ object.current.facettilhoer.Klassifikation }}
+{{ end }}

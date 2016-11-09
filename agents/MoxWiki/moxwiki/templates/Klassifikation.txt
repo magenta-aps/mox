@@ -1,0 +1,10 @@
+{{ begin }}Klassifikation
+|Navn={{ object.current.brugervendtnoegle }}
+|KlassifikationKaldenavn={{ object.current.klassifikationkaldenavn }}
+|Beskrivelse={{ object.current.klassifikationbeskrivelse }}
+|Ophavsret={{ object.current.klassifikationophavsret }}
+|Nummer={{ object.uuid }}
+|Publiceret={{ object.current.Publiceret }}
+|Ejer={{ object.current.ejer.Aktoer.current.brugervendtnoegle }}
+|Ansvarlig={{ object.current.Ansvarlig.Aktoer.current.brugervendtnoegle }}
+{{ end }}

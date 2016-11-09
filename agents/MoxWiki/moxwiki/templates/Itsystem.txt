@@ -1,4 +1,4 @@
-System
+{{ begin }}System
 |Navn={{ object.current.brugervendtnoegle }}
 |ITsystemNavn={{ object.current.itsystemnavn }}
 |Konfigurationsreference={{ object.current.konfigurationreference }}
@@ -6,14 +6,14 @@ System
 |Nummer={{ object.id }}
 |Gyldighed={{ object.current.gyldighed }}
 |Tilhører={{ object.current.tilhoerer.Organisation.0.current.brugervendtnoegle }}
-|TilknyttedeOrganisationer={{ object.current.TilknyttedeOrganisationer.Organisation.0.current.brugervendtnoegle }}
-|TilknyttedeEnheder={{ object.current.TilknyttedeEnheder.OrganisationEnhed.0.current.brugervendtnoegle }}
-|TilknyttedeFunktioner={{ object.current.OrganisatoriskFunktionsType.OrganisationFunktion.0.current.brugervendtnoegle }}
-|Interessefællesskaber={{ object.current.TilknyttedeInteressefaellesskaber.Interessefaellesskab.current.brugervendtnoegle }}
-|ItSystemer={{ object.current.TilknyttedeItSystemer.ItSystem.0.current.brugervendtnoegle }}
-|TilknyttedeBrugere={{ object.current.TilknyttedeBrugere.Bruger.0.current.brugervendtnoegle }}
-
-|TilknyttedePersoner= object.current.TilknyttedePersoner. Person) > .current. > gældende egenskab > brugervendtnoegle
-|Opgaver= object.current.Opgaver. Klasse) > .current. > gældende egenskab > brugervendtnoegle
-|Systemtype= object.current.Systemtyper. Klasse) > .current. > gældende egenskab > brugervendtnoegle
-|Adresser= object.current.Adresse. Adresse) > .current. > gældende egenskab > brugervendtnoegle
+|TilknyttedeOrganisationer={{ object.current.tilknyttedeorganisationer.Organisation.0.current.brugervendtnoegle }}
+|TilknyttedeEnheder={{ object.current.tilknyttedeenheder.OrganisationEnhed.0.current.brugervendtnoegle }}
+|TilknyttedeFunktioner={{ object.current.organisatoriskfunktionstype.OrganisationFunktion.0.current.brugervendtnoegle }}
+|Interessefællesskaber={{ object.current.tilknyttedeinteressefaellesskaber.Interessefaellesskab.current.brugervendtnoegle }}
+|ItSystemer={{ object.current.tilknyttedeitsystemer.ItSystem.0.current.brugervendtnoegle }}
+|TilknyttedeBrugere={{ object.current.tilknyttedebrugere.Bruger.0.current.brugervendtnoegle }}
+|TilknyttedePersoner={{ object.current.tilknyttedepersoner.Person.current.brugervendtnoegle }}
+|Opgaver={{ object.current.opgaver.Klasse.current.brugervendtnoegle }}
+|Systemtype={{ object.current.systemtyper.Klasse.current.brugervendtnoegle }}
+|Adresser={{ object.current.adresse.Adresse.current.brugervendtnoegle }}
+{{ end }}

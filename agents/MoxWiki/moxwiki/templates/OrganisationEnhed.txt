@@ -1,22 +1,22 @@
-OrganisationEnhed
-|Nummer={{object.id}}
-|Status=
-|Ejer={{object.current.tilhoerer}}
-|Administrator=
-|Budgetansvarlig=
-|Målgruppe=
-|MålgruppeOE=
-|Leverandør=
-|Driftsleverandør=
-|Driftsplacering=
-|PersonfølsomInfo=
-|AnmeldtDatatilsynet=
-|PersonfølsomType=
-|Afhængigheder=
-|IDMVenligt=
-|Dokumentation=
-|KLE=
-|URL=
-|Geodata=
-|SystemImplementsPrinciples=
-|AarligeOmkostninger=
+{{ begin }}OrganisationEnhed
+|Navn={{ object.current.brugervendtnoegle }}
+|EnhedsNavn={{ object.current.enhedsnavn }}
+|Nummer={{ object.uuid }}
+|Gyldighed={{ object.current.gyldighed }}
+|Tilhører={{ object.current.tilhoerer.Organisation.current.brugervendtnoegle }}
+|TilknyttedeOrganisationer={{ object.current.tilknyttedeorganisationer.Organisation.current.brugervendtnoegle }}
+|Overordnet={{ object.current.overordnet.OrgEnhed.current.brugervendtnoegle }}
+|TilknyttedeEnheder={{ object.current.tilknyttedeenheder.OrganisationEnhed.current.brugervendtnoegle }}
+|Funktioner={{ object.current.tilknyttedefunktioner.OrganisationFunktion.current.brugervendtnoegle }}
+|ItSystemer={{ object.current.tilknyttedeitsystemer.ItSystem.current.brugervendtnoegle }}
+|Interessefællesskaber={{ object.current.tilknyttedeinteressefaellesskaber.Interessefaellesskab.current.brugervendtnoegle }}
+|Brugere={{ object.current.tilknyttedebrugere.Bruger.current.brugervendtnoegle }}
+|Produktionsenhed={{ object.current.produktionsenhed.Virksomhed.current.brugervendtnoegle }}
+|Skattenhed={{ object.current.skatteenhed.Virksomhed.current.brugervendtnoegle }}
+|Ansatte={{ object.current.ansatte.Person.current.brugervendtnoegle }}
+|TilknyttedePersoner={{ object.current.tilknyttedepersoner.Person.current.brugervendtnoegle }}
+|Branche={{ object.current.branche.Klasse.current.brugervendtnoegle }}
+|Opgaver={{ object.current.opgaver.Klasse.current.brugervendtnoegle }}
+|Adresser={{ object.current.adresse.Adresse.current.brugervendtnoegle }}
+|Enhedstype={{ object.current.enhedstype.Klasse.current.brugervendtnoegle }}
+{{ end }}

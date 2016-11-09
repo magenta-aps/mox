@@ -12,17 +12,7 @@ class Klassifikation(OIOEntity):
     ENTITY_CLASS = 'Klassifikation'
     EGENSKABER_KEY = 'klassifikationegenskaber'
     GYLDIGHED_KEY = 'klassifikationgyldighed'
-
-    def __init__(self, lora, id):
-        """ Args:
-        lora:   Lora - the Lora handler object
-        ID:     string - the GUID uniquely representing the Klasse
-        """
-        super(Klassifikation, self).__init__(lora, id)
-
-    @staticmethod
-    def basepath():
-        return "/klassifikation/klassifikation"
+    basepath = '/klassifikation/klassifikation'
 
 
 @Klassifikation.registrering_class

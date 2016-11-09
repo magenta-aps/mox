@@ -1,22 +1,25 @@
-Organisation
-|Nummer={{object.id}}
-|Status=
-|Ejer={{object.current.tilhoerer}}
-|Administrator=
-|Budgetansvarlig=
-|Målgruppe=
-|MålgruppeOE=
-|Leverandør=
-|Driftsleverandør=
-|Driftsplacering=
-|PersonfølsomInfo=
-|AnmeldtDatatilsynet=
-|PersonfølsomType=
-|Afhængigheder=
-|IDMVenligt=
-|Dokumentation=
-|KLE=
-|URL=
-|Geodata=
-|SystemImplementsPrinciples=
-|AarligeOmkostninger=
+{{ begin }}Organisation
+|Navn={{ object.current.brugervendtnoegle }}
+|OrganisationsNavn={{ object.current.organisationsnavn }}
+|Nummer={{ object.id }}
+|Gyldighed={{ object.current.gyldighed }}
+|Tilhører={{ object.current.tilhoerer.Organisation.0.current.brugervendtnoegle }}
+|TilknyttedeOrganisationer={{ object.current.tilknyttedeorganisationer.Organisation.current.brugervendtnoegle }}
+|Overordnet={{ object.current.overordnet.OrganisationEnhed.current.brugervendtnoegle }}
+|Enheder={{ object.current.tilknyttedeenheder.OrganisationEnhed.current.brugervendtnoegle }}
+|Funktioner={{ object.current.tilknyttedefunktioner.OrganisationFunktion.current.brugervendtnoegle }}
+|ItSystemer={{ object.current.tilknyttedeitsystemer.ItSystem.current.brugervendtnoegle }}
+|TilknyttedeBrugere={{ object.current.tilknyttedebrugere.Bruger.current.brugervendtnoegle }}
+|Interessefællesskaber={{ object.current.tilknyttedeinteressefaellesskaber.Interessefaellesskab.current.brugervendtnoegle }}
+|Skattenhed={{ object.current.skatteenhed.Virksomhed.current.brugervendtnoegle }}
+|Virksomhed={{ object.current.virksomhed.Virksomhed.current.brugervendtnoegle }}
+|Produktionsenhed={{ object.current.produktionsenhed.Virksomhed.current.brugervendtnoegle }}
+|Myndighed={{ object.current.myndighed.Myndighed.current.brugervendtnoegle }}
+|Ansatte={{ object.current.ansatte.Person.current.brugervendtnoegle }}
+|TilknyttedePersoner={{ object.current.tilknyttedepersoner.Person.current.brugervendtnoegle }}
+|Branche={{ object.current.branche.Klasse.current.brugervendtnoegle }}
+|Opgaver={{ object.current.opgaver.Klasse.current.brugervendtnoegle }}
+|Adresser={{ object.current.adresse.Adresse.current.brugervendtnoegle }}
+|Myndighedstype={{ object.current.myndighedstype.Klasse.current.brugervendtnoegle }}
+|Virksomhedstype={{ object.current.virksomhedstype.Klasse.current.brugervendtnoegle }}
+{{ end }}

@@ -1,22 +1,19 @@
-Interessefaellesskab
-|Nummer={{object.id}}
-|Status=
-|Ejer={{object.current.tilhoerer}}
-|Administrator=
-|Budgetansvarlig=
-|Målgruppe=
-|MålgruppeOE=
-|Leverandør=
-|Driftsleverandør=
-|Driftsplacering=
-|PersonfølsomInfo=
-|AnmeldtDatatilsynet=
-|PersonfølsomType=
-|Afhængigheder=
-|IDMVenligt=
-|Dokumentation=
-|KLE=
-|URL=
-|Geodata=
-|SystemImplementsPrinciples=
-|AarligeOmkostninger=
+{{ begin }}Interessefællesskab
+|Navn={{ object.current.brugervendtnoegle }}
+|InteressefællesskabsNavn={{ object.current.funktionsnavn }}
+|Nummer={{ object.id }}
+|Gyldighed={{ object.current.gyldighed }}
+|Tilhører={{ object.current.tilhoerer.Organisation.current.brugervendtnoegle }}
+|Overordnet={{ object.current.overordnet.OrganisationEnhed.current.brugervendtnoegle }}
+|TilknyttedeOrganisationer={{ object.current.tilknyttedeorganisationer.Organisation.current.brugervendtnoegle }}
+|TilknyttedeEnheder={{ object.current.tilknyttedeenheder.OrganisationEnhed.current.brugervendtnoegle }}
+|TilknyttedeFunktioner={{ object.current.organisatoriskfunktionstype.OrganisationFunktion.current.brugervendtnoegle }}
+|ItSystemer={{ object.current.tilknyttedeitsystemer.ItSystem.current.brugervendtnoegle }}
+|Interessefællesskaber={{ object.current.tilknyttedeinteressefaellesskaber.Interessefaellesskab.current.brugervendtnoegle }}
+|TilknyttedeBrugere={{ object.current.tilknyttedebrugere.Bruger.current.brugervendtnoegle }}
+|TilknyttedePersoner={{ object.current.tilknyttedepersoner.Person.current.brugervendtnoegle }}
+|Branche={{ object.current.branche.Klasse.current.brugervendtnoegle }}
+|Opgaver={{ object.current.opgaver.Klasse.current.brugervendtnoegle }}
+|InteressefællesskabsType={{ object.current.interessefaellesskabstype.Klasse.current.brugervendtnoegle }}
+|Adresser={{ object.current.adresse.Adresse.current.brugervendtnoegle }}
+{{ end }}

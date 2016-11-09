@@ -15,14 +15,6 @@ class OrganisationEnhed(OIOEntity):
     basepath = '/organisation/organisationenhed'
 
 
-    def load(self):
-        super(OrganisationEnhed, self).load()
-        self.registreringer = []
-        for index, registrering in enumerate(self.json['registreringer']):
-            self.registreringer.append(OrganisationEnhedRegistrering(self, index, registrering))
-        self.loaded()
-
-
 @OrganisationEnhed.registrering_class
 class OrganisationEnhedRegistrering(OIORegistrering):
 

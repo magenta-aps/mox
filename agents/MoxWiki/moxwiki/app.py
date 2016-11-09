@@ -93,7 +93,7 @@ class MoxWiki(MessageListener):
         if template is None:
             raise TemplateNotFoundException("%s.txt" % objecttype)
 
-        pagetext = template.render({'object': instance})
+        pagetext = template.render({'object': instance, 'begin': '{{', 'end': '}}'})
         print pagetext
 
         # if pagetext != page.text():
