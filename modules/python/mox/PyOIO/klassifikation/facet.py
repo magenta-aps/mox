@@ -14,13 +14,6 @@ class Facet(OIOEntity):
     GYLDIGHED_KEY = 'facetgyldighed'
     basepath = '/klassifikation/facet'
 
-    def __init__(self, lora, id):
-        """ Args:
-        lora:   Lora - the Lora handler object
-        ID:     string - the GUID uniquely representing the Facet
-        """
-        super(Facet, self).__init__(lora, id)
-
 
 @Facet.registrering_class
 class FacetRegistrering(OIORegistrering):

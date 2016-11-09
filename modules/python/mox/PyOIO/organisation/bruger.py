@@ -14,13 +14,6 @@ class Bruger(OIOEntity):
     GYLDIGHED_KEY = 'brugergyldighed'
     basepath = '/organisation/bruger'
 
-    def __init__(self, lora, id):
-        """ Args:
-        lora:   Lora - the Lora handler object
-        ID:     string - the GUID uniquely representing the Bruger
-        """
-        super(Bruger, self).__init__(lora, id)
-
 
 @Bruger.registrering_class
 class BrugerRegistrering(OIORegistrering):

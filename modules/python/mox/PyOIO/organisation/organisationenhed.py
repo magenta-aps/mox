@@ -14,12 +14,6 @@ class OrganisationEnhed(OIOEntity):
     GYLDIGHED_KEY = 'organisationenhedgyldighed'
     basepath = '/organisation/organisationenhed'
 
-    def __init__(self, lora, id):
-        """ Args:
-        lora:   Lora - the Lora handler object
-        ID:     string - the GUID uniquely representing the OrganisationEnhed
-        """
-        super(OrganisationEnhed, self).__init__(lora, id)
 
     def load(self):
         super(OrganisationEnhed, self).load()

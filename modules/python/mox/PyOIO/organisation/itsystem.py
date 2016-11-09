@@ -19,14 +19,6 @@ class ItSystem(OIOEntity):
     GYLDIGHED_KEY = 'itsystemgyldighed'
     basepath = '/organisation/itsystem'
 
-    def __init__(self, lora, id):
-        """
-        Arguments:
-        lora:   Lora - the Lora handler object
-        ID:     string - the GUID uniquely representing the ItSystem
-        """
-        super(ItSystem, self).__init__(lora, id)
-
 
 @ItSystem.registrering_class
 class ItSystemRegistrering(OIORegistrering):

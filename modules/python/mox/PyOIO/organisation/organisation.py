@@ -14,13 +14,6 @@ class Organisation(OIOEntity):
     GYLDIGHED_KEY = 'organisationgyldighed'
     basepath = '/organisation/organisation'
 
-    def __init__(self, lora, id):
-        """ Args:
-        lora:   Lora - the Lora handler object
-        ID:     string - the GUID uniquely representing the Organisation
-        """
-        super(Organisation, self).__init__(lora, id)
-
 
 @Organisation.registrering_class
 class OrganisationRegistrering(OIORegistrering):

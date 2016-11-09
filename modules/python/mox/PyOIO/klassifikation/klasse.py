@@ -14,13 +14,6 @@ class Klasse(OIOEntity):
     GYLDIGHED_KEY = 'klassegyldighed'
     basepath = '/klassifikation/klasse'
 
-    def __init__(self, lora, id):
-        """ Args:
-        lora:   Lora - the Lora handler object
-        ID:     string - the GUID uniquely representing the Klasse
-        """
-        super(Klasse, self).__init__(lora, id)
-
 
 @Klasse.registrering_class
 class KlasseRegistrering(OIORegistrering):

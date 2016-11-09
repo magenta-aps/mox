@@ -14,20 +14,6 @@ class Interessefaellesskab(OIOEntity):
     GYLDIGHED_KEY = 'interessefaellesskabgyldighed'
     basepath = '/organisation/interessefaellesskab'
 
-    def __init__(self, lora, id):
-        """ Args:
-        lora:   Lora - the Lora handler object
-        ID:     string - the GUID uniquely representing the Interessefaellesskab
-        """
-        super(Interessefaellesskab, self).__init__(lora, id)
-
-    def load(self):
-        super(Interessefaellesskab, self).load()
-        self.registreringer = []
-        for index, registrering in enumerate(self.json['registreringer']):
-            self.registreringer.append(InteressefaellesskabRegistrering(self, index, registrering))
-        self.loaded()
-
 
 @Interessefaellesskab.registrering_class
 class InteressefaellesskabRegistrering(OIORegistrering):
