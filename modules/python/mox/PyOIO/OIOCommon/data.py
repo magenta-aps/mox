@@ -8,6 +8,10 @@ class Item(object):
     def __init__(self, registrering, data):
         self.registrering = registrering
         self.virkning = Virkning(data['virkning'])
+        self._data = data
+
+    def get(self, name, default=None):
+        return self._data.get(name, default)
 
 
 class ItemContainer(list):

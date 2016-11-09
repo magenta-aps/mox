@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from PyOIO.OIOCommon import Virkning, OIOEntity, OIORegistrering, InvalidOIOException, requires_load
-from PyOIO.OIOCommon import OIOEgenskab, OIOEgenskabContainer
 
 
 class Klasse(OIOEntity):
@@ -16,25 +15,3 @@ class Klasse(OIOEntity):
 
     egenskaber_keys = OIOEntity.egenskaber_keys + ['klassebeskrivelse', 'klassetitel', 'klasseeksempel', 'klasseomfang', 'aendringsnotat', 'retskilde']
     name_key = 'klassetitel'
-
-
-@Klasse.registrering_class
-class KlasseRegistrering(OIORegistrering):
-    pass
-
-
-@Klasse.egenskab_class
-class KlasseEgenskab(OIOEgenskab):
-
-    def __init__(self, registrering, data):
-        super(KlasseEgenskab, self).__init__(registrering, data)
-        self.klassebeskrivelse = data.get('klassebeskrivelse')
-        self.klassetitel = data.get('klassetitel')
-        self.klasseeksempel = data.get('klasseeksempel')
-        self.klasseomfang = data.get('klasseomfang')
-        self.aendringsnotat = data.get('aendringsnotat')
-        self.retskilde = data.get('retskilde')
-
-    @property
-    def name(self):
-        return self.klassenavn

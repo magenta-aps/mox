@@ -15,6 +15,10 @@ class OIOEgenskab(Item):
     def __str__(self):
         return '%sEgenskab: %s "%s - %s"' % (self.registrering.entity.ENTITY_CLASS, self.registrering.entity.ENTITY_CLASS, self.brugervendtnoegle, self.name)
 
+    def __getattr__(self, name):
+        if name in self.registrering.entity.egenskaber_keys:
+            return self.get(name)
+
 
 class OIOEgenskabContainer(ItemContainer):
 

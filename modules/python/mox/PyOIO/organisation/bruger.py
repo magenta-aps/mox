@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from PyOIO.OIOCommon import Virkning, OIOEntity, OIORegistrering
-from PyOIO.OIOCommon import OIOEgenskab, OIOEgenskabContainer
 
 
 class Bruger(OIOEntity):
@@ -17,21 +16,3 @@ class Bruger(OIOEntity):
     egenskaber_keys = OIOEntity.egenskaber_keys + ['brugernavn', 'brugertype']
     name_key = 'brugernavn'
     type_key = 'brugertype'
-
-
-@Bruger.registrering_class
-class BrugerRegistrering(OIORegistrering):
-    pass
-
-
-@Bruger.egenskab_class
-class BrugerEgenskab(OIOEgenskab):
-
-    def __init__(self, registrering, data):
-        super(BrugerEgenskab, self).__init__(registrering, data)
-        self.brugernavn = data['brugernavn']
-        self.brugertype = data.get('brugertype')
-
-    @property
-    def name(self):
-        return self.brugernavn

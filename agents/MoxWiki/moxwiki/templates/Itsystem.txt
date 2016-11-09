@@ -12,7 +12,7 @@
 |Interessefællesskaber={{ object.current.tilknyttedeinteressefaellesskaber.Interessefaellesskab.current.brugervendtnoegle }}
 |ItSystemer={{ object.current.tilknyttedeitsystemer.ItSystem.0.current.brugervendtnoegle }}
 |TilknyttedeBrugere={{ object.current.tilknyttedebrugere.Bruger.0.current.brugervendtnoegle }}
-|TilknyttedePersoner={{ object.current.tilknyttedepersoner.Person.current.brugervendtnoegle }}
+|TilknyttedePersoner={{ object.current.tilkyttedepersoner.Person.current.brugervendtnoegle }}
 |Opgaver={{ object.current.opgaver.Klasse.current.brugervendtnoegle }}
 |Systemtype={{ object.current.systemtyper.Klasse.current.brugervendtnoegle }}
 |Adresser={{ object.current.adresse.Adresse.current.brugervendtnoegle }}

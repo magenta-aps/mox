@@ -8,7 +8,7 @@ from PyOIO.OIOCommon.exceptions import ItemNotFoundException, InvalidOIOExceptio
 
 from PyOIO.OIOCommon.gyldighed import OIOGyldighedContainer
 from PyOIO.OIOCommon.relation import OIORelationContainer
-from PyOIO.OIOCommon.egenskab import OIOEgenskabContainer
+from PyOIO.OIOCommon.egenskab import OIOEgenskabContainer, OIOEgenskab
 
 def requires_load(func):
     def func_wrapper(self, *args, **kwargs):
@@ -26,6 +26,7 @@ class OIOEntity(object):
     name_key = 'brugervendtnoegle'
 
     _registrering_class = None
+    _egenskab_class = OIOEgenskab
 
     def __init__(self, lora, id):
         self.id = id

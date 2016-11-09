@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from PyOIO.OIOCommon import Virkning, OIOEntity, OIORegistrering, InvalidOIOException, requires_load
-from PyOIO.OIOCommon import OIOEgenskab, OIOEgenskabContainer
 
 
 class OrganisationEnhed(OIOEntity):
@@ -16,21 +15,3 @@ class OrganisationEnhed(OIOEntity):
 
     egenskaber_keys = OIOEntity.egenskaber_keys + ['enhedsnavn']
     name_key = 'enhedsnavn'
-
-
-@OrganisationEnhed.registrering_class
-class OrganisationEnhedRegistrering(OIORegistrering):
-    pass
-
-
-@OrganisationEnhed.egenskab_class
-class OrganisationEnhedEgenskab(OIOEgenskab):
-
-    def __init__(self, registrering, data):
-        super(OrganisationEnhedEgenskab, self).__init__(registrering, data)
-        self.enhedsnavn = data.get('enhedsnavn')
-
-    @property
-    def name(self):
-        return self.enhedsnavn
-
