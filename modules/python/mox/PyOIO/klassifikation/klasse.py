@@ -19,12 +19,28 @@ class Klasse(OIOEntity):
 class KlasseRegistrering(OIORegistrering):
 
     @property
-    def beskrivelse(self):
-        return self.get_egenskab('beskrivelse')
+    def klassebeskrivelse(self):
+        return self.get_egenskab('klassebeskrivelse')
 
     @property
-    def titel(self):
-        return self.get_egenskab('titel')
+    def klassetitel(self):
+        return self.get_egenskab('klassetitel')
+
+    @property
+    def klasseeksempel(self):
+        return self.get_egenskab('klasseeksempel')
+
+    @property
+    def klasseomfang(self):
+        return self.get_egenskab('klasseomfang')
+
+    @property
+    def aendringsnotat(self):
+        return self.get_egenskab('aendringsnotat')
+
+    @property
+    def retskilde(self):
+        return self.get_egenskab('retskilde')
 
 
 
@@ -33,10 +49,12 @@ class KlasseEgenskab(OIOEgenskab):
 
     def __init__(self, registrering, data):
         super(KlasseEgenskab, self).__init__(registrering, data)
-        self.beskrivelse = data.get('beskrivelse')
-        self.titel = data.get('titel')
-        self.eksempel = data.get('eksempel')
-        self.omfang = data.get('omfang')
+        self.klassebeskrivelse = data.get('klassebeskrivelse')
+        self.klassetitel = data.get('klassetitel')
+        self.klasseeksempel = data.get('klasseeksempel')
+        self.klasseomfang = data.get('klasseomfang')
+        self.aendringsnotat = data.get('aendringsnotat')
+        self.retskilde = data.get('retskilde')
 
     @property
     def name(self):

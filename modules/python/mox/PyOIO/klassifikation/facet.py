@@ -19,8 +19,28 @@ class Facet(OIOEntity):
 class FacetRegistrering(OIORegistrering):
 
     @property
-    def beskrivelse(self):
-        return self.get_egenskab('beskrivelse')
+    def facetbeskrivelse(self):
+        return self.get_egenskab('facetbeskrivelse')
+
+    @property
+    def facetplan(self):
+        return self.get_egenskab('facetplan')
+
+    @property
+    def facetopbygning(self):
+        return self.get_egenskab('facetopbygning')
+
+    @property
+    def facetophavsret(self):
+        return self.get_egenskab('facetophavsret')
+
+    @property
+    def facetsupplement(self):
+        return self.get_egenskab('facetsupplement')
+
+    @property
+    def retskilde(self):
+        return self.get_egenskab('retskilde')
 
 
 @Facet.egenskab_class
@@ -28,4 +48,9 @@ class FacetEgenskab(OIOEgenskab):
 
     def __init__(self, registrering, data):
         super(FacetEgenskab, self).__init__(registrering, data)
-        self.beskrivelse = data.get('beskrivelse')
+        self.facetbeskrivelse = data.get('facetbeskrivelse')
+        self.facetplan = data.get('facetplan')
+        self.facetopbygning = data.get('facetopbygning')
+        self.facetophavsret = data.get('facetophavsret')
+        self.facetsupplement = data.get('facetsupplement')
+        self.retskilde = data.get('retskilde')

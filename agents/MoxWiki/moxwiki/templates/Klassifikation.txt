@@ -3,8 +3,8 @@
 |KlassifikationKaldenavn={{ object.current.klassifikationkaldenavn }}
 |Beskrivelse={{ object.current.klassifikationbeskrivelse }}
 |Ophavsret={{ object.current.klassifikationophavsret }}
-|Nummer={{ object.uuid }}
-|Publiceret={{ object.current.Publiceret }}
+|Nummer={{ object.id }}
+|Publiceret={{ object.current.publiceret }}
 |Ejer={{ object.current.ejer.Aktoer.current.brugervendtnoegle }}
-|Ansvarlig={{ object.current.Ansvarlig.Aktoer.current.brugervendtnoegle }}
+|Ansvarlig={{ object.current.ansvarlig.Aktoer.current.brugervendtnoegle }}
 {{ end }}

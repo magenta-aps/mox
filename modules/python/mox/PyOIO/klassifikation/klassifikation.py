@@ -19,19 +19,19 @@ class Klassifikation(OIOEntity):
 class KlassifikationRegistrering(OIORegistrering):
 
     @property
-    def kaldenavn(self):
+    def klassifikationkaldenavn(self):
         return self.get_egenskab('kaldenavn')
 
     @property
     def name(self):
-        return self.kaldenavn
+        return self.klassifikationkaldenavn
 
     @property
-    def beskrivelse(self):
+    def klassifikationbeskrivelse(self):
         return self.get_egenskab('beskrivelse')
 
     @property
-    def ophavsret(self):
+    def klassifikationophavsret(self):
         return self.get_egenskab('ophavsret')
 
 
@@ -40,10 +40,10 @@ class KlassifikationEgenskab(OIOEgenskab):
 
     def __init__(self, registrering, data):
         super(KlassifikationEgenskab, self).__init__(registrering, data)
-        self.kaldenavn = data.get('kaldenavn')
-        self.beskrivelse = data.get('beskrivelse')
-        self.ophavsret = data.get('ophavsret')
+        self.klassifikationkaldenavn = data.get('klassifikationkaldenavn')
+        self.klassifikationbeskrivelse = data.get('klassifikationbeskrivelse')
+        self.klassifikationophavsret = data.get('klassifikationophavsret')
 
     @property
     def name(self):
-        return self.klassenavn
+        return self.klassifikationkaldenavn

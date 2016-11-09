@@ -13,7 +13,7 @@
 |Kategori={{ object.current.soegeordskategori }}
 |Ejer={{ object.current.ejer.Aktoer.current.brugervendtnoegle }}
 |Ansvarlig={{ object.current.ansvarlig.Aktoer.current.brugervendtnoegle }}
-|Redaktoerer={{ object.current.redAktoer.Aktoer.current.brugervendtnoegle }}
+|Redaktoerer={{ object.current.redaktoer.Aktoer.current.brugervendtnoegle }}
 |Overordnet={{ object.current.overordnet.Klasse.current.brugervendtnoegle }}
 |Sideordnet={{ object.current.sideordnet.Klasse.current.brugervendtnoegle }}
 |Mapninger={{ object.current.mapninger.Klasse.current.brugervendtnoegle }}

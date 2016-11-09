@@ -1,7 +1,7 @@
 {{ begin }}OrganisationEnhed
 |Navn={{ object.current.brugervendtnoegle }}
 |EnhedsNavn={{ object.current.enhedsnavn }}
-|Nummer={{ object.uuid }}
+|Nummer={{ object.id }}
 |Gyldighed={{ object.current.gyldighed }}
 |Tilhører={{ object.current.tilhoerer.Organisation.current.brugervendtnoegle }}
 |TilknyttedeOrganisationer={{ object.current.tilknyttedeorganisationer.Organisation.current.brugervendtnoegle }}

@@ -1,7 +1,7 @@
 {{ begin }}Organisatorisk funktion
 |Navn={{ object.current.brugervendtnoegle }}
 |FunktionsNavn={{ object.current.funktionsnavn }}
-|Nummer={{ object.uuid }}
+|Nummer={{ object.id }}
 |Gyldighed={{ object.current.gyldighed }}
 |TilknyttedeOrganisationer={{ object.current.tilknyttedeorganisationer.Organisation.current.brugervendtnoegle }}
 |TilknyttedeEnheder={{ object.current.tilknyttedeenheder.OrganisationEnhed.current.brugervendtnoegle }}
