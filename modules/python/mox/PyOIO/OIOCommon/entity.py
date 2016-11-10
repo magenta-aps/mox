@@ -24,6 +24,7 @@ class OIOEntity(object):
 
     egenskaber_keys = ['brugervendtnoegle']
     name_key = 'brugervendtnoegle'
+    relation_map = {}
 
     _registrering_class = None
     _egenskab_class = OIOEgenskab
@@ -212,7 +213,7 @@ class OIORegistrering(object):
         return self.entity.after(self)
 
     def __getattr__(self, name):
-        if name in OIORelation.types:
+        if name in self.entity.relation_map.keys():
             return getattr(self._relationer, name)
         if name in self.entity.egenskaber_keys:
             return self.get_egenskab(name)

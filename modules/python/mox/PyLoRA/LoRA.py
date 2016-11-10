@@ -5,6 +5,7 @@ import json
 from uuid import UUID
 from PyOIO.OIOCommon.entity import OIOEntity
 from PyOIO.organisation import Bruger, Interessefaellesskab, ItSystem, Organisation, OrganisationEnhed, OrganisationFunktion
+from PyOIO.klassifikation import Facet, Klasse, Klassifikation
 from PyOIO.OIOCommon.exceptions import InvalidUUIDException, InvalidObjectTypeException, TokenException, ItemNotFoundException, RestAccessException
 import pylru
 
@@ -17,7 +18,10 @@ class Lora(object):
         ItSystem,
         Organisation,
         OrganisationEnhed,
-        OrganisationFunktion
+        OrganisationFunktion,
+        Facet,
+        Klasse,
+        Klassifikation
     ]
 
     def __init__(self, host, username, password):
@@ -104,6 +108,9 @@ class Lora(object):
             objecttype = [objecttype]
 
         for otype in objecttype:
+
+            print "get object of type %s" % otype
+
             if otype not in self.object_map.keys():
                 raise InvalidObjectTypeException(otype)
 

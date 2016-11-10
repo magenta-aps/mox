@@ -16,3 +16,11 @@ class Interessefaellesskab(OIOEntity):
     egenskaber_keys = OIOEntity.egenskaber_keys + ['interessefaellesskabsnavn', 'interessefaellesskabstype']
     name_key = 'interessefaellesskabsnavn'
     type_key = 'interessefaellesskabstype'
+
+    relation_keys = [
+        'adresser', 'branche', 'interessefaellesskabstype' 'opgaver',
+        'overordnet', 'systemtyper', 'tilhoerer',
+        'tilknyttedebrugere', 'tilknyttedeenheder', 'tilknyttedefunktioner',
+        'tilknyttedeinteressefaellesskaber', 'tilknyttedeitsystemer',
+        'tilknyttedeorganisationer', 'tilknyttedepersoner'
+    ]

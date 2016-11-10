@@ -15,3 +15,12 @@ class OrganisationEnhed(OIOEntity):
 
     egenskaber_keys = OIOEntity.egenskaber_keys + ['enhedsnavn']
     name_key = 'enhedsnavn'
+
+    relation_keys = [
+        'adresser', 'ansatte', 'branche', 'enhedstype', 'opgaver', 'overordnet',
+        'produktionsenhed', 'skatteenhed', 'tilhoerer',
+        'tilknyttedeorganisationer', 'tilknyttedeenheder',
+        'tilknyttedefunktioner', 'tilknyttedebrugere',
+        'tilknyttedeinteressefaellesskaber', 'tilknyttedeitsystemer',
+        'tilknyttedepersoner'
+    ]

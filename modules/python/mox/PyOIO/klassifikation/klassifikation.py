@@ -15,3 +15,4 @@ class Klassifikation(OIOEntity):
 
     egenskaber_keys = OIOEntity.egenskaber_keys + ['klassifikationkaldenavn', 'klassifikationbeskrivelse', 'klassifikationophavsret']
     name_key = 'klassifikationkaldenavn'
+

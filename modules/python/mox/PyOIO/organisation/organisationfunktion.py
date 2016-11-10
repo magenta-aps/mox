@@ -15,3 +15,10 @@ class OrganisationFunktion(OIOEntity):
 
     egenskaber_keys = OIOEntity.egenskaber_keys + ['funktionsnavn']
     name_key = 'funktionsnavn'
+
+    relation_keys = [
+        'adresser', 'opgaver', 'organisatoriskfunktionstype',
+        'tilknyttedebrugere', 'tilknyttedeenheder',
+        'tilknyttedeorganisationer', 'tilknyttedeinteressefaellesskaber',
+        'tilknyttedeitsystemer', 'tilknyttedepersoner'
+    ]

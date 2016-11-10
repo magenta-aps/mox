@@ -16,3 +16,11 @@ class ItSystem(OIOEntity):
     egenskaber_keys = OIOEntity.egenskaber_keys + ['itsystemnavn', 'itsystemtype', 'konfigurationreference']
     name_key = 'itsystemnavn'
     type_key = 'itsystemtype'
+
+    relation_keys = [
+        'adresser', 'opgaver', 'systemtyper', 'tilhoerer',
+        'tilknyttedeorganisationer', 'tilknyttedeenheder',
+        'tilknyttedefunktioner', 'tilknyttedebrugere',
+        'tilknyttedeinteressefaellesskaber', 'tilknyttedeitsystemer',
+        'tilknyttedepersoner'
+    ]

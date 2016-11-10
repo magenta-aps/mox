@@ -15,3 +15,8 @@ class Klasse(OIOEntity):
 
     egenskaber_keys = OIOEntity.egenskaber_keys + ['klassebeskrivelse', 'klassetitel', 'klasseeksempel', 'klasseomfang', 'aendringsnotat', 'retskilde']
     name_key = 'klassetitel'
+
+    relation_keys = [
+        'ansvarlig', 'ejer', 'erstatter', 'facet', 'lovligekombinationer'
+        'mapninger', 'overordnet', 'redaktoerer', 'sideordnede', 'tilfoejelser'
+    ]

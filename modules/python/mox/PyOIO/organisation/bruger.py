@@ -16,3 +16,10 @@ class Bruger(OIOEntity):
     egenskaber_keys = OIOEntity.egenskaber_keys + ['brugernavn', 'brugertype']
     name_key = 'brugernavn'
     type_key = 'brugertype'
+
+    relation_keys = [
+        'adresser', 'brugertyper', 'opgaver','tilhoerer',
+        'tilknyttedeorganisationer', 'tilknyttedeenheder',
+        'tilknyttedefunktioner', 'tilknyttedeinteressefaellesskaber',
+        'tilknyttedeitsystemer', 'tilknyttedepersoner'
+    ]
