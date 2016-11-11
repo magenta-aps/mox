@@ -1,3 +1,4 @@
+{% import "__common__.txt" as common %}
 {{ begin }}Facet
 |Navn={{ object.current.brugervendtnoegle }}
 |Beskrivelse={{ object.current.facetbeskrivelse }}
@@ -7,8 +8,8 @@
 |Ophavsret={{ object.current.facetophavsret }}
 |Supplement={{ object.current.facetsupplement }}
 |Retskilde={{ object.current.retskilde }}
-|Ejer={{ object.current.ejer.Aktoer.current.brugervendtnoegle }}
-|Ansvarlig={{ object.current.ansvarlig.Aktoer.current.brugervendtnoegle }}
-|Redaktoer={{ object.current.redaktoer.Aktoer.current.brugervendtnoegle }}
-|FacetTilhoer={{ object.current.facettilhoer.Klassifikation }
+|Ejer={{ common.bvnlist(object.current.ejer) }}
+|Ansvarlig={{ common.bvnlist(object.current.ansvarlig) }}
+|Redaktoer={{ common.bvnlist(object.current.redaktoer) }}
+|FacetTilhoer={{ common.bvnlist(bject.current.facettilhoer) }}
 {{ end }}

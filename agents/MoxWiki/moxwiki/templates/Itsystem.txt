@@ -1,3 +1,4 @@
+{% import "__common__.txt" as common %}
 {{ begin }}System
 |Navn={{ object.current.brugervendtnoegle }}
 |ITsystemNavn={{ object.current.name }}
@@ -5,15 +6,15 @@
 |It-systemtype={{ object.current.itsystemtype }}
 |Nummer={{ object.id }}
 |Gyldighed={{ object.current.gyldighed }}
-|Tilhører={{ object.current.tilhoerer.0.current.brugervendtnoegle }}
-|TilknyttedeOrganisationer={{ object.current.tilknyttedeorganisationer.0.current.brugervendtnoegle }}
-|TilknyttedeEnheder={{ object.current.tilknyttedeenheder.0.current.brugervendtnoegle }}
-|TilknyttedeFunktioner={{ object.current.organisatoriskfunktionstype.0.current.brugervendtnoegle }}
-|Interessefællesskaber={{ object.current.tilknyttedeinteressefaellesskaber.current.brugervendtnoegle }}
-|ItSystemer={{ object.current.tilknyttedeitsystemer.0.current.brugervendtnoegle }}
-|TilknyttedeBrugere={{ object.current.tilknyttedebrugere.0.current.brugervendtnoegle }}
-|TilknyttedePersoner={{ object.current.tilkyttedepersoner.current.brugervendtnoegle }}
-|Opgaver={{ object.current.opgaver.current.brugervendtnoegle }}
-|Systemtype={{ object.current.systemtyper.current.brugervendtnoegle }}
-|Adresser={{ object.current.adresse.current.brugervendtnoegle }}
+|Tilhører={{ common.bvnlist(object.current.tilhoerer) }}
+|TilknyttedeOrganisationer={{ common.bvnlist(object.current.tilknyttedeorganisationer) }}
+|TilknyttedeEnheder={{ common.bvnlist(object.current.tilknyttedeenheder) }}
+|TilknyttedeFunktioner={{ common.bvnlist(object.current.tilknyttedefunktioner) }}
+|Interessefællesskaber={{ common.bvnlist(object.current.tilknyttedeinteressefaellesskaber) }}
+|ItSystemer={{ common.bvnlist(object.current.tilknyttedeitsystemer) }}
+|TilknyttedeBrugere={{ common.bvnlist(object.current.tilknyttedebrugere) }}
+|TilknyttedePersoner={{ common.bvnlist(object.current.tilknyttedepersoner) }}
+|Opgaver={{ common.bvnlist(object.current.opgaver) }}
+|Systemtype={{ common.bvnlist(object.current.systemtyper) }}
+|Adresser={{ common.bvnlist(object.current.adresser) }}
 {{ end }}

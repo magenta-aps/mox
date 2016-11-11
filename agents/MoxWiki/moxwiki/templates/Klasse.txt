@@ -1,3 +1,4 @@
+{% import "__common__.txt" as common %}
 {{ begin }}Klasse
 |Navn={{ object.current.brugervendtnoegle }}
 |Beskrivelse={{ object.current.klassebeskrivelse }}
@@ -11,14 +12,14 @@
 |Søgeordet={{ object.current.soegordidentifikator }}
 |Beskrivelse={{ object.current.soegeordsbeskrivelse }}
 |Kategori={{ object.current.soegeordskategori }}
-|Ejer={{ object.current.ejer.Aktoer.current.brugervendtnoegle }}
-|Ansvarlig={{ object.current.ansvarlig.Aktoer.current.brugervendtnoegle }}
-|Redaktoerer={{ object.current.redaktoer.Aktoer.current.brugervendtnoegle }}
-|Overordnet={{ object.current.overordnet.Klasse.current.brugervendtnoegle }}
-|Sideordnet={{ object.current.sideordnet.Klasse.current.brugervendtnoegle }}
-|Mapninger={{ object.current.mapninger.Klasse.current.brugervendtnoegle }}
-|Tilfoejelser={{ object.current.tilfoejelser.Klasse.current.brugervendtnoegle }}
-|Erstatter={{ object.current.erstatter.Klasse.current.brugervendtnoegle }}
-|LovligeKombinationer={{ object.current.lovligekombinationer.Klasse.current.brugervendtnoegle }}
-|FacetTilhoersforhold={{ object.current.facettilhoer.Klassifikation.current.brugervendtnoegle }}
+|Ejer={{ common.bvnlist(object.current.ejer) }}
+|Ansvarlig={{ common.bvnlist(object.current.ansvarlig) }}
+|Redaktoerer={{ common.bvnlist(object.current.redaktoer) }}
+|Overordnet={{ common.bvnlist(object.current.overordnet) }}
+|Sideordnet={{ common.bvnlist(object.current.sideordnet) }}
+|Mapninger={{ common.bvnlist(object.current.mapninger) }}
+|Tilfoejelser={{ common.bvnlist(object.current.tilfoejelser) }}
+|Erstatter={{ common.bvnlist(object.current.erstatter) }}
+|LovligeKombinationer={{ common.bvnlist(object.current.lovligekombinationer) }}
+|FacetTilhoersforhold={{ common.bvnlist(object.current.facettilhoer) }}
 {{ end }}

@@ -1,15 +1,16 @@
+{% import "__common__.txt" as common %}
 {{ begin }}Organisatorisk funktion
 |Navn={{ object.current.brugervendtnoegle }}
 |FunktionsNavn={{ object.current.funktionsnavn }}
 |Nummer={{ object.id }}
 |Gyldighed={{ object.current.gyldighed }}
-|TilknyttedeOrganisationer={{ object.current.tilknyttedeorganisationer.Organisation.current.brugervendtnoegle }}
-|TilknyttedeEnheder={{ object.current.tilknyttedeenheder.OrganisationEnhed.current.brugervendtnoegle }}
-|ItSystemer={{ object.current.tilknyttedeitsystemer.ItSystem.current.brugervendtnoegle }}
-|Interessefællesskaber={{ object.current.tilknyttedeinteressefaellesskaber.Interessefaellesskab.current.brugervendtnoegle }}
-|TilknyttedeBrugere={{ object.current.tilknyttedebrugere.Bruger.current.brugervendtnoegle }}
-|TilknyttedePersoner={{ object.current.tilknyttedepersoner.Person.current.brugervendtnoegle }}
-|Opgaver={{ object.current.opgaver.Klasse.current.brugervendtnoegle }}
-|Adresser={{ object.current.adresse.Adresse.current.brugervendtnoegle }}
-|OrganisatoriskFunktionsType={{ object.current.organisatoriskfunktionstype.Klasse.current.brugervendtnoegle }}
+|TilknyttedeOrganisationer={{ common.bvnlist(object.current.tilknyttedeorganisationer) }}
+|TilknyttedeEnheder={{ common.bvnlist(object.current.tilknyttedeenheder) }}
+|ItSystemer={{ common.bvnlist(object.current.tilknyttedeitsystemer) }}
+|Interessefællesskaber={{ common.bvnlist(object.current.tilknyttedeinteressefaellesskaber) }}
+|TilknyttedeBrugere={{ common.bvnlist(object.current.tilknyttedebrugere) }}
+|TilknyttedePersoner={{ common.bvnlist(object.current.tilknyttedepersoner) }}
+|Opgaver={{ common.bvnlist(object.current.opgaver) }}
+|Adresser={{ common.bvnlist(object.current.adresse.Adresse) }}
+|OrganisatoriskFunktionsType={{ common.bvnlist(object.current.organisatoriskfunktionstype) }}
 {{ end }}

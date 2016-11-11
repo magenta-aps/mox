@@ -213,7 +213,8 @@ class OIORegistrering(object):
         return self.entity.after(self)
 
     def __getattr__(self, name):
-        if name in self.entity.relation_map.keys():
-            return getattr(self._relationer, name)
+        if name in self.entity.relation_keys:
+            return getattr(self._relationer, name, [])
         if name in self.entity.egenskaber_keys:
             return self.get_egenskab(name)
+        print "didn't find %s" % name
