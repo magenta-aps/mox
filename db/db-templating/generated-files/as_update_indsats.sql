@@ -43,6 +43,7 @@ DECLARE
   indsats_rel_type_cardinality_unlimited indsatsRelationKode[]:=ARRAY['indsatskvalitet'::IndsatsRelationKode,'indsatsaktoer'::IndsatsRelationKode,'samtykke'::IndsatsRelationKode,'indsatssag'::IndsatsRelationKode,'indsatsdokument'::IndsatsRelationKode];
   indsats_uuid_underscores text;
   indsats_rel_seq_name text;
+  indsats_rel_type_cardinality_unlimited_present_in_argument tilstandRelationKode[];
 BEGIN
 
 --create a new registrering
@@ -103,7 +104,9 @@ FROM
 --Create temporary sequences
 indsats_uuid_underscores:=replace(indsats_uuid::text, '-', '_');
 
-FOREACH indsats_relation_navn IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(relationer) a WHERE a.RelType = any (indsats_rel_type_cardinality_unlimited))
+SELECT array_agg( DISTINCT a.RelType) into indsats_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(relationer) a WHERE a.RelType = any (indsats_rel_type_cardinality_unlimited) ;
+IF coalesce(array_length(indsats_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
+FOREACH indsats_relation_navn IN ARRAY (indsats_rel_type_cardinality_unlimited_present_in_argument)
   LOOP
   indsats_rel_seq_name := 'indsats_rel_' || indsats_relation_navn::text || indsats_uuid_underscores;
 
@@ -129,6 +132,7 @@ FOREACH indsats_relation_navn IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FR
   CACHE 1;';
 
 END LOOP;
+END IF;
 
       INSERT INTO indsats_relation (
         indsats_registrering_id,
@@ -162,12 +166,13 @@ END LOOP;
 
 
 --Drop temporary sequences
-FOREACH indsats_relation_navn IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(relationer) a WHERE a.RelType = any (indsats_rel_type_cardinality_unlimited))
+IF coalesce(array_length(indsats_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
+FOREACH indsats_relation_navn IN ARRAY (indsats_rel_type_cardinality_unlimited_present_in_argument)
   LOOP
   indsats_rel_seq_name := 'indsats_rel_' || indsats_relation_navn::text || indsats_uuid_underscores;
   EXECUTE 'DROP  SEQUENCE ' || indsats_rel_seq_name || ';';
 END LOOP;
-
+END IF;
 
   --Ad 2)
 
