@@ -1,8 +1,8 @@
-*** ./generated-files/as_update_tilstand.sql	2016-10-22 10:51:46.000000000 +0200
---- ./patches/as_update_tilstand.org.sql	2016-10-22 10:50:23.000000000 +0200
+*** ./generated-files/as_update_tilstand.sql	2016-11-13 16:31:32.000000000 +0100
+--- ./patches/as_update_tilstand.org.sql	2016-11-13 16:13:16.000000000 +0100
 ***************
 *** 36,45 ****
---- 36,50 ----
+--- 36,51 ----
     new_tilstand_registrering tilstand_registrering;
     prev_tilstand_registrering tilstand_registrering;
     tilstand_relation_navn TilstandRelationKode;
@@ -13,6 +13,7 @@
 +   tilstand_rel_type_cardinality_unlimited tilstandRelationKode[]:=ARRAY['tilstandsvaerdi'::TilstandRelationKode,'begrundelse'::TilstandRelationKode,'tilstandskvalitet'::TilstandRelationKode,'tilstandsvurdering'::TilstandRelationKode,'tilstandsaktoer'::TilstandRelationKode,'tilstandsudstyr'::TilstandRelationKode,'samtykke'::TilstandRelationKode,'tilstandsdokument'::TilstandRelationKode]::TilstandRelationKode[];
 +   tilstand_uuid_underscores text;
 +   tilstand_rel_seq_name text;
++   tilstand_rel_type_cardinality_unlimited_present_in_argument tilstandRelationKode[];
   BEGIN
   
   --create a new registrering
@@ -71,7 +72,7 @@
           new_tilstand_registrering.id, 
             ROW(
               c.tz_range_leftover,
---- 80,209 ----
+--- 81,216 ----
   IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
   --raise notice 'Skipping relations, as it is explicit set to empty array. Update note [%]',note;
   ELSE
@@ -95,16 +96,19 @@
 + ) as a
 + ;
 + 
-+ 
+  
 + --Create temporary sequences
++ 
++ SELECT array_agg( DISTINCT a.RelType) into tilstand_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(relationer) a WHERE a.RelType = any (tilstand_rel_type_cardinality_unlimited) ;
 + tilstand_uuid_underscores:=replace(tilstand_uuid::text, '-', '_');
 + 
-+ FOREACH tilstand_relation_navn IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(relationer) a WHERE a.RelType = any (tilstand_rel_type_cardinality_unlimited))
++ IF coalesce(array_length(tilstand_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
++ FOREACH tilstand_relation_navn IN ARRAY (tilstand_rel_type_cardinality_unlimited_present_in_argument)
 +   LOOP
 +   tilstand_rel_seq_name := 'tilstand_rel_' || tilstand_relation_navn::text || tilstand_uuid_underscores;
 + 
 +   rel_type_max_index_prev_rev:=null;
-  
++ 
 +   SELECT 
 +     a.indeks into rel_type_max_index_prev_rev
 +   FROM
@@ -125,6 +129,7 @@
 +   CACHE 1;';
 + 
 + END LOOP;
++ END IF;
   
         INSERT INTO tilstand_relation (
           tilstand_registrering_id,
@@ -172,12 +177,14 @@
   
 ! 
 ! --Drop temporary sequences
+! 
+! IF coalesce(array_length(tilstand_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 ! FOREACH tilstand_relation_navn IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(relationer) a WHERE a.RelType = any (tilstand_rel_type_cardinality_unlimited))
 !   LOOP
 !   tilstand_rel_seq_name := 'tilstand_rel_' || tilstand_relation_navn::text || tilstand_uuid_underscores;
 !   EXECUTE 'DROP  SEQUENCE ' || tilstand_rel_seq_name || ';';
 ! END LOOP;
-! 
+! END IF;
 ! 
     --Ad 2)
   
@@ -215,7 +222,7 @@
         --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to _subtract_tstzrange_arr on the relations of the previous registrering 
         SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
         FROM tilstand_relation b
---- 212,224 ----
+--- 219,231 ----
                 (a.virkning).NoteTekst
             ) :: virkning,
               a.rel_maal_uuid,
@@ -275,7 +282,7 @@
   
   END IF;
   /**********************/
---- 234,270 ----
+--- 241,277 ----
       ;
     END LOOP;
   
