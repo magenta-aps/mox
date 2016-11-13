@@ -1,8 +1,8 @@
-*** ./generated-files/as_update_aktivitet.sql	2016-11-06 21:21:45.000000000 +0100
---- ./patches/as_update_aktivitet.org.sql	2016-11-06 21:20:32.000000000 +0100
+*** ./generated-files/as_update_aktivitet.sql	2016-11-13 12:09:36.000000000 +0100
+--- ./patches/as_update_aktivitet.org.sql	2016-11-13 11:54:37.000000000 +0100
 ***************
 *** 36,45 ****
---- 36,50 ----
+--- 36,51 ----
     new_aktivitet_registrering aktivitet_registrering;
     prev_aktivitet_registrering aktivitet_registrering;
     aktivitet_relation_navn AktivitetRelationKode;
@@ -13,6 +13,7 @@
 +   aktivitet_rel_type_cardinality_unlimited aktivitetRelationKode[]:=ARRAY['udfoererklasse'::AktivitetRelationKode,'deltagerklasse'::AktivitetRelationKode,'objektklasse'::AktivitetRelationKode,'resultatklasse'::AktivitetRelationKode,'grundlagklasse'::AktivitetRelationKode,'facilitetklasse'::AktivitetRelationKode,'adresse'::AktivitetRelationKode,'geoobjekt'::AktivitetRelationKode,'position'::AktivitetRelationKode,'facilitet'::AktivitetRelationKode,'lokale'::AktivitetRelationKode,'aktivitetdokument'::AktivitetRelationKode,'aktivitetgrundlag'::AktivitetRelationKode,'aktivitetresultat'::AktivitetRelationKode,'udfoerer'::AktivitetRelationKode,'deltager'::AktivitetRelationKode]::aktivitetRelationKode[];
 +   aktivitet_uuid_underscores text;
 +   aktivitet_rel_seq_name text;
++   aktivitet_rel_type_cardinality_unlimited_present_in_argument aktivitetRelationKode[];
   BEGIN
   
   --create a new registrering
@@ -79,7 +80,7 @@
           new_aktivitet_registrering.id, 
             ROW(
               c.tz_range_leftover,
---- 72,214 ----
+--- 73,219 ----
     END IF;   
   END IF;
   
@@ -114,7 +115,9 @@
 + --Create temporary sequences
 + aktivitet_uuid_underscores:=replace(aktivitet_uuid::text, '-', '_');
   
-+ FOREACH aktivitet_relation_navn IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(relationer) a WHERE a.RelType = any (aktivitet_rel_type_cardinality_unlimited))
++ SELECT array_agg( DISTINCT a.RelType) into aktivitet_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(relationer) a WHERE a.RelType = any (aktivitet_rel_type_cardinality_unlimited) ;
++ IF coalesce(array_length(aktivitet_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
++ FOREACH aktivitet_relation_navn IN ARRAY (aktivitet_rel_type_cardinality_unlimited_present_in_argument)
 +   LOOP
 +   aktivitet_rel_seq_name := 'aktivitet_rel_' || aktivitet_relation_navn::text || aktivitet_uuid_underscores;
 + 
@@ -140,6 +143,7 @@
 +   CACHE 1;';
 + 
 + END LOOP;
++ END IF;
   
         INSERT INTO aktivitet_relation (
           aktivitet_registrering_id,
@@ -192,12 +196,13 @@
   
 ! 
 ! --Drop temporary sequences
-! FOREACH aktivitet_relation_navn IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(relationer) a WHERE a.RelType = any (aktivitet_rel_type_cardinality_unlimited))
+! IF coalesce(array_length(aktivitet_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
+! FOREACH aktivitet_relation_navn IN ARRAY (aktivitet_rel_type_cardinality_unlimited_present_in_argument)
 !   LOOP
 !   aktivitet_rel_seq_name := 'aktivitet_rel_' || aktivitet_relation_navn::text || aktivitet_uuid_underscores;
 !   EXECUTE 'DROP  SEQUENCE ' || aktivitet_rel_seq_name || ';';
 ! END LOOP;
-! 
+! END IF;
 ! 
     --Ad 2)
   
@@ -236,7 +241,7 @@
         --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to _subtract_tstzrange_arr on the relations of the previous registrering 
         SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
         FROM aktivitet_relation b
---- 217,229 ----
+--- 222,234 ----
                 (a.virkning).NoteTekst
             ) :: virkning,
               a.rel_maal_uuid,
@@ -296,7 +301,7 @@
   
   END IF;
   /**********************/
---- 239,275 ----
+--- 244,280 ----
       ;
     END LOOP;
   
@@ -349,7 +354,7 @@
   	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
   	  (attrEgenskaberObj.virkning).AktoerRef,
   	  (attrEgenskaberObj.virkning).AktoerTypeKode,
---- 446,464 ----
+--- 451,469 ----
     )
     SELECT
       coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
