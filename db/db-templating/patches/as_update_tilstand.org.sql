@@ -43,6 +43,7 @@ DECLARE
   tilstand_rel_type_cardinality_unlimited tilstandRelationKode[]:=ARRAY['tilstandsvaerdi'::TilstandRelationKode,'begrundelse'::TilstandRelationKode,'tilstandskvalitet'::TilstandRelationKode,'tilstandsvurdering'::TilstandRelationKode,'tilstandsaktoer'::TilstandRelationKode,'tilstandsudstyr'::TilstandRelationKode,'samtykke'::TilstandRelationKode,'tilstandsdokument'::TilstandRelationKode]::TilstandRelationKode[];
   tilstand_uuid_underscores text;
   tilstand_rel_seq_name text;
+  tilstand_rel_type_cardinality_unlimited_present_in_argument tilstandRelationKode[];
 BEGIN
 
 --create a new registrering
@@ -102,9 +103,12 @@ FROM
 
 
 --Create temporary sequences
+
+SELECT array_agg( DISTINCT a.RelType) into tilstand_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(relationer) a WHERE a.RelType = any (tilstand_rel_type_cardinality_unlimited) ;
 tilstand_uuid_underscores:=replace(tilstand_uuid::text, '-', '_');
 
-FOREACH tilstand_relation_navn IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(relationer) a WHERE a.RelType = any (tilstand_rel_type_cardinality_unlimited))
+IF coalesce(array_length(tilstand_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
+FOREACH tilstand_relation_navn IN ARRAY (tilstand_rel_type_cardinality_unlimited_present_in_argument)
   LOOP
   tilstand_rel_seq_name := 'tilstand_rel_' || tilstand_relation_navn::text || tilstand_uuid_underscores;
 
@@ -130,6 +134,7 @@ FOREACH tilstand_relation_navn IN ARRAY (SELECT array_agg( DISTINCT a.RelType) F
   CACHE 1;';
 
 END LOOP;
+END IF;
 
       INSERT INTO tilstand_relation (
         tilstand_registrering_id,
@@ -177,12 +182,14 @@ END LOOP;
 
 
 --Drop temporary sequences
+
+IF coalesce(array_length(tilstand_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 FOREACH tilstand_relation_navn IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(relationer) a WHERE a.RelType = any (tilstand_rel_type_cardinality_unlimited))
   LOOP
   tilstand_rel_seq_name := 'tilstand_rel_' || tilstand_relation_navn::text || tilstand_uuid_underscores;
   EXECUTE 'DROP  SEQUENCE ' || tilstand_rel_seq_name || ';';
 END LOOP;
-
+END IF;
 
   --Ad 2)
 
