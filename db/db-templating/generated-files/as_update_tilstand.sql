@@ -166,13 +166,13 @@ END IF;
                       CASE
                         WHEN 
                         a.relType='tilstandsvaerdi' AND
-                         ( NOT (a.tilstand_vaerdi_attr IS NULL))
+                         ( NOT ((a.tilstandsVaerdiAttr) IS NULL))
                          AND 
                          (
-                           (a.tilstand_vaerdi_attr).forventet IS NOT NULL
+                           (a.tilstandsVaerdiAttr).forventet IS NOT NULL
                            OR
-                           (a.tilstand_vaerdi_attr).nominelVaerdi IS NOT NULL
-                         ) THEN a.tilstand_vaerdi_attr
+                           (a.tilstandsVaerdiAttr).nominelVaerdi IS NOT NULL
+                         ) THEN (a.tilstandsVaerdiAttr)
                         ELSE
                         NULL
                       END
@@ -197,7 +197,7 @@ END IF;
   -- 0..1 relations 
   --Please notice, that for 0..1 relations for tilstand, we're ignoring index here, and handling it the same way, that is done for other object types (like Facet, Klasse etc). That is, you only make changes for the virkningsperiod that you explicitly specify (unless you delete all relations) 
 
-  FOREACH tilstand_relation_navn in array ARRAY['tilstandstype'::TilstandRelationKode,'emne'::TilstandRelationKode,'foelsomhedklasse'::TilstandRelationKode,'ansvarligklasse'::TilstandRelationKode,'rekvirentklasse'::TilstandRelationKode,'ansvarlig'::TilstandRelationKode,'tilhoerer'::TilstandRelationKode]::TilstandRelationKode[]
+  FOREACH tilstand_relation_navn in array ARRAY['tilstandsobjekt'::TilstandRelationKode,'tilstandstype'::TilstandRelationKode]::TilstandRelationKode[]
   LOOP
 
     INSERT INTO tilstand_relation (
