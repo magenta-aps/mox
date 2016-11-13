@@ -11,7 +11,9 @@ RETURNS SETOF TEXT LANGUAGE plpgsql AS
 $$
 DECLARE 
 	new_uuid1 uuid;
+	new_uuid2 uuid;
 	registrering tilstandRegistreringType;
+	registrering2 tilstandRegistreringType;
 	actual_registrering RegistreringBase;
 	virkEgenskaber Virkning;
 	virkTilstandsobjekt Virkning;
@@ -47,6 +49,8 @@ DECLARE
 	uuid_returned_from_import uuid;
 	read_Tilstand1 TilstandType;
 	expected_tilstand1 TilstandType;
+	read_Tilstand2 TilstandType;
+	expected_tilstand2 TilstandType;
 BEGIN
 
 
@@ -225,7 +229,7 @@ read_Tilstand1 := as_read_tilstand(new_uuid1,
 	null, --registrering_tstzrange
 	null --virkning_tstzrange
 	);
-raise notice 'read_Tilstand1:%',to_json(read_Tilstand1);
+--raise notice 'read_Tilstand1:%',to_json(read_Tilstand1);
 
 expected_tilstand1:=ROW(
 		new_uuid1,
@@ -292,7 +296,7 @@ expected_tilstand1:=ROW(
 		)::TilstandType
 ;
 
-raise notice 'expected_tilstand1:%',to_json(expected_tilstand1);
+--raise notice 'expected_tilstand1:%',to_json(expected_tilstand1);
 
 
 
@@ -302,11 +306,60 @@ RETURN NEXT IS(
 	,'test create tilstand #1'
 );
 
+/*********************************/
+--test with no relations of unlimited cardinality
+registrering2 := ROW (
+
+	ROW (
+	NULL,
+	'Opstaaet'::Livscykluskode,
+	uuidRegistrering,
+	'Test Note 4') :: RegistreringBase
+	,
+	ARRAY[tilstandStatus]::tilstandStatusTilsType[],
+	ARRAY[tilstandPubliceret]::TilstandPubliceretTilsType[],
+ARRAY[tilstandEgenskab]::tilstandEgenskaberAttrType[],
+ARRAY[tilstandRelTilstandsobjekt]) :: tilstandRegistreringType
+;
+
+new_uuid2 := as_create_or_import_tilstand(registrering2);
+
+read_Tilstand2 := as_read_tilstand(new_uuid2,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
+	);
+--raise notice 'read_Tilstand1:%',to_json(read_Tilstand1);
+
+expected_tilstand2:=ROW(
+		new_uuid2,
+		ARRAY[
+			ROW(
+			(read_Tilstand2.registrering[1]).registrering
+			,ARRAY[tilstandStatus]::tilstandStatusTilsType[]
+			,ARRAY[tilstandPubliceret]::tilstandPubliceretTilsType[]
+			,ARRAY[tilstandEgenskab]::tilstandEgenskaberAttrType[]
+			,ARRAY[
+				ROW (
+				'tilstandsobjekt'::tilstandRelationKode
+				,virkTilstandsobjekt
+				,uuidTilstandsobjekt
+				,null
+				,'Person'
+				,NULL --NOTICE: Was replaced
+				,ROW(null,null)::TilstandsVaerdiRelationAttrType --will be removed in python-layer
+			) :: tilstandRelationType
+				]::TilstandRelationType[]
+			)::TilstandRegistreringType
+			]::TilstandRegistreringType[]
+		)::TilstandType
+;
 
 
-
-
-
+RETURN NEXT IS(
+	read_Tilstand2,
+	expected_tilstand2
+	,'test create tilstand #2'
+);
 
 END;
 $$;
