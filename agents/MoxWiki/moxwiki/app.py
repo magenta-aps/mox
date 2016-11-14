@@ -22,7 +22,7 @@ configfile = DIR + "/settings.conf"
 config = read_properties_files("/srv/mox/mox.conf", configfile)
 template_environment = Environment(loader=PackageLoader('moxwiki', 'templates'), undefined=SilentUndefined, trim_blocks=True, lstrip_blocks=True)
 
-class MoxWiki(MessageListener):
+class MoxWiki(object):
 
     def __init__(self):
 
@@ -44,7 +44,10 @@ class MoxWiki(MessageListener):
             raise MissingConfigKeyError(str(e))
 
         self.accepted_object_types = ['bruger', 'interessefaellesskab', 'itsystem', 'organisation', 'organisationenhed', 'organisationfunktion']
-        # super(MoxWiki, self).__init__(amqp_username, amqp_password, amqp_host, amqp_queue, queue_parameters={'durable': True})
+
+        # self.notification_listener = MessageListener(amqp_username, amqp_password, amqp_host, amqp_queue, queue_parameters={'durable': True})
+        # self.notification_listener.callback = self.callback
+        # self.notification_listener.run()
 
         self.semawi = Semawi(wiki_host, wiki_username, wiki_password)
         self.lora = Lora(rest_host, rest_username, rest_password)
