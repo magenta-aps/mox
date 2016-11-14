@@ -143,5 +143,9 @@ class OIORelation(Item):
     def __repr__(self):
         return str(self)
 
+    # Lookups on other attributes are sent to the referred object
     def __getattr__(self, name):
-        return getattr(self.item, name)
+        try:
+            return getattr(self.item, name)
+        except:
+            pass

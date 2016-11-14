@@ -82,15 +82,19 @@ class Lora(object):
                 raise RestAccessException(response.text)
         return response
 
-    def load_all_of_type(self, objecttype):
+    def get_uuids_of_type(self, objecttype):
         if issubclass(objecttype, OIOEntity):
             objecttype = objecttype.ENTITY_CLASS
         objectclass = self.object_map[objecttype]
         url = self.host + objectclass.basepath + "?search"
         response = self.request(url, headers=self.get_headers())
         data = json.loads(response.text)
-        guids = data['results'][0]
-        for guid in guids:
+        return data['results'][0]
+
+    def load_all_of_type(self, objecttype):
+        if issubclass(objecttype, OIOEntity):
+            objecttype = objecttype.ENTITY_CLASS
+        for guid in self.get_uuids_of_type(objecttype):
             self.get_object(guid, objecttype, True, True)
 
     def get_object(self, uuid, objecttype=None, force_refresh=False, refresh_cache=True):

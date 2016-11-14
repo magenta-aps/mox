@@ -1,3 +1,12 @@
 {% macro bvnlist(list) -%}
-{% if list %}{% set comma=joiner(",") %}{% for item in list.current %}{% if item.current.brugervendtnoegle %}{{ comma() }}{{ item.current.brugervendtnoegle }}_{{ item.id }}{% endif %}{% endfor %}{% endif %}
+{% if list %}
+    {% set comma=joiner(",") %}
+    {% for item in list.current %}
+        {% if item.urn -%}
+            {{ comma() }}{{ item.urn }}
+        {%- elif item.current.brugervendtnoegle -%}
+            {{ comma() }}{{ item.current.brugervendtnoegle }}_{{ item.id }}
+        {%- endif %}
+    {% endfor %}
+{% endif %}
 {%- endmacro %}

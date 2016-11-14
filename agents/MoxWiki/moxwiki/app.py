@@ -20,7 +20,7 @@ DIR = os.path.dirname(os.path.realpath(__file__))
 
 configfile = DIR + "/settings.conf"
 config = read_properties_files("/srv/mox/mox.conf", configfile)
-template_environment = Environment(loader=PackageLoader('moxwiki', 'templates'), undefined=SilentUndefined)
+template_environment = Environment(loader=PackageLoader('moxwiki', 'templates'), undefined=SilentUndefined, trim_blocks=True, lstrip_blocks=True)
 
 class MoxWiki(MessageListener):
 
@@ -43,23 +43,19 @@ class MoxWiki(MessageListener):
         except KeyError as e:
             raise MissingConfigKeyError(str(e))
 
+        self.accepted_object_types = ['bruger', 'interessefaellesskab', 'itsystem', 'organisation', 'organisationenhed', 'organisationfunktion']
         # super(MoxWiki, self).__init__(amqp_username, amqp_password, amqp_host, amqp_queue, queue_parameters={'durable': True})
 
         self.semawi = Semawi(wiki_host, wiki_username, wiki_password)
         self.lora = Lora(rest_host, rest_username, rest_password)
 
-        self.accepted_object_types = ['bruger', 'interessefaellesskab', 'itsystem', 'organisation', 'organisationenhed', 'organisationfunktion']
-
-
     def test(self):
-        # for type in [Bruger, Interessefaellesskab, ItSystem, Organisation, OrganisationEnhed, OrganisationFunktion, Facet, Klasse, Klassifikation]:
-        for type in [Facet]:
-            self.lora.load_all_of_type(type)
-
-        for id in list(self.lora.all_items.keys()):
-            item = self.lora.all_items[id]
-            self.update(item.ENTITY_CLASS, id, True)
-            print "\n--------------------------------\n"
+        for type in [Bruger, Interessefaellesskab, ItSystem, Organisation, OrganisationEnhed, OrganisationFunktion, Facet, Klasse, Klassifikation]:
+            uuids = self.lora.get_uuids_of_type(type)
+            for uuid in uuids:
+                item = self.lora.get_object(uuid, type.ENTITY_CLASS)
+                self.update(item.ENTITY_CLASS, uuid, True)
+                print "\n--------------------------------\n"
 
     def callback(self, channel, method, properties, body):
         message = NotificationMessage.parse(properties.headers, body)
