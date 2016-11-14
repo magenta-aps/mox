@@ -58,7 +58,6 @@ class MoxWiki(object):
             for uuid in uuids:
                 item = self.lora.get_object(uuid, type.ENTITY_CLASS)
                 self.update(item.ENTITY_CLASS, uuid, True)
-                print "\n--------------------------------\n"
 
     def callback(self, channel, method, properties, body):
         message = NotificationMessage.parse(properties.headers, body)
@@ -99,6 +98,7 @@ class MoxWiki(object):
         if template is None:
             raise TemplateNotFoundException("%s.txt" % objecttype)
         pagetext = template.render({'object': instance, 'begin': '{{', 'end': '}}'})
+        print pagename
         print pagetext
 
         if pagetext != page.text():
@@ -107,8 +107,8 @@ class MoxWiki(object):
     def delete(self, objecttype, objectid):
         instance = self.lora.get_object(objectid, objecttype)
         pagename = "%s_%s" % (instance.current.brugervendtnoegle, objectid)
-        #page = self.semawi.site.Pages[pagename]
-        #page.delete(reason="Deleted in LoRa instance %s" % self.lora.host)
+        page = self.semawi.site.Pages[pagename]
+        page.delete(reason="Deleted in LoRa instance %s" % self.lora.host)
 
 
 main = MoxWiki()

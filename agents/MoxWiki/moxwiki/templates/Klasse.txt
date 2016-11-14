@@ -4,7 +4,7 @@
 |Beskrivelse={{ object.current.klassebeskrivelse }}
 |Titel={{ object.current.klassetitel }}
 |Publiceret={{ object.current.publiceret }}
-|Ekspempel={{ object.current.klasseeksempel }}
+|Eksempel={{ object.current.klasseeksempel }}
 |Omfang={{ object.current.klasseomfang }}
 |Notat={{ object.current.aendringsnotat }}
 |Retskilde={{ object.current.retskilde }}
@@ -16,7 +16,7 @@
 |Ansvarlig={{ common.bvnlist(object.current.ansvarlig) }}
 |Redaktoerer={{ common.bvnlist(object.current.redaktoer) }}
 |Overordnet={{ common.bvnlist(object.current.overordnet) }}
-|Sideordnet={{ common.bvnlist(object.current.sideordnet) }}
+|Sideordnet={{ common.bvnlist(object.current.sideordnede) }}
 |Mapninger={{ common.bvnlist(object.current.mapninger) }}
 |Tilfoejelser={{ common.bvnlist(object.current.tilfoejelser) }}
 |Erstatter={{ common.bvnlist(object.current.erstatter) }}
