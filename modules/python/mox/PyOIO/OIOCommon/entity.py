@@ -7,6 +7,7 @@ from PyOIO.OIOCommon.util import parse_time
 from PyOIO.OIOCommon.exceptions import ItemNotFoundException, InvalidOIOException
 
 from PyOIO.OIOCommon.gyldighed import OIOGyldighedContainer
+from PyOIO.OIOCommon.publiceret import OIOPubliceretContainer
 from PyOIO.OIOCommon.relation import OIORelationContainer
 from PyOIO.OIOCommon.egenskab import OIOEgenskabContainer, OIOEgenskab
 
@@ -20,7 +21,8 @@ class OIOEntity(object):
 
     ENTITY_CLASS = "OIOEntity"
     EGENSKABER_KEY = 'egenskaber'
-    GYLDIGHED_KEY = 'gyldighed'
+    GYLDIGHED_KEY = None
+    PUBLICERET_KEY = None
 
     egenskaber_keys = ['brugervendtnoegle']
     name_key = 'brugervendtnoegle'
@@ -149,15 +151,22 @@ class OIORegistrering(object):
             self.to_time = parse_time(to_time)
         # self.created_by = Bruger(self.lora, data['brugerref'])
 
-        self.gyldigheder = OIOGyldighedContainer.from_json(
-            self, self.json['tilstande'][self.entity.GYLDIGHED_KEY]
-        )
+
+        if self.entity.GYLDIGHED_KEY:
+            self.gyldigheder = OIOGyldighedContainer.from_json(
+                self, self.json['tilstande'][self.entity.GYLDIGHED_KEY]
+            )
+        if self.entity.PUBLICERET_KEY:
+            self.publiceringer = OIOPubliceretContainer.from_json(
+                self, self.json['tilstande'][self.entity.PUBLICERET_KEY]
+            )
         self._relationer = OIORelationContainer.from_json(
-            self, self.json['relationer']
+            self, self.json.get('relationer')
         )
         self.egenskaber = OIOEgenskabContainer.from_json(
             self, self.json['attributter'][self.entity.EGENSKABER_KEY], self.entity._egenskab_class
         )
+
 
 
     def __repr__(self):
@@ -174,16 +183,22 @@ class OIORegistrering(object):
         return self.from_time < time and time < self.to_time
 
     def get_gyldighed(self, time=None):
-        if time is None:
-            return self.gyldigheder.current.gyldighed
-        else:
-            gyldighed_items = self.gyldigheder.at(time)
-            if len(gyldighed_items):
-                return gyldighed_items[0]
+        gyldighed_items = self.gyldigheder.at(time) if time else self.gyldigheder.current
+        if len(gyldighed_items):
+            return gyldighed_items[0].gyldighed
 
     @property
     def gyldighed(self):
         return self.get_gyldighed()
+
+    def get_publiceret(self, time=None):
+        publiceret_items = self.publiceringer.at(time) if time else self.publiceringer.current
+        if len(publiceret_items):
+            return publiceret_items[0].publiceret
+
+    @property
+    def publiceret(self):
+        return self.get_publiceret()
 
     def get_egenskab(self, name, must_be_current=True):
         egenskaber = self.egenskaber.current if must_be_current else self.egenskaber
@@ -217,4 +232,3 @@ class OIORegistrering(object):
             return getattr(self._relationer, name, [])
         if name in self.entity.egenskaber_keys:
             return self.get_egenskab(name)
-        print "didn't find %s" % name

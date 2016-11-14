@@ -1,4 +1,5 @@
 from data import Item, ItemContainer
+from exceptions import InvalidObjectTypeException
 
 class OIORelationContainer(object):
 
@@ -11,10 +12,11 @@ class OIORelationContainer(object):
     @staticmethod
     def from_json(registrering, data):
         relationcontainer = OIORelationContainer(registrering)
-        for type in registrering.entity.relation_keys:
-            if type in data:
-                for relation in data[type]:
-                    relationcontainer.add(type, OIORelation.from_json(registrering, relation, type))
+        if data is not None:
+            for type in registrering.entity.relation_keys:
+                if type in data:
+                    for relation in data[type]:
+                        relationcontainer.add(type, OIORelation.from_json(registrering, relation, type))
         return relationcontainer
 
     def add(self, type, item):
@@ -117,21 +119,29 @@ class OIORelation(Item):
         'tilfoejelser': 'Klasse'
     }
 
-    def __init__(self, registrering, uuid, type, data):
+    def __init__(self, registrering, data, type):
         super(OIORelation, self).__init__(registrering, data)
-        self.uuid = uuid
+        self.uuid = data.get('uuid')
+        self.urn = data.get('urn')
         self.type = type
 
     @property
     def item(self):
-        return self.registrering.lora.get_object(self.uuid, self.relation_map[self.type])
+        if self.uuid:
+            try:
+                return self.registrering.lora.get_object(self.uuid, self.relation_map[self.type])
+            except InvalidObjectTypeException:
+                pass
 
     @staticmethod
     def from_json(registrering, json, type):
-        return OIORelation(registrering, json['uuid'], type, json)
+        return OIORelation(registrering, json, type)
 
     def __str__(self):
         return "Relation from %s to %s (%s)" % (self.registrering.entity, self.uuid, self.virkning)
 
     def __repr__(self):
         return str(self)
+
+    def __getattr__(self, name):
+        return getattr(self.item, name)

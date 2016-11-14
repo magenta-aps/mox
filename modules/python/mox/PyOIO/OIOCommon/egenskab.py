@@ -17,7 +17,7 @@ class OIOEgenskab(Item):
 
     def __getattr__(self, name):
         if name in self.registrering.entity.egenskaber_keys:
-            return self.get(name)
+            return self.get(name, u'')
 
 
 class OIOEgenskabContainer(ItemContainer):

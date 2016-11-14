@@ -11,6 +11,6 @@
 |TilknyttedeBrugere={{ common.bvnlist(object.current.tilknyttedebrugere) }}
 |TilknyttedePersoner={{ common.bvnlist(object.current.tilknyttedepersoner) }}
 |Opgaver={{ common.bvnlist(object.current.opgaver) }}
-|Adresser={{ common.bvnlist(object.current.adresse.Adresse) }}
+|Adresser={{ common.bvnlist(object.current.adresser) }}
 |OrganisatoriskFunktionsType={{ common.bvnlist(object.current.organisatoriskfunktionstype) }}
 {{ end }}

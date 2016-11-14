@@ -8,7 +8,7 @@
 |Overordnet={{ common.bvnlist(object.current.overordnet) }}
 |TilknyttedeOrganisationer={{ common.bvnlist(object.current.tilknyttedeorganisationer) }}
 |TilknyttedeEnheder={{ common.bvnlist(object.current.tilknyttedeenheder) }}
-|TilknyttedeFunktioner={{ common.bvnlist(object.current.organisatoriskfunktionstype) }}
+|TilknyttedeFunktioner={{ common.bvnlist(object.current.tilknyttedefunktioner) }}
 |ItSystemer={{ common.bvnlist(object.current.tilknyttedeitsystemer) }}
 |Interessefællesskaber={{ common.bvnlist(object.current.tilknyttedeinteressefaellesskaber) }}
 |TilknyttedeBrugere={{ common.bvnlist(object.current.tilknyttedebrugere) }}

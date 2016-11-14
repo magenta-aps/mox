@@ -109,8 +109,6 @@ class Lora(object):
 
         for otype in objecttype:
 
-            print "get object of type %s" % otype
-
             if otype not in self.object_map.keys():
                 raise InvalidObjectTypeException(otype)
 

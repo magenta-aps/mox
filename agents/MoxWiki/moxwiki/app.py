@@ -8,7 +8,8 @@ from agent.config import read_properties_files, MissingConfigKeyError
 from SeMaWi import Semawi
 from PyLoRA import Lora
 from PyOIO.OIOCommon.exceptions import InvalidOIOException
-from PyOIO.organisation import Bruger, ItSystem
+from PyOIO.organisation import Bruger, Interessefaellesskab, ItSystem, Organisation, OrganisationEnhed, OrganisationFunktion
+from PyOIO.klassifikation import Facet, Klasse, Klassifikation
 
 from jinja2 import Environment, PackageLoader
 from moxwiki.jinja2_override.silentundefined import SilentUndefined
@@ -38,6 +39,7 @@ class MoxWiki(MessageListener):
             rest_host = config['moxwiki.rest.host']
             rest_username = config['moxwiki.rest.username']
             rest_password = config['moxwiki.rest.password']
+
         except KeyError as e:
             raise MissingConfigKeyError(str(e))
 
@@ -50,9 +52,14 @@ class MoxWiki(MessageListener):
 
 
     def test(self):
-        self.lora.load_all_of_type(ItSystem)
-        # print self.lora.all_items['1706778e-30ff-410a-ad31-a9bb14c6c2b5'].json
-        self.update('Itsystem', '1706778e-30ff-410a-ad31-a9bb14c6c2b5', True)
+        # for type in [Bruger, Interessefaellesskab, ItSystem, Organisation, OrganisationEnhed, OrganisationFunktion, Facet, Klasse, Klassifikation]:
+        for type in [Facet]:
+            self.lora.load_all_of_type(type)
+
+        for id in list(self.lora.all_items.keys()):
+            item = self.lora.all_items[id]
+            self.update(item.ENTITY_CLASS, id, True)
+            print "\n--------------------------------\n"
 
     def callback(self, channel, method, properties, body):
         message = NotificationMessage.parse(properties.headers, body)
@@ -92,12 +99,11 @@ class MoxWiki(MessageListener):
         template = template_environment.get_template("%s.txt" % objecttype)
         if template is None:
             raise TemplateNotFoundException("%s.txt" % objecttype)
-
         pagetext = template.render({'object': instance, 'begin': '{{', 'end': '}}'})
         print pagetext
 
-        # if pagetext != page.text():
-        #    page.save(pagetext, summary="Imported from LoRA instance %s" % self.lora.host)
+        if pagetext != page.text():
+            page.save(pagetext, summary="Imported from LoRA instance %s" % self.lora.host)
 
     def delete(self, objecttype, objectid):
         instance = self.lora.get_object(objectid, objecttype)

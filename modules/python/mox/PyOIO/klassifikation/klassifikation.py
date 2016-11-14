@@ -10,7 +10,7 @@ class Klassifikation(OIOEntity):
 
     ENTITY_CLASS = 'Klassifikation'
     EGENSKABER_KEY = 'klassifikationegenskaber'
-    GYLDIGHED_KEY = 'klassifikationgyldighed'
+    PUBLICERET_KEY = 'klassifikationpubliceret'
     basepath = '/klassifikation/klassifikation'
 
     egenskaber_keys = OIOEntity.egenskaber_keys + ['klassifikationkaldenavn', 'klassifikationbeskrivelse', 'klassifikationophavsret']

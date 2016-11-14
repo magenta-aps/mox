@@ -10,7 +10,7 @@ class Klasse(OIOEntity):
 
     ENTITY_CLASS = 'Klasse'
     EGENSKABER_KEY = 'klasseegenskaber'
-    GYLDIGHED_KEY = 'klassegyldighed'
+    PUBLICERET_KEY = 'klassepubliceret'
     basepath = '/klassifikation/klasse'
 
     egenskaber_keys = OIOEntity.egenskaber_keys + ['klassebeskrivelse', 'klassetitel', 'klasseeksempel', 'klasseomfang', 'aendringsnotat', 'retskilde']

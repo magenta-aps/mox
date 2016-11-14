@@ -8,11 +8,11 @@
 |Tilhører={{ common.bvnlist(object.current.tilhoerer) }}
 |TilknyttedeOrganisationer={{ common.bvnlist(object.current.tilknyttedeorganisationer) }}
 |TilknyttedeEnheder={{ common.bvnlist(object.current.tilknyttedeenheder) }}
-|TilknyttedeFunktioner={{ common.bvnlist(object.current.organisatoriskfunktionstype) }}
+|TilknyttedeFunktioner={{ common.bvnlist(object.current.tilknyttedefunktioner) }}
 |Interessefællesskaber={{ common.bvnlist(object.current.tilknyttedeinteressefaellesskaber) }}
 |ItSystemer={{ common.bvnlist(object.current.tilknyttedeitsystemer) }}
 |TilknyttedePersoner={{ common.bvnlist(object.current.tilknyttedepersoner) }}
 |Opgaver={{ common.bvnlist(object.current.opgaver) }}
 |Brugertyper={{ common.bvnlist(object.current.brugertyper) }}
-|Adresser={{ common.bvnlist(object.current.adresse) }}
+|Adresser={{ common.bvnlist(object.current.adresser) }}
 {{ end }}
