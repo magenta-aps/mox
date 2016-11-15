@@ -3,7 +3,7 @@
 import os
 
 from agent.amqpclient import MessageListener
-from agent.message import NotificationMessage
+from agent.message import NotificationMessage, EffectUpdateMessage
 from agent.config import read_properties_files, MissingConfigKeyError
 from SeMaWi import Semawi
 from PyLoRA import Lora
@@ -72,6 +72,17 @@ class MoxWiki(object):
                     else:
                         print "lifecyclecode is '%s', performing update" % message.lifecyclecode
                         self.update(message.objecttype, message.objectid)
+                except InvalidOIOException as e:
+                    print e
+            else:
+                print "Object type '%s' rejected" % message.objecttype
+        message = EffectUpdateMessage.parse(properties.headers, body)
+        if message:
+            print "Got an effect update"
+            if message.objecttype in self.accepted_object_types:
+                print "Object type '%s' accepted" % message.objecttype
+                try:
+                    self.update(message.objecttype, message.objectid)
                 except InvalidOIOException as e:
                     print e
             else:

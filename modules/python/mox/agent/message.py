@@ -1,3 +1,6 @@
+from datetime import datetime
+from dateutil import parser as dateparser
+
 class Message(object):
 
     HEADER_AUTHORIZATION = "autorisation"
@@ -13,7 +16,6 @@ class Message(object):
 
     HEADER_OBJECTID = "objektID"
     HEADER_OPERATION = "operation"
-    HEADER_LIFECYCLE_CODE = "livscykluskode"
 
     version = 1
     operation = ""
@@ -76,31 +78,115 @@ class UploadedDocumentMessage(AuthorizedMessage):
 
 
 """
-An message saying that an object has been updated in the database
+A message pertaining to an object
 """
-class NotificationMessage(Message):
-    def __init__(self, objectid, objecttype, lifecyclecode):
-        super(NotificationMessage, self).__init__()
+class ObjectMessage(Message):
+
+    def __init__(self, objectid, objecttype):
+        super(ObjectMessage, self).__init__()
         self.objectid = objectid
         self.objecttype = objecttype
+
+    def getHeaders(self):
+        headers = super(ObjectMessage, self).getHeaders()
+        headers[self.HEADER_OBJECTID] = self.objectid
+        headers[self.HEADER_OBJECTTYPE] = self.objecttype
+        return headers
+
+
+
+"""
+A message saying that an object has been updated in the database
+"""
+class NotificationMessage(ObjectMessage):
+
+    HEADER_LIFECYCLE_CODE = "livscykluskode"
+    MESSAGE_TYPE = 'notification'
+
+    def __init__(self, objectid, objecttype, lifecyclecode):
+        super(NotificationMessage, self).__init__(objectid, objecttype)
         self.lifecyclecode = lifecyclecode
 
     def getHeaders(self):
         headers = super(NotificationMessage, self).getHeaders()
-        headers[Message.HEADER_MESSAGETYPE] = 'notification'
-        headers[Message.HEADER_OBJECTID] = self.objectid
-        headers[Message.HEADER_OBJECTTYPE] = self.objecttype
-        headers[Message.HEADER_LIFECYCLE_CODE] = self.lifecyclecode
+        headers[Message.HEADER_MESSAGETYPE] = self.MESSAGE_TYPE
+        headers[NotificationMessage.HEADER_LIFECYCLE_CODE] = self.lifecyclecode
         return headers
 
     @staticmethod
     def parse(headers, data=None):
         type = headers[Message.HEADER_MESSAGETYPE]
-        if type and type.lower() == 'notification':
+        if type and type.lower() == NotificationMessage.MESSAGE_TYPE:
             try:
                 objectid = headers.get[Message.HEADER_OBJECTID]
                 objecttype = headers.get[Message.HEADER_OBJECTTYPE]
-                lifecyclecode = headers.get[Message.HEADER_LIFECYCLE_CODE]
+                lifecyclecode = headers.get[NotificationMessage.HEADER_LIFECYCLE_CODE]
                 return NotificationMessage(objectid, objecttype, lifecyclecode)
-            except KeyError:
+            except:
+                pass
+
+
+"""
+A message saying that an object's effective period has begun or ended
+"""
+class EffectUpdateMessage(ObjectMessage):
+
+    TYPE_BEGIN = 1
+    TYPE_END = 2
+    TYPE_BOTH = TYPE_BEGIN | TYPE_END
+
+    HEADER_UPDATE_TYPE = "updatetype"
+    HEADER_EFFECT_TIME = "effecttime"
+    MESSAGE_TYPE = 'effectupdate'
+
+    def __init__(self, objectid, objecttype, updatetype, effecttime):
+        super(EffectUpdateMessage, self).__init__(objectid, objecttype)
+        self.updatetype = updatetype
+        self.effecttime = effecttime
+
+    @property
+    def updatetype(self):
+        return self._updatetype
+
+    @updatetype.setter
+    def updatetype(self, updatetype):
+        if type(updatetype) != int:
+            raise TypeError
+        elif updatetype not in [self.TYPE_BEGIN, self.TYPE_END, self.TYPE_BOTH]:
+            raise ValueError
+        else:
+            self._updatetype = updatetype
+
+
+    @property
+    def effecttime(self):
+        return self._effecttime
+
+    @effecttime.setter
+    def effecttime(self, effecttime):
+        if type(effecttime) == datetime:
+            self._effecttime = effecttime
+        elif isinstance(effecttime, basestring):
+            self._effecttime = dateparser.parse(effecttime)
+        else:
+            raise TypeError
+
+    def getHeaders(self):
+        headers = super(EffectUpdateMessage, self).getHeaders()
+        headers[self.HEADER_MESSAGETYPE] = self.MESSAGE_TYPE
+        headers[self.HEADER_UPDATE_TYPE] = self.updatetype
+        headers[self.HEADER_EFFECT_TIME] = self.effecttime
+        return headers
+
+    @staticmethod
+    def parse(headers, data=None):
+        type = headers[Message.HEADER_MESSAGETYPE]
+        if type and type.lower() == EffectUpdateMessage.MESSAGE_TYPE:
+            try:
+                objectid = headers.get[Message.HEADER_OBJECTID]
+                objecttype = headers.get[Message.HEADER_OBJECTTYPE]
+                updatetype = headers.get[EffectUpdateMessage.HEADER_UPDATE_TYPE]
+                effecttime = headers.get[EffectUpdateMessage.HEADER_EFFECT_TIME]
+                return EffectUpdateMessage(objectid, objecttype, updatetype, effecttime)
+            except:
                 pass
