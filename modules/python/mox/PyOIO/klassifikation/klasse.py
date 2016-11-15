@@ -13,7 +13,7 @@ class Klasse(OIOEntity):
     PUBLICERET_KEY = 'klassepubliceret'
     basepath = '/klassifikation/klasse'
 
-    egenskaber_keys = OIOEntity.egenskaber_keys + ['klassebeskrivelse', 'klassetitel', 'klasseeksempel', 'klasseomfang', 'aendringsnotat', 'retskilde']
+    egenskaber_keys = OIOEntity.egenskaber_keys + ['klassebeskrivelse', 'klassetitel', 'klasseeksempel', 'klasseomfang', 'aendringsnotat', 'retskilde', 'soegeord']
     name_key = 'klassetitel'
 
     relation_keys = [

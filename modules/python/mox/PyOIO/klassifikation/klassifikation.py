@@ -16,3 +16,7 @@ class Klassifikation(OIOEntity):
     egenskaber_keys = OIOEntity.egenskaber_keys + ['klassifikationkaldenavn', 'klassifikationbeskrivelse', 'klassifikationophavsret']
     name_key = 'klassifikationkaldenavn'
 
+    relation_keys = [
+        'ansvarlig', 'ejer', 'erstatter', 'facet', 'lovligekombinationer',
+        'mapninger', 'overordnet', 'redaktoerer', 'sideordnede', 'tilfoejelser'
+    ]

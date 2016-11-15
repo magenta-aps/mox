@@ -167,8 +167,6 @@ class OIORegistrering(object):
             self, self.json['attributter'][self.entity.EGENSKABER_KEY], self.entity._egenskab_class
         )
 
-
-
     def __repr__(self):
         return '%sRegistrering("%s", %s)' % (self.entity.ENTITY_CLASS, self.entity.id, self.registrering_number)
 
