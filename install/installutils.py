@@ -130,7 +130,7 @@ class VirtualEnv(object):
         self.environment_dir = environment_dir
         self.exists = os.path.isdir(self.environment_dir)
 
-    def create(self, always_overwrite=False, never_overwrite=False):
+    def create(self, always_overwrite=False, never_overwrite=False, outfile=None):
         if os.path.isdir(self.environment_dir):
             self.exists = True
             if always_overwrite:
@@ -153,12 +153,13 @@ class VirtualEnv(object):
 
         if create:
             print "Creating virtual enviroment '%s'" % self.environment_dir
-            subprocess.call(['virtualenv', self.environment_dir])
+            fp = open(outfile, 'a') if outfile else None
+            subprocess.call(['virtualenv', self.environment_dir], stdout=fp, stderr=fp)
             self.exists = True
 
         return create
 
-    def run(self, *commands):
+    def run(self, outfile=None, *commands):
         # Warning: Be very sure what you put in commands,
         # since that gets executed in a shell
         if self.exists:
@@ -180,9 +181,17 @@ class VirtualEnv(object):
                 universal_newlines=True
             )
             stdout_lines = iter(process.stdout.readline, "")
+            fp = None
+            if outfile is not None:
+                fp = open(outfile, 'a')
             for stdout_line in stdout_lines:
-                print stdout_line,
+                if fp:
+                    fp.write(stdout_line)
+                else:
+                    print stdout_line,
 
             process.stdout.close()
+            if fp:
+                fp.close()
             return_code = process.wait()
             return return_code
