@@ -194,4 +194,11 @@ class VirtualEnv(object):
             if fp:
                 fp.close()
             return_code = process.wait()
+
+            os.remove(filename)
             return return_code
+
+    def add_moxlib_pointer(self, moxdir):
+        fp = open("%s/lib/python2.7/site-packages/mox.pth" % self.environment_dir, "w")
+        fp.write(os.path.abspath("%s/modules/python/mox" % moxdir))
+        fp.close()
