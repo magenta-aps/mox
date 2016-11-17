@@ -109,9 +109,6 @@ class MoxWiki(object):
         if template is None:
             raise TemplateNotFoundException("%s.txt" % objecttype)
         pagetext = template.render({'object': instance, 'begin': '{{', 'end': '}}'})
-        print pagename
-        if instance.current.soegeord:
-            print pagetext
 
         if pagetext != page.text():
             page.save(pagetext, summary="Imported from LoRA instance %s" % self.lora.host)
