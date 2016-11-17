@@ -9,9 +9,9 @@
 |Notat={{ object.current.aendringsnotat }}
 |Retskilde={{ object.current.retskilde }}
 |Soegeord={{ object.current.soegeord }}
-|Søgeordet={{ object.current.soegordidentifikator }}
-|Beskrivelse={{ object.current.soegeordsbeskrivelse }}
-|Kategori={{ object.current.soegeordskategori }}
+|Søgeordet={{ common.searchlist(object.current.soegeord, 'soegeordidentifikator') }}
+|Beskrivelse={{ common.searchlist(object.current.soegeord, 'beskrivelse') }}
+|Kategori={{ common.searchlist(object.current.soegeord, 'soegeordskategori') }}
 |Ejer={{ common.bvnlist(object.current.ejer) }}
 |Ansvarlig={{ common.bvnlist(object.current.ansvarlig) }}
 |Redaktoerer={{ common.bvnlist(object.current.redaktoer) }}

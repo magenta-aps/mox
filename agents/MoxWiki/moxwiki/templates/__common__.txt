@@ -10,3 +10,14 @@
     {% endfor %}
 {% endif %}
 {%- endmacro %}
+
+{% macro searchlist(list, key) -%}
+{% if list -%}
+    {% set comma=joiner(",") %}
+    {% for item in list -%}
+        {% if item[key] -%}
+            {{ comma() }}{{ item[key] }}
+        {%- endif %}
+    {%- endfor %}
+{%- endif %}
+{%- endmacro %}

@@ -53,11 +53,16 @@ class MoxWiki(object):
         self.lora = Lora(rest_host, rest_username, rest_password)
 
     def test(self):
-        for type in [Bruger, Interessefaellesskab, ItSystem, Organisation, OrganisationEnhed, OrganisationFunktion, Facet, Klasse, Klassifikation]:
-            uuids = self.lora.get_uuids_of_type(type)
-            for uuid in uuids:
-                item = self.lora.get_object(uuid, type.ENTITY_CLASS)
-                self.update(item.ENTITY_CLASS, uuid, True)
+        # for type in [Bruger, Interessefaellesskab, ItSystem, Organisation, OrganisationEnhed, OrganisationFunktion, Facet, Klasse, Klassifikation]:
+        #     uuids = self.lora.get_uuids_of_type(type)
+        #     for uuid in uuids:
+        #         item = self.lora.get_object(uuid, type.ENTITY_CLASS)
+        #         self.update(item.ENTITY_CLASS, uuid, True)
+
+        uuid = '4e0a9ec8-2f25-4cbe-8094-7025ee280d3b'
+        item = self.lora.get_object(uuid, Klasse.ENTITY_CLASS)
+        self.update(item.ENTITY_CLASS, uuid, True)
+
 
     def callback(self, channel, method, properties, body):
         message = NotificationMessage.parse(properties.headers, body)
@@ -110,10 +115,11 @@ class MoxWiki(object):
             raise TemplateNotFoundException("%s.txt" % objecttype)
         pagetext = template.render({'object': instance, 'begin': '{{', 'end': '}}'})
         print pagename
-        print pagetext
+        if instance.current.soegeord:
+            print pagetext
 
-        if pagetext != page.text():
-            page.save(pagetext, summary="Imported from LoRA instance %s" % self.lora.host)
+        # if pagetext != page.text():
+        #     page.save(pagetext, summary="Imported from LoRA instance %s" % self.lora.host)
 
     def delete(self, objecttype, objectid):
         instance = self.lora.get_object(objectid, objecttype)
