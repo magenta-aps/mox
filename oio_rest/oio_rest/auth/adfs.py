@@ -27,11 +27,6 @@ def _gzipstring(s):
 
     return compressor.compress(s) + compressor.flush()
 
-    fp = StringIO()
-    with gzip.GzipFile(fileobj=fp, mode='wb') as gzfp:
-        gzfp.write(s)
-    return fp.getvalue()
-
 
 def get_token(username, passwd, idp_url, endpoint, pretty_print=False):
     '''Request a SAML authentication token from the given host and endpoint.
