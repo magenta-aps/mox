@@ -1,5 +1,5 @@
 {% import "__common__.txt" as common %}
-{{ begin }}Facet
+{{ begin }}OIOFacet
 |Navn={{ object.current.brugervendtnoegle }}
 |Beskrivelse={{ object.current.facetbeskrivelse }}
 |Publiceret={{ object.current.publiceret }}

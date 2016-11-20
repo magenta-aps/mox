@@ -1,5 +1,5 @@
 {% import "__common__.txt" as common %}
-{{ begin }}Interessefællesskab
+{{ begin }}OIOInteressefællesskab
 |Navn={{ object.current.brugervendtnoegle }}
 |InteressefællesskabsNavn={{ object.current.funktionsnavn }}
 |Nummer={{ object.id }}

@@ -1,5 +1,5 @@
 {% import "__common__.txt" as common %}
-{{ begin }}System
+{{ begin }}OIOSystem
 |Navn={{ object.current.brugervendtnoegle }}
 |ITsystemNavn={{ object.current.name }}
 |Konfigurationsreference={{ object.current.konfigurationreference }}

@@ -1,5 +1,5 @@
 {% import "__common__.txt" as common %}
-{{ begin }}OrganisationEnhed
+{{ begin }}OIOOrganisationEnhed
 |Navn={{ object.current.brugervendtnoegle }}
 |EnhedsNavn={{ object.current.enhedsnavn }}
 |Nummer={{ object.id }}

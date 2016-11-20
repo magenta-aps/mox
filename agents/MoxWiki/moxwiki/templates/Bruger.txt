@@ -1,5 +1,5 @@
 {% import "__common__.txt" as common %}
-{{ begin }}Bruger
+{{ begin }}OIOBruger
 |Navn={{ object.current.brugervendtnoegle }}
 |Brugernavn={{ object.current.brugernavn }}
 |Brugertype={{ object.current.brugertype }}

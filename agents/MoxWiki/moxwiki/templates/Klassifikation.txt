@@ -1,5 +1,5 @@
 {% import "__common__.txt" as common %}
-{{ begin }}Klassifikation
+{{ begin }}OIOKlassifikation
 |Navn={{ object.current.brugervendtnoegle }}
 |KlassifikationKaldenavn={{ object.current.klassifikationkaldenavn }}
 |Beskrivelse={{ object.current.klassifikationbeskrivelse }}

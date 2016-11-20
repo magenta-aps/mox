@@ -1,5 +1,5 @@
 {% import "__common__.txt" as common %}
-{{ begin }}Organisatorisk funktion
+{{ begin }}OIOOrganisationFunktion
 |Navn={{ object.current.brugervendtnoegle }}
 |FunktionsNavn={{ object.current.funktionsnavn }}
 |Nummer={{ object.id }}
