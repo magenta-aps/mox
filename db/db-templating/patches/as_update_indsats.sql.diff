@@ -1,5 +1,5 @@
-*** ./generated-files/as_update_indsats.sql	2016-11-13 15:19:57.000000000 +0100
---- ./patches/as_update_indsats.org.sql	2016-11-13 15:09:40.000000000 +0100
+*** ./generated-files/as_update_indsats.sql	2016-11-20 14:53:01.000000000 +0100
+--- ./patches/as_update_indsats.org.sql	2016-11-20 14:51:38.000000000 +0100
 ***************
 *** 36,45 ****
 --- 36,51 ----
@@ -13,7 +13,7 @@
 +   indsats_rel_type_cardinality_unlimited indsatsRelationKode[]:=ARRAY['indsatskvalitet'::IndsatsRelationKode,'indsatsaktoer'::IndsatsRelationKode,'samtykke'::IndsatsRelationKode,'indsatssag'::IndsatsRelationKode,'indsatsdokument'::IndsatsRelationKode];
 +   indsats_uuid_underscores text;
 +   indsats_rel_seq_name text;
-+   indsats_rel_type_cardinality_unlimited_present_in_argument tilstandRelationKode[];
++   indsats_rel_type_cardinality_unlimited_present_in_argument IndsatsRelationKode[];
   BEGIN
   
   --create a new registrering
@@ -191,7 +191,7 @@
     -- 0..1 relations 
 !   --Please notice, that for 0..1 relations for indsats, we're ignoring index here, and handling it the same way, that is done for other object types (like Facet, Klasse etc). That is, you only make changes for the virkningsperiod that you explicitly specify (unless you delete all relations) 
   
-!   FOREACH indsats_relation_navn in array ARRAY['indsatsstype'::IndsatsRelationKode,'emne'::IndsatsRelationKode,'foelsomhedklasse'::IndsatsRelationKode,'ansvarligklasse'::IndsatsRelationKode,'rekvirentklasse'::IndsatsRelationKode,'ansvarlig'::IndsatsRelationKode,'tilhoerer'::IndsatsRelationKode]::IndsatsRelationKode[]
+!   FOREACH indsats_relation_navn in array ARRAY['indsatstype'::IndsatsRelationKode,'indsatsmodtager'::IndsatsRelationKode]::IndsatsRelationKode[]
     LOOP
   
       INSERT INTO indsats_relation (

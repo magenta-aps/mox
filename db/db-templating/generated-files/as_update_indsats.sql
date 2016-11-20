@@ -43,7 +43,7 @@ DECLARE
   indsats_rel_type_cardinality_unlimited indsatsRelationKode[]:=ARRAY['indsatskvalitet'::IndsatsRelationKode,'indsatsaktoer'::IndsatsRelationKode,'samtykke'::IndsatsRelationKode,'indsatssag'::IndsatsRelationKode,'indsatsdokument'::IndsatsRelationKode];
   indsats_uuid_underscores text;
   indsats_rel_seq_name text;
-  indsats_rel_type_cardinality_unlimited_present_in_argument tilstandRelationKode[];
+  indsats_rel_type_cardinality_unlimited_present_in_argument IndsatsRelationKode[];
 BEGIN
 
 --create a new registrering
@@ -180,7 +180,7 @@ END IF;
   -- 0..1 relations 
   --Please notice, that for 0..1 relations for indsats, we're ignoring index here, and handling it the same way, that is done for other object types (like Facet, Klasse etc). That is, you only make changes for the virkningsperiod that you explicitly specify (unless you delete all relations) 
 
-  FOREACH indsats_relation_navn in array ARRAY['indsatsstype'::IndsatsRelationKode,'emne'::IndsatsRelationKode,'foelsomhedklasse'::IndsatsRelationKode,'ansvarligklasse'::IndsatsRelationKode,'rekvirentklasse'::IndsatsRelationKode,'ansvarlig'::IndsatsRelationKode,'tilhoerer'::IndsatsRelationKode]::IndsatsRelationKode[]
+  FOREACH indsats_relation_navn in array ARRAY['indsatstype'::IndsatsRelationKode,'indsatsmodtager'::IndsatsRelationKode]::IndsatsRelationKode[]
   LOOP
 
     INSERT INTO indsats_relation (
