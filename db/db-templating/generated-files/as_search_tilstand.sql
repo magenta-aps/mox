@@ -756,13 +756,13 @@ ELSE
 					(
 						(relationTypeObj.tilstandsVaerdiAttr).nominelVaerdi IS NULL
 						OR
-						(a.tilstandsVaerdiAttr).nominelVaerdi ILIKE (relationTypeObj.tilstandsVaerdiAttr).nominelVaerdi
+						(a.tilstand_vaerdi_attr).nominelVaerdi ILIKE (relationTypeObj.tilstandsVaerdiAttr).nominelVaerdi
 					)
 					AND
 					(
 						(relationTypeObj.tilstandsVaerdiAttr).forventet IS NULL
 						OR
-						(a.tilstandsVaerdiAttr).forventet = (relationTypeObj.tilstandsVaerdiAttr).forventet
+						(a.tilstand_vaerdi_attr).forventet = (relationTypeObj.tilstandsVaerdiAttr).forventet
 					)
 		
 				)

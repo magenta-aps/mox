@@ -1,5 +1,5 @@
-*** ./generated-files/as_search_tilstand.sql	2016-10-22 10:03:00.000000000 +0200
---- ./patches/as_search_tilstand.org.sql	2016-10-22 09:56:38.000000000 +0200
+*** ./generated-files/as_search_tilstand.sql	2016-11-20 19:01:22.000000000 +0100
+--- ./patches/as_search_tilstand.org.sql	2016-11-20 18:59:10.000000000 +0100
 ***************
 *** 741,750 ****
 --- 741,775 ----
@@ -21,13 +21,13 @@
 + 					(
 + 						(relationTypeObj.tilstandsVaerdiAttr).nominelVaerdi IS NULL
 + 						OR
-+ 						(a.tilstandsVaerdiAttr).nominelVaerdi ILIKE (relationTypeObj.tilstandsVaerdiAttr).nominelVaerdi
++ 						(a.tilstand_vaerdi_attr).nominelVaerdi ILIKE (relationTypeObj.tilstandsVaerdiAttr).nominelVaerdi
 + 					)
 + 					AND
 + 					(
 + 						(relationTypeObj.tilstandsVaerdiAttr).forventet IS NULL
 + 						OR
-+ 						(a.tilstandsVaerdiAttr).forventet = (relationTypeObj.tilstandsVaerdiAttr).forventet
++ 						(a.tilstand_vaerdi_attr).forventet = (relationTypeObj.tilstandsVaerdiAttr).forventet
 + 					)
 + 		
 + 				)

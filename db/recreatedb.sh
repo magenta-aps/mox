@@ -163,7 +163,7 @@ psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_search_dokument.sql
 #tilstand
 psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_create_or_import_tilstand.sql
 psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_update_tilstand.sql
-
+psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_search_tilstand.sql
 
 popd
 

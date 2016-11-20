@@ -593,7 +593,7 @@ read_Tilstand4 := as_read_tilstand(new_uuid1,
 	null --virkning_tstzrange
 	);
 
-raise notice 'read_Tilstand4:%',to_json(read_Tilstand4);
+--raise notice 'read_Tilstand4:%',to_json(read_Tilstand4);
 
 expected_tilstand4:=ROW(
 		new_uuid1,
@@ -662,7 +662,7 @@ expected_tilstand4:=ROW(
 		)::TilstandType
 ;
 
-raise notice 'expected_tilstand4:%',to_json(expected_tilstand4);	
+--raise notice 'expected_tilstand4:%',to_json(expected_tilstand4);	
 
 RETURN NEXT IS(
 	read_Tilstand4,
