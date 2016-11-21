@@ -72,6 +72,27 @@ class Config(object):
                 fp.write("%s = %s\n" % (item['key'], item['value']))
         fp.close()
 
+    def prompt(self, config_translation, args, defaults={}):
+        # config_translation must be a list of 2-tuples
+        # args must be a map of args, where keys match the first value in the tuples, and values are strings
+        # default must be a dict of fallback values
+        for (argkey, confkey) in config_translation:
+            value = None
+            if hasattr(args, argkey):
+                value = getattr(args, argkey)
+            if value is None:
+                # Not good. We must have these values. Prompt the user
+                default = defaults.get(argkey)
+                if default is not None:
+                    value = raw_input("%s = [%s] " % (confkey, default)).strip()
+                    if len(value) == 0:
+                        value = default
+                else:
+                    value = raw_input("%s = " % confkey).strip()
+            else:
+                print "%s = %s" % (confkey, value)
+            self.set(confkey, value)
+
 
 class ConfigNotCreatedException(Exception):
     def __init__(self, filename):
