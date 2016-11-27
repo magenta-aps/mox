@@ -1093,6 +1093,101 @@ actual_search_res_22:=as_search_aktivitet(
 );
 
 RETURN NEXT ok(expected_search_res_22 @> actual_search_res_22 and actual_search_res_22 @>expected_search_res_22 and coalesce(array_length(expected_search_res_22,1),0)=coalesce(array_length(actual_search_res_22,1),0), 'search aktivitet #22.');
+/**************************************************/
+expected_search_res_23:=array[new_uuid2]::uuid[];
+
+actual_search_res_23:=as_search_aktivitet(
+		null,--firstResult
+		null,--aktivitet_uuid
+		null
+		,null	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,null --anyuuidArr
+		,null --array[repraesentation_urn]::text[] --anyurnArr
+		,null --auth_criteria_arr AktivitetRegistreringType[]=null,
+		,null --search_operator_greater_then_attr_egenskaber
+		,ARRAY[
+			ROW (
+				null,--'aktivitet_1_brugervendtnoegle',
+				null,--'aktivitet_1_aktivitetnavn',
+				null,--'aktivitet_1_beskrivelse',
+				null,--'2016-04-20 10:00'::timestamptz,  --'starttidspunkt_aktivitet_1' --text
+				null,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
+				INTERVAL '0000-00 02 00:00:00.0',--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
+				null,--'aktivitet_1_formaal'
+				null--,virkEgenskaber
+				) :: aktivitetEgenskaberAttrType
+		]::AktivitetEgenskaberAttrType[]   --search_operator_less_then_attr_egenskaber
+
+);
+
+RETURN NEXT ok(expected_search_res_23 @> actual_search_res_23 and actual_search_res_23 @>expected_search_res_23 and coalesce(array_length(expected_search_res_23,1),0)=coalesce(array_length(actual_search_res_23,1),0), 'search aktivitet #23.');
+
+/**************************************************/
+
+expected_search_res_24:=array[]::uuid[];
+
+actual_search_res_24:=as_search_aktivitet(
+		null,--firstResult
+		null,--aktivitet_uuid
+		null
+		,null	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,null --anyuuidArr
+		,null --array[repraesentation_urn]::text[] --anyurnArr
+		,null --auth_criteria_arr AktivitetRegistreringType[]=null,
+		,null --search_operator_greater_then_attr_egenskaber
+		,ARRAY[
+			ROW (
+				null,--'aktivitet_1_brugervendtnoegle',
+				null,--'aktivitet_1_aktivitetnavn',
+				null,--'aktivitet_1_beskrivelse',
+				null,--'2016-04-20 10:00'::timestamptz,  --'starttidspunkt_aktivitet_1' --text
+				null,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
+				INTERVAL '0000-00 01 00:00:00.0',--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
+				null,--'aktivitet_1_formaal'
+				null--,virkEgenskaber
+				) :: aktivitetEgenskaberAttrType
+		]::AktivitetEgenskaberAttrType[]   --search_operator_less_then_attr_egenskaber
+
+);
+
+RETURN NEXT ok(expected_search_res_24 @> actual_search_res_24 and actual_search_res_24 @>expected_search_res_24 and coalesce(array_length(expected_search_res_24,1),0)=coalesce(array_length(actual_search_res_24,1),0), 'search aktivitet #24.');
+
+/**************************************************/
+
+expected_search_res_25:=array[new_uuid1,new_uuid2]::uuid[];
+
+actual_search_res_25:=as_search_aktivitet(
+		null,--firstResult
+		null,--aktivitet_uuid
+		null
+		,null	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,null --anyuuidArr
+		,null --array[repraesentation_urn]::text[] --anyurnArr
+		,null --auth_criteria_arr AktivitetRegistreringType[]=null,
+		,null --search_operator_greater_then_attr_egenskaber
+		,ARRAY[
+			ROW (
+				null,--'aktivitet_1_brugervendtnoegle',
+				null,--'aktivitet_1_aktivitetnavn',
+				null,--'aktivitet_1_beskrivelse',
+				null,--'2016-04-20 10:00'::timestamptz,  --'starttidspunkt_aktivitet_1' --text
+				null,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
+				INTERVAL '0000-01 00 00:00:00.0',--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
+				null,--'aktivitet_1_formaal'
+				null--,virkEgenskaber
+				) :: aktivitetEgenskaberAttrType
+		]::AktivitetEgenskaberAttrType[]   --search_operator_less_then_attr_egenskaber
+
+);
+
+RETURN NEXT ok(expected_search_res_25 @> actual_search_res_25 and actual_search_res_25 @>expected_search_res_25 and coalesce(array_length(expected_search_res_25,1),0)=coalesce(array_length(actual_search_res_25,1),0), 'search aktivitet #25.');
+
 
 
 --raise notice 'actual_search_res_19:%',to_json(actual_search_res_19);

@@ -1093,7 +1093,7 @@ END IF;
 --/**********************//
 
  --/**********************************************************//
---Filtration using operator 'greather than': Egenskaber
+--Filtration using operator 'greather than or equal': Egenskaber
 --/**********************************************************//
 IF coalesce(array_length(search_operator_greater_than_or_equal_attr_egenskaber,1),0)>0 THEN
 	IF (coalesce(array_length(aktivitet_candidates,1),0)>0 OR NOT aktivitet_candidates_is_initialized) THEN
@@ -1268,8 +1268,183 @@ IF coalesce(array_length(search_operator_greater_than_or_equal_attr_egenskaber,1
 --RAISE DEBUG 'aktivitet_candidates_is_initialized step 3:%',aktivitet_candidates_is_initialized;
 --RAISE DEBUG 'aktivitet_candidates step 3:%',aktivitet_candidates;
 
---/**********************//
+ --/**********************************************************//
+--Filtration using operator 'less than or equal': Egenskaber
+--/**********************************************************//
+IF coalesce(array_length(search_operator_less_than_or_equal_attr_egenskaber,1),0)>0 THEN
+	IF (coalesce(array_length(aktivitet_candidates,1),0)>0 OR NOT aktivitet_candidates_is_initialized) THEN
+		FOREACH attrEgenskaberTypeObj IN ARRAY search_operator_less_than_or_equal_attr_egenskaber
+		LOOP
+			aktivitet_candidates:=array(
+			SELECT DISTINCT
+			b.aktivitet_id 
+			FROM  aktivitet_attr_egenskaber a
+			JOIN aktivitet_registrering b on a.aktivitet_registrering_id=b.id
+			WHERE
+				(
+					(
+						attrEgenskaberTypeObj.virkning IS NULL 
+						OR
+						(
+							(
+								(
+							 		(attrEgenskaberTypeObj.virkning).TimePeriod IS NULL
+								)
+								OR
+								(
+									(attrEgenskaberTypeObj.virkning).TimePeriod && (a.virkning).TimePeriod
+								)
+							)
+							AND
+							(
+									(attrEgenskaberTypeObj.virkning).AktoerRef IS NULL OR (attrEgenskaberTypeObj.virkning).AktoerRef=(a.virkning).AktoerRef
+							)
+							AND
+							(
+									(attrEgenskaberTypeObj.virkning).AktoerTypeKode IS NULL OR (attrEgenskaberTypeObj.virkning).AktoerTypeKode=(a.virkning).AktoerTypeKode
+							)
+							AND
+							(
+									(attrEgenskaberTypeObj.virkning).NoteTekst IS NULL OR  (a.virkning).NoteTekst ILIKE (attrEgenskaberTypeObj.virkning).NoteTekst  
+							)
+						)
+					)
+				)
+				AND
+				(
+					(NOT (attrEgenskaberTypeObj.virkning IS NULL OR (attrEgenskaberTypeObj.virkning).TimePeriod IS NULL)) --we have already filtered on virkning above
+					OR
+					(
+						virkningSoeg IS NULL
+						OR
+						virkningSoeg && (a.virkning).TimePeriod
+					)
+				)
+				AND
+				(
+					attrEgenskaberTypeObj.brugervendtnoegle IS NULL
+					OR 
+					a.brugervendtnoegle <= attrEgenskaberTypeObj.brugervendtnoegle 
+				)
+				AND
+				(
+					attrEgenskaberTypeObj.aktivitetnavn IS NULL
+					OR 
+					a.aktivitetnavn <= attrEgenskaberTypeObj.aktivitetnavn 
+				)
+				AND
+				(
+					attrEgenskaberTypeObj.beskrivelse IS NULL
+					OR 
+					a.beskrivelse <= attrEgenskaberTypeObj.beskrivelse 
+				)
+				AND
+				(
+					attrEgenskaberTypeObj.starttidspunkt IS NULL
+					OR 
+					a.starttidspunkt <= attrEgenskaberTypeObj.starttidspunkt 
+				)
+				AND
+				(
+					attrEgenskaberTypeObj.sluttidspunkt IS NULL
+					OR 
+					a.sluttidspunkt <= attrEgenskaberTypeObj.sluttidspunkt 
+				)
+				AND
+				(
+					attrEgenskaberTypeObj.tidsforbrug IS NULL
+					OR 
+					a.tidsforbrug <= attrEgenskaberTypeObj.tidsforbrug 
+				)
+				AND
+				(
+					attrEgenskaberTypeObj.formaal IS NULL
+					OR 
+					a.formaal <= attrEgenskaberTypeObj.formaal 
+				)
+				AND
+						(
+				(registreringObj.registrering) IS NULL 
+				OR
+				(
+					(
+						(registreringObj.registrering).timeperiod IS NULL 
+						OR
+						(registreringObj.registrering).timeperiod && (b.registrering).timeperiod
+					)
+					AND
+					(
+						(registreringObj.registrering).livscykluskode IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode = (b.registrering).livscykluskode 		
+					) 
+					AND
+					(
+						(registreringObj.registrering).brugerref IS NULL
+						OR
+						(registreringObj.registrering).brugerref = (b.registrering).brugerref
+					)
+					AND
+					(
+						(registreringObj.registrering).note IS NULL
+						OR
+						(b.registrering).note ILIKE (registreringObj.registrering).note
+					)
+			)
+		)
+		AND
+		(
+			(
+				((b.registrering).livscykluskode <> 'Slettet'::Livscykluskode )
+				AND
+					(
+						(registreringObj.registrering) IS NULL 
+						OR
+						(registreringObj.registrering).livscykluskode IS NULL 
+					)
+			)
+			OR
+			(
+				(NOT ((registreringObj.registrering) IS NULL))
+				AND
+				(registreringObj.registrering).livscykluskode IS NOT NULL 
+			)
+		)
+		AND
+		(
+			(
+			  (
+			  	(registreringObj.registrering) IS NULL
+			  	OR
+			  	(registreringObj.registrering).timeperiod IS NULL
+			  )
+			  AND
+			  upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ
+			)  	
+		OR
+			(
+				(NOT ((registreringObj.registrering) IS NULL))
+				AND
+				((registreringObj.registrering).timeperiod IS NOT NULL)
+			)
+		)
+		AND
+		( (NOT aktivitet_candidates_is_initialized) OR b.aktivitet_id = ANY (aktivitet_candidates) )
 
+			);
+			
+
+			aktivitet_candidates_is_initialized:=true;
+			
+			
+			END LOOP;
+		END IF;	
+	END IF;
+
+--RAISE DEBUG 'aktivitet_candidates_is_initialized step 3:%',aktivitet_candidates_is_initialized;
+--RAISE DEBUG 'aktivitet_candidates step 3:%',aktivitet_candidates;
+
+--/**********************//
 
 
 
