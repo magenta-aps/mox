@@ -1,5 +1,5 @@
-*** ./generated-files/as_search_aktivitet.sql	2016-10-22 13:41:14.000000000 +0200
---- ./patches/as_search_aktivitet.org.sql	2016-10-22 13:15:53.000000000 +0200
+*** ./generated-files/as_search_aktivitet.sql	2016-11-27 12:19:14.000000000 +0100
+--- ./patches/as_search_aktivitet.org.sql	2016-11-27 12:15:53.000000000 +0100
 ***************
 *** 776,785 ****
 --- 776,821 ----
@@ -71,7 +71,7 @@
 ! 			(
 ! 				anyuuid = a.rel_maal_uuid
 ! 			OR  
-! 				((NOT (a.aktoer_attr IS NULL)) AND anyuuid = (a.aktoer_attr).repraesentation_uuid
+! 				((NOT (a.aktoer_attr IS NULL)) AND anyuuid = (a.aktoer_attr).repraesentation_uuid )
 ! 			)
   			AND
   			(

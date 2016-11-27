@@ -905,7 +905,7 @@ IF coalesce(array_length(anyuuidArr ,1),0)>0 THEN
 			(
 				anyuuid = a.rel_maal_uuid
 			OR  
-				((NOT (a.aktoer_attr IS NULL)) AND anyuuid = (a.aktoer_attr).repraesentation_uuid
+				((NOT (a.aktoer_attr IS NULL)) AND anyuuid = (a.aktoer_attr).repraesentation_uuid )
 			)
 			AND
 			(
