@@ -74,6 +74,24 @@ DECLARE
 	expected_search_res_9 uuid[];
 	expected_search_res_10 uuid[];
 	expected_search_res_11 uuid[];
+	expected_search_res_12 uuid[];
+	expected_search_res_13 uuid[];
+	expected_search_res_14 uuid[];
+	expected_search_res_15 uuid[];
+	expected_search_res_16 uuid[];
+	expected_search_res_17 uuid[];
+	expected_search_res_18 uuid[];
+	expected_search_res_19 uuid[];
+	expected_search_res_20 uuid[];
+	expected_search_res_21 uuid[];
+	expected_search_res_22 uuid[];
+	expected_search_res_23 uuid[];
+	expected_search_res_24 uuid[];
+	expected_search_res_25 uuid[];
+	expected_search_res_26 uuid[];
+	expected_search_res_27 uuid[];
+	expected_search_res_28 uuid[];
+	expected_search_res_29 uuid[];
 
 	actual_search_res_1 uuid[];
 	actual_search_res_2 uuid[];
@@ -86,6 +104,24 @@ DECLARE
 	actual_search_res_9 uuid[];
 	actual_search_res_10 uuid[];
 	actual_search_res_11 uuid[];
+	actual_search_res_12 uuid[];
+	actual_search_res_13 uuid[];
+	actual_search_res_14 uuid[];
+	actual_search_res_15 uuid[];
+	actual_search_res_16 uuid[];
+	actual_search_res_17 uuid[];
+	actual_search_res_18 uuid[];
+	actual_search_res_19 uuid[];
+	actual_search_res_20 uuid[];
+	actual_search_res_21 uuid[];
+	actual_search_res_22 uuid[];
+	actual_search_res_23 uuid[];
+	actual_search_res_24 uuid[];
+	actual_search_res_25 uuid[];
+	actual_search_res_26 uuid[];
+	actual_search_res_27 uuid[];
+	actual_search_res_28 uuid[];
+	actual_search_res_29 uuid[];
 
 BEGIN
 
@@ -694,8 +730,388 @@ actual_search_res_11:=as_search_aktivitet(
 
 RETURN NEXT ok(expected_search_res_11 @> actual_search_res_11 and actual_search_res_11 @>expected_search_res_11 and coalesce(array_length(expected_search_res_11,1),0)=coalesce(array_length(actual_search_res_11,1),0), 'search aktivitet #11.');
 
+/**************************************************/
+expected_search_res_12:=array[new_uuid1,new_uuid2]::uuid[];
+
+actual_search_res_12:=as_search_aktivitet(
+		null,--firstResult
+		null,--aktivitet_uuid
+		null
+		,null --virkningSoeg	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,null --anyuuidArr
+		,null --array[repraesentation_urn]::text[] --anyurnArr
+		,null --auth_criteria_arr AktivitetRegistreringType[]=null,
+		,ARRAY[
+			ROW (
+				null,--'aktivitet_1_brugervendtnoegle',
+				null,--'aktivitet_1_aktivitetnavn',
+				null,--'aktivitet_1_beskrivelse',
+				'2016-04-01 00:00'::timestamptz,  --'starttidspunkt_aktivitet_1' --text
+				null,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
+				null,--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
+				null,--'aktivitet_1_formaal'
+				null--,virkEgenskaber
+				) :: aktivitetEgenskaberAttrType
+		]::AktivitetEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null,
+		,null --search_operator_less_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null
+
+);
+
+RETURN NEXT ok(expected_search_res_12 @> actual_search_res_12 and actual_search_res_12 @>expected_search_res_12 and coalesce(array_length(expected_search_res_12,1),0)=coalesce(array_length(actual_search_res_12,1),0), 'search aktivitet #12.');
+
+/**************************************************/
+
+/**************************************************/
+expected_search_res_13:=array[]::uuid[];
+
+actual_search_res_13:=as_search_aktivitet(
+		null,--firstResult
+		null,--aktivitet_uuid
+		null
+		,null --virkningSoeg	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,null --anyuuidArr
+		,null --array[repraesentation_urn]::text[] --anyurnArr
+		,null --auth_criteria_arr AktivitetRegistreringType[]=null,
+		,ARRAY[
+			ROW (
+				null,--'aktivitet_1_brugervendtnoegle',
+				null,--'aktivitet_1_aktivitetnavn',
+				null,--'aktivitet_1_beskrivelse',
+				'2018-01-01 00:00'::timestamptz,  --'starttidspunkt_aktivitet_1' --text
+				null,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
+				null,--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
+				null,--'aktivitet_1_formaal'
+				null--,virkEgenskaber
+				) :: aktivitetEgenskaberAttrType
+		]::AktivitetEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null,
+		,null --search_operator_less_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null
+
+);
+
+RETURN NEXT ok(expected_search_res_13 @> actual_search_res_13 and actual_search_res_13 @>expected_search_res_13 and coalesce(array_length(expected_search_res_13,1),0)=coalesce(array_length(actual_search_res_13,1),0), 'search aktivitet #13.');
+
+--raise notice 'actual_search_res_13:%',to_json(actual_search_res_13);
+--raise notice 'expected_search_res_13:%',to_json(expected_search_res_13);
+
+/**************************************************/
+
+expected_search_res_14:=array[new_uuid1,new_uuid2]::uuid[];
+
+actual_search_res_14:=as_search_aktivitet(
+		null,--firstResult
+		null,--aktivitet_uuid
+		null
+		,null --virkningSoeg	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,null --anyuuidArr
+		,null --array[repraesentation_urn]::text[] --anyurnArr
+		,null --auth_criteria_arr AktivitetRegistreringType[]=null,
+		,ARRAY[
+			ROW (
+				null,--'aktivitet_1_brugervendtnoegle',
+				null,--'aktivitet_1_aktivitetnavn',
+				null,--'aktivitet_1_beskrivelse',
+				'2016-01-01 00:00'::timestamptz,  --'starttidspunkt_aktivitet_1' --text
+				null,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
+				null,--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
+				null,--'aktivitet_1_formaal'
+						ROW (
+			'[2015-06-01, 2015-06-01]' :: TSTZRANGE,
+				null,
+				null,
+				null
+				) :: Virkning
+						) :: aktivitetEgenskaberAttrType
+		]::AktivitetEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null,
+		,null --search_operator_less_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null
+
+);
+
+RETURN NEXT ok(expected_search_res_14 @> actual_search_res_14 and actual_search_res_14 @>expected_search_res_14 and coalesce(array_length(expected_search_res_14,1),0)=coalesce(array_length(actual_search_res_14,1),0), 'search aktivitet #14.');
+/**************************************************/
+
+/**************************************************/
+
+expected_search_res_15:=array[new_uuid2]::uuid[];
+
+actual_search_res_15:=as_search_aktivitet(
+		null,--firstResult
+		null,--aktivitet_uuid
+		null
+		,null --virkningSoeg	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,null --anyuuidArr
+		,null --array[repraesentation_urn]::text[] --anyurnArr
+		,null --auth_criteria_arr AktivitetRegistreringType[]=null,
+		,ARRAY[
+			ROW (
+				null,--'aktivitet_1_brugervendtnoegle',
+				null,--'aktivitet_1_aktivitetnavn',
+				null,--'aktivitet_1_beskrivelse',
+				'2016-01-01 00:00'::timestamptz,  --'starttidspunkt_aktivitet_1' --text
+				null,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
+				null,--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
+				null,--'aktivitet_1_formaal'
+						ROW (
+			'[2015-06-10, 2015-06-10]' :: TSTZRANGE,
+				null,
+				null,
+				null
+				) :: Virkning
+						) :: aktivitetEgenskaberAttrType
+		]::AktivitetEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null,
+		,null --search_operator_less_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null
+
+);
+
+RETURN NEXT ok(expected_search_res_15 @> actual_search_res_15 and actual_search_res_15 @>expected_search_res_15 and coalesce(array_length(expected_search_res_15,1),0)=coalesce(array_length(actual_search_res_15,1),0), 'search aktivitet #15.');
+
+/**************************************************/
+
+/**************************************************/
+expected_search_res_16:=array[new_uuid2]::uuid[];
+
+actual_search_res_16:=as_search_aktivitet(
+		null,--firstResult
+		null,--aktivitet_uuid
+		null
+		,null --virkningSoeg	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,null --anyuuidArr
+		,null --array[repraesentation_urn]::text[] --anyurnArr
+		,null --auth_criteria_arr AktivitetRegistreringType[]=null,
+		,ARRAY[
+			ROW (
+				null,--'aktivitet_1_brugervendtnoegle',
+				null,--'aktivitet_1_aktivitetnavn',
+				null,--'aktivitet_1_beskrivelse',
+				null,--'2018-01-01 00:00'::timestamptz,  --'starttidspunkt_aktivitet_1' --text
+				'2017-02-27 09:00'::timestamptz,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
+				null,--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
+				null,--'aktivitet_1_formaal'
+				null--,virkEgenskaber
+				) :: aktivitetEgenskaberAttrType
+		]::AktivitetEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null,
+		,null --search_operator_less_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null
+
+);
+
+RETURN NEXT ok(expected_search_res_16 @> actual_search_res_16 and actual_search_res_16 @>expected_search_res_16 and coalesce(array_length(expected_search_res_16,1),0)=coalesce(array_length(actual_search_res_16,1),0), 'search aktivitet #16.');
 
 
+/**************************************************/
+expected_search_res_17:=array[new_uuid2,new_uuid1]::uuid[];
+
+actual_search_res_17:=as_search_aktivitet(
+		null,--firstResult
+		null,--aktivitet_uuid
+		null
+		,null --virkningSoeg	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,null --anyuuidArr
+		,null --array[repraesentation_urn]::text[] --anyurnArr
+		,null --auth_criteria_arr AktivitetRegistreringType[]=null,
+		,ARRAY[
+			ROW (
+				null,--'aktivitet_1_brugervendtnoegle',
+				null,--'aktivitet_1_aktivitetnavn',
+				null,--'aktivitet_1_beskrivelse',
+				null,--'2018-01-01 00:00'::timestamptz,  --'starttidspunkt_aktivitet_1' --text
+				'2017-02-27 08:00'::timestamptz,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
+				null,--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
+				null,--'aktivitet_1_formaal'
+				null--,virkEgenskaber
+				) :: aktivitetEgenskaberAttrType
+		]::AktivitetEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null,
+		,null --search_operator_less_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null
+
+);
+
+RETURN NEXT ok(expected_search_res_17 @> actual_search_res_17 and actual_search_res_17 @>expected_search_res_17 and coalesce(array_length(expected_search_res_17,1),0)=coalesce(array_length(actual_search_res_17,1),0), 'search aktivitet #17.');
+
+
+/**************************************************/
+expected_search_res_18:=array[]::uuid[];
+
+actual_search_res_18:=as_search_aktivitet(
+		null,--firstResult
+		null,--aktivitet_uuid
+		null
+		,null --virkningSoeg	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,null --anyuuidArr
+		,null --array[repraesentation_urn]::text[] --anyurnArr
+		,null --auth_criteria_arr AktivitetRegistreringType[]=null,
+		,ARRAY[
+			ROW (
+				null,--'aktivitet_1_brugervendtnoegle',
+				null,--'aktivitet_1_aktivitetnavn',
+				null,--'aktivitet_1_beskrivelse',
+				null,--'2018-01-01 00:00'::timestamptz,  --'starttidspunkt_aktivitet_1' --text
+				'2017-02-27 13:00'::timestamptz,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
+				null,--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
+				null,--'aktivitet_1_formaal'
+				null--,virkEgenskaber
+				) :: aktivitetEgenskaberAttrType
+		]::AktivitetEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null,
+		,null --search_operator_less_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null
+
+);
+
+RETURN NEXT ok(expected_search_res_18 @> actual_search_res_18 and actual_search_res_18 @>expected_search_res_18 and coalesce(array_length(expected_search_res_18,1),0)=coalesce(array_length(actual_search_res_18,1),0), 'search aktivitet #18.');
+
+/**************************************************/
+expected_search_res_19:=array[new_uuid1,new_uuid2]::uuid[];
+
+actual_search_res_19:=as_search_aktivitet(
+		null,--firstResult
+		null,--aktivitet_uuid
+		null
+		,null --virkningSoeg	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,null --anyuuidArr
+		,null --array[repraesentation_urn]::text[] --anyurnArr
+		,null --auth_criteria_arr AktivitetRegistreringType[]=null,
+		,ARRAY[
+			ROW (
+				null,--'aktivitet_1_brugervendtnoegle',
+				null,--'aktivitet_1_aktivitetnavn',
+				null,--'aktivitet_1_beskrivelse',
+				'2016-04-20 10:00'::timestamptz,  --'starttidspunkt_aktivitet_1' --text
+				null,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
+				null,--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
+				null,--'aktivitet_1_formaal'
+				null--,virkEgenskaber
+				) :: aktivitetEgenskaberAttrType
+		]::AktivitetEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null,
+		,null --search_operator_less_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null
+
+);
+
+RETURN NEXT ok(expected_search_res_19 @> actual_search_res_19 and actual_search_res_19 @>expected_search_res_19 and coalesce(array_length(expected_search_res_19,1),0)=coalesce(array_length(actual_search_res_19,1),0), 'search aktivitet #19.');
+
+
+/**************************************************/
+expected_search_res_20:=array[new_uuid1,new_uuid2]::uuid[];
+
+actual_search_res_20:=as_search_aktivitet(
+		null,--firstResult
+		null,--aktivitet_uuid
+		null
+		,null --virkningSoeg	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,null --anyuuidArr
+		,null --array[repraesentation_urn]::text[] --anyurnArr
+		,null --auth_criteria_arr AktivitetRegistreringType[]=null,
+		,ARRAY[
+			ROW (
+				null,--'aktivitet_1_brugervendtnoegle',
+				null,--'aktivitet_1_aktivitetnavn',
+				null,--'aktivitet_1_beskrivelse',
+				null,--'2016-04-20 10:00'::timestamptz,  --'starttidspunkt_aktivitet_1' --text
+				null,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
+				INTERVAL '0000-00 01 00:00:00.0',--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
+				null,--'aktivitet_1_formaal'
+				null--,virkEgenskaber
+				) :: aktivitetEgenskaberAttrType
+		]::AktivitetEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null,
+		,null --search_operator_less_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null
+
+);
+
+RETURN NEXT ok(expected_search_res_20 @> actual_search_res_20 and actual_search_res_20 @>expected_search_res_20 and coalesce(array_length(expected_search_res_20,1),0)=coalesce(array_length(actual_search_res_20,1),0), 'search aktivitet #20.');
+
+/**************************************************/
+expected_search_res_21:=array[]::uuid[];
+
+actual_search_res_21:=as_search_aktivitet(
+		null,--firstResult
+		null,--aktivitet_uuid
+		null
+		,'[2015-06-10 , 2015-06-10]' :: TSTZRANGE --virkningSoeg	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,null --anyuuidArr
+		,null --array[repraesentation_urn]::text[] --anyurnArr
+		,null --auth_criteria_arr AktivitetRegistreringType[]=null,
+		,ARRAY[
+			ROW (
+				null,--'aktivitet_1_brugervendtnoegle',
+				null,--'aktivitet_1_aktivitetnavn',
+				null,--'aktivitet_1_beskrivelse',
+				null,--'2016-04-20 10:00'::timestamptz,  --'starttidspunkt_aktivitet_1' --text
+				null,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
+				INTERVAL '0000-00 02 00:00:00.0',--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
+				null,--'aktivitet_1_formaal'
+				null--,virkEgenskaber
+				) :: aktivitetEgenskaberAttrType
+		]::AktivitetEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null,
+		,null --search_operator_less_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null
+
+);
+
+RETURN NEXT ok(expected_search_res_21 @> actual_search_res_21 and actual_search_res_21 @>expected_search_res_21 and coalesce(array_length(expected_search_res_21,1),0)=coalesce(array_length(actual_search_res_21,1),0), 'search aktivitet #21.');
+
+/**************************************************/
+expected_search_res_22:=array[new_uuid2]::uuid[];
+
+actual_search_res_22:=as_search_aktivitet(
+		null,--firstResult
+		null,--aktivitet_uuid
+		null
+		,'[2015-06-10 , 2015-06-10]' :: TSTZRANGE --virkningSoeg	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,null --anyuuidArr
+		,null --array[repraesentation_urn]::text[] --anyurnArr
+		,null --auth_criteria_arr AktivitetRegistreringType[]=null,
+		,ARRAY[
+			ROW (
+				null,--'aktivitet_1_brugervendtnoegle',
+				null,--'aktivitet_1_aktivitetnavn',
+				null,--'aktivitet_1_beskrivelse',
+				null,--'2016-04-20 10:00'::timestamptz,  --'starttidspunkt_aktivitet_1' --text
+				null,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
+				INTERVAL '0000-00 01 00:00:00.0',--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
+				null,--'aktivitet_1_formaal'
+				null--,virkEgenskaber
+				) :: aktivitetEgenskaberAttrType
+		]::AktivitetEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null,
+		,null --search_operator_less_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null
+
+);
+
+RETURN NEXT ok(expected_search_res_22 @> actual_search_res_22 and actual_search_res_22 @>expected_search_res_22 and coalesce(array_length(expected_search_res_22,1),0)=coalesce(array_length(actual_search_res_22,1),0), 'search aktivitet #22.');
+
+
+--raise notice 'actual_search_res_19:%',to_json(actual_search_res_19);
+--raise notice 'expected_search_res_19:%',to_json(expected_search_res_19);
+
+
+/*
+	firstResult int,--TOOD ??
+	aktivitet_uuid uuid,
+	registreringObj AktivitetRegistreringType,
+	virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+	maxResults int = 2147483647,
+	anyAttrValueArr text[] = '{}'::text[],
+	anyuuidArr	uuid[] = '{}'::uuid[],
+	anyurnArr text[] = '{}'::text[],
+	auth_criteria_arr AktivitetRegistreringType[]=null,
+	search_operator_greater_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null,
+	search_operator_less_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null
+*/
 
 END;
 $$;
