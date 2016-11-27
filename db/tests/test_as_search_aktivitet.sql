@@ -67,12 +67,25 @@ DECLARE
 	expected_search_res_2 uuid[];
 	expected_search_res_3 uuid[];
 	expected_search_res_4 uuid[];
+	expected_search_res_5 uuid[];
+	expected_search_res_6 uuid[];
+	expected_search_res_7 uuid[];
+	expected_search_res_8 uuid[];
+	expected_search_res_9 uuid[];
+	expected_search_res_10 uuid[];
+	expected_search_res_11 uuid[];
 
 	actual_search_res_1 uuid[];
 	actual_search_res_2 uuid[];
 	actual_search_res_3 uuid[];
 	actual_search_res_4 uuid[];
-
+	actual_search_res_5 uuid[];
+	actual_search_res_6 uuid[];
+	actual_search_res_7 uuid[];
+	actual_search_res_8 uuid[];
+	actual_search_res_9 uuid[];
+	actual_search_res_10 uuid[];
+	actual_search_res_11 uuid[];
 
 BEGIN
 
@@ -390,6 +403,297 @@ actual_search_res_1:=as_search_aktivitet(null,null,
 );
 
 RETURN NEXT ok(expected_search_res_1 @> actual_search_res_1 and actual_search_res_1 @>expected_search_res_1 and coalesce(array_length(expected_search_res_1,1),0)=coalesce(array_length(actual_search_res_1,1),0), 'search aktivitet #1.');
+
+
+/**************************************************/
+
+expected_search_res_2:=array[new_uuid1,new_uuid2]::uuid[];
+
+actual_search_res_2:=as_search_aktivitet(null,null,
+			ROW(
+			null,
+			null,-- AktivitetStatusTilsType[],
+			null,-- AktivitetPubliceretTilsType[],
+			ARRAY[ ROW (
+ null,--'aktivitet_2_brugervendtnoegle',
+ null,--'aktivitet_2_aktivitetnavn',
+ null,--'aktivitet_2_beskrivelse',
+ '2017-02-25 17:00'::timestamptz,--'2016-04-20 10:00'::timestamptz,  --'starttidspunkt_aktivitet_1' --text
+ null,--'2017-02-27 12:00'::timestamptz, -- sluttidspunkt,
+ null,-- INTERVAL '0000-00 01 04:00:01.0', --tidsforbrug
+ null,--'aktivitet_2_formaal'
+ null--virkEgenskaber2
+) :: aktivitetEgenskaberAttrType ]::aktivitetEgenskaberAttrType[],
+			null-- AktivitetRelationType[]
+			)::aktivitetRegistreringType	
+		,null
+);
+
+RETURN NEXT ok(expected_search_res_2 @> actual_search_res_2 and actual_search_res_2 @>expected_search_res_2 and coalesce(array_length(expected_search_res_2,1),0)=coalesce(array_length(actual_search_res_2,1),0), 'search aktivitet #2.');
+
+/**************************************************/
+expected_search_res_3:=array[new_uuid2]::uuid[];
+
+actual_search_res_3:=as_search_aktivitet(null,null,
+		ROW(
+			null,
+			null,-- AktivitetStatusTilsType[],
+			null,-- AktivitetPubliceretTilsType[],
+			ARRAY[ ROW (
+ null,--'aktivitet_3_brugervendtnoegle',
+ null,--'aktivitet_3_aktivitetnavn',
+ null,--'aktivitet_3_beskrivelse',
+ null,--'2016-04-20 10:00'::timestamptz,  --'starttidspunkt_aktivitet_3' --text
+ null,--'2017-02-27 12:00'::timestamptz, -- sluttidspunkt,
+ INTERVAL '0000-00 01 04:00:01.0', --tidsforbrug
+ null,--'aktivitet_3_formaal'
+ null--virkEgenskaber2
+) :: aktivitetEgenskaberAttrType ]::aktivitetEgenskaberAttrType[],
+			null-- AktivitetRelationType[]
+			)::aktivitetRegistreringType	
+		,null
+);
+
+RETURN NEXT ok(expected_search_res_3 @> actual_search_res_3 and actual_search_res_3 @>expected_search_res_3 and coalesce(array_length(expected_search_res_3,1),0)=coalesce(array_length(actual_search_res_3,1),0), 'search aktivitet #3.');
+
+/**************************************************/
+expected_search_res_4:=array[new_uuid1]::uuid[];
+
+actual_search_res_4:=as_search_aktivitet(
+		null,--firstResult
+		null,--aktivitet_uuid
+		null,--registreringObj
+		null --virkningSoeg	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,array[repraesentation_uuid]::uuid[]
+		,null --anyurnArr
+);
+
+RETURN NEXT ok(expected_search_res_4 @> actual_search_res_4 and actual_search_res_4 @>expected_search_res_4 and coalesce(array_length(expected_search_res_4,1),0)=coalesce(array_length(actual_search_res_4,1),0), 'search aktivitet #4.');
+
+/**************************************************/
+expected_search_res_5:=array[new_uuid1]::uuid[];
+
+actual_search_res_5:=as_search_aktivitet(
+		null,--firstResult
+		null,--aktivitet_uuid
+		null,--registreringObj
+		null --virkningSoeg	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,null --anyuuidArr
+		,array[repraesentation_urn]::text[] --anyurnArr
+);
+
+RETURN NEXT ok(expected_search_res_5 @> actual_search_res_5 and actual_search_res_5 @>expected_search_res_5 and coalesce(array_length(expected_search_res_5,1),0)=coalesce(array_length(actual_search_res_5,1),0), 'search aktivitet #5.');
+
+
+/**************************************************/
+expected_search_res_6:=array[new_uuid2]::uuid[];
+
+actual_search_res_6:=as_search_aktivitet(
+		null,--firstResult
+		null,--aktivitet_uuid
+		null,--registreringObj
+		null --virkningSoeg	
+		,null --maxResults
+		,array['aktivitet_2_brugervendtnoegle']::text[] --anyAttrValueArr
+		,null --anyuuidArr
+		,null --array[repraesentation_urn]::text[] --anyurnArr
+);
+
+RETURN NEXT ok(expected_search_res_6 @> actual_search_res_6 and actual_search_res_6 @>expected_search_res_6 and coalesce(array_length(expected_search_res_6,1),0)=coalesce(array_length(actual_search_res_6,1),0), 'search aktivitet #6.');
+
+
+/**************************************************/
+expected_search_res_7:=array[new_uuid1]::uuid[];
+
+actual_search_res_7:=as_search_aktivitet(
+		null,--firstResult
+		null,--aktivitet_uuid
+		ROW(
+			null,
+			null,-- AktivitetStatusTilsType[],
+			null,-- AktivitetPubliceretTilsType[],
+			null,
+			ARRAY [
+				ROW (
+	'udfoerer'::aktivitetRelationKode
+	,null--virkUdfoerer1
+	,null--uuidUdfoerer1
+	,null
+	,null--'Person'
+	,null--3 --NOTICE: Should be replace in by import function
+	,ROW (
+		 null,--'valgfri'::AktivitetAktoerAttrObligatorikKode,
+  		'foreloebigt'::AktivitetAktoerAttrAccepteretKode,
+    null,--repraesentation_uuid,
+  null 
+	)::AktivitetAktoerAttr
+) :: aktivitetRelationType
+			]::AktivitetRelationType[]
+							)::aktivitetRegistreringType
+		,null --virkningSoeg	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,null --anyuuidArr
+		,null --array[repraesentation_urn]::text[] --anyurnArr
+);
+
+RETURN NEXT ok(expected_search_res_7 @> actual_search_res_7 and actual_search_res_7 @>expected_search_res_7 and coalesce(array_length(expected_search_res_7,1),0)=coalesce(array_length(actual_search_res_7,1),0), 'search aktivitet #7.');
+
+
+/**************************************************/
+expected_search_res_8:=array[]::uuid[];
+
+actual_search_res_8:=as_search_aktivitet(
+		null,--firstResult
+		null,--aktivitet_uuid
+		ROW(
+			null,
+			null,-- AktivitetStatusTilsType[],
+			null,-- AktivitetPubliceretTilsType[],
+			null,
+			ARRAY [
+				ROW (
+	'udfoerer'::aktivitetRelationKode
+	,null--virkUdfoerer1
+	,null--uuidUdfoerer1
+	,null
+	,null--'Person'
+	,null--3 --NOTICE: Should be replace in by import function
+	,ROW (
+		 'noedvendig'::AktivitetAktoerAttrObligatorikKode, --'valgfri'::AktivitetAktoerAttrObligatorikKode,
+  		'foreloebigt'::AktivitetAktoerAttrAccepteretKode,
+    null,--repraesentation_uuid,
+  null 
+	)::AktivitetAktoerAttr
+) :: aktivitetRelationType
+			]::AktivitetRelationType[]
+							)::aktivitetRegistreringType
+		,null --virkningSoeg	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,null --anyuuidArr
+		,null --array[repraesentation_urn]::text[] --anyurnArr
+);
+
+RETURN NEXT ok(expected_search_res_8 @> actual_search_res_8 and actual_search_res_8 @>expected_search_res_8 and coalesce(array_length(expected_search_res_8,1),0)=coalesce(array_length(actual_search_res_8,1),0), 'search aktivitet #8.');
+
+
+/**************************************************/
+expected_search_res_9:=array[new_uuid1]::uuid[];
+
+actual_search_res_9:=as_search_aktivitet(
+		null,--firstResult
+		null,--aktivitet_uuid
+		ROW(
+			null,
+			null,-- AktivitetStatusTilsType[],
+			null,-- AktivitetPubliceretTilsType[],
+			null,
+			ARRAY [
+				ROW (
+	'udfoerer'::aktivitetRelationKode
+	,null--virkUdfoerer1
+	,null--uuidUdfoerer1
+	,null
+	,null--'Person'
+	,null--3 --NOTICE: Should be replace in by import function
+	,ROW (
+		 null, --'valgfri'::AktivitetAktoerAttrObligatorikKode,
+  		null,
+    repraesentation_uuid,--repraesentation_uuid,
+  null 
+	)::AktivitetAktoerAttr
+) :: aktivitetRelationType
+			]::AktivitetRelationType[]
+							)::aktivitetRegistreringType
+		,null --virkningSoeg	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,null --anyuuidArr
+		,null --array[repraesentation_urn]::text[] --anyurnArr
+);
+
+RETURN NEXT ok(expected_search_res_9 @> actual_search_res_9 and actual_search_res_9 @>expected_search_res_9 and coalesce(array_length(expected_search_res_9,1),0)=coalesce(array_length(actual_search_res_9,1),0), 'search aktivitet #9.');
+
+
+/**************************************************/
+expected_search_res_10:=array[]::uuid[];
+
+actual_search_res_10:=as_search_aktivitet(
+		null,--firstResult
+		null,--aktivitet_uuid
+		ROW(
+			null,
+			null,-- AktivitetStatusTilsType[],
+			null,-- AktivitetPubliceretTilsType[],
+			null,
+			ARRAY [
+				ROW (
+	'udfoerer'::aktivitetRelationKode
+	,null--virkUdfoerer1
+	,null--uuidUdfoerer1
+	,null
+	,null--'Person'
+	,null--3 --NOTICE: Should be replace in by import function
+	,ROW (
+		 null, --'valgfri'::AktivitetAktoerAttrObligatorikKode,
+  		null,
+     uuidAnsvarligklasse,--repraesentation_uuid,
+  null 
+	)::AktivitetAktoerAttr
+) :: aktivitetRelationType
+			]::AktivitetRelationType[]
+							)::aktivitetRegistreringType
+		,null --virkningSoeg	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,null --anyuuidArr
+		,null --array[repraesentation_urn]::text[] --anyurnArr
+);
+
+RETURN NEXT ok(expected_search_res_10 @> actual_search_res_10 and actual_search_res_10 @>expected_search_res_10 and coalesce(array_length(expected_search_res_10,1),0)=coalesce(array_length(actual_search_res_10,1),0), 'search aktivitet #10.');
+
+/**************************************************/
+expected_search_res_11:=array[new_uuid1]::uuid[];
+
+actual_search_res_11:=as_search_aktivitet(
+		null,--firstResult
+		null,--aktivitet_uuid
+		ROW(
+			null,
+			null,-- AktivitetStatusTilsType[],
+			null,-- AktivitetPubliceretTilsType[],
+			null,
+			ARRAY [
+				ROW (
+	'udfoerer'::aktivitetRelationKode
+	,null--virkUdfoerer1
+	,null--uuidUdfoerer1
+	,null
+	,null--'Person'
+	,null--3 --NOTICE: Should be replace in by import function
+	,ROW (
+		 null, --'valgfri'::AktivitetAktoerAttrObligatorikKode,
+  		null,
+     null,--repraesentation_uuid,
+  repraesentation_urn 
+	)::AktivitetAktoerAttr
+) :: aktivitetRelationType
+			]::AktivitetRelationType[]
+							)::aktivitetRegistreringType
+		,null --virkningSoeg	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,null --anyuuidArr
+		,null --array[repraesentation_urn]::text[] --anyurnArr
+);
+
+RETURN NEXT ok(expected_search_res_11 @> actual_search_res_11 and actual_search_res_11 @>expected_search_res_11 and coalesce(array_length(expected_search_res_11,1),0)=coalesce(array_length(actual_search_res_11,1),0), 'search aktivitet #11.');
+
 
 
 
