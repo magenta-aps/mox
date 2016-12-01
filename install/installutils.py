@@ -223,3 +223,71 @@ class VirtualEnv(object):
         fp = open("%s/lib/python2.7/site-packages/mox.pth" % self.environment_dir, "w")
         fp.write(os.path.abspath("%s/modules/python/mox" % moxdir))
         fp.close()
+
+
+class Apache(object):
+
+    INCLUDE_BEGIN_MARKER = "### MOX INCLUDE BEGIN ###"
+    INCLUDE_END_MARKER = "### MOX INCLUDE END ###"
+    lines = []
+    beginmarker_index = None
+    endmarker_index = None
+    indent = ''
+
+    def __init__(self, siteconf="/srv/mox/apache/mox.conf"):
+        self.siteconf = siteconf
+
+    def load_config(self):
+        self.lines = []
+        with open(self.siteconf, 'r') as infile:
+            for line in infile:
+                self.lines.append(line)
+
+        self.beginmarker_index = self.index(self.INCLUDE_BEGIN_MARKER)
+        if self.beginmarker_index is not None:
+            line = self.lines[self.beginmarker_index]
+            self.indent = line[0 : -len(line.lstrip())]
+            self.endmarker_index = self.index(self.INCLUDE_END_MARKER, start=self.beginmarker_index)
+
+    def save_config(self):
+        if len(self.lines) > 0:
+            with open(self.siteconf, 'w') as outfile:
+                for line in self.lines:
+                    outfile.write(line)
+
+    def index(self, search, start=0, end=None):
+        if end is None:
+            end = len(self.lines) - 1
+        search = search.strip()
+        for index, line in enumerate(self.lines[start:end]):
+            if line and line.strip() == search:
+                return start + index
+        return None
+
+    def add_include(self, file):
+        self.load_config()
+        try:
+            if self.beginmarker_index or self.endmarker_index:
+                line = "%sInclude %s\n" % (self.indent, file)
+                index = self.index(line)
+                if index is None:
+                    if self.endmarker_index:
+                        self.lines.insert(self.endmarker_index, line)
+                    else:
+                        self.lines.insert(self.beginmarker_index + 1, line)
+        finally:
+            self.save_config()
+
+
+class WSGI(object):
+
+    def __init__(self, wsgifile, conffile, wsgidir='/var/www/wsgi'):
+        self.wsgifile = wsgifile
+        self.conffile = conffile
+        self.wsgidir = wsgidir
+
+    def install(self):
+        if not os.path.exists(self.wsgidir):
+            subprocess.Popen(['sudo', 'mkdir', "--parents", self.wsgidir]).wait()
+        subprocess.Popen(['sudo', 'cp', '--remove-destination', self.wsgifile, self.wsgidir]).wait()
+        Apache().add_include(self.conffile)
