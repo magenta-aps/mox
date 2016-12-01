@@ -3,8 +3,7 @@
 import argparse
 import os
 import sys
-import subprocess
-from installutils import VirtualEnv
+from installutils import VirtualEnv, WSGI
 
 DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
 MOXDIR = os.path.abspath(DIR + "/../..")
