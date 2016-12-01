@@ -10,7 +10,7 @@ DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
 MOXDIR = os.path.abspath(DIR + "/../..")
 WSGIDIR = '/var/www/wsgi'
 
-parser = argparse.ArgumentParser(description='Install MoxWiki')
+parser = argparse.ArgumentParser(description='Install MoxDocumentDownload')
 
 parser.add_argument('-y', '--overwrite-virtualenv', action='store_true')
 parser.add_argument('-n', '--keep-virtualenv', action='store_true')
@@ -34,9 +34,5 @@ if created:
 
 # Install WSGI service
 print "Setting up moxdocumentdownload WSGI service for Apache"
-
-if not os.path.exists(WSGIDIR):
-    subprocess.Popen(['sudo', 'mkdir', "--parents", WSGIDIR]).wait()
-subprocess.Popen(['sudo', 'cp', '--remove-destination', "%s/setup/moxdocumentdownload.wsgi" % DIR, WSGIDIR]).wait()
-subprocess.Popen(['sudo', "%s/apache/set_include.sh" % MOXDIR, '-a', "%s/setup/moxdocumentdownload.conf" % DIR]).wait()
-
+wsgi = WSGI("%s/setup/moxdocumentdownload.wsgi" % DIR, "%s/setup/moxdocumentdownload.conf" % DIR)
+wsgi.install()
