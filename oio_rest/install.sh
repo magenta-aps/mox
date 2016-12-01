@@ -96,41 +96,7 @@ if [ $CREATE_VIRTUALENV == 1 ]; then
 	fi
 fi
 
-DB_FOLDER="$MOXDIR/db"
-
-source $DB_FOLDER/config.sh
-
-WIPE_DB=0
-
-if [ ! -z $ALWAYS_CONFIRM ]; then
-	WIPE_DB=1
-else
-	if [[ (! -z `command -v psql`) && (! -z `sudo -u postgres psql -Atqc "\list $MOX_DB"`) ]]; then
-		echo "Database $MOX_DB already exists in PostgreSQL"
-		read -p "Do you want to overwrite it? (y/n): " -n 1 -r
-		echo
-		if [[ $REPLY =~ ^[Yy]$ ]]; then
-			WIPE_DB=1
-		fi
-	else
-		echo "DB does not exist!"
-	fi
-fi
-
-if [ $WIPE_DB == 1 ]; then
-	# Install Database
-	source $VIRTUALENV/bin/activate
-
-	echo "Installing database"
-
-	cd "$DB_FOLDER"
-	./install.sh
-	cd "$DB_FOLDER"
-	./recreatedb.sh
-	cd "$DIR"
-	deactivate
-fi
-
+sed --in-place --expression="s|^rest.interface.*$|rest.interface = https://${DOMAIN}|" "${MOX_CONFIG}"
 
 # Install WSGI service
 echo "Setting up oio_rest WSGI service for Apache"
