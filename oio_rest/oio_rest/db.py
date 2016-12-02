@@ -287,7 +287,7 @@ def object_exists(class_name, uuid):
     cursor = conn.cursor()
     try:
         cursor.execute(sql, (uuid,))
-    except Exception as e:
+    except psycopg2.Error as e:
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
             raise DBException(status_code, e.message)
@@ -315,7 +315,7 @@ where de.indhold = %s"""
     cursor = conn.cursor()
     try:
         cursor.execute(sql, (content_url,))
-    except Exception as e:
+    except psycopg2.Error as e:
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
             raise DBException(status_code, e.message)
@@ -359,12 +359,13 @@ def create_or_import_object(class_name, note, registration,
         note=note,
         registration=sql_registration,
         restrictions=sql_restrictions)
+
     # Call Postgres! Return OK or not accordingly
     conn = get_connection()
     cursor = conn.cursor()
     try:
         cursor.execute(sql)
-    except Exception as e:
+    except psycopg2.Error as e:
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
             raise DBException(status_code, e.message)
@@ -407,7 +408,7 @@ def delete_object(class_name, registration, note, uuid):
     cursor = conn.cursor()
     try:
         cursor.execute(sql)
-    except Exception as e:
+    except psycopg2.Error as e:
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
             raise DBException(status_code, e.message)
@@ -447,7 +448,7 @@ def passivate_object(class_name, note, registration, uuid):
     cursor = conn.cursor()
     try:
         cursor.execute(sql)
-    except Exception as e:
+    except psycopg2.Error as e:
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
             raise DBException(status_code, e.message)
@@ -489,10 +490,10 @@ def update_object(class_name, note, registration, uuid=None,
     try:
         cursor.execute(sql)
         cursor.fetchone()
-    except psycopg2.DataError:
+    except psycopg2.DataError as e:
         # Thrown when no changes
         pass
-    except Exception as e:
+    except psycopg2.Error as e:
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
             raise DBException(status_code, e.message)
@@ -534,7 +535,7 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
             'registrering_tstzrange': registration_period,
             'virkning_tstzrange': DateTimeTZRange(virkning_fra, virkning_til)
         })
-    except Exception as e:
+    except psycopg2.Error as e:
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
             raise DBException(status_code, e.message)
@@ -722,7 +723,7 @@ def search_objects(class_name, uuid, registration,
     cursor = conn.cursor()
     try:
         cursor.execute(sql)
-    except Exception as e:
+    except psycopg2.Error as e:
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
             raise DBException(status_code, e.message)
