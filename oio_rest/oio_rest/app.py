@@ -6,6 +6,7 @@ import traceback
 from flask import Flask, jsonify, request, Response
 from werkzeug.routing import BaseConverter
 from jinja2 import Environment, FileSystemLoader
+from psycopg2 import DataError
 
 from custom_exceptions import OIOFlaskException, AuthorizationFailedException
 from custom_exceptions import BadRequestException
@@ -74,6 +75,11 @@ def handle_not_allowed(error):
     response.status_code = error.status_code
     return response
 
+
+@app.errorhandler(DataError)
+def handle_db_error(error):
+    message, context = error.message.split('\n', 1)
+    return jsonify(message=message, context=context), 400
 
 def main():
     from settings import BASE_URL
