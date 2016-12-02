@@ -99,47 +99,7 @@ echo "Installing database"
 echo "$DIR/db/install.sh $@"
 $DIR/db/install.sh
 
-
-JAVA_HIGHEST_VERSION=0
-JAVA_VERSION_NEEDED=8
-JAVA_HIGHEST_VERSION_DIR=""
-regex=".*/java-([0-9]+).*"
-files=`find /usr/lib -wholename '*/bin/javac' -perm -a=x -type f`
-for f in $files; do
-	if [[ $f =~ $regex ]]; then
-		version="${BASH_REMATCH[1]}"
-		if [[ $version > $JAVA_HIGHEST_VERSION ]]; then
-			JAVA_HIGHEST_VERSION=$version
-			JAVA_HIGHEST_VERSION_DIR=$(readlink -m "$f/../..")
-		fi
-    fi
-done
-if [ $JAVA_HIGHEST_VERSION -ge $JAVA_VERSION_NEEDED ]; then
-	echo "Java is installed in version $JAVA_HIGHEST_VERSION"
-else
-	echo "Installing java in version $JAVA_VERSION_NEEDED"
-	if ! apt-cache show "openjdk-$JAVA_VERSION_NEEDED-jdk" > /dev/null 2>&1
-	then
-		# openjdk is not available in the version we want
-		sudo apt-get -qqy install software-properties-common
-		sudo add-apt-repository -ys ppa:openjdk-r/ppa
-		sudo apt-get -qq update
-	fi
-	sudo apt-get --yes --quiet install "openjdk-$JAVA_VERSION_NEEDED-jdk"
-	JAVA_HIGHEST_VERSION_DIR="/usr/lib/jvm/java-$JAVA_VERSION_NEEDED-openjdk-amd64"
-fi
-if [[ "x$JAVA_HIGHEST_VERSION_DIR" != "x" ]]; then
-	sed -r -e "s|^CMD_JAVA=.*$|CMD_JAVA=$JAVA_HIGHEST_VERSION_DIR/bin/java|" \
-       -e "s|^CMD_JAVAC=.*$|CMD_JAVAC=$JAVA_HIGHEST_VERSION_DIR/bin/javac|" \
-       ${SHELL_CONFIG} > ${SHELL_CONFIG}.$$
-fi
-if [[ -f ${SHELL_CONFIG}.$$ ]]; then
-	/bin/mv ${SHELL_CONFIG}.$$ ${SHELL_CONFIG}
-fi
-
-OLD_JAVA_HOME="$JAVA_HOME"
-JAVA_HOME="$JAVA_HIGHEST_VERSION_DIR"
-export JAVA_HOME
+$DIR/install/install_java.sh 8
 
 # Install Maven
 echo "Installing Maven"
@@ -167,9 +127,7 @@ $DIR/agents/MoxTest/install.sh
 $DIR/agents/MoxDocumentDownload/install.py
 $DIR/agents/MoxDocumentDownload/configure.py --rest-host "$REST_HOST"
 
-JAVA_HOME="$OLD_JAVA_HOME"
-
-sudo chown -R mox:mox $DIR
+sudo chown --recursive mox:mox $DIR
 sudo service apache2 reload
 
 echo
