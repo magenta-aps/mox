@@ -16,6 +16,7 @@ else
 		fi
 	else
 		echo "DB does not exist!"
+		WIPE_DB=1
 	fi
 fi
 
