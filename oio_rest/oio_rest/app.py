@@ -65,7 +65,7 @@ def sitemap():
         if "GET" in rule.methods:
             links.append(str(rule))
             print rule
-    return jsonify({"site-map": links})
+    return jsonify({"site-map": sorted(links)})
 
 
 @app.errorhandler(OIOFlaskException)
