@@ -17,6 +17,23 @@ from authentication import requires_auth
 def j(t):
     return jsonify(output=t)
 
+def typed_get(d, field, default):
+    v = d.get(field, default)
+    t = type(default)
+
+    if v is None:
+        return default
+
+    # special case strings
+    if t is str or t is unicode:
+        t = basestring
+
+    if not isinstance(v, t):
+        raise BadRequestException('expected %s for %r, found %s: %s' %
+                                  (t.__name__, field, type(v).__name__,
+                                   json.dumps(v)))
+
+    return v
 
 class ArgumentDict(ImmutableOrderedMultiDict):
     '''
@@ -122,7 +139,7 @@ class OIORestObject(object):
         if not input:
             return jsonify({'uuid': None}), 400
 
-        note = input.get("note", "")
+        note = typed_get(input, "note", "")
         registration = cls.gather_registration(input)
         uuid = db.create_or_import_object(cls.__name__, note, registration)
         return jsonify({'uuid': uuid}), 201
@@ -234,8 +251,8 @@ class OIORestObject(object):
     @classmethod
     def gather_registration(cls, input):
         """Return a registration dict from the input dict."""
-        attributes = input.get("attributter", {})
-        states = input.get("tilstande", {})
+        attributes = typed_get(input, "attributter", {})
+        states = typed_get(input, "tilstande", {})
         relations = input.get("relationer", None)
         return {"states": states,
                 "attributes": attributes,
@@ -251,7 +268,7 @@ class OIORestObject(object):
         if not input:
             return jsonify({'uuid': None}), 400
         # Get most common parameters if available.
-        note = input.get("note", "")
+        note = typed_get(input, "note", "")
         registration = cls.gather_registration(input)
         exists = db.object_exists(cls.__name__, uuid)
         deleted_or_passive = False
@@ -277,7 +294,7 @@ class OIORestObject(object):
 
         else:
             "Edit or passivate."
-            if input.get('livscyklus', '').lower() == 'passiv':
+            if typed_get(input, 'livscyklus', '').lower() == 'passiv':
                 # Passivate
                 registration = cls.gather_registration({})
                 db.passivate_object(
@@ -295,10 +312,8 @@ class OIORestObject(object):
     @requires_auth
     def delete_object(cls, uuid):
         # Delete facet
-        input = cls.get_json()
-        if not input:
-            return jsonify({'uuid': None}), 400
-        note = input.get("Note", "")
+        input = cls.get_json() or {}
+        note = typed_get(input, "note", "")
         class_name = cls.__name__
         # Gather a blank registration
         registration = cls.gather_registration({})
