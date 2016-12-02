@@ -21,7 +21,7 @@ from authentication import get_authenticated_user
 from auth.restrictions import Operation, get_restrictions
 from utils.build_registration import restriction_to_registration
 from custom_exceptions import NotFoundException, NotAllowedException
-from custom_exceptions import DBException
+from custom_exceptions import DBException, BadRequestException
 
 """
     Jinja2 Environment
@@ -127,6 +127,11 @@ def convert_relations(relations, class_name):
         for rel_name in relations:
             periods = relations[rel_name]
             for period in periods:
+                if not isinstance(period, dict):
+                    raise BadRequestException(
+                        'mapping expected for "%s" in "%s" - got %r' %
+                        (period, rel_name, period)
+                    )
                 for field in period:
                     period[field] = convert_relation_value(
                         class_name, field, period[field]
