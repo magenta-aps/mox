@@ -121,8 +121,8 @@ sudo apt-get -y install maven
 
 # Compile modules
 echo "Installing java modules"
-$DIR/modules/agent/install.sh
 $DIR/modules/auth/install.sh
+$DIR/modules/java/install.sh
 
 # Install servlet
 echo "Installing Tomcat webservices"
