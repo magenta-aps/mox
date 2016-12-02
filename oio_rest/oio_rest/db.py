@@ -366,9 +366,17 @@ def create_or_import_object(class_name, note, registration,
     try:
         cursor.execute(sql)
     except psycopg2.Error as e:
+        noop_msg = ('Aborted updating {} with id [{}] as the given data, '
+                    'does not give raise to a new registration.'.format(
+                        class_name, uuid
+                    ))
+
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
             raise DBException(status_code, e.message)
+        elif e.message.startswith(noop_msg):
+            status_code = int(e.pgcode[2:])
+            raise DBException(status_code, 'fuck no')
         else:
             raise
 
@@ -409,6 +417,13 @@ def delete_object(class_name, registration, note, uuid):
     try:
         cursor.execute(sql)
     except psycopg2.Error as e:
+        not_found_msg = (
+            'Unable to update {} with uuid [{}], '
+            'being unable to find any previous registrations.\n'
+        ).format(class_name.lower(), uuid)
+
+        if e.message == not_found_msg:
+            raise NotFoundException(e.message)
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
             raise DBException(status_code, e.message)
@@ -490,11 +505,15 @@ def update_object(class_name, note, registration, uuid=None,
     try:
         cursor.execute(sql)
         cursor.fetchone()
-    except psycopg2.DataError as e:
-        # Thrown when no changes
-        pass
     except psycopg2.Error as e:
-        if e.pgcode[:2] == 'MO':
+        noop_msg = ('Aborted updating {} with id [{}] as the given data, '
+                    'does not give raise to a new registration.'.format(
+                        class_name.lower(), uuid
+                    ))
+
+        if e.message.startswith(noop_msg):
+            return uuid
+        elif e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
             raise DBException(status_code, e.message)
         else:
