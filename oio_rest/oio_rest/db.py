@@ -527,7 +527,7 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
     """List objects with the given uuids, optionally filtering by the given
     virkning and registering periods."""
 
-    assert isinstance(uuid, list)
+    assert isinstance(uuid, list) or not uuid
 
     sql_template = jinja_env.get_template('list_objects.sql')
 
