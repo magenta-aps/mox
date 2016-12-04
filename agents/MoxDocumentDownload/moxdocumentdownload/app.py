@@ -10,6 +10,7 @@ import sys
 import socket
 import datetime
 import threading
+from agent.config import read_properties_files, MissingConfigKeyError
 from flask import Flask, render_template, request, make_response
 
 BASEPATH = os.path.dirname(os.path.realpath(sys.argv[0]))
@@ -18,6 +19,8 @@ GET_TOKEN = "/get-token"
 
 app = Flask(__name__)
 
+configfile = BASEPATH + "/settings.conf"
+config = read_properties_files("/srv/mox/mox.conf", configfile)
 
 
 class MoxFlaskException(Exception):
@@ -517,7 +520,10 @@ def main():
         except ValueError:
             raise BadRequestException("'merge' parameter must be 0, 1 or 2. Default is 1")
 
-        server = socket.getfqdn()
+        try:
+            server = config['moxdocumentdownload.rest.host']
+        except KeyError as e:
+            raise MissingConfigKeyError(str(e))
         objects = extract(
             server,
             username, password,
@@ -527,10 +533,6 @@ def main():
         objectdata = data[objecttype]
         filedata = u'\n'.join([u','.join(objectdata['headers'])] + [csvrow(row, objectdata['headers']) for row in objectdata['rows']])
 
-        headers = [
-            "Content-Type: text/csv; charset=utf-8",
-            "Content-Disposition: attachment; filename=\"%s.csv\"" % objecttype
-        ]
         response = make_response(filedata)
         response.headers['Content-Type'] = 'text/csv; charset=utf-8'
         response.headers['Content-Disposition'] = "attachment; filename=\"%s.csv\"" % objecttype
