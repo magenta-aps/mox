@@ -87,7 +87,7 @@ patch --fuzz=3 -i  ../patches/_remove_nulls_in_array_indsats.sql.diff
 patch --fuzz=3 -i  ../patches/as_create_or_import_indsats.sql.diff
 patch --fuzz=3 -i  ../patches/as_update_indsats.sql.diff
 patch --fuzz=3 -i  ../patches/json-cast-functions_indsats.sql.diff
-patch --fuzz=3 -i ../patches/as_search_indsats.sql.diff
+patch --fuzz=3 -i  ../patches/as_search_indsats.sql.diff
 
 cd ..
 
@@ -163,6 +163,7 @@ psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_search_dokument.sql
 #indsats
 psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_create_or_import_indsats.sql
 psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_update_indsats.sql
+psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_search_indsats.sql
 
 popd
 
