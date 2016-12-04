@@ -730,5 +730,264 @@ null --text,
 
 RETURN NEXT ok(expected_search_res_15 @> actual_search_res_15 and actual_search_res_15 @>expected_search_res_15 and coalesce(array_length(expected_search_res_15,1),0)=coalesce(array_length(actual_search_res_15,1),0), 'search indsats #15.');
 
+
+/**************************************************/
+
+
+expected_search_res_16:=array[new_uuid2]::uuid[];
+
+actual_search_res_16:=as_search_indsats(
+		null,--firstResult
+		null,--indsats_uuid
+		ROW(
+			null,
+			null,-- indsatsStatusTilsType[],
+			null,-- indsatsPubliceretTilsType[],
+			ARRAY[  ROW (
+			'brugervendtnoegle_indsats_2' --text, 
+			,null--'beskrivelse_indsats_2'-- text,
+			, null--'2017-01-25 09:00'::timestamptz  -- starttidspunkt,
+			, null--'2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+			,null--virkEgenskaber2
+			) :: indsatsEgenskaberAttrType ]::indsatsEgenskaberAttrType[],
+						null-- indsatsRelationType[]
+						)::indsatsRegistreringType	
+		,null --virkningSoeg	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,null --anyuuidArr
+		,null --array[repraesentation_urn]::text[] --anyurnArr
+		,null --auth_criteria_arr indsatsRegistreringType[]=null,
+		,null  --search_operator_greater_then_attr_egenskaber indsatsEgenskaberAttrType[]=null,
+		,ARRAY[
+			 ROW (
+null --text, 
+,null--'beskrivelse_indsats_2'-- text,
+, '2017-01-25 09:00'::timestamptz   -- starttidspunkt,
+, null--'2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+,null--virkEgenskaber2
+) :: indsatsEgenskaberAttrType
+		]::indsatsEgenskaberAttrType[] --search_operator_less_then_attr_egenskaber indsatsEgenskaberAttrType[]=null
+
+);
+
+RETURN NEXT ok(expected_search_res_16 @> actual_search_res_16 and actual_search_res_16 @>expected_search_res_16 and coalesce(array_length(expected_search_res_16,1),0)=coalesce(array_length(actual_search_res_16,1),0), 'search indsats #16.');
+
+
+/**************************************************/
+
+expected_search_res_17:=array[new_uuid2,new_uuid1]::uuid[];
+
+actual_search_res_17:=as_search_indsats(
+		null,--firstResult
+		null,--indsats_uuid
+		ROW(
+			null,
+			null,-- indsatsStatusTilsType[],
+			null,-- indsatsPubliceretTilsType[],
+			ARRAY[  ROW (
+			null --'brugervendtnoegle_indsats_2' --text, 
+			,'beskrivelse_indsats_faelles'-- text,
+			, null--'2017-01-25 09:00'::timestamptz  -- starttidspunkt,
+			, null--'2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+			,null--virkEgenskaber2
+			) :: indsatsEgenskaberAttrType ]::indsatsEgenskaberAttrType[],
+						null-- indsatsRelationType[]
+						)::indsatsRegistreringType	
+		,null --virkningSoeg	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,null --anyuuidArr
+		,null --array[repraesentation_urn]::text[] --anyurnArr
+		,null --auth_criteria_arr indsatsRegistreringType[]=null,
+		,null  --search_operator_greater_then_attr_egenskaber indsatsEgenskaberAttrType[]=null,
+		,ARRAY[
+			 ROW (
+null --text, 
+,null--'beskrivelse_indsats_2'-- text,
+, '2017-01-25 09:00'::timestamptz   -- starttidspunkt,
+, null--'2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+,null--virkEgenskaber2
+) :: indsatsEgenskaberAttrType
+		]::indsatsEgenskaberAttrType[] --search_operator_less_then_attr_egenskaber indsatsEgenskaberAttrType[]=null
+
+);
+
+RETURN NEXT ok(expected_search_res_17 @> actual_search_res_17 and actual_search_res_17 @>expected_search_res_17 and coalesce(array_length(expected_search_res_17,1),0)=coalesce(array_length(actual_search_res_17,1),0), 'search indsats #17.');
+
+
+/**************************************************/
+
+/**************************************************/
+
+expected_search_res_18:=array[new_uuid1]::uuid[];
+
+actual_search_res_18:=as_search_indsats(
+		null,--firstResult
+		null,--indsats_uuid
+		ROW(
+			null,
+			null,-- indsatsStatusTilsType[],
+			null,-- indsatsPubliceretTilsType[],
+			ARRAY[  ROW (
+			null --'brugervendtnoegle_indsats_2' --text, 
+			,'beskrivelse_indsats_faelles'-- text,
+			, null--'2017-01-25 09:00'::timestamptz  -- starttidspunkt,
+			, null--'2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+			,null--virkEgenskaber2
+			) :: indsatsEgenskaberAttrType ]::indsatsEgenskaberAttrType[],
+						null-- indsatsRelationType[]
+						)::indsatsRegistreringType	
+		,null --virkningSoeg	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,null --anyuuidArr
+		,null --array[repraesentation_urn]::text[] --anyurnArr
+		,null --auth_criteria_arr indsatsRegistreringType[]=null,
+		,null  --search_operator_greater_then_attr_egenskaber indsatsEgenskaberAttrType[]=null,
+		,ARRAY[
+			 ROW (
+null --text, 
+,null--'beskrivelse_indsats_2'-- text,
+, '2017-01-25 08:00'::timestamptz   -- starttidspunkt,
+, null--'2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+,null--virkEgenskaber2
+) :: indsatsEgenskaberAttrType
+		]::indsatsEgenskaberAttrType[] --search_operator_less_then_attr_egenskaber indsatsEgenskaberAttrType[]=null
+
+);
+
+RETURN NEXT ok(expected_search_res_18 @> actual_search_res_18 and actual_search_res_18 @>expected_search_res_18 and coalesce(array_length(expected_search_res_18,1),0)=coalesce(array_length(actual_search_res_18,1),0), 'search indsats #18.');
+
+/**************************************************/
+
+expected_search_res_19:=array[]::uuid[];
+
+actual_search_res_19:=as_search_indsats(
+		null,--firstResult
+		null,--indsats_uuid
+		ROW(
+			null,
+			null,-- indsatsStatusTilsType[],
+			null,-- indsatsPubliceretTilsType[],
+			ARRAY[  ROW (
+			'brugervendtnoegle_indsats_2' --text, 
+			,null --'beskrivelse_indsats_faelles'-- text,
+			, null--'2017-01-25 09:00'::timestamptz  -- starttidspunkt,
+			, null--'2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+			,null--virkEgenskaber2
+			) :: indsatsEgenskaberAttrType ]::indsatsEgenskaberAttrType[],
+						null-- indsatsRelationType[]
+						)::indsatsRegistreringType	
+		,null --virkningSoeg	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,null --anyuuidArr
+		,null --array[repraesentation_urn]::text[] --anyurnArr
+		,null --auth_criteria_arr indsatsRegistreringType[]=null,
+		,null  --search_operator_greater_then_attr_egenskaber indsatsEgenskaberAttrType[]=null,
+		,ARRAY[
+			 ROW (
+null --text, 
+,null--'beskrivelse_indsats_2'-- text,
+, '2017-01-25 08:00'::timestamptz   -- starttidspunkt,
+, null--'2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+,null--virkEgenskaber2
+) :: indsatsEgenskaberAttrType
+		]::indsatsEgenskaberAttrType[] --search_operator_less_then_attr_egenskaber indsatsEgenskaberAttrType[]=null
+
+);
+
+RETURN NEXT ok(expected_search_res_19 @> actual_search_res_19 and actual_search_res_19 @>expected_search_res_19 and coalesce(array_length(expected_search_res_19,1),0)=coalesce(array_length(actual_search_res_19,1),0), 'search indsats #19.');
+
+/**************************************************/
+
+expected_search_res_20:=array[new_uuid1]::uuid[];
+
+actual_search_res_20:=as_search_indsats(
+		null,--firstResult
+		null,--indsats_uuid
+		null	
+		,null --virkningSoeg	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,null --anyuuidArr
+		,null --array[repraesentation_urn]::text[] --anyurnArr
+		,null --auth_criteria_arr indsatsRegistreringType[]=null,
+		,null  --search_operator_greater_then_attr_egenskaber indsatsEgenskaberAttrType[]=null,
+		,ARRAY[
+			 ROW (
+null --text, 
+,null--'beskrivelse_indsats_2'-- text,
+, '2017-01-25 09:00'::timestamptz   -- starttidspunkt,
+, '2017-04-01 18:00'::timestamptz -- sluttidspunkt,
+,null--virkEgenskaber2
+) :: indsatsEgenskaberAttrType
+		]::indsatsEgenskaberAttrType[] --search_operator_less_then_attr_egenskaber indsatsEgenskaberAttrType[]=null
+
+);
+
+RETURN NEXT ok(expected_search_res_20 @> actual_search_res_20 and actual_search_res_20 @>expected_search_res_20 and coalesce(array_length(expected_search_res_20,1),0)=coalesce(array_length(actual_search_res_20,1),0), 'search indsats #20.');
+
+/**************************************************/
+
+expected_search_res_21:=array[new_uuid1,new_uuid2]::uuid[];
+
+actual_search_res_21:=as_search_indsats(
+		null,--firstResult
+		null,--indsats_uuid
+		null	
+		,null --virkningSoeg	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,null --anyuuidArr
+		,null --array[repraesentation_urn]::text[] --anyurnArr
+		,null --auth_criteria_arr indsatsRegistreringType[]=null,
+		,null  --search_operator_greater_then_attr_egenskaber indsatsEgenskaberAttrType[]=null,
+		,ARRAY[
+			 ROW (
+null --text, 
+,null--'beskrivelse_indsats_2'-- text,
+, null -- starttidspunkt
+, '2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+,null--virkEgenskaber2
+) :: indsatsEgenskaberAttrType
+		]::indsatsEgenskaberAttrType[] --search_operator_less_then_attr_egenskaber indsatsEgenskaberAttrType[]=null
+
+);
+
+RETURN NEXT ok(expected_search_res_21 @> actual_search_res_21 and actual_search_res_21 @>expected_search_res_21 and coalesce(array_length(expected_search_res_21,1),0)=coalesce(array_length(actual_search_res_21,1),0), 'search indsats #21.');
+
+/**************************************************/
+expected_search_res_22:=array[new_uuid1]::uuid[];
+
+actual_search_res_22:=as_search_indsats(
+		null,--firstResult
+		null,--indsats_uuid
+		null	
+		,null --virkningSoeg	
+		,null --maxResults
+		,null --anyAttrValueArr
+		,null --anyuuidArr
+		,null --array[repraesentation_urn]::text[] --anyurnArr
+		,null --auth_criteria_arr indsatsRegistreringType[]=null,
+		,null  --search_operator_greater_then_attr_egenskaber indsatsEgenskaberAttrType[]=null,
+		,ARRAY[
+			 ROW (
+null --text, 
+,null--'beskrivelse_indsats_2'-- text,
+, null -- starttidspunkt
+, '2017-06-01 11:00'::timestamptz -- sluttidspunkt,
+,null--virkEgenskaber2
+) :: indsatsEgenskaberAttrType
+		]::indsatsEgenskaberAttrType[] --search_operator_less_then_attr_egenskaber indsatsEgenskaberAttrType[]=null
+
+);
+
+RETURN NEXT ok(expected_search_res_22 @> actual_search_res_22 and actual_search_res_22 @>expected_search_res_22 and coalesce(array_length(expected_search_res_22,1),0)=coalesce(array_length(actual_search_res_22,1),0), 'search indsats #22.');
+
+
+
+
 END;
 $$;
