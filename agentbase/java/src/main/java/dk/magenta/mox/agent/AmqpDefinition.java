@@ -11,21 +11,21 @@ import java.util.Properties;
 public class AmqpDefinition {
     private String username;
     private String password;
-    private String amqpLocation;
-    private String exchangeName;
-    private String queueName;
+    private String host;
+    private String exchange;
+    private String queue;
     private Logger log = Logger.getLogger(AmqpDefinition.class);
 
     public AmqpDefinition() {
 
     }
 
-    public AmqpDefinition(String username, String password, String amqpLocation, String exchangeName, String queueName) {
+    public AmqpDefinition(String username, String password, String host, String exchange, String queue) {
         this.username = username;
         this.password = password;
-        this.amqpLocation = amqpLocation;
-        this.exchangeName = exchangeName;
-        this.queueName = queueName;
+        this.host = host;
+        this.exchange = exchange;
+        this.queue = queue;
     }
 
     public AmqpDefinition(ParameterMap<String, String> commandLineArgs, Properties properties, String prefix) {
@@ -39,7 +39,7 @@ public class AmqpDefinition {
     }
 
     public boolean complete() {
-        return (this.username != null && this.password != null && this.amqpLocation != null && this.queueName != null);
+        return (this.username != null && this.password != null && this.host != null && this.queue != null);
     }
 
     //--------------------------------------------------------------------------
@@ -52,16 +52,16 @@ public class AmqpDefinition {
         return password;
     }
 
-    public String getAmqpLocation() {
-        return amqpLocation;
+    public String getHost() {
+        return host;
     }
 
-    public String getExchangeName() {
-        return exchangeName;
+    public String getExchange() {
+        return exchange;
     }
 
-    public String getQueueName() {
-        return queueName;
+    public String getQueue() {
+        return queue;
     }
 
     //--------------------------------------------------------------------------
@@ -74,16 +74,16 @@ public class AmqpDefinition {
         this.password = password;
     }
 
-    public void setAmqpLocation(String amqpLocation) {
-        this.amqpLocation = amqpLocation;
+    public void setHost(String host) {
+        this.host = host;
     }
 
-    public void setExchangeName(String exchangeName) {
-        this.exchangeName = exchangeName;
+    public void setExchange(String exchange) {
+        this.exchange = this.exchange;
     }
 
-    public void setQueueName(String queueName) {
-        this.queueName = queueName;
+    public void setQueue(String queue) {
+        this.queue = queue;
     }
 
     //--------------------------------------------------------------------------
@@ -112,24 +112,24 @@ public class AmqpDefinition {
                     changed = true;
                 }
             }
-            if (overwrite || this.amqpLocation == null) {
-                String location = this.getFromProperties(properties, prefix + ".amqpLocation", print, printIndent, true);
+            if (overwrite || this.host == null) {
+                String location = this.getFromProperties(properties, prefix + ".host", print, printIndent, true);
                 if (location != null) {
-                    this.amqpLocation = location;
+                    this.host = location;
                     changed = true;
                 }
             }
-            if (overwrite || this.exchangeName == null) {
+            if (overwrite || this.exchange == null) {
                 String exchange = this.getFromProperties(properties, prefix + ".exchange", print, printIndent, true);
                 if (exchange != null) {
-                    this.exchangeName = exchange;
+                    this.exchange = exchange;
                     changed = true;
                 }
             }
-            if (overwrite || this.queueName == null) {
-                String queue = this.getFromProperties(properties, prefix + ".queueName", print, printIndent, true);
+            if (overwrite || this.queue == null) {
+                String queue = this.getFromProperties(properties, prefix + ".queue", print, printIndent, true);
                 if (queue != null) {
-                    this.queueName = queue;
+                    this.queue = queue;
                     changed = true;
                 }
             }
@@ -155,14 +155,14 @@ public class AmqpDefinition {
 
     public boolean populateFromDefaults(boolean print, String prefix, int printIndent) {
         boolean changed = false;
-        if (this.amqpLocation == null) {
-            this.amqpLocation = "localhost:5672";
-            this.log.info(this.formatValue("amqpLocation", this.amqpLocation, printIndent, prefix));
+        if (this.host == null) {
+            this.host = "localhost:5672";
+            this.log.info(this.formatValue("host", this.host, printIndent, prefix));
             changed = true;
         }
-        if (this.queueName == null) {
-            this.queueName = "incoming";
-            this.log.info(this.formatValue("queueName", this.queueName, printIndent, prefix));
+        if (this.queue == null) {
+            this.queue = "incoming";
+            this.log.info(this.formatValue("queue", this.queue, printIndent, prefix));
             changed = true;
         }
         return changed;
@@ -189,24 +189,24 @@ public class AmqpDefinition {
                     changed = true;
                 }
             }
-            if (overwrite || this.amqpLocation == null) {
-                String amqpLocation = this.getFromMap(map, prefix + ".amqpLocation", print, printIndent, false);
+            if (overwrite || this.host == null) {
+                String amqpLocation = this.getFromMap(map, prefix + ".host", print, printIndent, false);
                 if (amqpLocation != null) {
-                    this.amqpLocation = amqpLocation;
+                    this.host = amqpLocation;
                     changed = true;
                 }
             }
-            if (overwrite || this.exchangeName == null) {
-                String exchangeName = this.getFromMap(map, prefix + ".exchangeName", print, printIndent, false);
+            if (overwrite || this.exchange == null) {
+                String exchangeName = this.getFromMap(map, prefix + ".exchange", print, printIndent, false);
                 if (exchangeName != null) {
-                    this.exchangeName = exchangeName;
+                    this.exchange = exchangeName;
                     changed = true;
                 }
             }
-            if (overwrite || this.queueName == null) {
-                String queueName = this.getFromMap(map, prefix + ".queueName", print, printIndent, false);
+            if (overwrite || this.queue == null) {
+                String queueName = this.getFromMap(map, prefix + ".queue", print, printIndent, false);
                 if (queueName != null) {
-                    this.queueName = queueName;
+                    this.queue = queueName;
                     changed = true;
                 }
             }

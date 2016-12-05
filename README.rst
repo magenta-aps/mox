@@ -1436,18 +1436,18 @@ where
 
 You also need a ``MessageSender``  object, which can be created with: ::
 
-    new MessageSender(String queueInterface, String queueName); 
+    new MessageSender(String queueInterface, String queue);
     
 where
 
 * ``queueInterface`` is a hostname/port combination to the RabbitMQ
   instance, e.g. "localhost:5672", and
 
-* ``queueName``  is the RabbitMQ queue name, e.g. "incoming".  
+* ``queue``  is the RabbitMQ queue name, e.g. "incoming".
   
 The queue name and interface port must match what the queue listener is
 set up to use; the oio_moxagent listener is currently configured to use
-the queueName "incoming" for the RabbitMQ service on port 5672.
+the queue "incoming" for the RabbitMQ service on port 5672.
 
 
 

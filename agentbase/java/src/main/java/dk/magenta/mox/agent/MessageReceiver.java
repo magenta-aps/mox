@@ -41,16 +41,16 @@ public class MessageReceiver extends MessageInterface {
     }
 
     private void setupConsumer() throws IOException {
-        this.queueResult = this.getChannel().queueDeclare(this.getQueueName(), true, false, true, null);
+        this.queueResult = this.getChannel().queueDeclare(this.getQueue(), true, false, true, null);
         if (this.getExchange() != null) {
-            this.getChannel().queueBind(this.getQueueName(), this.getExchange(), null);
+            this.getChannel().queueBind(this.getQueue(), this.getExchange(), null);
         }
 
         this.consumer = new QueueingConsumer(this.getChannel());
         if (consumer == null) {
             throw new IOException("Couldn't open listener");
         }
-        this.getChannel().basicConsume(this.getQueueName(), true, this.consumer);
+        this.getChannel().basicConsume(this.getQueue(), true, this.consumer);
     }
 
     public AMQP.Queue.DeclareOk getQueueResult() {

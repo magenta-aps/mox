@@ -48,7 +48,7 @@ public class MoxRestFrontend extends MoxAgent {
         log.info("\n--------------------------------------------------------------------------------");
         log.info("MoxRestFrontend Starting");
         AmqpDefinition amqpDefinition = this.getAmqpDefinition();
-        log.info("Listening for messages from RabbitMQ service at " + amqpDefinition.getAmqpLocation() + ", exchange '" + amqpDefinition.getExchange() + "'");
+        log.info("Listening for messages from RabbitMQ service at " + amqpDefinition.getHost() + ", exchange '" + amqpDefinition.getExchange() + "'");
         log.info("Successfully parsed messages will be forwarded to the REST interface at " + this.restInterface);
         MessageReceiver messageReceiver = null;
         try {

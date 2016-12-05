@@ -28,9 +28,9 @@ public abstract class MessageInterface {
     public MessageInterface(AmqpDefinition amqpDefinition) throws IOException {
         this(amqpDefinition.getUsername(),
                 amqpDefinition.getPassword(),
-                amqpDefinition.getAmqpLocation(),
-                amqpDefinition.getExchangeName(),
-                amqpDefinition.getQueueName());
+                amqpDefinition.getHost(),
+                amqpDefinition.getExchange(),
+                amqpDefinition.getQueue());
     }
 
     public MessageInterface(String host, String exchange, String queue) throws IOException {
@@ -91,7 +91,7 @@ public abstract class MessageInterface {
         return exchange;
     }
 
-    public String getQueueName() {
+    public String getQueue() {
         return queue;
     }
 
