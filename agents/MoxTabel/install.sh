@@ -13,4 +13,3 @@ sudo touch /var/log/mox/moxtabel.log
 sudo chown mox /var/log/mox/moxtabel.log
 
 sudo service moxtabel restart
-
