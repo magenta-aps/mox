@@ -48,14 +48,14 @@ public class MoxRestFrontend extends MoxAgent {
         log.info("\n--------------------------------------------------------------------------------");
         log.info("MoxRestFrontend Starting");
         AmqpDefinition amqpDefinition = this.getAmqpDefinition();
-        log.info("Listening for messages from RabbitMQ service at " + amqpDefinition.getHost() + ", exchange '" + amqpDefinition.getExchange() + "'");
-        log.info("Successfully parsed messages will be forwarded to the REST interface at " + this.restInterface);
         MessageReceiver messageReceiver = null;
         try {
             log.info("Creating MessageReceiver instance");
             messageReceiver = this.createMessageReceiver();
             messageReceiver.setThrottleSize(20);
             log.info("Running MessageReceiver instance");
+            log.info("Listening for messages from RabbitMQ service at " + amqpDefinition.getHost() + ", exchange '" + amqpDefinition.getExchange() + "' (bound to queue '"+messageReceiver.getQueue()+"')");
+            log.info("Successfully parsed messages will be forwarded to the REST interface at " + this.restInterface);
             messageReceiver.run(new RestMessageHandler(this.restInterface, this.objectTypeMap));
             log.info("MessageReceiver instance stopped on its own");
         } catch (InterruptedException | IOException | TimeoutException e) {

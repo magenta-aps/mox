@@ -26,7 +26,7 @@ public class MessageSender extends MessageInterface {
     }
 
     private void setup() throws IOException {
-        this.getChannel().exchangeDeclare(this.getExchange(), "direct", true);
+        this.getChannel().exchangeDeclare(this.getExchange(), "fanout", true);
 
         this.replyQueue = this.getChannel().queueDeclare().getQueue();
         this.replyConsumer = new QueueingConsumer(this.getChannel());
@@ -76,7 +76,7 @@ public class MessageSender extends MessageInterface {
         String correlationId = UUID.randomUUID().toString();
         AMQP.BasicProperties properties = this.getStandardPropertyBuilder().headers(message.getHeaders()).contentType("application/json").correlationId(correlationId).build();
 
-        this.getChannel().basicPublish(this.getExchange(), null, properties, message.getJSON().toString().getBytes());
+        this.getChannel().basicPublish(this.getExchange(), "", properties, message.getJSON().toString().getBytes());
 
         if (expectReply) {
             SettableFuture<String> expector = new SettableFuture<String>(); // Set up a Future<> to wait for a reply

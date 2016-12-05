@@ -160,11 +160,6 @@ public class AmqpDefinition {
             this.log.info(this.formatValue("host", this.host, printIndent, prefix));
             changed = true;
         }
-        if (this.queue == null) {
-            this.queue = "incoming";
-            this.log.info(this.formatValue("queue", this.queue, printIndent, prefix));
-            changed = true;
-        }
         return changed;
     }
 

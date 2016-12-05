@@ -43,7 +43,8 @@ public class MessageReceiver extends MessageInterface {
     private void setupConsumer() throws IOException {
         this.queueResult = this.getChannel().queueDeclare(this.getQueue(), true, false, true, null);
         if (this.getExchange() != null) {
-            this.getChannel().queueBind(this.getQueue(), this.getExchange(), null);
+            this.getChannel().exchangeDeclare(this.getExchange(), "fanout", true);
+            this.getChannel().queueBind(this.getQueue(), this.getExchange(), "");
         }
 
         this.consumer = new QueueingConsumer(this.getChannel());
