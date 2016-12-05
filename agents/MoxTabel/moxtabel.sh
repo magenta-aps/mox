@@ -3,7 +3,7 @@
 DIR=$(dirname ${BASH_SOURCE[0]})
 MOXDIR="$DIR/../.."
 source $MOXDIR/variables.sh
-COMMAND="$CMD_JAVA -Xmx4g -cp target/MoxTabel-1.0.jar:target/dependency/* dk.magenta.mox.moxtabel.MoxTabel --propertiesFile /srv/mox/mox.conf"
+COMMAND="$CMD_JAVA -Xmx4g -cp target/MoxTabel-1.0.jar:target/dependency/* dk.magenta.mox.moxtabel.MoxTabel"
 AS_USER="mox"
 
 cd $DIR

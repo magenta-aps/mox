@@ -54,7 +54,7 @@ public class MoxTabel extends MoxAgent {
     }
 
     protected String getDefaultPropertiesFileName() {
-        return "moxtabel.properties";
+        return "moxtabel.conf";
     }
 
     @Override
