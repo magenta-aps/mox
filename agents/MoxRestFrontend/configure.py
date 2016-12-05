@@ -25,7 +25,7 @@ parser.add_argument('--amqp-exchange', action='store')
 
 args = parser.parse_args()
 
-configfile = DIR + "/moxrestfrontend/moxrestfrontend.conf"
+configfile = DIR + "/moxrestfrontend.conf"
 
 config_map = [
     ('amqp_host', 'moxrestfrontend.amqp.host'),
