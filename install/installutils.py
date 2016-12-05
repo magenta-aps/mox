@@ -264,14 +264,14 @@ class Apache(object):
                 return start + index
         return None
 
-    def add_include(self, file):
+    def add_include(self, file, first=False):
         self.load_config()
         try:
             if self.beginmarker_index or self.endmarker_index:
                 line = "%sInclude %s\n" % (self.indent, file)
                 index = self.index(line)
                 if index is None:
-                    if self.endmarker_index:
+                    if self.endmarker_index and not first:
                         self.lines.insert(self.endmarker_index, line)
                     else:
                         self.lines.insert(self.beginmarker_index + 1, line)
@@ -286,8 +286,8 @@ class WSGI(object):
         self.conffile = conffile
         self.wsgidir = wsgidir
 
-    def install(self):
+    def install(self, first_include=False):
         if not os.path.exists(self.wsgidir):
             subprocess.Popen(['sudo', 'mkdir', "--parents", self.wsgidir]).wait()
         subprocess.Popen(['sudo', 'cp', '--remove-destination', self.wsgifile, self.wsgidir]).wait()
-        Apache().add_include(self.conffile)
+        Apache().add_include(self.conffile, first_include)
