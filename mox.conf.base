@@ -20,14 +20,6 @@ moxtabel.amqp.outgoing.password = guest
 
 
 
-## MoxRestFrontend Configuration ##
-
-moxrestfrontend.amqp.queueName = rest
-moxrestfrontend.amqp.username = guest
-moxrestfrontend.amqp.password = guest
-
-
-
 ## Mox Auth Configuration
 
 security.sts.address = https://${domain}:9443/services/wso2carbon-sts?wsdl
