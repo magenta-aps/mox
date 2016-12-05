@@ -12,7 +12,7 @@ from moxconfig import read_properties_file
 
 DIR = os.path.dirname(os.path.realpath(__file__))
 
-config = read_properties_file("/srv/mox/mox.conf")
+config = read_properties_file("/srv/mox/mox.conf", DIR + "/settings.conf")
 
 ALLOWED_EXTENSIONS = set(['ods', 'xls', 'xlsx'])
 
@@ -79,8 +79,9 @@ app.config['UPLOAD_FOLDER'] = '/tmp'
 sender = MessageSender(
     config.get("moxdocumentupload.amqp.username"),
     config.get("moxdocumentupload.amqp.password"),
-    config.get("moxdocumentupload.amqp.interface"),
-    config.get("moxdocumentupload.amqp.queueName"))
+    config.get("moxdocumentupload.amqp.host"),
+    config.get("moxdocumentupload.amqp.exchange")
+)
 
 
 @app.route('/', methods=['GET','POST'])
@@ -116,7 +117,7 @@ def upload():
         file.save(destfilepath)
 
         # Send file to document service
-        url = config.get("rest.interface") + "/dokument/dokument"
+        url = config.get("moxdocumentupload.rest.host") + "/dokument/dokument"
         data = MultipartEncoder(
             fields={
                 'json': getCreateDocumentJson(filename, file.mimetype),
