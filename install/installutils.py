@@ -20,7 +20,7 @@ class Config(object):
     def load(self):
         if self.exists():
             self.lastline = 0
-            fp = open(file, 'r')
+            fp = open(self.file, 'r')
             i = 0
             for line in fp:
                 if '=' in line:
