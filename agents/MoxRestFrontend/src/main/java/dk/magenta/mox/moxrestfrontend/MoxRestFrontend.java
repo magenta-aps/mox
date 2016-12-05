@@ -8,7 +8,9 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
 
 import java.io.IOException;
+import java.io.FileInputStream;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 
 public class MoxRestFrontend extends MoxObjectAgent {
@@ -21,16 +23,28 @@ public class MoxRestFrontend extends MoxObjectAgent {
 
     public static void main(String[] args) {
         DOMConfigurator.configure("log4j.xml");
-        MoxRestFrontend agent = new MoxRestFrontend(args);
+        MoxRestFrontend agent;
+        try {
+            agent = new MoxRestFrontend(args);
+        } catch (Exception e) {
+            return;
+        }
         agent.run();
     }
 
-    public MoxRestFrontend(String[] args) {
+    public MoxRestFrontend(String[] args) throws IOException {
         super(args);
         this.restInterface = this.getSetting("moxrestfrontend.rest.host");
-        Properties objectTypeConfig = new Properties();
-        objectTypeConfig.load(new FileInputStream("structure.conf"));
-        this.objectTypeMap = ObjectType.load(objectTypeConfig);
+
+        try {
+            Properties objectTypeConfig = new Properties();
+            objectTypeConfig.load(new FileInputStream("structure.conf"));
+            this.objectTypeMap = ObjectType.load(objectTypeConfig);
+        } catch (IOException e) {
+            this.log.error("Error loading from properties file structure.conf: " + e.getMessage());
+            System.err.println("Failed loading structure.conf");
+            throw e;
+        }
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
