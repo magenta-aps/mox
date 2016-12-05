@@ -27,7 +27,7 @@ public class MoxRestFrontend extends MoxObjectAgent {
 
     public MoxRestFrontend(String[] args) {
         super(args);
-        this.restInterface = this.getSetting("rest.interface");
+        this.restInterface = this.getSetting("moxrestfrontend.rest.host");
         this.objectTypeMap = ObjectType.load(this.properties);
 
         Runtime.getRuntime().addShutdownHook(new Thread() {

@@ -135,7 +135,10 @@ $DIR/scripts/install.sh
 # Compile agents
 echo "Installing Agents"
 $DIR/agents/MoxTabel/install.sh
+
 $DIR/agents/MoxRestFrontend/install.sh
+$DIR/agents/MoxRestFrontend/configure.py --rest-host "$REST_HOST" --amqp-host "$DOMAIN" --amqp-user "$AMQP_USER" --amqp-pass "$AMQP_PASS" --amqp-exchange "mox.rest"
+
 $DIR/agents/MoxTest/install.sh
 
 JAVA_HOME="$OLD_JAVA_HOME"
