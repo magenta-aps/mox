@@ -25,7 +25,8 @@ setup(
         'requests==2.10.0',
         'requests-toolbelt==0.6.2',
         'werkzeug==0.11.10',
-        'amqp==2.0.3',
-        'promise==0.4.2'
+        'pika==0.10.0',
+        'promise==0.4.2',
+        'python-dateutil==2.5.3'
     ]
 )

@@ -7,12 +7,13 @@ import requests
 import json
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 
-from moxamqp import MessageSender, UploadedDocumentMessage, NoSuchJob
-from moxconfig import read_properties_file
+from agent.amqpclient import MessageSender, NoSuchJob
+from agent.message import UploadedDocumentMessage
+from agent.config import read_properties_files
 
 DIR = os.path.dirname(os.path.realpath(__file__))
 
-config = read_properties_file("/srv/mox/mox.conf", DIR + "/settings.conf")
+config = read_properties_files("/srv/mox/mox.conf", DIR + "/settings.conf")
 
 ALLOWED_EXTENSIONS = set(['ods', 'xls', 'xlsx'])
 
@@ -117,7 +118,7 @@ def upload():
         file.save(destfilepath)
 
         # Send file to document service
-        url = config.get("moxdocumentupload.rest.host") + "/dokument/dokument"
+        url = config["moxdocumentupload.rest.host"] + "/dokument/dokument"
         data = MultipartEncoder(
             fields={
                 'json': getCreateDocumentJson(filename, file.mimetype),

@@ -36,7 +36,7 @@ config_map = [
     ('amqp_exchange', 'moxdocumentupload.amqp.exchange'),
     ('amqp_user', 'moxdocumentupload.amqp.username'),
     ('amqp_pass', 'moxdocumentupload.amqp.password'),
-    ('rest_host', 'moxdocumentdownload.rest.host'),
+    ('rest_host', 'moxdocumentupload.rest.host'),
 ]
 config = Config(configfile)
 
