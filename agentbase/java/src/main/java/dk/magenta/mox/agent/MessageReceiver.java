@@ -26,11 +26,11 @@ public class MessageReceiver extends MessageInterface {
         this.setupConsumer();
     }
 
-    public MessageReceiver(String host, String exchange, String queue, boolean sendReplies) throws IOException, TimeoutException {
-        this(null, null, host, exchange, queue, sendReplies);
+    public MessageReceiver(String host, String queue, boolean sendReplies) throws IOException, TimeoutException {
+        this(null, null, host, queue, sendReplies);
     }
-    public MessageReceiver(String username, String password, String host, String exchange, String queue, boolean sendReplies) throws IOException, TimeoutException {
-        super(username, password, host, exchange, queue);
+    public MessageReceiver(String username, String password, String host, String queue, boolean sendReplies) throws IOException, TimeoutException {
+        super(username, password, host, null, queue);
         this.setupConsumer();
     }
 

@@ -120,7 +120,7 @@ public class AmqpDefinition {
                 }
             }
             if (overwrite || this.exchangeName == null) {
-                String exchange = this.getFromProperties(properties, prefix + ".exchangeName", print, printIndent, true);
+                String exchange = this.getFromProperties(properties, prefix + ".exchange", print, printIndent, true);
                 if (exchange != null) {
                     this.exchangeName = exchange;
                     changed = true;

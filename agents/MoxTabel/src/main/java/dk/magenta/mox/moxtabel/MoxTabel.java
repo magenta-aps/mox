@@ -61,7 +61,7 @@ public class MoxTabel extends MoxAgent {
     public void run() {
         log.info("\n--------------------------------------------------------------------------------");
         log.info("MoxTabel Starting");
-        log.info("Listening for messages from RabbitMQ service at " + this.listenerDefinition.getAmqpLocation() + ", queue name '" + this.listenerDefinition.getQueueName() + "'");
+        log.info("Listening for messages from RabbitMQ service at " + this.listenerDefinition.getAmqpLocation() + ", exchange '" + this.listenerDefinition.getExchangeName() + "'");
         log.info("Successfully converted messages will be forwarded to the RabbitMQ service at " + this.senderDefinition.getAmqpLocation() + ", queue name '"+this.senderDefinition.getQueueName()+"'");
         MessageReceiver messageReceiver = null;
         MessageSender messageSender = null;

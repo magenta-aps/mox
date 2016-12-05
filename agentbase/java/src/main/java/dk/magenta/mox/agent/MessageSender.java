@@ -25,8 +25,8 @@ public class MessageSender extends MessageInterface {
         this.setup();
     }
 
-    public MessageSender(String username, String password, String host, String queue) throws IOException, TimeoutException {
-        this(username, password, host, null, queue);
+    public MessageSender(String username, String password, String host, String exchange) throws IOException, TimeoutException {
+        this(username, password, host, exchange, null);
     }
     public MessageSender(String host, String exchange, String queue) throws IOException, TimeoutException {
         this(null, null, host, exchange, queue);

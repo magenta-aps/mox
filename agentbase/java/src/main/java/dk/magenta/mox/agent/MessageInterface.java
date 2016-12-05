@@ -19,7 +19,7 @@ public abstract class MessageInterface {
     private Connection connection;
     private Channel channel;
     private String exchange;
-    private String queueName;
+    private String queue;
     private AMQP.Queue.DeclareOk queueResult;
     protected Logger log = Logger.getLogger(this.getClass());
 
@@ -34,15 +34,18 @@ public abstract class MessageInterface {
                 amqpDefinition.getQueueName());
     }
 
-    public MessageInterface(String host, String exchange, String queueName) throws IOException {
-        this(null, null, host, exchange, queueName);
+    public MessageInterface(String host, String exchange, String queue) throws IOException {
+        this(null, null, host, exchange, queue);
     }
-    public MessageInterface(String username, String password, String host, String exchange, String queueName) throws IOException {
+    public MessageInterface(String username, String password, String host, String exchange, String queue) throws IOException {
         if (username == null) {
             username = ConnectionFactory.DEFAULT_USER;
         }
         if (password == null) {
             password = ConnectionFactory.DEFAULT_PASS;
+        }
+        if (queue == null) {
+            queue = "queue_" + UUID.randomUUID().toString();
         }
 
         this.id = UUID.randomUUID().toString();
@@ -64,10 +67,14 @@ public abstract class MessageInterface {
             exchange = "";
         }
         this.exchange = exchange;
-        this.queueName = queueName;
+        this.queue = queue;
         this.connection = connectionFactories.get(host).newConnection();
         this.channel = connection.createChannel();
-        this.queueResult = this.channel.queueDeclare(queueName, false, false, false, null);
+
+        this.queueResult = this.channel.queueDeclare(queue, false, false, false, null);
+        if (exchange != null) {
+            this.channel.queueBind(queue, exchange, null);
+        }
     }
 
     public String getId() {
@@ -91,7 +98,7 @@ public abstract class MessageInterface {
     }
 
     public String getQueueName() {
-        return queueName;
+        return queue;
     }
 
     public AMQP.Queue.DeclareOk getQueueResult() {
