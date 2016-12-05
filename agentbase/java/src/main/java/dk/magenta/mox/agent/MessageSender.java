@@ -25,18 +25,9 @@ public class MessageSender extends MessageInterface {
         this.setup();
     }
 
-    public MessageSender(String username, String password, String host, String exchange) throws IOException, TimeoutException {
-        this(username, password, host, exchange, null);
-    }
-    public MessageSender(String host, String exchange, String queue) throws IOException, TimeoutException {
-        this(null, null, host, exchange, queue);
-    }
-    public MessageSender(String username, String password, String host, String exchange, String queue) throws IOException, TimeoutException {
-        super(username, password, host, exchange, queue);
-        this.setup();
-    }
-
     private void setup() throws IOException {
+        this.getChannel().exchangeDeclare(this.getExchange(), "direct", true);
+
         this.replyQueue = this.getChannel().queueDeclare().getQueue();
         this.replyConsumer = new QueueingConsumer(this.getChannel());
         this.getChannel().basicConsume(this.replyQueue, true, this.replyConsumer);
@@ -85,7 +76,7 @@ public class MessageSender extends MessageInterface {
         String correlationId = UUID.randomUUID().toString();
         AMQP.BasicProperties properties = this.getStandardPropertyBuilder().headers(message.getHeaders()).contentType("application/json").correlationId(correlationId).build();
 
-        this.getChannel().basicPublish(this.getExchange(), this.getQueueName(), properties, message.getJSON().toString().getBytes());
+        this.getChannel().basicPublish(this.getExchange(), null, properties, message.getJSON().toString().getBytes());
 
         if (expectReply) {
             SettableFuture<String> expector = new SettableFuture<String>(); // Set up a Future<> to wait for a reply

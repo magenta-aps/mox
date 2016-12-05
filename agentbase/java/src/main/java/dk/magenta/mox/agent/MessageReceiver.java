@@ -15,22 +15,14 @@ public class MessageReceiver extends MessageInterface {
     private boolean running;
     private boolean sendReplies;
     private Throttle throttle = new Throttle(0);
+    private AMQP.Queue.DeclareOk queueResult;
 
     public MessageReceiver(AmqpDefinition amqpDefinition) throws IOException {
-        super(amqpDefinition);
-        this.setupConsumer();
+        this(amqpDefinition, true);
     }
     public MessageReceiver(AmqpDefinition amqpDefinition, boolean sendReplies) throws IOException {
         super(amqpDefinition);
         this.sendReplies = sendReplies;
-        this.setupConsumer();
-    }
-
-    public MessageReceiver(String host, String queue, boolean sendReplies) throws IOException, TimeoutException {
-        this(null, null, host, queue, sendReplies);
-    }
-    public MessageReceiver(String username, String password, String host, String queue, boolean sendReplies) throws IOException, TimeoutException {
-        super(username, password, host, null, queue);
         this.setupConsumer();
     }
 
@@ -49,11 +41,20 @@ public class MessageReceiver extends MessageInterface {
     }
 
     private void setupConsumer() throws IOException {
+        this.queueResult = this.getChannel().queueDeclare(this.getQueueName(), true, false, true, null);
+        if (this.getExchange() != null) {
+            this.getChannel().queueBind(this.getQueueName(), this.getExchange(), null);
+        }
+
         this.consumer = new QueueingConsumer(this.getChannel());
         if (consumer == null) {
             throw new IOException("Couldn't open listener");
         }
         this.getChannel().basicConsume(this.getQueueName(), true, this.consumer);
+    }
+
+    public AMQP.Queue.DeclareOk getQueueResult() {
+        return this.queueResult;
     }
 
     public void run(MessageHandler callback) throws InterruptedException {

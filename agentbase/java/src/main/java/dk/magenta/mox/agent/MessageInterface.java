@@ -20,7 +20,6 @@ public abstract class MessageInterface {
     private Channel channel;
     private String exchange;
     private String queue;
-    private AMQP.Queue.DeclareOk queueResult;
     protected Logger log = Logger.getLogger(this.getClass());
 
 
@@ -45,7 +44,10 @@ public abstract class MessageInterface {
             password = ConnectionFactory.DEFAULT_PASS;
         }
         if (queue == null) {
-            queue = "queue_" + UUID.randomUUID().toString();
+            queue = UUID.randomUUID().toString();
+        }
+        if (exchange == null) {
+            exchange = "";
         }
 
         this.id = UUID.randomUUID().toString();
@@ -63,18 +65,10 @@ public abstract class MessageInterface {
             factory.setPassword(password);
             connectionFactories.put(host, factory);
         }
-        if (exchange == null) {
-            exchange = "";
-        }
         this.exchange = exchange;
         this.queue = queue;
         this.connection = connectionFactories.get(host).newConnection();
         this.channel = connection.createChannel();
-
-        this.queueResult = this.channel.queueDeclare(queue, false, false, false, null);
-        if (exchange != null) {
-            this.channel.queueBind(queue, exchange, null);
-        }
     }
 
     public String getId() {
@@ -99,10 +93,6 @@ public abstract class MessageInterface {
 
     public String getQueueName() {
         return queue;
-    }
-
-    public AMQP.Queue.DeclareOk getQueueResult() {
-        return queueResult;
     }
 
     public void close() {
