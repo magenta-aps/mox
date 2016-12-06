@@ -13,13 +13,13 @@ import threading
 from agent.config import read_properties_files, MissingConfigKeyError
 from flask import Flask, render_template, request, make_response
 
-BASEPATH = os.path.dirname(os.path.realpath(sys.argv[0]))
+DIR = os.path.dirname(os.path.realpath(__file__))
 
 GET_TOKEN = "/get-token"
 
 app = Flask(__name__)
 
-configfile = BASEPATH + "/settings.conf"
+configfile = DIR + "/settings.conf"
 config = read_properties_files("/srv/mox/mox.conf", configfile)
 
 
@@ -94,10 +94,9 @@ class ChunkGet(threading.Thread):
 
 
 
-def extract(server, username, password, objecttypes, https=True, load_threaded=10):
-    schema = "https://" if https else "http://"
+def extract(host, username, password, objecttypes, https=True, load_threaded=10):
 
-    token = get_token(schema, server, username, password)
+    token = get_token(host, username, password)
 
     registerTime = datetime.datetime.today().date() + datetime.timedelta(days=1)
 
@@ -108,7 +107,7 @@ def extract(server, username, password, objecttypes, https=True, load_threaded=1
         uuids = []
         for parameterset in ["brugervendtnoegle=%", "livscykluskode=Importeret"]:
             list_request = requests.get(
-                "%s%s%s?%s" % (schema, server, objecttype_url, parameterset),
+                "%s%s?%s" % (host, objecttype_url, parameterset),
                 headers={
                     "Authorization": token,
                     "Content-type": "application/json"
@@ -134,7 +133,7 @@ def extract(server, username, password, objecttypes, https=True, load_threaded=1
         if load_threaded is not None and load_threaded > 0:
             loaders = []
             for chunk in chunks:
-                url = "%s%s%s?registreretFra=%s&uuid=%s" % (schema, server, objecttype_url, registerTime, "&uuid=".join(chunk))
+                url = "%s%s?registreretFra=%s&uuid=%s" % (host, objecttype_url, registerTime, "&uuid=".join(chunk))
                 loader = ChunkGet(url, token)
                 loaders.append(loader)
 
@@ -155,7 +154,7 @@ def extract(server, username, password, objecttypes, https=True, load_threaded=1
                     objects[objecttype_name].extend(result)
         else:
             for chunk in chunks:
-                url = "%s%s%s?registreretFra=%s&uuid=%s" % (schema, server, objecttype_url, registerTime, "&uuid=".join(chunk))
+                url = "%s%s?registreretFra=%s&uuid=%s" % (host, objecttype_url, registerTime, "&uuid=".join(chunk))
 
                 item_request = requests.get(
                     url,
@@ -176,21 +175,21 @@ def extract(server, username, password, objecttypes, https=True, load_threaded=1
 
                 request_counter += 1 # Rens for gamle registreringer
                 if request_counter % 20 == 0:
-                    token = get_token(schema, server, username, password)
+                    token = get_token(host, username, password)
 
     return objects
 
 
-def get_token(schema, server, username, password):
+def get_token(host, username, password):
     """ Get a token from the server"""
-    token_url = "%s%s%s" % (schema, server, GET_TOKEN)
+    token_url = "%s%s" % (host, GET_TOKEN)
     # print "Obtaining token from %s" % token_url
     token_request = requests.post(
         token_url,
         data={
             'username': username,
             'password': password,
-            'sts': "https://%s:9443/services/wso2carbon-sts?wsdl" % server
+            'sts': "%s:9443/services/wso2carbon-sts?wsdl" % host
         },
         verify=False
     )
