@@ -53,21 +53,24 @@ class MessageSender(MessageInterface):
         properties = self.getStandardProperties()
         properties.headers = message.getHeaders()
 
+        replyQueue = "reply-%s" % str(uuid.uuid4())
+        properties.correlation_id = replyQueue
+        properties.reply_to = replyQueue
+        self.channel.queue_declare(replyQueue, durable=False, exclusive=False, auto_delete=True)
+
+        self.replyQueues.append(replyQueue)
+
+        # Remove the queue after a given time (default is one hour)
+        cleanupTimer = threading.Timer(self.replyDeletePeriod, self.channel.queue_delete, args=[replyQueue])
+        cleanupTimer.start()
+        self.replyDeleters.append(cleanupTimer)
+
         if replyCallback:
             # Register a reply queue
-            replyQueue = "reply-%s" % str(uuid.uuid4())
-            properties.correlation_id = replyQueue
-            properties.reply_to = replyQueue
-            self.channel.queue_declare(replyQueue, durable=False, exclusive=False, auto_delete=True)
             self.channel.basic_consume(replyCallback, replyQueue, no_ack=True, exclusive=False)
-            self.replyQueues.append(replyQueue)
-
-            # Remove the queue after a given time (default is one hour)
-            cleanupTimer = threading.Timer(self.replyDeletePeriod, self.channel.queue_delete, args=[replyQueue])
-            cleanupTimer.start()
-            self.replyDeleters.append(cleanupTimer)
 
         self.channel.basic_publish(self.exchange, '', data, properties)
+        return replyQueue
 
     def close(self):
         for replyDeleter in self.replyDeleters:
@@ -111,7 +114,7 @@ class MessageListener(MessageInterface):
         if not self.queue:
             print "Please specify queue before running!"
             return
-        
+
         print ' [*] Waiting for messages. To exit press CTRL+C'
         self.channel.basic_qos(prefetch_count=1)
         self.channel.basic_consume(self.callback, queue=self.queue, no_ack=True)
