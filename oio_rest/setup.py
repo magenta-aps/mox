@@ -24,6 +24,7 @@ setup(
     zip_safe=False,
     install_requires=[
         # -*- Extra requirements: -*-
+        'pytz>=2016.10',
         'Flask==0.10.1',
         'Jinja2==2.7.3',
         'MarkupSafe==0.23',

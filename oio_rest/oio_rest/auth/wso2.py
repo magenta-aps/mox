@@ -1,49 +1,83 @@
+import datetime
 import os
-import pexpect
-import re
+import urllib2
 
-from ..settings import MOX_BASE_DIR
+from xml.dom import minidom
+import jinja2
+import pytz
 
-send_pwd_with_ipc = True
-try:
-    from shlex import quote as cmd_quote
-except ImportError:
-    from pipes import quote as cmd_quote
+from . import util
+
+SOAP_NS = 'http://www.w3.org/2003/05/soap-envelope'
+TRUST_NS = 'http://schemas.xmlsoap.org/ws/2005/02/trust'
+
+curdir = os.path.dirname(os.path.realpath(__file__))
+jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(
+    os.path.join(curdir, '..', 'templates', 'xml')
+))
 
 
-def get_packed_token(username, password, sts=''):
-    params = ['-u', username, '-a', sts, '-s']
-    if send_pwd_with_ipc:
-        params.append('-p')
-    else:
-        params.extend(['-p', password])
+def get_token(username, passwd, idp_url, endpoint, pretty_print):
+    '''Request a SAML authentication token from the given host and endpoint.
 
-    child = pexpect.spawn(
-        os.path.join(MOX_BASE_DIR, 'auth.sh') +
-        ' ' + ' '.join(cmd_quote(param) for param in params))
+    Windows Server typically returns a 500 Internal Server Error on
+    authentication errors; this function simply raises a
+    httplib.HTTPError in these cases. In other cases, it returns a
+    KeyError.
+
+    '''
+
+    created = datetime.datetime.now(pytz.utc)
+    expires = created + datetime.timedelta(hours=1)
+
+    t = jinja_env.get_template('wso2-soap-request.xml')
+    xml = t.render(
+        username=username,
+        password=passwd,
+        endpoint=endpoint,
+        created=created.isoformat(),
+        expires=expires.isoformat(),
+    )
+
+    headers = {
+        'Content-Type': 'application/soap+xml; charset=utf-8',
+    }
+    req = urllib2.Request(idp_url, xml, headers)
+
     try:
-        if send_pwd_with_ipc:
-            i = child.expect([pexpect.TIMEOUT, "Password:"])
-            if i == 0:
-                raise Exception("Error requesting token: "
-                                "no password prompt")
-            else:
-                child.sendline(password)
-        output = child.read()
-        m = re.search("saml-gzipped\s+(.+?)\s", output)
-        if m is not None:
-            token = m.group(1)
-            return "saml-gzipped " + token
-        else:
-            m = re.search("Incorrect password!", output)
-            if m is not None:
-                raise Exception("Error requesting token: "
-                                "invalid username or password")
-            else:
-                raise Exception(
-                    "Error requesting token: " + output
-                )
-    except pexpect.TIMEOUT:
-        raise Exception("Timeout while requesting token")
+        urlfp = urllib2.urlopen(req)
+    except urllib2.HTTPError as e:
+        # do something?
+        ct = e.info()['Content-Type'].split(';')[0]
+
+        if e.getcode() == 500 and ct == 'application/soap+xml':
+            # the reason rarely makes sense, but report it nonetheless
+            try:
+                reason = util.get_reason(minidom.parse(e))
+            finally:
+                e.close()
+            raise Exception(reason)
+
+        raise
+
+    try:
+        doc = minidom.parse(urlfp)
     finally:
-        child.close()
+        urlfp.close()
+
+    tokens = doc.getElementsByTagNameNS(TRUST_NS, 'RequestedSecurityToken')
+    if len(tokens) == 0:
+        raise KeyError('no tokens found - is the endpoint correct?')
+    if len(tokens) > 1:
+        raise KeyError('too many tokens found')
+
+    assert len(tokens[0].childNodes) == 1
+
+    token = tokens[0].firstChild
+
+    if pretty_print:
+        return token.toprettyxml(indent=' ' * 2)
+    else:
+        return token.toxml()
+
+__all__ = ('get_token')

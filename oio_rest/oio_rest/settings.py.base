@@ -20,13 +20,13 @@ SAML_MOX_ENTITY_ID = 'https://${domain}'
 SAML_IDP_ENTITY_ID = 'localhost'
 
 # The URL on which to access the SAML IdP.
-SAML_IDP_URL = ("https://${domain}:9443/services/wso2carbon-sts?wsdl")
+SAML_IDP_URL = "https://${domain}:9443/services/wso2carbon-sts.wso2carbon-stsHttpsEndpoint"
 
 # The public certificate file of the IdP, in PEM-format.
 SAML_IDP_CERTIFICATE = "test_auth_data/idp-certificate.pem"
 
-# Use simple, ADFS-compatible SAML authentication
-USE_SIMPLE_SAML = False
+# We currently support authentication against 'wso2' and 'adfs'
+SAML_IDP_TYPE = "wso2"
 
 # Whether to enable SAML authentication
 USE_SAML_AUTHENTICATION = True
@@ -34,9 +34,6 @@ USE_SAML_AUTHENTICATION = True
 # Whether authorization is enabled - if not, the restrictions module is not
 # called.
 DO_ENABLE_RESTRICTIONS = True
-
-# SAML user ID attribute -- default is for WSO2
-SAML_USER_ID_ATTIBUTE = 'http://wso2.org/claims/url'
 
 # The module which implements the authorization restrictions.
 # Must be present in sys.path.

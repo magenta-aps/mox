@@ -9,8 +9,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from custom_exceptions import OIOFlaskException, AuthorizationFailedException
 from custom_exceptions import UnauthorizedException, BadRequestException
-from auth import adfs, wso2
-import settings
+import auth
 
 app = Flask(__name__)
 
@@ -39,23 +38,16 @@ def get_token():
     if request.method == 'GET':
 
         t = jinja_env.get_template('get_token.html')
-        html = t.render(saml_url=settings.SAML_IDP_URL)
+        html = t.render()
         return html
     elif request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        sts = request.form.get('sts', '')
         if username is None or password is None:
-            raise BadRequestException("Parameters username and password are "
-                                      "required")
+            raise BadRequestException("Username and password required")
 
         try:
-            if settings.USE_SIMPLE_SAML:
-                text = adfs.get_packed_token(username, password,
-                                             settings.SAML_IDP_URL,
-                                             settings.SAML_MOX_ENTITY_ID)
-            else:
-                text = wso2.get_packed_token(username, password, sts)
+            text = auth.get_token(username, password)
         except Exception as e:
             traceback.print_exc()
             raise AuthorizationFailedException(e.message)
