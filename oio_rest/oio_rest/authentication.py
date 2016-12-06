@@ -3,6 +3,7 @@ from functools import wraps
 import os
 from flask import request
 from custom_exceptions import UnauthorizedException
+from custom_exceptions import AuthorizationFailedException
 import zlib
 import json
 import uuid
@@ -29,8 +30,10 @@ def check_saml_authentication():
     The following Authorization header formats are supported:
         Authorization: SAML-GZIPPED <base64-encoded gzipped SAML assertion>
 
-    If the token is not present, or is not valid, raises an
-    `UnauthorizedException` exception."""
+    Raises `UnauthorizedException` when the token is absent, and
+    `AuthorizationFailedException` when it's invalid.
+
+    """
     auth_header = request.headers.get('Authorization')
     if auth_header is None:
         raise UnauthorizedException("No Authorization header present")
@@ -39,7 +42,7 @@ def check_saml_authentication():
     (auth_type, encoded_token) = auth_header.split(None, 1)
     auth_type = auth_type.lower()
     if auth_type != 'saml-gzipped':
-        raise UnauthorizedException(
+        raise AuthorizationFailedException(
             "Unknown authorization type %s." % auth_type
         )
 
@@ -61,9 +64,8 @@ def check_saml_authentication():
     try:
         assertion.check_validity()
 
-        print "Assertion valid"
         name_id = assertion.get_nameid()
-        print "Name ID: %s" % name_id
+        print "SAML Assertion valid for: %s" % name_id
 
         # Add the username and SAML attributes to the request object
         request.saml_attributes = assertion.get_attributes()
@@ -78,13 +80,13 @@ def check_saml_authentication():
 
         request.saml_user_id = userid
 
-        print "UUID", request.saml_user_id
-        print "SAML ATTRIBUTES", json.dumps(request.saml_attributes, indent=2)
+        # print "UUID", request.saml_user_id
+        # print "SAML ATTRIBUTES", json.dumps(request.saml_attributes, indent=2)
         # print "TOKEN: ", token
     except Exception as e:
         errmsg = "SAML token validation failed: %s" % e.message
         print errmsg
-        raise UnauthorizedException(errmsg)
+        raise AuthorizationFailedException(errmsg)
 
 
 def requires_auth(f):

@@ -7,7 +7,7 @@ from flask import Flask, jsonify, request, Response
 from werkzeug.routing import BaseConverter
 from jinja2 import Environment, FileSystemLoader
 
-from custom_exceptions import OIOFlaskException
+from custom_exceptions import OIOFlaskException, AuthorizationFailedException
 from custom_exceptions import UnauthorizedException, BadRequestException
 from auth import adfs, wso2
 import settings
@@ -58,7 +58,7 @@ def get_token():
                 text = wso2.get_packed_token(username, password, sts)
         except Exception as e:
             traceback.print_exc()
-            raise UnauthorizedException(e.args[0])
+            raise AuthorizationFailedException(e.message)
 
         return Response(text, mimetype='text/plain')
 
