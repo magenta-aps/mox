@@ -143,7 +143,7 @@ def upload():
 
         # Send AMQP message detailing the upload
         amqpMessage = UploadedDocumentMessage(uuid, authorization)
-        jobId = sender.send(amqpMessage, True)
+        jobId = sender.send(amqpMessage)
 
         # Send http response
         jobObject = {'jobId': jobId}
