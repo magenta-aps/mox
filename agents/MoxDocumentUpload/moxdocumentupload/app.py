@@ -143,7 +143,7 @@ def upload():
 
         # Send AMQP message detailing the upload
         amqpMessage = UploadedDocumentMessage(uuid, authorization)
-        jobId = sender.send(amqpMessage)
+        jobId = sender.send(amqpMessage, True)
 
         # Send http response
         jobObject = {'jobId': jobId}
@@ -157,18 +157,14 @@ def checkStatus():
     jobId = request.args.get('jobId')
     if jobId is None:
         raise BadRequestException("Missing jobId")
-    try:
-        status = sender.getJobStatus(jobId)
-    except NoSuchJob as e:
-        raise NotFoundException("Incorrect jobId '%s'" % e.message)
-    if status is not None:
-        try:
-            data = json.loads(status)
-            return jsonify({'response': data})
-        except ValueError:
-            return jsonify({'response': status})
-    else:
+    (properties, body) = sender.getReply(jobId)
+    if body is None:
         return jsonify({})
+    try:
+        data = json.loads(body)
+        return jsonify({'response': data})
+    except ValueError:
+        return jsonify({'response': body})
 
 @app.errorhandler(MoxFlaskException)
 def handle_error(error):
