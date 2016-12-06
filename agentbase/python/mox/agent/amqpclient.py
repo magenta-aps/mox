@@ -58,8 +58,8 @@ class MessageSender(MessageInterface):
             replyQueue = "reply-%s" % str(uuid.uuid4())
             properties.correlation_id = replyQueue
             properties.reply_to = replyQueue
-            self.channel.queue_declare(replyQueue, durable=False, exclusive=True, auto_delete=True)
-            self.channel.basic_consume(replyCallback, replyQueue, no_ack=True, exclusive=True)
+            self.channel.queue_declare(replyQueue, durable=False, exclusive=False, auto_delete=True)
+            self.channel.basic_consume(replyCallback, replyQueue, no_ack=True, exclusive=False)
             self.replyQueues.append(replyQueue)
 
             # Remove the queue after a given time (default is one hour)
@@ -76,13 +76,9 @@ class MessageSender(MessageInterface):
             self.channel.queue_delete(replyQueue)
         super(MessageSender, self).close()
 
-    def getJobStatus(self, replyQueue):
-        #try:
-        reply = self.channel.basic_get(replyQueue)
-        #except amqp.exceptions.NotFound:
-        #    raise NoSuchJob(replyQueue)
-        if reply is not None:
-            return reply.body
+    def getReply(self, replyQueue):
+        (method, properties, body) = self.channel.basic_get(replyQueue)
+        return (properties, body)
 
 
 class MessageListener(MessageInterface):
