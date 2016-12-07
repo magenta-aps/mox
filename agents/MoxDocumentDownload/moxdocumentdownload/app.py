@@ -19,8 +19,7 @@ GET_TOKEN = "/get-token"
 
 app = Flask(__name__)
 
-configfile = DIR + "/settings.conf"
-config = read_properties_files("/srv/mox/mox.conf", configfile)
+config = read_properties_files(DIR + "/moxdocumentdownload.conf")
 
 
 class MoxFlaskException(Exception):

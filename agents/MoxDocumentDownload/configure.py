@@ -21,7 +21,7 @@ args = parser.parse_args()
 
 # ------------------------------------------------------------------------------
 
-configfile = DIR + "/moxdocumentdownload/settings.conf"
+configfile = DIR + "/moxdocumentdownload/moxdocumentdownload.conf"
 
 config_map = [
     ('rest_host', 'moxdocumentdownload.rest.host'),
