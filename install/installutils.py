@@ -83,7 +83,9 @@ class Config(object):
                 value = getattr(args, argkey)
             if value is None:
                 # Not good. We must have these values. Prompt the user
-                default = defaults.get(argkey)
+                default = self.get(confkey)
+                if default is None:
+                    default = defaults.get(argkey)
                 if default is not None:
                     value = raw_input("%s = [%s] " % (confkey, default)).strip()
                     if len(value) == 0:
