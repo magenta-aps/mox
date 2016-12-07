@@ -76,6 +76,7 @@ class Config(object):
         # config_translation must be a list of 2-tuples
         # args must be a map of args, where keys match the first value in the tuples, and values are strings
         # default must be a dict of fallback values
+        self.load()
         for (argkey, confkey) in config_translation:
             value = None
             if hasattr(args, argkey):
