@@ -24,3 +24,4 @@ oio_rest/oio_rest/settings.py
 variables.sh
 mox.conf
 apache/mox.conf
+agents/MoxDocumentDownload/moxdocumentdownload/moxdocumentdownload.conf
