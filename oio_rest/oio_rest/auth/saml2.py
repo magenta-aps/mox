@@ -105,14 +105,18 @@ class Saml2_Assertion(OneLogin_Saml2_Response):
         valid_audiences = self.get_audiences()
         if valid_audiences and self.mox_entity_id not in valid_audiences:
             raise Exception(
-                '%s is not a valid audience for this Assertion' %
-                self.mox_entity_id)
+                '%s is not a valid audience for this Assertion, got %s' %
+                (self.mox_entity_id, ', '.join(valid_audiences))
+            )
 
         # Checks the issuers
         issuers = self.get_issuers()
         for issuer in issuers:
             if issuer is None or issuer != self.idp_entity_id:
-                raise Exception('Invalid issuer in the Assertion/Response')
+                raise Exception(
+                    'Invalid issuer {!r} in the Assertion/Response, '
+                    'expected {!r}'.format(issuer, self.idp_entity_id)
+                )
 
         fingerprint = None
         fingerprintalg = None
