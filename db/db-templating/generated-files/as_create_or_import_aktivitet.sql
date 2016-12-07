@@ -29,6 +29,7 @@ DECLARE
   aktivitet_uuid_underscores text;
   aktivitet_rel_seq_name text;
   aktivitet_rel_type_cardinality_unlimited aktivitetRelationKode[]:=ARRAY['udfoererklasse'::AktivitetRelationKode,'deltagerklasse'::AktivitetRelationKode,'objektklasse'::AktivitetRelationKode,'resultatklasse'::AktivitetRelationKode,'grundlagklasse'::AktivitetRelationKode,'facilitetklasse'::AktivitetRelationKode,'adresse'::AktivitetRelationKode,'geoobjekt'::AktivitetRelationKode,'position'::AktivitetRelationKode,'facilitet'::AktivitetRelationKode,'lokale'::AktivitetRelationKode,'aktivitetdokument'::AktivitetRelationKode,'aktivitetgrundlag'::AktivitetRelationKode,'aktivitetresultat'::AktivitetRelationKode,'udfoerer'::AktivitetRelationKode,'deltager'::AktivitetRelationKode]::aktivitetRelationKode[];
+  aktivitet_rel_type_cardinality_unlimited_present_in_argument aktivitetRelationKode[];
 
 BEGIN
 
@@ -182,7 +183,10 @@ IF coalesce(array_length(aktivitet_registrering.relationer,1),0)>0 THEN
 --Create temporary sequences
 aktivitet_uuid_underscores:=replace(aktivitet_uuid::text, '-', '_');
 
-FOREACH aktivitet_relation_kode IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(aktivitet_registrering.relationer) a WHERE a.RelType = any (aktivitet_rel_type_cardinality_unlimited))
+SELECT array_agg( DISTINCT a.RelType) into aktivitet_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(aktivitet_registrering.relationer) a WHERE a.RelType = any (aktivitet_rel_type_cardinality_unlimited) ;
+IF coalesce(array_length(aktivitet_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
+
+FOREACH aktivitet_relation_kode IN ARRAY (aktivitet_rel_type_cardinality_unlimited_present_in_argument)
   LOOP
   aktivitet_rel_seq_name := 'aktivitet_rel_' || aktivitet_relation_kode::text || aktivitet_uuid_underscores;
 
@@ -194,6 +198,7 @@ FOREACH aktivitet_relation_kode IN ARRAY (SELECT array_agg( DISTINCT a.RelType) 
   CACHE 1;';
 
 END LOOP;
+END IF;
 
     INSERT INTO aktivitet_relation (
       aktivitet_registrering_id,
@@ -240,11 +245,13 @@ END LOOP;
 
 
 --Drop temporary sequences
-FOREACH aktivitet_relation_kode IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(aktivitet_registrering.relationer) a WHERE a.RelType = any (aktivitet_rel_type_cardinality_unlimited))
+IF coalesce(array_length(aktivitet_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
+FOREACH aktivitet_relation_kode IN ARRAY (aktivitet_rel_type_cardinality_unlimited_present_in_argument)
   LOOP
   aktivitet_rel_seq_name := 'aktivitet_rel_' || aktivitet_relation_kode::text || aktivitet_uuid_underscores;
   EXECUTE 'DROP  SEQUENCE ' || aktivitet_rel_seq_name || ';';
 END LOOP;
+END IF;
 
 
 END IF;

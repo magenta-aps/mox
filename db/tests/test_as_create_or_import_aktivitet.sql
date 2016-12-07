@@ -11,7 +11,9 @@ RETURNS SETOF TEXT LANGUAGE plpgsql AS
 $$
 DECLARE 
 	new_uuid1 uuid;
+	new_uuid2 uuid;
 	registrering aktivitetRegistreringType;
+	registrering2 aktivitetRegistreringType;
 	actual_registrering RegistreringBase;
 	virkEgenskaber Virkning;
 	virkEgenskaber2 Virkning;
@@ -58,6 +60,8 @@ DECLARE
 	uuid_returned_from_import uuid;
 	read_Aktivitet1 AktivitetType;
 	expected_aktivitet1 AktivitetType;
+	read_Aktivitet2 AktivitetType;
+	expected_aktivitet2 AktivitetType;
 BEGIN
 
 
@@ -417,6 +421,71 @@ RETURN NEXT IS(
 );
 
 
+/**************************************************/
+--test with no unlimited carinality relations given
+
+
+registrering2 := ROW (
+	ROW (
+	NULL,
+	'Opstaaet'::Livscykluskode,
+	uuidRegistrering,
+	'Test Note 4') :: RegistreringBase
+	,
+	ARRAY[aktivitetStatus]::aktivitetStatusTilsType[],
+	ARRAY[aktivitetPubliceret]::AktivitetPubliceretTilsType[],
+ARRAY[aktivitetEgenskab,aktivitetEgenskab2]::aktivitetEgenskaberAttrType[],
+ARRAY[	ROW (
+				'ansvarligklasse'::aktivitetRelationKode
+				,virkAnsvarligklasse
+				,uuidAnsvarligklasse
+				,null
+				,'Klasse'
+				,NULL 
+				,null --ROW (null,null,null,null)::AktivitetAktoerAttr  --aktoerAttr
+			) :: aktivitetRelationType
+]::aktivitetRelationType[]
+);
+
+new_uuid2 := as_create_or_import_aktivitet(registrering2);
+
+
+
+read_Aktivitet2 := as_read_aktivitet(new_uuid2,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
+	);
+--raise notice 'read_Aktivitet1:%',to_json(read_Aktivitet1);
+
+expected_aktivitet2:=ROW(
+		new_uuid2,
+		ARRAY[
+			ROW(
+			(read_Aktivitet2.registrering[1]).registrering
+			,ARRAY[aktivitetStatus]::aktivitetStatusTilsType[]
+			,ARRAY[aktivitetPubliceret]::aktivitetPubliceretTilsType[]
+			,ARRAY[aktivitetEgenskab,aktivitetEgenskab2]::aktivitetEgenskaberAttrType[]
+			,ARRAY[
+					ROW (
+				'ansvarligklasse'::aktivitetRelationKode
+				,virkAnsvarligklasse
+				,uuidAnsvarligklasse
+				,null
+				,'Klasse'
+				,NULL 
+				,ROW (null,null,null,null)::AktivitetAktoerAttr  --aktoerAttr
+			) :: aktivitetRelationType
+				]::AktivitetRelationType[]
+			)::AktivitetRegistreringType
+			]::AktivitetRegistreringType[]
+		)::AktivitetType
+;
+
+RETURN NEXT IS(
+	read_Aktivitet2,
+	expected_aktivitet2
+	,'test create aktivitet #2'
+);
 
 
 

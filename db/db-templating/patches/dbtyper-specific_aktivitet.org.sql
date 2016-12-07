@@ -30,9 +30,9 @@ CREATE TYPE AktivitetEgenskaberAttrType AS (
 brugervendtnoegle text,
 aktivitetnavn text,
 beskrivelse text,
-starttidspunkt timestamptz,
-sluttidspunkt timestamptz,
-tidsforbrug interval(0),
+starttidspunkt ClearableTimestamptz,
+sluttidspunkt ClearableTimestamptz,
+tidsforbrug ClearableInterval,
 formaal text,
  virkning Virkning
 );

@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 --SELECT * FROM runtests('test'::name);
-CREATE OR REPLACE FUNCTION test.test_as_create_or_import_aktivitet()
+CREATE OR REPLACE FUNCTION test.test_as_update_aktivitet()
 RETURNS SETOF TEXT LANGUAGE plpgsql AS 
 $$
 DECLARE 
@@ -30,6 +30,7 @@ DECLARE
 	virkStatus1B Virkning;
 	aktivitetEgenskab aktivitetEgenskaberAttrType;
 	aktivitetEgenskab2 aktivitetEgenskaberAttrType;
+	aktivitetEgenskab2B aktivitetEgenskaberAttrType;
 	aktivitetStatus aktivitetStatusTilsType;
 	aktivitetStatus1B aktivitetStatusTilsType;
 	aktivitetPubliceret aktivitetPubliceretTilsType;
@@ -66,6 +67,7 @@ DECLARE
 	uuid_to_import uuid :='a1819cce-043b-447f-ba5e-92e6a75df918'::uuid;
 	uuid_returned_from_import uuid;
 	update_reg_id_1 int;
+	update_reg_id_2 int;
 	read_Aktivitet1 AktivitetType;
 	expected_aktivitet1 AktivitetType;
 BEGIN
@@ -408,10 +410,23 @@ virkStatus1B,
 ;
 
 
+aktivitetEgenskab2B := ROW (
+ null, --'aktivitet_2_brugervendtnoegle',
+ null, --'aktivitet_2_aktivitetnavn',
+ null,--'aktivitet_2_beskrivelse',
+ ''::text,  --'starttidspunkt_aktivitet_1' --text
+null, --'2017-02-27 12:00'::timestamptz, -- sluttidspunkt,
+ ''::text,-- INTERVAL '0000-00 01 04:00:01.0', --tidsforbrug
+ null--'aktivitet_2_formaal'
+,virkEgenskaber2
+) :: aktivitetEgenskaberAttrType
+;
+
+
 update_reg_id_1:=as_update_aktivitet(
   new_uuid1, '5f368584-4c3e-4ba4-837b-da2b1eee37c4'::uuid,'Test update 20'::text,
   'Rettet'::Livscykluskode,          
-  null,
+  array[aktivitetEgenskab2B]::aktivitetEgenskaberAttrType[],
    array[aktivitetStatus1B]::aktivitetStatusTilsType[],
  null,
   array[aktivitetRelUdfoerer2B,aktivitetRelUdfoerer3,aktivitetRelGeoobjekt]::AktivitetRelationType[]
@@ -455,7 +470,18 @@ expected_aktivitet1:=ROW(
 				):: aktivitetStatusTilsType
 			]::aktivitetStatusTilsType[]
 			,ARRAY[aktivitetPubliceret]::aktivitetPubliceretTilsType[]
-			,ARRAY[aktivitetEgenskab,aktivitetEgenskab2]::aktivitetEgenskaberAttrType[]
+			,ARRAY[aktivitetEgenskab,
+							ROW (
+				'aktivitet_2_brugervendtnoegle',
+				'aktivitet_2_aktivitetnavn',
+				'aktivitet_2_beskrivelse',
+				Row(null,null)::ClearableTimestamptz,  --was cleared
+				'2017-02-27 12:00'::timestamptz, -- sluttidspunkt,
+				Row(null,null)::ClearableInterval, --was cleared
+				'aktivitet_2_formaal'
+				,virkEgenskaber2
+				) :: aktivitetEgenskaberAttrType
+			]::aktivitetEgenskaberAttrType[]
 			,ARRAY[
 					ROW ( --Notice: Was added
 						'geoobjekt'::aktivitetRelationKode
@@ -578,7 +604,29 @@ RETURN NEXT IS(
 );
 
 
---TODO: Confirm: To delete / clear a relation with a given index, you specify a blank uuid and/or a blank urn for that particular index.
+--TODO: Test: To delete / clear a relation with a given index, you specify a blank uuid and/or a blank urn for that particular index.
+
+/******************************************************/
+
+--Test if providing empty arguments will trigger exception as expected 
+BEGIN
+
+update_reg_id_2:=as_update_aktivitet(
+  new_uuid1, '5f368584-4c3e-4ba4-837b-da2b1eee37c4'::uuid,'Test update 20'::text,
+  'Rettet'::Livscykluskode,          
+  null,
+  null,
+  null,
+  null
+	);
+
+RETURN NEXT ok(false,'as_update_aktivitet empty arguments: Should throw MO400 exception');
+EXCEPTION  
+WHEN sqlstate 'MO400' THEN
+	RETURN NEXT ok(true,'as_update_aktivitet empty arguments: Throws MO400 exception (as it should)');
+
+END;
+
 
 
 

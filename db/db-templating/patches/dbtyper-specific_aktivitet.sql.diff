@@ -1,7 +1,17 @@
-*** ./generated-files/dbtyper-specific_aktivitet.sql	2016-10-22 13:41:13.000000000 +0200
---- ./patches/dbtyper-specific_aktivitet.org.sql	2016-10-22 12:35:22.000000000 +0200
+*** ./generated-files/dbtyper-specific_aktivitet.sql	2016-11-06 21:15:33.000000000 +0100
+--- ./patches/dbtyper-specific_aktivitet.org.sql	2016-11-06 21:13:59.000000000 +0100
 ***************
-*** 38,53 ****
+*** 28,53 ****
+  
+  CREATE TYPE AktivitetEgenskaberAttrType AS (
+  brugervendtnoegle text,
+  aktivitetnavn text,
+  beskrivelse text,
+! starttidspunkt timestamptz,
+! sluttidspunkt timestamptz,
+! tidsforbrug interval(0),
+  formaal text,
+   virkning Virkning
   );
   
   
@@ -18,7 +28,17 @@
   
   CREATE TYPE AktivitetRegistreringType AS
   (
---- 38,67 ----
+--- 28,67 ----
+  
+  CREATE TYPE AktivitetEgenskaberAttrType AS (
+  brugervendtnoegle text,
+  aktivitetnavn text,
+  beskrivelse text,
+! starttidspunkt ClearableTimestamptz,
+! sluttidspunkt ClearableTimestamptz,
+! tidsforbrug ClearableInterval,
+  formaal text,
+   virkning Virkning
   );
   
   
