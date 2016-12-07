@@ -25,3 +25,4 @@ variables.sh
 mox.conf
 apache/mox.conf
 agents/MoxDocumentUpload/moxdocumentupload/moxdocumentupload.conf
+agents/MoxDocumentUpload/install.log
