@@ -28,6 +28,7 @@ def get_token(username, passwd, idp_url, endpoint, pretty_print):
         username=username,
         password=passwd,
         endpoint=endpoint,
+        idp_url=idp_url,
     )
 
     headers = {
