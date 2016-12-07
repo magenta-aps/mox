@@ -13,7 +13,7 @@ from agent.config import read_properties_files
 
 DIR = os.path.dirname(os.path.realpath(__file__))
 
-config = read_properties_files("/srv/mox/mox.conf", DIR + "/settings.conf")
+config = read_properties_files(DIR + "/moxdocumentupload.conf")
 
 ALLOWED_EXTENSIONS = set(['ods', 'xls', 'xlsx'])
 

@@ -29,7 +29,7 @@ args = parser.parse_args()
 
 # ------------------------------------------------------------------------------
 
-configfile = DIR + "/moxdocumentupload/settings.conf"
+configfile = DIR + "/moxdocumentupload/moxdocumentupload.conf"
 
 config_map = [
     ('amqp_host', 'moxdocumentupload.amqp.host'),
