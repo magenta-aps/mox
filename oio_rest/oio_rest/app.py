@@ -9,7 +9,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from custom_exceptions import OIOFlaskException, AuthorizationFailedException
 from custom_exceptions import UnauthorizedException, BadRequestException
-import auth
+from auth import tokens
 
 app = Flask(__name__)
 
@@ -47,7 +47,7 @@ def get_token():
             raise BadRequestException("Username and password required")
 
         try:
-            text = auth.get_token(username, password)
+            text = tokens.get_token(username, password)
         except Exception as e:
             traceback.print_exc()
             raise AuthorizationFailedException(e.message)
