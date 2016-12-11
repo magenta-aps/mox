@@ -164,6 +164,8 @@ psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_search_dokument.sql
 psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_create_or_import_indsats.sql
 psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_update_indsats.sql
 psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_search_indsats.sql
+psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_filter_unauth_indsats.sql
+
 
 popd
 
