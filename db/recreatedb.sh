@@ -9,29 +9,31 @@ export PGPASSWORD="$MOX_DB_PASSWORD"
 # TODO: Support remote Postgres DB server
 #export PGHOST="$MOX_DB_HOST"
 
-sudo -u postgres createuser $MOX_DB_USER
-sudo -u postgres psql -c "ALTER USER $MOX_DB_USER WITH PASSWORD '$MOX_DB_PASSWORD';"
-sudo -u postgres dropdb $MOX_DB
-sudo -u postgres createdb $MOX_DB
-sudo -u postgres psql -c "GRANT ALL ON DATABASE $MOX_DB TO $MOX_DB_USER"
-sudo -u postgres psql -d $MOX_DB -f basis/dbserver_prep.sql
+sudo -u $SUPER_USER createuser $MOX_DB_USER
+sudo -u $SUPER_USER psql -c "ALTER USER $MOX_DB_USER WITH PASSWORD '$MOX_DB_PASSWORD';"
+sudo -u $SUPER_USER dropdb $MOX_DB
+sudo -u $SUPER_USER createdb $MOX_DB
+sudo -u $SUPER_USER psql -c "GRANT ALL ON DATABASE $MOX_DB TO $MOX_DB_USER"
+sudo -u $SUPER_USER psql -d $MOX_DB -f basis/dbserver_prep.sql
 
 # Setup AMQP server settings
-sudo -u postgres psql -d $MOX_DB -c "insert into amqp.broker
+sudo -u $SUPER_USER psql -d $MOX_DB -c "insert into amqp.broker
 (host, port, vhost, username, password)
 values ('$MOX_AMQP_HOST', $MOX_AMQP_PORT, '$MOX_AMQP_VHOST', '$MOX_AMQP_USER',
 '$MOX_AMQP_PASS');"
 
 # Grant mox user privileges to publish to AMQP
-sudo -u postgres psql -d $MOX_DB -c "GRANT ALL PRIVILEGES ON SCHEMA amqp TO $MOX_DB_USER;
+sudo -u $SUPER_USER psql -d $MOX_DB -c "GRANT ALL PRIVILEGES ON SCHEMA amqp TO $MOX_DB_USER;
 GRANT SELECT ON ALL TABLES IN SCHEMA amqp TO $MOX_DB_USER;"
 
 # Declare AMQP MOX notifications exchange as type fanout
-sudo -u postgres psql -d $MOX_DB -c "SELECT amqp.exchange_declare(1, 'mox.notifications', 'fanout', false, true, false);"
+sudo -u $SUPER_USER psql -d $MOX_DB -c "SELECT amqp.exchange_declare(1, 'mox.notifications', 'fanout', false, true, false);"
 
 psql -d $MOX_DB -U $MOX_DB_USER -c "CREATE SCHEMA actual_state AUTHORIZATION $MOX_DB_USER "
-sudo -u postgres psql -c "ALTER database $MOX_DB SET search_path TO actual_state,public;"
-sudo -u postgres psql -c "ALTER database mox SET DATESTYLE to 'ISO, YMD';" #Please notice that the db-tests are run, using a different datestyle
+sudo -u $SUPER_USER psql -c "ALTER database $MOX_DB SET search_path TO actual_state,public;"
+sudo -u $SUPER_USER psql -c "ALTER database mox SET DATESTYLE to 'ISO, YMD';" #Please notice that the db-tests are run, using a different datestyle
+sudo -u $SUPER_USER psql -c "ALTER database mox SET INTERVALSTYLE to 'sql_standard';" 
+
 psql -d $MOX_DB -U $MOX_DB_USER -c "CREATE SCHEMA test AUTHORIZATION $MOX_DB_USER "
 psql -d $MOX_DB -U $MOX_DB_USER -f basis/common_types.sql
 psql -d $MOX_DB -U $MOX_DB_USER -f funcs/_index_helper_funcs.sql
@@ -78,6 +80,8 @@ patch --fuzz=3 -i  ../patches/_remove_nulls_in_array_dokument.sql.diff
 patch --fuzz=3 -i  ../patches/as_list_dokument.sql.diff
 patch --fuzz=3 -i  ../patches/json-cast-functions_dokument.sql.diff
 patch --fuzz=3 -i  ../patches/as_search_dokument.sql.diff
+
+
 
 cd ..
 
