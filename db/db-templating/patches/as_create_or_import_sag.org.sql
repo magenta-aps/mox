@@ -28,6 +28,8 @@ DECLARE
   sag_rel_seq_name text;
   sag_rel_type_cardinality_unlimited SagRelationKode[]:=ARRAY['andetarkiv'::SagRelationKode,'andrebehandlere'::SagRelationKode,'sekundaerpart'::SagRelationKode,'andresager'::SagRelationKode,'byggeri'::SagRelationKode,'fredning'::SagRelationKode,'journalpost'::SagRelationKode]::SagRelationKode[];
   auth_filtered_uuids uuid[];
+  sag_rel_type_cardinality_unlimited_present_in_argument sagRelationKode[];
+
 BEGIN
 
 IF sag_uuid IS NULL THEN
@@ -161,7 +163,9 @@ IF coalesce(array_length(sag_registrering.relationer,1),0)>0 THEN
 --Create temporary sequences
 sag_uuid_underscores:=replace(sag_uuid::text, '-', '_');
 
-FOREACH sag_relation_kode IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(sag_registrering.relationer) a WHERE a.RelType = any (sag_rel_type_cardinality_unlimited))
+SELECT array_agg( DISTINCT a.RelType) into sag_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(sag_registrering.relationer) a WHERE a.RelType = any (sag_rel_type_cardinality_unlimited) ;
+IF coalesce(array_length(sag_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
+FOREACH sag_relation_kode IN ARRAY (sag_rel_type_cardinality_unlimited_present_in_argument)
   LOOP
   sag_rel_seq_name := 'sag_rel_' || sag_relation_kode::text || sag_uuid_underscores;
 
@@ -173,6 +177,7 @@ FOREACH sag_relation_kode IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  
   CACHE 1;';
 
 END LOOP;
+END IF;
 
     INSERT INTO sag_relation (
       sag_registrering_id,
@@ -244,11 +249,13 @@ END LOOP;
 
 
 --Drop temporary sequences
-FOREACH sag_relation_kode IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(sag_registrering.relationer) a WHERE a.RelType = any (sag_rel_type_cardinality_unlimited))
+IF coalesce(array_length(sag_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
+FOREACH sag_relation_kode IN ARRAY (sag_rel_type_cardinality_unlimited_present_in_argument)
   LOOP
   sag_rel_seq_name := 'sag_rel_' || sag_relation_kode::text || sag_uuid_underscores;
   EXECUTE 'DROP  SEQUENCE ' || sag_rel_seq_name || ';';
 END LOOP;
+END IF;
 
 
 END IF;
