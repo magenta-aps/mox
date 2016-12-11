@@ -54,6 +54,7 @@ DECLARE
 	uuid_returned_from_import uuid;
 	read_Sag1 SagType;
 	update_reg_id int;
+	update_reg_id_2 int;
 	read_sag_relation_1 SagRelationType;
 	read_uuidSekundaerpart2 uuid;
 	read_rel_index_3 int;
@@ -384,8 +385,26 @@ RETURN NEXT is(read_rel_index_3,3,'Test update of sag relation based on index #2
 
 --raise notice 'read_Sag1 update:%',to_json(read_Sag1);
 
+/*******************************************/
+--Test if providing empty arguments will trigger exception as expected 
+BEGIN
 
---TODO: Implement tests here
+update_reg_id_2:=as_update_sag(
+  new_uuid1, '6f368584-4c3e-4ba4-837b-da2b1eee37c6'::uuid,'Test update 30'::text,
+  'Rettet'::Livscykluskode,          
+  null,
+  null,
+  null,
+  null
+	);
+
+RETURN NEXT ok(false,'as_update_sag empty arguments: Should throw MO400 exception');
+EXCEPTION  
+WHEN sqlstate 'MO400' THEN
+	RETURN NEXT ok(true,'as_update_sag empty arguments: Throws MO400 exception (as it should)');
+
+END;
+
 
 
 
