@@ -125,11 +125,6 @@ $DIR/modules/json/install.sh
 $DIR/modules/agent/install.sh
 $DIR/modules/auth/install.sh
 
-# Install servlet
-echo "Installing Tomcat webservices"
-$DIR/servlets/install.sh
-$DIR/servlets/MoxDocumentUpload/install.sh "$DOMAIN"
-
 $DIR/scripts/install.sh
 
 # Compile agents
