@@ -224,7 +224,7 @@ class VirtualEnv(object):
 
     def add_moxlib_pointer(self, moxdir):
         fp = open("%s/lib/python2.7/site-packages/mox.pth" % self.environment_dir, "w")
-        fp.write(os.path.abspath("%s/modules/python/mox" % moxdir))
+        fp.write(os.path.abspath("%s/agentbase/python/mox" % moxdir))
         fp.close()
 
 
