@@ -108,7 +108,7 @@ SELECT array_agg( DISTINCT a.RelType) into aktivitet_rel_type_cardinality_unlimi
 IF coalesce(array_length(aktivitet_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 FOREACH aktivitet_relation_navn IN ARRAY (aktivitet_rel_type_cardinality_unlimited_present_in_argument)
   LOOP
-  aktivitet_rel_seq_name := 'aktivitet_rel_' || aktivitet_relation_navn::text || aktivitet_uuid_underscores;
+  aktivitet_rel_seq_name := 'aktivitet_' || aktivitet_relation_navn::text || aktivitet_uuid_underscores;
 
   rel_type_max_index_prev_rev:=null;
 
@@ -154,7 +154,7 @@ END IF;
                     CASE 
                     WHEN a.relType = any (aktivitet_rel_type_cardinality_unlimited) THEN
                       CASE WHEN a.indeks IS NULL OR b.id IS NULL THEN --for new relations and relations with index given that is not found in prev registrering, we'll assign new index values 
-                        nextval('aktivitet_rel_' || a.relType::text || aktivitet_uuid_underscores)
+                        nextval('aktivitet_' || a.relType::text || aktivitet_uuid_underscores)
                       ELSE
                         a.indeks
                       END
@@ -188,7 +188,7 @@ END IF;
 IF coalesce(array_length(aktivitet_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 FOREACH aktivitet_relation_navn IN ARRAY (aktivitet_rel_type_cardinality_unlimited_present_in_argument)
   LOOP
-  aktivitet_rel_seq_name := 'aktivitet_rel_' || aktivitet_relation_navn::text || aktivitet_uuid_underscores;
+  aktivitet_rel_seq_name := 'aktivitet_' || aktivitet_relation_navn::text || aktivitet_uuid_underscores;
   EXECUTE 'DROP  SEQUENCE ' || aktivitet_rel_seq_name || ';';
 END LOOP;
 END IF;

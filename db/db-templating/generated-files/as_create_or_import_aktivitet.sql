@@ -188,7 +188,7 @@ IF coalesce(array_length(aktivitet_rel_type_cardinality_unlimited_present_in_arg
 
 FOREACH aktivitet_relation_kode IN ARRAY (aktivitet_rel_type_cardinality_unlimited_present_in_argument)
   LOOP
-  aktivitet_rel_seq_name := 'aktivitet_rel_' || aktivitet_relation_kode::text || aktivitet_uuid_underscores;
+  aktivitet_rel_seq_name := 'aktivitet_' || aktivitet_relation_kode::text || aktivitet_uuid_underscores;
 
   EXECUTE 'CREATE TEMPORARY SEQUENCE ' || aktivitet_rel_seq_name || '
   INCREMENT 1
@@ -218,7 +218,7 @@ END IF;
       a.relType,
       a.objektType,
         CASE WHEN a.relType = any (aktivitet_rel_type_cardinality_unlimited) THEN --rel_index
-        nextval('aktivitet_rel_' || a.relType::text || aktivitet_uuid_underscores)
+        nextval('aktivitet_' || a.relType::text || aktivitet_uuid_underscores)
         ELSE 
         NULL
         END,
@@ -248,7 +248,7 @@ END IF;
 IF coalesce(array_length(aktivitet_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 FOREACH aktivitet_relation_kode IN ARRAY (aktivitet_rel_type_cardinality_unlimited_present_in_argument)
   LOOP
-  aktivitet_rel_seq_name := 'aktivitet_rel_' || aktivitet_relation_kode::text || aktivitet_uuid_underscores;
+  aktivitet_rel_seq_name := 'aktivitet_' || aktivitet_relation_kode::text || aktivitet_uuid_underscores;
   EXECUTE 'DROP  SEQUENCE ' || aktivitet_rel_seq_name || ';';
 END LOOP;
 END IF;
