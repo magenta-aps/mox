@@ -167,7 +167,7 @@ SELECT array_agg( DISTINCT a.RelType) into sag_rel_type_cardinality_unlimited_pr
 IF coalesce(array_length(sag_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 FOREACH sag_relation_kode IN ARRAY (sag_rel_type_cardinality_unlimited_present_in_argument)
   LOOP
-  sag_rel_seq_name := 'sag_rel_' || sag_relation_kode::text || sag_uuid_underscores;
+  sag_rel_seq_name := 'sag_' || sag_relation_kode::text || sag_uuid_underscores;
 
   EXECUTE 'CREATE TEMPORARY SEQUENCE ' || sag_rel_seq_name || '
   INCREMENT 1
@@ -199,7 +199,7 @@ END IF;
       a.relType,
       a.objektType,
         CASE WHEN a.relType = any (sag_rel_type_cardinality_unlimited) THEN --rel_index
-        nextval('sag_rel_' || a.relType::text || sag_uuid_underscores)
+        nextval('sag_' || a.relType::text || sag_uuid_underscores)
         ELSE 
         NULL
         END,
@@ -252,7 +252,7 @@ END IF;
 IF coalesce(array_length(sag_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 FOREACH sag_relation_kode IN ARRAY (sag_rel_type_cardinality_unlimited_present_in_argument)
   LOOP
-  sag_rel_seq_name := 'sag_rel_' || sag_relation_kode::text || sag_uuid_underscores;
+  sag_rel_seq_name := 'sag_' || sag_relation_kode::text || sag_uuid_underscores;
   EXECUTE 'DROP  SEQUENCE ' || sag_rel_seq_name || ';';
 END LOOP;
 END IF;
