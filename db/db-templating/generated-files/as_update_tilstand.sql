@@ -110,7 +110,7 @@ tilstand_uuid_underscores:=replace(tilstand_uuid::text, '-', '_');
 IF coalesce(array_length(tilstand_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 FOREACH tilstand_relation_navn IN ARRAY (tilstand_rel_type_cardinality_unlimited_present_in_argument)
   LOOP
-  tilstand_rel_seq_name := 'tilstand_rel_' || tilstand_relation_navn::text || tilstand_uuid_underscores;
+  tilstand_rel_seq_name := 'tilstand_' || tilstand_relation_navn::text || tilstand_uuid_underscores;
 
   rel_type_max_index_prev_rev:=null;
 
@@ -156,7 +156,7 @@ END IF;
                     CASE 
                     WHEN a.relType = any (tilstand_rel_type_cardinality_unlimited) THEN
                       CASE WHEN a.indeks IS NULL OR b.id IS NULL THEN --for new relations and relations with index given that is not found in prev registrering, we'll assign new index values 
-                        nextval('tilstand_rel_' || a.relType::text || tilstand_uuid_underscores)
+                        nextval('tilstand_' || a.relType::text || tilstand_uuid_underscores)
                       ELSE
                         a.indeks
                       END
@@ -186,7 +186,7 @@ END IF;
 IF coalesce(array_length(tilstand_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 FOREACH tilstand_relation_navn IN ARRAY (SELECT array_agg( DISTINCT a.RelType) FROM  unnest(relationer) a WHERE a.RelType = any (tilstand_rel_type_cardinality_unlimited))
   LOOP
-  tilstand_rel_seq_name := 'tilstand_rel_' || tilstand_relation_navn::text || tilstand_uuid_underscores;
+  tilstand_rel_seq_name := 'tilstand_' || tilstand_relation_navn::text || tilstand_uuid_underscores;
   EXECUTE 'DROP  SEQUENCE ' || tilstand_rel_seq_name || ';';
 END LOOP;
 END IF;

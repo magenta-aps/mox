@@ -178,7 +178,7 @@ SELECT array_agg( DISTINCT a.RelType) into tilstand_rel_type_cardinality_unlimit
 IF coalesce(array_length(tilstand_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 FOREACH tilstand_relation_kode IN ARRAY (tilstand_rel_type_cardinality_unlimited_present_in_argument)
   LOOP
-  tilstand_rel_seq_name := 'tilstand_rel_' || tilstand_relation_kode::text || tilstand_uuid_underscores;
+  tilstand_rel_seq_name := 'tilstand_' || tilstand_relation_kode::text || tilstand_uuid_underscores;
 
   EXECUTE 'CREATE TEMPORARY SEQUENCE ' || tilstand_rel_seq_name || '
   INCREMENT 1
@@ -208,7 +208,7 @@ END IF;
       a.relType,
       a.objektType,
         CASE WHEN a.relType = any (tilstand_rel_type_cardinality_unlimited) THEN --rel_index
-        nextval('tilstand_rel_' || a.relType::text || tilstand_uuid_underscores)
+        nextval('tilstand_' || a.relType::text || tilstand_uuid_underscores)
         ELSE 
         NULL
         END,
@@ -232,7 +232,7 @@ END IF;
 IF coalesce(array_length(tilstand_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 FOREACH tilstand_relation_kode IN ARRAY (tilstand_rel_type_cardinality_unlimited_present_in_argument)
   LOOP
-  tilstand_rel_seq_name := 'tilstand_rel_' || tilstand_relation_kode::text || tilstand_uuid_underscores;
+  tilstand_rel_seq_name := 'tilstand_' || tilstand_relation_kode::text || tilstand_uuid_underscores;
   EXECUTE 'DROP  SEQUENCE ' || tilstand_rel_seq_name || ';';
 END LOOP;
 END IF;
