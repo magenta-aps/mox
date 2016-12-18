@@ -63,7 +63,7 @@
 + IF coalesce(array_length(indsats_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 + FOREACH indsats_relation_kode IN ARRAY (indsats_rel_type_cardinality_unlimited_present_in_argument)
 +   LOOP
-+   indsats_rel_seq_name := 'indsats_rel_' || indsats_relation_kode::text || indsats_uuid_underscores;
++   indsats_rel_seq_name := 'indsats_' || indsats_relation_kode::text || indsats_uuid_underscores;
 + 
 +   EXECUTE 'CREATE TEMPORARY SEQUENCE ' || indsats_rel_seq_name || '
 +   INCREMENT 1
@@ -92,7 +92,7 @@
         a.relType,
 !       a.objektType,
 !         CASE WHEN a.relType = any (indsats_rel_type_cardinality_unlimited) THEN --rel_index
-!         nextval('indsats_rel_' || a.relType::text || indsats_uuid_underscores)
+!         nextval('indsats_' || a.relType::text || indsats_uuid_underscores)
 !         ELSE 
 !         NULL
 !         END
@@ -104,7 +104,7 @@
 ! IF coalesce(array_length(indsats_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 ! FOREACH indsats_relation_kode IN ARRAY (indsats_rel_type_cardinality_unlimited_present_in_argument)
 !   LOOP
-!   indsats_rel_seq_name := 'indsats_rel_' || indsats_relation_kode::text || indsats_uuid_underscores;
+!   indsats_rel_seq_name := 'indsats_' || indsats_relation_kode::text || indsats_uuid_underscores;
 !   EXECUTE 'DROP  SEQUENCE ' || indsats_rel_seq_name || ';';
 ! END LOOP;
 ! END IF;
