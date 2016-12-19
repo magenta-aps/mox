@@ -37,7 +37,7 @@ public class MoxTabel extends MoxAgent {
         this.senderDefinition = new AmqpDefinition(this.commandLineArgs, this.properties, senderPrefix, true);
 
         try {
-            this.restInterface = new URL(this.getSetting("rest.interface"));
+            this.restInterface = new URL(this.getSetting("moxtabel.rest.host"));
         } catch (MalformedURLException e) {
             throw new RuntimeException("Rest interface URL is malformed", e);
         }
@@ -54,7 +54,7 @@ public class MoxTabel extends MoxAgent {
     }
 
     protected String getDefaultPropertiesFileName() {
-        return "moxtabel.properties";
+        return "moxtabel.conf";
     }
 
     @Override
