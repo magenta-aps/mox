@@ -19,7 +19,6 @@ auth.sh
 agents/MoxRestFrontend/moxrestfrontend.properties
 agents/MoxTabel/moxtabel.properties
 servlets/MoxDocumentUpload/web/WEB-INF/web.xml
-modules/auth/auth.properties
 oio_rest/oio_rest/settings.py
 variables.sh
 mox.conf

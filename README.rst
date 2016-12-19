@@ -130,10 +130,8 @@ a password.
 
 If SAML authentication is turned on (i.e., if the parameter
 ``USE_SAML_AUTHENTICATION`` in ``oio_rest/oio_rest/settings.py`` is
-`True`, and the parameter ``security.enabled`` in 
-``modules/auth/auth.properties`` is `true`), the IDP must be configured
-correctly - see the corresponding sections below for instruction on how to do
-this.
+`True`), the IDP must be configured correctly - see the corresponding
+sections below for instruction on how to do this.
 
 
 Quick install
@@ -167,8 +165,7 @@ Quick test
 ----------
 
 Make sure the parameters ``USE_SAML_AUTHENTICATION`` in 
-``oio_rest/oio_rest/settings.py`` and ``security.enabled`` in
-``modules/auth/auth.properties`` are  `False` and `false`, respectively.
+``oio_rest/oio_rest/settings.py`` is `False`.
 
 Make sure the parameter ``rest.interface`` in 
 ``agents/MoxRestFrontend/moxrestfrontend.properties`` is set to 

@@ -59,9 +59,6 @@ cp --remove-destination "$MOX_CONFIG.base" "$MOX_CONFIG"
 SHELL_CONFIG="$DIR/variables.sh"
 cp --remove-destination "$SHELL_CONFIG.base" "$SHELL_CONFIG"
 
-AUTH_CONFIG="$DIR/modules/auth/auth.properties"
-cp --remove-destination "$AUTH_CONFIG.base" "$AUTH_CONFIG"
-
 OIO_REST_CONFIG="$DIR/oio_rest/oio_rest/settings.py"
 cp --remove-destination "$OIO_REST_CONFIG.base" "$OIO_REST_CONFIG"
 
@@ -133,7 +130,6 @@ sudo apt-get -y install maven
 
 # Compile modules
 echo "Installing java modules"
-$DIR/modules/auth/install.sh
 $DIR/agentbase/java/install.sh
 
 echo "$DIR/agentbase/python/mox" > "$DIR/agentbase/python/mox/mox.pth"
