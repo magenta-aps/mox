@@ -5,33 +5,38 @@ import pika
 import requests
 import json
 
-# This is the URL of the RabbitMQ server to which we send the log messages.
+from settings import LOG_AMQP_SERVER, LOG_QUEUE, LOG_IGNORED_SERVICES
 
 
-def log_service_call(log_destination, service_name, class_name, time,
-                     operation, return_code, msg, note, user_uuid, role_uuid, object_uuid):
+def log_service_call(service_name, class_name, time,
+                     operation, return_code, msg, note, user_uuid, role_uuid,
+                     object_uuid):
     """Log a call to a LoRa service."""
+
+    if service_name in LOG_IGNORED_SERVICES:
+        "Don't log the log service."
+        return
 
     # Virkning for all virkning periods.
     virkning = {
-        "from": time,
+        "from": str(time),
         "to": "infinity",
         "aktoerref": "TODO",
         "aktoertypekode": "Bruger",
         "notetekst": ""
     }
     logevent_dict = {
-        "note": BASE_URL, 
+        "note": BASE_URL,
         "attributter": {
             "loghaendelsesegenskaber": [
                 {
-                    "service": service_name, 
+                    "service": service_name,
                     "klasse": class_name,
-                    "tidspunkt": time, 
+                    "tidspunkt": str(time),
                     "operation": operation,
                     "returkode": return_code,
                     "returtekst": msg,
-                    "note": note, 
+                    "note": note,
                     "virkning": virkning
                 }
             ]
@@ -67,7 +72,8 @@ def log_service_call(log_destination, service_name, class_name, time,
     }
 
     # Get auth token if auth enabled
-    pass  # Start with no authorization.    # Send AMQP message to LOG_SERVICE_URL
+    pass  # Start with no authorization.
+    # Send AMQP message to LOG_SERVICE_URL
 
     connection = pika.BlockingConnection(pika.ConnectionParameters(
         host=LOG_AMQP_SERVER
@@ -76,8 +82,8 @@ def log_service_call(log_destination, service_name, class_name, time,
     channel.queue_declare(queue=LOG_QUEUE, durable=True)
 
     message = json.dumps(logevent_dict)
+    print "LOG-BESKED:", message
     subject = "Log-besked"
-
 
     channel.basic_publish(
         exchange='',
@@ -86,8 +92,8 @@ def log_service_call(log_destination, service_name, class_name, time,
         properties=pika.BasicProperties(
             content_type='application/json',
             delivery_mode=2,
-            headers={  # 'autorisation': saml_token,
-                     'operation': 'create',
-                     'objekttype': 'LogHaendelse',
-                    }
+            headers={
+                'operation': 'create',
+                'objekttype': 'LogHaendelse',
+            }
         ))

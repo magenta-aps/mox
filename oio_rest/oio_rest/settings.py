@@ -314,3 +314,9 @@ DB_TEMPLATE_EXTRA_OPTIONS = {
 MOX_BASE_DIR = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..', '..')
 )
+
+# Log AMQP settings
+LOG_AMQP_SERVER = 'localhost'
+LOG_QUEUE = 'rest'
+LOG_IGNORED_SERVICES = ['Log',]
+
