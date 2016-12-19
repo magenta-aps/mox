@@ -13,9 +13,9 @@ templateLoader = jinja2.FileSystemLoader(searchpath="./templates")
 templateEnv = jinja2.Environment(loader=templateLoader)
 TEMPLATE_FILE = sys.argv[2]
 template = templateEnv.get_template(TEMPLATE_FILE)
-templateVars = DATABASE_STRUCTURE[sys.argv[1]] 
+templateVars = DATABASE_STRUCTURE[sys.argv[1]]
 templateVars["script_signature"] = (
-	os.path.basename(__file__) + " "+sys.argv[1]+" "+sys.argv[2]
+    os.path.basename(__file__) + " "+sys.argv[1]+" "+sys.argv[2]
 )
 # it is important that the order is stable, as some templates rely on this
 templateVars['tilstande'] = OrderedDict(templateVars['tilstande'])
@@ -34,10 +34,10 @@ templateVars['attributter_revorder'] = OrderedDict(attributter_items)
 if sys.argv[1] in DB_TEMPLATE_EXTRA_OPTIONS and \
         sys.argv[2] in DB_TEMPLATE_EXTRA_OPTIONS[sys.argv[1]] and \
         'include_mixin' in DB_TEMPLATE_EXTRA_OPTIONS[sys.argv[1]][sys.argv[2]]:
-	templateVars['include_mixin'] = \
+    templateVars['include_mixin'] = \
         DB_TEMPLATE_EXTRA_OPTIONS[sys.argv[1]][sys.argv[2]]['include_mixin']
 else:
-	templateVars['include_mixin'] = "empty.jinja"
+    templateVars['include_mixin'] = "empty.jinja"
 
-outputText = template.render( templateVars )
+outputText = template.render(templateVars)
 print(outputText)
