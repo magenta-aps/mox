@@ -3,11 +3,11 @@ package dk.magenta.mox.moxtabel;
 import dk.magenta.mox.agent.MessageHandler;
 import dk.magenta.mox.agent.MessageSender;
 import dk.magenta.mox.agent.exceptions.MissingHeaderException;
+import dk.magenta.mox.agent.json.JSONObject;
 import dk.magenta.mox.agent.messages.*;
 import dk.magenta.mox.agent.rest.RestClient;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import org.json.JSONObject;
 
 import java.io.*;
 import java.net.MalformedURLException;

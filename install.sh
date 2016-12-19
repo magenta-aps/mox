@@ -121,9 +121,8 @@ sudo apt-get -y install maven
 
 # Compile modules
 echo "Installing java modules"
-$DIR/modules/json/install.sh
-$DIR/modules/agent/install.sh
 $DIR/modules/auth/install.sh
+$DIR/agentbase/java/install.sh
 
 # Compile agents
 echo "Installing Agents"

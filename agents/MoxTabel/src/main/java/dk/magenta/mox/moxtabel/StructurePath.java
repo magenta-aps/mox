@@ -1,6 +1,6 @@
 package dk.magenta.mox.moxtabel;
 
-import dk.magenta.mox.json.JSONArray;
+import dk.magenta.mox.agent.json.JSONArray;
 
 import java.util.ArrayList;
 
