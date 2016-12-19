@@ -130,13 +130,15 @@ echo "Installing Tomcat webservices"
 $DIR/servlets/install.sh
 $DIR/servlets/MoxDocumentUpload/install.sh "$DOMAIN"
 
-$DIR/scripts/install.sh
-
 # Compile agents
 echo "Installing Agents"
 $DIR/agents/MoxTabel/install.sh
 $DIR/agents/MoxRestFrontend/install.sh
 $DIR/agents/MoxTest/install.sh
+
+$DIR/agents/MoxDocumentDownload/install.py
+$DIR/agents/MoxDocumentDownload/configure.py --rest-host "$REST_HOST"
+
 
 JAVA_HOME="$OLD_JAVA_HOME"
 
