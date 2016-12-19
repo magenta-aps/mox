@@ -83,6 +83,11 @@ echo "Installing oio_rest"
 echo "$DIR/oio_rest/install.sh $@"
 $DIR/oio_rest/install.sh "$@" -d $DOMAIN
 
+# Install database
+echo "Installing database"
+echo "$DIR/db/install.sh $@"
+$DIR/db/install.sh
+
 
 JAVA_HIGHEST_VERSION=0
 JAVA_VERSION_NEEDED=8
