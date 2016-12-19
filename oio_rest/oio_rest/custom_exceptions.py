@@ -4,7 +4,7 @@ class OIOFlaskException(Exception):
     status_code = None  # Please supply in subclass!
 
     def __init__(self, message, payload=None):
-        Exception.__init__(self)
+        Exception.__init__(self, message)
         self.message = message
         self.payload = payload
 
@@ -24,6 +24,10 @@ class NotFoundException(OIOFlaskException):
 
 class UnauthorizedException(OIOFlaskException):
     status_code = 401
+
+
+class AuthorizationFailedException(OIOFlaskException):
+    status_code = 403
 
 
 class BadRequestException(OIOFlaskException):

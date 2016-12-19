@@ -1,14 +1,15 @@
 # encoding: utf-8
 
 import os
+import traceback
 
 from flask import Flask, jsonify, request, Response
 from werkzeug.routing import BaseConverter
 from jinja2 import Environment, FileSystemLoader
 
-from custom_exceptions import OIOFlaskException
+from custom_exceptions import OIOFlaskException, AuthorizationFailedException
 from custom_exceptions import UnauthorizedException, BadRequestException
-from settings import MOX_BASE_DIR, SAML_IDP_URL
+from auth import tokens
 
 app = Flask(__name__)
 
@@ -37,57 +38,21 @@ def get_token():
     if request.method == 'GET':
 
         t = jinja_env.get_template('get_token.html')
-        html = t.render(saml_url=SAML_IDP_URL)
+        html = t.render()
         return html
     elif request.method == 'POST':
-        import pexpect
-        import re
-        send_pwd_with_ipc = True
-        try:
-            from shlex import quote as cmd_quote
-        except ImportError:
-            from pipes import quote as cmd_quote
         username = request.form.get('username')
         password = request.form.get('password')
-        sts = request.form.get('sts', '')
         if username is None or password is None:
-            raise BadRequestException("Parameters username and password are "
-                                      "required")
+            raise BadRequestException("Username and password required")
 
-        params = ['-u', username, '-a', sts, '-s']
-        if send_pwd_with_ipc:
-            params.append('-p')
-        else:
-            params.extend(['-p', password])
-
-        child = pexpect.spawn(
-            os.path.join(MOX_BASE_DIR, 'auth.sh') +
-            ' ' + ' '.join(cmd_quote(param) for param in params))
         try:
-            if send_pwd_with_ipc:
-                i = child.expect([pexpect.TIMEOUT, "Password:"])
-                if i == 0:
-                    raise UnauthorizedException("Error requesting token.")
-                else:
-                    child.sendline(password)
-            output = child.read()
-            m = re.search("saml-gzipped\s+(.+?)\s", output)
-            if m is not None:
-                token = m.group(1)
-                return Response("saml-gzipped " + token, mimetype='text/plain')
-            else:
-                m = re.search("Incorrect password!", output)
-                if m is not None:
-                    raise UnauthorizedException("Error requesting token: "
-                                                "invalid username or password")
-                else:
-                    raise UnauthorizedException(
-                        "Error requesting token: " + output
-                    )
-        except pexpect.TIMEOUT:
-            raise UnauthorizedException("Timeout while requesting token")
-        finally:
-            child.close()
+            text = tokens.get_token(username, password)
+        except Exception as e:
+            traceback.print_exc()
+            raise AuthorizationFailedException(e.message)
+
+        return Response(text, mimetype='text/plain')
 
 
 @app.route('/site-map')

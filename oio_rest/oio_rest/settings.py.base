@@ -16,17 +16,29 @@ FILE_UPLOAD_FOLDER = '/var/mox'
 # This will be used to verify the Audience of the SAML Assertion
 SAML_MOX_ENTITY_ID = 'https://${domain}'
 
-# The entity ID of the IdP. This will be used to verify the token Issuer
+# The Entity ID of the IdP. Used to verify the token Issuer --
+# specified in AD FS as the Federation Service identifier.
 SAML_IDP_ENTITY_ID = 'localhost'
+#SAML_IDP_ENTITY_ID = 'http://fs.contoso.com/adfs/services/trust'
 
 # The URL on which to access the SAML IdP.
-SAML_IDP_URL = ("https://${domain}:9443/services/wso2carbon-sts?wsdl")
+SAML_IDP_URL = "https://${domain}:9443/services/wso2carbon-sts.wso2carbon-stsHttpsEndpoint"
+#SAML_IDP_URL = "https://fs.contoso.com/adfs/services/trust/13/UsernameMixed"
+
+# We currently support authentication against 'wso2' and 'adfs'
+SAML_IDP_TYPE = "wso2"
+#SAML_IDP_TYPE = "adfs"
 
 # The public certificate file of the IdP, in PEM-format.
 SAML_IDP_CERTIFICATE = "test_auth_data/idp-certificate.pem"
 
 # Whether to enable SAML authentication
 USE_SAML_AUTHENTICATION = True
+
+# SAML user ID attribute -- default is for WSO2
+SAML_USER_ID_ATTIBUTE = 'http://wso2.org/claims/url'
+#SAML_USER_ID_ATTIBUTE = ("http://schemas.xmlsoap.org/ws/2005/05/"
+#                         "identity/claims/privatepersonalidentifier")
 
 # Whether authorization is enabled - if not, the restrictions module is not
 # called.
