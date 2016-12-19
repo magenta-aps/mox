@@ -60,7 +60,6 @@ cp --remove-destination "$OIO_REST_CONFIG.base" "$OIO_REST_CONFIG"
 APACHE_CONFIG="$DIR/apache/mox.conf"
 cp --remove-destination "$APACHE_CONFIG.base" "$APACHE_CONFIG"
 
-
 # Setup common config
 sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$MOX_CONFIG"
 
