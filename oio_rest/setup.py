@@ -8,8 +8,8 @@ authors = 'C. Agger, Jørgen Ulrik B. Krag, Thomas Kristensen, Seth Yastrov'
 setup(
     name='oio_rest',
     version=version,
-    description=
-    "Python and PostgreSQL implementation of the OIO service interfaces.",
+    description="Python and PostgreSQL implementation "
+                "of the OIO service interfaces.",
     long_description="""\
     Implementation of various object hierarchies from the Danish Government's
     OIOXML standard for the exchange of public administration documents.""",
