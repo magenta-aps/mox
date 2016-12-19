@@ -81,7 +81,8 @@ def check_saml_authentication():
         request.saml_user_id = userid
 
         # print "UUID", request.saml_user_id
-        # print "SAML ATTRIBUTES", json.dumps(request.saml_attributes, indent=2)
+        # print "SAML ATTRIBUTES",
+        #       json.dumps(request.saml_attributes, indent=2)
         # print "TOKEN: ", token
     except Exception as e:
         errmsg = "SAML token validation failed: %s" % e.message

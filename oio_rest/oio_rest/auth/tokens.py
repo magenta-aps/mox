@@ -21,11 +21,13 @@ IDP_TEMPLATES = {
     'wso2': 'wso2-soap-request.xml',
 }
 
+
 def _gzipstring(s):
     compressor = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION,
                                   zlib.DEFLATED, 16 + zlib.MAX_WBITS)
 
     return compressor.compress(s) + compressor.flush()
+
 
 def get_token(username, passwd, pack=True, pretty_print=False):
     '''Request a SAML authentication token from the given host and endpoint.
