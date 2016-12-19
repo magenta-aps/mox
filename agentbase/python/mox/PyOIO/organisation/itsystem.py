@@ -13,7 +13,9 @@ class ItSystem(OIOEntity):
     GYLDIGHED_KEY = 'itsystemgyldighed'
     basepath = '/organisation/itsystem'
 
-    egenskaber_keys = OIOEntity.egenskaber_keys + ['itsystemnavn', 'itsystemtype', 'konfigurationreference']
+    egenskaber_keys = OIOEntity.egenskaber_keys + [
+        'itsystemnavn', 'itsystemtype', 'konfigurationreference'
+    ]
     name_key = 'itsystemnavn'
     type_key = 'itsystemtype'
 

@@ -18,9 +18,9 @@ class Organisation(OIOEntity):
 
     relation_keys = [
         'adresser', 'ansatte', 'branche', 'myndighed', 'myndighedstype',
-        'opgaver', 'overordnet', 'produktionsenhed', 'skatteenhed', 'tilhoerer',
-        'tilknyttedebrugere', 'tilknyttedeenheder', 'tilknyttedefunktioner',
-        'tilknyttedeinteressefaellesskaber', 'tilknyttedeitsystemer',
-        'tilknyttedeorganisationer', 'tilknyttedepersoner',
-        'virksomhed', 'virksomhedstype'
+        'opgaver', 'overordnet', 'produktionsenhed', 'skatteenhed',
+        'tilhoerer', 'tilknyttedebrugere', 'tilknyttedeenheder',
+        'tilknyttedefunktioner', 'tilknyttedeinteressefaellesskaber',
+        'tilknyttedeitsystemer', 'tilknyttedeorganisationer',
+        'tilknyttedepersoner', 'virksomhed', 'virksomhedstype'
     ]

@@ -1,6 +1,7 @@
 from data import Item, ItemContainer
 from exceptions import InvalidObjectTypeException
 
+
 class OIORelationContainer(object):
 
     items = None
@@ -16,11 +17,14 @@ class OIORelationContainer(object):
             for type in registrering.entity.relation_keys:
                 if type in data:
                     for relation in data[type]:
-                        relationcontainer.add(type, OIORelation.from_json(registrering, relation, type))
+                        relationcontainer.add(
+                            type,
+                            OIORelation.from_json(registrering, relation, type)
+                        )
         return relationcontainer
 
     def add(self, type, item):
-        if not type in self.items:
+        if type not in self.items:
             self.items[type] = ItemContainer()
         self.items[type].append(item)
 
@@ -129,7 +133,9 @@ class OIORelation(Item):
     def item(self):
         if self.uuid:
             try:
-                return self.registrering.lora.get_object(self.uuid, self.relation_map[self.type])
+                return self.registrering.lora.get_object(
+                    self.uuid, self.relation_map[self.type]
+                )
             except InvalidObjectTypeException:
                 pass
 
@@ -138,7 +144,9 @@ class OIORelation(Item):
         return OIORelation(registrering, json, type)
 
     def __str__(self):
-        return "Relation from %s to %s (%s)" % (self.registrering.entity, self.uuid, self.virkning)
+        return "Relation from %s to %s (%s)" % (
+            self.registrering.entity, self.uuid, self.virkning
+        )
 
     def __repr__(self):
         return str(self)

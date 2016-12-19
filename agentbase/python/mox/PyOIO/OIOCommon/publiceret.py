@@ -1,6 +1,7 @@
 from data import Item, ItemContainer
 from exceptions import InvalidOIOException
 
+
 class OIOPubliceret(Item):
     tilstande = ['Publiceret', 'IkkePubliceret']
 
@@ -19,6 +20,7 @@ class OIOPubliceret(Item):
     @staticmethod
     def from_json(registrering, json):
         return OIOPubliceret(registrering, json)
+
 
 class OIOPubliceretContainer(ItemContainer):
 

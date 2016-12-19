@@ -3,18 +3,21 @@ import pytz
 from datetime import datetime
 from urllib import urlencode
 from PyOIO.OIOCommon.util import parse_time
-from PyOIO.OIOCommon.exceptions import ItemNotFoundException, InvalidOIOException
+from PyOIO.OIOCommon.exceptions import ItemNotFoundException
+from PyOIO.OIOCommon.exceptions import InvalidOIOException
 
 from PyOIO.OIOCommon.gyldighed import OIOGyldighedContainer
 from PyOIO.OIOCommon.publiceret import OIOPubliceretContainer
 from PyOIO.OIOCommon.relation import OIORelationContainer
 from PyOIO.OIOCommon.egenskab import OIOEgenskabContainer, OIOEgenskab
 
+
 def requires_load(func):
     def func_wrapper(self, *args, **kwargs):
         self.ensure_load()
         return func(self, *args, **kwargs)
     return func_wrapper
+
 
 class OIOEntity(object):
 
@@ -70,11 +73,16 @@ class OIOEntity(object):
             'virkningtil': 'infinity'
         }
 
-        response = self.lora.request(self.lora.host + self.path + "?" + urlencode(params), headers=self.get_headers())
+        response = self.lora.request(
+            self.lora.host + self.path + "?" + urlencode(params),
+            headers=self.get_headers()
+        )
         if response.status_code == 200:
             jsondata = json.loads(response.text)
             if jsondata[self.id] is None:
-                raise ItemNotFoundException(self.id, self.ENTITY_CLASS, self.path)
+                raise ItemNotFoundException(
+                    self.id, self.ENTITY_CLASS, self.path
+                )
             print "Load %s %s" % (self.ENTITY_CLASS, self.id)
             self.json = jsondata[self.id][0]
             self.parse_json()
@@ -86,14 +94,21 @@ class OIOEntity(object):
             pass
 
     def parse_json(self):
-        if 'registreringer' not in self.json or len(self.json.get('registreringer')) == 0:
-            raise InvalidOIOException("Item %s has no registreringer" % self.id)
+        if 'registreringer' not in self.json or \
+                len(self.json.get('registreringer')) == 0:
+            raise InvalidOIOException(
+                "Item %s has no registreringer" % self.id
+            )
         self.registreringer = []
         for index, registrering in enumerate(self.json['registreringer']):
-            self.registreringer.append(self._registrering_class(self, registrering, index))
+            self.registreringer.append(
+                self._registrering_class(self, registrering, index)
+            )
 
     def sort_registreringer(self):
-        self.registreringer.sort(key=lambda registrering: registrering.from_time)
+        self.registreringer.sort(
+            key=lambda registrering: registrering.from_time
+        )
 
     def ensure_load(self):
         if not self._loaded:
@@ -149,14 +164,13 @@ class OIORegistrering(object):
         self.tilstande = {}
         self.note = data.get('note')
         self.livscykluskode = data['livscykluskode']
-        from_time = data.get('fratidspunkt',{}).get('tidsstempeldatotid')
+        from_time = data.get('fratidspunkt', {}).get('tidsstempeldatotid')
         if from_time:
             self.from_time = parse_time(from_time)
-        to_time = data.get('tiltidspunkt',{}).get('tidsstempeldatotid')
+        to_time = data.get('tiltidspunkt', {}).get('tidsstempeldatotid')
         if to_time:
             self.to_time = parse_time(to_time)
         # self.created_by = Bruger(self.lora, data['brugerref'])
-
 
         if self.entity.GYLDIGHED_KEY:
             self.gyldigheder = OIOGyldighedContainer.from_json(
@@ -170,14 +184,21 @@ class OIORegistrering(object):
             self, self.json.get('relationer')
         )
         self.egenskaber = OIOEgenskabContainer.from_json(
-            self, self.json['attributter'][self.entity.EGENSKABER_KEY], self.entity._egenskab_class
+            self,
+            self.json['attributter'][self.entity.EGENSKABER_KEY],
+            self.entity._egenskab_class
         )
 
     def __repr__(self):
-        return '%sRegistrering("%s", %s)' % (self.entity.ENTITY_CLASS, self.entity.id, self.registrering_number)
+        return '%sRegistrering("%s", %s)' % (
+            self.entity.ENTITY_CLASS, self.entity.id, self.registrering_number
+        )
 
     def __str__(self):
-        return '%sRegistrering: %s "%s", Nr. %s (%s - %s)' % (self.entity.ENTITY_CLASS, self.entity.ENTITY_CLASS, self.entity.id, self.registrering_number, self.from_time, self.to_time)
+        return '%sRegistrering: %s "%s", Nr. %s (%s - %s)' % (
+            self.entity.ENTITY_CLASS, self.entity.ENTITY_CLASS, self.entity.id,
+            self.registrering_number, self.from_time, self.to_time
+        )
 
     @property
     def lora(self):
@@ -187,7 +208,8 @@ class OIORegistrering(object):
         return self.from_time < time and time < self.to_time
 
     def get_gyldighed(self, time=None):
-        gyldighed_items = self.gyldigheder.at(time) if time else self.gyldigheder.current
+        gyldighed_items = self.gyldigheder.at(time) if time \
+            else self.gyldigheder.current
         if len(gyldighed_items):
             return gyldighed_items[0].gyldighed
 
@@ -196,7 +218,8 @@ class OIORegistrering(object):
         return self.get_gyldighed()
 
     def get_publiceret(self, time=None):
-        publiceret_items = self.publiceringer.at(time) if time else self.publiceringer.current
+        publiceret_items = self.publiceringer.at(time) if time \
+            else self.publiceringer.current
         if len(publiceret_items):
             return publiceret_items[0].publiceret
 
@@ -205,7 +228,8 @@ class OIORegistrering(object):
         return self.get_publiceret()
 
     def get_egenskab(self, name, must_be_current=True):
-        egenskaber = self.egenskaber.current if must_be_current else self.egenskaber
+        egenskaber = self.egenskaber.current if must_be_current \
+            else self.egenskaber
         for egenskab in egenskaber:
             if hasattr(egenskab, name):
                 return getattr(egenskab, name)

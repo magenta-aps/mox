@@ -1,6 +1,7 @@
 from data import Item, ItemContainer
 from exceptions import InvalidOIOException
 
+
 class OIOGyldighed(Item):
     gyldige_tilstande = ['Aktiv', 'Inaktiv']
 
@@ -15,6 +16,7 @@ class OIOGyldighed(Item):
     @staticmethod
     def from_json(registrering, json):
         return OIOGyldighed(registrering, json)
+
 
 class OIOGyldighedContainer(ItemContainer):
 

@@ -17,8 +17,8 @@ class OrganisationEnhed(OIOEntity):
     name_key = 'enhedsnavn'
 
     relation_keys = [
-        'adresser', 'ansatte', 'branche', 'enhedstype', 'opgaver', 'overordnet',
-        'produktionsenhed', 'skatteenhed', 'tilhoerer',
+        'adresser', 'ansatte', 'branche', 'enhedstype', 'opgaver',
+        'overordnet', 'produktionsenhed', 'skatteenhed', 'tilhoerer',
         'tilknyttedeorganisationer', 'tilknyttedeenheder',
         'tilknyttedefunktioner', 'tilknyttedebrugere',
         'tilknyttedeinteressefaellesskaber', 'tilknyttedeitsystemer',

@@ -13,7 +13,10 @@ class Facet(OIOEntity):
     PUBLICERET_KEY = 'facetpubliceret'
     basepath = '/klassifikation/facet'
 
-    egenskaber_keys = OIOEntity.egenskaber_keys + ['facetbeskrivelse', 'facetplan', 'facetopbygning', 'facetophavsret', 'facetsupplement', 'retskilde']
+    egenskaber_keys = OIOEntity.egenskaber_keys + [
+        'facetbeskrivelse', 'facetplan', 'facetopbygning',
+        'facetophavsret', 'facetsupplement', 'retskilde'
+    ]
 
     relation_keys = [
         'ansvarlig', 'ejer', 'facettilhoer', 'redaktoerer'

@@ -18,7 +18,7 @@ class Bruger(OIOEntity):
     type_key = 'brugertype'
 
     relation_keys = [
-        'adresser', 'brugertyper', 'opgaver','tilhoerer',
+        'adresser', 'brugertyper', 'opgaver', 'tilhoerer',
         'tilknyttedeorganisationer', 'tilknyttedeenheder',
         'tilknyttedefunktioner', 'tilknyttedeinteressefaellesskaber',
         'tilknyttedeitsystemer', 'tilknyttedepersoner'

@@ -2,6 +2,7 @@
 
 from PyOIO.OIOCommon.util import parse_time
 
+
 class Virkning(object):
     """ Virkning is a fairly broadly used class. Its purpose when attached to
     metadata is to lend the metadata bitemporality.
@@ -9,8 +10,8 @@ class Virkning(object):
 
     def __init__(self, json):
         """Args:
-
-        json: (dictionary) data containing the attributes of the Virkning object
+        json: (dictionary) data containing the attributes
+        of the Virkning object
         """
         # TODO below might need to live with missing elements?
         self.aktoerref = json.get('aktoerref')
@@ -36,4 +37,5 @@ class Virkning(object):
         return 'Virkning: %s - %s' % (self.from_time, self.to_time)
 
     def compare_time(self, other):
-        return self.from_time == other.from_time and self.to_time == other.to_time
+        return self.from_time == other.from_time and \
+               self.to_time == other.to_time
