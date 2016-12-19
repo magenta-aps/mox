@@ -4,6 +4,7 @@ import os
 import shutil
 import subprocess
 import random
+import sys
 
 # ------------------------------------------------------------------------------
 
@@ -39,7 +40,8 @@ class Config(object):
 
     def create(self):
         if not self.exists():
-            if os.path.exists(self.file): # The path exists, but it's not a file
+            if os.path.exists(self.file):
+                # The path exists, but it's not a file
                 raise ConfigCreationException(self.file)
             fp = open(self.file, 'w')
             fp.close()
@@ -74,7 +76,8 @@ class Config(object):
 
     def prompt(self, config_translation, args, defaults={}):
         # config_translation must be a list of 2-tuples
-        # args must be a map of args, where keys match the first value in the tuples, and values are strings
+        # args must be a map of args, where keys match the first value
+        # in the tuples, and values are strings
         # default must be a dict of fallback values
         self.load()
         for (argkey, confkey) in config_translation:
@@ -87,7 +90,9 @@ class Config(object):
                 if default is None:
                     default = defaults.get(argkey)
                 if default is not None:
-                    value = raw_input("%s = [%s] " % (confkey, default)).strip()
+                    value = raw_input(
+                        "%s = [%s] " % (confkey, default)
+                    ).strip()
                     if len(value) == 0:
                         value = default
                 else:
@@ -99,11 +104,16 @@ class Config(object):
 
 class ConfigNotCreatedException(Exception):
     def __init__(self, filename):
-        super(ConfigNotCreatedException, self).__init__("File %s has not been created yet" % filename)
+        super(ConfigNotCreatedException, self).__init__(
+            "File %s has not been created yet" % filename
+        )
+
 
 class ConfigCreationException(Exception):
     def __init__(self, filename):
-        super(ConfigCreationException, self).__init__("File %s can not be created" % filename)
+        super(ConfigCreationException, self).__init__(
+            "File %s can not be created" % filename
+        )
 
 # ------------------------------------------------------------------------------
 
@@ -121,10 +131,12 @@ class _Getch:
 
 class _GetchUnix:
     def __init__(self):
-        import tty, sys
+        import tty
+        import termios
 
     def __call__(self):
-        import sys, tty, termios
+        import tty
+        import termios
         fd = sys.stdin.fileno()
         old_settings = termios.tcgetattr(fd)
         try:
@@ -154,7 +166,8 @@ class VirtualEnv(object):
         self.environment_dir = environment_dir
         self.exists = os.path.isdir(self.environment_dir)
 
-    def create(self, always_overwrite=False, never_overwrite=False, outfile=None):
+    def create(self, always_overwrite=False, never_overwrite=False,
+               outfile=None):
         if os.path.isdir(self.environment_dir):
             self.exists = True
             if always_overwrite:
@@ -178,7 +191,9 @@ class VirtualEnv(object):
         if create:
             print "Creating virtual enviroment '%s'" % self.environment_dir
             fp = open(outfile, 'a') if outfile else None
-            subprocess.call(['virtualenv', self.environment_dir], stdout=fp, stderr=fp)
+            subprocess.call(
+                ['virtualenv', self.environment_dir], stdout=fp, stderr=fp
+            )
             self.exists = True
 
         return create
@@ -223,7 +238,10 @@ class VirtualEnv(object):
             return return_code
 
     def add_moxlib_pointer(self, moxdir):
-        fp = open("%s/lib/python2.7/site-packages/mox.pth" % self.environment_dir, "w")
+        fp = open(
+            "%s/lib/python2.7/site-packages/mox.pth" % self.environment_dir,
+            "w"
+        )
         fp.write(os.path.abspath("%s/agentbase/python/mox" % moxdir))
         fp.close()
 
@@ -249,8 +267,10 @@ class Apache(object):
         self.beginmarker_index = self.index(self.INCLUDE_BEGIN_MARKER)
         if self.beginmarker_index is not None:
             line = self.lines[self.beginmarker_index]
-            self.indent = line[0 : -len(line.lstrip())]
-            self.endmarker_index = self.index(self.INCLUDE_END_MARKER, start=self.beginmarker_index)
+            self.indent = line[0:-len(line.lstrip())]
+            self.endmarker_index = self.index(
+                self.INCLUDE_END_MARKER, start=self.beginmarker_index
+            )
 
     def save_config(self):
         if len(self.lines) > 0:
@@ -291,6 +311,10 @@ class WSGI(object):
 
     def install(self, first_include=False):
         if not os.path.exists(self.wsgidir):
-            subprocess.Popen(['sudo', 'mkdir', "--parents", self.wsgidir]).wait()
-        subprocess.Popen(['sudo', 'cp', '--remove-destination', self.wsgifile, self.wsgidir]).wait()
+            subprocess.Popen(
+                ['sudo', 'mkdir', "--parents", self.wsgidir]
+            ).wait()
+        subprocess.Popen(
+            ['sudo', 'cp', '--remove-destination', self.wsgifile, self.wsgidir]
+        ).wait()
         Apache().add_include(self.conffile, first_include)
