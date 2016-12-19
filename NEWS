@@ -2,11 +2,11 @@
 
 * Converted spreadsheet download to a python Flask webservice
 * Converted spreadsheet upload to a python Flask webservice
-* Ticket 17362: moxrestfrontend
+* Stability, configuration and verbosity update to moxrestfrontend
 * Consolidated common classes & utilities to share between agents
 * Simplified apache installation & configuration
 * Created common install & config utilities, to avoid the same boilerplate code in install files
-* Ticket 17146: install
+
 
 * Version 0.2.14.1, June 30, 2016
 
