@@ -131,6 +131,8 @@ echo "Installing java modules"
 $DIR/modules/auth/install.sh
 $DIR/agentbase/java/install.sh
 
+echo "$DIR/agentbase/python/mox" > "$DIR/agentbase/python/mox/mox.pth"
+
 # Compile agents
 echo "Installing Agents"
 $DIR/agents/MoxTabel/install.sh
