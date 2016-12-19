@@ -125,20 +125,18 @@ $DIR/modules/json/install.sh
 $DIR/modules/agent/install.sh
 $DIR/modules/auth/install.sh
 
-# Install servlet
-echo "Installing Tomcat webservices"
-$DIR/servlets/install.sh
-$DIR/servlets/MoxDocumentUpload/install.sh "$DOMAIN"
-
 # Compile agents
 echo "Installing Agents"
 $DIR/agents/MoxTabel/install.sh
 $DIR/agents/MoxRestFrontend/install.sh
+
+$DIR/agents/MoxDocumentUpload/install.py
+$DIR/agents/MoxDocumentUpload/configure.py --rest-host "$REST_HOST" --amqp-host "$DOMAIN" --amqp-user "$AMQP_USER" --amqp-pass "$AMQP_PASS" --amqp-exchange "mox.documentconvert"
+
 $DIR/agents/MoxTest/install.sh
 
 $DIR/agents/MoxDocumentDownload/install.py
 $DIR/agents/MoxDocumentDownload/configure.py --rest-host "$REST_HOST"
-
 
 JAVA_HOME="$OLD_JAVA_HOME"
 

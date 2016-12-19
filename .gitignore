@@ -26,3 +26,5 @@ mox.conf
 apache/mox.conf
 agents/MoxDocumentDownload/moxdocumentdownload/moxdocumentdownload.conf
 agents/MoxDocumentDownload/install.log
+agents/MoxDocumentUpload/moxdocumentupload/moxdocumentupload.conf
+agents/MoxDocumentUpload/install.log

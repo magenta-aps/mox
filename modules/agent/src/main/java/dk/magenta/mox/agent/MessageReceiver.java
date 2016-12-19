@@ -121,7 +121,7 @@ public class MessageReceiver extends MessageInterface {
                                 responseString = Util.error(e);
                             }
                             MessageReceiver.this.throttle.yield();
-                            MessageReceiver.this.log.info("Got a response from message handler. Relaying to sender.");
+                            MessageReceiver.this.log.info("Got a response from message handler. Relaying to sender at queue "+replyTo+".");
                             MessageReceiver.this.log.info(responseString);
                             try {
                                 MessageReceiver.this.getChannel().basicPublish("", replyTo, responseProperties, responseString.getBytes());
@@ -130,6 +130,7 @@ public class MessageReceiver extends MessageInterface {
                                     MessageReceiver.this.getChannel().basicPublish("", replyTo, responseProperties, Util.error(e).getBytes());
                                 } catch (IOException e1) {
                                     e1.printStackTrace();
+                                    MessageReceiver.this.log.error(e1);
                                 }
                             }
                         }
