@@ -1,12 +1,11 @@
 * Version 0.2.15, December NN, 2016
 
-* Ticket 15899: moxdocumentdownload
-* Ticket 16220: moxdocumentupload
+* Converted spreadsheet download to a python Flask webservice
+* Converted spreadsheet upload to a python Flask webservice
 * Ticket 17362: moxrestfrontend
-* Ticket 17358: agentbase
-* Ticket 17361: apache
-* Ticket 17146: install utilities
-* Ticket 17376: moxtabel
+* Consolidated common classes & utilities to share between agents
+* Simplified apache installation & configuration
+* Created common install & config utilities, to avoid the same boilerplate code in install files
 * Ticket 17146: install
 
 * Version 0.2.14.1, June 30, 2016
