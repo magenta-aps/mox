@@ -198,7 +198,6 @@ def get_token(host, username, password):
         data={
             'username': username,
             'password': password,
-            'sts': "%s:9443/services/wso2carbon-sts?wsdl" % host
         },
         verify=False
     )
