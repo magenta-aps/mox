@@ -2,16 +2,12 @@ package dk.magenta.mox.moxrestfrontend;
 
 import dk.magenta.mox.agent.messages.*;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import javax.naming.OperationNotSupportedException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.Future;
 
 /**
  * Created by lars on 30-07-15.
