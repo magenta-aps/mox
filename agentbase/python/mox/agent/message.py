@@ -2,6 +2,7 @@ from datetime import datetime
 from dateutil import parser as dateparser
 import uuid
 
+
 class Message(object):
 
     HEADER_AUTHORIZATION = "autorisation"
@@ -63,7 +64,8 @@ class UploadedDocumentMessage(AuthorizedMessage):
 
     def getHeaders(self):
         headers = super(UploadedDocumentMessage, self).getHeaders()
-        headers[Message.HEADER_OBJECTTYPE] = Message.HEADER_OBJECTTYPE_VALUE_DOCUMENT
+        headers[Message.HEADER_OBJECTTYPE] = \
+            Message.HEADER_OBJECTTYPE_VALUE_DOCUMENT
         headers[Message.HEADER_TYPE] = Message.HEADER_TYPE_VALUE_MANUAL
         headers[Message.HEADER_OBJECTREFERENCE] = str(self.uuid)
         return headers
@@ -78,9 +80,7 @@ class UploadedDocumentMessage(AuthorizedMessage):
                 return UploadedDocumentMessage(uuid, authorization)
 
 
-"""
-A message pertaining to an object
-"""
+# A message pertaining to an object
 class ObjectMessage(Message):
 
     def __init__(self, objectid, objecttype):
@@ -95,10 +95,7 @@ class ObjectMessage(Message):
         return headers
 
 
-
-"""
-A message saying that an object has been updated in the database
-"""
+# A message saying that an object has been updated in the database
 class NotificationMessage(ObjectMessage):
 
     HEADER_LIFECYCLE_CODE = "livscykluskode"
@@ -121,15 +118,15 @@ class NotificationMessage(ObjectMessage):
             try:
                 objectid = headers[Message.HEADER_OBJECTID]
                 objecttype = headers[Message.HEADER_OBJECTTYPE]
-                lifecyclecode = headers[NotificationMessage.HEADER_LIFECYCLE_CODE]
+                lifecyclecode = headers[
+                    NotificationMessage.HEADER_LIFECYCLE_CODE
+                ]
                 return NotificationMessage(objectid, objecttype, lifecyclecode)
             except:
                 pass
 
 
-"""
-A message saying that an object's effective period has begun or ended
-"""
+# A message saying that an object's effective period has begun or ended
 class EffectUpdateMessage(ObjectMessage):
 
     TYPE_BEGIN = 1
@@ -153,11 +150,12 @@ class EffectUpdateMessage(ObjectMessage):
     def updatetype(self, updatetype):
         if type(updatetype) != int:
             raise TypeError
-        elif updatetype not in [self.TYPE_BEGIN, self.TYPE_END, self.TYPE_BOTH]:
+        elif updatetype not in [
+            self.TYPE_BEGIN, self.TYPE_END, self.TYPE_BOTH
+        ]:
             raise ValueError
         else:
             self._updatetype = updatetype
-
 
     @property
     def effecttime(self):
@@ -188,6 +186,8 @@ class EffectUpdateMessage(ObjectMessage):
                 objecttype = headers[Message.HEADER_OBJECTTYPE]
                 updatetype = headers[EffectUpdateMessage.HEADER_UPDATE_TYPE]
                 effecttime = headers[EffectUpdateMessage.HEADER_EFFECT_TIME]
-                return EffectUpdateMessage(objectid, objecttype, updatetype, effecttime)
+                return EffectUpdateMessage(
+                    objectid, objecttype, updatetype, effecttime
+                )
             except:
                 pass

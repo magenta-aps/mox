@@ -2,6 +2,7 @@ import StringIO
 import os
 import ConfigParser
 
+
 def read_properties_files(*file_paths):
     data = {}
     for file_path in file_paths:
@@ -20,6 +21,9 @@ def read_properties_files(*file_paths):
             pass
     return data
 
+
 class MissingConfigKeyError(Exception):
     def __init__(self, key):
-        super(MissingConfigKeyError, self).__init__('Missing configuration key: %s' % key)
+        super(MissingConfigKeyError, self).__init__(
+            'Missing configuration key: %s' % key
+        )

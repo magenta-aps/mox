@@ -4,11 +4,17 @@ import requests
 import json
 from uuid import UUID
 from PyOIO.OIOCommon.entity import OIOEntity
-from PyOIO.organisation import Bruger, Interessefaellesskab, ItSystem, Organisation, OrganisationEnhed, OrganisationFunktion
+from PyOIO.organisation import Bruger, Interessefaellesskab, ItSystem
+from PyOIO.organisation Organisation, OrganisationEnhed, OrganisationFunktion
 from PyOIO.klassifikation import Facet, Klasse, Klassifikation
-from PyOIO.OIOCommon.exceptions import InvalidUUIDException, InvalidObjectTypeException, TokenException, ItemNotFoundException, RestAccessException
+from PyOIO.OIOCommon.exceptions import InvalidUUIDException
+from PyOIO.OIOCommon.exceptions import InvalidObjectTypeException
+from PyOIO.OIOCommon.exceptions import TokenException
+from PyOIO.OIOCommon.exceptions import ItemNotFoundException
+from PyOIO.OIOCommon.exceptions import RestAccessException
 import pylru
 import urllib
+
 
 class Lora(object):
     """A Lora object represents a single running instance of the LoRa service.
@@ -89,7 +95,9 @@ class Lora(object):
         objectclass = self.object_map[objecttype]
         url = self.host + objectclass.basepath + "?search"
         if since:
-            url += '&registreringfra=%s' % urllib.quote_plus(since.strftime('%Y-%m-%d %H:%M:%S%z'))
+            url += '&registreringfra=%s' % urllib.quote_plus(
+                since.strftime('%Y-%m-%d %H:%M:%S%z')
+            )
         response = self.request(url, headers=self.get_headers())
         data = json.loads(response.text)
         return data['results'][0]
@@ -100,7 +108,8 @@ class Lora(object):
         for guid in self.get_uuids_of_type(objecttype):
             self.get_object(guid, objecttype, True, True)
 
-    def get_object(self, uuid, objecttype=None, force_refresh=False, refresh_cache=True):
+    def get_object(self, uuid, objecttype=None,
+                   force_refresh=False, refresh_cache=True):
         try:
             UUID(uuid)
         except ValueError:

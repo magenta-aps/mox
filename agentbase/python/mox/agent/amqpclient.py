@@ -9,11 +9,13 @@ class MessageInterface(object):
 
     def __init__(self, username, password, host, exchange):
 
-        #if ":" not in host:
-        #    host += ":5672"
-
         try:
-            self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=host, credentials=pika.PlainCredentials(username, password)))
+            self.connection = pika.BlockingConnection(
+                pika.ConnectionParameters(
+                    host=host,
+                    credentials=pika.PlainCredentials(username, password)
+                )
+            )
         except pika.exceptions.ConnectionClosed:
             raise CannotConnectException(host)
         except pika.exceptions.ProbableAuthenticationError:
@@ -56,18 +58,26 @@ class MessageSender(MessageInterface):
         replyQueue = "reply-%s" % str(uuid.uuid4())
         properties.correlation_id = replyQueue
         properties.reply_to = replyQueue
-        self.channel.queue_declare(replyQueue, durable=False, exclusive=False, auto_delete=True)
+        self.channel.queue_declare(
+            replyQueue, durable=False, exclusive=False, auto_delete=True
+        )
 
         self.replyQueues.append(replyQueue)
 
         # Remove the queue after a given time (default is one hour)
-        cleanupTimer = threading.Timer(self.replyDeletePeriod, self.channel.queue_delete, args=[replyQueue])
+        cleanupTimer = threading.Timer(
+            self.replyDeletePeriod,
+            self.channel.queue_delete,
+            args=[replyQueue]
+        )
         cleanupTimer.start()
         self.replyDeleters.append(cleanupTimer)
 
         if replyCallback:
             # Register a reply queue
-            self.channel.basic_consume(replyCallback, replyQueue, no_ack=True, exclusive=False)
+            self.channel.basic_consume(
+                replyCallback, replyQueue, no_ack=True, exclusive=False
+            )
 
         self.channel.basic_publish(self.exchange, '', data, properties)
         return replyQueue
@@ -86,10 +96,15 @@ class MessageSender(MessageInterface):
 
 class MessageListener(MessageInterface):
 
-    def __init__(self, username, password, host, exchange, queue_name=None, queue_parameters={}):
-        super(MessageListener, self).__init__(username, password, host, exchange)
+    def __init__(self, username, password, host, exchange,
+                 queue_name=None, queue_parameters={}):
+        super(MessageListener, self).__init__(
+            username, password, host, exchange
+        )
 
-        parameters = {'durable': False, 'exclusive': False, 'auto_delete': False}
+        parameters = {
+            'durable': False, 'exclusive': False, 'auto_delete': False
+        }
         parameters.update(queue_parameters)
 
         if isinstance(queue_name, basestring) and len(queue_name) > 0:
@@ -117,7 +132,9 @@ class MessageListener(MessageInterface):
 
         print ' [*] Waiting for messages. To exit press CTRL+C'
         self.channel.basic_qos(prefetch_count=1)
-        self.channel.basic_consume(self.callback, queue=self.queue, no_ack=True)
+        self.channel.basic_consume(
+            self.callback, queue=self.queue, no_ack=True
+        )
         try:
             self.channel.start_consuming()
         except KeyboardInterrupt:
@@ -132,9 +149,14 @@ class NoSuchJob(Exception):
 
 class CannotConnectException(Exception):
     def __init__(self, host):
-        super(CannotConnectException, self).__init__("Cannot connect to AMQP service at %s" % host)
+        super(CannotConnectException, self).__init__(
+            "Cannot connect to AMQP service at %s" % host
+        )
 
 
 class InvalidCredentialsException(Exception):
     def __init__(self, host, username):
-        super(InvalidCredentialsException, self).__init__("Cannot authenticate to host %s as user %s: Incorrect password" % (host, username))
+        super(InvalidCredentialsException, self).__init__(
+            "Cannot authenticate to host %s as user %s: "
+            "Incorrect password" % (host, username)
+        )
