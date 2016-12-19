@@ -6,8 +6,6 @@ import requests
 import json
 import io
 import os
-import sys
-import socket
 import datetime
 import threading
 from agent.config import read_properties_files, MissingConfigKeyError
@@ -56,10 +54,10 @@ class ServiceException(MoxFlaskException):
     status_code = 500
 
 
-
 class ChunkGet(threading.Thread):
 
     results = []
+
     def __init__(self, url, token):
         super(ChunkGet, self).__init__()
         self.url = url
@@ -92,19 +90,21 @@ class ChunkGet(threading.Thread):
             raise Exception(msg)
 
 
-
-def extract(host, username, password, objecttypes, https=True, load_threaded=10):
+def extract(host, username, password, objecttypes, load_threaded=10):
 
     token = get_token(host, username, password)
 
-    registerTime = datetime.datetime.today().date() + datetime.timedelta(days=1)
+    register_time = datetime.datetime.today().date() + \
+        datetime.timedelta(days=1)
 
     request_counter = 0
     objects = {}
     for objecttype_name, objecttype_url in objecttypes.iteritems():
         # print "Listing objects of type %s" % objecttype_name
         uuids = []
-        for parameterset in ["brugervendtnoegle=%", "livscykluskode=Importeret"]:
+        for parameterset in [
+            "brugervendtnoegle=%", "livscykluskode=Importeret"
+        ]:
             list_request = requests.get(
                 "%s%s?%s" % (host, objecttype_url, parameterset),
                 headers={
@@ -127,17 +127,25 @@ def extract(host, username, password, objecttypes, https=True, load_threaded=10)
         objects[objecttype_name] = []
         uuids = list(set(uuids))
         chunksize = 20
-        chunks = [uuids[i:i+chunksize] for i in range(0, len(uuids), chunksize)]
+        chunks = [
+            uuids[i:i+chunksize]
+            for i in range(0, len(uuids), chunksize)
+        ]
 
         if load_threaded is not None and load_threaded > 0:
             loaders = []
             for chunk in chunks:
-                url = "%s%s?registreretFra=%s&uuid=%s" % (host, objecttype_url, registerTime, "&uuid=".join(chunk))
+                url = "%s%s?registreretFra=%s&uuid=%s" % (
+                    host, objecttype_url, register_time, "&uuid=".join(chunk)
+                )
                 loader = ChunkGet(url, token)
                 loaders.append(loader)
 
             loader_chunk_size = load_threaded
-            loader_chunks = [loaders[i:i+loader_chunk_size] for i in range(0, len(loaders), loader_chunk_size)]
+            loader_chunks = [
+                loaders[i:i+loader_chunk_size]
+                for i in range(0, len(loaders), loader_chunk_size)
+            ]
             chunks_processed = 0
             for loader_chunk in loader_chunks:
                 for loader in loader_chunk:
@@ -153,7 +161,9 @@ def extract(host, username, password, objecttypes, https=True, load_threaded=10)
                     objects[objecttype_name].extend(result)
         else:
             for chunk in chunks:
-                url = "%s%s?registreretFra=%s&uuid=%s" % (host, objecttype_url, registerTime, "&uuid=".join(chunk))
+                url = "%s%s?registreretFra=%s&uuid=%s" % (
+                    host, objecttype_url, register_time, "&uuid=".join(chunk)
+                )
 
                 item_request = requests.get(
                     url,
@@ -172,7 +182,7 @@ def extract(host, username, password, objecttypes, https=True, load_threaded=10)
                         msg += "\n%s" % item_request.text
                     raise ServiceException(msg)
 
-                request_counter += 1 # Rens for gamle registreringer
+                request_counter += 1
                 if request_counter % 20 == 0:
                     token = get_token(host, username, password)
 
@@ -258,16 +268,17 @@ def merge_standard(listdata):
     newlistdata = []
     taken = set()
     for i in range(len(listdata)):
-        if True or not i in taken:
+        if True or i not in taken:
             list1 = listdata[i]
             merged = {}
             merged.update(list1)
             flaf = set()
             merge = False
             for j in range(i+1, len(listdata)):
-                if not j in taken:
+                if j not in taken:
                     list2 = listdata[j]
-                    if list1.get('Fra') == list2.get('Fra') and list1.get('Til') == list2.get('Til'):
+                    if list1.get('Fra') == list2.get('Fra') and \
+                            list1.get('Til') == list2.get('Til'):
                         shared = shared_keys(merged, list2, ['Til', 'Fra'])
                         same = True
                         for s in shared:
@@ -292,13 +303,14 @@ def merge_aggressive(listdata):
     newlistdata = {}
     separator = "|"
     for item in listdata:
-        for key,value in item.iteritems():
+        for key, value in item.iteritems():
             if key != "Til" and key != "Fra":
                 if key in newlistdata:
                     newlistdata[key] += separator + value
                 else:
                     newlistdata[key] = value
     return [newlistdata]
+
 
 def fmt_date(date):
     if date and date != 'infinity':
@@ -331,6 +343,7 @@ def convert(row, structure, include_virkning=True):
         ptr = row
 
         try:
+            p = None
             for p in path:
                 if p == 'registrering':
                     continue
@@ -382,8 +395,10 @@ def fix_rowset(rows):
             for row in rows:
                 if attribute not in row:
                     timestamp = row['Tidsstempel']
-                    if timestamp in attribute_storage and attribute in attribute_storage[timestamp]:
-                        row[attribute] = attribute_storage[timestamp][attribute]
+                    if timestamp in attribute_storage and \
+                            attribute in attribute_storage[timestamp]:
+                        row[attribute] = \
+                            attribute_storage[timestamp][attribute]
 
     """
     if STATUS_DELETED in lifecycles_detected:
@@ -407,18 +422,22 @@ def fix_rowset(rows):
 def csvrow(row, headers):
     line = []
     for header in headers:
-        line.append(row.get(header,''))
+        line.append(row.get(header, ''))
     return ','.join(["\"%s\"" % x.replace('"', '""') for x in line])
 
 
 def format(data, mergelevel=1):
     output = {}
-    structure_collection = json.load(app.open_instance_resource("structure.json"))
+    structure_collection = json.load(
+        app.open_instance_resource("structure.json")
+    )
     for objecttype_name, items in data.iteritems():
         # print "Type %s has %d objects" % (objecttype_name, len(items))
         rows = []
         structure = structure_collection[objecttype_name]
-        baseheaders = ['Operation', 'objektID', 'Fra', 'Til', 'BrugervendtNoegle']
+        baseheaders = [
+            'Operation', 'objektID', 'Fra', 'Til', 'BrugervendtNoegle'
+        ]
         otherheaders = []
         for item in items:
             id = item['id']
@@ -432,7 +451,10 @@ def format(data, mergelevel=1):
                     listdata = []
                 if basedata is None:
                     basedata = {}
-                converted_listdata = [convert(item, structure) for item in listdata]
+                converted_listdata = [
+                    convert(item, structure)
+                    for item in listdata
+                ]
                 converted_basedata = convert(basedata, structure)
 
                 if mergelevel == 0:
@@ -483,15 +505,17 @@ OBJECTTYPE_MAP = {
 }
 
 
-
-
 def print_error(message):
     print "Content-Type: text/plain\n\n"
     print message
 
+
 def require_parameter(parametername):
     if parametername not in request.form:
-        raise BadRequestException("Please specify the '%s' parameter" % parametername)
+        raise BadRequestException(
+            "Please specify the '%s' parameter" % parametername
+        )
+
 
 @app.route('/', methods=['GET', 'POST'])
 def main():
@@ -502,7 +526,10 @@ def main():
         objecttype = request.form['type']
         print objecttype
         if objecttype not in OBJECTTYPE_MAP:
-            raise BadRequestException("The type parameter must be one of the following: %s" % ", ".join(OBJECTTYPE_MAP.keys()))
+            raise BadRequestException(
+                "The type parameter must be one of the following: %s" %
+                ", ".join(OBJECTTYPE_MAP.keys())
+            )
 
         require_parameter('username')
         username = request.form['username']
@@ -514,9 +541,13 @@ def main():
         try:
             mergelevel = int(mergelevel)
             if mergelevel not in [0, 1, 2]:
-                raise BadRequestException("'merge' parameter must be 0, 1 or 2. Default is 1")
+                raise BadRequestException(
+                    "'merge' parameter must be 0, 1 or 2. Default is 1"
+                )
         except ValueError:
-            raise BadRequestException("'merge' parameter must be 0, 1 or 2. Default is 1")
+            raise BadRequestException(
+                "'merge' parameter must be 0, 1 or 2. Default is 1"
+            )
 
         try:
             server = config['moxdocumentdownload.rest.host']
@@ -529,11 +560,18 @@ def main():
         )
         data = format(objects, mergelevel)
         objectdata = data[objecttype]
-        filedata = u'\n'.join([u','.join(objectdata['headers'])] + [csvrow(row, objectdata['headers']) for row in objectdata['rows']])
+        filedata = u'\n'.join(
+            [u','.join(objectdata['headers'])] +
+            [
+                csvrow(row, objectdata['headers'])
+                for row in objectdata['rows']
+            ]
+        )
 
         response = make_response(filedata)
         response.headers['Content-Type'] = 'text/csv; charset=utf-8'
-        response.headers['Content-Disposition'] = "attachment; filename=\"%s.csv\"" % objecttype
+        response.headers['Content-Disposition'] = \
+            "attachment; filename=\"%s.csv\"" % objecttype
         return response
 
 
