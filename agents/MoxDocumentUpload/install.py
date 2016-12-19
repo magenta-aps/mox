@@ -23,7 +23,9 @@ fp = open(logfilename, 'w')
 fp.close()
 
 virtualenv = VirtualEnv(DIR + "/python-env")
-created = virtualenv.create(args.overwrite_virtualenv, args.keep_virtualenv, logfilename)
+created = virtualenv.create(
+    args.overwrite_virtualenv, args.keep_virtualenv, logfilename
+)
 if created:
     print "Running setup.py"
     virtualenv.run(logfilename, "python " + DIR + "/setup.py develop")
@@ -33,5 +35,8 @@ if created:
 
 # Install WSGI service
 print "Setting up moxdocumentdownload WSGI service for Apache"
-wsgi = WSGI("%s/setup/moxdocumentupload.wsgi" % DIR, "%s/setup/moxdocumentupload.conf" % DIR)
+wsgi = WSGI(
+    "%s/setup/moxdocumentupload.wsgi" % DIR,
+    "%s/setup/moxdocumentupload.conf" % DIR
+)
 wsgi.install(True)

@@ -15,7 +15,7 @@ DIR = os.path.dirname(os.path.realpath(__file__))
 
 config = read_properties_files(DIR + "/moxdocumentupload.conf")
 
-ALLOWED_EXTENSIONS = set(['ods', 'xls', 'xlsx'])
+ALLOWED_EXTENSIONS = {'ods', 'xls', 'xlsx'}
 
 
 def allowed_file(filename):
@@ -85,7 +85,7 @@ sender = MessageSender(
 )
 
 
-@app.route('/', methods=['GET','POST'])
+@app.route('/', methods=['GET', 'POST'])
 def upload():
     if request.method == 'GET':
         return render_template('form.html')
@@ -93,7 +93,6 @@ def upload():
 
         # check if the post request has the file part
         if 'file' not in request.files:
-            #flash('No file part')
             return redirect(request.url)
         file = request.files['file']
         authorization = request.form['token']
@@ -102,7 +101,8 @@ def upload():
         if not file:
             raise BadRequestException("No file submitted")
 
-        # if user does not select file, browser also submits an empty part without filename
+        # if user does not select file,
+        # browser also submits an empty part without filename
         if file.filename == '':
             raise BadRequestException("No file submitted")
 
@@ -132,7 +132,9 @@ def upload():
         response = requests.post(url, headers=headers, data=data)
         os.remove(destfilepath)
         if response.status_code != 200 and response.status_code != 201:
-            raise ServiceException("Error in document service: %s" % response.text)
+            raise ServiceException(
+                "Error in document service: %s" % response.text
+            )
         try:
             responseJson = json.loads(response.text)
         except ValueError:
@@ -152,6 +154,7 @@ def upload():
         elif output == 'html':
             return render_template('waiter.html', **jobObject)
 
+
 @app.route('/status')
 def checkStatus():
     jobId = request.args.get('jobId')
@@ -165,6 +168,7 @@ def checkStatus():
         return jsonify({'response': data})
     except ValueError:
         return jsonify({'response': body})
+
 
 @app.errorhandler(MoxFlaskException)
 def handle_error(error):
