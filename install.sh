@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -e
 
 # TODO: bail if root
 if [ `id -u` == 0 ]; then
@@ -26,11 +26,21 @@ done
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 # Query for hostname
-DOMAIN=`hostname --fqdn`
-read -p "Domain: [$DOMAIN] " -r
+DOMAIN=$(hostname --fqdn)
+
+read -p "Host name: [$DOMAIN] " -r
 echo
 if [[ "x$REPLY" != "x" ]]; then
 	DOMAIN="$REPLY"
+fi
+
+read -p "Install WSO2 identity provider? [N/y] " -r -n 1
+echo
+if [[ $REPLY != [yY] ]]
+then
+	USE_WSO2=false
+else
+	USE_WSO2=true
 fi
 
 AMQP_HOST="$DOMAIN"
@@ -42,8 +52,8 @@ REST_USER="admin"
 REST_PASS="admin"
 
 # Add system user if none exists
-getent passwd mox
-if [ $? -ne 0 ]; then 
+if ! getent passwd mox > /dev/null
+then
 	echo "Creating system user 'mox'"
 	sudo useradd mox
 fi
@@ -70,15 +80,18 @@ sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$MOX_CONFIG"
 
 # Setup apache virtualhost
 echo "Setting up Apache virtualhost"
-$DIR/apache/install.sh -d $DOMAIN
+$DIR/apache/install.sh
 
-echo "Setting up Identity Server"
-$DIR/wso2/install.sh "$DOMAIN"
+if $USE_WSO2
+then
+	echo "Setting up Identity Server"
+	$DIR/wso2/install.sh "$DOMAIN"
+fi
 
 # Install oio_rest
 echo "Installing oio_rest"
 echo "$DIR/oio_rest/install.sh $@"
-$DIR/oio_rest/install.sh "$@" -d $DOMAIN
+$DIR/oio_rest/install.sh "$@"
 
 # Install database
 echo "Installing database"
@@ -104,13 +117,15 @@ if [ $JAVA_HIGHEST_VERSION -ge $JAVA_VERSION_NEEDED ]; then
 	echo "Java is installed in version $JAVA_HIGHEST_VERSION"
 else
 	echo "Installing java in version $JAVA_VERSION_NEEDED"
-	sudo apt-cache -q=2 show "openjdk-$JAVA_VERSION_NEEDED-jdk" 2> /dev/null 1> /dev/null
-	if [[ $? > 0 ]]; then
+	if ! apt-cache show "openjdk-$JAVA_VERSION_NEEDED-jdk" > /dev/null 2>&1
+	then
 		# openjdk is not available in the version we want
-		sudo add-apt-repository ppa:openjdk-r/ppa
-		sudo apt-get update > /dev/null
+		sudo apt-get -qqy install software-properties-common
+		sudo add-apt-repository -ys ppa:openjdk-r/ppa
+		sudo apt-get -qq update
 	fi
 	sudo apt-get --yes --quiet install "openjdk-$JAVA_VERSION_NEEDED-jdk"
+	JAVA_HIGHEST_VERSION_DIR="/usr/lib/jvm/java-$JAVA_VERSION_NEEDED-openjdk-amd64"
 fi
 if [[ "x$JAVA_HIGHEST_VERSION_DIR" != "x" ]]; then
 	sed -r -e "s|^CMD_JAVA=.*$|CMD_JAVA=$JAVA_HIGHEST_VERSION_DIR/bin/java|" \
@@ -123,6 +138,7 @@ fi
 
 OLD_JAVA_HOME="$JAVA_HOME"
 JAVA_HOME="$JAVA_HIGHEST_VERSION_DIR"
+export JAVA_HOME
 
 # Install Maven
 echo "Installing Maven"
@@ -155,3 +171,6 @@ JAVA_HOME="$OLD_JAVA_HOME"
 sudo chown -R mox:mox $DIR
 sudo service apache2 reload
 
+echo
+echo "Install succeeded!!!"
+echo

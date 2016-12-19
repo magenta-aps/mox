@@ -1,6 +1,7 @@
-#!/bin/bash
+#!/bin/bash -e
 
-DOMAIN="referencedata.dk"
+unset PYTHONPATH
+
 while getopts ":ysd:" OPT; do
   case $OPT in
         s)
@@ -9,14 +10,10 @@ while getopts ":ysd:" OPT; do
         y)
                 ALWAYS_CONFIRM=1
                 ;;
-        d)
-                DOMAIN="$OPTARG"
-                ;;
         *)
-                echo "Usage: $0 [-y] [-s] [-d domain]"
+                echo "Usage: $0 [-y] [-s]"
                 echo "  -s: Skip installing oio_rest API system dependencies"
                 echo "  -y: Always confirm (yes) when prompted"
-				echo "  -d: Specify domain"
                 exit 1;
                 ;;
         esac
@@ -34,11 +31,7 @@ MOXDIR="$DIR/.."
 #
 if [ -z $SKIP_SYSTEM_DEPS ]; then
     echo "Installing oio_rest dependencies"
-	SYSTEM_PACKAGES=$(cat "$DIR/SYSTEM_DEPENDENCIES")
-
-	for package in "${SYSTEM_PACKAGES[@]}"; do
-		sudo apt-get -y install $package
-	done
+	sudo apt-get -y install $(cat "$DIR/SYSTEM_DEPENDENCIES")
 fi
 
 
@@ -95,8 +88,6 @@ if [ $CREATE_VIRTUALENV == 1 ]; then
 		deactivate
 	fi
 fi
-
-sed --in-place --expression="s|^rest.interface.*$|rest.interface = https://${DOMAIN}|" "${MOX_CONFIG}"
 
 # Install WSGI service
 echo "Setting up oio_rest WSGI service for Apache"

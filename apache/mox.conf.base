@@ -1,16 +1,13 @@
 <VirtualHost *:80>
 
-	ServerName			${domain}
-	ServerAlias			${domain}
-
 	DocumentRoot			/var/www/html
+	RewriteEngine           On
+	RewriteCond             %{HTTPS}    off
+	RewriteRule             (.*)        https://%{SERVER_NAME}$1 [R=308]
 
 </VirtualHost>
 
 <VirtualHost *:443>
-
-	ServerName			${domain}
-	ServerAlias			${domain}
 
 	TimeOut	1200
 
@@ -19,17 +16,16 @@
 	SSLEngine			On
 	SSLProtocol			All -SSLv2 -SSLv3
 
-	SSLCertificateFile		/etc/apache2/certs/magenta-aps.dk.crt
-	SSLCertificateKeyFile		/etc/apache2/certs/magenta-aps.dk.key
-	SSLCACertificateFile		/etc/apache2/certs/intermediate.crt
+	SSLCertificateFile          /etc/ssl/certs/ssl-cert-snakeoil.pem
+	SSLCertificateKeyFile       /etc/ssl/private/ssl-cert-snakeoil.key
+	#SSLCACertificateFile        /dev/null
 
 	CustomLog			/var/log/mox/access.log combined
 	ErrorLog			/var/log/mox/error.log
 
 	# Redirect / to /info/ 
-	RewriteEngine			on
-	RewriteRule			"^/$" "/info/" [R]
-	# Redirect from www. to /       # Really redirect all but ${domain}
+	RewriteEngine               on
+	RewriteRule                 "^/$" "/info/" [R=308]
 
 	### MOX INCLUDE BEGIN ###
 	### MOX INCLUDE END ###

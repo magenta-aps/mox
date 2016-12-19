@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $DIR/config.sh
@@ -24,10 +24,7 @@ if [ $WIPE_DB == 1 ]; then
 	# Install Database
 
     echo "Installing database dependencies"
-    SYSTEM_PACKAGES=$(cat "$DIR/SYSTEM_DEPENDENCIES")
-    for package in "${SYSTEM_PACKAGES[@]}"; do
-        sudo apt-get -y install $package
-    done
+    sudo apt-get -qqy install --no-install-recommends  $(cat "$DIR/SYSTEM_DEPENDENCIES")
 
     # Install pgtap - unit test framework
     sudo pgxn install pgtap
