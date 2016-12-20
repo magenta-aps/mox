@@ -71,6 +71,7 @@ cp --remove-destination "$SHELL_CONFIG.base" "$SHELL_CONFIG"
 
 OIO_REST_CONFIG="$DIR/oio_rest/oio_rest/settings.py"
 cp --remove-destination "$OIO_REST_CONFIG.base" "$OIO_REST_CONFIG"
+sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$OIO_REST_CONFIG"
 
 APACHE_CONFIG="$DIR/apache/mox.conf"
 cp --remove-destination "$APACHE_CONFIG.base" "$APACHE_CONFIG"
