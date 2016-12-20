@@ -3,7 +3,6 @@ from onelogin.saml2.response import OneLogin_Saml2_Response
 from defusedxml.lxml import fromstring
 from copy import deepcopy
 
-
 from xml.dom.minidom import Document, Element
 from lxml import etree
 from onelogin.saml2.constants import OneLogin_Saml2_Constants
@@ -123,7 +122,7 @@ class Saml2_Assertion(OneLogin_Saml2_Response):
         fingerprintalg = None
         if not validate_sign(
                 self.original_document, self.idp_cert, fingerprint,
-                fingerprintalg, debug=True
+                fingerprintalg, debug=True, raise_on_failure=True,
         ):
             raise Exception(
                 'Signature validation failed. SAML Response rejected')
@@ -132,9 +131,9 @@ class Saml2_Assertion(OneLogin_Saml2_Response):
 # This code was pulled from OneLogin's util.py
 # The only change was to remove xmlsec.initialize()
 def validate_sign(xml, cert=None, fingerprint=None,
-                  fingerprintalg='sha1', validatecert=False, debug=False):
-    """
-    Validates a signature (Message or Assertion).
+                  fingerprintalg='sha1', validatecert=False, debug=False,
+                  raise_on_failure=False):
+    """Validates a signature (Message or Assertion).
 
     :param xml: The element we should validate
     :type: string | Document
@@ -154,6 +153,11 @@ def validate_sign(xml, cert=None, fingerprint=None,
 
     :param debug: Activate the xmlsec debug
     :type: bool
+
+    :param raise_on_failure: Raise an exception on failure, rather
+                             than returning False.
+    :type: bool
+
     """
     try:
         if xml is None or xml == '':
@@ -209,7 +213,7 @@ def validate_sign(xml, cert=None, fingerprint=None,
                         )
 
             if cert is None or cert == '':
-                return False
+                raise Exception('cannot find signing certificate')
 
             dsig_ctx = xmlsec.DSigCtx()
 
@@ -237,6 +241,8 @@ def validate_sign(xml, cert=None, fingerprint=None,
             dsig_ctx.verify(signature_node)
             return True
         else:
-            return False
+            raise Exception('no signature nodes')
     except Exception:
+        if raise_on_failure:
+            raise
         return False
