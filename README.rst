@@ -167,9 +167,9 @@ Quick test
 Make sure the parameters ``USE_SAML_AUTHENTICATION`` in 
 ``oio_rest/oio_rest/settings.py`` is `False`.
 
-Make sure the parameter ``rest.interface`` in 
-``agents/MoxRestFrontend/moxrestfrontend.properties`` is set to 
-`http://localhost:5000`. 
+Make sure the parameter ``moxrestfrontend.rest.host`` in
+``agents/MoxRestFrontend/moxrestfrontend.conf`` is set to
+`http://localhost:5000`.
 
 Start the (AMQP) MOX REST frontend agent: ::
 
