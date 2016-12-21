@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -e
 
 # TODO: Maybe make this directory a Python package & do the installation
 # through setup.py.

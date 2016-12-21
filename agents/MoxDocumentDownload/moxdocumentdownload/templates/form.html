@@ -1,0 +1,34 @@
+<html>
+    <head>
+        <title>Mox document extract</title>
+    </head>
+    <body>
+        <form method="POST">
+            <label for="username">Brugernavn: </label>
+            <input type="text" id="username" name="username"/><br/>
+
+            <label for="password">Password: </label>
+            <input type="password" id="password" name="password"/><br/>
+
+            <label for="type">Type: </label>
+            <select id="type" name="type">
+                <option value="klassifikation">klassifikation</option>
+                <option value="klasse">klasse</option>
+                <option value="facet">facet</option>
+                <option value="organisation">organisation</option>
+                <option value="organisationenhed">organisationenhed</option>
+                <option value="organisationfunktion">organisationfunktion</option>
+                <option value="bruger">bruger</option>
+            </select><br/>
+
+            <label for="type">Merge level: </label>
+            <select id="merge" name="merge">
+                <option value="0">No merge (0)</option>
+                <option value="1">Partial merge (1)</option>
+                <option value="2" selected="selected">Full merge (2)</option>
+            </select><br/>
+
+            <button type="submit">Hent data</button>
+        </form>
+    </body>
+</html>

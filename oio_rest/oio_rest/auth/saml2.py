@@ -3,7 +3,6 @@ from onelogin.saml2.response import OneLogin_Saml2_Response
 from defusedxml.lxml import fromstring
 from copy import deepcopy
 
-
 from xml.dom.minidom import Document, Element
 from lxml import etree
 from onelogin.saml2.constants import OneLogin_Saml2_Constants
@@ -106,14 +105,18 @@ class Saml2_Assertion(OneLogin_Saml2_Response):
         valid_audiences = self.get_audiences()
         if valid_audiences and self.mox_entity_id not in valid_audiences:
             raise Exception(
-                '%s is not a valid audience for this Assertion' %
-                self.mox_entity_id)
+                '%s is not a valid audience for this Assertion, got %s' %
+                (self.mox_entity_id, ', '.join(valid_audiences))
+            )
 
         # Checks the issuers
         issuers = self.get_issuers()
         for issuer in issuers:
             if issuer is None or issuer != self.idp_entity_id:
-                raise Exception('Invalid issuer in the Assertion/Response')
+                raise Exception(
+                    'Invalid issuer {!r} in the Assertion/Response, '
+                    'expected {!r}'.format(issuer, self.idp_entity_id)
+                )
 
         fingerprint = None
         fingerprintalg = None
@@ -150,6 +153,11 @@ def validate_sign(xml, cert=None, fingerprint=None, fingerprintalg='sha1',
 
     :param debug: Activate the xmlsec debug
     :type: bool
+
+    :param raise_on_failure: Raise an exception on failure, rather
+                             than returning False.
+    :type: bool
+
     """
     try:
         if xml is None or xml == '':
@@ -206,7 +214,7 @@ def validate_sign(xml, cert=None, fingerprint=None, fingerprintalg='sha1',
                         )
 
             if cert is None or cert == '':
-                return False
+                raise Exception('cannot find signing certificate')
 
             dsig_ctx = xmlsec.DSigCtx()
 
@@ -229,6 +237,8 @@ def validate_sign(xml, cert=None, fingerprint=None, fingerprintalg='sha1',
             dsig_ctx.verify(signature_node)
             return True
         else:
-            return False
+            raise Exception('no signature nodes')
     except Exception:
+        if raise_on_failure:
+            raise
         return False

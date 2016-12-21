@@ -20,8 +20,8 @@ MOXDIR="/srv/mox"
 
 DOMAIN=$1
 DOMAIN_DEF=$(hostname --fqdn)
-CERTIFICATE_DEF=/etc/apache2/certs/magenta-aps.dk.crt
-PRIVATE_KEY_DEF=/etc/apache2/certs/magenta-aps.dk.key
+CERTIFICATE_DEF=/etc/ssl/certs/ssl-cert-snakeoil.pem
+PRIVATE_KEY_DEF=/etc/ssl/private/ssl-cert-snakeoil.key
 PASSOUT_DEF=wso2carbon
 
 NEW_KEYSTORE_DEF=/opt/wso2is-5.0.0/repository/resources/security/newkeystore.jks
