@@ -275,14 +275,14 @@ DATABASE_STRUCTURE = {
     },
 
     "loghaendelse": {
-        "attributter": { 
-            "egenskaber": ["service", "klasse", "tidspunkt", "operation", "objekttype",
-                           "returkode", "returtekst", "note"]
-                },
-        "tilstande": {
-            "gyldighed": ["Aktiv", "Inaktiv"]
+        "attributter": {
+            "egenskaber": ["service", "klasse", "tidspunkt", "operation",
+                           "objekttype", "returkode", "returtekst", "note"]
         },
-        "relationer_nul_til_en": ["objekt", "bruger", "brugerrolle"], 
+        "tilstande": {
+            "gyldighed": ["Rettet", "Ikke rettet"]
+        },
+        "relationer_nul_til_en": ["objekt", "bruger", "brugerrolle"],
 
         "relationer_nul_til_mange": []
 
@@ -317,6 +317,5 @@ MOX_BASE_DIR = os.path.abspath(
 
 # Log AMQP settings
 LOG_AMQP_SERVER = 'localhost'
-LOG_QUEUE = 'rest'
-LOG_IGNORED_SERVICES = ['Log',]
-
+LOG_QUEUE = 'incoming'
+LOG_IGNORED_SERVICES = ['Log', ]
