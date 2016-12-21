@@ -15,6 +15,7 @@ from onelogin.saml2.constants import OneLogin_Saml2_Constants
 import dm.xmlsec.binding as xmlsec
 xmlsec.initialize()
 
+
 class Saml2_Assertion(OneLogin_Saml2_Response):
     """Represent a SAML2 assertion by wrapping it in OneLogin's Response class.
 
@@ -117,17 +118,18 @@ class Saml2_Assertion(OneLogin_Saml2_Response):
         fingerprint = None
         fingerprintalg = None
         if not validate_sign(self.original_document,
-                            self.idp_cert,
-                            fingerprint,
-                            fingerprintalg,
-                            debug=True):
+                             self.idp_cert,
+                             fingerprint,
+                             fingerprintalg,
+                             debug=True):
             raise Exception(
                 'Signature validation failed. SAML Response rejected')
 
 
 # This code was pulled from OneLogin's util.py
 # The only change was to remove xmlsec.initialize()
-def validate_sign(xml, cert=None, fingerprint=None, fingerprintalg='sha1', validatecert=False, debug=False):
+def validate_sign(xml, cert=None, fingerprint=None, fingerprintalg='sha1',
+                  validatecert=False, debug=False):
     """
     Validates a signature (Message or Assertion).
 
@@ -143,7 +145,7 @@ def validate_sign(xml, cert=None, fingerprint=None, fingerprintalg='sha1', valid
     :param fingerprintalg: The algorithm used to build the fingerprint
     :type: string
 
-    :param validatecert: If true, will verify the signature and if the cert is valid.
+    :param validatecert: If true, will verify signature and if cert is valid.
     :type: bool
 
     :param debug: Activate the xmlsec debug
@@ -186,13 +188,22 @@ def validate_sign(xml, cert=None, fingerprint=None, fingerprintalg='sha1', valid
             signature_node = signature_nodes[0]
 
             if (cert is None or cert == '') and fingerprint:
-                x509_certificate_nodes = OneLogin_Saml2_Utils.query(signature_node, '//ds:Signature/ds:KeyInfo/ds:X509Data/ds:X509Certificate')
+                x509_certificate_nodes = OneLogin_Saml2_Utils.query(
+                    signature_node,
+                    '//ds:Signature/ds:KeyInfo/ds:X509Data/ds:X509Certificate'
+                )
                 if len(x509_certificate_nodes) > 0:
                     x509_certificate_node = x509_certificate_nodes[0]
                     x509_cert_value = x509_certificate_node.text
-                    x509_fingerprint_value = OneLogin_Saml2_Utils.calculate_x509_fingerprint(x509_cert_value, fingerprintalg)
+                    x509_fingerprint_value = (
+                        OneLogin_Saml2_Utils.calculate_x509_fingerprint(
+                            x509_cert_value, fingerprintalg
+                        )
+                    )
                     if fingerprint == x509_fingerprint_value:
-                        cert = OneLogin_Saml2_Utils.format_cert(x509_cert_value)
+                        cert = OneLogin_Saml2_Utils.format_cert(
+                            x509_cert_value
+                        )
 
             if cert is None or cert == '':
                 return False
@@ -203,11 +214,14 @@ def validate_sign(xml, cert=None, fingerprint=None, fingerprintalg='sha1', valid
 
             if validatecert:
                 mngr = xmlsec.KeysMngr()
-                mngr.loadCert(file_cert.name, xmlsec.KeyDataFormatCertPem, xmlsec.KeyDataTypeTrusted)
+                mngr.loadCert(file_cert.name, xmlsec.KeyDataFormatCertPem,
+                              xmlsec.KeyDataTypeTrusted)
                 dsig_ctx = xmlsec.DSigCtx(mngr)
             else:
                 dsig_ctx = xmlsec.DSigCtx()
-                dsig_ctx.signKey = xmlsec.Key.load(file_cert.name, xmlsec.KeyDataFormatCertPem, None)
+                dsig_ctx.signKey = xmlsec.Key.load(
+                    file_cert.name, xmlsec.KeyDataFormatCertPem, None
+                )
 
             file_cert.close()
 

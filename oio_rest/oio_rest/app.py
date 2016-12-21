@@ -126,7 +126,9 @@ def page_not_found(e):
 def get_service_name():
     'Get the hierarchy of the present method call from the request URL'
     u = urlparse.urlparse(request.url)
-    service_name = u.path[-2].capitalize()
+    urlpath = u.path
+    service_name = urlpath.split('/')[1].capitalize()
+
     return service_name
 
 
@@ -139,17 +141,18 @@ def get_class_name():
 
 @app.after_request
 def log_api_call(response):
-    service_name = get_service_name()
-    class_name = get_class_name()
-    time = datetime.datetime.now()
-    operation = request.api_operation
-    return_code = response.status_code
-    msg = response.status
-    note = "Is there a note too?"
-    user_uuid = get_authenticated_user()
-    object_uuid = request.uuid
-    log_service_call(service_name, class_name, time, operation, return_code,
-                     msg, note, user_uuid, "N/A", object_uuid)
+    if hasattr(request, 'api_operation'):
+        service_name = get_service_name()
+        class_name = get_class_name()
+        time = datetime.datetime.now()
+        operation = request.api_operation
+        return_code = response.status_code
+        msg = response.status
+        note = "Is there a note too?"
+        user_uuid = get_authenticated_user()
+        object_uuid = request.uuid
+        log_service_call(service_name, class_name, time, operation,
+                         return_code, msg, note, user_uuid, "N/A", object_uuid)
     return response
 
 

@@ -9,7 +9,7 @@ from settings import LOG_AMQP_SERVER, LOG_QUEUE, LOG_IGNORED_SERVICES
 
 
 def log_service_call(service_name, class_name, time,
-                     operation, return_code, msg, note, user_uuid, role_uuid,
+                     operation, return_code, msg, note, user_uuid, role,
                      object_uuid):
     """Log a call to a LoRa service."""
 
@@ -21,14 +21,14 @@ def log_service_call(service_name, class_name, time,
     virkning = {
         "from": str(time),
         "to": "infinity",
-        "aktoerref": "TODO",
+        "aktoerref": user_uuid,
         "aktoertypekode": "Bruger",
         "notetekst": ""
     }
     logevent_dict = {
         "note": BASE_URL,
         "attributter": {
-            "loghaendelsesegenskaber": [
+            "loghaendelseegenskaber": [
                 {
                     "service": service_name,
                     "klasse": class_name,
@@ -44,7 +44,7 @@ def log_service_call(service_name, class_name, time,
         "tilstande": {
             "loghaendelsegyldighed": [
                 {
-                    "gyldighed": "Ikke rettet",
+                    "gyldighed": "Aktiv",
                     "virkning": virkning
                 }
             ]
@@ -64,26 +64,23 @@ def log_service_call(service_name, class_name, time,
             ],
             "brugerrolle": [
                 {
-                    "uuid": role_uuid,
+                    "urn": role,
                     "virkning": virkning
                 }
             ]
         }
     }
 
-    # Get auth token if auth enabled
-    pass  # Start with no authorization.
+    # TODO: Get auth token if auth enabled
+    authorization = ''
     # Send AMQP message to LOG_SERVICE_URL
 
     connection = pika.BlockingConnection(pika.ConnectionParameters(
         host=LOG_AMQP_SERVER
     ))
     channel = connection.channel()
-    channel.queue_declare(queue=LOG_QUEUE, durable=True)
-
+    channel.queue_declare(queue=LOG_QUEUE)
     message = json.dumps(logevent_dict)
-    print "LOG-BESKED:", message
-    subject = "Log-besked"
 
     channel.basic_publish(
         exchange='',
@@ -93,7 +90,9 @@ def log_service_call(service_name, class_name, time,
             content_type='application/json',
             delivery_mode=2,
             headers={
-                'operation': 'create',
+                'beskedversion': "1",
+                'beskedID': object_uuid,
                 'objekttype': 'LogHaendelse',
+                'operation': 'create',
             }
         ))

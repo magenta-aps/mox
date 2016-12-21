@@ -102,7 +102,7 @@ class OIORestObject(object):
         uuid = db.create_or_import_object(cls.__name__, note, registration)
         # Pass log info on request object.
         request.api_operation = "Opret"
-        request.object_uuid = uuid
+        request.uuid = uuid
         return jsonify({'uuid': uuid}), 201
 
     @classmethod
