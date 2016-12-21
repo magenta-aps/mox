@@ -130,10 +130,8 @@ a password.
 
 If SAML authentication is turned on (i.e., if the parameter
 ``USE_SAML_AUTHENTICATION`` in ``oio_rest/oio_rest/settings.py`` is
-`True`, and the parameter ``security.enabled`` in 
-``modules/auth/auth.properties`` is `true`), the IDP must be configured
-correctly - see the corresponding sections below for instruction on how to do
-this.
+`True`), the IDP must be configured correctly - see the corresponding
+sections below for instruction on how to do this.
 
 
 Quick install
@@ -167,12 +165,11 @@ Quick test
 ----------
 
 Make sure the parameters ``USE_SAML_AUTHENTICATION`` in 
-``oio_rest/oio_rest/settings.py`` and ``security.enabled`` in
-``modules/auth/auth.properties`` are  `False` and `false`, respectively.
+``oio_rest/oio_rest/settings.py`` is `False`.
 
-Make sure the parameter ``rest.interface`` in 
-``agents/MoxRestFrontend/moxrestfrontend.properties`` is set to 
-`http://localhost:5000`. 
+Make sure the parameter ``moxrestfrontend.rest.host`` in
+``agents/MoxRestFrontend/moxrestfrontend.conf`` is set to
+`http://localhost:5000`.
 
 Start the (AMQP) MOX REST frontend agent: ::
 
@@ -1436,18 +1433,18 @@ where
 
 You also need a ``MessageSender``  object, which can be created with: ::
 
-    new MessageSender(String queueInterface, String queueName); 
+    new MessageSender(String queueInterface, String queue);
     
 where
 
 * ``queueInterface`` is a hostname/port combination to the RabbitMQ
   instance, e.g. "localhost:5672", and
 
-* ``queueName``  is the RabbitMQ queue name, e.g. "incoming".  
+* ``queue``  is the RabbitMQ queue name, e.g. "incoming".
   
 The queue name and interface port must match what the queue listener is
 set up to use; the oio_moxagent listener is currently configured to use
-the queueName "incoming" for the RabbitMQ service on port 5672.
+the queue "incoming" for the RabbitMQ service on port 5672.
 
 
 

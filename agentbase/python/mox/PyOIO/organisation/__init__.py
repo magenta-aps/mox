@@ -1,0 +1,6 @@
+from bruger import Bruger
+from interessefaellesskab import Interessefaellesskab
+from itsystem import ItSystem
+from organisation import Organisation
+from organisationenhed import OrganisationEnhed
+from organisationfunktion import OrganisationFunktion

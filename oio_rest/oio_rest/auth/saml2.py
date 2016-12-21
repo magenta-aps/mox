@@ -3,7 +3,6 @@ from onelogin.saml2.response import OneLogin_Saml2_Response
 from defusedxml.lxml import fromstring
 from copy import deepcopy
 
-
 from xml.dom.minidom import Document, Element
 from lxml import etree
 from onelogin.saml2.constants import OneLogin_Saml2_Constants
@@ -14,6 +13,7 @@ from onelogin.saml2.constants import OneLogin_Saml2_Constants
 # requests are made rapidly from different server processes.
 import dm.xmlsec.binding as xmlsec
 xmlsec.initialize()
+
 
 class Saml2_Assertion(OneLogin_Saml2_Response):
     """Represent a SAML2 assertion by wrapping it in OneLogin's Response class.
@@ -105,31 +105,35 @@ class Saml2_Assertion(OneLogin_Saml2_Response):
         valid_audiences = self.get_audiences()
         if valid_audiences and self.mox_entity_id not in valid_audiences:
             raise Exception(
-                '%s is not a valid audience for this Assertion' %
-                self.mox_entity_id)
+                '%s is not a valid audience for this Assertion, got %s' %
+                (self.mox_entity_id, ', '.join(valid_audiences))
+            )
 
         # Checks the issuers
         issuers = self.get_issuers()
         for issuer in issuers:
             if issuer is None or issuer != self.idp_entity_id:
-                raise Exception('Invalid issuer in the Assertion/Response')
+                raise Exception(
+                    'Invalid issuer {!r} in the Assertion/Response, '
+                    'expected {!r}'.format(issuer, self.idp_entity_id)
+                )
 
         fingerprint = None
         fingerprintalg = None
-        if not validate_sign(self.original_document,
-                            self.idp_cert,
-                            fingerprint,
-                            fingerprintalg,
-                            debug=True):
+        if not validate_sign(
+                self.original_document, self.idp_cert, fingerprint,
+                fingerprintalg, debug=True, raise_on_failure=True,
+        ):
             raise Exception(
                 'Signature validation failed. SAML Response rejected')
 
 
 # This code was pulled from OneLogin's util.py
 # The only change was to remove xmlsec.initialize()
-def validate_sign(xml, cert=None, fingerprint=None, fingerprintalg='sha1', validatecert=False, debug=False):
-    """
-    Validates a signature (Message or Assertion).
+def validate_sign(xml, cert=None, fingerprint=None,
+                  fingerprintalg='sha1', validatecert=False, debug=False,
+                  raise_on_failure=False):
+    """Validates a signature (Message or Assertion).
 
     :param xml: The element we should validate
     :type: string | Document
@@ -143,11 +147,17 @@ def validate_sign(xml, cert=None, fingerprint=None, fingerprintalg='sha1', valid
     :param fingerprintalg: The algorithm used to build the fingerprint
     :type: string
 
-    :param validatecert: If true, will verify the signature and if the cert is valid.
+    :param validatecert: If true, will verify the signature
+    and if the cert is valid.
     :type: bool
 
     :param debug: Activate the xmlsec debug
     :type: bool
+
+    :param raise_on_failure: Raise an exception on failure, rather
+                             than returning False.
+    :type: bool
+
     """
     try:
         if xml is None or xml == '':
@@ -186,16 +196,24 @@ def validate_sign(xml, cert=None, fingerprint=None, fingerprintalg='sha1', valid
             signature_node = signature_nodes[0]
 
             if (cert is None or cert == '') and fingerprint:
-                x509_certificate_nodes = OneLogin_Saml2_Utils.query(signature_node, '//ds:Signature/ds:KeyInfo/ds:X509Data/ds:X509Certificate')
+                x509_certificate_nodes = OneLogin_Saml2_Utils.query(
+                    signature_node,
+                    '//ds:Signature/ds:KeyInfo/ds:X509Data/ds:X509Certificate'
+                )
                 if len(x509_certificate_nodes) > 0:
                     x509_certificate_node = x509_certificate_nodes[0]
                     x509_cert_value = x509_certificate_node.text
-                    x509_fingerprint_value = OneLogin_Saml2_Utils.calculate_x509_fingerprint(x509_cert_value, fingerprintalg)
+                    x509_fingerprint_value = \
+                        OneLogin_Saml2_Utils.calculate_x509_fingerprint(
+                            x509_cert_value, fingerprintalg
+                        )
                     if fingerprint == x509_fingerprint_value:
-                        cert = OneLogin_Saml2_Utils.format_cert(x509_cert_value)
+                        cert = OneLogin_Saml2_Utils.format_cert(
+                            x509_cert_value
+                        )
 
             if cert is None or cert == '':
-                return False
+                raise Exception('cannot find signing certificate')
 
             dsig_ctx = xmlsec.DSigCtx()
 
@@ -203,11 +221,19 @@ def validate_sign(xml, cert=None, fingerprint=None, fingerprintalg='sha1', valid
 
             if validatecert:
                 mngr = xmlsec.KeysMngr()
-                mngr.loadCert(file_cert.name, xmlsec.KeyDataFormatCertPem, xmlsec.KeyDataTypeTrusted)
+                mngr.loadCert(
+                    file_cert.name,
+                    xmlsec.KeyDataFormatCertPem,
+                    xmlsec.KeyDataTypeTrusted
+                )
                 dsig_ctx = xmlsec.DSigCtx(mngr)
             else:
                 dsig_ctx = xmlsec.DSigCtx()
-                dsig_ctx.signKey = xmlsec.Key.load(file_cert.name, xmlsec.KeyDataFormatCertPem, None)
+                dsig_ctx.signKey = xmlsec.Key.load(
+                    file_cert.name,
+                    xmlsec.KeyDataFormatCertPem,
+                    None
+                )
 
             file_cert.close()
 
@@ -215,6 +241,8 @@ def validate_sign(xml, cert=None, fingerprint=None, fingerprintalg='sha1', valid
             dsig_ctx.verify(signature_node)
             return True
         else:
-            return False
+            raise Exception('no signature nodes')
     except Exception:
+        if raise_on_failure:
+            raise
         return False

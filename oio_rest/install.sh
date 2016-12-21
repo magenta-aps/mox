@@ -1,6 +1,7 @@
-#!/bin/bash
+#!/bin/bash -e
 
-DOMAIN="referencedata.dk"
+unset PYTHONPATH
+
 while getopts ":ysd:" OPT; do
   case $OPT in
         s)
@@ -9,14 +10,10 @@ while getopts ":ysd:" OPT; do
         y)
                 ALWAYS_CONFIRM=1
                 ;;
-        d)
-                DOMAIN="$OPTARG"
-                ;;
         *)
-                echo "Usage: $0 [-y] [-s] [-d domain]"
+                echo "Usage: $0 [-y] [-s]"
                 echo "  -s: Skip installing oio_rest API system dependencies"
                 echo "  -y: Always confirm (yes) when prompted"
-				echo "  -d: Specify domain"
                 exit 1;
                 ;;
         esac
@@ -34,11 +31,7 @@ MOXDIR="$DIR/.."
 #
 if [ -z $SKIP_SYSTEM_DEPS ]; then
     echo "Installing oio_rest dependencies"
-	SYSTEM_PACKAGES=$(cat "$DIR/SYSTEM_DEPENDENCIES")
-
-	for package in "${SYSTEM_PACKAGES[@]}"; do
-		sudo apt-get -y install $package
-	done
+	sudo apt-get -y install $(cat "$DIR/SYSTEM_DEPENDENCIES")
 fi
 
 
@@ -96,47 +89,11 @@ if [ $CREATE_VIRTUALENV == 1 ]; then
 	fi
 fi
 
-DB_FOLDER="$MOXDIR/db"
-
-source $DB_FOLDER/config.sh
-
-WIPE_DB=0
-
-if [ ! -z $ALWAYS_CONFIRM ]; then
-	WIPE_DB=1
-else
-	if [[ (! -z `command -v psql`) && (! -z `sudo -u postgres psql -Atqc "\list $MOX_DB"`) ]]; then
-		echo "Database $MOX_DB already exists in PostgreSQL"
-		read -p "Do you want to overwrite it? (y/n): " -n 1 -r
-		echo
-		if [[ $REPLY =~ ^[Yy]$ ]]; then
-			WIPE_DB=1
-		fi
-	else
-		echo "DB does not exist!"
-	fi
-fi
-
-if [ $WIPE_DB == 1 ]; then
-	# Install Database
-	source $VIRTUALENV/bin/activate
-
-	echo "Installing database"
-
-	cd "$DB_FOLDER"
-	./install.sh
-	cd "$DB_FOLDER"
-	./recreatedb.sh
-	cd "$DIR"
-	deactivate
-fi
-
-
 # Install WSGI service
 echo "Setting up oio_rest WSGI service for Apache"
 sudo mkdir -p /var/www/wsgi
 sudo cp --remove-destination "$DIR/server-setup/oio_rest.wsgi" "/var/www/wsgi/"
-sudo $MOXDIR/apache/set_include.sh -a "$DIR/server-setup/oio_rest.conf"
+sudo $MOXDIR/apache/set_include.sh -a "$DIR/server-setup/oio_rest.conf" -l
 
 sudo mkdir -p /var/log/mox/oio_rest
 
