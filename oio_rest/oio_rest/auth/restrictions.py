@@ -84,13 +84,13 @@ def get_restrictions(user, object_type, operation):
         module which is accessible on the Python path.
 
 """
+    if not DO_ENABLE_RESTRICTIONS:
+        return None
+
     try:
         auth_module = import_module(AUTH_RESTRICTION_MODULE)
         auth_function = getattr(auth_module, AUTH_RESTRICTION_FUNCTION)
-        if DO_ENABLE_RESTRICTIONS:
-            return auth_function(user, object_type, operation)
-        else:
-            return None
+        return auth_function(user, object_type, operation)
     except (AttributeError, ImportError):
         print "Config error: Unable to load authorization module!"
         raise
