@@ -198,7 +198,7 @@ class OIORestObject(object):
         if virkning_fra is None and virkning_til is None:
             virkning_fra = datetime.datetime.now()
             virkning_til = datetime.datetime.now()
-        request.api_operation = 'Læs'
+        request.api_operation = u'Læs'
         request.uuid = uuid
         object_list = db.list_objects(cls.__name__, [uuid], virkning_fra,
                                       virkning_til, registreret_fra,

@@ -119,10 +119,10 @@ Omvendt kan der måske være brug for at slette hændelser, der ved en fejltagel
 er logget for f.eks. en forkert service, eller for at ændre et notefelt, hvis
 der ved en fejltagelse er kommet fortrolige data med ud.
 
-Vi kunne derfor måske have én tilstand:
+Vi har derfor én tilstand:
 
-* Rettet - en angivelse af, om LogHændelsen er blevet ændret, siden den blev
-  registreret. Værdimængden ville blot være Ja og Nej.
+* Gyldighed - en angivelse af, om LogHændelsen er blevet ændret, siden den blev
+  registreret. Værdimængden er "Ikke rettet" (default) og "Rettet".
 
 
 Relationer

@@ -45,7 +45,7 @@ def log_service_call(service_name, class_name, time,
         "tilstande": {
             "loghaendelsegyldighed": [
                 {
-                    "gyldighed": "Aktiv",
+                    "gyldighed": "Ikke rettet",
                     "virkning": virkning
                 }
             ]
@@ -82,6 +82,9 @@ def log_service_call(service_name, class_name, time,
     channel = connection.channel()
     channel.queue_declare(queue=LOG_QUEUE)
     message = json.dumps(logevent_dict)
+    print "Log queue", LOG_QUEUE
+    print "Log exchange", LOG_EXCHANGE
+    print "Log message", message
 
     channel.basic_publish(
         exchange=LOG_EXCHANGE,
