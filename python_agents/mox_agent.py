@@ -17,16 +17,18 @@ class MOXAgent(object):
 
     def run(self):
         """Main program - wait and listen to queue."""
-        if not self.queue:
-            print "Please specify queue before running!"
+        if not (self.queue or self.exchange):
+            print "Please specify queue or exchange before running!"
             return
         connection = pika.BlockingConnection(
             pika.ConnectionParameters(host=AMQP_SERVER)
         )
         channel = connection.channel()
 
-        channel.queue_declare(queue=self.queue,
-                              durable=self.do_persist)
+        result = channel.queue_declare(queue=self.queue,
+                                       durable=self.do_persist)
+        if self.exchange:
+            channel.queue_bind(result.method.queue, exchange=self.exchange)
 
         print ' [*] Waiting for messages. To exit press CTRL+C'
 

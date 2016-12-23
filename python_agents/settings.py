@@ -7,6 +7,7 @@ AMQP_SERVER = 'localhost'
 
 MOX_ADVIS_QUEUE = 'Advis'
 MOX_LOG_QUEUE = 'mox.log'
+MOX_LOG_EXCHANGE = 'mox.rest'
 
 IS_LOG_AUTHENTICATION_ENABLED = False
 

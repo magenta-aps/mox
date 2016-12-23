@@ -6,7 +6,7 @@ import logging
 
 import requests
 
-from settings import MOX_LOG_QUEUE
+from settings import MOX_LOG_EXCHANGE
 from settings import SAML_IDP_CERTIFICATE
 from settings import MOX_ELK_LOG_FILE, IS_LOG_AUTHENTICATION_ENABLED
 
@@ -47,7 +47,8 @@ class MOXELKLog(MOXAgent):
             format='%(asctime)s %(levelname)s %(message)s'
         )
 
-    queue = MOX_LOG_QUEUE
+    queue = ''
+    exchange = MOX_LOG_EXCHANGE
     do_persist = False
 
     def callback(self, ch, method, properties, body):
