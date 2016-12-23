@@ -82,7 +82,7 @@ patch --fuzz=3 -i  ../patches/as_search_dokument.sql.diff
 
 cd ..
 
-oiotypes=( facet klassifikation klasse bruger interessefaellesskab itsystem organisation organisationenhed organisationfunktion sag dokument )
+oiotypes=( facet klassifikation klasse bruger interessefaellesskab itsystem organisation organisationenhed organisationfunktion sag dokument loghaendelse )
 
 templates1=( dbtyper-specific tbls-specific _remove_nulls_in_array )
 

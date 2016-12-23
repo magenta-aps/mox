@@ -27,3 +27,8 @@ agents/MoxDocumentDownload/moxdocumentdownload/moxdocumentdownload.conf
 agents/MoxDocumentDownload/install.log
 agents/MoxDocumentUpload/moxdocumentupload/moxdocumentupload.conf
 agents/MoxDocumentUpload/install.log
+agentbase/python/mox/mox.pth
+agents/MoxRestFrontend/install.log
+agents/MoxRestFrontend/moxrestfrontend.conf
+agents/MoxTabel/install.log
+

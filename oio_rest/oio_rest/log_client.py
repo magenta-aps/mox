@@ -6,6 +6,7 @@ import requests
 import json
 
 from settings import LOG_AMQP_SERVER, LOG_QUEUE, LOG_IGNORED_SERVICES
+from settings import LOG_EXCHANGE
 
 
 def log_service_call(service_name, class_name, time,
@@ -83,7 +84,7 @@ def log_service_call(service_name, class_name, time,
     message = json.dumps(logevent_dict)
 
     channel.basic_publish(
-        exchange='',
+        exchange=LOG_EXCHANGE,
         routing_key=LOG_QUEUE,
         body=message,
         properties=pika.BasicProperties(
