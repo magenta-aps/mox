@@ -1,13 +1,12 @@
 import pika
 
 from settings import AMQP_SERVER
-# from oio_rest.settings import SAML_MOX_ENTITY_ID, SAML_IDP_ENTITY_ID
-# from oio_rest.auth.saml2 import Saml2_Assertion
 
 
 class MOXAgent(object):
     """Super class for MOX agents written in Python."""
 
+    exchange = None
     queue = None
     do_persist = False
 
@@ -26,7 +25,8 @@ class MOXAgent(object):
         )
         channel = connection.channel()
 
-        channel.queue_declare(queue=self.queue, durable=self.do_persist)
+        channel.queue_declare(queue=self.queue,
+                              durable=self.do_persist)
 
         print ' [*] Waiting for messages. To exit press CTRL+C'
 
