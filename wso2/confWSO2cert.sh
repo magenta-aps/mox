@@ -215,7 +215,7 @@ fi
 prompt_var CERTIFICATE "${CERTIFICATE_DEF}" "Path for certificate" "Not a file" true
 prompt_var PRIVATE_KEY "${PRIVATE_KEY_DEF}" "Path for certificate private key" "Not a file" true
 prompt_var PASSOUT "${PASSOUT_DEF}" "Password for certificate/key_trust_stores" "Password must not be empty" false
-prompt_var NEW_KEYSTORE "${NEW_KEYSTORE_DEF}" "Path for new keystore" "Name of new keystore must not be empty" true
+prompt_var NEW_KEYSTORE "${NEW_KEYSTORE_DEF}" "Path for new keystore" "New keystore file doesn't exist" true
 prompt_var KEY_ALIAS "${KEY_ALIAS_DEF}" "Name for keyalias" "Alias must not be empty" false
 prompt_var CLIENT_KEYSTORE "${CLIENT_KEYSTORE_DEF}" "Path for client truststore" "Not a file" true
 
