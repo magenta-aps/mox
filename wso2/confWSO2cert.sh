@@ -287,11 +287,11 @@ then
 echo "cert: ${CERTIFICATE}"
 
 # Update auth.properties with new values
-	/bin/echo sed -r -e "s|^security.keystore.path.*$|security.keystore.path = ${NEW_KEYSTORE}|" \
-       -e "s|^security.keystore.password.*$|security.keystore.password = ${PASSOUT}|" \
-       -e "s|^security.user.cert.alias.*$|security.user.cert.alias = ${KEY_ALIAS}|" \
-       -e "s|^security.user.cert.password.*$|security.user.cert.password = ${PASSOUT}|" \
-       ${MOX_AUTH_CONFIG} > ${MOX_AUTH_CONFIG}.$$
+#	/bin/echo sed -r -e "s|^security.keystore.path.*$|security.keystore.path = ${NEW_KEYSTORE}|" \
+#       -e "s|^security.keystore.password.*$|security.keystore.password = ${PASSOUT}|" \
+#       -e "s|^security.user.cert.alias.*$|security.user.cert.alias = ${KEY_ALIAS}|" \
+#       -e "s|^security.user.cert.password.*$|security.user.cert.password = ${PASSOUT}|" \
+#       ${MOX_AUTH_CONFIG} > ${MOX_AUTH_CONFIG}.$$
 
 # Update oio settings.py with new values
 	/bin/echo sed -r -e "s|^SAML_MOX_ENTITY_ID.*$|SAML_MOX_ENTITY_ID = 'https://${DOMAIN}'|" \
@@ -467,11 +467,11 @@ fi
 
 
 # Update auth.properties with new values
-sed -r -e "s|^security.keystore.path.*$|security.keystore.path = ${NEW_KEYSTORE}|" \
-       -e "s|^security.keystore.password.*$|security.keystore.password = ${PASSOUT}|" \
-       -e "s|^security.user.cert.alias.*$|security.user.cert.alias = ${KEY_ALIAS}|" \
-       -e "s|^security.user.cert.password.*$|security.user.cert.password = ${PASSOUT}|" \
-       ${MOX_AUTH_CONFIG} > ${MOX_AUTH_CONFIG}.$$
+#sed -r -e "s|^security.keystore.path.*$|security.keystore.path = ${NEW_KEYSTORE}|" \
+#       -e "s|^security.keystore.password.*$|security.keystore.password = ${PASSOUT}|" \
+#       -e "s|^security.user.cert.alias.*$|security.user.cert.alias = ${KEY_ALIAS}|" \
+#       -e "s|^security.user.cert.password.*$|security.user.cert.password = ${PASSOUT}|" \
+#       ${MOX_AUTH_CONFIG} > ${MOX_AUTH_CONFIG}.$$
 
 # Update oio settings.py with new values
 sed -r -e "s|^SAML_MOX_ENTITY_ID.*$|SAML_MOX_ENTITY_ID = 'https://${DOMAIN}'|" \
@@ -483,14 +483,14 @@ sed -r -e "s|^SAML_MOX_ENTITY_ID.*$|SAML_MOX_ENTITY_ID = 'https://${DOMAIN}'|" \
 if [ -z "$NODEBUG" ]
 then
 	/bin/echo
-	/bin/cat ${MOX_AUTH_CONFIG}.$$
+#	/bin/cat ${MOX_AUTH_CONFIG}.$$
 	/bin/echo
 	/bin/cat ${MOX_OIO_CONFIG}.$$
 else
-	/bin/cp -p ${MOX_AUTH_CONFIG}.$$ ${MOX_AUTH_CONFIG}
+#	/bin/cp -p ${MOX_AUTH_CONFIG}.$$ ${MOX_AUTH_CONFIG}
 	/bin/cp -p ${MOX_OIO_CONFIG}.$$ ${MOX_OIO_CONFIG}
 fi
-/bin/rm ${MOX_AUTH_CONFIG}.$$
+#/bin/rm ${MOX_AUTH_CONFIG}.$$
 /bin/rm ${MOX_OIO_CONFIG}.$$
 
 
