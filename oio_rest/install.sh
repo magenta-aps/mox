@@ -81,7 +81,8 @@ if [ $CREATE_VIRTUALENV == 1 ]; then
 		source $VIRTUALENV/bin/activate
 
 		pushd "$DIR"
-		python setup.py develop
+		echo "Running setup.py"
+		python setup.py develop > "$DIR/install.log"
 		popd
 
 		echo "Stopping virtual environment"
