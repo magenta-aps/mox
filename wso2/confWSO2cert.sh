@@ -24,12 +24,12 @@ CERTIFICATE_DEF=/etc/ssl/certs/ssl-cert-snakeoil.pem
 PRIVATE_KEY_DEF=/etc/ssl/private/ssl-cert-snakeoil.key
 PASSOUT_DEF=wso2carbon
 
-NEW_KEYSTORE_DEF=/opt/wso2is-5.0.0/repository/resources/security/newkeystore.jks
-KEY_ALIAS_DEF=newalias
-CLIENT_KEYSTORE_DEF=/opt/wso2is-5.0.0/repository/resources/security/client-truststore.jks
+NEW_KEYSTORE_DEF="/opt/wso2is-5.0.0/repository/resources/security/newkeystore.jks"
+KEY_ALIAS_DEF="newalias"
+CLIENT_KEYSTORE_DEF="/opt/wso2is-5.0.0/repository/resources/security/client-truststore.jks"
 
-CARBON_XML=/opt/wso2is-5.0.0/repository/conf/carbon.xml
-SECRET_CONF=/opt/wso2is-5.0.0/repository/conf/security/secret-conf.properties
+CARBON_XML="/opt/wso2is-5.0.0/repository/conf/carbon.xml"
+SECRET_CONF="/opt/wso2is-5.0.0/repository/conf/security/secret-conf.properties"
 MOX_AUTH_CONFIG="${MOXDIR}/modules/auth/auth.properties"
 MOX_OIO_CONFIG="${MOXDIR}/oio_rest/oio_rest/settings.py"
 
@@ -302,7 +302,6 @@ echo "cert: ${CERTIFICATE}"
 
 else
 # Extract convert certificate to pkcs12 format with alias KEY_ALIAS
-	/bin/echo step 1
 # Because the certificate is encoded with no/empty password and the option -passin does not allow an empty password
 # -passout will be the same as -password which in turn will submit the password as both the -passin and the -passout parameter.
 # This is obviously wrong.
@@ -320,14 +319,12 @@ else
 	/tmp/expect1
 
 # Backup old keystore if present
-	/bin/echo step 2
 	if [[ -f "${NEW_KEYSTORE}" ]]
 	then
 		/bin/cp -p ${NEW_KEYSTORE} ${NEW_KEYSTORE}.${NOW}
 	fi
 
 # Create new keystore
-	/bin/echo step 3
 # If the new keystore already exist, we have to overwrite it using terminal input to accept overwriting.
 # Hence, we use expect!
 	build_expect3_script
@@ -339,19 +336,16 @@ else
 	/tmp/expect3
 
 # Backup old client-truststore
-	/bin/echo step 4
 	if [[ -f "${CLIENT_KEYSTORE}" ]]
 	then
 		/bin/cp -p ${CLIENT_KEYSTORE} ${CLIENT_KEYSTORE}.${NOW}
 	fi
 
 # Export public key from new keystore certificate
-	/bin/echo step 5
 	/usr/bin/keytool -export -alias ${KEY_ALIAS} -keystore ${NEW_KEYSTORE} \
 	-storepass ${PASSOUT} -file ${PUBLIC_KEY}
 
 # If public key is already present in client-truststore it has to be removed
-	/bin/echo step 6
 	/usr/bin/keytool -list -alias ${KEY_ALIAS} -keystore ${CLIENT_KEYSTORE} -storepass ${PASSOUT} | grep -qs "${KEY_ALIAS}"
 	if [ $? -eq 0 ]
 	then
@@ -360,7 +354,6 @@ else
 	fi
 
 # Import public key to client-truststore
-	/bin/echo step 7
 # This keytool command expects terminal input, so we have to run it via expect
 	build_expect7_script
 
@@ -372,7 +365,6 @@ else
 	/tmp/expect7
 
 # Backup old configuration files
-	/bin/echo step 8
 	/bin/cp -p ${CARBON_XML} ${CARBON_XML}.${NOW}
 	/bin/cp -p ${SECRET_CONF} ${SECRET_CONF}.${NOW}
 fi
