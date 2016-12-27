@@ -3,6 +3,7 @@
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $DIR/config.sh
 WIPE_DB=0
+LOGFILE="$DIR/install.log"
 
 echo "Installing database dependencies"
 sudo apt-get -y install --no-install-recommends  $(cat "$DIR/SYSTEM_DEPENDENCIES")
@@ -25,6 +26,7 @@ fi
 
 if [ $WIPE_DB == 1 ]; then
 	# Install Database
+	echo "" > "$LOGFILE"
 
     # Install pgtap - unit test framework
     sudo pgxn install pgtap
@@ -34,7 +36,7 @@ if [ $WIPE_DB == 1 ]; then
     # https://github.com/duncanburke/pg_amqp.git
     git clone https://github.com/duncanburke/pg_amqp.git /tmp/pg_amqp
     pushd /tmp/pg_amqp
-    sudo make install
+    sudo make install >> "$LOGFILE"
     popd
     rm -rf /tmp/pg_amqp
 
@@ -46,13 +48,5 @@ if [ $WIPE_DB == 1 ]; then
 
     sudo service postgresql restart
 
-	$DIR/recreatedb.sh
+	$DIR/recreatedb.sh >> "$LOGFILE"
 fi
-
-
-
-
-
-
-
-
