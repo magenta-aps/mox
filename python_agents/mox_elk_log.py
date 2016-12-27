@@ -1,37 +1,16 @@
 #!/usr/bin/env /home/mox/mox/python_agents/python-env/bin/python
-import zlib
-import base64
 import logging
 
 
 import requests
 
 from settings import MOX_LOG_EXCHANGE
-from settings import SAML_IDP_CERTIFICATE
 from settings import MOX_ELK_LOG_FILE, IS_LOG_AUTHENTICATION_ENABLED
 
 from oio_rest.settings import SAML_MOX_ENTITY_ID, SAML_IDP_ENTITY_ID
 from oio_rest.auth.saml2 import Saml2_Assertion
 
-from mox_agent import MOXAgent
-
-
-def unpack_saml_token(token):
-    """Retrieve the SAML XML from a gzipped auth header."""
-    data = token.split(' ')[1]
-    data = base64.b64decode(data)
-
-    token = zlib.decompress(data, 15+16)
-
-    return token
-
-
-def get_idp_cert():
-    try:
-        with open(SAML_IDP_CERTIFICATE) as file:
-            return file.read()
-    except Exception:
-        raise
+from mox_agent import MOXAgent, unpack_saml_token, get_idp_cert
 
 
 class MOXELKLog(MOXAgent):
@@ -77,7 +56,7 @@ class MOXELKLog(MOXAgent):
                     )
                 )
                 return
-        print body
+        print ch, method, properties, body
 
 
 if __name__ == '__main__':

@@ -1,6 +1,26 @@
+import zlib
+import base64
 import pika
 
-from settings import AMQP_SERVER
+from settings import AMQP_SERVER, SAML_IDP_CERTIFICATE
+
+
+def unpack_saml_token(token):
+    """Retrieve the SAML XML from a gzipped auth header."""
+    data = token.split(' ')[1]
+    data = base64.b64decode(data)
+
+    token = zlib.decompress(data, 15+16)
+
+    return token
+
+
+def get_idp_cert():
+    try:
+        with open(SAML_IDP_CERTIFICATE) as file:
+            return file.read()
+    except Exception:
+        raise
 
 
 class MOXAgent(object):
