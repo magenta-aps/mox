@@ -100,8 +100,8 @@ def get_service_name():
 
 def get_class_name():
     'Get the hierarchy of the present method call from the request URL'
-    u = urlparse.urlparse(request.url)
-    class_name = u.path[-1].capitalize()
+    url = urlparse.urlparse(request.url)
+    class_name = url.path.split('/')[2].capitalize()
     return class_name
 
 
