@@ -467,11 +467,11 @@ fi
 
 
 # Update auth.properties with new values
-sed -r -e "s|^security.keystore.path.*$|security.keystore.path = ${NEW_KEYSTORE}|" \
-       -e "s|^security.keystore.password.*$|security.keystore.password = ${PASSOUT}|" \
-       -e "s|^security.user.cert.alias.*$|security.user.cert.alias = ${KEY_ALIAS}|" \
-       -e "s|^security.user.cert.password.*$|security.user.cert.password = ${PASSOUT}|" \
-       ${MOX_AUTH_CONFIG} > ${MOX_AUTH_CONFIG}.$$
+#sed -r -e "s|^security.keystore.path.*$|security.keystore.path = ${NEW_KEYSTORE}|" \
+#       -e "s|^security.keystore.password.*$|security.keystore.password = ${PASSOUT}|" \
+#       -e "s|^security.user.cert.alias.*$|security.user.cert.alias = ${KEY_ALIAS}|" \
+#       -e "s|^security.user.cert.password.*$|security.user.cert.password = ${PASSOUT}|" \
+#       ${MOX_AUTH_CONFIG} > ${MOX_AUTH_CONFIG}.$$
 
 # Update oio settings.py with new values
 sed -r -e "s|^SAML_MOX_ENTITY_ID.*$|SAML_MOX_ENTITY_ID = 'https://${DOMAIN}'|" \
