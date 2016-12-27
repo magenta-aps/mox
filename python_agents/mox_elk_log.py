@@ -1,16 +1,21 @@
 #!/usr/bin/env /home/mox/mox/python_agents/python-env/bin/python
 import logging
-
+import json
 
 import requests
 
-from settings import MOX_LOG_EXCHANGE
+from settings import MOX_LOG_EXCHANGE, MOX_LOG_QUEUE
 from settings import MOX_ELK_LOG_FILE, IS_LOG_AUTHENTICATION_ENABLED
 
 from oio_rest.settings import SAML_MOX_ENTITY_ID, SAML_IDP_ENTITY_ID
 from oio_rest.auth.saml2 import Saml2_Assertion
 
 from mox_agent import MOXAgent, unpack_saml_token, get_idp_cert
+
+# Logstash configuration
+logstash_url = 'http://139.162.183.253:42998'
+logstash_user = 'hunter2'
+logstash_password = ''
 
 
 class MOXELKLog(MOXAgent):
@@ -26,7 +31,7 @@ class MOXELKLog(MOXAgent):
             format='%(asctime)s %(levelname)s %(message)s'
         )
 
-    queue = ''
+    queue = MOX_LOG_QUEUE
     exchange = MOX_LOG_EXCHANGE
     do_persist = False
 
@@ -56,7 +61,16 @@ class MOXELKLog(MOXAgent):
                     )
                 )
                 return
-        print ch, method, properties, body
+        if (
+            properties.headers and properties.headers.get(
+                'objekttype', None
+            ) == 'LogHaendelse'
+        ):
+            print "Posting to logstash ..."
+            data = json.loads(body)  # noqa
+            r = requests.post(logstash_url, body, auth=(logstash_user,
+                                                        logstash_password))
+            print "Done: ", r
 
 
 if __name__ == '__main__':

@@ -48,7 +48,8 @@ class MOXAgent(object):
         result = channel.queue_declare(queue=self.queue,
                                        durable=self.do_persist)
         if self.exchange:
-            channel.queue_bind(result.method.queue, exchange=self.exchange)
+            channel.queue_bind(result.method.queue,
+                               exchange=self.exchange)
 
         print ' [*] Waiting for messages. To exit press CTRL+C'
 
