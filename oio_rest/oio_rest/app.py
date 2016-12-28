@@ -8,7 +8,7 @@ from werkzeug.routing import BaseConverter
 from jinja2 import Environment, FileSystemLoader
 
 from custom_exceptions import OIOFlaskException, AuthorizationFailedException
-from custom_exceptions import UnauthorizedException, BadRequestException
+from custom_exceptions import BadRequestException
 from auth import tokens
 
 app = Flask(__name__)

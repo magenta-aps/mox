@@ -1,7 +1,5 @@
 # encoding: utf-8
 from setuptools import setup, find_packages
-import sys
-import os
 
 version = '0.0.1'
 authors = 'C. Agger, Jørgen Ulrik B. Krag, Thomas Kristensen, Seth Yastrov'

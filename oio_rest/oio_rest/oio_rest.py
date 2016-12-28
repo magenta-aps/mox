@@ -9,7 +9,6 @@ import db
 import settings
 from utils.build_registration import build_registration, to_lower_param
 
-
 # Just a helper during debug
 from authentication import requires_auth
 
@@ -131,10 +130,12 @@ class OIORestObject(object):
             virkning_til = datetime.datetime.now()
 
         uuid_param = list_args.get('uuid', None)
+
+        valid_list_args = {'virkningfra', 'virkningtil', 'registreretfra',
+                           'registrerettil', 'uuid'}
+
         # Assume the search operation if other params were specified
-        if not set(args.keys()).issubset(('virkningfra', 'virkningtil',
-                                          'registreretfra', 'registrerettil',
-                                          'uuid')):
+        if not set(args.keys()).issubset(valid_list_args):
             # Only one uuid is supported through the search operation
             if uuid_param is not None and len(uuid_param) > 1:
                 raise BadRequestException("Multiple uuid parameters passed "
