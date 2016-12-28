@@ -4,6 +4,7 @@ import datetime
 
 from flask import jsonify, request
 from custom_exceptions import BadRequestException
+from werkzeug.datastructures import ImmutableOrderedMultiDict
 
 import db
 import settings
@@ -15,6 +16,32 @@ from authentication import requires_auth
 
 def j(t):
     return jsonify(output=t)
+
+
+class ArgumentDict(ImmutableOrderedMultiDict):
+    '''
+    A Werkzeug multi dict that maintains the order, and maps alias
+    arguments.
+    '''
+
+    PARAM_ALIASES = {
+        'bvn': 'brugervendtnoegle',
+    }
+
+    @classmethod
+    def _process_item(cls, (key, value)):
+        key = key.lower()
+
+        return (cls.PARAM_ALIASES.get(key, key), value)
+
+    def __init__(self, mapping):
+        # this code assumes that a) we always get a mapping and b)
+        # that mapping is specified as list of two-tuples -- which
+        # happens to be the case when contructing the dictionary from
+        # query arguments
+        super(ArgumentDict, self).__init__(
+            map(self._process_item, mapping)
+        )
 
 
 class Registration(object):
@@ -115,6 +142,8 @@ class OIORestObject(object):
         """
         LIST or SEARCH objects, depending on parameters.
         """
+        request.parameter_storage_class = ArgumentDict
+
         # Convert arguments to lowercase, getting them as lists
         list_args = cls._get_args(True)
         args = cls._get_args()
