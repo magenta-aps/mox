@@ -336,3 +336,11 @@ class File(object):
 
     def chown(self, owner):
         subprocess.Popen(['sudo', 'chown', owner, self.filename]).wait()
+
+
+class LogFile(File):
+
+    def create(self):
+        self.touch()
+        self.chmod('644')
+        self.chown('mox')
