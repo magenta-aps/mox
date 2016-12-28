@@ -337,10 +337,14 @@ class File(object):
     def chown(self, owner):
         subprocess.Popen(['sudo', 'chown', owner, self.filename]).wait()
 
+    def chgrp(self, group):
+        subprocess.Popen(['sudo', 'chgrp', group, self.filename]).wait()
+
 
 class LogFile(File):
 
     def create(self):
         self.touch()
-        self.chmod('644')
+        self.chmod('664')
         self.chown('mox')
+        self.chgrp('mox')
