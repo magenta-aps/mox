@@ -118,7 +118,7 @@ def main(*args):
 
     password = options.password or getpass.getpass('Password: ')
 
-    token = get_token(options.user, password, options.full, options.verbose)
+    token = get_token(options.user, password, not options.full, options.verbose)
 
     sys.stdout.write(token)
 
