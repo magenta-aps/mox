@@ -318,3 +318,21 @@ class WSGI(object):
             ['sudo', 'cp', '--remove-destination', self.wsgifile, self.wsgidir]
         ).wait()
         Apache().add_include(self.conffile, first_include)
+
+
+class File(object):
+
+    def __init__(self, filename):
+        self.filename = filename
+
+    def open(self, mode):
+        return open(self.filename, mode)
+
+    def touch(self):
+        subprocess.Popen(['sudo', 'touch', self.filename]).wait()
+
+    def chmod(self, mode):
+        subprocess.Popen(['sudo', 'chmod', mode, self.filename]).wait()
+
+    def chown(self, owner):
+        subprocess.Popen(['sudo', 'chown', owner, self.filename]).wait()
