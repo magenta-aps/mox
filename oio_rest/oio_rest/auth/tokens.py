@@ -108,14 +108,20 @@ def main(*args):
         description='request a SAML token'
     )
 
-    parser.add_argument('user')
+    parser.add_argument('user', nargs='?', default=argparse.SUPPRESS)
+    parser.add_argument('-u', '--user', default=argparse.SUPPRESS)
 
     parser.add_argument('-v', '--verbose', action='store_true')
     parser.add_argument('-f', '--full', action='store_true')
     parser.add_argument('-p', '--password')
 
+    # compatibility argument -- we don't print out anything
+    parser.add_argument('-s', '--silent', action='store_true',
+                        help=argparse.SUPPRESS, default=argparse.SUPPRESS)
+
     options = parser.parse_args()
 
+    password = getattr(options, 'user', None) or raw_input('User: ')
     password = options.password or getpass.getpass('Password: ')
 
     token = get_token(options.user, password, not options.full, options.verbose)
