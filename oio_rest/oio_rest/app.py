@@ -11,6 +11,7 @@ from psycopg2 import DataError
 from custom_exceptions import OIOFlaskException, AuthorizationFailedException
 from custom_exceptions import BadRequestException
 from auth import tokens
+import settings
 
 app = Flask(__name__)
 
@@ -39,7 +40,7 @@ def get_token():
     if request.method == 'GET':
 
         t = jinja_env.get_template('get_token.html')
-        html = t.render()
+        html = t.render(settings=settings)
         return html
     elif request.method == 'POST':
         username = request.form.get('username')
