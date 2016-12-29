@@ -31,7 +31,8 @@ MOXDIR="$DIR/.."
 #
 if [ -z $SKIP_SYSTEM_DEPS ]; then
     echo "Installing oio_rest dependencies"
-	sudo apt-get -y install $(cat "$DIR/SYSTEM_DEPENDENCIES")
+	sudo apt-get -qq update
+	sudo apt-get -qqy install $(cat "$DIR/SYSTEM_DEPENDENCIES")
 fi
 
 
