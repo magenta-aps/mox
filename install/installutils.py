@@ -177,10 +177,13 @@ class VirtualEnv(object):
             else:
                 print "%s already exists" % self.environment_dir
                 # raw_input("Do you want to reinstall it? (y/n)")
-                print "Do you want to reinstall it? (y/n)",
+                default = 'y'
+                print "Do you want to reinstall it? (Y/n)",
                 answer = None
                 while answer != 'y' and answer != 'n':
                     answer = getch()
+                    if answer in ['\n', '\r']:
+                        answer = default
                 create = (answer == 'y')
                 print answer
             if create:
