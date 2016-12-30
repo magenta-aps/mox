@@ -126,7 +126,8 @@ class _Getch:
         except ImportError:
             self.impl = _GetchUnix()
 
-    def __call__(self): return self.impl()
+    def __call__(self):
+        return self.impl()
 
 
 class _GetchUnix:
@@ -144,6 +145,8 @@ class _GetchUnix:
             ch = sys.stdin.read(1)
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        if ord(ch) == 3:
+            raise KeyboardInterrupt
         return ch
 
 
@@ -153,7 +156,11 @@ class _GetchWindows:
 
     def __call__(self):
         import msvcrt
-        return msvcrt.getch()
+        ch = msvcrt.getch()
+        if ord(ch) == 3:
+            raise KeyboardInterrupt
+        return ch
+
 
 getch = _Getch()
 
@@ -185,7 +192,6 @@ class VirtualEnv(object):
                     if answer in ['\n', '\r']:
                         answer = default
                 create = (answer == 'y')
-                print answer
             if create:
                 shutil.rmtree(self.environment_dir)
         else:
