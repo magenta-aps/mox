@@ -345,7 +345,7 @@ class LogFile(File):
 
     def create(self):
         self.touch()
-        self.chmod('664')
+        self.chmod('666')
         self.chown('mox')
         self.chgrp('mox')
 
