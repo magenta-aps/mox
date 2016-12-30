@@ -3,7 +3,7 @@
 import argparse
 import os
 import sys
-from installutils import VirtualEnv, WSGI, install_dependencies
+from installutils import VirtualEnv, WSGI, Folder, LogFile, install_dependencies
 
 DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
 MOXDIR = os.path.abspath(DIR + "/../..")
@@ -19,27 +19,29 @@ args = parser.parse_args()
 
 # -----------------------------------------------------------------------------
 
-logfilename = "%s/install.log" % DIR
-fp = open(logfilename, 'w')
-fp.close()
+install_log = LogFile("%s/install.log" % DIR)
+install_log.create()
 
 install_dependencies("%s/SYSTEM_DEPENDENCIES" % DIR)
 
+# -----------------------------------------------------------------------------
+
 # Create the MOX content storage directory and give the www-data user ownership
-MOX_STORAGE="/var/mox"
+MOX_STORAGE = "/var/mox"
 print "Creating MOX content storage directory %s" % STORAGEDIR
-# sudo mkdir -p "$MOX_STORAGE"
-# sudo chown www-data "$MOX_STORAGE"
-#
-#
-#
+storage = Folder(STORAGEDIR)
+storage.mkdir()
+storage.chown('www-data')
+
+# -----------------------------------------------------------------------------
+
 virtualenv = VirtualEnv(DIR + "/python-env")
 created = virtualenv.create(
-    args.overwrite_virtualenv, args.keep_virtualenv, logfilename
+    args.overwrite_virtualenv, args.keep_virtualenv, install_log.filename
 )
 if created:
     print "Running setup.py"
-    virtualenv.run(logfilename, "python " + DIR + "/setup.py develop")
+    virtualenv.run(install_log.filename, "python " + DIR + "/setup.py develop")
     virtualenv.add_moxlib_pointer(MOXDIR)
 
 # -----------------------------------------------------------------------------
