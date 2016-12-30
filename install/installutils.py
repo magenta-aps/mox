@@ -330,3 +330,57 @@ def install_dependencies(file):
                 subprocess.Popen(
                     ['sudo', 'apt-get', '--yes', 'install'] + packages
                 ).wait()
+
+
+class File(object):
+
+    def __init__(self, filename):
+        self.filename = filename
+
+    def open(self, mode):
+        return open(self.filename, mode)
+
+    def touch(self):
+        subprocess.Popen(['sudo', 'touch', self.filename]).wait()
+
+    def chmod(self, mode):
+        subprocess.Popen(['sudo', 'chmod', mode, self.filename]).wait()
+
+    def chown(self, owner):
+        subprocess.Popen(['sudo', 'chown', owner, self.filename]).wait()
+
+    def chgrp(self, group):
+        subprocess.Popen(['sudo', 'chgrp', group, self.filename]).wait()
+
+
+class LogFile(File):
+
+    def create(self):
+        self.touch()
+        self.chmod('664')
+        self.chown('mox')
+        self.chgrp('mox')
+
+
+class Folder(object):
+
+    def __init__(self, foldername):
+        self.foldername = foldername
+
+    def isdir(self):
+        return os.path.isdir(self.foldername)
+
+    def mkdir(self):
+        if not self.isdir():
+            subprocess.Popen(
+                ['sudo', 'mkdir', '--parents', self.foldername]
+            ).wait()
+
+    def chmod(self, mode):
+        subprocess.Popen(['sudo', 'chmod', mode, self.foldername]).wait()
+
+    def chown(self, owner):
+        subprocess.Popen(['sudo', 'chown', owner, self.foldername]).wait()
+
+    def chgrp(self, group):
+        subprocess.Popen(['sudo', 'chgrp', group, self.foldername]).wait()
