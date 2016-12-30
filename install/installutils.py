@@ -348,3 +348,27 @@ class LogFile(File):
         self.chmod('664')
         self.chown('mox')
         self.chgrp('mox')
+
+
+class Folder(object):
+
+    def __init__(self, foldername):
+        self.foldername = foldername
+
+    def isdir(self):
+        return os.path.isdir(self.foldername)
+
+    def mkdir(self):
+        if not self.isdir():
+            subprocess.Popen(
+                ['sudo', 'mkdir', '--parents', self.foldername]
+            ).wait()
+
+    def chmod(self, mode):
+        subprocess.Popen(['sudo', 'chmod', mode, self.foldername]).wait()
+
+    def chown(self, owner):
+        subprocess.Popen(['sudo', 'chown', owner, self.foldername]).wait()
+
+    def chgrp(self, group):
+        subprocess.Popen(['sudo', 'chgrp', group, self.foldername]).wait()
