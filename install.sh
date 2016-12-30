@@ -101,7 +101,7 @@ fi
 # Install oio_rest
 echo "Installing oio_rest"
 echo "$DIR/oio_rest/install.sh $@"
-$DIR/oio_rest/install.sh "$@"
+$DIR/oio_rest/install.py "$@"
 
 # Install database
 echo "Installing database"
