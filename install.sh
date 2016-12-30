@@ -6,23 +6,6 @@ if [ `id -u` == 0 ]; then
 	exit 1;
 fi
 
-while getopts ":ys" OPT; do
-  case $OPT in
-	s)
-		SKIP_SYSTEM_DEPS=1
-		;;
-	y)
-		ALWAYS_CONFIRM=1
-		;;
-	*)
-		echo "Usage: $0 [-y] [-s]"
-		echo "	-s: Skip installing oio_rest API system dependencies"
-		echo "	-y: Always confirm (yes) when prompted"
-		exit 1;
-		;;
-	esac
-done
-
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 # Query for hostname
@@ -100,12 +83,12 @@ fi
 
 # Install oio_rest
 echo "Installing oio_rest"
-echo "$DIR/oio_rest/install.sh $@"
-$DIR/oio_rest/install.py "$@"
+echo "$DIR/oio_rest/install.py $REINSTALL_VIRTUALENVS"
+$DIR/oio_rest/install.py $REINSTALL_VIRTUALENVS
 
 # Install database
 echo "Installing database"
-echo "$DIR/db/install.sh $@"
+echo "$DIR/db/install.sh"
 $DIR/db/install.sh
 
 
