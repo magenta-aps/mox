@@ -1,4 +1,4 @@
-#!/usr/bin/env /home/mox/mox/python_agents/python-env/bin/python
+#!/srv/mox/python_agents/python-env/bin/python
 import logging
 import json
 import pika
@@ -38,7 +38,6 @@ class MOXELKLog(MOXAgent):
 
     def callback(self, ch, method, properties, body):
         """Extract UUID and SAML token - send body as email to user."""
-
         if IS_LOG_AUTHENTICATION_ENABLED:
             # Authenticate
             gzip_token = properties.headers.get(
@@ -66,6 +65,7 @@ class MOXELKLog(MOXAgent):
             properties.headers and properties.headers.get(
                 'objekttype', None) == 'LogHaendelse'):
             if DO_LOG_TO_AMQP:
+                print "Sending!"
                 connection = pika.BlockingConnection(pika.ConnectionParameters(
                     host='localhost'
                 ))

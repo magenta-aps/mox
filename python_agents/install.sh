@@ -17,4 +17,5 @@ popd
 pip install pika
 pip install requests
 
-
+sudo cp setup/*.conf /etc/init
+sudo initctl reload-configuration

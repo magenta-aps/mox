@@ -1,4 +1,4 @@
-#!/usr/bin/env /home/mox/mox/python_agents/python-env/bin/python
+#!/srv/mox/python_agents/python-env/bin/python
 import smtplib
 import logging
 
