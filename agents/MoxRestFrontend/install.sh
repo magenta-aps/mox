@@ -1,15 +1,27 @@
 #!/bin/bash -e
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+MOXDIR=$( cd "$DIR/../.." && pwd )
 
-sudo cp "$DIR/setup/moxrestfrontend.conf" /etc/init/
+(
+    cd "$DIR"
+    mvn package -Dmaven.test.skip=true > "$DIR/install.log"
+)
 
-pushd "$DIR" > /dev/null
-mvn package --quiet -Dmaven.test.skip=true > "$DIR/install.log"
-popd > /dev/null
+if ! id moxrestfrontend > /dev/null 2>&1
+then
+    sudo useradd --system -s /usr/sbin/nologin -g mox moxrestfrontend
+fi
 
-sudo mkdir -p /var/log/mox
+tempfile=$(mktemp -t moxrestfrontend.XXXXX)
+
+sed -e "s,/srv/mox,$MOXDIR," \
+    "$DIR/setup/moxrestfrontend.conf" \
+    > $tempfile
+sudo install -m 644 $tempfile /etc/init/moxrestfrontend.conf
+rm $tempfile
+
 sudo touch /var/log/mox/moxrestfrontend.log
-sudo chown mox /var/log/mox/moxrestfrontend.log
+sudo chown moxrestfrontend:mox /var/log/mox/moxrestfrontend.log
 
 sudo service moxrestfrontend restart
