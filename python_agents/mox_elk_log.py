@@ -1,10 +1,11 @@
 #!/usr/bin/env /home/mox/mox/python_agents/python-env/bin/python
 import logging
 import json
+import pika
 
 import requests
 
-from settings import MOX_LOG_EXCHANGE, MOX_LOG_QUEUE
+from settings import MOX_LOG_EXCHANGE, MOX_OBJECT_EXCHANGE, DO_LOG_TO_AMQP
 from settings import MOX_ELK_LOG_FILE, IS_LOG_AUTHENTICATION_ENABLED
 
 from oio_rest.settings import SAML_MOX_ENTITY_ID, SAML_IDP_ENTITY_ID
@@ -15,7 +16,7 @@ from mox_agent import MOXAgent, unpack_saml_token, get_idp_cert
 # Logstash configuration
 logstash_url = 'http://139.162.183.253:42998'
 logstash_user = 'hunter2'
-logstash_password = ''
+logstash_password = 'fghTJ425245ADCFVd'
 
 
 class MOXELKLog(MOXAgent):
@@ -31,8 +32,8 @@ class MOXELKLog(MOXAgent):
             format='%(asctime)s %(levelname)s %(message)s'
         )
 
-    queue = MOX_LOG_QUEUE
-    exchange = MOX_LOG_EXCHANGE
+    queue = ''
+    exchange = MOX_OBJECT_EXCHANGE
     do_persist = False
 
     def callback(self, ch, method, properties, body):
@@ -63,14 +64,27 @@ class MOXELKLog(MOXAgent):
                 return
         if (
             properties.headers and properties.headers.get(
-                'objekttype', None
-            ) == 'LogHaendelse'
-        ):
-            print "Posting to logstash ..."
-            data = json.loads(body)  # noqa
-            r = requests.post(logstash_url, body, auth=(logstash_user,
-                                                        logstash_password))
-            print "Done: ", r
+                'objekttype', None) == 'LogHaendelse'):
+            if DO_LOG_TO_AMQP:
+                connection = pika.BlockingConnection(pika.ConnectionParameters(
+                    host='localhost'
+                ))
+                channel = connection.channel()
+                channel.queue_declare(queue='mox.log_queue')
+                channel.exchange_declare(exchange=MOX_LOG_EXCHANGE,
+                                         type='fanout')
+                channel.queue_bind('mox.log_queue',
+                                   exchange=MOX_LOG_EXCHANGE)
+                channel.basic_publish(exchange=MOX_LOG_EXCHANGE,
+                                      routing_key='mox.log_queue',
+                                      properties=properties,
+                                      body=body)
+            else:
+                print "Posting to logstash ..."
+                data = json.loads(body)  # noqa
+                r = requests.post(logstash_url, body, auth=(logstash_user,
+                                                            logstash_password))
+                print "Done: ", r
 
 
 if __name__ == '__main__':
