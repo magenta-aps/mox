@@ -22,5 +22,12 @@ popd
 pip install pika
 pip install requests
 
-sudo cp setup/*.conf /etc/init
+sed "s#PATH#${PWD}/#" setup/mox-advis.in.conf > setup/mox-advis.conf
+sed "s#PATH#${PWD}/#" setup/mox-elk-log.in.conf > setup/mox-elk-log.conf
+
+sudo cp setup/mox-advis.conf /etc/init
+sudo cp setup/mox-elk-log.conf /etc/init
+
+rm setup/mox-advis.conf setup/mox-elk-log.conf
+
 sudo initctl reload-configuration
