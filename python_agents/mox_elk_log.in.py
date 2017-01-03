@@ -1,4 +1,4 @@
-#!/srv/mox/python_agents/python-env/bin/python
+#!%PYTHON%
 import logging
 import json
 import pika
