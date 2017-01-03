@@ -6,6 +6,11 @@
 
 virtualenv python-env
 source python-env/bin/activate
+sed  "s#PYTHON#${PWD}/python-env/bin/python#" mox_advis.in.py > mox_advis.py
+chmod +x mox_advis.py
+
+sed  "s#PYTHON#${PWD}/python-env/bin/python#" mox_elk_log.in.py > mox_elk_log.py
+chmod +x mox_elk_log.py
 
 pushd ../oio_rest
 python setup.py sdist
