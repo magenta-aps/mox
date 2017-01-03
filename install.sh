@@ -79,6 +79,11 @@ cp --remove-destination "$APACHE_CONFIG.base" "$APACHE_CONFIG"
 # Setup common config
 sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$MOX_CONFIG"
 
+echo "Installing Python"
+sudo apt-get -qq update
+sudo apt-get -qqy install python
+sudo apt-get -qqy install --no-install-recommends python-virtualenv python-pip
+
 # Setup apache virtualhost
 echo "Setting up Apache virtualhost"
 $DIR/apache/install.sh
@@ -91,8 +96,8 @@ fi
 
 # Install oio_rest
 echo "Installing oio_rest"
-echo "$DIR/oio_rest/install.sh $@"
-$DIR/oio_rest/install.sh "$@"
+echo "$DIR/oio_rest/install.py $@"
+$DIR/oio_rest/install.py "$@"
 
 # Install database
 echo "Installing database"
