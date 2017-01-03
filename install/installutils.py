@@ -1,12 +1,49 @@
-#!/usr/bin/python
-
 import os
+import pwd
 import shutil
 import subprocess
-import random
 import sys
+import tempfile
+import virtualenv
 
 # ------------------------------------------------------------------------------
+
+_basedir = os.path.dirname(os.path.dirname(os.path.realpath(
+    os.path.splitext(__file__)[0] + '.py')
+))
+
+
+class _RedirectOutput(object):
+    '''Context manager for temporarily redirecting stdout & stderr.
+
+    Loosely based on contextlib._RedirectStream from the Python 3.4
+    standard library.
+
+    '''
+
+    def __new__(cls, new_target):
+        if new_target:
+            return object.__new__(cls, new_target)
+
+    def __init__(self, new_target):
+        self._new_target = new_target
+        # We use a list of old targets to make this CM re-entrant
+        self._old_targets = []
+
+    def __enter__(self):
+        self._old_targets[:] = [sys.stdout, sys.stderr]
+        if isinstance(self._new_target, basestring):
+            sys.stdout = sys.stderr = open(self._new_target, 'a')
+        else:
+            sys.stdout = sys.stderr = self._new_target
+        return sys.stdout
+
+    def __exit__(self, exctype, excinst, exctb):
+        if isinstance(self._new_target, basestring):
+            os.fsync(sys.stdout)
+            sys.stdout.close()
+
+        sys.stdout, sys.stderr = self._old_targets
 
 
 class Config(object):
@@ -190,59 +227,35 @@ class VirtualEnv(object):
 
         if create:
             print "Creating virtual enviroment '%s'" % self.environment_dir
-            fp = open(outfile, 'a') if outfile else None
-            subprocess.call(
-                ['virtualenv', self.environment_dir], stdout=fp, stderr=fp
-            )
+            with _RedirectOutput(outfile):
+                virtualenv.create_environment(self.environment_dir)
             self.exists = True
 
         return create
 
-    def run(self, outfile=None, *commands):
+    def run(self, args, outfile=None):
         # Warning: Be very sure what you put in commands,
         # since that gets executed in a shell
         if self.exists:
-            while True:
-                filename = "/tmp/foo.%d" % random.randint(0, (2**32)-1)
-                if not os.path.isfile(filename):
-                    break
-            with open(filename, 'w') as file:
-                file.write("#!/bin/bash\n")
-                file.write("source %s/bin/activate\n" % self.environment_dir)
-                for command in commands:
-                    file.write("%s\n" % command)
-                file.write("deactivate\n")
-                file.close()
-            os.chmod(filename, 0755)
-            process = subprocess.Popen(
-                filename, shell=True,
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                universal_newlines=True
-            )
-            stdout_lines = iter(process.stdout.readline, "")
-            fp = None
-            if outfile is not None:
-                fp = open(outfile, 'a')
-            for stdout_line in stdout_lines:
-                if fp:
-                    fp.write(stdout_line)
-                else:
-                    print stdout_line,
+            # based on virtualenv.py
+            pycmd = os.path.join(self.environment_dir, 'bin',
+                                 os.path.basename(sys.executable))
 
-            process.stdout.close()
-            if fp:
-                fp.close()
-            return_code = process.wait()
+            try:
+                with _RedirectOutput(outfile):
+                    output = subprocess.check_output([pycmd,] + args,
+                                                     stderr=sys.stderr)
+            except subprocess.CalledProcessError as e:
+                return e.returncode
 
-            os.remove(filename)
-            return return_code
+            return 0
 
-    def add_moxlib_pointer(self, moxdir):
+    def add_moxlib_pointer(self):
         fp = open(
             "%s/lib/python2.7/site-packages/mox.pth" % self.environment_dir,
             "w"
         )
-        fp.write(os.path.abspath("%s/agentbase/python/mox" % moxdir))
+        fp.write(os.path.abspath("%s/agentbase/python/mox" % _basedir))
         fp.close()
 
 
@@ -255,7 +268,8 @@ class Apache(object):
     endmarker_index = None
     indent = ''
 
-    def __init__(self, siteconf="/srv/mox/apache/mox.conf"):
+    def __init__(self, siteconf=_basedir + "/apache/mox.conf"):
+        assert os.path.isdir(_basedir + '/apache'), _basedir
         self.siteconf = siteconf
 
     def load_config(self):
@@ -304,17 +318,50 @@ class Apache(object):
 
 class WSGI(object):
 
-    def __init__(self, wsgifile, conffile, wsgidir='/var/www/wsgi'):
+    def __init__(self, wsgifile, conffile, user='mox',
+                 wsgidir='/var/www/wsgi'):
         self.wsgifile = wsgifile
         self.conffile = conffile
         self.wsgidir = wsgidir
+        # FIXME: we use apache's mod_wsgi, so we can't actually change the user
+        self.user = user
+
+    def _ensure_user(self):
+        try:
+            pwd.getpwnam(self.user)
+        except KeyError:
+            subprocess.check_call([
+                'sudo', 'useradd', '--system',
+                '-s', '/usr/sbin/nologin',
+                '-g', 'mox', self.user,
+            ])
+
+    def _copy_files(self):
+        destfile = os.path.join(self.wsgidir, os.path.basename(self.wsgifile))
+
+        if not os.path.exists(self.wsgidir):
+            subprocess.check_call(
+                ['sudo', 'mkdir', "--parents", self.wsgidir]
+            )
+
+        with open(self.wsgifile) as fp:
+            text = fp.read().replace('/srv/mox', _basedir)
+
+        tempfd, tempfn = tempfile.mkstemp()
+
+        try:
+            os.write(tempfd, text)
+            os.fsync(tempfd)
+            os.close(tempfd)
+
+            subprocess.check_call(
+                ['sudo', 'install', '-m', '644', tempfn, destfile]
+            )
+
+        finally:
+            os.remove(tempfn)
 
     def install(self, first_include=False):
-        if not os.path.exists(self.wsgidir):
-            subprocess.Popen(
-                ['sudo', 'mkdir', "--parents", self.wsgidir]
-            ).wait()
-        subprocess.Popen(
-            ['sudo', 'cp', '--remove-destination', self.wsgifile, self.wsgidir]
-        ).wait()
+        self._ensure_user()
+        self._copy_files()
         Apache().add_include(self.conffile, first_include)

@@ -6,7 +6,6 @@ import sys
 from installutils import VirtualEnv, WSGI
 
 DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
-MOXDIR = os.path.abspath(DIR + "/../..")
 WSGIDIR = '/var/www/wsgi'
 
 parser = argparse.ArgumentParser(description='Install MoxDocumentDownload')
@@ -28,8 +27,8 @@ created = virtualenv.create(
 )
 if created:
     print "Running setup.py"
-    virtualenv.run(logfilename, "python " + DIR + "/setup.py develop")
-    virtualenv.add_moxlib_pointer(MOXDIR)
+    virtualenv.run([DIR + "/setup.py", "develop"], logfilename)
+    virtualenv.add_moxlib_pointer()
 
 # ------------------------------------------------------------------------------
 
