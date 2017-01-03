@@ -27,7 +27,7 @@ created = virtualenv.create(
 )
 if created:
     print "Running setup.py"
-    virtualenv.run([DIR + "/setup.py", "develop"], outfile=logfilename)
+    virtualenv.run([DIR + "/setup.py", "develop"], logfilename)
     virtualenv.add_moxlib_pointer()
 
 # ------------------------------------------------------------------------------
@@ -35,7 +35,8 @@ if created:
 # Install WSGI service
 print "Setting up moxdocumentupload WSGI service for Apache"
 wsgi = WSGI(
-    "%s/setup/moxdocumentupload.wsgi" % DIR,
-    "%s/setup/moxdocumentupload.conf" % DIR
+    "setup/moxdocumentupload.wsgi.in",
+    "setup/moxdocumentupload.conf.in",
+    virtualenv
 )
 wsgi.install(True)

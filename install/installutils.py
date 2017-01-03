@@ -1,3 +1,4 @@
+import multiprocessing
 import os
 import pwd
 import shutil
@@ -8,10 +9,10 @@ import virtualenv
 
 # ------------------------------------------------------------------------------
 
-_basedir = os.path.dirname(os.path.dirname(os.path.realpath(
+_basedir = os.path.dirname(os.path.abspath(sys.modules['__main__'].__file__))
+_moxdir = os.path.dirname(os.path.dirname(os.path.realpath(
     os.path.splitext(__file__)[0] + '.py')
 ))
-
 
 class _RedirectOutput(object):
     '''Context manager for temporarily redirecting stdout & stderr.
@@ -168,8 +169,8 @@ class _Getch:
 
 class _GetchUnix:
     def __init__(self):
-        import tty
-        import termios
+        import tty  # NOQA
+        import termios  # NOQA
 
     def __call__(self):
         import tty
@@ -186,7 +187,7 @@ class _GetchUnix:
 
 class _GetchWindows:
     def __init__(self):
-        import msvcrt
+        import msvcrt  # NOQA
 
     def __call__(self):
         import msvcrt
@@ -196,6 +197,16 @@ getch = _Getch()
 
 # ------------------------------------------------------------------------------
 
+def _expand_template(template_file, dest_file, kwargs):
+    import jinja2
+
+    with open(template_file) as fp:
+        template = jinja2.Template(fp.read())
+
+    text = template.render(**kwargs)
+
+    with open(dest_file, 'w') as fp:
+        fp.write(text)
 
 class VirtualEnv(object):
 
@@ -243,19 +254,57 @@ class VirtualEnv(object):
 
             try:
                 with _RedirectOutput(outfile):
-                    output = subprocess.check_output([pycmd,] + args,
-                                                     stderr=sys.stderr)
+                    subprocess.check_call([pycmd, ] + args)
             except subprocess.CalledProcessError as e:
                 return e.returncode
 
             return 0
+
+    def call(self, func, *args, **kwargs):
+        '''Call the given function within this environment
+
+        In order to avoid polluting global namespaces, the function is
+        called in a subprocess.
+
+        '''
+        r = {}
+        this_file = os.path.join(self.environment_dir,
+                                 'bin', 'activate_this.py')
+
+        def init(this_file):
+            execfile(this_file, dict(__file__=this_file))
+
+        pool = multiprocessing.Pool(1, init, (this_file,))
+
+        return pool.apply(func, args, kwargs)
+
+    def expand_template(self, template_file, dest_file=None, **kwargs):
+        if not dest_file:
+            dest_file = os.path.splitext(template_file)[0]
+
+        print 'Expanding {!r} to {!r}'.format(template_file, dest_file)
+
+        template_file = os.path.join(_basedir, template_file)
+        dest_file = os.path.join(_basedir, dest_file)
+
+        kwargs.setdefault('ENVDIR', self.environment_dir)
+        kwargs.setdefault('DIR', _basedir)
+        kwargs.setdefault('MOXDIR', _moxdir)
+        kwargs.setdefault('PYTHON',os.path.join(
+            self.environment_dir, 'bin',
+            os.path.basename(sys.executable),
+        ))
+
+        self.call(_expand_template, template_file, dest_file, kwargs)
+
+        return dest_file
 
     def add_moxlib_pointer(self):
         fp = open(
             "%s/lib/python2.7/site-packages/mox.pth" % self.environment_dir,
             "w"
         )
-        fp.write(os.path.abspath("%s/agentbase/python/mox" % _basedir))
+        fp.write(os.path.abspath("%s/agentbase/python/mox" % _moxdir))
         fp.close()
 
 
@@ -268,8 +317,8 @@ class Apache(object):
     endmarker_index = None
     indent = ''
 
-    def __init__(self, siteconf=_basedir + "/apache/mox.conf"):
-        assert os.path.isdir(_basedir + '/apache'), _basedir
+    def __init__(self, siteconf=_moxdir + "/apache/mox.conf"):
+        assert os.path.isdir(os.path.dirname(siteconf)), siteconf
         self.siteconf = siteconf
 
     def load_config(self):
@@ -291,6 +340,7 @@ class Apache(object):
             with open(self.siteconf, 'w') as outfile:
                 for line in self.lines:
                     outfile.write(line)
+            subprocess.check_call(['sudo', 'apachectl', "graceful"])
 
     def index(self, search, start=0, end=None):
         if end is None:
@@ -318,15 +368,17 @@ class Apache(object):
 
 class WSGI(object):
 
-    def __init__(self, wsgifile, conffile, user='mox',
-                 wsgidir='/var/www/wsgi'):
+    def __init__(self, wsgifile, conffile, virtualenv, user=None):
+        self.virtualenv = virtualenv
         self.wsgifile = wsgifile
         self.conffile = conffile
-        self.wsgidir = wsgidir
         # FIXME: we use apache's mod_wsgi, so we can't actually change the user
         self.user = user
 
     def _ensure_user(self):
+        if not self.user:
+            return
+
         try:
             pwd.getpwnam(self.user)
         except KeyError:
@@ -336,32 +388,10 @@ class WSGI(object):
                 '-g', 'mox', self.user,
             ])
 
-    def _copy_files(self):
-        destfile = os.path.join(self.wsgidir, os.path.basename(self.wsgifile))
-
-        if not os.path.exists(self.wsgidir):
-            subprocess.check_call(
-                ['sudo', 'mkdir', "--parents", self.wsgidir]
-            )
-
-        with open(self.wsgifile) as fp:
-            text = fp.read().replace('/srv/mox', _basedir)
-
-        tempfd, tempfn = tempfile.mkstemp()
-
-        try:
-            os.write(tempfd, text)
-            os.fsync(tempfd)
-            os.close(tempfd)
-
-            subprocess.check_call(
-                ['sudo', 'install', '-m', '644', tempfn, destfile]
-            )
-
-        finally:
-            os.remove(tempfn)
-
     def install(self, first_include=False):
         self._ensure_user()
-        self._copy_files()
-        Apache().add_include(self.conffile, first_include)
+
+        self.virtualenv.expand_template(self.wsgifile)
+        conffile = self.virtualenv.expand_template(self.conffile)
+
+        Apache().add_include(conffile, first_include)

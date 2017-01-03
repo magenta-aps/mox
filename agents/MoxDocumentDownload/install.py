@@ -35,7 +35,8 @@ if created:
 # Install WSGI service
 print "Setting up moxdocumentdownload WSGI service for Apache"
 wsgi = WSGI(
-    "%s/setup/moxdocumentdownload.wsgi" % DIR,
-    "%s/setup/moxdocumentdownload.conf" % DIR
+    "setup/moxdocumentdownload.wsgi.in",
+    "setup/moxdocumentdownload.conf.in",
+    virtualenv,
 )
 wsgi.install(True)

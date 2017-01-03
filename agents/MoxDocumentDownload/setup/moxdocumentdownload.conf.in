@@ -1,0 +1,11 @@
+WSGIDaemonProcess		moxdocumentdownload user=www-data group=www-data threads=5
+WSGIScriptAlias			/bin/download {{DIR}}/setup/moxdocumentdownload.wsgi
+WSGIPassAuthorization		On
+
+<Directory {{DIR}}/setup>
+	<Files moxdocumentdownload.wsgi>
+		WSGIProcessGroup	moxdocumentdownload
+		WSGIApplicationGroup	%{RESOURCE}
+		require			all granted
+	</Files>
+</Directory>
