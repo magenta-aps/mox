@@ -3,7 +3,7 @@
 import os
 import traceback
 
-from flask import Flask, jsonify, request, Response
+from flask import Flask, jsonify, redirect, request, url_for, Response
 from werkzeug.routing import BaseConverter
 from jinja2 import Environment, FileSystemLoader
 from psycopg2 import DataError
@@ -34,6 +34,9 @@ class RegexConverter(BaseConverter):
 
 app.url_map.converters['regex'] = RegexConverter
 
+@app.route('/')
+def root():
+    return redirect(url_for('sitemap'), code=308)
 
 @app.route('/get-token', methods=['GET', 'POST'])
 def get_token():
