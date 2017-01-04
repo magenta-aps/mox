@@ -172,7 +172,6 @@ $DIR/agents/MoxDocumentDownload/configure.py --rest-host "$REST_HOST"
 
 JAVA_HOME="$OLD_JAVA_HOME"
 
-sudo chown -R mox:mox $DIR
 sudo service apache2 reload
 
 echo
