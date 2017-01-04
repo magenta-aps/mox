@@ -53,7 +53,7 @@ REST_HOST="https://$DOMAIN"
 if ! getent passwd mox > /dev/null
 then
 	echo "Creating system user 'mox'"
-	sudo useradd mox
+	sudo useradd --system -s /usr/sbin/nologin -d /srv/mox mox
 fi
 
 # Create log dir
