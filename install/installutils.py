@@ -1,10 +1,10 @@
+import datetime
 import multiprocessing
 import os
 import pwd
 import shutil
 import subprocess
 import sys
-import tempfile
 import virtualenv
 
 # ------------------------------------------------------------------------------
@@ -13,6 +13,9 @@ _basedir = os.path.dirname(os.path.abspath(sys.modules['__main__'].__file__))
 _moxdir = os.path.dirname(os.path.dirname(os.path.realpath(
     os.path.splitext(__file__)[0] + '.py')
 ))
+
+logfilename = os.path.join(_basedir, 'install.log')
+
 
 class _RedirectOutput(object):
     '''Context manager for temporarily redirecting stdout & stderr.
@@ -195,6 +198,7 @@ class _GetchWindows:
 
 getch = _Getch()
 
+
 # ------------------------------------------------------------------------------
 
 def _expand_template(template_file, dest_file, kwargs):
@@ -208,14 +212,14 @@ def _expand_template(template_file, dest_file, kwargs):
     with open(dest_file, 'w') as fp:
         fp.write(text)
 
+
 class VirtualEnv(object):
 
     def __init__(self, environment_dir):
         self.environment_dir = environment_dir
         self.exists = os.path.isdir(self.environment_dir)
 
-    def create(self, always_overwrite=False, never_overwrite=False,
-               outfile=None):
+    def create(self, always_overwrite=False, never_overwrite=False):
         if os.path.isdir(self.environment_dir):
             self.exists = True
             if always_overwrite:
@@ -238,23 +242,25 @@ class VirtualEnv(object):
 
         if create:
             print "Creating virtual enviroment '%s'" % self.environment_dir
-            with _RedirectOutput(outfile):
+            with _RedirectOutput(logfilename):
+                sys.stdout.write('\n{}\nVENV: create {}\n\n'.format(
+                    datetime.datetime.now(), self.environment_dir
+                ))
+
                 virtualenv.create_environment(self.environment_dir)
+
             self.exists = True
 
         return create
 
-    def run(self, args, outfile=None):
-        # Warning: Be very sure what you put in commands,
-        # since that gets executed in a shell
+    def run(self, *args):
         if self.exists:
             # based on virtualenv.py
             pycmd = os.path.join(self.environment_dir, 'bin',
                                  os.path.basename(sys.executable))
 
             try:
-                with _RedirectOutput(outfile):
-                    subprocess.check_call([pycmd, ] + args)
+                run(pycmd, *args)
             except subprocess.CalledProcessError as e:
                 return e.returncode
 
@@ -267,7 +273,6 @@ class VirtualEnv(object):
         called in a subprocess.
 
         '''
-        r = {}
         this_file = os.path.join(self.environment_dir,
                                  'bin', 'activate_this.py')
 
@@ -290,7 +295,7 @@ class VirtualEnv(object):
         kwargs.setdefault('ENVDIR', self.environment_dir)
         kwargs.setdefault('DIR', _basedir)
         kwargs.setdefault('MOXDIR', _moxdir)
-        kwargs.setdefault('PYTHON',os.path.join(
+        kwargs.setdefault('PYTHON', os.path.join(
             self.environment_dir, 'bin',
             os.path.basename(sys.executable),
         ))
@@ -340,7 +345,7 @@ class Apache(object):
             with open(self.siteconf, 'w') as outfile:
                 for line in self.lines:
                     outfile.write(line)
-            subprocess.check_call(['sudo', 'apachectl', "graceful"])
+            sudo('apachectl', "graceful")
 
     def index(self, search, start=0, end=None):
         if end is None:
@@ -375,23 +380,42 @@ class WSGI(object):
         # FIXME: we use apache's mod_wsgi, so we can't actually change the user
         self.user = user
 
-    def _ensure_user(self):
-        if not self.user:
-            return
-
-        try:
-            pwd.getpwnam(self.user)
-        except KeyError:
-            subprocess.check_call([
-                'sudo', 'useradd', '--system',
-                '-s', '/usr/sbin/nologin',
-                '-g', 'mox', self.user,
-            ])
-
     def install(self, first_include=False):
-        self._ensure_user()
+        if self.user:
+            create_user(self.user)
 
         self.virtualenv.expand_template(self.wsgifile)
         conffile = self.virtualenv.expand_template(self.conffile)
 
         Apache().add_include(conffile, first_include)
+
+
+def run(*args):
+    with open(logfilename, 'a') as logfp:
+        logfp.write('\n{}\nCMD: {}\n\n'.format(datetime.datetime.now(),
+                                               ' '.join(args)))
+        logfp.flush()
+
+        subprocess.check_call(args, cwd=_basedir,
+                              stdout=logfp, stderr=logfp)
+
+
+def sudo(*args):
+    with open(logfilename, 'a') as logfp:
+        logfp.write('\n{}\nSUDO: {}\n\n'.format(datetime.datetime.now(),
+                                                ' '.join(args)))
+        logfp.flush()
+
+        subprocess.check_call(('sudo',) + args, cwd=_basedir,
+                              stdout=logfp, stderr=logfp)
+
+
+def create_user(user):
+    try:
+        pwd.getpwnam(user)
+    except KeyError:
+        sudo(
+            'useradd', '--system',
+            '-s', '/usr/sbin/nologin',
+            '-g', 'mox', user,
+        )

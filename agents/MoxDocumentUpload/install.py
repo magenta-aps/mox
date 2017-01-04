@@ -6,7 +6,6 @@ import sys
 from installutils import VirtualEnv, WSGI
 
 DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
-WSGIDIR = '/var/www/wsgi'
 
 parser = argparse.ArgumentParser(description='Install MoxDocumentUpload')
 
@@ -17,17 +16,13 @@ args = parser.parse_args()
 
 # ------------------------------------------------------------------------------
 
-logfilename = "%s/install.log" % DIR
-fp = open(logfilename, 'w')
-fp.close()
-
 virtualenv = VirtualEnv(DIR + "/python-env")
 created = virtualenv.create(
-    args.overwrite_virtualenv, args.keep_virtualenv, logfilename
+    args.overwrite_virtualenv, args.keep_virtualenv,
 )
 if created:
     print "Running setup.py"
-    virtualenv.run([DIR + "/setup.py", "develop"], logfilename)
+    virtualenv.run(DIR + "/setup.py", "develop")
     virtualenv.add_moxlib_pointer()
 
 # ------------------------------------------------------------------------------
@@ -37,6 +32,6 @@ print "Setting up moxdocumentupload WSGI service for Apache"
 wsgi = WSGI(
     "setup/moxdocumentupload.wsgi.in",
     "setup/moxdocumentupload.conf.in",
-    virtualenv
+    virtualenv,
 )
 wsgi.install(True)

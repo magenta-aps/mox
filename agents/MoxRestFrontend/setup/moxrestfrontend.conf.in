@@ -6,5 +6,5 @@ stop on shutdown
 setuid moxrestfrontend
 setgid mox
 
-exec /srv/mox/agents/MoxRestFrontend/moxrestfrontend.sh
+exec {{DIR}}/moxrestfrontend.sh
 

@@ -2,7 +2,7 @@ import sys
 import logging
 logging.basicConfig(stream=sys.stderr)
 
-activate_this = '{{DIR}}/python-env/bin/activate_this.py'
+activate_this = '{{ENVDIR}}/bin/activate_this.py'
 execfile(activate_this, dict(__file__=activate_this))
 
 

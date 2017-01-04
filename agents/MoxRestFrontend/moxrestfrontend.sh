@@ -7,7 +7,7 @@ source $MOXDIR/variables.sh
 
 cd $DIR
 exec $CMD_JAVA \
-    -cp target/MoxRestFrontend-1.0.jar:target/dependency/* \
+    -cp "target/MoxRestFrontend-1.0.jar:target/dependency/*" \
     dk.magenta.mox.moxrestfrontend.MoxRestFrontend \
     --propertiesFile "$MOXDIR/mox.conf" \
     "$DIR/moxrestfrontend.conf"
