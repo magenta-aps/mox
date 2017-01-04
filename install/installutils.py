@@ -259,12 +259,7 @@ class VirtualEnv(object):
             pycmd = os.path.join(self.environment_dir, 'bin',
                                  os.path.basename(sys.executable))
 
-            try:
-                run(pycmd, *args)
-            except subprocess.CalledProcessError as e:
-                return e.returncode
-
-            return 0
+            run(pycmd, *args)
 
     def call(self, func, *args, **kwargs):
         '''Call the given function within this environment
