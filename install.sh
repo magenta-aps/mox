@@ -79,8 +79,7 @@ sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$MOX_CONFIG"
 
 echo "Installing Python"
 sudo apt-get -qq update
-sudo apt-get -qqy install python
-sudo apt-get -qqy install --no-install-recommends python-virtualenv python-pip
+sudo apt-get -qq install python python-pip python-virtualenv
 
 # Setup apache virtualhost
 echo "Setting up Apache virtualhost"
@@ -124,11 +123,11 @@ else
 	if ! apt-cache show "openjdk-$JAVA_VERSION_NEEDED-jdk" > /dev/null 2>&1
 	then
 		# openjdk is not available in the version we want
-		sudo apt-get -qqy install software-properties-common
+		sudo apt-get -qq install software-properties-common
 		sudo add-apt-repository -ys ppa:openjdk-r/ppa
 		sudo apt-get -qq update
 	fi
-	sudo apt-get --yes --quiet install "openjdk-$JAVA_VERSION_NEEDED-jdk"
+	sudo apt-get -qq install "openjdk-$JAVA_VERSION_NEEDED-jdk"
 	JAVA_HIGHEST_VERSION_DIR="/usr/lib/jvm/java-$JAVA_VERSION_NEEDED-openjdk-amd64"
 fi
 if [[ "x$JAVA_HIGHEST_VERSION_DIR" != "x" ]]; then
@@ -146,7 +145,7 @@ export JAVA_HOME
 
 # Install Maven
 echo "Installing Maven"
-sudo apt-get -y install maven
+sudo apt-get -qq install maven
 
 # Compile modules
 echo "Installing java modules"

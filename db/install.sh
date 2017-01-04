@@ -24,7 +24,7 @@ if [ $WIPE_DB == 1 ]; then
 	# Install Database
 
     echo "Installing database dependencies"
-    sudo apt-get -qqy install --no-install-recommends  $(cat "$DIR/SYSTEM_DEPENDENCIES")
+    sudo apt-get -qq install --no-install-recommends  $(cat "$DIR/SYSTEM_DEPENDENCIES")
 
     # Install pgtap - unit test framework
     sudo pgxn install pgtap
