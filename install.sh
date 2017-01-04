@@ -48,8 +48,6 @@ AMQP_USER="guest"
 AMQP_PASS="guest"
 
 REST_HOST="https://$DOMAIN"
-REST_USER="admin"
-REST_PASS="admin"
 
 # Add system user if none exists
 if ! getent passwd mox > /dev/null

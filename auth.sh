@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 
 MOXDIR=$(cd $(dirname $0); pwd)
 

@@ -2,7 +2,7 @@
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
-pushd $DIR
+cd $DIR
 source ./config.sh
 
 export PGPASSWORD="$MOX_DB_PASSWORD"
@@ -151,6 +151,3 @@ psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_create_or_import_dokument.sql
 psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_list_dokument.sql
 psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_update_dokument.sql
 psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_search_dokument.sql
-
-popd
-
