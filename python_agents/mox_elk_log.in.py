@@ -33,7 +33,7 @@ class MOXELKLog(MOXAgent):
         )
 
     queue = ''
-    exchange = MOX_OBJECT_EXCHANGE
+    exchange = MOX_LOG_EXCHANGE
     do_persist = False
 
     def callback(self, ch, method, properties, body):
@@ -61,30 +61,21 @@ class MOXELKLog(MOXAgent):
                     )
                 )
                 return
-        if (
-            properties.headers and properties.headers.get(
-                'objekttype', None) == 'LogHaendelse'):
-            if DO_LOG_TO_AMQP:
-                print "Sending!"
-                connection = pika.BlockingConnection(pika.ConnectionParameters(
-                    host='localhost'
-                ))
-                channel = connection.channel()
-                channel.queue_declare(queue='mox.log_queue')
-                channel.exchange_declare(exchange=MOX_LOG_EXCHANGE,
-                                         type='fanout')
-                channel.queue_bind('mox.log_queue',
-                                   exchange=MOX_LOG_EXCHANGE)
-                channel.basic_publish(exchange=MOX_LOG_EXCHANGE,
-                                      routing_key='mox.log_queue',
-                                      properties=properties,
-                                      body=body)
-            else:
-                print "Posting to logstash ..."
-                data = json.loads(body)  # noqa
-                r = requests.post(logstash_url, body, auth=(logstash_user,
-                                                            logstash_password))
-                print "Done: ", r
+        if DO_LOG_TO_AMQP:
+            connection = pika.BlockingConnection(
+                pika.ConnectionParameters(host='localhost')
+            )
+            channel = connection.channel()
+            channel.basic_publish(exchange=MOX_OBJECT_EXCHANGE,
+                                  routing_key='',
+                                  properties=properties,
+                                  body=body)
+        else:
+            print "Posting to logstash ..."
+            data = json.loads(body)  # noqa
+            r = requests.post(logstash_url, body, auth=(logstash_user,
+                                                        logstash_password))
+            print "Done: ", r
 
 
 if __name__ == '__main__':

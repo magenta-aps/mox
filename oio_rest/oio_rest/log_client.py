@@ -5,8 +5,8 @@ import pika
 import requests
 import json
 
-from settings import LOG_AMQP_SERVER, LOG_QUEUE, LOG_IGNORED_SERVICES
-from settings import LOG_EXCHANGE
+from settings import LOG_AMQP_SERVER, MOX_LOG_QUEUE, LOG_IGNORED_SERVICES
+from settings import MOX_LOG_EXCHANGE
 
 
 def log_service_call(service_name, class_name, time,
@@ -80,15 +80,18 @@ def log_service_call(service_name, class_name, time,
         host=LOG_AMQP_SERVER
     ))
     channel = connection.channel()
-    channel.queue_declare(queue=LOG_QUEUE)
+    channel.queue_declare(queue=MOX_LOG_QUEUE)
+    channel.exchange_declare(exchange=MOX_LOG_EXCHANGE, type='fanout')
+    channel.queue_bind(MOX_LOG_QUEUE, exchange=MOX_LOG_EXCHANGE)
+
     message = json.dumps(logevent_dict)
-    print "Log queue", LOG_QUEUE
-    print "Log exchange", LOG_EXCHANGE
+    # print "Log queue", LOG_QUEUE
+    #print "Log exchange", LOG_EXCHANGE
     print "Log message", message
 
     channel.basic_publish(
-        exchange=LOG_EXCHANGE,
-        routing_key=LOG_QUEUE,
+        exchange=MOX_LOG_EXCHANGE,
+        routing_key=MOX_LOG_QUEUE,
         body=message,
         properties=pika.BasicProperties(
             content_type='application/json',
