@@ -1,3 +1,11 @@
+* Version 0.2.16, January 10, 2017
+
+New in this version:
+
+* Minor bug fixes for installer
+* Factor out JDK installation to a separate script
+* Consolidate WSGI webapp installers
+
 * Version 0.2.15, December 21, 2016
 
 New in this version:
