@@ -16,9 +16,3 @@ moxtabel.amqp.outgoing.host = localhost
 moxtabel.amqp.outgoing.exchange = mox.rest
 moxtabel.amqp.outgoing.username = guest
 moxtabel.amqp.outgoing.password = guest
-
-
-## Mox Auth Configuration
-
-security.sts.address = https://${domain}:9443/services/wso2carbon-sts?wsdl
-

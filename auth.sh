@@ -1,9 +1,10 @@
-#!/bin/sh
+#!/bin/sh -e
 
 MOXDIR=$(cd $(dirname $0); pwd)
 
-export PYTHONPATH="$MOXDIR/oio_rest"
+# the script neither reads to nor writes from any file, so we can
+# safely cd to a fixed location -- this fixes running this script from
+# '$MOXDIR/oio_rest/oio_rest'
+cd "$MOXDIR/oio_rest"
 
-. "$MOXDIR/oio_rest/python-env/bin/activate"
-
-exec python -m oio_rest.auth.tokens "$@"
+exec python-env/bin/python -s -m oio_rest.auth.tokens "$@"

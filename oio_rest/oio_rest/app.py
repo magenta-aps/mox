@@ -3,13 +3,15 @@
 import os
 import traceback
 
-from flask import Flask, jsonify, request, Response
+from flask import Flask, jsonify, redirect, request, url_for, Response
 from werkzeug.routing import BaseConverter
 from jinja2 import Environment, FileSystemLoader
+from psycopg2 import DataError
 
 from custom_exceptions import OIOFlaskException, AuthorizationFailedException
-from custom_exceptions import UnauthorizedException, BadRequestException
+from custom_exceptions import BadRequestException
 from auth import tokens
+import settings
 
 app = Flask(__name__)
 
@@ -32,13 +34,16 @@ class RegexConverter(BaseConverter):
 
 app.url_map.converters['regex'] = RegexConverter
 
+@app.route('/')
+def root():
+    return redirect(url_for('sitemap'), code=308)
 
 @app.route('/get-token', methods=['GET', 'POST'])
 def get_token():
     if request.method == 'GET':
 
         t = jinja_env.get_template('get_token.html')
-        html = t.render()
+        html = t.render(settings=settings)
         return html
     elif request.method == 'POST':
         username = request.form.get('username')
@@ -64,7 +69,7 @@ def sitemap():
         if "GET" in rule.methods:
             links.append(str(rule))
             print rule
-    return jsonify({"site-map": links})
+    return jsonify({"site-map": sorted(links)})
 
 
 @app.errorhandler(OIOFlaskException)
@@ -74,6 +79,11 @@ def handle_not_allowed(error):
     response.status_code = error.status_code
     return response
 
+
+@app.errorhandler(DataError)
+def handle_db_error(error):
+    message, context = error.message.split('\n', 1)
+    return jsonify(message=message, context=context), 400
 
 def main():
     from settings import BASE_URL
