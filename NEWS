@@ -3,6 +3,7 @@
 New in this version:
 
 * Minor bug fixes for installer
+* Factor out JDK installation to a separate script
 
 
 * Version 0.2.15, December 21, 2016

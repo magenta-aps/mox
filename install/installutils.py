@@ -126,7 +126,8 @@ class _Getch:
         except ImportError:
             self.impl = _GetchUnix()
 
-    def __call__(self): return self.impl()
+    def __call__(self):
+        return self.impl()
 
 
 class _GetchUnix:
@@ -144,6 +145,8 @@ class _GetchUnix:
             ch = sys.stdin.read(1)
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        if ord(ch) == 3:
+            raise KeyboardInterrupt
         return ch
 
 
@@ -153,7 +156,11 @@ class _GetchWindows:
 
     def __call__(self):
         import msvcrt
-        return msvcrt.getch()
+        ch = msvcrt.getch()
+        if ord(ch) == 3:
+            raise KeyboardInterrupt
+        return ch
+
 
 getch = _Getch()
 
@@ -177,12 +184,14 @@ class VirtualEnv(object):
             else:
                 print "%s already exists" % self.environment_dir
                 # raw_input("Do you want to reinstall it? (y/n)")
-                print "Do you want to reinstall it? (y/n)",
+                default = 'y'
+                print "Do you want to reinstall it? (Y/n)",
                 answer = None
                 while answer != 'y' and answer != 'n':
                     answer = getch()
+                    if answer in ['\n', '\r']:
+                        answer = default
                 create = (answer == 'y')
-                print answer
             if create:
                 shutil.rmtree(self.environment_dir)
         else:
@@ -318,3 +327,57 @@ class WSGI(object):
             ['sudo', 'cp', '--remove-destination', self.wsgifile, self.wsgidir]
         ).wait()
         Apache().add_include(self.conffile, first_include)
+
+
+class File(object):
+
+    def __init__(self, filename):
+        self.filename = filename
+
+    def open(self, mode):
+        return open(self.filename, mode)
+
+    def touch(self):
+        subprocess.Popen(['sudo', 'touch', self.filename]).wait()
+
+    def chmod(self, mode):
+        subprocess.Popen(['sudo', 'chmod', mode, self.filename]).wait()
+
+    def chown(self, owner):
+        subprocess.Popen(['sudo', 'chown', owner, self.filename]).wait()
+
+    def chgrp(self, group):
+        subprocess.Popen(['sudo', 'chgrp', group, self.filename]).wait()
+
+
+class LogFile(File):
+
+    def create(self):
+        self.touch()
+        self.chmod('666')
+        self.chown('mox')
+        self.chgrp('mox')
+
+
+class Folder(object):
+
+    def __init__(self, foldername):
+        self.foldername = foldername
+
+    def isdir(self):
+        return os.path.isdir(self.foldername)
+
+    def mkdir(self):
+        if not self.isdir():
+            subprocess.Popen(
+                ['sudo', 'mkdir', '--parents', self.foldername]
+            ).wait()
+
+    def chmod(self, mode):
+        subprocess.Popen(['sudo', 'chmod', mode, self.foldername]).wait()
+
+    def chown(self, owner):
+        subprocess.Popen(['sudo', 'chown', owner, self.foldername]).wait()
+
+    def chgrp(self, group):
+        subprocess.Popen(['sudo', 'chgrp', group, self.foldername]).wait()
