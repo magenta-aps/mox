@@ -1,7 +1,5 @@
 # encoding: utf-8
 from setuptools import setup, find_packages
-import sys
-import os
 
 version = '0.0.1'
 authors = 'C. Agger, Jørgen Ulrik B. Krag, Thomas Kristensen, Seth Yastrov'
@@ -24,6 +22,7 @@ setup(
     zip_safe=False,
     install_requires=[
         # -*- Extra requirements: -*-
+        'requests==2.10',
         'pytz>=2016.10',
         'Flask==0.10.1',
         'Jinja2==2.7.3',

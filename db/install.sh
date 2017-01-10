@@ -6,7 +6,7 @@ WIPE_DB=0
 LOGFILE="$DIR/install.log"
 
 echo "Installing database dependencies"
-sudo apt-get -y install --no-install-recommends  $(cat "$DIR/SYSTEM_DEPENDENCIES")
+sudo apt-get -qq install --no-install-recommends  $(cat "$DIR/SYSTEM_DEPENDENCIES")
 
 if [ ! -z $ALWAYS_CONFIRM ]; then
 	WIPE_DB=1

@@ -32,7 +32,8 @@ else
 	sudo apt-cache -q=2 show "openjdk-$JAVA_VERSION_NEEDED-jdk" 2> /dev/null 1> /dev/null
 	if [[ $? > 0 ]]; then
 		# openjdk is not available in the version we want
-		sudo add-apt-repository ppa:openjdk-r/ppa
+        sudo apt-get -qq install software-properties-common
+		sudo add-apt-repository -y ppa:openjdk-r/ppa
 		sudo apt-get update > /dev/null
 	fi
 	sudo apt-cache -q=2 show "openjdk-$JAVA_VERSION_NEEDED-jdk" 2> /dev/null 1> /dev/null

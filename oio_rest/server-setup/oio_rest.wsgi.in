@@ -2,11 +2,11 @@ import sys
 import logging
 logging.basicConfig(stream=sys.stderr)
 
-activate_this = '/srv/mox/oio_rest/python-env/bin/activate_this.py'
+activate_this = '{{ENVDIR}}/bin/activate_this.py'
 execfile(activate_this, dict(__file__=activate_this))
 
 
-sys.path.append('/srv/mox/oio_rest')
+sys.path.append('{{DIR}}')
 from oio_rest.settings import BASE_URL
 from oio_rest.klassifikation import KlassifikationsHierarki
 from oio_rest.organisation import OrganisationsHierarki

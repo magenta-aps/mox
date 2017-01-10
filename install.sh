@@ -31,14 +31,12 @@ AMQP_USER="guest"
 AMQP_PASS="guest"
 
 REST_HOST="https://$DOMAIN"
-REST_USER="admin"
-REST_PASS="admin"
 
 # Add system user if none exists
 if ! getent passwd mox > /dev/null
 then
 	echo "Creating system user 'mox'"
-	sudo useradd mox
+	sudo useradd --system -s /usr/sbin/nologin -d /srv/mox mox
 fi
 
 # Create log dir
@@ -61,6 +59,10 @@ cp --remove-destination "$APACHE_CONFIG.base" "$APACHE_CONFIG"
 
 # Setup common config
 sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$MOX_CONFIG"
+
+echo "Installing Python"
+sudo apt-get -qq update
+sudo apt-get -qq install python python-pip python-virtualenv python-jinja2
 
 # Setup apache virtualhost
 echo "Setting up Apache virtualhost"
@@ -95,7 +97,7 @@ $DIR/install/install_java.sh 8
 
 # Install Maven
 echo "Installing Maven"
-sudo apt-get -y install maven
+sudo apt-get -qq install maven
 
 # Compile modules
 echo "Installing java modules"
@@ -105,10 +107,10 @@ echo "$DIR/agentbase/python/mox" > "$DIR/agentbase/python/mox/mox.pth"
 
 # Compile agents
 echo "Installing Agents"
-$DIR/agents/MoxTabel/install.sh
+$DIR/agents/MoxTabel/install.py
 $DIR/agents/MoxTabel/configure.py --rest-host "$REST_HOST" --amqp-incoming-host "$DOMAIN" --amqp-incoming-user "$AMQP_USER" --amqp-incoming-pass "$AMQP_PASS" --amqp-incoming-exchange "mox.documentconvert" --amqp-outgoing-host "$DOMAIN" --amqp-outgoing-user "$AMQP_USER" --amqp-outgoing-pass "$AMQP_PASS" --amqp-outgoing-exchange "mox.rest"
 
-$DIR/agents/MoxRestFrontend/install.sh
+$DIR/agents/MoxRestFrontend/install.py
 $DIR/agents/MoxRestFrontend/configure.py --rest-host "$REST_HOST" --amqp-host "$DOMAIN" --amqp-user "$AMQP_USER" --amqp-pass "$AMQP_PASS" --amqp-exchange "mox.rest"
 
 $DIR/agents/MoxDocumentUpload/install.py $REINSTALL_VIRTUALENVS
@@ -119,7 +121,6 @@ $DIR/agents/MoxTest/install.sh
 $DIR/agents/MoxDocumentDownload/install.py $REINSTALL_VIRTUALENVS
 $DIR/agents/MoxDocumentDownload/configure.py --rest-host "$REST_HOST"
 
-sudo chown --recursive mox:mox $DIR
 sudo service apache2 reload
 
 echo

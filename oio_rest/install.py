@@ -3,26 +3,38 @@
 import argparse
 import os
 import sys
-from installutils import VirtualEnv, WSGI, Folder, LogFile, install_dependencies
+from installutils import VirtualEnv, WSGI, Folder, sudo, install_dependencies
 
 DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
-MOXDIR = os.path.abspath(DIR + "/../..")
-WSGIDIR = '/var/www/wsgi'
 STORAGEDIR = '/var/mox'
 
-parser = argparse.ArgumentParser(description='Install OIO Rest')
+parser = argparse.ArgumentParser(description='Install OIO REST')
 
 parser.add_argument('-y', '--overwrite-virtualenv', action='store_true')
 parser.add_argument('-n', '--keep-virtualenv', action='store_true')
+parser.add_argument('-s', '--skip-system-deps', action='store_true')
 
 args = parser.parse_args()
 
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
-install_log = LogFile("%s/install.log" % DIR)
-install_log.create()
+if not args.skip_system_deps:
+    print "Installing system dependancies"
 
-install_dependencies("%s/SYSTEM_DEPENDENCIES" % DIR)
+    install_dependencies("%s/SYSTEM_DEPENDENCIES" % DIR)
+
+sudo('install', '-d', '-o', 'mox', '-g', 'mox',
+     '/var/mox', '/var/log/mox', '/var/log/mox/oio_rest')
+
+virtualenv = VirtualEnv(DIR + "/python-env")
+created = virtualenv.create(
+    args.overwrite_virtualenv, args.keep_virtualenv,
+)
+
+if created:
+    print "Running setup.py"
+    virtualenv.run(DIR + "/setup.py", "develop")
+    virtualenv.add_moxlib_pointer()
 
 # -----------------------------------------------------------------------------
 
@@ -33,23 +45,13 @@ storage = Folder(STORAGEDIR)
 storage.mkdir()
 storage.chown('www-data')
 
-# -----------------------------------------------------------------------------
-
-virtualenv = VirtualEnv(DIR + "/python-env")
-created = virtualenv.create(
-    args.overwrite_virtualenv, args.keep_virtualenv, install_log.filename
-)
-if created:
-    print "Running setup.py"
-    virtualenv.run(install_log.filename, "python " + DIR + "/setup.py develop")
-    virtualenv.add_moxlib_pointer(MOXDIR)
-
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # Install WSGI service
-print "Setting up oio_rest WSGI service for Apache"
+print "Setting up OIO REST WSGI service for Apache"
 wsgi = WSGI(
-    "%s/server-setup/oio_rest.wsgi" % DIR,
-    "%s/server-setup/oio_rest.conf" % DIR
+    "server-setup/oio_rest.wsgi.in",
+    "server-setup/oio_rest.conf.in",
+    virtualenv,
 )
-wsgi.install(False)
+wsgi.install(True)
