@@ -6,23 +6,6 @@ if [ `id -u` == 0 ]; then
 	exit 1;
 fi
 
-while getopts ":ys" OPT; do
-  case $OPT in
-	s)
-		SKIP_SYSTEM_DEPS=1
-		;;
-	y)
-		ALWAYS_CONFIRM=1
-		;;
-	*)
-		echo "Usage: $0 [-y] [-s]"
-		echo "	-s: Skip installing oio_rest API system dependencies"
-		echo "	-y: Always confirm (yes) when prompted"
-		exit 1;
-		;;
-	esac
-done
-
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 # Query for hostname
@@ -89,14 +72,23 @@ then
 	$DIR/wso2/install.sh "$DOMAIN"
 fi
 
+REINSTALL_VIRTUALENVS=""
+read -p "Reinstall python virtual environments [(y)es/(n)o/(A)sk every time] " -r -n 1
+echo
+if [[ $REPLY == [yY] ]]; then
+	REINSTALL_VIRTUALENVS="--overwrite-virtualenv"
+elif [[ $REPLY == [nN] ]]; then
+	REINSTALL_VIRTUALENVS="--keep-virtualenv"
+fi
+
 # Install oio_rest
 echo "Installing oio_rest"
-echo "$DIR/oio_rest/install.sh $@"
-$DIR/oio_rest/install.sh "$@"
+echo "$DIR/oio_rest/install.py $REINSTALL_VIRTUALENVS"
+$DIR/oio_rest/install.py $REINSTALL_VIRTUALENVS
 
 # Install database
 echo "Installing database"
-echo "$DIR/db/install.sh $@"
+echo "$DIR/db/install.sh"
 $DIR/db/install.sh
 
 $DIR/install/install_java.sh 8
@@ -119,12 +111,12 @@ $DIR/agents/MoxTabel/configure.py --rest-host "$REST_HOST" --amqp-incoming-host 
 $DIR/agents/MoxRestFrontend/install.sh
 $DIR/agents/MoxRestFrontend/configure.py --rest-host "$REST_HOST" --amqp-host "$DOMAIN" --amqp-user "$AMQP_USER" --amqp-pass "$AMQP_PASS" --amqp-exchange "mox.rest"
 
-$DIR/agents/MoxDocumentUpload/install.py
+$DIR/agents/MoxDocumentUpload/install.py $REINSTALL_VIRTUALENVS
 $DIR/agents/MoxDocumentUpload/configure.py --rest-host "$REST_HOST" --amqp-host "$DOMAIN" --amqp-user "$AMQP_USER" --amqp-pass "$AMQP_PASS" --amqp-exchange "mox.documentconvert"
 
 $DIR/agents/MoxTest/install.sh
 
-$DIR/agents/MoxDocumentDownload/install.py
+$DIR/agents/MoxDocumentDownload/install.py $REINSTALL_VIRTUALENVS
 $DIR/agents/MoxDocumentDownload/configure.py --rest-host "$REST_HOST"
 
 sudo chown --recursive mox:mox $DIR

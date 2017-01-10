@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import random
 import sys
+import re
 
 # ------------------------------------------------------------------------------
 
@@ -327,6 +328,17 @@ class WSGI(object):
             ['sudo', 'cp', '--remove-destination', self.wsgifile, self.wsgidir]
         ).wait()
         Apache().add_include(self.conffile, first_include)
+
+
+def install_dependencies(file):
+    if os.path.isfile(file):
+        with open(file, 'r') as fp:
+            data = fp.read()
+            packages = re.split('\s+', data)
+            if len(packages):
+                subprocess.Popen(
+                    ['sudo', 'apt-get', '--yes', 'install'] + packages
+                ).wait()
 
 
 class File(object):
