@@ -120,14 +120,14 @@ def main(*args):
 
     options = parser.parse_args()
 
-    password = options.user or raw_input('User: ')
+    username = options.user or raw_input('User: ')
     password = options.password or getpass.getpass('Password: ')
 
     if options.insecure:
         from requests.packages import urllib3
         urllib3.disable_warnings()
 
-    token = get_token(options.user, password,
+    token = get_token(username, password,
                       options.raw or options.cert_only,
                       options.insecure)
 

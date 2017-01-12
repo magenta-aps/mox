@@ -1,7 +1,7 @@
         <html>
         <head><title>Get token</title></head>
         <body>
-        {% if settings.USE_SAML_AUTHENTICATION %}
+        {% if not settings.USE_SAML_AUTHENTICATION %}
         <div>
           SAML authentication is disabled.
         </div>
