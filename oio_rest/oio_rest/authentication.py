@@ -5,7 +5,6 @@ from flask import request
 from custom_exceptions import UnauthorizedException
 from custom_exceptions import AuthorizationFailedException
 import zlib
-import json
 import uuid
 
 from auth.saml2 import Saml2_Assertion

@@ -6,7 +6,7 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 ## System dependencies. These are the packages we need that might not be present on a fresh OS install.
 if [ -z $SKIP_SYSTEM_DEPS ]; then
     echo "Installing oio_rest dependencies"
-	sudo apt-get -qy install $(cat "$DIR/SYSTEM_DEPENDENCIES")
+	sudo apt-get -qq install $(cat "$DIR/SYSTEM_DEPENDENCIES")
 fi
 
 # Setup apache site config

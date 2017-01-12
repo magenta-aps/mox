@@ -3,5 +3,8 @@ description "Upstart file for running the MoxRestFrontend agent on system boot"
 start on runlevel [2345]
 stop on shutdown
 
-exec /srv/mox/agents/MoxRestFrontend/moxrestfrontend.sh
+setuid moxrestfrontend
+setgid mox
+
+exec {{DIR}}/moxrestfrontend.sh
 

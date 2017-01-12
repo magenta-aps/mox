@@ -1,0 +1,11 @@
+WSGIDaemonProcess		oio_rest user=www-data group=www-data threads=5
+WSGIScriptAlias			/ {{DIR}}/server-setup/oio_rest.wsgi
+WSGIPassAuthorization		On
+
+<Directory {{DIR}}/server-setup>
+	<Files oio_rest.wsgi>
+		WSGIProcessGroup	oio_rest
+		WSGIApplicationGroup	%{RESOURCE}
+		require			all granted
+	</Files>
+</Directory>

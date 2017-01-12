@@ -294,7 +294,7 @@ parameter values. This character matches zero or more of any characters.
 
 If it is desired to search for attribute values of type TEXT which
 contain "%" themselves, then the character must be escaped in the search
-parameters with a backslash, like, for example: "abc\%def" would match the
+parameters with a backslash, like, for example: "abc\\%def" would match the
 value "abc%def". Contrary, to typical SQL LIKE syntax, the character "_"
 (underscore) matches only the underscore character (and not "any character").
 

@@ -72,7 +72,7 @@ def get_state_field(class_name, state_name):
     """Return the name of the state field for the given state.
     This usually follows the convention of appending 'status' to the end.
     """
-    return state_name.lstrip(class_name.lower()) + 'status'
+    return state_name + 'status'
 
 
 _relation_names = {}
