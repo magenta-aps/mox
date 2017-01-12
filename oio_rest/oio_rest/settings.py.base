@@ -329,5 +329,6 @@ MOX_BASE_DIR = os.path.abspath(
 
 # Log AMQP settings
 LOG_AMQP_SERVER = 'localhost'
-LOG_QUEUE = 'incoming'
+MOX_LOG_EXCHANGE = 'mox.log'
+MOX_LOG_QUEUE = 'mox.log_queue'
 LOG_IGNORED_SERVICES = ['Log', ]
