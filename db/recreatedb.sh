@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
@@ -9,12 +9,13 @@ export PGPASSWORD="$MOX_DB_PASSWORD"
 # TODO: Support remote Postgres DB server
 #export PGHOST="$MOX_DB_HOST"
 
-sudo -u $SUPER_USER createuser $MOX_DB_USER
-sudo -u $SUPER_USER psql -c "ALTER USER $MOX_DB_USER WITH PASSWORD '$MOX_DB_PASSWORD';"
-sudo -u $SUPER_USER dropdb $MOX_DB
-sudo -u $SUPER_USER createdb $MOX_DB
-sudo -u $SUPER_USER psql -c "GRANT ALL ON DATABASE $MOX_DB TO $MOX_DB_USER"
-sudo -u $SUPER_USER psql -d $MOX_DB -f basis/dbserver_prep.sql
+sudo -u postgres dropdb --if-exists $MOX_DB
+sudo -u postgres createdb $MOX_DB
+sudo -u postgres dropuser --if-exists $MOX_DB_USER
+sudo -u postgres createuser $MOX_DB_USER
+sudo -u postgres psql -c "ALTER USER $MOX_DB_USER WITH PASSWORD '$MOX_DB_PASSWORD';"
+sudo -u postgres psql -c "GRANT ALL ON DATABASE $MOX_DB TO $MOX_DB_USER"
+sudo -u postgres psql -d $MOX_DB -f basis/dbserver_prep.sql
 
 # Setup AMQP server settings
 sudo -u $SUPER_USER psql -d $MOX_DB -c "insert into amqp.broker

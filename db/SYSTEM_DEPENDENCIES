@@ -1,6 +1,8 @@
-postgresql
-postgresql-server-dev-all
+postgresql-9.3
+postgresql-client-9.3
+postgresql-server-dev-9.3
 postgresql-contrib
 python-jinja2
 pgxnclient
 rabbitmq-server
+git

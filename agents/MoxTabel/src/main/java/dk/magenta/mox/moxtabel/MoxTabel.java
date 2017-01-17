@@ -30,22 +30,14 @@ public class MoxTabel extends MoxAgent {
     public MoxTabel(String[] args) {
         super(args);
 
-        String listenerPrefix = "amqp.incoming";
-        String senderPrefix = "amqp.outgoing";
+        String listenerPrefix = this.getAmqpPrefix() + ".incoming";
+        String senderPrefix = this.getAmqpPrefix() + ".outgoing";
 
-        this.listenerDefinition = new AmqpDefinition();
-        this.listenerDefinition.populateFromMap(this.commandLineArgs, listenerPrefix, true, true);
-        this.listenerDefinition.populateFromProperties(this.properties, listenerPrefix, false);
-        this.listenerDefinition.populateFromDefaults(true, listenerPrefix);
-
-        this.senderDefinition = new AmqpDefinition();
-        this.senderDefinition.populateFromMap(this.commandLineArgs, senderPrefix, true, true);
-        this.senderDefinition.populateFromProperties(this.properties, senderPrefix, false);
-        this.senderDefinition.populateFromDefaults(true, senderPrefix);
-
+        this.listenerDefinition = new AmqpDefinition(this.commandLineArgs, this.properties, listenerPrefix, true);
+        this.senderDefinition = new AmqpDefinition(this.commandLineArgs, this.properties, senderPrefix, true);
 
         try {
-            this.restInterface = new URL(this.getSetting("rest.interface"));
+            this.restInterface = new URL(this.getSetting("moxtabel.rest.host"));
         } catch (MalformedURLException e) {
             throw new RuntimeException("Rest interface URL is malformed", e);
         }
@@ -57,16 +49,20 @@ public class MoxTabel extends MoxAgent {
         });
     }
 
+    protected String getAmqpPrefix() {
+        return "moxtabel.amqp";
+    }
+
     protected String getDefaultPropertiesFileName() {
-        return "moxtabel.properties";
+        return "moxtabel.conf";
     }
 
     @Override
     public void run() {
         log.info("\n--------------------------------------------------------------------------------");
         log.info("MoxTabel Starting");
-        log.info("Listening for messages from RabbitMQ service at " + this.listenerDefinition.getAmqpLocation() + ", queue name '" + this.listenerDefinition.getQueueName() + "'");
-        log.info("Successfully converted messages will be forwarded to the RabbitMQ service at " + this.senderDefinition.getAmqpLocation() + ", queue name '"+this.senderDefinition.getQueueName()+"'");
+        log.info("Listening for messages from RabbitMQ service at " + this.listenerDefinition.getHost() + ", exchange '" + this.listenerDefinition.getExchange() + "'");
+        log.info("Successfully converted messages will be forwarded to the RabbitMQ service at " + this.senderDefinition.getHost() + ", exchange '"+this.senderDefinition.getExchange()+"'");
         MessageReceiver messageReceiver = null;
         MessageSender messageSender = null;
         try {

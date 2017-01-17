@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/bin/bash -e
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
-pushd $DIR
-mvn package
+pushd "$DIR" > /dev/null
+mvn package --quiet -Dmaven.test.skip=true
 popd
 
 sudo mkdir -p /var/log/mox

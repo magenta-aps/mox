@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Spreadsheet upload</title>
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+    <script src="{{ url_for('static', filename='poll.js') }}"></script>
+    <script>
+        (function () {
+            var jobId = {{ jobId|tojson }};
+            var handleResponse = function(response) {
+                for (var id in response) {
+                    var responseNode = $("<p>");
+                    responseNode.text("uuid: " + response[id].uuid);
+                    $("#responseContainer").append(responseNode);
+                }
+            };
+            pollJob(jobId, handleResponse);
+        })();
+    </script>
+</head>
+<body>
+    <p>Spreadsheet has been submitted.</p>
+    <p>Response:</p>
+    <div id="responseContainer"></div>
+</body>
+</html>

@@ -1,0 +1,1 @@
+from dokument import Dokument

@@ -65,12 +65,6 @@
             <version>20141113</version>
         </dependency>
 
-        <dependency>
-            <groupId>dk.magenta.mox</groupId>
-            <artifactId>json</artifactId>
-            <version>1.0</version>
-        </dependency>
-
         <!-- RabbitMQ -->
         <dependency>
             <groupId>com.rabbitmq</groupId>

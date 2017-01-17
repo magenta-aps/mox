@@ -1,3 +1,16 @@
+* Version 0.2.15, December 21, 2016
+
+New in this version:
+
+* Converted spreadsheet download to a python Flask webservice
+* Converted spreadsheet upload to a python Flask webservice
+* Stability, configuration and verbosity update to moxrestfrontend
+* Consolidated common classes & utilities to share between agents
+* Simplified apache installation & configuration
+* Created common install & config utilities, to avoid the same boilerplate code in install files
+* Refactored get-token to support authentication against WSO2 and AD FS.
+
+
 * Version 0.2.14.1, June 30, 2016
 
 Hotfix:
