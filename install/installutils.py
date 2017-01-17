@@ -1,12 +1,56 @@
-#!/usr/bin/python
-
+import datetime
+import multiprocessing
 import os
+import pwd
+import re
 import shutil
 import subprocess
-import random
 import sys
 
+import jinja2
+import virtualenv
+
 # ------------------------------------------------------------------------------
+
+_basedir = os.path.dirname(os.path.abspath(sys.modules['__main__'].__file__))
+_moxdir = os.path.dirname(os.path.dirname(os.path.realpath(
+    os.path.splitext(__file__)[0] + '.py')
+))
+
+logfilename = os.path.join(_basedir, 'install.log')
+
+
+class _RedirectOutput(object):
+    '''Context manager for temporarily redirecting stdout & stderr.
+
+    Loosely based on contextlib._RedirectStream from the Python 3.4
+    standard library.
+
+    '''
+
+    def __new__(cls, new_target):
+        if new_target:
+            return object.__new__(cls, new_target)
+
+    def __init__(self, new_target):
+        self._new_target = new_target
+        # We use a list of old targets to make this CM re-entrant
+        self._old_targets = []
+
+    def __enter__(self):
+        self._old_targets[:] = [sys.stdout, sys.stderr]
+        if isinstance(self._new_target, basestring):
+            sys.stdout = sys.stderr = open(self._new_target, 'a')
+        else:
+            sys.stdout = sys.stderr = self._new_target
+        return sys.stdout
+
+    def __exit__(self, exctype, excinst, exctb):
+        if isinstance(self._new_target, basestring):
+            os.fsync(sys.stdout)
+            sys.stdout.close()
+
+        sys.stdout, sys.stderr = self._old_targets
 
 
 class Config(object):
@@ -126,13 +170,14 @@ class _Getch:
         except ImportError:
             self.impl = _GetchUnix()
 
-    def __call__(self): return self.impl()
+    def __call__(self):
+        return self.impl()
 
 
 class _GetchUnix:
     def __init__(self):
-        import tty
-        import termios
+        import tty  # NOQA
+        import termios  # NOQA
 
     def __call__(self):
         import tty
@@ -144,18 +189,25 @@ class _GetchUnix:
             ch = sys.stdin.read(1)
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        if ord(ch) == 3:
+            raise KeyboardInterrupt
         return ch
 
 
 class _GetchWindows:
     def __init__(self):
-        import msvcrt
+        import msvcrt  # NOQA
 
     def __call__(self):
         import msvcrt
-        return msvcrt.getch()
+        ch = msvcrt.getch()
+        if ord(ch) == 3:
+            raise KeyboardInterrupt
+        return ch
+
 
 getch = _Getch()
+
 
 # ------------------------------------------------------------------------------
 
@@ -166,8 +218,7 @@ class VirtualEnv(object):
         self.environment_dir = environment_dir
         self.exists = os.path.isdir(self.environment_dir)
 
-    def create(self, always_overwrite=False, never_overwrite=False,
-               outfile=None):
+    def create(self, always_overwrite=False, never_overwrite=False):
         if os.path.isdir(self.environment_dir):
             self.exists = True
             if always_overwrite:
@@ -177,12 +228,14 @@ class VirtualEnv(object):
             else:
                 print "%s already exists" % self.environment_dir
                 # raw_input("Do you want to reinstall it? (y/n)")
-                print "Do you want to reinstall it? (y/n)",
+                default = 'y'
+                print "Do you want to reinstall it? (Y/n)",
                 answer = None
                 while answer != 'y' and answer != 'n':
                     answer = getch()
+                    if answer in ['\n', '\r']:
+                        answer = default
                 create = (answer == 'y')
-                print answer
             if create:
                 shutil.rmtree(self.environment_dir)
         else:
@@ -190,60 +243,57 @@ class VirtualEnv(object):
 
         if create:
             print "Creating virtual enviroment '%s'" % self.environment_dir
-            fp = open(outfile, 'a') if outfile else None
-            subprocess.call(
-                ['virtualenv', self.environment_dir], stdout=fp, stderr=fp
-            )
+            with _RedirectOutput(logfilename):
+                sys.stdout.write('\n{}\nVENV: create {}\n\n'.format(
+                    datetime.datetime.now(), self.environment_dir
+                ))
+
+                virtualenv.create_environment(self.environment_dir)
+
             self.exists = True
 
         return create
 
-    def run(self, outfile=None, *commands):
-        # Warning: Be very sure what you put in commands,
-        # since that gets executed in a shell
+    def run(self, *args):
         if self.exists:
-            while True:
-                filename = "/tmp/foo.%d" % random.randint(0, (2**32)-1)
-                if not os.path.isfile(filename):
-                    break
-            with open(filename, 'w') as file:
-                file.write("#!/bin/bash\n")
-                file.write("source %s/bin/activate\n" % self.environment_dir)
-                for command in commands:
-                    file.write("%s\n" % command)
-                file.write("deactivate\n")
-                file.close()
-            os.chmod(filename, 0755)
-            process = subprocess.Popen(
-                filename, shell=True,
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                universal_newlines=True
-            )
-            stdout_lines = iter(process.stdout.readline, "")
-            fp = None
-            if outfile is not None:
-                fp = open(outfile, 'a')
-            for stdout_line in stdout_lines:
-                if fp:
-                    fp.write(stdout_line)
-                else:
-                    print stdout_line,
+            # based on virtualenv.py
+            pycmd = os.path.join(self.environment_dir, 'bin',
+                                 os.path.basename(sys.executable))
 
-            process.stdout.close()
-            if fp:
-                fp.close()
-            return_code = process.wait()
+            run(pycmd, *args)
 
-            os.remove(filename)
-            return return_code
+    def call(self, func, *args, **kwargs):
+        '''Call the given function within this environment
 
-    def add_moxlib_pointer(self, moxdir):
-        fp = open(
+        In order to avoid polluting global namespaces, the function is
+        called in a subprocess.
+
+        '''
+        this_file = os.path.join(self.environment_dir,
+                                 'bin', 'activate_this.py')
+
+        def init(this_file):
+            execfile(this_file, dict(__file__=this_file))
+
+        pool = multiprocessing.Pool(1, init, (this_file,))
+
+        return pool.apply(func, args, kwargs)
+
+    def expand_template(self, *args, **kwargs):
+        kwargs.setdefault('ENVDIR', self.environment_dir)
+        kwargs.setdefault('PYTHON', os.path.join(
+            self.environment_dir, 'bin',
+            os.path.basename(sys.executable),
+        ))
+
+        return expand_template(*args, **kwargs)
+
+    def add_moxlib_pointer(self):
+        with open(
             "%s/lib/python2.7/site-packages/mox.pth" % self.environment_dir,
             "w"
-        )
-        fp.write(os.path.abspath("%s/agentbase/python/mox" % moxdir))
-        fp.close()
+        ) as fp:
+            fp.write(os.path.abspath("%s/agentbase/python/mox" % _moxdir))
 
 
 class Apache(object):
@@ -255,7 +305,8 @@ class Apache(object):
     endmarker_index = None
     indent = ''
 
-    def __init__(self, siteconf="/srv/mox/apache/mox.conf"):
+    def __init__(self, siteconf=_moxdir + "/apache/mox.conf"):
+        assert os.path.isdir(os.path.dirname(siteconf)), siteconf
         self.siteconf = siteconf
 
     def load_config(self):
@@ -277,6 +328,7 @@ class Apache(object):
             with open(self.siteconf, 'w') as outfile:
                 for line in self.lines:
                     outfile.write(line)
+            sudo('apachectl', "graceful")
 
     def index(self, search, start=0, end=None):
         if end is None:
@@ -304,17 +356,130 @@ class Apache(object):
 
 class WSGI(object):
 
-    def __init__(self, wsgifile, conffile, wsgidir='/var/www/wsgi'):
+    def __init__(self, wsgifile, conffile, virtualenv, user=None):
+        self.virtualenv = virtualenv
         self.wsgifile = wsgifile
         self.conffile = conffile
-        self.wsgidir = wsgidir
+        # FIXME: we use apache's mod_wsgi, so we can't actually change the user
+        self.user = user
 
     def install(self, first_include=False):
-        if not os.path.exists(self.wsgidir):
-            subprocess.Popen(
-                ['sudo', 'mkdir', "--parents", self.wsgidir]
-            ).wait()
-        subprocess.Popen(
-            ['sudo', 'cp', '--remove-destination', self.wsgifile, self.wsgidir]
-        ).wait()
-        Apache().add_include(self.conffile, first_include)
+        if self.user:
+            create_user(self.user)
+
+        self.virtualenv.expand_template(self.wsgifile)
+        conffile = self.virtualenv.expand_template(self.conffile)
+
+        Apache().add_include(conffile, first_include)
+
+
+def install_dependencies(file):
+    if os.path.isfile(file):
+        with open(file, 'r') as fp:
+            packages = fp.read().split()
+            if packages:
+                sudo('apt-get', '--yes', 'install', *packages)
+
+
+class File(object):
+
+    def __init__(self, filename):
+        self.filename = filename
+
+    def open(self, mode):
+        return open(self.filename, mode)
+
+    def touch(self):
+        sudo('touch', self.filename)
+
+    def chmod(self, mode):
+        sudo('chmod', mode, self.filename)
+
+    def chown(self, owner):
+        sudo('chown', owner, self.filename)
+
+    def chgrp(self, group):
+        sudo('chgrp', group, self.filename)
+
+
+class LogFile(File):
+
+    def create(self):
+        self.touch()
+        self.chmod('666')
+        self.chown('mox')
+        self.chgrp('mox')
+
+
+class Folder(object):
+
+    def __init__(self, foldername):
+        self.foldername = foldername
+
+    def isdir(self):
+        return os.path.isdir(self.foldername)
+
+    def mkdir(self):
+        if not self.isdir():
+            sudo('mkdir', '--parents', self.foldername)
+
+    def chmod(self, mode):
+        sudo('chmod', mode, self.foldername)
+
+    def chown(self, owner):
+        sudo('chown', owner, self.foldername)
+
+    def chgrp(self, group):
+        sudo('chgrp', group, self.foldername)
+
+
+def expand_template(template_file, dest_file=None, **kwargs):
+    if not dest_file:
+        dest_file = os.path.splitext(template_file)[0]
+
+    print 'Expanding {!r} to {!r}'.format(template_file, dest_file)
+    template_file = os.path.join(_basedir, template_file)
+    dest_file = os.path.join(_basedir, dest_file)
+
+    kwargs.setdefault('DIR', _basedir)
+    kwargs.setdefault('MOXDIR', _moxdir)
+
+    with open(template_file) as fp:
+        template = jinja2.Template(fp.read())
+
+    text = template.render(**kwargs)
+
+    with open(dest_file, 'w') as fp:
+        fp.write(text)
+
+    return dest_file
+
+def run(*args):
+    with open(logfilename, 'a') as logfp:
+        logfp.write('\n{}\nCMD: {}\n\n'.format(datetime.datetime.now(),
+                                               ' '.join(args)))
+        logfp.flush()
+
+        subprocess.check_call(args, cwd=_basedir,
+                              stdout=logfp, stderr=logfp)
+
+
+def sudo(*args):
+    with open(logfilename, 'a') as logfp:
+        logfp.write('\n{}\nSUDO: {}\n\n'.format(datetime.datetime.now(),
+                                                ' '.join(args)))
+        logfp.flush()
+
+        subprocess.check_call(('sudo',) + args, cwd=_basedir,
+                              stdout=logfp, stderr=logfp)
+
+
+def create_user(user):
+    try:
+        pwd.getpwnam(user)
+    except KeyError:
+        sudo(
+            'useradd', '--system',
+            '-s', '/usr/sbin/nologin',
+            '-g', 'mox', user,
+        )

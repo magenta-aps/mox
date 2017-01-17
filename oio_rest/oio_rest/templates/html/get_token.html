@@ -1,6 +1,11 @@
         <html>
         <head><title>Get token</title></head>
         <body>
+        {% if not settings.USE_SAML_AUTHENTICATION %}
+        <div>
+          SAML authentication is disabled.
+        </div>
+        {% else %}
         <form method="POST" action="/get-token">
             <label>
                 Username:
@@ -14,5 +19,6 @@
             <br/>
             <input type="submit" value="Request Token"/>
         </form>
+        {% endif %}
         </body>
         </html>

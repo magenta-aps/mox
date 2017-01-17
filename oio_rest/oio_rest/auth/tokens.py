@@ -2,7 +2,7 @@ import base64
 import datetime
 import os
 import sys
-import urllib2
+import requests
 import zlib
 
 from lxml import etree
@@ -29,7 +29,7 @@ def _gzipstring(s):
     return compressor.compress(s) + compressor.flush()
 
 
-def get_token(username, passwd, pack=True, pretty_print=False):
+def get_token(username, passwd, pretty_print=False, insecure=False):
     '''Request a SAML authentication token from the given host and endpoint.
 
     Windows Server typically returns a 500 Internal Server Error on
@@ -56,31 +56,25 @@ def get_token(username, passwd, pack=True, pretty_print=False):
         expires=expires.isoformat(),
     )
 
-    headers = {
+    resp = requests.post(idp_url, data=xml, verify=not insecure, headers={
         'Content-Type': 'application/soap+xml; charset=utf-8',
-    }
-    req = urllib2.Request(idp_url, xml, headers)
+    }, )
 
-    try:
-        urlfp = urllib2.urlopen(req)
-    except urllib2.HTTPError as e:
+    if not resp.ok:
         # do something?
-        ct = e.info().get('Content-Type', '').split(';')[0]
+        ct = resp.headers.get('Content-Type', '').split(';')[0]
 
-        if e.getcode() == 500 and ct == 'application/soap+xml':
-            doc = etree.parse(e)
+        if resp.status_code == 500 and ct == 'application/soap+xml':
+            doc = etree.fromstring(resp.content)
 
-            try:
-                raise Exception(' '.join(doc.getroot().itertext('{*}Text')))
-            finally:
-                e.close()
+            raise Exception(' '.join(doc.itertext('{*}Text')))
 
-        raise
+        resp.raise_for_status()
 
-    try:
-        doc = etree.parse(urlfp)
-    finally:
-        urlfp.close()
+    doc = etree.fromstring(resp.content)
+
+    if doc.find('./{*}Body/{*}Fault') is not None:
+        raise Exception(' '.join(doc.itertext('{*}Text')))
 
     tokens = doc.findall('.//{*}RequestedSecurityToken/{*}Assertion')
 
@@ -91,12 +85,13 @@ def get_token(username, passwd, pack=True, pretty_print=False):
 
     assert len(tokens) == 1
 
-    token = etree.tostring(tokens[0], pretty_print=pretty_print)
-
-    if pack:
-        return 'saml-gzipped ' + base64.standard_b64encode(_gzipstring(token))
+    if pretty_print:
+        return etree.tostring(tokens[0], pretty_print=pretty_print)
     else:
-        return token
+        text = \
+            base64.standard_b64encode(_gzipstring(etree.tostring(tokens[0])))
+
+        return 'saml-gzipped ' + text
 
 
 def main(*args):
@@ -108,19 +103,45 @@ def main(*args):
         description='request a SAML token'
     )
 
-    parser.add_argument('user')
+    parser.add_argument('-u', '--user',
+                        help="account user name")
+    parser.add_argument('-p', '--password',
+                        help="account password")
+    parser.add_argument('-r', '--raw', action='store_true',
+                        help="don't pack and wrap the token")
+    parser.add_argument('--insecure', action='store_true',
+                        help="disable SSL/TLS security checks")
+    parser.add_argument('--cert-only', action='store_true',
+                        help="output embedded certificates in PEM form")
 
-    parser.add_argument('-v', '--verbose', action='store_true')
-    parser.add_argument('-f', '--full', action='store_true')
-    parser.add_argument('-p', '--password')
+    # compatibility argument -- we don't print out anything
+    parser.add_argument('-s', '--silent', action='store_true',
+                        help=argparse.SUPPRESS, default=argparse.SUPPRESS)
 
     options = parser.parse_args()
 
+    username = options.user or raw_input('User: ')
     password = options.password or getpass.getpass('Password: ')
 
-    token = get_token(options.user, password, options.full, options.verbose)
+    if options.insecure:
+        from requests.packages import urllib3
+        urllib3.disable_warnings()
 
-    sys.stdout.write(token)
+    token = get_token(username, password,
+                      options.raw or options.cert_only,
+                      options.insecure)
+
+    if not options.cert_only:
+        sys.stdout.write(token)
+
+    else:
+        from lxml import etree
+        from M2Crypto import X509
+
+        for el in etree.fromstring(token).findall('.//{*}X509Certificate'):
+            data = base64.standard_b64decode(el.text)
+
+            sys.stdout.write(X509.load_cert_der_string(data).as_pem())
 
     return 0
 
