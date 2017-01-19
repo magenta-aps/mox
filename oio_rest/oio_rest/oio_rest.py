@@ -17,6 +17,7 @@ from authentication import requires_auth
 def j(t):
     return jsonify(output=t)
 
+
 def typed_get(d, field, default):
     v = d.get(field, default)
     t = type(default)
@@ -34,6 +35,7 @@ def typed_get(d, field, default):
                                    json.dumps(v)))
 
     return v
+
 
 class ArgumentDict(ImmutableOrderedMultiDict):
     '''

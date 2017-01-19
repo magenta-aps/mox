@@ -34,9 +34,11 @@ class RegexConverter(BaseConverter):
 
 app.url_map.converters['regex'] = RegexConverter
 
+
 @app.route('/')
 def root():
     return redirect(url_for('sitemap'), code=308)
+
 
 @app.route('/get-token', methods=['GET', 'POST'])
 def get_token():
@@ -87,7 +89,7 @@ def handle_db_error(error):
 
 
 def setup_api():
-    
+
     from settings import BASE_URL
     from klassifikation import KlassifikationsHierarki
     from organisation import OrganisationsHierarki
@@ -106,7 +108,6 @@ def main():
 
     setup_api()
     app.run(debug=True)
-    
 
 
 if __name__ == '__main__':
