@@ -8,6 +8,7 @@ from psycopg2.extras import DateTimeTZRange
 from psycopg2.extensions import adapt as psyco_adapt
 
 from jinja2 import Environment, FileSystemLoader
+from dateutil import parser as date_parser
 
 from settings import DATABASE, DB_USER, DO_ENABLE_RESTRICTIONS, DB_PASSWORD
 
@@ -82,6 +83,8 @@ def convert_attr_value(attribute_name, attribute_field_name,
                 attribute_field_value.get('hjemmel', None))
     elif field_type == "date":
         return datetime.strptime(attribute_field_value, "%Y-%m-%d").date()
+    elif field_type == "timestamptz":
+        return date_parser.parse(attribute_field_value)
     else:
         return attribute_field_value
 
@@ -98,6 +101,9 @@ def convert_relation_value(class_name, field_name, value):
             OffentlighedUndtaget(ou.get('alternativtitel', None),
                                  ou.get('hjemmel', None))
         )
+    elif field_type == 'aktoerattr':
+        # TODO: Handle properly.
+        pass
     else:
         return value
 
@@ -359,6 +365,8 @@ def create_or_import_object(class_name, note, registration,
         note=note,
         registration=sql_registration,
         restrictions=sql_restrictions)
+
+    print sql
 
     # Call Postgres! Return OK or not accordingly
     conn = get_connection()

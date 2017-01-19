@@ -85,19 +85,28 @@ def handle_db_error(error):
     message, context = error.message.split('\n', 1)
     return jsonify(message=message, context=context), 400
 
-def main():
+
+def setup_api():
+    
     from settings import BASE_URL
     from klassifikation import KlassifikationsHierarki
     from organisation import OrganisationsHierarki
     from sag import SagsHierarki
     from dokument import DokumentHierarki
+    from aktivitet import AktivitetsHierarki
 
     KlassifikationsHierarki.setup_api(base_url=BASE_URL, flask=app)
     SagsHierarki.setup_api(base_url=BASE_URL, flask=app)
     OrganisationsHierarki.setup_api(base_url=BASE_URL, flask=app)
     DokumentHierarki.setup_api(base_url=BASE_URL, flask=app)
+    AktivitetsHierarki.setup_api(base_url=BASE_URL, flask=app)
 
+
+def main():
+
+    setup_api()
     app.run(debug=True)
+    
 
 
 if __name__ == '__main__':
