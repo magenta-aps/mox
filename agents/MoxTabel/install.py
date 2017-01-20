@@ -18,7 +18,7 @@ args = parser.parse_args()
 if not args.skip_compile:
     print 'Building Maven package'
 
-    run('mvn', 'package', '-Dmaven.test.skip=true')
+    run('mvn', 'package', '-Dmaven.test.skip=true', '-Dmaven.clean.skip=true')
 
 # ------------------------------------------------------------------------------
 
