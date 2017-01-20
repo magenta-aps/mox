@@ -446,6 +446,69 @@ class Folder(object):
         sudo('chgrp', group, self.foldername)
 
 
+class Service(object):
+    USE_SYSTEMD = (os.path.islink("/sbin/init") and
+                   os.path.basename(os.readlink("/sbin/init")) == "systemd")
+
+    def __init__(self, script, user='mox', group='mox', after=()):
+        self.script = os.path.join(_basedir, script)
+        self.user = user
+        self.group = group
+        self.after = after
+
+    @property
+    def name(self):
+        return os.path.basename(os.path.splitext(self.script)[0])
+
+    def install(self):
+        create_user(self.user, self.group)
+
+        service_name = self.name + '.service'
+        systemd_service = '/etc/systemd/system/{}.service'.format(self.name)
+        upstart_config = '/etc/init/{}.conf'.format(self.name)
+
+        if os.path.exists(upstart_config):
+            try:
+                sudo('service', self.name, 'stop')
+            except subprocess.CalledProcessError:
+                log('failed to stop upstart service', self.name)
+
+            sudo('rm', '-v', upstart_config)
+
+        if os.path.exists(systemd_service):
+            try:
+                sudo('systemctl', 'stop', service_name)
+            except subprocess.CalledProcessError:
+                log('failed to stop systemd service', self.name)
+
+            sudo('rm', '-v', systemd_service)
+
+        if self.USE_SYSTEMD:
+            template = \
+                os.path.join(_moxdir,
+                             'install/templates/systemd-agent.service.in')
+
+            expand_template(template,
+                            systemd_service,
+                            NAME=self.name, SCRIPT=self.script,
+                            USER=self.user, GROUP=self.group,
+                            AFTER=self.after)
+
+            sudo('systemctl', 'enable', service_name)
+            sudo('systemctl', 'start', service_name)
+
+        else:
+            template = \
+                os.path.join(_moxdir,
+                             'install/templates/upstart-agent.conf.in')
+
+            expand_template(template, upstart_config,
+                            NAME=self.name, SCRIPT=self.script,
+                            USER=self.user, GROUP=self.group)
+
+            sudo('service', self.name, 'start')
+
+
 def expand_template(template_file, dest_file=None, **kwargs):
     if not dest_file:
         dest_file = os.path.splitext(template_file)[0]
