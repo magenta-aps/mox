@@ -17,15 +17,6 @@ if [[ "x$REPLY" != "x" ]]; then
 	DOMAIN="$REPLY"
 fi
 
-read -p "Install WSO2 identity provider? [N/y] " -r -n 1
-echo
-if [[ $REPLY != [yY] ]]
-then
-	USE_WSO2=false
-else
-	USE_WSO2=true
-fi
-
 AMQP_HOST="localhost"
 AMQP_USER="guest"
 AMQP_PASS="guest"
@@ -67,12 +58,6 @@ sudo apt-get -qq install python python-pip python-virtualenv python-jinja2
 # Setup apache virtualhost
 echo "Setting up Apache virtualhost"
 $DIR/apache/install.sh
-
-if $USE_WSO2
-then
-	echo "Setting up Identity Server"
-	$DIR/wso2/install.sh "$DOMAIN"
-fi
 
 # Install oio_rest
 echo "Installing oio_rest"
