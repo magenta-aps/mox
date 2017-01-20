@@ -548,7 +548,9 @@ def sudo_with_input(data, *args):
 def create_user(user, group='mox'):
     try:
         pwd.getpwnam(user)
+        print('Using pre-existing user {!r}'.format(user))
     except KeyError:
+        print('Creating user {!r}'.format(user))
         sudo(
             'useradd', '--system',
             '-s', '/usr/sbin/nologin',
