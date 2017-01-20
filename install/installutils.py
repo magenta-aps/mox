@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import collections
 import datetime
 import multiprocessing
@@ -146,7 +148,7 @@ class Config(object, UserDict.DictMixin):
                 else:
                     value = raw_input("%s = " % confkey).strip()
             else:
-                print "%s = %s" % (confkey, value)
+                print("%s = %s" % (confkey, value))
             self.set(confkey, value)
 
 
@@ -230,10 +232,10 @@ class VirtualEnv(object):
             elif never_overwrite:
                 create = False
             else:
-                print "%s already exists" % self.environment_dir
+                print("%s already exists" % self.environment_dir)
                 # raw_input("Do you want to reinstall it? (y/n)")
                 default = 'y'
-                print "Do you want to reinstall it? (Y/n)",
+                print("Do you want to reinstall it? (Y/n) ", end='')
                 answer = None
                 while answer != 'y' and answer != 'n':
                     answer = getch()
@@ -246,7 +248,7 @@ class VirtualEnv(object):
             create = True
 
         if create:
-            print "Creating virtual enviroment '%s'" % self.environment_dir
+            print("Creating virtual enviroment %r" % self.environment_dir)
             with _RedirectOutput(logfilename):
                 sys.stdout.write('\n{}\nVENV: create {}\n\n'.format(
                     datetime.datetime.now(), self.environment_dir
@@ -441,7 +443,7 @@ def expand_template(template_file, dest_file=None, **kwargs):
     if not dest_file:
         dest_file = os.path.splitext(template_file)[0]
 
-    print 'Expanding {!r} to {!r}'.format(template_file, dest_file)
+    print('Expanding {!r} to {!r}'.format(template_file, dest_file))
     template_file = os.path.join(_basedir, template_file)
     dest_file = os.path.join(_basedir, dest_file)
 
