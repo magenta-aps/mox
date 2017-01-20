@@ -1,3 +1,4 @@
+import collections
 import datetime
 import multiprocessing
 import os
@@ -6,6 +7,7 @@ import re
 import shutil
 import subprocess
 import sys
+import UserDict
 
 import jinja2
 import virtualenv
@@ -53,11 +55,11 @@ class _RedirectOutput(object):
         sys.stdout, sys.stderr = self._old_targets
 
 
-class Config(object):
+class Config(object, UserDict.DictMixin):
     def __init__(self, file, create=True):
         self.file = file
         self.lines = []
-        self.data = {}
+        self.data = collections.OrderedDict()
         self.lastline = 0
         if create:
             self.create()
@@ -90,7 +92,7 @@ class Config(object):
             fp = open(self.file, 'w')
             fp.close()
 
-    def set(self, key, value):
+    def __setitem__(self, key, value):
         if not self.exists():
             raise ConfigNotCreatedException(self.file)
         key = key.strip()
@@ -101,11 +103,13 @@ class Config(object):
             self.data[key] = obj
             self.lines.append(obj)
 
-    def get(self, key):
-        try:
-            return self.data[key.strip()]['value']
-        except:
-            return None
+    set = __setitem__
+
+    def __getitem__(self, key):
+        return self.data[key.strip()]['value']
+
+    def __delitem__(self, key):
+        del self.data[key.strip()]
 
     def save(self):
         if not self.exists():
