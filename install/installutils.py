@@ -473,6 +473,13 @@ def expand_template(template_file, dest_file=None, **kwargs):
 
     return dest_file
 
+
+def log(*args):
+    with open(logfilename, 'a') as logfp:
+        print(*args, file=logfp)
+        logfp.flush()
+
+
 def run(*args):
     with open(logfilename, 'a') as logfp:
         logfp.write('\n{}\nCMD: {}\n\n'.format(datetime.datetime.now(),
