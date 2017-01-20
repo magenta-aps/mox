@@ -74,19 +74,10 @@ then
 	$DIR/wso2/install.sh "$DOMAIN"
 fi
 
-REINSTALL_VIRTUALENVS=""
-read -p "Reinstall python virtual environments [(y)es/(n)o/(A)sk every time] " -r -n 1
-echo
-if [[ $REPLY == [yY] ]]; then
-	REINSTALL_VIRTUALENVS="--overwrite-virtualenv"
-elif [[ $REPLY == [nN] ]]; then
-	REINSTALL_VIRTUALENVS="--keep-virtualenv"
-fi
-
 # Install oio_rest
 echo "Installing oio_rest"
-echo "$DIR/oio_rest/install.py $REINSTALL_VIRTUALENVS"
-$DIR/oio_rest/install.py $REINSTALL_VIRTUALENVS
+echo "$DIR/oio_rest/install.py"
+$DIR/oio_rest/install.py
 
 # Install database
 echo "Installing database"
@@ -113,13 +104,13 @@ $DIR/agents/MoxTabel/configure.py --rest-host "$REST_HOST" --amqp-incoming-host 
 $DIR/agents/MoxRestFrontend/install.py
 $DIR/agents/MoxRestFrontend/configure.py --rest-host "$REST_HOST" --amqp-host "$DOMAIN" --amqp-user "$AMQP_USER" --amqp-pass "$AMQP_PASS" --amqp-exchange "mox.rest"
 
-$DIR/agents/MoxDocumentUpload/install.py $REINSTALL_VIRTUALENVS
 $DIR/agents/MoxDocumentUpload/configure.py --rest-host "$REST_HOST" --amqp-host "$DOMAIN" --amqp-user "$AMQP_USER" --amqp-pass "$AMQP_PASS" --amqp-exchange "mox.documentconvert"
+$DIR/agents/MoxDocumentUpload/install.py
 
 $DIR/agents/MoxTest/install.sh
 
-$DIR/agents/MoxDocumentDownload/install.py $REINSTALL_VIRTUALENVS
 $DIR/agents/MoxDocumentDownload/configure.py --rest-host "$REST_HOST"
+$DIR/agents/MoxDocumentDownload/install.py
 
 sudo service apache2 reload
 

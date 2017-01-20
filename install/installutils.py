@@ -6,8 +6,6 @@ import datetime
 import multiprocessing
 import os
 import pwd
-import re
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -222,35 +220,15 @@ getch = _Getch()
 
 class VirtualEnv(object):
 
-    def __init__(self, environment_dir):
-        self.environment_dir = environment_dir
-        self.exists = os.path.isdir(self.environment_dir)
+    def __init__(self, environment_dir=None):
+        self.environment_dir = \
+            environment_dir or os.path.join(_moxdir, 'python-env')
 
-    def create(self, always_overwrite=False, never_overwrite=False):
         if os.path.isdir(self.environment_dir):
-            self.exists = True
-            if always_overwrite:
-                create = True
-            elif never_overwrite:
-                create = False
-            else:
-                print("%s already exists" % self.environment_dir)
-                # raw_input("Do you want to reinstall it? (y/n)")
-                default = 'y'
-                print("Do you want to reinstall it? (Y/n) ", end='')
-                answer = None
-                while answer != 'y' and answer != 'n':
-                    answer = getch()
-                    if answer in ['\n', '\r']:
-                        answer = default
-                create = (answer == 'y')
-            if create:
-                shutil.rmtree(self.environment_dir)
+            print("Using virtual environment %r" % self.environment_dir)
         else:
-            create = True
-
-        if create:
             print("Creating virtual enviroment %r" % self.environment_dir)
+
             with _RedirectOutput(logfilename):
                 sys.stdout.write('\n{}\nVENV: create {}\n\n'.format(
                     datetime.datetime.now(), self.environment_dir
@@ -258,17 +236,12 @@ class VirtualEnv(object):
 
                 virtualenv.create_environment(self.environment_dir)
 
-            self.exists = True
-
-        return create
-
     def run(self, *args):
-        if self.exists:
-            # based on virtualenv.py
-            pycmd = os.path.join(self.environment_dir, 'bin',
-                                 os.path.basename(sys.executable))
+        # based on virtualenv.py
+        pycmd = os.path.join(self.environment_dir, 'bin',
+                             os.path.basename(sys.executable))
 
-            run(pycmd, *args)
+        run(pycmd, *args)
 
     def call(self, func, *args, **kwargs):
         '''Call the given function within this environment
