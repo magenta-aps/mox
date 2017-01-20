@@ -411,12 +411,17 @@ class File(object):
 
 
 class LogFile(File):
+    def __init__(self, filename, user='mox', group='mox'):
+        super(LogFile, self).__init__(filename)
+
+        self.user = user
+        self.group = group
 
     def create(self):
         self.touch()
         self.chmod('666')
-        self.chown('mox')
-        self.chgrp('mox')
+        self.chown(self.user)
+        self.chgrp(self.group)
 
 
 class Folder(object):
@@ -497,12 +502,12 @@ def sudo_with_input(data, *args):
                                   stdout=logfp, stderr=logfp, stdin=inputfp)
 
 
-def create_user(user):
+def create_user(user, group='mox'):
     try:
         pwd.getpwnam(user)
     except KeyError:
         sudo(
             'useradd', '--system',
             '-s', '/usr/sbin/nologin',
-            '-g', 'mox', user,
+            '-g', group, user,
         )
