@@ -34,7 +34,7 @@ if [ $WIPE_DB == 1 ]; then
     # Install pg_amqp - Postgres AMQP extension
     # We depend on a specific fork, which supports setting of message headers
     # https://github.com/duncanburke/pg_amqp.git
-    git clone https://github.com/duncanburke/pg_amqp.git /tmp/pg_amqp
+    git clone https://github.com/magenta-aps/pg_amqp.git /tmp/pg_amqp
     pushd /tmp/pg_amqp
     sudo make install >> "$LOGFILE"
     popd
@@ -42,9 +42,9 @@ if [ $WIPE_DB == 1 ]; then
 
     echo "Updating authentication config"
     # Set authentication method to 'md5' (= password, not peer)
-    sudo sed -i -r 's/local\s+all\s+all\s+peer/local   all             all                                     trust/g' /etc/postgresql/9.3/main/pg_hba.conf
-    sudo sed -i -r 's/host\s+all\s+all\s+127.0.0.1\/32\s+md5/#host    all             all             127.0.0.1\/32            md5/g' /etc/postgresql/9.3/main/pg_hba.conf
-    sudo sed -i -r 's/host\s+all\s+all\s+::1\/128\s+md5/#host    all             all             ::1\/128                 md5/g' /etc/postgresql/9.3/main/pg_hba.conf
+    sudo sed -i -r 's/local\s+all\s+all\s+peer/local   all             all                                     trust/g' /etc/postgresql/*/main/pg_hba.conf
+    sudo sed -i -r 's/host\s+all\s+all\s+127.0.0.1\/32\s+md5/#host    all             all             127.0.0.1\/32            md5/g' /etc/postgresql/*/main/pg_hba.conf
+    sudo sed -i -r 's/host\s+all\s+all\s+::1\/128\s+md5/#host    all             all             ::1\/128                 md5/g' /etc/postgresql/*/main/pg_hba.conf
 
     sudo service postgresql restart
 
