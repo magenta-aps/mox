@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import errno
 import collections
 import datetime
 import multiprocessing
@@ -9,6 +10,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import UserDict
 
 import jinja2
@@ -455,8 +457,14 @@ def expand_template(template_file, dest_file=None, **kwargs):
 
     text = template.render(**kwargs)
 
-    with open(dest_file, 'w') as fp:
-        fp.write(text)
+    try:
+        with open(dest_file, 'w') as fp:
+            fp.write(text)
+    except IOError as exc:
+        if exc.errno not in (errno.EPERM, errno.EACCES):
+            raise
+
+        sudo_with_input(text, 'dd', 'of=' + dest_file)
 
     return dest_file
 
@@ -471,13 +479,22 @@ def run(*args):
 
 
 def sudo(*args):
-    with open(logfilename, 'a') as logfp:
-        logfp.write('\n{}\nSUDO: {}\n\n'.format(datetime.datetime.now(),
-                                                ' '.join(args)))
-        logfp.flush()
+    return sudo_with_input('', *args)
 
-        subprocess.check_call(('sudo',) + args, cwd=_basedir,
-                              stdout=logfp, stderr=logfp)
+
+def sudo_with_input(data, *args):
+    with tempfile.TemporaryFile() as inputfp:
+        if data:
+            inputfp.write(data)
+            inputfp.seek(0)
+
+        with open(logfilename, 'a') as logfp:
+            logfp.write('\n{}\nSUDO: {}\n\n'.format(datetime.datetime.now(),
+                                                    ' '.join(args)))
+            logfp.flush()
+
+            subprocess.check_call(('sudo',) + args, cwd=_basedir,
+                                  stdout=logfp, stderr=logfp, stdin=inputfp)
 
 
 def create_user(user):
