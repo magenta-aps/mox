@@ -15,7 +15,7 @@ from settings import DATABASE, DB_USER, DO_ENABLE_RESTRICTIONS, DB_PASSWORD
 from db_helpers import get_attribute_fields, get_attribute_names
 from db_helpers import get_field_type, get_state_names, get_relation_field_type
 from db_helpers import (Soegeord, OffentlighedUndtaget, JournalNotat,
-                        JournalDokument, DokumentVariantType)
+                        JournalDokument, DokumentVariantType, AktoerAttr)
 
 from authentication import get_authenticated_user
 
@@ -102,8 +102,11 @@ def convert_relation_value(class_name, field_name, value):
                                  ou.get('hjemmel', None))
         )
     elif field_type == 'aktoerattr':
-        # TODO: Handle properly.
-        pass
+        result = AktoerAttr(value.get("accepteret", None),
+                            value.get("obligatorik", None),
+                            value.get("repraesentation_uuid", None),
+                            value.get("repraesentation_urn", None))
+        return result
     else:
         return value
 
@@ -196,6 +199,7 @@ def sql_convert_registration(registration, class_name):
     registration["attributes"] = convert_attributes(registration["attributes"])
     registration["relations"] = convert_relations(registration["relations"],
                                                   class_name)
+    print "CONVERT_RELATION", registration["relations"]
     if "variants" in registration:
         registration["variants"] = adapt(
             convert_variants(registration["variants"])
@@ -222,6 +226,7 @@ def sql_convert_registration(registration, class_name):
 
     relations = registration["relations"]
     sql_relations = sql_relations_array(class_name, relations)
+    print "SQL_RELATIONS", sql_relations
     registration["relations"] = sql_relations
 
     return registration

@@ -102,6 +102,9 @@ JournalNotat = namedtuple('JournalNotatType', 'titel notat format')
 JournalDokument = namedtuple(
     'JournalPostDokumentAttrType', 'dokumenttitel offentlighedundtaget'
 )
+AktoerAttr = namedtuple(
+    'AktivitetAktoerAttr', 'accepteret obligatorik repraesentation_uuid'
+)
 
 
 def input_list(_type, input, key):
@@ -308,13 +311,13 @@ class NamedTupleAdapter(object):
     def prepare(self, conn):
         self._conn = conn
 
-    def getquoted(self):
-        def prepare_and_adapt(x):
-            x = psyco_adapt(x)
-            if hasattr(x, 'prepare'):
-                x.prepare(self._conn)
-            return x
+    def prepare_and_adapt(self, x):
+        x = psyco_adapt(x)
+        if hasattr(x, 'prepare'):
+            x.prepare(self._conn)
+        return x
 
+    def getquoted(self):
         values = map(prepare_and_adapt, self._tuple_obj)
         values = [v.getquoted() for v in values]
         sql = 'ROW(' + ','.join(values) + ') :: ' + \
@@ -325,11 +328,20 @@ class NamedTupleAdapter(object):
         return self.getquoted()
 
 
+class AktoerAttrAdapter(NamedTupleAdapter):
+
+    def getquoted(self):
+        values = map(prepare_and_adapt, self._tuple_obj)
+        values = [v.getquoted() for v in values]
+        sql = "TODO: Generate proper SQL"
+        return sql
+
 psyco_register_adapter(Virkning, NamedTupleAdapter)
 psyco_register_adapter(Soegeord, NamedTupleAdapter)
 psyco_register_adapter(OffentlighedUndtaget, NamedTupleAdapter)
 psyco_register_adapter(JournalNotat, NamedTupleAdapter)
 psyco_register_adapter(JournalDokument, NamedTupleAdapter)
+psyco_register_adapter(AktoerAttr, NamedTupleAdapter)
 
 # Dokument variants
 psyco_register_adapter(DokumentVariantType, NamedTupleAdapter)
