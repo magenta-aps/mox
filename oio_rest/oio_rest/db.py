@@ -9,6 +9,7 @@ from psycopg2.extensions import adapt as psyco_adapt
 
 from jinja2 import Environment, FileSystemLoader
 from dateutil import parser as date_parser
+from mx.DateTime import DateTimeDeltaFrom, DateTimeFrom
 
 from settings import DATABASE, DB_USER, DO_ENABLE_RESTRICTIONS, DB_PASSWORD
 
@@ -85,6 +86,8 @@ def convert_attr_value(attribute_name, attribute_field_name,
         return datetime.strptime(attribute_field_value, "%Y-%m-%d").date()
     elif field_type == "timestamptz":
         return date_parser.parse(attribute_field_value)
+    elif field_type == "interval(0)":
+        return DateTimeDeltaFrom(attribute_field_value).pytimedelta()
     else:
         return attribute_field_value
 
@@ -225,7 +228,6 @@ def sql_convert_registration(registration, class_name):
 
     relations = registration["relations"]
     sql_relations = sql_relations_array(class_name, relations)
-    print "SQL_RELATIONS", sql_relations
     registration["relations"] = sql_relations
 
     return registration
@@ -370,7 +372,7 @@ def create_or_import_object(class_name, note, registration,
         registration=sql_registration,
         restrictions=sql_restrictions)
 
-    # print sql
+    print sql
 
     # Call Postgres! Return OK or not accordingly
     conn = get_connection()
