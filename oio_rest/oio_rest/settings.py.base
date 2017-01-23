@@ -333,7 +333,11 @@ REAL_DB_STRUCTURE["sag"]["relationer_type_override"] = {
     "journalnotat": "journalnotat",
     "journaldokument": "journaldokument"
 }
-#
+
+REAL_DB_STRUCTURE["aktivitet"]["relationer_type_override"] = {
+    "aktoerattr": "aktoerattr"
+}
+
 DB_TEMPLATE_EXTRA_OPTIONS = {
     "dokument": {
         "as_search.jinja.sql": {
