@@ -199,12 +199,11 @@ def sql_convert_registration(registration, class_name):
     registration["attributes"] = convert_attributes(registration["attributes"])
     registration["relations"] = convert_relations(registration["relations"],
                                                   class_name)
-    print "CONVERT_RELATION", registration["relations"]
+    # print "CONVERT_RELATION", registration["relations"]
     if "variants" in registration:
         registration["variants"] = adapt(
             convert_variants(registration["variants"])
         )
-
     states = registration["states"]
     sql_states = []
     for sn in get_state_names(class_name):
@@ -371,7 +370,7 @@ def create_or_import_object(class_name, note, registration,
         registration=sql_registration,
         restrictions=sql_restrictions)
 
-    print sql
+    # print sql
 
     # Call Postgres! Return OK or not accordingly
     conn = get_connection()

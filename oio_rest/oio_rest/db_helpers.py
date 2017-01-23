@@ -103,7 +103,8 @@ JournalDokument = namedtuple(
     'JournalPostDokumentAttrType', 'dokumenttitel offentlighedundtaget'
 )
 AktoerAttr = namedtuple(
-    'AktivitetAktoerAttr', 'accepteret obligatorik repraesentation_uuid'
+    'AktivitetAktoerAttr',
+    'accepteret obligatorik repraesentation_uuid repraesentation_urn'
 )
 
 
@@ -318,10 +319,10 @@ class NamedTupleAdapter(object):
         return x
 
     def getquoted(self):
-        values = map(prepare_and_adapt, self._tuple_obj)
+        values = map(self.prepare_and_adapt, self._tuple_obj)
         values = [v.getquoted() for v in values]
-        sql = 'ROW(' + ','.join(values) + ') :: ' + \
-              self._tuple_obj.__class__.__name__
+        sql = ('ROW(' + ','.join(values) + ') :: ' +
+               self._tuple_obj.__class__.__name__)
         return sql
 
     def __str__(self):
@@ -331,9 +332,18 @@ class NamedTupleAdapter(object):
 class AktoerAttrAdapter(NamedTupleAdapter):
 
     def getquoted(self):
-        values = map(prepare_and_adapt, self._tuple_obj)
+        values = map(self.prepare_and_adapt, self._tuple_obj)
         values = [v.getquoted() for v in values]
-        sql = "TODO: Generate proper SQL"
+        qaa = AktoerAttr(*values)  # quoted_aktoer_attr
+        values = [
+            qaa.obligatorik + '::AktivitetAktoerAttrObligatorikKode',
+            qaa.accepteret + '::AktivitetAktoerAttrAccepteretKode',
+            qaa.repraesentation_uuid + '::uuid',
+            qaa.repraesentation_urn
+        ]
+
+        sql = ('ROW(' + ','.join(values) + ') :: ' +
+               self._tuple_obj.__class__.__name__)
         return sql
 
 psyco_register_adapter(Virkning, NamedTupleAdapter)
@@ -341,7 +351,7 @@ psyco_register_adapter(Soegeord, NamedTupleAdapter)
 psyco_register_adapter(OffentlighedUndtaget, NamedTupleAdapter)
 psyco_register_adapter(JournalNotat, NamedTupleAdapter)
 psyco_register_adapter(JournalDokument, NamedTupleAdapter)
-psyco_register_adapter(AktoerAttr, NamedTupleAdapter)
+psyco_register_adapter(AktoerAttr, AktoerAttrAdapter)
 
 # Dokument variants
 psyco_register_adapter(DokumentVariantType, NamedTupleAdapter)
