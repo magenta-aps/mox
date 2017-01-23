@@ -1,0 +1,12 @@
+WSGIDaemonProcess		moxdocumentupload user=www-data group=www-data threads=5
+WSGIScriptAlias			/bin/upload {{MOXDIR}}/agents/MoxDocumentUpload/setup/moxdocumentupload.wsgi
+WSGIPassAuthorization		On
+
+<Directory {{MOXDIR}}/agents/MoxDocumentUpload/setup>
+	<Files moxdocumentupload.wsgi>
+		WSGIProcessGroup	moxdocumentupload
+		WSGIApplicationGroup	%{RESOURCE}
+		AllowOverride			All
+		require			all granted
+	</Files>
+</Directory>

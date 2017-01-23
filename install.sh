@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -e
 
 # TODO: bail if root
 if [ `id -u` == 0 ]; then
@@ -6,99 +6,123 @@ if [ `id -u` == 0 ]; then
 	exit 1;
 fi
 
-while getopts ":ys" OPT; do
-  case $OPT in
-	s)
-		SKIP_SYSTEM_DEPS=1
-		;;
-	y)
-		ALWAYS_CONFIRM=1
-		;;
-	*)
-		echo "Usage: $0 [-y] [-s]"
-		echo "	-s: Skip installing oio_rest API system dependencies"
-		echo "	-y: Always confirm (yes) when prompted"
-		exit 1;
-		;;
-	esac
-done
-
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-echo "DIR=$DIR"
 
-ENVIRONMENT=""
-while [[ $ENVIRONMENT == "" ]]
-do
-	echo "Installation type"
-	echo "[1] production"
-	echo "[2] testing"
-	echo "[3] development"
-	read -p "Enter type: [1]" -n 1 -r
-	echo
-	if [[ $REPLY =~ ^[1]$ ]]; then
-		ENVIRONMENT="production"
-	elif [[ $REPLY =~ ^[2]$ ]]; then
-		ENVIRONMENT="testing"
-	elif [[ $REPLY =~ ^[3]$ ]]; then
-		ENVIRONMENT="development"
-	fi
-done
+# Query for hostname
+DOMAIN=$(hostname --fqdn)
 
-# Add system user if none exists
-getent passwd mox
-if [ $? -ne 0 ]; then 
-	echo "Creating system user 'mox'"
-	sudo useradd mox
+read -p "Host name: [$DOMAIN] " -r
+echo
+if [[ "x$REPLY" != "x" ]]; then
+	DOMAIN="$REPLY"
 fi
 
-# Setup symlinks
-./setsymlinks.sh $ENVIRONMENT
+read -p "Install WSO2 identity provider? [N/y] " -r -n 1
+echo
+if [[ $REPLY != [yY] ]]
+then
+	USE_WSO2=false
+else
+	USE_WSO2=true
+fi
 
-# Install oio_rest
-echo "Installing oio_rest"
-echo "$DIR/oio_rest/install.sh $@"
-$DIR/oio_rest/install.sh "$@"
+AMQP_HOST="$DOMAIN"
+AMQP_USER="guest"
+AMQP_PASS="guest"
 
+REST_HOST="https://$DOMAIN"
 
+# Add system user if none exists
+if ! getent passwd mox > /dev/null
+then
+	echo "Creating system user 'mox'"
+	sudo useradd --system -s /usr/sbin/nologin -d /srv/mox mox
+fi
 
 # Create log dir
 echo "Creating log dir"
 sudo mkdir -p "/var/log/mox"
 
+# Config files that may be altered during install should be copied from git, but not themselves be present there
+MOX_CONFIG="$DIR/mox.conf"
+cp --remove-destination "$MOX_CONFIG.base" "$MOX_CONFIG"
 
+SHELL_CONFIG="$DIR/variables.sh"
+cp --remove-destination "$SHELL_CONFIG.base" "$SHELL_CONFIG"
 
-# Ubuntu 14.04 doesn't come with java 8
-sudo apt-cache -q=2 show oracle-java8-installer 2>&1 >/dev/null
-if [[ $? > 0 ]]; then
-	sudo add-apt-repository ppa:webupd8team/java
-	sudo apt-get update
-	sudo apt-get -y install oracle-java8-installer
+OIO_REST_CONFIG="$DIR/oio_rest/oio_rest/settings.py"
+cp --remove-destination "$OIO_REST_CONFIG.base" "$OIO_REST_CONFIG"
+sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$OIO_REST_CONFIG"
+
+APACHE_CONFIG="$DIR/apache/mox.conf"
+cp --remove-destination "$APACHE_CONFIG.base" "$APACHE_CONFIG"
+
+# Setup common config
+sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$MOX_CONFIG"
+
+echo "Installing Python"
+sudo apt-get -qq update
+sudo apt-get -qq install python python-pip python-virtualenv python-jinja2
+
+# Setup apache virtualhost
+echo "Setting up Apache virtualhost"
+$DIR/apache/install.sh
+
+if $USE_WSO2
+then
+	echo "Setting up Identity Server"
+	$DIR/wso2/install.sh "$DOMAIN"
 fi
-export JAVA_HOME="/usr/lib/jvm/java-8-oracle/"
-sudo ln -sf "/usr/lib/jvm/java-8-oracle/" "/usr/lib/jvm/default-java"
 
+REINSTALL_VIRTUALENVS=""
+read -p "Reinstall python virtual environments [(y)es/(n)o/(A)sk every time] " -r -n 1
+echo
+if [[ $REPLY == [yY] ]]; then
+	REINSTALL_VIRTUALENVS="--overwrite-virtualenv"
+elif [[ $REPLY == [nN] ]]; then
+	REINSTALL_VIRTUALENVS="--keep-virtualenv"
+fi
+
+# Install oio_rest
+echo "Installing oio_rest"
+echo "$DIR/oio_rest/install.py $REINSTALL_VIRTUALENVS"
+$DIR/oio_rest/install.py $REINSTALL_VIRTUALENVS
+
+# Install database
+echo "Installing database"
+echo "$DIR/db/install.sh"
+$DIR/db/install.sh
+
+$DIR/install/install_java.sh 8
+
+# Install Maven
+echo "Installing Maven"
+sudo apt-get -qq install maven
+
+# Compile modules
 echo "Installing java modules"
-sudo apt-get -y install maven
+$DIR/agentbase/java/install.sh
 
+echo "$DIR/agentbase/python/mox" > "$DIR/agentbase/python/mox/mox.pth"
 
-$DIR/modules/json/install.sh
-$DIR/modules/agent/install.sh
-$DIR/modules/auth/install.sh
-$DIR/modules/spreadsheet/install.sh
+# Compile agents
+echo "Installing Agents"
+$DIR/agents/MoxTabel/install.py
+$DIR/agents/MoxTabel/configure.py --rest-host "$REST_HOST" --amqp-incoming-host "$DOMAIN" --amqp-incoming-user "$AMQP_USER" --amqp-incoming-pass "$AMQP_PASS" --amqp-incoming-exchange "mox.documentconvert" --amqp-outgoing-host "$DOMAIN" --amqp-outgoing-user "$AMQP_USER" --amqp-outgoing-pass "$AMQP_PASS" --amqp-outgoing-exchange "mox.rest"
 
+$DIR/agents/MoxRestFrontend/install.py
+$DIR/agents/MoxRestFrontend/configure.py --rest-host "$REST_HOST" --amqp-host "$DOMAIN" --amqp-user "$AMQP_USER" --amqp-pass "$AMQP_PASS" --amqp-exchange "mox.rest"
 
-sudo mkdir -p "/var/log/mox"
+$DIR/agents/MoxDocumentUpload/install.py $REINSTALL_VIRTUALENVS
+$DIR/agents/MoxDocumentUpload/configure.py --rest-host "$REST_HOST" --amqp-host "$DOMAIN" --amqp-user "$AMQP_USER" --amqp-pass "$AMQP_PASS" --amqp-exchange "mox.documentconvert"
 
-
-echo "Installing Tomcat webservices"
-$DIR/servlets/install.sh
-
-
-
-$DIR/servlets/MoxDocumentUpload/install.sh
-$DIR/agents/MoxTabel/install.sh
-$DIR/agents/MoxRestFrontend/install.sh
 $DIR/agents/MoxTest/install.sh
 
-sudo chown -R mox:mox $DIR
+$DIR/agents/MoxDocumentDownload/install.py $REINSTALL_VIRTUALENVS
+$DIR/agents/MoxDocumentDownload/configure.py --rest-host "$REST_HOST"
 
+sudo service apache2 reload
+
+echo
+echo "Install succeeded!!!"
+echo

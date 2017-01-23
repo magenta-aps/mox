@@ -1,13 +1,12 @@
-#!/bin/bash
+#!/bin/bash -e
 
-DIR=$(dirname ${BASH_SOURCE[0]})
-COMMAND="java -Xmx4g -cp target/MoxTabel-1.0.jar:target/dependency/* dk.magenta.mox.moxtabel.MoxTabel"
-AS_USER="mox"
+DIR=$(cd $(dirname $0); pwd)
+MOXDIR=$(cd "${DIR}/../.."; pwd)
 
-cd $DIR
-if [[ `whoami` != "$AS_USER" ]]; then
-    sudo su $AS_USER -c "$COMMAND"
-else
-    $COMMAND
-fi
-cd - > /dev/null
+source $MOXDIR/variables.sh
+
+cd "$DIR"
+
+exec $CMD_JAVA -Xmx4g \
+     -cp target/MoxTabel-1.0.jar:target/dependency/* \
+     dk.magenta.mox.moxtabel.MoxTabel

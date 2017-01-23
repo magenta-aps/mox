@@ -21,7 +21,7 @@ from authentication import get_authenticated_user
 from auth.restrictions import Operation, get_restrictions
 from utils.build_registration import restriction_to_registration
 from custom_exceptions import NotFoundException, NotAllowedException
-from custom_exceptions import DBException
+from custom_exceptions import DBException, BadRequestException
 
 """
     Jinja2 Environment
@@ -127,6 +127,11 @@ def convert_relations(relations, class_name):
         for rel_name in relations:
             periods = relations[rel_name]
             for period in periods:
+                if not isinstance(period, dict):
+                    raise BadRequestException(
+                        'mapping expected for "%s" in "%s" - got %r' %
+                        (period, rel_name, period)
+                    )
                 for field in period:
                     period[field] = convert_relation_value(
                         class_name, field, period[field]
@@ -282,7 +287,7 @@ def object_exists(class_name, uuid):
     cursor = conn.cursor()
     try:
         cursor.execute(sql, (uuid,))
-    except Exception as e:
+    except psycopg2.Error as e:
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
             raise DBException(status_code, e.message)
@@ -310,7 +315,7 @@ where de.indhold = %s"""
     cursor = conn.cursor()
     try:
         cursor.execute(sql, (content_url,))
-    except Exception as e:
+    except psycopg2.Error as e:
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
             raise DBException(status_code, e.message)
@@ -354,15 +359,24 @@ def create_or_import_object(class_name, note, registration,
         note=note,
         registration=sql_registration,
         restrictions=sql_restrictions)
+
     # Call Postgres! Return OK or not accordingly
     conn = get_connection()
     cursor = conn.cursor()
     try:
         cursor.execute(sql)
-    except Exception as e:
+    except psycopg2.Error as e:
+        noop_msg = ('Aborted updating {} with id [{}] as the given data, '
+                    'does not give raise to a new registration.'.format(
+                        class_name, uuid
+                    ))
+
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
             raise DBException(status_code, e.message)
+        elif e.message.startswith(noop_msg):
+            status_code = int(e.pgcode[2:])
+            raise DBException(status_code, 'fuck no')
         else:
             raise
 
@@ -402,7 +416,14 @@ def delete_object(class_name, registration, note, uuid):
     cursor = conn.cursor()
     try:
         cursor.execute(sql)
-    except Exception as e:
+    except psycopg2.Error as e:
+        not_found_msg = (
+            'Unable to update {} with uuid [{}], '
+            'being unable to find any previous registrations.\n'
+        ).format(class_name.lower(), uuid)
+
+        if e.message == not_found_msg:
+            raise NotFoundException(e.message)
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
             raise DBException(status_code, e.message)
@@ -442,7 +463,7 @@ def passivate_object(class_name, note, registration, uuid):
     cursor = conn.cursor()
     try:
         cursor.execute(sql)
-    except Exception as e:
+    except psycopg2.Error as e:
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
             raise DBException(status_code, e.message)
@@ -484,11 +505,15 @@ def update_object(class_name, note, registration, uuid=None,
     try:
         cursor.execute(sql)
         cursor.fetchone()
-    except psycopg2.DataError:
-        # Thrown when no changes
-        pass
-    except Exception as e:
-        if e.pgcode[:2] == 'MO':
+    except psycopg2.Error as e:
+        noop_msg = ('Aborted updating {} with id [{}] as the given data, '
+                    'does not give raise to a new registration.'.format(
+                        class_name.lower(), uuid
+                    ))
+
+        if e.message.startswith(noop_msg):
+            return uuid
+        elif e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
             raise DBException(status_code, e.message)
         else:
@@ -502,7 +527,7 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
     """List objects with the given uuids, optionally filtering by the given
     virkning and registering periods."""
 
-    assert isinstance(uuid, list)
+    assert isinstance(uuid, list) or not uuid
 
     sql_template = jinja_env.get_template('list_objects.sql')
 
@@ -529,7 +554,7 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
             'registrering_tstzrange': registration_period,
             'virkning_tstzrange': DateTimeTZRange(virkning_fra, virkning_til)
         })
-    except Exception as e:
+    except psycopg2.Error as e:
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
             raise DBException(status_code, e.message)
@@ -717,7 +742,7 @@ def search_objects(class_name, uuid, registration,
     cursor = conn.cursor()
     try:
         cursor.execute(sql)
-    except Exception as e:
+    except psycopg2.Error as e:
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
             raise DBException(status_code, e.message)
