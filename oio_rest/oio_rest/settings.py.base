@@ -284,6 +284,37 @@ DATABASE_STRUCTURE = {
                                      "andredokumenter", "andreklasser",
                                      "andrebehandlere", "parter",
                                      "kopiparter", "tilknyttedesager"]
+    },
+
+    "aktivitet": {
+        "attributter": {
+            "egenskaber": [
+                "brugervendtnoegle", "aktivitetnavn", "beskrivelse",
+                "starttidspunkt", "sluttidspunkt", "tidsforbrug", "formaal"
+            ]
+        },
+        "attributter_type_override": {
+            "egenskaber": {
+                "starttidspunkt": "timestamptz",
+                "sluttidspunkt": "timestamptz",
+                "tidsforbrug": "interval(0)"
+             }
+         },
+
+        "tilstande": {
+            "status": ["Inaktiv", "Aktiv", "Aflyst"],
+            "publiceret": ["Publiceret", "IkkePubliceret", "Normal"]
+        },
+        "relationer_nul_til_en": ["aktivitetstype", "emne", "foelsomhedklasse",
+                                  "ansvarligklasse", "rekvirentklasse",
+                                  "ansvarlig", "tilhoerer"],
+        "relationer_nul_til_mange": [
+            "udfoererklasse", "deltagerklasse", "objektklasse",
+            "resultatklasse", "grundlagklasse", "facilitetklasse", "adresse",
+            "geoobjekt", "position", "facilitet", "lokale",
+            "aktivitetdokument", "aktivitetgrundlag", "aktivitetresultat",
+            "udfoerer", "deltager"
+        ]
     }
     ,
     "indsats": {
@@ -305,6 +336,8 @@ DATABASE_STRUCTURE = {
         "relationer_nul_til_mange": ["indsatskvalitet","indsatsaktoer","samtykke","indsatssag","indsatsdokument"]
 }
 
+
+
 }
 
 
@@ -319,7 +352,11 @@ REAL_DB_STRUCTURE["sag"]["relationer_type_override"] = {
     "journalnotat": "journalnotat",
     "journaldokument": "journaldokument"
 }
-#
+
+REAL_DB_STRUCTURE["aktivitet"]["relationer_type_override"] = {
+    "aktoerattr": "aktoerattr"
+}
+
 DB_TEMPLATE_EXTRA_OPTIONS = {
     "dokument": {
         "as_search.jinja.sql": {

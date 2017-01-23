@@ -102,6 +102,10 @@ JournalNotat = namedtuple('JournalNotatType', 'titel notat format')
 JournalDokument = namedtuple(
     'JournalPostDokumentAttrType', 'dokumenttitel offentlighedundtaget'
 )
+AktoerAttr = namedtuple(
+    'AktivitetAktoerAttr',
+    'accepteret obligatorik repraesentation_uuid repraesentation_urn'
+)
 
 
 def input_list(_type, input, key):
@@ -308,28 +312,46 @@ class NamedTupleAdapter(object):
     def prepare(self, conn):
         self._conn = conn
 
-    def getquoted(self):
-        def prepare_and_adapt(x):
-            x = psyco_adapt(x)
-            if hasattr(x, 'prepare'):
-                x.prepare(self._conn)
-            return x
+    def prepare_and_adapt(self, x):
+        x = psyco_adapt(x)
+        if hasattr(x, 'prepare'):
+            x.prepare(self._conn)
+        return x
 
-        values = map(prepare_and_adapt, self._tuple_obj)
+    def getquoted(self):
+        values = map(self.prepare_and_adapt, self._tuple_obj)
         values = [v.getquoted() for v in values]
-        sql = 'ROW(' + ','.join(values) + ') :: ' + \
-              self._tuple_obj.__class__.__name__
+        sql = ('ROW(' + ','.join(values) + ') :: ' +
+               self._tuple_obj.__class__.__name__)
         return sql
 
     def __str__(self):
         return self.getquoted()
 
 
+class AktoerAttrAdapter(NamedTupleAdapter):
+
+    def getquoted(self):
+        values = map(self.prepare_and_adapt, self._tuple_obj)
+        values = [v.getquoted() for v in values]
+        qaa = AktoerAttr(*values)  # quoted_aktoer_attr
+        values = [
+            qaa.obligatorik + '::AktivitetAktoerAttrObligatorikKode',
+            qaa.accepteret + '::AktivitetAktoerAttrAccepteretKode',
+            qaa.repraesentation_uuid + '::uuid',
+            qaa.repraesentation_urn
+        ]
+
+        sql = ('ROW(' + ','.join(values) + ') :: ' +
+               self._tuple_obj.__class__.__name__)
+        return sql
+
 psyco_register_adapter(Virkning, NamedTupleAdapter)
 psyco_register_adapter(Soegeord, NamedTupleAdapter)
 psyco_register_adapter(OffentlighedUndtaget, NamedTupleAdapter)
 psyco_register_adapter(JournalNotat, NamedTupleAdapter)
 psyco_register_adapter(JournalDokument, NamedTupleAdapter)
+psyco_register_adapter(AktoerAttr, AktoerAttrAdapter)
 
 # Dokument variants
 psyco_register_adapter(DokumentVariantType, NamedTupleAdapter)

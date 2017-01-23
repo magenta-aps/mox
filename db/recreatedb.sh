@@ -1,4 +1,6 @@
 #!/bin/bash -e
+set -x
+set -b
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
@@ -31,8 +33,10 @@ GRANT SELECT ON ALL TABLES IN SCHEMA amqp TO $MOX_DB_USER;"
 sudo -u $SUPER_USER psql -d $MOX_DB -c "SELECT amqp.exchange_declare(1, 'mox.notifications', 'fanout', false, true, false);"
 
 psql -d $MOX_DB -U $MOX_DB_USER -c "CREATE SCHEMA actual_state AUTHORIZATION $MOX_DB_USER "
-sudo -u $SUPER_USER psql -c "ALTER database $MOX_DB SET search_path TO actual_state,public;"
-sudo -u $SUPER_USER psql -c "ALTER database mox SET DATESTYLE to 'ISO, YMD';" #Please notice that the db-tests are run, using a different datestyle
+sudo -u postgres psql -c "ALTER database $MOX_DB SET search_path TO actual_state,public;"
+sudo -u postgres psql -c "ALTER database mox SET DATESTYLE to 'ISO, YMD';" #Please notice that the db-tests are run, using a different datestyle
+sudo -u postgres psql -c "ALTER database mox SET INTERVALSTYLE to 'sql_standard';" 
+
 psql -d $MOX_DB -U $MOX_DB_USER -c "CREATE SCHEMA test AUTHORIZATION $MOX_DB_USER "
 psql -d $MOX_DB -U $MOX_DB_USER -f basis/common_types.sql
 psql -d $MOX_DB -U $MOX_DB_USER -f funcs/_index_helper_funcs.sql
@@ -79,6 +83,16 @@ patch --fuzz=3 -i  ../patches/_remove_nulls_in_array_dokument.sql.diff
 patch --fuzz=3 -i  ../patches/as_list_dokument.sql.diff
 patch --fuzz=3 -i  ../patches/json-cast-functions_dokument.sql.diff
 patch --fuzz=3 -i  ../patches/as_search_dokument.sql.diff
+#aktivitet
+patch --fuzz=3 -i  ../patches/tbls-specific_aktivitet.sql.diff
+patch --fuzz=3 -i  ../patches/dbtyper-specific_aktivitet.sql.diff
+patch --fuzz=3 -i  ../patches/as_list_aktivitet.sql.diff
+patch --fuzz=3 -i  ../patches/_remove_nulls_in_array_aktivitet.sql.diff
+patch --fuzz=3 -i  ../patches/as_create_or_import_aktivitet.sql.diff
+patch --fuzz=3 -i  ../patches/as_update_aktivitet.sql.diff
+patch --fuzz=3 -i  ../patches/json-cast-functions_aktivitet.sql.diff
+patch --fuzz=3 -i  ../patches/as_search_aktivitet.sql.diff
+
 
 #indsats
 patch --fuzz=3 -i  ../patches/tbls-specific_indsats.sql.diff
@@ -92,7 +106,7 @@ patch --fuzz=3 -i  ../patches/as_search_indsats.sql.diff
 
 cd ..
 
-oiotypes=( facet klassifikation klasse bruger interessefaellesskab itsystem organisation organisationenhed organisationfunktion sag dokument indsats )
+oiotypes=( facet klassifikation klasse bruger interessefaellesskab itsystem organisation organisationenhed organisationfunktion sag dokument indsats aktivitet )
 
 templates1=( dbtyper-specific tbls-specific _remove_nulls_in_array )
 
@@ -166,4 +180,7 @@ psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_create_or_import_indsats.sql
 psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_update_indsats.sql
 psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_search_indsats.sql
 psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_filter_unauth_indsats.sql
-
+#aktivitet
+psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_create_or_import_aktivitet.sql
+psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_update_aktivitet.sql
+psql -d $MOX_DB -U $MOX_DB_USER -f tests/test_as_search_aktivitet.sql

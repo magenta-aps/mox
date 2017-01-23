@@ -6,12 +6,12 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py sag json-cast-functions.jinja.sql
+NOTICE: This file is auto-generated using the script: apply-template.py aktivitet json-cast-functions.jinja.sql
 */
 
 
 
-CREATE OR REPLACE FUNCTION actual_state._cast_SagRegistreringType_to_json(SagRegistreringType) 
+CREATE OR REPLACE FUNCTION actual_state._cast_AktivitetRegistreringType_to_json(AktivitetRegistreringType) 
 
 RETURNS
 json
@@ -38,7 +38,7 @@ FROM
         WHEN coalesce(array_length($1.attrEgenskaber,1),0)>0 THEN to_json($1.attrEgenskaber) 
         ELSE 
         NULL
-        END sagegenskaber
+        END aktivitetegenskaber
         
         
       ) as c
@@ -53,10 +53,17 @@ FROM
         SELECT 
         
         CASE 
-        WHEN coalesce(array_length($1.tilsFremdrift,1),0)>0 THEN to_json($1.tilsFremdrift) 
+        WHEN coalesce(array_length($1.tilsStatus,1),0)>0 THEN to_json($1.tilsStatus) 
         ELSE 
         NULL
-        END sagfremdrift
+        END aktivitetstatus
+        ,
+        
+        CASE 
+        WHEN coalesce(array_length($1.tilsPubliceret,1),0)>0 THEN to_json($1.tilsPubliceret) 
+        ELSE 
+        NULL
+        END aktivitetpubliceret
         
         
       ) as d
@@ -68,13 +75,13 @@ FROM
     (
       SELECT
       e.relType,
-      array_agg( _json_object_delete_keys(row_to_json(ROW(e.relType,e.virkning,e.uuid,e.urn,e.objektType,e.indeks,e.relTypeSpec,e.journalNotat,e.journalDokumentAttr)::SagRelationType),ARRAY['reltype']::text[])) rel_json_arr
-      from unnest($1.relationer) e(relType,virkning,uuid,urn,objektType,indeks,relTypeSpec,journalNotat,journalDokumentAttr) 
+      array_agg( _json_object_delete_keys(row_to_json(ROW(e.relType,e.virkning,e.uuid,e.urn,e.objektType,e.indeks,e.aktoerAttr)::AktivitetRelationType),ARRAY['reltype']::text[])) rel_json_arr
+      from unnest($1.relationer) e(relType,virkning,uuid,urn,objektType,indeks,aktoerAttr) 
       group by e.relType
       order by e.relType asc
     ) as f
   )
-  SELECT
+  SELECT 
   row_to_json(FraTidspunkt.*) FraTidspunkt
   ,row_to_json(TilTidspunkt.*) TilTidspunkt
   ,($1.registrering).livscykluskode
@@ -90,8 +97,8 @@ FROM
   FROM
     (
     SELECT
-     (SELECT LOWER(($1.registrering).TimePeriod)) as TidsstempelDatoTid
-    ,(SELECT lower_inc(($1.registrering).TimePeriod)) as GraenseIndikator
+     (SELECT LOWER(($1.registrering).TimePeriod)) as TidsstempelDatoTid 
+    ,(SELECT lower_inc(($1.registrering).TimePeriod)) as GraenseIndikator 
     ) as  FraTidspunkt,
     (
     SELECT
@@ -110,13 +117,13 @@ END;
 $$ LANGUAGE plpgsql immutable;
 
 
-drop cast if exists (SagRegistreringType as json);
-create cast (SagRegistreringType as json) with function actual_state._cast_SagRegistreringType_to_json(SagRegistreringType);
+drop cast if exists (AktivitetRegistreringType as json);
+create cast (AktivitetRegistreringType as json) with function actual_state._cast_AktivitetRegistreringType_to_json(AktivitetRegistreringType);
 
 
 ---------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION actual_state._cast_sagType_to_json(SagType) 
+CREATE OR REPLACE FUNCTION actual_state._cast_aktivitetType_to_json(AktivitetType) 
 
 RETURNS
 json
@@ -125,7 +132,7 @@ $$
 DECLARE 
 result json;
 reg_json_arr json[];
-reg SagRegistreringType;
+reg AktivitetRegistreringType;
 BEGIN
 
 
@@ -150,8 +157,8 @@ RETURN result;
 END;
 $$ LANGUAGE plpgsql immutable;
 
-drop cast if exists (SagType as json);
-create cast (SagType as json) with function actual_state._cast_sagType_to_json(SagType); 
+drop cast if exists (AktivitetType as json);
+create cast (AktivitetType as json) with function actual_state._cast_aktivitetType_to_json(AktivitetType); 
 
 
 

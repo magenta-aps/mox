@@ -1,1 +1,1 @@
-../../oio_rest/oio_rest/settings.py.production
+../../oio_rest/oio_rest/settings.py
