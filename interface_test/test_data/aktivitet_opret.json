@@ -8,7 +8,8 @@
 				"beskrivelse": "Jogging", 
 				"formaal": "Ja", 
 				"starttidspunkt": "2014-05-19 12:02:32+00:00", 
-				"starttidspunkt": "2016-05-19 12:02:32+00:00", 
+				"sluttidspunkt": "2016-05-19 14:02:32+00:00", 
+                                "tidsforbrug": "2 hours",
 				"virkning": { 
 					"from": "2014-05-19 12:02:32", 
 					"to": "infinity", 
@@ -20,8 +21,8 @@
 			] 
 		}, 
 		"tilstande": { 
-			"klassestatus": [{ 
-				"status": "Normal", 
+			"aktivitetstatus": [{ 
+				"status": "Aktiv", 
 				"virkning": { 
 					"from": "2014-05-19 12:02:32", 
 					"to": "infinity", 
@@ -30,7 +31,18 @@
 					"notetekst": "Nothing to see here!" 
 				} 
 			}
-			] 
+			], 
+			"aktivitetpubliceret": [{ 
+				"publiceret": "Publiceret", 
+				"virkning": { 
+					"from": "2014-05-19 12:02:32", 
+					"to": "infinity", 
+					"aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+					"aktoertypekode": "Bruger", 
+					"notetekst": "Nothing to see here!" 
+				} 
+			}
+                        ]
 		},
 		"relationer": { 
 			"ansvarlig": [
