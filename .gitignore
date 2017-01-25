@@ -1,4 +1,5 @@
 *.pyc
+*.pth
 .env
 *.swp
 *.egg-info

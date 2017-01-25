@@ -18,26 +18,30 @@ DIR=$(dirname ${BASH_SOURCE[0]})
 source $DIR/config.sh
 
 
-result=$(curl -k -H "Content-Type: application/json"  -X POST -d "$(cat $DIR/test_data/aktivitet_opret.json)" $HOST_URL/aktivitet/aktivitet)
+result=$(curl -k -H "Content-Type: application/json"  -X POST -d "$(cat $DIR/test_data/indsats_opret.json)" $HOST_URL/indsats/indsats)
 
 uuid=$(expr "$result" : '.*"uuid": "\([^"]*\)"')
 
 if [ ! -z $uuid ]
 then
-    echo "Oprettet aktivitet: $uuid"
+    echo "Oprettet indsats: $uuid"
 else
-    echo "Opret aktivitet fejlet: $result" 
+    echo "Opret indsats fejlet: $result" 
     exit
 fi
-# Now, import a new aktivitet
+# Now, import a new facet
 # - Suppose no object with this ID exists.
-import_uuid=$(uuidgen)
-echo "Importerer aktivitet:"
-echo ""
-curl -k --write-out %{http_code} --output /tmp/aktivitet_opret.txt -sH "Content-Type: application/json"  -X PUT -d "$(cat $DIR/test_data/aktivitet_opret.json)" $HOST_URL/aktivitet/aktivitet/$import_uuid 
 
 echo ""
-echo "Done."
+echo "Importing indsats" 
+
+import_uuid=$(uuidgen)
+
+curl -k --write-out %{http_code} --output /tmp/indsats_opret.txt -sH "Content-Type: application/json"  -X PUT -d "$(cat $DIR/test_data/indsats_opret.json)" $HOST_URL/indsats/indsats/$import_uuid 
+
+echo ""
+echo "Done"
+
 # Update the facet
 
 # curl -k -sH "Content-Type: application/json"  -X PUT -d "$(cat $DIR/test_data/facet_opdater.json)" $HOST_URL/klassifikation/facet/$uuid
