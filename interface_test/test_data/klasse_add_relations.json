@@ -1,0 +1,29 @@
+{ 
+    "note": "Slet mapning",
+    "relationer": {
+        "facet": [
+        {
+            "uuid": "fd9aa2a3-8640-42ad-95da-b4d0307a7ab2", 
+            "virkning": {
+                "from": "2014-12-01 00:00:00+01", 
+                "from_included": true, 
+                "to": "infinity", 
+                "to_included": false
+            }
+        }
+        ], 
+            "overordnetklasse": [
+            {
+                "uuid": "2101886a-66c9-42f3-b4cb-dc19572c3c60", 
+                "virkning": {
+                    "from": "2014-12-01 00:00:00+01", 
+                    "from_included": true, 
+                    "to": "infinity", 
+                    "to_included": false
+                }
+            }
+        ]
+
+    } 
+}
+

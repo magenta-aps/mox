@@ -1,0 +1,38 @@
+*** ./generated-files/as_list_indsats.sql	2016-10-15 11:37:11.000000000 +0200
+--- ./patches/as_list_indsats.org.sql	2016-10-15 11:57:33.000000000 +0200
+***************
+*** 62,77 ****
+  		ROW (
+  				b.rel_type,
+  				b.virkning,
+  				b.rel_maal_uuid,
+  				b.rel_maal_urn,
+! 				b.objekt_type 
+  			):: IndsatsRelationType
+  		ELSE
+  		NULL
+  		END
+! 		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.objekt_type,b.virkning
+  	)) IndsatsRelationArr
+  	FROM
+  	(
+  			SELECT
+  			a.indsats_id,
+--- 62,78 ----
+  		ROW (
+  				b.rel_type,
+  				b.virkning,
+  				b.rel_maal_uuid,
+  				b.rel_maal_urn,
+! 				b.objekt_type,
+!  				b.rel_index 
+  			):: IndsatsRelationType
+  		ELSE
+  		NULL
+  		END
+! 		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.objekt_type,b.rel_index,b.virkning
+  	)) IndsatsRelationArr
+  	FROM
+  	(
+  			SELECT
+  			a.indsats_id,

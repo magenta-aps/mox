@@ -1,15 +1,13 @@
 # encoding: utf-8
 from setuptools import setup, find_packages
-import sys
-import os
 
 version = '0.0.1'
 authors = 'C. Agger, Jørgen Ulrik B. Krag, Thomas Kristensen, Seth Yastrov'
 setup(
     name='oio_rest',
     version=version,
-    description=
-    "Python and PostgreSQL implementation of the OIO service interfaces.",
+    description="Python and PostgreSQL implementation "
+                "of the OIO service interfaces.",
     long_description="""\
     Implementation of various object hierarchies from the Danish Government's
     OIOXML standard for the exchange of public administration documents.""",
@@ -24,6 +22,8 @@ setup(
     zip_safe=False,
     install_requires=[
         # -*- Extra requirements: -*-
+        'requests==2.10',
+        'pytz>=2016.10',
         'Flask==0.10.1',
         'Jinja2==2.7.3',
         'MarkupSafe==0.23',
@@ -34,7 +34,9 @@ setup(
         'psycopg2==2.6',
         'wsgiref==0.1.2',
         'python-saml==2.1.3',
-        'pexpect==3.3'
+        'pexpect==3.3',
+        'python-dateutil==2.6.0',
+        'egenix-mx-base==3.2.9'
     ],
     entry_points={
         # -*- Entry points: -*-

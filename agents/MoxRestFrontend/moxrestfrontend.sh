@@ -1,13 +1,13 @@
-#!/bin/bash
+#!/bin/bash -e
 
-DIR=$(dirname ${BASH_SOURCE[0]})
-COMMAND="java -cp target/MoxRestFrontend-1.0.jar:target/dependency/* dk.magenta.mox.moxrestfrontend.MoxRestFrontend"
-AS_USER="mox"
+DIR=$(cd $(dirname $0); pwd)
+MOXDIR=$(cd "${DIR}/../.."; pwd)
+
+source $MOXDIR/variables.sh
 
 cd $DIR
-if [[ `whoami` != "$AS_USER" ]]; then
-    sudo su $AS_USER -c "$COMMAND"
-else
-    $COMMAND
-fi
-cd - > /dev/null
+exec $CMD_JAVA \
+    -cp "target/MoxRestFrontend-1.0.jar:target/dependency/*" \
+    dk.magenta.mox.moxrestfrontend.MoxRestFrontend \
+    --propertiesFile "$MOXDIR/mox.conf" \
+    "$DIR/moxrestfrontend.conf"

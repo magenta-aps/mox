@@ -1,0 +1,10 @@
+description "Upstart file for running the MoxTabel agent on system boot"
+
+start on runlevel [2345]
+stop on shutdown
+
+setuid moxtabel
+setgid mox
+
+exec {{DIR}}/moxtabel.sh
+

@@ -26,6 +26,13 @@ NULL
             {% if rel.journalnotat is defined %}{{ rel.journalnotat|adapt }}{% else %}NULL{% endif %},
             {% if rel.journaldokument is defined %}{{ rel.journaldokument|adapt }}{% else %}NULL{% endif %}
         {% endif %}
+        {% if class_name == "Aktivitet" %}
+        ,        {% if rel.indeks is defined %}{{ rel.indeks|adapt }}{% else%}NULL{% endif %},
+            {% if rel.aktoerattr is defined %}{{ rel.aktoerattr|adapt }}{% else %}NULL{% endif %}
+        {% endif %}
+        {% if class_name == "Indsats" %}
+        ,        {% if rel.indeks is defined %}{{ rel.indeks|adapt }}{% else%}NULL{% endif %}
+        {% endif %}
     ){% if not (outer_loop.last and loop.last) -%},{% endif -%}
     {% endfor -%}
     {% endfor -%}

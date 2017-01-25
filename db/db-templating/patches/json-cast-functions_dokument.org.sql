@@ -111,7 +111,7 @@ END;
 $$ LANGUAGE plpgsql immutable;
 
 
---drop cast (DokumentRegistreringType as json);
+drop cast if exists (DokumentRegistreringType as json);
 create cast (DokumentRegistreringType as json) with function actual_state._cast_DokumentRegistreringType_to_json(DokumentRegistreringType);
 
 
@@ -151,7 +151,7 @@ RETURN result;
 END;
 $$ LANGUAGE plpgsql immutable;
 
---drop cast (DokumentType as json);
+drop cast if exists (DokumentType as json);
 create cast (DokumentType as json) with function actual_state._cast_dokumentType_to_json(DokumentType); 
 
 
