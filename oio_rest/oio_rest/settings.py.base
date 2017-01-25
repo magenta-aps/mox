@@ -22,7 +22,7 @@ SAML_IDP_ENTITY_ID = 'localhost'
 #SAML_IDP_ENTITY_ID = 'http://fs.contoso.com/adfs/services/trust'
 
 # The URL on which to access the SAML IdP.
-SAML_IDP_URL = "https://${domain}:9443/services/wso2carbon-sts.wso2carbon-stsHttpsEndpoint"
+SAML_IDP_URL = "https://${domain}:9443/services/wso2carbon-sts.wso2carbon-stsHttpsEndpoint"  # noqa
 #SAML_IDP_URL = "https://fs.contoso.com/adfs/services/trust/13/UsernameMixed"
 
 # We currently support authentication against 'wso2' and 'adfs'
@@ -298,9 +298,8 @@ DATABASE_STRUCTURE = {
                 "starttidspunkt": "timestamptz",
                 "sluttidspunkt": "timestamptz",
                 "tidsforbrug": "interval(0)"
-             }
-         },
-
+            }
+        },
         "tilstande": {
             "status": ["Inaktiv", "Aktiv", "Aflyst"],
             "publiceret": ["Publiceret", "IkkePubliceret", "Normal"]
@@ -315,12 +314,13 @@ DATABASE_STRUCTURE = {
             "aktivitetdokument", "aktivitetgrundlag", "aktivitetresultat",
             "udfoerer", "deltager"
         ]
-    }
-    ,
+    },
     "indsats": {
         "attributter": {
             "egenskaber": [
-                "brugervendtnoegle","beskrivelse","starttidspunkt","sluttidspunkt"]
+                "brugervendtnoegle", "beskrivelse", "starttidspunkt",
+                "sluttidspunkt"
+            ]
         },
         "attributter_type_override": {
             "egenskaber": {
@@ -329,15 +329,17 @@ DATABASE_STRUCTURE = {
                 }
         },
         "tilstande": {
-            "fremdrift": ["Uoplyst","Visiteret","Disponeret","Leveret","Vurderet"],
-            "publiceret": ["Publiceret", "IkkePubliceret","Normal"]
+            "fremdrift": [
+                "Uoplyst", "Visiteret", "Disponeret", "Leveret", "Vurderet"
+            ],
+            "publiceret": ["Publiceret", "IkkePubliceret", "Normal"]
         },
-        "relationer_nul_til_en": ["indsatsmodtager","indsatstype"],
-        "relationer_nul_til_mange": ["indsatskvalitet","indsatsaktoer","samtykke","indsatssag","indsatsdokument"]
-}
-
-
-
+        "relationer_nul_til_en": ["indsatsmodtager", "indsatstype"],
+        "relationer_nul_til_mange": [
+            "indsatskvalitet", "indsatsaktoer", "samtykke", "indsatssag",
+            "indsatsdokument"
+        ]
+    }
 }
 
 

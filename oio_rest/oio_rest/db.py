@@ -9,7 +9,7 @@ from psycopg2.extensions import adapt as psyco_adapt
 
 from jinja2 import Environment, FileSystemLoader
 from dateutil import parser as date_parser
-from mx.DateTime import DateTimeDeltaFrom, DateTimeFrom
+from mx.DateTime import DateTimeDeltaFrom
 
 from settings import DATABASE, DB_USER, DO_ENABLE_RESTRICTIONS, DB_PASSWORD
 
