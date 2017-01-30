@@ -34,8 +34,8 @@ NULL
         ,        {% if rel.indeks is defined %}{{ rel.indeks|adapt }}{% else%}NULL{% endif %}
         {% endif %}
         {% if class_name == "Tilstand" -%}
-        ,    {% if rel.tilstandsvaerdiattr is defined %}{{ rel.tilstandsvaerdiattr|adapt }}{% else %}NULL{% endif %},
-        {% if rel.indeks is defined %}{{ rel.indeks|adapt }}{% else%}NULL{% endif %}
+        , {% if rel.indeks is defined %}{{ rel.indeks|adapt }}{% else%}NULL{% endif %},
+        {% if rel.tilstandsvaerdiattr is defined %}{{ rel.tilstandsvaerdiattr|adapt }}{% else %}NULL{% endif %}
         {% endif %}
     ){% if not (outer_loop.last and loop.last) -%},{% endif -%}
     {% endfor -%}

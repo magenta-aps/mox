@@ -208,7 +208,7 @@ def sql_convert_registration(registration, class_name):
     registration["attributes"] = convert_attributes(registration["attributes"])
     registration["relations"] = convert_relations(registration["relations"],
                                                   class_name)
-    print "CONVERT_RELATION", registration["relations"]
+    # print "CONVERT_RELATION", registration["relations"]
     if "variants" in registration:
         registration["variants"] = adapt(
             convert_variants(registration["variants"])
@@ -234,8 +234,8 @@ def sql_convert_registration(registration, class_name):
 
     relations = registration["relations"]
     sql_relations = sql_relations_array(class_name, relations)
-    print "CLASS", class_name
-    print "RELATIONS", sql_relations
+    # print "CLASS", class_name
+    # print "RELATIONS", sql_relations
 
     registration["relations"] = sql_relations
 
