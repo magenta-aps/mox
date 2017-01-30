@@ -93,6 +93,7 @@ def get_document_part_relation_names():
     """Return the list of all recognized relations for DokumentDel"""
     return ["underredigeringaf"]
 
+
 # Helper classers for adapting special types
 Soegeord = namedtuple('KlasseSoegeordType', 'identifier description category')
 OffentlighedUndtaget = namedtuple(
@@ -105,6 +106,10 @@ JournalDokument = namedtuple(
 AktoerAttr = namedtuple(
     'AktivitetAktoerAttr',
     'accepteret obligatorisk repraesentation_uuid repraesentation_urn'
+)
+VaerdiRelationAttr = namedtuple(
+    'TilstandVaerdiRelationAttrType',
+    'forventet nominelvaerdi'
 )
 
 
@@ -346,11 +351,13 @@ class AktoerAttrAdapter(NamedTupleAdapter):
                self._tuple_obj.__class__.__name__)
         return sql
 
+
 psyco_register_adapter(Virkning, NamedTupleAdapter)
 psyco_register_adapter(Soegeord, NamedTupleAdapter)
 psyco_register_adapter(OffentlighedUndtaget, NamedTupleAdapter)
 psyco_register_adapter(JournalNotat, NamedTupleAdapter)
 psyco_register_adapter(JournalDokument, NamedTupleAdapter)
+psyco_register_adapter(VaerdiRelationAttr, NamedTupleAdapter)
 psyco_register_adapter(AktoerAttr, AktoerAttrAdapter)
 
 # Dokument variants

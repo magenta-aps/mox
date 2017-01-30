@@ -16,7 +16,8 @@ from settings import DATABASE, DB_USER, DO_ENABLE_RESTRICTIONS, DB_PASSWORD
 from db_helpers import get_attribute_fields, get_attribute_names
 from db_helpers import get_field_type, get_state_names, get_relation_field_type
 from db_helpers import (Soegeord, OffentlighedUndtaget, JournalNotat,
-                        JournalDokument, DokumentVariantType, AktoerAttr)
+                        JournalDokument, DokumentVariantType, AktoerAttr,
+                        VaerdiRelationAttr)
 
 from authentication import get_authenticated_user
 
@@ -109,6 +110,11 @@ def convert_relation_value(class_name, field_name, value):
                             value.get("obligatorisk", None),
                             value.get("repraesentation_uuid", None),
                             value.get("repraesentation_urn", None))
+    elif field_type == 'vaerdirelationattr':
+        result = VaerdiRelationAttr(
+                     value.get("forventet", None),
+                     value.get("nominelvaerdi", None)
+        )
         return result
     else:
         return value
@@ -230,7 +236,7 @@ def sql_convert_registration(registration, class_name):
     sql_relations = sql_relations_array(class_name, relations)
     print "CLASS", class_name
     print "RELATIONS", sql_relations
-    
+
     registration["relations"] = sql_relations
 
     return registration
