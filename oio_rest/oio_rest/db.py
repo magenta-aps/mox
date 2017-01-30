@@ -106,7 +106,7 @@ def convert_relation_value(class_name, field_name, value):
         )
     elif field_type == 'aktoerattr':
         result = AktoerAttr(value.get("accepteret", None),
-                            value.get("obligatorik", None),
+                            value.get("obligatorisk", None),
                             value.get("repraesentation_uuid", None),
                             value.get("repraesentation_urn", None))
         return result
@@ -202,7 +202,7 @@ def sql_convert_registration(registration, class_name):
     registration["attributes"] = convert_attributes(registration["attributes"])
     registration["relations"] = convert_relations(registration["relations"],
                                                   class_name)
-    # print "CONVERT_RELATION", registration["relations"]
+    print "CONVERT_RELATION", registration["relations"]
     if "variants" in registration:
         registration["variants"] = adapt(
             convert_variants(registration["variants"])
@@ -228,6 +228,9 @@ def sql_convert_registration(registration, class_name):
 
     relations = registration["relations"]
     sql_relations = sql_relations_array(class_name, relations)
+    print "CLASS", class_name
+    print "RELATIONS", sql_relations
+    
     registration["relations"] = sql_relations
 
     return registration
@@ -372,6 +375,7 @@ def create_or_import_object(class_name, note, registration,
         registration=sql_registration,
         restrictions=sql_restrictions)
 
+    # print sql
     # Call Postgres! Return OK or not accordingly
     conn = get_connection()
     cursor = conn.cursor()

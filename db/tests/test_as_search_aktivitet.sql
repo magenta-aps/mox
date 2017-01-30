@@ -235,7 +235,7 @@ aktivitetRelUdfoerer1 := ROW (
 	,'Person'
 	,3 --NOTICE: Should be replace in by import function
 	,ROW (
-		 'valgfri'::AktivitetAktoerAttrObligatorikKode,
+		 'valgfri'::AktivitetAktoerAttrObligatoriskKode,
   		'foreloebigt'::AktivitetAktoerAttrAccepteretKode,
   repraesentation_uuid,
   null 
@@ -252,7 +252,7 @@ aktivitetRelUdfoerer2 := ROW (
 	,'Person'
 	,3 --NOTICE: Should be replace in by import function
 	,ROW (
-		 'noedvendig'::AktivitetAktoerAttrObligatorikKode,
+		 'noedvendig'::AktivitetAktoerAttrObligatoriskKode,
   		'accepteret'::AktivitetAktoerAttrAccepteretKode,
   null,
   repraesentation_urn
@@ -562,7 +562,7 @@ actual_search_res_7:=as_search_aktivitet(
 	,null--'Person'
 	,null--3 --NOTICE: Should be replace in by import function
 	,ROW (
-		 null,--'valgfri'::AktivitetAktoerAttrObligatorikKode,
+		 null,--'valgfri'::AktivitetAktoerAttrObligatoriskKode,
   		'foreloebigt'::AktivitetAktoerAttrAccepteretKode,
     null,--repraesentation_uuid,
   null 
@@ -600,7 +600,7 @@ actual_search_res_8:=as_search_aktivitet(
 	,null--'Person'
 	,null--3 --NOTICE: Should be replace in by import function
 	,ROW (
-		 'noedvendig'::AktivitetAktoerAttrObligatorikKode, --'valgfri'::AktivitetAktoerAttrObligatorikKode,
+		 'noedvendig'::AktivitetAktoerAttrObligatoriskKode, --'valgfri'::AktivitetAktoerAttrObligatoriskKode,
   		'foreloebigt'::AktivitetAktoerAttrAccepteretKode,
     null,--repraesentation_uuid,
   null 
@@ -638,7 +638,7 @@ actual_search_res_9:=as_search_aktivitet(
 	,null--'Person'
 	,null--3 --NOTICE: Should be replace in by import function
 	,ROW (
-		 null, --'valgfri'::AktivitetAktoerAttrObligatorikKode,
+		 null, --'valgfri'::AktivitetAktoerAttrObligatoriskKode,
   		null,
     repraesentation_uuid,--repraesentation_uuid,
   null 
@@ -676,7 +676,7 @@ actual_search_res_10:=as_search_aktivitet(
 	,null--'Person'
 	,null--3 --NOTICE: Should be replace in by import function
 	,ROW (
-		 null, --'valgfri'::AktivitetAktoerAttrObligatorikKode,
+		 null, --'valgfri'::AktivitetAktoerAttrObligatoriskKode,
   		null,
      uuidAnsvarligklasse,--repraesentation_uuid,
   null 
@@ -713,7 +713,7 @@ actual_search_res_11:=as_search_aktivitet(
 	,null--'Person'
 	,null--3 --NOTICE: Should be replace in by import function
 	,ROW (
-		 null, --'valgfri'::AktivitetAktoerAttrObligatorikKode,
+		 null, --'valgfri'::AktivitetAktoerAttrObligatoriskKode,
   		null,
      null,--repraesentation_uuid,
   repraesentation_urn 

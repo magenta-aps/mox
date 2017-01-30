@@ -50,7 +50,7 @@
                                 "index": 1,
 				"aktoerattr": {
 					"accepteret": "foreloebigt",
-					"obligatorik": "valgfri",
+					"obligatorisk": "valgfri",
 					"repraesentation_uuid": "0e3ed41a-08f2-4967-8689-dce625f93029"
 				},
 				"uuid": "ddc99abd-c1b0-48c2-aef7-74fea841adae",

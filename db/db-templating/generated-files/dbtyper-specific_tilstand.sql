@@ -33,7 +33,7 @@ beskrivelse text,
 );
 
 
-CREATE TYPE TilstandsVaerdiRelationAttrType AS (
+CREATE TYPE TilstandVaerdiRelationAttrType AS (
   forventet boolean,
   nominelVaerdi text
 );
@@ -47,7 +47,7 @@ CREATE TYPE TilstandRelationType AS (
   urn  text,
   objektType text,
   indeks int,
-  tilstandsVaerdiAttr TilstandsVaerdiRelationAttrType
+  tilstandsVaerdiAttr TilstandVaerdiRelationAttrType
 )
 ;
 

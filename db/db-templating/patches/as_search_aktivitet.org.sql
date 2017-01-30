@@ -791,9 +791,9 @@ ELSE
 					OR
 					(
 						(
-							(relationTypeObj.aktoerAttr).obligatorik IS NULL
+							(relationTypeObj.aktoerAttr).obligatorisk IS NULL
 							OR
-							(relationTypeObj.aktoerAttr).obligatorik = (a.aktoer_attr).obligatorik					
+							(relationTypeObj.aktoerAttr).obligatorisk = (a.aktoer_attr).obligatorisk					
 						)
 						AND
 						(

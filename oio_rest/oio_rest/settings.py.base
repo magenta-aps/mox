@@ -374,6 +374,10 @@ REAL_DB_STRUCTURE["aktivitet"]["relationer_type_override"] = {
     "aktoerattr": "aktoerattr"
 }
 
+REAL_DB_STRUCTURE["tilstand"]["relationer_type_override"] = {
+    "tilstandsvaerdi": "vaerdirelationattrtype"
+}
+
 DB_TEMPLATE_EXTRA_OPTIONS = {
     "dokument": {
         "as_search.jinja.sql": {

@@ -104,7 +104,7 @@ JournalDokument = namedtuple(
 )
 AktoerAttr = namedtuple(
     'AktivitetAktoerAttr',
-    'accepteret obligatorik repraesentation_uuid repraesentation_urn'
+    'accepteret obligatorisk repraesentation_uuid repraesentation_urn'
 )
 
 
@@ -336,7 +336,7 @@ class AktoerAttrAdapter(NamedTupleAdapter):
         values = [v.getquoted() for v in values]
         qaa = AktoerAttr(*values)  # quoted_aktoer_attr
         values = [
-            qaa.obligatorik + '::AktivitetAktoerAttrObligatorikKode',
+            qaa.obligatorisk + '::AktivitetAktoerAttrObligatoriskKode',
             qaa.accepteret + '::AktivitetAktoerAttrAccepteretKode',
             qaa.repraesentation_uuid + '::uuid',
             qaa.repraesentation_urn

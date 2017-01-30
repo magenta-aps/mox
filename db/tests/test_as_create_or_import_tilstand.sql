@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 --SELECT * FROM runtests('test'::name);
-CREATE OR REPLACE FUNCTION test.test_as_create_or_import_tilstand()
+CREATE OR REPLACE FUNCTION my_as_create_or_import_tilstand()
 RETURNS SETOF TEXT LANGUAGE plpgsql AS 
 $$
 DECLARE 
@@ -127,7 +127,7 @@ tilstandRelTilstandsobjekt := ROW (
 	,null
 	,'Person'
 	,900 --NOTICE: Should be replace in by import function
-	,null --TilstandsVaerdiRelationAttrType
+	,null --TilstandVaerdiRelationAttrType
 ) :: tilstandRelationType
 ;
 
@@ -139,7 +139,7 @@ tilstandRelTilstandsvaerdi1 := ROW (
 	null,
 	null
 	,768 --NOTICE: Should be replace in by import function
-	,ROW(true,'82')::TilstandsVaerdiRelationAttrType
+	,ROW(true,'82')::TilstandVaerdiRelationAttrType
 ) :: tilstandRelationType
 ;
 
@@ -152,7 +152,7 @@ tilstandRelTilstandsvaerdi2 := ROW (
 	null,--urnTilstandsvaerdi2
 	'Klasse'
 	,800 --NOTICE: Should be replace in by import function
-	, null --TilstandsVaerdiRelationAttrType
+	, null --TilstandVaerdiRelationAttrType
 ) :: tilstandRelationType
 ;
 
@@ -165,7 +165,7 @@ tilstandRelTilstandskvalitet1 := ROW (
 	null,
 	'Klasse'
 	,7268 --NOTICE: Should be replace in by import function
-	, null --TilstandsVaerdiRelationAttrType
+	, null --TilstandVaerdiRelationAttrType
 ) :: tilstandRelationType
 ;
 
@@ -178,7 +178,7 @@ tilstandRelTilstandskvalitet2 := ROW (
 	null,
 	'Klasse'
 	,3 --NOTICE: Should be replace in by import function
-	,null --TilstandsVaerdiRelationAttrType
+	,null --TilstandVaerdiRelationAttrType
 ) :: tilstandRelationType
 ;
 
@@ -222,7 +222,6 @@ ARRAY[tilstandRelTilstandsobjekt,tilstandRelTilstandsvaerdi1,tilstandRelTilstand
 
 new_uuid1 := as_create_or_import_tilstand(registrering);
 
-RETURN NEXT ok(true,'No errors running as_create_or_import_tilstand');
 
 
 read_Tilstand1 := as_read_tilstand(new_uuid1,
@@ -247,7 +246,7 @@ expected_tilstand1:=ROW(
 				null,--urnTilstandsvaerdi2
 				'Klasse'
 				,2 --NOTICE: Was replace din by import function
-				, ROW(null,null)::TilstandsVaerdiRelationAttrType --will be removed in python-layer
+				, ROW(null,null)::TilstandVaerdiRelationAttrType --will be removed in python-layer
 			) :: tilstandRelationType
 			,
 				ROW (
@@ -257,7 +256,7 @@ expected_tilstand1:=ROW(
 				null,
 				'Klasse'
 				,2 --NOTICE: Was replaced by import function
-				,ROW(null,null)::TilstandsVaerdiRelationAttrType --will be removed in python-layer
+				,ROW(null,null)::TilstandVaerdiRelationAttrType --will be removed in python-layer
 			) :: tilstandRelationType
 			,
 				ROW (
@@ -267,7 +266,7 @@ expected_tilstand1:=ROW(
 				null,
 				'Klasse'
 				,1 --NOTICE: Was replaced  by import function
-				,ROW(null,null)::TilstandsVaerdiRelationAttrType --will be removed in python-layer
+				,ROW(null,null)::TilstandVaerdiRelationAttrType --will be removed in python-layer
 			) :: tilstandRelationType
 			,
 				ROW (
@@ -277,7 +276,7 @@ expected_tilstand1:=ROW(
 				,null
 				,'Person'
 				,NULL --NOTICE: Was replaced
-				,ROW(null,null)::TilstandsVaerdiRelationAttrType --will be removed in python-layer
+				,ROW(null,null)::TilstandVaerdiRelationAttrType --will be removed in python-layer
 			) :: tilstandRelationType
 				,
 				 ROW (
@@ -287,7 +286,7 @@ expected_tilstand1:=ROW(
 					null,
 					null
 					,1 --NOTICE: Was replaced by import function
-					,ROW(true,'82')::TilstandsVaerdiRelationAttrType
+					,ROW(true,'82')::TilstandVaerdiRelationAttrType
 				) :: tilstandRelationType
 			
 				]::TilstandRelationType[]
@@ -300,11 +299,6 @@ expected_tilstand1:=ROW(
 
 
 
-RETURN NEXT IS(
-	read_Tilstand1,
-	expected_tilstand1
-	,'test create tilstand #1'
-);
 
 /*********************************/
 --test with no relations of unlimited cardinality
@@ -346,7 +340,7 @@ expected_tilstand2:=ROW(
 				,null
 				,'Person'
 				,NULL --NOTICE: Was replaced
-				,ROW(null,null)::TilstandsVaerdiRelationAttrType --will be removed in python-layer
+				,ROW(null,null)::TilstandVaerdiRelationAttrType --will be removed in python-layer
 			) :: tilstandRelationType
 				]::TilstandRelationType[]
 			)::TilstandRegistreringType
@@ -354,12 +348,6 @@ expected_tilstand2:=ROW(
 		)::TilstandType
 ;
 
-
-RETURN NEXT IS(
-	read_Tilstand2,
-	expected_tilstand2
-	,'test create tilstand #2'
-);
 
 END;
 $$;

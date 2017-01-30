@@ -184,7 +184,7 @@ aktivitetRelUdfoerer1 := ROW (
 	,'Person'
 	,3 --NOTICE: Should be replace in by import function
 	,ROW (
-		 'valgfri'::AktivitetAktoerAttrObligatorikKode,
+		 'valgfri'::AktivitetAktoerAttrObligatoriskKode,
   		'foreloebigt'::AktivitetAktoerAttrAccepteretKode,
   repraesentation_uuid,
   null 
@@ -201,7 +201,7 @@ aktivitetRelUdfoerer2 := ROW (
 	,'Person'
 	,3 --NOTICE: Should be replace in by import function
 	,ROW (
-		 'noedvendig'::AktivitetAktoerAttrObligatorikKode,
+		 'noedvendig'::AktivitetAktoerAttrObligatoriskKode,
   		'accepteret'::AktivitetAktoerAttrAccepteretKode,
   null,
   repraesentation_urn
@@ -336,7 +336,7 @@ aktivitetRelUdfoerer2B := ROW (
 	,'Person'
 	,2 
 	,ROW (
-		 'valgfri'::AktivitetAktoerAttrObligatorikKode,
+		 'valgfri'::AktivitetAktoerAttrObligatoriskKode,
   		'foreloebigt'::AktivitetAktoerAttrAccepteretKode,
   null,
   repraesentation_urn
@@ -361,7 +361,7 @@ aktivitetRelUdfoerer3 := ROW (
 	,'Person'
 	,null
 	,ROW (
-		 'noedvendig'::AktivitetAktoerAttrObligatorikKode,
+		 'noedvendig'::AktivitetAktoerAttrObligatoriskKode,
   		'afslaaet'::AktivitetAktoerAttrAccepteretKode,
   null,
   repraesentation_urn2
@@ -386,7 +386,7 @@ aktivitetRelGeoobjekt:= ROW (
 	,'Geoobjekt'
 	,null
 	,ROW (
-		 'valgfri'::AktivitetAktoerAttrObligatorikKode,
+		 'valgfri'::AktivitetAktoerAttrObligatoriskKode,
   		'foreloebigt'::AktivitetAktoerAttrAccepteretKode,
   null,
   repraesentation_urn
@@ -511,7 +511,7 @@ expected_aktivitet1:=ROW(
 					,'Person'
 					,3
 					,ROW (
-						'noedvendig'::AktivitetAktoerAttrObligatorikKode,
+						'noedvendig'::AktivitetAktoerAttrObligatoriskKode,
 						'afslaaet'::AktivitetAktoerAttrAccepteretKode,
 				null,
 				repraesentation_urn2
@@ -526,7 +526,7 @@ expected_aktivitet1:=ROW(
 					,'Person'
 					,1 --NOTICE: was replaced by import function
 					,ROW (
-						'valgfri'::AktivitetAktoerAttrObligatorikKode,
+						'valgfri'::AktivitetAktoerAttrObligatoriskKode,
 						'foreloebigt'::AktivitetAktoerAttrAccepteretKode,
 				repraesentation_uuid,
 				null 
@@ -541,7 +541,7 @@ expected_aktivitet1:=ROW(
 					,'Person'
 					,2 
 					,ROW (
-						'valgfri'::AktivitetAktoerAttrObligatorikKode,
+						'valgfri'::AktivitetAktoerAttrObligatoriskKode,
 						'foreloebigt'::AktivitetAktoerAttrAccepteretKode,
 				null,
 				repraesentation_urn

@@ -26,7 +26,7 @@
   );
   
   
-+ CREATE TYPE TilstandsVaerdiRelationAttrType AS (
++ CREATE TYPE TilstandVaerdiRelationAttrType AS (
 +   forventet boolean,
 +   nominelVaerdi text
 + );
@@ -40,7 +40,7 @@
     urn  text,
 !   objektType text,
 !   indeks int,
-!   tilstandsVaerdiAttr TilstandsVaerdiRelationAttrType
+!   tilstandsVaerdiAttr TilstandVaerdiRelationAttrType
   )
   ;
   

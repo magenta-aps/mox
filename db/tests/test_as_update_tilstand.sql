@@ -145,7 +145,7 @@ tilstandRelTilstandsobjekt := ROW (
 	,null
 	,'Person'
 	,900 --NOTICE: Should be replace in by import function
-	,null --TilstandsVaerdiRelationAttrType
+	,null --TilstandVaerdiRelationAttrType
 ) :: tilstandRelationType
 ;
 
@@ -157,7 +157,7 @@ tilstandRelTilstandsvaerdi1 := ROW (
 	null,
 	null
 	,768 --NOTICE: Should be replace in by import function
-	,ROW(true,'82')::TilstandsVaerdiRelationAttrType
+	,ROW(true,'82')::TilstandVaerdiRelationAttrType
 ) :: tilstandRelationType
 ;
 
@@ -170,7 +170,7 @@ tilstandRelTilstandsvaerdi2 := ROW (
 	null,--urnTilstandsvaerdi2
 	'Klasse'
 	,800 --NOTICE: Should be replace in by import function
-	, null --TilstandsVaerdiRelationAttrType
+	, null --TilstandVaerdiRelationAttrType
 ) :: tilstandRelationType
 ;
 
@@ -183,7 +183,7 @@ tilstandRelTilstandskvalitet1 := ROW (
 	null,
 	'Klasse'
 	,7268 --NOTICE: Should be replace in by import function
-	, null --TilstandsVaerdiRelationAttrType
+	, null --TilstandVaerdiRelationAttrType
 ) :: tilstandRelationType
 ;
 
@@ -196,7 +196,7 @@ tilstandRelTilstandskvalitet2 := ROW (
 	null,
 	'Klasse'
 	,3 --NOTICE: Should be replace in by import function
-	,null --TilstandsVaerdiRelationAttrType
+	,null --TilstandVaerdiRelationAttrType
 ) :: tilstandRelationType
 ;
 
@@ -315,7 +315,7 @@ expected_tilstand1:=ROW(
 				null,--urnTilstandsvaerdi2
 				'Klasse'
 				,2 --NOTICE: Was replace din by import function
-				, ROW(null,null)::TilstandsVaerdiRelationAttrType --will be removed in python-layer
+				, ROW(null,null)::TilstandVaerdiRelationAttrType --will be removed in python-layer
 			) :: tilstandRelationType
 			,
 				ROW (
@@ -325,7 +325,7 @@ expected_tilstand1:=ROW(
 				null,
 				'Klasse'
 				,2 --NOTICE: Was replaced by import function
-				,ROW(null,null)::TilstandsVaerdiRelationAttrType --will be removed in python-layer
+				,ROW(null,null)::TilstandVaerdiRelationAttrType --will be removed in python-layer
 			) :: tilstandRelationType
 			,
 				ROW (
@@ -335,7 +335,7 @@ expected_tilstand1:=ROW(
 				null,
 				'Klasse'
 				,1 --NOTICE: Was replaced  by import function
-				,ROW(null,null)::TilstandsVaerdiRelationAttrType --will be removed in python-layer
+				,ROW(null,null)::TilstandVaerdiRelationAttrType --will be removed in python-layer
 			) :: tilstandRelationType
 			,
 				ROW (
@@ -345,7 +345,7 @@ expected_tilstand1:=ROW(
 				,null
 				,'Person'
 				,NULL --NOTICE: Was replaced
-				,ROW(null,null)::TilstandsVaerdiRelationAttrType --will be removed in python-layer
+				,ROW(null,null)::TilstandVaerdiRelationAttrType --will be removed in python-layer
 			) :: tilstandRelationType
 				,
 				 ROW (
@@ -355,7 +355,7 @@ expected_tilstand1:=ROW(
 					null,
 					null
 					,1 --NOTICE: Was replaced by import function
-					,ROW(true,'82')::TilstandsVaerdiRelationAttrType
+					,ROW(true,'82')::TilstandVaerdiRelationAttrType
 				) :: tilstandRelationType
 			
 				]::TilstandRelationType[]
@@ -473,7 +473,7 @@ updated_reg_id_3:=as_update_tilstand(
 					null,
 					null
 					,1 
-					,ROW(true,'85')::TilstandsVaerdiRelationAttrType ) ]::TilstandRelationType[]  --relationer TilstandRelationType[]
+					,ROW(true,'85')::TilstandVaerdiRelationAttrType ) ]::TilstandRelationType[]  --relationer TilstandRelationType[]
 	);
 
 read_Tilstand3 := as_read_tilstand(new_uuid1,
@@ -501,7 +501,7 @@ expected_tilstand3:=ROW(
 				null,--urnTilstandsvaerdi2
 				'Klasse'
 				,2 --NOTICE: Was replace din by import function
-				, ROW(null,null)::TilstandsVaerdiRelationAttrType --will be removed in python-layer
+				, ROW(null,null)::TilstandVaerdiRelationAttrType --will be removed in python-layer
 			) :: tilstandRelationType
 			,
 				ROW (
@@ -511,7 +511,7 @@ expected_tilstand3:=ROW(
 				null,
 				'Klasse'
 				,2 --NOTICE: Was replaced by import function
-				,ROW(null,null)::TilstandsVaerdiRelationAttrType --will be removed in python-layer
+				,ROW(null,null)::TilstandVaerdiRelationAttrType --will be removed in python-layer
 			) :: tilstandRelationType
 			,
 				ROW (
@@ -521,7 +521,7 @@ expected_tilstand3:=ROW(
 				null,
 				'Klasse'
 				,1 --NOTICE: Was replaced  by import function
-				,ROW(null,null)::TilstandsVaerdiRelationAttrType --will be removed in python-layer
+				,ROW(null,null)::TilstandVaerdiRelationAttrType --will be removed in python-layer
 			) :: tilstandRelationType
 			,
 				ROW (
@@ -531,7 +531,7 @@ expected_tilstand3:=ROW(
 				,null
 				,'Person'
 				,NULL --NOTICE: Was replaced
-				,ROW(null,null)::TilstandsVaerdiRelationAttrType --will be removed in python-layer
+				,ROW(null,null)::TilstandVaerdiRelationAttrType --will be removed in python-layer
 			) :: tilstandRelationType
 				,
 				 ROW (
@@ -541,7 +541,7 @@ expected_tilstand3:=ROW(
 					null,
 					null
 					,1 --NOTICE: Was replaced by import function
-					,ROW(true,'85')::TilstandsVaerdiRelationAttrType
+					,ROW(true,'85')::TilstandVaerdiRelationAttrType
 				) :: tilstandRelationType
 			
 				]::TilstandRelationType[]
@@ -585,7 +585,7 @@ updated_reg_id_4:=as_update_tilstand(
 					null,
 					null
 					,1 
-					,ROW(null,null)::TilstandsVaerdiRelationAttrType ) ]::TilstandRelationType[]  --relationer TilstandRelationType[]
+					,ROW(null,null)::TilstandVaerdiRelationAttrType ) ]::TilstandRelationType[]  --relationer TilstandRelationType[]
 	);
 
 read_Tilstand4 := as_read_tilstand(new_uuid1,
@@ -611,7 +611,7 @@ expected_tilstand4:=ROW(
 				null,--urnTilstandsvaerdi2
 				'Klasse'
 				,2 --NOTICE: Was replace din by import function
-				, ROW(null,null)::TilstandsVaerdiRelationAttrType --will be removed in python-layer
+				, ROW(null,null)::TilstandVaerdiRelationAttrType --will be removed in python-layer
 			) :: tilstandRelationType
 			,
 				ROW (
@@ -621,7 +621,7 @@ expected_tilstand4:=ROW(
 				null,
 				'Klasse'
 				,2 --NOTICE: Was replaced by import function
-				,ROW(null,null)::TilstandsVaerdiRelationAttrType --will be removed in python-layer
+				,ROW(null,null)::TilstandVaerdiRelationAttrType --will be removed in python-layer
 			) :: tilstandRelationType
 			,
 				ROW (
@@ -631,7 +631,7 @@ expected_tilstand4:=ROW(
 				null,
 				'Klasse'
 				,1 --NOTICE: Was replaced  by import function
-				,ROW(null,null)::TilstandsVaerdiRelationAttrType --will be removed in python-layer
+				,ROW(null,null)::TilstandVaerdiRelationAttrType --will be removed in python-layer
 			) :: tilstandRelationType
 			,
 				ROW (
@@ -641,7 +641,7 @@ expected_tilstand4:=ROW(
 				,null
 				,'Person'
 				,NULL --NOTICE: Was replaced
-				,ROW(null,null)::TilstandsVaerdiRelationAttrType --will be removed in python-layer
+				,ROW(null,null)::TilstandVaerdiRelationAttrType --will be removed in python-layer
 			) :: tilstandRelationType
 				,
 				 ROW (
@@ -651,7 +651,7 @@ expected_tilstand4:=ROW(
 					null,
 					null
 					,1 --NOTICE: Was replaced by import function
-					,ROW(null,null)::TilstandsVaerdiRelationAttrType
+					,ROW(null,null)::TilstandVaerdiRelationAttrType
 				) :: tilstandRelationType
 			
 				]::TilstandRelationType[]

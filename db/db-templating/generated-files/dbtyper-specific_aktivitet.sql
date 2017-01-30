@@ -40,12 +40,12 @@ formaal text,
 
 CREATE TYPE AktivitetRelationKode AS ENUM  ('aktivitetstype','emne','foelsomhedklasse','ansvarligklasse','rekvirentklasse','ansvarlig','tilhoerer','udfoererklasse','deltagerklasse','objektklasse','resultatklasse','grundlagklasse','facilitetklasse','adresse','geoobjekt','position','facilitet','lokale','aktivitetdokument','aktivitetgrundlag','aktivitetresultat','udfoerer','deltager');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_aktivitet_relation_kode_to_txt is invoked.
 
-CREATE TYPE AktivitetAktoerAttrObligatorikKode AS ENUM ('noedvendig','valgfri');
+CREATE TYPE AktivitetAktoerAttrObligatoriskKode AS ENUM ('noedvendig','valgfri');
 
 CREATE TYPE AktivitetAktoerAttrAccepteretKode AS ENUM ('accepteret','foreloebigt','afslaaet');
 
 CREATE TYPE  AktivitetAktoerAttr AS (
-  obligatorik AktivitetAktoerAttrObligatorikKode,
+  obligatorisk AktivitetAktoerAttrObligatoriskKode,
   accepteret AktivitetAktoerAttrAccepteretKode,
   repraesentation_uuid uuid,
   repraesentation_urn text 

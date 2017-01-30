@@ -139,7 +139,7 @@ tilstandRelTilstandsobjekt := ROW (
 	,null
 	,'Person'
 	,900 --NOTICE: Should be replace in by import function
-	,null --TilstandsVaerdiRelationAttrType
+	,null --TilstandVaerdiRelationAttrType
 ) :: tilstandRelationType
 ;
 
@@ -151,7 +151,7 @@ tilstandRelTilstandsvaerdi1 := ROW (
 	null,
 	null
 	,768 --NOTICE: Should be replace in by import function
-	,ROW(true,'82')::TilstandsVaerdiRelationAttrType
+	,ROW(true,'82')::TilstandVaerdiRelationAttrType
 ) :: tilstandRelationType
 ;
 
@@ -164,7 +164,7 @@ tilstandRelTilstandsvaerdi2 := ROW (
 	null,--urnTilstandsvaerdi2
 	'Klasse'
 	,800 --NOTICE: Should be replace in by import function
-	, null --TilstandsVaerdiRelationAttrType
+	, null --TilstandVaerdiRelationAttrType
 ) :: tilstandRelationType
 ;
 
@@ -177,7 +177,7 @@ tilstandRelTilstandskvalitet1 := ROW (
 	null,
 	'Klasse'
 	,7268 --NOTICE: Should be replace in by import function
-	, null --TilstandsVaerdiRelationAttrType
+	, null --TilstandVaerdiRelationAttrType
 ) :: tilstandRelationType
 ;
 
@@ -190,7 +190,7 @@ tilstandRelTilstandskvalitet2 := ROW (
 	null,
 	'Klasse'
 	,3 --NOTICE: Should be replace in by import function
-	,null --TilstandsVaerdiRelationAttrType
+	,null --TilstandVaerdiRelationAttrType
 ) :: tilstandRelationType
 ;
 
@@ -349,7 +349,7 @@ actual_search_res_3:=as_search_tilstand(null,null,
 				null,
 				null
 				,null
-				,ROW(null,'82')::TilstandsVaerdiRelationAttrType
+				,ROW(null,'82')::TilstandVaerdiRelationAttrType
 			) :: tilstandRelationType] ::TilstandRelationType[]
 			)::tilstandRegistreringType	
 		,null
@@ -374,7 +374,7 @@ actual_search_res_4:=as_search_tilstand(null,null,
 				null,
 				null
 				,null
-				,ROW(false,'82')::TilstandsVaerdiRelationAttrType
+				,ROW(false,'82')::TilstandVaerdiRelationAttrType
 			) :: tilstandRelationType] ::TilstandRelationType[]
 			)::tilstandRegistreringType	
 		,null

@@ -165,7 +165,7 @@ END IF;
                   WHEN a.relType =('udfoerer'::AktivitetRelationKode)  OR rel_type=('deltager'::AktivitetRelationKode) OR rel_type=('ansvarlig'::AktivitetRelationKode) 
                   AND NOT (a.aktoerAttr IS NULL)
                   AND (
-                    (a.aktoerAttr).obligatorik IS NOT NULL
+                    (a.aktoerAttr).obligatorisk IS NOT NULL
                     OR
                     (a.aktoerAttr).accepteret IS NOT NULL
                     OR
