@@ -97,6 +97,7 @@ def setup_api():
     from dokument import DokumentHierarki
     from aktivitet import AktivitetsHierarki
     from indsats import IndsatsHierarki
+    from tilstand import TilstandsHierarki
 
     KlassifikationsHierarki.setup_api(base_url=BASE_URL, flask=app)
     SagsHierarki.setup_api(base_url=BASE_URL, flask=app)
@@ -104,6 +105,7 @@ def setup_api():
     DokumentHierarki.setup_api(base_url=BASE_URL, flask=app)
     AktivitetsHierarki.setup_api(base_url=BASE_URL, flask=app)
     IndsatsHierarki.setup_api(base_url=BASE_URL, flask=app)
+    TilstandsHierarki.setup_api(base_url=BASE_URL, flask=app)
 
 
 def main():

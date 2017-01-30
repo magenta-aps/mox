@@ -288,14 +288,18 @@ DATABASE_STRUCTURE = {
     "tilstand": {
         "attributter": {
             "egenskaber": [
-                "brugervendtnoegle","beskrivelse"]
+                "brugervendtnoegle", "beskrivelse"]
         },
         "tilstande": {
             "status": ["Inaktiv", "Aktiv"],
-            "publiceret": ["Publiceret", "IkkePubliceret","Normal"]
+            "publiceret": ["Publiceret", "IkkePubliceret", "Normal"]
         },
-        "relationer_nul_til_en": ["tilstandsobjekt","tilstandstype"],
-        "relationer_nul_til_mange": ["tilstandsvaerdi","begrundelse","tilstandskvalitet","tilstandsvurdering","tilstandsaktoer","tilstandsudstyr","samtykke","tilstandsdokument"]
+        "relationer_nul_til_en": ["tilstandsobjekt", "tilstandstype"],
+        "relationer_nul_til_mange": [
+            "tilstandsvaerdi", "begrundelse", "tilstandskvalitet",
+            "tilstandsvurdering", "tilstandsaktoer", "tilstandsudstyr",
+            "samtykke", "tilstandsdokument"
+            ]
         },
     "aktivitet": {
         "attributter": {
