@@ -391,6 +391,8 @@ class LogFile(File):
         self.group = group
 
     def create(self):
+        create_user(self.user, self.group)
+
         self.touch()
         self.chmod('666')
         self.chown(self.user)
