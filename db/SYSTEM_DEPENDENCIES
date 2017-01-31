@@ -7,3 +7,4 @@ python-jinja2
 pgxnclient
 rabbitmq-server
 git
+build-essential
