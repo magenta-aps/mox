@@ -289,6 +289,8 @@ class OIORestObject(object):
             ):
                 deleted_or_passive = True
 
+        request.uuid = uuid
+
         if not exists:
             # Do import.
             request.api_operation = "Import"
@@ -319,7 +321,6 @@ class OIORestObject(object):
                 db.update_object(cls.__name__, note, registration,
                                  uuid)
                 return jsonify({'uuid': uuid}), 200
-        request.uuid = uuid
         return j(u"Forkerte parametre!"), 405
 
     @classmethod
