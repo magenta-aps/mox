@@ -13,25 +13,33 @@ echo "Installing database dependencies"
     sudo apt-get -y install --no-install-recommends  $(cat "$DIR/SYSTEM_DEPENDENCIES")
 ) >> "$LOGFILE" 2>&1
 
-if [ ! -z $ALWAYS_CONFIRM ]; then
-	WIPE_DB=1
-else
-	if [[ (! -z `command -v psql`) && (! -z `sudo -u postgres psql -Atqc "\list $MOX_DB"`) ]]; then
-		echo "Database $MOX_DB already exists in PostgreSQL"
-		read -p "Do you want to overwrite it? (y/n): " -n 1 -r
-		echo
-		if [[ $REPLY =~ ^[Yy]$ ]]; then
-			WIPE_DB=1
-		fi
-	else
-		echo "DB does not exist!"
-		WIPE_DB=1
-	fi
-fi
+# Install pg_amqp - Postgres AMQP extension
+# We depend on a specific fork, which supports setting of
+# message headers
+# https://github.com/duncanburke/pg_amqp.git
+echo "Installing PostreSQL AMQP extension"
+(
+    echo
+    date
+    echo
+    set -x
 
-if [ $WIPE_DB == 1 ]; then
+    for PG_CONFIG in /usr/lib/postgresql/*/bin/pg_config
+    do
+        rm -rf /tmp/pg_amqp
+        git clone https://github.com/magenta-aps/pg_amqp.git /tmp/pg_amqp
+        echo $PG_CONFIG
+        sudo make install -C /tmp/pg_amqp PG_CONFIG=$PG_CONFIG
+        rm -rf /tmp/pg_amqp
+    done
+) >> "$LOGFILE" 2>&1
+
+if sudo -u postgres psql -c "\\connect $MOX_DB" > /dev/null 2>&1
+then
+    echo "Database '$MOX_DB' already exists in PostgreSQL"
+else
 	# Install Database
-    echo Installing database
+    echo "Installing database"
     (
         echo
         date
@@ -41,14 +49,6 @@ if [ $WIPE_DB == 1 ]; then
         # Install pgtap - unit test framework
         sudo pgxn install pgtap
 
-        # Install pg_amqp - Postgres AMQP extension
-        # We depend on a specific fork, which supports setting of
-        # message headers
-        # https://github.com/duncanburke/pg_amqp.git
-        git clone https://github.com/magenta-aps/pg_amqp.git /tmp/pg_amqp
-        sudo make install -C /tmp/pg_amqp
-        rm -rf /tmp/pg_amqp
-
         echo "Updating authentication config"
         # Set authentication method to 'md5' (= password, not peer)
         sudo sed -i -r 's/local\s+all\s+all\s+peer/local   all             all                                     trust/g' /etc/postgresql/*/main/pg_hba.conf
@@ -57,7 +57,7 @@ if [ $WIPE_DB == 1 ]; then
 
         sudo service postgresql restart
 
-	    $DIR/recreatedb.sh >> "$LOGFILE"
+	    $DIR/initdb.sh >> "$LOGFILE"
         sudo apt-get -y install --no-install-recommends  $(cat "$DIR/SYSTEM_DEPENDENCIES")
     ) >> "$LOGFILE" 2>&1
 fi
