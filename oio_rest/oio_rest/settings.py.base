@@ -378,10 +378,6 @@ REAL_DB_STRUCTURE["tilstand"]["relationer_type_override"] = {
     "tilstandsvaerdiattr": "vaerdirelationattr"
 }
 
-REAL_DB_STRUCTURE["tilstand"]["relationer_type_override"] = {
-    "tilstandsvaerdi": "vaerdirelationattrtype"
-}
-
 DB_TEMPLATE_EXTRA_OPTIONS = {
     "dokument": {
         "as_search.jinja.sql": {
