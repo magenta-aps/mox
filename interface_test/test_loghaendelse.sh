@@ -17,9 +17,13 @@ set -x
 DIR=$(dirname ${BASH_SOURCE[0]})
 source $DIR/config.sh
 
+echo "CREATE"
+
 result=$(curl -k -H "Content-Type: application/json" -X POST -d "$(cat $DIR/test_data/loghaendelse_opret.json)" $HOST_URL/log/loghaendelse)
 
 echo "RESULT: $result"
+
+echo "IMPORT" 
 
 uuid=$(expr "$result" : '.*"uuid": "\([^"]*\)"')
 echo "Oprettet LogHændelse: $uuid"
@@ -32,10 +36,14 @@ curl -k -sH "Content-Type: application/json" -X PUT -d "$(cat $DIR/test_data/log
 
 # Delete the LogHændelse. 
 
+echo "DELETE"
+
 curl -k -sH "Content-Type: application/json"  -X DELETE -d "$(cat $DIR/test_data/loghaendelse_slet.json)" $HOST_URL/log/loghaendelse/$uuid
 
 
-# List klasser
+# List loghaendelser
+
+echo "LIST"
 
 curl -k -sH "Content-Type: application/json" -X GET $HOST_URL/log/loghaendelse?uuid=$uuid 
 

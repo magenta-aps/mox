@@ -22,7 +22,7 @@
     }, 
     "tilstande": { 
         "loghaendelsegyldighed": [{ 
-            "gyldighed": "Aktiv", 
+            "gyldighed": "Ikke rettet", 
             "virkning": { 
                 "from": "2014-05-19 12:02:32", 
                 "to": "infinity", 
