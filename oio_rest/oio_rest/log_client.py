@@ -85,13 +85,12 @@ def log_service_call(service_name, class_name, time,
     channel.queue_bind(MOX_LOG_QUEUE, exchange=MOX_LOG_EXCHANGE)
 
     message = json.dumps(logevent_dict)
-    # print "Log queue", LOG_QUEUE
-    #print "Log exchange", LOG_EXCHANGE
+    # print "Log exchange", LOG_EXCHANGE
     print "Log message", message
 
     channel.basic_publish(
         exchange=MOX_LOG_EXCHANGE,
-        routing_key=MOX_LOG_QUEUE,
+        routing_key='',
         body=message,
         properties=pika.BasicProperties(
             content_type='application/json',

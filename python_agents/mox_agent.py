@@ -48,6 +48,7 @@ class MOXAgent(object):
         result = channel.queue_declare(queue=self.queue,
                                        durable=self.do_persist)
         if self.exchange:
+            channel.exchange_declare(exchange=self.exchange, type='fanout')
             channel.queue_bind(result.method.queue,
                                exchange=self.exchange)
 

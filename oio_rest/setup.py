@@ -22,7 +22,7 @@ setup(
     zip_safe=False,
     install_requires=[
         # -*- Extra requirements: -*-
-        'requests==2.10',
+        'requests==2.12.4',
         'pytz>=2016.10',
         'Flask==0.10.1',
         'Jinja2==2.7.3',
