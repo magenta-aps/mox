@@ -121,7 +121,7 @@ def log_api_call(response):
         msg = response.status
         note = "Is there a note too?"
         user_uuid = get_authenticated_user()
-        object_uuid = request.uuid
+        object_uuid = getattr(request, 'uuid', None)
         log_service_call(service_name, class_name, time, operation,
                          return_code, msg, note, user_uuid, "N/A", object_uuid)
     return response
