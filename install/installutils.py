@@ -107,6 +107,9 @@ class Config(object, UserDict.DictMixin):
 
     set = __setitem__
 
+    def keys(self):
+        return self.data.keys()
+
     def __getitem__(self, key):
         return self.data[key.strip()]['value']
 
@@ -130,10 +133,10 @@ class Config(object, UserDict.DictMixin):
         # in the tuples, and values are strings
         # default must be a dict of fallback values
         self.load()
+
         for (argkey, confkey) in config_translation:
-            value = None
-            if hasattr(args, argkey):
-                value = getattr(args, argkey)
+            value = self.get(confkey, None) or getattr(args, argkey, None)
+
             if value is None:
                 # Not good. We must have these values. Prompt the user
                 default = self.get(confkey)
