@@ -1,3 +1,10 @@
+* Version 0.2.16.1, January 12, 2017
+
+Hotfix:
+
+* Fix check for SAML authentication in get-token template
+* Fix reading user name from prompt in 'auth.sh' script
+
 * Version 0.2.16, January 10, 2017
 
 New in this version:
