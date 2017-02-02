@@ -17,12 +17,6 @@ if [[ "x$REPLY" != "x" ]]; then
 	DOMAIN="$REPLY"
 fi
 
-AMQP_HOST="localhost"
-AMQP_USER="guest"
-AMQP_PASS="guest"
-
-REST_HOST="https://$DOMAIN"
-
 # Add system user if none exists
 if ! getent passwd mox > /dev/null
 then
@@ -83,41 +77,7 @@ echo "$DIR/agentbase/python/mox" > "$DIR/agentbase/python/mox/mox.pth"
 
 # Compile agents
 echo "Installing Agents"
-$DIR/agents/MoxTabel/install.py
-$DIR/agents/MoxTabel/configure.py \
-    --rest-host "$REST_HOST" \
-    --amqp-incoming-host "$AMQP_HOST" \
-    --amqp-incoming-user "$AMQP_USER" \
-    --amqp-incoming-pass "$AMQP_PASS" \
-    --amqp-incoming-exchange "mox.documentconvert" \
-    --amqp-outgoing-host "$AMQP_HOST" \
-    --amqp-outgoing-user "$AMQP_USER" \
-    --amqp-outgoing-pass "$AMQP_PASS" \
-    --amqp-outgoing-exchange "mox.rest"
-
-$DIR/agents/MoxRestFrontend/install.py
-$DIR/agents/MoxRestFrontend/configure.py \
-    --rest-host "$REST_HOST" \
-    --amqp-host "$AMQP_HOST" \
-    --amqp-user "$AMQP_USER" \
-    --amqp-pass "$AMQP_PASS" \
-    --amqp-exchange "mox.rest"
-
-$DIR/agents/MoxDocumentUpload/install.py
-$DIR/agents/MoxDocumentUpload/configure.py \
-    --rest-host "$REST_HOST" \
-    --amqp-host "$AMQP_HOST" \
-    --amqp-user "$AMQP_USER" \
-    --amqp-pass "$AMQP_PASS" \
-    --amqp-exchange "mox.documentconvert"
-
-$DIR/agents/MoxTest/install.sh
-
-$DIR/agents/MoxDocumentDownload/install.py
-$DIR/agents/MoxDocumentDownload/configure.py \
-    --rest-host "$REST_HOST"
-
-sudo service apache2 reload
+$DIR/agents/install.sh "$DOMAIN"
 
 echo
 echo "Install succeeded!!!"
