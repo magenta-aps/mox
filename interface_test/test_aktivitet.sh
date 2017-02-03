@@ -59,7 +59,7 @@ echo "Done."
 
 # List aktiviteter
 
-curl -k -sH "Content-Type: application/json"  -X GET $HOST_URL/klassifikation/facet?uuid=$uuid > /tmp/listoutput
+curl -k -sH "Content-Type: application/json"  -X GET $HOST_URL/aktivitet/aktivitet/$uuid > /tmp/listoutput
 
 
 

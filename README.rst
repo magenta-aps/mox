@@ -70,7 +70,7 @@ chosen in ``db/config.sh``.
 
 The FILE_UPLOAD_FOLDER setting allows you to change where the database
 stores its files (used for storing the contents of binary files in the
-Dokument hierarchy). The default is i``/var/mox``, and this is
+Dokument hierarchy). The default is ``/var/mox``, and this is
 automatically created by the install script.
 
 There are some other settings that can be changed, and there should be
@@ -130,7 +130,7 @@ a password.
 
 If SAML authentication is turned on (i.e., if the parameter
 ``USE_SAML_AUTHENTICATION`` in ``oio_rest/oio_rest/settings.py`` is
-`True`), the IDP must be configured correctly - see the corresponding
+``True``), the IDP must be configured correctly - see the corresponding
 sections below for instruction on how to do this.
 
 
@@ -151,12 +151,11 @@ completely new Ubuntu 14.04 Server Edition: ::
 installation. We recommend creating a dedicated "mox" user and stripping its
 sudo rights when everything works.
 
-**Note:** This will install the system in ``srv/mox``. It is of course
+**Note:** This will install the system in ``/srv/mox``. It is of course
 possible to install in any other location, but we do not recommend this 
 for a quick install as it means a lot of configuration files need to be 
 changed. In a later version, the user will be prompted for the location and 
 the configuration will be generated accordingly.
-to the location desired by the users.
 
 **Note:** All commands, e.g. ``./test.sh``, are assumed to be issued from the
 installation root directory, by default ``/srv/mox``.
@@ -165,11 +164,11 @@ Quick test
 ----------
 
 Make sure the parameters ``USE_SAML_AUTHENTICATION`` in 
-``oio_rest/oio_rest/settings.py`` is `False`.
+``oio_rest/oio_rest/settings.py`` is ``False``.
 
 Make sure the parameter ``moxrestfrontend.rest.host`` in
 ``agents/MoxRestFrontend/moxrestfrontend.conf`` is set to
-`http://localhost:5000`.
+``http://localhost:5000``.
 
 Start the (AMQP) MOX REST frontend agent: ::
 
@@ -408,8 +407,8 @@ Merging Of Attributes / States / Relations When Updating Object
 ----------------------------------------------------------------
 
 It is worth noting, that the current implementation of the REST-api and the 
-underlying DB procedures *as a general* rule, merges the incomming registration 
-with the registration currently in effect, for all 'virknings' periods not 
+underlying DB procedures as a general rule merges the incomming registration 
+with the registration currently in effect for all 'virknings' periods not 
 explictly covered by the incomming registration.
 
 
@@ -426,8 +425,8 @@ Exceptions to this rule
   registration takes place. However, if you omit the particular type of 
   relation entirely, when you're updating the object - all the relations of that 
   particular type of the previous registration, will be carried over.
-  ( The exception to this rule, is in the case of the object Sag - see section
-  below regarding this. )
+- The relations in the services and object classes Sag, Aktivitet, Indsats and
+  Tilstand have indices and behave differently - this will be described below.
 
 
 Examples Of The Effects Of The Merging Logic When Updating Attributes
@@ -789,19 +788,22 @@ will look like this: ::
 
 
 As we can see no merging has taken place, as we in this example are updating 
-relations of a type with unlimited cardinality (0..n). ( The exception to 
-the behaviour described here, is when updating relations of the Sag object - see
-specific section dedicated to this topic). 
+relations of a type with unlimited cardinality (0..n). 
+
+As explained above, this works differently for "new-style" relations, i.e. 
+relations with indices - specifically, the object classes Sag, Indsats, 
+Aktivitet and Tilstand.
 
 Also see the section named 'Deleting / Clearing Relations' for info regarding
 clearing relations.
 
 
-Behaviour Of Relations Of Object Of Type Sag
---------------------------------------------
+Behaviour of Relations of type Sag, Indsats, Tilstand and Aktivitet
+-------------------------------------------------------------------
 
-The relations with unlimited cardinality (0..n) of the 'Sag' object is different
-than the relations of the other object types, as it operates with an 'index' 
+The relations with unlimited cardinality (0..n) of the Sag, Indsats, Tilstand
+and Aktivitet objects are different
+from the relations of the other object types, as they operate with an 'index' 
 field. This means that you can update relations with unlimited cardinality 
 without specifying the full list of the relations of the given type. You can 
 update a specific relation instance, making use of its index value.
@@ -848,8 +850,8 @@ provided to the update operation of the Sag object: ::
               {
                 "objekttype": "Organisation",
                 "indeks": 2, 
-                "uuid": "ddc99abd-c1b0-48c2-aef7-74fea841adae"
-                ,"virkning": { 
+                "uuid": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+                "virkning": { 
                     "from": "2015-05-20", 
                     "to": "2015-08-20", 
                     "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
@@ -933,7 +935,7 @@ instance will be created with an index value computed by the logic in the
 DB-server. For the create and import operations, this will be all the specified 
 index values.
 
-Updating relations with cardinality 0..1 of the Sag object is done similar to
+Updating relations with cardinality 0..1 of the Sag object is done similarly to
 updating relations of objects of other types. Any specified index values are
 ignored and blanked by the logic of the update operation. Otherwise consult the
 section 'Examples Of The Effects Of The Merging Logic When Updating Relations'
