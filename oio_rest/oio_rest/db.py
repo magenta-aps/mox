@@ -106,18 +106,19 @@ def convert_relation_value(class_name, field_name, value):
                                  ou.get('hjemmel', None))
         )
     elif field_type == 'aktoerattr':
-        result = AktoerAttr(value.get("accepteret", None),
-                            value.get("obligatorisk", None),
-                            value.get("repraesentation_uuid", None),
-                            value.get("repraesentation_urn", None))
+        if value:
+            return AktoerAttr(value.get("accepteret", None),
+                value.get("obligatorisk", None),
+                value.get("repraesentation_uuid", None),
+                value.get("repraesentation_urn", None))
     elif field_type == 'vaerdirelationattr':
         result = VaerdiRelationAttr(
                      value.get("forventet", None),
                      value.get("nominelvaerdi", None)
         )
         return result
-    else:
-        return value
+    # Default: no conversion. 
+    return value
 
 
 def convert_attributes(attributes):
@@ -151,9 +152,10 @@ def convert_relations(relations, class_name):
                         (period, rel_name, period)
                     )
                 for field in period:
-                    period[field] = convert_relation_value(
+                    converted = convert_relation_value(
                         class_name, field, period[field]
                     )
+                    period[field] = converted
     return relations
 
 
@@ -208,7 +210,6 @@ def sql_convert_registration(registration, class_name):
     registration["attributes"] = convert_attributes(registration["attributes"])
     registration["relations"] = convert_relations(registration["relations"],
                                                   class_name)
-    # print "CONVERT_RELATION", registration["relations"]
     if "variants" in registration:
         registration["variants"] = adapt(
             convert_variants(registration["variants"])
@@ -235,7 +236,6 @@ def sql_convert_registration(registration, class_name):
     relations = registration["relations"]
     sql_relations = sql_relations_array(class_name, relations)
     # print "CLASS", class_name
-    # print "RELATIONS", sql_relations
 
     registration["relations"] = sql_relations
 
@@ -381,7 +381,7 @@ def create_or_import_object(class_name, note, registration,
         registration=sql_registration,
         restrictions=sql_restrictions)
 
-    # print sql
+    print sql
     # Call Postgres! Return OK or not accordingly
     conn = get_connection()
     cursor = conn.cursor()
@@ -589,6 +589,8 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
         raise NotFoundException("{0} with UUID {1} not found.".format(
             class_name, uuid
         ))
+    # import json
+    # print json.dumps(output, indent=2)
     return filter_json_output(output)
 
 

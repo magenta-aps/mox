@@ -40,7 +40,8 @@ echo ""
 echo "Done."
 # Update the facet
 
-# curl -k -sH "Content-Type: application/json"  -X PUT -d "$(cat $DIR/test_data/facet_opdater.json)" $HOST_URL/klassifikation/facet/$uuid
+# echo "UPDATE"
+curl -k -sH "Content-Type: application/json"  -X PUT -d "$(cat $DIR/test_data/aktivitet_opdater.json)" $HOST_URL/aktivitet/aktivitet/$uuid
 
 # Passivate the facet. 
 
@@ -59,7 +60,7 @@ echo "Done."
 
 # List aktiviteter
 
-curl -k -sH "Content-Type: application/json"  -X GET $HOST_URL/aktivitet/aktivitet/$uuid > /tmp/listoutput
+# curl -k -sH "Content-Type: application/json"  -X GET $HOST_URL/aktivitet/aktivitet/$uuid > /tmp/listoutput
 
 
 

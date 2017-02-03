@@ -229,7 +229,7 @@ class OIORestObject(object):
     @requires_auth
     def get_object(cls, uuid):
         """
-        READ a facet, return as JSON.
+        READ an object, return as JSON.
         """
         args = cls._get_args()
         virkning_fra = args.get('virkningfra', None)

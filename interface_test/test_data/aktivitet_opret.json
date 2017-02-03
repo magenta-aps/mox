@@ -87,7 +87,7 @@
                                 "indeks": 1,
 				"aktoerattr": {
 					"accepteret": "foreloebigt",
-					"obligatorisk": "obligatorisk",
+					"obligatorisk": "valgfri",
 					"repraesentation_uuid": "0123d41a-08f2-4967-8689-dce625f93029"
 				},
 				"uuid": "22345abd-c1b0-48c2-aef7-74fea841adae",
