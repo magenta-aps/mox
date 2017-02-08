@@ -39,9 +39,6 @@ OIO_REST_CONFIG="$DIR/oio_rest/oio_rest/settings.py"
 cp --remove-destination "$OIO_REST_CONFIG.base" "$OIO_REST_CONFIG"
 sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$OIO_REST_CONFIG"
 
-APACHE_CONFIG="$DIR/apache/mox.conf"
-cp --remove-destination "$APACHE_CONFIG.base" "$APACHE_CONFIG"
-
 # Setup common config
 sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$MOX_CONFIG"
 
@@ -51,7 +48,7 @@ sudo apt-get -qq install python python-pip python-virtualenv python-jinja2
 
 # Setup apache virtualhost
 echo "Setting up Apache virtualhost"
-$DIR/apache/install.sh
+$DIR/apache/install.py -d "$DOMAIN"
 
 # Install oio_rest
 echo "Installing oio_rest"
