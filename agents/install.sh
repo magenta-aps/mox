@@ -19,7 +19,7 @@ else
     fi
 fi
 
-. ../db/config.sh
+. $DIR/../db/config.sh
 
 $DIR/MoxTabel/install.py
 $DIR/MoxTabel/configure.py \
