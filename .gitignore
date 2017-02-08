@@ -6,6 +6,7 @@ install.log
 python-env
 oio_rest/oio_api
 *.orig
+*.bak
 *.rej
 *.class
 *~
@@ -32,8 +33,6 @@ agents/MoxDocumentDownload/setup/moxdocumentdownload.wsgi
 agents/MoxDocumentUpload/moxdocumentupload/moxdocumentupload.conf
 agents/MoxDocumentUpload/setup/moxdocumentupload.conf
 agents/MoxDocumentUpload/setup/moxdocumentupload.wsgi
-agents/MoxDocumentDownload/setup/moxdocumentdownload.conf
-agents/MoxRestFrontend/setup/moxrestfrontend.conf
 agents/MoxRestFrontend/moxrestfrontend.conf
 agents/MoxTabel/moxtabel.conf
 agents/MoxTabel/setup/moxtabel.conf

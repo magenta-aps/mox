@@ -16,14 +16,10 @@ args = parser.parse_args()
 
 # ------------------------------------------------------------------------------
 
-virtualenv = VirtualEnv(DIR + "/python-env")
-created = virtualenv.create(
-    args.overwrite_virtualenv, args.keep_virtualenv,
-)
-if created:
-    print "Running setup.py"
-    virtualenv.run(DIR + "/setup.py", "develop")
-    virtualenv.add_moxlib_pointer()
+virtualenv = VirtualEnv()
+print "Running setup.py"
+virtualenv.run(DIR + "/setup.py", "develop")
+virtualenv.add_moxlib_pointer()
 
 # ------------------------------------------------------------------------------
 

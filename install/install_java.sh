@@ -29,19 +29,21 @@ if [ $JAVA_HIGHEST_VERSION -ge $JAVA_VERSION_NEEDED ]; then
 	echo "No need to upgrade"
 else
 	echo "Installing java in version $JAVA_VERSION_NEEDED"
-	sudo apt-cache -q=2 show "openjdk-$JAVA_VERSION_NEEDED-jdk" 2> /dev/null 1> /dev/null
+	pkg="openjdk-$JAVA_VERSION_NEEDED-jdk"
+	sudo apt-cache -q=2 show $pkg > /dev/null 2>&1
 	if [[ $? > 0 ]]; then
 		# openjdk is not available in the version we want
         sudo apt-get -qq install software-properties-common
 		sudo add-apt-repository -y ppa:openjdk-r/ppa
 		sudo apt-get update > /dev/null
 	fi
-	sudo apt-cache -q=2 show "openjdk-$JAVA_VERSION_NEEDED-jdk" 2> /dev/null 1> /dev/null
+	sudo apt-cache -q=2 show $pkg > /dev/null 2>&1
 	if [[ $? > 0 ]]; then
 		echo "Java version $JAVA_VERSION_NEEDED is not available"
 		exit 1
 	fi
-	sudo apt-get --yes --quiet install "openjdk-$JAVA_VERSION_NEEDED-jdk"
+	sudo apt-get --yes --quiet install $pkg
+    unset pkg
 fi
 
 JAVA_VERSION_DIR=""

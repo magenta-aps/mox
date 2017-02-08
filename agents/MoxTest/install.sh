@@ -5,7 +5,7 @@ MOXDIR=$( cd "$DIR/../.." && pwd )
 
 (
     cd "$DIR"
-    mvn package --quiet -Dmaven.test.skip=true
+    mvn package --quiet -Dmaven.test.skip=true -Dmaven.clean.skip=true
 )
 
 sudo mkdir -p /var/log/mox

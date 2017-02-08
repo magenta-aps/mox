@@ -1,4 +1,4 @@
-ServerName localhost
+ServerName {{DOMAIN}}
 
 <VirtualHost *:80>
 
