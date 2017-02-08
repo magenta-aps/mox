@@ -6,6 +6,7 @@ install.log
 python-env
 oio_rest/oio_api
 *.orig
+*.bak
 *.rej
 *.class
 *~

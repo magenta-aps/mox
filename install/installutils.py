@@ -503,6 +503,14 @@ def expand_template(template_file, dest_file=None, **kwargs):
 
     text = template.render(**kwargs)
 
+    if os.path.exists(dest_file):
+        backup_file = '{}-{}.bak'.format(dest_file, timestamp())
+
+        try:
+            os.rename(dest_file, backup_file)
+        except:
+            sudo('mv', '-v', dest_file, backup_file)
+
     try:
         with open(dest_file, 'w') as fp:
             fp.write(text)
@@ -561,3 +569,10 @@ def create_user(user, group='mox'):
             '-s', '/usr/sbin/nologin',
             '-g', group, user,
         )
+
+
+def timestamp(dt=None):
+    if not dt:
+        dt = datetime.datetime.now()
+    return '%04d%02d%02d-%02d%02d%02d' % (dt.year, dt.month, dt.day,
+                                          dt.hour, dt.minute, dt.second)
