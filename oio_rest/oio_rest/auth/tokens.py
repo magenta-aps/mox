@@ -136,12 +136,12 @@ def main(*args):
 
     else:
         from lxml import etree
-        from M2Crypto import X509
+        import ssl
 
         for el in etree.fromstring(token).findall('.//{*}X509Certificate'):
             data = base64.standard_b64decode(el.text)
 
-            sys.stdout.write(X509.load_cert_der_string(data).as_pem())
+            sys.stdout.write(ssl.DER_cert_to_PEM_cert(data))
 
     return 0
 
