@@ -30,17 +30,30 @@ sudo mkdir -p "/var/log/mox"
 
 # Config files that may be altered during install should be copied from git, but not themselves be present there
 MOX_CONFIG="$DIR/mox.conf"
-cp --remove-destination "$MOX_CONFIG.base" "$MOX_CONFIG"
+if test -f "$MOX_CONFIG"
+then
+    echo "Not overwriting $MOX_CONFIG"
+else
+    cp --remove-destination "$MOX_CONFIG.base" "$MOX_CONFIG"
+    sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$MOX_CONFIG"
+fi
 
 SHELL_CONFIG="$DIR/variables.sh"
-cp --remove-destination "$SHELL_CONFIG.base" "$SHELL_CONFIG"
+if test -f "$SHELL_CONFIG"
+then
+    echo "Not overwriting $SHELL_CONFIG"
+else
+    cp --remove-destination "$SHELL_CONFIG.base" "$SHELL_CONFIG"
+fi
 
 OIO_REST_CONFIG="$DIR/oio_rest/oio_rest/settings.py"
-cp --remove-destination "$OIO_REST_CONFIG.base" "$OIO_REST_CONFIG"
-sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$OIO_REST_CONFIG"
-
-# Setup common config
-sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$MOX_CONFIG"
+if test -f "$OIO_REST_CONFIG"
+then
+    echo "Not overwriting $OIO_REST_CONFIG"
+else
+    cp --remove-destination "$OIO_REST_CONFIG.base" "$OIO_REST_CONFIG"
+    sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$OIO_REST_CONFIG"
+fi
 
 echo "Installing Python"
 sudo apt-get -qq update
