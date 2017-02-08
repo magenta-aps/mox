@@ -1,0 +1,19 @@
+# -*- conf -*-
+
+[Unit]
+Description="{{NAME}} agent, part of MOX"
+{%- if AFTER %}
+After={{AFTER}}
+{%- endif %}
+
+[Service]
+Type=simple
+Restart=on-failure
+
+User={{USER}}
+Group={{GROUP}}
+
+ExecStart={{SCRIPT}}
+
+[Install]
+WantedBy=multi-user.target

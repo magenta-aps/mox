@@ -1,23 +1,27 @@
+from __future__ import print_function
+
+import errno
+import collections
 import datetime
 import multiprocessing
 import os
 import pwd
-import re
-import shutil
 import subprocess
 import sys
+import tempfile
+import UserDict
 
 import jinja2
 import virtualenv
 
 # ------------------------------------------------------------------------------
 
-_basedir = os.path.dirname(os.path.abspath(sys.modules['__main__'].__file__))
-_moxdir = os.path.dirname(os.path.dirname(os.path.realpath(
+DIR = os.path.dirname(os.path.abspath(sys.modules['__main__'].__file__))
+MOXDIR = os.path.dirname(os.path.dirname(os.path.realpath(
     os.path.splitext(__file__)[0] + '.py')
 ))
 
-logfilename = os.path.join(_basedir, 'install.log')
+logfilename = os.path.join(DIR, 'install.log')
 
 
 class _RedirectOutput(object):
@@ -53,11 +57,11 @@ class _RedirectOutput(object):
         sys.stdout, sys.stderr = self._old_targets
 
 
-class Config(object):
+class Config(object, UserDict.DictMixin):
     def __init__(self, file, create=True):
         self.file = file
         self.lines = []
-        self.data = {}
+        self.data = collections.OrderedDict()
         self.lastline = 0
         if create:
             self.create()
@@ -90,7 +94,7 @@ class Config(object):
             fp = open(self.file, 'w')
             fp.close()
 
-    def set(self, key, value):
+    def __setitem__(self, key, value):
         if not self.exists():
             raise ConfigNotCreatedException(self.file)
         key = key.strip()
@@ -101,11 +105,16 @@ class Config(object):
             self.data[key] = obj
             self.lines.append(obj)
 
-    def get(self, key):
-        try:
-            return self.data[key.strip()]['value']
-        except:
-            return None
+    set = __setitem__
+
+    def keys(self):
+        return self.data.keys()
+
+    def __getitem__(self, key):
+        return self.data[key.strip()]['value']
+
+    def __delitem__(self, key):
+        del self.data[key.strip()]
 
     def save(self):
         if not self.exists():
@@ -124,10 +133,10 @@ class Config(object):
         # in the tuples, and values are strings
         # default must be a dict of fallback values
         self.load()
+
         for (argkey, confkey) in config_translation:
-            value = None
-            if hasattr(args, argkey):
-                value = getattr(args, argkey)
+            value = self.get(confkey, None) or getattr(args, argkey, None)
+
             if value is None:
                 # Not good. We must have these values. Prompt the user
                 default = self.get(confkey)
@@ -142,7 +151,7 @@ class Config(object):
                 else:
                     value = raw_input("%s = " % confkey).strip()
             else:
-                print "%s = %s" % (confkey, value)
+                print("%s = %s" % (confkey, value))
             self.set(confkey, value)
 
 
@@ -214,35 +223,15 @@ getch = _Getch()
 
 class VirtualEnv(object):
 
-    def __init__(self, environment_dir):
-        self.environment_dir = environment_dir
-        self.exists = os.path.isdir(self.environment_dir)
+    def __init__(self, environment_dir=None):
+        self.environment_dir = \
+            environment_dir or os.path.join(MOXDIR, 'python-env')
 
-    def create(self, always_overwrite=False, never_overwrite=False):
         if os.path.isdir(self.environment_dir):
-            self.exists = True
-            if always_overwrite:
-                create = True
-            elif never_overwrite:
-                create = False
-            else:
-                print "%s already exists" % self.environment_dir
-                # raw_input("Do you want to reinstall it? (y/n)")
-                default = 'y'
-                print "Do you want to reinstall it? (Y/n)",
-                answer = None
-                while answer != 'y' and answer != 'n':
-                    answer = getch()
-                    if answer in ['\n', '\r']:
-                        answer = default
-                create = (answer == 'y')
-            if create:
-                shutil.rmtree(self.environment_dir)
+            print("Using virtual environment %r" % self.environment_dir)
         else:
-            create = True
+            print("Creating virtual enviroment %r" % self.environment_dir)
 
-        if create:
-            print "Creating virtual enviroment '%s'" % self.environment_dir
             with _RedirectOutput(logfilename):
                 sys.stdout.write('\n{}\nVENV: create {}\n\n'.format(
                     datetime.datetime.now(), self.environment_dir
@@ -250,17 +239,12 @@ class VirtualEnv(object):
 
                 virtualenv.create_environment(self.environment_dir)
 
-            self.exists = True
-
-        return create
-
     def run(self, *args):
-        if self.exists:
-            # based on virtualenv.py
-            pycmd = os.path.join(self.environment_dir, 'bin',
-                                 os.path.basename(sys.executable))
+        # based on virtualenv.py
+        pycmd = os.path.join(self.environment_dir, 'bin',
+                             os.path.basename(sys.executable))
 
-            run(pycmd, *args)
+        run(pycmd, *args)
 
     def call(self, func, *args, **kwargs):
         '''Call the given function within this environment
@@ -293,7 +277,7 @@ class VirtualEnv(object):
             "%s/lib/python2.7/site-packages/mox.pth" % self.environment_dir,
             "w"
         ) as fp:
-            fp.write(os.path.abspath("%s/agentbase/python/mox" % _moxdir))
+            fp.write(os.path.abspath("%s/agentbase/python/mox" % MOXDIR))
 
 
 class Apache(object):
@@ -305,7 +289,7 @@ class Apache(object):
     endmarker_index = None
     indent = ''
 
-    def __init__(self, siteconf=_moxdir + "/apache/mox.conf"):
+    def __init__(self, siteconf=MOXDIR + "/apache/mox.conf"):
         assert os.path.isdir(os.path.dirname(siteconf)), siteconf
         self.siteconf = siteconf
 
@@ -403,12 +387,19 @@ class File(object):
 
 
 class LogFile(File):
+    def __init__(self, filename, user='mox', group='mox'):
+        super(LogFile, self).__init__(filename)
+
+        self.user = user
+        self.group = group
 
     def create(self):
+        create_user(self.user, self.group)
+
         self.touch()
         self.chmod('666')
-        self.chown('mox')
-        self.chgrp('mox')
+        self.chown(self.user)
+        self.chgrp(self.group)
 
 
 class Folder(object):
@@ -433,26 +424,110 @@ class Folder(object):
         sudo('chgrp', group, self.foldername)
 
 
+class Service(object):
+    USE_SYSTEMD = (os.path.islink("/sbin/init") and
+                   os.path.basename(os.readlink("/sbin/init")) == "systemd")
+
+    def __init__(self, script, user='mox', group='mox', after=()):
+        self.script = os.path.join(DIR, script)
+        self.user = user
+        self.group = group
+        self.after = after
+
+    @property
+    def name(self):
+        return os.path.basename(os.path.splitext(self.script)[0])
+
+    def install(self):
+        create_user(self.user, self.group)
+
+        service_name = self.name + '.service'
+        systemd_service = '/etc/systemd/system/{}.service'.format(self.name)
+        upstart_config = '/etc/init/{}.conf'.format(self.name)
+
+        if os.path.exists(upstart_config):
+            try:
+                sudo('service', self.name, 'stop')
+            except subprocess.CalledProcessError:
+                log('failed to stop upstart service', self.name)
+
+            sudo('rm', '-v', upstart_config)
+
+        if os.path.exists(systemd_service):
+            try:
+                sudo('systemctl', 'stop', service_name)
+            except subprocess.CalledProcessError:
+                log('failed to stop systemd service', self.name)
+
+            sudo('rm', '-v', systemd_service)
+
+        if self.USE_SYSTEMD:
+            template = \
+                os.path.join(MOXDIR,
+                             'install/templates/systemd-agent.service.in')
+
+            expand_template(template,
+                            systemd_service,
+                            NAME=self.name, SCRIPT=self.script,
+                            USER=self.user, GROUP=self.group,
+                            AFTER=self.after)
+
+            sudo('systemctl', 'enable', service_name)
+            sudo('systemctl', 'start', service_name)
+
+        else:
+            template = \
+                os.path.join(MOXDIR,
+                             'install/templates/upstart-agent.conf.in')
+
+            expand_template(template, upstart_config,
+                            NAME=self.name, SCRIPT=self.script,
+                            USER=self.user, GROUP=self.group)
+
+            sudo('service', self.name, 'start')
+
+
 def expand_template(template_file, dest_file=None, **kwargs):
     if not dest_file:
         dest_file = os.path.splitext(template_file)[0]
 
-    print 'Expanding {!r} to {!r}'.format(template_file, dest_file)
-    template_file = os.path.join(_basedir, template_file)
-    dest_file = os.path.join(_basedir, dest_file)
+    print('Expanding {!r} to {!r}'.format(template_file, dest_file))
+    template_file = os.path.join(DIR, template_file)
+    dest_file = os.path.join(DIR, dest_file)
 
-    kwargs.setdefault('DIR', _basedir)
-    kwargs.setdefault('MOXDIR', _moxdir)
+    kwargs.setdefault('DIR', DIR)
+    kwargs.setdefault('MOXDIR', MOXDIR)
 
     with open(template_file) as fp:
         template = jinja2.Template(fp.read())
 
     text = template.render(**kwargs)
 
-    with open(dest_file, 'w') as fp:
-        fp.write(text)
+    if os.path.exists(dest_file):
+        backup_file = '{}-{}.bak'.format(dest_file, timestamp())
+
+        try:
+            os.rename(dest_file, backup_file)
+        except:
+            sudo('mv', '-v', dest_file, backup_file)
+
+    try:
+        with open(dest_file, 'w') as fp:
+            fp.write(text)
+    except IOError as exc:
+        if exc.errno not in (errno.EPERM, errno.EACCES):
+            raise
+
+        sudo_with_input(text, 'dd', 'of=' + dest_file)
 
     return dest_file
+
+
+def log(*args):
+    with open(logfilename, 'a') as logfp:
+        print(*args, file=logfp)
+        logfp.flush()
+
 
 def run(*args):
     with open(logfilename, 'a') as logfp:
@@ -460,26 +535,44 @@ def run(*args):
                                                ' '.join(args)))
         logfp.flush()
 
-        subprocess.check_call(args, cwd=_basedir,
+        subprocess.check_call(args, cwd=DIR,
                               stdout=logfp, stderr=logfp)
 
 
 def sudo(*args):
-    with open(logfilename, 'a') as logfp:
-        logfp.write('\n{}\nSUDO: {}\n\n'.format(datetime.datetime.now(),
-                                                ' '.join(args)))
-        logfp.flush()
-
-        subprocess.check_call(('sudo',) + args, cwd=_basedir,
-                              stdout=logfp, stderr=logfp)
+    return sudo_with_input('', *args)
 
 
-def create_user(user):
+def sudo_with_input(data, *args):
+    with tempfile.TemporaryFile() as inputfp:
+        if data:
+            inputfp.write(data)
+            inputfp.seek(0)
+
+        with open(logfilename, 'a') as logfp:
+            logfp.write('\n{}\nSUDO: {}\n\n'.format(datetime.datetime.now(),
+                                                    ' '.join(args)))
+            logfp.flush()
+
+            subprocess.check_call(('sudo',) + args, cwd=DIR,
+                                  stdout=logfp, stderr=logfp, stdin=inputfp)
+
+
+def create_user(user, group='mox'):
     try:
         pwd.getpwnam(user)
+        print('Using pre-existing user {!r}'.format(user))
     except KeyError:
+        print('Creating user {!r}'.format(user))
         sudo(
             'useradd', '--system',
             '-s', '/usr/sbin/nologin',
-            '-g', 'mox', user,
+            '-g', group, user,
         )
+
+
+def timestamp(dt=None):
+    if not dt:
+        dt = datetime.datetime.now()
+    return '%04d%02d%02d-%02d%02d%02d' % (dt.year, dt.month, dt.day,
+                                          dt.hour, dt.minute, dt.second)

@@ -3,7 +3,7 @@
 import argparse
 import os
 import sys
-from installutils import VirtualEnv, create_user, run, sudo
+from installutils import Service, LogFile, run
 
 DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
 
@@ -18,19 +18,14 @@ args = parser.parse_args()
 if not args.skip_compile:
     print 'Building Maven package'
 
-    run('mvn', 'package', '-Dmaven.test.skip=true')
+    run('mvn', 'package', '-Dmaven.test.skip=true', '-Dmaven.clean.skip=true')
 
 # ------------------------------------------------------------------------------
 
 print 'Installing service'
 
-create_user('moxtabel')
+LogFile('/var/log/mox/moxtabel.log', 'moxtabel').create()
 
-sudo('touch', '/var/log/mox/moxtabel.log')
-sudo('chown', 'moxtabel:mox', '/var/log/mox/moxtabel.log')
-
-venv = VirtualEnv(DIR + "/python-env")
-venv.expand_template('setup/moxtabel.conf.in')
-
-sudo('install', '-m', '644', 'setup/moxtabel.conf', '/etc/init/moxtabel.conf')
-sudo('service', 'moxtabel', 'restart')
+service = Service('moxtabel.sh', user='moxtabel',
+                  after=('rabbitmq-server.service'))
+service.install()

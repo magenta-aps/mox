@@ -3,7 +3,7 @@
 import argparse
 import os
 import sys
-from installutils import VirtualEnv, create_user, run, sudo
+from installutils import LogFile, Service, run
 
 DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
 
@@ -18,20 +18,14 @@ args = parser.parse_args()
 if not args.skip_compile:
     print 'Building Maven package'
 
-    run('mvn', 'package', '-Dmaven.test.skip=true')
+    run('mvn', 'package', '-Dmaven.test.skip=true', '-Dmaven.clean.skip=true')
 
 # ------------------------------------------------------------------------------
 
 print 'Installing service'
 
-create_user('moxrestfrontend')
+LogFile('/var/log/mox/moxrestfrontend.log', 'moxrestfrontend').create()
 
-sudo('touch', '/var/log/mox/moxrestfrontend.log')
-sudo('chown', 'moxrestfrontend:mox', '/var/log/mox/moxrestfrontend.log')
-
-venv = VirtualEnv(os.path.join(DIR, '..', 'MoxDocumentUpload', 'python-env'))
-venv.expand_template('setup/moxrestfrontend.conf.in')
-
-sudo('install', '-m', '644', 'setup/moxrestfrontend.conf',
-     '/etc/init/moxrestfrontend.conf')
-sudo('service', 'moxrestfrontend', 'restart')
+service = Service('moxrestfrontend.sh', user='moxrestfrontend',
+                  after=('rabbitmq-server.service'))
+service.install()

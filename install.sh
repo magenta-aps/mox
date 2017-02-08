@@ -17,21 +17,6 @@ if [[ "x$REPLY" != "x" ]]; then
 	DOMAIN="$REPLY"
 fi
 
-read -p "Install WSO2 identity provider? [N/y] " -r -n 1
-echo
-if [[ $REPLY != [yY] ]]
-then
-	USE_WSO2=false
-else
-	USE_WSO2=true
-fi
-
-AMQP_HOST="$DOMAIN"
-AMQP_USER="guest"
-AMQP_PASS="guest"
-
-REST_HOST="https://$DOMAIN"
-
 # Add system user if none exists
 if ! getent passwd mox > /dev/null
 then
@@ -45,20 +30,30 @@ sudo mkdir -p "/var/log/mox"
 
 # Config files that may be altered during install should be copied from git, but not themselves be present there
 MOX_CONFIG="$DIR/mox.conf"
-cp --remove-destination "$MOX_CONFIG.base" "$MOX_CONFIG"
+if test -f "$MOX_CONFIG"
+then
+    echo "Not overwriting $MOX_CONFIG"
+else
+    cp --remove-destination "$MOX_CONFIG.base" "$MOX_CONFIG"
+    sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$MOX_CONFIG"
+fi
 
 SHELL_CONFIG="$DIR/variables.sh"
-cp --remove-destination "$SHELL_CONFIG.base" "$SHELL_CONFIG"
+if test -f "$SHELL_CONFIG"
+then
+    echo "Not overwriting $SHELL_CONFIG"
+else
+    cp --remove-destination "$SHELL_CONFIG.base" "$SHELL_CONFIG"
+fi
 
 OIO_REST_CONFIG="$DIR/oio_rest/oio_rest/settings.py"
-cp --remove-destination "$OIO_REST_CONFIG.base" "$OIO_REST_CONFIG"
-sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$OIO_REST_CONFIG"
-
-APACHE_CONFIG="$DIR/apache/mox.conf"
-cp --remove-destination "$APACHE_CONFIG.base" "$APACHE_CONFIG"
-
-# Setup common config
-sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$MOX_CONFIG"
+if test -f "$OIO_REST_CONFIG"
+then
+    echo "Not overwriting $OIO_REST_CONFIG"
+else
+    cp --remove-destination "$OIO_REST_CONFIG.base" "$OIO_REST_CONFIG"
+    sed -i -e s/$\{domain\}/${DOMAIN//\//\\/}/ "$OIO_REST_CONFIG"
+fi
 
 echo "Installing Python"
 sudo apt-get -qq update
@@ -66,27 +61,12 @@ sudo apt-get -qq install python python-pip python-virtualenv python-jinja2
 
 # Setup apache virtualhost
 echo "Setting up Apache virtualhost"
-$DIR/apache/install.sh
-
-if $USE_WSO2
-then
-	echo "Setting up Identity Server"
-	$DIR/wso2/install.sh "$DOMAIN"
-fi
-
-REINSTALL_VIRTUALENVS=""
-read -p "Reinstall python virtual environments [(y)es/(n)o/(A)sk every time] " -r -n 1
-echo
-if [[ $REPLY == [yY] ]]; then
-	REINSTALL_VIRTUALENVS="--overwrite-virtualenv"
-elif [[ $REPLY == [nN] ]]; then
-	REINSTALL_VIRTUALENVS="--keep-virtualenv"
-fi
+$DIR/apache/install.py -d "$DOMAIN"
 
 # Install oio_rest
 echo "Installing oio_rest"
-echo "$DIR/oio_rest/install.py $REINSTALL_VIRTUALENVS"
-$DIR/oio_rest/install.py $REINSTALL_VIRTUALENVS
+echo "$DIR/oio_rest/install.py"
+$DIR/oio_rest/install.py
 
 # Install database
 echo "Installing database"
@@ -107,21 +87,7 @@ echo "$DIR/agentbase/python/mox" > "$DIR/agentbase/python/mox/mox.pth"
 
 # Compile agents
 echo "Installing Agents"
-$DIR/agents/MoxTabel/install.py
-$DIR/agents/MoxTabel/configure.py --rest-host "$REST_HOST" --amqp-incoming-host "$DOMAIN" --amqp-incoming-user "$AMQP_USER" --amqp-incoming-pass "$AMQP_PASS" --amqp-incoming-exchange "mox.documentconvert" --amqp-outgoing-host "$DOMAIN" --amqp-outgoing-user "$AMQP_USER" --amqp-outgoing-pass "$AMQP_PASS" --amqp-outgoing-exchange "mox.rest"
-
-$DIR/agents/MoxRestFrontend/install.py
-$DIR/agents/MoxRestFrontend/configure.py --rest-host "$REST_HOST" --amqp-host "$DOMAIN" --amqp-user "$AMQP_USER" --amqp-pass "$AMQP_PASS" --amqp-exchange "mox.rest"
-
-$DIR/agents/MoxDocumentUpload/install.py $REINSTALL_VIRTUALENVS
-$DIR/agents/MoxDocumentUpload/configure.py --rest-host "$REST_HOST" --amqp-host "$DOMAIN" --amqp-user "$AMQP_USER" --amqp-pass "$AMQP_PASS" --amqp-exchange "mox.documentconvert"
-
-$DIR/agents/MoxTest/install.sh
-
-$DIR/agents/MoxDocumentDownload/install.py $REINSTALL_VIRTUALENVS
-$DIR/agents/MoxDocumentDownload/configure.py --rest-host "$REST_HOST"
-
-sudo service apache2 reload
+$DIR/agents/install.sh "$DOMAIN"
 
 echo
 echo "Install succeeded!!!"
