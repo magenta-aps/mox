@@ -127,9 +127,16 @@ def main(*args):
         from requests.packages import urllib3
         urllib3.disable_warnings()
 
-    token = get_token(username, password,
-                      options.raw or options.cert_only,
-                      options.insecure)
+    try:
+        token = get_token(username, password,
+                          options.raw or options.cert_only,
+                          options.insecure)
+    except requests.exceptions.SSLError as e:
+        msg = ('SSL request failed; you probably need to install the '
+               'appropriate certificate authority, or use the correct host '
+               'name')
+        print >> sys.stderr, msg, e
+        return 1
 
     if not options.cert_only:
         sys.stdout.write(token)
