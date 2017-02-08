@@ -127,21 +127,28 @@ def main(*args):
         from requests.packages import urllib3
         urllib3.disable_warnings()
 
-    token = get_token(username, password,
-                      options.raw or options.cert_only,
-                      options.insecure)
+    try:
+        token = get_token(username, password,
+                          options.raw or options.cert_only,
+                          options.insecure)
+    except requests.exceptions.SSLError as e:
+        msg = ('SSL request failed; you probably need to install the '
+               'appropriate certificate authority, or use the correct host '
+               'name')
+        print >> sys.stderr, msg, e
+        return 1
 
     if not options.cert_only:
         sys.stdout.write(token)
 
     else:
         from lxml import etree
-        from M2Crypto import X509
+        import ssl
 
         for el in etree.fromstring(token).findall('.//{*}X509Certificate'):
             data = base64.standard_b64decode(el.text)
 
-            sys.stdout.write(X509.load_cert_der_string(data).as_pem())
+            sys.stdout.write(ssl.DER_cert_to_PEM_cert(data))
 
     return 0
 

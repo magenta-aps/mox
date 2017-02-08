@@ -7,4 +7,4 @@ MOXDIR=$(cd $(dirname $0); pwd)
 # '$MOXDIR/oio_rest/oio_rest'
 cd "$MOXDIR/oio_rest"
 
-exec python-env/bin/python -s -m oio_rest.auth.tokens "$@"
+exec ../python-env/bin/python -s -m oio_rest.auth.tokens "$@"

@@ -1233,10 +1233,68 @@ Dokument Del relations, you have to specify the full list of relations.
 Authentication
 ==========================================
 
-SAML token authentication is enabled by default. This requires that you have access to a SAML Identity Provider (IdP) which provides a Security Token Service (STS).
+SAML token authentication is enabled by default. This requires that
+you have access to a SAML Identity Provider (IdP) which provides a
+Security Token Service (STS). We currently support two types:
 
-Setting up an IdP with STS for testing
---------------------------------------
+* Active Directory Federation Services
+* WSO2_
+
+.. _WSO2: http://wso2.com
+
+
+Using Active Directory Federation Services
+------------------------------------------
+
+In order to use AD FS as the Security Token Service, you first need an
+*endpoint* configured in ADFS. You should name this endpoint
+corresponding to the designated name of the box running LoRA, for
+example::
+
+  https://lora.magenta-aps.dk
+
+As for the attributes to send, select the following:
+
+=====================================  ====================
+LDAP Attribute                         Outgoing Claim Type
+=====================================  ====================
+objectGUID                             PPID
+User-Principal-Name                    NameID
+Token-Groups (Unqualified Names)       Group
+=====================================  ====================
+
+Please note that you should configure AD FS to sign, but not encrypt,
+its assertions.
+
+Then configure the following fields in ``oio_rest/oio_rest/settings.py``:
+
+=====================================  ====================
+Setting                                Description
+=====================================  ====================
+``SAML_MOX_ENTITY_ID``                 In this case, “``https://lora.magenta-aps.dk``”.
+``SAML_IDP_ENTITY_ID``                 The name of your ADFS.
+``SAML_IDP_URL``                       The URL where your ADFS may be reached.
+``SAML_IDP_TYPE``                      ``"adfs"``
+``USE_SAML_AUTHENTICATION``            ``True``
+``SAML_USER_ID_ATTIBUTE``              ``"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/privatepersonalidentifier"``
+=====================================  ====================
+
+You should now be able to test the basic configuration, and extract
+the signing certificate::
+
+  $ cd /path/to/mox
+  $ ./auth.sh --cert-only
+  User: user@domain
+  Password: <enter password here>
+
+Now save the results to a file, e.g. ``adfs-cert.pem``, and set that
+as ``SAML_IDP_CERTIFICATE``. You may get an SSL error, in that case,
+you should add your certificate authority to the system.
+Alternatively, you can pass the ``--insecure`` option to ``auth.sh``
+temporarily bypass the error.
+
+Setting up a WSO2 IdP with STS for testing
+------------------------------------------
 
 You need a STS (Security Token Service) running on your IdP.
 An open-source IdP is available from http://wso2.com/products/identity-server/
@@ -1254,7 +1312,7 @@ Restart the WSO2 server! The STS endpoint simply did not work until I
 restarted the WSO2 server.
 
 Setting up users on the IDP
----------------------------
++++++++++++++++++++++++++++
 
 This is for testing with the WSO2 Identity Server as described above -
 we assume that this is not the configuration which the municipalities
@@ -1274,7 +1332,7 @@ to the database.
 
 
 OIO-REST SAML settings
-----------------------
+++++++++++++++++++++++
 
 The default IdP entity ID is called "localhost". If your IdP has a
 different entity ID, you must change the SAML_IDP_ENTITY_ID setting
@@ -1322,6 +1380,10 @@ or the Firefox addon "REST Easy", available at https://addons.mozilla.org/da/fir
 
 Requesting a SAML token manually
 --------------------------------
+
+.. Note::
+
+   This section only applies covers using the *WSO2* IdP.
 
 Although the Java MOX agent does this automatically, it can be useful
 to request a SAML token manually, for testing purposes.
@@ -1378,8 +1440,10 @@ Sending Messages on the Beskedfordeler
 Using the OIO Mox Library
 -------------------------
 
-**CAUTION! !!! This section is currently out of date!!! Please refer to the
-examples above for more up to date details.**
+.. Caution::
+
+   **This section is currently out of date!!! Please refer to the
+   examples above for more up to date details.**
 
 This is located in the folder ``agent/`` in the Mox source code
 repository.

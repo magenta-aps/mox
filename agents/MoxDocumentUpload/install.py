@@ -9,21 +9,14 @@ DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
 
 parser = argparse.ArgumentParser(description='Install MoxDocumentUpload')
 
-parser.add_argument('-y', '--overwrite-virtualenv', action='store_true')
-parser.add_argument('-n', '--keep-virtualenv', action='store_true')
-
 args = parser.parse_args()
 
 # ------------------------------------------------------------------------------
 
-virtualenv = VirtualEnv(DIR + "/python-env")
-created = virtualenv.create(
-    args.overwrite_virtualenv, args.keep_virtualenv,
-)
-if created:
-    print "Running setup.py"
-    virtualenv.run(DIR + "/setup.py", "develop")
-    virtualenv.add_moxlib_pointer()
+virtualenv = VirtualEnv()
+print "Running setup.py"
+virtualenv.run(DIR + "/setup.py", "develop")
+virtualenv.add_moxlib_pointer()
 
 # ------------------------------------------------------------------------------
 
