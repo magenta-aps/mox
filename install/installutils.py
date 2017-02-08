@@ -16,12 +16,12 @@ import virtualenv
 
 # ------------------------------------------------------------------------------
 
-_basedir = os.path.dirname(os.path.abspath(sys.modules['__main__'].__file__))
-_moxdir = os.path.dirname(os.path.dirname(os.path.realpath(
+DIR = os.path.dirname(os.path.abspath(sys.modules['__main__'].__file__))
+MOXDIR = os.path.dirname(os.path.dirname(os.path.realpath(
     os.path.splitext(__file__)[0] + '.py')
 ))
 
-logfilename = os.path.join(_basedir, 'install.log')
+logfilename = os.path.join(DIR, 'install.log')
 
 
 class _RedirectOutput(object):
@@ -225,7 +225,7 @@ class VirtualEnv(object):
 
     def __init__(self, environment_dir=None):
         self.environment_dir = \
-            environment_dir or os.path.join(_moxdir, 'python-env')
+            environment_dir or os.path.join(MOXDIR, 'python-env')
 
         if os.path.isdir(self.environment_dir):
             print("Using virtual environment %r" % self.environment_dir)
@@ -277,7 +277,7 @@ class VirtualEnv(object):
             "%s/lib/python2.7/site-packages/mox.pth" % self.environment_dir,
             "w"
         ) as fp:
-            fp.write(os.path.abspath("%s/agentbase/python/mox" % _moxdir))
+            fp.write(os.path.abspath("%s/agentbase/python/mox" % MOXDIR))
 
 
 class Apache(object):
@@ -289,7 +289,7 @@ class Apache(object):
     endmarker_index = None
     indent = ''
 
-    def __init__(self, siteconf=_moxdir + "/apache/mox.conf"):
+    def __init__(self, siteconf=MOXDIR + "/apache/mox.conf"):
         assert os.path.isdir(os.path.dirname(siteconf)), siteconf
         self.siteconf = siteconf
 
@@ -429,7 +429,7 @@ class Service(object):
                    os.path.basename(os.readlink("/sbin/init")) == "systemd")
 
     def __init__(self, script, user='mox', group='mox', after=()):
-        self.script = os.path.join(_basedir, script)
+        self.script = os.path.join(DIR, script)
         self.user = user
         self.group = group
         self.after = after
@@ -463,7 +463,7 @@ class Service(object):
 
         if self.USE_SYSTEMD:
             template = \
-                os.path.join(_moxdir,
+                os.path.join(MOXDIR,
                              'install/templates/systemd-agent.service.in')
 
             expand_template(template,
@@ -477,7 +477,7 @@ class Service(object):
 
         else:
             template = \
-                os.path.join(_moxdir,
+                os.path.join(MOXDIR,
                              'install/templates/upstart-agent.conf.in')
 
             expand_template(template, upstart_config,
@@ -492,11 +492,11 @@ def expand_template(template_file, dest_file=None, **kwargs):
         dest_file = os.path.splitext(template_file)[0]
 
     print('Expanding {!r} to {!r}'.format(template_file, dest_file))
-    template_file = os.path.join(_basedir, template_file)
-    dest_file = os.path.join(_basedir, dest_file)
+    template_file = os.path.join(DIR, template_file)
+    dest_file = os.path.join(DIR, dest_file)
 
-    kwargs.setdefault('DIR', _basedir)
-    kwargs.setdefault('MOXDIR', _moxdir)
+    kwargs.setdefault('DIR', DIR)
+    kwargs.setdefault('MOXDIR', MOXDIR)
 
     with open(template_file) as fp:
         template = jinja2.Template(fp.read())
@@ -527,7 +527,7 @@ def run(*args):
                                                ' '.join(args)))
         logfp.flush()
 
-        subprocess.check_call(args, cwd=_basedir,
+        subprocess.check_call(args, cwd=DIR,
                               stdout=logfp, stderr=logfp)
 
 
@@ -546,7 +546,7 @@ def sudo_with_input(data, *args):
                                                     ' '.join(args)))
             logfp.flush()
 
-            subprocess.check_call(('sudo',) + args, cwd=_basedir,
+            subprocess.check_call(('sudo',) + args, cwd=DIR,
                                   stdout=logfp, stderr=logfp, stdin=inputfp)
 
 
