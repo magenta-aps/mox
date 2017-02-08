@@ -1,3 +1,23 @@
+* Version 0.2.17, February 8, 2017
+
+This version contains various installer cleanups, including:
+
+ * Don't prompt for WSO installation during install - it's broken
+ * Consolidate all Python virtual environemnts into one
+ * Add support for Ubuntu 16.04 Xenial Xerus
+ * Fix agents by using 'localhost' for AMQP queues
+ * Install the headless JDK
+ * Fix installing with recommended dependancies turned off system-wide
+ * Fix initial install -- don't assume users exist
+ * Suppress prompt for resetting the database, and factor out doing to
+   a separate script
+ * Don't overwrite pre-existing configurations when re-installing
+ * Handle SSL errors gracefully in 'auth.sh'
+
+In addition, the README was updated to document how to set up AD FS
+authentication.
+
+
 * Version 0.2.16.1, January 12, 2017
 
 Hotfix:
