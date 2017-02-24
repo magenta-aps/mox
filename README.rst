@@ -1,12 +1,12 @@
-Mox Messaging Service and Actual State Database
+MOX Messaging Service and Actual State Database
 ===============================================
 
-.. contents:: `Table of contents`
+.. contents::
    :depth: 5
 
-This project contains an implementation (in PostgreSQL) of the OIO object
-model, used as a standard for data exchange by the Danish government, for use
-with a MOX messaging queue.
+This project contains an implementation of the OIO object model, used
+as a standard for data exchange by the Danish government, for use with
+a MOX messaging queue.
 
 You can find the current MOX specification here:
 
@@ -15,46 +15,69 @@ http://www.kl.dk/ImageVaultFiles/id_55874/cf_202/MOX_specifikation_version_0.PDF
 As an example, you can find the Organisation hierarchy
 here:
 
-http://digitaliser.dk/resource/991439/artefact/Informations-+og+meddelelsesmodeller+for+Organisation+%5bvs.+1.1%5d.pdf
+http://digitaliser.dk/resource/991439
 
-This version of the system implements four OIO hierarchies, namely
-Klassifikation, Sag, Dokument and Organisation. In each installation of
-the service, it is possible to only enable some of the hierarchies.
+In each installation of MOX, it is possible to only enable
+some of the hierarchies, but we provide the following four OIO
+hierarchies by default:
+
+* *Klassifikation*
+* *Sag*
+* *Dokument*
+* *Organisation*
 
 
 On this documentation
 ---------------------
 
 This README file is a reStructuredText document, and an HTML version can
-be obtained by running the command ::
+be obtained by the following command in a command prompt::
 
-    rst2html README.rst README.html
+    $ rst2html README.rst README.html
 
-in a command prompt. Note that this requires Python Docutils to be
-installed - on Ubuntu or Debian, this can be done with the following
-command: ::
+Note that this requires Python Docutils to be installed — on Ubuntu or
+Debian, this can be done with the following command::
 
-    sudo apt-get install python-docutils
+    $ sudo apt-get install python-docutils
 
-If you're reading this on Github, you're probably seeing the HTML
+If you're reading this on GitHub, you're probably seeing the HTML
 rendering.
+
+Please note that as a convention, all shell commands have been
+prefixed with a dollar-sign, or ``$``, representing a prompt. You
+should exclude this when entering the command in your terminal.
 
 Audience
 --------
 
 This is a technical guide. You are not expected to have a profound knowledge of
-the system as such, but you do have to know your way in a Bash prompt - you 
+the system as such, but you do have to know your way in a Bash prompt — you 
 should be able to change the Apache configuration and e.g. disable or change
 the SSL certificate on your own.
 
 Getting started
 ===============
 
+To install the OIO REST API, run ``install.sh``::
+
+  $ sudo apt-get install git
+  $ git clone https://github.com/magenta-aps/mox
+  $ cd mox
+  $ ./install.sh
+
+Run ``install.sh -h`` for a list of options.
+
+**NOTE:** PostgreSQL 9.3 or later is required. If PostgreSQL is not installed
+on your system already, it will be during installation.
+
 Configuration
 -------------
 
-The file ``db/config.sh`` contains configuration for the database, such
-as which username/password to use to connect to the database, and which
+Installation creates a file for REST settings in
+``oio_rest/oio_rest/settings.py`` as well as individual configuration
+files for the agents within the ``agents`` directory. In addition,
+``db/config.sh`` contains configuration for the database, such as
+which username/password to use to connect to the database, and which
 database name to use.
 
 To setup the database to send notifications to an AMQP message exchange,
@@ -63,153 +86,73 @@ assume you have a local AMQP server and use the guest user. However,
 these can be changed in ``db/config.sh`` prior to performing
 installation.
 
-The file ``oio_rest/oio_rest/settings.py`` contains configuration for
-the generation of the database structure and the REST API. Set the
-DATABASE, DB_USER and DB_PASSWORD settings according to what you have
-chosen in ``db/config.sh``.
+The file REST settings specify the generation of the database
+structure and the REST API. Set ``DATABASE``, ``DB_USER`` and
+``DB_PASSWORD`` according to what you have chosen in ``db/config.sh``.
 
-The FILE_UPLOAD_FOLDER setting allows you to change where the database
-stores its files (used for storing the contents of binary files in the
-Dokument hierarchy). The default is i``/var/mox``, and this is
-automatically created by the install script.
+The ``FILE_UPLOAD_FOLDER`` setting allows you to change where the
+database stores its files (used for storing the contents of binary
+files in the Dokument hierarchy). The default is ``/var/mox``, and
+this is automatically created by the install script.
 
-There are some other settings that can be changed, and there should be
-comments describing their purpose, or they are described in another
-section of this document.
+Some other settings can be changed; please see the comments in the
+file for a description of their purpose.
 
-Installing
-----------
+Components
+==========
 
-To install the OIO REST API, run ``install.sh``
+On a high level the MOX actual state database consists of three server
+processes and several agents joining them together.
 
-By default, you will be prompted to reinstall the python virtualenv
-if it already exists, and reinstall/overwrite the database
-if it already exists.
+Server processes
+----------------
 
-To always answer yes to these questions, pass the ``-y`` parameter.
+PostgreSQL
+    Database server providing the storage of the bi-temporal actual
+    state database as well as validation and verification of the basic
+    constraints.
 
-Run ``install.sh -h`` for a list of options.
+Apache
+    HTTP web server providing the REST API as well as certain other
+    web servers, described below.
 
-**NOTE:** PostgreSQL 9.3 or later is required. If PostgreSQL is not installed
-on your system already, it will be during installation.
+RabbitMQ
+    AMQP message broker providing interprocess communication between
+    the various components.
 
-To run the API for testing or development purposes, run: ::
+Agents
+------
 
-    oio_rest/oio_api.sh 
+Within the context of the Mox Messaging Service, agents are small
+pieces of software which either listen on an AMQP queue and perform
+operations on the incoming data, or expose certain operations as a web
+service.
 
-Then, go to http://localhost:5000/site-map to see a map of all available
-URLs, assuming you're running this on your local machine.
+The default installation includes the following agents:
 
-The install.sh script creates an Apache VirtualHost for oio rest and 
-MoxDocumentUpload.
+MoxDocumentDownload
+    Web service for exporting actual state contents as Excel
+    spreadsheets.
 
-To run the OIO Rest Mox Agent (the one listening for messages and
-relaying them onwards to the REST interface), run: ::
+MoxDocumentUpload
+    Web service for importing data from Excel spreadsheets into the
+    actual state database.
 
-    agents/MoxRestFrontend/moxrestfrontend.sh
+MoxRestFrontend
+    AMQP agent bridging the REST API.
 
-**NOTE:** You can start the agent in the background by running: ::
-
-    sudo service moxrestfrontend start
-
-To test sending messages through the agent, run: ::
-
-    ./test.sh
-
-**NOTE:** The install script does not set up an IDP for SAML authentication,
-which is enabled by default. If you need to test without SAML authentication, 
-you will need to turn it off as described below. 
-
-To request a token for the username from the IdP and output it in
-base64-encoded gzipped format, run: ::
-
-    ./auth.sh -u <username> -p
-
-Insert your username in the command argument. You will be prompted to enter
-a password.
-
-If SAML authentication is turned on (i.e., if the parameter
-``USE_SAML_AUTHENTICATION`` in ``oio_rest/oio_rest/settings.py`` is
-`True`), the IDP must be configured correctly - see the corresponding
-sections below for instruction on how to do this.
-
-
-Quick install
--------------
-
-These commands should get you up and running quickly on a machine with a 
-completely new Ubuntu 14.04 Server Edition: ::
-
-    sudo apt-get install git
-    cd /srv
-    sudo git clone https://github.com/magenta-aps/mox
-    sudo chown -R <username>:<username> mox/
-    cd mox
-    ./install.sh
-
-**Note:** The <username> must belong to the sudo user you're using for the
-installation. We recommend creating a dedicated "mox" user and stripping its
-sudo rights when everything works.
-
-**Note:** This will install the system in ``srv/mox``. It is of course
-possible to install in any other location, but we do not recommend this 
-for a quick install as it means a lot of configuration files need to be 
-changed. In a later version, the user will be prompted for the location and 
-the configuration will be generated accordingly.
-to the location desired by the users.
-
-**Note:** All commands, e.g. ``./test.sh``, are assumed to be issued from the
-installation root directory, by default ``/srv/mox``.
-
-Quick test
-----------
-
-Make sure the parameters ``USE_SAML_AUTHENTICATION`` in 
-``oio_rest/oio_rest/settings.py`` is `False`.
-
-Make sure the parameter ``moxrestfrontend.rest.host`` in
-``agents/MoxRestFrontend/moxrestfrontend.conf`` is set to
-`http://localhost:5000`.
-
-Start the (AMQP) MOX REST frontend agent: ::
-
-    sudo service moxrestfrontend start
-
-Start the REST API: ::
-
-    oio_rest/oio_api.sh
-
-Run the tests: ::
-
-    ./test.sh
-
-This should give you a lot of output like this: ::
-
-    Deleting bruger, uuid: 1e874f85-07e5-40e5-81ed-42f21fc3fc9e
-    Getting authtoken
-    127.0.0.1 - - [27/Apr/2016 15:55:09] "DELETE /organisation/bruger/1e874f85-07e5-40e5-81ed-42f21fc3fc9e HTTP/1.1" 200 -
-    Delete succeeded
-
-**Note:** Currently, some of the tests will give the notice: "Result differs
-from the expected". This is due to a bug in the tests, i.e. you should not
-worry about this - if you see output as described above, the system is working.
-
-For more advanced test or production setup, please study the rest of this 
-README and follow your organization's best practices.
-
-
+MoxTabel
+    AQMP worker agent MoxDocumentDownload & MoxDocumentUpload.
 
 Authentication
-==========================================
+==============
 
 SAML token authentication is enabled by default. This requires that
 you have access to a SAML Identity Provider (IdP) which provides a
 Security Token Service (STS). We currently support two types:
 
 * Active Directory Federation Services
-* WSO2_
-
-.. _WSO2: http://wso2.com
+* WSO2
 
 
 Using Active Directory Federation Services
@@ -220,7 +163,7 @@ In order to use AD FS as the Security Token Service, you first need an
 corresponding to the designated name of the box running LoRA, for
 example::
 
-  https://lora.magenta-aps.dk
+  https://lora.magenta.dk
 
 As for the attributes to send, select the following:
 
@@ -262,13 +205,12 @@ you should add your certificate authority to the system.
 Alternatively, you can pass the ``--insecure`` option to ``auth.sh``
 temporarily bypass the error.
 
-Setting up a WSO2 IdP with STS for testing
+Using WSO2 for testing
 ------------------------------------------
 
-You need a STS (Security Token Service) running on your IdP.
-An open-source IdP is available from http://wso2.com/products/identity-server/
-and is useful for testing. Download the binary, and follow the instructions
-to run it.
+The open source identity provider `WSO2
+<http://wso2.com/products/identity-server>`_ is useful for testing.
+Download the binary and follow the instructions to run it.
 
 In the folder ``wso2/`` you can find an example init file for running the
 WSO2 Identity Server as a daemon.
@@ -311,11 +253,11 @@ For testing purposes, WSO2's IdP public certificate file is included in the
 distribution.
 
 When configuring the REST API to use your IdP, you must specify your
-IdP's public certificate file by setting in settings.py: ::
+IdP's public certificate file by setting in settings.py::
 
     SAML_IDP_CERTIFICATE = '/my/idp/certificate.pem'
 
-In settings.py, SAML authentication can be turned off by setting: ::
+In settings.py, SAML authentication can be turned off by setting::
 
     USE_SAML_AUTHENTICATION = False
 
@@ -326,9 +268,13 @@ Requesting a SAML token using the OIO REST service
 The OIO REST service provides a convenience method for requesting a SAML
 token in the correct base64-encoded gzipped format for use with the API.
 
-Visit the following URL of the OIO REST server, e.g. ::
+Visit the following URL of the OIO REST server::
 
-    http://localhost:5000/get-token
+    http://referencedata.dk/get-token
+
+Alternatively, you can run the following command locally on the server::
+
+  $ ./auth.sh -u <username> -p
 
 
 You will be presented with a form with a username/password field.
@@ -339,35 +285,35 @@ HTTP "Authorization" header. If it fails due to invalid username/password,
 an error message will be returned.
 
 This value can then be included in the HTTP "Authorization" header, like the
-following: ::
+following::
 
     Authorization: <output of get-token>
 
-For testing purposes, it is useful to use tools like the Chrome "app" called
-"Advanced REST client", available at https://chrome.google.com/webstore/detail/advanced-rest-client/hgmloofddffdnphfgcellkdfbfbjeloo
-or the Firefox addon "REST Easy", available at https://addons.mozilla.org/da/firefox/addon/rest-easy/
+For testing purposes, we recommend the browser extensions `Advanced
+REST client`_ for Chrome or `REST Easy`_ for Firefox.
+
+.. _Advanced REST client: https://chrome.google.com/webstore/detail/advanced-rest-client/hgmloofddffdnphfgcellkdfbfbjeloo
+.. _REST Easy: https://addons.mozilla.org/da/firefox/addon/rest-easy/
 
 Requesting a SAML token manually
 --------------------------------
 
-.. Note::
-
-   This section only applies covers using the *WSO2* IdP.
+**NOTE:** This section only applies covers using the *WSO2* IdP.
 
 Although the Java MOX agent does this automatically, it can be useful
 to request a SAML token manually, for testing purposes.
 
 To request a SAML token, it is useful to use SoapUI.
 
-Download SoapUI (http://www.soapui.org/) and import the project
-provided in 'oio_rest/test_auth_data/soapui-saml2-sts-request.xml'.
+Download `SoapUI <http://www.soapui.org/>`_ and import the project
+provided in ``oio_rest/test_auth_data/soapui-saml2-sts-request.xml``.
 
-Navigate to and double-click on: ::
+Navigate to and double-click on::
 
     "sts" -> "wso2carbon-stsSoap11Binding" -> "Issue token - SAML 2.0"
 
-Note: The value of <a:Address> element in <wsp:AppliesTo> must match your
-SAML_MOX_ENTITY_ID setting. Change as needed.
+Note: The value of ``<a:Address>`` element in ``<wsp:AppliesTo>`` must match your
+``SAML_MOX_ENTITY_ID`` setting. Change as needed.
 
 The project assumes you are running the IdP server on https://localhost:9443/
 (the default).
@@ -376,43 +322,123 @@ Execute the SOAP request. You can copy the response by clicking on the
 "Raw" tab in the right side of the window and then selecting all, and
 copying to the clipboard. Paste the response, making sure that the
 original whitespace/indentation is preserved. Remove all elements/text
-surrounding the <saml2:Assertion>..</saml2:Assertion> tag. Save to a
+surrounding the ``<saml2:Assertion>..</saml2:Assertion>`` tag. Save to a
 file, e.g. /my/saml/assertion.xml.
 
 After requesting a SAML token, to make a REST request using the SAML token,
-you need to pass in an HTTP Authorization header of a specific format: ::
+you need to pass in an HTTP Authorization header of a specific format::
 
     Authorization: saml-gzipped <base64-encoded gzip-compressed SAML assertion>
 
 A script has been included to generate this HTTP header from a SAML token
-XML file. This file must only contain the <saml2:Assertion> element.
+XML file. This file must only contain the ``<saml2:Assertion>`` element.
 
-To run it: ::
+To run it::
 
-    python utils/encode_token.py /my/saml/assertion.xml
+    $ python oio_rest/oio_rest/utils/encode_token.py /my/saml/assertion.xml
 
 The output of this script can be used in a curl request by adding the
-parameter -H, e.g.: ::
+parameter -H, e.g.::
 
-    curl -H "Authorization saml-gzipped eJy9V1................." ...
+    $ curl -H "Authorization saml-gzipped eJy9V1................." ...
 
 to the curl request. 
 
-Alternately, if using bash shell: ::
+Alternately, if using bash shell::
 
-    curl -H "$(python utils/encode_token.py" /my/saml/assertion.xml) ...
+    $ curl -H "$(python oio_rest/oio_rest/utils/encode_token.py" /my/saml/assertion.xml) ...
+
+
+Testing
+=======
+
+To run the API for testing or development purposes, run::
+
+    $ oio_rest/oio_api.sh 
+
+Then, go to ``http://localhost:5000/site-map`` to see a map of all available
+URLs, assuming you're running this on your local machine.
+
+The install.sh script creates an Apache VirtualHost for oio rest and 
+MoxDocumentUpload.
+
+To run the OIO Rest Mox Agent (the one listening for messages and
+relaying them onwards to the REST interface), run::
+
+    $ agents/MoxRestFrontend/moxrestfrontend.sh
+
+**NOTE:** You can start the agent in the background by running::
+
+    $ sudo service moxrestfrontend start
+
+To test sending messages through the agent, run::
+
+    $ ./test.sh
+
+**NOTE:** The install script does not set up an IDP for SAML authentication,
+which is enabled by default. If you need to test without SAML authentication, 
+you will need to turn it off as described below. 
+
+To request a token for the username from the IdP and output it in
+base64-encoded gzipped format, run::
+
+    $ ./auth.sh -u <username> -p
+
+Insert your username in the command argument. You will be prompted to enter
+a password.
+
+If SAML authentication is turned on (i.e., if the parameter
+``USE_SAML_AUTHENTICATION`` in ``oio_rest/oio_rest/settings.py`` is
+`True`), the IDP must be configured correctly — see the corresponding
+sections below for instruction on how to do this.
+
+Running the tests
+-----------------
+
+Make sure the parameter ``USE_SAML_AUTHENTICATION`` in
+``oio_rest/oio_rest/settings.py`` is `False`.
+
+Make sure the parameter ``moxrestfrontend.rest.host`` in
+``agents/MoxRestFrontend/moxrestfrontend.conf`` is set to
+``http://localhost:5000``.
+
+Start the (AMQP) MOX REST frontend agent::
+
+    $ sudo service moxrestfrontend start
+
+Start the REST API::
+
+    $ oio_rest/oio_api.sh
+
+Run the tests::
+
+    $ ./test.sh
+
+This should give you a lot of output like this::
+
+    Deleting bruger, uuid: 1e874f85-07e5-40e5-81ed-42f21fc3fc9e
+    Getting authtoken
+    127.0.0.1 - - [27/Apr/2016 15:55:09] "DELETE /organisation/bruger/1e874f85-07e5-40e5-81ed-42f21fc3fc9e HTTP/1.1" 200 -
+    Delete succeeded
+
+**Note:** Currently, some of the tests will give the notice: "Result differs
+from the expected". This is due to a bug in the tests, i.e. you should not
+worry about this — if you see output as described above, the system is working.
+
+For more advanced test or production setup, please study the rest of this 
+README and follow your organization's best practices.
 
 
 Licensing
 =========
 
-The MOX messaging queue, including the ActualState database, as found in this
-project is free software. You are entitled to use, study, modify and share it
-under the provisions of Version 2.0 of the Mozilla Public License as specified
-in the LICENSE file. The license is available online at
-https://www.mozilla.org/MPL/2.0/.
+The MOX messaging queue, including the ActualState database, as found
+in this project is free software. You are entitled to use, study,
+modify and share it under the provisions of `Version 2.0 of the
+Mozilla Public License <https://www.mozilla.org/MPL/2.0/>`_ as
+specified in the ``LICENSE`` file.
 
-This software was developed by Magenta ApS, http://www.magenta.dk. For
-feedback, feel  free to open an issue in the Github repository,
-https://github.com/magenta-aps/mox. 
+This software was developed by `Magenta ApS <http://www.magenta.dk>`_. For
+feedback, feel  free to open an issue in the `GitHub repository
+<https://github.com/magenta-aps/mox>`_.
 
