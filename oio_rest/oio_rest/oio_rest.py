@@ -47,7 +47,7 @@ class ArgumentDict(ImmutableOrderedMultiDict):
 
     @classmethod
     def _process_item(cls, (key, value)):
-        key = key.lower()
+        key = to_lower_param(key)
 
         return (cls.PARAM_ALIASES.get(key, key), value)
 
