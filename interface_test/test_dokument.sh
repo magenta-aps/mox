@@ -51,7 +51,7 @@ curl -k -sH "Content-Type: application/json" -X GET $HOST_URL/dokument/dokument?
 
 # Grab the values of the indhold attributes of each DokumentDel, so we know
 # the content URLs.
-IFS=$'\n' content_paths=($(grep -Po '(?<="indhold": "store:)[^"]*(?=")' /tmp/listoutput))
+IFS=$'\n' content_paths=($(sed -n 's/^.*"indhold": "store:\([^"]*\)".*$/\1/p' /tmp/listoutput))
 
 # Take only the first one
 content_path=${content_paths[0]}
@@ -93,7 +93,7 @@ curl -k -sH "Content-Type: application/json" -X GET $HOST_URL/dokument/dokument?
 
 # Grab the values of the indhold attributes of each DokumentDel, so we know
 # the content URLs.
-IFS=$'\n' content_paths=($(grep -Po '(?<="indhold": "store:)[^"]*(?=")' /tmp/listoutput))
+IFS=$'\n' content_paths=($(sed -n 's/^.*"indhold": "store:\([^"]*\)".*$/\1/p' /tmp/listoutput))
 content_path=${content_paths[0]}
 
 printf "\nDownloading from $content_path"
