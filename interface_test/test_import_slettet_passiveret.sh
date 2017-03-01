@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 # In order to start the tests, make sure the REST interface is running.
 #
