@@ -19,8 +19,7 @@ source $DIR/config.sh
 
 if [ -z $AUTH_TOKEN ]
 then
-    echo "Please set authentication in the AUTH_TOKEN variable."
-    exit 1
+    AUTH_TOKEN=$(${DIR}/../auth.sh --insecure)
 fi
 
 result=$(curl -k -H "Content-Type: application/json" -H "Authorization: $AUTH_TOKEN" -X POST -d "$(cat $DIR/test_data/facet_opret.json)" $HOST_URL/klassifikation/facet)
