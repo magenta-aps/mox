@@ -120,7 +120,11 @@ def main(*args):
 
     options = parser.parse_args()
 
-    username = options.user or raw_input('User: ')
+    def my_input(prompt):
+        sys.stderr.write(prompt)
+        return raw_input()
+
+    username = options.user or my_input('User: ')
     password = options.password or getpass.getpass('Password: ')
 
     if options.insecure:
