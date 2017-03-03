@@ -1,3 +1,14 @@
+* Version 0.2.NEXT, XX March 2017
+
+This is a bugfix release, containing:
+
+* Use DMY date order in this file.
+* Fix running interface_tests on Darwin, i.e. macOS.
+* Fix searching for document attributes and relations.
+* Update the README, and factor out API documentation to a separate
+  file.
+
+
 * Version 0.2.17, 8 February 2017
 
 This version contains various installer cleanups, including:
