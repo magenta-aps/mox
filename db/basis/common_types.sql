@@ -62,7 +62,18 @@ CREATE TYPE ClearableBoolean AS (
   cleared boolean
 );
 
+CREATE TYPE ClearableTimestamptz AS (
+  value timestamptz,
+  cleared boolean
+);
 
+
+CREATE TYPE ClearableInterval AS (
+  value interval(0),
+  cleared boolean
+);
+
+/****************************************/
 
 CREATE OR REPLACE FUNCTION actual_state._cast_ClearableInt_to_int( clearable_int ClearableInt) 
 
@@ -284,3 +295,154 @@ $$ LANGUAGE plpgsql immutable;
 
 create cast (text as ClearableBoolean) with function actual_state._cast_text_to_ClearableBoolean(text) as implicit; 
 
+
+/**************************************************************************/
+
+CREATE OR REPLACE FUNCTION actual_state._cast_ClearableTimestamptz_to_timestamptz( clearable_timestamptz ClearableTimestamptz) 
+
+RETURNS
+timestamptz
+AS 
+$$
+DECLARE 
+BEGIN
+
+IF clearable_timestamptz IS NULL THEN
+  RETURN NULL;
+ELSE
+  RETURN clearable_timestamptz.value;
+END IF;
+
+END;
+$$ LANGUAGE plpgsql immutable;
+
+
+create cast (ClearableTimestamptz as timestamptz)  with function actual_state._cast_ClearableTimestamptz_to_timestamptz(ClearableTimestamptz) as implicit; 
+
+
+
+CREATE OR REPLACE FUNCTION actual_state._cast_timestamptz_to_ClearableTimestamptz( timestamptz_value timestamptz) 
+
+RETURNS
+ClearableTimestamptz
+AS 
+$$
+DECLARE 
+BEGIN
+
+IF timestamptz_value IS NULL THEN
+  RETURN NULL;
+ELSE
+  RETURN ROW(timestamptz_value,null)::ClearableTimestamptz;
+END IF;
+
+END;
+$$ LANGUAGE plpgsql immutable;
+
+create cast (timestamptz as ClearableTimestamptz) with function actual_state._cast_timestamptz_to_ClearableTimestamptz(timestamptz) as implicit; 
+
+
+
+
+CREATE OR REPLACE FUNCTION actual_state._cast_text_to_ClearableTimestamptz( text_value text) 
+
+RETURNS
+ClearableTimestamptz
+AS 
+$$
+DECLARE 
+BEGIN
+
+IF text_value IS NULL THEN
+  RETURN NULL;
+ELSE
+  IF text_value<>'' THEN 
+    RAISE EXCEPTION 'Unable to cast text value [%] to ClearableTimestamptz. Only empty text is allowed (or null).',text_value USING ERRCODE = 22000;
+  ELSE
+    RETURN ROW(null,true)::ClearableTimestamptz;
+  END IF;
+  
+END IF;
+
+END;
+$$ LANGUAGE plpgsql immutable;
+
+create cast (text as ClearableTimestamptz) with function actual_state._cast_text_to_ClearableTimestamptz(text) as implicit; 
+
+/**************************************************************************/
+
+CREATE OR REPLACE FUNCTION actual_state._cast_ClearableInterval_to_interval( clearable_interval ClearableInterval) 
+
+RETURNS
+interval(0)
+AS 
+$$
+DECLARE 
+BEGIN
+
+IF clearable_interval IS NULL THEN
+  RETURN NULL;
+ELSE
+  RETURN clearable_interval.value;
+END IF;
+
+END;
+$$ LANGUAGE plpgsql immutable;
+
+
+create cast (ClearableInterval as interval(0) )  with function actual_state._cast_ClearableInterval_to_interval(ClearableInterval) as implicit; 
+
+
+
+CREATE OR REPLACE FUNCTION actual_state._cast_interval_to_ClearableInterval( interval_value interval(0)) 
+
+RETURNS
+ClearableInterval
+AS 
+$$
+DECLARE 
+BEGIN
+
+IF interval_value IS NULL THEN
+  RETURN NULL;
+ELSE
+  RETURN ROW(interval_value,null)::ClearableInterval;
+END IF;
+
+END;
+$$ LANGUAGE plpgsql immutable;
+
+create cast (interval(0) as ClearableInterval) with function actual_state._cast_interval_to_ClearableInterval(interval) as implicit; 
+
+
+
+
+CREATE OR REPLACE FUNCTION actual_state._cast_text_to_ClearableInterval( text_value text) 
+
+RETURNS
+ClearableInterval
+AS 
+$$
+DECLARE 
+BEGIN
+
+IF text_value IS NULL THEN
+  RETURN NULL;
+ELSE
+  IF text_value<>'' THEN 
+    RAISE EXCEPTION 'Unable to cast text value [%] to ClearableInterval. Only empty text is allowed (or null).',text_value USING ERRCODE = 22000;
+  ELSE
+    RETURN ROW(null,true)::ClearableInterval;
+  END IF;
+  
+END IF;
+
+END;
+$$ LANGUAGE plpgsql immutable;
+
+create cast (text as ClearableInterval) with function actual_state._cast_text_to_ClearableInterval(text) as implicit; 
+
+
+
+
+/**************************************************************************/

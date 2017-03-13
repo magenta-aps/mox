@@ -1,0 +1,41 @@
+*** ./generated-files/tbls-specific_tilstand.sql	2016-10-22 10:51:46.000000000 +0200
+--- ./patches/tbls-specific_tilstand.org.sql	2016-10-22 10:45:15.000000000 +0200
+***************
+*** 297,312 ****
+    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
+    rel_maal_uuid uuid NULL, --we have to allow null values (for now at least), as it is needed to be able to clear/overrule previous registered relations.
+    rel_maal_urn text null,
+    rel_type TilstandRelationKode not null,
+    objekt_type text null,
+   CONSTRAINT tilstand_relation_forkey_tilstandregistrering  FOREIGN KEY (tilstand_registrering_id) REFERENCES tilstand_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
+   CONSTRAINT tilstand_relation_pkey PRIMARY KEY (id),
+   CONSTRAINT tilstand_relation_no_virkning_overlap EXCLUDE USING gist (tilstand_registrering_id WITH =, _as_convert_tilstand_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('tilstandsvaerdi'::TilstandRelationKode ) AND rel_type<>('begrundelse'::TilstandRelationKode ) AND rel_type<>('tilstandskvalitet'::TilstandRelationKode ) AND rel_type<>('tilstandsvurdering'::TilstandRelationKode ) AND rel_type<>('tilstandsaktoer'::TilstandRelationKode ) AND rel_type<>('tilstandsudstyr'::TilstandRelationKode ) AND rel_type<>('samtykke'::TilstandRelationKode ) AND rel_type<>('tilstandsdokument'::TilstandRelationKode )) ,-- no overlapping virkning except for 0..n --relations
+!  CONSTRAINT tilstand_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
+  );
+  
+  
+  CREATE INDEX tilstand_relation_idx_rel_maal_obj_uuid
+    ON tilstand_relation
+    USING btree
+    (rel_type,objekt_type,rel_maal_uuid);
+--- 297,316 ----
+    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
+    rel_maal_uuid uuid NULL, --we have to allow null values (for now at least), as it is needed to be able to clear/overrule previous registered relations.
+    rel_maal_urn text null,
+    rel_type TilstandRelationKode not null,
+    objekt_type text null,
++   rel_index int null,
++   tilstand_vaerdi_attr TilstandVaerdiRelationAttrType null,
+   CONSTRAINT tilstand_relation_forkey_tilstandregistrering  FOREIGN KEY (tilstand_registrering_id) REFERENCES tilstand_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
+   CONSTRAINT tilstand_relation_pkey PRIMARY KEY (id),
+   CONSTRAINT tilstand_relation_no_virkning_overlap EXCLUDE USING gist (tilstand_registrering_id WITH =, _as_convert_tilstand_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('tilstandsvaerdi'::TilstandRelationKode ) AND rel_type<>('begrundelse'::TilstandRelationKode ) AND rel_type<>('tilstandskvalitet'::TilstandRelationKode ) AND rel_type<>('tilstandsvurdering'::TilstandRelationKode ) AND rel_type<>('tilstandsaktoer'::TilstandRelationKode ) AND rel_type<>('tilstandsudstyr'::TilstandRelationKode ) AND rel_type<>('samtykke'::TilstandRelationKode ) AND rel_type<>('tilstandsdokument'::TilstandRelationKode )) ,-- no overlapping virkning except for 0..n --relations
+!  CONSTRAINT tilstand_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>''))),
+!  CONSTRAINT tilstand_relation_nominel_vaerdi_relevant_null_check CHECK (tilstand_vaerdi_attr IS NULL OR rel_type='tilstandsvaerdi')
+  );
+  
++ CREATE UNIQUE INDEX tilstand_relation_unique_index_within_type  ON tilstand_relation (tilstand_registrering_id,rel_type,rel_index) WHERE ( rel_type IN ('tilstandsvaerdi'::TilstandRelationKode,'begrundelse'::TilstandRelationKode,'tilstandskvalitet'::TilstandRelationKode,'tilstandsvurdering'::TilstandRelationKode,'tilstandsaktoer'::TilstandRelationKode,'tilstandsudstyr'::TilstandRelationKode,'samtykke'::TilstandRelationKode,'tilstandsdokument'::TilstandRelationKode));
+  
+  CREATE INDEX tilstand_relation_idx_rel_maal_obj_uuid
+    ON tilstand_relation
+    USING btree
+    (rel_type,objekt_type,rel_maal_uuid);

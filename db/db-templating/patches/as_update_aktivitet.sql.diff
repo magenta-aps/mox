@@ -1,0 +1,376 @@
+*** ./generated-files/as_update_aktivitet.sql	2016-11-13 12:09:36.000000000 +0100
+--- ./patches/as_update_aktivitet.org.sql	2016-11-13 11:54:37.000000000 +0100
+***************
+*** 36,45 ****
+--- 36,51 ----
+    new_aktivitet_registrering aktivitet_registrering;
+    prev_aktivitet_registrering aktivitet_registrering;
+    aktivitet_relation_navn AktivitetRelationKode;
+    attrEgenskaberObj AktivitetEgenskaberAttrType;
+    auth_filtered_uuids uuid[];
++   rel_type_max_index_prev_rev int;
++   rel_type_max_index_arr _aktivitetRelationMaxIndex[];
++   aktivitet_rel_type_cardinality_unlimited aktivitetRelationKode[]:=ARRAY['udfoererklasse'::AktivitetRelationKode,'deltagerklasse'::AktivitetRelationKode,'objektklasse'::AktivitetRelationKode,'resultatklasse'::AktivitetRelationKode,'grundlagklasse'::AktivitetRelationKode,'facilitetklasse'::AktivitetRelationKode,'adresse'::AktivitetRelationKode,'geoobjekt'::AktivitetRelationKode,'position'::AktivitetRelationKode,'facilitet'::AktivitetRelationKode,'lokale'::AktivitetRelationKode,'aktivitetdokument'::AktivitetRelationKode,'aktivitetgrundlag'::AktivitetRelationKode,'aktivitetresultat'::AktivitetRelationKode,'udfoerer'::AktivitetRelationKode,'deltager'::AktivitetRelationKode]::aktivitetRelationKode[];
++   aktivitet_uuid_underscores text;
++   aktivitet_rel_seq_name text;
++   aktivitet_rel_type_cardinality_unlimited_present_in_argument aktivitetRelationKode[];
+  BEGIN
+  
+  --create a new registrering
+  
+  IF NOT EXISTS (select a.id from aktivitet a join aktivitet_registrering b on b.aktivitet_id=a.id  where a.id=aktivitet_uuid) THEN
+***************
+*** 67,125 ****
+    END IF;   
+  END IF;
+  
+  
+  
+- 
+  --handle relationer (relations)
+  
+  IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
+  --raise notice 'Skipping relations, as it is explicit set to empty array. Update note [%]',note;
+  ELSE
+  
+    --1) Insert relations given as part of this update
+!   --2) Insert relations of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
+  
+    --Ad 1)
+  
+  
+  
+        INSERT INTO aktivitet_relation (
+          aktivitet_registrering_id,
+            virkning,
+              rel_maal_uuid,
+                rel_maal_urn,
+                  rel_type,
+!                   objekt_type
+        )
+        SELECT
+          new_aktivitet_registrering.id,
+            a.virkning,
+              a.uuid,
+                a.urn,
+                  a.relType,
+!                   a.objektType
+        FROM unnest(relationer) as a
+      ;
+  
+!    
+    --Ad 2)
+  
+    /**********************/
+    -- 0..1 relations 
+!    
+  
+!   FOREACH aktivitet_relation_navn in array  ARRAY['aktivitetstype'::AktivitetRelationKode,'emne'::AktivitetRelationKode,'foelsomhedklasse'::AktivitetRelationKode,'ansvarligklasse'::AktivitetRelationKode,'rekvirentklasse'::AktivitetRelationKode,'ansvarlig'::AktivitetRelationKode,'tilhoerer'::AktivitetRelationKode]::AktivitetRelationKode[]
+    LOOP
+  
+      INSERT INTO aktivitet_relation (
+          aktivitet_registrering_id,
+            virkning,
+              rel_maal_uuid,
+                rel_maal_urn,
+                  rel_type,
+!                   objekt_type
+        )
+      SELECT 
+          new_aktivitet_registrering.id, 
+            ROW(
+              c.tz_range_leftover,
+--- 73,219 ----
+    END IF;   
+  END IF;
+  
+  
+  
+  --handle relationer (relations)
+  
+  IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
+  --raise notice 'Skipping relations, as it is explicit set to empty array. Update note [%]',note;
+  ELSE
+  
+    --1) Insert relations given as part of this update
+!   --2) Insert relations of previous registration, with index values not included in this update. Please notice that for the logic to work,
+!   --  it is very important that the index sequences start with the max value for index of the same type in the previous registration
+  
+    --Ad 1)
+  
++ --build array with the max index values of the different types of relations of the previous registration
++ SELECT array_agg(rel_type_max_index)::_aktivitetRelationMaxIndex[] into rel_type_max_index_arr
++ FROM
++ (
++   SELECT
++   (ROW(rel_type,coalesce(max(rel_index),0))::_aktivitetRelationMaxIndex) rel_type_max_index  
++   FROM aktivitet_relation a
++   where a.aktivitet_registrering_id=prev_aktivitet_registrering.id
++   and a.rel_type = any (aktivitet_rel_type_cardinality_unlimited)
++   group by rel_type
++ ) as a
++ ;
++ 
++ 
++ --Create temporary sequences
++ aktivitet_uuid_underscores:=replace(aktivitet_uuid::text, '-', '_');
+  
++ SELECT array_agg( DISTINCT a.RelType) into aktivitet_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(relationer) a WHERE a.RelType = any (aktivitet_rel_type_cardinality_unlimited) ;
++ IF coalesce(array_length(aktivitet_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
++ FOREACH aktivitet_relation_navn IN ARRAY (aktivitet_rel_type_cardinality_unlimited_present_in_argument)
++   LOOP
++   aktivitet_rel_seq_name := 'aktivitet_' || aktivitet_relation_navn::text || aktivitet_uuid_underscores;
++ 
++   rel_type_max_index_prev_rev:=null;
++ 
++   SELECT 
++     a.indeks into rel_type_max_index_prev_rev
++   FROM
++     unnest(rel_type_max_index_arr) a(relType,indeks)
++   WHERE
++     a.relType=aktivitet_relation_navn
++   ;
++   
++   IF rel_type_max_index_prev_rev IS NULL THEN
++     rel_type_max_index_prev_rev:=0;
++   END IF;
++ 
++   EXECUTE 'CREATE TEMPORARY SEQUENCE ' || aktivitet_rel_seq_name || '
++   INCREMENT 1
++   MINVALUE 1
++   MAXVALUE 9223372036854775807
++   START ' ||  (rel_type_max_index_prev_rev+1)::text ||'
++   CACHE 1;';
++ 
++ END LOOP;
++ END IF;
+  
+        INSERT INTO aktivitet_relation (
+          aktivitet_registrering_id,
+            virkning,
+              rel_maal_uuid,
+                rel_maal_urn,
+                  rel_type,
+!                   objekt_type,
+!                     rel_index,
+!                       aktoer_attr
+        )
+        SELECT
+          new_aktivitet_registrering.id,
+            a.virkning,
+              a.uuid,
+                a.urn,
+                  a.relType,
+!                   a.objektType,
+!                     CASE 
+!                     WHEN a.relType = any (aktivitet_rel_type_cardinality_unlimited) THEN
+!                       CASE WHEN a.indeks IS NULL OR b.id IS NULL THEN --for new relations and relations with index given that is not found in prev registrering, we'll assign new index values 
+!                         nextval('aktivitet_' || a.relType::text || aktivitet_uuid_underscores)
+!                       ELSE
+!                         a.indeks
+!                       END
+!                     ELSE
+!                     NULL
+!                     END,
+!                     CASE 
+!                   WHEN a.relType =('udfoerer'::AktivitetRelationKode)  OR rel_type=('deltager'::AktivitetRelationKode) OR rel_type=('ansvarlig'::AktivitetRelationKode) 
+!                   AND NOT (a.aktoerAttr IS NULL)
+!                   AND (
+!                     (a.aktoerAttr).obligatorisk IS NOT NULL
+!                     OR
+!                     (a.aktoerAttr).accepteret IS NOT NULL
+!                     OR
+!                       (
+!                         (a.aktoerAttr).repraesentation_uuid IS NOT NULL
+!                         OR
+!                         ((a.aktoerAttr).repraesentation_urn IS NOT NULL AND (a.aktoerAttr).repraesentation_urn<>'')
+!                       )
+!                     ) 
+!                   THEN a.aktoerAttr
+!                   ELSE
+!                   NULL
+!                 END
+        FROM unnest(relationer) as a
++       LEFT JOIN aktivitet_relation b on a.relType = any (aktivitet_rel_type_cardinality_unlimited) and b.aktivitet_registrering_id=prev_aktivitet_registrering.id and a.relType=b.rel_type and a.indeks=b.rel_index
+      ;
+  
+! 
+! --Drop temporary sequences
+! IF coalesce(array_length(aktivitet_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
+! FOREACH aktivitet_relation_navn IN ARRAY (aktivitet_rel_type_cardinality_unlimited_present_in_argument)
+!   LOOP
+!   aktivitet_rel_seq_name := 'aktivitet_' || aktivitet_relation_navn::text || aktivitet_uuid_underscores;
+!   EXECUTE 'DROP  SEQUENCE ' || aktivitet_rel_seq_name || ';';
+! END LOOP;
+! END IF;
+! 
+    --Ad 2)
+  
+    /**********************/
+    -- 0..1 relations 
+!   --Please notice, that for 0..1 relations for aktivitet, we're ignoring index here, and handling it the same way, that is done for other object types (like Facet, Klasse etc). That is, you only make changes for the virkningsperiod that you explicitly specify (unless you delete all relations) 
+  
+!   FOREACH aktivitet_relation_navn in array ARRAY['aktivitetstype'::AktivitetRelationKode,'emne'::AktivitetRelationKode,'foelsomhedklasse'::AktivitetRelationKode,'ansvarligklasse'::AktivitetRelationKode,'rekvirentklasse'::AktivitetRelationKode,'ansvarlig'::AktivitetRelationKode,'tilhoerer'::AktivitetRelationKode]::AktivitetRelationKode[]
+    LOOP
+  
+      INSERT INTO aktivitet_relation (
+          aktivitet_registrering_id,
+            virkning,
+              rel_maal_uuid,
+                rel_maal_urn,
+                  rel_type,
+!                   objekt_type,
+!                     rel_index,
+!                       aktoer_attr
+! 
+        )
+      SELECT 
+          new_aktivitet_registrering.id, 
+            ROW(
+              c.tz_range_leftover,
+***************
+*** 128,138 ****
+                (a.virkning).NoteTekst
+            ) :: virkning,
+              a.rel_maal_uuid,
+                a.rel_maal_urn,
+                  a.rel_type,
+!                   a.objekt_type
+      FROM
+      (
+        --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to _subtract_tstzrange_arr on the relations of the previous registrering 
+        SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
+        FROM aktivitet_relation b
+--- 222,234 ----
+                (a.virkning).NoteTekst
+            ) :: virkning,
+              a.rel_maal_uuid,
+                a.rel_maal_urn,
+                  a.rel_type,
+!                   a.objekt_type,
+!                     NULL,--a.rel_index, rel_index is not to be used for 0..1 relations     
+!                       a.aktoer_attr
+      FROM
+      (
+        --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to _subtract_tstzrange_arr on the relations of the previous registrering 
+        SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
+        FROM aktivitet_relation b
+***************
+*** 148,191 ****
+      ;
+    END LOOP;
+  
+    /**********************/
+    -- 0..n relations
+! 
+!   --We only have to check if there are any of the relations with the given name present in the new registration, otherwise copy the ones from the previous registration
+! 
+! 
+!   FOREACH aktivitet_relation_navn in array ARRAY['udfoererklasse'::AktivitetRelationKode,'deltagerklasse'::AktivitetRelationKode,'objektklasse'::AktivitetRelationKode,'resultatklasse'::AktivitetRelationKode,'grundlagklasse'::AktivitetRelationKode,'facilitetklasse'::AktivitetRelationKode,'adresse'::AktivitetRelationKode,'geoobjekt'::AktivitetRelationKode,'position'::AktivitetRelationKode,'facilitet'::AktivitetRelationKode,'lokale'::AktivitetRelationKode,'aktivitetdokument'::AktivitetRelationKode,'aktivitetgrundlag'::AktivitetRelationKode,'aktivitetresultat'::AktivitetRelationKode,'udfoerer'::AktivitetRelationKode,'deltager'::AktivitetRelationKode]::AktivitetRelationKode[]
+!   LOOP
+! 
+!     IF NOT EXISTS  (SELECT 1 FROM aktivitet_relation WHERE aktivitet_registrering_id=new_aktivitet_registrering.id and rel_type=aktivitet_relation_navn) THEN
+! 
+        INSERT INTO aktivitet_relation (
+              aktivitet_registrering_id,
+                virkning,
+                  rel_maal_uuid,
+                    rel_maal_urn,
+                      rel_type,
+!                       objekt_type
+            )
+        SELECT 
+              new_aktivitet_registrering.id,
+!               virkning,
+!                 rel_maal_uuid,
+!                   rel_maal_urn,
+!                     rel_type,
+!                       objekt_type
+!       FROM aktivitet_relation
+!       WHERE aktivitet_registrering_id=prev_aktivitet_registrering.id 
+!       and rel_type=aktivitet_relation_navn 
+        ;
+  
+-     END IF;
+-               
+-   END LOOP;
+- 
+- 
+  /**********************/
+  
+  
+  END IF;
+  /**********************/
+--- 244,280 ----
+      ;
+    END LOOP;
+  
+    /**********************/
+    -- 0..n relations
+!   
+        INSERT INTO aktivitet_relation (
+              aktivitet_registrering_id,
+                virkning,
+                  rel_maal_uuid,
+                    rel_maal_urn,
+                      rel_type,
+!                       objekt_type,
+!                         rel_index,
+!                           aktoer_attr
+            )
+        SELECT 
+              new_aktivitet_registrering.id,
+!               a.virkning,
+!                 a.rel_maal_uuid,
+!                   a.rel_maal_urn,
+!                     a.rel_type,
+!                       a.objekt_type,
+!                         a.rel_index,
+!                           a.aktoer_attr
+!       FROM aktivitet_relation a
+!       LEFT JOIN aktivitet_relation b on b.aktivitet_registrering_id=new_aktivitet_registrering.id and b.rel_type=a.rel_type and b.rel_index=a.rel_index
+!       WHERE a.aktivitet_registrering_id=prev_aktivitet_registrering.id 
+!       and a.rel_type = any (aktivitet_rel_type_cardinality_unlimited)
+!       and b.id is null --don't transfer relations of prev. registrering, if the index was specified in data given to the/this update-function
+        ;
+  
+  /**********************/
+  
+  
+  END IF;
+  /**********************/
+***************
+*** 362,374 ****
+    )
+    SELECT
+      coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+      coalesce(attrEgenskaberObj.aktivitetnavn,a.aktivitetnavn),
+      coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
+!     coalesce(attrEgenskaberObj.starttidspunkt,a.starttidspunkt),
+!     coalesce(attrEgenskaberObj.sluttidspunkt,a.sluttidspunkt),
+!     coalesce(attrEgenskaberObj.tidsforbrug,a.tidsforbrug),
+      coalesce(attrEgenskaberObj.formaal,a.formaal),
+  	ROW (
+  	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
+  	  (attrEgenskaberObj.virkning).AktoerRef,
+  	  (attrEgenskaberObj.virkning).AktoerTypeKode,
+--- 451,469 ----
+    )
+    SELECT
+      coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+      coalesce(attrEgenskaberObj.aktivitetnavn,a.aktivitetnavn),
+      coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
+!     CASE WHEN ((attrEgenskaberObj.starttidspunkt).cleared) THEN NULL 
+!         ELSE coalesce((attrEgenskaberObj.starttidspunkt).value,a.starttidspunkt)
+!         END,
+!     CASE WHEN ((attrEgenskaberObj.sluttidspunkt).cleared) THEN NULL 
+!         ELSE coalesce((attrEgenskaberObj.sluttidspunkt).value,a.sluttidspunkt)
+!         END,
+!     CASE WHEN ((attrEgenskaberObj.tidsforbrug).cleared) THEN NULL 
+!         ELSE coalesce((attrEgenskaberObj.tidsforbrug).value,a.tidsforbrug)
+!         END,
+      coalesce(attrEgenskaberObj.formaal,a.formaal),
+  	ROW (
+  	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
+  	  (attrEgenskaberObj.virkning).AktoerRef,
+  	  (attrEgenskaberObj.virkning).AktoerTypeKode,

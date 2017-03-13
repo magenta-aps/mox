@@ -1,0 +1,95 @@
+*** ./generated-files/dbtyper-specific_aktivitet.sql	2016-11-06 21:15:33.000000000 +0100
+--- ./patches/dbtyper-specific_aktivitet.org.sql	2016-11-06 21:13:59.000000000 +0100
+***************
+*** 28,53 ****
+  
+  CREATE TYPE AktivitetEgenskaberAttrType AS (
+  brugervendtnoegle text,
+  aktivitetnavn text,
+  beskrivelse text,
+! starttidspunkt timestamptz,
+! sluttidspunkt timestamptz,
+! tidsforbrug interval(0),
+  formaal text,
+   virkning Virkning
+  );
+  
+  
+  CREATE TYPE AktivitetRelationKode AS ENUM  ('aktivitetstype','emne','foelsomhedklasse','ansvarligklasse','rekvirentklasse','ansvarlig','tilhoerer','udfoererklasse','deltagerklasse','objektklasse','resultatklasse','grundlagklasse','facilitetklasse','adresse','geoobjekt','position','facilitet','lokale','aktivitetdokument','aktivitetgrundlag','aktivitetresultat','udfoerer','deltager');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_aktivitet_relation_kode_to_txt is invoked.
+  
+  CREATE TYPE AktivitetRelationType AS (
+    relType AktivitetRelationKode,
+    virkning Virkning,
+    uuid uuid,
+    urn  text,
+!   objektType text 
+  )
+  ;
+  
+  CREATE TYPE AktivitetRegistreringType AS
+  (
+--- 28,67 ----
+  
+  CREATE TYPE AktivitetEgenskaberAttrType AS (
+  brugervendtnoegle text,
+  aktivitetnavn text,
+  beskrivelse text,
+! starttidspunkt ClearableTimestamptz,
+! sluttidspunkt ClearableTimestamptz,
+! tidsforbrug ClearableInterval,
+  formaal text,
+   virkning Virkning
+  );
+  
+  
+  CREATE TYPE AktivitetRelationKode AS ENUM  ('aktivitetstype','emne','foelsomhedklasse','ansvarligklasse','rekvirentklasse','ansvarlig','tilhoerer','udfoererklasse','deltagerklasse','objektklasse','resultatklasse','grundlagklasse','facilitetklasse','adresse','geoobjekt','position','facilitet','lokale','aktivitetdokument','aktivitetgrundlag','aktivitetresultat','udfoerer','deltager');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_aktivitet_relation_kode_to_txt is invoked.
+  
++ CREATE TYPE AktivitetAktoerAttrObligatoriskKode AS ENUM ('noedvendig','valgfri');
++ 
++ CREATE TYPE AktivitetAktoerAttrAccepteretKode AS ENUM ('accepteret','foreloebigt','afslaaet');
++ 
++ CREATE TYPE  AktivitetAktoerAttr AS (
++   obligatorisk AktivitetAktoerAttrObligatoriskKode,
++   accepteret AktivitetAktoerAttrAccepteretKode,
++   repraesentation_uuid uuid,
++   repraesentation_urn text 
++ );
++ 
++ 
+  CREATE TYPE AktivitetRelationType AS (
+    relType AktivitetRelationKode,
+    virkning Virkning,
+    uuid uuid,
+    urn  text,
+!   objektType text,
+!   indeks int,
+!   aktoerAttr AktivitetAktoerAttr
+  )
+  ;
+  
+  CREATE TYPE AktivitetRegistreringType AS
+  (
+***************
+*** 62,68 ****
+  (
+    id uuid,
+    registrering AktivitetRegistreringType[]
+  );  
+  
+! 
+! 
+--- 76,89 ----
+  (
+    id uuid,
+    registrering AktivitetRegistreringType[]
+  );  
+  
+!  CREATE Type _AktivitetRelationMaxIndex AS
+!  (
+!    relType AktivitetRelationKode,
+!    indeks int
+!  );
+! 
+! --we'll add two small functions here, that will help with placing CHECK CONSTRAINT on the composite type AktivitetAktoerAttr in the db-table.
+! CREATE OR REPLACE FUNCTION _aktivitet_aktoer_attr_repr_uuid_to_text(AktivitetAktoerAttr) RETURNS TEXT AS 'SELECT $1.repraesentation_uuid::TEXT' LANGUAGE sql IMMUTABLE;
+! CREATE OR REPLACE FUNCTION _aktivitet_aktoer_attr_repr_urn_to_text(AktivitetAktoerAttr) RETURNS TEXT AS 'SELECT NULLIF($1.repraesentation_urn::TEXT,'''') ' LANGUAGE sql IMMUTABLE;

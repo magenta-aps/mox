@@ -1,0 +1,27 @@
+*** ./generated-files/_remove_nulls_in_array_aktivitet.sql	2016-10-22 13:41:14.000000000 +0200
+--- patches/_remove_nulls_in_array_aktivitet.org.sql	2016-10-22 13:38:38.000000000 +0200
+***************
+*** 107,117 ****
+    BEGIN
+  
+     IF inputArr IS NOT NULL THEN
+      FOREACH element IN ARRAY  inputArr
+      LOOP
+!       IF element IS NULL OR ( element.relType IS NULL AND element.uuid IS NULL AND element.urn IS NULL AND element.objektType IS NULL AND element.virkning IS NULL  ) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+        --RAISE DEBUG 'Skipping element';
+        ELSE
+        result:=array_append(result,element);
+        END IF;
+      END LOOP;
+--- 107,117 ----
+    BEGIN
+  
+     IF inputArr IS NOT NULL THEN
+      FOREACH element IN ARRAY  inputArr
+      LOOP
+!       IF element IS NULL OR ( element.relType IS NULL AND element.uuid IS NULL AND element.urn IS NULL AND element.objektType IS NULL AND element.indeks IS NULL AND (element.aktoerAttr IS NULL OR ((element.aktoerAttr).obligatorisk IS NULL AND (element.aktoerAttr).accepteret IS NULL AND (element.aktoerAttr).repraesentation_uuid IS NULL AND (element.aktoerAttr).repraesentation_urn IS NULL    )) AND element.virkning IS NULL  ) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+        --RAISE DEBUG 'Skipping element';
+        ELSE
+        result:=array_append(result,element);
+        END IF;
+      END LOOP;

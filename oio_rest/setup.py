@@ -34,7 +34,9 @@ setup(
         'psycopg2==2.6',
         'wsgiref==0.1.2',
         'python-saml==2.1.3',
-        'pexpect==3.3'
+        'pexpect==3.3',
+        'python-dateutil==2.6.0',
+        'egenix-mx-base==3.2.9'
     ],
     entry_points={
         # -*- Entry points: -*-

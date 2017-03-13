@@ -22,7 +22,7 @@ SAML_IDP_ENTITY_ID = 'localhost'
 #SAML_IDP_ENTITY_ID = 'http://fs.contoso.com/adfs/services/trust'
 
 # The URL on which to access the SAML IdP.
-SAML_IDP_URL = "https://${domain}:9443/services/wso2carbon-sts.wso2carbon-stsHttpsEndpoint"
+SAML_IDP_URL = "https://${domain}:9443/services/wso2carbon-sts.wso2carbon-stsHttpsEndpoint"  # noqa
 #SAML_IDP_URL = "https://fs.contoso.com/adfs/services/trust/13/UsernameMixed"
 
 # We currently support authentication against 'wso2' and 'adfs'
@@ -284,8 +284,77 @@ DATABASE_STRUCTURE = {
                                      "andredokumenter", "andreklasser",
                                      "andrebehandlere", "parter",
                                      "kopiparter", "tilknyttedesager"]
+    },
+    "tilstand": {
+        "attributter": {
+            "egenskaber": [
+                "brugervendtnoegle", "beskrivelse"]
+        },
+        "tilstande": {
+            "status": ["Inaktiv", "Aktiv"],
+            "publiceret": ["Publiceret", "IkkePubliceret", "Normal"]
+        },
+        "relationer_nul_til_en": ["tilstandsobjekt", "tilstandstype"],
+        "relationer_nul_til_mange": [
+            "tilstandsvaerdi", "begrundelse", "tilstandskvalitet",
+            "tilstandsvurdering", "tilstandsaktoer", "tilstandsudstyr",
+            "samtykke", "tilstandsdokument"
+            ]
+        },
+    "aktivitet": {
+        "attributter": {
+            "egenskaber": [
+                "brugervendtnoegle", "aktivitetnavn", "beskrivelse",
+                "starttidspunkt", "sluttidspunkt", "tidsforbrug", "formaal"
+            ]
+        },
+        "attributter_type_override": {
+            "egenskaber": {
+                "starttidspunkt": "timestamptz",
+                "sluttidspunkt": "timestamptz",
+                "tidsforbrug": "interval(0)"
+            }
+        },
+        "tilstande": {
+            "status": ["Inaktiv", "Aktiv", "Aflyst"],
+            "publiceret": ["Publiceret", "IkkePubliceret", "Normal"]
+        },
+        "relationer_nul_til_en": ["aktivitetstype", "emne", "foelsomhedklasse",
+                                  "ansvarligklasse", "rekvirentklasse",
+                                  "ansvarlig", "tilhoerer"],
+        "relationer_nul_til_mange": [
+            "udfoererklasse", "deltagerklasse", "objektklasse",
+            "resultatklasse", "grundlagklasse", "facilitetklasse", "adresse",
+            "geoobjekt", "position", "facilitet", "lokale",
+            "aktivitetdokument", "aktivitetgrundlag", "aktivitetresultat",
+            "udfoerer", "deltager"
+        ]
+    },
+    "indsats": {
+        "attributter": {
+            "egenskaber": [
+                "brugervendtnoegle", "beskrivelse", "starttidspunkt",
+                "sluttidspunkt"
+            ]
+        },
+        "attributter_type_override": {
+            "egenskaber": {
+                "starttidspunkt": "timestamptz",
+                "sluttidspunkt": "timestamptz",
+                }
+        },
+        "tilstande": {
+            "fremdrift": [
+                "Uoplyst", "Visiteret", "Disponeret", "Leveret", "Vurderet"
+            ],
+            "publiceret": ["Publiceret", "IkkePubliceret", "Normal"]
+        },
+        "relationer_nul_til_en": ["indsatsmodtager", "indsatstype"],
+        "relationer_nul_til_mange": [
+            "indsatskvalitet", "indsatsaktoer", "samtykke", "indsatssag",
+            "indsatsdokument"
+        ]
     }
-
 }
 
 
@@ -300,7 +369,15 @@ REAL_DB_STRUCTURE["sag"]["relationer_type_override"] = {
     "journalnotat": "journalnotat",
     "journaldokument": "journaldokument"
 }
-#
+
+REAL_DB_STRUCTURE["aktivitet"]["relationer_type_override"] = {
+    "aktoerattr": "aktoerattr"
+}
+
+REAL_DB_STRUCTURE["tilstand"]["relationer_type_override"] = {
+    "tilstandsvaerdiattr": "vaerdirelationattr"
+}
+
 DB_TEMPLATE_EXTRA_OPTIONS = {
     "dokument": {
         "as_search.jinja.sql": {

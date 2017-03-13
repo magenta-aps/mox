@@ -110,7 +110,7 @@ END;
 $$ LANGUAGE plpgsql immutable;
 
 
---drop cast (SagRegistreringType as json);
+drop cast if exists (SagRegistreringType as json);
 create cast (SagRegistreringType as json) with function actual_state._cast_SagRegistreringType_to_json(SagRegistreringType);
 
 
@@ -150,7 +150,7 @@ RETURN result;
 END;
 $$ LANGUAGE plpgsql immutable;
 
---drop cast (SagType as json);
+drop cast if exists (SagType as json);
 create cast (SagType as json) with function actual_state._cast_sagType_to_json(SagType); 
 
 

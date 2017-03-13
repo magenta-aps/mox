@@ -5,6 +5,199 @@ OIO REST API Notes
    :depth: 5
 
 
+You can find the current MOX specification here:
+
+http://www.kl.dk/ImageVaultFiles/id_55874/cf_202/MOX_specifikation_version_0.PDF
+
+As an example, you can find the Organisation hierarchy
+here:
+
+http://digitaliser.dk/resource/991439/artefact/Informations-+og+meddelelsesmodeller+for+Organisation+%5bvs.+1.1%5d.pdf
+
+This version of the system implements four OIO hierarchies, namely
+Klassifikation, Sag, Dokument and Organisation. In each installation of
+the service, it is possible to only enable some of the hierarchies.
+
+
+On this documentation
+---------------------
+
+This README file is a reStructuredText document, and an HTML version can
+be obtained by running the command ::
+
+    rst2html README.rst README.html
+
+in a command prompt. Note that this requires Python Docutils to be
+installed - on Ubuntu or Debian, this can be done with the following
+command: ::
+
+    sudo apt-get install python-docutils
+
+If you're reading this on Github, you're probably seeing the HTML
+rendering.
+
+Audience
+--------
+
+This is a technical guide. You are not expected to have a profound knowledge of
+the system as such, but you do have to know your way in a Bash prompt - you 
+should be able to change the Apache configuration and e.g. disable or change
+the SSL certificate on your own.
+
+Getting started
+===============
+
+Configuration
+-------------
+
+The file ``db/config.sh`` contains configuration for the database, such
+as which username/password to use to connect to the database, and which
+database name to use.
+
+To setup the database to send notifications to an AMQP message exchange,
+the database must know how to connect to the AMQP server. The defaults
+assume you have a local AMQP server and use the guest user. However,
+these can be changed in ``db/config.sh`` prior to performing
+installation.
+
+The file ``oio_rest/oio_rest/settings.py`` contains configuration for
+the generation of the database structure and the REST API. Set the
+DATABASE, DB_USER and DB_PASSWORD settings according to what you have
+chosen in ``db/config.sh``.
+
+The FILE_UPLOAD_FOLDER setting allows you to change where the database
+stores its files (used for storing the contents of binary files in the
+Dokument hierarchy). The default is ``/var/mox``, and this is
+automatically created by the install script.
+
+There are some other settings that can be changed, and there should be
+comments describing their purpose, or they are described in another
+section of this document.
+
+Installing
+----------
+
+To install the OIO REST API, run ``install.sh``
+
+By default, you will be prompted to reinstall the python virtualenv
+if it already exists, and reinstall/overwrite the database
+if it already exists.
+
+To always answer yes to these questions, pass the ``-y`` parameter.
+
+Run ``install.sh -h`` for a list of options.
+
+**NOTE:** PostgreSQL 9.3 or later is required. If PostgreSQL is not installed
+on your system already, it will be during installation.
+
+To run the API for testing or development purposes, run: ::
+
+    oio_rest/oio_api.sh 
+
+Then, go to http://localhost:5000/site-map to see a map of all available
+URLs, assuming you're running this on your local machine.
+
+The install.sh script creates an Apache VirtualHost for oio rest and 
+MoxDocumentUpload.
+
+To run the OIO Rest Mox Agent (the one listening for messages and
+relaying them onwards to the REST interface), run: ::
+
+    agents/MoxRestFrontend/moxrestfrontend.sh
+
+**NOTE:** You can start the agent in the background by running: ::
+
+    sudo service moxrestfrontend start
+
+To test sending messages through the agent, run: ::
+
+    ./test.sh
+
+**NOTE:** The install script does not set up an IDP for SAML authentication,
+which is enabled by default. If you need to test without SAML authentication, 
+you will need to turn it off as described below. 
+
+To request a token for the username from the IdP and output it in
+base64-encoded gzipped format, run: ::
+
+    ./auth.sh -u <username> -p
+
+Insert your username in the command argument. You will be prompted to enter
+a password.
+
+If SAML authentication is turned on (i.e., if the parameter
+``USE_SAML_AUTHENTICATION`` in ``oio_rest/oio_rest/settings.py`` is
+``True``), the IDP must be configured correctly - see the corresponding
+sections below for instruction on how to do this.
+
+
+Quick install
+-------------
+
+These commands should get you up and running quickly on a machine with a 
+completely new Ubuntu 14.04 Server Edition: ::
+
+    sudo apt-get install git
+    cd /srv
+    sudo git clone https://github.com/magenta-aps/mox
+    sudo chown -R <username>:<username> mox/
+    cd mox
+    ./install.sh
+
+**Note:** The <username> must belong to the sudo user you're using for the
+installation. We recommend creating a dedicated "mox" user and stripping its
+sudo rights when everything works.
+
+**Note:** This will install the system in ``/srv/mox``. It is of course
+possible to install in any other location, but we do not recommend this 
+for a quick install as it means a lot of configuration files need to be 
+changed. In a later version, the user will be prompted for the location and 
+the configuration will be generated accordingly.
+
+**Note:** All commands, e.g. ``./test.sh``, are assumed to be issued from the
+installation root directory, by default ``/srv/mox``.
+
+Quick test
+----------
+
+Make sure the parameters ``USE_SAML_AUTHENTICATION`` in 
+``oio_rest/oio_rest/settings.py`` is ``False``.
+
+Make sure the parameter ``moxrestfrontend.rest.host`` in
+``agents/MoxRestFrontend/moxrestfrontend.conf`` is set to
+``http://localhost:5000``.
+
+Start the (AMQP) MOX REST frontend agent: ::
+
+    sudo service moxrestfrontend start
+
+Start the REST API: ::
+
+    oio_rest/oio_api.sh
+
+Run the tests: ::
+
+    ./test.sh
+
+This should give you a lot of output like this: ::
+
+    Deleting bruger, uuid: 1e874f85-07e5-40e5-81ed-42f21fc3fc9e
+    Getting authtoken
+    127.0.0.1 - - [27/Apr/2016 15:55:09] "DELETE /organisation/bruger/1e874f85-07e5-40e5-81ed-42f21fc3fc9e HTTP/1.1" 200 -
+    Delete succeeded
+
+**Note:** Currently, some of the tests will give the notice: "Result differs
+from the expected". This is due to a bug in the tests, i.e. you should not
+worry about this - if you see output as described above, the system is working.
+
+For more advanced test or production setup, please study the rest of this 
+README and follow your organization's best practices.
+
+
+OIO REST API Notes
+==================
+
+
 Format of JSON body in requests to REST API
 -------------------------------------------
 
@@ -211,8 +404,8 @@ Merging Of Attributes / States / Relations When Updating Object
 ----------------------------------------------------------------
 
 It is worth noting, that the current implementation of the REST-api and the 
-underlying DB procedures *as a general* rule, merges the incomming registration 
-with the registration currently in effect, for all 'virknings' periods not 
+underlying DB procedures as a general rule merges the incomming registration 
+with the registration currently in effect for all 'virknings' periods not 
 explictly covered by the incomming registration.
 
 
@@ -229,8 +422,8 @@ Exceptions to this rule
   registration takes place. However, if you omit the particular type of 
   relation entirely, when you're updating the object - all the relations of that 
   particular type of the previous registration, will be carried over.
-  ( The exception to this rule, is in the case of the object Sag - see section
-  below regarding this. )
+- The relations in the services and object classes Sag, Aktivitet, Indsats and
+  Tilstand have indices and behave differently - this will be described below.
 
 
 Examples Of The Effects Of The Merging Logic When Updating Attributes
@@ -592,19 +785,22 @@ will look like this: ::
 
 
 As we can see no merging has taken place, as we in this example are updating 
-relations of a type with unlimited cardinality (0..n). ( The exception to 
-the behaviour described here, is when updating relations of the Sag object - see
-specific section dedicated to this topic). 
+relations of a type with unlimited cardinality (0..n). 
+
+As explained above, this works differently for "new-style" relations, i.e. 
+relations with indices - specifically, the object classes Sag, Indsats, 
+Aktivitet and Tilstand.
 
 Also see the section named 'Deleting / Clearing Relations' for info regarding
 clearing relations.
 
 
-Behaviour Of Relations Of Object Of Type Sag
---------------------------------------------
+Behaviour of Relations of type Sag, Indsats, Tilstand and Aktivitet
+-------------------------------------------------------------------
 
-The relations with unlimited cardinality (0..n) of the 'Sag' object is different
-than the relations of the other object types, as it operates with an 'index' 
+The relations with unlimited cardinality (0..n) of the Sag, Indsats, Tilstand
+and Aktivitet objects are different
+from the relations of the other object types, as they operate with an 'index' 
 field. This means that you can update relations with unlimited cardinality 
 without specifying the full list of the relations of the given type. You can 
 update a specific relation instance, making use of its index value.
@@ -651,8 +847,8 @@ provided to the update operation of the Sag object: ::
               {
                 "objekttype": "Organisation",
                 "indeks": 2, 
-                "uuid": "ddc99abd-c1b0-48c2-aef7-74fea841adae"
-                ,"virkning": { 
+                "uuid": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+                "virkning": { 
                     "from": "2015-05-20", 
                     "to": "2015-08-20", 
                     "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
@@ -736,7 +932,7 @@ instance will be created with an index value computed by the logic in the
 DB-server. For the create and import operations, this will be all the specified 
 index values.
 
-Updating relations with cardinality 0..1 of the Sag object is done similar to
+Updating relations with cardinality 0..1 of the Sag object is done similarly to
 updating relations of objects of other types. Any specified index values are
 ignored and blanked by the logic of the update operation. Otherwise consult the
 section 'Examples Of The Effects Of The Merging Logic When Updating Relations'
