@@ -6,6 +6,7 @@ import dk.magenta.mox.agent.ParameterMap;
 import dk.magenta.mox.agent.json.JSONArray;
 import dk.magenta.mox.agent.json.JSONObject;
 import dk.magenta.mox.agent.messages.*;
+import java.lang.ProcessBuilder.Redirect;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
@@ -332,8 +333,14 @@ public class MoxTest extends MoxAgent {
     private String getAuthToken() {
         if (this.authToken == null) {
             try {
-                System.out.println("Getting authtoken");
-                Process authProcess = Runtime.getRuntime().exec(this.properties.getProperty("auth.command"));
+                String command = this.properties.getProperty("auth.command");
+                System.err.println("Getting authtoken");
+                ProcessBuilder pb = new ProcessBuilder();
+                pb.redirectInput(Redirect.INHERIT);
+                pb.redirectError(Redirect.INHERIT);
+                pb.command(command);
+
+                Process authProcess = pb.start();
                 InputStream processOutput = authProcess.getInputStream();
                 StringWriter writer = new StringWriter();
                 IOUtils.copy(processOutput, writer);
@@ -343,8 +350,12 @@ public class MoxTest extends MoxAgent {
                     int index = output.indexOf(tokentype);
                     if (index != -1) {
                         int endIndex = output.indexOf("\n", index);
-                        this.authToken = output.substring(index, endIndex).trim();
-                        System.out.println("Authtoken obtained");
+                        if (endIndex != -1) {
+                            this.authToken = output.substring(index, endIndex).trim();
+                        } else {
+                            this.authToken = output.trim();
+                        }
+                        System.err.println("Authtoken obtained");
                     }
                 }
             } catch (IOException e) {
