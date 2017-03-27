@@ -58,6 +58,5 @@ else
         sudo service postgresql restart
 
 	    $DIR/initdb.sh >> "$LOGFILE"
-        sudo apt-get -y install --no-install-recommends  $(cat "$DIR/SYSTEM_DEPENDENCIES")
     ) >> "$LOGFILE" 2>&1
 fi

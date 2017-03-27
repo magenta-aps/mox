@@ -4,8 +4,8 @@
 import jinja2
 import os
 import sys
-from settings import DATABASE_STRUCTURE
-from settings import DB_TEMPLATE_EXTRA_OPTIONS
+from oio_rest.db_structure import DATABASE_STRUCTURE
+from oio_rest.db_structure import DB_TEMPLATE_EXTRA_OPTIONS
 from collections import OrderedDict
 
 

@@ -1,8 +1,8 @@
 #!/bin/bash -e
-set -x
 set -b
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+PYTHON="$MOXDIR/python-env/bin/python"
 
 cd $DIR
 source ./config.sh
@@ -111,12 +111,12 @@ patch --fuzz=3 -i ../patches/as_search_tilstand.sql.diff
 
 cd ..
 
-oiotypes=( facet klassifikation klasse bruger interessefaellesskab itsystem organisation organisationenhed organisationfunktion sag dokument tilstand indsats aktivitet )
+oiotypes=$($PYTHON -m oio_rest.db_helpers)
 
 templates1=( dbtyper-specific tbls-specific _remove_nulls_in_array )
 
 
-for oiotype in "${oiotypes[@]}"
+for oiotype in $oiotypes
 do
 	for template in "${templates1[@]}"
 	do
@@ -135,7 +135,7 @@ psql -d $MOX_DB -U $MOX_DB_USER -f ../funcs/_as_list_dokument_varianter.sql
 templates2=(  _as_get_prev_registrering _as_create_registrering as_update  as_create_or_import  as_list as_read as_search json-cast-functions _as_filter_unauth )
 
 
-for oiotype in "${oiotypes[@]}"
+for oiotype in $oiotypes
 do
 	for template in "${templates2[@]}"
 	do
