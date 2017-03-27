@@ -1,6 +1,13 @@
-* Version 0.2.NEXT, XX March 2017
+* Version 0.3.0, 28 March 2017
 
-This is a bugfix release, containing:
+This is a major release, adding four new services:
+
+* Tilstand
+* Indsats
+* Activity
+* Log
+
+In addition, it fixes the following bugs:
 
 * Use DMY date order in this file.
 * Fix running interface_tests on Darwin, i.e. macOS.
