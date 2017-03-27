@@ -24,6 +24,8 @@ echo "Installing PostreSQL AMQP extension"
     echo
     set -x
 
+    sudo pgxn install pgtap
+
     for PG_CONFIG in /usr/lib/postgresql/*/bin/pg_config
     do
         rm -rf /tmp/pg_amqp
@@ -45,9 +47,6 @@ else
         date
         echo
         set -x
-
-        # Install pgtap - unit test framework
-        sudo pgxn install pgtap
 
         echo "Updating authentication config"
         # Set authentication method to 'md5' (= password, not peer)
