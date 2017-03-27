@@ -381,7 +381,6 @@ def create_or_import_object(class_name, note, registration,
         registration=sql_registration,
         restrictions=sql_restrictions)
 
-    print sql
     # Call Postgres! Return OK or not accordingly
     conn = get_connection()
     cursor = conn.cursor()

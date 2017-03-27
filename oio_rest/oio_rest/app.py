@@ -70,7 +70,6 @@ def sitemap():
         # and rules that require parameters
         if "GET" in rule.methods:
             links.append(str(rule))
-            print rule
     return jsonify({"site-map": sorted(links)})
 
 

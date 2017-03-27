@@ -8,7 +8,7 @@ from psycopg2.extensions import adapt as psyco_adapt, ISQLQuote
 from psycopg2.extensions import register_adapter as psyco_register_adapter
 from contentstore import content_store
 
-from settings import REAL_DB_STRUCTURE as db_struct
+from db_structure import REAL_DB_STRUCTURE as db_struct
 from custom_exceptions import BadRequestException
 
 _attribute_fields = {}
@@ -367,3 +367,6 @@ psyco_register_adapter(DokumentVariantEgenskaberType, NamedTupleAdapter)
 psyco_register_adapter(DokumentDelType, NamedTupleAdapter)
 psyco_register_adapter(DokumentDelEgenskaberType, NamedTupleAdapter)
 psyco_register_adapter(DokumentDelRelationType, NamedTupleAdapter)
+
+if __name__ == '__main__':
+    print '\n'.join(sorted(db_struct))

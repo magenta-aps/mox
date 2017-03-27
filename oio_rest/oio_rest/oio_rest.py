@@ -7,7 +7,7 @@ from custom_exceptions import BadRequestException
 from werkzeug.datastructures import ImmutableOrderedMultiDict
 
 import db
-import settings
+import db_structure
 from utils.build_registration import build_registration, to_lower_param
 
 # Just a helper during debug
@@ -88,7 +88,7 @@ class OIOStandardHierarchy(object):
         classes_url = u"{0}/{1}/{2}".format(base_url, hierarchy, u"classes")
 
         def get_classes():
-            structure = settings.REAL_DB_STRUCTURE
+            structure = db_structure.REAL_DB_STRUCTURE
             clsnms = [c.__name__.lower() for c in cls._classes]
             hierarchy_dict = {c: structure[c] for c in clsnms}
             return json.dumps(hierarchy_dict)
@@ -326,7 +326,7 @@ class OIORestObject(object):
     @classmethod
     def get_fields(cls):
         """Set up API with correct database access functions."""
-        structure = settings.REAL_DB_STRUCTURE
+        structure = db_structure.REAL_DB_STRUCTURE
         class_key = cls.__name__.lower()
         # TODO: Perform some transformations to improve readability.
         class_dict = structure[class_key]
