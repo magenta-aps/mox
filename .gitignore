@@ -30,6 +30,13 @@ agents/MoxDocumentDownload/moxdocumentdownload/moxdocumentdownload.conf
 agents/MoxDocumentDownload/setup/moxdocumentdownload.conf
 agents/MoxDocumentDownload/setup/moxdocumentdownload.wsgi
 agents/MoxDocumentUpload/moxdocumentupload/moxdocumentupload.conf
+agents/MoxDocumentUpload/install.log
+agentbase/python/mox/mox.pth
+agents/MoxRestFrontend/install.log
+agents/MoxRestFrontend/moxrestfrontend.conf
+agents/MoxTabel/install.log
+python_agents/mox_advis.py
+python_agents/mox_elk_log.py
 agents/MoxDocumentUpload/setup/moxdocumentupload.conf
 agents/MoxDocumentUpload/setup/moxdocumentupload.wsgi
 agents/MoxRestFrontend/moxrestfrontend.conf

@@ -105,4 +105,4 @@ def get_authenticated_user():
     if USE_SAML_AUTHENTICATION:
         return request.saml_user_id
     else:
-        "615957e8-4aa1-4319-a787-f1f7ad6b5e2c"
+        return "42c432e8-9c4a-11e6-9f62-873cf34a735f"

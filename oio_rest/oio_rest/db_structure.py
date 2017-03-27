@@ -304,6 +304,20 @@ DATABASE_STRUCTURE = {
             "indsatskvalitet", "indsatsaktoer", "samtykke", "indsatssag",
             "indsatsdokument"
         ]
+    },
+
+    "loghaendelse": {
+        "attributter": {
+            "egenskaber": ["service", "klasse", "tidspunkt", "operation",
+                           "objekttype", "returkode", "returtekst", "note"]
+        },
+        "tilstande": {
+            "gyldighed": ["Rettet", "Ikke rettet"]
+        },
+        "relationer_nul_til_en": ["objekt", "bruger", "brugerrolle"],
+
+        "relationer_nul_til_mange": []
+
     }
 }
 
