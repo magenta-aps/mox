@@ -20,6 +20,7 @@ In addition, it fixes the following bugs:
   file.
 * Reduce size of settings.py by moving the database structure
   definition to a separate Python module
+* Install mox_advis by default
 
 
 * Version 0.2.17, 8 February 2017
