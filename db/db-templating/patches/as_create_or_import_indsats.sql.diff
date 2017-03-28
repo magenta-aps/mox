@@ -1,0 +1,117 @@
+*** ./generated-files/as_create_or_import_indsats.sql	2016-11-13 15:10:19.000000000 +0100
+--- ./patches/as_create_or_import_indsats.org.sql	2016-11-13 15:08:50.000000000 +0100
+***************
+*** 23,32 ****
+--- 23,37 ----
+    indsats_tils_publiceret_obj indsatsPubliceretTilsType;
+    indsats_tils_fremdrift_obj indsatsFremdriftTilsType;
+    
+    indsats_relationer IndsatsRelationType;
+    auth_filtered_uuids uuid[];
++   indsats_relation_kode indsatsRelationKode;
++   indsats_uuid_underscores text;
++   indsats_rel_seq_name text;
++   indsats_rel_type_cardinality_unlimited indsatsRelationKode[]:=ARRAY['indsatskvalitet'::IndsatsRelationKode,'indsatsaktoer'::IndsatsRelationKode,'samtykke'::IndsatsRelationKode,'indsatssag'::IndsatsRelationKode,'indsatsdokument'::IndsatsRelationKode]::indsatsRelationKode[];
++   indsats_rel_type_cardinality_unlimited_present_in_argument indsatsRelationKode[];
+  BEGIN
+  
+  IF indsats_uuid IS NULL THEN
+      LOOP
+      indsats_uuid:=uuid_generate_v4();
+***************
+*** 164,191 ****
+  END IF;
+  
+  /*********************************/
+  --Insert relations
+  
+      INSERT INTO indsats_relation (
+        indsats_registrering_id,
+        virkning,
+        rel_maal_uuid,
+        rel_maal_urn,
+        rel_type,
+!       objekt_type
+      )
+      SELECT
+        indsats_registrering_id,
+        a.virkning,
+        a.uuid,
+        a.urn,
+        a.relType,
+!       a.objektType
+      FROM unnest(indsats_registrering.relationer) a
+!   ;
+  
+  
+  /*** Verify that the object meets the stipulated access allowed criteria  ***/
+  /*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
+  auth_filtered_uuids:=_as_filter_unauth_indsats(array[indsats_uuid]::uuid[],auth_criteria_arr); 
+  IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[indsats_uuid]) THEN
+--- 169,234 ----
+  END IF;
+  
+  /*********************************/
+  --Insert relations
+  
++ IF coalesce(array_length(indsats_registrering.relationer,1),0)>0 THEN
++ 
++ --Create temporary sequences
++ indsats_uuid_underscores:=replace(indsats_uuid::text, '-', '_');
++ 
++ SELECT array_agg( DISTINCT a.RelType) into indsats_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(indsats_registrering.relationer) a WHERE a.RelType = any (indsats_rel_type_cardinality_unlimited) ;
++ IF coalesce(array_length(indsats_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
++ FOREACH indsats_relation_kode IN ARRAY (indsats_rel_type_cardinality_unlimited_present_in_argument)
++   LOOP
++   indsats_rel_seq_name := 'indsats_' || indsats_relation_kode::text || indsats_uuid_underscores;
++ 
++   EXECUTE 'CREATE TEMPORARY SEQUENCE ' || indsats_rel_seq_name || '
++   INCREMENT 1
++   MINVALUE 1
++   MAXVALUE 9223372036854775807
++   START 1
++   CACHE 1;';
++ 
++ END LOOP;
++ END IF;
++ 
+      INSERT INTO indsats_relation (
+        indsats_registrering_id,
+        virkning,
+        rel_maal_uuid,
+        rel_maal_urn,
+        rel_type,
+!       objekt_type,
+!       rel_index
+      )
+      SELECT
+        indsats_registrering_id,
+        a.virkning,
+        a.uuid,
+        a.urn,
+        a.relType,
+!       a.objektType,
+!         CASE WHEN a.relType = any (indsats_rel_type_cardinality_unlimited) THEN --rel_index
+!         nextval('indsats_' || a.relType::text || indsats_uuid_underscores)
+!         ELSE 
+!         NULL
+!         END
+      FROM unnest(indsats_registrering.relationer) a
+!     ;
+! 
+! 
+! --Drop temporary sequences
+! IF coalesce(array_length(indsats_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
+! FOREACH indsats_relation_kode IN ARRAY (indsats_rel_type_cardinality_unlimited_present_in_argument)
+!   LOOP
+!   indsats_rel_seq_name := 'indsats_' || indsats_relation_kode::text || indsats_uuid_underscores;
+!   EXECUTE 'DROP  SEQUENCE ' || indsats_rel_seq_name || ';';
+! END LOOP;
+! END IF;
+  
++ END IF;
+  
+  /*** Verify that the object meets the stipulated access allowed criteria  ***/
+  /*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
+  auth_filtered_uuids:=_as_filter_unauth_indsats(array[indsats_uuid]::uuid[],auth_criteria_arr); 
+  IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[indsats_uuid]) THEN

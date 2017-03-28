@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 # In order to start the tests, make sure the REST interface is running.
 #
@@ -51,7 +51,7 @@ curl -k -sH "Content-Type: application/json" -X GET $HOST_URL/dokument/dokument?
 
 # Grab the values of the indhold attributes of each DokumentDel, so we know
 # the content URLs.
-IFS=$'\n' content_paths=($(grep -Po '(?<="indhold": "store:)[^"]*(?=")' /tmp/listoutput))
+IFS=$'\n' content_paths=($(sed -n 's/^.*"indhold": "store:\([^"]*\)".*$/\1/p' /tmp/listoutput))
 
 # Take only the first one
 content_path=${content_paths[0]}
@@ -68,7 +68,7 @@ fi
 
 # Make sure that deleting DokumentDel relations is possible
 if $(curl -k -sH "Content-Type: application/json" \
-"$HOST_URL/dokument/dokument?variant=doc_varianttekst2&deltekst=doc_deltekst2B&underredigeringaf=urn:cpr8883394&uuid=$uuid" | grep -q "$uuid")
+"$HOST_URL/dokument/dokument?variant=doc_varianttekst2&deltekst=doc_deltekst2B&underredigeringaf=urn:cpr8883394&uuid=$uuid" | grep -qi "$uuid")
 then
     printf "\nSearch on del relation successful"
 else
@@ -93,7 +93,7 @@ curl -k -sH "Content-Type: application/json" -X GET $HOST_URL/dokument/dokument?
 
 # Grab the values of the indhold attributes of each DokumentDel, so we know
 # the content URLs.
-IFS=$'\n' content_paths=($(grep -Po '(?<="indhold": "store:)[^"]*(?=")' /tmp/listoutput))
+IFS=$'\n' content_paths=($(sed -n 's/^.*"indhold": "store:\([^"]*\)".*$/\1/p' /tmp/listoutput))
 content_path=${content_paths[0]}
 
 printf "\nDownloading from $content_path"
@@ -109,7 +109,7 @@ fi
 
 # Make sure that deleting DokumentDel relations is possible
 if ! $(curl -k -sH "Content-Type: application/json" \
-"$HOST_URL/dokument/dokument?variant=doc_varianttekst2&deltekst=doc_deltekst2B&underredigeringaf=urn:cpr8883394&uuid=$uuid" | grep -q "$uuid")
+"$HOST_URL/dokument/dokument?variant=doc_varianttekst2&deltekst=doc_deltekst2B&underredigeringaf=urn:cpr8883394&uuid=$uuid" | grep -qi "$uuid")
 then
     printf "\nSearch on deleted del relation successful"
 else
@@ -127,7 +127,7 @@ curl -k -sH "Content-Type: application/json" -X DELETE -d "$(cat $DIR/test_data/
 
 # Search on the imported dokument
 
-if ! $(curl -k -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?produktion=true&virkningfra=2015-05-20&uuid=$import_uuid" | grep -q "$import_uuid")
+if ! $(curl -k -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?produktion=true&virkningfra=2015-05-20&uuid=$import_uuid" | grep -qi "$import_uuid")
 then
     printf "\nSearch 1 successful"
 else
@@ -136,7 +136,7 @@ else
 fi
 
 
-if $(curl -k -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?varianttekst=PDF&deltekst=doc_deltekst1A&mimetype=text/plain&uuid=$import_uuid" | grep -q "$import_uuid")
+if $(curl -k -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?varianttekst=PDF&deltekst=doc_deltekst1A&mimetype=text/plain&uuid=$import_uuid" | grep -qi "$import_uuid")
 then
     printf "\nSearch del 1 successful"
 else
@@ -144,7 +144,7 @@ else
     exit
 fi
 
-if $(curl -k -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?deltekst=doc_deltekst1A&mimetype=text/plain&uuid=$import_uuid" | grep -q "$import_uuid")
+if $(curl -k -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?deltekst=doc_deltekst1A&mimetype=text/plain&uuid=$import_uuid" | grep -qi "$import_uuid")
 then
     printf "\nSearch del 2 successful"
 else
@@ -152,7 +152,7 @@ else
     exit
 fi
 
-if $(curl -k -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?underredigeringaf=urn:cpr8883394&uuid=$import_uuid" | grep -q "$import_uuid")
+if $(curl -k -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?underredigeringaf=urn:cpr8883394&uuid=$import_uuid" | grep -qi "$import_uuid")
 then
     printf "\nSearch on del relation URN successful"
 else
@@ -161,7 +161,7 @@ else
 fi
 
 
-if $(curl -k -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?ejer:Organisation=ef2713ee-1a38-4c23-8fcb-3c4331262194&uuid=$import_uuid" | grep -q "$import_uuid")
+if $(curl -k -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?ejer:Organisation=ef2713ee-1a38-4c23-8fcb-3c4331262194&uuid=$import_uuid" | grep -qi "$import_uuid")
 then
     printf "\nSearch on relation with objekttype successful"
 else
@@ -169,7 +169,7 @@ else
     exit
 fi
 
-if ! $(curl -k -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?ejer:Blah=ef2713ee-1a38-4c23-8fcb-3c4331262194&uuid=$import_uuid" | grep -q "$import_uuid")
+if ! $(curl -k -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?ejer:Blah=ef2713ee-1a38-4c23-8fcb-3c4331262194&uuid=$import_uuid" | grep -qi "$import_uuid")
 then
     printf "\nSearch on relation with wrong objekttype successful"
 else
@@ -177,7 +177,7 @@ else
     exit
 fi
 
-if $(curl -k -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?underredigeringaf:Bruger=urn:cpr8883394&uuid=$import_uuid" | grep -q "$import_uuid")
+if $(curl -k -sH "Content-Type: application/json" "$HOST_URL/dokument/dokument?underredigeringaf:Bruger=urn:cpr8883394&uuid=$import_uuid" | grep -qi "$import_uuid")
 then
     printf "\nSearch on del relation with objekttype successful"
 else

@@ -1,0 +1,40 @@
+*** ./generated-files/as_search_tilstand.sql	2016-11-20 19:01:22.000000000 +0100
+--- ./patches/as_search_tilstand.org.sql	2016-11-20 18:59:10.000000000 +0100
+***************
+*** 741,750 ****
+--- 741,775 ----
+  					relationTypeObj.urn IS NULL
+  					OR
+  					relationTypeObj.urn = a.rel_maal_urn
+  				)
+  				AND
++ 				(
++  					relationTypeObj.indeks IS NULL
++  					OR
++  					relationTypeObj.indeks = a.rel_index
++  				)
++ 				AND
++ 				(
++ 				relationTypeObj.tilstandsVaerdiAttr IS NULL
++ 				OR
++ 				(
++ 					(
++ 						(relationTypeObj.tilstandsVaerdiAttr).nominelVaerdi IS NULL
++ 						OR
++ 						(a.tilstand_vaerdi_attr).nominelVaerdi ILIKE (relationTypeObj.tilstandsVaerdiAttr).nominelVaerdi
++ 					)
++ 					AND
++ 					(
++ 						(relationTypeObj.tilstandsVaerdiAttr).forventet IS NULL
++ 						OR
++ 						(a.tilstand_vaerdi_attr).forventet = (relationTypeObj.tilstandsVaerdiAttr).forventet
++ 					)
++ 		
++ 				)
++ 				)
++ 				AND
+  						(
+  				(registreringObj.registrering) IS NULL 
+  				OR
+  				(
+  					(

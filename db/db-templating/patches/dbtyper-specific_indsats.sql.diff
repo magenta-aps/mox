@@ -1,0 +1,76 @@
+*** ./generated-files/dbtyper-specific_indsats.sql	2016-11-06 21:39:17.000000000 +0100
+--- ./patches/dbtyper-specific_indsats.org.sql	2016-11-06 21:37:24.000000000 +0100
+***************
+*** 27,38 ****
+  ;
+  
+  CREATE TYPE IndsatsEgenskaberAttrType AS (
+  brugervendtnoegle text,
+  beskrivelse text,
+! starttidspunkt timestamptz,
+! sluttidspunkt timestamptz,
+   virkning Virkning
+  );
+  
+  
+  CREATE TYPE IndsatsRelationKode AS ENUM  ('indsatsmodtager','indsatstype','indsatskvalitet','indsatsaktoer','samtykke','indsatssag','indsatsdokument');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_indsats_relation_kode_to_txt is invoked.
+--- 27,38 ----
+  ;
+  
+  CREATE TYPE IndsatsEgenskaberAttrType AS (
+  brugervendtnoegle text,
+  beskrivelse text,
+! starttidspunkt ClearableTimestamptz,
+! sluttidspunkt ClearableTimestamptz,
+   virkning Virkning
+  );
+  
+  
+  CREATE TYPE IndsatsRelationKode AS ENUM  ('indsatsmodtager','indsatstype','indsatskvalitet','indsatsaktoer','samtykke','indsatssag','indsatsdokument');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_indsats_relation_kode_to_txt is invoked.
+***************
+*** 40,50 ****
+  CREATE TYPE IndsatsRelationType AS (
+    relType IndsatsRelationKode,
+    virkning Virkning,
+    uuid uuid,
+    urn  text,
+!   objektType text 
+  )
+  ;
+  
+  CREATE TYPE IndsatsRegistreringType AS
+  (
+--- 40,51 ----
+  CREATE TYPE IndsatsRelationType AS (
+    relType IndsatsRelationKode,
+    virkning Virkning,
+    uuid uuid,
+    urn  text,
+!   objektType text,
+! indeks int 
+  )
+  ;
+  
+  CREATE TYPE IndsatsRegistreringType AS
+  (
+***************
+*** 59,65 ****
+  (
+    id uuid,
+    registrering IndsatsRegistreringType[]
+  );  
+  
+! 
+  
+--- 60,70 ----
+  (
+    id uuid,
+    registrering IndsatsRegistreringType[]
+  );  
+  
+!  CREATE Type _IndsatsRelationMaxIndex AS
+!  (
+!    relType IndsatsRelationKode,
+!    indeks int
+!  );
+  

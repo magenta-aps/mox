@@ -1,0 +1,138 @@
+*** ./generated-files/as_create_or_import_aktivitet.sql	2016-11-13 14:07:02.000000000 +0100
+--- ./patches/as_create_or_import_aktivitet.org.sql	2016-11-13 14:01:01.000000000 +0100
+***************
+*** 23,32 ****
+--- 23,38 ----
+    aktivitet_tils_status_obj aktivitetStatusTilsType;
+    aktivitet_tils_publiceret_obj aktivitetPubliceretTilsType;
+    
+    aktivitet_relationer AktivitetRelationType;
+    auth_filtered_uuids uuid[];
++   aktivitet_relation_kode aktivitetRelationKode;
++   aktivitet_uuid_underscores text;
++   aktivitet_rel_seq_name text;
++   aktivitet_rel_type_cardinality_unlimited aktivitetRelationKode[]:=ARRAY['udfoererklasse'::AktivitetRelationKode,'deltagerklasse'::AktivitetRelationKode,'objektklasse'::AktivitetRelationKode,'resultatklasse'::AktivitetRelationKode,'grundlagklasse'::AktivitetRelationKode,'facilitetklasse'::AktivitetRelationKode,'adresse'::AktivitetRelationKode,'geoobjekt'::AktivitetRelationKode,'position'::AktivitetRelationKode,'facilitet'::AktivitetRelationKode,'lokale'::AktivitetRelationKode,'aktivitetdokument'::AktivitetRelationKode,'aktivitetgrundlag'::AktivitetRelationKode,'aktivitetresultat'::AktivitetRelationKode,'udfoerer'::AktivitetRelationKode,'deltager'::AktivitetRelationKode]::aktivitetRelationKode[];
++   aktivitet_rel_type_cardinality_unlimited_present_in_argument aktivitetRelationKode[];
++ 
+  BEGIN
+  
+  IF aktivitet_uuid IS NULL THEN
+      LOOP
+      aktivitet_uuid:=uuid_generate_v4();
+***************
+*** 170,196 ****
+  END IF;
+  
+  /*********************************/
+  --Insert relations
+  
+      INSERT INTO aktivitet_relation (
+        aktivitet_registrering_id,
+        virkning,
+        rel_maal_uuid,
+        rel_maal_urn,
+        rel_type,
+!       objekt_type
+      )
+      SELECT
+        aktivitet_registrering_id,
+        a.virkning,
+        a.uuid,
+        a.urn,
+        a.relType,
+!       a.objektType
+      FROM unnest(aktivitet_registrering.relationer) a
+!   ;
+  
+  
+  /*** Verify that the object meets the stipulated access allowed criteria  ***/
+  /*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
+  auth_filtered_uuids:=_as_filter_unauth_aktivitet(array[aktivitet_uuid]::uuid[],auth_criteria_arr); 
+--- 176,262 ----
+  END IF;
+  
+  /*********************************/
+  --Insert relations
+  
++ IF coalesce(array_length(aktivitet_registrering.relationer,1),0)>0 THEN
++ 
++ --Create temporary sequences
++ aktivitet_uuid_underscores:=replace(aktivitet_uuid::text, '-', '_');
++ 
++ SELECT array_agg( DISTINCT a.RelType) into aktivitet_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(aktivitet_registrering.relationer) a WHERE a.RelType = any (aktivitet_rel_type_cardinality_unlimited) ;
++ IF coalesce(array_length(aktivitet_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
++ 
++ FOREACH aktivitet_relation_kode IN ARRAY (aktivitet_rel_type_cardinality_unlimited_present_in_argument)
++   LOOP
++   aktivitet_rel_seq_name := 'aktivitet_' || aktivitet_relation_kode::text || aktivitet_uuid_underscores;
++ 
++   EXECUTE 'CREATE TEMPORARY SEQUENCE ' || aktivitet_rel_seq_name || '
++   INCREMENT 1
++   MINVALUE 1
++   MAXVALUE 9223372036854775807
++   START 1
++   CACHE 1;';
++ 
++ END LOOP;
++ END IF;
++ 
+      INSERT INTO aktivitet_relation (
+        aktivitet_registrering_id,
+        virkning,
+        rel_maal_uuid,
+        rel_maal_urn,
+        rel_type,
+!       objekt_type,
+!       rel_index,
+!       aktoer_attr
+      )
+      SELECT
+        aktivitet_registrering_id,
+        a.virkning,
+        a.uuid,
+        a.urn,
+        a.relType,
+!       a.objektType,
+!         CASE WHEN a.relType = any (aktivitet_rel_type_cardinality_unlimited) THEN --rel_index
+!         nextval('aktivitet_' || a.relType::text || aktivitet_uuid_underscores)
+!         ELSE 
+!         NULL
+!         END,
+!         CASE 
+!           WHEN a.relType =('udfoerer'::AktivitetRelationKode)  OR a.relType=('deltager'::AktivitetRelationKode) OR a.relType=('ansvarlig'::AktivitetRelationKode) 
+!           AND NOT (a.aktoerAttr IS NULL)
+!           AND (
+!             (a.aktoerAttr).obligatorisk IS NOT NULL
+!             OR
+!             (a.aktoerAttr).accepteret IS NOT NULL
+!             OR
+!               (
+!                 (a.aktoerAttr).repraesentation_uuid IS NOT NULL
+!                 OR
+!                 ((a.aktoerAttr).repraesentation_urn IS NOT NULL AND (a.aktoerAttr).repraesentation_urn<>'')
+!               )
+!             ) 
+!           THEN a.aktoerAttr
+!           ELSE
+!           NULL
+!         END
+      FROM unnest(aktivitet_registrering.relationer) a
+!     ;
+! 
+! 
+! --Drop temporary sequences
+! IF coalesce(array_length(aktivitet_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
+! FOREACH aktivitet_relation_kode IN ARRAY (aktivitet_rel_type_cardinality_unlimited_present_in_argument)
+!   LOOP
+!   aktivitet_rel_seq_name := 'aktivitet_' || aktivitet_relation_kode::text || aktivitet_uuid_underscores;
+!   EXECUTE 'DROP  SEQUENCE ' || aktivitet_rel_seq_name || ';';
+! END LOOP;
+! END IF;
+! 
+! 
+! END IF;
+  
+  
+  /*** Verify that the object meets the stipulated access allowed criteria  ***/
+  /*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
+  auth_filtered_uuids:=_as_filter_unauth_aktivitet(array[aktivitet_uuid]::uuid[],auth_criteria_arr); 

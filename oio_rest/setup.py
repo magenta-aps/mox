@@ -22,7 +22,7 @@ setup(
     zip_safe=False,
     install_requires=[
         # -*- Extra requirements: -*-
-        'requests==2.10',
+        'requests==2.12.4',
         'pytz>=2016.10',
         'Flask==0.10.1',
         'Jinja2==2.7.3',
@@ -34,7 +34,10 @@ setup(
         'psycopg2==2.6',
         'wsgiref==0.1.2',
         'python-saml==2.1.3',
-        'pexpect==3.3'
+        'pexpect==3.3',
+        'python-dateutil==2.6.0',
+        'egenix-mx-base==3.2.9',
+        'pika',
     ],
     entry_points={
         # -*- Entry points: -*-

@@ -8,13 +8,16 @@ from psycopg2.extras import DateTimeTZRange
 from psycopg2.extensions import adapt as psyco_adapt
 
 from jinja2 import Environment, FileSystemLoader
+from dateutil import parser as date_parser
+from mx.DateTime import DateTimeDeltaFrom
 
 from settings import DATABASE, DB_USER, DO_ENABLE_RESTRICTIONS, DB_PASSWORD
 
 from db_helpers import get_attribute_fields, get_attribute_names
 from db_helpers import get_field_type, get_state_names, get_relation_field_type
 from db_helpers import (Soegeord, OffentlighedUndtaget, JournalNotat,
-                        JournalDokument, DokumentVariantType)
+                        JournalDokument, DokumentVariantType, AktoerAttr,
+                        VaerdiRelationAttr)
 
 from authentication import get_authenticated_user
 
@@ -82,6 +85,10 @@ def convert_attr_value(attribute_name, attribute_field_name,
                 attribute_field_value.get('hjemmel', None))
     elif field_type == "date":
         return datetime.strptime(attribute_field_value, "%Y-%m-%d").date()
+    elif field_type == "timestamptz":
+        return date_parser.parse(attribute_field_value)
+    elif field_type == "interval(0)":
+        return DateTimeDeltaFrom(attribute_field_value).pytimedelta()
     else:
         return attribute_field_value
 
@@ -98,8 +105,20 @@ def convert_relation_value(class_name, field_name, value):
             OffentlighedUndtaget(ou.get('alternativtitel', None),
                                  ou.get('hjemmel', None))
         )
-    else:
-        return value
+    elif field_type == 'aktoerattr':
+        if value:
+            return AktoerAttr(value.get("accepteret", None),
+                value.get("obligatorisk", None),
+                value.get("repraesentation_uuid", None),
+                value.get("repraesentation_urn", None))
+    elif field_type == 'vaerdirelationattr':
+        result = VaerdiRelationAttr(
+                     value.get("forventet", None),
+                     value.get("nominelvaerdi", None)
+        )
+        return result
+    # Default: no conversion. 
+    return value
 
 
 def convert_attributes(attributes):
@@ -133,9 +152,10 @@ def convert_relations(relations, class_name):
                         (period, rel_name, period)
                     )
                 for field in period:
-                    period[field] = convert_relation_value(
+                    converted = convert_relation_value(
                         class_name, field, period[field]
                     )
+                    period[field] = converted
     return relations
 
 
@@ -194,7 +214,6 @@ def sql_convert_registration(registration, class_name):
         registration["variants"] = adapt(
             convert_variants(registration["variants"])
         )
-
     states = registration["states"]
     sql_states = []
     for sn in get_state_names(class_name):
@@ -216,6 +235,8 @@ def sql_convert_registration(registration, class_name):
 
     relations = registration["relations"]
     sql_relations = sql_relations_array(class_name, relations)
+    # print "CLASS", class_name
+
     registration["relations"] = sql_relations
 
     return registration
@@ -567,6 +588,8 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
         raise NotFoundException("{0} with UUID {1} not found.".format(
             class_name, uuid
         ))
+    # import json
+    # print json.dumps(output, indent=2)
     return filter_json_output(output)
 
 

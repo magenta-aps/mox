@@ -8,7 +8,7 @@ from psycopg2.extensions import adapt as psyco_adapt, ISQLQuote
 from psycopg2.extensions import register_adapter as psyco_register_adapter
 from contentstore import content_store
 
-from settings import REAL_DB_STRUCTURE as db_struct
+from db_structure import REAL_DB_STRUCTURE as db_struct
 from custom_exceptions import BadRequestException
 
 _attribute_fields = {}
@@ -93,6 +93,7 @@ def get_document_part_relation_names():
     """Return the list of all recognized relations for DokumentDel"""
     return ["underredigeringaf"]
 
+
 # Helper classers for adapting special types
 Soegeord = namedtuple('KlasseSoegeordType', 'identifier description category')
 OffentlighedUndtaget = namedtuple(
@@ -101,6 +102,14 @@ OffentlighedUndtaget = namedtuple(
 JournalNotat = namedtuple('JournalNotatType', 'titel notat format')
 JournalDokument = namedtuple(
     'JournalPostDokumentAttrType', 'dokumenttitel offentlighedundtaget'
+)
+AktoerAttr = namedtuple(
+    'AktivitetAktoerAttr',
+    'accepteret obligatorisk repraesentation_uuid repraesentation_urn'
+)
+VaerdiRelationAttr = namedtuple(
+    'TilstandVaerdiRelationAttrType',
+    'forventet nominelvaerdi'
 )
 
 
@@ -308,21 +317,39 @@ class NamedTupleAdapter(object):
     def prepare(self, conn):
         self._conn = conn
 
-    def getquoted(self):
-        def prepare_and_adapt(x):
-            x = psyco_adapt(x)
-            if hasattr(x, 'prepare'):
-                x.prepare(self._conn)
-            return x
+    def prepare_and_adapt(self, x):
+        x = psyco_adapt(x)
+        if hasattr(x, 'prepare'):
+            x.prepare(self._conn)
+        return x
 
-        values = map(prepare_and_adapt, self._tuple_obj)
+    def getquoted(self):
+        values = map(self.prepare_and_adapt, self._tuple_obj)
         values = [v.getquoted() for v in values]
-        sql = 'ROW(' + ','.join(values) + ') :: ' + \
-              self._tuple_obj.__class__.__name__
+        sql = ('ROW(' + ','.join(values) + ') :: ' +
+               self._tuple_obj.__class__.__name__)
         return sql
 
     def __str__(self):
         return self.getquoted()
+
+
+class AktoerAttrAdapter(NamedTupleAdapter):
+
+    def getquoted(self):
+        values = map(self.prepare_and_adapt, self._tuple_obj)
+        values = [v.getquoted() for v in values]
+        qaa = AktoerAttr(*values)  # quoted_aktoer_attr
+        values = [
+            qaa.obligatorisk + '::AktivitetAktoerAttrObligatoriskKode',
+            qaa.accepteret + '::AktivitetAktoerAttrAccepteretKode',
+            qaa.repraesentation_uuid + '::uuid',
+            qaa.repraesentation_urn
+        ]
+
+        sql = ('ROW(' + ','.join(values) + ') :: ' +
+               self._tuple_obj.__class__.__name__)
+        return sql
 
 
 psyco_register_adapter(Virkning, NamedTupleAdapter)
@@ -330,6 +357,8 @@ psyco_register_adapter(Soegeord, NamedTupleAdapter)
 psyco_register_adapter(OffentlighedUndtaget, NamedTupleAdapter)
 psyco_register_adapter(JournalNotat, NamedTupleAdapter)
 psyco_register_adapter(JournalDokument, NamedTupleAdapter)
+psyco_register_adapter(VaerdiRelationAttr, NamedTupleAdapter)
+psyco_register_adapter(AktoerAttr, AktoerAttrAdapter)
 
 # Dokument variants
 psyco_register_adapter(DokumentVariantType, NamedTupleAdapter)
@@ -338,3 +367,6 @@ psyco_register_adapter(DokumentVariantEgenskaberType, NamedTupleAdapter)
 psyco_register_adapter(DokumentDelType, NamedTupleAdapter)
 psyco_register_adapter(DokumentDelEgenskaberType, NamedTupleAdapter)
 psyco_register_adapter(DokumentDelRelationType, NamedTupleAdapter)
+
+if __name__ == '__main__':
+    print '\n'.join(sorted(db_struct))

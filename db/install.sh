@@ -13,17 +13,19 @@ echo "Installing database dependencies"
     sudo apt-get -y install --no-install-recommends  $(cat "$DIR/SYSTEM_DEPENDENCIES")
 ) >> "$LOGFILE" 2>&1
 
-# Install pg_amqp - Postgres AMQP extension
-# We depend on a specific fork, which supports setting of
-# message headers
-# https://github.com/duncanburke/pg_amqp.git
-echo "Installing PostreSQL AMQP extension"
+echo "Installing PostgreSQL extensions"
 (
     echo
     date
     echo
     set -x
 
+    sudo pgxn install pgtap
+
+    # Install pg_amqp - Postgres AMQP extension
+    # We depend on a specific fork, which supports setting of
+    # message headers
+    # https://github.com/duncanburke/pg_amqp.git
     for PG_CONFIG in /usr/lib/postgresql/*/bin/pg_config
     do
         rm -rf /tmp/pg_amqp
@@ -46,9 +48,6 @@ else
         echo
         set -x
 
-        # Install pgtap - unit test framework
-        sudo pgxn install pgtap
-
         echo "Updating authentication config"
         # Set authentication method to 'md5' (= password, not peer)
         sudo sed -i -r 's/local\s+all\s+all\s+peer/local   all             all                                     trust/g' /etc/postgresql/*/main/pg_hba.conf
@@ -58,6 +57,5 @@ else
         sudo service postgresql restart
 
 	    $DIR/initdb.sh >> "$LOGFILE"
-        sudo apt-get -y install --no-install-recommends  $(cat "$DIR/SYSTEM_DEPENDENCIES")
     ) >> "$LOGFILE" 2>&1
 fi

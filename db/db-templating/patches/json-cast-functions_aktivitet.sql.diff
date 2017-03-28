@@ -1,0 +1,29 @@
+*** ./generated-files/json-cast-functions_aktivitet.sql	2016-10-22 13:41:14.000000000 +0200
+--- ./patches/json-cast-functions_aktivitet.org.sql	2016-10-22 13:26:10.000000000 +0200
+***************
+*** 73,84 ****
+      ('{' || string_agg(   to_json(f.relType::text) || ':' || array_to_json(f.rel_json_arr,false) ,',') || '}')::json rel_json
+      FROM
+      (
+        SELECT
+        e.relType,
+!       array_agg( _json_object_delete_keys(row_to_json(ROW(e.relType,e.virkning,e.uuid,e.urn,e.objektType)::AktivitetRelationType),ARRAY['reltype']::text[])) rel_json_arr
+!       from unnest($1.relationer) e(relType,virkning,uuid,urn,objektType) 
+        group by e.relType
+        order by e.relType asc
+      ) as f
+    )
+    SELECT 
+--- 73,84 ----
+      ('{' || string_agg(   to_json(f.relType::text) || ':' || array_to_json(f.rel_json_arr,false) ,',') || '}')::json rel_json
+      FROM
+      (
+        SELECT
+        e.relType,
+!       array_agg( _json_object_delete_keys(row_to_json(ROW(e.relType,e.virkning,e.uuid,e.urn,e.objektType,e.indeks,e.aktoerAttr)::AktivitetRelationType),ARRAY['reltype']::text[])) rel_json_arr
+!       from unnest($1.relationer) e(relType,virkning,uuid,urn,objektType,indeks,aktoerAttr) 
+        group by e.relType
+        order by e.relType asc
+      ) as f
+    )
+    SELECT 

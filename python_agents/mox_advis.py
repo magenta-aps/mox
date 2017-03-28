@@ -1,6 +1,4 @@
-#!/usr/bin/env /home/mox/mox/python_agents/python-env/bin/python
-import zlib
-import base64
+#!/usr/bin/env python
 import smtplib
 import logging
 
@@ -9,31 +7,13 @@ import requests
 
 from email.mime.text import MIMEText
 from settings import MOX_ADVIS_QUEUE, OIOREST_SERVER, FROM_EMAIL
-from settings import ADVIS_SUBJECT_PREFIX, SAML_IDP_CERTIFICATE
+from settings import ADVIS_SUBJECT_PREFIX
 from settings import MOX_ADVIS_LOG_FILE
 
 from oio_rest.settings import SAML_MOX_ENTITY_ID, SAML_IDP_ENTITY_ID
 from oio_rest.auth.saml2 import Saml2_Assertion
 
-from mox_agent import MOXAgent
-
-
-def unpack_saml_token(token):
-    """Retrieve the SAML XML from a gzipped auth header."""
-    data = token.split(' ')[1]
-    data = base64.b64decode(data)
-
-    token = zlib.decompress(data, 15+16)
-
-    return token
-
-
-def get_idp_cert():
-    try:
-        with open(SAML_IDP_CERTIFICATE) as file:
-            return file.read()
-    except Exception:
-        raise
+from mox_agent import MOXAgent, unpack_saml_token, get_idp_cert
 
 
 def get_destination_emails(uuids, headers):
@@ -109,11 +89,6 @@ class MOXAdvis(MOXAgent):
         if not saml_token:
             logging.error("ERROR: No authentication present!")
             return
-        uuids = properties.headers.get('query', None)
-        if isinstance(uuids, basestring):
-            uuids = [uuids]
-        subject = properties.headers.get('subject', '')
-        from_address = FROM_EMAIL
         # Validate SAML token
         assertion = Saml2_Assertion(saml_token, SAML_MOX_ENTITY_ID,
                                     SAML_IDP_ENTITY_ID, get_idp_cert())
@@ -126,6 +101,13 @@ class MOXAdvis(MOXAgent):
             return
 
         attributes = assertion.get_attributes()
+
+        # Get recipients, subject, default from address
+        uuids = properties.headers.get('query', None)
+        if isinstance(uuids, basestring):
+            uuids = [uuids]
+        subject = properties.headers.get('subject', '')
+        from_address = FROM_EMAIL
         # Get From: email from SAML assertion.
         # TODO: It should be possible to override this in configuration.
         from_email = attributes.get(

@@ -1,0 +1,134 @@
+*** ./generated-files/as_create_or_import_tilstand.sql	2016-11-13 14:29:33.000000000 +0100
+--- ./patches/as_create_or_import_tilstand.org.sql	2016-11-13 14:26:06.000000000 +0100
+***************
+*** 23,32 ****
+--- 23,38 ----
+    tilstand_tils_status_obj tilstandStatusTilsType;
+    tilstand_tils_publiceret_obj tilstandPubliceretTilsType;
+    
+    tilstand_relationer TilstandRelationType;
+    auth_filtered_uuids uuid[];
++   tilstand_relation_kode tilstandRelationKode;
++   tilstand_uuid_underscores text;
++   tilstand_rel_seq_name text;
++   tilstand_rel_type_cardinality_unlimited tilstandRelationKode[]:=ARRAY['tilstandsvaerdi'::TilstandRelationKode,'begrundelse'::TilstandRelationKode,'tilstandskvalitet'::TilstandRelationKode,'tilstandsvurdering'::TilstandRelationKode,'tilstandsaktoer'::TilstandRelationKode,'tilstandsudstyr'::TilstandRelationKode,'samtykke'::TilstandRelationKode,'tilstandsdokument'::TilstandRelationKode]::TilstandRelationKode[];
++   tilstand_rel_type_cardinality_unlimited_present_in_argument tilstandRelationKode[];
++ 
+  BEGIN
+  
+  IF tilstand_uuid IS NULL THEN
+      LOOP
+      tilstand_uuid:=uuid_generate_v4();
+***************
+*** 160,188 ****
+  END IF;
+  
+  /*********************************/
+  --Insert relations
+  
+      INSERT INTO tilstand_relation (
+        tilstand_registrering_id,
+        virkning,
+        rel_maal_uuid,
+        rel_maal_urn,
+        rel_type,
+!       objekt_type
+      )
+      SELECT
+        tilstand_registrering_id,
+        a.virkning,
+        a.uuid,
+        a.urn,
+        a.relType,
+!       a.objektType
+      FROM unnest(tilstand_registrering.relationer) a
+!   ;
+  
+  
+  /*** Verify that the object meets the stipulated access allowed criteria  ***/
+  /*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
+  auth_filtered_uuids:=_as_filter_unauth_tilstand(array[tilstand_uuid]::uuid[],auth_criteria_arr); 
+  IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[tilstand_uuid]) THEN
+    RAISE EXCEPTION 'Unable to create/import tilstand with uuid [%]. Object does not met stipulated criteria:%',tilstand_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
+--- 166,246 ----
+  END IF;
+  
+  /*********************************/
+  --Insert relations
+  
++ IF coalesce(array_length(tilstand_registrering.relationer,1),0)>0 THEN
++ 
++ --Create temporary sequences
++ tilstand_uuid_underscores:=replace(tilstand_uuid::text, '-', '_');
++ 
++ 
++ SELECT array_agg( DISTINCT a.RelType) into tilstand_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(tilstand_registrering.relationer) a WHERE a.RelType = any (tilstand_rel_type_cardinality_unlimited) ;
++ IF coalesce(array_length(tilstand_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
++ FOREACH tilstand_relation_kode IN ARRAY (tilstand_rel_type_cardinality_unlimited_present_in_argument)
++   LOOP
++   tilstand_rel_seq_name := 'tilstand_' || tilstand_relation_kode::text || tilstand_uuid_underscores;
++ 
++   EXECUTE 'CREATE TEMPORARY SEQUENCE ' || tilstand_rel_seq_name || '
++   INCREMENT 1
++   MINVALUE 1
++   MAXVALUE 9223372036854775807
++   START 1
++   CACHE 1;';
++ 
++ END LOOP;
++ END IF;
++ 
+      INSERT INTO tilstand_relation (
+        tilstand_registrering_id,
+        virkning,
+        rel_maal_uuid,
+        rel_maal_urn,
+        rel_type,
+!       objekt_type,
+!       rel_index,
+!       tilstand_vaerdi_attr
+      )
+      SELECT
+        tilstand_registrering_id,
+        a.virkning,
+        a.uuid,
+        a.urn,
+        a.relType,
+!       a.objektType,
+!         CASE WHEN a.relType = any (tilstand_rel_type_cardinality_unlimited) THEN --rel_index
+!         nextval('tilstand_' || a.relType::text || tilstand_uuid_underscores)
+!         ELSE 
+!         NULL
+!         END,
+!      CASE
+!         WHEN a.relType='tilstandsvaerdi' AND
+!           ( NOT (a.tilstandsVaerdiAttr IS NULL))
+!           AND 
+!           (
+!             (a.tilstandsVaerdiAttr).forventet IS NOT NULL
+!             OR
+!             (a.tilstandsVaerdiAttr).nominelVaerdi IS NOT NULL
+!           ) THEN a.tilstandsVaerdiAttr
+!         ELSE
+!         NULL
+!       END
+      FROM unnest(tilstand_registrering.relationer) a
+!     ;
+  
+  
++ --Drop temporary sequences
++ IF coalesce(array_length(tilstand_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
++ FOREACH tilstand_relation_kode IN ARRAY (tilstand_rel_type_cardinality_unlimited_present_in_argument)
++   LOOP
++   tilstand_rel_seq_name := 'tilstand_' || tilstand_relation_kode::text || tilstand_uuid_underscores;
++   EXECUTE 'DROP  SEQUENCE ' || tilstand_rel_seq_name || ';';
++ END LOOP;
++ END IF;
++ 
++ END IF;
++ 
+  /*** Verify that the object meets the stipulated access allowed criteria  ***/
+  /*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
+  auth_filtered_uuids:=_as_filter_unauth_tilstand(array[tilstand_uuid]::uuid[],auth_criteria_arr); 
+  IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[tilstand_uuid]) THEN
+    RAISE EXCEPTION 'Unable to create/import tilstand with uuid [%]. Object does not met stipulated criteria:%',tilstand_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
