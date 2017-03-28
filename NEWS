@@ -1,3 +1,7 @@
+* Version 0.3.0.1, 28 March 2017
+
+This quick hotfix addresses a missing variables that broke installation.
+
 * Version 0.3.0, 28 March 2017
 
 This is a major release, adding four new services:

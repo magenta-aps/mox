@@ -2,6 +2,7 @@
 set -b
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+MOXDIR=$(cd $DIR/..; pwd)
 PYTHON="$MOXDIR/python-env/bin/python"
 
 cd $DIR
