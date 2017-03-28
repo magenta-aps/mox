@@ -1,12 +1,26 @@
-* Version 0.2.NEXT, XX March 2017
+* Version 0.3.0, 28 March 2017
 
-This is a bugfix release, containing:
+This is a major release, adding four new services:
+
+* Tilstand
+* Indsats
+* Activity
+* Log
+
+As a result of these changes, you'll need to add the configuration for
+the new Log service to 'settings.py'. Please note that the installer
+does not add these new services to the database automatically.
+
+In addition, it fixes the following bugs:
 
 * Use DMY date order in this file.
 * Fix running interface_tests on Darwin, i.e. macOS.
 * Fix searching for document attributes and relations.
 * Update the README, and factor out API documentation to a separate
   file.
+* Reduce size of settings.py by moving the database structure
+  definition to a separate Python module
+* Install mox_advis by default
 
 
 * Version 0.2.17, 8 February 2017

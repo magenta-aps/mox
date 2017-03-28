@@ -88,6 +88,7 @@ echo "$DIR/agentbase/python/mox" > "$DIR/agentbase/python/mox/mox.pth"
 # Compile agents
 echo "Installing Agents"
 $DIR/agents/install.sh "$DOMAIN"
+$DIR/python_agents/install.py
 
 echo
 echo "Install succeeded!!!"

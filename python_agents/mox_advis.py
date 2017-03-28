@@ -1,4 +1,4 @@
-#!%PYTHON%
+#!/usr/bin/env python
 import smtplib
 import logging
 

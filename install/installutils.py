@@ -239,12 +239,14 @@ class VirtualEnv(object):
 
                 virtualenv.create_environment(self.environment_dir)
 
-    def run(self, *args):
+    @property
+    def executable(self):
         # based on virtualenv.py
-        pycmd = os.path.join(self.environment_dir, 'bin',
-                             os.path.basename(sys.executable))
+        return os.path.join(self.environment_dir, 'bin',
+                            os.path.basename(sys.executable))
 
-        run(pycmd, *args)
+    def run(self, *args):
+        run(self.executable, *args)
 
     def call(self, func, *args, **kwargs):
         '''Call the given function within this environment
@@ -481,6 +483,7 @@ class Service(object):
                              'install/templates/upstart-agent.conf.in')
 
             expand_template(template, upstart_config,
+                            PYTHON=self.executable,
                             NAME=self.name, SCRIPT=self.script,
                             USER=self.user, GROUP=self.group)
 
