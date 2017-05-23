@@ -14,7 +14,7 @@ def log_service_call(service_name, class_name, time,
                      object_uuid):
     """Log a call to a LoRa service."""
 
-    if service_name in LOG_IGNORED_SERVICES:
+    if service_name in LOG_IGNORED_SERVICES or not LOG_AMQP_SERVER:
         "Don't log the log service."
         return
 
@@ -86,7 +86,10 @@ def log_service_call(service_name, class_name, time,
 
     message = json.dumps(logevent_dict)
     # print "Log exchange", LOG_EXCHANGE
-    print "Log message", message
+    with open('/var/log/mox/audit.log', 'at') as fp:
+        json.dump(logevent_dict, fp, indent=2)
+        fp.write('\n')
+        fp.flush()
 
     channel.basic_publish(
         exchange=MOX_LOG_EXCHANGE,
