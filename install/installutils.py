@@ -483,7 +483,7 @@ class Service(object):
                              'install/templates/upstart-agent.conf.in')
 
             expand_template(template, upstart_config,
-                            PYTHON=self.executable,
+                            PYTHON=VirtualEnv().executable,
                             NAME=self.name, SCRIPT=self.script,
                             USER=self.user, GROUP=self.group)
 
