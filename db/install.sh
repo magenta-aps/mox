@@ -54,6 +54,8 @@ else
         sudo sed -i -r 's/host\s+all\s+all\s+127.0.0.1\/32\s+md5/#host    all             all             127.0.0.1\/32            md5/g' /etc/postgresql/*/main/pg_hba.conf
         sudo sed -i -r 's/host\s+all\s+all\s+::1\/128\s+md5/#host    all             all             ::1\/128                 md5/g' /etc/postgresql/*/main/pg_hba.conf
 
+        sudo sed -i -r "s/^#?(shared_preload_libraries *= *)''/\1'pg_amqp.so'/" /etc/postgresql/*/main/postgresql.conf
+
         sudo service postgresql restart
 
 	    $DIR/initdb.sh >> "$LOGFILE"
