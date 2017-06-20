@@ -3,7 +3,14 @@
 import argparse
 import os
 import sys
-from installutils import VirtualEnv, WSGI, Folder, sudo, install_dependencies
+from installutils import (
+    VirtualEnv,
+    WSGI,
+    Folder,
+    LogFile,
+    sudo,
+    install_dependencies,
+)
 
 DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
 STORAGEDIR = '/var/mox'
@@ -38,6 +45,8 @@ print "Creating MOX content storage directory %s" % STORAGEDIR
 storage = Folder(STORAGEDIR)
 storage.mkdir()
 storage.chown('www-data')
+
+LogFile('/var/log/mox/audit.log', 'www-data').create()
 
 # ------------------------------------------------------------------------------
 
