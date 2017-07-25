@@ -2,7 +2,7 @@ import uuid
 from werkzeug.datastructures import MultiDict
 
 from ..db_helpers import get_attribute_names, get_attribute_fields
-from ..db_helpers import get_state_names, get_relation_names, get_state_field
+from ..db_helpers import get_state_names, get_relation_names
 from ..db_helpers import get_document_part_relation_names
 from ..db_helpers import DokumentVariantEgenskaberType
 from ..db_helpers import DokumentDelEgenskaberType
@@ -124,14 +124,11 @@ def build_registration(class_name, list_args):
 
         state = registration.setdefault('states', {})
         for state_name in get_state_names(class_name):
-            state_field_name = get_state_field(class_name,
-                                               state_name)
-
             state_periods = state.setdefault(state_name, [])
-            if f == state_field_name:
+            if f == state_name:
                 for state_value in list_args[f]:
                     state_periods.append({
-                        state_field_name: state_value,
+                        state_name: state_value,
                         'virkning': None
                     })
 
