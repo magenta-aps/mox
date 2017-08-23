@@ -1,3 +1,7 @@
+* Version 0.3.1, 23 August 2017
+
+This is a minor update that fixes searching by validity.
+
 * Version 0.3.0.1, 28 March 2017
 
 This quick hotfix addresses a missing variables that broke installation.
