@@ -15,7 +15,6 @@ Welcome to the LoRa MOX documentation!
    LoRa_HOWTO.rst
    praesentation.rst
    log_haendelse.rst
-   user_admin_HOWTO.rst
 
 
 Indices and tables
