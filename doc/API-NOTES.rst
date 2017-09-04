@@ -1,5 +1,9 @@
+==================
 OIO REST API Notes
 ==================
+
+Introduction
+============
 
 .. contents:: `Table of contents`
    :depth: 5

@@ -1,5 +1,9 @@
+===============================================
 MOX Messaging Service and Actual State Database
 ===============================================
+
+Introduction
+============
 
 .. contents::
    :depth: 5
