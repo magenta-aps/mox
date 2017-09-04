@@ -11,8 +11,9 @@ Welcome to the LoRa MOX documentation!
    :caption: Contents:
 
    readme.rst
-   API-NOTES.rst
+   REST_API_getting-started.rst
    LoRa_HOWTO.rst
+   API-NOTES.rst
    praesentation.rst
    log_haendelse.rst
 
