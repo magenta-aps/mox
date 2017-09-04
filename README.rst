@@ -34,18 +34,21 @@ hierarchies by default:
 On this documentation
 ---------------------
 
-This README file is a reStructuredText document, and an HTML version can
+This README file is part of our documentation, and an HTML version can
 be obtained by the following command in a command prompt::
 
-    $ rst2html README.rst README.html
+    $ make -C doc
 
-Note that this requires Python Docutils to be installed — on Ubuntu or
+Note that this requires Sphinx to be installed — on Ubuntu or
 Debian, this can be done with the following command::
 
-    $ sudo apt-get install python-docutils
+    $ sudo apt install python-sphinx
 
-If you're reading this on GitHub, you're probably seeing the HTML
-rendering.
+If you're reading this on GitHub or ReadTheDocs, you're probably
+seeing the HTML rendering. The official location for this
+documentation is:
+
+* http://mox.readthedocs.io/
 
 Please note that as a convention, all shell commands have been
 prefixed with a dollar-sign, or ``$``, representing a prompt. You
