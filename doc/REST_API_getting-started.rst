@@ -58,7 +58,8 @@ and SSH back in::
 
 Installing and configuring LoRa
 -------------------------------
-Following the instructions on the LoRa GitHub site we can install LoRa
+Following the instructions on the
+`LoRa GitHub site <https://github.com/magenta-aps/mox>`_ we can install LoRa
 (use the development branch) in our Linux container in the following way::
 
   $ sudo apt install git
@@ -150,8 +151,10 @@ which should give a JSON response like::
 Getting to know LoRas REST API
 ------------------------------
 The following small exercises can be used as an inspiration to getting to know
-LoRas REST API. Read the HOWTO from the LoRa GitHub page before moving on.
-Also, have a look at the LoRa documentation found in Magenta’s Alfresco system.
+LoRas REST API. Read the
+`HOWTO <https://github.com/magenta-aps/mox/blob/master/doc/LoRa_HOWTO.rst>`_
+from the LoRa GitHub page before moving on. Also, have a look at the LoRa
+documentation found in Magenta’s Alfresco system.
 
 1. Create an organisation called e.g. “Magenta” valid from 2017-01-01
    (included) to 2019-12-31 (excluded).
