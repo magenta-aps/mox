@@ -56,6 +56,7 @@ MOX_LOG_EXCHANGE = 'mox.log'
 MOX_LOG_QUEUE = 'mox.log_queue'
 LOG_IGNORED_SERVICES = ['Log', ]
 
+import os
 MOX_BASE_DIR = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..', '..')
 )
