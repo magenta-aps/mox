@@ -62,6 +62,41 @@ the system as such, but you do have to know your way in a Bash prompt — you
 should be able to change the Apache configuration and e.g. disable or change
 the SSL certificate on your own.
 
+System requirements
+===================
+
+LoRA currently supports Ubuntu 14.04 and 16.04. We recommend running
+it on a VM with the following allocation:
+
+.. list-table::
+   :header-rows: 1
+   :stub-columns: 1
+
+   * -
+     - CPU
+     - Memory
+     - Storage
+     - Disk type
+   * - Minimal
+     - 1 core
+     - 2 GB
+     - 15 GB
+     - any *(SSD or HD)*
+   * - Test & development
+     - 2 cores
+     - 4 GB
+     - 30 GB
+     - SSD *(recommended)*
+   * - Production
+     - 4 cores
+     - 8 GB
+     - 60 GB
+     - SSD
+
+You should initially provision all the storage space you expect to use,
+as adjusting it is somewhat cumbersome. By comparison, increasing or
+decreasing CPU and memory is trivial.
+
 Getting started
 ===============
 
