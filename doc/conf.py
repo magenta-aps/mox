@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# MOX Actual State database documentation build configuration file, created by
+# LoRa MOX documentation build configuration file, created by
 # sphinx-quickstart on Mon Sep  4 10:02:41 2017.
 #
 # This file is execfile()d with the current directory set to its
@@ -145,7 +145,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'MOX.tex', 'MOX Documentation',
+    (master_doc, 'loramox.tex', 'LoRa MOX Documentation',
      'Magenta ApS', 'manual'),
 ]
 
@@ -155,7 +155,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'moxdatabase', 'MOX Documentation',
+    (master_doc, 'loramox', 'LoRa MOX Documentation',
      [author], 1)
 ]
 
@@ -166,8 +166,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'MOXDatabase', 'MOX Documentation',
-     author, 'MOXDatabase', 'One line description of project.',
+    (master_doc, 'LoRaMOX', 'LoRa MOX Documentation',
+     author, 'LoRaMOX', 'One line description of project.',
      'Miscellaneous'),
 ]
 
