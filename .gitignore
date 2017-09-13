@@ -17,6 +17,7 @@ oio_rest/dist
 *.iml
 **/target/
 */out/
+doc/_build
 agents/MoxRestFrontend/moxrestfrontend.properties
 agents/MoxTabel/moxtabel.properties
 servlets/MoxDocumentUpload/web/WEB-INF/web.xml

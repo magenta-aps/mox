@@ -1,5 +1,9 @@
+===============================================
 MOX Messaging Service and Actual State Database
 ===============================================
+
+Introduction
+============
 
 .. contents::
    :depth: 5
@@ -30,18 +34,21 @@ hierarchies by default:
 On this documentation
 ---------------------
 
-This README file is a reStructuredText document, and an HTML version can
+This README file is part of our documentation, and an HTML version can
 be obtained by the following command in a command prompt::
 
-    $ rst2html README.rst README.html
+    $ make -C doc
 
-Note that this requires Python Docutils to be installed — on Ubuntu or
+Note that this requires Sphinx to be installed — on Ubuntu or
 Debian, this can be done with the following command::
 
-    $ sudo apt-get install python-docutils
+    $ sudo apt install python-sphinx
 
-If you're reading this on GitHub, you're probably seeing the HTML
-rendering.
+If you're reading this on GitHub or ReadTheDocs, you're probably
+seeing the HTML rendering. The official location for this
+documentation is:
+
+* http://mox.readthedocs.io/
 
 Please note that as a convention, all shell commands have been
 prefixed with a dollar-sign, or ``$``, representing a prompt. You
@@ -54,6 +61,41 @@ This is a technical guide. You are not expected to have a profound knowledge of
 the system as such, but you do have to know your way in a Bash prompt — you 
 should be able to change the Apache configuration and e.g. disable or change
 the SSL certificate on your own.
+
+System requirements
+===================
+
+LoRA currently supports Ubuntu 14.04 and 16.04. We recommend running
+it on a VM with the following allocation:
+
+.. list-table::
+   :header-rows: 1
+   :stub-columns: 1
+
+   * -
+     - CPU
+     - Memory
+     - Storage
+     - Disk type
+   * - Minimal
+     - 1 core
+     - 2 GB
+     - 15 GB
+     - any *(SSD or HD)*
+   * - Test & development
+     - 2 cores
+     - 4 GB
+     - 30 GB
+     - SSD *(recommended)*
+   * - Production
+     - 4 cores
+     - 8 GB
+     - 60 GB
+     - SSD
+
+You should initially provision all the storage space you expect to use,
+as adjusting it is somewhat cumbersome. By comparison, increasing or
+decreasing CPU and memory is trivial.
 
 Getting started
 ===============

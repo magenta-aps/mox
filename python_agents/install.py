@@ -3,9 +3,7 @@
 import argparse
 import os
 import sys
-from installutils import Service, LogFile, VirtualEnv, expand_template, run
-
-DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
+from installutils import DIR, Service, LogFile, VirtualEnv, expand_template, run
 
 parser = argparse.ArgumentParser(description='Install Python agents')
 args = parser.parse_args()
