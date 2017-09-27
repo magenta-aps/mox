@@ -20,6 +20,9 @@ setup(
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
     include_package_data=True,
     zip_safe=False,
+    setup_requires=[
+        'pytest-runner'
+    ],
     install_requires=[
         # -*- Extra requirements: -*-
         'requests==2.12.4',
@@ -44,5 +47,12 @@ setup(
         'console_scripts': [
             'oio_api = oio_rest.app:main',
         ],
-    }
+    },
+    tests_require=[
+        'pytest',
+        'pytest-cov',
+        'mock',
+        'coverage',
+        'freezegun'
+    ]
 )
