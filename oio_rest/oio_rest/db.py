@@ -39,6 +39,7 @@ jinja_env = Environment(loader=FileSystemLoader(
 
 def adapt(value):
     adapter = psyco_adapt(value)
+    adapt_connection = get_adapt_connection()
     if hasattr(adapter, 'prepare'):
         adapter.prepare(adapt_connection)
     return unicode(adapter.getquoted(), adapt_connection.encoding)
@@ -62,7 +63,14 @@ def get_connection():
     return connection
 
 
-adapt_connection = get_connection()
+_adapt_connection = None
+
+
+def get_adapt_connection():
+    global _adapt_connection
+    if _adapt_connection is None:
+        _adapt_connection = get_connection()
+    return _adapt_connection
 
 
 def convert_attr_value(attribute_name, attribute_field_name,
