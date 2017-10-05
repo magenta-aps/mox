@@ -305,13 +305,13 @@ class TestDB(TestCase):
         mock_conv_rel.return_value = "value"
 
         relations = {
-            'attribute1': [
+            'relation1': [
                 {
                     'field1': 'value1',
                     'field2': 'value2'
                 }
             ],
-            'attribute2': [
+            'relation2': [
                 {
                     'field3': 'value3',
                     'field4': 'value4'
@@ -338,13 +338,13 @@ class TestDB(TestCase):
         # Arrange
 
         relations = {
-            'attribute1': [
+            'relation1': [
                 {
                     'field1': 'value1',
                     'field2': 'value2'
                 }
             ],
-            'attribute2': [
+            'relation2': [
                 {
                     'field3': 'value3',
                     'field4': 'value4'
@@ -353,13 +353,13 @@ class TestDB(TestCase):
         }
 
         expected_result = {
-            'attribute1': [
+            'relation1': [
                 {
                     'field1': 'value1',
                     'field2': 'value2'
                 }
             ],
-            'attribute2': [
+            'relation2': [
                 {
                     'field3': 'value3',
                     'field4': 'value4'
@@ -376,7 +376,7 @@ class TestDB(TestCase):
     def test_convert_relations_raises_on_malformed_relation(self):
         # Arrange
         relations = {
-            'attribute': [
+            'relation': [
                 "This is not a dict"
             ]
         }

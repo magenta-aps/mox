@@ -254,8 +254,6 @@ class TestBuildRegistration(unittest.TestCase):
 
     @patch('oio_rest.utils.build_registration.get_relation_names',
            new=MagicMock())
-    @patch('oio_rest.utils.build_registration.get_state_field',
-           new=MagicMock())
     @patch('oio_rest.utils.build_registration.get_state_names',
            new=MagicMock())
     @patch('oio_rest.utils.build_registration.get_attribute_fields')
@@ -294,31 +292,33 @@ class TestBuildRegistration(unittest.TestCase):
 
     @patch('oio_rest.utils.build_registration.get_relation_names',
            new=MagicMock())
-    @patch('oio_rest.utils.build_registration.get_state_field')
     @patch('oio_rest.utils.build_registration.get_state_names')
     @patch('oio_rest.utils.build_registration.get_attribute_fields',
            new=MagicMock())
     @patch('oio_rest.utils.build_registration.get_attribute_names',
            new=MagicMock())
     def test_build_registration_states(self,
-                                       mock_get_state_names,
-                                       mock_get_state_field):
+                                       mock_get_state_names):
         # type: (MagicMock, MagicMock) -> None
         # Arrange
         mock_get_state_names.return_value = ['statename']
-        mock_get_state_field.return_value = 'arg2'
 
         classname = 'class'
         list_args = {
-            'arg1': ['val1'],
-            'arg2': ['val2'],
+            'statename': ['val1', 'val2'],
+            'whatever': ['whatever'],
         }
+
         expected_result = {
             'states': {
                 'statename': [
                     {
                         'virkning': None,
-                        'arg2': 'val2'
+                        'statename': 'val1'
+                    },
+                    {
+                        'virkning': None,
+                        'statename': 'val2'
                     }
                 ]
             },
@@ -333,8 +333,6 @@ class TestBuildRegistration(unittest.TestCase):
         self.assertEqual(expected_result, actual_result)
 
     @patch('oio_rest.utils.build_registration.get_relation_names')
-    @patch('oio_rest.utils.build_registration.get_state_field',
-           new=MagicMock())
     @patch('oio_rest.utils.build_registration.get_state_names',
            new=MagicMock())
     @patch('oio_rest.utils.build_registration.get_attribute_fields',

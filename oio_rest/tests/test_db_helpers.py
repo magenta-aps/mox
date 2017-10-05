@@ -281,15 +281,6 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    def test_get_state_field(self):
-        # Arrange
-        expected_result = 'teststatestatus'
-
-        # Act
-        actual_result = db_helpers.get_state_field('testclass', 'teststate')
-
-        # Assert
-        self.assertEqual(expected_result, actual_result)
 
     def test_get_relation_names(self):
         # Arrange
