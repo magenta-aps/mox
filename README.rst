@@ -107,8 +107,6 @@ To install the OIO REST API, run ``install.sh``::
   $ cd mox
   $ ./install.sh
 
-Run ``install.sh -h`` for a list of options.
-
 **NOTE:** PostgreSQL 9.3 or later is required. If PostgreSQL is not installed
 on your system already, it will be during installation.
 
