@@ -467,9 +467,16 @@ This should give you a lot of output like this::
 from the expected". This is due to a bug in the tests, i.e. you should not
 worry about this — if you see output as described above, the system is working.
 
-For more advanced test or production setup, please study the rest of this 
-README and follow your organization's best practices.
+Additionally, OIO Rest has its own unit test suite::
 
+    $ cd oio_rest
+    $ python setup.py test
+
+This will automatically run the associated unit tests and measure test
+coverage.
+
+For more advanced test or production setup, please study the rest of this
+README and follow your organization's best practices.
 
 Licensing
 =========
