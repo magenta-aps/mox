@@ -11,8 +11,11 @@ RETURNS SETOF TEXT LANGUAGE plpgsql AS
 $$
 DECLARE 
 	new_uuid1 uuid;
+	new_uuid2 uuid;
 	registrering sagRegistreringType;
+	registrering2 sagRegistreringType;
 	actual_registrering RegistreringBase;
+	actual_registrering2 RegistreringBase;
 	virkEgenskaber Virkning;
 	virkPrimaerklasse Virkning;
 	virkSekundaerpart1 Virkning;
@@ -68,7 +71,10 @@ DECLARE
 	uuid_to_import uuid :='a1819cce-043b-447f-ba5e-92e6a75df918'::uuid;
 	uuid_returned_from_import uuid;
 	read_Sag1 SagType;
+	read_Sag2 SagType;
 	expected_sag1 SagType;
+	expected_sag2 SagType;
+
 BEGIN
 
 
@@ -390,7 +396,7 @@ ARRAY[sagRelPrimaerklasse,sagRelSekundaerpart1,sagRelSekundaerpart2,sagRelAndres
 
 new_uuid1 := as_create_or_import_sag(registrering);
 
-RETURN NEXT ok(true,'No errors running as_create_or_import_sag');
+RETURN NEXT ok(true,'No errors running as_create_or_import_sag #1');
 
 
 read_Sag1 := as_read_sag(new_uuid1,
@@ -562,7 +568,73 @@ RETURN NEXT IS(
 
 
 
+/***************************************************************/
+--Test to trigger bug #17060 (No relations with unlimited cardinality given)
 
+
+
+registrering2 := ROW (
+
+	ROW (
+	NULL,
+	'Opstaaet'::Livscykluskode,
+	uuidRegistrering,
+	'Test Note 10') :: RegistreringBase
+	,
+ARRAY[sagFremdrift]::sagFremdriftTilsType[],
+ARRAY[sagEgenskab]::sagEgenskaberAttrType[],
+ARRAY[sagRelPrimaerklasse]
+) :: sagRegistreringType
+;
+
+
+new_uuid2 := as_create_or_import_sag(registrering2);
+
+RETURN NEXT ok(true,'No errors running as_create_or_import_sag #2');
+
+
+read_Sag2 := as_read_sag(new_uuid2,
+	null, --registrering_tstzrange
+	null --virkning_tstzrange
+	);
+--raise notice 'read_Sag1:%',to_json(read_Sag1);
+
+expected_sag2:=ROW(
+		new_uuid2,
+		ARRAY[
+			ROW(
+			(read_Sag2.registrering[1]).registrering
+			,ARRAY[sagFremdrift]::sagFremdriftTilsType[]
+			,ARRAY[sagEgenskab]::sagEgenskaberAttrType[]
+			,ARRAY[
+			
+				ROW (
+						'ansvarlig'::sagRelationKode
+						,virkPrimaerklasse
+						,uuidPrimaerklasse
+						,null
+						,'Klasse'
+						,null  --NOTICE: Is nulled by import
+						,null --relTypeSpec
+						,ROW(null,null,null)::JournalNotatType --journalNotat
+						,ROW(null, ROW(null,null)::OffentlighedundtagetType) ::JournalPostDokumentAttrType  --journalDokumentAttr
+					) :: sagRelationType
+					
+				]::SagRelationType[]
+			)::SagRegistreringType
+			]::SagRegistreringType[]
+		)::SagType
+;
+
+--raise notice 'expected_sag1:%',to_json(expected_sag1);
+
+
+
+RETURN NEXT IS(
+	read_Sag2,
+	expected_sag2
+	,'test create sag #2 (test fix for bug# 17060)'
+);
 
 
 
