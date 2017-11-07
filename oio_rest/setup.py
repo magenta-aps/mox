@@ -1,5 +1,16 @@
 # encoding: utf-8
-from setuptools import setup, find_packages
+import os.path
+import subprocess
+
+from setuptools import find_packages, setup
+from setuptools.command.test import test
+
+
+class test_link_settings(test):
+    settings_file = 'oio_rest/settings.py'
+    if not os.path.exists(settings_file):
+        subprocess.call(['ln', 'oio_rest/settings.py.base', settings_file])
+
 
 version = '0.0.1'
 authors = 'C. Agger, Jørgen Ulrik B. Krag, Thomas Kristensen, Seth Yastrov'
@@ -54,5 +65,8 @@ setup(
         'mock',
         'coverage',
         'freezegun'
-    ]
+    ],
+    cmdclass={
+        'test': test_link_settings
+    }
 )
