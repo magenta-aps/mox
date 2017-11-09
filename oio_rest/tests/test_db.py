@@ -5,8 +5,8 @@ from unittest import TestCase
 from mock import MagicMock, patch, call, mock
 
 import oio_rest.db as db
-from oio_rest.custom_exceptions import NotFoundException, BadRequestException, \
-    DBException
+from oio_rest.custom_exceptions import (NotFoundException, BadRequestException,
+                                        DBException)
 
 
 class TestDB(TestCase):
@@ -475,8 +475,9 @@ class TestDB(TestCase):
         self.assertEqual(expected_result, actual_result)
 
     @patch('oio_rest.db.get_field_type')
-    def test_convert_attr_value_offentlighedundtagettype_none(self,
-                                                              mock_get_field_type):
+    def test_convert_attr_value_offentlighedundtagettype_none(
+            self,
+            mock_get_field_type):
         # type: (MagicMock) -> None
 
         # Arrange
@@ -1402,8 +1403,8 @@ class TestDBObjectFunctions(TestCase):
         uuid = "1c3236a1-9384-4730-82ab-5443e95bcead"
         expected_uuid = (uuid,)
 
-        expected_sql = "select (%s IN (SELECT DISTINCT {0}_id from {0}_registrering))".format(
-            classname)
+        expected_sql = ("select (%s IN (SELECT DISTINCT "
+                        "{0}_id from {0}_registrering))").format(classname)
 
         mock_get_conn.return_value.cursor.return_value = cursor = MagicMock()
 
@@ -1549,7 +1550,8 @@ class TestDBGeneralSQL(TestCase):
 
         # Assert
         sql_state_array_args = mock_sql_state_array.call_args_list
-        self.assertIn(call('state1', 'val1', 'classname'), sql_state_array_args)
+        self.assertIn(call('state1', 'val1', 'classname'),
+                      sql_state_array_args)
         self.assertIn(call('state2', None, 'classname'), sql_state_array_args)
         self.assertEqual(2, len(sql_state_array_args))
 
@@ -1560,7 +1562,8 @@ class TestDBGeneralSQL(TestCase):
     @patch('oio_rest.db.get_attribute_names')
     @patch('oio_rest.db.convert_attributes', new=lambda x: x)
     @patch('oio_rest.db.get_state_names', new=MagicMock())
-    def test_sql_convert_registration_attributes(self, mock_get_attribute_names,
+    def test_sql_convert_registration_attributes(self,
+                                                 mock_get_attribute_names,
                                                  mock_sql_relations_array,
                                                  mock_sql_attribute_array):
         # type: (MagicMock, MagicMock, MagicMock) -> None
@@ -1758,8 +1761,8 @@ class TestPGErrors(TestCase):
             db.get_document_from_content_url('')
 
     @patch("oio_rest.db.psycopg2.Error", new=TestException)
-    def test_get_document_from_content_url_raises_on_unknown_pgerror(self,
-                                                                     mock_get_conn):
+    def test_get_document_from_content_url_raises_on_unknown_pgerror(
+            self, mock_get_conn):
         # type: (MagicMock) -> None
 
         # Arrange
@@ -1793,8 +1796,9 @@ class TestPGErrors(TestCase):
         class_name = 'class'
         uuid = '61ae604b-e7fb-4892-a09a-55e5f6822435'
         exception = TestPGErrors.TestException()
-        exception.message = 'Aborted updating {} with id [{}] as the given data, ' \
-                            'does not give raise to a new registration.'.format(
+        exception.message = ('Aborted updating {} with id [{}] as the given '
+                             'data, does not give raise to a new '
+                             'registration.').format(
             class_name, uuid
         )
         exception.pgcode = '12345'

@@ -1,7 +1,6 @@
-import json
 import unittest
 
-from mock import patch, MagicMock
+from mock import MagicMock, patch
 
 import oio_rest.utils.build_registration as br
 
@@ -369,11 +368,12 @@ class TestBuildRegistration(unittest.TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.utils.build_registration.get_document_part_relation_names')
-    @patch(
-        'oio_rest.utils.build_registration.DokumentDelEgenskaberType.get_fields')
-    @patch(
-        'oio_rest.utils.build_registration.DokumentVariantEgenskaberType.get_fields')
+    @patch('oio_rest.utils.build_registration.'
+           'get_document_part_relation_names')
+    @patch('oio_rest.utils.build_registration.'
+           'DokumentDelEgenskaberType.get_fields')
+    @patch('oio_rest.utils.build_registration.'
+           'DokumentVariantEgenskaberType.get_fields')
     def test_build_registration_dokument(self, mock_dvet_get_fields,
                                          mock_ddet_get_fields, mock_get_dprn):
         # Arrange

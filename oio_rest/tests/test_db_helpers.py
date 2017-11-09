@@ -226,7 +226,8 @@ class TestDBHelpers(TestCase):
 
         patch('oio_rest.db_helpers.db_struct', new=db_struct).start()
 
-        expected_result = ['testclass1testattribut1', 'testclass1testattribut2']
+        expected_result = ['testclass1testattribut1',
+                           'testclass1testattribut2']
 
         # Act
         actual_result = db_helpers.get_attribute_names('testclass1')
@@ -280,7 +281,6 @@ class TestDBHelpers(TestCase):
 
         # Assert
         self.assertEqual(expected_result, actual_result)
-
 
     def test_get_relation_names(self):
         # Arrange
@@ -506,8 +506,8 @@ class TestDBHelpers(TestCase):
         with app.test_request_context(data={}, method='POST'):
             request.files = ImmutableMultiDict({'testfile': mockfile})
 
-            actual_result = DokumentDelEgenskaberType._get_file_storage_for_content_url(
-                'field:testfile')
+            actual_result = DokumentDelEgenskaberType \
+                ._get_file_storage_for_content_url('field:testfile')
 
         # Assert
         self.assertEqual(mockfile, actual_result)
@@ -518,8 +518,8 @@ class TestDBHelpers(TestCase):
         # Arrange
 
         # Act
-        actual_result = DokumentDelEgenskaberType._get_file_storage_for_content_url(
-            'notfield:testfile')
+        actual_result = DokumentDelEgenskaberType \
+            ._get_file_storage_for_content_url('notfield:testfile')
 
         # Assert
         self.assertIsNone(actual_result)
@@ -601,7 +601,6 @@ class TestNamedTupleAdapter(TestCase):
         adapted.prepare.assert_called()
 
     def test_get_quoted(self):
-
         # Arrange
         a = MagicMock()
         a.getquoted.return_value = 'first value'
@@ -618,6 +617,7 @@ class TestNamedTupleAdapter(TestCase):
 
         # Assert
         self.assertEqual(expected_result, actual_result)
+
 
 class TestAktoerAttrAdapter(TestCase):
     from oio_rest.db_helpers import AktoerAttrAdapter
@@ -636,16 +636,20 @@ class TestAktoerAttrAdapter(TestCase):
         urn = MagicMock()
         urn.getquoted.return_value = 'urn'
 
-        aaa = TestAktoerAttrAdapter.TestClass((accepteret, obligatorisk, uuid, urn))
+        aaa = TestAktoerAttrAdapter.TestClass(
+            (accepteret, obligatorisk, uuid, urn))
         aaa.prepare_and_adapt = MagicMock(side_effect=lambda x: x)
 
-        expected_result = 'ROW(obligatorisk::AktivitetAktoerAttrObligatoriskKode,accepteret::AktivitetAktoerAttrAccepteretKode,uuid::uuid,urn) :: tuple'
+        expected_result = ('ROW(obligatorisk::AktivitetAktoerAttr'
+                           'ObligatoriskKode,accepteret::AktivitetAktoerAttr'
+                           'AccepteretKode,uuid::uuid,urn) :: tuple')
 
         # Act
         actual_result = aaa.getquoted()
 
         # Assert
         self.assertEqual(expected_result, actual_result)
+
 
 class TestSearchable(TestCase):
     from oio_rest.db_helpers import Searchable

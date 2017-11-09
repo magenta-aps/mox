@@ -57,7 +57,8 @@ class TestTokens(TestCase):
         </Body>
         '''
 
-        expected_result = 'saml-gzipped H4sIAAAAAAAAA7NxLC5OLSrJzM9TKM9ILEktSy2yVTJU0rfjUkADALryg9gqAAAA'
+        expected_result = ('saml-gzipped H4sIAAAAAAAAA7NxLC5OLSrJzM9TKM9I'
+                           'LEktSy2yVTJU0rfjUkADALryg9gqAAAA')
 
         # Act
         actual_result = tokens.get_token(username, passwd)
@@ -246,7 +247,8 @@ class TestTokens(TestCase):
         # Arrange
         args = ['prog', '-u', 'user', '-p', 'pass', '--cert-only']
 
-        mock_get_token.return_value = '<X509Data><X509Certificate>test token</X509Certificate></X509Data>'
+        mock_get_token.return_value = ('<X509Data><X509Certificate>test token'
+                                       '</X509Certificate></X509Data>')
         mock_base64_decode.side_effect = lambda x: x
         mock_ssl_d2p.side_effect = lambda x: x
 
@@ -262,7 +264,8 @@ class TestTokens(TestCase):
 
     @patch('requests.packages.urllib3.disable_warnings')
     @patch('oio_rest.auth.tokens.get_token')
-    def test_main_insecure_disables_warnings(self, mock_get_token, mock_urllib3_dw):
+    def test_main_insecure_disables_warnings(self, mock_get_token,
+                                             mock_urllib3_dw):
         # Arrange
         args = ['prog', '-u', 'user', '-p', 'pass', '--insecure']
 

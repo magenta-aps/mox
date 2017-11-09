@@ -1,11 +1,11 @@
 from unittest import TestCase
 
 import flask
-from mock import patch, MagicMock
+from mock import MagicMock, patch
 
 from oio_rest import authentication
-from oio_rest.custom_exceptions import UnauthorizedException, \
-    AuthorizationFailedException
+from oio_rest.custom_exceptions import (AuthorizationFailedException,
+                                        UnauthorizedException)
 
 
 class TestAuthentication(TestCase):
@@ -23,8 +23,8 @@ class TestAuthentication(TestCase):
         headers = {'Authorization': 'unknowntype token'}
 
         # Act & Assert
-        with self.app.test_request_context(headers=headers), \
-             self.assertRaises(AuthorizationFailedException):
+        with self.app.test_request_context(headers=headers), self.assertRaises(
+                AuthorizationFailedException):
             authentication.check_saml_authentication()
 
     @patch('oio_rest.authentication.Saml2_Assertion')
@@ -38,7 +38,6 @@ class TestAuthentication(TestCase):
         mock_saml2.return_value.check_validity.side_effect = Exception
 
         # Act & Assert
-        with self.app.test_request_context(headers=headers), \
-             self.assertRaises(AuthorizationFailedException):
+        with self.app.test_request_context(headers=headers), self.assertRaises(
+                AuthorizationFailedException):
             authentication.check_saml_authentication()
-

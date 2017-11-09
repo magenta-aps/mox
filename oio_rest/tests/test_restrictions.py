@@ -36,7 +36,8 @@ class TestRestrictions(TestCase):
 
     @patch('oio_rest.auth.restrictions.DO_ENABLE_RESTRICTIONS', new=True)
     @patch('oio_rest.auth.restrictions.import_module')
-    def test_get_restrictions_raises_on_attribute_error(self, mock_import_module):
+    def test_get_restrictions_raises_on_attribute_error(self,
+                                                        mock_import_module):
         # type: (MagicMock) -> None
         # Arrange
         mock_import_module.side_effect = AttributeError
