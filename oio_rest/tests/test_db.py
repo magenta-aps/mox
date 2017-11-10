@@ -35,18 +35,20 @@ class TestDB(TestCase):
 
         self.assertEqual(expected_arg, actual_arg)
 
+    @patch('oio_rest.db.unicode', new=MagicMock())
+    @patch('oio_rest.db.psyco_adapt', new=MagicMock())
     @patch('oio_rest.db.get_connection')
-    def test_get_adapt_connection_reuses_same_connection(self, mock_get_conn):
+    def test_adapt_only_creates_one_connection(self, mock_get_conn):
         # type: (MagicMock) -> None
         # Arrange
-        mock_get_conn.side_effect = count()
 
         # Act
-        conn1 = db.get_adapt_connection()
-        conn2 = db.get_adapt_connection()
+        db.adapt('')
+        db.adapt('')
+        db.adapt('')
 
         # Assert
-        self.assertEqual(conn1, conn2)
+        self.assertEqual(1, mock_get_conn.call_count)
 
     @patch('oio_rest.db.get_relation_field_type')
     def test_convert_relation_value_default(self, mock_get_rel):
