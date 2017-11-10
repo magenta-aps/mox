@@ -9,7 +9,7 @@ from setuptools.command.test import test
 class test_link_settings(test):
     settings_file = 'oio_rest/settings.py'
     if not os.path.exists(settings_file):
-        subprocess.call(['ln', 'oio_rest/settings.py.base', settings_file])
+        subprocess.call(['cp', 'oio_rest/settings.py.base', settings_file])
 
 
 version = '0.0.1'
