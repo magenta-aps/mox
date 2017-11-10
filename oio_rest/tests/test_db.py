@@ -3,6 +3,7 @@ from itertools import count
 from unittest import TestCase
 
 from mock import MagicMock, patch, call, mock
+from psycopg2._range import DateTimeTZRange
 
 import oio_rest.db as db
 from oio_rest.custom_exceptions import (NotFoundException, BadRequestException,
@@ -434,6 +435,9 @@ class TestDB(TestCase):
         # Arrange
         mock_get_field_type.return_value = "soegeord"
 
+        classname = "classname"
+        note = "note"
+        uuid = "e225fc3d-68da-4867-9c6a-1d46c282befc"
         value = [
             ["identifier1", "description1", "category1"],
             ["identifier2", "description2", "category2"]
@@ -1023,26 +1027,318 @@ class TestDB(TestCase):
         self.assertEqual('Importeret', actual_result)
 
 
-@patch("oio_rest.db.sql_get_registration", new=MagicMock())
-@patch("oio_rest.db.sql_convert_registration", new=MagicMock())
-class TestDBObjectFunctions(TestCase):
+class TestDBObjectTemplateFunctions(TestCase):
+    @patch("oio_rest.db.get_authenticated_user")
+    @patch("oio_rest.db.get_restrictions_as_sql")
+    @patch("oio_rest.db.sql_get_registration")
     @patch("oio_rest.db.get_connection")
     @patch("oio_rest.db.jinja_env")
-    def test_create_or_import_object_gets_correct_template(self,
-                                                           mock_jinja_env,
-                                                           mock_get_conn):
-        # type: (MagicMock, MagicMock) -> None
+    @patch("oio_rest.db.sql_convert_registration", new=MagicMock())
+    def test_create_or_import_object_renders_template(self,
+                                                      mock_jinja_env,
+                                                      mock_get_conn,
+                                                      mock_get_reg,
+                                                      mock_get_restr,
+                                                      mock_get_user):
+        # type: (MagicMock, MagicMock, MagicMock, MagicMock, MagicMock) -> None
         # Arrange
         mock_jinja_env.get_template.return_value = template = MagicMock()
 
+        classname = "classname"
+        note = "note"
+        registration = {'registration': 123}
+        uuid = "b765b159-88d1-4c3c-b303-04f560669fa3"
+        sql_registration = {'sql_registration': 123}
+        restrictions = {'restrictions': 123}
+        user_ref = 'a1083425-a5b6-40de-9d92-d9f70eb58dfb'
+
+        mock_get_reg.return_value = sql_registration
+        mock_get_restr.return_value = restrictions
+        mock_get_user.return_value = user_ref
+
         # Act
-        db.create_or_import_object("classname", "note", {})
+        db.create_or_import_object(classname, note, registration, uuid)
 
         # Assert
         mock_jinja_env.get_template.assert_called()
-        template_name = mock_jinja_env.get_template.call_args[0][0]
-        self.assertEqual("create_object.sql", template_name)
+        template.render.assert_called_with(
+            class_name=classname,
+            life_cycle_code='Importeret',
+            note=note,
+            registration=sql_registration,
+            restrictions=restrictions,
+            user_ref=user_ref,
+            uuid=uuid
+        )
 
+    @patch("oio_rest.db.get_authenticated_user")
+    @patch("oio_rest.db.get_restrictions_as_sql")
+    @patch("oio_rest.db.sql_convert_registration")
+    @patch("oio_rest.db.get_connection")
+    @patch("oio_rest.db.jinja_env")
+    def test_delete_object_renders_template(self,
+                                            mock_jinja_env,
+                                            mock_get_conn,
+                                            mock_conv_reg,
+                                            mock_get_restr,
+                                            mock_get_user):
+        # type: (MagicMock, MagicMock, MagicMock, MagicMock, MagicMock) -> None
+        # Arrange
+        mock_jinja_env.get_template.return_value = template = MagicMock()
+
+        attributes = 'attributes'
+        states = 'states'
+        relations = 'relations'
+        variants = 'variants'
+        user_ref = "16e4a2c8-f508-4be5-bf75-63125b3fbfb5"
+        classname = "classname"
+        note = "note"
+        uuid = "e225fc3d-68da-4867-9c6a-1d46c282befc"
+
+        registration = {
+            'attributes': attributes,
+            'states': states,
+            'relations': relations,
+            'variants': variants,
+        }
+        restrictions = {'restrictions': 123}
+
+        mock_conv_reg.return_value = registration
+        mock_get_restr.return_value = restrictions
+        mock_get_user.return_value = user_ref
+
+        # Act
+        db.delete_object(classname, {}, note, uuid)
+
+        # Assert
+        mock_jinja_env.get_template.assert_called()
+        template.render.assert_called_with(
+            attributes=attributes,
+            class_name=classname,
+            life_cycle_code='Slettet',
+            relations=relations,
+            restrictions=restrictions,
+            states=states,
+            user_ref=user_ref,
+            uuid=uuid,
+            variants=variants,
+            note=note
+        )
+
+    @patch("oio_rest.db.get_authenticated_user")
+    @patch("oio_rest.db.get_restrictions_as_sql")
+    @patch("oio_rest.db.sql_convert_registration")
+    @patch("oio_rest.db.get_connection")
+    @patch("oio_rest.db.jinja_env")
+    def test_passivate_object_renders_template(self,
+                                               mock_jinja_env,
+                                               mock_get_conn,
+                                               mock_conv_reg,
+                                               mock_get_restr,
+                                               mock_get_user):
+        # type: (MagicMock, MagicMock, MagicMock, MagicMock, MagicMock) -> None
+        # Arrange
+        mock_jinja_env.get_template.return_value = template = MagicMock()
+
+        attributes = 'attributes'
+        states = 'states'
+        relations = 'relations'
+        variants = 'variants'
+        user_ref = "16e4a2c8-f508-4be5-bf75-63125b3fbfb5"
+        classname = "classname"
+        note = "note"
+        uuid = "de3d6e5f-cd21-4519-916b-5180e4c03dee"
+
+        registration = {
+            'attributes': attributes,
+            'states': states,
+            'relations': relations,
+            'variants': variants,
+        }
+
+        restrictions = {'restrictions': 123}
+
+        mock_conv_reg.return_value = registration
+        mock_get_restr.return_value = restrictions
+        mock_get_user.return_value = user_ref
+
+        # Act
+        db.passivate_object(classname, note, {}, uuid)
+
+        # Assert
+        mock_jinja_env.get_template.assert_called()
+        template.render.assert_called_with(
+            class_name=classname,
+            uuid=uuid,
+            life_cycle_code='Passiveret',
+            user_ref=user_ref,
+            note=note,
+            states=states,
+            attributes=attributes,
+            relations=relations,
+            variants=variants,
+            restrictions=restrictions
+        )
+
+    @patch("oio_rest.db.get_authenticated_user")
+    @patch("oio_rest.db.get_restrictions_as_sql")
+    @patch("oio_rest.db.sql_convert_registration")
+    @patch("oio_rest.db.get_connection")
+    @patch("oio_rest.db.jinja_env")
+    def test_update_object_renders_template(self,
+                                            mock_jinja_env,
+                                            mock_get_conn,
+                                            mock_conv_reg,
+                                            mock_get_restr,
+                                            mock_get_user):
+        # type: (MagicMock, MagicMock, MagicMock, MagicMock, MagicMock) -> None
+        # Arrange
+        mock_jinja_env.get_template.return_value = template = MagicMock()
+
+        attributes = 'attributes'
+        states = 'states'
+        relations = 'relations'
+        variants = 'variants'
+        user_ref = "16e4a2c8-f508-4be5-bf75-63125b3fbfb5"
+        classname = "classname"
+        note = "note"
+        uuid = "de3d6e5f-cd21-4519-916b-5180e4c03dee"
+        life_cycle_code = 'lifecyclecode'
+
+        registration = {
+            'attributes': attributes,
+            'states': states,
+            'relations': relations,
+            'variants': variants,
+        }
+
+        restrictions = {'restrictions': 123}
+
+        mock_conv_reg.return_value = registration
+        mock_get_restr.return_value = restrictions
+        mock_get_user.return_value = user_ref
+
+        # Act
+        db.update_object(classname, note, {}, uuid, life_cycle_code)
+
+        # Assert
+        mock_jinja_env.get_template.assert_called()
+        template.render.assert_called_with(
+            class_name=classname,
+            uuid=uuid,
+            life_cycle_code=life_cycle_code,
+            user_ref=user_ref,
+            note=note,
+            states=states,
+            attributes=attributes,
+            relations=relations,
+            variants=variants,
+            restrictions=restrictions
+        )
+
+    @patch("oio_rest.db.DateTimeTZRange")
+    @patch("oio_rest.db.get_restrictions_as_sql")
+    @patch("oio_rest.db.sql_get_registration")
+    @patch("oio_rest.db.sql_convert_registration", new=MagicMock())
+    @patch("oio_rest.db.get_connection", new=MagicMock())
+    @patch("oio_rest.db.jinja_env")
+    def test_search_objects_renders_template(self,
+                                             mock_jinja_env,
+                                             mock_get_reg,
+                                             mock_get_restr,
+                                             mock_dttzr):
+        # type: (MagicMock, MagicMock, MagicMock, MagicMock) -> None
+        # Arrange
+        mock_jinja_env.get_template.return_value = template = MagicMock()
+
+        classname = "classname"
+        uuid = "8c3e0579-cdcf-4593-a8d9-fcae8f264c4b"
+        virkning_fra = '1234'
+        virkning_til = '1234'
+        life_cycle_code = 'lifecyclecode'
+        user_ref = 'userref'
+        note = 'note'
+        any_attr_value_arr = ['123']
+        any_rel_uuid_arr = ['456']
+        first_result = 1234
+        max_results = 5678
+
+        registration = {'registration': 123}
+        restrictions = {'restriction': 123}
+        virkning_soeg = "DateTimeTZRange"
+
+        mock_get_reg.return_value = registration
+        mock_dttzr.return_value = virkning_soeg
+        mock_get_restr.return_value = restrictions
+
+        # Act
+        db.search_objects(classname, uuid, {}, virkning_fra, virkning_til,
+                          '1234', '1234', life_cycle_code,
+                          user_ref, note, any_attr_value_arr, any_rel_uuid_arr,
+                          first_result, max_results)
+
+        # Assert
+        mock_jinja_env.get_template.assert_called()
+        template.render.assert_called_with(
+            first_result=first_result,
+            uuid=uuid,
+            class_name=classname,
+            registration=registration,
+            any_attr_value_arr=any_attr_value_arr,
+            any_rel_uuid_arr=any_rel_uuid_arr,
+            max_results=max_results,
+            virkning_soeg=virkning_soeg,
+            restrictions=restrictions,
+        )
+
+    @patch('oio_rest.db.sql_attribute_array')
+    @patch('oio_rest.db.sql_relations_array')
+    @patch('oio_rest.db.get_attribute_names')
+    @patch('oio_rest.db.convert_attributes', new=lambda x: x)
+    @patch('oio_rest.db.get_state_names', new=MagicMock())
+    def test_sql_convert_registration_attributes(self,
+                                                 mock_get_attribute_names,
+                                                 mock_sql_relations_array,
+                                                 mock_sql_attribute_array):
+        # type: (MagicMock, MagicMock, MagicMock) -> None
+        mock_get_attribute_names.return_value = ['attribute1', 'attribute2']
+        mock_sql_relations_array.return_value = []
+        mock_sql_attribute_array.side_effect = lambda *x: x
+
+        # Arrange
+        registration = {
+            'states': {},
+            'attributes': {'attribute1': ['val1'],
+                           'attribute3': ['val3'],
+                           'whatever': 'whatever'},
+            'relations': {}
+        }
+
+        class_name = 'classname'
+
+        expected_result = {
+            'states': [],
+            'attributes': [
+                ('attribute1', ['val1']),
+                ('attribute2', None)
+            ],
+            'relations': []
+        }
+
+        # Act
+        actual_result = db.sql_convert_registration(registration, class_name)
+
+        # Assert
+        sql_state_array_args = mock_sql_attribute_array.call_args_list
+        self.assertIn(call('attribute1', ['val1']), sql_state_array_args)
+        self.assertIn(call('attribute2', None), sql_state_array_args)
+        self.assertEqual(2, len(sql_state_array_args))
+
+        self.assertEqual(expected_result, actual_result)
+
+
+@patch("oio_rest.db.sql_convert_registration", new=MagicMock())
+class TestDBObjectFunctions(TestCase):
     @patch("oio_rest.db.get_connection")
     @patch("oio_rest.db.jinja_env")
     def test_create_or_import_object_executes_sql(self,
@@ -1101,23 +1397,6 @@ class TestDBObjectFunctions(TestCase):
 
     @patch("oio_rest.db.get_connection")
     @patch("oio_rest.db.jinja_env")
-    def test_delete_object_gets_correct_template(self,
-                                                 mock_jinja_env,
-                                                 mock_get_conn):
-        # type: (MagicMock, MagicMock) -> None
-        # Arrange
-        mock_jinja_env.get_template.return_value = template = MagicMock()
-
-        # Act
-        db.delete_object("classname", {}, "note", "uuid")
-
-        # Assert
-        mock_jinja_env.get_template.assert_called()
-        template_name = mock_jinja_env.get_template.call_args[0][0]
-        self.assertEqual("update_object.sql", template_name)
-
-    @patch("oio_rest.db.get_connection")
-    @patch("oio_rest.db.jinja_env")
     def test_delete_object_executes_sql(self,
                                         mock_jinja_env,
                                         mock_get_conn):
@@ -1156,23 +1435,6 @@ class TestDBObjectFunctions(TestCase):
 
     @patch("oio_rest.db.get_connection")
     @patch("oio_rest.db.jinja_env")
-    def test_passivate_object_gets_correct_template(self,
-                                                    mock_jinja_env,
-                                                    mock_get_conn):
-        # type: (MagicMock, MagicMock) -> None
-        # Arrange
-        mock_jinja_env.get_template.return_value = template = MagicMock()
-
-        # Act
-        db.passivate_object("classname", {}, "note", "uuid")
-
-        # Assert
-        mock_jinja_env.get_template.assert_called()
-        template_name = mock_jinja_env.get_template.call_args[0][0]
-        self.assertEqual("update_object.sql", template_name)
-
-    @patch("oio_rest.db.get_connection")
-    @patch("oio_rest.db.jinja_env")
     def test_passivate_object_executes_sql(self,
                                            mock_jinja_env,
                                            mock_get_conn):
@@ -1206,23 +1468,6 @@ class TestDBObjectFunctions(TestCase):
 
         # Assert
         self.assertEqual(uuid, actual_result)
-
-    @patch("oio_rest.db.get_connection")
-    @patch("oio_rest.db.jinja_env")
-    def test_update_object_gets_correct_template(self,
-                                                 mock_jinja_env,
-                                                 mock_get_conn):
-        # type: (MagicMock, MagicMock) -> None
-        # Arrange
-        mock_jinja_env.get_template.return_value = template = MagicMock()
-
-        # Act
-        db.update_object("classname", {}, "note", "uuid")
-
-        # Assert
-        mock_jinja_env.get_template.assert_called()
-        template_name = mock_jinja_env.get_template.call_args[0][0]
-        self.assertEqual("update_object.sql", template_name)
 
     @patch("oio_rest.db.get_connection")
     @patch("oio_rest.db.jinja_env")
@@ -1264,23 +1509,30 @@ class TestDBObjectFunctions(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
+    @patch("oio_rest.db.get_restrictions_as_sql")
     @patch("oio_rest.db.get_connection")
     @patch("oio_rest.db.jinja_env")
-    def test_list_objects_gets_correct_template(self,
-                                                mock_jinja_env,
-                                                mock_get_conn):
-        # type: (MagicMock, MagicMock) -> None
+    def test_list_objects_renders_template(self,
+                                           mock_jinja_env,
+                                           mock_get_conn,
+                                           mock_get_restr):
+        # type: (MagicMock, MagicMock, MagicMock) -> None
         # Arrange
         mock_jinja_env.get_template.return_value = template = MagicMock()
+        classname = "classname"
+        restrictions = {'restrictions': 123}
+        mock_get_restr.return_value = restrictions
 
         # Act
-        db.list_objects("classname", ["uuid"], "virkning_fra", "virkning_til",
+        db.list_objects(classname, ["uuid"], "virkning_fra", "virkning_til",
                         "registrering_fra", "registrering_til")
 
         # Assert
         mock_jinja_env.get_template.assert_called()
-        template_name = mock_jinja_env.get_template.call_args[0][0]
-        self.assertEqual("list_objects.sql", template_name)
+        template.render.assert_called_with(
+            class_name=classname,
+            restrictions=restrictions
+        )
 
     @patch("oio_rest.db.get_connection")
     @patch("oio_rest.db.jinja_env")
@@ -1338,23 +1590,6 @@ class TestDBObjectFunctions(TestCase):
 
         # Assert
         self.assertEqual(expected_result, actual_result)
-
-    @patch("oio_rest.db.get_connection")
-    @patch("oio_rest.db.jinja_env")
-    def test_search_objects_gets_correct_template(self,
-                                                  mock_jinja_env,
-                                                  mock_get_conn):
-        # type: (MagicMock, MagicMock) -> None
-        # Arrange
-        mock_jinja_env.get_template.return_value = template = MagicMock()
-
-        # Act
-        db.search_objects("classname", "uuid", {})
-
-        # Assert
-        mock_jinja_env.get_template.assert_called()
-        template_name = mock_jinja_env.get_template.call_args[0][0]
-        self.assertEqual("search_objects.sql", template_name)
 
     @patch("oio_rest.db.get_connection")
     @patch("oio_rest.db.jinja_env")
@@ -1457,8 +1692,7 @@ class TestDBObjectFunctions(TestCase):
 
 class TestDBGeneralSQL(TestCase):
     @patch('oio_rest.db.jinja_env')
-    def test_sql_state_array_renders_correct_template(self,
-                                                      mock_jinja_env):
+    def test_sql_state_array(self, mock_jinja_env):
         # type: (MagicMock, MagicMock) -> None
         # Arrange
         mock_jinja_env.get_template.return_value = template = MagicMock()
@@ -1466,18 +1700,22 @@ class TestDBGeneralSQL(TestCase):
         expected_result = 'rendered sql'
         template.render.return_value = expected_result
 
+        state = "state"
+        periods = "periods"
+        classname = "class_name"
+
         # Act
-        actual_result = db.sql_state_array("state", "periods", "class_name")
+        actual_result = db.sql_state_array(state, periods, classname)
 
         # Assert
         mock_jinja_env.get_template.assert_called()
-        template_name = mock_jinja_env.get_template.call_args[0][0]
-        self.assertEqual("state_array.sql", template_name)
         self.assertEqual(expected_result, actual_result)
+        template.render.assert_called_with(class_name=classname,
+                                           state_name=state,
+                                           state_periods=periods)
 
     @patch('oio_rest.db.jinja_env')
-    def test_sql_attribute_array_renders_correct_template(self,
-                                                          mock_jinja_env):
+    def test_sql_attribute_array(self, mock_jinja_env):
         # type: (MagicMock, MagicMock) -> None
         # Arrange
         mock_jinja_env.get_template.return_value = template = MagicMock()
@@ -1485,18 +1723,20 @@ class TestDBGeneralSQL(TestCase):
         expected_result = 'rendered sql'
         template.render.return_value = expected_result
 
+        attribute = "attribute"
+        periods = "periods"
+
         # Act
-        actual_result = db.sql_attribute_array("attribute", "periods")
+        actual_result = db.sql_attribute_array(attribute, periods)
 
         # Assert
         mock_jinja_env.get_template.assert_called()
-        template_name = mock_jinja_env.get_template.call_args[0][0]
-        self.assertEqual("attribute_array.sql", template_name)
         self.assertEqual(expected_result, actual_result)
+        template.render.assert_called_with(attribute_name=attribute,
+                                           attribute_periods=periods)
 
     @patch('oio_rest.db.jinja_env')
-    def test_sql_relations_array_renders_correct_template(self,
-                                                          mock_jinja_env):
+    def test_sql_relations_array(self, mock_jinja_env):
         # type: (MagicMock, MagicMock) -> None
         # Arrange
         mock_jinja_env.get_template.return_value = template = MagicMock()
@@ -1504,14 +1744,17 @@ class TestDBGeneralSQL(TestCase):
         expected_result = 'rendered sql'
         template.render.return_value = expected_result
 
+        classname = "class_name"
+        relations = "relations"
+
         # Act
-        actual_result = db.sql_relations_array("attribute", "relations")
+        actual_result = db.sql_relations_array(classname, relations)
 
         # Assert
         mock_jinja_env.get_template.assert_called()
-        template_name = mock_jinja_env.get_template.call_args[0][0]
-        self.assertEqual("relations_array.sql", template_name)
         self.assertEqual(expected_result, actual_result)
+        template.render.assert_called_with(class_name=classname,
+                                           relations=relations)
 
     @patch('oio_rest.db.sql_state_array')
     @patch('oio_rest.db.sql_relations_array')
@@ -1553,51 +1796,6 @@ class TestDBGeneralSQL(TestCase):
         self.assertIn(call('state1', 'val1', 'classname'),
                       sql_state_array_args)
         self.assertIn(call('state2', None, 'classname'), sql_state_array_args)
-        self.assertEqual(2, len(sql_state_array_args))
-
-        self.assertEqual(expected_result, actual_result)
-
-    @patch('oio_rest.db.sql_attribute_array')
-    @patch('oio_rest.db.sql_relations_array')
-    @patch('oio_rest.db.get_attribute_names')
-    @patch('oio_rest.db.convert_attributes', new=lambda x: x)
-    @patch('oio_rest.db.get_state_names', new=MagicMock())
-    def test_sql_convert_registration_attributes(self,
-                                                 mock_get_attribute_names,
-                                                 mock_sql_relations_array,
-                                                 mock_sql_attribute_array):
-        # type: (MagicMock, MagicMock, MagicMock) -> None
-        mock_get_attribute_names.return_value = ['attribute1', 'attribute2']
-        mock_sql_relations_array.return_value = []
-        mock_sql_attribute_array.side_effect = lambda *x: x
-
-        # Arrange
-        registration = {
-            'states': {},
-            'attributes': {'attribute1': ['val1'],
-                           'attribute3': ['val3'],
-                           'whatever': 'whatever'},
-            'relations': {}
-        }
-
-        class_name = 'classname'
-
-        expected_result = {
-            'states': [],
-            'attributes': [
-                ('attribute1', ['val1']),
-                ('attribute2', None)
-            ],
-            'relations': []
-        }
-
-        # Act
-        actual_result = db.sql_convert_registration(registration, class_name)
-
-        # Assert
-        sql_state_array_args = mock_sql_attribute_array.call_args_list
-        self.assertIn(call('attribute1', ['val1']), sql_state_array_args)
-        self.assertIn(call('attribute2', None), sql_state_array_args)
         self.assertEqual(2, len(sql_state_array_args))
 
         self.assertEqual(expected_result, actual_result)
@@ -1691,7 +1889,6 @@ class TestDBGeneralSQL(TestCase):
                                          user_ref, note, registration)
 
         # Assert
-        mock_jinja_env.assert_called_with('registration.sql')
         template.render.assert_called_with(
             class_name=class_name,
             time_period=time_period,
