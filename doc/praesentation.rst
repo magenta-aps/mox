@@ -52,14 +52,14 @@ MOX-systemet består grundlæggende af fem komponenter:
 
 Som systemet er implementeret, har det følgende features/egenskaber:
 
-Autentikering
-+++++++++++++
+Autentificering
++++++++++++++++
 
 Denne foregår ved hjælp af SAML-tokens. Når MOX-agenten får besked om en
 ændring af fagsystemets data, sørger den for, at der genereres en
 SAML-token på den indloggede brugers vegne. Denne SAML-token
 repræsenterer den indloggede brugers digitale signatur af de pågældende
-ændringer. I REST-interfacet autentikeres brugerens identitet op mod en
+ændringer. I REST-interfacet autentificeres brugerens identitet op mod en
 SAML Identity Provider, og de pågældende ændringer logges med brugerens
 brugerid (UUID).
 
