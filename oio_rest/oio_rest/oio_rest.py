@@ -2,10 +2,11 @@
 """Superclasses for OIO objects and object hierarchies."""
 import json
 import datetime
-import urlparse
 
 from flask import jsonify, request
-from custom_exceptions import BadRequestException
+from custom_exceptions import BadRequestException, NotFoundException
+from custom_exceptions import GoneException
+
 from werkzeug.datastructures import ImmutableOrderedMultiDict
 
 import db
@@ -107,6 +108,9 @@ class OIORestObject(object):
 
     This class is intended to be subclassed, but not to be initialized.
     """
+
+    # The name of the current service. This is set by the create_api() method.
+    service_name = None
 
     @classmethod
     def get_json(cls):
@@ -259,7 +263,17 @@ class OIORestObject(object):
         try:
             object = object_list[0]
         except IndexError:
-            object = None
+            # No object found with that ID.
+            raise NotFoundException(
+                "No {} with ID {} found in service {}".format(
+                    cls.__name__, uuid, cls.service_name
+                )
+            )
+        # Raise 410 Gone if object is deleted.
+        if object[0]["registreringer"][0][
+            "livscykluskode"
+        ] == db.Livscyklus.SLETTET.value:
+            raise GoneException("This object has been deleted.")
         return jsonify({uuid: object})
 
     @classmethod
@@ -355,6 +369,7 @@ class OIORestObject(object):
     @classmethod
     def create_api(cls, hierarchy, flask, base_url):
         """Set up API with correct database access functions."""
+        cls.service_name = hierarchy
         hierarchy = hierarchy.lower()
         class_name = cls.__name__.lower()
         class_url = u"{0}/{1}/{2}".format(base_url,

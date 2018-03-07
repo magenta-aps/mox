@@ -24,7 +24,7 @@ from authentication import get_authenticated_user
 from auth.restrictions import Operation, get_restrictions
 from utils.build_registration import restriction_to_registration
 from custom_exceptions import NotFoundException, NotAllowedException
-from custom_exceptions import DBException, BadRequestException
+from custom_exceptions import DBException, BadRequestException, GoneException
 
 """
     Jinja2 Environment
@@ -448,9 +448,16 @@ def delete_object(class_name, registration, note, uuid):
             'Unable to update {} with uuid [{}], '
             'being unable to find any previous registrations.\n'
         ).format(class_name.lower(), uuid)
-
+        already_deleted_msg = (
+            'Error updating {} with uuid [{}], '
+            'Invalid [livscyklus] transition to [Slettet]'
+        ).format(class_name.lower(), uuid)
         if e.message == not_found_msg:
-            raise NotFoundException(e.message)
+            raise NotFoundException(
+                "No {} with ID {} found.".format(class_name, uuid)
+            )
+        if already_deleted_msg in e.message:
+            raise GoneException("This object has already been deleted.")
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
             raise DBException(status_code, e.message)

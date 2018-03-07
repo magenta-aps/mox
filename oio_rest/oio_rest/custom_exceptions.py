@@ -34,6 +34,10 @@ class BadRequestException(OIOFlaskException):
     status_code = 400
 
 
+class GoneException(OIOFlaskException):
+    status_code = 410
+
+
 class DBException(OIOFlaskException):
 
     def __init__(self, status_code, message, payload=None):
