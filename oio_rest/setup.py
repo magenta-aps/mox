@@ -1,5 +1,16 @@
 # encoding: utf-8
-from setuptools import setup, find_packages
+import os.path
+import subprocess
+
+from setuptools import find_packages, setup
+from setuptools.command.test import test
+
+
+class test_link_settings(test):
+    settings_file = 'oio_rest/settings.py'
+    if not os.path.exists(settings_file):
+        subprocess.call(['cp', 'oio_rest/settings.py.base', settings_file])
+
 
 version = '0.0.1'
 authors = 'C. Agger, Jørgen Ulrik B. Krag, Thomas Kristensen, Seth Yastrov'
@@ -20,6 +31,9 @@ setup(
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
     include_package_data=True,
     zip_safe=False,
+    setup_requires=[
+        'pytest-runner'
+    ],
     install_requires=[
         # -*- Extra requirements: -*-
         'requests==2.12.4',
@@ -44,5 +58,15 @@ setup(
         'console_scripts': [
             'oio_api = oio_rest.app:main',
         ],
+    },
+    tests_require=[
+        'pytest',
+        'pytest-cov',
+        'mock',
+        'coverage',
+        'freezegun'
+    ],
+    cmdclass={
+        'test': test_link_settings
     }
 )
