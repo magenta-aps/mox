@@ -448,9 +448,17 @@ def delete_object(class_name, registration, note, uuid):
             'Unable to update {} with uuid [{}], '
             'being unable to find any previous registrations.\n'
         ).format(class_name.lower(), uuid)
-
+        already_deleted_msg = (
+            'Error updating {} with uuid [{}], '
+            'Invalid [livscyklus] transition to [Slettet]'
+        ).format(class_name.lower(), uuid)
         if e.message == not_found_msg:
-            raise NotFoundException(e.message)
+            raise NotFoundException(
+                "No {} with ID {} found.".format(class_name, uuid)
+            )
+        if already_deleted_msg in e.message:
+            # DELETE is idempotent, no problem here
+            return
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
             raise DBException(status_code, e.message)
