@@ -355,7 +355,7 @@ class OIORestObject(object):
         request.uuid = uuid
         db.delete_object(class_name, registration, note, uuid)
 
-        return jsonify({'uuid': uuid}), 200
+        return jsonify({'uuid': uuid}), 202
 
     @classmethod
     def get_fields(cls):
