@@ -1,13 +1,15 @@
+import datetime
 import json
 import types
 from unittest import TestCase
 
 import flask
+import freezegun
 from mock import MagicMock, patch
 from werkzeug.exceptions import BadRequest
 
-from oio_rest import oio_rest
-from oio_rest.custom_exceptions import BadRequestException
+from oio_rest import oio_rest, db
+from oio_rest.custom_exceptions import BadRequestException, NotFoundException
 from oio_rest.oio_rest import OIOStandardHierarchy, OIORestObject
 
 
@@ -469,23 +471,29 @@ class TestOIORestObject(TestCase):
              self.assertRaises(BadRequestException):
             self.testclass.get_objects()
 
-    @patch('datetime.datetime')
     @patch('oio_rest.oio_rest.db')
-    def test_get_object_uses_default_params(self, mock_db, mock_datetime):
+    @freezegun.freeze_time('2017-01-01', tz_offset=1)
+    def test_get_object_uses_default_params(self, mock_db):
         # Arrange
-        data = ["data", "data2"]
+        data = [
+            {
+                "registreringer": [
+                    {
+                        'livscykluskode': "whatever"
+                    }
+                ]
+            }
+        ]
         uuid = "d5995ed0-d527-4841-9e33-112b22aaade1"
 
         mock_db.list_objects = MagicMock()
-        mock_db.list_objects.return_value = data
+        mock_db.list_objects.return_value = [data]
 
-        now = "NOW"
-        mock_datetime.now = MagicMock()
-        mock_datetime.now.return_value = now
+        now = datetime.datetime.now()
 
         expected_args = ('TestClassRestObject', [uuid], now, now, None, None)
 
-        expected_result = {uuid: "data"}
+        expected_result = {uuid: data}
 
         # Act
         with self.app.test_request_context(method='GET'):
@@ -496,27 +504,37 @@ class TestOIORestObject(TestCase):
         actual_args = mock_db.list_objects.call_args[0]
 
         self.assertEqual(expected_args, actual_args)
-        self.assertDictEqual(expected_result, actual_result)
+        self.assertEqual(expected_result, actual_result)
 
     @patch('oio_rest.oio_rest.db')
     def test_get_object_uses_supplied_params(self, mock):
         # Arrange
-        data = ["data", "data2"]
+        data = [
+            {
+                "registreringer": [
+                    {
+                        'livscykluskode': "whatever"
+                    }
+                ]
+            }
+        ]
         uuid = "9a543ba1-c36b-4e47-9f0f-3463ce0e297c"
-        virkningfra = "virkningfra"
-        virkningtil = "virkningtil"
-        registreretfra = "registreretfra"
-        registrerettil = "registrerettil"
+        virkningfra = datetime.datetime(2012, 1, 1)
+        virkningtil = datetime.datetime(2015, 1, 1)
+        registreretfra = datetime.datetime(2012, 1, 1)
+        registrerettil = datetime.datetime(2015, 1, 1)
 
         mock.list_objects = MagicMock()
-        mock.list_objects.return_value = data
+        mock.list_objects.return_value = [data]
 
         expected_args = (
-            'TestClassRestObject', [uuid], virkningfra, virkningtil,
-            registreretfra,
-            registrerettil)
+            'TestClassRestObject', [uuid],
+            str(virkningfra),
+            str(virkningtil),
+            str(registreretfra),
+            str(registrerettil))
 
-        expected_result = {uuid: "data"}
+        expected_result = {uuid: data}
 
         request_params = {
             "virkningfra": virkningfra,
@@ -535,7 +553,7 @@ class TestOIORestObject(TestCase):
         actual_args = mock.list_objects.call_args[0]
 
         self.assertEqual(expected_args, actual_args)
-        self.assertDictEqual(expected_result, actual_result)
+        self.assertEqual(expected_result, actual_result)
 
     @patch('oio_rest.oio_rest.db')
     def test_get_object_returns_none_value_on_no_results(self, mock):
@@ -546,15 +564,10 @@ class TestOIORestObject(TestCase):
         mock.list_objects = MagicMock()
         mock.list_objects.return_value = data
 
-        expected_result = {uuid: None}
-
         # Act
-        with self.app.test_request_context(method='GET'):
-            actual_result_json = self.testclass.get_object(uuid).data
-            actual_result = json.loads(actual_result_json)
-
-        # Assert
-        self.assertDictEqual(expected_result, actual_result)
+        with self.app.test_request_context(method='GET'), \
+             self.assertRaises(NotFoundException):
+            self.testclass.get_object(uuid).data
 
     def test_put_object_with_no_input_returns_uuid_none_and_code_400(
             self):
@@ -710,7 +723,7 @@ class TestOIORestObject(TestCase):
             actual_code = result[1]
         # Assert
         self.assertDictEqual(expected_data, actual_data)
-        self.assertEqual(200, actual_code)
+        self.assertEqual(202, actual_code)
 
     @patch("oio_rest.oio_rest.db.delete_object")
     def test_delete_object_called_with_empty_reg_and_uuid(self, mock_delete):
