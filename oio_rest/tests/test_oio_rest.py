@@ -9,7 +9,8 @@ from mock import MagicMock, patch
 from werkzeug.exceptions import BadRequest
 
 from oio_rest import oio_rest, db
-from oio_rest.custom_exceptions import BadRequestException, NotFoundException
+from oio_rest.custom_exceptions import (BadRequestException, NotFoundException,
+                                        GoneException)
 from oio_rest.oio_rest import OIOStandardHierarchy, OIORestObject
 
 
@@ -556,7 +557,7 @@ class TestOIORestObject(TestCase):
         self.assertEqual(expected_result, actual_result)
 
     @patch('oio_rest.oio_rest.db')
-    def test_get_object_returns_none_value_on_no_results(self, mock):
+    def test_get_object_raises_on_no_results(self, mock):
         # Arrange
         data = []
         uuid = "4efbbbde-e197-47be-9d40-e08f1cd00259"
@@ -568,6 +569,28 @@ class TestOIORestObject(TestCase):
         with self.app.test_request_context(method='GET'), \
              self.assertRaises(NotFoundException):
             self.testclass.get_object(uuid).data
+
+    @patch('oio_rest.oio_rest.db.list_objects')
+    def test_get_object_raises_on_deleted_object(self, mock_list):
+        # Arrange
+        data = [
+            {
+                "registreringer": [
+                    {
+                        'livscykluskode': db.Livscyklus.SLETTET.value
+                    }
+                ]
+            }
+        ]
+        uuid = "d5995ed0-d527-4841-9e33-112b22aaade1"
+
+        mock_list.return_value = [data]
+
+        # Act
+        with self.app.test_request_context(method='GET'), \
+             self.assertRaises(GoneException):
+            self.testclass.get_object(uuid).data
+
 
     def test_put_object_with_no_input_returns_uuid_none_and_code_400(
             self):
@@ -706,7 +729,7 @@ class TestOIORestObject(TestCase):
         self.assertEqual(200, actual_code)
 
     @patch("oio_rest.oio_rest.db.delete_object")
-    def test_delete_object_returns_expected_result_and_200(self, mock_delete):
+    def test_delete_object_returns_expected_result_and_202(self, mock_delete):
         # type: (MagicMock) -> None
         # Arrange
         uuid = "cb94b2ec-33a5-4730-b87e-520e2b82fa9a"
