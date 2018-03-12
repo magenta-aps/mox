@@ -205,15 +205,14 @@ class TestOIORestObject(TestCase):
         # Assert
         self.assertEquals(expected_json, actual_json)
 
-    @patch('oio_rest.oio_rest.db')
+    @patch('oio_rest.oio_rest.db.create_or_import_object')
     def test_create_object_with_input_returns_uuid_and_code_201(self, mock):
         # Arrange
         uuid = "c98d1e8b-0655-40a0-8e86-bb0cc07b0d59"
 
         expected_data = {"uuid": uuid}
 
-        mock.create_or_import_object = MagicMock()
-        mock.create_or_import_object.return_value = uuid
+        mock.return_value = uuid
 
         data = {'note': "NOTE"}
 
@@ -260,15 +259,14 @@ class TestOIORestObject(TestCase):
         self.assertEquals(expected_fields, actual_fields)
 
     @patch('datetime.datetime')
-    @patch('oio_rest.oio_rest.db')
+    @patch('oio_rest.oio_rest.db.list_objects')
     def test_get_objects_list_uses_default_params(self,
-                                                  mock_db,
+                                                  mock_list,
                                                   mock_datetime):
         # Arrange
         data = ["1", "2", "3"]
 
-        mock_db.list_objects = MagicMock()
-        mock_db.list_objects.return_value = data
+        mock_list.return_value = data
 
         now = "NOW"
         mock_datetime.now.return_value = now
@@ -283,18 +281,17 @@ class TestOIORestObject(TestCase):
             actual_result = json.loads(actual_result_json)
 
         # Assert
-        actual_args = mock_db.list_objects.call_args[0]
+        actual_args = mock_list.call_args[0]
 
         self.assertEqual(expected_args, actual_args)
         self.assertDictEqual(expected_result, actual_result)
 
-    @patch('oio_rest.oio_rest.db')
+    @patch('oio_rest.oio_rest.db.list_objects')
     def test_get_objects_list_uses_supplied_params(self, mock):
         # Arrange
         data = ["1", "2", "3"]
 
-        mock.list_objects = MagicMock()
-        mock.list_objects.return_value = data
+        mock.return_value = data
 
         uuids = ["942f2aae-6151-4894-ac47-842ab93b161b",
                  "18ac08a3-8158-4b68-81aa-adacb1ea0fb3"]
@@ -325,17 +322,16 @@ class TestOIORestObject(TestCase):
             actual_result = json.loads(actual_result_json)
 
         # Assert
-        actual_args = mock.list_objects.call_args[0]
+        actual_args = mock.call_args[0]
 
         self.assertEqual(expected_args, actual_args)
         self.assertDictEqual(expected_result, actual_result)
 
-    @patch('oio_rest.oio_rest.db')
+    @patch('oio_rest.oio_rest.db.list_objects')
     def test_get_objects_returns_empty_list_on_no_results(self, mock):
         # Arrange
 
-        mock.list_objects = MagicMock()
-        mock.list_objects.return_value = None
+        mock.return_value = None
 
         # Act
         with self.app.test_request_context(method='GET'):
@@ -348,14 +344,13 @@ class TestOIORestObject(TestCase):
 
     @patch('datetime.datetime')
     @patch('oio_rest.oio_rest.build_registration')
-    @patch('oio_rest.oio_rest.db')
-    def test_get_objects_search_uses_default_params(self, mock_db, mock_br,
+    @patch('oio_rest.oio_rest.db.search_objects')
+    def test_get_objects_search_uses_default_params(self, mock_search, mock_br,
                                                     mock_datetime):
         # Arrange
         data = ["1", "2", "3"]
 
-        mock_db.search_objects = MagicMock()
-        mock_db.search_objects.return_value = data
+        mock_search.return_value = data
 
         mock_br.return_value = "REGISTRATION"
 
@@ -379,19 +374,19 @@ class TestOIORestObject(TestCase):
             actual_result = json.loads(actual_result_json)
 
         # Assert
-        actual_args = mock_db.search_objects.call_args[0]
+        actual_args = mock_search.call_args[0]
 
         self.assertEqual(expected_args, actual_args)
         self.assertDictEqual(expected_result, actual_result)
 
     @patch('oio_rest.oio_rest.build_registration')
-    @patch('oio_rest.oio_rest.db')
-    def test_get_objects_search_uses_supplied_params(self, mock_db, mock_br):
+    @patch('oio_rest.oio_rest.db.search_objects')
+    def test_get_objects_search_uses_supplied_params(self, mock_search,
+                                                     mock_br):
         # Arrange
         data = ["1", "2", "3"]
 
-        mock_db.search_objects = MagicMock()
-        mock_db.search_objects.return_value = data
+        mock_search.return_value = data
 
         registration = "REGISTRATION"
         mock_br.return_value = registration
@@ -440,30 +435,30 @@ class TestOIORestObject(TestCase):
             actual_result = json.loads(actual_result_json)
 
         # Assert
-        actual_args = mock_db.search_objects.call_args[0]
+        actual_args = mock_search.call_args[0]
 
         self.assertEqual(expected_args, actual_args)
         self.assertDictEqual(expected_result, actual_result)
 
     @patch('oio_rest.oio_rest.build_registration')
-    @patch('oio_rest.oio_rest.db')
-    def test_get_objects_search_raises_exception_on_multi_uuid(self,
-                                                               mock_db,
-                                                               mock_br):
+    @patch('oio_rest.oio_rest.db.search_objects')
+    def test_get_objects_search_raises_exception_on_multi_uuid(
+            self,
+            mock_search,
+            mock_br):
         # Arrange
         data = ["1", "2", "3"]
 
-        mock_db.search_objects = MagicMock()
-        mock_db.search_objects.return_value = data
+        mock_search.return_value = data
 
-        mock_br.return_value = "REGISTRATION"
+        mock_br.return_value = {}
 
         uuids = ["94d42aaa-884d-42ba-8ced-964ee34b65c4",
                  "23dd27c8-09dd-4da2-bfe4-b152f97dad59"]
 
         request_params = {
             "uuid": uuids,
-            "brugerref": "brugerref",
+            "brugerref": "99809e77-ede6-48f2-b170-2366bdcd20e5",
         }
 
         # Act
@@ -472,9 +467,9 @@ class TestOIORestObject(TestCase):
              self.assertRaises(BadRequestException):
             self.testclass.get_objects()
 
-    @patch('oio_rest.oio_rest.db')
+    @patch('oio_rest.oio_rest.db.list_objects')
     @freezegun.freeze_time('2017-01-01', tz_offset=1)
-    def test_get_object_uses_default_params(self, mock_db):
+    def test_get_object_uses_default_params(self, mock_list):
         # Arrange
         data = [
             {
@@ -487,8 +482,7 @@ class TestOIORestObject(TestCase):
         ]
         uuid = "d5995ed0-d527-4841-9e33-112b22aaade1"
 
-        mock_db.list_objects = MagicMock()
-        mock_db.list_objects.return_value = [data]
+        mock_list.return_value = [data]
 
         now = datetime.datetime.now()
 
@@ -502,12 +496,12 @@ class TestOIORestObject(TestCase):
             actual_result = json.loads(actual_result_json)
 
         # Assert
-        actual_args = mock_db.list_objects.call_args[0]
+        actual_args = mock_list.call_args[0]
 
         self.assertEqual(expected_args, actual_args)
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.oio_rest.db')
+    @patch('oio_rest.oio_rest.db.list_objects')
     def test_get_object_uses_supplied_params(self, mock):
         # Arrange
         data = [
@@ -525,8 +519,7 @@ class TestOIORestObject(TestCase):
         registreretfra = datetime.datetime(2012, 1, 1)
         registrerettil = datetime.datetime(2015, 1, 1)
 
-        mock.list_objects = MagicMock()
-        mock.list_objects.return_value = [data]
+        mock.return_value = [data]
 
         expected_args = (
             'TestClassRestObject', [uuid],
@@ -551,19 +544,18 @@ class TestOIORestObject(TestCase):
             actual_result = json.loads(actual_result_json)
 
         # Assert
-        actual_args = mock.list_objects.call_args[0]
+        actual_args = mock.call_args[0]
 
         self.assertEqual(expected_args, actual_args)
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.oio_rest.db')
+    @patch('oio_rest.oio_rest.db.list_objects')
     def test_get_object_raises_on_no_results(self, mock):
         # Arrange
         data = []
         uuid = "4efbbbde-e197-47be-9d40-e08f1cd00259"
 
-        mock.list_objects = MagicMock()
-        mock.list_objects.return_value = data
+        mock.return_value = data
 
         # Act
         with self.app.test_request_context(method='GET'), \
@@ -590,7 +582,6 @@ class TestOIORestObject(TestCase):
         with self.app.test_request_context(method='GET'), \
              self.assertRaises(GoneException):
             self.testclass.get_object(uuid).data
-
 
     def test_put_object_with_no_input_returns_uuid_none_and_code_400(
             self):
