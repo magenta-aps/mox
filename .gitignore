@@ -41,3 +41,9 @@ agents/MoxDocumentUpload/setup/moxdocumentupload.wsgi
 agents/MoxRestFrontend/moxrestfrontend.conf
 agents/MoxTabel/moxtabel.conf
 agents/MoxTabel/setup/moxtabel.conf
+tests.xml
+coverage.xml
+.coverage
+.eggs
+.pytest_cache
+venv

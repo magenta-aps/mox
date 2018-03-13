@@ -38,10 +38,13 @@ jinja_env = Environment(loader=FileSystemLoader(
 
 
 def adapt(value):
+    if not hasattr(adapt, 'connection'):
+        adapt.connection = get_connection()
+
     adapter = psyco_adapt(value)
     if hasattr(adapter, 'prepare'):
-        adapter.prepare(adapt_connection)
-    return unicode(adapter.getquoted(), adapt_connection.encoding)
+        adapter.prepare(adapt.connection)
+    return unicode(adapter.getquoted(), adapt.connection.encoding)
 
 
 jinja_env.filters['adapt'] = adapt
@@ -60,9 +63,6 @@ def get_connection():
     )
     connection.autocommit = True
     return connection
-
-
-adapt_connection = get_connection()
 
 
 def convert_attr_value(attribute_name, attribute_field_name,
