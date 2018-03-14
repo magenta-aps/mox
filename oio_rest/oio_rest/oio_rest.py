@@ -290,7 +290,7 @@ class OIORestObject(object):
     @requires_auth
     def put_object(cls, uuid):
         """
-        UPDATE, IMPORT or PASSIVIZE an  object.
+        IMPORT or UPDATE an  object, replacing its contents completely.
         """
         input = cls.get_json()
         if not input:
@@ -313,8 +313,7 @@ class OIORestObject(object):
         if not exists:
             # Do import.
             request.api_operation = "Import"
-            db.create_or_import_object(cls.__name__, note,
-                                       registration, uuid)
+            db.create_or_import_object(cls.__name__, note, registration, uuid)
             return jsonify({'uuid': uuid}), 200
         elif deleted_or_passive:
             # Import.
@@ -323,29 +322,59 @@ class OIORestObject(object):
                              uuid=uuid,
                              life_cycle_code=db.Livscyklus.IMPORTERET.value)
             return jsonify({'uuid': uuid}), 200
-
         else:
-            "Edit or passivate."
-            if typed_get(input, 'livscyklus', '').lower() == 'passiv':
-                # Passivate
-                request.api_operation = "Passiver"
-                registration = cls.gather_registration({})
-                db.passivate_object(
-                    cls.__name__, note, registration, uuid
+            # Edit.
+            request.api_operation = "Ret"
+            # TODO: This needs to be implemented!
+            db.create_or_import_object(cls.__name__, note, registration, uuid)
+
+            return jsonify({'message': "NOT IMPLEMENTED!"}), 200
+
+        # We should never get here.
+        assert(0 != 0)
+
+    @classmethod
+    @requires_auth
+    def patch_object(cls, uuid):
+        """UPDATE or PASSIVIZE this object."""
+
+        # If the object doesn't exist, we can't patch it.
+        if not db.object_exists(cls.__name__, uuid):
+            raise NotFoundException(
+                "No {} with ID {} found in service {}".format(
+                    cls.__name__, uuid, cls.service_name
                 )
-                return jsonify({'uuid': uuid}), 200
-            else:
-                # Edit/change
-                request.api_operation = "Ret"
-                db.update_object(cls.__name__, note, registration,
-                                 uuid)
-                return jsonify({'uuid': uuid}), 200
-        return j(u"Forkerte parametre!"), 405
+            )
+
+        input = cls.get_json()
+        if not input:
+            return jsonify({'uuid': None}), 400
+        # Get most common parameters if available.
+        note = typed_get(input, "note", "")
+        registration = cls.gather_registration(input)
+
+        # We have input, we have a registration & captured the note - now do
+        # the deed.
+        "Edit or passivate."
+        if typed_get(input, 'livscyklus', '').lower() == 'passiv':
+            # Passivate
+            request.api_operation = "Passiver"
+            registration = cls.gather_registration({})
+            db.passivate_object(
+                cls.__name__, note, registration, uuid
+            )
+            return jsonify({'uuid': uuid}), 200
+        else:
+            # Edit/change
+            request.api_operation = "Ret"
+            db.update_object(cls.__name__, note, registration,
+                             uuid)
+            return jsonify({'uuid': uuid}), 200
 
     @classmethod
     @requires_auth
     def delete_object(cls, uuid):
-        # Delete facet
+        """Logically delete this object."""
         input = cls.get_json() or {}
         note = typed_get(input, "note", "")
         class_name = cls.__name__
@@ -397,6 +426,9 @@ class OIORestObject(object):
 
         flask.add_url_rule(object_url, u'_'.join([cls.__name__, 'put_object']),
                            cls.put_object, methods=['PUT'])
+        flask.add_url_rule(object_url,
+                           u'_'.join([cls.__name__, 'patch_object']),
+                           cls.patch_object, methods=['PATCH'])
         flask.add_url_rule(
             class_url, u'_'.join([cls.__name__, 'create_object']),
             cls.create_object, methods=['POST']
