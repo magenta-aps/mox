@@ -10,6 +10,7 @@ fi
 virtualenv -p python venv
 
 venv/bin/python setup.py test
+venv/bin/python setup.py flake8 || true
 
 if [[ "$NO_SETTINGS" = true ]]; then
     rm oio_rest/settings.py

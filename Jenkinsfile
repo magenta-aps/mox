@@ -22,6 +22,10 @@ pipeline {
       junit healthScaleFactor: 200.0,           \
         testResults: 'oio_rest/tests.xml'
 
+      warnings canRunOnFailed: true, consoleParsers: [
+        [parserName: 'Pep8']
+      ]
+
       cobertura coberturaReportFile: 'oio_rest/coverage.xml',    \
         maxNumberOfBuilds: 0
     }
