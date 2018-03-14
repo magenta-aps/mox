@@ -15,8 +15,7 @@ from oio_rest.oio_rest import OIOStandardHierarchy, OIORestObject
 
 
 class TestClassRestObject(OIORestObject):
-    _name = "TestClass"
-    _classes = []
+    pass
 
 
 class TestClassStandardHierarchy(OIOStandardHierarchy):
@@ -26,7 +25,7 @@ class TestClassStandardHierarchy(OIOStandardHierarchy):
 
 class TestOIORestObjectCreateApi(TestCase):
     def setUp(self):
-        self.testclass = TestClassRestObject()
+        self.testclass = TestClassRestObject
         self.flask = MagicMock()
         self.flask.add_url_rule = MagicMock()
 
@@ -773,9 +772,7 @@ class TestOIOStandardHierarchy(TestCase):
     def test_setup_api_calls_create_api_on_classes(self):
         # Arrange
         cls1 = MagicMock()
-        cls1.create_api = MagicMock()
         cls2 = MagicMock()
-        cls2.create_api = MagicMock()
         TestClassStandardHierarchy._classes = [cls1, cls2]
 
         # Act
@@ -788,7 +785,6 @@ class TestOIOStandardHierarchy(TestCase):
     def test_setup_api_calls_flask_add_url_rule_with_correct_params(self):
         # Arrange
         flask = MagicMock()
-        flask.add_url_rule = MagicMock()
 
         # Act
         self.testclass.setup_api(base_url="URL", flask=flask)
