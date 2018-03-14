@@ -1,13 +1,11 @@
 import datetime
-from itertools import count
 from unittest import TestCase
 
-from mock import MagicMock, patch, call, mock
-from psycopg2._range import DateTimeTZRange
+from mock import MagicMock, call, patch
 
 import oio_rest.db as db
-from oio_rest.custom_exceptions import (NotFoundException, BadRequestException,
-                                        DBException)
+from oio_rest.custom_exceptions import (BadRequestException, DBException,
+                                        NotFoundException)
 
 
 class TestDB(TestCase):
@@ -323,7 +321,7 @@ class TestDB(TestCase):
         }
 
         # Act
-        actual_result = db.convert_relations(relations, "classname")
+        db.convert_relations(relations, "classname")
 
         # Assert
         self.assertIn(call("classname", "field1", "value1"),
@@ -437,9 +435,6 @@ class TestDB(TestCase):
         # Arrange
         mock_get_field_type.return_value = "soegeord"
 
-        classname = "classname"
-        note = "note"
-        uuid = "e225fc3d-68da-4867-9c6a-1d46c282befc"
         value = [
             ["identifier1", "description1", "category1"],
             ["identifier2", "description2", "category2"]
@@ -488,9 +483,6 @@ class TestDB(TestCase):
 
         # Arrange
         mock_get_field_type.return_value = "offentlighedundtagettype"
-
-        alternativtitel = 'ALTERNATIVTITEL'
-        hjemmel = 'HJEMMEL'
 
         value = {}
 
@@ -1038,7 +1030,6 @@ class TestDBObjectFunctions(TestCase):
                                         mock_get_conn):
         # type: (MagicMock, MagicMock) -> None
         # Arrange
-        mock_get_conn.return_value.cursor.return_value = cursor = MagicMock()
         uuid = "uuid"
 
         # Act

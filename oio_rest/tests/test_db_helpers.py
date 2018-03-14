@@ -1,7 +1,6 @@
-import json
 from unittest import TestCase
 
-from mock import MagicMock, patch, call, mock_open
+from mock import MagicMock, call, patch
 from werkzeug.datastructures import ImmutableMultiDict
 
 from oio_rest import db_helpers
@@ -76,25 +75,6 @@ class TestDBHelpers(TestCase):
 
         # Assert
         self.assertEqual(expected_result, actual_result)
-
-    @patch('oio_rest.db_helpers.DokumentVariantEgenskaberType')
-    @patch('oio_rest.db_helpers.DokumentDelType')
-    def test_dokumentvarianttype_input(self, mock1, mock2):
-        from oio_rest.db_helpers import DokumentVariantType
-
-        # Arrange
-        expected_result = {}
-
-        # Act
-        inputdata = {
-            'varianttekst': '',
-            'egenskaber': ['1'],
-            'dele': ['']
-        }
-        actual_result = DokumentVariantType.input(inputdata)
-
-        # Assert
-        # self.assertEqual(expected_result, actual_result)
 
     def test_get_field_type_default(self):
         # Arrange
@@ -498,7 +478,6 @@ class TestDBHelpers(TestCase):
         from flask import request
 
         # Arrange
-        expected_result = None
         mockfile = MagicMock()
         app = flask.Flask(__name__)
 

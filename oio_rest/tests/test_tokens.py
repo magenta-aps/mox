@@ -38,8 +38,7 @@ class TestTokens(TestCase):
         mock_etree_tostring.assert_called_with(mock.ANY, pretty_print=True)
 
     @patch('oio_rest.auth.tokens.requests')
-    @patch('oio_rest.auth.tokens.jinja_env')
-    def test_get_token(self, mock_jinja_env, mock_requests):
+    def test_get_token(self, mock_requests):
         # type: (MagicMock, MagicMock) -> None
         # Arrange
         username = ''
