@@ -24,6 +24,7 @@ DECLARE
   
   facet_relationer FacetRelationType;
   auth_filtered_uuids uuid[];
+  does_exist boolean;
 BEGIN
 
 IF facet_uuid IS NULL THEN
@@ -33,22 +34,28 @@ IF facet_uuid IS NULL THEN
     END LOOP;
 END IF;
 
-
 IF EXISTS (SELECT id from facet WHERE id=facet_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing facet with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_facet (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',facet_uuid USING ERRCODE='MO500';
-END IF;
 
-IF  (facet_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (facet_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
+    does_exist = True;
+
+END IF; 
+
+--IF EXISTS (SELECT id from facet WHERE id=facet_uuid) and (facet_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
+--  RAISE EXCEPTION 'Error creating or importing facet with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_facet (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',facet_uuid USING ERRCODE='MO500';
+--END IF;
+
+IF  (facet_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (facet_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode and (facet_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
   RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_facet.',(facet_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
+if not does_exist THEN
 
-INSERT INTO 
-      facet (ID)
-SELECT
-      facet_uuid
-;
+	INSERT INTO 
+            facet (ID)
+        SELECT
+           facet_uuid;
+END IF;
 
 
 /*********************************/

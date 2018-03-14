@@ -17,14 +17,6 @@
 DIR=$(dirname ${BASH_SOURCE[0]})
 source $DIR/config.sh
 
-if [ -z $AUTH_TOKEN ]
-then
-    AUTH_TOKEN=$(${DIR}/../auth.sh --insecure)
-    if [ -z $AUTH_TOKEN ]
-    then
-         AUTH="-H \"Authorization: -z $AUTH_TOKEN\""
-    fi
-fi
 
 result=$(curl -k -H "Content-Type: application/json" -X POST -d "$(cat $DIR/test_data/facet_opret.json)" $HOST_URL/klassifikation/facet)
 
@@ -41,15 +33,15 @@ fi
 # - Suppose no object with this ID exists.
 import_uuid=$(uuidgen)
 
-curl -k --write-out %{http_code} --output /tmp/facet_opret.txt -sH "Content-Type: application/json" $AUTH -X PUT -d "$(cat $DIR/test_data/facet_opret.json)" $HOST_URL/klassifikation/facet/$import_uuid 
+curl -k  %{http_code} --output /tmp/facet_opret.txt -sH "Content-Type: application/json" $AUTH -X PUT -d "$(cat $DIR/test_data/facet_opret.json)" $HOST_URL/klassifikation/facet/$import_uuid 
 
 # Update the facet
 
-curl -k -sH "Content-Type: application/json" $AUTH -X PUT -d "$(cat $DIR/test_data/facet_opdater.json)" $HOST_URL/klassifikation/facet/$uuid
+curl -k -sH "Content-Type: application/json" $AUTH -X PATCH -d "$(cat $DIR/test_data/facet_opdater.json)" $HOST_URL/klassifikation/facet/$uuid
 
 # Passivate the facet. 
 
-curl -k -sH "Content-Type: application/json"  $AUTH -X PUT -d "$(cat $DIR/test_data/facet_passiv.json)" $HOST_URL/klassifikation/facet/$uuid
+curl -k -sH "Content-Type: application/json"  $AUTH -X PATCH -d "$(cat $DIR/test_data/facet_passiv.json)" $HOST_URL/klassifikation/facet/$uuid
 
 # Delete the facet. 
 
