@@ -1,19 +1,16 @@
+import sys
 from unittest import TestCase
 
-import sys
-
 import requests
-from mock import patch, MagicMock, mock
+from mock import MagicMock, patch
 
 from oio_rest.auth import tokens
 
 
 class TestTokens(TestCase):
-    @patch('oio_rest.auth.tokens.etree.tostring')
     @patch('oio_rest.auth.tokens.requests')
     @patch('oio_rest.auth.tokens.jinja_env')
-    def test_get_token_pretty_printed(self, mock_jinja_env, mock_requests,
-                                      mock_etree_tostring):
+    def test_get_token_pretty_printed(self, mock_jinja_env, mock_requests):
         # type: (MagicMock, MagicMock, MagicMock) -> None
         # Arrange
         username = ''
@@ -22,20 +19,30 @@ class TestTokens(TestCase):
         mock_requests.post.return_value = resp = MagicMock()
         resp.ok = True
         resp.content = '''
-        <Body>
-            <RequestSecurityTokenResponse>
-                <RequestedSecurityToken>
-                    <Assertion whatever='1'></Assertion>
-                </RequestedSecurityToken>
-            </RequestSecurityTokenResponse>
-        </Body>
-        '''
+            <Body>
+                <RequestSecurityTokenResponse>
+                    <RequestedSecurityToken>
+                        <Assertion whatever="1">
+                            <Issuer>issuer</Issuer>
+                            <Subject>subject</Subject>
+                            <Conditions>conditions</Conditions>
+                        </Assertion>
+                    </RequestedSecurityToken>
+                </RequestSecurityTokenResponse>
+            </Body>'''
+
+        expected = '''<Assertion whatever="1">
+                            <Issuer>issuer</Issuer>
+                            <Subject>subject</Subject>
+                            <Conditions>conditions</Conditions>
+                        </Assertion>
+                    \n'''
 
         # Act
-        tokens.get_token(username, passwd, pretty_print=True)
+        actual = tokens.get_token(username, passwd, pretty_print=True)
 
         # Assert
-        mock_etree_tostring.assert_called_with(mock.ANY, pretty_print=True)
+        self.assertEquals(expected, actual)
 
     @patch('oio_rest.auth.tokens.requests')
     def test_get_token(self, mock_requests):
