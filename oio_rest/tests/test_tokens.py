@@ -56,7 +56,7 @@ class TestTokens(TestCase):
         </Body>
         '''
 
-        expected_result = ('saml-gzipped H4sIAAAAAAAAA7NxLC5OLSrJzM9TKM9I'
+        expected_result = ('saml-gzipped H4sIAAAAAAAC/7NxLC5OLSrJzM9TKM9I'
                            'LEktSy2yVTJU0rfjUkADALryg9gqAAAA')
 
         # Act

@@ -1,9 +1,11 @@
 import base64
+import cStringIO
 import datetime
+import gzip
 import os
 import sys
+
 import requests
-import zlib
 
 from lxml import etree
 import jinja2
@@ -23,10 +25,12 @@ IDP_TEMPLATES = {
 
 
 def _gzipstring(s):
-    compressor = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION,
-                                  zlib.DEFLATED, 16 + zlib.MAX_WBITS)
+    buf = cStringIO.StringIO()
 
-    return compressor.compress(s) + compressor.flush()
+    with gzip.GzipFile(mode='wb', fileobj=buf, mtime=0) as fp:
+        fp.write(s)
+
+    return buf.getvalue()
 
 
 def get_token(username, passwd, pretty_print=False, insecure=False):
