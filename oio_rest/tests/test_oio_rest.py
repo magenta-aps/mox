@@ -186,11 +186,13 @@ class TestOIORestObject(TestCase):
     def test_get_json_returns_badrequest_if_malformed_form_json(self):
         # Arrange
         # Act
-        with self.app.test_request_context(
-                data='json={123123123}',
-                content_type='application/x-www-form-urlencoded',
-                method='POST'), \
-             self.assertRaises(BadRequest):
+        with \
+                self.app.test_request_context(
+                    data='json={123123123}',
+                    content_type='application/x-www-form-urlencoded',
+                    method='POST',
+                ), \
+                self.assertRaises(BadRequest):
             self.testclass.get_json()
 
     def test_get_json_returns_none_if_request_json_is_none(self):
@@ -463,7 +465,7 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='GET',
                                            query_string=request_params), \
-             self.assertRaises(BadRequestException):
+                self.assertRaises(BadRequestException):
             self.testclass.get_objects()
 
     @patch('oio_rest.oio_rest.db.list_objects')
@@ -558,7 +560,7 @@ class TestOIORestObject(TestCase):
 
         # Act
         with self.app.test_request_context(method='GET'), \
-             self.assertRaises(NotFoundException):
+                self.assertRaises(NotFoundException):
             self.testclass.get_object(uuid).data
 
     @patch('oio_rest.oio_rest.db.list_objects')
@@ -579,7 +581,7 @@ class TestOIORestObject(TestCase):
 
         # Act
         with self.app.test_request_context(method='GET'), \
-             self.assertRaises(GoneException):
+                self.assertRaises(GoneException):
             self.testclass.get_object(uuid).data
 
     def test_put_object_with_no_input_returns_uuid_none_and_code_400(

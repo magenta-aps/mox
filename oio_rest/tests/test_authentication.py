@@ -15,7 +15,7 @@ class TestAuthentication(TestCase):
     def test_check_saml_authentication_raises_on_no_auth(self):
         # Act & Assert
         with self.app.test_request_context(), \
-             self.assertRaises(UnauthorizedException):
+                self.assertRaises(UnauthorizedException):
             authentication.check_saml_authentication()
 
     def test_check_saml_authentication_raises_on_unknown_auth(self):
