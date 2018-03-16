@@ -12,7 +12,7 @@
 # the REST API for all classes in the hierarchy.
 
 # First, create a new facet.
-
+set -x
 # Test configuration
 DIR=$(dirname ${BASH_SOURCE[0]})
 source $DIR/config.sh

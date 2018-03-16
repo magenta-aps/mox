@@ -328,7 +328,7 @@ class OIORestObject(object):
             # TODO: This needs to be implemented!
             db.create_or_import_object(cls.__name__, note, registration, uuid)
 
-            return jsonify({'message': "NOT IMPLEMENTED!"}), 200
+            return jsonify({'uuid': uuid}), 200
 
         # We should never get here.
         assert(0 != 0)

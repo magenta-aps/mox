@@ -25,6 +25,8 @@ DECLARE
   facet_relationer FacetRelationType;
   auth_filtered_uuids uuid[];
   does_exist boolean;
+  new_facet_registrering facet_registrering;
+  prev_facet_registrering facet_registrering;
 BEGIN
 
 IF facet_uuid IS NULL THEN
@@ -35,8 +37,10 @@ IF facet_uuid IS NULL THEN
 END IF;
 
 IF EXISTS (SELECT id from facet WHERE id=facet_uuid) THEN
+   does_exist = True;
+ELSE
 
-    does_exist = True;
+    does_exist = False;
 
 END IF; 
 
@@ -61,23 +65,34 @@ END IF;
 /*********************************/
 --Insert new registrering
 
-facet_registrering_id:=nextval('facet_registrering_id_seq');
 
-INSERT INTO facet_registrering (
-      id,
-        facet_id,
-          registrering
+if not  does_exist THEN
+        facet_registrering_id:=nextval('facet_registrering_id_seq');
+
+        INSERT INTO facet_registrering (
+            id,
+            facet_id,
+            registrering
         )
-SELECT
-      facet_registrering_id,
-        facet_uuid,
-          ROW (
-            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+        SELECT
+          facet_registrering_id,
+            facet_uuid,
+              ROW (
+                TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+                (facet_registrering.registrering).livscykluskode,
+                (facet_registrering.registrering).brugerref,
+                (facet_registrering.registrering).note
+                  ):: RegistreringBase;
+    ELSE
+        -- This is an update, not an import or create
+        new_facet_registrering := _as_create_facet_registrering(
+            facet_uuid,
             (facet_registrering.registrering).livscykluskode,
             (facet_registrering.registrering).brugerref,
-            (facet_registrering.registrering).note
-              ):: RegistreringBase
-;
+            (facet_registrering.registrering).note);
+
+        facet_registrering_id := new_facet_registrering.id;
+END IF;
 
 /*********************************/
 --Insert attributes
@@ -91,7 +106,7 @@ SELECT
 IF coalesce(array_length(facet_registrering.attrEgenskaber, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [facet]. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
-
+ 
 
 
 IF facet_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(facet_registrering.attrEgenskaber,1),0)>0 THEN
