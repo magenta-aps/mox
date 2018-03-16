@@ -13,28 +13,26 @@ class TestDBHelpers(TestCase):
         db_helpers._attribute_names = {}
         db_helpers._relation_names = {}
 
-    def test_get_attribute_reads_db_struct(self):
-        # Arrange
-
-        db_struct = {
-            'testclass1': {
-                'attributter': {
-                    'testattribut': [
-                        'value1',
-                        'value2'
-                    ]
-                }
-            },
-            'testclass2': {
-                'attributter': {
-                    'testattribut': [
-                        'value3',
-                        'value4'
-                    ]
-                }
+    @patch('oio_rest.db_helpers.db_struct', new={
+        'testclass1': {
+            'attributter': {
+                'testattribut': [
+                    'value1',
+                    'value2'
+                ]
+            }
+        },
+        'testclass2': {
+            'attributter': {
+                'testattribut': [
+                    'value3',
+                    'value4'
+                ]
             }
         }
-
+    })
+    def test_get_attribute_reads_db_struct(self):
+        # Arrange
         expected_fields = {
             'testclass1testattribut': [
                 'value1',
@@ -53,8 +51,6 @@ class TestDBHelpers(TestCase):
             'value2',
             'virkning'
         ]
-
-        patch('oio_rest.db_helpers.db_struct', new=db_struct).start()
 
         # Act
         actual_result = db_helpers.get_attribute_fields(
@@ -86,20 +82,17 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    def test_get_field_type_override(self):
-        # Arrange
-        db_struct = {
-            'testclass1': {
-                'attributter_type_override': {
-                    'testattribut': {
-                        'value': 'value_override'
-                    }
+    @patch('oio_rest.db_helpers.db_struct', new={
+        'testclass1': {
+            'attributter_type_override': {
+                'testattribut': {
+                    'value': 'value_override'
                 }
             }
         }
-
-        patch('oio_rest.db_helpers.db_struct', new=db_struct).start()
-
+    })
+    def test_get_field_type_override(self):
+        # Arrange
         expected_result = 'value_override'
 
         # Act
@@ -109,20 +102,17 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    def test_get_field_type_override_field_not_found(self):
-        # Arrange
-        db_struct = {
-            'testclass1': {
-                'attributter_type_override': {
-                    'testattribut': {
-                        'value': 'value_override'
-                    }
+    @patch('oio_rest.db_helpers.db_struct', new={
+        'testclass1': {
+            'attributter_type_override': {
+                'testattribut': {
+                    'value': 'value_override'
                 }
             }
         }
-
-        patch('oio_rest.db_helpers.db_struct', new=db_struct).start()
-
+    })
+    def test_get_field_type_override_field_not_found(self):
+        # Arrange
         expected_result = 'text'
 
         # Act
@@ -132,10 +122,9 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    def test_get_relation_field_type_default(self):
+    @patch('oio_rest.db_helpers.db_struct')
+    def test_get_relation_field_type_default(self, p):
         # Arrange
-        patch('oio_rest.db_helpers.db_struct').start()
-
         expected_result = 'text'
 
         # Act
@@ -145,18 +134,15 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    def test_get_relation_field_type_override(self):
-        # Arrange
-        db_struct = {
-            'testclass1': {
-                'relationer_type_override': {
-                    'value': 'value_override'
-                }
+    @patch('oio_rest.db_helpers.db_struct', new={
+        'testclass1': {
+            'relationer_type_override': {
+                'value': 'value_override'
             }
         }
-
-        patch('oio_rest.db_helpers.db_struct', new=db_struct).start()
-
+    })
+    def test_get_relation_field_type_override(self):
+        # Arrange
         expected_result = 'value_override'
 
         # Act
@@ -166,18 +152,15 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    def test_get_relation_field_type_override_field_not_found(self):
-        # Arrange
-        db_struct = {
-            'testclass1': {
-                'relationer_type_override': {
-                    'value': 'value_override'
-                }
+    @patch('oio_rest.db_helpers.db_struct', new={
+        'testclass1': {
+            'relationer_type_override': {
+                'value': 'value_override'
             }
         }
-
-        patch('oio_rest.db_helpers.db_struct', new=db_struct).start()
-
+    })
+    def test_get_relation_field_type_override_field_not_found(self):
+        # Arrange
         expected_result = 'text'
 
         # Act
@@ -187,25 +170,22 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    def test_get_attribute_names_reads_db_struct(self):
-        # Arrange
-        db_struct = {
-            'testclass1': {
-                'attributter': {
-                    'testattribut1': [
-                        'value1',
-                        'value2'
-                    ],
-                    'testattribut2': [
-                        'value3',
-                        'value4'
-                    ]
-                }
+    @patch('oio_rest.db_helpers.db_struct', new={
+        'testclass1': {
+            'attributter': {
+                'testattribut1': [
+                    'value1',
+                    'value2'
+                ],
+                'testattribut2': [
+                    'value3',
+                    'value4'
+                ]
             }
         }
-
-        patch('oio_rest.db_helpers.db_struct', new=db_struct).start()
-
+    })
+    def test_get_attribute_names_reads_db_struct(self):
+        # Arrange
         expected_result = ['testclass1testattribut1',
                            'testclass1testattribut2']
 
@@ -226,25 +206,22 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    def test_get_state_names(self):
-        # Arrange
-        db_struct = {
-            'testclass1': {
-                'tilstande': {
-                    'testtilstand1': [
-                        'value1',
-                        'value2'
-                    ],
-                    'testtilstand2': [
-                        'value3',
-                        'value4'
-                    ]
-                }
+    @patch('oio_rest.db_helpers.db_struct', new={
+        'testclass1': {
+            'tilstande': {
+                'testtilstand1': [
+                    'value1',
+                    'value2'
+                ],
+                'testtilstand2': [
+                    'value3',
+                    'value4'
+                ]
             }
         }
-
-        patch('oio_rest.db_helpers.db_struct', new=db_struct).start()
-
+    })
+    def test_get_state_names(self):
+        # Arrange
         expected_result = {
             'testtilstand1': [
                 'value1',
@@ -262,23 +239,20 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
+    @patch('oio_rest.db_helpers.db_struct', new={
+        'testclass1': {
+            'relationer_nul_til_en': [
+                'value1',
+                'value2'
+            ],
+            'relationer_nul_til_mange': [
+                'value3',
+                'value4'
+            ]
+        }
+    })
     def test_get_relation_names(self):
         # Arrange
-        db_struct = {
-            'testclass1': {
-                'relationer_nul_til_en': [
-                    'value1',
-                    'value2'
-                ],
-                'relationer_nul_til_mange': [
-                    'value3',
-                    'value4'
-                ]
-            }
-        }
-
-        patch('oio_rest.db_helpers.db_struct', new=db_struct).start()
-
         expected_result = ['value1', 'value2', 'value3', 'value4']
 
         # Act

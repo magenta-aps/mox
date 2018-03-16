@@ -248,14 +248,14 @@ class TestOIORestObject(TestCase):
         db_structure = {"testclassrestobject": expected_fields,
                         "garbage": ["garbage"]}
 
-        patch("oio_rest.db_structure.REAL_DB_STRUCTURE",
-              new=db_structure).start()
+        with patch("oio_rest.db_structure.REAL_DB_STRUCTURE",
+                   new=db_structure):
 
-        # Act
-        actual_fields = json.loads(self.testclass.get_fields())
+            # Act
+            actual_fields = json.loads(self.testclass.get_fields())
 
-        # Assert
-        self.assertEquals(expected_fields, actual_fields)
+            # Assert
+            self.assertEquals(expected_fields, actual_fields)
 
     @patch('datetime.datetime')
     @patch('oio_rest.oio_rest.db.list_objects')
@@ -816,19 +816,19 @@ class TestOIOStandardHierarchy(TestCase):
         db_structure = expected_result.copy()
         db_structure.update({"garbage": "1234"})
 
-        patch("oio_rest.db_structure.REAL_DB_STRUCTURE",
-              new=db_structure).start()
+        with patch("oio_rest.db_structure.REAL_DB_STRUCTURE",
+                   new=db_structure):
 
-        # Act
-        self.testclass.setup_api(base_url="URL", flask=flask)
+            # Act
+            self.testclass.setup_api(base_url="URL", flask=flask)
 
-        # Assert
-        flask.add_url_rule.assert_called_once()
+            # Assert
+            flask.add_url_rule.assert_called_once()
 
-        get_classes = flask.add_url_rule.call_args[0][2]
-        actual_result = json.loads(get_classes())
+            get_classes = flask.add_url_rule.call_args[0][2]
+            actual_result = json.loads(get_classes())
 
-        self.assertDictEqual(actual_result, expected_result)
+            self.assertDictEqual(actual_result, expected_result)
 
 
 class TestOIORest(TestCase):
