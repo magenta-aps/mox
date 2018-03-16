@@ -25,7 +25,7 @@ def get_attribute_fields(attribute_name):
             for a in db_struct[c]["attributter"]:
                 _attribute_fields[
                     c + a
-                    ] = db_struct[c]["attributter"][a] + ['virkning']
+                ] = db_struct[c]["attributter"][a] + ['virkning']
     return _attribute_fields[attribute_name.lower()]
 
 
@@ -56,7 +56,7 @@ def get_attribute_names(class_name):
         for c in db_struct:
             _attribute_names[c] = [
                 c + a for a in db_struct[c]['attributter']
-                ]
+            ]
     return _attribute_names[class_name.lower()]
 
 
@@ -78,7 +78,7 @@ def get_relation_names(class_name):
             _relation_names[c] = [
                 a for a in db_struct[c]['relationer_nul_til_en'] +
                 [b for b in db_struct[c]['relationer_nul_til_mange']]
-                ]
+            ]
     return _relation_names[class_name.lower()]
 
 

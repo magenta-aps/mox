@@ -1,7 +1,4 @@
-from datetime import datetime
-
 import pika
-import requests
 import json
 
 import settings
@@ -74,7 +71,7 @@ def log_service_call(service_name, class_name, time,
     }
 
     # TODO: Get auth token if auth enabled
-    authorization = ''
+
     # Send AMQP message to LOG_SERVICE_URL
 
     connection = pika.BlockingConnection(pika.ConnectionParameters(

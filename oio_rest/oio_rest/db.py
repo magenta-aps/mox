@@ -109,17 +109,19 @@ def convert_relation_value(class_name, field_name, value):
         )
     elif field_type == 'aktoerattr':
         if value:
-            return AktoerAttr(value.get("accepteret", None),
+            return AktoerAttr(
+                value.get("accepteret", None),
                 value.get("obligatorisk", None),
                 value.get("repraesentation_uuid", None),
-                value.get("repraesentation_urn", None))
+                value.get("repraesentation_urn", None),
+            )
     elif field_type == 'vaerdirelationattr':
         result = VaerdiRelationAttr(
-                     value.get("forventet", None),
-                     value.get("nominelvaerdi", None)
+            value.get("forventet", None),
+            value.get("nominelvaerdi", None)
         )
         return result
-    # Default: no conversion. 
+    # Default: no conversion.
     return value
 
 
@@ -136,7 +138,7 @@ def convert_attributes(attributes):
                         attr_name, f, attr_period[f]
                     ) if f in attr_period else None
                     for f in field_names
-                    ]
+                ]
                 converted_attr_periods.append(attr_value_list)
             attributes[attr_name] = converted_attr_periods
     return attributes

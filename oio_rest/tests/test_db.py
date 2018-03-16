@@ -31,8 +31,8 @@ class TestDB(TestCase):
 
         # Act
         with patch('oio_rest.settings.DATABASE', new=database), \
-             patch('oio_rest.settings.DB_USER', new=user), \
-             patch('oio_rest.settings.DB_PASSWORD', new=password):
+                patch('oio_rest.settings.DB_USER', new=user), \
+                patch('oio_rest.settings.DB_PASSWORD', new=password):
 
             db.get_connection()
 
