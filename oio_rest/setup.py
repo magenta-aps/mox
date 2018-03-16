@@ -38,7 +38,7 @@ setup(
         'itsdangerous==0.24',
         'psycopg2==2.6',
         'wsgiref==0.1.2',
-        'python-saml==2.1.3',
+        'python-saml==2.4.0',
         'pexpect==3.3',
         'python-dateutil==2.6.0',
         'egenix-mx-base==3.2.9',
