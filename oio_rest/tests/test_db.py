@@ -18,20 +18,26 @@ class TestDB(TestCase):
         user = "user"
         password = "password"
 
-        expected_arg = "dbname={0} user={1} password={2}".format(database,
-                                                                 user,
-                                                                 password)
+        expected_args = (
+            (),
+            {
+                'database': database,
+                'user': user,
+                'password': password,
+                'host': 'localhost',
+                'port': 5432,
+            },
+        )
 
         # Act
-        with patch('oio_rest.db.DATABASE', new=database), \
-             patch('oio_rest.db.DB_USER', new=user), \
-             patch('oio_rest.db.DB_PASSWORD', new=password):
+        with patch('oio_rest.settings.DATABASE', new=database), \
+             patch('oio_rest.settings.DB_USER', new=user), \
+             patch('oio_rest.settings.DB_PASSWORD', new=password):
+
             db.get_connection()
 
         # Assert
-        actual_arg = mock.connect.call_args[0][0]
-
-        self.assertEqual(expected_arg, actual_arg)
+        self.assertEqual(expected_args, mock.connect.call_args)
 
     @patch('oio_rest.db.unicode', new=MagicMock())
     @patch('oio_rest.db.psyco_adapt', new=MagicMock())

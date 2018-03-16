@@ -11,7 +11,7 @@ from jinja2 import Environment, FileSystemLoader
 from dateutil import parser as date_parser
 from mx.DateTime import DateTimeDeltaFrom
 
-from settings import DATABASE, DB_USER, DO_ENABLE_RESTRICTIONS, DB_PASSWORD
+from . import settings
 
 from db_helpers import get_attribute_fields, get_attribute_names
 from db_helpers import get_field_type, get_state_names, get_relation_field_type
@@ -57,9 +57,11 @@ jinja_env.filters['adapt'] = adapt
 def get_connection():
     """Handle all intricacies of connecting to Postgres."""
     connection = psycopg2.connect(
-        "dbname={0} user={1} password={2}".format(DATABASE,
-                                                  DB_USER,
-                                                  DB_PASSWORD)
+        database=settings.DATABASE,
+        user=settings.DB_USER,
+        password=settings.DB_PASSWORD,
+        host=getattr(settings, 'DB_HOST', 'localhost'),
+        port=getattr(settings, 'DB_PORT', 5432),
     )
     connection.autocommit = True
     return connection
@@ -287,7 +289,7 @@ def sql_convert_restrictions(class_name, restrictions):
 
 def get_restrictions_as_sql(user, class_name, operation):
     """Get restrictions for user and operation, return as array of SQL."""
-    if not DO_ENABLE_RESTRICTIONS:
+    if not settings.DO_ENABLE_RESTRICTIONS:
         return None
     restrictions = get_restrictions(user, class_name, operation)
     if restrictions == []:
