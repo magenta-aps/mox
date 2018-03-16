@@ -1,9 +1,22 @@
+#!/usr/bin/env python2.7
 # encoding: utf-8
 
 from setuptools import find_packages, setup
 
 version = '0.0.1'
 authors = 'C. Agger, Jørgen Ulrik B. Krag, Thomas Kristensen, Seth Yastrov'
+
+test_requires = [
+    'pytest',
+    'pytest-cov',
+    'mock',
+    'coverage',
+    'freezegun',
+    'flake8',
+    'flake8-imports',
+    'flake8-module-name',
+]
+
 setup(
     name='oio_rest',
     version=version,
@@ -50,11 +63,8 @@ setup(
             'oio_api = oio_rest.app:main',
         ],
     },
-    tests_require=[
-        'pytest',
-        'pytest-cov',
-        'mock',
-        'coverage',
-        'freezegun'
-    ]
+    tests_require=test_requires,
+    extras_require={
+        'tests': test_requires,
+    }
 )
