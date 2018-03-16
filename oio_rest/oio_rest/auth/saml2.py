@@ -1,3 +1,5 @@
+import traceback
+
 from onelogin.saml2.utils import OneLogin_Saml2_Utils, print_xmlsec_errors
 from onelogin.saml2.response import OneLogin_Saml2_Response
 from defusedxml.lxml import fromstring
@@ -239,6 +241,5 @@ def validate_sign(xml, cert=None, fingerprint=None, fingerprintalg='sha1',
         else:
             raise Exception('no signature nodes')
     except Exception:
-        if raise_on_failure:
-            raise
+        traceback.print_exc()
         return False

@@ -1,13 +1,24 @@
+#!/usr/bin/env python2.7
 # encoding: utf-8
-import os.path
-import subprocess
 
 from setuptools import find_packages, setup
-from setuptools.command.test import test
-
 
 version = '0.0.1'
 authors = 'C. Agger, Jørgen Ulrik B. Krag, Thomas Kristensen, Seth Yastrov'
+
+test_requires = [
+    'Flask-Testing',
+    'testing.postgresql',
+    'pytest',
+    'pytest-cov',
+    'mock',
+    'coverage',
+    'freezegun',
+    'flake8',
+    'flake8-imports',
+    'flake8-module-name',
+]
+
 setup(
     name='oio_rest',
     version=version,
@@ -26,7 +37,8 @@ setup(
     include_package_data=True,
     zip_safe=False,
     setup_requires=[
-        'pytest-runner'
+        'pytest-runner',
+        'flake8'
     ],
     install_requires=[
         # -*- Extra requirements: -*-
@@ -37,11 +49,11 @@ setup(
         'MarkupSafe==0.23',
         'Werkzeug==0.10.4',
         'argparse==1.2.1',
-        'enum34==1.0.4',
+        'enum34==1.1.6',
         'itsdangerous==0.24',
         'psycopg2==2.6',
         'wsgiref==0.1.2',
-        'python-saml==2.1.3',
+        'python-saml==2.4.0',
         'pexpect==3.3',
         'python-dateutil==2.6.0',
         'egenix-mx-base==3.2.9',
@@ -53,11 +65,8 @@ setup(
             'oio_api = oio_rest.app:main',
         ],
     },
-    tests_require=[
-        'pytest',
-        'pytest-cov',
-        'mock',
-        'coverage',
-        'freezegun'
-    ]
+    tests_require=test_requires,
+    extras_require={
+        'tests': test_requires,
+    }
 )

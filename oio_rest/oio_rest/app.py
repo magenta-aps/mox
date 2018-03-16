@@ -13,7 +13,6 @@ from psycopg2 import DataError
 from authentication import get_authenticated_user
 from log_client import log_service_call
 
-from settings import MOX_BASE_DIR, SAML_IDP_URL
 from custom_exceptions import OIOFlaskException, AuthorizationFailedException
 from custom_exceptions import BadRequestException
 from auth import tokens
