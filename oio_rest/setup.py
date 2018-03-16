@@ -7,6 +7,8 @@ version = '0.0.1'
 authors = 'C. Agger, Jørgen Ulrik B. Krag, Thomas Kristensen, Seth Yastrov'
 
 test_requires = [
+    'Flask-Testing',
+    'testing.postgresql',
     'pytest',
     'pytest-cov',
     'mock',
