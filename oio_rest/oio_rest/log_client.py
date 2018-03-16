@@ -1,12 +1,10 @@
 from datetime import datetime
-from settings import BASE_URL
 
 import pika
 import requests
 import json
 
-from settings import LOG_AMQP_SERVER, MOX_LOG_QUEUE, LOG_IGNORED_SERVICES
-from settings import MOX_LOG_EXCHANGE
+import settings
 
 
 def log_service_call(service_name, class_name, time,
@@ -14,7 +12,10 @@ def log_service_call(service_name, class_name, time,
                      object_uuid):
     """Log a call to a LoRa service."""
 
-    if service_name in LOG_IGNORED_SERVICES or not LOG_AMQP_SERVER:
+    if (
+        service_name in settings.LOG_IGNORED_SERVICES or
+        not settings.LOG_AMQP_SERVER
+    ):
         "Don't log the log service."
         return
 
@@ -27,7 +28,7 @@ def log_service_call(service_name, class_name, time,
         "notetekst": ""
     }
     logevent_dict = {
-        "note": BASE_URL,
+        "note": settings.BASE_URL,
         "attributter": {
             "loghaendelseegenskaber": [
                 {
@@ -77,12 +78,14 @@ def log_service_call(service_name, class_name, time,
     # Send AMQP message to LOG_SERVICE_URL
 
     connection = pika.BlockingConnection(pika.ConnectionParameters(
-        host=LOG_AMQP_SERVER
+        host=settings.LOG_AMQP_SERVER
     ))
     channel = connection.channel()
-    channel.queue_declare(queue=MOX_LOG_QUEUE)
-    channel.exchange_declare(exchange=MOX_LOG_EXCHANGE, type='fanout')
-    channel.queue_bind(MOX_LOG_QUEUE, exchange=MOX_LOG_EXCHANGE)
+    channel.queue_declare(queue=settings.MOX_LOG_QUEUE)
+    channel.exchange_declare(exchange=settings.MOX_LOG_EXCHANGE,
+                             type='fanout')
+    channel.queue_bind(settings.MOX_LOG_QUEUE,
+                       exchange=settings.MOX_LOG_EXCHANGE)
 
     message = json.dumps(logevent_dict)
     # print "Log exchange", LOG_EXCHANGE
@@ -92,7 +95,7 @@ def log_service_call(service_name, class_name, time,
         fp.flush()
 
     channel.basic_publish(
-        exchange=MOX_LOG_EXCHANGE,
+        exchange=settings.MOX_LOG_EXCHANGE,
         routing_key='',
         body=message,
         properties=pika.BasicProperties(
