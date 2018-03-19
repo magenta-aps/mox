@@ -8,7 +8,7 @@ import freezegun
 from mock import MagicMock, patch
 from werkzeug.exceptions import BadRequest
 
-from oio_rest import oio_rest, db
+from oio_rest import oio_rest, db, db_helpers
 from oio_rest.custom_exceptions import (BadRequestException, NotFoundException,
                                         GoneException)
 from oio_rest.oio_rest import OIOStandardHierarchy, OIORestObject
@@ -92,9 +92,24 @@ class TestOIORestObjectCreateApi(TestCase):
 
 
 class TestOIORestObject(TestCase):
+
+    db_struct = {
+        'testclassrestobject': {
+            'attributter': {'egenskaber': ['attribut']},
+            'tilstande': {'tilstand': ['tilstand1', 'tilstand2']},
+            'relationer_nul_til_en': ['relation_en'],
+            'relationer_nul_til_mange': ['relation_mange'],
+        }
+    }
+
     def setUp(self):
         self.testclass = TestClassRestObject()
         self.app = flask.Flask(__name__)
+        db_helpers._search_params = {}
+        db_helpers._attribute_fields = {}
+        db_helpers._attribute_names = {}
+        db_helpers._relation_names = {}
+        db_helpers._state_names = {}
 
     def test_get_args_lowercases_arg_keys(self):
         # Arrange
@@ -244,14 +259,27 @@ class TestOIORestObject(TestCase):
         self.assertDictEqual(expected_data, actual_data)
         self.assertEqual(400, actual_code)
 
+    def test_create_object_raises_on_unknown_args(self):
+        # Arrange
+        params = {
+            'a': 'b'
+        }
+
+        # Act
+        with self.app.test_request_context(method='POST',
+                                           query_string=params), \
+                self.assertRaises(BadRequestException):
+            self.testclass.create_object()
+
     def test_get_fields(self):
         # Arrange
         expected_fields = ["field1", "field2"]
         db_structure = {"testclassrestobject": expected_fields,
                         "garbage": ["garbage"]}
 
-        with patch("oio_rest.db_structure.REAL_DB_STRUCTURE",
-                   new=db_structure):
+        with self.app.test_request_context(method='GET'), \
+                patch("oio_rest.db_structure.REAL_DB_STRUCTURE",
+                      new=db_structure):
 
             # Act
             actual_fields = json.loads(self.testclass.get_fields())
@@ -259,8 +287,21 @@ class TestOIORestObject(TestCase):
             # Assert
             self.assertEquals(expected_fields, actual_fields)
 
+    def test_get_fields_raises_on_unknown_args(self):
+        # Arrange
+        params = {
+            'a': 'b'
+        }
+
+        # Act
+        with self.app.test_request_context(method='GET',
+                                           query_string=params), \
+                self.assertRaises(BadRequestException):
+            self.testclass.get_fields()
+
     @patch('datetime.datetime')
     @patch('oio_rest.oio_rest.db.list_objects')
+    @patch('oio_rest.db_helpers.db_struct', new=db_struct)
     def test_get_objects_list_uses_default_params(self,
                                                   mock_list,
                                                   mock_datetime):
@@ -288,6 +329,7 @@ class TestOIORestObject(TestCase):
         self.assertDictEqual(expected_result, actual_result)
 
     @patch('oio_rest.oio_rest.db.list_objects')
+    @patch('oio_rest.db_helpers.db_struct', new=db_struct)
     def test_get_objects_list_uses_supplied_params(self, mock):
         # Arrange
         data = ["1", "2", "3"]
@@ -329,6 +371,7 @@ class TestOIORestObject(TestCase):
         self.assertDictEqual(expected_result, actual_result)
 
     @patch('oio_rest.oio_rest.db.list_objects')
+    @patch('oio_rest.db_helpers.db_struct', new=db_struct)
     def test_get_objects_returns_empty_list_on_no_results(self, mock):
         # Arrange
 
@@ -343,6 +386,7 @@ class TestOIORestObject(TestCase):
 
         self.assertDictEqual(expected_result, actual_result)
 
+    @patch('oio_rest.db_helpers.db_struct', new=db_struct)
     @patch('datetime.datetime')
     @patch('oio_rest.oio_rest.build_registration')
     @patch('oio_rest.oio_rest.db.search_objects')
@@ -365,7 +409,8 @@ class TestOIORestObject(TestCase):
         expected_result = {"results": data}
 
         request_params = {
-            "not_list_arg": "uuid",
+            # Send a non list-arg argument to trigger search
+            "attribut": "123",
         }
 
         # Act
@@ -380,6 +425,7 @@ class TestOIORestObject(TestCase):
         self.assertEqual(expected_args, actual_args)
         self.assertDictEqual(expected_result, actual_result)
 
+    @patch('oio_rest.db_helpers.db_struct', new=db_struct)
     @patch('oio_rest.oio_rest.build_registration')
     @patch('oio_rest.oio_rest.db.search_objects')
     def test_get_objects_search_uses_supplied_params(self, mock_search,
@@ -441,6 +487,7 @@ class TestOIORestObject(TestCase):
         self.assertEqual(expected_args, actual_args)
         self.assertDictEqual(expected_result, actual_result)
 
+    @patch('oio_rest.db_helpers.db_struct', new=db_struct)
     @patch('oio_rest.oio_rest.build_registration')
     @patch('oio_rest.oio_rest.db.search_objects')
     def test_get_objects_search_raises_exception_on_multi_uuid(
@@ -460,6 +507,23 @@ class TestOIORestObject(TestCase):
         request_params = {
             "uuid": uuids,
             "brugerref": "99809e77-ede6-48f2-b170-2366bdcd20e5",
+        }
+
+        # Act
+        with self.app.test_request_context(method='GET',
+                                           query_string=request_params), \
+                self.assertRaises(BadRequestException):
+            self.testclass.get_objects()
+
+    @patch('oio_rest.db_helpers.db_struct', new=db_struct)
+    @patch('oio_rest.oio_rest.db.search_objects')
+    def test_get_objects_search_raises_exception_on_unknown_args(self,
+                                                                 mock_search):
+        # Arrange
+        mock_search.return_value = {}
+
+        request_params = {
+            'a': 'b'
         }
 
         # Act
@@ -561,7 +625,7 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='GET'), \
                 self.assertRaises(NotFoundException):
-            self.testclass.get_object(uuid).data
+            self.testclass.get_object(uuid)
 
     @patch('oio_rest.oio_rest.db.list_objects')
     def test_get_object_raises_on_deleted_object(self, mock_list):
@@ -582,7 +646,24 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='GET'), \
                 self.assertRaises(GoneException):
-            self.testclass.get_object(uuid).data
+            self.testclass.get_object(uuid)
+
+    @patch('oio_rest.db_helpers.db_struct', new=db_struct)
+    @patch('oio_rest.oio_rest.db.list_objects')
+    def test_get_object_raises_on_unknown_args(self, mock_list):
+        # Arrange
+        uuid = "4efbbbde-e197-47be-9d40-e08f1cd00259"
+        mock_list.return_value = []
+
+        params = {
+            'a': 'b'
+        }
+
+        # Act
+        with self.app.test_request_context(method='GET',
+                                           query_string=params), \
+                self.assertRaises(BadRequestException):
+            self.testclass.get_object(uuid)
 
     def test_put_object_with_no_input_returns_uuid_none_and_code_400(
             self):
@@ -720,6 +801,20 @@ class TestOIORestObject(TestCase):
         self.assertDictEqual(expected_data, actual_data)
         self.assertEqual(200, actual_code)
 
+    def test_put_object_raises_on_unknown_args(self):
+        # Arrange
+        params = {
+            'a': 'b'
+        }
+
+        uuid = "2b9bfc6a-f1c1-459e-a16a-79f464c075a8"
+
+        # Act
+        with self.app.test_request_context(method='PUT',
+                                           query_string=params), \
+                self.assertRaises(BadRequestException):
+            self.testclass.put_object(uuid)
+
     @patch("oio_rest.oio_rest.db.delete_object")
     def test_delete_object_returns_expected_result_and_202(self, mock_delete):
         # type: (MagicMock) -> None
@@ -761,6 +856,20 @@ class TestOIORestObject(TestCase):
         actual_uuid = mock_delete.call_args[0][3]
         self.assertEqual(expected_reg, actual_reg)
         self.assertEqual(uuid, actual_uuid)
+
+    def test_delete_object_raises_on_unknown_args(self):
+        # Arrange
+        params = {
+            'a': 'b'
+        }
+
+        uuid = "2b9bfc6a-f1c1-459e-a16a-79f464c075a8"
+
+        # Act
+        with self.app.test_request_context(method='PUT',
+                                           query_string=params), \
+                self.assertRaises(BadRequestException):
+            self.testclass.delete_object(uuid)
 
 
 class TestOIOStandardHierarchy(TestCase):

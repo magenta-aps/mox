@@ -10,6 +10,7 @@ from custom_exceptions import GoneException
 from werkzeug.datastructures import ImmutableOrderedMultiDict
 
 import db
+from db_helpers import get_valid_search_parameters, TEMPORALITY_PARAMS
 import db_structure
 from utils.build_registration import build_registration, to_lower_param
 
@@ -143,6 +144,8 @@ class OIORestObject(object):
         """
         CREATE object, generate new UUID.
         """
+        cls.verify_args()
+
         input = cls.get_json()
         if not input:
             return jsonify({'uuid': None}), 400
@@ -171,6 +174,8 @@ class OIORestObject(object):
         LIST or SEARCH objects, depending on parameters.
         """
         request.parameter_storage_class = ArgumentDict
+
+        cls.verify_args(*get_valid_search_parameters(cls.__name__))
 
         # Convert arguments to lowercase, getting them as lists
         list_args = cls._get_args(True)
@@ -246,6 +251,8 @@ class OIORestObject(object):
         """
         READ an object, return as JSON.
         """
+        cls.verify_args(*TEMPORALITY_PARAMS)
+
         args = cls._get_args()
         virkning_fra = args.get('virkningfra', None)
         virkning_til = args.get('virkningtil', None)
@@ -292,6 +299,8 @@ class OIORestObject(object):
         """
         UPDATE, IMPORT or PASSIVIZE an  object.
         """
+        cls.verify_args()
+
         input = cls.get_json()
         if not input:
             return jsonify({'uuid': None}), 400
@@ -345,6 +354,8 @@ class OIORestObject(object):
     @classmethod
     @requires_auth
     def delete_object(cls, uuid):
+        cls.verify_args()
+
         # Delete facet
         input = cls.get_json() or {}
         note = typed_get(input, "note", "")
@@ -359,6 +370,8 @@ class OIORestObject(object):
 
     @classmethod
     def get_fields(cls):
+        cls.verify_args()
+
         """Set up API with correct database access functions."""
         structure = db_structure.REAL_DB_STRUCTURE
         class_key = cls.__name__.lower()
@@ -417,3 +430,12 @@ class OIORestObject(object):
     # Templates may only be overridden on subclass if they are explicitly
     # listed here.
     RELATIONS_TEMPLATE = 'relations_array.sql'
+
+    @classmethod
+    def verify_args(cls, *allowed):
+        req_args = cls._get_args()
+        difference = set(req_args.keys()).difference(allowed)
+        if difference:
+            arg_string = ', '.join(difference)
+            raise BadRequestException('Unsupported argument(s): {}'
+                                      .format(arg_string))
