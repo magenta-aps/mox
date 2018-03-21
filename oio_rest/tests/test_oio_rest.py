@@ -299,21 +299,22 @@ class TestOIORestObject(TestCase):
                 self.assertRaises(BadRequestException):
             self.testclass.get_fields()
 
-    @patch('datetime.datetime')
+    @freezegun.freeze_time('2017-01-01', tz_offset=1)
     @patch('oio_rest.oio_rest.db.list_objects')
     @patch('oio_rest.db_helpers.db_struct', new=db_struct)
     def test_get_objects_list_uses_default_params(self,
-                                                  mock_list,
-                                                  mock_datetime):
+                                                  mock_list):
         # Arrange
         data = ["1", "2", "3"]
 
         mock_list.return_value = data
 
-        now = "NOW"
-        mock_datetime.now.return_value = now
+        virkning_fra = datetime.datetime.now()
+        virkning_to = datetime.datetime.now() + datetime.timedelta(
+            microseconds=1)
 
-        expected_args = ('TestClassRestObject', None, now, now, None, None)
+        expected_args = ('TestClassRestObject', None, virkning_fra,
+                         virkning_to, None, None)
 
         expected_result = {"results": data}
 
@@ -386,12 +387,12 @@ class TestOIORestObject(TestCase):
 
         self.assertDictEqual(expected_result, actual_result)
 
+    @freezegun.freeze_time('2017-01-01', tz_offset=1)
     @patch('oio_rest.db_helpers.db_struct', new=db_struct)
-    @patch('datetime.datetime')
     @patch('oio_rest.oio_rest.build_registration')
     @patch('oio_rest.oio_rest.db.search_objects')
-    def test_get_objects_search_uses_default_params(self, mock_search, mock_br,
-                                                    mock_datetime):
+    def test_get_objects_search_uses_default_params(self, mock_search,
+                                                    mock_br):
         # Arrange
         data = ["1", "2", "3"]
 
@@ -399,12 +400,13 @@ class TestOIORestObject(TestCase):
 
         mock_br.return_value = "REGISTRATION"
 
-        now = "NOW"
-        mock_datetime.now.return_value = now
+        virkning_fra = datetime.datetime.now()
+        virkning_to = datetime.datetime.now() + datetime.timedelta(
+                microseconds=1)
 
         expected_args = (
-            'TestClassRestObject', None, "REGISTRATION", now, now,
-            None, None, None, None, None, None, None, None, None)
+            'TestClassRestObject', None, "REGISTRATION", virkning_fra,
+            virkning_to, None, None, None, None, None, None, None, None, None)
 
         expected_result = {"results": data}
 
@@ -549,9 +551,12 @@ class TestOIORestObject(TestCase):
 
         mock_list.return_value = [data]
 
-        now = datetime.datetime.now()
+        virkning_fra = datetime.datetime.now()
+        virkning_to = datetime.datetime.now() + datetime.timedelta(
+                microseconds=1)
 
-        expected_args = ('TestClassRestObject', [uuid], now, now, None, None)
+        expected_args = ('TestClassRestObject', [uuid], virkning_fra,
+                         virkning_to, None, None)
 
         expected_result = {uuid: data}
 

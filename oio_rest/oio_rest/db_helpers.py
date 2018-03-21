@@ -101,6 +101,7 @@ TEMPORALITY_PARAMS = {
     'registrerettil',
     'virkningfra',
     'virkningtil',
+    'virkningstid',
 }
 
 

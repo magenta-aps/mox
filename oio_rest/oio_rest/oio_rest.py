@@ -3,6 +3,7 @@
 import json
 import datetime
 
+from dateutil import parser
 from flask import jsonify, request
 from custom_exceptions import BadRequestException, NotFoundException
 from custom_exceptions import GoneException
@@ -168,6 +169,32 @@ class OIORestObject(object):
                 for k in request.args.keys()}
 
     @classmethod
+    def get_virkning_timespan(cls, args):
+        virkning_fra = args.get('virkningfra', None)
+        virkning_til = args.get('virkningtil', None)
+        virkningstid = args.get('virkningstid', None)
+
+        if virkningstid and (virkning_fra or virkning_til):
+            raise BadRequestException("'virkningfra'/'virkningtil' are not "
+                                      "supported parameters with "
+                                      "'virkningstid'")
+
+        if virkning_fra is None and virkning_til is None:
+            if virkningstid:
+                # Timespan has to be non-zero length of time, so we add one
+                # microsecond
+                dt = parser.parse(virkningstid)
+                virkning_fra = dt
+                virkning_til = dt + datetime.timedelta(microseconds=1)
+            else:
+                # TODO: Use the equivalent of TSTZRANGE(current_timestamp,
+                # current_timestamp,'[]') if possible
+                virkning_fra = datetime.datetime.now()
+                virkning_til = virkning_fra + datetime.timedelta(
+                    microseconds=1)
+        return virkning_fra, virkning_til
+
+    @classmethod
     @requires_auth
     def get_objects(cls):
         """
@@ -180,21 +207,14 @@ class OIORestObject(object):
         # Convert arguments to lowercase, getting them as lists
         list_args = cls._get_args(True)
         args = cls._get_args()
-        virkning_fra = args.get('virkningfra', None)
-        virkning_til = args.get('virkningtil', None)
         registreret_fra = args.get('registreretfra', None)
         registreret_til = args.get('registrerettil', None)
 
-        if virkning_fra is None and virkning_til is None:
-            # TODO: Use the equivalent of TSTZRANGE(current_timestamp,
-            # current_timestamp,'[]') if possible
-            virkning_fra = datetime.datetime.now()
-            virkning_til = datetime.datetime.now()
+        virkning_fra, virkning_til = cls.get_virkning_timespan(args)
 
         uuid_param = list_args.get('uuid', None)
 
-        valid_list_args = {'virkningfra', 'virkningtil', 'registreretfra',
-                           'registrerettil', 'uuid'}
+        valid_list_args = TEMPORALITY_PARAMS | {'uuid'}
 
         # Assume the search operation if other params were specified
         if not set(args.keys()).issubset(valid_list_args):
@@ -254,14 +274,11 @@ class OIORestObject(object):
         cls.verify_args(*TEMPORALITY_PARAMS)
 
         args = cls._get_args()
-        virkning_fra = args.get('virkningfra', None)
-        virkning_til = args.get('virkningtil', None)
         registreret_fra = args.get('registreretfra', None)
         registreret_til = args.get('registrerettil', None)
 
-        if virkning_fra is None and virkning_til is None:
-            virkning_fra = datetime.datetime.now()
-            virkning_til = datetime.datetime.now()
+        virkning_fra, virkning_til = cls.get_virkning_timespan(args)
+
         request.api_operation = u'Læs'
         request.uuid = uuid
         object_list = db.list_objects(cls.__name__, [uuid], virkning_fra,
