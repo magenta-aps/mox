@@ -402,7 +402,8 @@ class TestOIORestObject(TestCase):
 
         virkning_fra = datetime.datetime.now()
         virkning_to = datetime.datetime.now() + datetime.timedelta(
-                microseconds=1)
+            microseconds=1
+        )
 
         expected_args = (
             'TestClassRestObject', None, "REGISTRATION", virkning_fra,
@@ -553,7 +554,7 @@ class TestOIORestObject(TestCase):
 
         virkning_fra = datetime.datetime.now()
         virkning_to = datetime.datetime.now() + datetime.timedelta(
-                microseconds=1)
+            microseconds=1)
 
         expected_args = ('TestClassRestObject', [uuid], virkning_fra,
                          virkning_to, None, None)
@@ -875,6 +876,126 @@ class TestOIORestObject(TestCase):
                                            query_string=params), \
                 self.assertRaises(BadRequestException):
             self.testclass.delete_object(uuid)
+
+    def test_get_virkning_timespan_virkningstid(self):
+        # Arrange
+        args = {
+            'virkningstid': '2020-01-01',
+        }
+
+        expected_from = datetime.datetime(2020, 1, 1)
+        expected_to = expected_from + datetime.timedelta(microseconds=1)
+
+        # Act
+        actual_from, actual_to = self.testclass.get_virkning_timespan(args)
+
+        # Assert
+        self.assertEqual(expected_from, actual_from)
+        self.assertEqual(expected_to, actual_to)
+
+    def test_get_virkning_timespan_from_to(self):
+        # Arrange
+        args = {
+            'virkningfra': '2006-01-01',
+            'virkningtil': '2020-01-01',
+        }
+
+        expected_from = '2006-01-01'
+        expected_to = '2020-01-01'
+
+        # Act
+        actual_from, actual_to = self.testclass.get_virkning_timespan(args)
+
+        # Assert
+        self.assertEqual(expected_from, actual_from)
+        self.assertEqual(expected_to, actual_to)
+
+    @freezegun.freeze_time('2017-01-01', tz_offset=1)
+    def test_get_virkning_timespan_defaults(self):
+        # Arrange
+        args = {}
+
+        expected_from = datetime.datetime(2017, 1, 1, 1)
+        expected_to = expected_from + datetime.timedelta(microseconds=1)
+
+        # Act
+        actual_from, actual_to = self.testclass.get_virkning_timespan(args)
+
+        # Assert
+        self.assertEqual(expected_from, actual_from)
+        self.assertEqual(expected_to, actual_to)
+
+    def test_get_virkning_timespan_raises_on_invalid_args_combination(self):
+        # Arrange
+        args = {
+            'virkningstid': '2020-01-01',
+            'virkningfra': '2006-01-01',
+            'virkningtil': '2020-01-01',
+        }
+
+        # Act
+        with self.assertRaises(BadRequestException):
+            self.testclass.get_virkning_timespan(args)
+
+    def test_get_registreret_timespan_registreringstid(self):
+        # Arrange
+        args = {
+            'registreringstid': '2020-01-01',
+        }
+
+        expected_from = datetime.datetime(2020, 1, 1)
+        expected_to = expected_from + datetime.timedelta(microseconds=1)
+
+        # Act
+        actual_from, actual_to = self.testclass.get_registreret_timespan(args)
+
+        # Assert
+        self.assertEqual(expected_from, actual_from)
+        self.assertEqual(expected_to, actual_to)
+
+    def test_get_registreret_timespan_from_to(self):
+        # Arrange
+        args = {
+            'registreretfra': '2006-01-01',
+            'registrerettil': '2020-01-01',
+        }
+
+        expected_from = '2006-01-01'
+        expected_to = '2020-01-01'
+
+        # Act
+        actual_from, actual_to = self.testclass.get_registreret_timespan(args)
+
+        # Assert
+        self.assertEqual(expected_from, actual_from)
+        self.assertEqual(expected_to, actual_to)
+
+    @freezegun.freeze_time('2017-01-01', tz_offset=1)
+    def test_get_registreret_timespan_defaults(self):
+        # Arrange
+        args = {}
+
+        expected_from = None
+        expected_to = None
+
+        # Act
+        actual_from, actual_to = self.testclass.get_registreret_timespan(args)
+
+        # Assert
+        self.assertEqual(expected_from, actual_from)
+        self.assertEqual(expected_to, actual_to)
+
+    def test_get_registreret_timespan_raises_on_invalid_args_combination(self):
+        # Arrange
+        args = {
+            'registreringstid': '2020-01-01',
+            'registreretfra': '2006-01-01',
+            'registrerettil': '2020-01-01',
+        }
+
+        # Act
+        with self.assertRaises(BadRequestException):
+            self.testclass.get_registreret_timespan(args)
 
 
 class TestOIOStandardHierarchy(TestCase):
