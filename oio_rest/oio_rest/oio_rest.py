@@ -195,6 +195,25 @@ class OIORestObject(object):
         return virkning_fra, virkning_til
 
     @classmethod
+    def get_registreret_timespan(cls, args):
+        registreret_fra = args.get('registreretfra', None)
+        registreret_til = args.get('registrerettil', None)
+        registreringstid = args.get('registreringstid', None)
+
+        if registreringstid:
+            if registreret_fra or registreret_til:
+                raise BadRequestException("'registreretfra'/'registrerettil' "
+                                          "are not supported parameters with "
+                                          "'registreringstid'")
+            else:
+                # Timespan has to be non-zero length of time, so we add one
+                # microsecond
+                dt = parser.parse(registreringstid)
+                registreret_fra = dt
+                registreret_til = dt + datetime.timedelta(microseconds=1)
+        return registreret_fra, registreret_til
+
+    @classmethod
     @requires_auth
     def get_objects(cls):
         """
@@ -207,9 +226,7 @@ class OIORestObject(object):
         # Convert arguments to lowercase, getting them as lists
         list_args = cls._get_args(True)
         args = cls._get_args()
-        registreret_fra = args.get('registreretfra', None)
-        registreret_til = args.get('registrerettil', None)
-
+        registreret_fra, registreret_til = cls.get_registreret_timespan(args)
         virkning_fra, virkning_til = cls.get_virkning_timespan(args)
 
         uuid_param = list_args.get('uuid', None)
@@ -274,8 +291,7 @@ class OIORestObject(object):
         cls.verify_args(*TEMPORALITY_PARAMS)
 
         args = cls._get_args()
-        registreret_fra = args.get('registreretfra', None)
-        registreret_til = args.get('registrerettil', None)
+        registreret_fra, registreret_til = cls.get_registreret_timespan(args)
 
         virkning_fra, virkning_til = cls.get_virkning_timespan(args)
 
