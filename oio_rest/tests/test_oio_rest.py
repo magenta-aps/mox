@@ -877,6 +877,66 @@ class TestOIORestObject(TestCase):
                 self.assertRaises(BadRequestException):
             self.testclass.delete_object(uuid)
 
+    def test_gather_registration(self):
+        # Arrange
+        attrs = {'attribut': [{'whatever': '123'}]}
+        states = {'tilstand': [{'whatever': '123'}]}
+        rels = {'relation': [{'whatever': '123'}]}
+
+        input = {
+            'attributter': attrs,
+            'tilstande': states,
+            'relationer': rels
+        }
+
+        expected = {
+            'attributes': attrs,
+            'states': states,
+            'relations': rels
+        }
+
+        # Act
+        actual = self.testclass.gather_registration(input)
+
+        # Assert
+        self.assertEqual(expected, actual)
+
+    def test_gather_registration_empty_input(self):
+        # Arrange
+        input = {}
+
+        expected = {
+            'attributes': {},
+            'states': {},
+            'relations': None
+        }
+
+        # Act
+        actual = self.testclass.gather_registration(input)
+
+        # Assert
+        self.assertEqual(expected, actual)
+
+    def test_gather_registration_empty_lists(self):
+        # Arrange
+        input = {
+            'attributter': {},
+            'tilstande': {},
+            'relationer': {}
+        }
+
+        expected = {
+            'attributes': {},
+            'states': {},
+            'relations': None
+        }
+
+        # Act
+        actual = self.testclass.gather_registration(input)
+
+        # Assert
+        self.assertEqual(expected, actual)
+
 
 class TestOIOStandardHierarchy(TestCase):
     def setUp(self):
