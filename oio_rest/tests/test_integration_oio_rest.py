@@ -20,7 +20,5 @@ class Tests(util.TestCase):
         expected = util.get_fixture(
             'output/test_bruger_virkningstid.json')
 
-        actual = self.get_json_result('/organisation/bruger', uuid=uuid,
-                                      virkningstid='2004-01-01')
-
-        self.assertRegistrationsEqual(expected, actual)
+        self.assertQueryResponse(expected, '/organisation/bruger',
+                                 uuid=uuid, virkningstid='2004-01-01')

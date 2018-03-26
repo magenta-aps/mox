@@ -200,10 +200,9 @@ class TestCaseMixin(object):
 
     def _perform_request(self, path, **kwargs):
         if 'json' in kwargs:
-            if 'method' not in kwargs:
-                kwargs['method'] = "POST"
-            kwargs['data'] = json.dumps(kwargs.pop('json'), indent=2)
-            kwargs['headers'] = {'Content-Type': 'application/json'}
+            kwargs.setdefault('method', 'POST')
+            kwargs.setdefault('data', json.dumps(kwargs.pop('json'), indent=2))
+            kwargs.setdefault('headers', {'Content-Type': 'application/json'})
 
         return self.client.open(path, **kwargs)
 
@@ -243,6 +242,32 @@ class TestCaseMixin(object):
             sort_inner_lists(expected),
             sort_inner_lists(actual))
 
+    def assertQueryResponse(self, expected, path, **params):
+        """Perform a request towards LoRa, and assert that it yields the
+        expected output.
+
+        Results are unpacked from the LoRa result structure and filtered of
+        metadata before comparison
+
+        **params are passed as part of the query string in the request.
+        """
+
+        r = self._perform_request(path, query_string=params).json
+
+        results = r['results'][0]
+
+        assert len(results) == 1
+        registrations = results[0]['registreringer']
+
+        if set(params.keys()) & {'registreretfra', 'registrerettil',
+                                 'registreringstid'}:
+            actual = registrations
+        else:
+            assert len(registrations) == 1
+            actual = registrations[0]
+
+        return self.assertRegistrationsEqual(expected, actual)
+
     def load_fixture(self, path, fixture_name, uuid=None):
         """Load a fixture, i.e. a JSON file with the 'fixtures' directory,
         into LoRA at the given path & UUID.
@@ -255,23 +280,6 @@ class TestCaseMixin(object):
             r = self._perform_request(path, method='POST',
                                       json=get_fixture(fixture_name))
         return r
-
-    def get_json_result(self, path, **params):
-        r = self._perform_request(path, query_string=params).json
-
-        results = r['results'][0]
-
-        assert len(results) == 1
-
-        registrations = results[0]['registreringer']
-
-        if set(params.keys()) & {'registreretfra', 'registrerettil',
-                                 'registreringstid'}:
-            return registrations
-        else:
-            assert len(registrations) == 1
-
-            return registrations[0]
 
 
 class TestCase(TestCaseMixin, flask_testing.TestCase):
