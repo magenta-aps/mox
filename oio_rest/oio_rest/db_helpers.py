@@ -82,6 +82,54 @@ def get_relation_names(class_name):
     return _relation_names[class_name.lower()]
 
 
+_search_params = {}
+
+GENERAL_SEARCH_PARAMS = {
+    'brugerref',
+    'brugervendtnoegle',
+    'foersteresultat',
+    'livscykluskode',
+    'maximalantalresultater',
+    'notetekst',
+    'uuid',
+    'vilkaarligattr',
+    'vilkaarligrel',
+}
+
+TEMPORALITY_PARAMS = {
+    'registreretfra',
+    'registrerettil',
+    'virkningfra',
+    'virkningtil',
+}
+
+
+def get_valid_search_parameters(class_name):
+    """Return set of all searchable parameters specific to this class"""
+    # type: str -> set
+    if len(_search_params) == 0:
+        for c in db_struct:
+            attr_names = [a for attr in get_attribute_names(c) for a in
+                          get_attribute_fields(attr)]
+
+            rel_names = get_relation_names(c)
+
+            state_names = get_state_names(c).keys()
+
+            _search_params[c] = (set(attr_names + rel_names + state_names) |
+                                 GENERAL_SEARCH_PARAMS |
+                                 TEMPORALITY_PARAMS)
+
+        # Add 'Dokument'-specific parameters not present in db_struct
+        if _search_params.get('dokument'):
+            _search_params['dokument'].update([
+                'varianttekst', 'deltekst'] +
+                get_document_part_relation_names()
+            )
+
+    return _search_params[class_name.lower()]
+
+
 def get_document_part_relation_names():
     """Return the list of all recognized relations for DokumentDel"""
     return ["underredigeringaf"]
