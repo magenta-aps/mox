@@ -42,6 +42,51 @@ def typed_get(d, field, default):
     return v
 
 
+def get_virkning_dates(args):
+    virkning_fra = args.get('virkningfra', None)
+    virkning_til = args.get('virkningtil', None)
+    virkningstid = args.get('virkningstid', None)
+
+    if virkningstid and (virkning_fra or virkning_til):
+        raise BadRequestException("'virkningfra'/'virkningtil' are not "
+                                  "supported parameters with "
+                                  "'virkningstid'")
+
+    if virkning_fra is None and virkning_til is None:
+        if virkningstid:
+            # Timespan has to be non-zero length of time, so we add one
+            # microsecond
+            dt = parser.parse(virkningstid)
+            virkning_fra = dt
+            virkning_til = dt + datetime.timedelta(microseconds=1)
+        else:
+            # TODO: Use the equivalent of TSTZRANGE(current_timestamp,
+            # current_timestamp,'[]') if possible
+            virkning_fra = datetime.datetime.now()
+            virkning_til = virkning_fra + datetime.timedelta(
+                    microseconds=1)
+    return virkning_fra, virkning_til
+
+
+def get_registreret_dates(args):
+    registreret_fra = args.get('registreretfra', None)
+    registreret_til = args.get('registrerettil', None)
+    registreringstid = args.get('registreringstid', None)
+
+    if registreringstid:
+        if registreret_fra or registreret_til:
+            raise BadRequestException("'registreretfra'/'registrerettil' "
+                                      "are not supported parameters with "
+                                      "'registreringstid'")
+        else:
+            # Timespan has to be non-zero length of time, so we add one
+            # microsecond
+            dt = parser.parse(registreringstid)
+            registreret_fra = dt
+            registreret_til = dt + datetime.timedelta(microseconds=1)
+    return registreret_fra, registreret_til
+
+
 class ArgumentDict(ImmutableOrderedMultiDict):
     '''
     A Werkzeug multi dict that maintains the order, and maps alias
@@ -169,51 +214,6 @@ class OIORestObject(object):
                 for k in request.args.keys()}
 
     @classmethod
-    def get_virkning_timespan(cls, args):
-        virkning_fra = args.get('virkningfra', None)
-        virkning_til = args.get('virkningtil', None)
-        virkningstid = args.get('virkningstid', None)
-
-        if virkningstid and (virkning_fra or virkning_til):
-            raise BadRequestException("'virkningfra'/'virkningtil' are not "
-                                      "supported parameters with "
-                                      "'virkningstid'")
-
-        if virkning_fra is None and virkning_til is None:
-            if virkningstid:
-                # Timespan has to be non-zero length of time, so we add one
-                # microsecond
-                dt = parser.parse(virkningstid)
-                virkning_fra = dt
-                virkning_til = dt + datetime.timedelta(microseconds=1)
-            else:
-                # TODO: Use the equivalent of TSTZRANGE(current_timestamp,
-                # current_timestamp,'[]') if possible
-                virkning_fra = datetime.datetime.now()
-                virkning_til = virkning_fra + datetime.timedelta(
-                    microseconds=1)
-        return virkning_fra, virkning_til
-
-    @classmethod
-    def get_registreret_timespan(cls, args):
-        registreret_fra = args.get('registreretfra', None)
-        registreret_til = args.get('registrerettil', None)
-        registreringstid = args.get('registreringstid', None)
-
-        if registreringstid:
-            if registreret_fra or registreret_til:
-                raise BadRequestException("'registreretfra'/'registrerettil' "
-                                          "are not supported parameters with "
-                                          "'registreringstid'")
-            else:
-                # Timespan has to be non-zero length of time, so we add one
-                # microsecond
-                dt = parser.parse(registreringstid)
-                registreret_fra = dt
-                registreret_til = dt + datetime.timedelta(microseconds=1)
-        return registreret_fra, registreret_til
-
-    @classmethod
     @requires_auth
     def get_objects(cls):
         """
@@ -226,8 +226,8 @@ class OIORestObject(object):
         # Convert arguments to lowercase, getting them as lists
         list_args = cls._get_args(True)
         args = cls._get_args()
-        registreret_fra, registreret_til = cls.get_registreret_timespan(args)
-        virkning_fra, virkning_til = cls.get_virkning_timespan(args)
+        registreret_fra, registreret_til = get_registreret_dates(args)
+        virkning_fra, virkning_til = get_virkning_dates(args)
 
         uuid_param = list_args.get('uuid', None)
 
@@ -291,9 +291,9 @@ class OIORestObject(object):
         cls.verify_args(*TEMPORALITY_PARAMS)
 
         args = cls._get_args()
-        registreret_fra, registreret_til = cls.get_registreret_timespan(args)
+        registreret_fra, registreret_til = get_registreret_dates(args)
 
-        virkning_fra, virkning_til = cls.get_virkning_timespan(args)
+        virkning_fra, virkning_til = get_virkning_dates(args)
 
         request.api_operation = u'Læs'
         request.uuid = uuid
