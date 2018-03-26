@@ -1,0 +1,43 @@
+{
+    "attributter": {
+        "brugeregenskaber": [
+            {
+                "brugernavn": "Testbruger",
+                "brugervendtnoegle": "andersand",
+                "virkning": {
+                    "from": "-infinity",
+                    "from_included": true,
+                    "to": "infinity",
+                    "to_included": false
+                }
+            }
+        ]
+    },
+    "relationer": {
+        "tilknyttedepersoner": [
+            {
+                "urn": "urn:dk:cpr:person:2222222222",
+                "virkning": {
+                    "from": "2002-02-14 00:00:00+01",
+                    "from_included": true,
+                    "to": "2012-02-14 00:00:00+01",
+                    "to_included": false
+                }
+            }
+        ]
+    },
+    "tilstande": {
+        "brugergyldighed": [
+            {
+                "gyldighed": "Aktiv",
+                "virkning": {
+                    "from": "2002-02-14 00:00:00+01",
+                    "from_included": true,
+                    "to": "infinity",
+                    "to_included": false
+                }
+            }
+        ]
+    },
+    "livscykluskode": "Importeret"
+}
