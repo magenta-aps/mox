@@ -1,0 +1,10 @@
+Flask-Testing
+testing.postgresql
+pytest
+pytest-cov
+mock
+coverage
+freezegun
+flake8
+flake8-imports
+flake8-module-name
