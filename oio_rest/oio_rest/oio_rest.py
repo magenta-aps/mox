@@ -43,23 +43,21 @@ def typed_get(d, field, default):
 
 
 def get_virkning_dates(args):
-    virkning_fra = args.get('virkningfra', None)
-    virkning_til = args.get('virkningtil', None)
-    virkningstid = args.get('virkningstid', None)
+    virkning_fra = args.get('virkningfra')
+    virkning_til = args.get('virkningtil')
+    virkningstid = args.get('virkningstid')
 
-    if virkningstid and (virkning_fra or virkning_til):
-        raise BadRequestException("'virkningfra'/'virkningtil' are not "
-                                  "supported parameters with "
-                                  "'virkningstid'")
-
-    if virkning_fra is None and virkning_til is None:
-        if virkningstid:
-            # Timespan has to be non-zero length of time, so we add one
-            # microsecond
-            dt = dateutil.parser.isoparse(virkningstid)
-            virkning_fra = dt
-            virkning_til = dt + datetime.timedelta(microseconds=1)
-        else:
+    if virkningstid:
+        if virkning_fra or virkning_til:
+            raise BadRequestException("'virkningfra'/'virkningtil' conflict "
+                                      "with 'virkningstid'")
+        # Timespan has to be non-zero length of time, so we add one
+        # microsecond
+        dt = dateutil.parser.isoparse(virkningstid)
+        virkning_fra = dt
+        virkning_til = dt + datetime.timedelta(microseconds=1)
+    else:
+        if virkning_fra is None and virkning_til is None:
             # TODO: Use the equivalent of TSTZRANGE(current_timestamp,
             # current_timestamp,'[]') if possible
             virkning_fra = datetime.datetime.now()
@@ -69,15 +67,14 @@ def get_virkning_dates(args):
 
 
 def get_registreret_dates(args):
-    registreret_fra = args.get('registreretfra', None)
-    registreret_til = args.get('registrerettil', None)
-    registreringstid = args.get('registreringstid', None)
+    registreret_fra = args.get('registreretfra')
+    registreret_til = args.get('registrerettil')
+    registreringstid = args.get('registreringstid')
 
     if registreringstid:
         if registreret_fra or registreret_til:
             raise BadRequestException("'registreretfra'/'registrerettil' "
-                                      "are not supported parameters with "
-                                      "'registreringstid'")
+                                      "conflict with 'registreringstid'")
         else:
             # Timespan has to be non-zero length of time, so we add one
             # microsecond

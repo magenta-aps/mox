@@ -269,7 +269,7 @@ class TestCaseMixin(object):
         return self.assertRegistrationsEqual(expected, actual)
 
     def load_fixture(self, path, fixture_name, uuid=None):
-        """Load a fixture, i.e. a JSON file with the 'fixtures' directory,
+        """Load a fixture, i.e. a JSON file in the 'fixtures' directory,
         into LoRA at the given path & UUID.
         """
         if uuid:
@@ -279,6 +279,10 @@ class TestCaseMixin(object):
         else:
             r = self._perform_request(path, method='POST',
                                       json=get_fixture(fixture_name))
+
+        self.assertLess(r.status_code, 300)
+        self.assertGreaterEqual(r.status_code, 200)
+
         return r
 
 
