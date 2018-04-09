@@ -22,8 +22,6 @@ from oio_rest import app
 from oio_rest import db
 from oio_rest import settings
 
-app.setup_api()
-
 TESTS_DIR = os.path.dirname(__file__)
 BASE_DIR = os.path.dirname(TESTS_DIR)
 DATA_DIR = os.path.join(TESTS_DIR, 'data')
