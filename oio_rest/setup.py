@@ -15,9 +15,6 @@ with open(os.path.join(basedir, 'requirements.txt')) as fp:
 with open(os.path.join(basedir, 'requirements-test.txt')) as fp:
     test_requires = fp.readlines()
 
-with open(os.path.join(basedir, 'requirements-setup.txt')) as fp:
-    setup_requires = fp.readlines()
-
 setup(
     name='oio_rest',
     version=version,
@@ -35,7 +32,6 @@ setup(
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
     include_package_data=True,
     zip_safe=False,
-    setup_requires=setup_requires,
     install_requires=install_requires,
     entry_points={
         # -*- Entry points: -*-
