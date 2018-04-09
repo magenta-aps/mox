@@ -29,7 +29,7 @@ SSH-server::
 
   $ adduser clint
   $ usermod -aG sudo clint
-  $ apt install ssh
+  $ apt install openssh-server
 
 Lookup the IP-address of the container::
 
