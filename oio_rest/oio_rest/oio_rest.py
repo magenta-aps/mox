@@ -3,7 +3,7 @@
 import json
 import datetime
 
-from dateutil import parser
+import dateutil
 from flask import jsonify, request
 from custom_exceptions import BadRequestException, NotFoundException
 from custom_exceptions import GoneException
@@ -56,7 +56,7 @@ def get_virkning_dates(args):
         if virkningstid:
             # Timespan has to be non-zero length of time, so we add one
             # microsecond
-            dt = parser.parse(virkningstid)
+            dt = dateutil.parser.isoparse(virkningstid)
             virkning_fra = dt
             virkning_til = dt + datetime.timedelta(microseconds=1)
         else:
@@ -81,7 +81,7 @@ def get_registreret_dates(args):
         else:
             # Timespan has to be non-zero length of time, so we add one
             # microsecond
-            dt = parser.parse(registreringstid)
+            dt = dateutil.parser.isoparse(registreringstid)
             registreret_fra = dt
             registreret_til = dt + datetime.timedelta(microseconds=1)
     return registreret_fra, registreret_til

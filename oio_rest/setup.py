@@ -55,7 +55,7 @@ setup(
         'wsgiref==0.1.2',
         'python-saml==2.4.0',
         'pexpect==3.3',
-        'python-dateutil==2.6.0',
+        'python-dateutil==2.7.0',
         'egenix-mx-base==3.2.9',
         'pika',
     ],
