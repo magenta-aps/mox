@@ -299,21 +299,22 @@ class TestOIORestObject(TestCase):
                 self.assertRaises(BadRequestException):
             self.testclass.get_fields()
 
-    @patch('datetime.datetime')
+    @freezegun.freeze_time('2017-01-01', tz_offset=1)
     @patch('oio_rest.oio_rest.db.list_objects')
     @patch('oio_rest.db_helpers.db_struct', new=db_struct)
     def test_get_objects_list_uses_default_params(self,
-                                                  mock_list,
-                                                  mock_datetime):
+                                                  mock_list):
         # Arrange
         data = ["1", "2", "3"]
 
         mock_list.return_value = data
 
-        now = "NOW"
-        mock_datetime.now.return_value = now
+        virkning_fra = datetime.datetime.now()
+        virkning_to = datetime.datetime.now() + datetime.timedelta(
+            microseconds=1)
 
-        expected_args = ('TestClassRestObject', None, now, now, None, None)
+        expected_args = ('TestClassRestObject', None, virkning_fra,
+                         virkning_to, None, None)
 
         expected_result = {"results": data}
 
@@ -386,12 +387,12 @@ class TestOIORestObject(TestCase):
 
         self.assertDictEqual(expected_result, actual_result)
 
+    @freezegun.freeze_time('2017-01-01', tz_offset=1)
     @patch('oio_rest.db_helpers.db_struct', new=db_struct)
-    @patch('datetime.datetime')
     @patch('oio_rest.oio_rest.build_registration')
     @patch('oio_rest.oio_rest.db.search_objects')
-    def test_get_objects_search_uses_default_params(self, mock_search, mock_br,
-                                                    mock_datetime):
+    def test_get_objects_search_uses_default_params(self, mock_search,
+                                                    mock_br):
         # Arrange
         data = ["1", "2", "3"]
 
@@ -399,12 +400,14 @@ class TestOIORestObject(TestCase):
 
         mock_br.return_value = "REGISTRATION"
 
-        now = "NOW"
-        mock_datetime.now.return_value = now
+        virkning_fra = datetime.datetime.now()
+        virkning_to = datetime.datetime.now() + datetime.timedelta(
+            microseconds=1
+        )
 
         expected_args = (
-            'TestClassRestObject', None, "REGISTRATION", now, now,
-            None, None, None, None, None, None, None, None, None)
+            'TestClassRestObject', None, "REGISTRATION", virkning_fra,
+            virkning_to, None, None, None, None, None, None, None, None, None)
 
         expected_result = {"results": data}
 
@@ -549,9 +552,12 @@ class TestOIORestObject(TestCase):
 
         mock_list.return_value = [data]
 
-        now = datetime.datetime.now()
+        virkning_fra = datetime.datetime.now()
+        virkning_to = datetime.datetime.now() + datetime.timedelta(
+            microseconds=1)
 
-        expected_args = ('TestClassRestObject', [uuid], now, now, None, None)
+        expected_args = ('TestClassRestObject', [uuid], virkning_fra,
+                         virkning_to, None, None)
 
         expected_result = {uuid: data}
 
@@ -872,6 +878,7 @@ class TestOIORestObject(TestCase):
             self.testclass.delete_object(uuid)
 
 
+
 class TestOIOStandardHierarchy(TestCase):
     def setUp(self):
         self.testclass = TestClassStandardHierarchy()
@@ -977,3 +984,123 @@ class TestOIORest(TestCase):
         # Act & Assert
         with self.assertRaises(BadRequestException):
             oio_rest.typed_get(d, testkey, default)
+
+    def test_get_virkning_dates_virkningstid(self):
+        # Arrange
+        args = {
+            'virkningstid': '2020-01-01',
+        }
+
+        expected_from = datetime.datetime(2020, 1, 1)
+        expected_to = expected_from + datetime.timedelta(microseconds=1)
+
+        # Act
+        actual_from, actual_to = oio_rest.get_virkning_dates(args)
+
+        # Assert
+        self.assertEqual(expected_from, actual_from)
+        self.assertEqual(expected_to, actual_to)
+
+    def test_get_virkning_dates_from_to(self):
+        # Arrange
+        args = {
+            'virkningfra': '2006-01-01',
+            'virkningtil': '2020-01-01',
+        }
+
+        expected_from = '2006-01-01'
+        expected_to = '2020-01-01'
+
+        # Act
+        actual_from, actual_to = oio_rest.get_virkning_dates(args)
+
+        # Assert
+        self.assertEqual(expected_from, actual_from)
+        self.assertEqual(expected_to, actual_to)
+
+    @freezegun.freeze_time('2017-01-01', tz_offset=1)
+    def test_get_virkning_dates_defaults(self):
+        # Arrange
+        args = {}
+
+        expected_from = datetime.datetime(2017, 1, 1, 1)
+        expected_to = expected_from + datetime.timedelta(microseconds=1)
+
+        # Act
+        actual_from, actual_to = oio_rest.get_virkning_dates(args)
+
+        # Assert
+        self.assertEqual(expected_from, actual_from)
+        self.assertEqual(expected_to, actual_to)
+
+    def test_get_virkning_dates_raises_on_invalid_args_combination(self):
+        # Arrange
+        args = {
+            'virkningstid': '2020-01-01',
+            'virkningfra': '2006-01-01',
+            'virkningtil': '2020-01-01',
+        }
+
+        # Act
+        with self.assertRaises(BadRequestException):
+            oio_rest.get_virkning_dates(args)
+
+    def test_get_registreret_dates_registreringstid(self):
+        # Arrange
+        args = {
+            'registreringstid': '2020-01-01',
+        }
+
+        expected_from = datetime.datetime(2020, 1, 1)
+        expected_to = expected_from + datetime.timedelta(microseconds=1)
+
+        # Act
+        actual_from, actual_to = oio_rest.get_registreret_dates(args)
+
+        # Assert
+        self.assertEqual(expected_from, actual_from)
+        self.assertEqual(expected_to, actual_to)
+
+    def test_get_registreret_dates_from_to(self):
+        # Arrange
+        args = {
+            'registreretfra': '2006-01-01',
+            'registrerettil': '2020-01-01',
+        }
+
+        expected_from = '2006-01-01'
+        expected_to = '2020-01-01'
+
+        # Act
+        actual_from, actual_to = oio_rest.get_registreret_dates(args)
+
+        # Assert
+        self.assertEqual(expected_from, actual_from)
+        self.assertEqual(expected_to, actual_to)
+
+    @freezegun.freeze_time('2017-01-01', tz_offset=1)
+    def test_get_registreret_dates_defaults(self):
+        # Arrange
+        args = {}
+
+        expected_from = None
+        expected_to = None
+
+        # Act
+        actual_from, actual_to = oio_rest.get_registreret_dates(args)
+
+        # Assert
+        self.assertEqual(expected_from, actual_from)
+        self.assertEqual(expected_to, actual_to)
+
+    def test_get_registreret_dates_raises_on_invalid_args_combination(self):
+        # Arrange
+        args = {
+            'registreringstid': '2020-01-01',
+            'registreretfra': '2006-01-01',
+            'registrerettil': '2020-01-01',
+        }
+
+        # Act
+        with self.assertRaises(BadRequestException):
+            oio_rest.get_registreret_dates(args)

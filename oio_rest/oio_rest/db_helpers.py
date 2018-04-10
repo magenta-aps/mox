@@ -99,8 +99,10 @@ GENERAL_SEARCH_PARAMS = {
 TEMPORALITY_PARAMS = {
     'registreretfra',
     'registrerettil',
+    'registreringstid',
     'virkningfra',
     'virkningtil',
+    'virkningstid',
 }
 
 

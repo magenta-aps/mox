@@ -27,6 +27,21 @@ app.setup_api()
 TESTS_DIR = os.path.dirname(__file__)
 BASE_DIR = os.path.dirname(TESTS_DIR)
 DATA_DIR = os.path.join(TESTS_DIR, 'data')
+FIXTURE_DIR = os.path.join(TESTS_DIR, 'fixtures')
+
+
+def jsonfile_to_dict(path):
+    """
+    Reads JSON from resources folder and converts to Python dictionary
+    :param path: path to json resource
+    :return: dictionary corresponding to the resource JSON
+    """
+    with open(os.path.join(BASE_DIR, path)) as f:
+        return json.load(f)
+
+
+def get_fixture(fixture_name):
+    return jsonfile_to_dict(os.path.join(FIXTURE_DIR, fixture_name))
 
 
 class TestCaseMixin(object):
@@ -185,13 +200,9 @@ class TestCaseMixin(object):
 
     def _perform_request(self, path, **kwargs):
         if 'json' in kwargs:
-            # "In the face of ambiguity, refuse the temptation to guess."
-            # ...so check that the arguments we override don't exist
-            assert kwargs.keys().isdisjoint({'method', 'data', 'headers'})
-
-            kwargs['method'] = 'POST'
-            kwargs['data'] = json.dumps(kwargs.pop('json'), indent=2)
-            kwargs['headers'] = {'Content-Type': 'application/json'}
+            kwargs.setdefault('method', 'POST')
+            kwargs.setdefault('data', json.dumps(kwargs.pop('json'), indent=2))
+            kwargs.setdefault('headers', {'Content-Type': 'application/json'})
 
         return self.client.open(path, **kwargs)
 
@@ -230,6 +241,49 @@ class TestCaseMixin(object):
         return self.assertEqual(
             sort_inner_lists(expected),
             sort_inner_lists(actual))
+
+    def assertQueryResponse(self, expected, path, **params):
+        """Perform a request towards LoRa, and assert that it yields the
+        expected output.
+
+        Results are unpacked from the LoRa result structure and filtered of
+        metadata before comparison
+
+        **params are passed as part of the query string in the request.
+        """
+
+        r = self._perform_request(path, query_string=params).json
+
+        results = r['results'][0]
+
+        assert len(results) == 1
+        registrations = results[0]['registreringer']
+
+        if set(params.keys()) & {'registreretfra', 'registrerettil',
+                                 'registreringstid'}:
+            actual = registrations
+        else:
+            assert len(registrations) == 1
+            actual = registrations[0]
+
+        return self.assertRegistrationsEqual(expected, actual)
+
+    def load_fixture(self, path, fixture_name, uuid=None):
+        """Load a fixture, i.e. a JSON file in the 'fixtures' directory,
+        into LoRA at the given path & UUID.
+        """
+        if uuid:
+            path = "{}/{}".format(path, uuid)
+            r = self._perform_request(path, method='PUT',
+                                      json=get_fixture(fixture_name))
+        else:
+            r = self._perform_request(path, method='POST',
+                                      json=get_fixture(fixture_name))
+
+        self.assertLess(r.status_code, 300)
+        self.assertGreaterEqual(r.status_code, 200)
+
+        return r
 
 
 class TestCase(TestCaseMixin, flask_testing.TestCase):

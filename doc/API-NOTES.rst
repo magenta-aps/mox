@@ -233,6 +233,14 @@ giving the "actual state" as the results.
 The results that are returned are filtered by those that overlap with the
 given date/time ranges.
 
+Alternatively the following parameters can be used: ::
+
+   &virkningstid=<datotid>
+   &registreringstid=<datotid>
+
+The results returned will be those valid at date/time value <datotid>, giving a
+'snapshot' of the object's state at a given point in time.
+
 List operation
 --------------
 

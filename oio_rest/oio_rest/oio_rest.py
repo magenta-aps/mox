@@ -3,6 +3,7 @@
 import json
 import datetime
 
+import dateutil
 from flask import jsonify, request
 from custom_exceptions import BadRequestException, NotFoundException
 from custom_exceptions import GoneException
@@ -39,6 +40,48 @@ def typed_get(d, field, default):
                                    json.dumps(v)))
 
     return v
+
+
+def get_virkning_dates(args):
+    virkning_fra = args.get('virkningfra')
+    virkning_til = args.get('virkningtil')
+    virkningstid = args.get('virkningstid')
+
+    if virkningstid:
+        if virkning_fra or virkning_til:
+            raise BadRequestException("'virkningfra'/'virkningtil' conflict "
+                                      "with 'virkningstid'")
+        # Timespan has to be non-zero length of time, so we add one
+        # microsecond
+        dt = dateutil.parser.isoparse(virkningstid)
+        virkning_fra = dt
+        virkning_til = dt + datetime.timedelta(microseconds=1)
+    else:
+        if virkning_fra is None and virkning_til is None:
+            # TODO: Use the equivalent of TSTZRANGE(current_timestamp,
+            # current_timestamp,'[]') if possible
+            virkning_fra = datetime.datetime.now()
+            virkning_til = virkning_fra + datetime.timedelta(
+                    microseconds=1)
+    return virkning_fra, virkning_til
+
+
+def get_registreret_dates(args):
+    registreret_fra = args.get('registreretfra')
+    registreret_til = args.get('registrerettil')
+    registreringstid = args.get('registreringstid')
+
+    if registreringstid:
+        if registreret_fra or registreret_til:
+            raise BadRequestException("'registreretfra'/'registrerettil' "
+                                      "conflict with 'registreringstid'")
+        else:
+            # Timespan has to be non-zero length of time, so we add one
+            # microsecond
+            dt = dateutil.parser.isoparse(registreringstid)
+            registreret_fra = dt
+            registreret_til = dt + datetime.timedelta(microseconds=1)
+    return registreret_fra, registreret_til
 
 
 class ArgumentDict(ImmutableOrderedMultiDict):
@@ -180,21 +223,12 @@ class OIORestObject(object):
         # Convert arguments to lowercase, getting them as lists
         list_args = cls._get_args(True)
         args = cls._get_args()
-        virkning_fra = args.get('virkningfra', None)
-        virkning_til = args.get('virkningtil', None)
-        registreret_fra = args.get('registreretfra', None)
-        registreret_til = args.get('registrerettil', None)
-
-        if virkning_fra is None and virkning_til is None:
-            # TODO: Use the equivalent of TSTZRANGE(current_timestamp,
-            # current_timestamp,'[]') if possible
-            virkning_fra = datetime.datetime.now()
-            virkning_til = datetime.datetime.now()
+        registreret_fra, registreret_til = get_registreret_dates(args)
+        virkning_fra, virkning_til = get_virkning_dates(args)
 
         uuid_param = list_args.get('uuid', None)
 
-        valid_list_args = {'virkningfra', 'virkningtil', 'registreretfra',
-                           'registrerettil', 'uuid'}
+        valid_list_args = TEMPORALITY_PARAMS | {'uuid'}
 
         # Assume the search operation if other params were specified
         if not set(args.keys()).issubset(valid_list_args):
@@ -254,14 +288,10 @@ class OIORestObject(object):
         cls.verify_args(*TEMPORALITY_PARAMS)
 
         args = cls._get_args()
-        virkning_fra = args.get('virkningfra', None)
-        virkning_til = args.get('virkningtil', None)
-        registreret_fra = args.get('registreretfra', None)
-        registreret_til = args.get('registrerettil', None)
+        registreret_fra, registreret_til = get_registreret_dates(args)
 
-        if virkning_fra is None and virkning_til is None:
-            virkning_fra = datetime.datetime.now()
-            virkning_til = datetime.datetime.now()
+        virkning_fra, virkning_til = get_virkning_dates(args)
+
         request.api_operation = u'Læs'
         request.uuid = uuid
         object_list = db.list_objects(cls.__name__, [uuid], virkning_fra,
