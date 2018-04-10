@@ -511,7 +511,7 @@ def expand_template(template_file, dest_file=None, **kwargs):
 
         try:
             os.rename(dest_file, backup_file)
-        except:
+        except Exception:
             sudo('mv', '-v', dest_file, backup_file)
 
     try:
