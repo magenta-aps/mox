@@ -13,4 +13,4 @@ python-saml==2.4.0
 pexpect==3.3
 python-dateutil==2.7.0
 egenix-mx-base==3.2.9
-pika
+pika>=0.10.0
