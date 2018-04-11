@@ -240,7 +240,7 @@ class TestCaseMixin(object):
             sort_inner_lists(expected),
             sort_inner_lists(actual))
 
-    def assertQueryResponse(self, expected, path, **params):
+    def assertQueryResponse(self, path, expected, **params):
         """Perform a request towards LoRa, and assert that it yields the
         expected output.
 
