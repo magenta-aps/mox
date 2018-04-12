@@ -256,3 +256,13 @@ class TestAttributesCreateOrganisation(util.TestCase):
 
         self.ORG = {}
         self._check_response_400()
+
+    def test_attributterMissing(self):
+        """
+        Equivalence classes covered: [18]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+
+        del self.ORG['attributter']
+        self._check_response_400()

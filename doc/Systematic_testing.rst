@@ -27,6 +27,7 @@ Attr, Virkning     Virkning missing [11], Virkning malformed [12]     Virkning c
 Attr, No of attrs  OrgEgenskaber missing [14]                         Two OrgEgenskaber present (no overlaps) [15]
 Attr, Virkning     Different OrgNames for overlapping virknings [16]
 Empty org          Empty org [17]
+Attr               Attr missing [18]
 =================  =================================================  =============================================
 
 More cases to come...
