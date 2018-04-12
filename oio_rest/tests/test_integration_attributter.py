@@ -8,6 +8,7 @@
 
 import json
 import re
+import unittest
 
 from . import util
 
@@ -77,8 +78,8 @@ class TestAttributesCreateOrganisation(util.TestCase):
 
         # Create organisation
 
-        self.ORG['attributter']['organisationegenskaber'][0].pop(
-            'organisationsnavn')
+        del self.ORG['attributter']['organisationegenskaber'][0][
+            'organisationsnavn']
 
         r = self._post(self.ORG)
 
@@ -134,4 +135,38 @@ class TestAttributesCreateOrganisation(util.TestCase):
             uuid=r.json['uuid'],
             virkningfra='-infinity',
             virkningtil='infinity'
+        )
+
+    def test_invalidNote(self):
+        """
+        Equivalence classes covered: [1]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+
+        self.ORG[u'note'] = ['Note cannot be e.g. a list']
+
+        self.assertRequestFails(
+            '/organisation/organisation',
+            400,
+            json=self.ORG
+        )
+
+    @unittest.expectedFailure
+    def test_bvnMissing(self):
+        """
+        Equivalence classes covered: [4]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+
+        # Create organisation
+
+        del self.ORG['attributter']['organisationegenskaber'][0][
+            'brugervendtnoegle']
+
+        self.assertRequestFails(
+            '/organisation/organisation',
+            400,
+            json=self.ORG
         )
