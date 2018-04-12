@@ -1,5 +1,5 @@
-*** ./generated-files/as_create_or_import_sag.sql	2016-12-11 15:53:25.000000000 +0100
---- ./patches/as_create_or_import_sag.org.sql	2016-12-11 15:44:54.000000000 +0100
+*** ./patches/as_create_or_import_sag.org.sql	2018-04-12 09:56:16.684337200 +0000
+--- generated-files/as_create_or_import_sag.sql	2018-04-12 10:17:48.892466973 +0000
 ***************
 *** 4,14 ****
   -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -19,7 +19,7 @@
   -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
   
   /*
-! NOTICE: This file is auto-generated using the script: apply-template.py sag as_create_or_import.jinja.sql AND applying a patch
+! NOTICE: This file is auto-generated using the script: apply-template.py sag as_create_or_import.jinja.sql AND running a patch (as_create_or_import_sag.sql.diff)
   */
   
   CREATE OR REPLACE FUNCTION as_create_or_import_sag(
@@ -40,13 +40,13 @@
     auth_filtered_uuids uuid[];
 +   sag_rel_type_cardinality_unlimited_present_in_argument sagRelationKode[];
 + 
+    does_exist boolean;
+    new_sag_registrering sag_registrering;
+    prev_sag_registrering sag_registrering;
   BEGIN
   
-  IF sag_uuid IS NULL THEN
-      LOOP
-      sag_uuid:=uuid_generate_v4();
 ***************
-*** 150,176 ****
+*** 168,194 ****
   END IF;
   
   /*********************************/
@@ -74,7 +74,7 @@
   /*** Verify that the object meets the stipulated access allowed criteria  ***/
   /*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
   auth_filtered_uuids:=_as_filter_unauth_sag(array[sag_uuid]::uuid[],auth_criteria_arr); 
---- 156,267 ----
+--- 174,285 ----
   END IF;
   
   /*********************************/
@@ -100,7 +100,7 @@
 + 
 + END LOOP;
 + END IF;
-+ 
++  
       INSERT INTO sag_relation (
         sag_registrering_id,
         virkning,
@@ -157,15 +157,15 @@
 !                     AND
 !                     (
 !                       ((a.journalDokumentAttr).offentlighedUndtaget).AlternativTitel IS NOT NULL
-!                       OR
-!                       ((a.journalDokumentAttr).offentlighedUndtaget).Hjemmel IS NOT NULL
-!                     )
-!                   )
-!                )
-!              ) THEN a.journalDokumentAttr
-!         ELSE
-!         NULL
-!       END
+!                        OR
+!                        ((a.journalDokumentAttr).offentlighedUndtaget).Hjemmel IS NOT NULL
+!                      )
+!                    )
+!                 )
+!               ) THEN a.journalDokumentAttr
+!          ELSE
+!          NULL
+!        END
       FROM unnest(sag_registrering.relationer) a
 !     ;
 ! 
