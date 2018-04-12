@@ -16,14 +16,20 @@ UUID_REGEX = re.compile('[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-'
                         '[a-fA-F0-9]{4}-[a-fA-F0-9]{12}')
 
 
-class TestAttributesCreateOrganisation(util.TestCase):
+class TestCreateOrganisation(util.TestCase):
 
     def setUp(self):
-        super(TestAttributesCreateOrganisation, self).setUp()
-        self.STANDARD_VIRKNING = {
+        super(TestCreateOrganisation, self).setUp()
+        self.STANDARD_VIRKNING1 = {
             u"from": u"2000-01-01 12:00:00+01",
             u"from_included": True,
             u"to": u"2020-01-01 12:00:00+01",
+            u"to_included": False
+        }
+        self.STANDARD_VIRKNING2 = {
+            u"from": u"2020-01-01 12:00:00+01",
+            u"from_included": True,
+            u"to": u"2030-01-01 12:00:00+01",
             u"to_included": False
         }
         self.ORG = {
@@ -32,7 +38,7 @@ class TestAttributesCreateOrganisation(util.TestCase):
                     {
                         u"brugervendtnoegle": u"bvn1",
                         u"organisationsnavn": u"orgName1",
-                        u"virkning": self.STANDARD_VIRKNING
+                        u"virkning": self.STANDARD_VIRKNING1
                     }
                 ]
             },
@@ -40,7 +46,7 @@ class TestAttributesCreateOrganisation(util.TestCase):
                 u"organisationgyldighed": [
                     {
                         u"gyldighed": u"Aktiv",
-                        u"virkning": self.STANDARD_VIRKNING
+                        u"virkning": self.STANDARD_VIRKNING1
                     }
                 ]
             },
@@ -76,9 +82,9 @@ class TestAttributesCreateOrganisation(util.TestCase):
             json=self.ORG
         )
 
-    def test_noNote_validBvn_noOrgName_validVirkning(self):
+    def test_noNote_validBvn_noOrgName(self):
         """
-        Equivalence classes covered: [2][6][9][13]
+        Equivalence classes covered: [2][6][9][13][21][24][29]
         See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
         further details
         """
@@ -118,12 +124,7 @@ class TestAttributesCreateOrganisation(util.TestCase):
             {
                 u"brugervendtnoegle": u"bvn2",
                 u"organisationsnavn": u"orgName2",
-                u"virkning": {
-                    u"from": u"2020-01-01 12:00:00+01",
-                    u"from_included": True,
-                    u"to": u"2030-01-01 12:00:00+01",
-                    u"to_included": False
-                }
+                u"virkning": self.STANDARD_VIRKNING2
             }
         )
 
@@ -266,3 +267,38 @@ class TestAttributesCreateOrganisation(util.TestCase):
 
         del self.ORG['attributter']
         self._check_response_400()
+
+    def test_twoValidOrgGyldigheder_oneGyldighedInactive(self):
+        """
+        Equivalence classes covered: [22][25]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+
+        # Create organisation
+
+        self.ORG[u'note'] = u'This is a note'
+        self.ORG['tilstande']['organisationgyldighed'].append(
+            {
+                u"gyldighed": u"Inaktiv",
+                u"virkning": self.STANDARD_VIRKNING2
+            }
+        )
+
+        r = self._post(self.ORG)
+
+        # Check response
+
+        self._check_response_201(r)
+
+        # Check persisted data
+
+        self.ORG['livscykluskode'] = 'Opstaaet'
+
+        self.assertQueryResponse(
+            '/organisation/organisation',
+            self.ORG,
+            uuid=r.json['uuid'],
+            virkningfra='-infinity',
+            virkningtil='infinity'
+        )

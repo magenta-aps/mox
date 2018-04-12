@@ -16,9 +16,9 @@ OrganisationOpret
 
 Equivalence class partitioning:
 
-=================  =================================================  =============================================
+=================  =================================================  =================================================
 Condition          Invalid ECs                                        Valid ECs
-=================  =================================================  =============================================
+=================  =================================================  =================================================
 Note               Note not a string [1]                              Zero notes [2], One note [3]
 Attr, BVN          BVN missing [4], BVN not a string [5]              Exactly one BVN [6]
 Attr, BVN          BVN consists of special characters [7]
@@ -28,7 +28,12 @@ Attr, No of attrs  OrgEgenskaber missing [14]                         Two OrgEge
 Attr, Virkning     Different OrgNames for overlapping virknings [16]
 Empty org          Empty org [17]
 Attr               Attr missing [18]
-=================  =================================================  =============================================
+Tilstand, number   Tilstand missing [19]
+Tilstand, orgGyld  OrgGyldighed missing [20]                          One valid OrgGyld [21], Two valid OrgGyld [22]
+Tilstand, gyldigh  Gyld not aktiv or inaktiv [23], gyld missing [26]  gyldighed aktiv [24], gyldighed inaktiv [25]
+Tilstd, virkning   Virkning missing [27], Virkning malformed [28]     Virkning valid [29]
+Tilstd, virkning   Different gyldighed for overlapping virkning [30]
+=================  =================================================  =================================================
 
 More cases to come...
 
