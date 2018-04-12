@@ -31,6 +31,9 @@ DECLARE
   tilstand_rel_type_cardinality_unlimited tilstandRelationKode[]:=ARRAY['tilstandsvaerdi'::TilstandRelationKode,'begrundelse'::TilstandRelationKode,'tilstandskvalitet'::TilstandRelationKode,'tilstandsvurdering'::TilstandRelationKode,'tilstandsaktoer'::TilstandRelationKode,'tilstandsudstyr'::TilstandRelationKode,'samtykke'::TilstandRelationKode,'tilstandsdokument'::TilstandRelationKode]::TilstandRelationKode[];
   tilstand_rel_type_cardinality_unlimited_present_in_argument tilstandRelationKode[];
 
+  does_exist boolean;
+  new_tilstand_registrering tilstand_registrering;
+  prev_tilstand_registrering tilstand_registrering;
 BEGIN
 
 IF tilstand_uuid IS NULL THEN
@@ -42,42 +45,57 @@ END IF;
 
 
 IF EXISTS (SELECT id from tilstand WHERE id=tilstand_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing tilstand with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_tilstand (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',tilstand_uuid USING ERRCODE='MO500';
+    does_exist = True;
+ELSE
+
+    does_exist = False;
 END IF;
 
-IF  (tilstand_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (tilstand_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
+IF  (tilstand_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (tilstand_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (tilstand_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
   RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_tilstand.',(tilstand_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
+IF NOT does_exist THEN
 
-INSERT INTO 
-      tilstand (ID)
-SELECT
-      tilstand_uuid
-;
+    INSERT INTO
+          tilstand (ID)
+    SELECT
+          tilstand_uuid;
+END IF;
 
 
 /*********************************/
 --Insert new registrering
 
-tilstand_registrering_id:=nextval('tilstand_registrering_id_seq');
+IF NOT does_exist THEN
+    tilstand_registrering_id:=nextval('tilstand_registrering_id_seq');
 
-INSERT INTO tilstand_registrering (
-      id,
-        tilstand_id,
+    INSERT INTO tilstand_registrering (
+          id,
+          tilstand_id,
           registrering
         )
-SELECT
-      tilstand_registrering_id,
-        tilstand_uuid,
-          ROW (
-            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-            (tilstand_registrering.registrering).livscykluskode,
-            (tilstand_registrering.registrering).brugerref,
-            (tilstand_registrering.registrering).note
-              ):: RegistreringBase
-;
+    SELECT
+          tilstand_registrering_id,
+           tilstand_uuid,
+           ROW (
+             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+             (tilstand_registrering.registrering).livscykluskode,
+             (tilstand_registrering.registrering).brugerref,
+             (tilstand_registrering.registrering).note
+               ):: RegistreringBase ;
+ELSE
+    -- This is an update, not an import or create
+        new_tilstand_registrering := _as_create_tilstand_registrering(
+             tilstand_uuid,
+             (tilstand_registrering.registrering).livscykluskode,
+             (tilstand_registrering.registrering).brugerref,
+             (tilstand_registrering.registrering).note);
+
+        tilstand_registrering_id := new_tilstand_registrering.id;
+END IF;
+
 
 /*********************************/
 --Insert attributes
@@ -224,8 +242,8 @@ END IF;
         ELSE
         NULL
       END
-    FROM unnest(tilstand_registrering.relationer) a
-    ;
+      FROM unnest(tilstand_registrering.relationer) a
+  ;
 
 
 --Drop temporary sequences

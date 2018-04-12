@@ -36,63 +36,59 @@ IF facet_uuid IS NULL THEN
     END LOOP;
 END IF;
 
+
 IF EXISTS (SELECT id from facet WHERE id=facet_uuid) THEN
-   does_exist = True;
+    does_exist = True;
 ELSE
 
     does_exist = False;
+END IF;
 
-END IF; 
-
---IF EXISTS (SELECT id from facet WHERE id=facet_uuid) and (facet_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
---  RAISE EXCEPTION 'Error creating or importing facet with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_facet (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',facet_uuid USING ERRCODE='MO500';
---END IF;
-
-IF  (facet_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (facet_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode and (facet_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
+IF  (facet_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (facet_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (facet_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
   RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_facet.',(facet_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
-if not does_exist THEN
+IF NOT does_exist THEN
 
-	INSERT INTO 
-            facet (ID)
-        SELECT
-           facet_uuid;
+    INSERT INTO
+          facet (ID)
+    SELECT
+          facet_uuid;
 END IF;
 
 
 /*********************************/
 --Insert new registrering
 
+IF NOT does_exist THEN
+    facet_registrering_id:=nextval('facet_registrering_id_seq');
 
-if not  does_exist THEN
-        facet_registrering_id:=nextval('facet_registrering_id_seq');
-
-        INSERT INTO facet_registrering (
-            id,
-            facet_id,
-            registrering
+    INSERT INTO facet_registrering (
+          id,
+          facet_id,
+          registrering
         )
-        SELECT
+    SELECT
           facet_registrering_id,
-            facet_uuid,
-              ROW (
-                TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-                (facet_registrering.registrering).livscykluskode,
-                (facet_registrering.registrering).brugerref,
-                (facet_registrering.registrering).note
-                  ):: RegistreringBase;
-    ELSE
-        -- This is an update, not an import or create
+           facet_uuid,
+           ROW (
+             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+             (facet_registrering.registrering).livscykluskode,
+             (facet_registrering.registrering).brugerref,
+             (facet_registrering.registrering).note
+               ):: RegistreringBase ;
+ELSE
+    -- This is an update, not an import or create
         new_facet_registrering := _as_create_facet_registrering(
-            facet_uuid,
-            (facet_registrering.registrering).livscykluskode,
-            (facet_registrering.registrering).brugerref,
-            (facet_registrering.registrering).note);
+             facet_uuid,
+             (facet_registrering.registrering).livscykluskode,
+             (facet_registrering.registrering).brugerref,
+             (facet_registrering.registrering).note);
 
         facet_registrering_id := new_facet_registrering.id;
 END IF;
+
 
 /*********************************/
 --Insert attributes
@@ -106,7 +102,7 @@ END IF;
 IF coalesce(array_length(facet_registrering.attrEgenskaber, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [facet]. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
- 
+
 
 
 IF facet_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(facet_registrering.attrEgenskaber,1),0)>0 THEN

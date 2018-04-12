@@ -24,6 +24,9 @@ DECLARE
   
   loghaendelse_relationer LoghaendelseRelationType;
   auth_filtered_uuids uuid[];
+  does_exist boolean;
+  new_loghaendelse_registrering loghaendelse_registrering;
+  prev_loghaendelse_registrering loghaendelse_registrering;
 BEGIN
 
 IF loghaendelse_uuid IS NULL THEN
@@ -35,42 +38,57 @@ END IF;
 
 
 IF EXISTS (SELECT id from loghaendelse WHERE id=loghaendelse_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing loghaendelse with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_loghaendelse (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',loghaendelse_uuid USING ERRCODE='MO500';
+    does_exist = True;
+ELSE
+
+    does_exist = False;
 END IF;
 
-IF  (loghaendelse_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (loghaendelse_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
+IF  (loghaendelse_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (loghaendelse_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (loghaendelse_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
   RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_loghaendelse.',(loghaendelse_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
+IF NOT does_exist THEN
 
-INSERT INTO 
-      loghaendelse (ID)
-SELECT
-      loghaendelse_uuid
-;
+    INSERT INTO
+          loghaendelse (ID)
+    SELECT
+          loghaendelse_uuid;
+END IF;
 
 
 /*********************************/
 --Insert new registrering
 
-loghaendelse_registrering_id:=nextval('loghaendelse_registrering_id_seq');
+IF NOT does_exist THEN
+    loghaendelse_registrering_id:=nextval('loghaendelse_registrering_id_seq');
 
-INSERT INTO loghaendelse_registrering (
-      id,
-        loghaendelse_id,
+    INSERT INTO loghaendelse_registrering (
+          id,
+          loghaendelse_id,
           registrering
         )
-SELECT
-      loghaendelse_registrering_id,
-        loghaendelse_uuid,
-          ROW (
-            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-            (loghaendelse_registrering.registrering).livscykluskode,
-            (loghaendelse_registrering.registrering).brugerref,
-            (loghaendelse_registrering.registrering).note
-              ):: RegistreringBase
-;
+    SELECT
+          loghaendelse_registrering_id,
+           loghaendelse_uuid,
+           ROW (
+             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+             (loghaendelse_registrering.registrering).livscykluskode,
+             (loghaendelse_registrering.registrering).brugerref,
+             (loghaendelse_registrering.registrering).note
+               ):: RegistreringBase ;
+ELSE
+    -- This is an update, not an import or create
+        new_loghaendelse_registrering := _as_create_loghaendelse_registrering(
+             loghaendelse_uuid,
+             (loghaendelse_registrering.registrering).livscykluskode,
+             (loghaendelse_registrering.registrering).brugerref,
+             (loghaendelse_registrering.registrering).note);
+
+        loghaendelse_registrering_id := new_loghaendelse_registrering.id;
+END IF;
+
 
 /*********************************/
 --Insert attributes

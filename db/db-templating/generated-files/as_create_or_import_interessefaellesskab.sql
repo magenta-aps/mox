@@ -24,6 +24,9 @@ DECLARE
   
   interessefaellesskab_relationer InteressefaellesskabRelationType;
   auth_filtered_uuids uuid[];
+  does_exist boolean;
+  new_interessefaellesskab_registrering interessefaellesskab_registrering;
+  prev_interessefaellesskab_registrering interessefaellesskab_registrering;
 BEGIN
 
 IF interessefaellesskab_uuid IS NULL THEN
@@ -35,42 +38,57 @@ END IF;
 
 
 IF EXISTS (SELECT id from interessefaellesskab WHERE id=interessefaellesskab_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing interessefaellesskab with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_interessefaellesskab (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',interessefaellesskab_uuid USING ERRCODE='MO500';
+    does_exist = True;
+ELSE
+
+    does_exist = False;
 END IF;
 
-IF  (interessefaellesskab_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (interessefaellesskab_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
+IF  (interessefaellesskab_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (interessefaellesskab_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (interessefaellesskab_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
   RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_interessefaellesskab.',(interessefaellesskab_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
+IF NOT does_exist THEN
 
-INSERT INTO 
-      interessefaellesskab (ID)
-SELECT
-      interessefaellesskab_uuid
-;
+    INSERT INTO
+          interessefaellesskab (ID)
+    SELECT
+          interessefaellesskab_uuid;
+END IF;
 
 
 /*********************************/
 --Insert new registrering
 
-interessefaellesskab_registrering_id:=nextval('interessefaellesskab_registrering_id_seq');
+IF NOT does_exist THEN
+    interessefaellesskab_registrering_id:=nextval('interessefaellesskab_registrering_id_seq');
 
-INSERT INTO interessefaellesskab_registrering (
-      id,
-        interessefaellesskab_id,
+    INSERT INTO interessefaellesskab_registrering (
+          id,
+          interessefaellesskab_id,
           registrering
         )
-SELECT
-      interessefaellesskab_registrering_id,
-        interessefaellesskab_uuid,
-          ROW (
-            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-            (interessefaellesskab_registrering.registrering).livscykluskode,
-            (interessefaellesskab_registrering.registrering).brugerref,
-            (interessefaellesskab_registrering.registrering).note
-              ):: RegistreringBase
-;
+    SELECT
+          interessefaellesskab_registrering_id,
+           interessefaellesskab_uuid,
+           ROW (
+             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+             (interessefaellesskab_registrering.registrering).livscykluskode,
+             (interessefaellesskab_registrering.registrering).brugerref,
+             (interessefaellesskab_registrering.registrering).note
+               ):: RegistreringBase ;
+ELSE
+    -- This is an update, not an import or create
+        new_interessefaellesskab_registrering := _as_create_interessefaellesskab_registrering(
+             interessefaellesskab_uuid,
+             (interessefaellesskab_registrering.registrering).livscykluskode,
+             (interessefaellesskab_registrering.registrering).brugerref,
+             (interessefaellesskab_registrering.registrering).note);
+
+        interessefaellesskab_registrering_id := new_interessefaellesskab_registrering.id;
+END IF;
+
 
 /*********************************/
 --Insert attributes

@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py sag as_create_or_import.jinja.sql AND applying a patch
+NOTICE: This file is auto-generated using the script: apply-template.py sag as_create_or_import.jinja.sql AND running a patch (as_create_or_import_sag.sql.diff)
 */
 
 CREATE OR REPLACE FUNCTION as_create_or_import_sag(
@@ -30,6 +30,9 @@ DECLARE
   auth_filtered_uuids uuid[];
   sag_rel_type_cardinality_unlimited_present_in_argument sagRelationKode[];
 
+  does_exist boolean;
+  new_sag_registrering sag_registrering;
+  prev_sag_registrering sag_registrering;
 BEGIN
 
 IF sag_uuid IS NULL THEN
@@ -41,42 +44,57 @@ END IF;
 
 
 IF EXISTS (SELECT id from sag WHERE id=sag_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing sag with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_sag (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',sag_uuid USING ERRCODE='MO500';
+    does_exist = True;
+ELSE
+
+    does_exist = False;
 END IF;
 
-IF  (sag_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (sag_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
+IF  (sag_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (sag_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (sag_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
   RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_sag.',(sag_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
+IF NOT does_exist THEN
 
-INSERT INTO 
-      sag (ID)
-SELECT
-      sag_uuid
-;
+    INSERT INTO
+          sag (ID)
+    SELECT
+          sag_uuid;
+END IF;
 
 
 /*********************************/
 --Insert new registrering
 
-sag_registrering_id:=nextval('sag_registrering_id_seq');
+IF NOT does_exist THEN
+    sag_registrering_id:=nextval('sag_registrering_id_seq');
 
-INSERT INTO sag_registrering (
-      id,
-        sag_id,
+    INSERT INTO sag_registrering (
+          id,
+          sag_id,
           registrering
         )
-SELECT
-      sag_registrering_id,
-        sag_uuid,
-          ROW (
-            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-            (sag_registrering.registrering).livscykluskode,
-            (sag_registrering.registrering).brugerref,
-            (sag_registrering.registrering).note
-              ):: RegistreringBase
-;
+    SELECT
+          sag_registrering_id,
+           sag_uuid,
+           ROW (
+             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+             (sag_registrering.registrering).livscykluskode,
+             (sag_registrering.registrering).brugerref,
+             (sag_registrering.registrering).note
+               ):: RegistreringBase ;
+ELSE
+    -- This is an update, not an import or create
+        new_sag_registrering := _as_create_sag_registrering(
+             sag_uuid,
+             (sag_registrering.registrering).livscykluskode,
+             (sag_registrering.registrering).brugerref,
+             (sag_registrering.registrering).note);
+
+        sag_registrering_id := new_sag_registrering.id;
+END IF;
+
 
 /*********************************/
 --Insert attributes
@@ -178,7 +196,7 @@ FOREACH sag_relation_kode IN ARRAY (sag_rel_type_cardinality_unlimited_present_i
 
 END LOOP;
 END IF;
-
+ 
     INSERT INTO sag_relation (
       sag_registrering_id,
       virkning,
@@ -235,15 +253,15 @@ END IF;
                     AND
                     (
                       ((a.journalDokumentAttr).offentlighedUndtaget).AlternativTitel IS NOT NULL
-                      OR
-                      ((a.journalDokumentAttr).offentlighedUndtaget).Hjemmel IS NOT NULL
-                    )
-                  )
-               )
-             ) THEN a.journalDokumentAttr
-        ELSE
-        NULL
-      END
+                       OR
+                       ((a.journalDokumentAttr).offentlighedUndtaget).Hjemmel IS NOT NULL
+                     )
+                   )
+                )
+              ) THEN a.journalDokumentAttr
+         ELSE
+         NULL
+       END
     FROM unnest(sag_registrering.relationer) a
     ;
 

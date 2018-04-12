@@ -24,6 +24,9 @@ DECLARE
   
   organisation_relationer OrganisationRelationType;
   auth_filtered_uuids uuid[];
+  does_exist boolean;
+  new_organisation_registrering organisation_registrering;
+  prev_organisation_registrering organisation_registrering;
 BEGIN
 
 IF organisation_uuid IS NULL THEN
@@ -35,42 +38,57 @@ END IF;
 
 
 IF EXISTS (SELECT id from organisation WHERE id=organisation_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing organisation with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_organisation (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',organisation_uuid USING ERRCODE='MO500';
+    does_exist = True;
+ELSE
+
+    does_exist = False;
 END IF;
 
-IF  (organisation_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (organisation_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
+IF  (organisation_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (organisation_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (organisation_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
   RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_organisation.',(organisation_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
+IF NOT does_exist THEN
 
-INSERT INTO 
-      organisation (ID)
-SELECT
-      organisation_uuid
-;
+    INSERT INTO
+          organisation (ID)
+    SELECT
+          organisation_uuid;
+END IF;
 
 
 /*********************************/
 --Insert new registrering
 
-organisation_registrering_id:=nextval('organisation_registrering_id_seq');
+IF NOT does_exist THEN
+    organisation_registrering_id:=nextval('organisation_registrering_id_seq');
 
-INSERT INTO organisation_registrering (
-      id,
-        organisation_id,
+    INSERT INTO organisation_registrering (
+          id,
+          organisation_id,
           registrering
         )
-SELECT
-      organisation_registrering_id,
-        organisation_uuid,
-          ROW (
-            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-            (organisation_registrering.registrering).livscykluskode,
-            (organisation_registrering.registrering).brugerref,
-            (organisation_registrering.registrering).note
-              ):: RegistreringBase
-;
+    SELECT
+          organisation_registrering_id,
+           organisation_uuid,
+           ROW (
+             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+             (organisation_registrering.registrering).livscykluskode,
+             (organisation_registrering.registrering).brugerref,
+             (organisation_registrering.registrering).note
+               ):: RegistreringBase ;
+ELSE
+    -- This is an update, not an import or create
+        new_organisation_registrering := _as_create_organisation_registrering(
+             organisation_uuid,
+             (organisation_registrering.registrering).livscykluskode,
+             (organisation_registrering.registrering).brugerref,
+             (organisation_registrering.registrering).note);
+
+        organisation_registrering_id := new_organisation_registrering.id;
+END IF;
+
 
 /*********************************/
 --Insert attributes
