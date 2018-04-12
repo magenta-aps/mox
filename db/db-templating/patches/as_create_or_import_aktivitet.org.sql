@@ -25,12 +25,9 @@ DECLARE
   
   aktivitet_relationer AktivitetRelationType;
   auth_filtered_uuids uuid[];
-  aktivitet_relation_kode aktivitetRelationKode;
-  aktivitet_uuid_underscores text;
-  aktivitet_rel_seq_name text;
-  aktivitet_rel_type_cardinality_unlimited aktivitetRelationKode[]:=ARRAY['udfoererklasse'::AktivitetRelationKode,'deltagerklasse'::AktivitetRelationKode,'objektklasse'::AktivitetRelationKode,'resultatklasse'::AktivitetRelationKode,'grundlagklasse'::AktivitetRelationKode,'facilitetklasse'::AktivitetRelationKode,'adresse'::AktivitetRelationKode,'geoobjekt'::AktivitetRelationKode,'position'::AktivitetRelationKode,'facilitet'::AktivitetRelationKode,'lokale'::AktivitetRelationKode,'aktivitetdokument'::AktivitetRelationKode,'aktivitetgrundlag'::AktivitetRelationKode,'aktivitetresultat'::AktivitetRelationKode,'udfoerer'::AktivitetRelationKode,'deltager'::AktivitetRelationKode]::aktivitetRelationKode[];
-  aktivitet_rel_type_cardinality_unlimited_present_in_argument aktivitetRelationKode[];
-
+  does_exist boolean;
+  new_aktivitet_registrering aktivitet_registrering;
+  prev_aktivitet_registrering aktivitet_registrering;
 BEGIN
 
 IF aktivitet_uuid IS NULL THEN
@@ -42,42 +39,57 @@ END IF;
 
 
 IF EXISTS (SELECT id from aktivitet WHERE id=aktivitet_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing aktivitet with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_aktivitet (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',aktivitet_uuid USING ERRCODE='MO500';
+    does_exist = True;
+ELSE
+
+    does_exist = False;
 END IF;
 
-IF  (aktivitet_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (aktivitet_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
+IF  (aktivitet_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (aktivitet_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (aktivitet_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
   RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_aktivitet.',(aktivitet_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
+IF NOT does_exist THEN
 
-INSERT INTO 
-      aktivitet (ID)
-SELECT
-      aktivitet_uuid
-;
+    INSERT INTO
+          aktivitet (ID)
+    SELECT
+          aktivitet_uuid;
+END IF;
 
 
 /*********************************/
 --Insert new registrering
 
-aktivitet_registrering_id:=nextval('aktivitet_registrering_id_seq');
+IF NOT does_exist THEN
+    aktivitet_registrering_id:=nextval('aktivitet_registrering_id_seq');
 
-INSERT INTO aktivitet_registrering (
-      id,
-        aktivitet_id,
+    INSERT INTO aktivitet_registrering (
+          id,
+          aktivitet_id,
           registrering
         )
-SELECT
-      aktivitet_registrering_id,
-        aktivitet_uuid,
-          ROW (
-            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-            (aktivitet_registrering.registrering).livscykluskode,
-            (aktivitet_registrering.registrering).brugerref,
-            (aktivitet_registrering.registrering).note
-              ):: RegistreringBase
-;
+    SELECT
+          aktivitet_registrering_id,
+           aktivitet_uuid,
+           ROW (
+             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+             (aktivitet_registrering.registrering).livscykluskode,
+             (aktivitet_registrering.registrering).brugerref,
+             (aktivitet_registrering.registrering).note
+               ):: RegistreringBase ;
+ELSE
+    -- This is an update, not an import or create
+        new_aktivitet_registrering := _as_create_aktivitet_registrering(
+             aktivitet_uuid,
+             (aktivitet_registrering.registrering).livscykluskode,
+             (aktivitet_registrering.registrering).brugerref,
+             (aktivitet_registrering.registrering).note);
+
+        aktivitet_registrering_id := new_aktivitet_registrering.id;
+END IF;
+
 
 /*********************************/
 --Insert attributes
@@ -178,37 +190,13 @@ END IF;
 /*********************************/
 --Insert relations
 
-IF coalesce(array_length(aktivitet_registrering.relationer,1),0)>0 THEN
-
---Create temporary sequences
-aktivitet_uuid_underscores:=replace(aktivitet_uuid::text, '-', '_');
-
-SELECT array_agg( DISTINCT a.RelType) into aktivitet_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(aktivitet_registrering.relationer) a WHERE a.RelType = any (aktivitet_rel_type_cardinality_unlimited) ;
-IF coalesce(array_length(aktivitet_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
-
-FOREACH aktivitet_relation_kode IN ARRAY (aktivitet_rel_type_cardinality_unlimited_present_in_argument)
-  LOOP
-  aktivitet_rel_seq_name := 'aktivitet_' || aktivitet_relation_kode::text || aktivitet_uuid_underscores;
-
-  EXECUTE 'CREATE TEMPORARY SEQUENCE ' || aktivitet_rel_seq_name || '
-  INCREMENT 1
-  MINVALUE 1
-  MAXVALUE 9223372036854775807
-  START 1
-  CACHE 1;';
-
-END LOOP;
-END IF;
-
     INSERT INTO aktivitet_relation (
       aktivitet_registrering_id,
       virkning,
       rel_maal_uuid,
       rel_maal_urn,
       rel_type,
-      objekt_type,
-      rel_index,
-      aktoer_attr
+      objekt_type
     )
     SELECT
       aktivitet_registrering_id,
@@ -216,45 +204,9 @@ END IF;
       a.uuid,
       a.urn,
       a.relType,
-      a.objektType,
-        CASE WHEN a.relType = any (aktivitet_rel_type_cardinality_unlimited) THEN --rel_index
-        nextval('aktivitet_' || a.relType::text || aktivitet_uuid_underscores)
-        ELSE 
-        NULL
-        END,
-        CASE 
-          WHEN a.relType =('udfoerer'::AktivitetRelationKode)  OR a.relType=('deltager'::AktivitetRelationKode) OR a.relType=('ansvarlig'::AktivitetRelationKode) 
-          AND NOT (a.aktoerAttr IS NULL)
-          AND (
-            (a.aktoerAttr).obligatorisk IS NOT NULL
-            OR
-            (a.aktoerAttr).accepteret IS NOT NULL
-            OR
-              (
-                (a.aktoerAttr).repraesentation_uuid IS NOT NULL
-                OR
-                ((a.aktoerAttr).repraesentation_urn IS NOT NULL AND (a.aktoerAttr).repraesentation_urn<>'')
-              )
-            ) 
-          THEN a.aktoerAttr
-          ELSE
-          NULL
-        END
+      a.objektType
     FROM unnest(aktivitet_registrering.relationer) a
-    ;
-
-
---Drop temporary sequences
-IF coalesce(array_length(aktivitet_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
-FOREACH aktivitet_relation_kode IN ARRAY (aktivitet_rel_type_cardinality_unlimited_present_in_argument)
-  LOOP
-  aktivitet_rel_seq_name := 'aktivitet_' || aktivitet_relation_kode::text || aktivitet_uuid_underscores;
-  EXECUTE 'DROP  SEQUENCE ' || aktivitet_rel_seq_name || ';';
-END LOOP;
-END IF;
-
-
-END IF;
+  ;
 
 
 /*** Verify that the object meets the stipulated access allowed criteria  ***/
