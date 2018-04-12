@@ -19,7 +19,7 @@ When working with new/existing patch-files, following the steps listed below are
 5. If you are altering an existing patch, disable the application of this particular patch temporarily in the recreatedb.sh script. Now, re-run recreatedb.sh, leaving you with the 'raw' output of the template process for the particular function in the 'generated-files' folder.
 6. Create the actual .diff file by running the command below, substituting function names as needed.
 
-`diff --context=5 ./generated-files/as_create_or_import_tilstand.sql ./patches/as_create_or_import_tilstand.org.sql > patches/as_create_or_import_tilstand.sql.diff`
+`diff --context=5  ./patches/as_create_or_import_tilstand.org.sql ./generated-files/as_create_or_import_tilstand.sql > patches/as_create_or_import_tilstand.sql.diff`
 
 7. Make sure that the patch is applied in the relevant section of recreatedb.sh script. That is, undo what you did in step 5 or - if you are targeting a previously unpatched function/file - introduce a line similar to the one below (again, substituting names as needed)
 

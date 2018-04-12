@@ -1,5 +1,5 @@
-*** ./patches/as_create_or_import_klasse.org.sql	2018-04-12 07:19:51.247795279 +0000
---- generated-files/as_create_or_import_klasse.sql	2018-04-12 07:35:56.906639110 +0000
+*** ./patches/as_create_or_import_sag.org.sql	2018-04-12 09:56:16.684337200 +0000
+--- generated-files/as_create_or_import_sag.sql	2018-04-12 10:17:48.892466973 +0000
 ***************
 *** 4,14 ****
   -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,105 +7,183 @@
   -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
   
   /*
-! NOTICE: This file is auto-generated using the script: apply-template.py klasse as_create_or_import.jinja.sql
+! NOTICE: This file is auto-generated using the script: apply-template.py sag as_create_or_import.jinja.sql
   */
   
-  CREATE OR REPLACE FUNCTION as_create_or_import_klasse(
-    klasse_registrering KlasseRegistreringType,
-    klasse_uuid uuid DEFAULT NULL,
+  CREATE OR REPLACE FUNCTION as_create_or_import_sag(
+    sag_registrering SagRegistreringType,
+    sag_uuid uuid DEFAULT NULL,
 --- 4,14 ----
   -- This Source Code Form is subject to the terms of the Mozilla Public
   -- License, v. 2.0. If a copy of the MPL was not distributed with this
   -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
   
   /*
-! NOTICE: This file is auto-generated using the script: apply-template.py klasse as_create_or_import.jinja.sql AND applying a patch (as_create_or_import_klasse.sql.diff)
+! NOTICE: This file is auto-generated using the script: apply-template.py sag as_create_or_import.jinja.sql AND running a patch (as_create_or_import_sag.sql.diff)
   */
   
-  CREATE OR REPLACE FUNCTION as_create_or_import_klasse(
-    klasse_registrering KlasseRegistreringType,
-    klasse_uuid uuid DEFAULT NULL,
+  CREATE OR REPLACE FUNCTION as_create_or_import_sag(
+    sag_registrering SagRegistreringType,
+    sag_uuid uuid DEFAULT NULL,
 ***************
-*** 21,30 ****
---- 21,32 ----
-    klasse_attr_egenskaber_obj klasseEgenskaberAttrType;
+*** 21,31 ****
+--- 21,37 ----
+    sag_attr_egenskaber_obj sagEgenskaberAttrType;
     
-    klasse_tils_publiceret_obj klassePubliceretTilsType;
+    sag_tils_fremdrift_obj sagFremdriftTilsType;
     
-    klasse_relationer KlasseRelationType;
-+   klasse_attr_egenskaber_id bigint;
-+   klasse_attr_egenskaber_soegeord_obj KlasseSoegeordType;
+    sag_relationer SagRelationType;
++   sag_relation_kode SagRelationKode;
++   sag_uuid_underscores text;
++   sag_rel_seq_name text;
++   sag_rel_type_cardinality_unlimited SagRelationKode[]:=ARRAY['andetarkiv'::SagRelationKode,'andrebehandlere'::SagRelationKode,'sekundaerpart'::SagRelationKode,'andresager'::SagRelationKode,'byggeri'::SagRelationKode,'fredning'::SagRelationKode,'journalpost'::SagRelationKode]::SagRelationKode[];
     auth_filtered_uuids uuid[];
++   sag_rel_type_cardinality_unlimited_present_in_argument sagRelationKode[];
++ 
     does_exist boolean;
-    new_klasse_registrering klasse_registrering;
-    prev_klasse_registrering klasse_registrering;
+    new_sag_registrering sag_registrering;
+    prev_sag_registrering sag_registrering;
   BEGIN
-***************
-*** 107,117 ****
---- 109,121 ----
   
-  IF klasse_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(klasse_registrering.attrEgenskaber,1),0)>0 THEN
-    FOREACH klasse_attr_egenskaber_obj IN ARRAY klasse_registrering.attrEgenskaber
-    LOOP
-  
-+   klasse_attr_egenskaber_id:=nextval('klasse_attr_egenskaber_id_seq');
-      INSERT INTO klasse_attr_egenskaber (
-+       id,
-        brugervendtnoegle,
-        beskrivelse,
-        eksempel,
-        omfang,
-        titel,
 ***************
-*** 119,128 ****
---- 123,133 ----
-        aendringsnotat,
-        virkning,
-        klasse_registrering_id
-      )
-      SELECT
-+      klasse_attr_egenskaber_id,
-       klasse_attr_egenskaber_obj.brugervendtnoegle,
-        klasse_attr_egenskaber_obj.beskrivelse,
-        klasse_attr_egenskaber_obj.eksempel,
-        klasse_attr_egenskaber_obj.omfang,
-        klasse_attr_egenskaber_obj.titel,
-***************
-*** 131,140 ****
---- 136,171 ----
-        klasse_attr_egenskaber_obj.virkning,
-        klasse_registrering_id
-      ;
-   
-  
-+  /************/
-+  --Insert Soegeord
-+    IF klasse_attr_egenskaber_obj.soegeord IS NOT NULL AND coalesce(array_length(klasse_attr_egenskaber_obj.soegeord,1),0)>1  THEN
-+      FOREACH klasse_attr_egenskaber_soegeord_obj IN ARRAY klasse_attr_egenskaber_obj.soegeord
-+        LOOP
-+  
-+        IF (klasse_attr_egenskaber_soegeord_obj.soegeordidentifikator IS NOT NULL AND klasse_attr_egenskaber_soegeord_obj.soegeordidentifikator<>'') 
-+        OR (klasse_attr_egenskaber_soegeord_obj.beskrivelse IS NOT NULL AND klasse_attr_egenskaber_soegeord_obj.beskrivelse<>'' )
-+        OR (klasse_attr_egenskaber_soegeord_obj.soegeordskategori IS NOT NULL AND klasse_attr_egenskaber_soegeord_obj.soegeordskategori<>'') THEN
-+  
-+        INSERT INTO klasse_attr_egenskaber_soegeord (
-+          soegeordidentifikator,
-+          beskrivelse,
-+          soegeordskategori,
-+          klasse_attr_egenskaber_id
-+        )
-+        SELECT
-+          klasse_attr_egenskaber_soegeord_obj.soegeordidentifikator,
-+          klasse_attr_egenskaber_soegeord_obj.beskrivelse,
-+          klasse_attr_egenskaber_soegeord_obj.soegeordskategori,
-+          klasse_attr_egenskaber_id
-+        ;
-+        END IF;
-+   
-+       END LOOP;
-+      END IF;
-    END LOOP;
+*** 168,194 ****
   END IF;
   
   /*********************************/
-  --Insert states (tilstande)
+  --Insert relations
+  
+      INSERT INTO sag_relation (
+        sag_registrering_id,
+        virkning,
+        rel_maal_uuid,
+        rel_maal_urn,
+        rel_type,
+!       objekt_type
+      )
+      SELECT
+        sag_registrering_id,
+        a.virkning,
+        a.uuid,
+        a.urn,
+        a.relType,
+!       a.objektType
+      FROM unnest(sag_registrering.relationer) a
+!   ;
+  
+  
+  /*** Verify that the object meets the stipulated access allowed criteria  ***/
+  /*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
+  auth_filtered_uuids:=_as_filter_unauth_sag(array[sag_uuid]::uuid[],auth_criteria_arr); 
+--- 174,285 ----
+  END IF;
+  
+  /*********************************/
+  --Insert relations
+  
++ IF coalesce(array_length(sag_registrering.relationer,1),0)>0 THEN
++ 
++ --Create temporary sequences
++ sag_uuid_underscores:=replace(sag_uuid::text, '-', '_');
++ 
++ SELECT array_agg( DISTINCT a.RelType) into sag_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(sag_registrering.relationer) a WHERE a.RelType = any (sag_rel_type_cardinality_unlimited) ;
++ IF coalesce(array_length(sag_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
++ FOREACH sag_relation_kode IN ARRAY (sag_rel_type_cardinality_unlimited_present_in_argument)
++   LOOP
++   sag_rel_seq_name := 'sag_' || sag_relation_kode::text || sag_uuid_underscores;
++ 
++   EXECUTE 'CREATE TEMPORARY SEQUENCE ' || sag_rel_seq_name || '
++   INCREMENT 1
++   MINVALUE 1
++   MAXVALUE 9223372036854775807
++   START 1
++   CACHE 1;';
++ 
++ END LOOP;
++ END IF;
++  
+      INSERT INTO sag_relation (
+        sag_registrering_id,
+        virkning,
+        rel_maal_uuid,
+        rel_maal_urn,
+        rel_type,
+!       objekt_type,
+!       rel_index,
+!       rel_type_spec,
+!       journal_notat,
+!       journal_dokument_attr
+      )
+      SELECT
+        sag_registrering_id,
+        a.virkning,
+        a.uuid,
+        a.urn,
+        a.relType,
+!       a.objektType,
+!         CASE WHEN a.relType = any (sag_rel_type_cardinality_unlimited) THEN --rel_index
+!         nextval('sag_' || a.relType::text || sag_uuid_underscores)
+!         ELSE 
+!         NULL
+!         END,
+!         CASE 
+!           WHEN a.relType='journalpost' THEN a.relTypeSpec  --rel_type_spec
+!           ELSE
+!           NULL
+!         END,
+!       CASE 
+!           WHEN  
+!             (NOT (a.journalNotat IS NULL)) 
+!             AND
+!             (
+!               (a.journalNotat).titel IS NOT NULL
+!               OR
+!               (a.journalNotat).notat IS NOT NULL
+!               OR
+!               (a.journalNotat).format IS NOT NULL
+!             )
+!            THEN a.journalNotat
+!            ELSE
+!            NULL
+!       END
+!       ,CASE 
+!         WHEN ( 
+!                 (NOT a.journalDokumentAttr IS NULL)
+!                 AND
+!                 (
+!                   (a.journalDokumentAttr).dokumenttitel IS NOT NULL
+!                   OR
+!                   (
+!                     NOT ((a.journalDokumentAttr).offentlighedUndtaget IS NULL)
+!                     AND
+!                     (
+!                       ((a.journalDokumentAttr).offentlighedUndtaget).AlternativTitel IS NOT NULL
+!                        OR
+!                        ((a.journalDokumentAttr).offentlighedUndtaget).Hjemmel IS NOT NULL
+!                      )
+!                    )
+!                 )
+!               ) THEN a.journalDokumentAttr
+!          ELSE
+!          NULL
+!        END
+      FROM unnest(sag_registrering.relationer) a
+!     ;
+! 
+! 
+! --Drop temporary sequences
+! IF coalesce(array_length(sag_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
+! FOREACH sag_relation_kode IN ARRAY (sag_rel_type_cardinality_unlimited_present_in_argument)
+!   LOOP
+!   sag_rel_seq_name := 'sag_' || sag_relation_kode::text || sag_uuid_underscores;
+!   EXECUTE 'DROP  SEQUENCE ' || sag_rel_seq_name || ';';
+! END LOOP;
+! END IF;
+! 
+! 
+! END IF;
+! 
+  
+  
+  /*** Verify that the object meets the stipulated access allowed criteria  ***/
+  /*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
+  auth_filtered_uuids:=_as_filter_unauth_sag(array[sag_uuid]::uuid[],auth_criteria_arr); 
