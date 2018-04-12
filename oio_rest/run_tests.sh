@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 cd $(dirname $0)
 
@@ -13,10 +13,9 @@ python -m virtualenv --quiet venv
 
 . ./venv/bin/activate
 
-python -m pip install -e '.[tests]'
+python -m pip install -r requirements.txt -r requirements-test.txt
 python -m flake8 --exit-zero
-
-./setup.py test
+python -m pytest
 
 if [[ "$NO_SETTINGS" = true ]]; then
     rm oio_rest/settings.py

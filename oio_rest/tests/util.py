@@ -22,8 +22,6 @@ from oio_rest import app
 from oio_rest import db
 from oio_rest import settings
 
-app.setup_api()
-
 TESTS_DIR = os.path.dirname(__file__)
 BASE_DIR = os.path.dirname(TESTS_DIR)
 DATA_DIR = os.path.join(TESTS_DIR, 'data')
@@ -242,7 +240,7 @@ class TestCaseMixin(object):
             sort_inner_lists(expected),
             sort_inner_lists(actual))
 
-    def assertQueryResponse(self, expected, path, **params):
+    def assertQueryResponse(self, path, expected, **params):
         """Perform a request towards LoRa, and assert that it yields the
         expected output.
 

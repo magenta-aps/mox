@@ -20,5 +20,5 @@ class Tests(util.TestCase):
         expected = util.get_fixture(
             'output/test_bruger_virkningstid.json')
 
-        self.assertQueryResponse(expected, '/organisation/bruger',
+        self.assertQueryResponse('/organisation/bruger', expected,
                                  uuid=uuid, virkningstid='2004-01-01')
