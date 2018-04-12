@@ -99,8 +99,9 @@ class TestAttributesCreateOrganisation(util.TestCase):
         self.ORG['livscykluskode'] = 'Opstaaet'
 
         self.assertQueryResponse(
+            '/organisation/organisation',
             self.ORG,
-            '/organisation/organisation', uuid=r.json['uuid']
+            uuid=r.json['uuid']
         )
 
     def test_validNote_validOrgName_twoOrgEgenskaber(self):
@@ -137,8 +138,8 @@ class TestAttributesCreateOrganisation(util.TestCase):
         self.ORG['livscykluskode'] = 'Opstaaet'
 
         self.assertQueryResponse(
-            self.ORG,
             '/organisation/organisation',
+            self.ORG,
             uuid=r.json['uuid'],
             virkningfra='-infinity',
             virkningtil='infinity'
