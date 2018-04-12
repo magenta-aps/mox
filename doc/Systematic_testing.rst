@@ -6,7 +6,7 @@ Systemtic testing of the OIO REST interface
 The OIO REST interface (or parts of it) will be systematically tested (kind of)
 using *Equivalence Class Partitioning* and *Myers Heuristics* (a good reference
 describing these techniques can be found here_). Please note, that the
-equivalence classes (ECs) used here are a little fuzzy and union of them do
+equivalence classes (ECs) used here are a little fuzzy and the union of them do
 NOT form the full input set to the interface.
 
 .. _here: http://www.baerbak.com/
@@ -49,3 +49,4 @@ Check virkning...
 TODO
 ----
 Test registrations...
+Test virkning...

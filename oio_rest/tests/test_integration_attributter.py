@@ -69,6 +69,13 @@ class TestAttributesCreateOrganisation(util.TestCase):
         self.assertEquals(1, len(response.json))
         self.assertTrue(UUID_REGEX.match(response.json['uuid']))
 
+    def _check_response_400(self):
+        self.assertRequestFails(
+            '/organisation/organisation',
+            400,
+            json=self.ORG
+        )
+
     def test_noNote_validBvn_noOrgName_validVirkning(self):
         """
         Equivalence classes covered: [2][6][9][13]
@@ -108,7 +115,7 @@ class TestAttributesCreateOrganisation(util.TestCase):
         self.ORG[u'note'] = u'This is a note'
         self.ORG['attributter']['organisationegenskaber'].append(
             {
-                u"brugervendtnoegle": u"bnv2",
+                u"brugervendtnoegle": u"bvn2",
                 u"organisationsnavn": u"orgName2",
                 u"virkning": {
                     u"from": u"2020-01-01 12:00:00+01",
@@ -145,12 +152,7 @@ class TestAttributesCreateOrganisation(util.TestCase):
         """
 
         self.ORG[u'note'] = ['Note cannot be e.g. a list']
-
-        self.assertRequestFails(
-            '/organisation/organisation',
-            400,
-            json=self.ORG
-        )
+        self._check_response_400()
 
     @unittest.expectedFailure
     def test_bvnMissing(self):
@@ -160,13 +162,96 @@ class TestAttributesCreateOrganisation(util.TestCase):
         further details
         """
 
-        # Create organisation
-
         del self.ORG['attributter']['organisationegenskaber'][0][
             'brugervendtnoegle']
+        self._check_response_400()
 
-        self.assertRequestFails(
-            '/organisation/organisation',
-            400,
-            json=self.ORG
+    @unittest.expectedFailure
+    def test_bvnNotString(self):
+        """
+        Equivalence classes covered: [5]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+
+        self.ORG['attributter']['organisationegenskaber'][0][
+            'brugervendtnoegle'] = ['BVN cannot be a list']
+        self._check_response_400()
+
+    @unittest.expectedFailure
+    def test_orgNameNotString(self):
+        """
+        Equivalence classes covered: [8]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+
+        self.ORG['attributter']['organisationegenskaber'][0][
+            'organisationnavn'] = ['Organisationnavn cannot be a list']
+        self._check_response_400()
+
+    @unittest.expectedFailure
+    def test_virkningMissing(self):
+        """
+        Equivalence classes covered: [11]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+
+        del self.ORG['attributter']['organisationegenskaber'][0]['virkning']
+        self._check_response_400()
+
+    def test_orgEgenskaberMissing(self):
+        """
+        Equivalence classes covered: [14]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+
+        self.ORG['attributter']['organisationegenskaber'].pop()
+        self._check_response_400()
+
+    def test_virkningMalformed(self):
+        """
+        Equivalence classes covered: [12]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+
+        self.ORG['attributter']['organisationegenskaber'][0]['virkning'] = {
+            u"from": u"xyz",
+            u"to": u"xyz",
+        }
+        self._check_response_400()
+
+    @unittest.expectedFailure
+    def test_differentOrgNamesForOverlappingVirkning(self):
+        """
+        Equivalence classes covered: [16]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+
+        self.ORG['attributter']['organisationegenskaber'].append(
+            {
+                u"brugervendtnoegle": u"bvn1",
+                u"organisationsnavn": u"orgName2",
+                u"virkning": {
+                    u"from": u"2015-01-01 12:00:00+01",
+                    u"from_included": True,
+                    u"to": u"2030-01-01 12:00:00+01",
+                    u"to_included": False
+                }
+            }
         )
+        self._check_response_400()
+
+    def test_emptyOrgNotAllowed(self):
+        """
+        Equivalence classes covered: [17]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+
+        self.ORG = {}
+        self._check_response_400()
