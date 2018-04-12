@@ -36,7 +36,7 @@ setup(
     entry_points={
         # -*- Entry points: -*-
         'console_scripts': [
-            'oio_api = oio_rest.app:main',
+            'oio_api = oio_rest.app:app.run',
         ],
     },
     tests_require=test_requires,
