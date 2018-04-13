@@ -33,7 +33,7 @@ class TestCreateOrganisation(util.TestCase):
             "to": "2030-01-01 12:00:00+01",
             "to_included": False
         }
-        self.relation = {
+        self.reference = {
             'uuid': '00000000-0000-0000-0000-000000000000',
             'virkning': self.standard_virkning1
         }
@@ -268,6 +268,21 @@ class TestCreateOrganisation(util.TestCase):
         del self.org['attributter']
         self._check_response_400()
 
+    @unittest.skip('Setting "attributter" several times in the request '
+                   'JSON does not result in status code 400')
+    def test_attributter_key_not_allowed_twice(self):
+        """
+        Equivalence classes covered: [40]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+
+        org = json.dumps(self.org)[:-1] + ',"attributter":' + json.dumps(
+            self.org['attributter']) + '}'
+        self.org = json.loads(org)
+
+        self._check_response_400()
+
     def test_two_valid_org_gyldigheder_one_gyldighed_inactive(self):
         """
         Equivalence classes covered: [22][25]
@@ -306,6 +321,21 @@ class TestCreateOrganisation(util.TestCase):
         """
 
         del self.org['tilstande']
+        self._check_response_400()
+
+    @unittest.skip('Setting "tilstande" several times in the request '
+                   'JSON does not result in status code 400')
+    def test_tilstande_key_not_allowed_twice(self):
+        """
+        Equivalence classes covered: [41]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+
+        org = json.dumps(self.org)[:-1] + ',"tilstande":' + json.dumps(
+            self.org['tilstande']) + '}'
+        self.org = json.loads(org)
+
         self._check_response_400()
 
     def test_org_gyldighed_missing(self):
@@ -466,29 +496,29 @@ class TestCreateOrganisation(util.TestCase):
         r = self._post(klasse, '/klassifikation/klasse')
         self._check_response_201(r)
 
-        relationtype = copy.copy(self.relation)
+        relationtype = copy.copy(self.reference)
         relationtype['uuid'] = r.json['uuid']
 
         # Create organisation
         self.org['relationer'] = {
-            'adresser': [self.relation],
-            'ansatte': [self.relation],
-            'branche': [self.relation],
-            'myndighed': [self.relation],
+            'adresser': [self.reference],
+            'ansatte': [self.reference],
+            'branche': [self.reference],
+            'myndighed': [self.reference],
             'myndighedstype': [relationtype],
-            'opgaver': [self.relation],
-            'overordnet': [self.relation],
-            'produktionsenhed': [self.relation],
-            'skatteenhed': [self.relation],
-            'tilhoerer': [self.relation],
-            'tilknyttedebrugere': [self.relation],
-            'tilknyttedeenheder': [self.relation],
-            'tilknyttedefunktioner': [self.relation],
-            'tilknyttedeinteressefaellesskaber': [self.relation],
-            'tilknyttedeorganisationer': [self.relation],
-            'tilknyttedepersoner': [self.relation],
-            'tilknyttedeitsystemer': [self.relation],
-            'virksomhed': [self.relation],
+            'opgaver': [self.reference],
+            'overordnet': [self.reference],
+            'produktionsenhed': [self.reference],
+            'skatteenhed': [self.reference],
+            'tilhoerer': [self.reference],
+            'tilknyttedebrugere': [self.reference],
+            'tilknyttedeenheder': [self.reference],
+            'tilknyttedefunktioner': [self.reference],
+            'tilknyttedeinteressefaellesskaber': [self.reference],
+            'tilknyttedeorganisationer': [self.reference],
+            'tilknyttedepersoner': [self.reference],
+            'tilknyttedeitsystemer': [self.reference],
+            'virksomhed': [self.reference],
             'virksomhedstype': [relationtype]
         }
         r = self._post(self.org)
@@ -508,13 +538,16 @@ class TestCreateOrganisation(util.TestCase):
         """
         Equivalence classes covered: [33]
         See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
-        further details
+        further details.
+
+        We assume that is it work for all relations if it is working for
+        e.g. addresses.
         """
 
         # Create organisation
         self.org['relationer'] = {
             'adresser': [
-                self.relation,
+                self.reference,
                 {
                     'uuid': '10000000-0000-0000-0000-000000000000',
                     'virkning': self.standard_virkning1
@@ -533,3 +566,50 @@ class TestCreateOrganisation(util.TestCase):
             self.org,
             uuid=r.json['uuid']
         )
+
+    def test_reference_in_relation_must_be_an_uuid(self):
+        """
+        Equivalence classes covered: [34]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+
+        self.org['relationer'] = {
+            'adresser': [
+                {
+                    'uuid': 'not an UUID',
+                    'virkning': self.standard_virkning1
+                }
+            ]
+        }
+        self._check_response_400()
+
+    def test_invalid_relation_name_not_allowed(self):
+        """
+        Equivalence classes covered: [36]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+
+        self.org['relationer'] = {
+            'unknown': [self.reference]
+        }
+        self._check_response_400()
+
+    @unittest.skip('Setting "relationer" several times in the request '
+                   'JSON does not result in status code 400')
+    def test_relationer_key_not_allowed_twice(self):
+        """
+        Equivalence classes covered: [39]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+
+        self.org['relationer'] = {
+            'adresser': [self.reference]
+        }
+        org = json.dumps(self.org)[:-1] + ',"relationer":' + json.dumps(
+            self.org['relationer']) + '}'
+        self.org = json.loads(org)
+
+        self._check_response_400()

@@ -42,8 +42,6 @@ Rel, name          Invalid relation name not allowed [36]             All valid 
 
 More cases to come...
 
-Still not covered: 39, 40, 41
-
 Myers Heuristics
 ----------------
 
