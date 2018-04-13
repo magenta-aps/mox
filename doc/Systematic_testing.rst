@@ -27,12 +27,16 @@ Attr, Virkning     Virkning missing [11], Virkning malformed [12]     Virkning c
 Attr, No of attrs  OrgEgenskaber missing [14]                         Two OrgEgenskaber present (no overlaps) [15]
 Attr, Virkning     Different OrgNames for overlapping virknings [16]
 Empty org          Empty org [17]
-Attr               Attr missing [18]
-Tilstand, number   Tilstand missing [19]
+Attr               Attr missing [18], Two attr objects [40]
+Tilstand, number   Tilstand missing [19], Two tilstande objects [41]
 Tilstand, orgGyld  OrgGyldighed missing [20]                          One valid OrgGyld [21], Two valid OrgGyld [22]
 Tilstand, gyldigh  Gyld not aktiv or inaktiv [23], gyld missing [26]  gyldighed aktiv [24], gyldighed inaktiv [25]
 Tilstd, virkning   Virkning missing [27], Virkning malformed [28]     Virkning valid [29]
 Tilstd, virkning   Different gyldighed for overlapping virkning [30]
+Rel, object        Two relationobjects present [39]                   Relation object missing [38]
+Rel, number                                                           Zero allowed [31], one allowed [32], two [33]
+Rel, reference     Reference an UUID [34]                             Reference not an UUID [35]
+Rel, name          Invalid relation name not allowed [36]             All valid relation names allowed [37]
 =================  =================================================  =================================================
 
 More cases to come...

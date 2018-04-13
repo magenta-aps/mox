@@ -82,9 +82,9 @@ class TestCreateOrganisation(util.TestCase):
             json=self.org
         )
 
-    def test_no_note_valid_bvn_no_org_name(self):
+    def test_no_note_valid_bvn_no_org_name_no_relations(self):
         """
-        Equivalence classes covered: [2][6][9][13][21][24][29]
+        Equivalence classes covered: [2][6][9][13][21][24][29][38]
         See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
         further details
         """
@@ -216,7 +216,7 @@ class TestCreateOrganisation(util.TestCase):
         self.org['attributter']['organisationegenskaber'].pop()
         self._check_response_400()
 
-    def test_virkning_malformed(self):
+    def test_virkning_malformed_attributter(self):
         """
         Equivalence classes covered: [12]
         See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
@@ -360,4 +360,39 @@ class TestCreateOrganisation(util.TestCase):
         """
 
         del self.org['tilstande']['organisationgyldighed'][0]['virkning']
+        self._check_response_400()
+
+    def test_virkning_malformed_tilstande(self):
+        """
+        Equivalence classes covered: [28]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+
+        self.org['tilstande']['organisationgyldighed'][0]['virkning'] = {
+            "from": "xyz",
+            "to": "xyz",
+        }
+        self._check_response_400()
+
+    @unittest.skip('When sending gyldigheder that overlap in '
+                   'virkning we do not get status 400')
+    def test_different_gyldigheder_for_overlapping_virkninger(self):
+        """
+        Equivalence classes covered: [30]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+
+        self.org['tilstande']['organisationgyldighed'].append(
+            {
+                "gyldighed": "Inaktiv",
+                "virkning": {
+                    "from": "2015-01-01 12:00:00+01",
+                    "from_included": True,
+                    "to": "2030-01-01 12:00:00+01",
+                    "to_included": False
+                }
+            }
+        )
         self._check_response_400()
