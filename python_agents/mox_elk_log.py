@@ -8,7 +8,9 @@ import requests
 from settings import MOX_LOG_EXCHANGE, MOX_OBJECT_EXCHANGE, DO_LOG_TO_AMQP
 from settings import MOX_ELK_LOG_FILE, IS_LOG_AUTHENTICATION_ENABLED
 
-from oio_rest.settings import SAML_MOX_ENTITY_ID, SAML_IDP_ENTITY_ID
+from settings import SAML_MOX_ENTITY_ID
+from settings import SAML_IDP_ENTITY_ID
+
 from oio_rest.auth.saml2 import Saml2_Assertion
 
 from mox_agent import MOXAgent, unpack_saml_token, get_idp_cert
