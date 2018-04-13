@@ -35,11 +35,14 @@ Tilstd, virkning   Virkning missing [27], Virkning malformed [28]     Virkning v
 Tilstd, virkning   Different gyldighed for overlapping virkning [30]
 Rel, object        Two relationobjects present [39]                   Relation object missing [38]
 Rel, number                                                           Zero allowed [31], one allowed [32], two [33]
-Rel, reference     Reference an UUID [34]                             Reference not an UUID [35]
+Rel, number                                                           Specific relation list empty [42]
+Rel, reference     Reference not an UUID [34]                         Reference is an UUID [35]
 Rel, name          Invalid relation name not allowed [36]             All valid relation names allowed [37]
 =================  =================================================  =================================================
 
 More cases to come...
+
+Still not covered: 39, 40, 41
 
 Myers Heuristics
 ----------------

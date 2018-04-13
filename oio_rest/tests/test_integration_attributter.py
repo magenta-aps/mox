@@ -6,6 +6,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
+import copy
 import json
 import re
 import unittest
@@ -52,14 +53,14 @@ class TestCreateOrganisation(util.TestCase):
             },
         }
 
-    def _post(self, payload):
+    def _post(self, payload, url='/organisation/organisation'):
         """
         Make HTTP POST request to /organisation/organisation
         :param payload: dictionary containing payload to LoRa
         :return: Response from LoRa
         """
         r = self.client.post(
-            '/organisation/organisation',
+            url,
             data=json.dumps(payload),
             content_type='application/json'
         )
@@ -90,20 +91,16 @@ class TestCreateOrganisation(util.TestCase):
         """
 
         # Create organisation
-
         del self.org['attributter']['organisationegenskaber'][0][
             'organisationsnavn']
 
         r = self._post(self.org)
 
         # Check response
-
         self._check_response_201(r)
 
         # Check persisted data
-
         self.org['livscykluskode'] = 'Opstaaet'
-
         self.assertQueryResponse(
             '/organisation/organisation',
             self.org,
@@ -118,7 +115,6 @@ class TestCreateOrganisation(util.TestCase):
         """
 
         # Create organisation
-
         self.org['note'] = 'This is a note'
         self.org['attributter']['organisationegenskaber'].append(
             {
@@ -127,17 +123,13 @@ class TestCreateOrganisation(util.TestCase):
                 "virkning": self.standard_virkning2
             }
         )
-
         r = self._post(self.org)
 
         # Check response
-
         self._check_response_201(r)
 
         # Check persisted data
-
         self.org['livscykluskode'] = 'Opstaaet'
-
         self.assertQueryResponse(
             '/organisation/organisation',
             self.org,
@@ -280,7 +272,6 @@ class TestCreateOrganisation(util.TestCase):
         """
 
         # Create organisation
-
         self.org['note'] = 'This is a note'
         self.org['tilstande']['organisationgyldighed'].append(
             {
@@ -288,17 +279,13 @@ class TestCreateOrganisation(util.TestCase):
                 "virkning": self.standard_virkning2
             }
         )
-
         r = self._post(self.org)
 
         # Check response
-
         self._check_response_201(r)
 
         # Check persisted data
-
         self.org['livscykluskode'] = 'Opstaaet'
-
         self.assertQueryResponse(
             '/organisation/organisation',
             self.org,
@@ -396,3 +383,125 @@ class TestCreateOrganisation(util.TestCase):
             }
         )
         self._check_response_400()
+
+    def test_empty_list_of_relations(self):
+        """
+        Equivalence classes covered: [31]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+
+        # Create organisation
+        self.org['relationer'] = {}
+        r = self._post(self.org)
+
+        # Check response
+        self._check_response_201(r)
+
+        # Check persisted data
+        self.org['livscykluskode'] = 'Opstaaet'
+        del self.org['relationer']
+        self.assertQueryResponse(
+            '/organisation/organisation',
+            self.org,
+            uuid=r.json['uuid']
+        )
+
+    def test_specific_relation_list_empty(self):
+        """
+        Equivalence classes covered: [42]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+
+        # Create organisation
+        self.org['relationer'] = {
+            'overordnet': []
+        }
+        r = self._post(self.org)
+
+        # Check response
+        self._check_response_201(r)
+
+        # Check persisted data
+        self.org['livscykluskode'] = 'Opstaaet'
+        del self.org['relationer']
+        self.assertQueryResponse(
+            '/organisation/organisation',
+            self.org,
+            uuid=r.json['uuid']
+        )
+
+    def test_one_uuid_per_relation_reference_all_relation_names_tested(self):
+        """
+        Equivalence classes covered: [32][35][37]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+
+        # Create dummy relation
+        relation = {
+            'uuid': '00000000-0000-0000-0000-000000000000',
+            'virkning': self.standard_virkning1
+        }
+
+        # Create dummy "klasse"
+        klasse = {
+            "attributter": {
+                "klasseegenskaber": [
+                    {
+                        "brugervendtnoegle": "klasse1",
+                        "titel": "dummy_klasse",
+                        "virkning": self.standard_virkning1
+                    }
+                ]
+            },
+            "tilstande": {
+                "klassepubliceret": [
+                    {
+                        "publiceret": "Publiceret",
+                        "virkning": self.standard_virkning1
+                    }
+                ]
+            }
+        }
+        r = self._post(klasse, '/klassifikation/klasse')
+        self._check_response_201(r)
+
+        relationtype = copy.copy(relation)
+        relationtype['uuid'] = r.json['uuid']
+
+        # Create organisation
+        self.org['relationer'] = {
+            'adresser': [relation],
+            'ansatte': [relation],
+            'branche': [relation],
+            'myndighed': [relation],
+            'myndighedstype': [relationtype],
+            'opgaver': [relation],
+            'overordnet': [relation],
+            'produktionsenhed': [relation],
+            'skatteenhed': [relation],
+            'tilhoerer': [relation],
+            'tilknyttedebrugere': [relation],
+            'tilknyttedeenheder': [relation],
+            'tilknyttedefunktioner': [relation],
+            'tilknyttedeinteressefaellesskaber': [relation],
+            'tilknyttedeorganisationer': [relation],
+            'tilknyttedepersoner': [relation],
+            'tilknyttedeitsystemer': [relation],
+            'virksomhed': [relation],
+            'virksomhedstype': [relationtype]
+        }
+        r = self._post(self.org)
+
+        # Check response
+        self._check_response_201(r)
+
+        # Check persisted data
+        self.org['livscykluskode'] = 'Opstaaet'
+        self.assertQueryResponse(
+            '/organisation/organisation',
+            self.org,
+            uuid=r.json['uuid']
+        )
