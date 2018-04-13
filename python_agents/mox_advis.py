@@ -14,6 +14,10 @@ from settings import MOX_ADVIS_LOG_FILE
 from settings import SAML_MOX_ENTITY_ID
 from settings import SAML_IDP_ENTITY_ID
 
+# TODO:
+# In order to refactor the SAML related import(s)
+# We must first extract the Saml2_Assertion class
+# into its own library
 from oio_rest.auth.saml2 import Saml2_Assertion
 
 from mox_agent import MOXAgent, unpack_saml_token, get_idp_cert
