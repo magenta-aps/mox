@@ -37,3 +37,8 @@ SAML_MOX_ENTITY_ID = env('MOX_SAML_MOX_ENTITY_ID', 'https://localhost')
 # Legacy
 TEST_PUBLIC_KEY = os.path.join(DIR, 'test_auth_data/idp-certificate.pem')
 SAML_IDP_CERTIFICATE = env('MOX_SAML_IDP_CERTIFICATE', TEST_PUBLIC_KEY)
+
+# Logstash settings
+MOX_LOGSTASH_URI = env('MOX_LOGSTASH_URI', 'http://127.0.0.1:42998')
+MOX_LOGSTASH_USER = env('MOX_LOGSTASH_USER', 'mox_logstash_user')
+MOX_LOGSTASH_PASS = env('MOX_LOGSTASH_PASS', 'secretlogstashpassword')
