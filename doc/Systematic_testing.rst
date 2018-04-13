@@ -1,5 +1,5 @@
-Systemtic testing of the OIO REST interface
-===========================================
+Systematic testing of the OIO REST interface
+============================================
 
 (this document is work in progress...)
 
@@ -21,7 +21,7 @@ Condition          Invalid ECs                                        Valid ECs
 =================  =================================================  =================================================
 Note               Note not a string [1]                              Zero notes [2], One note [3]
 Attr, BVN          BVN missing [4], BVN not a string [5]              Exactly one BVN [6]
-Attr, BVN          BVN consists of special characters [7]
+Attr, BVN          (BVN consists of special characters [7])
 Attr, OrgName      OrgName not string [8]                             No OrgName [9], OrgName string [10]
 Attr, Virkning     Virkning missing [11], Virkning malformed [12]     Virkning correct [13]
 Attr, No of attrs  OrgEgenskaber missing [14]                         Two OrgEgenskaber present (no overlaps) [15]

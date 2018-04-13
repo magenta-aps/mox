@@ -20,25 +20,25 @@ class TestCreateOrganisation(util.TestCase):
 
     def setUp(self):
         super(TestCreateOrganisation, self).setUp()
-        self.STANDARD_VIRKNING1 = {
+        self.standard_virkning1 = {
             "from": "2000-01-01 12:00:00+01",
             "from_included": True,
             "to": "2020-01-01 12:00:00+01",
             "to_included": False
         }
-        self.STANDARD_VIRKNING2 = {
+        self.standard_virkning2 = {
             "from": "2020-01-01 12:00:00+01",
             "from_included": True,
             "to": "2030-01-01 12:00:00+01",
             "to_included": False
         }
-        self.ORG = {
+        self.org = {
             "attributter": {
                 "organisationegenskaber": [
                     {
                         "brugervendtnoegle": "bvn1",
                         "organisationsnavn": "orgName1",
-                        "virkning": self.STANDARD_VIRKNING1
+                        "virkning": self.standard_virkning1
                     }
                 ]
             },
@@ -46,7 +46,7 @@ class TestCreateOrganisation(util.TestCase):
                 "organisationgyldighed": [
                     {
                         "gyldighed": "Aktiv",
-                        "virkning": self.STANDARD_VIRKNING1
+                        "virkning": self.standard_virkning1
                     }
                 ]
             },
@@ -79,7 +79,7 @@ class TestCreateOrganisation(util.TestCase):
         self.assertRequestFails(
             '/organisation/organisation',
             400,
-            json=self.ORG
+            json=self.org
         )
 
     def test_no_note_valid_bvn_no_org_name(self):
@@ -91,10 +91,10 @@ class TestCreateOrganisation(util.TestCase):
 
         # Create organisation
 
-        del self.ORG['attributter']['organisationegenskaber'][0][
+        del self.org['attributter']['organisationegenskaber'][0][
             'organisationsnavn']
 
-        r = self._post(self.ORG)
+        r = self._post(self.org)
 
         # Check response
 
@@ -102,11 +102,11 @@ class TestCreateOrganisation(util.TestCase):
 
         # Check persisted data
 
-        self.ORG['livscykluskode'] = 'Opstaaet'
+        self.org['livscykluskode'] = 'Opstaaet'
 
         self.assertQueryResponse(
             '/organisation/organisation',
-            self.ORG,
+            self.org,
             uuid=r.json['uuid']
         )
 
@@ -119,16 +119,16 @@ class TestCreateOrganisation(util.TestCase):
 
         # Create organisation
 
-        self.ORG['note'] = 'This is a note'
-        self.ORG['attributter']['organisationegenskaber'].append(
+        self.org['note'] = 'This is a note'
+        self.org['attributter']['organisationegenskaber'].append(
             {
                 "brugervendtnoegle": "bvn2",
                 "organisationsnavn": "orgName2",
-                "virkning": self.STANDARD_VIRKNING2
+                "virkning": self.standard_virkning2
             }
         )
 
-        r = self._post(self.ORG)
+        r = self._post(self.org)
 
         # Check response
 
@@ -136,11 +136,11 @@ class TestCreateOrganisation(util.TestCase):
 
         # Check persisted data
 
-        self.ORG['livscykluskode'] = 'Opstaaet'
+        self.org['livscykluskode'] = 'Opstaaet'
 
         self.assertQueryResponse(
             '/organisation/organisation',
-            self.ORG,
+            self.org,
             uuid=r.json['uuid'],
             virkningfra='-infinity',
             virkningtil='infinity'
@@ -153,7 +153,7 @@ class TestCreateOrganisation(util.TestCase):
         further details
         """
 
-        self.ORG['note'] = ['Note cannot be e.g. a list']
+        self.org['note'] = ['Note cannot be e.g. a list']
         self._check_response_400()
 
     @unittest.skip(
@@ -165,7 +165,7 @@ class TestCreateOrganisation(util.TestCase):
         further details
         """
 
-        del self.ORG['attributter']['organisationegenskaber'][0][
+        del self.org['attributter']['organisationegenskaber'][0][
             'brugervendtnoegle']
         self._check_response_400()
 
@@ -177,7 +177,7 @@ class TestCreateOrganisation(util.TestCase):
         further details
         """
 
-        self.ORG['attributter']['organisationegenskaber'][0][
+        self.org['attributter']['organisationegenskaber'][0][
             'brugervendtnoegle'] = ['BVN cannot be a list']
         self._check_response_400()
 
@@ -190,20 +190,20 @@ class TestCreateOrganisation(util.TestCase):
         further details
         """
 
-        self.ORG['attributter']['organisationegenskaber'][0][
+        self.org['attributter']['organisationegenskaber'][0][
             'organisationnavn'] = ['Organisationnavn cannot be a list']
         self._check_response_400()
 
     @unittest.skip('When sending a JSON attribute without virkning, '
                    'we do not get a 400 status')
-    def test_virkning_missing(self):
+    def test_virkning_missing_attributter(self):
         """
         Equivalence classes covered: [11]
         See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
         further details
         """
 
-        del self.ORG['attributter']['organisationegenskaber'][0]['virkning']
+        del self.org['attributter']['organisationegenskaber'][0]['virkning']
         self._check_response_400()
 
     def test_org_egenskaber_missing(self):
@@ -213,7 +213,7 @@ class TestCreateOrganisation(util.TestCase):
         further details
         """
 
-        self.ORG['attributter']['organisationegenskaber'].pop()
+        self.org['attributter']['organisationegenskaber'].pop()
         self._check_response_400()
 
     def test_virkning_malformed(self):
@@ -223,7 +223,7 @@ class TestCreateOrganisation(util.TestCase):
         further details
         """
 
-        self.ORG['attributter']['organisationegenskaber'][0]['virkning'] = {
+        self.org['attributter']['organisationegenskaber'][0]['virkning'] = {
             "from": "xyz",
             "to": "xyz",
         }
@@ -238,7 +238,7 @@ class TestCreateOrganisation(util.TestCase):
         further details
         """
 
-        self.ORG['attributter']['organisationegenskaber'].append(
+        self.org['attributter']['organisationegenskaber'].append(
             {
                 "brugervendtnoegle": "bvn1",
                 "organisationsnavn": "orgName2",
@@ -259,7 +259,7 @@ class TestCreateOrganisation(util.TestCase):
         further details
         """
 
-        self.ORG = {}
+        self.org = {}
         self._check_response_400()
 
     def test_attributter_missing(self):
@@ -269,7 +269,7 @@ class TestCreateOrganisation(util.TestCase):
         further details
         """
 
-        del self.ORG['attributter']
+        del self.org['attributter']
         self._check_response_400()
 
     def test_two_valid_org_gyldigheder_one_gyldighed_inactive(self):
@@ -281,15 +281,15 @@ class TestCreateOrganisation(util.TestCase):
 
         # Create organisation
 
-        self.ORG['note'] = 'This is a note'
-        self.ORG['tilstande']['organisationgyldighed'].append(
+        self.org['note'] = 'This is a note'
+        self.org['tilstande']['organisationgyldighed'].append(
             {
                 "gyldighed": "Inaktiv",
-                "virkning": self.STANDARD_VIRKNING2
+                "virkning": self.standard_virkning2
             }
         )
 
-        r = self._post(self.ORG)
+        r = self._post(self.org)
 
         # Check response
 
@@ -297,12 +297,67 @@ class TestCreateOrganisation(util.TestCase):
 
         # Check persisted data
 
-        self.ORG['livscykluskode'] = 'Opstaaet'
+        self.org['livscykluskode'] = 'Opstaaet'
 
         self.assertQueryResponse(
             '/organisation/organisation',
-            self.ORG,
+            self.org,
             uuid=r.json['uuid'],
             virkningfra='-infinity',
             virkningtil='infinity'
         )
+
+    def test_tilstande_missing(self):
+        """
+        Equivalence classes covered: [19]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+
+        del self.org['tilstande']
+        self._check_response_400()
+
+    def test_org_gyldighed_missing(self):
+        """
+        Equivalence classes covered: [20]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+
+        self.org['tilstande']['organisationgyldighed'].pop()
+        self._check_response_400()
+
+    def test_gyldighed_invalid(self):
+        """
+        Equivalence classes covered: [23]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+
+        self.org['tilstande']['organisationgyldighed'][0][
+            'gyldighed'] = 'invalid'
+        self._check_response_400()
+
+    @unittest.skip('When sending a JSON tilstand without gyldighed, '
+                   'we do not get a 400 status')
+    def test_gyldighed_missing(self):
+        """
+        Equivalence classes covered: [26]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+
+        del self.org['tilstande']['organisationgyldighed'][0]['gyldighed']
+        self._check_response_400()
+
+    @unittest.skip('When sending a JSON attribute without virkning, '
+                   'we do not get a 400 status')
+    def test_virkning_missing_tilstande(self):
+        """
+        Equivalence classes covered: [27]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+
+        del self.org['tilstande']['organisationgyldighed'][0]['virkning']
+        self._check_response_400()
