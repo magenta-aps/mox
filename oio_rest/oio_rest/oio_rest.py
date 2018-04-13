@@ -3,6 +3,7 @@
 import json
 import datetime
 
+import dateutil
 from flask import jsonify, request
 from custom_exceptions import BadRequestException, NotFoundException
 from custom_exceptions import GoneException
@@ -10,6 +11,7 @@ from custom_exceptions import GoneException
 from werkzeug.datastructures import ImmutableOrderedMultiDict
 
 import db
+from db_helpers import get_valid_search_parameters, TEMPORALITY_PARAMS
 import db_structure
 from utils.build_registration import build_registration, to_lower_param
 
@@ -38,6 +40,48 @@ def typed_get(d, field, default):
                                    json.dumps(v)))
 
     return v
+
+
+def get_virkning_dates(args):
+    virkning_fra = args.get('virkningfra')
+    virkning_til = args.get('virkningtil')
+    virkningstid = args.get('virkningstid')
+
+    if virkningstid:
+        if virkning_fra or virkning_til:
+            raise BadRequestException("'virkningfra'/'virkningtil' conflict "
+                                      "with 'virkningstid'")
+        # Timespan has to be non-zero length of time, so we add one
+        # microsecond
+        dt = dateutil.parser.isoparse(virkningstid)
+        virkning_fra = dt
+        virkning_til = dt + datetime.timedelta(microseconds=1)
+    else:
+        if virkning_fra is None and virkning_til is None:
+            # TODO: Use the equivalent of TSTZRANGE(current_timestamp,
+            # current_timestamp,'[]') if possible
+            virkning_fra = datetime.datetime.now()
+            virkning_til = virkning_fra + datetime.timedelta(
+                    microseconds=1)
+    return virkning_fra, virkning_til
+
+
+def get_registreret_dates(args):
+    registreret_fra = args.get('registreretfra')
+    registreret_til = args.get('registrerettil')
+    registreringstid = args.get('registreringstid')
+
+    if registreringstid:
+        if registreret_fra or registreret_til:
+            raise BadRequestException("'registreretfra'/'registrerettil' "
+                                      "conflict with 'registreringstid'")
+        else:
+            # Timespan has to be non-zero length of time, so we add one
+            # microsecond
+            dt = dateutil.parser.isoparse(registreringstid)
+            registreret_fra = dt
+            registreret_til = dt + datetime.timedelta(microseconds=1)
+    return registreret_fra, registreret_til
 
 
 class ArgumentDict(ImmutableOrderedMultiDict):
@@ -143,6 +187,8 @@ class OIORestObject(object):
         """
         CREATE object, generate new UUID.
         """
+        cls.verify_args()
+
         input = cls.get_json()
         if not input:
             return jsonify({'uuid': None}), 400
@@ -172,24 +218,17 @@ class OIORestObject(object):
         """
         request.parameter_storage_class = ArgumentDict
 
+        cls.verify_args(*get_valid_search_parameters(cls.__name__))
+
         # Convert arguments to lowercase, getting them as lists
         list_args = cls._get_args(True)
         args = cls._get_args()
-        virkning_fra = args.get('virkningfra', None)
-        virkning_til = args.get('virkningtil', None)
-        registreret_fra = args.get('registreretfra', None)
-        registreret_til = args.get('registrerettil', None)
-
-        if virkning_fra is None and virkning_til is None:
-            # TODO: Use the equivalent of TSTZRANGE(current_timestamp,
-            # current_timestamp,'[]') if possible
-            virkning_fra = datetime.datetime.now()
-            virkning_til = datetime.datetime.now()
+        registreret_fra, registreret_til = get_registreret_dates(args)
+        virkning_fra, virkning_til = get_virkning_dates(args)
 
         uuid_param = list_args.get('uuid', None)
 
-        valid_list_args = {'virkningfra', 'virkningtil', 'registreretfra',
-                           'registrerettil', 'uuid'}
+        valid_list_args = TEMPORALITY_PARAMS | {'uuid'}
 
         # Assume the search operation if other params were specified
         if not set(args.keys()).issubset(valid_list_args):
@@ -246,15 +285,13 @@ class OIORestObject(object):
         """
         READ an object, return as JSON.
         """
-        args = cls._get_args()
-        virkning_fra = args.get('virkningfra', None)
-        virkning_til = args.get('virkningtil', None)
-        registreret_fra = args.get('registreretfra', None)
-        registreret_til = args.get('registrerettil', None)
+        cls.verify_args(*TEMPORALITY_PARAMS)
 
-        if virkning_fra is None and virkning_til is None:
-            virkning_fra = datetime.datetime.now()
-            virkning_til = datetime.datetime.now()
+        args = cls._get_args()
+        registreret_fra, registreret_til = get_registreret_dates(args)
+
+        virkning_fra, virkning_til = get_virkning_dates(args)
+
         request.api_operation = u'Læs'
         request.uuid = uuid
         object_list = db.list_objects(cls.__name__, [uuid], virkning_fra,
@@ -292,6 +329,8 @@ class OIORestObject(object):
         """
         IMPORT or UPDATE an  object, replacing its contents completely.
         """
+        cls.verify_args()
+
         input = cls.get_json()
         if not input:
             return jsonify({'uuid': None}), 400
@@ -374,7 +413,10 @@ class OIORestObject(object):
     @classmethod
     @requires_auth
     def delete_object(cls, uuid):
+
         """Logically delete this object."""
+        cls.verify_args()
+
         input = cls.get_json() or {}
         note = typed_get(input, "note", "")
         class_name = cls.__name__
@@ -388,6 +430,8 @@ class OIORestObject(object):
 
     @classmethod
     def get_fields(cls):
+        cls.verify_args()
+
         """Set up API with correct database access functions."""
         structure = db_structure.REAL_DB_STRUCTURE
         class_key = cls.__name__.lower()
@@ -449,3 +493,12 @@ class OIORestObject(object):
     # Templates may only be overridden on subclass if they are explicitly
     # listed here.
     RELATIONS_TEMPLATE = 'relations_array.sql'
+
+    @classmethod
+    def verify_args(cls, *allowed):
+        req_args = cls._get_args()
+        difference = set(req_args.keys()).difference(allowed)
+        if difference:
+            arg_string = ', '.join(difference)
+            raise BadRequestException('Unsupported argument(s): {}'
+                                      .format(arg_string))

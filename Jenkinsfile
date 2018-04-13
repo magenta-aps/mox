@@ -3,6 +3,10 @@
 pipeline {
   agent any
 
+  environment {
+    PYTEST_ADDOPTS = '--color=yes'
+  }
+
   stages {
     stage('Test') {
       steps {
@@ -21,6 +25,10 @@ pipeline {
     always {
       junit healthScaleFactor: 200.0,           \
         testResults: 'oio_rest/tests.xml'
+
+      warnings canRunOnFailed: true, consoleParsers: [
+        [parserName: 'Pep8']
+      ]
 
       cobertura coberturaReportFile: 'oio_rest/coverage.xml',    \
         maxNumberOfBuilds: 0

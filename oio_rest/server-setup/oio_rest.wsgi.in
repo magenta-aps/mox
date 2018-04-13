@@ -1,3 +1,5 @@
+# -*- python -*-
+
 import sys
 import logging
 logging.basicConfig(stream=sys.stderr)
@@ -12,5 +14,3 @@ import oio_rest.app as app
 
 
 application = app.app
-
-app.setup_api()

@@ -184,7 +184,7 @@ DATABASE_STRUCTURE = {
                 "principiel": "boolean",
                 "offentlighedundtaget": "offentlighedundtagettype"
             }
-            },
+        },
         "tilstande": {
             "fremdrift": ["Opstaaet", "Oplyst", "Afgjort", "Bestilt",
                           "Udfoert", "Afsluttet"]
@@ -212,15 +212,15 @@ DATABASE_STRUCTURE = {
             "egenskaber": ["brugervendtnoegle", "beskrivelse", "brevdato",
                            "kassationskode", "major", "minor",
                            "offentlighedundtaget", "titel", "dokumenttype"]
-            },
+        },
         "attributter_type_override": {
             "egenskaber": {
                 "brevdato": "date",
                 "major": "int",
                 "minor": "int",
                 "offentlighedundtaget": "offentlighedundtagettype"
-                }
-            },
+            }
+        },
         "tilstande": {
             "fremdrift": ["Modtaget", "Fordelt", "Underudarbejdelse",
                           "Underreview", "Publiceret", "Endeligt",
@@ -249,8 +249,8 @@ DATABASE_STRUCTURE = {
             "tilstandsvaerdi", "begrundelse", "tilstandskvalitet",
             "tilstandsvurdering", "tilstandsaktoer", "tilstandsudstyr",
             "samtykke", "tilstandsdokument"
-            ]
-        },
+        ]
+    },
     "aktivitet": {
         "attributter": {
             "egenskaber": [
@@ -291,7 +291,7 @@ DATABASE_STRUCTURE = {
             "egenskaber": {
                 "starttidspunkt": "timestamptz",
                 "sluttidspunkt": "timestamptz",
-                }
+            }
         },
         "tilstande": {
             "fremdrift": [
