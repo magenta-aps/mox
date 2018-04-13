@@ -12,7 +12,6 @@
 # the REST API for all classes in the hierarchy.
 
 # First, create a new facet.
-set -x
 # Test configuration
 DIR=$(dirname ${BASH_SOURCE[0]})
 source $DIR/config.sh
@@ -38,6 +37,10 @@ curl -k  %{http_code} --output /tmp/facet_opret.txt -sH "Content-Type: applicati
 # Update the facet
 
 curl -k -sH "Content-Type: application/json" $AUTH -X PATCH -d "$(cat $DIR/test_data/facet_opdater.json)" $HOST_URL/klassifikation/facet/$uuid
+
+# Replace the contents of the facet entirely with the old ones
+
+curl -k -sH "Content-Type: application/json" $AUTH -X PUT -d "$(cat $DIR/test_data/facet_opret.json)" $HOST_URL/klassifikation/facet/$uuid
 
 # Passivate the facet. 
 
