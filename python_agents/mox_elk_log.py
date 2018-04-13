@@ -17,12 +17,11 @@ from settings import SAML_IDP_ENTITY_ID
 # into its own library
 from oio_rest.auth.saml2 import Saml2_Assertion
 
-from mox_agent import MOXAgent, unpack_saml_token, get_idp_cert
+from settings import MOX_LOGSTASH_URI
+from settings import MOX_LOGSTASH_USER
+from settings import MOX_LOGSTASH_PASS
 
-# Logstash configuration
-logstash_url = 'http://139.162.183.253:42998'
-logstash_user = 'hunter2'
-logstash_password = 'fghTJ425245ADCFVd'
+from mox_agent import MOXAgent, unpack_saml_token, get_idp_cert
 
 
 class MOXELKLog(MOXAgent):
@@ -79,8 +78,8 @@ class MOXELKLog(MOXAgent):
         else:
             print "Posting to logstash ..."
             data = json.loads(body)  # noqa
-            r = requests.post(logstash_url, body, auth=(logstash_user,
-                                                        logstash_password))
+            r = requests.post(MOX_LOGSTASH_URI, body, auth=(MOX_LOGSTASH_USER,
+                                                            MOX_LOGSTASH_PASS))
             print "Done: ", r
 
 
