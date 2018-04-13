@@ -33,6 +33,10 @@ class TestCreateOrganisation(util.TestCase):
             "to": "2030-01-01 12:00:00+01",
             "to_included": False
         }
+        self.relation = {
+            'uuid': '00000000-0000-0000-0000-000000000000',
+            'virkning': self.standard_virkning1
+        }
         self.org = {
             "attributter": {
                 "organisationegenskaber": [
@@ -439,12 +443,6 @@ class TestCreateOrganisation(util.TestCase):
         further details
         """
 
-        # Create dummy relation
-        relation = {
-            'uuid': '00000000-0000-0000-0000-000000000000',
-            'virkning': self.standard_virkning1
-        }
-
         # Create dummy "klasse"
         klasse = {
             "attributter": {
@@ -468,30 +466,60 @@ class TestCreateOrganisation(util.TestCase):
         r = self._post(klasse, '/klassifikation/klasse')
         self._check_response_201(r)
 
-        relationtype = copy.copy(relation)
+        relationtype = copy.copy(self.relation)
         relationtype['uuid'] = r.json['uuid']
 
         # Create organisation
         self.org['relationer'] = {
-            'adresser': [relation],
-            'ansatte': [relation],
-            'branche': [relation],
-            'myndighed': [relation],
+            'adresser': [self.relation],
+            'ansatte': [self.relation],
+            'branche': [self.relation],
+            'myndighed': [self.relation],
             'myndighedstype': [relationtype],
-            'opgaver': [relation],
-            'overordnet': [relation],
-            'produktionsenhed': [relation],
-            'skatteenhed': [relation],
-            'tilhoerer': [relation],
-            'tilknyttedebrugere': [relation],
-            'tilknyttedeenheder': [relation],
-            'tilknyttedefunktioner': [relation],
-            'tilknyttedeinteressefaellesskaber': [relation],
-            'tilknyttedeorganisationer': [relation],
-            'tilknyttedepersoner': [relation],
-            'tilknyttedeitsystemer': [relation],
-            'virksomhed': [relation],
+            'opgaver': [self.relation],
+            'overordnet': [self.relation],
+            'produktionsenhed': [self.relation],
+            'skatteenhed': [self.relation],
+            'tilhoerer': [self.relation],
+            'tilknyttedebrugere': [self.relation],
+            'tilknyttedeenheder': [self.relation],
+            'tilknyttedefunktioner': [self.relation],
+            'tilknyttedeinteressefaellesskaber': [self.relation],
+            'tilknyttedeorganisationer': [self.relation],
+            'tilknyttedepersoner': [self.relation],
+            'tilknyttedeitsystemer': [self.relation],
+            'virksomhed': [self.relation],
             'virksomhedstype': [relationtype]
+        }
+        r = self._post(self.org)
+
+        # Check response
+        self._check_response_201(r)
+
+        # Check persisted data
+        self.org['livscykluskode'] = 'Opstaaet'
+        self.assertQueryResponse(
+            '/organisation/organisation',
+            self.org,
+            uuid=r.json['uuid']
+        )
+
+    def test_adding_two_relations(self):
+        """
+        Equivalence classes covered: [33]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+
+        # Create organisation
+        self.org['relationer'] = {
+            'adresser': [
+                self.relation,
+                {
+                    'uuid': '10000000-0000-0000-0000-000000000000',
+                    'virkning': self.standard_virkning1
+                }
+            ]
         }
         r = self._post(self.org)
 
