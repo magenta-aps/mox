@@ -88,7 +88,10 @@ echo "$DIR/agentbase/python/mox" > "$DIR/agentbase/python/mox/mox.pth"
 # Compile agents
 echo "Installing Agents"
 $DIR/agents/install.sh "$DOMAIN"
-$DIR/python_agents/install.py
+
+# Exclude legacy python_agents (MOX Advis, Mox Elk Log)
+# For more info, please see $REPOSITORY_ROOT/python_agents/README.rst
+# $DIR/python_agents/install.py
 
 echo
 echo "Install succeeded!!!"
