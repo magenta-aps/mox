@@ -70,28 +70,34 @@ def _generate_tilstande(obj):
     """
 
     tilstande = db.REAL_DB_STRUCTURE[obj]['tilstande']
-    key = tilstande.keys()[0]
+
+    properties = {}
+    required = []
+    for key in tilstande.keys():
+        tilstand_name = '{}{}'.format(obj, key)
+
+        properties[tilstand_name] = {
+            'type': 'array',
+            'items': {
+                'type': 'object',
+                'properties': {
+                    key: {
+                        'type': 'string',
+                        'enum': tilstande[key]
+                    },
+                    'virkning': {'$ref': '#/definitions/virkning'},
+                },
+                'required': [key, 'virkning'],
+                'additionalProperties': False
+            }
+        }
+
+        required.append(tilstand_name)
 
     return {
         'type': 'object',
-        'properties': {
-            '{}{}'.format(obj, key): {
-                'type': 'array',
-                'items': {
-                    'type': 'object',
-                    'properties': {
-                        key: {
-                            'type': 'string',
-                            'enum': tilstande[key]
-                        },
-                        'virkning': {'$ref': '#/definitions/virkning'},
-                    },
-                    'required': [key, 'virkning'],
-                    'additionalProperties': False
-                }
-            }
-        },
-        'required': ['{}{}'.format(obj, key)],
+        'properties': properties,
+        'required': required,
         'additionalProperties': False
     }
 

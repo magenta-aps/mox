@@ -288,3 +288,7 @@ class TestGenerateTilstande(unittest.TestCase):
     def test_create_klasse_request_valid(self):
         req = self._json_to_dict('klasse_opret.json')
         jsonschema.validate(req, validate.generate_json_schema(req))
+
+    # def test_create_aktivitet_request_valid(self):
+    #     req = self._json_to_dict('aktivitet_opret.json')
+    #     jsonschema.validate(req, validate.generate_json_schema(req))
