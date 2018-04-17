@@ -21,3 +21,28 @@ class Tests(util.TestCase):
 
         self.assertQueryResponse('/organisation/bruger', expected,
                                  uuid=uuid, virkningstid='2004-01-01')
+
+    def test_empty_update(self):
+        # Ensure that nothing is deleted when an empty update is made
+        # Arrange
+        uuid = "931ee7bf-10d6-4cc3-8938-83aa6389aaba"
+        path = '/organisation/bruger'
+
+        self.load_fixture(path, 'test_bruger.json', uuid)
+
+        expected = self.get(path, uuid=uuid)
+        expected['livscykluskode'] = 'Rettet'
+
+        update = {
+            'egenskaber': {},
+            'tilstande': {},
+            'relationer': {}
+        }
+
+        # Act
+        self.put("{}/{}".format(path, uuid), json=update)
+
+        # Assert
+        actual = self.get(path, uuid=uuid)
+
+        self.assertRegistrationsEqual(expected, actual)
