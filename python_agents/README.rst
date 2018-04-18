@@ -3,11 +3,11 @@ MOX python agents
 
 This directory contains the following 2 (legacy) mox agents:
 
-    +-------------+----------------+
-    | MOX Advis   | mox_advis.py   |
-    +-------------+----------------+
-    | MOX Elk Log | mox_elk_log.py |
-    +-------------+ ---------------+
++-------------+----------------+
+| MOX Advis   | mox_advis.py   |
++-------------+----------------+
+| MOX Elk Log | mox_elk_log.py |
++-------------+ ---------------+
 
 These agents were part of the early iterations of the Lora stack.
 However these agents not used in the current release (may be added in the forseeable future).
