@@ -7,21 +7,16 @@ import db_structure as db
 # here: https://spacetelescope.github.io/understanding-json-schema/
 
 
-def _modify_klasseegenskaber(egenskaber):
-    egenskaber['soegeord'] = {
-        'type': 'array',
-        'items': {
-            'type': 'array',
-            'items': {'type': 'string'}
-        },
-        'maxItems': 2
-    }
-    return egenskaber
-
-
-def _handle_overrides(obj, egenskaber):
+def _handle_special_egenskaber(obj, egenskaber):
     if obj == 'klasse':
-        return _modify_klasseegenskaber(egenskaber)
+        egenskaber['soegeord'] = {
+            'type': 'array',
+            'items': {
+                'type': 'array',
+                'items': {'type': 'string'}
+            },
+            'maxItems': 2
+        }
     return egenskaber
 
 
@@ -41,7 +36,7 @@ def _generate_attributter(obj):
     }
     egenskaber.update({'virkning': {'$ref': '#/definitions/virkning'}})
 
-    egenskaber = _handle_overrides(obj, egenskaber)
+    egenskaber = _handle_special_egenskaber(obj, egenskaber)
 
     return {
         'type': 'object',
