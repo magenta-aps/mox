@@ -102,6 +102,12 @@ def _generate_tilstande(obj):
     }
 
 
+def _handle_special_relations(obj, relation):
+    if obj in ['sag', 'aktivitet', 'tilstand', 'indsats']:
+        relation['items']['properties']['indeks'] = {'type': 'integer'}
+    return relation
+
+
 def _generate_relationer(obj):
     """
     Generate the 'relationer' part of the JSON schema.
@@ -130,11 +136,18 @@ def _generate_relationer(obj):
         }
     }
 
-    relation_schema = {}
-    for relation in relationer_nul_til_mange:
-        relation_schema[relation] = relation_nul_til_mange
-    relation_nul_til_en = copy.copy(relation_nul_til_mange)
+    relation_nul_til_mange = _handle_special_relations(obj,
+                                                       relation_nul_til_mange)
+
+    relation_schema = {
+        relation: relation_nul_til_mange
+        for relation in relationer_nul_til_mange
+    }
+
+    relation_nul_til_en = copy.deepcopy(relation_nul_til_mange)
     relation_nul_til_en['maxItems'] = 1
+    relation_nul_til_en['items']['properties'].pop('indeks', None)
+
     for relation in relationer_nul_til_en:
         relation_schema[relation] = relation_nul_til_en
 

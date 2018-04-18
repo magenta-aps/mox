@@ -244,13 +244,53 @@ class TestGenerateTilstande(unittest.TestCase):
             validate._generate_attributter('klasse')
         )
 
+    def test_index_allowed_in_relations_for_aktivitet(self):
+        relationer = validate._generate_relationer('aktivitet')
+        self.assertTrue(relationer['properties']['deltager']['items'][
+                            'properties'].has_key('indeks'))
+        self.assertEqual(
+            {'type': 'integer'},
+            relationer['properties']['deltager']['items']['properties'][
+                'indeks'])
+
+    def test_index_allowed_in_relations_for_sag(self):
+        relationer = validate._generate_relationer('sag')
+        self.assertTrue(relationer['properties']['andrebehandlere']['items'][
+                            'properties'].has_key('indeks'))
+        self.assertEqual(
+            {'type': 'integer'},
+            relationer['properties']['andrebehandlere']['items']['properties'][
+                'indeks'])
+
+    def test_index_allowed_in_relations_for_tilstand(self):
+        relationer = validate._generate_relationer('tilstand')
+        self.assertTrue(relationer['properties']['samtykke']['items'][
+                            'properties'].has_key('indeks'))
+        self.assertEqual(
+            {'type': 'integer'},
+            relationer['properties']['samtykke']['items']['properties'][
+                'indeks'])
+
+    def test_index_allowed_in_relations_for_indsats(self):
+        relationer = validate._generate_relationer('indsats')
+        self.assertTrue(relationer['properties']['samtykke']['items'][
+                            'properties'].has_key('indeks'))
+        self.assertEqual(
+            {'type': 'integer'},
+            relationer['properties']['samtykke']['items']['properties'][
+                'indeks'])
+
+    def test_index_not_allowed_for_nul_til_en_relations_for_sag(self):
+        relationer = validate._generate_relationer('sag')
+        self.assertFalse(relationer['properties']['ejer']['items'][
+                            'properties'].has_key('indeks'))
+
     def test_object_type_is_organisation(self):
         quasi_org = {
             'attributter': {
                 "organisationegenskaber": []
             }
         }
-
         self.assertEqual('organisation', validate._get_object_type(quasi_org))
 
     def test_object_type_is_organisationenhed(self):
@@ -259,7 +299,6 @@ class TestGenerateTilstande(unittest.TestCase):
                 "organisationenhedegenskaber": []
             }
         }
-
         self.assertEqual('organisationenhed',
                          validate._get_object_type(quasi_org_enhed))
 
