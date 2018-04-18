@@ -246,8 +246,6 @@ class TestGenerateTilstande(unittest.TestCase):
 
     def test_index_allowed_in_relations_for_aktivitet(self):
         relationer = validate._generate_relationer('aktivitet')
-        self.assertTrue(relationer['properties']['deltager']['items'][
-                            'properties'].has_key('indeks'))
         self.assertEqual(
             {'type': 'integer'},
             relationer['properties']['deltager']['items']['properties'][
@@ -255,8 +253,6 @@ class TestGenerateTilstande(unittest.TestCase):
 
     def test_index_allowed_in_relations_for_sag(self):
         relationer = validate._generate_relationer('sag')
-        self.assertTrue(relationer['properties']['andrebehandlere']['items'][
-                            'properties'].has_key('indeks'))
         self.assertEqual(
             {'type': 'integer'},
             relationer['properties']['andrebehandlere']['items']['properties'][
@@ -264,8 +260,6 @@ class TestGenerateTilstande(unittest.TestCase):
 
     def test_index_allowed_in_relations_for_tilstand(self):
         relationer = validate._generate_relationer('tilstand')
-        self.assertTrue(relationer['properties']['samtykke']['items'][
-                            'properties'].has_key('indeks'))
         self.assertEqual(
             {'type': 'integer'},
             relationer['properties']['samtykke']['items']['properties'][
@@ -273,8 +267,6 @@ class TestGenerateTilstande(unittest.TestCase):
 
     def test_index_allowed_in_relations_for_indsats(self):
         relationer = validate._generate_relationer('indsats')
-        self.assertTrue(relationer['properties']['samtykke']['items'][
-                            'properties'].has_key('indeks'))
         self.assertEqual(
             {'type': 'integer'},
             relationer['properties']['samtykke']['items']['properties'][
@@ -328,6 +320,6 @@ class TestGenerateTilstande(unittest.TestCase):
         req = self._json_to_dict('klasse_opret.json')
         jsonschema.validate(req, validate.generate_json_schema(req))
 
-    # def test_create_aktivitet_request_valid(self):
-    #     req = self._json_to_dict('aktivitet_opret.json')
-    #     jsonschema.validate(req, validate.generate_json_schema(req))
+    def test_create_aktivitet_request_valid(self):
+        req = self._json_to_dict('aktivitet_opret.json')
+        jsonschema.validate(req, validate.generate_json_schema(req))

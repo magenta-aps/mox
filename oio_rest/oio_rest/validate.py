@@ -2,9 +2,11 @@ import copy
 
 import db_structure as db
 
-
 # A very nice reference explaining the JSON schema syntax can be found
 # here: https://spacetelescope.github.io/understanding-json-schema/
+
+UUID_PATTERN = '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-' \
+               '[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$'
 
 
 def _handle_special_egenskaber(obj, egenskaber):
@@ -100,6 +102,19 @@ def _generate_tilstande(obj):
 def _handle_special_relations(obj, relation):
     if obj in ['sag', 'aktivitet', 'tilstand', 'indsats']:
         relation['items']['properties']['indeks'] = {'type': 'integer'}
+    if obj == 'aktivitet':
+        relation['items']['properties']['aktoerattr'] = {
+            'type': 'object',
+            'properties': {
+                'accepteret': {'type': 'string'},
+                'obligatorisk': {'type': 'string'},
+                'repraesentation_uuid': {
+                    'type': 'string',
+                    'pattern': UUID_PATTERN
+                }
+            },
+            'maxItems': 1
+        }
     return relation
 
 
@@ -120,8 +135,7 @@ def _generate_relationer(obj):
             'properties': {
                 'uuid': {
                     'type': 'string',
-                    'pattern': '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-'
-                               '[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$'
+                    'pattern': UUID_PATTERN
                 },
                 'virkning': {'$ref': '#/definitions/virkning'},
                 'objekttype': {'type': 'string'}
