@@ -318,8 +318,7 @@ class OIORestObject(object):
         """Return a registration dict from the input dict."""
         attributes = typed_get(input, "attributter", {})
         states = typed_get(input, "tilstande", {})
-        # Ensure that we only add 'relations' if the value is truthy
-        relations = input.get("relationer", None) or None
+        relations = typed_get(input, "relationer", {})
         return {"states": states,
                 "attributes": attributes,
                 "relations": relations}

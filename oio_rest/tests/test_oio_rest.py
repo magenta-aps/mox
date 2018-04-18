@@ -846,7 +846,7 @@ class TestOIORestObject(TestCase):
         # type: (MagicMock) -> None
         # Arrange
         uuid = "cb94b2ec-33a5-4730-b87e-520e2b82fa9a"
-        expected_reg = {'attributes': {}, 'relations': None, 'states': {}}
+        expected_reg = {'attributes': {}, 'relations': {}, 'states': {}}
 
         data = {'note': "NOTE"}
 
@@ -908,7 +908,7 @@ class TestOIORestObject(TestCase):
         expected = {
             'attributes': {},
             'states': {},
-            'relations': None
+            'relations': {}
         }
 
         # Act
@@ -928,7 +928,7 @@ class TestOIORestObject(TestCase):
         expected = {
             'attributes': {},
             'states': {},
-            'relations': None
+            'relations': {}
         }
 
         # Act
@@ -936,6 +936,36 @@ class TestOIORestObject(TestCase):
 
         # Assert
         self.assertEqual(expected, actual)
+
+    def test_gather_registration_raises_on_bad_attributter_input(self):
+        # Arrange
+        input = {
+            'attributter': 'not a dict',
+        }
+
+        # Act
+        with self.assertRaises(BadRequestException):
+            self.testclass.gather_registration(input)
+
+    def test_gather_registration_raises_on_bad_tilstande_input(self):
+        # Arrange
+        input = {
+            'tilstande': 'not a dict',
+        }
+
+        # Act
+        with self.assertRaises(BadRequestException):
+            self.testclass.gather_registration(input)
+
+    def test_gather_registration_raises_on_bad_relationer_input(self):
+        # Arrange
+        input = {
+            'relationer': 'not a dict',
+        }
+
+        # Act
+        with self.assertRaises(BadRequestException):
+            self.testclass.gather_registration(input)
 
 
 class TestOIOStandardHierarchy(TestCase):
