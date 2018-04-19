@@ -1,16 +1,25 @@
 import copy
+import json
 
 import db_structure as db
 
 # A very nice reference explaining the JSON schema syntax can be found
 # here: https://spacetelescope.github.io/understanding-json-schema/
 
+
 UUID_PATTERN = '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-' \
                '[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$'
 
+AKTIVITET = 'aktivitet'
+DOKUMENT = 'dokument'
+INDSATS = 'indsats'
+KLASSE = 'klasse'
+SAG = 'sag'
+TILSTAND = 'tilstand'
+
 
 def _handle_special_egenskaber(obj, egenskaber):
-    if obj == 'klasse':
+    if obj == KLASSE:
         egenskaber['soegeord'] = {
             'type': 'array',
             'items': {
@@ -99,10 +108,10 @@ def _generate_tilstande(obj):
     }
 
 
-def _handle_special_relations(obj, relation):
-    if obj in ['sag', 'aktivitet', 'tilstand', 'indsats']:
+def _handle_special_relations_all(obj, relation):
+    if obj in [AKTIVITET, INDSATS, SAG, TILSTAND]:
         relation['items']['properties']['indeks'] = {'type': 'integer'}
-    if obj == 'aktivitet':
+    if obj == AKTIVITET:
         relation['items']['properties']['aktoerattr'] = {
             'type': 'object',
             'properties': {
@@ -111,11 +120,30 @@ def _handle_special_relations(obj, relation):
                 'repraesentation_uuid': {
                     'type': 'string',
                     'pattern': UUID_PATTERN
-                }
+                },
             },
+            'required': ['accepteret', 'obligatorisk', 'repraesentation_uuid'],
+            'additionalProperties': False,
             'maxItems': 1
         }
     return relation
+
+
+def _handle_special_relations_specific(obj, relation_schema):
+    if obj == TILSTAND:
+        relation_schema['tilstandsvaerdi']['items']['properties'][
+            'tilstandsvaerdiattr'] = {
+            'type': 'object',
+            'properties': {
+                'forventet': {'type': "boolean"},
+                'nominelvaerdi': {'type': 'string'}
+            },
+            'required': ['forventet', 'nominelvaerdi'],
+            'additionalProperties': False
+        }
+        relation_schema['tilstandsvaerdi']['items']['properties'].pop('uuid')
+        relation_schema['tilstandsvaerdi']['items']['required'].remove('uuid')
+    return relation_schema
 
 
 def _generate_relationer(obj):
@@ -145,20 +173,21 @@ def _generate_relationer(obj):
         }
     }
 
-    relation_nul_til_mange = _handle_special_relations(obj,
-                                                       relation_nul_til_mange)
+    relation_nul_til_mange = _handle_special_relations_all(
+        obj, relation_nul_til_mange)
 
     relation_schema = {
-        relation: relation_nul_til_mange
+        relation: copy.deepcopy(relation_nul_til_mange)
         for relation in relationer_nul_til_mange
     }
 
     relation_nul_til_en = copy.deepcopy(relation_nul_til_mange)
     relation_nul_til_en['maxItems'] = 1
-    relation_nul_til_en['items']['properties'].pop('indeks', None)
 
     for relation in relationer_nul_til_en:
         relation_schema[relation] = relation_nul_til_en
+
+    relation_schema = _handle_special_relations_specific(obj, relation_schema)
 
     return {
         'type': 'object',
@@ -173,6 +202,9 @@ def _get_object_type(req):
     :param req: The JSON body from the LoRa request.
     :return: The LoRa object type, i.e. 'organisation', 'bruger',...
     """
+
+    # TODO: handle if 'attributter' not in JSON...
+
     return req['attributter'].keys()[0].split('egenskaber')[0]
 
 
@@ -214,3 +246,10 @@ def generate_json_schema(req):
         },
         'required': ['attributter', 'tilstande'],
     }
+
+# Will be cleaned up later...
+
+# if __name__ == '__main__':
+#     print(json.dumps(generate_json_schema({'attributter': {
+#         'tilstandegenskaber': []
+#     }}), indent=2))

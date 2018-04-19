@@ -30,7 +30,7 @@ class TestGenerateTilstande(unittest.TestCase):
                 'additionalProperties': False
             },
         }
-        self.relation_nul_til_en = copy.copy(self.relation_nul_til_mange)
+        self.relation_nul_til_en = copy.deepcopy(self.relation_nul_til_mange)
         self.relation_nul_til_en['maxItems'] = 1
 
     def _json_to_dict(self, filename):
@@ -154,6 +154,52 @@ class TestGenerateTilstande(unittest.TestCase):
             validate._generate_relationer('klassifikation')
         )
 
+    def test_relationer_tilstand(self):
+        self.relation_nul_til_en['items']['properties']['indeks'] = {
+            'type': 'integer'}
+        self.relation_nul_til_mange['items']['properties']['indeks'] = {
+            'type': 'integer'}
+        self.assertEqual(
+            {
+                'type': 'object',
+                'properties': {
+                    'tilstandsobjekt': self.relation_nul_til_en,
+                    'tilstandstype': self.relation_nul_til_en,
+                    'begrundelse': self.relation_nul_til_mange,
+                    'tilstandskvalitet': self.relation_nul_til_mange,
+                    'tilstandsvurdering': self.relation_nul_til_mange,
+                    'tilstandsaktoer': self.relation_nul_til_mange,
+                    'tilstandsudstyr': self.relation_nul_til_mange,
+                    'samtykke': self.relation_nul_til_mange,
+                    'tilstandsdokument': self.relation_nul_til_mange,
+                    'tilstandsvaerdi': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'indeks': {'type': 'integer'},
+                                'tilstandsvaerdiattr': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'forventet': {'type': 'boolean'},
+                                        'nominelvaerdi': {'type': 'string'}
+                                    },
+                                    'required': ['forventet', 'nominelvaerdi'],
+                                    'additionalProperties': False
+                                },
+                                'virkning': {'$ref': '#/definitions/virkning'},
+                                'objekttype': {'type': 'string'}
+                            },
+                            'required': ['virkning'],
+                            'additionalProperties': False
+                        },
+                    }
+                },
+                'additionalProperties': False
+            },
+            validate._generate_relationer('tilstand')
+        )
+
     def test_attributter_organisation(self):
         self.assertEqual(
             {
@@ -272,10 +318,10 @@ class TestGenerateTilstande(unittest.TestCase):
             relationer['properties']['samtykke']['items']['properties'][
                 'indeks'])
 
-    def test_index_not_allowed_for_nul_til_en_relations_for_sag(self):
-        relationer = validate._generate_relationer('sag')
-        self.assertFalse(relationer['properties']['ejer']['items'][
-                            'properties'].has_key('indeks'))
+    def test_index_not_allowed_for_non_special_nul_til_mange_relations(self):
+        relationer = validate._generate_relationer('organisation')
+        self.assertFalse(relationer['properties']['ansatte']['items'][
+                             'properties'].has_key('indeks'))
 
     def test_object_type_is_organisation(self):
         quasi_org = {
@@ -322,4 +368,8 @@ class TestGenerateTilstande(unittest.TestCase):
 
     def test_create_aktivitet_request_valid(self):
         req = self._json_to_dict('aktivitet_opret.json')
+        jsonschema.validate(req, validate.generate_json_schema(req))
+
+    def test_create_tilstand_request_valid(self):
+        req = self._json_to_dict('tilstand_opret.json')
         jsonschema.validate(req, validate.generate_json_schema(req))
