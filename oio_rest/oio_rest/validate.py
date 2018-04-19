@@ -13,6 +13,7 @@ UUID_PATTERN = '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-' \
 AKTIVITET = 'aktivitet'
 DOKUMENT = 'dokument'
 INDSATS = 'indsats'
+ITSYSTEM = 'itsystem'
 KLASSE = 'klasse'
 SAG = 'sag'
 TILSTAND = 'tilstand'
@@ -27,6 +28,11 @@ def _handle_special_egenskaber(obj, egenskaber):
                 'items': {'type': 'string'}
             },
             'maxItems': 2
+        }
+    if obj == ITSYSTEM:
+        egenskaber['konfigurationreference'] = {
+            'type': 'array',
+            'items': {'type': 'string'}
         }
     return egenskaber
 
