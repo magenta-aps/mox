@@ -373,3 +373,7 @@ class TestGenerateTilstande(unittest.TestCase):
     def test_create_tilstand_request_valid(self):
         req = self._json_to_dict('tilstand_opret.json')
         jsonschema.validate(req, validate.generate_json_schema(req))
+
+    def test_create_indsats_request_valid(self):
+        req = self._json_to_dict('indsats_opret.json')
+        jsonschema.validate(req, validate.generate_json_schema(req))
