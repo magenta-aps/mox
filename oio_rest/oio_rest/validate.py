@@ -1,6 +1,8 @@
 import copy
 import json
 
+import jsonschema
+
 import db_structure as db
 
 # A very nice reference explaining the JSON schema syntax can be found
@@ -206,10 +208,30 @@ def _get_object_type(req):
     """
     Get the LoRa object type from the request.
     :param req: The JSON body from the LoRa request.
+    :raise jsonschema.exceptions.ValidationError: If the LoRa object type
+    cannot be determined.
     :return: The LoRa object type, i.e. 'organisation', 'bruger',...
     """
 
-    # TODO: handle if 'attributter' not in JSON...
+    jsonschema.validate(
+        req,
+        {
+            'type': 'object',
+            'properties': {
+                'attributter': {
+                    'type': 'object',
+                },
+
+            },
+            'required': ['attributter']
+        }
+    )
+
+    if not len(req['attributter']) == 1:
+        raise jsonschema.exceptions.ValidationError('ups')
+    if not req['attributter'].keys()[0] in [key + 'egenskaber' for key in
+                                            db.REAL_DB_STRUCTURE.keys()]:
+        raise jsonschema.exceptions.ValidationError('ups2')
 
     return req['attributter'].keys()[0].split('egenskaber')[0]
 

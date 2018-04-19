@@ -340,6 +340,24 @@ class TestGenerateTilstande(unittest.TestCase):
         self.assertEqual('organisationenhed',
                          validate._get_object_type(quasi_org_enhed))
 
+    def test_raise_exception_if_obj_egenskaber_not_set(self):
+        quasi_org = {
+            'attributter': {
+                "invalid-egenskaber": []
+            }
+        }
+        with self.assertRaises(jsonschema.exceptions.ValidationError):
+            validate._get_object_type(quasi_org)
+
+    def test_raise_exception_if_attributter_not_set(self):
+        quasi_org = {
+            'invalid-attributter': {
+                "organisationegenskaber": []
+            }
+        }
+        with self.assertRaises(jsonschema.exceptions.ValidationError):
+            validate._get_object_type(quasi_org)
+
     def test_create_facet_request_valid(self):
         req = self._json_to_dict('facet_opret.json')
         jsonschema.validate(req, validate.generate_json_schema(req))
