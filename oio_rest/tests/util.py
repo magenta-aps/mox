@@ -25,7 +25,6 @@ from oio_rest import settings
 
 TESTS_DIR = os.path.dirname(__file__)
 BASE_DIR = os.path.dirname(TESTS_DIR)
-DATA_DIR = os.path.join(TESTS_DIR, 'data')
 FIXTURE_DIR = os.path.join(TESTS_DIR, 'fixtures')
 
 
@@ -115,7 +114,7 @@ class TestCaseMixin(object):
 
             subprocess.check_call(cmd)
 
-        do_psql(file=os.path.join(DATA_DIR, 'dump.sql'),
+        do_psql(file=os.path.join(FIXTURE_DIR, 'dump.sql'),
                 dbname=settings.DB_USER)
 
     @classmethod
