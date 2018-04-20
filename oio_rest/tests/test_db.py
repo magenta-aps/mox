@@ -1,5 +1,5 @@
 import datetime
-from unittest import TestCase
+import unittest
 
 from mock import MagicMock, call, patch
 
@@ -8,7 +8,7 @@ from oio_rest.custom_exceptions import (BadRequestException, DBException,
                                         NotFoundException)
 
 
-class TestDB(TestCase):
+class TestDB(unittest.TestCase):
     @patch('oio_rest.db.psycopg2')
     def test_get_connection(self, mock):
         # Arrange
@@ -1028,7 +1028,7 @@ class TestDB(TestCase):
 
 
 @patch("oio_rest.db.sql_convert_registration", new=MagicMock())
-class TestDBObjectFunctions(TestCase):
+class TestDBObjectFunctions(unittest.TestCase):
     @patch("oio_rest.db.get_connection")
     @patch("oio_rest.db.jinja_env")
     def test_update_object_returns_uuid(self,
@@ -1063,7 +1063,7 @@ class TestDBObjectFunctions(TestCase):
                             "registrering_til")
 
 
-class TestDBGeneralSQL(TestCase):
+class TestDBGeneralSQL(unittest.TestCase):
     @patch('oio_rest.db.sql_attribute_array')
     @patch('oio_rest.db.sql_relations_array')
     @patch('oio_rest.db.get_attribute_names')
@@ -1217,7 +1217,7 @@ class TestDBGeneralSQL(TestCase):
 @patch("oio_rest.db.sql_get_registration", new=MagicMock())
 @patch("oio_rest.db.sql_convert_registration", new=MagicMock())
 @patch("oio_rest.db.jinja_env.get_template", new=MagicMock())
-class TestPGErrors(TestCase):
+class TestPGErrors(unittest.TestCase):
     class TestException(Exception):
         def __init__(self):
             self.pgcode = 'MO123'
