@@ -3,6 +3,7 @@ testing.postgresql
 pytest
 pytest-cov
 mock
+requests_mock
 coverage
 freezegun
 flake8
