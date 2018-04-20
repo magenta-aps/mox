@@ -159,7 +159,6 @@ class TestCaseMixin(object):
         automatically posts the given JSON data.
 
         '''
-        message = message or 'request {!r} failed'.format(path)
 
         r = self._perform_request(path, **kwargs)
 
@@ -175,16 +174,29 @@ class TestCaseMixin(object):
             except (IndexError, KeyError, TypeError):
                 pass
 
+        print(r.status_code)
+
         if actual != expected:
             pprint.pprint(actual)
 
-        if status_code is None:
-            self.assertLess(r.status_code, 300, message)
-            self.assertGreaterEqual(r.status_code, 200, message)
+        if not message:
+            status_message = 'request {!r} failed with status {}'.format(
+                path, r.status_code,
+            )
+            content_message = 'request {!r} yielded an expected result'.format(
+                path,
+            )
         else:
-            self.assertEqual(r.status_code, status_code, message)
+            status_message = content_message = message
 
-        self.assertEqual(expected, actual, message)
+        if status_code is None:
+            self.assertLess(r.status_code, 300, status_message)
+            self.assertGreaterEqual(r.status_code, 200, status_message)
+        else:
+            self.assertEqual(r.status_code, status_code, status_message)
+
+        self.assertEqual(expected, actual, content_message)
+
 
     def assertRequestFails(self, path, code, message=None, **kwargs):
         '''Issue a request and assert that it succeeds (and does not
@@ -210,7 +222,7 @@ class TestCaseMixin(object):
 
         return self.client.open(path, **kwargs)
 
-    def assertRegistrationsEqual(self, expected, actual):
+    def assertRegistrationsEqual(self, expected, actual, message=None):
         def sort_inner_lists(obj):
             """Sort all inner lists and tuples by their JSON string value,
             recursively. This is quite stupid and slow, but works!
@@ -242,9 +254,11 @@ class TestCaseMixin(object):
         actual.pop('brugerref', None)
 
         # Sort all inner lists and compare
-        return self.assertEqual(
+        self.assertEqual(
             sort_inner_lists(expected),
-            sort_inner_lists(actual))
+            sort_inner_lists(actual),
+            message,
+        )
 
     def assertQueryResponse(self, path, expected, **params):
         """Perform a request towards LoRa, and assert that it yields the
@@ -270,6 +284,8 @@ class TestCaseMixin(object):
             assert len(registrations) == 1
             actual = registrations[0]
 
+        print(json.dumps(actual, indent=2))
+
         return self.assertRegistrationsEqual(expected, actual)
 
     def load_fixture(self, path, fixture_name, uuid=None):
@@ -277,17 +293,23 @@ class TestCaseMixin(object):
         into LoRA at the given path & UUID.
         """
         if uuid:
-            path = "{}/{}".format(path, uuid)
-            r = self._perform_request(path, method='PUT',
-                                      json=get_fixture(fixture_name))
+            method = 'PUT'
+            path = '{}/{}'.format(path, uuid)
         else:
-            r = self._perform_request(path, method='POST',
-                                      json=get_fixture(fixture_name))
+            method = 'POST'
 
-        self.assertLess(r.status_code, 300)
-        self.assertGreaterEqual(r.status_code, 200)
+        r = self._perform_request(
+            path, json=get_fixture(fixture_name), method=method,
+        )
 
-        return r
+        assert r, 'write of {!r} to {!r} failed!'.format(fixture_name, path)
+
+        objid = r.json.get('uuid')
+
+        print(r.get_data('True'), path)
+        self.assertTrue(objid)
+
+        return objid
 
 
 class TestCase(TestCaseMixin, flask_testing.TestCase):
