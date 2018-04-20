@@ -62,7 +62,7 @@ def get_virkning_dates(args):
             # current_timestamp,'[]') if possible
             virkning_fra = datetime.datetime.now()
             virkning_til = virkning_fra + datetime.timedelta(
-                    microseconds=1)
+                microseconds=1)
     return virkning_fra, virkning_til
 
 

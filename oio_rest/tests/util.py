@@ -197,7 +197,6 @@ class TestCaseMixin(object):
 
         self.assertEqual(expected, actual, content_message)
 
-
     def assertRequestFails(self, path, code, message=None, **kwargs):
         '''Issue a request and assert that it succeeds (and does not
         redirect) and yields the expected output.
