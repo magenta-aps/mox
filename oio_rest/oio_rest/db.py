@@ -399,17 +399,9 @@ def create_or_import_object(class_name, note, registration,
     try:
         cursor.execute(sql)
     except psycopg2.Error as e:
-        noop_msg = ('Aborted updating {} with id [{}] as the given data, '
-                    'does not give raise to a new registration.'.format(
-                        class_name, uuid
-                    ))
-
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
             raise DBException(status_code, e.message)
-        elif e.message.startswith(noop_msg):
-            status_code = int(e.pgcode[2:])
-            raise DBException(status_code, 'fuck no')
         else:
             raise
 

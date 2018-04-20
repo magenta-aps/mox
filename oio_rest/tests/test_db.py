@@ -1295,29 +1295,6 @@ class TestPGErrors(unittest.TestCase):
             db.create_or_import_object('', '', '', '')
 
     @patch("oio_rest.db.psycopg2.Error", new=TestException)
-    def test_create_or_import_object_raises_on_noop_pgerror(self,
-                                                            mock_get_conn):
-        # type: (MagicMock) -> None
-
-        # Arrange
-        class_name = 'class'
-        uuid = '61ae604b-e7fb-4892-a09a-55e5f6822435'
-        exception = TestPGErrors.TestException()
-        exception.message = ('Aborted updating {} with id [{}] as the given '
-                             'data, does not give raise to a new '
-                             'registration.').format(
-            class_name, uuid
-        )
-        exception.pgcode = '12345'
-
-        mock_get_conn.return_value.cursor.return_value = cursor = MagicMock()
-        cursor.execute.side_effect = exception
-
-        # Act
-        with self.assertRaises(DBException):
-            db.create_or_import_object(class_name, '', '', uuid)
-
-    @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_create_or_import_object_raises_on_unknown_pgerror(self,
                                                                mock_get_conn):
         # type: (MagicMock) -> None
