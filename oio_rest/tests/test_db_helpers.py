@@ -559,6 +559,65 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
+    def test_get_state_names_order(self):
+        # Arrange
+        expected_result = {
+            'itsystem': [
+                'gyldighed',
+            ],
+            'bruger': [
+                'gyldighed',
+            ],
+            'organisation': [
+                'gyldighed',
+            ],
+            'sag': [
+                'fremdrift',
+            ],
+            'organisationfunktion': [
+                'gyldighed',
+            ],
+            'organisationenhed': [
+                'gyldighed',
+            ],
+            'facet': [
+                'publiceret',
+            ],
+            'interessefaellesskab': [
+                'gyldighed',
+            ],
+            'loghaendelse': [
+                'gyldighed',
+            ],
+            'dokument': [
+                'fremdrift',
+            ],
+            'tilstand': [
+                'status', 'publiceret',
+            ],
+            'klassifikation': [
+                'publiceret',
+            ],
+            'indsats': [
+                'publiceret', 'fremdrift',
+            ],
+            'aktivitet': [
+                'status', 'publiceret',
+            ],
+            'klasse': [
+                'publiceret',
+            ],
+        }
+
+        # Act
+        actual_result = {
+            c: list(db_helpers.get_state_names(c))
+            for c in db_helpers.db_struct
+        }
+
+        # Assert
+        self.assertEqual(expected_result, actual_result)
+
     def test_get_state_names_default(self):
         # Arrange
         expected_result = {
