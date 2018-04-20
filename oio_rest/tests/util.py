@@ -20,7 +20,7 @@ import flask_testing
 import mock
 import testing.postgresql
 import psycopg2
-
+import pytest
 
 from oio_rest import app
 from oio_rest import db
@@ -89,6 +89,7 @@ def initdb(psql):
         curs.execute(subprocess.check_output([mkdb_path], env=env))
 
 
+@pytest.mark.slow
 class TestCaseMixin(object):
 
     '''Base class for LoRA test cases with database access.
