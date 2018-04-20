@@ -41,6 +41,57 @@ def get_fixture(fixture_name):
             return fp.read()
 
 
+def initdb(psql):
+    dsn = psql.dsn()
+
+    conn = psycopg2.connect(**dsn)
+    conn.autocommit = True
+
+    with conn.cursor() as curs:
+        curs.execute(
+            "CREATE USER {} WITH SUPERUSER PASSWORD %s".format(
+                settings.DB_USER,
+            ),
+            (
+                settings.DB_PASSWORD,
+            ),
+        )
+
+        curs.execute(
+            "CREATE DATABASE {} WITH OWNER = %s".format(settings.DATABASE),
+            (
+                settings.DB_USER,
+            ),
+        )
+
+        curs.execute(
+            "ALTER DATABASE {} SET search_path TO actual_state, public"
+            .format(
+                settings.DATABASE,
+            ),
+        )
+
+    def do_psql(**kwargs):
+        cmd = [
+            'psql',
+            '--user', dsn['user'],
+            '--host', dsn['host'],
+            '--port', str(dsn['port']),
+            '--variable', 'ON_ERROR_STOP=1',
+            '--output', os.devnull,
+            '--no-password',
+            '--quiet',
+        ]
+
+        for arg, value in kwargs.iteritems():
+            cmd += '--' + arg, value,
+
+        subprocess.check_call(cmd)
+
+    do_psql(file=os.path.join(FIXTURE_DIR, 'dump.sql'),
+            dbname=settings.DB_USER)
+
+
 class TestCaseMixin(object):
 
     '''Base class for LoRA test cases with database access.
@@ -62,59 +113,8 @@ class TestCaseMixin(object):
 
         cls.psql_factory = testing.postgresql.PostgresqlFactory(
             cache_initialized_db=True,
-            on_initialized=cls.initdb
+            on_initialized=initdb
         )
-
-    @classmethod
-    def initdb(cls, psql):
-        dsn = psql.dsn()
-
-        conn = psycopg2.connect(**dsn)
-        conn.autocommit = True
-
-        with conn.cursor() as curs:
-            curs.execute(
-                "CREATE USER {} WITH SUPERUSER PASSWORD %s".format(
-                    settings.DB_USER,
-                ),
-                (
-                    settings.DB_PASSWORD,
-                ),
-            )
-
-            curs.execute(
-                "CREATE DATABASE {} WITH OWNER = %s".format(settings.DATABASE),
-                (
-                    settings.DB_USER,
-                ),
-            )
-
-            curs.execute(
-                "ALTER DATABASE {} SET search_path TO actual_state, public"
-                .format(
-                    settings.DATABASE,
-                ),
-            )
-
-        def do_psql(**kwargs):
-            cmd = [
-                'psql',
-                '--user', dsn['user'],
-                '--host', dsn['host'],
-                '--port', str(dsn['port']),
-                '--variable', 'ON_ERROR_STOP=1',
-                '--output', os.devnull,
-                '--no-password',
-                '--quiet',
-            ]
-
-            for arg, value in kwargs.iteritems():
-                cmd += '--' + arg, value,
-
-            subprocess.check_call(cmd)
-
-        do_psql(file=os.path.join(FIXTURE_DIR, 'dump.sql'),
-                dbname=settings.DB_USER)
 
     @classmethod
     def tearDownClass(cls):
