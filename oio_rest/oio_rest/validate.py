@@ -22,6 +22,16 @@ TILSTAND = 'tilstand'
 
 
 def _handle_special_egenskaber(obj, egenskaber):
+    offentlighed_undtaget = {
+        'type': 'object',
+        'properties': {
+            'alternativtitel': {'type': 'string'},
+            'hjemmel': {'type': 'string'}
+        },
+        'required': ['alternativtitel', 'hjemmel'],
+        'additionalProperties': False
+    }
+
     if obj == KLASSE:
         egenskaber['soegeord'] = {
             'type': 'array',
@@ -36,6 +46,11 @@ def _handle_special_egenskaber(obj, egenskaber):
             'type': 'array',
             'items': {'type': 'string'}
         }
+    if obj == SAG:
+        egenskaber['afleveret'] = {'type': 'boolean'}
+        egenskaber['principiel'] = {'type': 'boolean'}
+        egenskaber['offentlighedundtaget'] = offentlighed_undtaget
+
     return egenskaber
 
 
@@ -139,6 +154,7 @@ def _handle_special_relations_all(obj, relation):
 
 def _handle_special_relations_specific(obj, relation_schema):
     if obj == TILSTAND:
+        # Refactor... make properties variable
         relation_schema['tilstandsvaerdi']['items']['properties'][
             'tilstandsvaerdiattr'] = {
             'type': 'object',
@@ -151,6 +167,44 @@ def _handle_special_relations_specific(obj, relation_schema):
         }
         relation_schema['tilstandsvaerdi']['items']['properties'].pop('uuid')
         relation_schema['tilstandsvaerdi']['items']['required'].remove('uuid')
+    if obj == SAG:
+        properties = relation_schema['journalpost']['items']['properties']
+        properties['journalpostkode'] = {
+            'type': 'string',
+            'enum': ['journalnotat', 'vedlagtdokument']
+        }
+        properties['journalnotat'] = {
+            'type': 'object',
+            'properties': {
+                'titel': {'type': 'string'},
+                'notat': {'type': 'string'},
+                'format': {'type': 'string'},
+            },
+            'required': ['titel', 'notat',
+                         'format'],
+            'additionalProperties': False
+        }
+        properties['journaldokument'] = {
+            'type': 'object',
+            'properties': {
+                'dokumenttitel': {'type': 'string'},
+                'offentlighedundtaget': {
+                    'type': 'object',
+                    'properties': {
+                        'alternativtitel': {'type': 'string'},
+                        'hjemmel': {'type': 'string'}
+                    },
+                    'required': ['alternativtitel', 'hjemmel'],
+                    'additionalProperties': False
+                }
+            }
+        }
+
+        # TODO: refactor!
+
+        relation_schema['journalpost']['items']['required'].append(
+            'journalpostkode')
+
     return relation_schema
 
 

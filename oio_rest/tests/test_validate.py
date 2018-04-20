@@ -414,3 +414,8 @@ class TestGenerateTilstande(unittest.TestCase):
         req = self._json_to_dict('loghaendelse_opret.json')
         obj = validate.get_lora_object_type(req)
         jsonschema.validate(req, validate.SCHEMA[obj])
+
+    def test_create_sag_request_valid(self):
+        req = self._json_to_dict('sag_opret.json')
+        obj = validate.get_lora_object_type(req)
+        jsonschema.validate(req, validate.SCHEMA[obj])
