@@ -1,0 +1,35 @@
+{
+	"note": "Opdatering",
+		"attributter": {
+			"aktivitetegenskaber": [
+			{
+                                "tidsforbrug": "",
+				"virkning": {
+					"from": "2016-05-19 12:02:32",
+					"to": "infinity",
+					"aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+					"aktoertypekode": "Bruger",
+					"notetekst": "Nothing to see here!"
+				}
+			}
+			]
+		},
+		"relationer": {
+			"ansvarlig": [
+			{
+				"aktoerattr": { "repraesentation_urn": "a::b::c"},
+				"uuid": "abcdeabd-c1b0-48c2-aef7-74fea841adae",
+				"virkning": {
+					"from": "2016-05-19 12:02:32",
+					"to": "infinity",
+					"aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+					"aktoertypekode": "Bruger",
+					"notetekst": "Nothing to see here!"
+
+				},
+				"objekttype": "Bruger"
+			}
+			]
+		}
+
+}
