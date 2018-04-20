@@ -227,6 +227,9 @@ def get_lora_object_type(req):
         }
     )
 
+    # TODO: this can probably be made smarter using the "oneOf" JSON schema
+    # keyword in the schema above, but there were problems getting this to work
+
     if not len(req['attributter']) == 1:
         raise jsonschema.exceptions.ValidationError('ups')
     if not req['attributter'].keys()[0] in [key + 'egenskaber' for key in
@@ -242,8 +245,6 @@ def generate_json_schema(obj):
     :param obj: The LoRa object type, i.e. 'bruger', 'organisation',...
     :return: Dictionary representing the JSON schema.
     """
-
-    # obj = get_lora_object_type(req)
 
     return {
         '$schema': "http://json-schema.org/schema#",
@@ -275,8 +276,10 @@ def generate_json_schema(obj):
         'required': ['attributter', 'tilstande'],
     }
 
+
 SCHEMA = {
-    obj: generate_json_schema(obj) for obj in db.REAL_DB_STRUCTURE.keys()
+    obj: copy.deepcopy(generate_json_schema(obj))
+    for obj in db.REAL_DB_STRUCTURE.keys()
 }
 
 # Will be cleaned up later...
@@ -285,4 +288,3 @@ SCHEMA = {
 #     print(json.dumps(generate_json_schema({'attributter': {
 #         'tilstandegenskaber': []
 #     }}), indent=2))
-

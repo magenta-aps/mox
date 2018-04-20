@@ -152,8 +152,6 @@ class TestCreateOrganisation(util.TestCase):
         self.org['note'] = ['Note cannot be e.g. a list']
         self._check_response_400()
 
-    @unittest.skip(
-        'We are allowed to leave out the bvn - this should not be the case')
     def test_bvn_missing(self):
         """
         Equivalence classes covered: [4]
@@ -165,7 +163,6 @@ class TestCreateOrganisation(util.TestCase):
             'brugervendtnoegle']
         self._check_response_400()
 
-    @unittest.skip('The REST interface accepts a bvn which is not a string')
     def test_bvn_not_string(self):
         """
         Equivalence classes covered: [5]
@@ -177,8 +174,6 @@ class TestCreateOrganisation(util.TestCase):
             'brugervendtnoegle'] = ['BVN cannot be a list']
         self._check_response_400()
 
-    @unittest.skip(
-        'The REST interface accepts an organisation name which is not a string')
     def test_org_name_not_string(self):
         """
         Equivalence classes covered: [8]
@@ -190,8 +185,6 @@ class TestCreateOrganisation(util.TestCase):
             'organisationnavn'] = ['Organisationnavn cannot be a list']
         self._check_response_400()
 
-    @unittest.skip('When sending a JSON attribute without virkning, '
-                   'we do not get a 400 status')
     def test_virkning_missing_attributter(self):
         """
         Equivalence classes covered: [11]
@@ -359,8 +352,6 @@ class TestCreateOrganisation(util.TestCase):
             'gyldighed'] = 'invalid'
         self._check_response_400()
 
-    @unittest.skip('When sending a JSON tilstand without gyldighed, '
-                   'we do not get a 400 status')
     def test_gyldighed_missing(self):
         """
         Equivalence classes covered: [26]
@@ -371,8 +362,6 @@ class TestCreateOrganisation(util.TestCase):
         del self.org['tilstande']['organisationgyldighed'][0]['gyldighed']
         self._check_response_400()
 
-    @unittest.skip('When sending a JSON attribute without virkning, '
-                   'we do not get a 400 status')
     def test_virkning_missing_tilstande(self):
         """
         Equivalence classes covered: [27]

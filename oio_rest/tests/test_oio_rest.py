@@ -92,7 +92,6 @@ class TestOIORestObjectCreateApi(TestCase):
 
 
 class TestOIORestObject(TestCase):
-
     db_struct = {
         'testclassrestobject': {
             'attributter': {'egenskaber': ['attribut']},
@@ -230,7 +229,32 @@ class TestOIORestObject(TestCase):
 
         mock.return_value = uuid
 
-        data = {'note': "NOTE"}
+        data = {
+            "note": "NOTE",
+            "attributter": {
+                "organisationegenskaber": [
+                    {
+                        "brugervendtnoegle": "bvn",
+                        "organisationsnavn": "name",
+                        "virkning": {
+                            "from": "2017-01-01 12:00:00",
+                            "to": "infinity"
+                        }
+                    }
+                ]
+            },
+            "tilstande": {
+                "organisationgyldighed": [
+                    {
+                        "gyldighed": "Aktiv",
+                        "virkning": {
+                            "from": "2017-01-01 12:00:00",
+                            "to": "infinity"
+                        }
+                    }
+                ]
+            },
+        }
 
         # Act
         with self.app.test_request_context(data=json.dumps(data),
@@ -268,7 +292,7 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='POST',
                                            query_string=params), \
-                self.assertRaises(BadRequestException):
+             self.assertRaises(BadRequestException):
             self.testclass.create_object()
 
     def test_get_fields(self):
@@ -278,9 +302,8 @@ class TestOIORestObject(TestCase):
                         "garbage": ["garbage"]}
 
         with self.app.test_request_context(method='GET'), \
-                patch("oio_rest.db_structure.REAL_DB_STRUCTURE",
-                      new=db_structure):
-
+             patch("oio_rest.db_structure.REAL_DB_STRUCTURE",
+                   new=db_structure):
             # Act
             actual_fields = json.loads(self.testclass.get_fields())
 
@@ -296,7 +319,7 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='GET',
                                            query_string=params), \
-                self.assertRaises(BadRequestException):
+             self.assertRaises(BadRequestException):
             self.testclass.get_fields()
 
     @freezegun.freeze_time('2017-01-01', tz_offset=1)
@@ -515,7 +538,7 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='GET',
                                            query_string=request_params), \
-                self.assertRaises(BadRequestException):
+             self.assertRaises(BadRequestException):
             self.testclass.get_objects()
 
     @patch('oio_rest.db_helpers.db_struct', new=db_struct)
@@ -532,7 +555,7 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='GET',
                                            query_string=request_params), \
-                self.assertRaises(BadRequestException):
+             self.assertRaises(BadRequestException):
             self.testclass.get_objects()
 
     @patch('oio_rest.oio_rest.db.list_objects')
@@ -630,7 +653,7 @@ class TestOIORestObject(TestCase):
 
         # Act
         with self.app.test_request_context(method='GET'), \
-                self.assertRaises(NotFoundException):
+             self.assertRaises(NotFoundException):
             self.testclass.get_object(uuid)
 
     @patch('oio_rest.oio_rest.db.list_objects')
@@ -651,7 +674,7 @@ class TestOIORestObject(TestCase):
 
         # Act
         with self.app.test_request_context(method='GET'), \
-                self.assertRaises(GoneException):
+             self.assertRaises(GoneException):
             self.testclass.get_object(uuid)
 
     @patch('oio_rest.db_helpers.db_struct', new=db_struct)
@@ -668,7 +691,7 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='GET',
                                            query_string=params), \
-                self.assertRaises(BadRequestException):
+             self.assertRaises(BadRequestException):
             self.testclass.get_object(uuid)
 
     def test_put_object_with_no_input_returns_uuid_none_and_code_400(
@@ -818,7 +841,7 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='PUT',
                                            query_string=params), \
-                self.assertRaises(BadRequestException):
+             self.assertRaises(BadRequestException):
             self.testclass.put_object(uuid)
 
     @patch("oio_rest.oio_rest.db.delete_object")
@@ -874,9 +897,8 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='PUT',
                                            query_string=params), \
-                self.assertRaises(BadRequestException):
+             self.assertRaises(BadRequestException):
             self.testclass.delete_object(uuid)
-
 
 
 class TestOIOStandardHierarchy(TestCase):
@@ -936,7 +958,6 @@ class TestOIOStandardHierarchy(TestCase):
 
         with patch("oio_rest.db_structure.REAL_DB_STRUCTURE",
                    new=db_structure):
-
             # Act
             self.testclass.setup_api(base_url="URL", flask=flask)
 
