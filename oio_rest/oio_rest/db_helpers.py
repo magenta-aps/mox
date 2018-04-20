@@ -54,9 +54,15 @@ def get_attribute_names(class_name):
     "Return the list of all recognized attributes for this class."
     if len(_attribute_names) == 0:
         for c in db_struct:
-            _attribute_names[c] = [
+            # unfortunately, the ordering of attribute names is of
+            # semantic importance to the database code, and the
+            # ordering isn't consistent in Python 3.5
+            #
+            # specifically, the two state types of 'aktivitet' can
+            # trigger occasional errors
+            _attribute_names[c] = sorted(
                 c + a for a in db_struct[c]['attributter']
-            ]
+            )
     return _attribute_names[class_name.lower()]
 
 
