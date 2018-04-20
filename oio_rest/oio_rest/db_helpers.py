@@ -111,16 +111,18 @@ def get_valid_search_parameters(class_name):
     # type: str -> set
     if len(_search_params) == 0:
         for c in db_struct:
-            attr_names = [a for attr in get_attribute_names(c) for a in
-                          get_attribute_fields(attr)]
+            params = set(
+                a
+                for attr in get_attribute_names(c)
+                for a in get_attribute_fields(attr)
+            )
 
-            rel_names = get_relation_names(c)
+            params.update(get_relation_names(c))
+            params.update(get_state_names(c))
+            params.update(GENERAL_SEARCH_PARAMS)
+            params.update(TEMPORALITY_PARAMS)
 
-            state_names = get_state_names(c).keys()
-
-            _search_params[c] = (set(attr_names + rel_names + state_names) |
-                                 GENERAL_SEARCH_PARAMS |
-                                 TEMPORALITY_PARAMS)
+            _search_params[c] = params
 
         # Add 'Dokument'-specific parameters not present in db_struct
         if _search_params.get('dokument'):
