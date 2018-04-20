@@ -8,6 +8,8 @@ from oio_rest.custom_exceptions import BadRequestException
 
 
 class TestDBHelpers(TestCase):
+    maxDiff = None
+
     def setUp(self):
         db_helpers._attribute_fields = {}
         db_helpers._attribute_names = {}
@@ -195,6 +197,65 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
+    def test_get_attribute_names_default(self):
+        # Arrange
+        expected_result = {
+            "itsystem": [
+                "itsystemegenskaber"
+            ],
+            "bruger": [
+                "brugeregenskaber"
+            ],
+            "organisation": [
+                "organisationegenskaber"
+            ],
+            "sag": [
+                "sagegenskaber"
+            ],
+            "organisationfunktion": [
+                "organisationfunktionegenskaber"
+            ],
+            "organisationenhed": [
+                "organisationenhedegenskaber"
+            ],
+            "facet": [
+                "facetegenskaber"
+            ],
+            "interessefaellesskab": [
+                "interessefaellesskabegenskaber"
+            ],
+            "loghaendelse": [
+                "loghaendelseegenskaber"
+            ],
+            "dokument": [
+                "dokumentegenskaber"
+            ],
+            "tilstand": [
+                "tilstandegenskaber"
+            ],
+            "klassifikation": [
+                "klassifikationegenskaber"
+            ],
+            "indsats": [
+                "indsatsegenskaber"
+            ],
+            "aktivitet": [
+                "aktivitetegenskaber"
+            ],
+            "klasse": [
+                "klasseegenskaber"
+            ]
+        }
+
+        # Act
+        actual_result = {
+            c: db_helpers.get_attribute_names(c)
+            for c in db_helpers.db_struct
+        }
+
+        # Assert
+        self.assertEqual(expected_result, actual_result)
+
     def test_get_attribute_names_uses_cache(self):
         # Arrange
         expected_result = ['value1', 'value2']
@@ -261,6 +322,231 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
+    def test_get_relation_names_default(self):
+        # Arrange
+        expected_result = {
+            "itsystem": [
+                "tilhoerer",
+                "tilknyttedeorganisationer",
+                "tilknyttedeenheder",
+                "tilknyttedefunktioner",
+                "tilknyttedebrugere",
+                "tilknyttedeinteressefaellesskaber",
+                "tilknyttedeitsystemer",
+                "tilknyttedepersoner",
+                "systemtyper",
+                "opgaver",
+                "adresser"
+            ],
+            "bruger": [
+                "tilhoerer",
+                "adresser",
+                "brugertyper",
+                "opgaver",
+                "tilknyttedeenheder",
+                "tilknyttedefunktioner",
+                "tilknyttedeinteressefaellesskaber",
+                "tilknyttedeorganisationer",
+                "tilknyttedepersoner",
+                "tilknyttedeitsystemer"
+            ],
+            "organisation": [
+                "branche",
+                "myndighed",
+                "myndighedstype",
+                "overordnet",
+                "produktionsenhed",
+                "skatteenhed",
+                "tilhoerer",
+                "virksomhed",
+                "virksomhedstype",
+                "adresser",
+                "ansatte",
+                "opgaver",
+                "tilknyttedebrugere",
+                "tilknyttedeenheder",
+                "tilknyttedefunktioner",
+                "tilknyttedeinteressefaellesskaber",
+                "tilknyttedeorganisationer",
+                "tilknyttedepersoner",
+                "tilknyttedeitsystemer"
+            ],
+            "sag": [
+                "behandlingarkiv",
+                "afleveringsarkiv",
+                "primaerklasse",
+                "opgaveklasse",
+                "handlingsklasse",
+                "kontoklasse",
+                "sikkerhedsklasse",
+                "foelsomhedsklasse",
+                "indsatsklasse",
+                "ydelsesklasse",
+                "ejer",
+                "ansvarlig",
+                "primaerbehandler",
+                "udlaanttil",
+                "primaerpart",
+                "ydelsesmodtager",
+                "oversag",
+                "praecedens",
+                "afgiftsobjekt",
+                "ejendomsskat",
+                "andetarkiv",
+                "andrebehandlere",
+                "sekundaerpart",
+                "andresager",
+                "byggeri",
+                "fredning",
+                "journalpost"
+            ],
+            "organisationfunktion": [
+                "organisatoriskfunktionstype",
+                "adresser",
+                "opgaver",
+                "tilknyttedebrugere",
+                "tilknyttedeenheder",
+                "tilknyttedeorganisationer",
+                "tilknyttedeitsystemer",
+                "tilknyttedeinteressefaellesskaber",
+                "tilknyttedepersoner"
+            ],
+            "organisationenhed": [
+                "branche",
+                "enhedstype",
+                "overordnet",
+                "produktionsenhed",
+                "skatteenhed",
+                "tilhoerer",
+                "adresser",
+                "ansatte",
+                "opgaver",
+                "tilknyttedebrugere",
+                "tilknyttedeenheder",
+                "tilknyttedefunktioner",
+                "tilknyttedeinteressefaellesskaber",
+                "tilknyttedeorganisationer",
+                "tilknyttedepersoner",
+                "tilknyttedeitsystemer"
+            ],
+            "facet": [
+                "ansvarlig",
+                "ejer",
+                "facettilhoerer",
+                "redaktoerer"
+            ],
+            "interessefaellesskab": [
+                "branche",
+                "interessefaellesskabstype",
+                "overordnet",
+                "tilhoerer",
+                "adresser",
+                "opgaver",
+                "tilknyttedebrugere",
+                "tilknyttedeenheder",
+                "tilknyttedefunktioner",
+                "tilknyttedeinteressefaellesskaber",
+                "tilknyttedeorganisationer",
+                "tilknyttedepersoner",
+                "tilknyttedeitsystemer"
+            ],
+            "loghaendelse": [
+                "objekt",
+                "bruger",
+                "brugerrolle"
+            ],
+            "dokument": [
+                "nyrevision",
+                "primaerklasse",
+                "ejer",
+                "ansvarlig",
+                "primaerbehandler",
+                "fordelttil",
+                "arkiver",
+                "besvarelser",
+                "udgangspunkter",
+                "kommentarer",
+                "bilag",
+                "andredokumenter",
+                "andreklasser",
+                "andrebehandlere",
+                "parter",
+                "kopiparter",
+                "tilknyttedesager"
+            ],
+            "tilstand": [
+                "tilstandsobjekt",
+                "tilstandstype",
+                "tilstandsvaerdi",
+                "begrundelse",
+                "tilstandskvalitet",
+                "tilstandsvurdering",
+                "tilstandsaktoer",
+                "tilstandsudstyr",
+                "samtykke",
+                "tilstandsdokument"
+            ],
+            "klassifikation": [
+                "ansvarlig",
+                "ejer"
+            ],
+            "indsats": [
+                "indsatsmodtager",
+                "indsatstype",
+                "indsatskvalitet",
+                "indsatsaktoer",
+                "samtykke",
+                "indsatssag",
+                "indsatsdokument"
+            ],
+            "aktivitet": [
+                "aktivitetstype",
+                "emne",
+                "foelsomhedklasse",
+                "ansvarligklasse",
+                "rekvirentklasse",
+                "ansvarlig",
+                "tilhoerer",
+                "udfoererklasse",
+                "deltagerklasse",
+                "objektklasse",
+                "resultatklasse",
+                "grundlagklasse",
+                "facilitetklasse",
+                "adresse",
+                "geoobjekt",
+                "position",
+                "facilitet",
+                "lokale",
+                "aktivitetdokument",
+                "aktivitetgrundlag",
+                "aktivitetresultat",
+                "udfoerer",
+                "deltager"
+            ],
+            "klasse": [
+                "ejer",
+                "ansvarlig",
+                "overordnetklasse",
+                "facet",
+                "redaktoerer",
+                "sideordnede",
+                "mapninger",
+                "tilfoejelser",
+                "erstatter",
+                "lovligekombinationer"
+            ]
+        }
+
+        # Act
+        actual_result = {
+            c: db_helpers.get_relation_names(c)
+            for c in db_helpers.db_struct
+        }
+
+        # Assert
+        self.assertEqual(expected_result, actual_result)
+
     def test_get_relation_names_uses_cache(self):
         # Arrange
 
@@ -269,6 +555,138 @@ class TestDBHelpers(TestCase):
 
         # Act
         actual_result = db_helpers.get_relation_names('testclass1')
+
+        # Assert
+        self.assertEqual(expected_result, actual_result)
+
+    def test_get_state_names_default(self):
+        # Arrange
+        expected_result = {
+            "itsystem": {
+                "gyldighed": [
+                    "Aktiv",
+                    "Inaktiv"
+                ]
+            },
+            "bruger": {
+                "gyldighed": [
+                    "Aktiv",
+                    "Inaktiv"
+                ]
+            },
+            "organisation": {
+                "gyldighed": [
+                    "Aktiv",
+                    "Inaktiv"
+                ]
+            },
+            "sag": {
+                "fremdrift": [
+                    "Opstaaet",
+                    "Oplyst",
+                    "Afgjort",
+                    "Bestilt",
+                    "Udfoert",
+                    "Afsluttet"
+                ]
+            },
+            "organisationfunktion": {
+                "gyldighed": [
+                    "Aktiv",
+                    "Inaktiv"
+                ]
+            },
+            "organisationenhed": {
+                "gyldighed": [
+                    "Aktiv",
+                    "Inaktiv"
+                ]
+            },
+            "facet": {
+                "publiceret": [
+                    "Publiceret",
+                    "IkkePubliceret"
+                ]
+            },
+            "interessefaellesskab": {
+                "gyldighed": [
+                    "Aktiv",
+                    "Inaktiv"
+                ]
+            },
+            "loghaendelse": {
+                "gyldighed": [
+                    "Rettet",
+                    "Ikke rettet"
+                ]
+            },
+            "dokument": {
+                "fremdrift": [
+                    "Modtaget",
+                    "Fordelt",
+                    "Underudarbejdelse",
+                    "Underreview",
+                    "Publiceret",
+                    "Endeligt",
+                    "Afleveret"
+                ]
+            },
+            "tilstand": {
+                "status": [
+                    "Inaktiv",
+                    "Aktiv"
+                ],
+                "publiceret": [
+                    "Publiceret",
+                    "IkkePubliceret",
+                    "Normal"
+                ]
+            },
+            "klassifikation": {
+                "publiceret": [
+                    "Publiceret",
+                    "IkkePubliceret"
+                ]
+            },
+            "indsats": {
+                "publiceret": [
+                    "Publiceret",
+                    "IkkePubliceret",
+                    "Normal"
+                ],
+                "fremdrift": [
+                    "Uoplyst",
+                    "Visiteret",
+                    "Disponeret",
+                    "Leveret",
+                    "Vurderet"
+                ]
+            },
+            "aktivitet": {
+                "status": [
+                    "Inaktiv",
+                    "Aktiv",
+                    "Aflyst"
+                ],
+                "publiceret": [
+                    "Publiceret",
+                    "IkkePubliceret",
+                    "Normal"
+                ]
+            },
+            "klasse": {
+                "publiceret": [
+                    "Publiceret",
+                    "IkkePubliceret"
+                ]
+            }
+        }
+
+        # Act
+        actual_result = {
+            c: db_helpers.get_state_names(c)
+            for c in db_helpers.db_struct
+        }
 
         # Assert
         self.assertEqual(expected_result, actual_result)
