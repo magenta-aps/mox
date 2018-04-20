@@ -23,9 +23,10 @@ def get_attribute_fields(attribute_name):
         "Initialize attr fields for ease of use."
         for c in db_struct:
             for a in db_struct[c]["attributter"]:
-                _attribute_fields[
-                    c + a
-                ] = db_struct[c]["attributter"][a] + ['virkning']
+                if not a == 'required_egenskaber':
+                    _attribute_fields[
+                        c + a
+                        ] = db_struct[c]["attributter"][a] + ['virkning']
     return _attribute_fields[attribute_name.lower()]
 
 
@@ -55,7 +56,8 @@ def get_attribute_names(class_name):
     if len(_attribute_names) == 0:
         for c in db_struct:
             _attribute_names[c] = [
-                c + a for a in db_struct[c]['attributter']
+                c + a for a in db_struct[c]['attributter'] if
+                not a == 'required_egenskaber'
             ]
     return _attribute_names[class_name.lower()]
 
@@ -77,7 +79,7 @@ def get_relation_names(class_name):
         for c in db_struct:
             _relation_names[c] = [
                 a for a in db_struct[c]['relationer_nul_til_en'] +
-                [b for b in db_struct[c]['relationer_nul_til_mange']]
+                           [b for b in db_struct[c]['relationer_nul_til_mange']]
             ]
     return _relation_names[class_name.lower()]
 
@@ -125,9 +127,9 @@ def get_valid_search_parameters(class_name):
         # Add 'Dokument'-specific parameters not present in db_struct
         if _search_params.get('dokument'):
             _search_params['dokument'].update([
-                'varianttekst', 'deltekst'] +
-                get_document_part_relation_names()
-            )
+                                                  'varianttekst', 'deltekst'] +
+                                              get_document_part_relation_names()
+                                              )
 
     return _search_params[class_name.lower()]
 
