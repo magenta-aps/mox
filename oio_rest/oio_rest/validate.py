@@ -204,7 +204,7 @@ def _generate_relationer(obj):
     }
 
 
-def _get_object_type(req):
+def get_lora_object_type(req):
     """
     Get the LoRa object type from the request.
     :param req: The JSON body from the LoRa request.
@@ -236,14 +236,14 @@ def _get_object_type(req):
     return req['attributter'].keys()[0].split('egenskaber')[0]
 
 
-def generate_json_schema(req):
+def generate_json_schema(obj):
     """
     Generate the JSON schema corresponding to LoRa object type.
-    :param req: The JSON body from the LoRa request.
+    :param obj: The LoRa object type, i.e. 'bruger', 'organisation',...
     :return: Dictionary representing the JSON schema.
     """
 
-    obj = _get_object_type(req)
+    # obj = get_lora_object_type(req)
 
     return {
         '$schema': "http://json-schema.org/schema#",
@@ -275,9 +275,14 @@ def generate_json_schema(req):
         'required': ['attributter', 'tilstande'],
     }
 
+SCHEMA = {
+    obj: generate_json_schema(obj) for obj in db.REAL_DB_STRUCTURE.keys()
+}
+
 # Will be cleaned up later...
 
 # if __name__ == '__main__':
 #     print(json.dumps(generate_json_schema({'attributter': {
 #         'tilstandegenskaber': []
 #     }}), indent=2))
+

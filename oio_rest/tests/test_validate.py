@@ -329,7 +329,8 @@ class TestGenerateTilstande(unittest.TestCase):
                 "organisationegenskaber": []
             }
         }
-        self.assertEqual('organisation', validate._get_object_type(quasi_org))
+        self.assertEqual('organisation',
+                         validate.get_lora_object_type(quasi_org))
 
     def test_object_type_is_organisationenhed(self):
         quasi_org_enhed = {
@@ -338,7 +339,7 @@ class TestGenerateTilstande(unittest.TestCase):
             }
         }
         self.assertEqual('organisationenhed',
-                         validate._get_object_type(quasi_org_enhed))
+                         validate.get_lora_object_type(quasi_org_enhed))
 
     def test_raise_exception_if_obj_egenskaber_not_set(self):
         quasi_org = {
@@ -347,7 +348,7 @@ class TestGenerateTilstande(unittest.TestCase):
             }
         }
         with self.assertRaises(jsonschema.exceptions.ValidationError):
-            validate._get_object_type(quasi_org)
+            validate.get_lora_object_type(quasi_org)
 
     def test_raise_exception_if_attributter_not_set(self):
         quasi_org = {
@@ -356,11 +357,12 @@ class TestGenerateTilstande(unittest.TestCase):
             }
         }
         with self.assertRaises(jsonschema.exceptions.ValidationError):
-            validate._get_object_type(quasi_org)
+            validate.get_lora_object_type(quasi_org)
 
     def test_create_facet_request_valid(self):
         req = self._json_to_dict('facet_opret.json')
-        jsonschema.validate(req, validate.generate_json_schema(req))
+        obj = validate.get_lora_object_type(req)
+        jsonschema.validate(req, validate.SCHEMA[obj])
 
     def test_create_facet_request_invalid(self):
         req = self._json_to_dict('facet_opret.json')
@@ -370,36 +372,45 @@ class TestGenerateTilstande(unittest.TestCase):
             req['attributter']['facetegenskaber'][0].pop('supplement')
 
         with self.assertRaises(jsonschema.exceptions.ValidationError):
-            jsonschema.validate(req, validate.generate_json_schema(req)),
+            obj = validate.get_lora_object_type(req)
+            jsonschema.validate(req, validate.SCHEMA[obj])
 
     def test_create_bruger_request_valid(self):
         req = self._json_to_dict('bruger_opret.json')
-        jsonschema.validate(req, validate.generate_json_schema(req))
+        obj = validate.get_lora_object_type(req)
+        jsonschema.validate(req, validate.SCHEMA[obj])
 
     def test_create_klassifikation_request_valid(self):
         req = self._json_to_dict('klassifikation_opret.json')
-        jsonschema.validate(req, validate.generate_json_schema(req))
+        obj = validate.get_lora_object_type(req)
+        jsonschema.validate(req, validate.SCHEMA[obj])
 
     def test_create_klasse_request_valid(self):
         req = self._json_to_dict('klasse_opret.json')
-        jsonschema.validate(req, validate.generate_json_schema(req))
+        obj = validate.get_lora_object_type(req)
+        jsonschema.validate(req, validate.SCHEMA[obj])
 
     def test_create_aktivitet_request_valid(self):
         req = self._json_to_dict('aktivitet_opret.json')
-        jsonschema.validate(req, validate.generate_json_schema(req))
+        obj = validate.get_lora_object_type(req)
+        jsonschema.validate(req, validate.SCHEMA[obj])
 
     def test_create_tilstand_request_valid(self):
         req = self._json_to_dict('tilstand_opret.json')
-        jsonschema.validate(req, validate.generate_json_schema(req))
+        obj = validate.get_lora_object_type(req)
+        jsonschema.validate(req, validate.SCHEMA[obj])
 
     def test_create_indsats_request_valid(self):
         req = self._json_to_dict('indsats_opret.json')
-        jsonschema.validate(req, validate.generate_json_schema(req))
+        obj = validate.get_lora_object_type(req)
+        jsonschema.validate(req, validate.SCHEMA[obj])
 
     def test_create_itsystem_request_valid(self):
         req = self._json_to_dict('itsystem_opret.json')
-        jsonschema.validate(req, validate.generate_json_schema(req))
+        obj = validate.get_lora_object_type(req)
+        jsonschema.validate(req, validate.SCHEMA[obj])
 
     def test_create_loghaendelse_request_valid(self):
         req = self._json_to_dict('loghaendelse_opret.json')
-        jsonschema.validate(req, validate.generate_json_schema(req))
+        obj = validate.get_lora_object_type(req)
+        jsonschema.validate(req, validate.SCHEMA[obj])
