@@ -267,38 +267,60 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.db_helpers.db_struct', new={
-        'testclass1': {
-            'tilstande': {
-                'testtilstand1': [
-                    'value1',
-                    'value2'
-                ],
-                'testtilstand2': [
-                    'value3',
-                    'value4'
-                ]
-            }
-        }
-    })
     def test_get_state_names(self):
-        # Arrange
-        expected_result = {
-            'testtilstand1': [
-                'value1',
-                'value2'
-            ],
-            'testtilstand2': [
-                'value3',
-                'value4'
+        with patch('oio_rest.db_helpers.db_struct', new={
+            'testclass1': {
+                'tilstande': {
+                    'testtilstand1': [
+                        'value1',
+                        'value2'
+                    ],
+                    'testtilstand2': [
+                        'value3',
+                        'value4'
+                    ]
+                }
+            }
+        }):
+            # Arrange
+            expected_result = [
+                'testtilstand1',
+                'testtilstand2',
             ]
-        }
 
-        # Act
-        actual_result = db_helpers.get_state_names('testclass1')
+            # Act
+            actual_result = db_helpers.get_state_names('testclass1')
 
-        # Assert
-        self.assertEqual(expected_result, actual_result)
+            # Assert
+            self.assertEqual(expected_result, sorted(actual_result))
+
+        with patch('oio_rest.db_helpers.db_struct', new={
+            'testclass1': {
+                'tilstande': [
+                    'testtilstand1',
+                    [
+                        'value1',
+                        'value2'
+                    ],
+                    'testtilstand2',
+                    [
+                        'value3',
+                        'value4'
+                    ]
+                ],
+            },
+        }):
+            # Arrange
+            expected_result = [
+                'testtilstand1',
+                'testtilstand2',
+            ]
+
+            # Act
+            actual_result = db_helpers.get_state_names('testclass1')
+
+            # Assert
+            self.assertEqual(expected_result, actual_result)
 
     @patch('oio_rest.db_helpers.db_struct', new={
         'testclass1': {
@@ -621,124 +643,54 @@ class TestDBHelpers(TestCase):
     def test_get_state_names_default(self):
         # Arrange
         expected_result = {
-            "itsystem": {
-                "gyldighed": [
-                    "Aktiv",
-                    "Inaktiv"
-                ]
-            },
-            "bruger": {
-                "gyldighed": [
-                    "Aktiv",
-                    "Inaktiv"
-                ]
-            },
-            "organisation": {
-                "gyldighed": [
-                    "Aktiv",
-                    "Inaktiv"
-                ]
-            },
-            "sag": {
-                "fremdrift": [
-                    "Opstaaet",
-                    "Oplyst",
-                    "Afgjort",
-                    "Bestilt",
-                    "Udfoert",
-                    "Afsluttet"
-                ]
-            },
-            "organisationfunktion": {
-                "gyldighed": [
-                    "Aktiv",
-                    "Inaktiv"
-                ]
-            },
-            "organisationenhed": {
-                "gyldighed": [
-                    "Aktiv",
-                    "Inaktiv"
-                ]
-            },
-            "facet": {
-                "publiceret": [
-                    "Publiceret",
-                    "IkkePubliceret"
-                ]
-            },
-            "interessefaellesskab": {
-                "gyldighed": [
-                    "Aktiv",
-                    "Inaktiv"
-                ]
-            },
-            "loghaendelse": {
-                "gyldighed": [
-                    "Rettet",
-                    "Ikke rettet"
-                ]
-            },
-            "dokument": {
-                "fremdrift": [
-                    "Modtaget",
-                    "Fordelt",
-                    "Underudarbejdelse",
-                    "Underreview",
-                    "Publiceret",
-                    "Endeligt",
-                    "Afleveret"
-                ]
-            },
-            "tilstand": {
-                "status": [
-                    "Inaktiv",
-                    "Aktiv"
-                ],
-                "publiceret": [
-                    "Publiceret",
-                    "IkkePubliceret",
-                    "Normal"
-                ]
-            },
-            "klassifikation": {
-                "publiceret": [
-                    "Publiceret",
-                    "IkkePubliceret"
-                ]
-            },
-            "indsats": {
-                "publiceret": [
-                    "Publiceret",
-                    "IkkePubliceret",
-                    "Normal"
-                ],
-                "fremdrift": [
-                    "Uoplyst",
-                    "Visiteret",
-                    "Disponeret",
-                    "Leveret",
-                    "Vurderet"
-                ]
-            },
-            "aktivitet": {
-                "status": [
-                    "Inaktiv",
-                    "Aktiv",
-                    "Aflyst"
-                ],
-                "publiceret": [
-                    "Publiceret",
-                    "IkkePubliceret",
-                    "Normal"
-                ]
-            },
-            "klasse": {
-                "publiceret": [
-                    "Publiceret",
-                    "IkkePubliceret"
-                ]
-            }
+            "itsystem": [
+                "gyldighed",
+            ],
+            "bruger": [
+                "gyldighed"
+            ],
+            "organisation": [
+                "gyldighed"
+            ],
+            "sag": [
+                "fremdrift"
+            ],
+            "organisationfunktion": [
+                "gyldighed"
+            ],
+            "organisationenhed": [
+                "gyldighed"
+            ],
+            "facet": [
+                "publiceret"
+            ],
+            "interessefaellesskab": [
+                "gyldighed"
+            ],
+            "loghaendelse": [
+                "gyldighed"
+            ],
+            "dokument": [
+                "fremdrift"
+            ],
+            "tilstand": [
+                "status",
+                "publiceret"
+            ],
+            "klassifikation": [
+                "publiceret"
+            ],
+            "indsats": [
+                "publiceret",
+                "fremdrift"
+            ],
+            "aktivitet": [
+                "status",
+                "publiceret"
+            ],
+            "klasse": [
+                "publiceret"
+            ]
         }
 
         # Act

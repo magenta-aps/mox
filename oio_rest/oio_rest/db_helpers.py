@@ -71,7 +71,12 @@ _state_names = {}
 
 def get_state_names(class_name):
     "Return the list of all recognized states for this class."
-    return db_struct[class_name.lower()]['tilstande']
+    states = db_struct[class_name.lower()]['tilstande']
+
+    if isinstance(states, list):
+        return states[::2]
+    else:
+        return list(states)
 
 
 _relation_names = {}
