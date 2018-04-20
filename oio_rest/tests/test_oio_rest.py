@@ -878,7 +878,6 @@ class TestOIORestObject(TestCase):
             self.testclass.delete_object(uuid)
 
 
-
 class TestOIOStandardHierarchy(TestCase):
     def setUp(self):
         self.testclass = TestClassStandardHierarchy()

@@ -1,3 +1,4 @@
+import itertools
 import uuid
 from werkzeug.datastructures import MultiDict
 
@@ -205,11 +206,11 @@ def build_registration(class_name, list_args):
 def restriction_to_registration(class_name, restriction):
     states, attributes, relations = restriction
 
-    def flatten(d):
-        return [(k, v) for k, v in d.items()]
-
-    all_fields = MultiDict(flatten(states) + flatten(attributes) +
-                           flatten(relations))
+    all_fields = MultiDict(itertools.chain(
+        states.viewitems(),
+        attributes.viewitems(),
+        relations.viewitems(),
+    ))
     list_args = {k.lower(): all_fields.getlist(k) for k in all_fields}
 
     return build_registration(class_name, list_args)

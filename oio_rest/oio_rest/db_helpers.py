@@ -32,7 +32,7 @@ def get_attribute_fields(attribute_name):
 def get_field_type(attribute_name, field_name):
     for c in db_struct:
         if "attributter_type_override" in db_struct[c]:
-            for a, fs in db_struct[c]["attributter_type_override"].items():
+            for a, fs in db_struct[c]["attributter_type_override"].iteritems():
                 if attribute_name == c + a:
                     if field_name in fs:
                         return fs[field_name]
@@ -54,9 +54,15 @@ def get_attribute_names(class_name):
     "Return the list of all recognized attributes for this class."
     if len(_attribute_names) == 0:
         for c in db_struct:
-            _attribute_names[c] = [
+            # unfortunately, the ordering of attribute names is of
+            # semantic importance to the database code, and the
+            # ordering isn't consistent in Python 3.5
+            #
+            # specifically, the two state types of 'aktivitet' can
+            # trigger occasional errors
+            _attribute_names[c] = sorted(
                 c + a for a in db_struct[c]['attributter']
-            ]
+            )
     return _attribute_names[class_name.lower()]
 
 
@@ -65,7 +71,12 @@ _state_names = {}
 
 def get_state_names(class_name):
     "Return the list of all recognized states for this class."
-    return db_struct[class_name.lower()]['tilstande']
+    states = db_struct[class_name.lower()]['tilstande']
+
+    if isinstance(states, list):
+        return states[::2]
+    else:
+        return list(states)
 
 
 _relation_names = {}
@@ -111,16 +122,18 @@ def get_valid_search_parameters(class_name):
     # type: str -> set
     if len(_search_params) == 0:
         for c in db_struct:
-            attr_names = [a for attr in get_attribute_names(c) for a in
-                          get_attribute_fields(attr)]
+            params = set(
+                a
+                for attr in get_attribute_names(c)
+                for a in get_attribute_fields(attr)
+            )
 
-            rel_names = get_relation_names(c)
+            params.update(get_relation_names(c))
+            params.update(get_state_names(c))
+            params.update(GENERAL_SEARCH_PARAMS)
+            params.update(TEMPORALITY_PARAMS)
 
-            state_names = get_state_names(c).keys()
-
-            _search_params[c] = (set(attr_names + rel_names + state_names) |
-                                 GENERAL_SEARCH_PARAMS |
-                                 TEMPORALITY_PARAMS)
+            _search_params[c] = params
 
         # Add 'Dokument'-specific parameters not present in db_struct
         if _search_params.get('dokument'):
@@ -178,7 +191,7 @@ def input_dict_list(_type, input):
     if input is None:
         return None
     else:
-        return [_type.input(k, v) for k in input.keys() for v in input[k]]
+        return [_type.input(k, v) for k in input for v in input[k]]
 
 
 def to_bool(s):

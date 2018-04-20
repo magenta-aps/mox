@@ -2,9 +2,12 @@ import sys
 from unittest import TestCase
 
 import requests
+import requests_mock
 from mock import MagicMock, patch
 
 from oio_rest.auth import tokens
+
+from . import util
 
 
 class TestTokens(TestCase):
@@ -284,3 +287,62 @@ class TestTokens(TestCase):
         # Assert
         self.assertEqual(0, actual_code)
         mock_urllib3_dw.assert_called()
+
+    @requests_mock.mock()
+    @patch('oio_rest.settings.SAML_IDP_URL', 'http://example.com/auth')
+    @patch('oio_rest.settings.SAML_IDP_TYPE', 'wso2')
+    def test_wso2_login(self, m):
+        m.post(
+            'http://example.com/auth',
+            text=util.get_fixture('wso2-successful-login.xml'),
+        )
+
+        assertion = util.get_fixture('wso2-assertion.txt')
+
+        self.assertEqual(assertion, tokens.get_token('hest', 'fest'))
+
+    @requests_mock.mock()
+    @patch('oio_rest.settings.SAML_IDP_URL', 'http://example.com/auth')
+    @patch('oio_rest.settings.SAML_IDP_TYPE', 'adfs')
+    def test_adfs_login(self, m):
+        m.post(
+            'http://example.com/auth',
+            text=util.get_fixture('adfs-successful-login.xml'),
+        )
+
+        assertion = util.get_fixture('adfs-assertion.txt')
+
+        self.assertEqual(assertion, tokens.get_token('hest', 'fest'))
+
+    @requests_mock.mock()
+    @patch('oio_rest.settings.SAML_IDP_URL', 'http://example.com/auth')
+    @patch('oio_rest.settings.SAML_IDP_TYPE', 'wso2')
+    def test_wso2_login_failure(self, m):
+        m.post(
+            'http://example.com/auth',
+            text=util.get_fixture('wso2-failed-login.xml'),
+        )
+
+        with self.assertRaises(Exception) as cm:
+            tokens.get_token('hest', 'fest')
+
+        self.assertEqual(cm.exception.args, (
+            'The security token could not be authenticated or authorized',
+        ))
+
+    @requests_mock.mock()
+    @patch('oio_rest.settings.SAML_IDP_URL', 'http://example.com/auth')
+    @patch('oio_rest.settings.SAML_IDP_TYPE', 'adfs')
+    def test_adfs_login_failure(self, m):
+        m.post(
+            'http://example.com/auth',
+            text=util.get_fixture('adfs-failed-login.xml'),
+        )
+
+        with self.assertRaises(Exception) as cm:
+            tokens.get_token('hest', 'fest')
+
+        self.assertEqual(cm.exception.args, (
+            'ID3242: The security token could not be authenticated '
+            'or authorized.',
+        ))

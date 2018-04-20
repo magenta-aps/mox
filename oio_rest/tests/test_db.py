@@ -1,5 +1,5 @@
 import datetime
-from unittest import TestCase
+import unittest
 
 from mock import MagicMock, call, patch
 
@@ -8,7 +8,7 @@ from oio_rest.custom_exceptions import (BadRequestException, DBException,
                                         NotFoundException)
 
 
-class TestDB(TestCase):
+class TestDB(unittest.TestCase):
     @patch('oio_rest.db.psycopg2')
     def test_get_connection(self, mock):
         # Arrange
@@ -549,14 +549,14 @@ class TestDB(TestCase):
 
         value = "1 day"
 
-        expected_result = datetime.timedelta(1)
+        expected_result = "'1 day' :: interval"
 
         # Act
         actual_result = db.convert_attr_value("attribute_name",
                                               "attribute_field_name",
                                               value)
         # Assert
-        self.assertEqual(expected_result, actual_result)
+        self.assertEqual(expected_result, str(actual_result))
 
     @patch('oio_rest.db.transform_virkning')
     @patch('oio_rest.db.filter_empty')
@@ -1028,7 +1028,7 @@ class TestDB(TestCase):
 
 
 @patch("oio_rest.db.sql_convert_registration", new=MagicMock())
-class TestDBObjectFunctions(TestCase):
+class TestDBObjectFunctions(unittest.TestCase):
     @patch("oio_rest.db.get_connection")
     @patch("oio_rest.db.jinja_env")
     def test_update_object_returns_uuid(self,
@@ -1063,7 +1063,7 @@ class TestDBObjectFunctions(TestCase):
                             "registrering_til")
 
 
-class TestDBGeneralSQL(TestCase):
+class TestDBGeneralSQL(unittest.TestCase):
     @patch('oio_rest.db.sql_attribute_array')
     @patch('oio_rest.db.sql_relations_array')
     @patch('oio_rest.db.get_attribute_names')
@@ -1217,7 +1217,7 @@ class TestDBGeneralSQL(TestCase):
 @patch("oio_rest.db.sql_get_registration", new=MagicMock())
 @patch("oio_rest.db.sql_convert_registration", new=MagicMock())
 @patch("oio_rest.db.jinja_env.get_template", new=MagicMock())
-class TestPGErrors(TestCase):
+class TestPGErrors(unittest.TestCase):
     class TestException(Exception):
         def __init__(self):
             self.pgcode = 'MO123'
@@ -1293,29 +1293,6 @@ class TestPGErrors(TestCase):
         # Act
         with self.assertRaises(DBException):
             db.create_or_import_object('', '', '', '')
-
-    @patch("oio_rest.db.psycopg2.Error", new=TestException)
-    def test_create_or_import_object_raises_on_noop_pgerror(self,
-                                                            mock_get_conn):
-        # type: (MagicMock) -> None
-
-        # Arrange
-        class_name = 'class'
-        uuid = '61ae604b-e7fb-4892-a09a-55e5f6822435'
-        exception = TestPGErrors.TestException()
-        exception.message = ('Aborted updating {} with id [{}] as the given '
-                             'data, does not give raise to a new '
-                             'registration.').format(
-            class_name, uuid
-        )
-        exception.pgcode = '12345'
-
-        mock_get_conn.return_value.cursor.return_value = cursor = MagicMock()
-        cursor.execute.side_effect = exception
-
-        # Act
-        with self.assertRaises(DBException):
-            db.create_or_import_object(class_name, '', '', uuid)
 
     @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_create_or_import_object_raises_on_unknown_pgerror(self,
