@@ -12,6 +12,8 @@ import db_structure as db
 UUID_PATTERN = '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-' \
                '[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$'
 
+# LoRa object types
+
 AKTIVITET = 'aktivitet'
 DOKUMENT = 'dokument'
 INDSATS = 'indsats'
@@ -20,18 +22,25 @@ KLASSE = 'klasse'
 SAG = 'sag'
 TILSTAND = 'tilstand'
 
+# Primitive JSON schema types
+BOOLEAN = {'type': 'boolean'}
+INTEGER = {'type': 'integer'}
+STRING = {'type': 'string'}
 
-def _handle_special_egenskaber(obj, egenskaber):
-    offentlighed_undtaget = {
+
+def _generate_schema_object(properties, required, kwargs=None):
+    schema_obj = {
         'type': 'object',
-        'properties': {
-            'alternativtitel': {'type': 'string'},
-            'hjemmel': {'type': 'string'}
-        },
-        'required': ['alternativtitel', 'hjemmel'],
+        'properties': properties,
+        'required': required,
         'additionalProperties': False
     }
+    if kwargs:
+        schema_obj.update(kwargs)
+    return schema_obj
 
+
+def _handle_special_egenskaber(obj, egenskaber):
     if obj == KLASSE:
         egenskaber['soegeord'] = {
             'type': 'array',
@@ -49,7 +58,8 @@ def _handle_special_egenskaber(obj, egenskaber):
     if obj == SAG:
         egenskaber['afleveret'] = {'type': 'boolean'}
         egenskaber['principiel'] = {'type': 'boolean'}
-        egenskaber['offentlighedundtaget'] = offentlighed_undtaget
+        egenskaber['offentlighedundtaget'] = {
+            '$ref': '#/definitions/offentlighedundtaget'}
 
     return egenskaber
 
@@ -72,23 +82,16 @@ def _generate_attributter(obj):
 
     egenskaber = _handle_special_egenskaber(obj, egenskaber)
 
-    return {
-        'type': 'object',
-        'properties': {
+    return _generate_schema_object(
+        {
             egenskaber_name: {
                 'type': 'array',
-                'items': {
-                    'type': 'object',
-                    'properties': egenskaber,
-                    'required': db_attributter['required_egenskaber'] + [
-                        'virkning'],
-                    'additionalProperties': False
-                }
+                'items': _generate_schema_object(egenskaber, db_attributter[
+                    'required_egenskaber'] + ['virkning'])
             }
         },
-        'required': [egenskaber_name],
-        'additionalProperties': False
-    }
+        [egenskaber_name]
+    )
 
 
 def _generate_tilstande(obj):
@@ -107,37 +110,29 @@ def _generate_tilstande(obj):
 
         properties[tilstand_name] = {
             'type': 'array',
-            'items': {
-                'type': 'object',
-                'properties': {
+            'items': _generate_schema_object(
+                {
                     key: {
                         'type': 'string',
                         'enum': tilstande[key]
                     },
                     'virkning': {'$ref': '#/definitions/virkning'},
                 },
-                'required': [key, 'virkning'],
-                'additionalProperties': False
-            }
+                [key, 'virkning']
+            )
         }
 
         required.append(tilstand_name)
 
-    return {
-        'type': 'object',
-        'properties': properties,
-        'required': required,
-        'additionalProperties': False
-    }
+    return _generate_schema_object(properties, required)
 
 
 def _handle_special_relations_all(obj, relation):
     if obj in [AKTIVITET, INDSATS, SAG, TILSTAND]:
-        relation['items']['properties']['indeks'] = {'type': 'integer'}
+        relation['items']['properties']['indeks'] = INTEGER
     if obj == AKTIVITET:
-        relation['items']['properties']['aktoerattr'] = {
-            'type': 'object',
-            'properties': {
+        relation['items']['properties']['aktoerattr'] = _generate_schema_object(
+            {
                 'accepteret': {'type': 'string'},
                 'obligatorisk': {'type': 'string'},
                 'repraesentation_uuid': {
@@ -145,10 +140,8 @@ def _handle_special_relations_all(obj, relation):
                     'pattern': UUID_PATTERN
                 },
             },
-            'required': ['accepteret', 'obligatorisk', 'repraesentation_uuid'],
-            'additionalProperties': False,
-            'maxItems': 1
-        }
+            ['accepteret', 'obligatorisk', 'repraesentation_uuid']
+        )
     return relation
 
 
@@ -189,19 +182,9 @@ def _handle_special_relations_specific(obj, relation_schema):
             'properties': {
                 'dokumenttitel': {'type': 'string'},
                 'offentlighedundtaget': {
-                    'type': 'object',
-                    'properties': {
-                        'alternativtitel': {'type': 'string'},
-                        'hjemmel': {'type': 'string'}
-                    },
-                    'required': ['alternativtitel', 'hjemmel'],
-                    'additionalProperties': False
-                }
+                    '$ref': '#/definitions/offentlighedundtaget'}
             }
         }
-
-        # TODO: refactor!
-
         relation_schema['journalpost']['items']['required'].append(
             'journalpostkode')
 
@@ -316,6 +299,15 @@ def generate_json_schema(obj):
                     'notetekst': {'type': 'string'},
                 },
                 'required': ['from', 'to'],
+                'additionalProperties': False
+            },
+            'offentlighedundtaget': {
+                'type': 'object',
+                'properties': {
+                    'alternativtitel': {'type': 'string'},
+                    'hjemmel': {'type': 'string'}
+                },
+                'required': ['alternativtitel', 'hjemmel'],
                 'additionalProperties': False
             }
         },
