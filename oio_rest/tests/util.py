@@ -71,6 +71,20 @@ def initdb(psql):
             ),
         )
 
+        curs.execute(
+            "ALTER DATABASE {} SET datestyle TO 'ISO, YMD'"
+            .format(
+                settings.DATABASE,
+            ),
+        )
+
+        curs.execute(
+            "ALTER DATABASE {} SET intervalstyle TO 'sql_standard'"
+            .format(
+                settings.DATABASE,
+            ),
+        )
+
     def do_psql(**kwargs):
         cmd = [
             'psql',

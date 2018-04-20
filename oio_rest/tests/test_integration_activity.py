@@ -26,7 +26,7 @@ class Tests(util.TestCase):
                         'formaal': 'Ja',
                         'sluttidspunkt': '2016-05-19T16:02:32+02:00',
                         'starttidspunkt': '2014-05-19T14:02:32+02:00',
-                        'tidsforbrug': '02:00:00',
+                        'tidsforbrug': '2:00:00',
                         'virkning': {
                             'aktoerref': 'ddc99abd-c1b0-48c2-aef7-'
                             '74fea841adae',
@@ -169,7 +169,7 @@ class Tests(util.TestCase):
                         'formaal': 'Ja',
                         'sluttidspunkt': '2016-05-19T16:02:32+02:00',
                         'starttidspunkt': '2014-05-19T14:02:32+02:00',
-                        'tidsforbrug': '00:00:00',
+                        'tidsforbrug': '0',
                         'virkning': {
                             'aktoerref': 'ddc99abd-c1b0-48c2-aef7-'
                             '74fea841adae',
