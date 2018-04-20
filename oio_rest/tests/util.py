@@ -14,6 +14,7 @@ import pprint
 import subprocess
 
 import flask_testing
+import mock
 import testing.postgresql
 import psycopg2
 
@@ -128,8 +129,17 @@ class TestCaseMixin(object):
 
         self.psql = self.psql_factory()
 
-        settings.LOG_AMQP_SERVER = None
-        settings.DB_PORT = self.psql.dsn()['port']
+        dsn = self.psql.dsn()
+
+        self.patches = [
+            mock.patch('oio_rest.settings.LOG_AMQP_SERVER', None),
+            mock.patch('oio_rest.settings.DB_PORT', dsn['port'],
+                       create=True),
+        ]
+
+        for p in self.patches:
+            p.start()
+            self.addCleanup(p.stop)
 
         if hasattr(db.adapt, 'connection'):
             del db.adapt.connection
@@ -137,8 +147,6 @@ class TestCaseMixin(object):
     def tearDown(self):
         super(TestCaseMixin, self).tearDown()
 
-        # for now, we won't restore the settings -- every test should
-        # override them as needed
         self.psql.stop()
 
     def assertRequestResponse(self, path, expected, message=None,
