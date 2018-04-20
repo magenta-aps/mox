@@ -32,7 +32,7 @@ def get_attribute_fields(attribute_name):
 def get_field_type(attribute_name, field_name):
     for c in db_struct:
         if "attributter_type_override" in db_struct[c]:
-            for a, fs in db_struct[c]["attributter_type_override"].items():
+            for a, fs in db_struct[c]["attributter_type_override"].iteritems():
                 if attribute_name == c + a:
                     if field_name in fs:
                         return fs[field_name]
@@ -178,7 +178,7 @@ def input_dict_list(_type, input):
     if input is None:
         return None
     else:
-        return [_type.input(k, v) for k in input.keys() for v in input[k]]
+        return [_type.input(k, v) for k in input for v in input[k]]
 
 
 def to_bool(s):

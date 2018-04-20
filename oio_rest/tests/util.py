@@ -233,7 +233,7 @@ class TestCaseMixin(object):
             if isinstance(obj, dict):
                 return {
                     k: sort_inner_lists(v)
-                    for k, v in obj.items()
+                    for k, v in obj.iteritems()
                 }
             elif isinstance(obj, (list, tuple)):
                 return sorted(
