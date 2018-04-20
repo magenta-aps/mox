@@ -12,7 +12,10 @@ import json
 import os
 import pprint
 import subprocess
+import sys
+import tempfile
 
+import click
 import flask_testing
 import mock
 import testing.postgresql
@@ -25,6 +28,7 @@ from oio_rest import settings
 
 TESTS_DIR = os.path.dirname(__file__)
 BASE_DIR = os.path.dirname(TESTS_DIR)
+TOP_DIR = os.path.dirname(BASE_DIR)
 FIXTURE_DIR = os.path.join(TESTS_DIR, 'fixtures')
 
 
@@ -44,66 +48,45 @@ def get_fixture(fixture_name):
 def initdb(psql):
     dsn = psql.dsn()
 
-    conn = psycopg2.connect(**dsn)
-    conn.autocommit = True
+    env = os.environ.copy()
 
-    with conn.cursor() as curs:
-        curs.execute(
-            "CREATE USER {} WITH SUPERUSER PASSWORD %s".format(
-                settings.DB_USER,
-            ),
-            (
-                settings.DB_PASSWORD,
-            ),
-        )
+    env.update(
+        TESTING='1',
+        PYTHON=sys.executable,
+        MOX_DB=settings.DATABASE,
+        MOX_DB_USER=settings.DB_USER,
+        MOX_DB_PASSWORD=settings.DB_PASSWORD,
+    )
 
-        curs.execute(
-            "CREATE DATABASE {} WITH OWNER = %s".format(settings.DATABASE),
-            (
-                settings.DB_USER,
-            ),
-        )
+    with psycopg2.connect(**dsn) as conn:
+        conn.autocommit = True
 
-        curs.execute(
-            "ALTER DATABASE {} SET search_path TO actual_state, public"
-            .format(
-                settings.DATABASE,
-            ),
-        )
+        with conn.cursor() as curs:
+            curs.execute(
+                "CREATE USER {} WITH SUPERUSER PASSWORD %s".format(
+                    settings.DB_USER,
+                ),
+                (
+                    settings.DB_PASSWORD,
+                ),
+            )
 
-        curs.execute(
-            "ALTER DATABASE {} SET datestyle TO 'ISO, YMD'"
-            .format(
-                settings.DATABASE,
-            ),
-        )
+            curs.execute(
+                "CREATE DATABASE {} WITH OWNER = %s".format(settings.DATABASE),
+                (
+                    settings.DB_USER,
+                ),
+            )
 
-        curs.execute(
-            "ALTER DATABASE {} SET intervalstyle TO 'sql_standard'"
-            .format(
-                settings.DATABASE,
-            ),
-        )
+    dsn = dsn.copy()
+    dsn['database'] = settings.DATABASE
+    dsn['user'] = settings.DB_USER
+    dsn['password'] = settings.DB_PASSWORD
 
-    def do_psql(**kwargs):
-        cmd = [
-            'psql',
-            '--user', dsn['user'],
-            '--host', dsn['host'],
-            '--port', str(dsn['port']),
-            '--variable', 'ON_ERROR_STOP=1',
-            '--output', os.devnull,
-            '--no-password',
-            '--quiet',
-        ]
+    mkdb_path = os.path.join(BASE_DIR, '..', 'db', 'mkdb.sh')
 
-        for arg, value in kwargs.iteritems():
-            cmd += '--' + arg, value,
-
-        subprocess.check_call(cmd)
-
-    do_psql(file=os.path.join(FIXTURE_DIR, 'dump.sql'),
-            dbname=settings.DB_USER)
+    with psycopg2.connect(**dsn) as conn, conn.cursor() as curs:
+        curs.execute(subprocess.check_output([mkdb_path], env=env))
 
 
 class TestCaseMixin(object):
@@ -140,11 +123,14 @@ class TestCaseMixin(object):
         super(TestCaseMixin, self).setUp()
 
         self.psql = self.psql_factory()
+        self.psql.wait_booting()
 
         dsn = self.psql.dsn()
 
         self.patches = [
             mock.patch('oio_rest.settings.LOG_AMQP_SERVER', None),
+            mock.patch('oio_rest.settings.DB_HOST', dsn['host'],
+                       create=True),
             mock.patch('oio_rest.settings.DB_PORT', dsn['port'],
                        create=True),
         ]
@@ -328,3 +314,30 @@ class TestCaseMixin(object):
 
 class TestCase(TestCaseMixin, flask_testing.TestCase):
     pass
+
+
+@click.command()
+@click.option('-p', '--port', type=int, default=5000)
+def run_with_db(**kwargs):
+    with testing.postgresql.Postgresql(
+        base_dir=tempfile.mkdtemp(prefix='mox'),
+        postgres_args=(
+            '-h localhost -F '
+            '-c logging_collector=off '
+            '-c synchronous_commit=off '
+            '-c fsync=off'
+        ),
+    ) as psql:
+        # We take over the process, given that this is a CLI command.
+        # Hence, there's no need to restore these variables afterwards
+        settings.LOG_AMQP_SERVER = None
+        settings.DB_HOST = psql.dsn()['host']
+        settings.DB_PORT = psql.dsn()['port']
+
+        initdb(psql)
+
+        app.app.run(**kwargs)
+
+
+if __name__ == '__main__':
+    run_with_db()
