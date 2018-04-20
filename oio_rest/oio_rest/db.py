@@ -5,11 +5,10 @@ from datetime import datetime, timedelta
 import psycopg2
 
 from psycopg2.extras import DateTimeTZRange
-from psycopg2.extensions import adapt as psyco_adapt
+from psycopg2.extensions import AsIs, QuotedString, adapt as psyco_adapt
 
 from jinja2 import Environment, FileSystemLoader
 from dateutil import parser as date_parser
-from mx.DateTime import DateTimeDeltaFrom
 
 from . import settings
 
@@ -90,7 +89,10 @@ def convert_attr_value(attribute_name, attribute_field_name,
     elif field_type == "timestamptz":
         return date_parser.parse(attribute_field_value)
     elif field_type == "interval(0)":
-        return DateTimeDeltaFrom(attribute_field_value).pytimedelta()
+        # delegate actual interval parsing to PostgreSQL in all cases,
+        # bypassing psycopg2 cleverness
+        s = QuotedString(attribute_field_value or '0')
+        return AsIs('{} :: interval'.format(s))
     else:
         return attribute_field_value
 

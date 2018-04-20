@@ -549,14 +549,14 @@ class TestDB(TestCase):
 
         value = "1 day"
 
-        expected_result = datetime.timedelta(1)
+        expected_result = "'1 day' :: interval"
 
         # Act
         actual_result = db.convert_attr_value("attribute_name",
                                               "attribute_field_name",
                                               value)
         # Assert
-        self.assertEqual(expected_result, actual_result)
+        self.assertEqual(expected_result, str(actual_result))
 
     @patch('oio_rest.db.transform_virkning')
     @patch('oio_rest.db.filter_empty')
