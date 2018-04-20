@@ -28,18 +28,17 @@ BASE_DIR = os.path.dirname(TESTS_DIR)
 FIXTURE_DIR = os.path.join(TESTS_DIR, 'fixtures')
 
 
-def jsonfile_to_dict(path):
-    """
-    Reads JSON from resources folder and converts to Python dictionary
-    :param path: path to json resource
-    :return: dictionary corresponding to the resource JSON
-    """
-    with open(os.path.join(BASE_DIR, path)) as f:
-        return json.load(f)
-
-
 def get_fixture(fixture_name):
-    return jsonfile_to_dict(os.path.join(FIXTURE_DIR, fixture_name))
+    """Reads data from fixture folder. If the file name ends with
+    ``.json``, we parse it, otherwise, we just return it as text.
+    """
+    if os.path.splitext(fixture_name)[1] == '.json':
+        with open(os.path.join(FIXTURE_DIR, fixture_name)) as fp:
+            return json.load(fp)
+
+    else:
+        with open(os.path.join(FIXTURE_DIR, fixture_name)) as fp:
+            return fp.read()
 
 
 class TestCaseMixin(object):
