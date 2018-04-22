@@ -175,11 +175,6 @@ class TestCaseMixin(object):
             except (IndexError, KeyError, TypeError):
                 pass
 
-        print(r.status_code)
-
-        if actual != expected:
-            pprint.pprint(actual)
-
         if not message:
             status_message = 'request {!r} failed with status {}'.format(
                 path, r.status_code,
@@ -190,13 +185,20 @@ class TestCaseMixin(object):
         else:
             status_message = content_message = message
 
-        if status_code is None:
-            self.assertLess(r.status_code, 300, status_message)
-            self.assertGreaterEqual(r.status_code, 200, status_message)
-        else:
-            self.assertEqual(r.status_code, status_code, status_message)
+        try:
+            if status_code is None:
+                self.assertLess(r.status_code, 300, status_message)
+                self.assertGreaterEqual(r.status_code, 200, status_message)
+            else:
+                self.assertEqual(r.status_code, status_code, status_message)
 
-        self.assertEqual(expected, actual, content_message)
+            self.assertEqual(expected, actual, content_message)
+        except AssertionError:
+            print(path)
+            print(r.status_code)
+            pprint.pprint(actual)
+
+            raise
 
     def assertRequestFails(self, path, code, message=None, **kwargs):
         '''Issue a request and assert that it succeeds (and does not
