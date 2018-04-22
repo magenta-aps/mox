@@ -58,7 +58,9 @@ def check_saml_authentication():
     #           python-streaming-gzip-decompression/
 
     assertion = Saml2_Assertion(token, settings.SAML_MOX_ENTITY_ID,
-                                settings.SAML_IDP_ENTITY_ID, get_idp_cert())
+                                settings.SAML_IDP_ENTITY_ID,
+                                settings.SAML_IDP_URL,
+                                get_idp_cert())
 
     try:
         assertion.check_validity()

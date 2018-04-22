@@ -1,4 +1,4 @@
-from unittest import TestCase
+import unittest
 
 import flask
 import freezegun
@@ -11,7 +11,7 @@ from oio_rest.custom_exceptions import (AuthorizationFailedException,
 from . import util
 
 
-class TestAuthentication(TestCase):
+class TestAuthentication(unittest.TestCase):
     def setUp(self):
         self.app = flask.Flask(__name__)
 
@@ -57,42 +57,109 @@ class TestAssertionVerification(util.TestCase):
 
     @patch('oio_rest.settings.SAML_IDP_TYPE', 'adfs')
     @patch('oio_rest.settings.SAML_MOX_ENTITY_ID',
-           'https://aak-modn.lxc')
+           'https://moxdev.atlas.magenta.dk')
     @patch('oio_rest.settings.SAML_IDP_ENTITY_ID',
-           'http://fs.magenta-aps.dk/adfs/services/trust')
-    @patch('oio_rest.settings.SAML_IDP_CERTIFICATE',
+           'http://adfs.magenta.dk/adfs/services/trust')
+    @patch('oio_rest.settings.SAML_IDP_URL',
+           "https://adfs.magenta.dk/adfs/services/trust/13/UsernameMixed")
+    @patch('oio_rest.settings.SAML_USER_ID_ATTIBUTE',
+           "http://schemas.xmlsoap.org/ws/2005/05/"
+           "identity/claims/privatepersonalidentifier")
+    @patch('oio_rest.authentication.__IDP_CERT',
            util.get_fixture('adfs-cert.pem'))
-    @freezegun.freeze_time('2017-08-10 11:07:30')
     def test_adfs(self):
-        self.assertRequestResponse(
-            '/organisation/organisation?bvn=%',
-            {
-                u'message': u'SAML token validation failed: '
-                'Signature validation failed. SAML Response rejected',
-            },
-            headers={
-                'Authorization': util.get_fixture('adfs-assertion.txt'),
-            },
-            status_code=403,
-        )
+        def check(expected, status_code):
+            token = util.get_fixture('adfs-assertion.txt').strip()
+            self.assertRequestResponse(
+                '/organisation/organisation?bvn=%',
+                expected,
+                headers={
+                    'Authorization': token,
+                },
+                status_code=status_code,
+            )
+
+        with freezegun.freeze_time('2018-04-20 18:00:00'):
+            # this test verifies a properly authorised request
+            check(
+                {
+                    'results': [[]],
+                },
+                200,
+            )
+
+            # now verify that we reject assertions not targeted to us
+
+            with patch('oio_rest.settings.SAML_MOX_ENTITY_ID',
+                       'https://whatever'):
+                check(
+                    {
+                        'message':
+                        'SAML token validation failed: '
+                        'https://whatever is not a valid audience for this '
+                        'Assertion, got https://moxdev.atlas.magenta.dk',
+                    },
+                    403,
+                )
+
+            # verify that we reject from the wrong issuing IdP
+
+            with patch('oio_rest.settings.SAML_IDP_ENTITY_ID',
+                       'https://whatever'):
+                check(
+                    {
+                        'message':
+                        "SAML token validation failed: "
+                        "Invalid issuer "
+                        "'http://adfs.magenta.dk/adfs/services/trust' "
+                        "in the Assertion/Response, expected 'https://whatever'"
+                    },
+                    403,
+                )
+
+            # and we MUST verify the certificate!!!
+
+            with patch('oio_rest.authentication.__IDP_CERT',
+                       util.get_fixture('idp-certificate.pem')):
+                check(
+                    {
+                        'message':
+                        'SAML token validation failed: '
+                        'Signature validation failed. SAML Response rejected. '
+                        'Signature is invalid.',
+                    },
+                    403,
+                )
+
+        # finally, ensure that we reject expired requests
+
+        with freezegun.freeze_time('2018-04-20 19:00:00'):
+            check(
+                {
+                    'message':
+                    'SAML token validation failed: '
+                    'Could not validate timestamp: expired. '
+                    'Check system clock.'
+                },
+                403,
+            )
+
+        # ..and just-in-case, that we reject future requests as well
+
+        with freezegun.freeze_time('2018-04-20 17:00:00'):
+            check(
+                {
+                    'message':
+                    'SAML token validation failed: '
+                    'Could not validate timestamp: not yet valid. '
+                    'Check system clock.'
+                },
+                403,
+            )
 
     @patch('oio_rest.settings.SAML_IDP_TYPE', 'wso2')
-    @patch('oio_rest.settings.SAML_MOX_ENTITY_ID',
-           'https://aak-modn.lxc')
-    @patch('oio_rest.settings.SAML_IDP_ENTITY_ID',
-           'https://localhost')
-    @patch('oio_rest.settings.SAML_IDP_CERTIFICATE',
-           util.get_fixture('wso2-cert.pem'))
-    @freezegun.freeze_time('2017-08-09 12:40')
     def test_wso2(self):
-        self.assertRequestResponse(
-            '/organisation/organisation?bvn=%',
-            {
-                u'message': u'SAML token validation failed: '
-                'Signature validation failed. SAML Response rejected',
-            },
-            headers={
-                'Authorization': util.get_fixture('wso2-assertion.txt'),
-            },
-            status_code=403,
-        )
+        raise unittest.SkipTest('TODO')
+
+    def test_restrictions(self):
+        raise unittest.SkipTest('TODO')
