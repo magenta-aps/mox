@@ -8,15 +8,20 @@ import requests
 from settings import MOX_LOG_EXCHANGE, MOX_OBJECT_EXCHANGE, DO_LOG_TO_AMQP
 from settings import MOX_ELK_LOG_FILE, IS_LOG_AUTHENTICATION_ENABLED
 
-from oio_rest.settings import SAML_MOX_ENTITY_ID, SAML_IDP_ENTITY_ID
+from settings import SAML_MOX_ENTITY_ID
+from settings import SAML_IDP_ENTITY_ID
+
+# TODO:
+# In order to refactor the SAML related import(s)
+# We must first extract the Saml2_Assertion class
+# into its own library
 from oio_rest.auth.saml2 import Saml2_Assertion
 
-from mox_agent import MOXAgent, unpack_saml_token, get_idp_cert
+from settings import MOX_LOGSTASH_URI
+from settings import MOX_LOGSTASH_USER
+from settings import MOX_LOGSTASH_PASS
 
-# Logstash configuration
-logstash_url = 'http://139.162.183.253:42998'
-logstash_user = 'hunter2'
-logstash_password = 'fghTJ425245ADCFVd'
+from mox_agent import MOXAgent, unpack_saml_token, get_idp_cert
 
 
 class MOXELKLog(MOXAgent):
@@ -73,8 +78,8 @@ class MOXELKLog(MOXAgent):
         else:
             print "Posting to logstash ..."
             data = json.loads(body)  # noqa
-            r = requests.post(logstash_url, body, auth=(logstash_user,
-                                                        logstash_password))
+            r = requests.post(MOX_LOGSTASH_URI, body, auth=(MOX_LOGSTASH_USER,
+                                                            MOX_LOGSTASH_PASS))
             print "Done: ", r
 
 
