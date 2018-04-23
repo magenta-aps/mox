@@ -8,7 +8,7 @@ import jsonschema
 import oio_rest.validate as validate
 
 
-class TestGenerateTilstande(unittest.TestCase):
+class TestGenerateJSONSchema(unittest.TestCase):
     maxDiff = None
 
     def setUp(self):
@@ -420,9 +420,438 @@ class TestGenerateTilstande(unittest.TestCase):
         obj = validate.get_lora_object_type(req)
         jsonschema.validate(req, validate.SCHEMA[obj])
 
-    @unittest.skip('Due to inconsistency between the way LoRa handles '
+    @unittest.skip('Due to an inconsistency between the way LoRa handles '
                    '"DokumentVariantEgenskaber" and the specs')
     def test_create_dokument_request_valid(self):
         req = self._json_to_dict('dokument_opret.json')
         obj = validate.get_lora_object_type(req)
         jsonschema.validate(req, validate.SCHEMA[obj])
+
+
+class TestFacetSystematically(unittest.TestCase):
+    def setUp(self):
+        self.standard_virkning1 = {
+            "from": "2000-01-01 12:00:00+01",
+            "from_included": True,
+            "to": "2020-01-01 12:00:00+01",
+            "to_included": False
+        }
+        self.standard_virkning2 = {
+            "from": "2020-01-01 12:00:00+01",
+            "from_included": True,
+            "to": "2030-01-01 12:00:00+01",
+            "to_included": False
+        }
+        self.reference = {
+            'uuid': '00000000-0000-0000-0000-000000000000',
+            'virkning': self.standard_virkning1
+        }
+        self.facet = {
+            'attributter': {
+                'facetegenskaber': [
+                    {
+                        'brugervendtnoegle': 'bvn1',
+                        'virkning': self.standard_virkning1
+                    }
+                ]
+            },
+            'tilstande': {
+                'facetpubliceret': [
+                    {
+                        'publiceret': 'Publiceret',
+                        'virkning': self.standard_virkning1
+                    }
+                ]
+            }
+        }
+
+    def assertValidationError(self):
+        with self.assertRaises(jsonschema.exceptions.ValidationError):
+            jsonschema.validate(self.facet, validate.SCHEMA['facet'])
+
+    def test_valid_equivalence_classes1(self):
+        """
+        Equivalence classes covered: [44][48][80][53][77][79][83][86][89][92]
+        [61][63][67][68][101][102][108][109][111]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        jsonschema.validate(self.facet, validate.SCHEMA['facet'])
+
+    def test_valid_equivalence_classes2(self):
+        """
+        Equivalence classes covered: [45][50][81][84][87][90][93][55][62]
+        [64][69]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.facet['note'] = 'This is a note'
+        egenskaber = self.facet['attributter']['facetegenskaber'][0]
+        egenskaber['beskrivelse'] = 'xyz'
+        egenskaber['plan'] = 'xyz'
+        egenskaber['opbygning'] = 'xyz'
+        egenskaber['ophavsret'] = 'xyz'
+        egenskaber['supplement'] = 'xyz'
+        egenskaber['retskilde'] = 'xyz'
+
+        self.facet['attributter']['facetegenskaber'].append(
+            {
+                'brugervendtnoegle': 'bvn2',
+                'virkning': self.standard_virkning2
+            }
+        )
+
+        self.facet['tilstande']['facetpubliceret'].append(
+            {
+                'publiceret': 'IkkePubliceret',
+                'virkning': self.standard_virkning2
+            }
+        )
+
+        self.facet['relationer'] = {}
+
+        jsonschema.validate(self.facet, validate.SCHEMA['facet'])
+
+    def test_valid_equivalence_classes3(self):
+        """
+        Equivalence classes covered: [70][72]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.facet['relationer'] = {
+            'ansvarlig': []
+        }
+
+        jsonschema.validate(self.facet, validate.SCHEMA['facet'])
+
+    def test_valid_equivalence_classes4(self):
+        """
+        Equivalence classes covered: [71][74][76]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.facet['relationer'] = {
+            'ansvarlig': [self.reference],
+            'ejer': [self.reference],
+            'facettilhoerer': [self.reference],
+            'redaktoerer': [self.reference, self.reference]
+        }
+
+        jsonschema.validate(self.facet, validate.SCHEMA['facet'])
+
+    def test_note_not_string(self):
+        """
+        Equivalence classes covered: [43]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.facet['note'] = ['This is not a string']
+        self.assertValidationError()
+
+    def test_bvn_missing(self):
+        """
+        Equivalence classes covered: [46]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        del self.facet['attributter']['facetegenskaber'][0]['brugervendtnoegle']
+        self.assertValidationError()
+
+    def test_bvn_not_string(self):
+        """
+        Equivalence classes covered: [47]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.facet['attributter']['facetegenskaber'][0]['brugervendtnoegle'] = {
+            'dummy': 'This is not a string'
+        }
+        self.assertValidationError()
+
+    def test_beskrivelse_not_string(self):
+        """
+        Equivalence classes covered: [49]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.facet['attributter']['facetegenskaber'][0]['beskrivelse'] = {
+            'dummy': 'This is not a string'
+        }
+        self.assertValidationError()
+
+    def test_plan_not_string(self):
+        """
+        Equivalence classes covered: [78]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.facet['attributter']['facetegenskaber'][0]['plan'] = {
+            'dummy': 'This is not a string'
+        }
+        self.assertValidationError()
+
+    def test_opbygning_not_string(self):
+        """
+        Equivalence classes covered: [82]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.facet['attributter']['facetegenskaber'][0]['opbygning'] = {
+            'dummy': 'This is not a string'
+        }
+        self.assertValidationError()
+
+    def test_ophavsret_not_string(self):
+        """
+        Equivalence classes covered: [85]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.facet['attributter']['facetegenskaber'][0]['ophavsret'] = {
+            'dummy': 'This is not a string'
+        }
+        self.assertValidationError()
+
+    def test_supplement_not_string(self):
+        """
+        Equivalence classes covered: [88]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.facet['attributter']['facetegenskaber'][0]['supplement'] = {
+            'dummy': 'This is not a string'
+        }
+        self.assertValidationError()
+
+    def test_retskilde_not_string(self):
+        """
+        Equivalence classes covered: [91]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.facet['attributter']['facetegenskaber'][0]['retskilde'] = {
+            'dummy': 'This is not a string'
+        }
+        self.assertValidationError()
+
+    def test_virkning_missing_attributter(self):
+        """
+        Equivalence classes covered: [51]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        del self.facet['attributter']['facetegenskaber'][0]['virkning']
+        self.assertValidationError()
+
+    def test_egenskaber_missing(self):
+        """
+        Equivalence classes covered: [54]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        del self.facet['attributter']['facetegenskaber']
+        self.assertValidationError()
+
+    def test_unknown_key_in_facetegenskaber(self):
+        """
+        Equivalence classes covered: [94]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.facet['attributter']['facetegenskaber'][0]['unknown'] = 'xyz'
+        self.assertValidationError()
+
+    def test_empty_facet(self):
+        """
+        Equivalence classes covered: [56]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.facet = {}
+        self.assertValidationError()
+
+    def test_attributter_missing(self):
+        """
+        Equivalence classes covered: [57]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        del self.facet['attributter']
+        self.assertValidationError()
+
+    def test_tilstande_missing(self):
+        """
+        Equivalence classes covered: [58]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        del self.facet['tilstande']
+        self.assertValidationError()
+
+    def test_facetpubliceret_missing(self):
+        """
+        Equivalence classes covered: [60]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        del self.facet['tilstande']['facetpubliceret']
+        self.assertValidationError()
+
+    def test_publiceret_not_valid_enum(self):
+        """
+        Equivalence classes covered: [61]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.facet['tilstande']['facetpubliceret'][0]['publiceret'] = 'invalid'
+        self.assertValidationError()
+
+    def test_publiceret_missing(self):
+        """
+        Equivalence classes covered: [62]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        del self.facet['tilstande']['facetpubliceret'][0]['publiceret']
+        self.assertValidationError()
+
+    def test_virkning_malformed_tilstande(self):
+        """
+        Equivalence classes covered: [66]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        del self.facet['tilstande']['facetpubliceret'][0]['virkning']['from']
+        self.assertValidationError()
+
+    def test_unknown_key_in_facetpubliceret(self):
+        """
+        Equivalence classes covered: [95]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.facet['tilstande']['facetpubliceret'][0]['unknown'] = 'xyz'
+        self.assertValidationError()
+
+    def test_two_references_in_nul_til_en_relation(self):
+        """
+        Equivalence classes covered: [96]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.facet['relationer'] = {
+            'ansvarlig': [self.reference, self.reference],
+        }
+        self.assertValidationError()
+
+    def test_reference_not_an_uuid(self):
+        """
+        Equivalence classes covered: [73]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.reference['uuid'] = 'This is not an UUID'
+        self.facet['relationer'] = {
+            'ansvarlig': [self.reference],
+        }
+        self.assertValidationError()
+
+    def test_unknown_relation_name(self):
+        """
+        Equivalence classes covered: [75]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.facet['relationer'] = {
+            'unknown': [self.reference],
+        }
+        self.assertValidationError()
+
+    def test_virkning_aktoer_and_note_ok(self):
+        """
+        Equivalence classes covered: [104][106][110]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.facet['attributter']['facetegenskaber'][0]['virkning'].update(
+            {
+                'aktoerref': '00000000-0000-0000-0000-000000000000',
+                'aktoertypekode': 'type',
+                'notetekst': 'This is a note'
+            }
+        )
+        jsonschema.validate(self.facet, validate.SCHEMA['facet'])
+
+    def test_virkning_from_missing(self):
+        """
+        Equivalence classes covered: [52][97]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        del self.facet['attributter']['facetegenskaber'][0]['virkning']['from']
+        self.assertValidationError()
+
+    def test_virkning_to_missing(self):
+        """
+        Equivalence classes covered: [99]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        del self.facet['attributter']['facetegenskaber'][0]['virkning']['to']
+        self.assertValidationError()
+
+    def test_virkning_from_not_string(self):
+        """
+        Equivalence classes covered: [98]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.facet['attributter']['facetegenskaber'][0]['virkning']['from'] = {
+            'key': 'This is not a string'
+        }
+        self.assertValidationError()
+
+    def test_virkning_to_not_string(self):
+        """
+        Equivalence classes covered: [100]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.facet['attributter']['facetegenskaber'][0]['virkning']['to'] = {
+            'key': 'This is not a string'
+        }
+        self.assertValidationError()
+
+    def test_virkning_aktoerref_not_uuid(self):
+        """
+        Equivalence classes covered: [103]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.facet['attributter']['facetegenskaber'][0]['virkning'][
+            'aktoerref'] = 'This is not an UUID'
+        self.assertValidationError()
+
+    def test_virkning_aktoertype_not_string(self):
+        """
+        Equivalence classes covered: [105]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.facet['attributter']['facetegenskaber'][0]['virkning'][
+            'aktoertypekode'] = {
+            'key': 'This is not a string'
+        }
+        self.assertValidationError()
+
+    def test_virkning_notetekst_not_string(self):
+        """
+        Equivalence classes covered: [107]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.facet['attributter']['facetegenskaber'][0]['virkning'][
+            'notetekst'] = {
+            'key': 'This is not a string'
+        }
+        self.assertValidationError()

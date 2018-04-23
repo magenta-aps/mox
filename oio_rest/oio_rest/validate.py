@@ -312,7 +312,7 @@ def generate_json_schema(obj):
                 'to': STRING,
                 'from_included': BOOLEAN,
                 'to_included': BOOLEAN,
-                'aktoerref': STRING,
+                'aktoerref': UUID,
                 'aktoertypekode': STRING,
                 'notetekst': STRING,
             },
