@@ -1,16 +1,10 @@
 import copy
-import json
-
 import jsonschema
 
 import db_structure as db
 
 # A very nice reference explaining the JSON schema syntax can be found
 # here: https://spacetelescope.github.io/understanding-json-schema/
-
-
-UUID_PATTERN = '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-' \
-               '[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$'
 
 # LoRa object types
 AKTIVITET = 'aktivitet'
@@ -21,10 +15,15 @@ KLASSE = 'klasse'
 SAG = 'sag'
 TILSTAND = 'tilstand'
 
-# Primitive JSON schema types
+# JSON schema types
 BOOLEAN = {'type': 'boolean'}
 INTEGER = {'type': 'integer'}
 STRING = {'type': 'string'}
+UUID = {
+    'type': 'string',
+    'pattern': '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-'
+               '[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$'
+}
 
 
 def _generate_schema_array(items, maxItems=None):
@@ -52,14 +51,17 @@ def _generate_schema_object(properties, required, kwargs=None):
 def _handle_special_egenskaber(obj, egenskaber):
     if obj == KLASSE:
         egenskaber['soegeord'] = _generate_schema_array(
-            _generate_schema_array(STRING),
-            2
-        )
+            _generate_schema_array(STRING), 2)
     if obj == ITSYSTEM:
         egenskaber['konfigurationreference'] = _generate_schema_array(STRING)
     if obj == SAG:
         egenskaber['afleveret'] = BOOLEAN
         egenskaber['principiel'] = BOOLEAN
+        egenskaber['offentlighedundtaget'] = {
+            '$ref': '#/definitions/offentlighedundtaget'}
+    if obj == DOKUMENT:
+        egenskaber['major'] = INTEGER
+        egenskaber['minor'] = INTEGER
         egenskaber['offentlighedundtaget'] = {
             '$ref': '#/definitions/offentlighedundtaget'}
 
@@ -135,10 +137,7 @@ def _handle_special_relations_all(obj, relation):
             {
                 'accepteret': STRING,
                 'obligatorisk': STRING,
-                'repraesentation_uuid': {
-                    'type': 'string',
-                    'pattern': UUID_PATTERN
-                },
+                'repraesentation_uuid': UUID,
             },
             ['accepteret', 'obligatorisk', 'repraesentation_uuid']
         )
@@ -198,10 +197,7 @@ def _generate_relationer(obj):
     relation_nul_til_mange = _generate_schema_array(
         _generate_schema_object(
             {
-                'uuid': {
-                    'type': 'string',
-                    'pattern': UUID_PATTERN
-                },
+                'uuid': UUID,
                 'virkning': {'$ref': '#/definitions/virkning'},
                 'objekttype': STRING
             },
@@ -230,6 +226,30 @@ def _generate_relationer(obj):
         'properties': relation_schema,
         'additionalProperties': False
     }
+
+
+def _generate_varianter():
+    """
+    Function to generate the special 'varianter' section of the JSON schema
+    used for the the 'Dokument' LoRa object type.
+    """
+
+    return _generate_schema_array(_generate_schema_object(
+        {
+            'egenskaber': _generate_schema_array(_generate_schema_object(
+                {
+                    'varianttekst': STRING,
+                    'arkivering': BOOLEAN,
+                    'delvisscannet': BOOLEAN,
+                    'offentliggoerelse': BOOLEAN,
+                    'produktion': BOOLEAN,
+                    'virkning': {'$ref': '#/definitions/virkning'}
+                },
+                ['varianttekst', 'virkning']
+            ))
+        },
+        ['egenskaber']
+    ))
 
 
 def get_lora_object_type(req):
@@ -274,50 +294,43 @@ def generate_json_schema(obj):
     :return: Dictionary representing the JSON schema.
     """
 
-    return {
-        '$schema': "http://json-schema.org/schema#",
-
-        'definitions': {
-            'virkning': _generate_schema_object(
-                {
-                    'from': STRING,
-                    'to': STRING,
-                    'from_included': BOOLEAN,
-                    'to_included': BOOLEAN,
-                    'aktoerref': STRING,
-                    'aktoertypekode': STRING,
-                    'notetekst': STRING,
-                },
-                ['from', 'to']
-            ),
-            'offentlighedundtaget': _generate_schema_object(
-                {
-                    'alternativtitel': STRING,
-                    'hjemmel': STRING
-                },
-                ['alternativtitel', 'hjemmel']
-            )
-        },
-
-        'type': 'object',
-        'properties': {
+    schema = _generate_schema_object(
+        {
             'attributter': _generate_attributter(obj),
             'tilstande': _generate_tilstande(obj),
             'relationer': _generate_relationer(obj),
             'note': STRING,
         },
-        'required': ['attributter', 'tilstande'],
+        ['attributter', 'tilstande']
+    )
+
+    schema['$schema'] = 'http://json-schema.org/schema#'
+    schema['definitions'] = {
+        'virkning': _generate_schema_object(
+            {
+                'from': STRING,
+                'to': STRING,
+                'from_included': BOOLEAN,
+                'to_included': BOOLEAN,
+                'aktoerref': STRING,
+                'aktoertypekode': STRING,
+                'notetekst': STRING,
+            },
+            ['from', 'to']
+        ),
+        'offentlighedundtaget': _generate_schema_object(
+            {
+                'alternativtitel': STRING,
+                'hjemmel': STRING
+            },
+            ['alternativtitel', 'hjemmel']
+        )
     }
+
+    return schema
 
 
 SCHEMA = {
     obj: copy.deepcopy(generate_json_schema(obj))
     for obj in db.REAL_DB_STRUCTURE.keys()
 }
-
-# Will be cleaned up later...
-
-# if __name__ == '__main__':
-#     print(json.dumps(generate_json_schema({'attributter': {
-#         'tilstandegenskaber': []
-#     }}), indent=2))

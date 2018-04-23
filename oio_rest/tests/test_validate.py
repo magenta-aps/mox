@@ -419,3 +419,10 @@ class TestGenerateTilstande(unittest.TestCase):
         req = self._json_to_dict('sag_opret.json')
         obj = validate.get_lora_object_type(req)
         jsonschema.validate(req, validate.SCHEMA[obj])
+
+    @unittest.skip('Due to inconsistency between the way LoRa handles '
+                   '"DokumentVariantEgenskaber" and the specs')
+    def test_create_dokument_request_valid(self):
+        req = self._json_to_dict('dokument_opret.json')
+        obj = validate.get_lora_object_type(req)
+        jsonschema.validate(req, validate.SCHEMA[obj])
