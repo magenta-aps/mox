@@ -8,7 +8,7 @@ from psycopg2.extensions import adapt as psyco_adapt, ISQLQuote
 from psycopg2.extensions import register_adapter as psyco_register_adapter
 from contentstore import content_store
 
-from db_structure import REAL_DB_STRUCTURE as db_struct
+from oio_rest_lib.db_structure import REAL_DB_STRUCTURE as db_struct
 from custom_exceptions import BadRequestException
 
 _attribute_fields = {}
