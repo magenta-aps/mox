@@ -12,7 +12,7 @@ from werkzeug.datastructures import ImmutableOrderedMultiDict
 
 import db
 from db_helpers import get_valid_search_parameters, TEMPORALITY_PARAMS
-import db_structure
+from oio_rest_lib import db_structure
 from utils.build_registration import build_registration, to_lower_param
 
 # Just a helper during debug
