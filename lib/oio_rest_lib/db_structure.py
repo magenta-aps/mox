@@ -354,3 +354,6 @@ DB_TEMPLATE_EXTRA_OPTIONS = {
         }
     }
 }
+
+if __name__ == "__main__":
+    print '\n'.join(sorted(REAL_DB_STRUCTURE))
