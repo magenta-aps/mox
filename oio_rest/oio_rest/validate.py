@@ -147,18 +147,15 @@ def _handle_special_relations_all(obj, relation):
 
 def _handle_special_relations_specific(obj, relation_schema):
     if obj == TILSTAND:
-        # Refactor... make properties variable
-        relation_schema['tilstandsvaerdi']['items']['properties'][
-            'tilstandsvaerdiattr'] = {
-            'type': 'object',
-            'properties': {
-                'forventet': {'type': "boolean"},
-                'nominelvaerdi': {'type': 'string'}
+        properties = relation_schema['tilstandsvaerdi']['items']['properties']
+        properties['tilstandsvaerdiattr'] = _generate_schema_object(
+            {
+                'forventet': BOOLEAN,
+                'nominelvaerdi': STRING
             },
-            'required': ['forventet', 'nominelvaerdi'],
-            'additionalProperties': False
-        }
-        relation_schema['tilstandsvaerdi']['items']['properties'].pop('uuid')
+            ['forventet', 'nominelvaerdi']
+        )
+        properties.pop('uuid')
         relation_schema['tilstandsvaerdi']['items']['required'].remove('uuid')
     if obj == SAG:
         properties = relation_schema['journalpost']['items']['properties']
@@ -166,25 +163,22 @@ def _handle_special_relations_specific(obj, relation_schema):
             'type': 'string',
             'enum': ['journalnotat', 'vedlagtdokument']
         }
-        properties['journalnotat'] = {
-            'type': 'object',
-            'properties': {
-                'titel': {'type': 'string'},
-                'notat': {'type': 'string'},
-                'format': {'type': 'string'},
+        properties['journalnotat'] = _generate_schema_object(
+            {
+                'titel': STRING,
+                'notat': STRING,
+                'format': STRING,
             },
-            'required': ['titel', 'notat',
-                         'format'],
-            'additionalProperties': False
-        }
-        properties['journaldokument'] = {
-            'type': 'object',
-            'properties': {
-                'dokumenttitel': {'type': 'string'},
+            ['titel', 'notat', 'format']
+        )
+        properties['journaldokument'] = _generate_schema_object(
+            {
+                'dokumenttitel': STRING,
                 'offentlighedundtaget': {
                     '$ref': '#/definitions/offentlighedundtaget'}
-            }
-        }
+            },
+            ['dokumenttitel', 'offentlighedundtaget']
+        )
         relation_schema['journalpost']['items']['required'].append(
             'journalpostkode')
 
@@ -203,19 +197,17 @@ def _generate_relationer(obj):
 
     relation_nul_til_mange = {
         'type': 'array',
-        'items': {
-            'type': 'object',
-            'properties': {
+        'items': _generate_schema_object(
+            {
                 'uuid': {
                     'type': 'string',
                     'pattern': UUID_PATTERN
                 },
                 'virkning': {'$ref': '#/definitions/virkning'},
-                'objekttype': {'type': 'string'}
+                'objekttype': STRING
             },
-            'required': ['uuid', 'virkning'],
-            'additionalProperties': False
-        }
+            ['uuid', 'virkning']
+        )
     }
 
     relation_nul_til_mange = _handle_special_relations_all(
@@ -287,29 +279,25 @@ def generate_json_schema(obj):
         '$schema': "http://json-schema.org/schema#",
 
         'definitions': {
-            'virkning': {
-                'type': 'object',
-                'properties': {
-                    'from': {'type': 'string'},
-                    'to': {'type': 'string'},
-                    'from_included': {'type': 'boolean'},
-                    'to_included': {'type': 'boolean'},
-                    'aktoerref': {'type': 'string'},
-                    'aktoertypekode': {'type': 'string'},
-                    'notetekst': {'type': 'string'},
+            'virkning': _generate_schema_object(
+                {
+                    'from': STRING,
+                    'to': STRING,
+                    'from_included': BOOLEAN,
+                    'to_included': BOOLEAN,
+                    'aktoerref': STRING,
+                    'aktoertypekode': STRING,
+                    'notetekst': STRING,
                 },
-                'required': ['from', 'to'],
-                'additionalProperties': False
-            },
-            'offentlighedundtaget': {
-                'type': 'object',
-                'properties': {
-                    'alternativtitel': {'type': 'string'},
-                    'hjemmel': {'type': 'string'}
+                ['from', 'to']
+            ),
+            'offentlighedundtaget': _generate_schema_object(
+                {
+                    'alternativtitel': STRING,
+                    'hjemmel': STRING
                 },
-                'required': ['alternativtitel', 'hjemmel'],
-                'additionalProperties': False
-            }
+                ['alternativtitel', 'hjemmel']
+            )
         },
 
         'type': 'object',
@@ -317,7 +305,7 @@ def generate_json_schema(obj):
             'attributter': _generate_attributter(obj),
             'tilstande': _generate_tilstande(obj),
             'relationer': _generate_relationer(obj),
-            'note': {'type': 'string'},
+            'note': STRING,
         },
         'required': ['attributter', 'tilstande'],
     }
