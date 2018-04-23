@@ -364,7 +364,6 @@ class OIORestObject(object):
         else:
             # Edit.
             request.api_operation = "Ret"
-            # TODO: This needs to be implemented!
             db.create_or_import_object(cls.__name__, note, registration, uuid)
 
             return jsonify({'uuid': uuid}), 200
@@ -392,9 +391,6 @@ class OIORestObject(object):
         note = typed_get(input, "note", "")
         registration = cls.gather_registration(input)
 
-        # We have input, we have a registration & captured the note - now do
-        # the deed.
-        "Edit or passivate."
         if typed_get(input, 'livscyklus', '').lower() == 'passiv':
             # Passivate
             request.api_operation = "Passiver"
