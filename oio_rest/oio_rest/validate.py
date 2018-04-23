@@ -13,7 +13,6 @@ UUID_PATTERN = '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-' \
                '[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$'
 
 # LoRa object types
-
 AKTIVITET = 'aktivitet'
 DOKUMENT = 'dokument'
 INDSATS = 'indsats'
@@ -26,6 +25,16 @@ TILSTAND = 'tilstand'
 BOOLEAN = {'type': 'boolean'}
 INTEGER = {'type': 'integer'}
 STRING = {'type': 'string'}
+
+
+def _generate_schema_array(items, maxItems=None):
+    schema_array = {
+        'type': 'array',
+        'items': items
+    }
+    if maxItems:
+        schema_array['maxItems'] = maxItems
+    return schema_array
 
 
 def _generate_schema_object(properties, required, kwargs=None):
@@ -42,22 +51,15 @@ def _generate_schema_object(properties, required, kwargs=None):
 
 def _handle_special_egenskaber(obj, egenskaber):
     if obj == KLASSE:
-        egenskaber['soegeord'] = {
-            'type': 'array',
-            'items': {
-                'type': 'array',
-                'items': {'type': 'string'}
-            },
-            'maxItems': 2
-        }
+        egenskaber['soegeord'] = _generate_schema_array(
+            _generate_schema_array(STRING),
+            2
+        )
     if obj == ITSYSTEM:
-        egenskaber['konfigurationreference'] = {
-            'type': 'array',
-            'items': {'type': 'string'}
-        }
+        egenskaber['konfigurationreference'] = _generate_schema_array(STRING)
     if obj == SAG:
-        egenskaber['afleveret'] = {'type': 'boolean'}
-        egenskaber['principiel'] = {'type': 'boolean'}
+        egenskaber['afleveret'] = BOOLEAN
+        egenskaber['principiel'] = BOOLEAN
         egenskaber['offentlighedundtaget'] = {
             '$ref': '#/definitions/offentlighedundtaget'}
 
@@ -75,7 +77,7 @@ def _generate_attributter(obj):
 
     egenskaber_name = '{}egenskaber'.format(obj)
     egenskaber = {
-        key: {'type': 'string'}
+        key: STRING
         for key in db_attributter['egenskaber']
     }
     egenskaber.update({'virkning': {'$ref': '#/definitions/virkning'}})
@@ -84,11 +86,10 @@ def _generate_attributter(obj):
 
     return _generate_schema_object(
         {
-            egenskaber_name: {
-                'type': 'array',
-                'items': _generate_schema_object(egenskaber, db_attributter[
+            egenskaber_name: _generate_schema_array(
+                _generate_schema_object(egenskaber, db_attributter[
                     'required_egenskaber'] + ['virkning'])
-            }
+            )
         },
         [egenskaber_name]
     )
@@ -108,9 +109,8 @@ def _generate_tilstande(obj):
     for key in tilstande.keys():
         tilstand_name = '{}{}'.format(obj, key)
 
-        properties[tilstand_name] = {
-            'type': 'array',
-            'items': _generate_schema_object(
+        properties[tilstand_name] = _generate_schema_array(
+            _generate_schema_object(
                 {
                     key: {
                         'type': 'string',
@@ -120,7 +120,7 @@ def _generate_tilstande(obj):
                 },
                 [key, 'virkning']
             )
-        }
+        )
 
         required.append(tilstand_name)
 
@@ -133,8 +133,8 @@ def _handle_special_relations_all(obj, relation):
     if obj == AKTIVITET:
         relation['items']['properties']['aktoerattr'] = _generate_schema_object(
             {
-                'accepteret': {'type': 'string'},
-                'obligatorisk': {'type': 'string'},
+                'accepteret': STRING,
+                'obligatorisk': STRING,
                 'repraesentation_uuid': {
                     'type': 'string',
                     'pattern': UUID_PATTERN
@@ -195,9 +195,8 @@ def _generate_relationer(obj):
     relationer_nul_til_mange = db.REAL_DB_STRUCTURE[obj][
         'relationer_nul_til_mange']
 
-    relation_nul_til_mange = {
-        'type': 'array',
-        'items': _generate_schema_object(
+    relation_nul_til_mange = _generate_schema_array(
+        _generate_schema_object(
             {
                 'uuid': {
                     'type': 'string',
@@ -208,7 +207,7 @@ def _generate_relationer(obj):
             },
             ['uuid', 'virkning']
         )
-    }
+    )
 
     relation_nul_til_mange = _handle_special_relations_all(
         obj, relation_nul_til_mange)
