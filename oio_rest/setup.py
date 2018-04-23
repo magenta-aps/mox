@@ -13,7 +13,7 @@ with open(os.path.join(basedir, 'requirements.txt')) as fp:
     install_requires = fp.readlines()
 
 with open(os.path.join(basedir, 'requirements-test.txt')) as fp:
-    test_requires = fp.readlines()
+    test_requires = [s for s in fp.readlines() if not s.startswith('-')]
 
 setup(
     name='oio_rest',
