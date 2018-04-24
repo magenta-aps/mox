@@ -241,8 +241,8 @@ DATABASE_STRUCTURE = {
                 "brugervendtnoegle", "beskrivelse"]
         },
         "tilstande": [
-            ["status", ["Inaktiv", "Aktiv"]],
-            ["publiceret", ["Publiceret", "IkkePubliceret", "Normal"]],
+            ("status", ["Inaktiv", "Aktiv"]),
+            ("publiceret", ["Publiceret", "IkkePubliceret", "Normal"]),
         ],
         "relationer_nul_til_en": ["tilstandsobjekt", "tilstandstype"],
         "relationer_nul_til_mange": [
@@ -266,8 +266,8 @@ DATABASE_STRUCTURE = {
             }
         },
         "tilstande": [
-            ["status", ["Inaktiv", "Aktiv", "Aflyst"]],
-            ["publiceret", ["Publiceret", "IkkePubliceret", "Normal"]],
+            ("status", ["Inaktiv", "Aktiv", "Aflyst"]),
+            ("publiceret", ["Publiceret", "IkkePubliceret", "Normal"]),
         ],
         "relationer_nul_til_en": ["aktivitetstype", "emne", "foelsomhedklasse",
                                   "ansvarligklasse", "rekvirentklasse",
@@ -294,10 +294,10 @@ DATABASE_STRUCTURE = {
             }
         },
         "tilstande": [
-            ["publiceret", ["Publiceret", "IkkePubliceret", "Normal"]],
-            ["fremdrift", [
+            ("publiceret", ["Publiceret", "IkkePubliceret", "Normal"]),
+            ("fremdrift", [
                 "Uoplyst", "Visiteret", "Disponeret", "Leveret", "Vurderet"
-            ]],
+            ]),
         ],
         "relationer_nul_til_en": ["indsatsmodtager", "indsatstype"],
         "relationer_nul_til_mange": [
