@@ -260,6 +260,37 @@ class TestCaseMixin(object):
             message,
         )
 
+    def get(self, path, **params):
+        r = self._perform_request(path, query_string=params)
+        self.assertLess(r.status_code, 300)
+        self.assertGreaterEqual(r.status_code, 200)
+
+        d = r.json['results'][0]
+
+        assert len(d) == 1
+        registrations = d[0]['registreringer']
+
+        if set(params.keys()) & {'registreretfra', 'registrerettil',
+                                 'registreringstid'}:
+            return registrations
+        else:
+            assert len(registrations) == 1
+            return registrations[0]
+
+    def put(self, path, json):
+        r = self._perform_request(path, json=json, method="PUT")
+        self.assertLess(r.status_code, 300)
+        self.assertGreaterEqual(r.status_code, 200)
+
+        return r.json['uuid']
+
+    def post(self, path, json):
+        r = self._perform_request(path, json=json, method="POST")
+        self.assertLess(r.status_code, 300)
+        self.assertGreaterEqual(r.status_code, 200)
+
+        return r.json['uuid']
+
     def assertQueryResponse(self, path, expected, **params):
         """Perform a request towards LoRa, and assert that it yields the
         expected output.
@@ -270,19 +301,7 @@ class TestCaseMixin(object):
         **params are passed as part of the query string in the request.
         """
 
-        r = self._perform_request(path, query_string=params).json
-
-        results = r['results'][0]
-
-        assert len(results) == 1
-        registrations = results[0]['registreringer']
-
-        if set(params.keys()) & {'registreretfra', 'registrerettil',
-                                 'registreringstid'}:
-            actual = registrations
-        else:
-            assert len(registrations) == 1
-            actual = registrations[0]
+        actual = self.get(path, **params)
 
         print(json.dumps(actual, indent=2))
 
