@@ -1,4 +1,4 @@
-{% if relations is none -%}
+{% if not relations -%}
 NULL
 {% else -%}
     ARRAY[

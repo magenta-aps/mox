@@ -297,16 +297,14 @@ class TestDBHelpers(TestCase):
         with patch('oio_rest.db_helpers.db_struct', new={
             'testclass1': {
                 'tilstande': [
-                    'testtilstand1',
-                    [
+                    ('testtilstand1', [
                         'value1',
                         'value2'
-                    ],
-                    'testtilstand2',
-                    [
+                    ]),
+                    ('testtilstand2', [
                         'value3',
                         'value4'
-                    ]
+                    ]),
                 ],
             },
         }):
