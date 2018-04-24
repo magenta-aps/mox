@@ -254,10 +254,12 @@ DATABASE_STRUCTURE = {
                 "brugervendtnoegle", "beskrivelse"],
             "required_egenskaber": ["brugervendtnoegle"],
         },
-        "tilstande": {
-            "status": ["Inaktiv", "Aktiv"],
-            "publiceret": ["Publiceret", "IkkePubliceret", "Normal"]
-        },
+        "tilstande": [
+            "status",
+            ["Inaktiv", "Aktiv"],
+            "publiceret",
+            ["Publiceret", "IkkePubliceret", "Normal"]
+        ],
         "relationer_nul_til_en": ["tilstandsobjekt", "tilstandstype"],
         "relationer_nul_til_mange": [
             "tilstandsvaerdi", "begrundelse", "tilstandskvalitet",
@@ -280,10 +282,12 @@ DATABASE_STRUCTURE = {
                 "tidsforbrug": "interval(0)"
             }
         },
-        "tilstande": {
-            "status": ["Inaktiv", "Aktiv", "Aflyst"],
-            "publiceret": ["Publiceret", "IkkePubliceret", "Normal"]
-        },
+        "tilstande": [
+            "status",
+            ["Inaktiv", "Aktiv", "Aflyst"],
+            "publiceret",
+            ["Publiceret", "IkkePubliceret", "Normal"],
+        ],
         "relationer_nul_til_en": ["aktivitetstype", "emne", "foelsomhedklasse",
                                   "ansvarligklasse", "rekvirentklasse",
                                   "ansvarlig", "tilhoerer"],
@@ -309,12 +313,14 @@ DATABASE_STRUCTURE = {
                 "sluttidspunkt": "timestamptz",
             }
         },
-        "tilstande": {
-            "fremdrift": [
+        "tilstande": [
+            "publiceret",
+            ["Publiceret", "IkkePubliceret", "Normal"],
+            "fremdrift",
+            [
                 "Uoplyst", "Visiteret", "Disponeret", "Leveret", "Vurderet"
-            ],
-            "publiceret": ["Publiceret", "IkkePubliceret", "Normal"]
-        },
+            ]
+        ],
         "relationer_nul_til_en": ["indsatsmodtager", "indsatstype"],
         "relationer_nul_til_mange": [
             "indsatskvalitet", "indsatsaktoer", "samtykke", "indsatssag",

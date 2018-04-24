@@ -1,5 +1,7 @@
 #!/bin/bash
 
+PYTHON="$(cd $(dirname $0); pwd)/../python-env/bin/python"
+
 SUPER_USER="postgres"
 
 # Where to create the MOX database

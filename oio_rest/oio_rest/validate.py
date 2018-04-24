@@ -1,4 +1,5 @@
 import copy
+import types
 import jsonschema
 
 import db_structure as db
@@ -97,6 +98,24 @@ def _generate_attributter(obj):
     )
 
 
+def _adapter_tilstande(obj):
+    """
+    The 'tilstande' parts of DB_STRUCTURE was changed (upstream) to use
+    lists in some cases instead of dictoinaries. This function converts
+    the 'tilstande' parts back to dictionaries whenever necessary.
+    :param obj: The LoRa object type, i.e. 'organisation', 'bruger',...
+    :return: The 'tilstande' from DB_STRUCTURE for the given object type.
+    """
+    tilstande = db.REAL_DB_STRUCTURE[obj]['tilstande']
+    print(tilstande)
+    if type(tilstande) == types.DictType:
+        return tilstande
+    else:
+        return {
+            tilstande[i]: tilstande[i + 1] for i in range(0, len(tilstande), 2)
+        }
+
+
 def _generate_tilstande(obj):
     """
     Generate the 'tilstande' part of the JSON schema.
@@ -104,7 +123,7 @@ def _generate_tilstande(obj):
     :return: Dictionary representing the 'tilstande' part of the JSON schema.
     """
 
-    tilstande = db.REAL_DB_STRUCTURE[obj]['tilstande']
+    tilstande = _adapter_tilstande(obj)
 
     properties = {}
     required = []

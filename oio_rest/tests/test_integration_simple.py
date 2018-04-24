@@ -8,6 +8,7 @@
 
 from . import util
 
+
 UUID_PATTERN = (
     "<regex(\"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-"
     "[a-fA-F0-9]{4}-[a-fA-F0-9]{12}\"):uuid>"

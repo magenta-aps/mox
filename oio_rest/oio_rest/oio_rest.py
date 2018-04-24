@@ -64,7 +64,7 @@ def get_virkning_dates(args):
             # current_timestamp,'[]') if possible
             virkning_fra = datetime.datetime.now()
             virkning_til = virkning_fra + datetime.timedelta(
-                    microseconds=1)
+                microseconds=1)
     return virkning_fra, virkning_til
 
 
@@ -217,7 +217,7 @@ class OIORestObject(object):
         """
         return {to_lower_param(k): (request.args.get(k) if not as_lists else
                                     request.args.getlist(k))
-                for k in request.args.keys()}
+                for k in request.args}
 
     @classmethod
     @requires_auth
@@ -240,7 +240,7 @@ class OIORestObject(object):
         valid_list_args = TEMPORALITY_PARAMS | {'uuid'}
 
         # Assume the search operation if other params were specified
-        if not set(args.keys()).issubset(valid_list_args):
+        if not valid_list_args.issuperset(args):
             # Only one uuid is supported through the search operation
             if uuid_param is not None and len(uuid_param) > 1:
                 raise BadRequestException("Multiple uuid parameters passed "
@@ -473,7 +473,7 @@ class OIORestObject(object):
     @classmethod
     def verify_args(cls, *allowed):
         req_args = cls._get_args()
-        difference = set(req_args.keys()).difference(allowed)
+        difference = set(req_args).difference(allowed)
         if difference:
             arg_string = ', '.join(difference)
             raise BadRequestException('Unsupported argument(s): {}'

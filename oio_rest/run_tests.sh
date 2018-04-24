@@ -13,7 +13,7 @@ python -m virtualenv --quiet venv
 
 . ./venv/bin/activate
 
-python -m pip install -r requirements.txt -r requirements-test.txt
+python -m pip install -r requirements-test.txt
 python -m flake8 --exit-zero
 python -m pytest
 
