@@ -324,6 +324,8 @@ def generate_json_schema(obj):
     )
 
     schema['$schema'] = 'http://json-schema.org/schema#'
+    schema['id'] = 'http://github.com/magenta-aps/mox'
+
     schema['definitions'] = {
         'virkning': _generate_schema_object(
             {
