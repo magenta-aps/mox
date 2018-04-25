@@ -9,7 +9,7 @@ TEST_ENV=python-testenv
 PYTHON=${TEST_ENV}/bin/python
 
 # Create virtualenv
-python -m virtualenv --quiet $TEST_ENV
+python3 -m virtualenv --quiet $TEST_ENV
 
 # Temporary workaround
 # These variables are needed to run $ROOT/db/mkdb.sh
