@@ -207,9 +207,9 @@ def restriction_to_registration(class_name, restriction):
     states, attributes, relations = restriction
 
     all_fields = MultiDict(itertools.chain(
-        states.viewitems(),
-        attributes.viewitems(),
-        relations.viewitems(),
+        states.items(),
+        attributes.items(),
+        relations.items(),
     ))
     list_args = {k.lower(): all_fields.getlist(k) for k in all_fields}
 

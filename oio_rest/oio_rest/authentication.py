@@ -67,7 +67,7 @@ def check_saml_authentication():
         assertion.check_validity()
 
         name_id = assertion.get_nameid()
-        print "SAML Assertion valid for: %s" % name_id
+        print("SAML Assertion valid for: %s" % name_id)
 
         # Add the username and SAML attributes to the request object
         request.saml_attributes = assertion.get_attributes()

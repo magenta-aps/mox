@@ -191,7 +191,7 @@ class TestOIORestObject(TestCase):
             actual_json = self.testclass.get_json()
 
         # Assert
-        self.assertEquals(expected_json, actual_json)
+        self.assertEqual(expected_json, actual_json)
 
     def test_get_json_returns_json_if_form_json(self):
         # Arrange
@@ -205,7 +205,7 @@ class TestOIORestObject(TestCase):
             actual_json = self.testclass.get_json()
 
         # Assert
-        self.assertEquals(expected_json, actual_json)
+        self.assertEqual(expected_json, actual_json)
 
     def test_get_json_returns_badrequest_if_malformed_form_json(self):
         # Arrange
@@ -228,7 +228,7 @@ class TestOIORestObject(TestCase):
             actual_json = self.testclass.get_json()
 
         # Assert
-        self.assertEquals(expected_json, actual_json)
+        self.assertEqual(expected_json, actual_json)
 
     @patch('oio_rest.db.create_or_import_object')
     def test_create_object_with_input_returns_uuid_and_code_201(self, mock):
@@ -294,7 +294,7 @@ class TestOIORestObject(TestCase):
             actual_fields = json.loads(self.testclass.get_fields().data)
 
             # Assert
-            self.assertEquals(expected_fields, actual_fields)
+            self.assertEqual(expected_fields, actual_fields)
 
     def test_get_fields_raises_on_unknown_args(self):
         # Arrange
@@ -1016,8 +1016,8 @@ class TestOIOStandardHierarchy(TestCase):
         keyword_args = flask.add_url_rule.call_args[1]
 
         self.assertIn('GET', keyword_args['methods'])
-        self.assertEquals(u'URL/testclass/classes', ordered_args[0])
-        self.assertEquals(u'testclass_classes', ordered_args[1])
+        self.assertEqual('URL/testclass/classes', ordered_args[0])
+        self.assertEqual('testclass_classes', ordered_args[1])
         self.assertIsInstance(ordered_args[2], types.FunctionType)
 
     def test_setup_api_get_classes_returns_correct_result(self):

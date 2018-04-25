@@ -45,7 +45,7 @@ class TestTokens(TestCase):
         actual = tokens.get_token(username, passwd, pretty_print=True)
 
         # Assert
-        self.assertEquals(expected, actual)
+        self.assertEqual(expected, actual)
 
     @patch('oio_rest.auth.tokens.requests')
     def test_get_token(self, mock_requests):

@@ -41,7 +41,7 @@ def adapt(value):
     adapter = psyco_adapt(value)
     if hasattr(adapter, 'prepare'):
         adapter.prepare(adapt.connection)
-    return unicode(adapter.getquoted(), adapt.connection.encoding)
+    return str(adapter.getquoted(), adapt.connection.encoding)
 
 
 jinja_env.filters['adapt'] = adapt
@@ -275,17 +275,11 @@ def sql_get_registration(class_name, time_period, life_cycle_code,
 
 def sql_convert_restrictions(class_name, restrictions):
     """Convert a list of restrictions to SQL."""
-    registrations = map(
-        lambda r: restriction_to_registration(class_name, r),
-        restrictions
-    )
-    sql_restrictions = map(
-        lambda r: sql_get_registration(
+    registrations = [restriction_to_registration(class_name, r) for r in restrictions]
+    sql_restrictions = [sql_get_registration(
             class_name, None, None, None, None,
             sql_convert_registration(r, class_name)
-        ),
-        registrations
-    )
+        ) for r in registrations]
     return sql_restrictions
 
 
@@ -619,7 +613,7 @@ def simplify_cleared_wrappers(o):
             # Handle clearable wrapper db-types.
             return o.get("value", None)
         else:
-            return {k: simplify_cleared_wrappers(v) for k, v in o.iteritems()}
+            return {k: simplify_cleared_wrappers(v) for k, v in o.items()}
     elif isinstance(o, list):
         return [simplify_cleared_wrappers(v) for v in o]
     elif isinstance(o, tuple):
@@ -642,13 +636,13 @@ def transform_virkning(o):
                 f = f[1:-1]
             if t[0] == '"':
                 t = t[1:-1]
-            items = o.items() + [
+            items = list(o.items()) + [
                 ('from', f), ('to', t), ("from_included", from_included),
                 ("to_included", to_included)
             ]
             return {k: v for k, v in items if k != "timeperiod"}
         else:
-            return {k: transform_virkning(v) for k, v in o.iteritems()}
+            return {k: transform_virkning(v) for k, v in o.items()}
     elif isinstance(o, list):
         return [transform_virkning(v) for v in o]
     elif isinstance(o, tuple):
@@ -659,14 +653,14 @@ def transform_virkning(o):
 
 def filter_empty(d):
     """Recursively filter out empty dictionary keys."""
-    if type(d) is dict:
+    if isinstance(d, dict):
         return dict(
-            (k, filter_empty(v)) for k, v in d.iteritems() if v and
+            (k, filter_empty(v)) for k, v in d.items() if v and
             filter_empty(v)
         )
-    elif type(d) is list:
+    elif isinstance(d, list):
         return [filter_empty(v) for v in d if v and filter_empty(v)]
-    elif type(d) is tuple:
+    elif isinstance(d, tuple):
         return tuple(filter_empty(v) for v in d if v and filter_empty(v))
     else:
         return d
@@ -691,7 +685,7 @@ def transform_relations(o):
             o["relationer"] = rel_dict
             return o
         else:
-            return {k: transform_relations(v) for k, v in o.iteritems()}
+            return {k: transform_relations(v) for k, v in o.items()}
     elif isinstance(o, list):
         return [transform_relations(v) for v in o]
     elif isinstance(o, tuple):
@@ -734,7 +728,7 @@ def search_objects(class_name, uuid, registration,
     if not any_rel_uuid_arr:
         any_rel_uuid_arr = []
     if uuid is not None:
-        assert isinstance(uuid, basestring)
+        assert isinstance(uuid, str)
 
     time_period = None
     if registreret_fra is not None or registreret_til is not None:

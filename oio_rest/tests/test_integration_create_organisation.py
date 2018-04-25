@@ -76,8 +76,8 @@ class TestCreateOrganisation(util.TestCase):
         JSON.
         :param response: Response from LoRa when creating a new organisation
         """
-        self.assertEquals(201, response.status_code)
-        self.assertEquals(1, len(response.json))
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(1, len(response.json))
         self.assertTrue(UUID_REGEX.match(response.json['uuid']))
 
     def _check_response_400(self):

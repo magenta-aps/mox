@@ -6,7 +6,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
-from __future__ import print_function
+
 
 import json
 import os
@@ -236,7 +236,7 @@ class TestCaseMixin(object):
             if isinstance(obj, dict):
                 return {
                     k: sort_inner_lists(v)
-                    for k, v in obj.iteritems()
+                    for k, v in obj.items()
                 }
             elif isinstance(obj, (list, tuple)):
                 return sorted(

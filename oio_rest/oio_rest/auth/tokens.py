@@ -1,5 +1,5 @@
 import base64
-import cStringIO
+import io
 import datetime
 import gzip
 import os
@@ -25,7 +25,7 @@ IDP_TEMPLATES = {
 
 
 def _gzipstring(s):
-    buf = cStringIO.StringIO()
+    buf = io.StringIO()
 
     with gzip.GzipFile(mode='wb', fileobj=buf, mtime=0) as fp:
         fp.write(s)
@@ -126,7 +126,7 @@ def main(*args):
 
     def my_input(prompt):
         sys.stderr.write(prompt)
-        return raw_input()
+        return input()
 
     username = options.user or my_input('User: ')
     password = options.password or getpass.getpass('Password: ')
@@ -143,7 +143,7 @@ def main(*args):
         msg = ('SSL request failed; you probably need to install the '
                'appropriate certificate authority, or use the correct host '
                'name')
-        print >> sys.stderr, msg, e
+        print(msg, e, file=sys.stderr)
         return 1
 
     if not options.cert_only:

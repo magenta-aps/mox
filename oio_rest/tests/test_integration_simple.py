@@ -106,7 +106,7 @@ class Tests(util.TestCase):
             if endpoint.endswith(UUID_PATTERN)
         ]
 
-        self.assertEquals(
+        self.assertEqual(
             [
                 '/aktivitet/aktivitet',
                 '/dokument/dokument',

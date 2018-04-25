@@ -19,8 +19,8 @@ assertion = Saml2_Assertion(assertion_body, SAML_MOX_ENTITY_ID,
 
 try:
     assertion.check_validity()
-    print "Assertion valid"
-    print "Name ID: %s" % assertion.get_nameid()
+    print("Assertion valid")
+    print("Name ID: %s" % assertion.get_nameid())
 except Exception as e:
-    print "Assertion NOT valid!"
-    print str(e)
+    print("Assertion NOT valid!")
+    print(str(e))

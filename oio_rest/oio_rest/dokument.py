@@ -1,8 +1,8 @@
 # encoding: utf-8
 import flask
-from authentication import requires_auth
-from contentstore import content_store
-import db
+from .authentication import requires_auth
+from .contentstore import content_store
+from . import db
 
 from .oio_rest import OIORestObject, OIOStandardHierarchy
 
@@ -39,7 +39,7 @@ class Dokument(OIORestObject):
         """Set up API with correct database access functions."""
         super(Dokument, cls).create_api(hierarchy, flask, base_url)
         hierarchy = hierarchy.lower()
-        class_url = u"{0}/{1}/{2}".format(base_url,
+        class_url = "{0}/{1}/{2}".format(base_url,
                                           hierarchy,
                                           cls.__name__.lower())
         uuid_regex = (
@@ -49,13 +49,13 @@ class Dokument(OIORestObject):
         date_path_regex = (
             "\\d{4}/\\d{2}/\\d{2}/\\d{2}/\\d{2}/" + uuid_regex + ".bin"
         )
-        download_content_url = u'{0}/<regex("{1}"):content_path>'.format(
+        download_content_url = '{0}/<regex("{1}"):content_path>'.format(
             class_url,
             date_path_regex
         )
 
         flask.add_url_rule(
-            download_content_url, u'_'.join(
+            download_content_url, '_'.join(
                 [cls.__name__, 'download_content']
             ), cls.download_content, methods=['GET']
         )

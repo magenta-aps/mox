@@ -2,7 +2,7 @@
 
 import os
 import datetime
-import urlparse
+import urllib.parse
 import traceback
 
 from flask import Flask, jsonify, redirect, request, url_for, Response
@@ -112,7 +112,7 @@ def page_not_found(e):
 
 def get_service_name():
     'Get the hierarchy of the present method call from the request URL'
-    u = urlparse.urlparse(request.url)
+    u = urllib.parse.urlparse(request.url)
     urlpath = u.path
     service_name = urlpath.split('/')[1].capitalize()
 
@@ -121,7 +121,7 @@ def get_service_name():
 
 def get_class_name():
     'Get the hierarchy of the present method call from the request URL'
-    url = urlparse.urlparse(request.url)
+    url = urllib.parse.urlparse(request.url)
     class_name = url.path.split('/')[2].capitalize()
     return class_name
 
