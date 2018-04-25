@@ -76,7 +76,7 @@ def get_state_names(class_name):
     states = db_struct[class_name.lower()]['tilstande']
 
     if isinstance(states, list):
-        return states[::2]
+        return [state[0] for state in states]
     else:
         return list(states)
 
