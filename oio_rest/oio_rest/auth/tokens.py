@@ -25,12 +25,11 @@ IDP_TEMPLATES = {
 
 
 def _gzipstring(s):
-    buf = io.StringIO()
+    with io.BytesIO() as buf:
+        with gzip.GzipFile(mode='wb', fileobj=buf, mtime=0) as fp:
+            fp.write(s)
 
-    with gzip.GzipFile(mode='wb', fileobj=buf, mtime=0) as fp:
-        fp.write(s)
-
-    return buf.getvalue()
+        return buf.getvalue()
 
 
 def get_token(username, passwd, pretty_print=False, insecure=False):
@@ -95,7 +94,7 @@ def get_token(username, passwd, pretty_print=False, insecure=False):
         text = \
             base64.standard_b64encode(_gzipstring(etree.tostring(tokens[0])))
 
-        return 'saml-gzipped ' + text
+        return b'saml-gzipped ' + text
 
 
 def main(*args):

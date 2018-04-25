@@ -34,7 +34,7 @@ class TestTokens(TestCase):
                 </RequestSecurityTokenResponse>
             </Body>'''
 
-        expected = '''<Assertion whatever="1">
+        expected = b'''<Assertion whatever="1">
                             <Issuer>issuer</Issuer>
                             <Subject>subject</Subject>
                             <Conditions>conditions</Conditions>
@@ -66,8 +66,8 @@ class TestTokens(TestCase):
         </Body>
         '''
 
-        expected_result = ('saml-gzipped H4sIAAAAAAAC/7NxLC5OLSrJzM9TKM9I'
-                           'LEktSy2yVTJU0rfjUkADALryg9gqAAAA')
+        expected_result = (b'saml-gzipped H4sIAAAAAAAC/7NxLC5OLSrJzM9TKM9I'
+                           b'LEktSy2yVTJU0rfjUkADALryg9gqAAAA')
 
         # Act
         actual_result = tokens.get_token(username, passwd)
