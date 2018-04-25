@@ -383,8 +383,8 @@ class NamedTupleAdapter(object):
     def getquoted(self):
         values = list(map(self.prepare_and_adapt, self._tuple_obj))
         values = [v.getquoted() for v in values]
-        sql = ('ROW(' + ','.join(values) + ') :: ' +
-               self._tuple_obj.__class__.__name__)
+        sql = (b'ROW(' + b','.join(values) + b') :: ' +
+               self._tuple_obj.__class__.__name__.encode('ascii'))
         return sql
 
     def __str__(self):
@@ -398,14 +398,14 @@ class AktoerAttrAdapter(NamedTupleAdapter):
         values = [v.getquoted() for v in values]
         qaa = AktoerAttr(*values)  # quoted_aktoer_attr
         values = [
-            qaa.obligatorisk + '::AktivitetAktoerAttrObligatoriskKode',
-            qaa.accepteret + '::AktivitetAktoerAttrAccepteretKode',
-            qaa.repraesentation_uuid + '::uuid',
+            qaa.obligatorisk + b'::AktivitetAktoerAttrObligatoriskKode',
+            qaa.accepteret + b'::AktivitetAktoerAttrAccepteretKode',
+            qaa.repraesentation_uuid + b'::uuid',
             qaa.repraesentation_urn
         ]
 
-        sql = ('ROW(' + ','.join(values) + ') :: ' +
-               self._tuple_obj.__class__.__name__)
+        sql = (b'ROW(' + b','.join(values) + b') :: ' +
+               self._tuple_obj.__class__.__name__.encode('ascii'))
         return sql
 
 
