@@ -322,23 +322,3 @@ class Tests(util.TestCase):
             status_code=202,
             method='DELETE',
         )
-
-    def test_bad_import(self):
-        '''import an activity into an organisation -- not expected to work'''
-        data = util.get_fixture('aktivitet_opret.json')
-
-        self.assertRequestResponse(
-            '/organisation/organisation',
-            {
-                'context':
-                "LINE 21:         'ansvarlig' :: OrganisationRelationKode,\n"
-                "                 ^\n",
-
-                'message':
-                'invalid input value for enum organisationrelationkode: '
-                '"ansvarlig"',
-            },
-            method='POST',
-            status_code=400,
-            json=data,
-        )
