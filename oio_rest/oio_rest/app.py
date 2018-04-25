@@ -145,7 +145,8 @@ def log_api_call(response):
 
 @app.errorhandler(DataError)
 def handle_db_error(error):
-    message, context = error.message.split('\n', 1)
+    message = error.diag.message_primary
+    context = error.diag.context or error.pgerror.split('\n', 1)[-1]
     return jsonify(message=message, context=context), 400
 
 

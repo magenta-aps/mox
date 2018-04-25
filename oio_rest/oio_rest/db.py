@@ -315,7 +315,7 @@ def object_exists(class_name, uuid):
     except psycopg2.Error as e:
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.message)
+            raise DBException(status_code, e.pgerror)
         else:
             raise
 
@@ -343,7 +343,7 @@ where de.indhold = %s"""
     except psycopg2.Error as e:
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.message)
+            raise DBException(status_code, e.pgerror)
         else:
             raise
 
@@ -396,7 +396,7 @@ def create_or_import_object(class_name, note, registration,
     except psycopg2.Error as e:
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.message)
+            raise DBException(status_code, e.pgerror)
         else:
             raise
 
@@ -449,7 +449,7 @@ def delete_object(class_name, registration, note, uuid):
     except psycopg2.Error as e:
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.message)
+            raise DBException(status_code, e.pgerror)
         else:
             raise
 
@@ -489,7 +489,7 @@ def passivate_object(class_name, note, registration, uuid):
     except psycopg2.Error as e:
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.message)
+            raise DBException(status_code, e.pgerror)
         else:
             raise
 
@@ -534,11 +534,11 @@ def update_object(class_name, note, registration, uuid=None,
                         class_name.lower(), uuid
                     ))
 
-        if e.message.startswith(noop_msg):
+        if e.pgerror.startswith(noop_msg):
             return uuid
         elif e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.message)
+            raise DBException(status_code, e.pgerror)
         else:
             raise
 
@@ -580,7 +580,7 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
     except psycopg2.Error as e:
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.message)
+            raise DBException(status_code, e.pgerror)
         else:
             raise
 
@@ -770,7 +770,7 @@ def search_objects(class_name, uuid, registration,
     except psycopg2.Error as e:
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.message)
+            raise DBException(status_code, e.pgerror)
         else:
             raise
 

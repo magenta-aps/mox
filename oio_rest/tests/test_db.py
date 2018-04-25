@@ -1,3 +1,4 @@
+import collections
 import datetime
 import unittest
 
@@ -1213,15 +1214,19 @@ class TestDBGeneralSQL(unittest.TestCase):
         mock_convert_variants.assert_called_with(variants)
 
 
+Diagnostics = collections.namedtuple('Diagnostics', ['message_primary'])
+
+
 @patch("oio_rest.db.get_connection")
 @patch("oio_rest.db.sql_get_registration", new=MagicMock())
 @patch("oio_rest.db.sql_convert_registration", new=MagicMock())
 @patch("oio_rest.db.jinja_env.get_template", new=MagicMock())
 class TestPGErrors(unittest.TestCase):
     class TestException(Exception):
-        def __init__(self):
-            self.pgcode = 'MO123'
-            self.message = '1 2 3 testing...'
+        def __init__(self, code='MO123', message='1 2 3 testing...'):
+            self.pgcode = code
+            self.pgerror = message
+            self.diag = Diagnostics(message)
 
     @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_object_exists_raises_on_pgerror(self, mock_get_conn):
@@ -1235,7 +1240,7 @@ class TestPGErrors(unittest.TestCase):
         cursor.execute.side_effect = TestPGErrors.TestException
 
         # Act
-        with self.assertRaises(DBException):
+        with self.assertRaises(Exception):
             db.object_exists(classname, uuid)
 
     @patch("oio_rest.db.psycopg2.Error", new=TestException)
@@ -1247,8 +1252,7 @@ class TestPGErrors(unittest.TestCase):
         uuid = "1c3236a1-9384-4730-82ab-5443e95bcead"
 
         mock_get_conn.return_value.cursor.return_value = cursor = MagicMock()
-        exception = TestPGErrors.TestException()
-        exception.pgcode = '12345'
+        exception = TestPGErrors.TestException('12345')
         cursor.execute.side_effect = exception
 
         # Act
@@ -1359,12 +1363,13 @@ class TestPGErrors(unittest.TestCase):
         class_name = 'classname'
         uuid = '40910e35-feeb-47ca-8020-a88fffe6d6f3'
 
-        exception = TestPGErrors.TestException()
-        exception.pgcode = '12345'
-        exception.message = (
-            'Unable to update {} with uuid [{}], '
-            'being unable to find any previous registrations.\n'
-        ).format(class_name.lower(), uuid)
+        exception = TestPGErrors.TestException(
+            '12345',
+            (
+                'Unable to update {} with uuid [{}], '
+                'being unable to find any previous registrations.'
+            ).format(class_name.lower(), uuid),
+        )
 
         mock_get_conn.return_value.cursor.return_value = cursor = MagicMock()
         cursor.execute.side_effect = exception
@@ -1435,12 +1440,12 @@ class TestPGErrors(unittest.TestCase):
         class_name = 'classname'
         uuid = '8abdb359-ce8a-47d9-a5d0-c9a1c6d36c44'
 
-        exception = TestPGErrors.TestException()
-        exception.message = (
-            'Aborted updating {} with id [{}] as the given data, '
+        exception = TestPGErrors.TestException(
+            message='Aborted updating {} with id [{}] as the given data, '
             'does not give raise to a new registration.'.format(
                 class_name.lower(), uuid
-            ))
+            )
+        )
         mock_get_conn.return_value.cursor.return_value = cursor = MagicMock()
         cursor.execute.side_effect = exception
 
