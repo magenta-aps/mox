@@ -440,8 +440,8 @@ class OIORestObject(object):
         hierarchy = hierarchy.lower()
         class_name = cls.__name__.lower()
         class_url = "{0}/{1}/{2}".format(base_url,
-                                          hierarchy,
-                                          class_name)
+                                         hierarchy,
+                                         class_name)
         cls_fields_url = "{0}/{1}".format(class_url, "fields")
         uuid_regex = (
             "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}" +

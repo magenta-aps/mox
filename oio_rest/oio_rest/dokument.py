@@ -40,8 +40,8 @@ class Dokument(OIORestObject):
         super(Dokument, cls).create_api(hierarchy, flask, base_url)
         hierarchy = hierarchy.lower()
         class_url = "{0}/{1}/{2}".format(base_url,
-                                          hierarchy,
-                                          cls.__name__.lower())
+                                         hierarchy,
+                                         cls.__name__.lower())
         uuid_regex = (
             "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}" +
             "-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"

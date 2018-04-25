@@ -275,11 +275,12 @@ def sql_get_registration(class_name, time_period, life_cycle_code,
 
 def sql_convert_restrictions(class_name, restrictions):
     """Convert a list of restrictions to SQL."""
-    registrations = [restriction_to_registration(class_name, r) for r in restrictions]
+    registrations = [restriction_to_registration(class_name, r)
+                     for r in restrictions]
     sql_restrictions = [sql_get_registration(
-            class_name, None, None, None, None,
-            sql_convert_registration(r, class_name)
-        ) for r in registrations]
+        class_name, None, None, None, None,
+        sql_convert_registration(r, class_name)
+    ) for r in registrations]
     return sql_restrictions
 
 
