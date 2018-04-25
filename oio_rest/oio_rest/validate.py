@@ -107,12 +107,11 @@ def _adapter_tilstande(obj):
     :return: The 'tilstande' from DB_STRUCTURE for the given object type.
     """
     tilstande = db.REAL_DB_STRUCTURE[obj]['tilstande']
-    print(tilstande)
     if type(tilstande) == types.DictType:
         return tilstande
     else:
         return {
-            tilstande[i]: tilstande[i + 1] for i in range(0, len(tilstande), 2)
+            tilstand[0]: tilstand[1] for tilstand in tilstande
         }
 
 
