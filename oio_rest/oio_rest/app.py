@@ -78,7 +78,7 @@ def get_token():
             text = tokens.get_token(username, password)
         except Exception as e:
             traceback.print_exc()
-            raise AuthorizationFailedException(e.message)
+            raise AuthorizationFailedException(*e.args)
 
         return Response(text, mimetype='text/plain')
 

@@ -706,7 +706,7 @@ def filter_nulls(o):
             # Handle clearable wrapper db-types.
             return o.get("value", None)
         else:
-            return {k: filter_nulls(v) for k, v in o.iteritems()
+            return {k: filter_nulls(v) for k, v in o.items()
                     if v is not None and filter_nulls(v) is not None}
     elif isinstance(o, list):
         return [filter_nulls(v) for v in o]

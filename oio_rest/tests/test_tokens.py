@@ -297,7 +297,7 @@ class TestTokens(TestCase):
             text=util.get_fixture('wso2-successful-login.xml'),
         )
 
-        assertion = util.get_fixture('wso2-assertion.txt')
+        assertion = util.get_fixture('wso2-assertion.txt', 'rb')
 
         self.assertEqual(assertion, tokens.get_token('hest', 'fest'))
 
@@ -310,7 +310,7 @@ class TestTokens(TestCase):
             text=util.get_fixture('adfs-successful-login.xml'),
         )
 
-        assertion = util.get_fixture('adfs-assertion.txt')
+        assertion = util.get_fixture('adfs-assertion.txt', 'rb')
 
         self.assertEqual(assertion, tokens.get_token('hest', 'fest'))
 

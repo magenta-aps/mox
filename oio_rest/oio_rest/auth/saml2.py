@@ -60,7 +60,7 @@ class Saml2_Assertion(OneLogin_Saml2_Response):
                 },
                 sp_validation_only=True,
             ),
-            base64.b64encode(self.response),
+            base64.b64encode(self.response.encode('ascii')),
         )
 
     def __query(self, query):

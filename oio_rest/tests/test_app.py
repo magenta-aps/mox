@@ -45,4 +45,4 @@ class TestApp(TestCase):
 
         # Assert
         self.assertEqual(200, result.status_code)
-        self.assertEqual('testtoken', result.data)
+        self.assertEqual(b'testtoken', result.data)

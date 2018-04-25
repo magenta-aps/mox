@@ -39,7 +39,7 @@ class TestDB(unittest.TestCase):
         # Assert
         self.assertEqual(expected_args, mock.connect.call_args)
 
-    @patch('oio_rest.db.unicode', new=MagicMock())
+    @patch('oio_rest.db.str', new=MagicMock())
     @patch('oio_rest.db.psyco_adapt', new=MagicMock())
     @patch('oio_rest.db.get_connection')
     def test_adapt_only_creates_one_connection(self, mock_get_conn):
@@ -1221,6 +1221,7 @@ class TestPGErrors(unittest.TestCase):
     class TestException(Exception):
         def __init__(self):
             self.pgcode = 'MO123'
+            self.message = '1 2 3 testing...'
 
     @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_object_exists_raises_on_pgerror(self, mock_get_conn):

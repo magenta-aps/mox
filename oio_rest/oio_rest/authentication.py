@@ -88,7 +88,7 @@ def check_saml_authentication():
         # print "TOKEN: ", token
     except Exception as e:
         errmsg = "SAML token validation failed: {}".format(
-            e.message or (e.args and e.args[0]) or str(e)
+            e.args and e.args[0] or str(e)
         )
         raise AuthorizationFailedException(errmsg)
 
