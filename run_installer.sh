@@ -36,12 +36,5 @@ sudo apt-get install python3 python3-venv python3-dev
 ## Install python (installer) dependencies
 $PYTHON_EXEC -m pip install -r $REQUIREMENTS
 
-
-## Run setup
-
-# Installation variables:
-export BASE_DIR=$BASE_DIR
-export INSTALLER_DIR=$INSTALLER_DIR
-
-# Run installer (as SUPERUSER)
+## Run installer (as SUPERUSER)
 sudo $PYTHON_EXEC $INSTALLER
