@@ -40,8 +40,8 @@ $PYTHON_EXEC -m pip install -r $REQUIREMENTS
 ## Run setup
 
 # Installation variables:
-export BASE_DIR
-export INSTALLER_DIR
+export BASE_DIR=$BASE_DIR
+export INSTALLER_DIR=$INSTALLER_DIR
 
 # Run installer (as SUPERUSER)
 sudo $PYTHON_EXEC $INSTALLER
