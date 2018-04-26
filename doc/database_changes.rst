@@ -9,15 +9,15 @@ has production data in it ) - as it will be dropped . The script is
 intended to initialize a new database.
 
 The recreatedb.sh script runs a process, where configuration defined in
-settings.py for each OIO-type, combined with the listing of OIO-types a
-few places in recreatedb.sh, will trigger the generation of tables,
-indexes, datatypes and functions in the database, to support the
+db_structure.py for each OIO-type, combined with the listing of
+OIO-types a few places in recreatedb.sh, will trigger the generation of
+tables, indexes, datatypes and functions in the database, to support the
 handling of the OIO-types.
 
 This process uses the jinja-templates (.jinja.sql) located in the folder
 'templates' to generate the bulk of the code/structures in the database
 to support a given OIO-type. In a few cases (e.g. for OIO-type
-'Dokument'), the settings.py file contains some extra configuration,
+'Dokument'), the db_structure.py file contains some extra configuration
 that is utilized in very specific parts of a template, to accommodate
 for variations for that particular type. However, in a lot of cases, the
 handling of variations is done by applying patch-files to the output of
@@ -115,12 +115,13 @@ a patch failed to apply fully (or entirely).
     also in the patches folder, the modified recreatedb.sh script and
     files containing any new or modified tests.
 
-How changes in settings.py or jinja-tempaltes may affect patching
------------------------------------------------------------------
+How changes in db_structure.py or jinja-templates may affect patching
+---------------------------------------------------------------------
 
-When you are introducing changes in settings.py or in jinja-tempaltes,
-you need to pay special attention, when your changes involves OIO-types,
-the function definitions of which are the target of patching.
+When you are introducing changes in db_structure.py or in
+jinja-tempaltes, you need to pay special attention, when your changes
+involves OIO-types, the function definitions of which are the target of
+patching.
 
 As a basis, you should always run recreatedb.sh and verify that all
 patches applied successfully, by inspecting the output of the script -
@@ -131,9 +132,9 @@ patches, you should do a search in the .diff files to check for relevant
 sections, that may need manual updating. As an example, say you need to
 add a new relation type to the OIO-type 'Tilstand', where the new
 relation is of unlimited cardinality. After you have added the new
-relation to the relevant section in settings.py and you have completed
-the step described above - you should search the patch (.diff) files
-related to 'Tilstand' for the name of an existing relation type of
+relation to the relevant section in db_structure.py and you have
+completed the step described above - you should search the patch (.diff)
+files related to 'Tilstand' for the name of an existing relation type of
 unlimited cardinality. If you find occurrences in the diff files (and at
 the time of this writing, you should) of the 'sister'-relation type, you
 need to inspect the code in the full context and determine if not your

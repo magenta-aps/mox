@@ -368,9 +368,6 @@ class OIORestObject(object):
 
             return jsonify({'uuid': uuid}), 200
 
-        # We should never get here.
-        assert(0 != 0)
-
     @classmethod
     @requires_auth
     def patch_object(cls, uuid):
