@@ -197,8 +197,7 @@ class OIORestObject(object):
 
         # Validate JSON input
         try:
-            obj_type = validate.get_lora_object_type(input)
-            jsonschema.validate(input, validate.SCHEMA[obj_type])
+            validate.validate(input)
         except jsonschema.exceptions.ValidationError as e:
             return jsonify({'message': e.message}), 400
 

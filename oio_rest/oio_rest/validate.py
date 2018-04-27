@@ -1,5 +1,4 @@
 import copy
-import types
 import jsonschema
 
 import db_structure as db
@@ -90,29 +89,13 @@ def _generate_attributter(obj):
     return _generate_schema_object(
         {
             egenskaber_name: _generate_schema_array(
-                _generate_schema_object(egenskaber, db_attributter[
-                    'required_egenskaber'] + ['virkning'])
+                _generate_schema_object(
+                    egenskaber,
+                    db_attributter['required_egenskaber'] + ['virkning'])
             )
         },
         [egenskaber_name]
     )
-
-
-def _adapter_tilstande(obj):
-    """
-    The 'tilstande' parts of DB_STRUCTURE was changed (upstream) to use
-    lists in some cases instead of dictoinaries. This function converts
-    the 'tilstande' parts back to dictionaries whenever necessary.
-    :param obj: The LoRa object type, i.e. 'organisation', 'bruger',...
-    :return: The 'tilstande' from DB_STRUCTURE for the given object type.
-    """
-    tilstande = db.REAL_DB_STRUCTURE[obj]['tilstande']
-    if type(tilstande) == types.DictType:
-        return tilstande
-    else:
-        return {
-            tilstand[0]: tilstand[1] for tilstand in tilstande
-        }
 
 
 def _generate_tilstande(obj):
@@ -122,12 +105,12 @@ def _generate_tilstande(obj):
     :return: Dictionary representing the 'tilstande' part of the JSON schema.
     """
 
-    tilstande = _adapter_tilstande(obj)
+    tilstande = dict(db.REAL_DB_STRUCTURE[obj]['tilstande'])
 
     properties = {}
     required = []
     for key in tilstande.keys():
-        tilstand_name = '{}{}'.format(obj, key)
+        tilstand_name = obj + key
 
         properties[tilstand_name] = _generate_schema_array(
             _generate_schema_object(
@@ -174,7 +157,7 @@ def _handle_special_relations_specific(obj, relation_schema):
         )
         properties.pop('uuid')
         relation_schema['tilstandsvaerdi']['items']['required'].remove('uuid')
-    if obj == SAG:
+    elif obj == SAG:
         properties = relation_schema['journalpost']['items']['properties']
         properties['journalpostkode'] = {
             'type': 'string',
@@ -354,3 +337,8 @@ SCHEMA = {
     obj: copy.deepcopy(generate_json_schema(obj))
     for obj in db.REAL_DB_STRUCTURE.keys()
 }
+
+
+def validate(input_json):
+    obj_type = get_lora_object_type(input_json)
+    jsonschema.validate(input_json, SCHEMA[obj_type])

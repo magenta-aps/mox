@@ -23,7 +23,7 @@ def get_attribute_fields(attribute_name):
         "Initialize attr fields for ease of use."
         for c in db_struct:
             for a in db_struct[c]["attributter"]:
-                if not a == 'required_egenskaber':
+                if not a.startswith('required_'):
                     _attribute_fields[
                         c + a
                         ] = db_struct[c]["attributter"][a] + ['virkning']
@@ -63,7 +63,7 @@ def get_attribute_names(class_name):
             # trigger occasional errors
             _attribute_names[c] = sorted(
                 c + a for a in db_struct[c]['attributter'] if
-                not a == 'required_egenskaber'
+                not a.startswith('required_')
             )
     return _attribute_names[class_name.lower()]
 

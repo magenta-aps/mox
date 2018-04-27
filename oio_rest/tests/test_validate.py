@@ -7,42 +7,6 @@ import jsonschema
 import oio_rest.validate as validate
 
 
-class TestTilstandeAdapter(unittest.TestCase):
-    def test_facet(self):
-        self.assertEqual(
-            {
-                'publiceret': ['Publiceret', 'IkkePubliceret']
-            },
-            validate._adapter_tilstande('facet')
-        )
-
-    def test_organisation(self):
-        self.assertEqual(
-            {
-                'gyldighed': ['Aktiv', 'Inaktiv']
-            },
-            validate._adapter_tilstande('organisation')
-        )
-
-    def test_tilstand(self):
-        self.assertEqual(
-            {
-                'status': ['Inaktiv', 'Aktiv'],
-                'publiceret': ['Publiceret', 'IkkePubliceret', 'Normal']
-            },
-            validate._adapter_tilstande('tilstand')
-        )
-
-    def test_aktivitet(self):
-        self.assertEqual(
-            {
-                'status': ["Inaktiv", "Aktiv", "Aflyst"],
-                'publiceret': ["Publiceret", "IkkePubliceret", "Normal"],
-            },
-            validate._adapter_tilstande('aktivitet')
-        )
-
-
 class TestGenerateJSONSchema(unittest.TestCase):
     maxDiff = None
 
