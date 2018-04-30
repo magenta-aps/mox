@@ -5,7 +5,7 @@ from freezegun import freeze_time
 
 from mock import patch, MagicMock
 
-from oio_rest.contentstore import ContentStore
+from contentstore import ContentStore
 
 
 # Override os.path with posix-version, to be OS-agnostic

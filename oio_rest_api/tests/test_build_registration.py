@@ -2,7 +2,7 @@ import unittest
 
 from mock import MagicMock, patch
 
-import oio_rest.utils.build_registration as br
+import utils.build_registration as br
 
 
 class TestBuildRegistration(unittest.TestCase):

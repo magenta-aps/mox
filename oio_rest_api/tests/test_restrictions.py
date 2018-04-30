@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from mock import patch, MagicMock
 
-from oio_rest.auth import restrictions
+from auth import restrictions
 
 
 class TestRestrictions(TestCase):

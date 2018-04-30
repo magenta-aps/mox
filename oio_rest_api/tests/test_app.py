@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from mock import patch
 
-from oio_rest import app as flaskapp
+import app as flaskapp
 
 
 class TestApp(TestCase):

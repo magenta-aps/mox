@@ -4,11 +4,11 @@ import flask
 import freezegun
 from mock import MagicMock, patch
 
-from oio_rest import authentication
-from oio_rest.custom_exceptions import (AuthorizationFailedException,
+import authentication
+from custom_exceptions import (AuthorizationFailedException,
                                         UnauthorizedException)
 
-from . import util
+from tests import util
 
 
 class TestAuthentication(TestCase):

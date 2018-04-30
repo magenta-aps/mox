@@ -8,10 +8,11 @@ import freezegun
 from mock import MagicMock, patch
 from werkzeug.exceptions import BadRequest
 
-from oio_rest import oio_rest_api, db, db_helpers
-from oio_rest.custom_exceptions import (BadRequestException, NotFoundException,
+import db
+import db_helpers
+from custom_exceptions import (BadRequestException, NotFoundException,
                                         GoneException)
-from oio_rest.oio_rest_api import OIOStandardHierarchy, OIORestObject
+from oio_rest import OIOStandardHierarchy, OIORestObject
 
 
 class TestClassRestObject(OIORestObject):

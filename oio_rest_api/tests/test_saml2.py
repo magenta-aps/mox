@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from mock import patch
 
-from oio_rest.auth.saml2 import Saml2_Assertion
+from auth.saml2 import Saml2_Assertion
 
 
 class TestSAML2(TestCase):

@@ -3,8 +3,8 @@ from unittest import TestCase
 from mock import MagicMock, call, patch
 from werkzeug.datastructures import ImmutableMultiDict
 
-from oio_rest import db_helpers
-from oio_rest.custom_exceptions import BadRequestException
+import db_helpers
+from custom_exceptions import BadRequestException
 
 
 class TestDBHelpers(TestCase):

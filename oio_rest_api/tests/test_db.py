@@ -3,8 +3,8 @@ import unittest
 
 from mock import MagicMock, call, patch
 
-import oio_rest.db as db
-from oio_rest.custom_exceptions import (BadRequestException, DBException,
+import db
+from custom_exceptions import (BadRequestException, DBException,
                                         NotFoundException)
 
 

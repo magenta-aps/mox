@@ -5,9 +5,9 @@ import requests
 import requests_mock
 from mock import MagicMock, patch
 
-from oio_rest.auth import tokens
+from auth import tokens
 
-from . import util
+from tests import util
 
 
 class TestTokens(TestCase):
