@@ -1,62 +1,82 @@
 # -*- python -*-
 
-BASE_URL = ''
+import os
 
-DATABASE = 'mox'
-DB_USER = 'mox'
-DB_PASSWORD = 'mox'
+# Environ wrapper
+env = os.environ.get
+
+# Base url
+BASE_URL = env('BASE_URL', '')
+
+# DB (Postgres) settings
+DATABASE = env('DB_NAME', 'mox')
+DB_USER = env('DB_USER', 'mox')
+DB_PASSWORD = env('DB_PASS', 'mox')
 
 # This is where file uploads are stored. It must be readable and writable by
 # the mox user, running the REST API server. This is used in the Dokument
 # hierarchy.
-FILE_UPLOAD_FOLDER = '/var/mox'
+FILE_UPLOAD_FOLDER = env('FILE_UPLOAD_FOLDER', '/var/mox')
 
 # The Endpoint specified in the AppliesTo element of the STS request
 # This will be used to verify the Audience of the SAML Assertion
-SAML_MOX_ENTITY_ID = 'https://${domain}'
+SAML_MOX_ENTITY_ID = env('SAML_MOX_ENTITY_ID', 'https://saml.local')
 
 # The Entity ID of the IdP. Used to verify the token Issuer --
 # specified in AD FS as the Federation Service identifier.
-SAML_IDP_ENTITY_ID = 'localhost'
-#SAML_IDP_ENTITY_ID = 'http://fs.contoso.com/adfs/services/trust'
+# Example: 'http://fs.contoso.com/adfs/services/trust'
+SAML_IDP_ENTITY_ID = env('SAML_IDP_ENTITY_ID', 'localhost')
 
 # The URL on which to access the SAML IdP.
-SAML_IDP_URL = "https://${domain}:9443/services/wso2carbon-sts.wso2carbon-stsHttpsEndpoint"  # noqa
-#SAML_IDP_URL = "https://fs.contoso.com/adfs/services/trust/13/UsernameMixed"
+# Example: 'https://fs.contoso.com/adfs/services/trust/13/UsernameMixed'
+SAML_IDP_URL = env(
+    'SAML_IDP_URL',
+    'https://localhost:9443/services/wso2carbon-sts.wso2carbon-stsHttpsEndpoint'
+)
 
 # We currently support authentication against 'wso2' and 'adfs'
-SAML_IDP_TYPE = "wso2"
-#SAML_IDP_TYPE = "adfs"
+SAML_IDP_TYPE = env('SAML_IDP_TYPE', 'wso2')
 
 # The public certificate file of the IdP, in PEM-format.
-SAML_IDP_CERTIFICATE = "test_auth_data/idp-certificate.pem"
+SAML_IDP_CERTIFICATE = env(
+    'SAML_IDP_CERTIFICATE',
+    'test_auth_data/idp-certificate.pem'
+)
 
 # Whether to enable SAML authentication
-USE_SAML_AUTHENTICATION = False
+USE_SAML_AUTHENTICATION = env('USE_SAML_AUTHENTICATION', False)
 
 # SAML user ID attribute -- default is for WSO2
-SAML_USER_ID_ATTIBUTE = 'http://wso2.org/claims/url'
-#SAML_USER_ID_ATTIBUTE = ("http://schemas.xmlsoap.org/ws/2005/05/"
-#                         "identity/claims/privatepersonalidentifier")
+# Example:
+#   http://schemas.xmlsoap.org
+#       /ws/2005/05/identity/claims/privatepersonalidentifier
+SAML_USER_ID_ATTIBUTE = env(
+    'SAML_USER_ID_ATTIBUTE',
+    'http://wso2.org/claims/url'
+)
 
-# Whether authorization is enabled - if not, the restrictions module is not
-# called.
-DO_ENABLE_RESTRICTIONS = False
+# Whether authorization is enabled
+# if not, the restrictions module is not called.
+DO_ENABLE_RESTRICTIONS = env('DO_ENABLE_RESTRICTIONS', False)
 
 # The module which implements the authorization restrictions.
 # Must be present in sys.path.
-AUTH_RESTRICTION_MODULE = 'oio_rest.auth.wso_restrictions'
+AUTH_RESTRICTION_MODULE = env(
+    'AUTH_RESTRICTION_MODULE',
+    'oio_rest.auth.wso_restrictions'
+)
+
 # The name of the function which retrieves the restrictions.
 # Must be present in AUTH_RESTRICTION_MODULE and have the correct signature.
-AUTH_RESTRICTION_FUNCTION = 'get_auth_restrictions'
+AUTH_RESTRICTION_FUNCTION = env(
+    'AUTH_RESTRICTION_FUNCTION',
+    'get_auth_restrictions'
+)
 
 # Log AMQP settings
-LOG_AMQP_SERVER = 'localhost'
-MOX_LOG_EXCHANGE = 'mox.log'
-MOX_LOG_QUEUE = 'mox.log_queue'
-LOG_IGNORED_SERVICES = ['Log', ]
+LOG_AMQP_SERVER = env('LOG_AMQP_SERVER', 'localhost')
+MOX_LOG_EXCHANGE = env('MOX_LOG_EXCHANGE', 'mox.log')
+MOX_LOG_QUEUE = env('MOX_LOG_QUEUE', 'mox.log_queue')
 
-import os
-MOX_BASE_DIR = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '..', '..')
-)
+# Ignore services
+LOG_IGNORED_SERVICES = ['Log', ]
