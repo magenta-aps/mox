@@ -5,8 +5,8 @@ import sys
 import pwd
 import grp
 from socket import gethostname
-import salt.client
-import salt.config
+from salt import client
+from salt import config
 
 
 # Base dir / root of git repository
@@ -18,7 +18,7 @@ installer_dir = os.path.dirname(
 )
 
 # Import salt config
-__opts__ = salt.config.minion_config("salt.conf")
+__opts__ = config.minion_config("salt.conf")
 
 # Set file roots (relative to rootdir)
 salt_base = os.path.join(installer_dir, "base")
@@ -31,7 +31,7 @@ __opts__['file_roots'] = {
 
 # Minion caller client
 # This used in a masterless configuration
-caller = salt.client.Caller(mopts=__opts__)
+caller = client.Caller(mopts=__opts__)
 
 
 # Grains / Configuration variables
@@ -40,12 +40,15 @@ uid = os.getuid()
 gid = os.getgid()
 user = pwd.getpwuid(uid).pw_name
 group = grp.getgrgid(gid).gr_name
+virtualenv = "{root}/python-env".format(root=base_dir)
+python_exec = "{venv}/bin/python".format(venv=virtualenv)
 
 db_config = {
     "host": "localhost",
     "name": "mox",
     "user": "mox",
-    "pass": "mox"
+    "pass": "mox",
+    "superuser": "postgres"
 }
 
 amqp_config = {
@@ -57,9 +60,12 @@ amqp_config = {
 }
 
 mox_config = {
-    "hostname": hostname ,
+    "hostname": hostname,
     "user": user,
     "group": group,
+    "base_dir": base_dir,
+    "virtualenv": virtualenv,
+    "python_exec": python_exec,
     "db": db_config,
     "amqp": amqp_config
 }
