@@ -80,3 +80,6 @@ MOX_LOG_QUEUE = env('MOX_LOG_QUEUE', 'mox.log_queue')
 
 # Ignore services
 LOG_IGNORED_SERVICES = ['Log', ]
+
+# Log files
+AUDIT_LOG_FILE = env('AUDIT_LOG_FILE', '/var/log/mox/audit.log')
