@@ -725,8 +725,8 @@ class TestOIORestObject(TestCase):
     @patch("oio_rest.oio_rest.db.object_exists")
     @patch("oio_rest.oio_rest.db.update_object")
     def test_patch_object_update_if_deleted_or_passive(self, mock_update,
-                                                     mock_exists,
-                                                     mock_life_cycle):
+                                                       mock_exists,
+                                                       mock_life_cycle):
         # type: (MagicMock, MagicMock, MagicMock) -> None
         from oio_rest.db import Livscyklus
 
@@ -757,8 +757,8 @@ class TestOIORestObject(TestCase):
     @patch("oio_rest.oio_rest.db.object_exists")
     @patch("oio_rest.oio_rest.db.update_object")
     def test_patch_object_update_if_not_deleted_or_passive(self, mock_update,
-                                                         mock_exists,
-                                                         mock_life_cycle):
+                                                           mock_exists,
+                                                           mock_life_cycle):
         # type: (MagicMock, MagicMock, MagicMock) -> None
         from oio_rest.db import Livscyklus
 
@@ -788,8 +788,8 @@ class TestOIORestObject(TestCase):
     @patch("oio_rest.oio_rest.db.object_exists")
     @patch("oio_rest.oio_rest.db.passivate_object")
     def test_patch_object_passivate_if_livscyklus_passiv(self, mock_passivate,
-                                                       mock_exists,
-                                                       mock_life_cycle):
+                                                         mock_exists,
+                                                         mock_life_cycle):
         # type: (MagicMock, MagicMock, MagicMock) -> None
         from oio_rest.db import Livscyklus
 

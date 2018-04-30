@@ -156,7 +156,7 @@ class Tests(util.TestCase):
                 'uuid': objid,
             },
             json=util.get_fixture('aktivitet_opdater.json'),
-            method='PUT',
+            method='PATCH',
         )
 
         expected = {

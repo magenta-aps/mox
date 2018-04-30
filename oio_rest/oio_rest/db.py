@@ -417,6 +417,11 @@ def delete_object(class_name, registration, note, uuid):
     Deleting is the same as updating with the life cycle code "Slettet".
     """
 
+    if not object_exists(class_name, uuid):
+        raise NotFoundException(
+            "No {} with ID {} found.".format(class_name, uuid)
+        )
+
     user_ref = get_authenticated_user()
     life_cycle_code = Livscyklus.SLETTET.value
     sql_template = jinja_env.get_template('update_object.sql')
@@ -444,18 +449,10 @@ def delete_object(class_name, registration, note, uuid):
     try:
         cursor.execute(sql)
     except psycopg2.Error as e:
-        not_found_msg = (
-            'Unable to update {} with uuid [{}], '
-            'being unable to find any previous registrations.\n'
-        ).format(class_name.lower(), uuid)
         already_deleted_msg = (
             'Error updating {} with uuid [{}], '
             'Invalid [livscyklus] transition to [Slettet]'
         ).format(class_name.lower(), uuid)
-        if e.message == not_found_msg:
-            raise NotFoundException(
-                "No {} with ID {} found.".format(class_name, uuid)
-            )
         if already_deleted_msg in e.message:
             # DELETE is idempotent, no problem here
             return
