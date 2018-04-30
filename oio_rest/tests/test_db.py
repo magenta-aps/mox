@@ -1295,7 +1295,7 @@ class TestPGErrors(unittest.TestCase):
             db.create_or_import_object('', '', '', '')
 
     @patch("oio_rest.db.psycopg2.Error", new=TestException)
-    @patch('oio_rest.db.object_exists', new=MagicMock())
+    @patch('oio_rest.db.object_exists', new=lambda *x: False)
     def test_create_or_import_object_raises_on_noop_pgerror(self,
                                                             mock_get_conn):
         # type: (MagicMock) -> None
@@ -1315,7 +1315,7 @@ class TestPGErrors(unittest.TestCase):
         cursor.execute.side_effect = exception
 
         # Act
-        with self.assertRaises(DBException):
+        with self.assertRaises(TestPGErrors.TestException):
             db.create_or_import_object(class_name, '', '', uuid)
 
     @patch("oio_rest.db.psycopg2.Error", new=TestException)
