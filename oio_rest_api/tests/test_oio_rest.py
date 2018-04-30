@@ -8,10 +8,10 @@ import freezegun
 from mock import MagicMock, patch
 from werkzeug.exceptions import BadRequest
 
-from oio_rest import oio_rest, db, db_helpers
+from oio_rest import oio_rest_api, db, db_helpers
 from oio_rest.custom_exceptions import (BadRequestException, NotFoundException,
                                         GoneException)
-from oio_rest.oio_rest import OIOStandardHierarchy, OIORestObject
+from oio_rest.oio_rest_api import OIOStandardHierarchy, OIORestObject
 
 
 class TestClassRestObject(OIORestObject):
@@ -1046,7 +1046,7 @@ class TestOIORest(TestCase):
         d = {testkey: expected_result}
 
         # Act
-        actual_result = oio_rest.typed_get(d, testkey, 'default')
+        actual_result = oio_rest_api.typed_get(d, testkey, 'default')
 
         # Assert
         self.assertEqual(expected_result, actual_result)
@@ -1058,7 +1058,7 @@ class TestOIORest(TestCase):
         d = {testkey: None}
 
         # Act
-        actual_result = oio_rest.typed_get(d, testkey, expected_result)
+        actual_result = oio_rest_api.typed_get(d, testkey, expected_result)
 
         # Assert
         self.assertEqual(expected_result, actual_result)
@@ -1072,7 +1072,7 @@ class TestOIORest(TestCase):
 
         # Act & Assert
         with self.assertRaises(BadRequestException):
-            oio_rest.typed_get(d, testkey, default)
+            oio_rest_api.typed_get(d, testkey, default)
 
     def test_get_virkning_dates_virkningstid(self):
         # Arrange
@@ -1084,7 +1084,7 @@ class TestOIORest(TestCase):
         expected_to = expected_from + datetime.timedelta(microseconds=1)
 
         # Act
-        actual_from, actual_to = oio_rest.get_virkning_dates(args)
+        actual_from, actual_to = oio_rest_api.get_virkning_dates(args)
 
         # Assert
         self.assertEqual(expected_from, actual_from)
@@ -1101,7 +1101,7 @@ class TestOIORest(TestCase):
         expected_to = '2020-01-01'
 
         # Act
-        actual_from, actual_to = oio_rest.get_virkning_dates(args)
+        actual_from, actual_to = oio_rest_api.get_virkning_dates(args)
 
         # Assert
         self.assertEqual(expected_from, actual_from)
@@ -1116,7 +1116,7 @@ class TestOIORest(TestCase):
         expected_to = expected_from + datetime.timedelta(microseconds=1)
 
         # Act
-        actual_from, actual_to = oio_rest.get_virkning_dates(args)
+        actual_from, actual_to = oio_rest_api.get_virkning_dates(args)
 
         # Assert
         self.assertEqual(expected_from, actual_from)
@@ -1132,7 +1132,7 @@ class TestOIORest(TestCase):
 
         # Act
         with self.assertRaises(BadRequestException):
-            oio_rest.get_virkning_dates(args)
+            oio_rest_api.get_virkning_dates(args)
 
     def test_get_registreret_dates_registreringstid(self):
         # Arrange
@@ -1144,7 +1144,7 @@ class TestOIORest(TestCase):
         expected_to = expected_from + datetime.timedelta(microseconds=1)
 
         # Act
-        actual_from, actual_to = oio_rest.get_registreret_dates(args)
+        actual_from, actual_to = oio_rest_api.get_registreret_dates(args)
 
         # Assert
         self.assertEqual(expected_from, actual_from)
@@ -1161,7 +1161,7 @@ class TestOIORest(TestCase):
         expected_to = '2020-01-01'
 
         # Act
-        actual_from, actual_to = oio_rest.get_registreret_dates(args)
+        actual_from, actual_to = oio_rest_api.get_registreret_dates(args)
 
         # Assert
         self.assertEqual(expected_from, actual_from)
@@ -1176,7 +1176,7 @@ class TestOIORest(TestCase):
         expected_to = None
 
         # Act
-        actual_from, actual_to = oio_rest.get_registreret_dates(args)
+        actual_from, actual_to = oio_rest_api.get_registreret_dates(args)
 
         # Assert
         self.assertEqual(expected_from, actual_from)
@@ -1192,4 +1192,4 @@ class TestOIORest(TestCase):
 
         # Act
         with self.assertRaises(BadRequestException):
-            oio_rest.get_registreret_dates(args)
+            oio_rest_api.get_registreret_dates(args)
