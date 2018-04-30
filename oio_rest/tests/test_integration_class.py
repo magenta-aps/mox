@@ -402,19 +402,9 @@ class Tests(util.TestCase):
         '''import a class into an organisation -- not expected to work'''
         data = util.get_fixture('klasse_opret.json')
 
-        self.assertRequestResponse(
+        self.assertRequestFails(
             '/klassifikation/klassifikation',
-            {
-                'context':
-                "LINE 37:         "
-                "'redaktoerer' :: KlassifikationRelationKode,\n"
-                "                 ^\n",
-
-                'message':
-                'invalid input value for enum klassifikationrelationkode: '
-                '"redaktoerer"',
-            },
+            400,
             method='POST',
-            status_code=400,
             json=data,
         )
