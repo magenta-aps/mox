@@ -1,12 +1,10 @@
 #!/bin/bash -e
 set -b
 
-DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-MOXDIR=$(cd $DIR/..; pwd)
-PYTHON="$MOXDIR/python-env/bin/python"
+MOXDIR=${BASE_DIR}
+DIR=${DB_DIR}
 
-cd $DIR
-source ./config.sh
+PYTHON=${PYTHON_EXEC}
 
 export PGPASSWORD="$MOX_DB_PASSWORD"
 # TODO: Support remote $SUPER_USER DB server
