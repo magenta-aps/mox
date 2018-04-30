@@ -30,10 +30,6 @@ def typed_get(d, field, default):
     if v is None:
         return default
 
-    # special case strings
-    if t is str or t is str:
-        t = str
-
     if not isinstance(v, t):
         raise BadRequestException('expected %s for %r, found %s: %s' %
                                   (t.__name__, field, type(v).__name__,
