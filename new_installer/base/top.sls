@@ -1,3 +1,4 @@
 base:
   "*":
-    - tasks.test
+    - tasks.create_venv
+    - tasks.install_database
