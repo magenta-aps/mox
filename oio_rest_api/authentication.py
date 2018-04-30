@@ -7,9 +7,8 @@ from custom_exceptions import AuthorizationFailedException
 import zlib
 import uuid
 
+import settings
 from auth.saml2 import Saml2_Assertion
-
-from . import settings
 
 
 # Read the IdP certificate file into memory

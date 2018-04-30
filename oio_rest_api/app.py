@@ -5,6 +5,17 @@ import datetime
 import urlparse
 import traceback
 
+import log
+import sag
+import indsats
+import dokument
+import tilstand
+import aktivitet
+import organisation
+import klassifikation
+
+import settings
+
 from flask import Flask, jsonify, redirect, request, url_for, Response
 from werkzeug.routing import BaseConverter
 from jinja2 import Environment, FileSystemLoader
@@ -16,11 +27,6 @@ from log_client import log_service_call
 from custom_exceptions import OIOFlaskException, AuthorizationFailedException
 from custom_exceptions import BadRequestException
 from auth import tokens
-import settings
-
-from . import klassifikation, log, organisation
-from . import dokument, sag
-from . import tilstand, indsats, aktivitet
 
 app = Flask(__name__)
 

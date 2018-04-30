@@ -11,7 +11,7 @@ from lxml import etree
 import jinja2
 import pytz
 
-from .. import settings
+import settings
 
 curdir = os.path.dirname(os.path.realpath(__file__))
 jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(
