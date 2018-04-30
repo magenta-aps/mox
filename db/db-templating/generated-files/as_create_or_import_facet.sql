@@ -26,7 +26,6 @@ DECLARE
   auth_filtered_uuids uuid[];
   does_exist boolean;
   new_facet_registrering facet_registrering;
-  prev_facet_registrering facet_registrering;
 BEGIN
 
 IF facet_uuid IS NULL THEN

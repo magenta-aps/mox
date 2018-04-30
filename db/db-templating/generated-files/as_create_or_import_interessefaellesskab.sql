@@ -26,7 +26,6 @@ DECLARE
   auth_filtered_uuids uuid[];
   does_exist boolean;
   new_interessefaellesskab_registrering interessefaellesskab_registrering;
-  prev_interessefaellesskab_registrering interessefaellesskab_registrering;
 BEGIN
 
 IF interessefaellesskab_uuid IS NULL THEN

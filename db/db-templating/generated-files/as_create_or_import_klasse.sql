@@ -28,7 +28,6 @@ DECLARE
   auth_filtered_uuids uuid[];
   does_exist boolean;
   new_klasse_registrering klasse_registrering;
-  prev_klasse_registrering klasse_registrering;
 BEGIN
 
 IF klasse_uuid IS NULL THEN

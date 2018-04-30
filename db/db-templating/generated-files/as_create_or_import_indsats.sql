@@ -32,7 +32,6 @@ DECLARE
   indsats_rel_type_cardinality_unlimited_present_in_argument indsatsRelationKode[];
   does_exist boolean;
   new_indsats_registrering indsats_registrering;
-  prev_indsats_registrering indsats_registrering;
 BEGIN
 
 IF indsats_uuid IS NULL THEN

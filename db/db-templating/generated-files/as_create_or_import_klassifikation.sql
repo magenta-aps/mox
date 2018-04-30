@@ -26,7 +26,6 @@ DECLARE
   auth_filtered_uuids uuid[];
   does_exist boolean;
   new_klassifikation_registrering klassifikation_registrering;
-  prev_klassifikation_registrering klassifikation_registrering;
 BEGIN
 
 IF klassifikation_uuid IS NULL THEN

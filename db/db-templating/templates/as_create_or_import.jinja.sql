@@ -23,7 +23,6 @@ DECLARE
   auth_filtered_uuids uuid[];
   does_exist boolean;
   new_{{oio_type}}_registrering {{oio_type}}_registrering;
-  prev_{{oio_type}}_registrering {{oio_type}}_registrering;
 BEGIN
 
 IF {{oio_type}}_uuid IS NULL THEN

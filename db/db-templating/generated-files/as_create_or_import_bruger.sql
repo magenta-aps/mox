@@ -26,7 +26,6 @@ DECLARE
   auth_filtered_uuids uuid[];
   does_exist boolean;
   new_bruger_registrering bruger_registrering;
-  prev_bruger_registrering bruger_registrering;
 BEGIN
 
 IF bruger_uuid IS NULL THEN

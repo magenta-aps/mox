@@ -26,7 +26,6 @@ DECLARE
   auth_filtered_uuids uuid[];
   does_exist boolean;
   new_itsystem_registrering itsystem_registrering;
-  prev_itsystem_registrering itsystem_registrering;
 BEGIN
 
 IF itsystem_uuid IS NULL THEN

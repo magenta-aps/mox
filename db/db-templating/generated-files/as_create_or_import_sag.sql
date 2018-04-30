@@ -32,7 +32,6 @@ DECLARE
 
   does_exist boolean;
   new_sag_registrering sag_registrering;
-  prev_sag_registrering sag_registrering;
 BEGIN
 
 IF sag_uuid IS NULL THEN

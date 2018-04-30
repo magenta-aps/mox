@@ -33,7 +33,6 @@ DECLARE
 
   does_exist boolean;
   new_tilstand_registrering tilstand_registrering;
-  prev_tilstand_registrering tilstand_registrering;
 BEGIN
 
 IF tilstand_uuid IS NULL THEN

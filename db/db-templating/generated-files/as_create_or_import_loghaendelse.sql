@@ -26,7 +26,6 @@ DECLARE
   auth_filtered_uuids uuid[];
   does_exist boolean;
   new_loghaendelse_registrering loghaendelse_registrering;
-  prev_loghaendelse_registrering loghaendelse_registrering;
 BEGIN
 
 IF loghaendelse_uuid IS NULL THEN

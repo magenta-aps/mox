@@ -26,7 +26,6 @@ DECLARE
   auth_filtered_uuids uuid[];
   does_exist boolean;
   new_organisationfunktion_registrering organisationfunktion_registrering;
-  prev_organisationfunktion_registrering organisationfunktion_registrering;
 BEGIN
 
 IF organisationfunktion_uuid IS NULL THEN

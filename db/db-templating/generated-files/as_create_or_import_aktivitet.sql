@@ -33,7 +33,6 @@ DECLARE
 
   does_exist boolean;
   new_aktivitet_registrering aktivitet_registrering;
-  prev_aktivitet_registrering aktivitet_registrering;
 BEGIN
 
 IF aktivitet_uuid IS NULL THEN

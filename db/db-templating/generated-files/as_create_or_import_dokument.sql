@@ -33,7 +33,6 @@ DECLARE
   auth_filtered_uuids uuid[];
   does_exist boolean;
   new_dokument_registrering dokument_registrering;
-  prev_dokument_registrering dokument_registrering;
 BEGIN
 
 IF dokument_uuid IS NULL THEN
