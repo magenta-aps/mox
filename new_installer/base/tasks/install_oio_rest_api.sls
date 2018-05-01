@@ -39,7 +39,8 @@ create_audit_log_file:
 
 
 install_oio_rest_requirements:
-  pip.installed:
+  virtualenv.managed:
+    - system_site_packages: False
     - requirements: {{ config.base_dir }}/oio_rest_api/requirements.txt
 
 
