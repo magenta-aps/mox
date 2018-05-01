@@ -1,5 +1,6 @@
 # -- coding: utf-8 --
 
+import os
 from salt import client
 from salt import config
 
