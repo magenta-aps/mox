@@ -65,7 +65,8 @@ deploy_service_file:
         service_description: This should be the output
         user: {{ config.user }}
         group: {{ config.group }}
-        startup_script: {{ config.virtualenv }}/bin/gunicorn -w 4 -b :8080
+        working_directory: {{ config.base_dir }}/oio_rest_api
+        startup_script: {{ config.virtualenv }}/bin/gunicorn -w 4 -b :8080 app:app
 
     - defaults:
         after_requirement: False
