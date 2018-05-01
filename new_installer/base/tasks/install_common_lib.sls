@@ -5,7 +5,13 @@
 
 # For most installations
 # AVA requires a different lib
-install_common_lib:
-  cmd.run:
-    - name: {{ config.virtualenv }}/bin/pip install {{ config.base_dir }}/lib/common
-    - runas: {{ config.user }}
+
+## PYTHON3
+#install_common_lib:
+#  cmd.run:
+#    - name: {{ config.virtualenv }}/bin/pip install {{ config.base_dir }}/lib/common
+#    - runas: {{ config.user }}
+
+install_common_lib_python_2:
+  pip.installed:
+    - requirements: {{ config.base_dir }}/lib/common

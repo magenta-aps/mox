@@ -38,22 +38,32 @@ create_audit_log_file:
     - name: /var/log/mox/audit.log
 
 
-install_oio_rest_requirements:
-  virtualenv.managed:
-    - name: {{ config.virtualenv }}
-    - system_site_packages: False
-    - user: {{ config.user }}
+# PYTHON3
+#install_oio_rest_requirements:
+#  virtualenv.managed:
+#    - name: {{ config.virtualenv }}
+#    - system_site_packages: False
+#    - user: {{ config.user }}
+#    - requirements: {{ config.base_dir }}/oio_rest_api/requirements.txt
+#
+#
+#install_gunicorn:
+#  virtualenv.managed:
+#    - name: {{ config.virtualenv }}
+#    - system_site_packages: False
+#    - user: {{ config.user }}
+#    - pip_pkgs:
+#      - gunicorn
+
+install_oio_rest_requirements_python_2:
+  pip.installed:
     - requirements: {{ config.base_dir }}/oio_rest_api/requirements.txt
-
-
-install_gunicorn:
-  virtualenv.managed:
-    - name: {{ config.virtualenv }}
-    - system_site_packages: False
     - user: {{ config.user }}
-    - pip_pkgs:
-      - gunicorn
 
+install_gunicorn_python_2:
+  pip.installed:
+    - name: gunicorn
+    - user: {{ config.user }}
 
 deploy_service_file:
   file.managed:
