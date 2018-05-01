@@ -16,4 +16,5 @@ install_common_lib_python_2:
   virtualenv.managed:
     - name: {{ config.virtualenv }}
     - requirements: {{ config.base_dir }}/lib/common
+    - system_site_packages: False
     - user: {{ config.user }}

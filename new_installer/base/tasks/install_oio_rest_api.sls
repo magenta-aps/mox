@@ -38,34 +38,22 @@ create_audit_log_file:
     - name: /var/log/mox/audit.log
 
 
-# PYTHON3
-#install_oio_rest_requirements:
-#  virtualenv.managed:
-#    - name: {{ config.virtualenv }}
-#    - system_site_packages: False
-#    - user: {{ config.user }}
-#    - requirements: {{ config.base_dir }}/oio_rest_api/requirements.txt
-#
-#
-#install_gunicorn:
-#  virtualenv.managed:
-#    - name: {{ config.virtualenv }}
-#    - system_site_packages: False
-#    - user: {{ config.user }}
-#    - pip_pkgs:
-#      - gunicorn
-
-install_oio_rest_requirements_python_2:
-  pip.installed:
+# This should work for both Python 2 & 3
+install_oio_rest_requirements:
+  virtualenv.managed:
+    - name: {{ config.virtualenv }}
+    - system_site_packages: False
+    - user: {{ config.user }}
     - requirements: {{ config.base_dir }}/oio_rest_api/requirements.txt
-    - user: {{ config.user }}
-    - bin_env: {{ config.virtualenv }}
 
-install_gunicorn_python_2:
-  pip.installed:
-    - name: gunicorn
+
+install_gunicorn:
+  virtualenv.managed:
+    - name: {{ config.virtualenv }}
+    - system_site_packages: False
     - user: {{ config.user }}
-    - bin_env: {{ config.virtualenv }}
+    - pip_pkgs:
+      - gunicorn
 
 deploy_service_file:
   file.managed:
