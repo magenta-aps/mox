@@ -59,11 +59,13 @@ install_oio_rest_requirements_python_2:
   pip.installed:
     - requirements: {{ config.base_dir }}/oio_rest_api/requirements.txt
     - user: {{ config.user }}
+    - bin_env: {{ config.virtualenv }}
 
 install_gunicorn_python_2:
   pip.installed:
     - name: gunicorn
     - user: {{ config.user }}
+    - bin_env: {{ config.virtualenv }}
 
 deploy_service_file:
   file.managed:
