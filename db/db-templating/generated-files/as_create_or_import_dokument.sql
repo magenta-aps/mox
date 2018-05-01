@@ -31,6 +31,8 @@ DECLARE
   dokument_variant_new_id bigint;
   dokument_del_new_id bigint;
   auth_filtered_uuids uuid[];
+  does_exist boolean;
+  new_dokument_registrering dokument_registrering;
 BEGIN
 
 IF dokument_uuid IS NULL THEN
@@ -42,42 +44,57 @@ END IF;
 
 
 IF EXISTS (SELECT id from dokument WHERE id=dokument_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing dokument with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_dokument (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',dokument_uuid USING ERRCODE='MO500';
+    does_exist = True;
+ELSE
+
+    does_exist = False;
 END IF;
 
-IF  (dokument_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (dokument_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
+IF  (dokument_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (dokument_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (dokument_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
   RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_dokument.',(dokument_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
+IF NOT does_exist THEN
 
-INSERT INTO 
-      dokument (ID)
-SELECT
-      dokument_uuid
-;
+    INSERT INTO
+          dokument (ID)
+    SELECT
+          dokument_uuid;
+END IF;
 
 
 /*********************************/
 --Insert new registrering
 
-dokument_registrering_id:=nextval('dokument_registrering_id_seq');
+IF NOT does_exist THEN
+    dokument_registrering_id:=nextval('dokument_registrering_id_seq');
 
-INSERT INTO dokument_registrering (
-      id,
-        dokument_id,
+    INSERT INTO dokument_registrering (
+          id,
+          dokument_id,
           registrering
         )
-SELECT
-      dokument_registrering_id,
-        dokument_uuid,
-          ROW (
-            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-            (dokument_registrering.registrering).livscykluskode,
-            (dokument_registrering.registrering).brugerref,
-            (dokument_registrering.registrering).note
-              ):: RegistreringBase
-;
+    SELECT
+          dokument_registrering_id,
+           dokument_uuid,
+           ROW (
+             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+             (dokument_registrering.registrering).livscykluskode,
+             (dokument_registrering.registrering).brugerref,
+             (dokument_registrering.registrering).note
+               ):: RegistreringBase ;
+ELSE
+    -- This is an update, not an import or create
+        new_dokument_registrering := _as_create_dokument_registrering(
+             dokument_uuid,
+             (dokument_registrering.registrering).livscykluskode,
+             (dokument_registrering.registrering).brugerref,
+             (dokument_registrering.registrering).note);
+
+        dokument_registrering_id := new_dokument_registrering.id;
+END IF;
+
 
 /*********************************/
 --Insert attributes
@@ -176,7 +193,6 @@ END IF;
       a.objektType
     FROM unnest(dokument_registrering.relationer) a
   ;
-
 
 /*********************************/
 --Insert document variants (and parts)
@@ -311,6 +327,7 @@ dokument_variant_new_id:=nextval('dokument_variant_id_seq'::regclass);
 
 
 END IF; --varianter
+
 
 
 /*** Verify that the object meets the stipulated access allowed criteria  ***/

@@ -1,5 +1,5 @@
-*** ./generated-files/as_create_or_import_indsats.sql	2016-11-13 15:10:19.000000000 +0100
---- ./patches/as_create_or_import_indsats.org.sql	2016-11-13 15:08:50.000000000 +0100
+*** ./patches/as_create_or_import_indsats.org.sql	2018-04-12 13:53:40.928595252 +0000
+--- generated-files/as_create_or_import_indsats.sql	2018-04-12 14:03:13.597057762 +0000
 ***************
 *** 23,32 ****
 --- 23,37 ----
@@ -13,13 +13,13 @@
 +   indsats_rel_seq_name text;
 +   indsats_rel_type_cardinality_unlimited indsatsRelationKode[]:=ARRAY['indsatskvalitet'::IndsatsRelationKode,'indsatsaktoer'::IndsatsRelationKode,'samtykke'::IndsatsRelationKode,'indsatssag'::IndsatsRelationKode,'indsatsdokument'::IndsatsRelationKode]::indsatsRelationKode[];
 +   indsats_rel_type_cardinality_unlimited_present_in_argument indsatsRelationKode[];
+    does_exist boolean;
+    new_indsats_registrering indsats_registrering;
+    prev_indsats_registrering indsats_registrering;
   BEGIN
   
-  IF indsats_uuid IS NULL THEN
-      LOOP
-      indsats_uuid:=uuid_generate_v4();
 ***************
-*** 164,191 ****
+*** 182,208 ****
   END IF;
   
   /*********************************/
@@ -47,8 +47,7 @@
   /*** Verify that the object meets the stipulated access allowed criteria  ***/
   /*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
   auth_filtered_uuids:=_as_filter_unauth_indsats(array[indsats_uuid]::uuid[],auth_criteria_arr); 
-  IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[indsats_uuid]) THEN
---- 169,234 ----
+--- 187,252 ----
   END IF;
   
   /*********************************/
@@ -108,10 +107,10 @@
 !   EXECUTE 'DROP  SEQUENCE ' || indsats_rel_seq_name || ';';
 ! END LOOP;
 ! END IF;
+! 
+! END IF;
   
-+ END IF;
   
   /*** Verify that the object meets the stipulated access allowed criteria  ***/
   /*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
   auth_filtered_uuids:=_as_filter_unauth_indsats(array[indsats_uuid]::uuid[],auth_criteria_arr); 
-  IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[indsats_uuid]) THEN

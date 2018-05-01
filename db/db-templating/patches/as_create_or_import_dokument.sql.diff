@@ -1,5 +1,5 @@
-*** ../generated-files/as_create_or_import_dokument.sql	2015-08-14 12:57:21.821564487 +0200
---- as_create_or_import_dokument.org.sql	2015-08-14 13:00:33.581574037 +0200
+*** ./patches/as_create_or_import_dokument.org.sql	2018-04-12 12:06:30.935299994 +0000
+--- generated-files/as_create_or_import_dokument.sql	2018-04-12 12:43:31.616795290 +0000
 ***************
 *** 4,14 ****
   -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -41,17 +41,17 @@
 +   dokument_variant_new_id bigint;
 +   dokument_del_new_id bigint;
     auth_filtered_uuids uuid[];
+    does_exist boolean;
+    new_dokument_registrering dokument_registrering;
+    prev_dokument_registrering dokument_registrering;
   BEGIN
-  
-  IF dokument_uuid IS NULL THEN
-      LOOP
 ***************
-*** 169,178 ****
---- 176,320 ----
+*** 186,195 ****
+--- 193,337 ----
+        a.relType,
         a.objektType
       FROM unnest(dokument_registrering.relationer) a
     ;
-  
   
 + /*********************************/
 + --Insert document variants (and parts)
@@ -188,8 +188,8 @@
 + END IF; --varianter
 + 
 + 
+  
   /*** Verify that the object meets the stipulated access allowed criteria  ***/
   /*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
   auth_filtered_uuids:=_as_filter_unauth_dokument(array[dokument_uuid]::uuid[],auth_criteria_arr); 
   IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[dokument_uuid]) THEN
-    RAISE EXCEPTION 'Unable to create/import dokument with uuid [%]. Object does not met stipulated criteria:%',dokument_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 

@@ -44,11 +44,11 @@ echo "Done"
 
 # Update the facet
 
-# curl -k -sH "Content-Type: application/json"  -X PUT -d "$(cat $DIR/test_data/facet_opdater.json)" $HOST_URL/klassifikation/facet/$uuid
+# curl -k -sH "Content-Type: application/json"  -X PATCH -d "$(cat $DIR/test_data/facet_opdater.json)" $HOST_URL/klassifikation/facet/$uuid
 
 # Passivate the facet. 
 
-# curl -k -sH "Content-Type: application/json"  -X PUT -d "$(cat $DIR/test_data/facet_passiv.json)" $HOST_URL/klassifikation/facet/$uuid
+# curl -k -sH "Content-Type: application/json"  -X PATCH -d "$(cat $DIR/test_data/facet_passiv.json)" $HOST_URL/klassifikation/facet/$uuid
 
 # Delete the facet. 
 

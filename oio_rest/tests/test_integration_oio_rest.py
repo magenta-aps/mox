@@ -40,7 +40,7 @@ class Tests(util.TestCase):
         }
 
         # Act
-        self.put("{}/{}".format(path, uuid), json=update)
+        self.patch("{}/{}".format(path, uuid), json=update)
 
         # Assert
         actual = self.get(path, uuid=uuid)

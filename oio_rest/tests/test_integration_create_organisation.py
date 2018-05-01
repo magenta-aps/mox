@@ -178,7 +178,8 @@ class TestCreateOrganisation(util.TestCase):
         self._check_response_400()
 
     @unittest.skip(
-        'The REST interface accepts an organisation name which is not a string')
+        'The REST interface accepts an organisation name which is not a string'
+    )
     def test_org_name_not_string(self):
         """
         Equivalence classes covered: [8]

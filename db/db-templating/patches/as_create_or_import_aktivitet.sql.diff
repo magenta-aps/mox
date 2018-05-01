@@ -1,5 +1,5 @@
-*** ./generated-files/as_create_or_import_aktivitet.sql	2016-11-13 14:07:02.000000000 +0100
---- ./patches/as_create_or_import_aktivitet.org.sql	2016-11-13 14:01:01.000000000 +0100
+*** ./patches/as_create_or_import_aktivitet.org.sql	2018-04-12 13:18:15.639586434 +0000
+--- generated-files/as_create_or_import_aktivitet.sql	2018-04-12 13:36:36.471480136 +0000
 ***************
 *** 23,32 ****
 --- 23,38 ----
@@ -14,13 +14,13 @@
 +   aktivitet_rel_type_cardinality_unlimited aktivitetRelationKode[]:=ARRAY['udfoererklasse'::AktivitetRelationKode,'deltagerklasse'::AktivitetRelationKode,'objektklasse'::AktivitetRelationKode,'resultatklasse'::AktivitetRelationKode,'grundlagklasse'::AktivitetRelationKode,'facilitetklasse'::AktivitetRelationKode,'adresse'::AktivitetRelationKode,'geoobjekt'::AktivitetRelationKode,'position'::AktivitetRelationKode,'facilitet'::AktivitetRelationKode,'lokale'::AktivitetRelationKode,'aktivitetdokument'::AktivitetRelationKode,'aktivitetgrundlag'::AktivitetRelationKode,'aktivitetresultat'::AktivitetRelationKode,'udfoerer'::AktivitetRelationKode,'deltager'::AktivitetRelationKode]::aktivitetRelationKode[];
 +   aktivitet_rel_type_cardinality_unlimited_present_in_argument aktivitetRelationKode[];
 + 
+    does_exist boolean;
+    new_aktivitet_registrering aktivitet_registrering;
+    prev_aktivitet_registrering aktivitet_registrering;
   BEGIN
   
-  IF aktivitet_uuid IS NULL THEN
-      LOOP
-      aktivitet_uuid:=uuid_generate_v4();
 ***************
-*** 170,196 ****
+*** 188,214 ****
   END IF;
   
   /*********************************/
@@ -48,7 +48,7 @@
   /*** Verify that the object meets the stipulated access allowed criteria  ***/
   /*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
   auth_filtered_uuids:=_as_filter_unauth_aktivitet(array[aktivitet_uuid]::uuid[],auth_criteria_arr); 
---- 176,262 ----
+--- 194,280 ----
   END IF;
   
   /*********************************/

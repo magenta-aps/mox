@@ -25,12 +25,9 @@ DECLARE
   
   tilstand_relationer TilstandRelationType;
   auth_filtered_uuids uuid[];
-  tilstand_relation_kode tilstandRelationKode;
-  tilstand_uuid_underscores text;
-  tilstand_rel_seq_name text;
-  tilstand_rel_type_cardinality_unlimited tilstandRelationKode[]:=ARRAY['tilstandsvaerdi'::TilstandRelationKode,'begrundelse'::TilstandRelationKode,'tilstandskvalitet'::TilstandRelationKode,'tilstandsvurdering'::TilstandRelationKode,'tilstandsaktoer'::TilstandRelationKode,'tilstandsudstyr'::TilstandRelationKode,'samtykke'::TilstandRelationKode,'tilstandsdokument'::TilstandRelationKode]::TilstandRelationKode[];
-  tilstand_rel_type_cardinality_unlimited_present_in_argument tilstandRelationKode[];
-
+  does_exist boolean;
+  new_tilstand_registrering tilstand_registrering;
+  prev_tilstand_registrering tilstand_registrering;
 BEGIN
 
 IF tilstand_uuid IS NULL THEN
@@ -42,42 +39,57 @@ END IF;
 
 
 IF EXISTS (SELECT id from tilstand WHERE id=tilstand_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing tilstand with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_tilstand (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',tilstand_uuid USING ERRCODE='MO500';
+    does_exist = True;
+ELSE
+
+    does_exist = False;
 END IF;
 
-IF  (tilstand_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (tilstand_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
+IF  (tilstand_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (tilstand_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (tilstand_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
   RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_tilstand.',(tilstand_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
+IF NOT does_exist THEN
 
-INSERT INTO 
-      tilstand (ID)
-SELECT
-      tilstand_uuid
-;
+    INSERT INTO
+          tilstand (ID)
+    SELECT
+          tilstand_uuid;
+END IF;
 
 
 /*********************************/
 --Insert new registrering
 
-tilstand_registrering_id:=nextval('tilstand_registrering_id_seq');
+IF NOT does_exist THEN
+    tilstand_registrering_id:=nextval('tilstand_registrering_id_seq');
 
-INSERT INTO tilstand_registrering (
-      id,
-        tilstand_id,
+    INSERT INTO tilstand_registrering (
+          id,
+          tilstand_id,
           registrering
         )
-SELECT
-      tilstand_registrering_id,
-        tilstand_uuid,
-          ROW (
-            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-            (tilstand_registrering.registrering).livscykluskode,
-            (tilstand_registrering.registrering).brugerref,
-            (tilstand_registrering.registrering).note
-              ):: RegistreringBase
-;
+    SELECT
+          tilstand_registrering_id,
+           tilstand_uuid,
+           ROW (
+             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+             (tilstand_registrering.registrering).livscykluskode,
+             (tilstand_registrering.registrering).brugerref,
+             (tilstand_registrering.registrering).note
+               ):: RegistreringBase ;
+ELSE
+    -- This is an update, not an import or create
+        new_tilstand_registrering := _as_create_tilstand_registrering(
+             tilstand_uuid,
+             (tilstand_registrering.registrering).livscykluskode,
+             (tilstand_registrering.registrering).brugerref,
+             (tilstand_registrering.registrering).note);
+
+        tilstand_registrering_id := new_tilstand_registrering.id;
+END IF;
+
 
 /*********************************/
 --Insert attributes
@@ -168,37 +180,13 @@ END IF;
 /*********************************/
 --Insert relations
 
-IF coalesce(array_length(tilstand_registrering.relationer,1),0)>0 THEN
-
---Create temporary sequences
-tilstand_uuid_underscores:=replace(tilstand_uuid::text, '-', '_');
-
-
-SELECT array_agg( DISTINCT a.RelType) into tilstand_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(tilstand_registrering.relationer) a WHERE a.RelType = any (tilstand_rel_type_cardinality_unlimited) ;
-IF coalesce(array_length(tilstand_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
-FOREACH tilstand_relation_kode IN ARRAY (tilstand_rel_type_cardinality_unlimited_present_in_argument)
-  LOOP
-  tilstand_rel_seq_name := 'tilstand_' || tilstand_relation_kode::text || tilstand_uuid_underscores;
-
-  EXECUTE 'CREATE TEMPORARY SEQUENCE ' || tilstand_rel_seq_name || '
-  INCREMENT 1
-  MINVALUE 1
-  MAXVALUE 9223372036854775807
-  START 1
-  CACHE 1;';
-
-END LOOP;
-END IF;
-
     INSERT INTO tilstand_relation (
       tilstand_registrering_id,
       virkning,
       rel_maal_uuid,
       rel_maal_urn,
       rel_type,
-      objekt_type,
-      rel_index,
-      tilstand_vaerdi_attr
+      objekt_type
     )
     SELECT
       tilstand_registrering_id,
@@ -206,38 +194,10 @@ END IF;
       a.uuid,
       a.urn,
       a.relType,
-      a.objektType,
-        CASE WHEN a.relType = any (tilstand_rel_type_cardinality_unlimited) THEN --rel_index
-        nextval('tilstand_' || a.relType::text || tilstand_uuid_underscores)
-        ELSE 
-        NULL
-        END,
-     CASE
-        WHEN a.relType='tilstandsvaerdi' AND
-          ( NOT (a.tilstandsVaerdiAttr IS NULL))
-          AND 
-          (
-            (a.tilstandsVaerdiAttr).forventet IS NOT NULL
-            OR
-            (a.tilstandsVaerdiAttr).nominelVaerdi IS NOT NULL
-          ) THEN a.tilstandsVaerdiAttr
-        ELSE
-        NULL
-      END
+      a.objektType
     FROM unnest(tilstand_registrering.relationer) a
-    ;
+  ;
 
-
---Drop temporary sequences
-IF coalesce(array_length(tilstand_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
-FOREACH tilstand_relation_kode IN ARRAY (tilstand_rel_type_cardinality_unlimited_present_in_argument)
-  LOOP
-  tilstand_rel_seq_name := 'tilstand_' || tilstand_relation_kode::text || tilstand_uuid_underscores;
-  EXECUTE 'DROP  SEQUENCE ' || tilstand_rel_seq_name || ';';
-END LOOP;
-END IF;
-
-END IF;
 
 /*** Verify that the object meets the stipulated access allowed criteria  ***/
 /*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/
