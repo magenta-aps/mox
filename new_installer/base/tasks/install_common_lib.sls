@@ -13,6 +13,6 @@
 #    - runas: {{ config.user }}
 
 install_common_lib_python_2:
-    - name: {{ config.virtualenv }}
-    - requirements: {{ config.base_dir }}/lib/common
-    - user: {{ config.user }}
+  - name: {{ config.virtualenv }}
+  - requirements: {{ config.base_dir }}/lib/common
+  - user: {{ config.user }}
