@@ -6,3 +6,4 @@
 create_python_3_venv:
   cmd.run:
     - name: /usr/bin/env python3 -m venv {{ config.virtualenv }}
+    - runas: {{ config.user }}

@@ -8,3 +8,4 @@
 install_common_lib:
   cmd.run:
     - name: {{ config.virtualenv }}/bin/pip install {{ config.base_dir }}/lib/common
+    - runas: {{ config.user }}
