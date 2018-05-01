@@ -40,13 +40,17 @@ create_audit_log_file:
 
 install_oio_rest_requirements:
   virtualenv.managed:
+    - name: {{ config.virtualenv }}
     - system_site_packages: False
     - requirements: {{ config.base_dir }}/oio_rest_api/requirements.txt
 
 
 install_gunicorn:
-  pip.installed:
-    - name: gunicorn
+  virtualenv.managed:
+    - name: {{ config.virtualenv }}
+    - system_site_packages: False
+    - pip_pkgs:
+      - gunicorn
 
 
 deploy_service_file:
