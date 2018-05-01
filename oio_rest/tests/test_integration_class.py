@@ -122,6 +122,128 @@ class Tests(util.TestCase):
         self.assertQueryResponse('/klassifikation/klasse', expected,
                                  uuid=objid)
 
+    def test_edit_put(self):
+        objid = self.load_fixture('/klassifikation/klasse',
+                                  'klasse_opret.json')
+
+        self.assertRequestResponse(
+            '/klassifikation/klasse/{}'.format(objid),
+            {
+                'uuid': objid,
+            },
+            json=util.get_fixture('klasse_opdater_put.json'),
+            method='PUT'
+        )
+        expected = {
+            'note': 'Overskriv klasse med  nye perioder mv',
+            'attributter': {
+                'klasseegenskaber': [
+                    {
+                        'beskrivelse': 'Klasse',
+                        'brugervendtnoegle': 'KLASSE',
+                        'eksempel': 'Hierarkisk',
+                        'omfang': 'Magenta',
+                        'retskilde': 'Nej',
+                        'soegeord': [
+                            {
+                                'beskrivelse': 'Vores firma',
+                                'soegeordidentifikator': 'Magenta',
+                                'soegeordskategori': 'info'
+                            },
+                            {
+                                'beskrivelse': 'Vores kunde',
+                                'soegeordidentifikator': 'KL',
+                                'soegeordskategori': 'info'
+                            }
+                        ],
+                        'titel': 'XYZ',
+                        'virkning': {
+                            'aktoerref':
+                            'ddc99abd-c1b0-48c2-aef7-74fea841adae',
+                            'aktoertypekode': 'Bruger',
+                            'from': '2016-05-19 12:02:32+02',
+                            'from_included': True,
+                            'to': 'infinity',
+                            'to_included': False
+                        }
+                    }
+                ]
+            },
+            'livscykluskode': 'Rettet',
+            'note': 'Overskriv klasse med  nye perioder mv',
+            'relationer': {
+                'ansvarlig': [
+                    {
+                        'objekttype': 'Bruger',
+                        'uuid': 'ddc99abd-c1b0-48c2-aef7-74fea841adae',
+                        'virkning': {
+                            'aktoerref':
+                            'ddc99abd-c1b0-48c2-aef7-74fea841adae',
+                            'aktoertypekode': 'Bruger',
+                            'from': '2016-05-19 12:02:32+02',
+                            'from_included': True,
+                            'notetekst': 'Nothing to see here!',
+                            'to': 'infinity',
+                            'to_included': False
+                        }
+                    }
+                ],
+                'redaktoerer': [
+                    {
+                        'objekttype': 'Bruger',
+                        'uuid': 'ddc99abd-c1b0-48c2-aef7-74fea841adae',
+                        'virkning': {
+                            'aktoerref':
+                            'ddc99abd-c1b0-48c2-aef7-74fea841adae',
+                            'aktoertypekode': 'Bruger',
+                            'from': '2016-05-19 12:02:32+02',
+                            'from_included': True,
+                            'notetekst': 'Nothing to see here!',
+                            'to': 'infinity',
+                            'to_included': False
+                        }
+                    },
+                    {
+                        'objekttype': 'Bruger',
+                        'uuid': 'ef2713ee-1a38-4c23-8fcb-3c4331262194',
+                        'virkning': {
+                            'aktoerref':
+                            'ddc99abd-c1b0-48c2-aef7-74fea841adae',
+                            'aktoertypekode': 'Bruger',
+                            'from': '2016-05-19 12:02:32+02',
+                            'from_included': True,
+                            'notetekst': 'Nothing to see here!',
+                            'to': 'infinity',
+                            'to_included': False
+                        }
+                    }
+                ]
+            },
+            'tilstande': {
+                'klassepubliceret': [
+                    {
+                        'publiceret': 'Publiceret',
+                        'virkning': {
+                            'aktoerref':
+                            'ddc99abd-c1b0-48c2-aef7-74fea841adae',
+                            'aktoertypekode': 'Bruger',
+                            'from': '2016-05-19 12:02:32+02',
+                            'from_included': True,
+                            'notetekst': 'Nothing to see here!',
+                            'to': 'infinity',
+                            'to_included': False
+                        }
+                    }
+                ]
+            }
+        }
+
+        self.assertQueryResponse(
+            '/klassifikation/klasse',
+            expected,
+            uuid=objid,
+        )
+
     def test_edit(self):
         objid = self.load_fixture('/klassifikation/klasse',
                                   'klasse_opret.json')
@@ -132,7 +254,7 @@ class Tests(util.TestCase):
                 'uuid': objid,
             },
             json=util.get_fixture('klasse_opdater.json'),
-            method='PATCH',
+            method='PATCH'
         )
 
         expected = {

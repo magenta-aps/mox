@@ -327,7 +327,7 @@ class OIORestObject(object):
     @requires_auth
     def put_object(cls, uuid):
         """
-        IMPORT or UPDATE an  object, replacing its contents completely.
+        IMPORT or UPDATE an  object, replacing its contents entirely.
         """
         cls.verify_args()
 
