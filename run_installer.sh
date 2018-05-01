@@ -16,7 +16,8 @@ BASE_DIR=$( pwd )
 INSTALLER_DIR=${BASE_DIR}/new_installer
 
 # Setup executable
-INSTALLER=${INSTALLER_DIR}/run.py
+CONFIGURE=${INSTALLER_DIR}/configure.py
+INSTALLER=${INSTALLER_DIR}/install_application.py
 
 # Setup requirements
 REQUIREMENTS=${INSTALLER_DIR}/install_requirements.txt
@@ -35,6 +36,9 @@ sudo apt-get install python3 python3-venv python3-dev
 
 ## Install python (installer) dependencies
 $PYTHON_EXEC -m pip install -r $REQUIREMENTS
+
+# Collect info and set information (grains)
+$PYTHON_EXEC $CONFIGURE
 
 ## Run installer (as SUPERUSER)
 sudo $PYTHON_EXEC $INSTALLER
