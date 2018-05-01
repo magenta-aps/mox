@@ -1,6 +1,6 @@
 # Import grains created by the task runner
-# Config variables are called with {{ config.<variable> }}
-# E.g. config["hostname"] is expressed with {{ config.hostname }}
+# Config variables are called with config.<variable>
+# E.g. config["hostname"] is expressed with config.hostname
 {% set config = grains["mox_config"] %}
 
 install_system_dependencies:
