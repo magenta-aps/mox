@@ -17,8 +17,11 @@ installer_dir = os.path.dirname(
     os.path.abspath(__file__)
 )
 
+# Path to config
+salt_config = os.path.join(installer_dir, "salt.conf")
+
 # Import salt config
-__opts__ = config.minion_config("salt.conf")
+__opts__ = config.minion_config(salt_config)
 
 # Set file roots (relative to rootdir)
 salt_base = os.path.join(installer_dir, "base")
