@@ -8,6 +8,21 @@ pipeline {
   }
 
   stages {
+    stage('Docs') {
+      steps {
+
+        timeout(2) {
+          ansiColor('xterm') {
+            sh 'make -C doc dirhtml'
+          }
+        }
+
+        publishHTML target: [
+          allowMissing: true, reportDir: 'doc/_build/dirhtml',
+          reportFiles: 'index.html', reportName: 'Docs'
+        ]
+      }
+    }
     stage('Test') {
       steps {
         echo 'Testing oio_rest...'
@@ -27,6 +42,7 @@ pipeline {
         testResults: 'oio_rest/tests.xml'
 
       warnings canRunOnFailed: true, consoleParsers: [
+        [parserName: 'Sphinx-build'],
         [parserName: 'Pep8']
       ]
 
