@@ -21,11 +21,19 @@ install_system_dependencies:
 
 
 update_postgresql_configuration:
-  file.append:
+  file.managed:
     - name: /etc/postgresql/9.5/main/pg_hba.conf
-    - text:
-      - "# MOX actual state config"
-      - "host all {{ config.user }} ::1/128 trust"
+    - source: salt://files/pg_hba.conf.j2
+    - user: root
+    - group: root
+    - mode: 600
+    - template: jinja
+    - context:
+      - db_user: {{ config.db.user }}
+      - auth_method: md5
+
+    # Backup distributed conf file
+    - backup: minion
 
 # Install pg_amqp - Postgres AMQP extension
 # We depend on a specific fork, which supports setting of
