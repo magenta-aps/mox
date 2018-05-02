@@ -37,6 +37,13 @@ create_audit_log_file:
   file.touch:
     - name: /var/log/mox/audit.log
 
+set_audit_log_file_permissions:
+  file.managed:
+    - name: /var/log/mox/audit.log
+    - user: {{ config.user }}
+    - group: {{ config.group }}
+    - mode: 644
+
 
 # This should work for both Python 2 & 3
 install_oio_rest_requirements:
