@@ -81,7 +81,7 @@ def log_service_call(service_name, class_name, time,
     channel = connection.channel()
     channel.queue_declare(queue=settings.MOX_LOG_QUEUE)
     channel.exchange_declare(exchange=settings.MOX_LOG_EXCHANGE,
-                             type='fanout')
+                             exchange_type='fanout')
     channel.queue_bind(settings.MOX_LOG_QUEUE,
                        exchange=settings.MOX_LOG_EXCHANGE)
 
