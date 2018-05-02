@@ -246,7 +246,7 @@ class TestOIORestObject(TestCase):
                                            content_type='application/json',
                                            method='POST'):
             result = self.testclass.create_object()
-            actual_data = json.loads(result[0].get_data(True))
+            actual_data = json.loads(result[0].get_data(as_text=True))
             actual_code = result[1]
 
         # Assert
@@ -261,7 +261,7 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='POST'):
             result = self.testclass.create_object()
-            actual_data = json.loads(result[0].get_data(True))
+            actual_data = json.loads(result[0].get_data(as_text=True))
             actual_code = result[1]
 
         # Assert
@@ -329,7 +329,8 @@ class TestOIORestObject(TestCase):
 
         # Act
         with self.app.test_request_context(method='GET'):
-            actual_result_json = self.testclass.get_objects().get_data(True)
+            actual_result_json = self.testclass.get_objects().get_data(
+                as_text=True)
             actual_result = json.loads(actual_result_json)
 
         # Assert
@@ -371,7 +372,8 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='GET',
                                            query_string=request_params):
-            actual_result_json = self.testclass.get_objects().get_data(True)
+            actual_result_json = self.testclass.get_objects().get_data(
+                as_text=True)
             actual_result = json.loads(actual_result_json)
 
         # Assert
@@ -389,7 +391,8 @@ class TestOIORestObject(TestCase):
 
         # Act
         with self.app.test_request_context(method='GET'):
-            actual_result_json = self.testclass.get_objects().get_data(True)
+            actual_result_json = self.testclass.get_objects().get_data(
+                as_text=True)
             actual_result = json.loads(actual_result_json)
 
         expected_result = {"results": []}
@@ -428,7 +431,8 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='GET',
                                            query_string=request_params):
-            actual_result_json = self.testclass.get_objects().get_data(True)
+            actual_result_json = self.testclass.get_objects().get_data(
+                as_text=True)
             actual_result = json.loads(actual_result_json)
 
         # Assert
@@ -490,7 +494,8 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='GET',
                                            query_string=request_params):
-            actual_result_json = self.testclass.get_objects().get_data(True)
+            actual_result_json = self.testclass.get_objects().get_data(
+                as_text=True)
             actual_result = json.loads(actual_result_json)
 
         # Assert
@@ -572,7 +577,8 @@ class TestOIORestObject(TestCase):
 
         # Act
         with self.app.test_request_context(method='GET'):
-            actual_result_json = self.testclass.get_object(uuid).get_data(True)
+            actual_result_json = self.testclass.get_object(uuid).get_data(
+                as_text=True)
             actual_result = json.loads(actual_result_json)
 
         # Assert
@@ -620,7 +626,8 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='GET',
                                            query_string=request_params):
-            actual_result_json = self.testclass.get_object(uuid).get_data(True)
+            actual_result_json = self.testclass.get_object(uuid).get_data(
+                as_text=True)
             actual_result = json.loads(actual_result_json)
 
         # Assert
@@ -690,7 +697,7 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='PUT'):
             result = self.testclass.put_object(uuid)
-            actual_data = json.loads(result[0].get_data(True))
+            actual_data = json.loads(result[0].get_data(as_text=True))
             actual_code = result[1]
 
         # Assert
@@ -714,7 +721,7 @@ class TestOIORestObject(TestCase):
                                            content_type='application/json',
                                            method='PUT'):
             result = self.testclass.put_object(uuid)
-            actual_data = json.loads(result[0].get_data(True))
+            actual_data = json.loads(result[0].get_data(as_text=True))
             actual_code = result[1]
 
         # Assert
@@ -747,7 +754,7 @@ class TestOIORestObject(TestCase):
                                            content_type='application/json',
                                            method='PUT'):
             result = self.testclass.patch_object(uuid)
-            actual_data = json.loads(result[0].get_data(True))
+            actual_data = json.loads(result[0].get_data(as_text=True))
             actual_code = result[1]
 
         # Assert
@@ -779,7 +786,7 @@ class TestOIORestObject(TestCase):
                                            content_type='application/json',
                                            method='PUT'):
             result = self.testclass.patch_object(uuid)
-            actual_data = json.loads(result[0].get_data(True))
+            actual_data = json.loads(result[0].get_data(as_text=True))
             actual_code = result[1]
 
         # Assert
@@ -811,7 +818,7 @@ class TestOIORestObject(TestCase):
                                            content_type='application/json',
                                            method='PUT'):
             result = self.testclass.patch_object(uuid)
-            actual_data = json.loads(result[0].get_data(True))
+            actual_data = json.loads(result[0].get_data(as_text=True))
             actual_code = result[1]
 
         # Assert
@@ -847,7 +854,7 @@ class TestOIORestObject(TestCase):
                                            content_type='application/json',
                                            method='PUT'):
             result = self.testclass.delete_object(uuid)
-            actual_data = json.loads(result[0].get_data(True))
+            actual_data = json.loads(result[0].get_data(as_text=True))
             actual_code = result[1]
         # Assert
         self.assertDictEqual(expected_data, actual_data)

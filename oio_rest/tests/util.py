@@ -161,9 +161,9 @@ class TestCaseMixin(object):
         r = self._perform_request(path, **kwargs)
 
         actual = (
-            json.loads(r.get_data(True))
+            json.loads(r.get_data(as_text=True))
             if r.mimetype == 'application/json'
-            else r.get_data(True)
+            else r.get_data(as_text=True)
         )
 
         for k in drop_keys:
@@ -331,7 +331,7 @@ class TestCaseMixin(object):
 
         objid = r.json.get('uuid')
 
-        print(r.get_data('True'), path)
+        print(r.get_data(as_text=True), path)
         self.assertTrue(objid)
 
         return objid
