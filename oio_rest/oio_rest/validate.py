@@ -48,27 +48,29 @@ def _generate_schema_object(properties, required, kwargs=None):
     return schema_obj
 
 
-def _get_metadata(obj, attribute):
+def _get_metadata(obj, attribute_name):
     """
     Get the metadata for a given attribute
     :param obj: The type of LoRa object, i.e. 'bruger', 'organisation' etc.
-    :param attribute: The attribute to get the metadata from, e.g. 'egenskaber'
+    :param attribute_name: The attribute to get the metadata from,
+    e.g. 'egenskaber'
     :return: Dictionary containing the metadata for the attribute fields
     """
     metadata = db.REAL_DB_STRUCTURE[obj].get('attributter_metadata', [])
     if not metadata:
         return metadata
-    return metadata[attribute]
+    return metadata[attribute_name]
 
 
-def _get_mandatory(obj, attribute):
+def _get_mandatory(obj, attribute_name):
     """
     Get a list of mandatory attribute fields for a given attribute.
     :param obj: The type of LoRa object, i.e. 'bruger', 'organisation' etc.
-    :param attribute: The attribute to get the fields from, e.g. 'egenskaber'
+    :param attribute_name: The attribute to get the fields from,
+    e.g. 'egenskaber'
     :return: Sorted list of mandatory attribute keys
     """
-    attribute = _get_metadata(obj, attribute)
+    attribute = _get_metadata(obj, attribute_name)
     mandatory = [
         key for key in attribute if attribute[key].get('mandatory', False)
     ]
@@ -78,7 +80,6 @@ def _get_mandatory(obj, attribute):
 
 
 def _handle_attribute_metadata(obj, fields, attribute_name):
-
     type_map = {
         'boolean': BOOLEAN,
         'date': STRING,
