@@ -62,6 +62,7 @@ install_gunicorn:
     - pip_pkgs:
       - gunicorn
 
+
 deploy_service_file:
   file.managed:
     - name: /etc/systemd/system/oio_rest_api.service
@@ -76,10 +77,6 @@ deploy_service_file:
         group: {{ config.group }}
         working_directory: {{ config.base_dir }}/oio_rest_api
         gunicorn: {{ config.virtualenv }}/bin/gunicorn
-        workers: 4
-        bind_address: 127.0.0.1:8080
-        access_log: /var/log/oio_access.log
-        error_log: /var/log/oio_error.log
 
 
 enable_and_reload_oio_rest_service:
