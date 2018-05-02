@@ -29,8 +29,8 @@ update_postgresql_configuration:
     - mode: 600
     - template: jinja
     - context:
-      - db_user: {{ config.db.user }}
-      - auth_method: md5
+        db_user: {{ config.db.user }}
+        auth_method: md5
 
     # Backup distributed conf file
     - backup: minion
