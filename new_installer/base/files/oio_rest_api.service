@@ -1,0 +1,21 @@
+[Unit]
+Description="{{ service_description }}"
+
+[Service]
+Type=simple
+Restart=on-failure
+
+User={{ user }}
+Group={{ group }}
+
+WorkingDirectory={{ working_directory }}
+ExecStart={{ gunicorn }} \
+    -w {{ workers }} \
+    -b {{ bind_address }} \
+    --access-logfile {{ access_log }} \
+    --error-logfile {{ error_log }} \
+    app:app
+
+
+[Install]
+WantedBy=multi-user.target

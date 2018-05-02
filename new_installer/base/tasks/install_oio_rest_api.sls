@@ -64,7 +64,7 @@ install_gunicorn:
 
 deploy_service_file:
   file.managed:
-    - name: /etc/systemd/system/oio_rest.service
+    - name: /etc/systemd/system/oio_rest_api.service
     - source: salt://files/service_template.j2
     - user: root
     - group: root
@@ -75,15 +75,15 @@ deploy_service_file:
         user: {{ config.user }}
         group: {{ config.group }}
         working_directory: {{ config.base_dir }}/oio_rest_api
-        startup_script: {{ config.virtualenv }}/bin/gunicorn -w 4 -b :8080 app:app
-
-    - defaults:
-        after_requirement: False
-        after_value: None
+        gunicorn: {{ config.virtualenv }}/bin/gunicorn
+        workers: 4
+        bind_address: 127.0.0.1:8080
+        access_log: /var/log/oio_access.log
+        error_log: /var/log/oio_error.log
 
 
 enable_and_reload_oio_rest_service:
   service.running:
-    - name: oio_rest
+    - name: oio_rest_api
     - enable: True
     - reload: True
