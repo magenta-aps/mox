@@ -461,7 +461,7 @@ class OIORestObject(object):
         flask.add_url_rule(object_url, '_'.join([cls.__name__, 'put_object']),
                            cls.put_object, methods=['PUT'])
         flask.add_url_rule(object_url,
-                           u'_'.join([cls.__name__, 'patch_object']),
+                           '_'.join([cls.__name__, 'patch_object']),
                            cls.patch_object, methods=['PATCH'])
         flask.add_url_rule(
             class_url, '_'.join([cls.__name__, 'create_object']),
