@@ -9,6 +9,7 @@ from client import caller
 
 
 ## Gather and map information
+#TODO: Run state to check and verify system current state
 
 # Base dir / root of git repository
 base_dir = os.getcwd()
