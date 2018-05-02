@@ -12,10 +12,12 @@ install_system_dependencies:
       - postgresql-server-dev-all
       - postgresql-contrib
       - python-jinja2
-      - pgxnclient
       - rabbitmq-server
       - git
       - build-essential
+
+      # Extension
+      - postgresql-9.5-pgtap
 
 
 update_postgresql_configuration:
@@ -24,13 +26,6 @@ update_postgresql_configuration:
     - text:
       - "# MOX actual state config"
       - "host all {{ config.user }} ::1/128 trust"
-
-
-install_postgresql_pgtab_extension:
-  postgres_extension.present:
-    - name: pgtap
-    - user: root
-
 
 # Install pg_amqp - Postgres AMQP extension
 # We depend on a specific fork, which supports setting of
