@@ -24,9 +24,9 @@ update_postgresql_configuration:
   file.managed:
     - name: /etc/postgresql/9.5/main/pg_hba.conf
     - source: salt://files/pg_hba.conf.j2
-    - user: root
-    - group: root
-    - mode: 600
+    - user: postgres
+    - group: postgres
+    - mode: 644
     - template: jinja
     - context:
         db_user: {{ config.db.user }}
