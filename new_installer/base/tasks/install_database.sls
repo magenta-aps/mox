@@ -30,10 +30,7 @@ update_postgresql_configuration:
     - template: jinja
     - context:
         db_user: {{ config.db.user }}
-        auth_method: md5
 
-    # Backup distributed conf file
-    - backup: minion
 
 # Install pg_amqp - Postgres AMQP extension
 # We depend on a specific fork, which supports setting of
