@@ -58,8 +58,14 @@ enable_and_reload_postgresql:
     - reload: True
 
 # DEPENDENCY
-include:
-  - install_common_lib
+install_common_lib_python_2:
+  virtualenv.managed:
+    - name: {{ config.virtualenv }}
+    - system_site_packages: False
+    - user: {{ config.user }}
+    - pip_pkgs:
+      - {{ config.base_dir }}/lib/common
+
 
 run_database_init_script:
   cmd.run:
@@ -84,4 +90,4 @@ run_database_init_script:
       - MOX_AMQP_PASS: {{ config.amqp.pass }}
       - MOX_AMQP_VHOST: {{ config.amqp.vhost }}
   - require:
-    - sls: install_common_lib
+    - install_common_lib_python_2
