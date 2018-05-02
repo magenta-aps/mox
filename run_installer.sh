@@ -29,7 +29,7 @@ VIRTUALENV=${BASE_DIR}/venv-linux
 PYTHON_EXEC=${VIRTUALENV}/bin/python
 
 ## Install system dependencies
-sudo apt-get install python3 python3-venv python3-dev
+sudo apt-get install python3 python3-venv python3-dev gcc
 
 ## Create virtual environment
 /usr/bin/env python3 -m venv ${VIRTUALENV}
