@@ -36,24 +36,6 @@ def _generate_schema_array(items, maxItems=None):
     return schema_array
 
 
-def _get_mandatory(obj, attribute='egenskaber'):
-    """
-    Get a list of mandatory attribute keys for a given attribute.
-    :param obj: The type of LoRa object, i.e. 'bruger', 'organisation' etc.
-    :param attribute: The attribute to get the keys from, e.g. 'egenskaber'
-    :return: Sorted list of mandatory attribute keys
-    """
-    metadata = db.REAL_DB_STRUCTURE[obj].get('attributter_metadata', [])
-    if not metadata:
-        return metadata
-    attribute = db.REAL_DB_STRUCTURE[obj]['attributter_metadata'][attribute]
-    mandatory = [
-        key for key in attribute if attribute[key].get('mandatory', False)
-    ]
-    mandatory.sort()
-    return mandatory
-
-
 def _generate_schema_object(properties, required, kwargs=None):
     schema_obj = {
         'type': 'object',
@@ -66,7 +48,36 @@ def _generate_schema_object(properties, required, kwargs=None):
     return schema_obj
 
 
-def _handle_special_egenskaber(obj, egenskaber, attribute='egenskaber'):
+def _get_metadata(obj, attribute):
+    """
+    Get the metadata for a given attribute
+    :param obj: The type of LoRa object, i.e. 'bruger', 'organisation' etc.
+    :param attribute: The attribute to get the metadata from, e.g. 'egenskaber'
+    :return: Dictionary containing the metadata for the attribute fields
+    """
+    metadata = db.REAL_DB_STRUCTURE[obj].get('attributter_metadata', [])
+    if not metadata:
+        return metadata
+    return metadata[attribute]
+
+
+def _get_mandatory(obj, attribute):
+    """
+    Get a list of mandatory attribute fields for a given attribute.
+    :param obj: The type of LoRa object, i.e. 'bruger', 'organisation' etc.
+    :param attribute: The attribute to get the fields from, e.g. 'egenskaber'
+    :return: Sorted list of mandatory attribute keys
+    """
+    attribute = _get_metadata(obj, attribute)
+    mandatory = [
+        key for key in attribute if attribute[key].get('mandatory', False)
+    ]
+    mandatory.sort()
+
+    return mandatory
+
+
+def _handle_attribute_metadata(obj, fields, attribute_name):
 
     type_map = {
         'boolean': BOOLEAN,
@@ -78,20 +89,15 @@ def _handle_special_egenskaber(obj, egenskaber, attribute='egenskaber'):
         'text[]': _generate_schema_array(STRING)
     }
 
-    # TODO: refactor according to the above
-    metadata = db.REAL_DB_STRUCTURE[obj].get('attributter_metadata', [])
-    if not metadata:
-        return egenskaber
-    attribute = db.REAL_DB_STRUCTURE[obj]['attributter_metadata'][attribute]
-
-    egenskaber.update(
+    attribute = _get_metadata(obj, attribute_name)
+    fields.update(
         {
             key: type_map[attribute[key]['type']]
             for key in attribute if attribute[key].get('type', False)
         }
     )
 
-    return egenskaber
+    return fields
 
 
 def _generate_attributter(obj):
@@ -110,14 +116,14 @@ def _generate_attributter(obj):
     }
     egenskaber.update({'virkning': {'$ref': '#/definitions/virkning'}})
 
-    egenskaber = _handle_special_egenskaber(obj, egenskaber)
+    egenskaber = _handle_attribute_metadata(obj, egenskaber, 'egenskaber')
 
     return _generate_schema_object(
         {
             egenskaber_name: _generate_schema_array(
                 _generate_schema_object(
                     egenskaber,
-                    _get_mandatory(obj) + ['virkning'])
+                    _get_mandatory(obj, 'egenskaber') + ['virkning'])
             )
         },
         [egenskaber_name]

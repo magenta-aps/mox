@@ -11,37 +11,38 @@ class TestGetMandatory(unittest.TestCase):
     def test_facet(self):
         self.assertEqual(
             ['brugervendtnoegle'],
-            validate._get_mandatory('facet')
+            validate._get_mandatory('facet', 'egenskaber')
         )
 
     def test_organisation(self):
         self.assertEqual(
             ['brugervendtnoegle'],
-            validate._get_mandatory('organisation')
+            validate._get_mandatory('organisation', 'egenskaber')
         )
 
     def test_klasse(self):
         self.assertEqual(
             ['brugervendtnoegle', 'titel'],
-            validate._get_mandatory('klasse')
+            validate._get_mandatory('klasse', 'egenskaber')
         )
 
     def test_sag(self):
         self.assertEqual(
             ['beskrivelse', 'brugervendtnoegle', 'kassationskode', 'sagsnummer',
              'titel'],
-            validate._get_mandatory('sag')
+            validate._get_mandatory('sag', 'egenskaber')
         )
 
     def test_dokument(self):
         self.assertEqual(
             ['beskrivelse', 'brevdato', 'brugervendtnoegle', 'dokumenttype',
              'titel'],
-            validate._get_mandatory('dokument')
+            validate._get_mandatory('dokument', 'egenskaber')
         )
 
     def test_loghaendelse(self):
-        self.assertEqual([], validate._get_mandatory('loghaendelse'))
+        self.assertEqual([],
+                         validate._get_mandatory('loghaendelse', 'egenskaber'))
 
 
 class TestGenerateJSONSchema(unittest.TestCase):
