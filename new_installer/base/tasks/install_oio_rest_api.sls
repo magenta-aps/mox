@@ -55,8 +55,8 @@ install_oio_rest_requirements:
     - system_site_packages: False
     - user: {{ config.user }}
     - requirements: {{ config.base_dir }}/oio_rest_api/requirements.txt
-  - require:
-    - sls: tasks.install_common_lib
+    - require:
+      - sls: tasks.install_common_lib
 
 install_gunicorn:
   virtualenv.managed:
