@@ -29,6 +29,7 @@ update_postgresql_configuration:
 install_postgresql_pgtab_extension:
   postgres_extension.present:
     - name: pgtap
+    - user: root
 
 
 # Install pg_amqp - Postgres AMQP extension
