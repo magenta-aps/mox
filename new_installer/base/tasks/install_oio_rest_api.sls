@@ -65,7 +65,7 @@ install_gunicorn:
 deploy_service_file:
   file.managed:
     - name: /etc/systemd/system/oio_rest_api.service
-    - source: salt://files/service_template.j2
+    - source: salt://files/oio_rest_api.service.j2
     - user: root
     - group: root
     - mode: 600
