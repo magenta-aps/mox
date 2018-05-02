@@ -33,8 +33,8 @@ sudo('install', '-d', '-o', 'mox', '-g', 'mox',
 
 virtualenv = VirtualEnv()
 
-print "Running setup.py"
-virtualenv.run(DIR + "/setup.py", "develop")
+print "Installing OIO REST into virtual environment"
+virtualenv.run("-m", "pip", "install", "--system", "-e", DIR)
 virtualenv.add_moxlib_pointer()
 
 # -----------------------------------------------------------------------------
