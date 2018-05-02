@@ -326,6 +326,108 @@ class TestGenerateJSONSchema(unittest.TestCase):
             validate._generate_attributter('klasse')
         )
 
+    def test_attributter_itsystem(self):
+        self.assertEqual(
+            {
+                'type': 'object',
+                'properties': {
+                    'itsystemegenskaber': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'brugervendtnoegle': {'type': 'string'},
+                                'itsystemnavn': {'type': 'string'},
+                                'itsystemtype': {'type': 'string'},
+                                'konfigurationreference': {
+                                    'type': 'array',
+                                    'items': {'type': 'string'}
+                                },
+                                'virkning': {'$ref': '#/definitions/virkning'}
+                            },
+                            'required': ['brugervendtnoegle', 'virkning'],
+                            'additionalProperties': False
+                        }
+                    }
+                },
+                'required': ['itsystemegenskaber'],
+                'additionalProperties': False
+            },
+            validate._generate_attributter('itsystem')
+        )
+
+    def test_attributter_sag(self):
+        self.assertEqual(
+            {
+                'type': 'object',
+                'properties': {
+                    'sagegenskaber': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'brugervendtnoegle': {'type': 'string'},
+                                'sagsnummer': {'type': 'string'},
+                                'titel': {'type': 'string'},
+                                'beskrivelse': {'type': 'string'},
+                                'hjemmel': {'type': 'string'},
+                                'offentlighedundtaget': {
+                                    '$ref': '#/definitions/offentlighedundtaget'
+                                },
+                                'principiel': {'type': 'boolean'},
+                                'kassationskode': {'type': 'string'},
+                                'afleveret': {'type': 'boolean'},
+                                'virkning': {'$ref': '#/definitions/virkning'}
+                            },
+                            'required': ['beskrivelse', 'brugervendtnoegle',
+                                         'kassationskode', 'sagsnummer',
+                                         'titel', 'virkning'],
+                            'additionalProperties': False
+                        }
+                    }
+                },
+                'required': ['sagegenskaber'],
+                'additionalProperties': False
+            },
+            validate._generate_attributter('sag')
+        )
+
+    def test_attributter_dokument(self):
+        self.assertEqual(
+            {
+                'type': 'object',
+                'properties': {
+                    'dokumentegenskaber': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'brugervendtnoegle': {'type': 'string'},
+                                'beskrivelse': {'type': 'string'},
+                                'brevdato': {'type': 'string'},
+                                'dokumenttype': {'type': 'string'},
+                                'kassationskode': {'type': 'string'},
+                                'major': {'type': 'integer'},
+                                'minor': {'type': 'integer'},
+                                'offentlighedundtaget': {
+                                    '$ref': '#/definitions/offentlighedundtaget'
+                                },
+                                'titel': {'type': 'string'},
+                                'virkning': {'$ref': '#/definitions/virkning'}
+                            },
+                            'required': ['beskrivelse', 'brevdato',
+                                         'brugervendtnoegle', 'dokumenttype',
+                                         'titel', 'virkning'],
+                            'additionalProperties': False
+                        }
+                    }
+                },
+                'required': ['dokumentegenskaber'],
+                'additionalProperties': False
+            },
+            validate._generate_attributter('dokument')
+        )
+
     def test_index_allowed_in_relations_for_aktivitet(self):
         relationer = validate._generate_relationer('aktivitet')
         self.assertEqual(

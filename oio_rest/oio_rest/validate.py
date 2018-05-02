@@ -37,6 +37,12 @@ def _generate_schema_array(items, maxItems=None):
 
 
 def _get_mandatory(obj, attribute='egenskaber'):
+    """
+    Get a list of mandatory attribute keys for a given attribute.
+    :param obj: The type of LoRa object, i.e. 'bruger', 'organisation' etc.
+    :param attribute: The attribute to get the keys from, e.g. 'egenskaber'
+    :return: Sorted list of mandatory attribute keys
+    """
     metadata = db.REAL_DB_STRUCTURE[obj].get('attributter_metadata', [])
     if not metadata:
         return metadata
@@ -60,22 +66,30 @@ def _generate_schema_object(properties, required, kwargs=None):
     return schema_obj
 
 
-def _handle_special_egenskaber(obj, egenskaber):
-    if obj == KLASSE:
-        egenskaber['soegeord'] = _generate_schema_array(
-            _generate_schema_array(STRING), 2)
-    if obj == ITSYSTEM:
-        egenskaber['konfigurationreference'] = _generate_schema_array(STRING)
-    if obj == SAG:
-        egenskaber['afleveret'] = BOOLEAN
-        egenskaber['principiel'] = BOOLEAN
-        egenskaber['offentlighedundtaget'] = {
-            '$ref': '#/definitions/offentlighedundtaget'}
-    if obj == DOKUMENT:
-        egenskaber['major'] = INTEGER
-        egenskaber['minor'] = INTEGER
-        egenskaber['offentlighedundtaget'] = {
-            '$ref': '#/definitions/offentlighedundtaget'}
+def _handle_special_egenskaber(obj, egenskaber, attribute='egenskaber'):
+
+    type_map = {
+        'boolean': BOOLEAN,
+        'date': STRING,
+        'int': INTEGER,
+        'offentlighedundtagettype': {
+            '$ref': '#/definitions/offentlighedundtaget'},
+        'soegeord': _generate_schema_array(_generate_schema_array(STRING), 2),
+        'text[]': _generate_schema_array(STRING)
+    }
+
+    # TODO: refactor according to the above
+    metadata = db.REAL_DB_STRUCTURE[obj].get('attributter_metadata', [])
+    if not metadata:
+        return egenskaber
+    attribute = db.REAL_DB_STRUCTURE[obj]['attributter_metadata'][attribute]
+
+    egenskaber.update(
+        {
+            key: type_map[attribute[key]['type']]
+            for key in attribute if attribute[key].get('type', False)
+        }
+    )
 
     return egenskaber
 

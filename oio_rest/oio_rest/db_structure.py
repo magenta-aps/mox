@@ -48,13 +48,14 @@ DATABASE_STRUCTURE = {
         "attributter": {
             "egenskaber": [
                 "brugervendtnoegle", "beskrivelse", "eksempel", "omfang",
-                "titel", "retskilde", "aendringsnotat"
+                "titel", "retskilde", "aendringsnotat", "soegeord"
             ],
         },
         "attributter_metadata": {
             'egenskaber': {
                 'brugervendtnoegle': {'mandatory': True},
-                'titel': {'mandatory': True}
+                'soegeord': {'type': 'soegeord'},
+                'titel': {'mandatory': True},
             }
         },
         "tilstande": {
@@ -126,7 +127,8 @@ DATABASE_STRUCTURE = {
         },
         "attributter_metadata": {
             'egenskaber': {
-                'brugervendtnoegle': {'mandatory': True}
+                'brugervendtnoegle': {'mandatory': True},
+                'konfigurationreference': {'type': 'text[]'}
             }
         },
         "attributter_type_override": {
@@ -226,11 +228,14 @@ DATABASE_STRUCTURE = {
         },
         "attributter_metadata": {
             'egenskaber': {
+                'afleveret': {'type': 'boolean'},
+                'beskrivelse': {'mandatory': True},
                 'brugervendtnoegle': {'mandatory': True},
+                'kassationskode': {'mandatory': True},
+                'offentlighedundtaget': {'type': 'offentlighedundtagettype'},
+                'principiel': {'type': 'boolean'},
                 'sagsnummer': {'mandatory': True},
                 'titel': {'mandatory': True},
-                'beskrivelse': {'mandatory': True},
-                'kassationskode': {'mandatory': True}
             }
         },
         "attributter_type_override": {
@@ -270,11 +275,14 @@ DATABASE_STRUCTURE = {
         },
         "attributter_metadata": {
             'egenskaber': {
-                'brugervendtnoegle': {'mandatory': True},
                 'beskrivelse': {'mandatory': True},
-                'brevdato': {'mandatory': True},
-                'titel': {'mandatory': True},
+                'brevdato': {'mandatory': True, 'type': 'date'},
+                'brugervendtnoegle': {'mandatory': True},
                 'dokumenttype': {'mandatory': True},
+                'major': {'type': 'int'},
+                'minor': {'type': 'int'},
+                'offentlighedundtaget': {'type': 'offentlighedundtagettype'},
+                'titel': {'mandatory': True},
             }
         },
         "attributter_type_override": {
@@ -401,7 +409,7 @@ DATABASE_STRUCTURE = {
 }
 
 REAL_DB_STRUCTURE = deepcopy(DATABASE_STRUCTURE)
-REAL_DB_STRUCTURE["klasse"]["attributter"]["egenskaber"].append("soegeord")
+# REAL_DB_STRUCTURE["klasse"]["attributter"]["egenskaber"].append("soegeord")
 REAL_DB_STRUCTURE["klasse"]["attributter_type_override"] = {
     "egenskaber": {
         "soegeord": "soegeord"
