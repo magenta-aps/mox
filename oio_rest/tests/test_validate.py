@@ -7,6 +7,43 @@ import jsonschema
 import oio_rest.validate as validate
 
 
+class TestGetMandatory(unittest.TestCase):
+    def test_facet(self):
+        self.assertEqual(
+            ['brugervendtnoegle'],
+            validate._get_mandatory('facet')
+        )
+
+    def test_organisation(self):
+        self.assertEqual(
+            ['brugervendtnoegle'],
+            validate._get_mandatory('organisation')
+        )
+
+    def test_klasse(self):
+        self.assertEqual(
+            ['brugervendtnoegle', 'titel'],
+            validate._get_mandatory('klasse')
+        )
+
+    def test_sag(self):
+        self.assertEqual(
+            ['beskrivelse', 'brugervendtnoegle', 'kassationskode', 'sagsnummer',
+             'titel'],
+            validate._get_mandatory('sag')
+        )
+
+    def test_dokument(self):
+        self.assertEqual(
+            ['beskrivelse', 'brevdato', 'brugervendtnoegle', 'dokumenttype',
+             'titel'],
+            validate._get_mandatory('dokument')
+        )
+
+    def test_loghaendelse(self):
+        self.assertEqual([], validate._get_mandatory('loghaendelse'))
+
+
 class TestGenerateJSONSchema(unittest.TestCase):
     maxDiff = None
 

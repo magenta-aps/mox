@@ -36,6 +36,18 @@ def _generate_schema_array(items, maxItems=None):
     return schema_array
 
 
+def _get_mandatory(obj, attribute='egenskaber'):
+    metadata = db.REAL_DB_STRUCTURE[obj].get('attributter_metadata', [])
+    if not metadata:
+        return metadata
+    attribute = db.REAL_DB_STRUCTURE[obj]['attributter_metadata'][attribute]
+    mandatory = [
+        key for key in attribute if attribute[key].get('mandatory', False)
+    ]
+    mandatory.sort()
+    return mandatory
+
+
 def _generate_schema_object(properties, required, kwargs=None):
     schema_obj = {
         'type': 'object',
@@ -91,7 +103,7 @@ def _generate_attributter(obj):
             egenskaber_name: _generate_schema_array(
                 _generate_schema_object(
                     egenskaber,
-                    db_attributter['required_egenskaber'] + ['virkning'])
+                    _get_mandatory(obj) + ['virkning'])
             )
         },
         [egenskaber_name]
