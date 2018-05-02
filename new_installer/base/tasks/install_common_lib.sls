@@ -6,8 +6,9 @@
 # For most installations
 # AVA requires a different lib
 install_common_lib_python_2:
-  pip.installed:
-    - name:
-      - pkg: {{ config.base_dir }}/lib/common
-      - bin_env: {{ config.virtualenv }}
-    - user:
+  virtualenv.managed:
+    - name: {{ config.virtualenv }}
+    - system_site_packages: False
+    - user: {{ config.user }}
+    - pip_pkgs:
+      - {{ config.base_dir }}/lib/common
