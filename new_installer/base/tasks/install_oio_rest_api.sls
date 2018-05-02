@@ -64,7 +64,7 @@ deploy_service_file:
     - mode: 600
     - template: jinja
     - context:
-        service_description: This should be the output
+        service_description: "OIO Rest interface"
         user: {{ config.user }}
         group: {{ config.group }}
         working_directory: {{ config.base_dir }}/oio_rest_api
