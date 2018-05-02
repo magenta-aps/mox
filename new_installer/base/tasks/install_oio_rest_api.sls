@@ -37,6 +37,7 @@ create_audit_log_file:
   file.touch:
     - name: /var/log/mox/audit.log
 
+
 set_audit_log_file_permissions:
   file.managed:
     - name: /var/log/mox/audit.log
@@ -44,9 +45,6 @@ set_audit_log_file_permissions:
     - group: {{ config.group }}
     - mode: 644
 
-# DEPENDENCY
-include:
-  - tasks.install_common_lib
 
 # This should work for both Python 2 & 3
 install_oio_rest_requirements:
@@ -55,8 +53,7 @@ install_oio_rest_requirements:
     - system_site_packages: False
     - user: {{ config.user }}
     - requirements: {{ config.base_dir }}/oio_rest_api/requirements.txt
-    - require:
-      - sls: tasks.install_common_lib
+
 
 install_gunicorn:
   virtualenv.managed:

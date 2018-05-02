@@ -57,9 +57,6 @@ enable_and_reload_postgresql:
     - enable: True
     - reload: True
 
-# DEPENDENCY
-include:
-  - tasks.install_common_lib
 
 run_database_init_script:
   cmd.run:
@@ -83,5 +80,3 @@ run_database_init_script:
       - MOX_AMQP_USER: {{ config.amqp.user }}
       - MOX_AMQP_PASS: {{ config.amqp.pass }}
       - MOX_AMQP_VHOST: {{ config.amqp.vhost }}
-    - require:
-      - sls: tasks.install_common_lib
