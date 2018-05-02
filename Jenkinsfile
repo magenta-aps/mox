@@ -13,7 +13,7 @@ pipeline {
 
         timeout(2) {
           ansiColor('xterm') {
-            sh 'make -C doc dirhtml'
+            sh 'make -C doc dirhtml SPHINXOPTS=--color'
           }
         }
 
@@ -25,8 +25,6 @@ pipeline {
     }
     stage('Test') {
       steps {
-        echo 'Testing oio_rest...'
-
         timeout(15) {
           ansiColor('xterm') {
             sh 'oio_rest/run_tests.sh'
