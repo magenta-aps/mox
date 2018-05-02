@@ -45,14 +45,8 @@ set_audit_log_file_permissions:
     - mode: 644
 
 # DEPENDENCY
-install_common_lib_python_2:
-  virtualenv.managed:
-    - name: {{ config.virtualenv }}
-    - system_site_packages: False
-    - user: {{ config.user }}
-    - pip_pkgs:
-      - {{ config.base_dir }}/lib/common
-
+include:
+  - tasks.install_common_lib
 
 # This should work for both Python 2 & 3
 install_oio_rest_requirements:
@@ -62,7 +56,7 @@ install_oio_rest_requirements:
     - user: {{ config.user }}
     - requirements: {{ config.base_dir }}/oio_rest_api/requirements.txt
   - require:
-    - install_common_lib_python_2
+    - sls: tasks.install_common_lib
 
 install_gunicorn:
   virtualenv.managed:
