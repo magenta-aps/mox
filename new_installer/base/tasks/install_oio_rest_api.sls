@@ -3,46 +3,6 @@
 # E.g. config["hostname"] is expressed with config.hostname
 {% set config = grains["mox_config"] %}
 
-install_dependencies_for_oio_rest:
-  pkg.installed:
-    - pkgs:
-      - libxmlsec1-dev
-      - swig
-      - libpq-dev
-      - python-dev
-      - build-essential
-
-
-create_upload_directory:
-  file.directory:
-    - name: /var/mox
-    - user: {{ config.user }}
-    - group: {{ config.group }}
-    - dir_mode: 755
-    - file_mode: 644
-
-
-create_log_directory:
-  file.directory:
-    - name: /var/log/mox
-    - user: {{ config.user }}
-    - group: {{ config.group }}
-    - dir_mode: 755
-    - file_mode: 644
-
-create_audit_log_file:
-  file.touch:
-    - name: /var/log/mox/audit.log
-
-
-set_audit_log_file_permissions:
-  file.managed:
-    - name: /var/log/mox/audit.log
-    - user: {{ config.user }}
-    - group: {{ config.group }}
-    - mode: 644
-
-
 # This should work for both Python 2 & 3
 install_oio_rest_requirements:
   virtualenv.managed:
@@ -77,7 +37,7 @@ deploy_service_file:
         gunicorn: {{ config.virtualenv }}/bin/gunicorn
 
 
-enable_and_reload_oio_rest_service:
+enable_and_reload_oio_rest_api:
   service.running:
     - name: oio_rest_api
     - enable: True

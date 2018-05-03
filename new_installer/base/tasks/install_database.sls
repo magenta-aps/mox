@@ -3,24 +3,6 @@
 # E.g. config["hostname"] is expressed with config.hostname
 {% set config = grains["mox_config"] %}
 
-install_system_dependencies:
-  pkg.installed:
-    - pkgs:
-      - ca-certificates
-      - postgresql
-      - postgresql-common
-      - postgresql-client
-      - postgresql-server-dev-all
-      - postgresql-contrib
-      - python-jinja2
-      - rabbitmq-server
-      - git
-      - build-essential
-
-      # Extension
-      - postgresql-9.5-pgtap
-
-
 update_postgresql_configuration:
   file.managed:
     - name: /etc/postgresql/9.5/main/pg_hba.conf
@@ -52,33 +34,14 @@ compile_extension:
       - PG_CONFIG: /usr/lib/postgresql/9.5/bin/pg_config
 
 
-enable_and_reload_postgresql:
+# Apply changes
+restart_postgresql:
+  module.run:
+    - name: service.restart
+    - m_name: postgresql
+
+
+enable_postgresql:
   service.running:
     - name: postgresql
     - enable: True
-    - reload: True
-
-
-run_database_init_script:
-  cmd.run:
-    - name: ./initdb.sh
-    - cwd: {{ config.base_dir }}/db
-    - runas: postgres
-    - env:
-      - BASE_DIR: {{ config.base_dir }}
-      - DB_DIR: {{ config.base_dir }}/db
-      - PYTHON_EXEC: {{ config.python_exec }}
-
-      # DB
-      - SUPER_USER: {{ config.db.superuser }}
-      - MOX_DB_HOST: {{ config.db.host }}
-      - MOX_DB: {{ config.db.name }}
-      - MOX_DB_USER: {{ config.db.user }}
-      - MOX_DB_PASSWORD: {{ config.db.pass }}
-
-      # AMQP
-      - MOX_AMQP_HOST: {{ config.amqp.host }}
-      - MOX_AMQP_PORT: {{ config.amqp.port }}
-      - MOX_AMQP_USER: {{ config.amqp.user }}
-      - MOX_AMQP_PASS: {{ config.amqp.pass }}
-      - MOX_AMQP_VHOST: {{ config.amqp.vhost }}
