@@ -63,6 +63,7 @@ run_database_init_script:
   cmd.run:
     - name: ./initdb.sh
     - cwd: {{ config.base_dir }}/db
+    - runas: postgres
     - env:
       - BASE_DIR: {{ config.base_dir }}
       - DB_DIR: {{ config.base_dir }}/db
