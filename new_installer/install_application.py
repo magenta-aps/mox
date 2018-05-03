@@ -11,11 +11,8 @@ def print_task(executed_tasks):
 
 
 # Run states
-create_venv = caller.cmd("state.apply", "tasks.create_venv")
-print_task(create_venv)
-
-install_common_lib = caller.cmd("state.apply", "tasks.install_common_lib")
-print_task(install_common_lib)
+configure = caller.cmd("state.apply", "tasks.configure_environment")
+print_task(configure)
 
 install_database = caller.cmd("state.apply", "tasks.install_database")
 print_task(install_database)
