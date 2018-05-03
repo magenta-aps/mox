@@ -101,7 +101,7 @@ CREATE TABLE {{oio_type}}_attr_{{attribut}}
 (
   id bigint NOT NULL DEFAULT nextval('{{oio_type}}_attr_{{attribut}}_id_seq'::regclass),
    {%- for field in attribut_fields %} 
-   {{field}} {%- if  attributter_type_override is defined and attributter_type_override[attribut] is defined and attributter_type_override[attribut][field] is defined %} {{attributter_type_override[attribut][field]}} {%- else %} text {%- endif %} null,
+   {{field}} {%- if  attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][field] is defined and attributter_metadata[attribut][field]['type'] is defined %} {{attributter_metadata[attribut][field]['type']}} {%- else %} text {%- endif %} null,
    {%- endfor %} 
    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
   {{oio_type}}_registrering_id bigint not null,
@@ -118,15 +118,15 @@ ALTER TABLE {{oio_type}}_attr_{{attribut}}
 {% for field in attribut_fields %} 
 
 
- {%- if  attributter_type_override is defined and attributter_type_override[attribut] is defined and attributter_type_override[attribut][field] is defined %} 
-{%-if attributter_type_override[attribut][field] == "text[]" %}
+ {%- if  attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][field] is defined and attributter_metadata[attribut][field]['type'] is defined %} 
+{%-if attributter_metadata[attribut][field]['type'] == "text[]" %}
   CREATE INDEX {{oio_type}}_attr_{{attribut}}_pat_{{field}}
   ON {{oio_type}}_attr_{{attribut}}
   USING gin
   ({{field}} _text_ops);
 {%- else %} 
 
- {%-if attributter_type_override[attribut][field] == "offentlighedundtagettype" %} 
+ {%-if attributter_metadata[attribut][field]['type'] == "offentlighedundtagettype" %} 
 
  CREATE INDEX {{oio_type}}_attr_{{attribut}}_pat_AlternativTitel_{{field}}
   ON {{oio_type}}_attr_{{attribut}}
