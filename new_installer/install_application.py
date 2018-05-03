@@ -17,8 +17,8 @@ print_task(configure)
 install_database = caller.cmd("state.apply", "tasks.install_database")
 print_task(install_database)
 
-install_oio_rest_api = caller.cmd("state.apply", "tasks.install_oio_rest_api")
-print_task(install_oio_rest_api)
+install_oio_rest = caller.cmd("state.apply", "tasks.install_oio_rest")
+print_task(install_oio_rest)
 
 init_db = caller.cmd("state.apply", "tasks.initialize_database")
 print_task(init_db)
