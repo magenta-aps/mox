@@ -33,6 +33,20 @@ systems, so we would prefer not to support that parameter.
 As regards the parameter ``-version``, we have deferred support for it
 until we actually have more than one version of the protocol to support.
 
+
+A note for developers
+---------------------
+
+This guide assumes that the LoRA is configured to use SAML
+authentication, which is the case when interacting with deployed
+instances. For development, however, it is frequently easier to
+disable authentication in ``settings.py``::
+
+  USE_SAML_AUTHENTICATION = False
+
+In this case, you may safely disregard all talk of _SAML_ tokens, the
+:http:header:`Authorization` header and ``AUTH_TOKEN``.
+
 Acquire SAML token
 ++++++++++++++++++
 
