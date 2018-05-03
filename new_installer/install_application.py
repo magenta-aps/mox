@@ -19,3 +19,6 @@ print_task(install_database)
 
 install_oio_rest_api = caller.cmd("state.apply", "tasks.install_oio_rest_api")
 print_task(install_oio_rest_api)
+
+init_db = caller.cmd("state.apply", "tasks.initialize_database")
+print_task(init_db)
