@@ -9,7 +9,7 @@ import os
 env = os.environ.get
 
 # Location of access log file
-accesslog= env("GUNICORN_ACCESS_LOG", "/tmp/oio_access.log")
+accesslog = env("GUNICORN_ACCESS_LOG", "/tmp/oio_access.log")
 
 # Location of error log file
 errorlog = env("GUNICORN_ERROR_LOG", "/tmp/oio_error.log")
@@ -23,5 +23,6 @@ bind = env("GUNICORN_BIND_ADDRESS", '127.0.0.1:8080')
 # Gunicorn workers
 # Example:
 #   workers = multiprocessing.cpu_count() * 2 + 1
-# For more information, please see (# Please see http://docs.gunicorn.org/en/stable/configure.html)
+# For more information,
+# please see (http://docs.gunicorn.org/en/stable/configure.html)
 workers = env("GUNICORN_WORKERS", 2)
