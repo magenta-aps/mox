@@ -336,7 +336,10 @@ DATABASE_STRUCTURE = {
         },
         "attributter_metadata": {
             'egenskaber': {
-                'brugervendtnoegle': {'mandatory': True}
+                'brugervendtnoegle': {'mandatory': True},
+                'starttidspunkt': {'type': 'timestamptz'},
+                'sluttidspunkt': {'type': 'timestamptz'},
+                'tidsforbrug': {'type': 'interval(0)'}
             }
         },
         "attributter_type_override": {
@@ -370,7 +373,9 @@ DATABASE_STRUCTURE = {
         },
         "attributter_metadata": {
             'egenskaber': {
-                'brugervendtnoegle': {'mandatory': True}
+                'brugervendtnoegle': {'mandatory': True},
+                'starttidspunkt': {'type': 'timestamptz'},
+                'sluttidspunkt': {'type': 'timestamptz'},
             }
         },
         "attributter_type_override": {
