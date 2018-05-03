@@ -48,8 +48,7 @@ DATABASE_STRUCTURE = {
         "attributter": {
             "egenskaber": [
                 "brugervendtnoegle", "beskrivelse", "eksempel", "omfang",
-                "titel", "retskilde", "aendringsnotat", "soegeord"
-            ],
+                "titel", "retskilde", "aendringsnotat"],
         },
         "attributter_metadata": {
             'egenskaber': {
@@ -409,7 +408,7 @@ DATABASE_STRUCTURE = {
 }
 
 REAL_DB_STRUCTURE = deepcopy(DATABASE_STRUCTURE)
-# REAL_DB_STRUCTURE["klasse"]["attributter"]["egenskaber"].append("soegeord")
+REAL_DB_STRUCTURE["klasse"]["attributter"]["egenskaber"].append("soegeord")
 REAL_DB_STRUCTURE["klasse"]["attributter_type_override"] = {
     "egenskaber": {
         "soegeord": "soegeord"
