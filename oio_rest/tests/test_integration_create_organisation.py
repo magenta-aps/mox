@@ -602,3 +602,45 @@ class TestCreateOrganisation(util.TestCase):
         self.org = json.loads(org)
 
         self._check_response_400()
+
+    def test_create_itsystem(self):
+        """
+        TODO: move this elsewhere!!
+        """
+
+        # Create itsystem
+
+        itsystem = {
+            "note": "Nyt IT-system",
+            "attributter": {
+                "itsystemegenskaber": [
+                    {
+                        "brugervendtnoegle": "OIO_REST",
+                        "itsystemnavn": "OIOXML REST API",
+                        "itsystemtype": "Kommunalt system",
+                        "konfigurationreference": ["Ja", "Nej", "Ved ikke"],
+                        "virkning": self.standard_virkning1
+                    }
+                ]
+            },
+            "tilstande": {
+                "itsystemgyldighed": [{
+                    "gyldighed": "Aktiv",
+                    "virkning": self.standard_virkning1
+                }
+                ]
+            },
+        }
+
+        r = self._post(itsystem, url='/organisation/itsystem')
+
+        # Check response
+        self._check_response_201(r)
+
+        # Check persisted data
+        itsystem['livscykluskode'] = 'Opstaaet'
+        self.assertQueryResponse(
+            '/organisation/itsystem',
+            itsystem,
+            uuid=r.json['uuid']
+        )
