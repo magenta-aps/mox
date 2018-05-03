@@ -11,8 +11,8 @@ from tests import util
 
 
 class TestTokens(TestCase):
-    @patch('oio_rest.auth.tokens.requests')
-    @patch('oio_rest.auth.tokens.jinja_env')
+    @patch('auth.tokens.requests')
+    @patch('auth.tokens.jinja_env')
     def test_get_token_pretty_printed(self, mock_jinja_env, mock_requests):
         # type: (MagicMock, MagicMock, MagicMock) -> None
         # Arrange
@@ -47,7 +47,7 @@ class TestTokens(TestCase):
         # Assert
         self.assertEquals(expected, actual)
 
-    @patch('oio_rest.auth.tokens.requests')
+    @patch('auth.tokens.requests')
     def test_get_token(self, mock_requests):
         # type: (MagicMock, MagicMock) -> None
         # Arrange
@@ -75,8 +75,8 @@ class TestTokens(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.auth.tokens.requests')
-    @patch('oio_rest.auth.tokens.jinja_env')
+    @patch('auth.tokens.requests')
+    @patch('auth.tokens.jinja_env')
     def test_get_token_raises_on_response_code_500(self, mock_jinja_env,
                                                    mock_requests):
         # type: (MagicMock, MagicMock) -> None
@@ -105,8 +105,8 @@ class TestTokens(TestCase):
         with self.assertRaises(Exception):
             tokens.get_token(username, passwd)
 
-    @patch('oio_rest.auth.tokens.requests')
-    @patch('oio_rest.auth.tokens.jinja_env')
+    @patch('auth.tokens.requests')
+    @patch('auth.tokens.jinja_env')
     def test_get_token_raises_on_fault(self, mock_jinja_env,
                                        mock_requests):
         # type: (MagicMock, MagicMock) -> None
@@ -129,8 +129,8 @@ class TestTokens(TestCase):
         with self.assertRaises(Exception):
             tokens.get_token(username, passwd)
 
-    @patch('oio_rest.auth.tokens.requests')
-    @patch('oio_rest.auth.tokens.jinja_env')
+    @patch('auth.tokens.requests')
+    @patch('auth.tokens.jinja_env')
     def test_get_token_raises_on_no_tokens(self, mock_jinja_env,
                                            mock_requests):
         # type: (MagicMock, MagicMock) -> None
@@ -156,8 +156,8 @@ class TestTokens(TestCase):
         with self.assertRaises(KeyError):
             tokens.get_token(username, passwd)
 
-    @patch('oio_rest.auth.tokens.requests')
-    @patch('oio_rest.auth.tokens.jinja_env')
+    @patch('auth.tokens.requests')
+    @patch('auth.tokens.jinja_env')
     def test_get_token_raises_on_too_many_tokens(self, mock_jinja_env,
                                                  mock_requests):
         # type: (MagicMock, MagicMock) -> None
@@ -185,8 +185,8 @@ class TestTokens(TestCase):
         with self.assertRaises(KeyError):
             tokens.get_token(username, passwd)
 
-    @patch('oio_rest.auth.tokens.requests')
-    @patch('oio_rest.auth.tokens.jinja_env')
+    @patch('auth.tokens.requests')
+    @patch('auth.tokens.jinja_env')
     def test_get_token_raises_stored_response_error(self, mock_jinja_env,
                                                     mock_requests):
         from requests import HTTPError
@@ -217,7 +217,7 @@ class TestTokens(TestCase):
         with self.assertRaises(HTTPError):
             tokens.get_token(username, passwd)
 
-    @patch('oio_rest.auth.tokens.get_token')
+    @patch('auth.tokens.get_token')
     def test_main_returns_1_on_sslerror(self, mock_get_token):
         # Arrange
         args = ['prog', '-u', 'user', '-p', 'pass']
@@ -232,7 +232,7 @@ class TestTokens(TestCase):
         self.assertEqual(1, actual_code)
 
     @patch('sys.stdout.write')
-    @patch('oio_rest.auth.tokens.get_token')
+    @patch('auth.tokens.get_token')
     def test_main(self, mock_get_token, mock_write):
         # Arrange
         args = ['prog', '-u', 'user', '-p', 'pass']
@@ -248,9 +248,9 @@ class TestTokens(TestCase):
         mock_write.assert_called_with('test token')
 
     @patch('ssl.DER_cert_to_PEM_cert')
-    @patch('oio_rest.auth.tokens.base64.standard_b64decode')
+    @patch('auth.tokens.base64.standard_b64decode')
     @patch('sys.stdout.write')
-    @patch('oio_rest.auth.tokens.get_token')
+    @patch('auth.tokens.get_token')
     def test_main_cert_only(self, mock_get_token, mock_write,
                             mock_base64_decode, mock_ssl_d2p):
         # Arrange
@@ -272,7 +272,7 @@ class TestTokens(TestCase):
         mock_ssl_d2p.assert_called()
 
     @patch('requests.packages.urllib3.disable_warnings')
-    @patch('oio_rest.auth.tokens.get_token')
+    @patch('auth.tokens.get_token')
     def test_main_insecure_disables_warnings(self, mock_get_token,
                                              mock_urllib3_dw):
         # Arrange
@@ -289,8 +289,8 @@ class TestTokens(TestCase):
         mock_urllib3_dw.assert_called()
 
     @requests_mock.mock()
-    @patch('oio_rest.settings.SAML_IDP_URL', 'http://example.com/auth')
-    @patch('oio_rest.settings.SAML_IDP_TYPE', 'wso2')
+    @patch('settings.SAML_IDP_URL', 'http://example.com/auth')
+    @patch('settings.SAML_IDP_TYPE', 'wso2')
     def test_wso2_login(self, m):
         m.post(
             'http://example.com/auth',
@@ -302,8 +302,8 @@ class TestTokens(TestCase):
         self.assertEqual(assertion, tokens.get_token('hest', 'fest'))
 
     @requests_mock.mock()
-    @patch('oio_rest.settings.SAML_IDP_URL', 'http://example.com/auth')
-    @patch('oio_rest.settings.SAML_IDP_TYPE', 'adfs')
+    @patch('settings.SAML_IDP_URL', 'http://example.com/auth')
+    @patch('settings.SAML_IDP_TYPE', 'adfs')
     def test_adfs_login(self, m):
         m.post(
             'http://example.com/auth',
@@ -315,8 +315,8 @@ class TestTokens(TestCase):
         self.assertEqual(assertion, tokens.get_token('hest', 'fest'))
 
     @requests_mock.mock()
-    @patch('oio_rest.settings.SAML_IDP_URL', 'http://example.com/auth')
-    @patch('oio_rest.settings.SAML_IDP_TYPE', 'wso2')
+    @patch('settings.SAML_IDP_URL', 'http://example.com/auth')
+    @patch('settings.SAML_IDP_TYPE', 'wso2')
     def test_wso2_login_failure(self, m):
         m.post(
             'http://example.com/auth',
@@ -331,8 +331,8 @@ class TestTokens(TestCase):
         ))
 
     @requests_mock.mock()
-    @patch('oio_rest.settings.SAML_IDP_URL', 'http://example.com/auth')
-    @patch('oio_rest.settings.SAML_IDP_TYPE', 'adfs')
+    @patch('settings.SAML_IDP_URL', 'http://example.com/auth')
+    @patch('settings.SAML_IDP_TYPE', 'adfs')
     def test_adfs_login_failure(self, m):
         m.post(
             'http://example.com/auth',

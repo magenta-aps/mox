@@ -6,7 +6,7 @@ from auth import restrictions
 
 
 class TestRestrictions(TestCase):
-    @patch('oio_rest.auth.restrictions.DO_ENABLE_RESTRICTIONS', new=False)
+    @patch('auth.restrictions.DO_ENABLE_RESTRICTIONS', new=False)
     def test_get_restrictions_disabled(self):
         # Arrange
         # Act
@@ -15,10 +15,10 @@ class TestRestrictions(TestCase):
         # Assert
         self.assertIsNone(actual_result)
 
-    @patch('oio_rest.auth.restrictions.DO_ENABLE_RESTRICTIONS', new=True)
-    @patch('oio_rest.auth.restrictions.AUTH_RESTRICTION_FUNCTION',
+    @patch('auth.restrictions.DO_ENABLE_RESTRICTIONS', new=True)
+    @patch('auth.restrictions.AUTH_RESTRICTION_FUNCTION',
            new='mock_fun')
-    @patch('oio_rest.auth.restrictions.import_module')
+    @patch('auth.restrictions.import_module')
     def test_get_restrictions(self, mock_import_module):
         # type: (MagicMock) -> None
         # Arrange
@@ -34,8 +34,8 @@ class TestRestrictions(TestCase):
         # Assert
         auth_module.mock_fun.assert_called_with(user, object_type, operation)
 
-    @patch('oio_rest.auth.restrictions.DO_ENABLE_RESTRICTIONS', new=True)
-    @patch('oio_rest.auth.restrictions.import_module')
+    @patch('auth.restrictions.DO_ENABLE_RESTRICTIONS', new=True)
+    @patch('auth.restrictions.import_module')
     def test_get_restrictions_raises_on_attribute_error(self,
                                                         mock_import_module):
         # type: (MagicMock) -> None
@@ -50,8 +50,8 @@ class TestRestrictions(TestCase):
         with self.assertRaises(AttributeError):
             restrictions.get_restrictions(user, object_type, operation)
 
-    @patch('oio_rest.auth.restrictions.DO_ENABLE_RESTRICTIONS', new=True)
-    @patch('oio_rest.auth.restrictions.import_module')
+    @patch('auth.restrictions.DO_ENABLE_RESTRICTIONS', new=True)
+    @patch('auth.restrictions.import_module')
     def test_get_restrictions_raises_on_import_error(self, mock_import_module):
         # type: (MagicMock) -> None
         # Arrange

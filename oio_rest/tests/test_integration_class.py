@@ -8,7 +8,7 @@
 
 from __future__ import unicode_literals
 
-from oio_rest.tests import util
+from tests import util
 
 
 class Tests(util.TestCase):

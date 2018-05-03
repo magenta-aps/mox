@@ -30,9 +30,9 @@ class TestAuthentication(unittest.TestCase):
                 AuthorizationFailedException):
             authentication.check_saml_authentication()
 
-    @patch('oio_rest.authentication.Saml2_Assertion')
-    @patch('oio_rest.authentication.b64decode', new=MagicMock())
-    @patch('oio_rest.authentication.zlib', new=MagicMock())
+    @patch('authentication.Saml2_Assertion')
+    @patch('authentication.b64decode', new=MagicMock())
+    @patch('authentication.zlib', new=MagicMock())
     def test_check_saml_authentication_raises_on_invalid_assert(self,
                                                                 mock_saml2):
         # Arrange
@@ -46,7 +46,7 @@ class TestAuthentication(unittest.TestCase):
             authentication.check_saml_authentication()
 
 
-@patch('oio_rest.settings.USE_SAML_AUTHENTICATION', True)
+@patch('settings.USE_SAML_AUTHENTICATION', True)
 class TestAssertionVerification(util.TestCase):
     '''The intention of these tests are that they should perform an actual
     validation. Unfortunately, I only had some old assertions
@@ -55,17 +55,17 @@ class TestAssertionVerification(util.TestCase):
 
     '''
 
-    @patch('oio_rest.settings.SAML_IDP_TYPE', 'adfs')
-    @patch('oio_rest.settings.SAML_MOX_ENTITY_ID',
+    @patch('settings.SAML_IDP_TYPE', 'adfs')
+    @patch('settings.SAML_MOX_ENTITY_ID',
            'https://moxdev.atlas.magenta.dk')
-    @patch('oio_rest.settings.SAML_IDP_ENTITY_ID',
+    @patch('settings.SAML_IDP_ENTITY_ID',
            'http://adfs.magenta.dk/adfs/services/trust')
-    @patch('oio_rest.settings.SAML_IDP_URL',
+    @patch('settings.SAML_IDP_URL',
            "https://adfs.magenta.dk/adfs/services/trust/13/UsernameMixed")
-    @patch('oio_rest.settings.SAML_USER_ID_ATTIBUTE',
+    @patch('settings.SAML_USER_ID_ATTIBUTE',
            "http://schemas.xmlsoap.org/ws/2005/05/"
            "identity/claims/privatepersonalidentifier")
-    @patch('oio_rest.authentication.__IDP_CERT',
+    @patch('authentication.__IDP_CERT',
            util.get_fixture('adfs-cert.pem'))
     def test_adfs(self):
         def check(expected, status_code):
@@ -90,7 +90,7 @@ class TestAssertionVerification(util.TestCase):
 
             # now verify that we reject assertions not targeted to us
 
-            with patch('oio_rest.settings.SAML_MOX_ENTITY_ID',
+            with patch('settings.SAML_MOX_ENTITY_ID',
                        'https://whatever'):
                 check(
                     {
@@ -104,7 +104,7 @@ class TestAssertionVerification(util.TestCase):
 
             # verify that we reject from the wrong issuing IdP
 
-            with patch('oio_rest.settings.SAML_IDP_ENTITY_ID',
+            with patch('settings.SAML_IDP_ENTITY_ID',
                        'https://whatever'):
                 check(
                     {
@@ -119,7 +119,7 @@ class TestAssertionVerification(util.TestCase):
 
             # and we MUST verify the certificate!!!
 
-            with patch('oio_rest.authentication.__IDP_CERT',
+            with patch('authentication.__IDP_CERT',
                        util.get_fixture('idp-certificate.pem')):
                 check(
                     {
@@ -157,7 +157,7 @@ class TestAssertionVerification(util.TestCase):
                 403,
             )
 
-    @patch('oio_rest.settings.SAML_IDP_TYPE', 'wso2')
+    @patch('settings.SAML_IDP_TYPE', 'wso2')
     def test_wso2(self):
         raise unittest.SkipTest('TODO')
 

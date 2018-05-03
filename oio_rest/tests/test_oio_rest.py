@@ -13,7 +13,7 @@ import db_helpers
 from custom_exceptions import (BadRequestException, NotFoundException,
                                         GoneException)
 from oio_rest import OIOStandardHierarchy, OIORestObject
-
+import oio_rest
 
 class TestClassRestObject(OIORestObject):
     pass
@@ -222,7 +222,7 @@ class TestOIORestObject(TestCase):
         # Assert
         self.assertEquals(expected_json, actual_json)
 
-    @patch('oio_rest.oio_rest.db.create_or_import_object')
+    @patch('db.create_or_import_object')
     def test_create_object_with_input_returns_uuid_and_code_201(self, mock):
         # Arrange
         uuid = "c98d1e8b-0655-40a0-8e86-bb0cc07b0d59"
@@ -279,7 +279,7 @@ class TestOIORestObject(TestCase):
                         "garbage": ["garbage"]}
 
         with self.app.test_request_context(method='GET'), \
-                patch("oio_rest.db_structure.REAL_DB_STRUCTURE",
+                patch("oio_rest_lib.db_structure.REAL_DB_STRUCTURE",
                       new=db_structure):
 
             # Act
@@ -301,8 +301,8 @@ class TestOIORestObject(TestCase):
             self.testclass.get_fields()
 
     @freezegun.freeze_time('2017-01-01', tz_offset=1)
-    @patch('oio_rest.oio_rest.db.list_objects')
-    @patch('oio_rest.db_helpers.db_struct', new=db_struct)
+    @patch('db.list_objects')
+    @patch('db_helpers.db_struct', new=db_struct)
     def test_get_objects_list_uses_default_params(self,
                                                   mock_list):
         # Arrange
@@ -330,8 +330,8 @@ class TestOIORestObject(TestCase):
         self.assertEqual(expected_args, actual_args)
         self.assertDictEqual(expected_result, actual_result)
 
-    @patch('oio_rest.oio_rest.db.list_objects')
-    @patch('oio_rest.db_helpers.db_struct', new=db_struct)
+    @patch('db.list_objects')
+    @patch('db_helpers.db_struct', new=db_struct)
     def test_get_objects_list_uses_supplied_params(self, mock):
         # Arrange
         data = ["1", "2", "3"]
@@ -372,8 +372,8 @@ class TestOIORestObject(TestCase):
         self.assertEqual(expected_args, actual_args)
         self.assertDictEqual(expected_result, actual_result)
 
-    @patch('oio_rest.oio_rest.db.list_objects')
-    @patch('oio_rest.db_helpers.db_struct', new=db_struct)
+    @patch('db.list_objects')
+    @patch('db_helpers.db_struct', new=db_struct)
     def test_get_objects_returns_empty_list_on_no_results(self, mock):
         # Arrange
 
@@ -389,9 +389,9 @@ class TestOIORestObject(TestCase):
         self.assertDictEqual(expected_result, actual_result)
 
     @freezegun.freeze_time('2017-01-01', tz_offset=1)
-    @patch('oio_rest.db_helpers.db_struct', new=db_struct)
-    @patch('oio_rest.oio_rest.build_registration')
-    @patch('oio_rest.oio_rest.db.search_objects')
+    @patch('db_helpers.db_struct', new=db_struct)
+    @patch('oio_rest.build_registration')
+    @patch('db.search_objects')
     def test_get_objects_search_uses_default_params(self, mock_search,
                                                     mock_br):
         # Arrange
@@ -429,9 +429,9 @@ class TestOIORestObject(TestCase):
         self.assertEqual(expected_args, actual_args)
         self.assertDictEqual(expected_result, actual_result)
 
-    @patch('oio_rest.db_helpers.db_struct', new=db_struct)
-    @patch('oio_rest.oio_rest.build_registration')
-    @patch('oio_rest.oio_rest.db.search_objects')
+    @patch('db_helpers.db_struct', new=db_struct)
+    @patch('oio_rest.build_registration')
+    @patch('db.search_objects')
     def test_get_objects_search_uses_supplied_params(self, mock_search,
                                                      mock_br):
         # Arrange
@@ -491,9 +491,9 @@ class TestOIORestObject(TestCase):
         self.assertEqual(expected_args, actual_args)
         self.assertDictEqual(expected_result, actual_result)
 
-    @patch('oio_rest.db_helpers.db_struct', new=db_struct)
-    @patch('oio_rest.oio_rest.build_registration')
-    @patch('oio_rest.oio_rest.db.search_objects')
+    @patch('db_helpers.db_struct', new=db_struct)
+    @patch('oio_rest.build_registration')
+    @patch('db.search_objects')
     def test_get_objects_search_raises_exception_on_multi_uuid(
             self,
             mock_search,
@@ -519,8 +519,8 @@ class TestOIORestObject(TestCase):
                 self.assertRaises(BadRequestException):
             self.testclass.get_objects()
 
-    @patch('oio_rest.db_helpers.db_struct', new=db_struct)
-    @patch('oio_rest.oio_rest.db.search_objects')
+    @patch('db_helpers.db_struct', new=db_struct)
+    @patch('db.search_objects')
     def test_get_objects_search_raises_exception_on_unknown_args(self,
                                                                  mock_search):
         # Arrange
@@ -536,7 +536,7 @@ class TestOIORestObject(TestCase):
                 self.assertRaises(BadRequestException):
             self.testclass.get_objects()
 
-    @patch('oio_rest.oio_rest.db.list_objects')
+    @patch('db.list_objects')
     @freezegun.freeze_time('2017-01-01', tz_offset=1)
     def test_get_object_uses_default_params(self, mock_list):
         # Arrange
@@ -573,7 +573,7 @@ class TestOIORestObject(TestCase):
         self.assertEqual(expected_args, actual_args)
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.oio_rest.db.list_objects')
+    @patch('db.list_objects')
     def test_get_object_uses_supplied_params(self, mock):
         # Arrange
         data = [
@@ -621,7 +621,7 @@ class TestOIORestObject(TestCase):
         self.assertEqual(expected_args, actual_args)
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.oio_rest.db.list_objects')
+    @patch('db.list_objects')
     def test_get_object_raises_on_no_results(self, mock):
         # Arrange
         data = []
@@ -634,7 +634,7 @@ class TestOIORestObject(TestCase):
                 self.assertRaises(NotFoundException):
             self.testclass.get_object(uuid)
 
-    @patch('oio_rest.oio_rest.db.list_objects')
+    @patch('db.list_objects')
     def test_get_object_raises_on_deleted_object(self, mock_list):
         # Arrange
         data = [
@@ -655,8 +655,8 @@ class TestOIORestObject(TestCase):
                 self.assertRaises(GoneException):
             self.testclass.get_object(uuid)
 
-    @patch('oio_rest.db_helpers.db_struct', new=db_struct)
-    @patch('oio_rest.oio_rest.db.list_objects')
+    @patch('db_helpers.db_struct', new=db_struct)
+    @patch('db.list_objects')
     def test_get_object_raises_on_unknown_args(self, mock_list):
         # Arrange
         uuid = "4efbbbde-e197-47be-9d40-e08f1cd00259"
@@ -689,8 +689,8 @@ class TestOIORestObject(TestCase):
         self.assertDictEqual(expected_data, actual_data)
         self.assertEqual(400, actual_code)
 
-    @patch("oio_rest.oio_rest.db.object_exists")
-    @patch("oio_rest.oio_rest.db.create_or_import_object")
+    @patch("db.object_exists")
+    @patch("db.create_or_import_object")
     def test_put_object_create_if_not_exists(self, mock_create, mock_exists):
         # type: (MagicMock, MagicMock) -> None
         # Arrange
@@ -714,14 +714,14 @@ class TestOIORestObject(TestCase):
         self.assertDictEqual(expected_data, actual_data)
         self.assertEqual(200, actual_code)
 
-    @patch("oio_rest.oio_rest.db.get_life_cycle_code")
-    @patch("oio_rest.oio_rest.db.object_exists")
-    @patch("oio_rest.oio_rest.db.update_object")
+    @patch("db.get_life_cycle_code")
+    @patch("db.object_exists")
+    @patch("db.update_object")
     def test_put_object_update_if_deleted_or_passive(self, mock_update,
                                                      mock_exists,
                                                      mock_life_cycle):
         # type: (MagicMock, MagicMock, MagicMock) -> None
-        from oio_rest.db import Livscyklus
+        from db import Livscyklus
 
         # Arrange
         uuid = "fa3c6c47-9594-48e3-918e-cb1208e0144c"
@@ -746,14 +746,14 @@ class TestOIORestObject(TestCase):
         self.assertDictEqual(expected_data, actual_data)
         self.assertEqual(200, actual_code)
 
-    @patch("oio_rest.oio_rest.db.get_life_cycle_code")
-    @patch("oio_rest.oio_rest.db.object_exists")
-    @patch("oio_rest.oio_rest.db.update_object")
+    @patch("db.get_life_cycle_code")
+    @patch("db.object_exists")
+    @patch("db.update_object")
     def test_put_object_update_if_not_deleted_or_passive(self, mock_update,
                                                          mock_exists,
                                                          mock_life_cycle):
         # type: (MagicMock, MagicMock, MagicMock) -> None
-        from oio_rest.db import Livscyklus
+        from db import Livscyklus
 
         # Arrange
         uuid = "4b4be464-ace2-49d7-9589-04d279b0fe79"
@@ -777,14 +777,14 @@ class TestOIORestObject(TestCase):
         self.assertDictEqual(expected_data, actual_data)
         self.assertEqual(200, actual_code)
 
-    @patch("oio_rest.oio_rest.db.get_life_cycle_code")
-    @patch("oio_rest.oio_rest.db.object_exists")
-    @patch("oio_rest.oio_rest.db.passivate_object")
+    @patch("db.get_life_cycle_code")
+    @patch("db.object_exists")
+    @patch("db.passivate_object")
     def test_put_object_passivate_if_livscyklus_passiv(self, mock_passivate,
                                                        mock_exists,
                                                        mock_life_cycle):
         # type: (MagicMock, MagicMock, MagicMock) -> None
-        from oio_rest.db import Livscyklus
+        from db import Livscyklus
 
         # Arrange
         uuid = "b1dfa53f-89a7-4277-8c3d-86703bf87a87"
@@ -822,7 +822,7 @@ class TestOIORestObject(TestCase):
                 self.assertRaises(BadRequestException):
             self.testclass.put_object(uuid)
 
-    @patch("oio_rest.oio_rest.db.delete_object")
+    @patch("db.delete_object")
     def test_delete_object_returns_expected_result_and_202(self, mock_delete):
         # type: (MagicMock) -> None
         # Arrange
@@ -842,7 +842,7 @@ class TestOIORestObject(TestCase):
         self.assertDictEqual(expected_data, actual_data)
         self.assertEqual(202, actual_code)
 
-    @patch("oio_rest.oio_rest.db.delete_object")
+    @patch("db.delete_object")
     def test_delete_object_called_with_empty_reg_and_uuid(self, mock_delete):
         # type: (MagicMock) -> None
         # Arrange
@@ -1024,7 +1024,7 @@ class TestOIOStandardHierarchy(TestCase):
         db_structure = expected_result.copy()
         db_structure.update({"garbage": "1234"})
 
-        with patch("oio_rest.db_structure.REAL_DB_STRUCTURE",
+        with patch("oio_rest_lib.db_structure.REAL_DB_STRUCTURE",
                    new=db_structure):
 
             # Act
@@ -1047,7 +1047,7 @@ class TestOIORest(TestCase):
         d = {testkey: expected_result}
 
         # Act
-        actual_result = oio_rest_api.typed_get(d, testkey, 'default')
+        actual_result = oio_rest.typed_get(d, testkey, 'default')
 
         # Assert
         self.assertEqual(expected_result, actual_result)
@@ -1059,7 +1059,7 @@ class TestOIORest(TestCase):
         d = {testkey: None}
 
         # Act
-        actual_result = oio_rest_api.typed_get(d, testkey, expected_result)
+        actual_result = oio_rest.typed_get(d, testkey, expected_result)
 
         # Assert
         self.assertEqual(expected_result, actual_result)
@@ -1073,7 +1073,7 @@ class TestOIORest(TestCase):
 
         # Act & Assert
         with self.assertRaises(BadRequestException):
-            oio_rest_api.typed_get(d, testkey, default)
+            oio_rest.typed_get(d, testkey, default)
 
     def test_get_virkning_dates_virkningstid(self):
         # Arrange
@@ -1085,7 +1085,7 @@ class TestOIORest(TestCase):
         expected_to = expected_from + datetime.timedelta(microseconds=1)
 
         # Act
-        actual_from, actual_to = oio_rest_api.get_virkning_dates(args)
+        actual_from, actual_to = oio_rest.get_virkning_dates(args)
 
         # Assert
         self.assertEqual(expected_from, actual_from)
@@ -1102,7 +1102,7 @@ class TestOIORest(TestCase):
         expected_to = '2020-01-01'
 
         # Act
-        actual_from, actual_to = oio_rest_api.get_virkning_dates(args)
+        actual_from, actual_to = oio_rest.get_virkning_dates(args)
 
         # Assert
         self.assertEqual(expected_from, actual_from)
@@ -1117,7 +1117,7 @@ class TestOIORest(TestCase):
         expected_to = expected_from + datetime.timedelta(microseconds=1)
 
         # Act
-        actual_from, actual_to = oio_rest_api.get_virkning_dates(args)
+        actual_from, actual_to = oio_rest.get_virkning_dates(args)
 
         # Assert
         self.assertEqual(expected_from, actual_from)
@@ -1133,7 +1133,7 @@ class TestOIORest(TestCase):
 
         # Act
         with self.assertRaises(BadRequestException):
-            oio_rest_api.get_virkning_dates(args)
+            oio_rest.get_virkning_dates(args)
 
     def test_get_registreret_dates_registreringstid(self):
         # Arrange
@@ -1145,7 +1145,7 @@ class TestOIORest(TestCase):
         expected_to = expected_from + datetime.timedelta(microseconds=1)
 
         # Act
-        actual_from, actual_to = oio_rest_api.get_registreret_dates(args)
+        actual_from, actual_to = oio_rest.get_registreret_dates(args)
 
         # Assert
         self.assertEqual(expected_from, actual_from)
@@ -1162,7 +1162,7 @@ class TestOIORest(TestCase):
         expected_to = '2020-01-01'
 
         # Act
-        actual_from, actual_to = oio_rest_api.get_registreret_dates(args)
+        actual_from, actual_to = oio_rest.get_registreret_dates(args)
 
         # Assert
         self.assertEqual(expected_from, actual_from)
@@ -1177,7 +1177,7 @@ class TestOIORest(TestCase):
         expected_to = None
 
         # Act
-        actual_from, actual_to = oio_rest_api.get_registreret_dates(args)
+        actual_from, actual_to = oio_rest.get_registreret_dates(args)
 
         # Assert
         self.assertEqual(expected_from, actual_from)
@@ -1193,4 +1193,4 @@ class TestOIORest(TestCase):
 
         # Act
         with self.assertRaises(BadRequestException):
-            oio_rest_api.get_registreret_dates(args)
+            oio_rest.get_registreret_dates(args)
