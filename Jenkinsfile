@@ -10,11 +10,11 @@ pipeline {
   stages {
     stage('Test') {
       steps {
-        echo 'Testing oio_rest_api...'
+        echo 'Testing oio_rest...'
 
         timeout(15) {
           ansiColor('xterm') {
-            sh 'oio_rest_api/run_tests.sh'
+            sh 'oio_rest/run_tests.sh'
           }
         }
       }
