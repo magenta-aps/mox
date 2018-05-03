@@ -87,8 +87,8 @@ local   all             postgres                                peer
 # TYPE  DATABASE        USER            ADDRESS                 METHOD
 
 # MOX actual state config
-host    all             {{ db_user }}   127.0.0.1/32            md5
-local   all             {{ db_user }}                           md5
+host    all             all             127.0.0.1/32            md5
+local   all             all                                     md5
 
 # "local" is for Unix domain socket connections only
 #local   all             all                                     peer
