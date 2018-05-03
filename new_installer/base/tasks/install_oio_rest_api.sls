@@ -6,13 +6,10 @@
 install_dependencies_for_oio_rest:
   pkg.installed:
     - pkgs:
-      - python-virtualenv
       - libxmlsec1-dev
       - swig
-      - postgresql-common
       - libpq-dev
       - python-dev
-      - libapache2-mod-wsgi
       - build-essential
 
 

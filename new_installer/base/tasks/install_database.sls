@@ -8,6 +8,7 @@ install_system_dependencies:
     - pkgs:
       - ca-certificates
       - postgresql
+      - postgresql-common
       - postgresql-client
       - postgresql-server-dev-all
       - postgresql-contrib
