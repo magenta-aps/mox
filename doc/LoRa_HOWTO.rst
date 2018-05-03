@@ -15,20 +15,22 @@ In this document, the use of LoRa's REST interface for reading and
 writing data is described.
 
 The examples are given with the ``curl`` terminal command but should
-work equally well with a browser plugin capable of sending HTTP POST,
-PUT and DELETE requests.
+work equally well with a browser plugin capable of sending HTTP ``POST``,
+``PUT`` and ``DELETE`` requests.
 
-**Note:** As an example, the REST interface for Organisation is specified
-here: http://beta.rammearkitektur.dk/index.php/LoRA_Organisationsservice
+.. note::
+   As an example, the REST interface for Organisation is specified
+   here: http://beta.rammearkitektur.dk/index.php/LoRA_Organisationsservice
 
 Please note that in comparison with this official implementation, our
 system currently does not support the parameters ``-miljø`` and
 ``-version``.
 
-As regards the parameter ``-miljø`` (which could be "-prod", "-test",
-"-dev", etc.) we have been trying to convince the customer that we do
-not recommend running test, development and production on the same
-systems, so we would prefer not to support that parameter.
+As regards the parameter ``-miljø`` (which could be ``-prod``,
+``-test``, ``-dev``, etc.) we have been trying to convince the
+customer that we do not recommend running test, development and
+production on the same systems, so we would prefer not to support that
+parameter.
 
 As regards the parameter ``-version``, we have deferred support for it
 until we actually have more than one version of the protocol to support.
@@ -47,8 +49,8 @@ disable authentication in ``settings.py``::
 In this case, you may safely disregard all talk of _SAML_ tokens, the
 :http:header:`Authorization` header and ``AUTH_TOKEN``.
 
-Acquire SAML token
-++++++++++++++++++
+Acquiring a SAML token
+++++++++++++++++++++++
 
 A SAML STS token recognized by the system may be acquired by any means.
 Please note that for login to proceed and the user's permissions to be
