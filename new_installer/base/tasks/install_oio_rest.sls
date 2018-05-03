@@ -9,7 +9,7 @@ install_oio_rest_requirements:
     - name: {{ config.virtualenv }}
     - system_site_packages: False
     - user: {{ config.user }}
-    - requirements: {{ config.base_dir }}/oio_rest_api/requirements.txt
+    - requirements: {{ config.base_dir }}/oio_rest/requirements.txt
 
 
 install_gunicorn:
@@ -23,7 +23,7 @@ install_gunicorn:
 
 deploy_service_file:
   file.managed:
-    - name: /etc/systemd/system/oio_rest_api.service
+    - name: /etc/systemd/system/oio_rest.service
     - source: salt://files/oio_rest_api.service.j2
     - user: root
     - group: root
@@ -33,12 +33,12 @@ deploy_service_file:
         service_description: "OIO Rest interface"
         user: {{ config.user }}
         group: {{ config.group }}
-        working_directory: {{ config.base_dir }}/oio_rest_api
+        working_directory: {{ config.base_dir }}/oio_rest
         gunicorn: {{ config.virtualenv }}/bin/gunicorn
 
 
-enable_and_reload_oio_rest_api:
+enable_and_reload_oio_rest:
   service.running:
-    - name: oio_rest_api
+    - name: oio_rest
     - enable: True
     - reload: True
