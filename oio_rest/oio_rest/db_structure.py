@@ -53,7 +53,6 @@ DATABASE_STRUCTURE = {
         "attributter_metadata": {
             'egenskaber': {
                 'brugervendtnoegle': {'mandatory': True},
-                'soegeord': {'type': 'soegeord'},
                 'titel': {'mandatory': True},
             }
         },
@@ -381,6 +380,8 @@ DATABASE_STRUCTURE = {
 
 REAL_DB_STRUCTURE = deepcopy(DATABASE_STRUCTURE)
 REAL_DB_STRUCTURE["klasse"]["attributter"]["egenskaber"].append("soegeord")
+REAL_DB_STRUCTURE['klasse']['attributter_metadata']['egenskaber'][
+    'soegeord'] = {'type': 'soegeord'}
 REAL_DB_STRUCTURE["sag"]["relationer_type_override"] = {
     "journalnotat": "journalnotat",
     "journaldokument": "journaldokument"
