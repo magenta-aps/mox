@@ -1,4 +1,6 @@
 #!/bin/bash
+# DOES NOT AUTOMATICALLY INSTALL THE FOLLOWING COMPONENTS:
+# Mox Rest Frontend, Mox Advis, Mox Elk log
 
 ## Check if executed as root
 if [ $( whoami ) == "root" ]; then
