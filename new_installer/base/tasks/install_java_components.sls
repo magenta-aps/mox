@@ -41,6 +41,15 @@ install_java_modules:
 
 
 # THIS DOES NOT WORK
+install_mox_rest_frontend_system_dependencies:
+  pkg.installed:
+    - pkgs:
+      - maven
+      - rabbitmq-server
+      - python-dev
+      - libffi-dev
+      - libssl-dev
+
 install_mox_rest_frontend:
   cmd.run:
     - name: {{ config.base_dir }}/agents/install.sh
