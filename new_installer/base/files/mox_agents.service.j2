@@ -1,0 +1,17 @@
+[Unit]
+Description="{{ service_description }}"
+
+After={{ after_service }}
+
+[Service]
+Type=simple
+Restart=on-failure
+
+User={{ user }}
+Group={{ group }}
+
+WorkingDirectory={{ working_directory }}
+ExecStart={{ exec_start }}
+
+[Install]
+WantedBy=multi-user.target
