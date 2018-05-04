@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py klasse as_create_or_import.jinja.sql AND applying a patch (as_create_or_import_klasse.sql.diff)
+NOTICE: This file is auto-generated using the script: apply-template.py klasse as_create_or_import.jinja.sql
 */
 
 CREATE OR REPLACE FUNCTION as_create_or_import_klasse(
@@ -23,9 +23,10 @@ DECLARE
   klasse_tils_publiceret_obj klassePubliceretTilsType;
   
   klasse_relationer KlasseRelationType;
-  klasse_attr_egenskaber_id bigint;
-  klasse_attr_egenskaber_soegeord_obj KlasseSoegeordType;
   auth_filtered_uuids uuid[];
+  does_exist boolean;
+  new_klasse_registrering klasse_registrering;
+  prev_klasse_registrering klasse_registrering;
 BEGIN
 
 IF klasse_uuid IS NULL THEN
@@ -37,42 +38,57 @@ END IF;
 
 
 IF EXISTS (SELECT id from klasse WHERE id=klasse_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing klasse with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_klasse (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',klasse_uuid USING ERRCODE='MO500';
+    does_exist = True;
+ELSE
+
+    does_exist = False;
 END IF;
 
-IF  (klasse_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (klasse_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
+IF  (klasse_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (klasse_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (klasse_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
   RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_klasse.',(klasse_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
+IF NOT does_exist THEN
 
-INSERT INTO 
-      klasse (ID)
-SELECT
-      klasse_uuid
-;
+    INSERT INTO
+          klasse (ID)
+    SELECT
+          klasse_uuid;
+END IF;
 
 
 /*********************************/
 --Insert new registrering
 
-klasse_registrering_id:=nextval('klasse_registrering_id_seq');
+IF NOT does_exist THEN
+    klasse_registrering_id:=nextval('klasse_registrering_id_seq');
 
-INSERT INTO klasse_registrering (
-      id,
-        klasse_id,
+    INSERT INTO klasse_registrering (
+          id,
+          klasse_id,
           registrering
         )
-SELECT
-      klasse_registrering_id,
-        klasse_uuid,
-          ROW (
-            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-            (klasse_registrering.registrering).livscykluskode,
-            (klasse_registrering.registrering).brugerref,
-            (klasse_registrering.registrering).note
-              ):: RegistreringBase
-;
+    SELECT
+          klasse_registrering_id,
+           klasse_uuid,
+           ROW (
+             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+             (klasse_registrering.registrering).livscykluskode,
+             (klasse_registrering.registrering).brugerref,
+             (klasse_registrering.registrering).note
+               ):: RegistreringBase ;
+ELSE
+    -- This is an update, not an import or create
+        new_klasse_registrering := _as_create_klasse_registrering(
+             klasse_uuid,
+             (klasse_registrering.registrering).livscykluskode,
+             (klasse_registrering.registrering).brugerref,
+             (klasse_registrering.registrering).note);
+
+        klasse_registrering_id := new_klasse_registrering.id;
+END IF;
+
 
 /*********************************/
 --Insert attributes
@@ -93,58 +109,30 @@ IF klasse_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(klas
   FOREACH klasse_attr_egenskaber_obj IN ARRAY klasse_registrering.attrEgenskaber
   LOOP
 
-klasse_attr_egenskaber_id:=nextval('klasse_attr_egenskaber_id_seq');
-  INSERT INTO klasse_attr_egenskaber (
-    id,
-    brugervendtnoegle,
-    beskrivelse,
-    eksempel,
-    omfang,
-    titel,
-    retskilde,
-    aendringsnotat,
-    virkning,
-    klasse_registrering_id
-  )
-  SELECT
-    klasse_attr_egenskaber_id,
-   klasse_attr_egenskaber_obj.brugervendtnoegle,
-    klasse_attr_egenskaber_obj.beskrivelse,
-    klasse_attr_egenskaber_obj.eksempel,
-    klasse_attr_egenskaber_obj.omfang,
-    klasse_attr_egenskaber_obj.titel,
-    klasse_attr_egenskaber_obj.retskilde,
-    klasse_attr_egenskaber_obj.aendringsnotat,
-    klasse_attr_egenskaber_obj.virkning,
-    klasse_registrering_id
-  ;
+    INSERT INTO klasse_attr_egenskaber (
+      brugervendtnoegle,
+      beskrivelse,
+      eksempel,
+      omfang,
+      titel,
+      retskilde,
+      aendringsnotat,
+      virkning,
+      klasse_registrering_id
+    )
+    SELECT
+     klasse_attr_egenskaber_obj.brugervendtnoegle,
+      klasse_attr_egenskaber_obj.beskrivelse,
+      klasse_attr_egenskaber_obj.eksempel,
+      klasse_attr_egenskaber_obj.omfang,
+      klasse_attr_egenskaber_obj.titel,
+      klasse_attr_egenskaber_obj.retskilde,
+      klasse_attr_egenskaber_obj.aendringsnotat,
+      klasse_attr_egenskaber_obj.virkning,
+      klasse_registrering_id
+    ;
+ 
 
-/************/
---Insert Soegeord
-  IF klasse_attr_egenskaber_obj.soegeord IS NOT NULL AND coalesce(array_length(klasse_attr_egenskaber_obj.soegeord,1),0)>1  THEN
-    FOREACH klasse_attr_egenskaber_soegeord_obj IN ARRAY klasse_attr_egenskaber_obj.soegeord
-      LOOP
-
-      IF (klasse_attr_egenskaber_soegeord_obj.soegeordidentifikator IS NOT NULL AND klasse_attr_egenskaber_soegeord_obj.soegeordidentifikator<>'') 
-      OR (klasse_attr_egenskaber_soegeord_obj.beskrivelse IS NOT NULL AND klasse_attr_egenskaber_soegeord_obj.beskrivelse<>'' )
-      OR (klasse_attr_egenskaber_soegeord_obj.soegeordskategori IS NOT NULL AND klasse_attr_egenskaber_soegeord_obj.soegeordskategori<>'') THEN
-
-      INSERT INTO klasse_attr_egenskaber_soegeord (
-        soegeordidentifikator,
-        beskrivelse,
-        soegeordskategori,
-        klasse_attr_egenskaber_id
-      )
-      SELECT
-        klasse_attr_egenskaber_soegeord_obj.soegeordidentifikator,
-        klasse_attr_egenskaber_soegeord_obj.beskrivelse,
-        klasse_attr_egenskaber_soegeord_obj.soegeordskategori,
-        klasse_attr_egenskaber_id
-      ;
-      END IF;
-
-     END LOOP;
-    END IF;
   END LOOP;
 END IF;
 

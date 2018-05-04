@@ -1,5 +1,5 @@
-*** ./generated-files/as_create_or_import_tilstand.sql	2016-11-13 14:29:33.000000000 +0100
---- ./patches/as_create_or_import_tilstand.org.sql	2016-11-13 14:26:06.000000000 +0100
+*** ./patches/as_create_or_import_tilstand.org.sql	2018-04-12 14:09:03.721247948 +0000
+--- generated-files/as_create_or_import_tilstand.sql	2018-04-12 14:13:40.045376205 +0000
 ***************
 *** 23,32 ****
 --- 23,38 ----
@@ -14,13 +14,13 @@
 +   tilstand_rel_type_cardinality_unlimited tilstandRelationKode[]:=ARRAY['tilstandsvaerdi'::TilstandRelationKode,'begrundelse'::TilstandRelationKode,'tilstandskvalitet'::TilstandRelationKode,'tilstandsvurdering'::TilstandRelationKode,'tilstandsaktoer'::TilstandRelationKode,'tilstandsudstyr'::TilstandRelationKode,'samtykke'::TilstandRelationKode,'tilstandsdokument'::TilstandRelationKode]::TilstandRelationKode[];
 +   tilstand_rel_type_cardinality_unlimited_present_in_argument tilstandRelationKode[];
 + 
+    does_exist boolean;
+    new_tilstand_registrering tilstand_registrering;
+    prev_tilstand_registrering tilstand_registrering;
   BEGIN
   
-  IF tilstand_uuid IS NULL THEN
-      LOOP
-      tilstand_uuid:=uuid_generate_v4();
 ***************
-*** 160,188 ****
+*** 178,206 ****
   END IF;
   
   /*********************************/
@@ -41,8 +41,8 @@
         a.urn,
         a.relType,
 !       a.objektType
-      FROM unnest(tilstand_registrering.relationer) a
-!   ;
+!     FROM unnest(tilstand_registrering.relationer) a
+    ;
   
   
   /*** Verify that the object meets the stipulated access allowed criteria  ***/
@@ -50,7 +50,7 @@
   auth_filtered_uuids:=_as_filter_unauth_tilstand(array[tilstand_uuid]::uuid[],auth_criteria_arr); 
   IF NOT (coalesce(array_length(auth_filtered_uuids,1),0)=1 AND auth_filtered_uuids @>ARRAY[tilstand_uuid]) THEN
     RAISE EXCEPTION 'Unable to create/import tilstand with uuid [%]. Object does not met stipulated criteria:%',tilstand_uuid,to_json(auth_criteria_arr)  USING ERRCODE = 'MO401'; 
---- 166,246 ----
+--- 184,264 ----
   END IF;
   
   /*********************************/
@@ -112,8 +112,8 @@
 !         ELSE
 !         NULL
 !       END
-      FROM unnest(tilstand_registrering.relationer) a
-!     ;
+!       FROM unnest(tilstand_registrering.relationer) a
+    ;
   
   
 + --Drop temporary sequences

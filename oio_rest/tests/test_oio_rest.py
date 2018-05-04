@@ -67,6 +67,14 @@ class TestOIORestObjectCreateApi(TestCase):
                              self.testclass.put_object,
                              self.flask.add_url_rule.call_args_list)
 
+    def test_create_api_adds_patch_object_rule(self):
+        self.testclass.create_api(hierarchy="Hierarchy", flask=self.flask,
+                                  base_url="URL")
+        self.flask.add_url_rule.assert_called()
+        self.assert_api_rule("TestClassRestObject_patch_object", "PATCH",
+                             self.testclass.patch_object,
+                             self.flask.add_url_rule.call_args_list)
+
     def test_create_api_adds_create_object_rule(self):
         self.testclass.create_api(hierarchy="Hierarchy", flask=self.flask,
                                   base_url="URL")
@@ -714,12 +722,13 @@ class TestOIORestObject(TestCase):
         self.assertDictEqual(expected_data, actual_data)
         self.assertEqual(200, actual_code)
 
+
     @patch("db.get_life_cycle_code")
     @patch("db.object_exists")
     @patch("db.update_object")
-    def test_put_object_update_if_deleted_or_passive(self, mock_update,
-                                                     mock_exists,
-                                                     mock_life_cycle):
+    def test_patch_object_update_if_deleted_or_passive(self, mock_update,
+                                                       mock_exists,
+                                                       mock_life_cycle):
         # type: (MagicMock, MagicMock, MagicMock) -> None
         from db import Livscyklus
 
@@ -737,7 +746,7 @@ class TestOIORestObject(TestCase):
         with self.app.test_request_context(data=json.dumps(data),
                                            content_type='application/json',
                                            method='PUT'):
-            result = self.testclass.put_object(uuid)
+            result = self.testclass.patch_object(uuid)
             actual_data = json.loads(result[0].data)
             actual_code = result[1]
 
@@ -746,12 +755,13 @@ class TestOIORestObject(TestCase):
         self.assertDictEqual(expected_data, actual_data)
         self.assertEqual(200, actual_code)
 
+
     @patch("db.get_life_cycle_code")
     @patch("db.object_exists")
     @patch("db.update_object")
-    def test_put_object_update_if_not_deleted_or_passive(self, mock_update,
-                                                         mock_exists,
-                                                         mock_life_cycle):
+    def test_patch_object_update_if_not_deleted_or_passive(self, mock_update,
+                                                           mock_exists,
+                                                           mock_life_cycle):
         # type: (MagicMock, MagicMock, MagicMock) -> None
         from db import Livscyklus
 
@@ -768,7 +778,7 @@ class TestOIORestObject(TestCase):
         with self.app.test_request_context(data=json.dumps(data),
                                            content_type='application/json',
                                            method='PUT'):
-            result = self.testclass.put_object(uuid)
+            result = self.testclass.patch_object(uuid)
             actual_data = json.loads(result[0].data)
             actual_code = result[1]
 
@@ -777,12 +787,13 @@ class TestOIORestObject(TestCase):
         self.assertDictEqual(expected_data, actual_data)
         self.assertEqual(200, actual_code)
 
+
     @patch("db.get_life_cycle_code")
     @patch("db.object_exists")
     @patch("db.passivate_object")
-    def test_put_object_passivate_if_livscyklus_passiv(self, mock_passivate,
-                                                       mock_exists,
-                                                       mock_life_cycle):
+    def test_patch_object_passivate_if_livscyklus_passiv(self, mock_passivate,
+                                                         mock_exists,
+                                                         mock_life_cycle):
         # type: (MagicMock, MagicMock, MagicMock) -> None
         from db import Livscyklus
 
@@ -799,7 +810,7 @@ class TestOIORestObject(TestCase):
         with self.app.test_request_context(data=json.dumps(data),
                                            content_type='application/json',
                                            method='PUT'):
-            result = self.testclass.put_object(uuid)
+            result = self.testclass.patch_object(uuid)
             actual_data = json.loads(result[0].data)
             actual_code = result[1]
 

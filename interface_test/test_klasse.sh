@@ -26,7 +26,7 @@ import_uuid=$(uuidgen)
 
 #exit
 
-curl -k -sH "Content-Type: application/json" -X PUT -d "$(cat $DIR/test_data/klasse_opdater.json)" $HOST_URL/klassifikation/klasse/$uuid
+curl -k -sH "Content-Type: application/json" -X PATCH -d "$(cat $DIR/test_data/klasse_opdater.json)" $HOST_URL/klassifikation/klasse/$uuid
 
 
 

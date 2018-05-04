@@ -112,7 +112,8 @@ class TestAssertionVerification(util.TestCase):
                         "SAML token validation failed: "
                         "Invalid issuer "
                         "'http://adfs.magenta.dk/adfs/services/trust' "
-                        "in the Assertion/Response, expected 'https://whatever'"
+                        "in the Assertion/Response, expected "
+                        "'https://whatever'"
                     },
                     403,
                 )

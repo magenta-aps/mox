@@ -21,6 +21,8 @@ DECLARE
   {% endfor %}
   {{oio_type}}_relationer {{oio_type|title}}RelationType;
   auth_filtered_uuids uuid[];
+  does_exist boolean;
+  new_{{oio_type}}_registrering {{oio_type}}_registrering;
 BEGIN
 
 IF {{oio_type}}_uuid IS NULL THEN
@@ -32,42 +34,57 @@ END IF;
 
 
 IF EXISTS (SELECT id from {{oio_type}} WHERE id={{oio_type}}_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing {{oio_type}} with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_{{oio_type}} (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',{{oio_type}}_uuid USING ERRCODE='MO500';
+    does_exist = True;
+ELSE
+
+    does_exist = False;
 END IF;
 
-IF  ({{oio_type}}_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and ({{oio_type}}_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
+IF  ({{oio_type}}_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and ({{oio_type}}_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and ({{oio_type}}_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
   RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_{{oio_type}}.',({{oio_type}}_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
+IF NOT does_exist THEN
 
-INSERT INTO 
-      {{oio_type}} (ID)
-SELECT
-      {{oio_type}}_uuid
-;
+    INSERT INTO
+          {{oio_type}} (ID)
+    SELECT
+          {{oio_type}}_uuid;
+END IF;
 
 
 /*********************************/
 --Insert new registrering
 
-{{oio_type}}_registrering_id:=nextval('{{oio_type}}_registrering_id_seq');
+IF NOT does_exist THEN
+    {{oio_type}}_registrering_id:=nextval('{{oio_type}}_registrering_id_seq');
 
-INSERT INTO {{oio_type}}_registrering (
-      id,
-        {{oio_type}}_id,
+    INSERT INTO {{oio_type}}_registrering (
+          id,
+          {{oio_type}}_id,
           registrering
         )
-SELECT
-      {{oio_type}}_registrering_id,
-        {{oio_type}}_uuid,
-          ROW (
-            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-            ({{oio_type}}_registrering.registrering).livscykluskode,
-            ({{oio_type}}_registrering.registrering).brugerref,
-            ({{oio_type}}_registrering.registrering).note
-              ):: RegistreringBase
-;
+    SELECT
+          {{oio_type}}_registrering_id,
+           {{oio_type}}_uuid,
+           ROW (
+             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+             ({{oio_type}}_registrering.registrering).livscykluskode,
+             ({{oio_type}}_registrering.registrering).brugerref,
+             ({{oio_type}}_registrering.registrering).note
+               ):: RegistreringBase ;
+ELSE
+    -- This is an update, not an import or create
+        new_{{oio_type}}_registrering := _as_create_{{oio_type}}_registrering(
+             {{oio_type}}_uuid,
+             ({{oio_type}}_registrering.registrering).livscykluskode,
+             ({{oio_type}}_registrering.registrering).brugerref,
+             ({{oio_type}}_registrering.registrering).note);
+
+        {{oio_type}}_registrering_id := new_{{oio_type}}_registrering.id;
+END IF;
+
 
 /*********************************/
 --Insert attributes
