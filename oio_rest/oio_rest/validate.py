@@ -84,10 +84,12 @@ def _handle_attribute_metadata(obj, fields, attribute_name):
         'boolean': BOOLEAN,
         'date': STRING,
         'int': INTEGER,
+        'interval(0)': STRING,
         'offentlighedundtagettype': {
             '$ref': '#/definitions/offentlighedundtaget'},
         'soegeord': _generate_schema_array(_generate_schema_array(STRING), 2),
-        'text[]': _generate_schema_array(STRING)
+        'text[]': _generate_schema_array(STRING),
+        'timestamptz': STRING,
     }
 
     attribute = _get_metadata(obj, attribute_name)

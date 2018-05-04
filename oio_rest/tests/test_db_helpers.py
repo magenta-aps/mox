@@ -86,9 +86,9 @@ class TestDBHelpers(TestCase):
 
     @patch('oio_rest.db_helpers.db_struct', new={
         'testclass1': {
-            'attributter_type_override': {
+            'attributter_metadata': {
                 'testattribut': {
-                    'value': 'value_override'
+                    'value': {'type': 'value_override'}
                 }
             }
         }
@@ -106,9 +106,9 @@ class TestDBHelpers(TestCase):
 
     @patch('oio_rest.db_helpers.db_struct', new={
         'testclass1': {
-            'attributter_type_override': {
+            'attributter_metadata': {
                 'testattribut': {
-                    'value': 'value_override'
+                    'value': {'type': 'value_override'}
                 }
             }
         }

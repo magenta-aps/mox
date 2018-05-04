@@ -130,11 +130,6 @@ DATABASE_STRUCTURE = {
                 'konfigurationreference': {'type': 'text[]'}
             }
         },
-        "attributter_type_override": {
-            "egenskaber": {
-                "konfigurationreference": "text[]"
-            }
-        },
         "tilstande": {
             "gyldighed": ["Aktiv", "Inaktiv"]
         },
@@ -237,13 +232,6 @@ DATABASE_STRUCTURE = {
                 'titel': {'mandatory': True},
             }
         },
-        "attributter_type_override": {
-            "egenskaber": {
-                "afleveret": "boolean",
-                "principiel": "boolean",
-                "offentlighedundtaget": "offentlighedundtagettype"
-            }
-        },
         "tilstande": {
             "fremdrift": ["Opstaaet", "Oplyst", "Afgjort", "Bestilt",
                           "Udfoert", "Afsluttet"]
@@ -282,14 +270,6 @@ DATABASE_STRUCTURE = {
                 'minor': {'type': 'int'},
                 'offentlighedundtaget': {'type': 'offentlighedundtagettype'},
                 'titel': {'mandatory': True},
-            }
-        },
-        "attributter_type_override": {
-            "egenskaber": {
-                "brevdato": "date",
-                "major": "int",
-                "minor": "int",
-                "offentlighedundtaget": "offentlighedundtagettype"
             }
         },
         "tilstande": {
@@ -342,13 +322,6 @@ DATABASE_STRUCTURE = {
                 'tidsforbrug': {'type': 'interval(0)'}
             }
         },
-        "attributter_type_override": {
-            "egenskaber": {
-                "starttidspunkt": "timestamptz",
-                "sluttidspunkt": "timestamptz",
-                "tidsforbrug": "interval(0)"
-            }
-        },
         "tilstande": [
             ("status", ["Inaktiv", "Aktiv", "Aflyst"]),
             ("publiceret", ["Publiceret", "IkkePubliceret", "Normal"]),
@@ -376,12 +349,6 @@ DATABASE_STRUCTURE = {
                 'brugervendtnoegle': {'mandatory': True},
                 'starttidspunkt': {'type': 'timestamptz'},
                 'sluttidspunkt': {'type': 'timestamptz'},
-            }
-        },
-        "attributter_type_override": {
-            "egenskaber": {
-                "starttidspunkt": "timestamptz",
-                "sluttidspunkt": "timestamptz",
             }
         },
         "tilstande": [
@@ -414,11 +381,6 @@ DATABASE_STRUCTURE = {
 
 REAL_DB_STRUCTURE = deepcopy(DATABASE_STRUCTURE)
 REAL_DB_STRUCTURE["klasse"]["attributter"]["egenskaber"].append("soegeord")
-REAL_DB_STRUCTURE["klasse"]["attributter_type_override"] = {
-    "egenskaber": {
-        "soegeord": "soegeord"
-    }
-}
 REAL_DB_STRUCTURE["sag"]["relationer_type_override"] = {
     "journalnotat": "journalnotat",
     "journaldokument": "journaldokument"

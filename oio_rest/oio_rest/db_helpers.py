@@ -23,20 +23,18 @@ def get_attribute_fields(attribute_name):
         "Initialize attr fields for ease of use."
         for c in db_struct:
             for a in db_struct[c]["attributter"]:
-                if not a.startswith('required_'):
-                    _attribute_fields[
-                        c + a
-                        ] = db_struct[c]["attributter"][a] + ['virkning']
+                _attribute_fields[c + a] = db_struct[c]["attributter"][a] + [
+                    'virkning']
     return _attribute_fields[attribute_name.lower()]
 
 
 def get_field_type(attribute_name, field_name):
     for c in db_struct:
-        if "attributter_type_override" in db_struct[c]:
-            for a, fs in db_struct[c]["attributter_type_override"].iteritems():
+        if "attributter_metadata" in db_struct[c]:
+            for a, fs in db_struct[c]["attributter_metadata"].iteritems():
                 if attribute_name == c + a:
-                    if field_name in fs:
-                        return fs[field_name]
+                    if field_name in fs and 'type' in fs[field_name]:
+                        return fs[field_name]['type']
     return "text"
 
 
@@ -62,9 +60,7 @@ def get_attribute_names(class_name):
             # specifically, the two state types of 'aktivitet' can
             # trigger occasional errors
             _attribute_names[c] = sorted(
-                c + a for a in db_struct[c]['attributter'] if
-                not a.startswith('required_')
-            )
+                c + a for a in db_struct[c]['attributter'])
     return _attribute_names[class_name.lower()]
 
 
