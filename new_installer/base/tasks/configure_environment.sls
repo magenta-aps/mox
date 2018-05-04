@@ -15,7 +15,7 @@ install_system_dependencies:
       - swig
       - libpq-dev
       - ca-certificates
-      - git
+      - software-properties-common
 
       # POSTGRESQL
       - postgresql
