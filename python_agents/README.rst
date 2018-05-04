@@ -23,3 +23,15 @@ The agents have now been de-coupled and do not depend on external settings and p
 However the agents depend on a local OIO Rest module: saml2.py (Saml2_Assertion class).
 This dependency is not Python 3 compatible
 and will be removed or refactored when the code is moved to Python 3.
+
+
+Installation
+------------
+A installation strategy (formula) has been created,
+however as previously described the agents have unresolved dependencies.
+
+As such they are not automatically installed as part of the stack.
+
+:NOTE:
+    Once the dependencies have been resolve,
+    it should be relatively easy to adjust the installation strategy
