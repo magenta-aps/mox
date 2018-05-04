@@ -1,24 +1,22 @@
 # -- coding: utf-8 --
 
-import json
 from client import caller
-
-
-def print_task(executed_tasks):
-    for task, result in executed_tasks.items():
-        formatted = json.dumps(result, indent=2)
-        print(formatted)
+from client import notify_and_log
 
 
 # Run states
+print("## Configuring environment ##")
 configure = caller.cmd("state.apply", "tasks.configure_environment")
-print_task(configure)
+notify_and_log(configure)
 
+print("## Setup database (postgresql) ##")
 install_database = caller.cmd("state.apply", "tasks.install_database")
-print_task(install_database)
+notify_and_log(install_database)
 
+print("## Install/Setup database ##")
 install_oio_rest = caller.cmd("state.apply", "tasks.install_oio_rest")
-print_task(install_oio_rest)
+notify_and_log(install_oio_rest)
 
+print("## Initializing database ##")
 init_db = caller.cmd("state.apply", "tasks.initialize_database")
-print_task(init_db)
+notify_and_log(init_db)
