@@ -249,8 +249,18 @@ DATABASE_STRUCTURE = {
         "relationer_nul_til_mange": [
             "andetarkiv", "andrebehandlere", "sekundaerpart", "andresager",
             "byggeri", "fredning", "journalpost"
-        ]
-
+        ],
+        'relationer_metadata': {
+            'all': {
+                'indeks': {'type': 'int'}
+            },
+            'journalpost': {
+                'journalpostkode': {
+                    'enum': ['journalnotat', 'vedlagtdokument']},
+                'journalnotat': {'type': 'journalnotat'},
+                'journaldokument': {'type': 'journaldokument'},
+            },
+        }
     },
 
     "dokument": {
@@ -285,6 +295,7 @@ DATABASE_STRUCTURE = {
                                      "andrebehandlere", "parter",
                                      "kopiparter", "tilknyttedesager"]
     },
+
     "tilstand": {
         "attributter": {
             "egenskaber": [
@@ -304,8 +315,18 @@ DATABASE_STRUCTURE = {
             "tilstandsvaerdi", "begrundelse", "tilstandskvalitet",
             "tilstandsvurdering", "tilstandsaktoer", "tilstandsudstyr",
             "samtykke", "tilstandsdokument"
-        ]
+        ],
+        'relationer_metadata': {
+            'all': {
+                'indeks': {'type': 'int'}
+            },
+            'tilstandsvaerdi': {
+                'tilstandsvaerdiattr': {'type': 'vaerdirelationattr'},
+                'uuid': {'allowed': False}
+            }
+        }
     },
+
     "aktivitet": {
         "attributter": {
             "egenskaber": [
@@ -334,8 +355,15 @@ DATABASE_STRUCTURE = {
             "geoobjekt", "position", "facilitet", "lokale",
             "aktivitetdokument", "aktivitetgrundlag", "aktivitetresultat",
             "udfoerer", "deltager"
-        ]
+        ],
+        'relationer_metadata': {
+            'all': {
+                'indeks': {'type': 'int'},
+                'aktoerattr': {'type': 'aktoerattr'}
+            },
+        }
     },
+
     "indsats": {
         "attributter": {
             "egenskaber": [
@@ -360,7 +388,12 @@ DATABASE_STRUCTURE = {
         "relationer_nul_til_mange": [
             "indsatskvalitet", "indsatsaktoer", "samtykke", "indsatssag",
             "indsatsdokument"
-        ]
+        ],
+        'relationer_metadata': {
+            'all': {
+                'indeks': {'type': 'int'}
+            },
+        }
     },
 
     "loghaendelse": {
@@ -372,9 +405,7 @@ DATABASE_STRUCTURE = {
             "gyldighed": ["Rettet", "Ikke rettet"]
         },
         "relationer_nul_til_en": ["objekt", "bruger", "brugerrolle"],
-
-        "relationer_nul_til_mange": []
-
+        "relationer_nul_til_mange": [],
     }
 }
 
@@ -382,18 +413,6 @@ REAL_DB_STRUCTURE = deepcopy(DATABASE_STRUCTURE)
 REAL_DB_STRUCTURE["klasse"]["attributter"]["egenskaber"].append("soegeord")
 REAL_DB_STRUCTURE['klasse']['attributter_metadata']['egenskaber'][
     'soegeord'] = {'type': 'soegeord'}
-REAL_DB_STRUCTURE["sag"]["relationer_type_override"] = {
-    "journalnotat": "journalnotat",
-    "journaldokument": "journaldokument"
-}
-
-REAL_DB_STRUCTURE["aktivitet"]["relationer_type_override"] = {
-    "aktoerattr": "aktoerattr"
-}
-
-REAL_DB_STRUCTURE["tilstand"]["relationer_type_override"] = {
-    "tilstandsvaerdiattr": "vaerdirelationattr"
-}
 
 DB_TEMPLATE_EXTRA_OPTIONS = {
     "dokument": {

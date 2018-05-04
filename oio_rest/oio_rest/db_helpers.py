@@ -43,9 +43,13 @@ _attribute_names = {}
 
 def get_relation_field_type(class_name, field_name):
     class_info = db_struct[class_name.lower()]
-    if "relationer_type_override" in class_info:
-        if field_name in class_info["relationer_type_override"]:
-            return class_info["relationer_type_override"][field_name]
+    if 'relationer_metadata' in class_info:
+        metadata = class_info['relationer_metadata']
+        for relation in metadata:
+            for key in metadata[relation]:
+                if field_name == key and metadata[relation][key].has_key(
+                        'type'):
+                    return metadata[relation][key]['type']
     return "text"
 
 

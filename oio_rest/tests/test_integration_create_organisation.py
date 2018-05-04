@@ -624,10 +624,11 @@ class TestCreateOrganisation(util.TestCase):
                 ]
             },
             "tilstande": {
-                "itsystemgyldighed": [{
-                    "gyldighed": "Aktiv",
-                    "virkning": self.standard_virkning1
-                }
+                "itsystemgyldighed": [
+                    {
+                        "gyldighed": "Aktiv",
+                        "virkning": self.standard_virkning1
+                    }
                 ]
             },
         }
@@ -642,5 +643,72 @@ class TestCreateOrganisation(util.TestCase):
         self.assertQueryResponse(
             '/organisation/itsystem',
             itsystem,
+            uuid=r.json['uuid']
+        )
+
+    def test_create_tilstand(self):
+        """
+        TODO: move this elsewhere!!
+        """
+
+        # Create tilstand
+
+        tilstand = {
+            "attributter": {
+                "tilstandegenskaber": [
+                    {
+                        "brugervendtnoegle": "bvn",
+                        "beskrivelse": "description",
+                        "virkning": self.standard_virkning1
+                    }
+                ]
+            },
+            "tilstande": {
+                "tilstandstatus": [
+                    {
+                        "status": "Aktiv",
+                        "virkning": self.standard_virkning1
+                    }
+                ],
+                "tilstandpubliceret": [
+                    {
+                        "publiceret": "Normal",
+                        "virkning": self.standard_virkning1
+                    }
+                ]
+            },
+            "relationer": {
+                "tilstandskvalitet": [
+                    {
+                        "indeks": 1,
+                        "objekttype": "Klasse",
+                        "uuid": "f7109356-e87e-4b10-ad5d-36de6e3ee09d",
+                        "virkning": self.standard_virkning1
+                    }
+                ],
+                "tilstandsvaerdi": [
+                    {
+                        "indeks": 1,
+                        "tilstandsvaerdiattr": {
+                            "forventet": True,
+                            "nominelvaerdi": "82"
+                        },
+                        "virkning": self.standard_virkning1
+                    }
+                ]
+            }
+
+        }
+
+        r = self._post(tilstand, url='/tilstand/tilstand')
+
+        # Check response
+        self._check_response_201(r)
+
+        # Check persisted data
+        tilstand['livscykluskode'] = 'Opstaaet'
+        self.assertQueryResponse(
+            '/tilstand/tilstand',
+            tilstand,
             uuid=r.json['uuid']
         )
