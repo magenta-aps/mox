@@ -256,7 +256,9 @@ DATABASE_STRUCTURE = {
             },
             'journalpost': {
                 'journalpostkode': {
-                    'enum': ['journalnotat', 'vedlagtdokument']},
+                    'enum': ['journalnotat', 'vedlagtdokument'],
+                    'mandatory': True,
+                },
                 'journalnotat': {'type': 'journalnotat'},
                 'journaldokument': {'type': 'journaldokument'},
             },
@@ -322,7 +324,6 @@ DATABASE_STRUCTURE = {
             },
             'tilstandsvaerdi': {
                 'tilstandsvaerdiattr': {'type': 'vaerdirelationattr'},
-                'uuid': {'allowed': False}
             }
         }
     },

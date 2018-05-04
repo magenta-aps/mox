@@ -48,18 +48,63 @@ def _generate_schema_object(properties, required, kwargs=None):
     return schema_obj
 
 
-def _get_metadata(obj, attribute_name):
+TYPE_MAP = {
+    'aktoerattr': _generate_schema_object(
+        {
+            'accepteret': STRING,
+            'obligatorisk': STRING,
+            'repraesentation_uuid': UUID,
+        },
+        ['accepteret', 'obligatorisk', 'repraesentation_uuid']
+    ),
+    'boolean': BOOLEAN,
+    'date': STRING,
+    'int': INTEGER,
+    'interval(0)': STRING,
+    'journaldokument': _generate_schema_object(
+        {
+            'dokumenttitel': STRING,
+            'offentlighedundtaget': {
+                '$ref': '#/definitions/offentlighedundtaget'}
+        },
+        ['dokumenttitel', 'offentlighedundtaget']
+    ),
+    'journalnotat': _generate_schema_object(
+        {
+            'titel': STRING,
+            'notat': STRING,
+            'format': STRING,
+        },
+        ['titel', 'notat', 'format']
+    ),
+    'offentlighedundtagettype': {
+        '$ref': '#/definitions/offentlighedundtaget'},
+    'soegeord': _generate_schema_array(_generate_schema_array(STRING), 2),
+    'text[]': _generate_schema_array(STRING),
+    'timestamptz': STRING,
+    'vaerdirelationattr': _generate_schema_object(
+        {
+            'forventet': BOOLEAN,
+            'nominelvaerdi': STRING
+        },
+        ['forventet', 'nominelvaerdi']
+    )
+}
+
+
+def _get_metadata(obj, metadata_type, key):
     """
     Get the metadata for a given attribute
     :param obj: The type of LoRa object, i.e. 'bruger', 'organisation' etc.
-    :param attribute_name: The attribute to get the metadata from,
+    :param key: The attribute to get the metadata from,
     e.g. 'egenskaber'
     :return: Dictionary containing the metadata for the attribute fields
     """
-    metadata = db.REAL_DB_STRUCTURE[obj].get('attributter_metadata', [])
+    metadata = db.REAL_DB_STRUCTURE[obj].get(
+        '{}_metadata'.format(metadata_type), [])
     if not metadata:
         return metadata
-    return metadata[attribute_name]
+    return metadata[key]
 
 
 def _get_mandatory(obj, attribute_name):
@@ -70,7 +115,7 @@ def _get_mandatory(obj, attribute_name):
     e.g. 'egenskaber'
     :return: Sorted list of mandatory attribute keys
     """
-    attribute = _get_metadata(obj, attribute_name)
+    attribute = _get_metadata(obj, 'attributter', attribute_name)
     mandatory = [
         key for key in attribute if attribute[key].get('mandatory', False)
     ]
@@ -80,22 +125,10 @@ def _get_mandatory(obj, attribute_name):
 
 
 def _handle_attribute_metadata(obj, fields, attribute_name):
-    type_map = {
-        'boolean': BOOLEAN,
-        'date': STRING,
-        'int': INTEGER,
-        'interval(0)': STRING,
-        'offentlighedundtagettype': {
-            '$ref': '#/definitions/offentlighedundtaget'},
-        'soegeord': _generate_schema_array(_generate_schema_array(STRING), 2),
-        'text[]': _generate_schema_array(STRING),
-        'timestamptz': STRING,
-    }
-
-    attribute = _get_metadata(obj, attribute_name)
+    attribute = _get_metadata(obj, 'attributter', attribute_name)
     fields.update(
         {
-            key: type_map[attribute[key]['type']]
+            key: TYPE_MAP[attribute[key]['type']]
             for key in attribute if attribute[key].get('type', False)
         }
     )
@@ -165,57 +198,43 @@ def _generate_tilstande(obj):
     return _generate_schema_object(properties, required)
 
 
-def _handle_special_relations_all(obj, relation):
-    if obj in [AKTIVITET, INDSATS, SAG, TILSTAND]:
-        relation['items']['properties']['indeks'] = INTEGER
-    if obj == AKTIVITET:
-        relation['items']['properties']['aktoerattr'] = _generate_schema_object(
-            {
-                'accepteret': STRING,
-                'obligatorisk': STRING,
-                'repraesentation_uuid': UUID,
-            },
-            ['accepteret', 'obligatorisk', 'repraesentation_uuid']
-        )
+def _handle_relation_metadata_all(obj, relation):
+    metadata_all = _get_metadata(obj, 'relationer', 'all')
+    for key in metadata_all:
+        if metadata_all[key].has_key('type'):
+            relation['items']['properties'][key] = TYPE_MAP[
+                metadata_all[key]['type']]
     return relation
 
 
-def _handle_special_relations_specific(obj, relation_schema):
-    if obj == TILSTAND:
-        properties = relation_schema['tilstandsvaerdi']['items']['properties']
-        properties['tilstandsvaerdiattr'] = _generate_schema_object(
-            {
-                'forventet': BOOLEAN,
-                'nominelvaerdi': STRING
-            },
-            ['forventet', 'nominelvaerdi']
-        )
-        properties.pop('uuid')
-        relation_schema['tilstandsvaerdi']['items']['required'].remove('uuid')
-    elif obj == SAG:
-        properties = relation_schema['journalpost']['items']['properties']
-        properties['journalpostkode'] = {
-            'type': 'string',
-            'enum': ['journalnotat', 'vedlagtdokument']
-        }
-        properties['journalnotat'] = _generate_schema_object(
-            {
-                'titel': STRING,
-                'notat': STRING,
-                'format': STRING,
-            },
-            ['titel', 'notat', 'format']
-        )
-        properties['journaldokument'] = _generate_schema_object(
-            {
-                'dokumenttitel': STRING,
-                'offentlighedundtaget': {
-                    '$ref': '#/definitions/offentlighedundtaget'}
-            },
-            ['dokumenttitel', 'offentlighedundtaget']
-        )
-        relation_schema['journalpost']['items']['required'].append(
-            'journalpostkode')
+def _handle_relation_metadata_specific(obj, relation_schema):
+
+    metadata_specific = db.REAL_DB_STRUCTURE[obj].get('relationer_metadata',
+                                                      [])
+    for relation in [key for key in metadata_specific if not key == 'all']:
+        properties = relation_schema[relation]['items']['properties']
+        print relation, properties
+        metadata = metadata_specific[relation]
+        for key in metadata:
+            print relation, key, metadata[key]
+            if metadata[key].has_key('type'):
+                properties[key] = TYPE_MAP[metadata[key]['type']]
+            if metadata[key].has_key('enum'):
+                # Enum implies type = text
+                properties[key] = {
+                    'type': 'string',
+                    'enum': metadata[key]['enum']
+                }
+            if metadata[key].get('mandatory', False):
+                relation_schema[relation]['items']['required'].append(key)
+
+    if obj == 'tilstand':
+
+        # Handle special case for 'tilstand' where UUID not allowed
+
+        del relation_schema['tilstandsvaerdi']['items']['properties']['uuid']
+        relation_schema['tilstandsvaerdi']['items']['required'].remove(
+            'uuid')
 
     return relation_schema
 
@@ -241,7 +260,7 @@ def _generate_relationer(obj):
         )
     )
 
-    relation_nul_til_mange = _handle_special_relations_all(
+    relation_nul_til_mange = _handle_relation_metadata_all(
         obj, relation_nul_til_mange)
 
     relation_schema = {
@@ -255,7 +274,7 @@ def _generate_relationer(obj):
     for relation in relationer_nul_til_en:
         relation_schema[relation] = relation_nul_til_en
 
-    relation_schema = _handle_special_relations_specific(obj, relation_schema)
+    relation_schema = _handle_relation_metadata_specific(obj, relation_schema)
 
     return {
         'type': 'object',
