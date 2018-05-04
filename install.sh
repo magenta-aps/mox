@@ -14,8 +14,7 @@ fi
 BASE_DIR=$( pwd )
 
 # Setup directory
-# TODO: Temporary installer directory name
-INSTALLER_DIR=${BASE_DIR}/new_installer
+INSTALLER_DIR=${BASE_DIR}/installer
 
 # Setup executable
 CONFIGURE=${INSTALLER_DIR}/configure.py

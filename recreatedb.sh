@@ -10,7 +10,7 @@ fi
 BASE_DIR=$( pwd )
 
 # Recreate
-INSTALLER_DIR=${BASE_DIR}/new_installer
+INSTALLER_DIR=${BASE_DIR}/installer
 
 # Path to (python) virtual environment
 VIRTUALENV=${BASE_DIR}/venv-linux
