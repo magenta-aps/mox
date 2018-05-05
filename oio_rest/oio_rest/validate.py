@@ -6,15 +6,6 @@ import db_structure as db
 # A very nice reference explaining the JSON schema syntax can be found
 # here: https://spacetelescope.github.io/understanding-json-schema/
 
-# LoRa object types
-AKTIVITET = 'aktivitet'
-DOKUMENT = 'dokument'
-INDSATS = 'indsats'
-ITSYSTEM = 'itsystem'
-KLASSE = 'klasse'
-SAG = 'sag'
-TILSTAND = 'tilstand'
-
 # JSON schema types
 BOOLEAN = {'type': 'boolean'}
 INTEGER = {'type': 'integer'}
@@ -47,6 +38,7 @@ def _generate_schema_object(properties, required, kwargs=None):
         schema_obj.update(kwargs)
     return schema_obj
 
+# Mapping from DATABASE_STRUCTURE types to JSON schema types
 
 TYPE_MAP = {
     'aktoerattr': _generate_schema_object(
@@ -96,6 +88,7 @@ def _get_metadata(obj, metadata_type, key):
     """
     Get the metadata for a given attribute
     :param obj: The type of LoRa object, i.e. 'bruger', 'organisation' etc.
+    :param metadata_type: Must be either 'attributter' or 'relationer'
     :param key: The attribute to get the metadata from,
     e.g. 'egenskaber'
     :return: Dictionary containing the metadata for the attribute fields
@@ -125,6 +118,13 @@ def _get_mandatory(obj, attribute_name):
 
 
 def _handle_attribute_metadata(obj, fields, attribute_name):
+    """
+    Update the types of the attribute fields.
+    :param obj: The type of LoRa object, i.e. 'bruger', 'organisation' etc.
+    :param fields: A dictionary of attribute fields to update.
+    :param attribute_name: The name of the attribute fields
+    :return: Dictionary of updated attribute fields.
+    """
     attribute = _get_metadata(obj, 'attributter', attribute_name)
     fields.update(
         {
@@ -199,6 +199,13 @@ def _generate_tilstande(obj):
 
 
 def _handle_relation_metadata_all(obj, relation):
+    """
+    Update relations an their metadata (e.g. types) for all relations of the
+    given LoRa object.
+    :param obj: The type of LoRa object, i.e. 'bruger', 'organisation' etc.
+    :param relation: The base relation to update.
+    :return: Dictionary representing the updated relation.
+    """
     metadata_all = _get_metadata(obj, 'relationer', 'all')
     for key in metadata_all:
         if metadata_all[key].has_key('type'):
@@ -208,15 +215,21 @@ def _handle_relation_metadata_all(obj, relation):
 
 
 def _handle_relation_metadata_specific(obj, relation_schema):
-
+    """
+    Update relations an their metadata (e.g. types) for specific relations
+    of the given LoRa object.
+    :param obj: The type of LoRa object, i.e. 'bruger', 'organisation' etc.
+    :param relation_schema: Dictionary representing the 'relationer' part of
+    the JSON schema.
+    :return: Dictionary representing the updated 'relationer' part of
+    the JSON schema.
+    """
     metadata_specific = db.REAL_DB_STRUCTURE[obj].get('relationer_metadata',
                                                       [])
     for relation in [key for key in metadata_specific if not key == 'all']:
         properties = relation_schema[relation]['items']['properties']
-        print relation, properties
         metadata = metadata_specific[relation]
         for key in metadata:
-            print relation, key, metadata[key]
             if metadata[key].has_key('type'):
                 properties[key] = TYPE_MAP[metadata[key]['type']]
             if metadata[key].has_key('enum'):
@@ -394,5 +407,11 @@ SCHEMA = {
 
 
 def validate(input_json):
+    """
+    Validate request JSON according to JSON schema.
+    :param input_json: The request JSON
+    :raise ValidationError: If the request JSON is not valid according to the
+    JSON schema.
+    """
     obj_type = get_lora_object_type(input_json)
     jsonschema.validate(input_json, SCHEMA[obj_type])
