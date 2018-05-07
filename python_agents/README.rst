@@ -33,5 +33,5 @@ however as previously described the agents have unresolved dependencies.
 As such they are not automatically installed as part of the stack.
 
 :NOTE:
-    Once the dependencies have been resolve,
-    it should be relatively easy to adjust the installation strategy
+    Once the dependencies have been resolved,
+    it should be relatively easy to adjust the installation strategy.
