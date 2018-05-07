@@ -91,7 +91,7 @@ def notify_and_log(executed_tasks):
         """.format(
             id=task_id,
             duration=task_duration,
-            result=resul
+            result=result
         ))
 
         # Log task
