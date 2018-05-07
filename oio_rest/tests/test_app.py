@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from mock import patch
 
-import app as flaskapp
+import oio_rest.app as flaskapp
 
 
 class TestApp(TestCase):
@@ -19,7 +19,7 @@ class TestApp(TestCase):
         # Assert
         self.assertEqual(400, result.status_code)
 
-    @patch('app.tokens.get_token')
+    @patch('oio_rest.app.tokens.get_token')
     def test_route_get_token_post_returns_403_on_auth_failed(self,
                                                              mock_get_token):
         # Arrange
@@ -32,7 +32,7 @@ class TestApp(TestCase):
         # Assert
         self.assertEqual(403, result.status_code)
 
-    @patch('app.tokens.get_token')
+    @patch('oio_rest.app.tokens.get_token')
     def test_route_get_token_post_returns_200_and_token_on_success(
             self,
             mock_get_token):

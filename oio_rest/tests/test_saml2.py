@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from mock import patch
 
-from auth.saml2 import Saml2_Assertion
+from oio_rest.auth.saml2 import Saml2_Assertion
 
 
 class TestSAML2(TestCase):
@@ -21,7 +21,7 @@ class TestSAML2(TestCase):
         with self.assertRaises(Exception):
             s2a.check_validity()
 
-    @patch('auth.saml2.Saml2_Assertion.validate_timestamps')
+    @patch('oio_rest.auth.saml2.Saml2_Assertion.validate_timestamps')
     def test_check_validity_raises_on_invalid_timestamp(self, mock_vt):
         # Arrange
         mock_vt.return_value = False
@@ -40,8 +40,8 @@ class TestSAML2(TestCase):
         with self.assertRaises(Exception):
             s2a.check_validity()
 
-    @patch('auth.saml2.Saml2_Assertion.get_audiences')
-    @patch('auth.saml2.Saml2_Assertion.validate_timestamps')
+    @patch('oio_rest.auth.saml2.Saml2_Assertion.get_audiences')
+    @patch('oio_rest.auth.saml2.Saml2_Assertion.validate_timestamps')
     def test_check_validity_raises_on_invalid_audience(self, mock_vt, mock_ga):
         # Arrange
         mock_vt.return_value = True
@@ -61,8 +61,8 @@ class TestSAML2(TestCase):
         with self.assertRaises(Exception):
             s2a.check_validity()
 
-    @patch('auth.saml2.Saml2_Assertion.get_issuers')
-    @patch('auth.saml2.Saml2_Assertion.validate_timestamps')
+    @patch('oio_rest.auth.saml2.Saml2_Assertion.get_issuers')
+    @patch('oio_rest.auth.saml2.Saml2_Assertion.validate_timestamps')
     def test_check_validity_raises_on_invalid_issuer(self, mock_vt, mock_gi):
         # Arrange
         mock_vt.return_value = True
@@ -82,8 +82,8 @@ class TestSAML2(TestCase):
         with self.assertRaises(Exception):
             s2a.check_validity()
 
-    @patch('auth.saml2.Saml2_Assertion.get_issuers')
-    @patch('auth.saml2.Saml2_Assertion.validate_timestamps')
+    @patch('oio_rest.auth.saml2.Saml2_Assertion.get_issuers')
+    @patch('oio_rest.auth.saml2.Saml2_Assertion.validate_timestamps')
     def test_check_validity_raises_on_invalid_signature(self, mock_vt,
                                                         mock_gi):
         # Arrange

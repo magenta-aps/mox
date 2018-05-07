@@ -2,7 +2,7 @@ import unittest
 
 from mock import MagicMock, patch
 
-import utils.build_registration as br
+import oio_rest.utils.build_registration as br
 
 
 class TestBuildRegistration(unittest.TestCase):
@@ -213,7 +213,7 @@ class TestBuildRegistration(unittest.TestCase):
         # Assert
         self.assertEqual(expected_result, relation)
 
-    @patch('utils.build_registration.build_registration')
+    @patch('oio_rest.utils.build_registration.build_registration')
     def test_restriction_to_registration(self, mock_br):
         # type: (MagicMock) -> None
         # Arrange
@@ -251,12 +251,12 @@ class TestBuildRegistration(unittest.TestCase):
         self.assertEqual(classname, actual_class_name)
         self.assertEqual(expected_list_args, actual_list_args)
 
-    @patch('utils.build_registration.get_relation_names',
+    @patch('oio_rest.utils.build_registration.get_relation_names',
            new=MagicMock())
-    @patch('utils.build_registration.get_state_names',
+    @patch('oio_rest.utils.build_registration.get_state_names',
            new=MagicMock())
-    @patch('utils.build_registration.get_attribute_fields')
-    @patch('utils.build_registration.get_attribute_names')
+    @patch('oio_rest.utils.build_registration.get_attribute_fields')
+    @patch('oio_rest.utils.build_registration.get_attribute_names')
     def test_build_registration_attributes(self,
                                            mock_get_attribute_names,
                                            mock_get_attribute_fields):
@@ -289,12 +289,12 @@ class TestBuildRegistration(unittest.TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('utils.build_registration.get_relation_names',
+    @patch('oio_rest.utils.build_registration.get_relation_names',
            new=MagicMock())
-    @patch('utils.build_registration.get_state_names')
-    @patch('utils.build_registration.get_attribute_fields',
+    @patch('oio_rest.utils.build_registration.get_state_names')
+    @patch('oio_rest.utils.build_registration.get_attribute_fields',
            new=MagicMock())
-    @patch('utils.build_registration.get_attribute_names',
+    @patch('oio_rest.utils.build_registration.get_attribute_names',
            new=MagicMock())
     def test_build_registration_states(self,
                                        mock_get_state_names):
@@ -331,12 +331,12 @@ class TestBuildRegistration(unittest.TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('utils.build_registration.get_relation_names')
-    @patch('utils.build_registration.get_state_names',
+    @patch('oio_rest.utils.build_registration.get_relation_names')
+    @patch('oio_rest.utils.build_registration.get_state_names',
            new=MagicMock())
-    @patch('utils.build_registration.get_attribute_fields',
+    @patch('oio_rest.utils.build_registration.get_attribute_fields',
            new=MagicMock())
-    @patch('utils.build_registration.get_attribute_names',
+    @patch('oio_rest.utils.build_registration.get_attribute_names',
            new=MagicMock())
     def test_build_registration_relations(self, mock_get_relation_names):
         # type: (MagicMock) -> None
@@ -368,11 +368,11 @@ class TestBuildRegistration(unittest.TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('utils.build_registration.'
+    @patch('oio_rest.utils.build_registration.'
            'get_document_part_relation_names')
-    @patch('utils.build_registration.'
+    @patch('oio_rest.utils.build_registration.'
            'DokumentDelEgenskaberType.get_fields')
-    @patch('utils.build_registration.'
+    @patch('oio_rest.utils.build_registration.'
            'DokumentVariantEgenskaberType.get_fields')
     def test_build_registration_dokument(self, mock_dvet_get_fields,
                                          mock_ddet_get_fields, mock_get_dprn):

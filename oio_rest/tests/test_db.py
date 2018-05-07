@@ -3,13 +3,13 @@ import unittest
 
 from mock import MagicMock, call, patch
 
-import db
-from custom_exceptions import (BadRequestException, DBException,
+from oio_rest import db
+from oio_rest.custom_exceptions import (BadRequestException, DBException,
                                         NotFoundException)
 
 
 class TestDB(unittest.TestCase):
-    @patch('db.psycopg2')
+    @patch('oio_rest.db.psycopg2')
     def test_get_connection(self, mock):
         # Arrange
         mock.connect = MagicMock()
@@ -39,9 +39,9 @@ class TestDB(unittest.TestCase):
         # Assert
         self.assertEqual(expected_args, mock.connect.call_args)
 
-    @patch('db.unicode', new=MagicMock())
-    @patch('db.psyco_adapt', new=MagicMock())
-    @patch('db.get_connection')
+    @patch('oio_rest.db.unicode', new=MagicMock())
+    @patch('oio_rest.db.psyco_adapt', new=MagicMock())
+    @patch('oio_rest.db.get_connection')
     def test_adapt_only_creates_one_connection(self, mock_get_conn):
         # type: (MagicMock) -> None
         # Arrange
@@ -54,7 +54,7 @@ class TestDB(unittest.TestCase):
         # Assert
         self.assertEqual(1, mock_get_conn.call_count)
 
-    @patch('db.get_relation_field_type')
+    @patch('oio_rest.db.get_relation_field_type')
     def test_convert_relation_value_default(self, mock_get_rel):
         mock_get_rel.return_value = "not a known field type"
 
@@ -64,7 +64,7 @@ class TestDB(unittest.TestCase):
 
         self.assertEqual(value, actual_value)
 
-    @patch('db.get_relation_field_type')
+    @patch('oio_rest.db.get_relation_field_type')
     def test_convert_relation_value_journalnotat(self, mock_get_rel):
         from db_helpers import JournalNotat
 
@@ -84,7 +84,7 @@ class TestDB(unittest.TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('db.get_relation_field_type')
+    @patch('oio_rest.db.get_relation_field_type')
     def test_convert_relation_value_journaldokument(self, mock_get_rel):
         from db_helpers import JournalDokument, OffentlighedUndtaget
 
@@ -113,7 +113,7 @@ class TestDB(unittest.TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('db.get_relation_field_type')
+    @patch('oio_rest.db.get_relation_field_type')
     def test_convert_relation_value_aktoerattr(self, mock_get_rel):
         from db_helpers import AktoerAttr
 
@@ -141,7 +141,7 @@ class TestDB(unittest.TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('db.get_relation_field_type')
+    @patch('oio_rest.db.get_relation_field_type')
     def test_convert_relation_value_aktoerattr_no_value(self, mock_get_rel):
         # Arrange
         mock_get_rel.return_value = "aktoerattr"
@@ -156,7 +156,7 @@ class TestDB(unittest.TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('db.get_relation_field_type')
+    @patch('oio_rest.db.get_relation_field_type')
     def test_convert_relation_value_vaerdirelationattr(self, mock_get_rel):
         from db_helpers import VaerdiRelationAttr
 
@@ -179,7 +179,7 @@ class TestDB(unittest.TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('db.get_attribute_fields')
+    @patch('oio_rest.db.get_attribute_fields')
     def test_convert_attributes_no_value(self, mock_get_attr):
         # Arrange
         mock_get_attr.return_value = ['field1', 'field2', 'field3', 'field4']
@@ -192,7 +192,7 @@ class TestDB(unittest.TestCase):
         # Assert
         self.assertEqual(attributes, actual_result)
 
-    @patch('db.get_attribute_fields')
+    @patch('oio_rest.db.get_attribute_fields')
     def test_convert_attributes_is_correct_order(self, mock_get_attr):
         # Arrange
         mock_get_attr.return_value = ['field1', 'field2', 'field3', 'field4']
@@ -222,7 +222,7 @@ class TestDB(unittest.TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('db.get_attribute_fields')
+    @patch('oio_rest.db.get_attribute_fields')
     def test_convert_attributes_adds_none_values(self, mock_get_attr):
         # Arrange
         mock_get_attr.return_value = ['field1', 'field2', 'field3', 'field4']
@@ -248,7 +248,7 @@ class TestDB(unittest.TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('db.get_attribute_fields')
+    @patch('oio_rest.db.get_attribute_fields')
     def test_convert_attributes_handles_multiple_attributes(self,
                                                             mock_get_attr):
         # Arrange
@@ -287,7 +287,7 @@ class TestDB(unittest.TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('db.convert_relation_value')
+    @patch('oio_rest.db.convert_relation_value')
     def test_convert_relations_no_value(self,
                                         mock_conv_rel):
         # type: (MagicMock) -> None
@@ -303,7 +303,7 @@ class TestDB(unittest.TestCase):
         # Assert
         self.assertEqual(relations, actual_result)
 
-    @patch('db.convert_relation_value')
+    @patch('oio_rest.db.convert_relation_value')
     def test_convert_relations_calls_convert_relation_value(self,
                                                             mock_conv_rel):
         # type: (MagicMock) -> None
@@ -339,7 +339,7 @@ class TestDB(unittest.TestCase):
         self.assertIn(call("classname", "field4", "value4"),
                       mock_conv_rel.call_args_list)
 
-    @patch('db.convert_relation_value', new=lambda x, y, z: z)
+    @patch('oio_rest.db.convert_relation_value', new=lambda x, y, z: z)
     def test_convert_relations_returns_as_expected(self):
         # type: (MagicMock) -> None
         # Arrange
@@ -402,7 +402,7 @@ class TestDB(unittest.TestCase):
         # Assert
         self.assertIsNone(actual_result)
 
-    @patch('db.DokumentVariantType.input')
+    @patch('oio_rest.db.DokumentVariantType.input')
     def test_convert_variants_calls_constructor(self, mock_dvt_input):
         # type: (MagicMock) -> None
         # Arrange
@@ -418,7 +418,7 @@ class TestDB(unittest.TestCase):
         self.assertEqual(2, mock_dvt_input.call_count)
         self.assertEqual(expected_result, actual_result)
 
-    @patch('db.get_field_type')
+    @patch('oio_rest.db.get_field_type')
     def test_convert_attr_value_default(self, mock_get_field_type):
         # type: (MagicMock) -> None
         # Arrange
@@ -432,7 +432,7 @@ class TestDB(unittest.TestCase):
         # Assert
         self.assertEqual(value, actual_result)
 
-    @patch('db.get_field_type')
+    @patch('oio_rest.db.get_field_type')
     def test_convert_attr_value_soegeord(self,
                                          mock_get_field_type):
         # type: (MagicMock) -> None
@@ -455,7 +455,7 @@ class TestDB(unittest.TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('db.get_field_type')
+    @patch('oio_rest.db.get_field_type')
     def test_convert_attr_value_offentlighedundtagettype(self,
                                                          mock_get_field_type):
         # type: (MagicMock) -> None
@@ -481,7 +481,7 @@ class TestDB(unittest.TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('db.get_field_type')
+    @patch('oio_rest.db.get_field_type')
     def test_convert_attr_value_offentlighedundtagettype_none(
             self,
             mock_get_field_type):
@@ -501,7 +501,7 @@ class TestDB(unittest.TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('db.get_field_type')
+    @patch('oio_rest.db.get_field_type')
     def test_convert_attr_value_date(self,
                                      mock_get_field_type):
         # type: (MagicMock) -> None
@@ -520,7 +520,7 @@ class TestDB(unittest.TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('db.get_field_type')
+    @patch('oio_rest.db.get_field_type')
     def test_convert_attr_value_timestamptz(self,
                                             mock_get_field_type):
         # type: (MagicMock) -> None
@@ -539,7 +539,7 @@ class TestDB(unittest.TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('db.get_field_type')
+    @patch('oio_rest.db.get_field_type')
     def test_convert_attr_value_interval(self,
                                          mock_get_field_type):
         # type: (MagicMock) -> None
@@ -558,9 +558,9 @@ class TestDB(unittest.TestCase):
         # Assert
         self.assertEqual(expected_result, str(actual_result))
 
-    @patch('db.transform_virkning')
-    @patch('db.filter_empty')
-    @patch('db.simplify_cleared_wrappers')
+    @patch('oio_rest.db.transform_virkning')
+    @patch('oio_rest.db.filter_empty')
+    @patch('oio_rest.db.simplify_cleared_wrappers')
     def test_filter_json_output(self, mock_transform, mock_filter,
                                 mock_simplify):
         # type: (MagicMock, MagicMock, MagicMock) -> None
@@ -1002,7 +1002,7 @@ class TestDB(unittest.TestCase):
         # Assert
         self.assertEqual(expected_result, actual_value)
 
-    @patch('db.list_objects')
+    @patch('oio_rest.db.list_objects')
     def test_get_life_cycle_code(self, mock_list_objs):
         # type: (MagicMock) -> None
         # Arrange
@@ -1027,10 +1027,10 @@ class TestDB(unittest.TestCase):
         self.assertEqual('Importeret', actual_result)
 
 
-@patch("db.sql_convert_registration", new=MagicMock())
+@patch("oio_rest.db.sql_convert_registration", new=MagicMock())
 class TestDBObjectFunctions(unittest.TestCase):
-    @patch("db.get_connection")
-    @patch("db.jinja_env")
+    @patch("oio_rest.db.get_connection")
+    @patch("oio_rest.db.jinja_env")
     def test_update_object_returns_uuid(self,
                                         mock_jinja_env,
                                         mock_get_conn):
@@ -1044,8 +1044,8 @@ class TestDBObjectFunctions(unittest.TestCase):
         # Assert
         self.assertEqual(uuid, actual_result)
 
-    @patch("db.get_connection")
-    @patch("db.jinja_env")
+    @patch("oio_rest.db.get_connection")
+    @patch("oio_rest.db.jinja_env")
     def test_list_objects_raises_on_no_results(self,
                                                mock_jinja_env,
                                                mock_get_conn):
@@ -1064,11 +1064,11 @@ class TestDBObjectFunctions(unittest.TestCase):
 
 
 class TestDBGeneralSQL(unittest.TestCase):
-    @patch('db.sql_attribute_array')
-    @patch('db.sql_relations_array')
-    @patch('db.get_attribute_names')
-    @patch('db.convert_attributes', new=lambda x: x)
-    @patch('db.get_state_names', new=MagicMock())
+    @patch('oio_rest.db.sql_attribute_array')
+    @patch('oio_rest.db.sql_relations_array')
+    @patch('oio_rest.db.get_attribute_names')
+    @patch('oio_rest.db.convert_attributes', new=lambda x: x)
+    @patch('oio_rest.db.get_state_names', new=MagicMock())
     def test_sql_convert_registration_attributes(self,
                                                  mock_get_attribute_names,
                                                  mock_sql_relations_array,
@@ -1109,10 +1109,10 @@ class TestDBGeneralSQL(unittest.TestCase):
 
         self.assertEqual(expected_result, actual_result)
 
-    @patch('db.sql_state_array')
-    @patch('db.sql_relations_array')
-    @patch('db.get_attribute_names', new=MagicMock())
-    @patch('db.get_state_names')
+    @patch('oio_rest.db.sql_state_array')
+    @patch('oio_rest.db.sql_relations_array')
+    @patch('oio_rest.db.get_attribute_names', new=MagicMock())
+    @patch('oio_rest.db.get_state_names')
     def test_sql_convert_registration_states(self, mock_get_state_names,
                                              mock_sql_relations_array,
                                              mock_sql_state_array):
@@ -1153,10 +1153,10 @@ class TestDBGeneralSQL(unittest.TestCase):
 
         self.assertEqual(expected_result, actual_result)
 
-    @patch('db.sql_relations_array')
-    @patch('db.convert_relations', new=lambda x, y: x)
-    @patch('db.get_attribute_names', new=MagicMock())
-    @patch('db.get_state_names', new=MagicMock())
+    @patch('oio_rest.db.sql_relations_array')
+    @patch('oio_rest.db.convert_relations', new=lambda x, y: x)
+    @patch('oio_rest.db.get_attribute_names', new=MagicMock())
+    @patch('oio_rest.db.get_state_names', new=MagicMock())
     def test_sql_convert_registration_relations(self,
                                                 mock_sql_relations_array):
         # type: (MagicMock) -> None
@@ -1182,11 +1182,11 @@ class TestDBGeneralSQL(unittest.TestCase):
         self.assertIn(call('classname', {'relation1': [], 'relation2': []}),
                       sql_state_array_args)
 
-    @patch('db.convert_variants')
-    @patch('db.adapt')
-    @patch('db.convert_relations', new=lambda x, y: x)
-    @patch('db.get_attribute_names', new=MagicMock())
-    @patch('db.get_state_names', new=MagicMock())
+    @patch('oio_rest.db.convert_variants')
+    @patch('oio_rest.db.adapt')
+    @patch('oio_rest.db.convert_relations', new=lambda x, y: x)
+    @patch('oio_rest.db.get_attribute_names', new=MagicMock())
+    @patch('oio_rest.db.get_state_names', new=MagicMock())
     def test_sql_convert_registration_variants(self,
                                                mock_adapt,
                                                mock_convert_variants):
@@ -1213,16 +1213,16 @@ class TestDBGeneralSQL(unittest.TestCase):
         mock_convert_variants.assert_called_with(variants)
 
 
-@patch("db.get_connection")
-@patch("db.sql_get_registration", new=MagicMock())
-@patch("db.sql_convert_registration", new=MagicMock())
-@patch("db.jinja_env.get_template", new=MagicMock())
+@patch("oio_rest.db.get_connection")
+@patch("oio_rest.db.sql_get_registration", new=MagicMock())
+@patch("oio_rest.db.sql_convert_registration", new=MagicMock())
+@patch("oio_rest.db.jinja_env.get_template", new=MagicMock())
 class TestPGErrors(unittest.TestCase):
     class TestException(Exception):
         def __init__(self):
             self.pgcode = 'MO123'
 
-    @patch("db.psycopg2.Error", new=TestException)
+    @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_object_exists_raises_on_pgerror(self, mock_get_conn):
         # type: (MagicMock) -> None
 
@@ -1237,7 +1237,7 @@ class TestPGErrors(unittest.TestCase):
         with self.assertRaises(DBException):
             db.object_exists(classname, uuid)
 
-    @patch("db.psycopg2.Error", new=TestException)
+    @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_object_exists_raises_on_unknown_pgerror(self, mock_get_conn):
         # type: (MagicMock) -> None
 
@@ -1254,7 +1254,7 @@ class TestPGErrors(unittest.TestCase):
         with self.assertRaises(TestPGErrors.TestException):
             db.object_exists(classname, uuid)
 
-    @patch("db.psycopg2.Error", new=TestException)
+    @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_get_document_from_content_url_raises_on_pgerror(self,
                                                              mock_get_conn):
         # type: (MagicMock) -> None
@@ -1267,7 +1267,7 @@ class TestPGErrors(unittest.TestCase):
         with self.assertRaises(DBException):
             db.get_document_from_content_url('')
 
-    @patch("db.psycopg2.Error", new=TestException)
+    @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_get_document_from_content_url_raises_on_unknown_pgerror(
             self, mock_get_conn):
         # type: (MagicMock) -> None
@@ -1282,7 +1282,7 @@ class TestPGErrors(unittest.TestCase):
         with self.assertRaises(TestPGErrors.TestException):
             db.get_document_from_content_url('')
 
-    @patch("db.psycopg2.Error", new=TestException)
+    @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_create_or_import_object_raises_on_pgerror(self, mock_get_conn):
         # type: (MagicMock) -> None
 
@@ -1295,8 +1295,8 @@ class TestPGErrors(unittest.TestCase):
             db.create_or_import_object('', '', '', '')
 
 
-    @patch("db.psycopg2.Error", new=TestException)
-    @patch('db.object_exists', new=lambda *x: False)
+    @patch("oio_rest.db.psycopg2.Error", new=TestException)
+    @patch('oio_rest.db.object_exists', new=lambda *x: False)
     def test_create_or_import_object_raises_on_noop_pgerror(self,
                                                             mock_get_conn):
         # type: (MagicMock) -> None
@@ -1319,7 +1319,7 @@ class TestPGErrors(unittest.TestCase):
         with self.assertRaises(TestPGErrors.TestException):
             db.create_or_import_object(class_name, '', '', uuid)
 
-    @patch("db.psycopg2.Error", new=TestException)
+    @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_create_or_import_object_raises_on_unknown_pgerror(self,
                                                                mock_get_conn):
         # type: (MagicMock) -> None
@@ -1337,7 +1337,7 @@ class TestPGErrors(unittest.TestCase):
         with self.assertRaises(TestPGErrors.TestException):
             db.create_or_import_object(class_name, '', '', uuid)
 
-    @patch("db.psycopg2.Error", new=TestException)
+    @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_delete_object_raises_on_pgerror(self, mock_get_conn):
         # type: (MagicMock) -> None
 
@@ -1349,8 +1349,8 @@ class TestPGErrors(unittest.TestCase):
         with self.assertRaises(DBException):
             db.delete_object('', '', '', '')
 
-    @patch("db.psycopg2.Error", new=TestException)
-    @patch('db.object_exists', new=lambda *x: False)
+    @patch("oio_rest.db.psycopg2.Error", new=TestException)
+    @patch('oio_rest.db.object_exists', new=lambda *x: False)
     def test_delete_object_raises_on_notfound_pgerror(self, mock_get_conn):
         # type: (MagicMock) -> None
 
@@ -1372,7 +1372,7 @@ class TestPGErrors(unittest.TestCase):
         with self.assertRaises(NotFoundException):
             db.delete_object(class_name, '', '', uuid)
 
-    @patch("db.psycopg2.Error", new=TestException)
+    @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_delete_object_raises_on_unknown_pgerror(self, mock_get_conn):
         # type: (MagicMock) -> None
 
@@ -1386,7 +1386,7 @@ class TestPGErrors(unittest.TestCase):
         with self.assertRaises(TestPGErrors.TestException):
             db.delete_object('', '', '', '')
 
-    @patch("db.psycopg2.Error", new=TestException)
+    @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_passivate_object_raises_on_pgerror(self, mock_get_conn):
         # type: (MagicMock) -> None
 
@@ -1399,7 +1399,7 @@ class TestPGErrors(unittest.TestCase):
         with self.assertRaises(DBException):
             db.passivate_object('', '', '', '')
 
-    @patch("db.psycopg2.Error", new=TestException)
+    @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_passivate_object_raises_on_unknown_pgerror(self, mock_get_conn):
         # type: (MagicMock) -> None
 
@@ -1413,7 +1413,7 @@ class TestPGErrors(unittest.TestCase):
         with self.assertRaises(TestPGErrors.TestException):
             db.passivate_object('', '', '', '')
 
-    @patch("db.psycopg2.Error", new=TestException)
+    @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_update_object_raises_on_pgerror(self, mock_get_conn):
         # type: (MagicMock) -> None
 
@@ -1426,7 +1426,7 @@ class TestPGErrors(unittest.TestCase):
         with self.assertRaises(DBException):
             db.update_object('', '', '', '')
 
-    @patch("db.psycopg2.Error", new=TestException)
+    @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_update_object_returns_uuid_on_noop_pgerror(self, mock_get_conn):
         # type: (MagicMock) -> None
 
@@ -1449,7 +1449,7 @@ class TestPGErrors(unittest.TestCase):
         # Assert
         self.assertEqual(uuid, actual_result)
 
-    @patch("db.psycopg2.Error", new=TestException)
+    @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_update_object_raises_on_unknown_pgerror(self, mock_get_conn):
         # type: (MagicMock) -> None
 
@@ -1463,7 +1463,7 @@ class TestPGErrors(unittest.TestCase):
         with self.assertRaises(TestPGErrors.TestException):
             db.update_object('', '', '', '')
 
-    @patch("db.psycopg2.Error", new=TestException)
+    @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_list_objects_raises_on_pgerror(self, mock_get_conn):
         # type: (MagicMock) -> None
 
@@ -1476,7 +1476,7 @@ class TestPGErrors(unittest.TestCase):
         with self.assertRaises(DBException):
             db.list_objects('', '', '', '', '', '')
 
-    @patch("db.psycopg2.Error", new=TestException)
+    @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_list_objects_raises_on_unknown_pgerror(self, mock_get_conn):
         # type: (MagicMock) -> None
 
@@ -1490,7 +1490,7 @@ class TestPGErrors(unittest.TestCase):
         with self.assertRaises(TestPGErrors.TestException):
             db.list_objects('', '', '', '', '', '')
 
-    @patch("db.psycopg2.Error", new=TestException)
+    @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_search_objects_raises_on_pgerror(self, mock_get_conn):
         # type: (MagicMock) -> None
 
@@ -1503,7 +1503,7 @@ class TestPGErrors(unittest.TestCase):
         with self.assertRaises(DBException):
             db.search_objects('', '', '')
 
-    @patch("db.psycopg2.Error", new=TestException)
+    @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_search_objects_raises_on_unknown_pgerror(self, mock_get_conn):
         # type: (MagicMock) -> None
 

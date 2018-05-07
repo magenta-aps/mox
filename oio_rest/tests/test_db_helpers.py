@@ -3,8 +3,8 @@ from unittest import TestCase
 from mock import MagicMock, call, patch
 from werkzeug.datastructures import ImmutableMultiDict
 
-import db_helpers
-from custom_exceptions import BadRequestException
+from oio_rest import db_helpers
+from oio_rest.custom_exceptions import BadRequestException
 
 
 class TestDBHelpers(TestCase):
@@ -15,7 +15,7 @@ class TestDBHelpers(TestCase):
         db_helpers._attribute_names = {}
         db_helpers._relation_names = {}
 
-    @patch('db_helpers.db_struct', new={
+    @patch('oio_rest.db_helpers.db_struct', new={
         'testclass1': {
             'attributter': {
                 'testattribut': [
@@ -84,7 +84,7 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('db_helpers.db_struct', new={
+    @patch('oio_rest.db_helpers.db_struct', new={
         'testclass1': {
             'attributter_type_override': {
                 'testattribut': {
@@ -104,7 +104,7 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('db_helpers.db_struct', new={
+    @patch('oio_rest.db_helpers.db_struct', new={
         'testclass1': {
             'attributter_type_override': {
                 'testattribut': {
@@ -124,7 +124,7 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('db_helpers.db_struct')
+    @patch('oio_rest.db_helpers.db_struct')
     def test_get_relation_field_type_default(self, p):
         # Arrange
         expected_result = 'text'
@@ -136,7 +136,7 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('db_helpers.db_struct', new={
+    @patch('oio_rest.db_helpers.db_struct', new={
         'testclass1': {
             'relationer_type_override': {
                 'value': 'value_override'
@@ -154,7 +154,7 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('db_helpers.db_struct', new={
+    @patch('oio_rest.db_helpers.db_struct', new={
         'testclass1': {
             'relationer_type_override': {
                 'value': 'value_override'
@@ -172,7 +172,7 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('db_helpers.db_struct', new={
+    @patch('oio_rest.db_helpers.db_struct', new={
         'testclass1': {
             'attributter': {
                 'testattribut1': [
@@ -294,7 +294,7 @@ class TestDBHelpers(TestCase):
             # Assert
             self.assertEqual(expected_result, sorted(actual_result))
 
-        with patch('db_helpers.db_struct', new={
+        with patch('oio_rest.db_helpers.db_struct', new={
             'testclass1': {
                 'tilstande': [
                     ('testtilstand1', [
@@ -320,7 +320,7 @@ class TestDBHelpers(TestCase):
             # Assert
             self.assertEqual(expected_result, actual_result)
 
-    @patch('db_helpers.db_struct', new={
+    @patch('oio_rest.db_helpers.db_struct', new={
         'testclass1': {
             'relationer_nul_til_en': [
                 'value1',
@@ -904,9 +904,9 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertIsNone(actual_result)
 
-    @patch('db_helpers.DokumentDelEgenskaberType'
+    @patch('oio_rest.db_helpers.DokumentDelEgenskaberType'
            '._get_file_storage_for_content_url')
-    @patch('db_helpers.content_store.save_file_object')
+    @patch('oio_rest.db_helpers.content_store.save_file_object')
     def test_dokumentdelegenskabertype_input_update_file(self, mock_save_file,
                                                          mock_get_file):
         # type: (MagicMock, MagicMock) -> None
@@ -961,7 +961,7 @@ class TestNamedTupleAdapter(TestCase):
     class TestClass(NamedTupleAdapter):
         pass
 
-    @patch('db_helpers.psyco_adapt')
+    @patch('oio_rest.db_helpers.psyco_adapt')
     def test_prepare_and_adapt(self, mock_psyco_adapt):
         # type: (MagicMock) -> None
         # Arrange

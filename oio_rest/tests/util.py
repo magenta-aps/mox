@@ -22,8 +22,8 @@ import testing.postgresql
 import psycopg2
 import pytest
 
-import app
-import db
+from oio_rest import app
+from oio_rest import db
 import settings
 
 TESTS_DIR = os.path.dirname(__file__)

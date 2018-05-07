@@ -8,12 +8,12 @@ import freezegun
 from mock import MagicMock, patch
 from werkzeug.exceptions import BadRequest
 
-import db
-import db_helpers
-from custom_exceptions import (BadRequestException, NotFoundException,
+from oio_rest import db
+from oio_rest import db_helpers
+from oio_rest.custom_exceptions import (BadRequestException, NotFoundException,
                                         GoneException)
-from oio_rest import OIOStandardHierarchy, OIORestObject
-import oio_rest
+from oio_rest.oio_rest import OIOStandardHierarchy, OIORestObject
+from oio_rest import oio_rest
 
 class TestClassRestObject(OIORestObject):
     pass
@@ -230,7 +230,7 @@ class TestOIORestObject(TestCase):
         # Assert
         self.assertEquals(expected_json, actual_json)
 
-    @patch('db.create_or_import_object')
+    @patch('oio_rest.db.create_or_import_object')
     def test_create_object_with_input_returns_uuid_and_code_201(self, mock):
         # Arrange
         uuid = "c98d1e8b-0655-40a0-8e86-bb0cc07b0d59"
@@ -287,7 +287,7 @@ class TestOIORestObject(TestCase):
                         "garbage": ["garbage"]}
 
         with self.app.test_request_context(method='GET'), \
-                patch("oio_rest_lib.db_structure.REAL_DB_STRUCTURE",
+                patch("oio_common.db_structure.REAL_DB_STRUCTURE",
                       new=db_structure):
 
             # Act
@@ -1035,7 +1035,7 @@ class TestOIOStandardHierarchy(TestCase):
         db_structure = expected_result.copy()
         db_structure.update({"garbage": "1234"})
 
-        with patch("oio_rest_lib.db_structure.REAL_DB_STRUCTURE",
+        with patch("oio_common.db_structure.REAL_DB_STRUCTURE",
                    new=db_structure):
 
             # Act

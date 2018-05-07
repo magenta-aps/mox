@@ -4,8 +4,8 @@ import flask
 import freezegun
 from mock import MagicMock, patch
 
-import authentication
-from custom_exceptions import (AuthorizationFailedException,
+from oio_rest import authentication
+from oio_rest.custom_exceptions import (AuthorizationFailedException,
                                         UnauthorizedException)
 
 from tests import util
@@ -30,9 +30,9 @@ class TestAuthentication(unittest.TestCase):
                 AuthorizationFailedException):
             authentication.check_saml_authentication()
 
-    @patch('authentication.Saml2_Assertion')
-    @patch('authentication.b64decode', new=MagicMock())
-    @patch('authentication.zlib', new=MagicMock())
+    @patch('oio_rest.authentication.Saml2_Assertion')
+    @patch('oio_rest.authentication.b64decode', new=MagicMock())
+    @patch('oio_rest.authentication.zlib', new=MagicMock())
     def test_check_saml_authentication_raises_on_invalid_assert(self,
                                                                 mock_saml2):
         # Arrange

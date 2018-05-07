@@ -5,14 +5,14 @@ from freezegun import freeze_time
 
 from mock import patch, MagicMock
 
-from contentstore import ContentStore
+from oio_rest.contentstore import ContentStore
 
 
 # Override os.path with posix-version, to be OS-agnostic
-@patch('contentstore.os.path', new=posixpath)
+@patch('oio_rest.contentstore.os.path', new=posixpath)
 class TestContentStore(TestCase):
-    @patch('contentstore.os.makedirs')
-    @patch('contentstore.os.stat')
+    @patch('oio_rest.contentstore.os.makedirs')
+    @patch('oio_rest.contentstore.os.stat')
     def test_save_file_object(self, mock_os_stat, mock_os_makedirs):
         # Arrange
         cs = ContentStore()
@@ -34,8 +34,8 @@ class TestContentStore(TestCase):
         mockfile.save.assert_called_with('/test/sub/path/testfile.bin')
         self.assertEqual('store:sub/path/testfile.bin', actual_result)
 
-    @patch('contentstore.os.removedirs')
-    @patch('contentstore.os.remove')
+    @patch('oio_rest.contentstore.os.removedirs')
+    @patch('oio_rest.contentstore.os.remove')
     def test_remove(self, mock_os_remove, mock_os_removedirs):
         # Arrange
         cs = ContentStore()
@@ -56,7 +56,7 @@ class TestContentStore(TestCase):
         expected_result = '{}.bin'.format(uuid)
 
         # Act
-        with patch('contentstore.uuid.uuid4', return_value=uuid):
+        with patch('oio_rest.contentstore.uuid.uuid4', return_value=uuid):
             actual_result = cs._get_new_file_name()
 
         # Assert
@@ -81,7 +81,7 @@ class TestContentStore(TestCase):
 
         # Act
 
-        with patch('contentstore.FILE_UPLOAD_FOLDER', new='/test/'):
+        with patch('oio_rest.contentstore.FILE_UPLOAD_FOLDER', new='/test/'):
             actual_result = cs.get_filename_for_url('store:url')
 
         # Assert
@@ -93,6 +93,6 @@ class TestContentStore(TestCase):
 
         # Act
 
-        with patch('contentstore.FILE_UPLOAD_FOLDER',
+        with patch('oio_rest.contentstore.FILE_UPLOAD_FOLDER',
                    new='/test/'), self.assertRaises(Exception):
             cs.get_filename_for_url('bla:url')
