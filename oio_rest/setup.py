@@ -18,6 +18,9 @@ setup(
     url='https://github.com/magenta-aps/mox',
     license='Mozilla Public License Version 2.0',
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
+    package_data={
+        '': ["*.txt", "*.xml", "*.pem"]
+    },
     include_package_data=True,
     zip_safe=False,
     install_requires=[
