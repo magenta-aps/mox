@@ -5,28 +5,22 @@ import datetime
 import urlparse
 import traceback
 
-import log
-import sag
-import indsats
-import dokument
-import tilstand
-import aktivitet
-import organisation
-import klassifikation
-
-import settings
-
 from flask import Flask, jsonify, redirect, request, url_for, Response
 from werkzeug.routing import BaseConverter
 from jinja2 import Environment, FileSystemLoader
 from psycopg2 import DataError
 
-from authentication import get_authenticated_user
-from log_client import log_service_call
+from . import sag, indsats, dokument, tilstand, aktivitet, organisation
+from . import log, klassifikation
+from .authentication import get_authenticated_user
+from .log_client import log_service_call
 
-from custom_exceptions import OIOFlaskException, AuthorizationFailedException
-from custom_exceptions import BadRequestException
-from auth import tokens
+from .custom_exceptions import OIOFlaskException, AuthorizationFailedException
+from .custom_exceptions import BadRequestException
+from .auth import tokens
+
+import settings
+
 
 app = Flask(__name__)
 

@@ -1,15 +1,16 @@
 """"Encapsulate details about the database structure."""
 from collections import namedtuple
 from urlparse import urlparse
-from flask import request
 
+from flask import request
 from psycopg2._range import DateTimeTZRange
 from psycopg2.extensions import adapt as psyco_adapt, ISQLQuote
 from psycopg2.extensions import register_adapter as psyco_register_adapter
-from contentstore import content_store
+
+from .contentstore import content_store
+from .custom_exceptions import BadRequestException
 
 from oio_common.db_structure import REAL_DB_STRUCTURE as db_struct
-from custom_exceptions import BadRequestException
 
 _attribute_fields = {}
 

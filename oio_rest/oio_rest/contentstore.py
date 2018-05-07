@@ -6,7 +6,7 @@ import uuid
 import errno
 import time
 
-from settings import FILE_UPLOAD_FOLDER
+import settings
 
 
 def _mkdir_p(path):
@@ -36,7 +36,7 @@ class ContentStore:
         o = urlparse(url)
         if o.scheme != 'store':
             raise Exception("Content store supports only URL scheme 'store'")
-        return os.path.join(FILE_UPLOAD_FOLDER, o.path)
+        return os.path.join(settings.FILE_UPLOAD_FOLDER, o.path)
 
     def save_file_object(self, file_obj):
         """Save the file to the content store. Return the content URL.
@@ -46,7 +46,7 @@ class ContentStore:
         while True:
             file_name = self._get_new_file_name()
             sub_path = self._get_file_sub_path()
-            full_path = os.path.join(FILE_UPLOAD_FOLDER, sub_path)
+            full_path = os.path.join(settings.FILE_UPLOAD_FOLDER, sub_path)
             full_file_path = os.path.join(full_path, file_name)
             try:
                 os.stat(full_file_path)

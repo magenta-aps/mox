@@ -3,27 +3,25 @@ from enum import Enum
 from datetime import datetime, timedelta
 
 import psycopg2
-
 from psycopg2.extras import DateTimeTZRange
 from psycopg2.extensions import AsIs, QuotedString, adapt as psyco_adapt
-
 from jinja2 import Environment, FileSystemLoader
 from dateutil import parser as date_parser
 
-import settings
-
-from db_helpers import get_attribute_fields, get_attribute_names
-from db_helpers import get_field_type, get_state_names, get_relation_field_type
-from db_helpers import (Soegeord, OffentlighedUndtaget, JournalNotat,
+from .db_helpers import get_attribute_fields, get_attribute_names
+from .db_helpers import get_field_type, get_state_names, get_relation_field_type
+from .db_helpers import (Soegeord, OffentlighedUndtaget, JournalNotat,
                         JournalDokument, DokumentVariantType, AktoerAttr,
                         VaerdiRelationAttr)
 
-from authentication import get_authenticated_user
+from .authentication import get_authenticated_user
 
-from auth.restrictions import Operation, get_restrictions
-from utils.build_registration import restriction_to_registration
-from custom_exceptions import NotFoundException, NotAllowedException
-from custom_exceptions import DBException, BadRequestException
+from .auth.restrictions import Operation, get_restrictions
+from .utils.build_registration import restriction_to_registration
+from .custom_exceptions import NotFoundException, NotAllowedException
+from .custom_exceptions import DBException, BadRequestException
+
+import settings
 
 """
     Jinja2 Environment

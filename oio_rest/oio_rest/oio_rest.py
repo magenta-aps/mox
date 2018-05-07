@@ -5,18 +5,18 @@ import datetime
 
 import dateutil
 from flask import jsonify, request
-from custom_exceptions import BadRequestException, NotFoundException
-from custom_exceptions import GoneException
-
 from werkzeug.datastructures import ImmutableOrderedMultiDict
 
-import db
-from db_helpers import get_valid_search_parameters, TEMPORALITY_PARAMS
-from oio_common import db_structure
-from utils.build_registration import build_registration, to_lower_param
+from . import db
+from .db_helpers import get_valid_search_parameters, TEMPORALITY_PARAMS
+from .utils.build_registration import build_registration, to_lower_param
+from .custom_exceptions import BadRequestException, NotFoundException
+from .custom_exceptions import GoneException
 
 # Just a helper during debug
-from authentication import requires_auth
+from .authentication import requires_auth
+
+from oio_common import db_structure
 
 
 def j(t):

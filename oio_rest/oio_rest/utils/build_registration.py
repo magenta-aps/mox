@@ -2,11 +2,11 @@ import itertools
 import uuid
 from werkzeug.datastructures import MultiDict
 
-from db_helpers import get_attribute_names, get_attribute_fields
-from db_helpers import get_state_names, get_relation_names
-from db_helpers import get_document_part_relation_names
-from db_helpers import DokumentVariantEgenskaberType
-from db_helpers import DokumentDelEgenskaberType
+from .db_helpers import get_attribute_names, get_attribute_fields
+from .db_helpers import get_state_names, get_relation_names
+from .db_helpers import get_document_part_relation_names
+from .db_helpers import DokumentVariantEgenskaberType
+from .db_helpers import DokumentDelEgenskaberType
 
 
 def is_urn(s):
