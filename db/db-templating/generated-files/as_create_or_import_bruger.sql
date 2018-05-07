@@ -24,6 +24,8 @@ DECLARE
   
   bruger_relationer BrugerRelationType;
   auth_filtered_uuids uuid[];
+  does_exist boolean;
+  new_bruger_registrering bruger_registrering;
 BEGIN
 
 IF bruger_uuid IS NULL THEN
@@ -35,42 +37,57 @@ END IF;
 
 
 IF EXISTS (SELECT id from bruger WHERE id=bruger_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing bruger with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_bruger (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',bruger_uuid USING ERRCODE='MO500';
+    does_exist = True;
+ELSE
+
+    does_exist = False;
 END IF;
 
-IF  (bruger_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (bruger_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
+IF  (bruger_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (bruger_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (bruger_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
   RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_bruger.',(bruger_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
+IF NOT does_exist THEN
 
-INSERT INTO 
-      bruger (ID)
-SELECT
-      bruger_uuid
-;
+    INSERT INTO
+          bruger (ID)
+    SELECT
+          bruger_uuid;
+END IF;
 
 
 /*********************************/
 --Insert new registrering
 
-bruger_registrering_id:=nextval('bruger_registrering_id_seq');
+IF NOT does_exist THEN
+    bruger_registrering_id:=nextval('bruger_registrering_id_seq');
 
-INSERT INTO bruger_registrering (
-      id,
-        bruger_id,
+    INSERT INTO bruger_registrering (
+          id,
+          bruger_id,
           registrering
         )
-SELECT
-      bruger_registrering_id,
-        bruger_uuid,
-          ROW (
-            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-            (bruger_registrering.registrering).livscykluskode,
-            (bruger_registrering.registrering).brugerref,
-            (bruger_registrering.registrering).note
-              ):: RegistreringBase
-;
+    SELECT
+          bruger_registrering_id,
+           bruger_uuid,
+           ROW (
+             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+             (bruger_registrering.registrering).livscykluskode,
+             (bruger_registrering.registrering).brugerref,
+             (bruger_registrering.registrering).note
+               ):: RegistreringBase ;
+ELSE
+    -- This is an update, not an import or create
+        new_bruger_registrering := _as_create_bruger_registrering(
+             bruger_uuid,
+             (bruger_registrering.registrering).livscykluskode,
+             (bruger_registrering.registrering).brugerref,
+             (bruger_registrering.registrering).note);
+
+        bruger_registrering_id := new_bruger_registrering.id;
+END IF;
+
 
 /*********************************/
 --Insert attributes

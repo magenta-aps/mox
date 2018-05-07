@@ -77,13 +77,13 @@ else
 fi
 
 # Update the document
-curl -k -sH "Content-Type: application/json" -X PUT -d "$(cat $DIR/test_data/dokument_opdater.json)" $HOST_URL/dokument/dokument/$uuid
+curl -k -sH "Content-Type: application/json" -X PATCH -d "$(cat $DIR/test_data/dokument_opdater.json)" $HOST_URL/dokument/dokument/$uuid
 
 curl -k -sH "Content-Type: application/json" -X GET $HOST_URL/dokument/dokument?uuid=$uuid > /tmp/listoutput
 
 
 # Try updating, while uploading a new file
-curl -k -X PUT \
+curl -k -X PATCH \
     -F "json=$(cat $DIR/test_data/dokument_opdater2.json)" \
     -F "del_indhold1_opdateret=@$DIR/test_data/test2.txt" \
     $HOST_URL/dokument/dokument/$uuid
@@ -118,7 +118,7 @@ else
 fi
 
 # Passivate
-curl -k -sH "Content-Type: application/json" -X PUT -d "$(cat $DIR/test_data/facet_passiv.json)" $HOST_URL/dokument/dokument/$uuid
+curl -k -sH "Content-Type: application/json" -X PATCH -d "$(cat $DIR/test_data/facet_passiv.json)" $HOST_URL/dokument/dokument/$uuid
 
 # Delete
 curl -k -sH "Content-Type: application/json" -X DELETE -d "$(cat $DIR/test_data/dokument_slet.json)" $HOST_URL/dokument/dokument/$uuid

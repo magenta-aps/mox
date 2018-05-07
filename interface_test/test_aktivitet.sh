@@ -41,7 +41,7 @@ echo "Done."
 # Update the facet
 
 # echo "UPDATE"
-curl -k -sH "Content-Type: application/json"  -X PUT -d "$(cat $DIR/test_data/aktivitet_opdater.json)" $HOST_URL/aktivitet/aktivitet/$uuid
+curl -k -sH "Content-Type: application/json"  -X PATCH -d "$(cat $DIR/test_data/aktivitet_opdater.json)" $HOST_URL/aktivitet/aktivitet/$uuid
 
 # Passivate the facet. 
 

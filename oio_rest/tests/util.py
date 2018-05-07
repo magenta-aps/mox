@@ -286,6 +286,13 @@ class TestCaseMixin(object):
 
         return r.json['uuid']
 
+    def patch(self, path, json):
+        r = self._perform_request(path, json=json, method="PATCH")
+        self.assertLess(r.status_code, 300)
+        self.assertGreaterEqual(r.status_code, 200)
+
+        return r.json['uuid']
+
     def post(self, path, json):
         r = self._perform_request(path, json=json, method="POST")
         self.assertLess(r.status_code, 300)

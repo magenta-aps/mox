@@ -31,6 +31,8 @@ DECLARE
   aktivitet_rel_type_cardinality_unlimited aktivitetRelationKode[]:=ARRAY['udfoererklasse'::AktivitetRelationKode,'deltagerklasse'::AktivitetRelationKode,'objektklasse'::AktivitetRelationKode,'resultatklasse'::AktivitetRelationKode,'grundlagklasse'::AktivitetRelationKode,'facilitetklasse'::AktivitetRelationKode,'adresse'::AktivitetRelationKode,'geoobjekt'::AktivitetRelationKode,'position'::AktivitetRelationKode,'facilitet'::AktivitetRelationKode,'lokale'::AktivitetRelationKode,'aktivitetdokument'::AktivitetRelationKode,'aktivitetgrundlag'::AktivitetRelationKode,'aktivitetresultat'::AktivitetRelationKode,'udfoerer'::AktivitetRelationKode,'deltager'::AktivitetRelationKode]::aktivitetRelationKode[];
   aktivitet_rel_type_cardinality_unlimited_present_in_argument aktivitetRelationKode[];
 
+  does_exist boolean;
+  new_aktivitet_registrering aktivitet_registrering;
 BEGIN
 
 IF aktivitet_uuid IS NULL THEN
@@ -42,42 +44,57 @@ END IF;
 
 
 IF EXISTS (SELECT id from aktivitet WHERE id=aktivitet_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing aktivitet with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_aktivitet (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',aktivitet_uuid USING ERRCODE='MO500';
+    does_exist = True;
+ELSE
+
+    does_exist = False;
 END IF;
 
-IF  (aktivitet_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (aktivitet_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
+IF  (aktivitet_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (aktivitet_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (aktivitet_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
   RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_aktivitet.',(aktivitet_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
+IF NOT does_exist THEN
 
-INSERT INTO 
-      aktivitet (ID)
-SELECT
-      aktivitet_uuid
-;
+    INSERT INTO
+          aktivitet (ID)
+    SELECT
+          aktivitet_uuid;
+END IF;
 
 
 /*********************************/
 --Insert new registrering
 
-aktivitet_registrering_id:=nextval('aktivitet_registrering_id_seq');
+IF NOT does_exist THEN
+    aktivitet_registrering_id:=nextval('aktivitet_registrering_id_seq');
 
-INSERT INTO aktivitet_registrering (
-      id,
-        aktivitet_id,
+    INSERT INTO aktivitet_registrering (
+          id,
+          aktivitet_id,
           registrering
         )
-SELECT
-      aktivitet_registrering_id,
-        aktivitet_uuid,
-          ROW (
-            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-            (aktivitet_registrering.registrering).livscykluskode,
-            (aktivitet_registrering.registrering).brugerref,
-            (aktivitet_registrering.registrering).note
-              ):: RegistreringBase
-;
+    SELECT
+          aktivitet_registrering_id,
+           aktivitet_uuid,
+           ROW (
+             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+             (aktivitet_registrering.registrering).livscykluskode,
+             (aktivitet_registrering.registrering).brugerref,
+             (aktivitet_registrering.registrering).note
+               ):: RegistreringBase ;
+ELSE
+    -- This is an update, not an import or create
+        new_aktivitet_registrering := _as_create_aktivitet_registrering(
+             aktivitet_uuid,
+             (aktivitet_registrering.registrering).livscykluskode,
+             (aktivitet_registrering.registrering).brugerref,
+             (aktivitet_registrering.registrering).note);
+
+        aktivitet_registrering_id := new_aktivitet_registrering.id;
+END IF;
+
 
 /*********************************/
 --Insert attributes

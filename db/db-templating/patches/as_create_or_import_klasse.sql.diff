@@ -1,5 +1,5 @@
-*** ../generated-files/as_create_or_import_klasse.sql	2015-08-14 12:57:17.317564263 +0200
---- as_create_or_import_klasse.org.sql	2015-08-14 12:58:29.657567865 +0200
+*** ./patches/as_create_or_import_klasse.org.sql	2018-04-12 07:19:51.247795279 +0000
+--- generated-files/as_create_or_import_klasse.sql	2018-04-12 07:35:56.906639110 +0000
 ***************
 *** 4,14 ****
   -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -36,104 +36,74 @@
 +   klasse_attr_egenskaber_id bigint;
 +   klasse_attr_egenskaber_soegeord_obj KlasseSoegeordType;
     auth_filtered_uuids uuid[];
+    does_exist boolean;
+    new_klasse_registrering klasse_registrering;
+    prev_klasse_registrering klasse_registrering;
   BEGIN
-  
-  IF klasse_uuid IS NULL THEN
-      LOOP
 ***************
-*** 89,122 ****
+*** 107,117 ****
+--- 109,121 ----
   
   IF klasse_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(klasse_registrering.attrEgenskaber,1),0)>0 THEN
     FOREACH klasse_attr_egenskaber_obj IN ARRAY klasse_registrering.attrEgenskaber
     LOOP
   
-!     INSERT INTO klasse_attr_egenskaber (
-!       brugervendtnoegle,
-!       beskrivelse,
-!       eksempel,
-!       omfang,
-!       titel,
-!       retskilde,
-!       aendringsnotat,
-!       virkning,
-!       klasse_registrering_id
-!     )
-!     SELECT
-!      klasse_attr_egenskaber_obj.brugervendtnoegle,
-!       klasse_attr_egenskaber_obj.beskrivelse,
-!       klasse_attr_egenskaber_obj.eksempel,
-!       klasse_attr_egenskaber_obj.omfang,
-!       klasse_attr_egenskaber_obj.titel,
-!       klasse_attr_egenskaber_obj.retskilde,
-!       klasse_attr_egenskaber_obj.aendringsnotat,
-!       klasse_attr_egenskaber_obj.virkning,
-!       klasse_registrering_id
-!     ;
-!  
++   klasse_attr_egenskaber_id:=nextval('klasse_attr_egenskaber_id_seq');
+      INSERT INTO klasse_attr_egenskaber (
++       id,
+        brugervendtnoegle,
+        beskrivelse,
+        eksempel,
+        omfang,
+        titel,
+***************
+*** 119,128 ****
+--- 123,133 ----
+        aendringsnotat,
+        virkning,
+        klasse_registrering_id
+      )
+      SELECT
++      klasse_attr_egenskaber_id,
+       klasse_attr_egenskaber_obj.brugervendtnoegle,
+        klasse_attr_egenskaber_obj.beskrivelse,
+        klasse_attr_egenskaber_obj.eksempel,
+        klasse_attr_egenskaber_obj.omfang,
+        klasse_attr_egenskaber_obj.titel,
+***************
+*** 131,140 ****
+--- 136,171 ----
+        klasse_attr_egenskaber_obj.virkning,
+        klasse_registrering_id
+      ;
+   
   
-    END LOOP;
-  END IF;
-  
-  /*********************************/
-  --Insert states (tilstande)
---- 91,152 ----
-  
-  IF klasse_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(klasse_registrering.attrEgenskaber,1),0)>0 THEN
-    FOREACH klasse_attr_egenskaber_obj IN ARRAY klasse_registrering.attrEgenskaber
-    LOOP
-  
-! klasse_attr_egenskaber_id:=nextval('klasse_attr_egenskaber_id_seq');
-!   INSERT INTO klasse_attr_egenskaber (
-!     id,
-!     brugervendtnoegle,
-!     beskrivelse,
-!     eksempel,
-!     omfang,
-!     titel,
-!     retskilde,
-!     aendringsnotat,
-!     virkning,
-!     klasse_registrering_id
-!   )
-!   SELECT
-!     klasse_attr_egenskaber_id,
-!    klasse_attr_egenskaber_obj.brugervendtnoegle,
-!     klasse_attr_egenskaber_obj.beskrivelse,
-!     klasse_attr_egenskaber_obj.eksempel,
-!     klasse_attr_egenskaber_obj.omfang,
-!     klasse_attr_egenskaber_obj.titel,
-!     klasse_attr_egenskaber_obj.retskilde,
-!     klasse_attr_egenskaber_obj.aendringsnotat,
-!     klasse_attr_egenskaber_obj.virkning,
-!     klasse_registrering_id
-!   ;
-! 
-! /************/
-! --Insert Soegeord
-!   IF klasse_attr_egenskaber_obj.soegeord IS NOT NULL AND coalesce(array_length(klasse_attr_egenskaber_obj.soegeord,1),0)>1  THEN
-!     FOREACH klasse_attr_egenskaber_soegeord_obj IN ARRAY klasse_attr_egenskaber_obj.soegeord
-!       LOOP
-! 
-!       IF (klasse_attr_egenskaber_soegeord_obj.soegeordidentifikator IS NOT NULL AND klasse_attr_egenskaber_soegeord_obj.soegeordidentifikator<>'') 
-!       OR (klasse_attr_egenskaber_soegeord_obj.beskrivelse IS NOT NULL AND klasse_attr_egenskaber_soegeord_obj.beskrivelse<>'' )
-!       OR (klasse_attr_egenskaber_soegeord_obj.soegeordskategori IS NOT NULL AND klasse_attr_egenskaber_soegeord_obj.soegeordskategori<>'') THEN
-! 
-!       INSERT INTO klasse_attr_egenskaber_soegeord (
-!         soegeordidentifikator,
-!         beskrivelse,
-!         soegeordskategori,
-!         klasse_attr_egenskaber_id
-!       )
-!       SELECT
-!         klasse_attr_egenskaber_soegeord_obj.soegeordidentifikator,
-!         klasse_attr_egenskaber_soegeord_obj.beskrivelse,
-!         klasse_attr_egenskaber_soegeord_obj.soegeordskategori,
-!         klasse_attr_egenskaber_id
-!       ;
-!       END IF;
-  
-+      END LOOP;
-+     END IF;
++  /************/
++  --Insert Soegeord
++    IF klasse_attr_egenskaber_obj.soegeord IS NOT NULL AND coalesce(array_length(klasse_attr_egenskaber_obj.soegeord,1),0)>1  THEN
++      FOREACH klasse_attr_egenskaber_soegeord_obj IN ARRAY klasse_attr_egenskaber_obj.soegeord
++        LOOP
++  
++        IF (klasse_attr_egenskaber_soegeord_obj.soegeordidentifikator IS NOT NULL AND klasse_attr_egenskaber_soegeord_obj.soegeordidentifikator<>'') 
++        OR (klasse_attr_egenskaber_soegeord_obj.beskrivelse IS NOT NULL AND klasse_attr_egenskaber_soegeord_obj.beskrivelse<>'' )
++        OR (klasse_attr_egenskaber_soegeord_obj.soegeordskategori IS NOT NULL AND klasse_attr_egenskaber_soegeord_obj.soegeordskategori<>'') THEN
++  
++        INSERT INTO klasse_attr_egenskaber_soegeord (
++          soegeordidentifikator,
++          beskrivelse,
++          soegeordskategori,
++          klasse_attr_egenskaber_id
++        )
++        SELECT
++          klasse_attr_egenskaber_soegeord_obj.soegeordidentifikator,
++          klasse_attr_egenskaber_soegeord_obj.beskrivelse,
++          klasse_attr_egenskaber_soegeord_obj.soegeordskategori,
++          klasse_attr_egenskaber_id
++        ;
++        END IF;
++   
++       END LOOP;
++      END IF;
     END LOOP;
   END IF;
   

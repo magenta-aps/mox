@@ -24,6 +24,8 @@ DECLARE
   
   facet_relationer FacetRelationType;
   auth_filtered_uuids uuid[];
+  does_exist boolean;
+  new_facet_registrering facet_registrering;
 BEGIN
 
 IF facet_uuid IS NULL THEN
@@ -35,42 +37,57 @@ END IF;
 
 
 IF EXISTS (SELECT id from facet WHERE id=facet_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing facet with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_facet (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',facet_uuid USING ERRCODE='MO500';
+    does_exist = True;
+ELSE
+
+    does_exist = False;
 END IF;
 
-IF  (facet_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (facet_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
+IF  (facet_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (facet_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (facet_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
   RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_facet.',(facet_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
+IF NOT does_exist THEN
 
-INSERT INTO 
-      facet (ID)
-SELECT
-      facet_uuid
-;
+    INSERT INTO
+          facet (ID)
+    SELECT
+          facet_uuid;
+END IF;
 
 
 /*********************************/
 --Insert new registrering
 
-facet_registrering_id:=nextval('facet_registrering_id_seq');
+IF NOT does_exist THEN
+    facet_registrering_id:=nextval('facet_registrering_id_seq');
 
-INSERT INTO facet_registrering (
-      id,
-        facet_id,
+    INSERT INTO facet_registrering (
+          id,
+          facet_id,
           registrering
         )
-SELECT
-      facet_registrering_id,
-        facet_uuid,
-          ROW (
-            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-            (facet_registrering.registrering).livscykluskode,
-            (facet_registrering.registrering).brugerref,
-            (facet_registrering.registrering).note
-              ):: RegistreringBase
-;
+    SELECT
+          facet_registrering_id,
+           facet_uuid,
+           ROW (
+             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+             (facet_registrering.registrering).livscykluskode,
+             (facet_registrering.registrering).brugerref,
+             (facet_registrering.registrering).note
+               ):: RegistreringBase ;
+ELSE
+    -- This is an update, not an import or create
+        new_facet_registrering := _as_create_facet_registrering(
+             facet_uuid,
+             (facet_registrering.registrering).livscykluskode,
+             (facet_registrering.registrering).brugerref,
+             (facet_registrering.registrering).note);
+
+        facet_registrering_id := new_facet_registrering.id;
+END IF;
+
 
 /*********************************/
 --Insert attributes
