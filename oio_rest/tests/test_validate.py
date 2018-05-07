@@ -191,9 +191,84 @@ class TestGenerateJSONSchema(unittest.TestCase):
             validate._generate_relationer('klassifikation')
         )
 
-    def test_relationer_tilstand(self):
-        self.relation_nul_til_en['items']['properties']['indeks'] = {
+    def test_relationer_aktivitet(self):
+        aktoerattr = {
+            'aktoerattr': {
+                'type': 'object',
+                'properties': {
+                    'accepteret': {'type': 'string'},
+                    'obligatorisk': {'type': 'string'},
+                    'repraesentation_uuid': {
+                        'type': 'string',
+                        'pattern': '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-'
+                                   '[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-'
+                                   '[a-fA-F0-9]{12}$'
+                    },
+                },
+                'required': ['accepteret', 'obligatorisk',
+                             'repraesentation_uuid'],
+                'additionalProperties': False
+            }
+        }
+        self.relation_nul_til_en['items']['properties'].update(
+            copy.deepcopy(aktoerattr))
+        aktoerattr['indeks'] = {'type': 'integer'}
+        self.relation_nul_til_mange['items']['properties'].update(aktoerattr)
+
+        self.assertEqual(
+            {
+                'type': 'object',
+                'properties': {
+                    'aktivitetstype': self.relation_nul_til_en,
+                    'emne': self.relation_nul_til_en,
+                    'foelsomhedklasse': self.relation_nul_til_en,
+                    'ansvarligklasse': self.relation_nul_til_en,
+                    'rekvirentklasse': self.relation_nul_til_en,
+                    'ansvarlig': self.relation_nul_til_en,
+                    'tilhoerer': self.relation_nul_til_en,
+                    'udfoererklasse': self.relation_nul_til_mange,
+                    'deltagerklasse': self.relation_nul_til_mange,
+                    'objektklasse': self.relation_nul_til_mange,
+                    'resultatklasse': self.relation_nul_til_mange,
+                    'grundlagklasse': self.relation_nul_til_mange,
+                    'facilitetklasse': self.relation_nul_til_mange,
+                    'adresse': self.relation_nul_til_mange,
+                    'geoobjekt': self.relation_nul_til_mange,
+                    'position': self.relation_nul_til_mange,
+                    'facilitet': self.relation_nul_til_mange,
+                    'lokale': self.relation_nul_til_mange,
+                    'aktivitetdokument': self.relation_nul_til_mange,
+                    'aktivitetgrundlag': self.relation_nul_til_mange,
+                    'aktivitetresultat': self.relation_nul_til_mange,
+                    'udfoerer': self.relation_nul_til_mange,
+                    'deltager': self.relation_nul_til_mange,
+                },
+                'additionalProperties': False
+            },
+            validate._generate_relationer('aktivitet')
+        )
+
+    def test_relationer_indsats(self):
+        self.relation_nul_til_mange['items']['properties']['indeks'] = {
             'type': 'integer'}
+        self.assertEqual(
+            {
+                'type': 'object',
+                'properties': {
+                    'indsatsmodtager': self.relation_nul_til_en,
+                    'indsatstype': self.relation_nul_til_en,
+                    'indsatskvalitet': self.relation_nul_til_mange,
+                    'indsatsaktoer': self.relation_nul_til_mange,
+                    'samtykke': self.relation_nul_til_mange,
+                    'indsatssag': self.relation_nul_til_mange,
+                    'indsatsdokument': self.relation_nul_til_mange,
+                },
+                'additionalProperties': False
+            },
+            validate._generate_relationer('indsats')
+        )
+
+    def test_relationer_tilstand(self):
         self.relation_nul_til_mange['items']['properties']['indeks'] = {
             'type': 'integer'}
         self.assertEqual(

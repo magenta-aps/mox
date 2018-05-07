@@ -89,8 +89,7 @@ def _get_metadata(obj, metadata_type, key):
     Get the metadata for a given attribute
     :param obj: The type of LoRa object, i.e. 'bruger', 'organisation' etc.
     :param metadata_type: Must be either 'attributter' or 'relationer'
-    :param key: The attribute to get the metadata from,
-    e.g. 'egenskaber'
+    :param key: The attribute to get the metadata from, e.g. 'egenskaber'
     :return: Dictionary containing the metadata for the attribute fields
     """
     metadata = db.REAL_DB_STRUCTURE[obj].get(
@@ -282,6 +281,7 @@ def _generate_relationer(obj):
     }
 
     relation_nul_til_en = copy.deepcopy(relation_nul_til_mange)
+    relation_nul_til_en['items']['properties'].pop('indeks', None)
     relation_nul_til_en['maxItems'] = 1
 
     for relation in relationer_nul_til_en:
@@ -410,8 +410,8 @@ def validate(input_json):
     """
     Validate request JSON according to JSON schema.
     :param input_json: The request JSON
-    :raise ValidationError: If the request JSON is not valid according to the
-    JSON schema.
+    :raise jsonschema.exceptions.ValidationError: If the request JSON is not
+    valid according to the JSON schema.
     """
     obj_type = get_lora_object_type(input_json)
     jsonschema.validate(input_json, SCHEMA[obj_type])
