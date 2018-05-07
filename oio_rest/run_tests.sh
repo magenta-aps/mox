@@ -26,6 +26,7 @@ export MOX_AMQP_VHOST="/"
 
 # Install common lib & oio_rest
 $PYTHON -m pip install -e .
+$PYTHON -m pip install -e ../oio_common
 
 # Execute tests
 $PYTHON -m pip install -r requirements-test.txt
