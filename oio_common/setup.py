@@ -15,7 +15,7 @@ setup(
     author="Steffen Park",
     author_email="steffen@magenta.dk",
     license="MPL 2.0",
-    packages=['oio_rest_lib'],
+    packages=['oio_common'],
     zip_safe=False,
     install_requires=[]
 )
