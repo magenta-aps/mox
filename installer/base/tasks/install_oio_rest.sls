@@ -9,15 +9,8 @@ install_oio_rest_requirements:
     - name: {{ config.virtualenv }}
     - system_site_packages: False
     - user: {{ config.user }}
-    - requirements: {{ config.base_dir }}/oio_rest/requirements.txt
-
-
-install_gunicorn:
-  virtualenv.managed:
-    - name: {{ config.virtualenv }}
-    - system_site_packages: False
-    - user: {{ config.user }}
     - pip_pkgs:
+      - {{ config.base_dir }}/oio_rest
       - gunicorn
 
 
