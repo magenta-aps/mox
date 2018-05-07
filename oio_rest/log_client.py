@@ -2,7 +2,6 @@ import pika
 import json
 
 import settings
-from settings import AUDIT_LOG_FILE
 
 
 def log_service_call(service_name, class_name, time,
@@ -87,7 +86,7 @@ def log_service_call(service_name, class_name, time,
 
     message = json.dumps(logevent_dict)
     # print "Log exchange", LOG_EXCHANGE
-    with open(AUDIT_LOG_FILE, 'at') as fp:
+    with open(settings.AUDIT_LOG_FILE, 'at') as fp:
         json.dump(logevent_dict, fp, indent=2)
         fp.write('\n')
         fp.flush()
