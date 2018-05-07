@@ -66,7 +66,7 @@ class TestDB(unittest.TestCase):
 
     @patch('oio_rest.db.get_relation_field_type')
     def test_convert_relation_value_journalnotat(self, mock_get_rel):
-        from db_helpers import JournalNotat
+        from oio_rest.db_helpers import JournalNotat
 
         # Arrange
         mock_get_rel.return_value = "journalnotat"
@@ -86,7 +86,7 @@ class TestDB(unittest.TestCase):
 
     @patch('oio_rest.db.get_relation_field_type')
     def test_convert_relation_value_journaldokument(self, mock_get_rel):
-        from db_helpers import JournalDokument, OffentlighedUndtaget
+        from oio_rest.db_helpers import JournalDokument, OffentlighedUndtaget
 
         # Arrange
         mock_get_rel.return_value = "journaldokument"
@@ -115,7 +115,7 @@ class TestDB(unittest.TestCase):
 
     @patch('oio_rest.db.get_relation_field_type')
     def test_convert_relation_value_aktoerattr(self, mock_get_rel):
-        from db_helpers import AktoerAttr
+        from oio_rest.db_helpers import AktoerAttr
 
         # Arrange
         mock_get_rel.return_value = "aktoerattr"
@@ -158,7 +158,7 @@ class TestDB(unittest.TestCase):
 
     @patch('oio_rest.db.get_relation_field_type')
     def test_convert_relation_value_vaerdirelationattr(self, mock_get_rel):
-        from db_helpers import VaerdiRelationAttr
+        from oio_rest.db_helpers import VaerdiRelationAttr
 
         # Arrange
         mock_get_rel.return_value = "vaerdirelationattr"
@@ -436,7 +436,7 @@ class TestDB(unittest.TestCase):
     def test_convert_attr_value_soegeord(self,
                                          mock_get_field_type):
         # type: (MagicMock) -> None
-        from db_helpers import Soegeord
+        from oio_rest.db_helpers import Soegeord
 
         # Arrange
         mock_get_field_type.return_value = "soegeord"
@@ -459,7 +459,7 @@ class TestDB(unittest.TestCase):
     def test_convert_attr_value_offentlighedundtagettype(self,
                                                          mock_get_field_type):
         # type: (MagicMock) -> None
-        from db_helpers import OffentlighedUndtaget
+        from oio_rest.db_helpers import OffentlighedUndtaget
 
         # Arrange
         mock_get_field_type.return_value = "offentlighedundtagettype"

@@ -65,7 +65,7 @@ class TestAssertionVerification(util.TestCase):
     @patch('settings.SAML_USER_ID_ATTIBUTE',
            "http://schemas.xmlsoap.org/ws/2005/05/"
            "identity/claims/privatepersonalidentifier")
-    @patch('authentication.__IDP_CERT',
+    @patch('oio_rest.authentication.__IDP_CERT',
            util.get_fixture('adfs-cert.pem'))
     def test_adfs(self):
         def check(expected, status_code):
@@ -120,7 +120,7 @@ class TestAssertionVerification(util.TestCase):
 
             # and we MUST verify the certificate!!!
 
-            with patch('authentication.__IDP_CERT',
+            with patch('oio_rest.authentication.__IDP_CERT',
                        util.get_fixture('idp-certificate.pem')):
                 check(
                     {

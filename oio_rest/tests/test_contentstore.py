@@ -26,7 +26,7 @@ class TestContentStore(TestCase):
                           return_value='testfile.bin'), \
                 patch.object(cs, '_get_file_sub_path',
                              return_value='sub/path/'), \
-                patch('contentstore.FILE_UPLOAD_FOLDER',
+                patch('oio_rest.contentstore.FILE_UPLOAD_FOLDER',
                       new='/test/'):
             actual_result = cs.save_file_object(mockfile)
 

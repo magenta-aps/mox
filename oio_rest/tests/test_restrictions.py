@@ -6,7 +6,7 @@ from oio_rest.auth import restrictions
 
 
 class TestRestrictions(TestCase):
-    @patch('auth.restrictions.DO_ENABLE_RESTRICTIONS', new=False)
+    @patch('oio_rest.auth.restrictions.DO_ENABLE_RESTRICTIONS', new=False)
     def test_get_restrictions_disabled(self):
         # Arrange
         # Act

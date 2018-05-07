@@ -268,7 +268,7 @@ class TestDBHelpers(TestCase):
         self.assertEqual(expected_result, actual_result)
 
     def test_get_state_names(self):
-        with patch('db_helpers.db_struct', new={
+        with patch('oio_rest.db_helpers.db_struct', new={
             'testclass1': {
                 'tilstande': {
                     'testtilstand1': [
@@ -813,7 +813,7 @@ class TestDBHelpers(TestCase):
             db_helpers.to_bool("This is not a valid boolean value")
 
     def test_dokumentvarianttype_input_when_none(self):
-        from db_helpers import DokumentVariantType
+        from oio_rest.db_helpers import DokumentVariantType
 
         # Arrange
         expected_result = None
@@ -825,7 +825,7 @@ class TestDBHelpers(TestCase):
         self.assertEqual(expected_result, actual_result)
 
     def test_dokumentvariantegenskabertype_input_when_none(self):
-        from db_helpers import DokumentVariantEgenskaberType
+        from oio_rest.db_helpers import DokumentVariantEgenskaberType
 
         # Arrange
         expected_result = None
@@ -837,7 +837,7 @@ class TestDBHelpers(TestCase):
         self.assertEqual(expected_result, actual_result)
 
     def test_dokumentdeltype_input_when_none(self):
-        from db_helpers import DokumentDelType
+        from oio_rest.db_helpers import DokumentDelType
 
         # Arrange
         expected_result = None
@@ -849,7 +849,7 @@ class TestDBHelpers(TestCase):
         self.assertEqual(expected_result, actual_result)
 
     def test_virkning_input_when_none(self):
-        from db_helpers import Virkning
+        from oio_rest.db_helpers import Virkning
 
         # Arrange
         expected_result = None
@@ -861,7 +861,7 @@ class TestDBHelpers(TestCase):
         self.assertEqual(expected_result, actual_result)
 
     def test_dokumentdelegenskabertype_get_file_storage_raises_bre(self):
-        from db_helpers import DokumentDelEgenskaberType
+        from oio_rest.db_helpers import DokumentDelEgenskaberType
         import flask
 
         # Arrange
@@ -874,7 +874,7 @@ class TestDBHelpers(TestCase):
                 'field:not_in_request')
 
     def test_dokumentdelegenskabertype_get_file_storage(self):
-        from db_helpers import DokumentDelEgenskaberType
+        from oio_rest.db_helpers import DokumentDelEgenskaberType
         import flask
         from flask import request
 
@@ -893,7 +893,7 @@ class TestDBHelpers(TestCase):
         self.assertEqual(mockfile, actual_result)
 
     def test_dokumentdelegenskabertype_get_file_storage_returns_none(self):
-        from db_helpers import DokumentDelEgenskaberType
+        from oio_rest.db_helpers import DokumentDelEgenskaberType
 
         # Arrange
 
@@ -910,7 +910,7 @@ class TestDBHelpers(TestCase):
     def test_dokumentdelegenskabertype_input_update_file(self, mock_save_file,
                                                          mock_get_file):
         # type: (MagicMock, MagicMock) -> None
-        from db_helpers import DokumentDelEgenskaberType
+        from oio_rest.db_helpers import DokumentDelEgenskaberType
         import flask
 
         # Arrange
@@ -931,7 +931,7 @@ class TestDBHelpers(TestCase):
         mock_save_file.assert_called_with(mockfile)
 
     def test_dokumentdelegenskabertype_input_when_none(self):
-        from db_helpers import DokumentDelEgenskaberType
+        from oio_rest.db_helpers import DokumentDelEgenskaberType
 
         # Arrange
         expected_result = None
@@ -943,7 +943,7 @@ class TestDBHelpers(TestCase):
         self.assertEqual(expected_result, actual_result)
 
     def test_dokumentdelrelationtype_input_when_none(self):
-        from db_helpers import DokumentDelRelationType
+        from oio_rest.db_helpers import DokumentDelRelationType
 
         # Arrange
         expected_result = None
@@ -956,7 +956,7 @@ class TestDBHelpers(TestCase):
 
 
 class TestNamedTupleAdapter(TestCase):
-    from db_helpers import NamedTupleAdapter
+    from oio_rest.db_helpers import NamedTupleAdapter
 
     class TestClass(NamedTupleAdapter):
         pass
@@ -1000,7 +1000,7 @@ class TestNamedTupleAdapter(TestCase):
 
 
 class TestAktoerAttrAdapter(TestCase):
-    from db_helpers import AktoerAttrAdapter
+    from oio_rest.db_helpers import AktoerAttrAdapter
 
     class TestClass(AktoerAttrAdapter):
         pass
@@ -1032,7 +1032,7 @@ class TestAktoerAttrAdapter(TestCase):
 
 
 class TestSearchable(TestCase):
-    from db_helpers import Searchable
+    from oio_rest.db_helpers import Searchable
 
     class TestSearchableClass(Searchable):
         _fields = ()

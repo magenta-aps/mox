@@ -309,8 +309,8 @@ class TestOIORestObject(TestCase):
             self.testclass.get_fields()
 
     @freezegun.freeze_time('2017-01-01', tz_offset=1)
-    @patch('db.list_objects')
-    @patch('db_helpers.db_struct', new=db_struct)
+    @patch('oio_rest.db.list_objects')
+    @patch('oio_rest.db_helpers.db_struct', new=db_struct)
     def test_get_objects_list_uses_default_params(self,
                                                   mock_list):
         # Arrange
@@ -338,8 +338,8 @@ class TestOIORestObject(TestCase):
         self.assertEqual(expected_args, actual_args)
         self.assertDictEqual(expected_result, actual_result)
 
-    @patch('db.list_objects')
-    @patch('db_helpers.db_struct', new=db_struct)
+    @patch('oio_rest.db.list_objects')
+    @patch('oio_rest.db_helpers.db_struct', new=db_struct)
     def test_get_objects_list_uses_supplied_params(self, mock):
         # Arrange
         data = ["1", "2", "3"]
@@ -380,8 +380,8 @@ class TestOIORestObject(TestCase):
         self.assertEqual(expected_args, actual_args)
         self.assertDictEqual(expected_result, actual_result)
 
-    @patch('db.list_objects')
-    @patch('db_helpers.db_struct', new=db_struct)
+    @patch('oio_rest.db.list_objects')
+    @patch('oio_rest.db_helpers.db_struct', new=db_struct)
     def test_get_objects_returns_empty_list_on_no_results(self, mock):
         # Arrange
 
@@ -397,9 +397,9 @@ class TestOIORestObject(TestCase):
         self.assertDictEqual(expected_result, actual_result)
 
     @freezegun.freeze_time('2017-01-01', tz_offset=1)
-    @patch('db_helpers.db_struct', new=db_struct)
-    @patch('oio_rest.build_registration')
-    @patch('db.search_objects')
+    @patch('oio_rest.db_helpers.db_struct', new=db_struct)
+    @patch('oio_rest.oio_rest.build_registration')
+    @patch('oio_rest.db.search_objects')
     def test_get_objects_search_uses_default_params(self, mock_search,
                                                     mock_br):
         # Arrange
@@ -437,9 +437,9 @@ class TestOIORestObject(TestCase):
         self.assertEqual(expected_args, actual_args)
         self.assertDictEqual(expected_result, actual_result)
 
-    @patch('db_helpers.db_struct', new=db_struct)
-    @patch('oio_rest.build_registration')
-    @patch('db.search_objects')
+    @patch('oio_rest.db_helpers.db_struct', new=db_struct)
+    @patch('oio_rest.oio_rest.build_registration')
+    @patch('oio_rest.db.search_objects')
     def test_get_objects_search_uses_supplied_params(self, mock_search,
                                                      mock_br):
         # Arrange
@@ -499,9 +499,9 @@ class TestOIORestObject(TestCase):
         self.assertEqual(expected_args, actual_args)
         self.assertDictEqual(expected_result, actual_result)
 
-    @patch('db_helpers.db_struct', new=db_struct)
-    @patch('oio_rest.build_registration')
-    @patch('db.search_objects')
+    @patch('oio_rest.db_helpers.db_struct', new=db_struct)
+    @patch('oio_rest.utils.build_registration')
+    @patch('oio_rest.db.search_objects')
     def test_get_objects_search_raises_exception_on_multi_uuid(
             self,
             mock_search,
@@ -527,8 +527,8 @@ class TestOIORestObject(TestCase):
                 self.assertRaises(BadRequestException):
             self.testclass.get_objects()
 
-    @patch('db_helpers.db_struct', new=db_struct)
-    @patch('db.search_objects')
+    @patch('oio_rest.db_helpers.db_struct', new=db_struct)
+    @patch('oio_rest.db.search_objects')
     def test_get_objects_search_raises_exception_on_unknown_args(self,
                                                                  mock_search):
         # Arrange
@@ -544,7 +544,7 @@ class TestOIORestObject(TestCase):
                 self.assertRaises(BadRequestException):
             self.testclass.get_objects()
 
-    @patch('db.list_objects')
+    @patch('oio_rest.db.list_objects')
     @freezegun.freeze_time('2017-01-01', tz_offset=1)
     def test_get_object_uses_default_params(self, mock_list):
         # Arrange
@@ -581,7 +581,7 @@ class TestOIORestObject(TestCase):
         self.assertEqual(expected_args, actual_args)
         self.assertEqual(expected_result, actual_result)
 
-    @patch('db.list_objects')
+    @patch('oio_rest.db.list_objects')
     def test_get_object_uses_supplied_params(self, mock):
         # Arrange
         data = [
@@ -629,7 +629,7 @@ class TestOIORestObject(TestCase):
         self.assertEqual(expected_args, actual_args)
         self.assertEqual(expected_result, actual_result)
 
-    @patch('db.list_objects')
+    @patch('oio_rest.db.list_objects')
     def test_get_object_raises_on_no_results(self, mock):
         # Arrange
         data = []
@@ -642,7 +642,7 @@ class TestOIORestObject(TestCase):
                 self.assertRaises(NotFoundException):
             self.testclass.get_object(uuid)
 
-    @patch('db.list_objects')
+    @patch('oio_rest.db.list_objects')
     def test_get_object_raises_on_deleted_object(self, mock_list):
         # Arrange
         data = [
@@ -663,8 +663,8 @@ class TestOIORestObject(TestCase):
                 self.assertRaises(GoneException):
             self.testclass.get_object(uuid)
 
-    @patch('db_helpers.db_struct', new=db_struct)
-    @patch('db.list_objects')
+    @patch('oio_rest.db_helpers.db_struct', new=db_struct)
+    @patch('oio_rest.db.list_objects')
     def test_get_object_raises_on_unknown_args(self, mock_list):
         # Arrange
         uuid = "4efbbbde-e197-47be-9d40-e08f1cd00259"
@@ -697,8 +697,8 @@ class TestOIORestObject(TestCase):
         self.assertDictEqual(expected_data, actual_data)
         self.assertEqual(400, actual_code)
 
-    @patch("db.object_exists")
-    @patch("db.create_or_import_object")
+    @patch("oio_rest.db.object_exists")
+    @patch("oio_rest.db.create_or_import_object")
     def test_put_object_create_if_not_exists(self, mock_create, mock_exists):
         # type: (MagicMock, MagicMock) -> None
         # Arrange
@@ -723,14 +723,14 @@ class TestOIORestObject(TestCase):
         self.assertEqual(200, actual_code)
 
 
-    @patch("db.get_life_cycle_code")
-    @patch("db.object_exists")
-    @patch("db.update_object")
+    @patch("oio_rest.db.get_life_cycle_code")
+    @patch("oio_rest.db.object_exists")
+    @patch("oio_rest.db.update_object")
     def test_patch_object_update_if_deleted_or_passive(self, mock_update,
                                                        mock_exists,
                                                        mock_life_cycle):
         # type: (MagicMock, MagicMock, MagicMock) -> None
-        from db import Livscyklus
+        from oio_rest.db import Livscyklus
 
         # Arrange
         uuid = "fa3c6c47-9594-48e3-918e-cb1208e0144c"
@@ -756,14 +756,14 @@ class TestOIORestObject(TestCase):
         self.assertEqual(200, actual_code)
 
 
-    @patch("db.get_life_cycle_code")
-    @patch("db.object_exists")
-    @patch("db.update_object")
+    @patch("oio_rest.db.get_life_cycle_code")
+    @patch("oio_rest.db.object_exists")
+    @patch("oio_rest.db.update_object")
     def test_patch_object_update_if_not_deleted_or_passive(self, mock_update,
                                                            mock_exists,
                                                            mock_life_cycle):
         # type: (MagicMock, MagicMock, MagicMock) -> None
-        from db import Livscyklus
+        from oio_rest.db import Livscyklus
 
         # Arrange
         uuid = "4b4be464-ace2-49d7-9589-04d279b0fe79"
@@ -788,14 +788,14 @@ class TestOIORestObject(TestCase):
         self.assertEqual(200, actual_code)
 
 
-    @patch("db.get_life_cycle_code")
-    @patch("db.object_exists")
-    @patch("db.passivate_object")
+    @patch("oio_rest.db.get_life_cycle_code")
+    @patch("oio_rest.db.object_exists")
+    @patch("oio_rest.db.passivate_object")
     def test_patch_object_passivate_if_livscyklus_passiv(self, mock_passivate,
                                                          mock_exists,
                                                          mock_life_cycle):
         # type: (MagicMock, MagicMock, MagicMock) -> None
-        from db import Livscyklus
+        from oio_rest.db import Livscyklus
 
         # Arrange
         uuid = "b1dfa53f-89a7-4277-8c3d-86703bf87a87"
@@ -833,7 +833,7 @@ class TestOIORestObject(TestCase):
                 self.assertRaises(BadRequestException):
             self.testclass.put_object(uuid)
 
-    @patch("db.delete_object")
+    @patch("oio_rest.db.delete_object")
     def test_delete_object_returns_expected_result_and_202(self, mock_delete):
         # type: (MagicMock) -> None
         # Arrange
@@ -853,7 +853,7 @@ class TestOIORestObject(TestCase):
         self.assertDictEqual(expected_data, actual_data)
         self.assertEqual(202, actual_code)
 
-    @patch("db.delete_object")
+    @patch("oio_rest.db.delete_object")
     def test_delete_object_called_with_empty_reg_and_uuid(self, mock_delete):
         # type: (MagicMock) -> None
         # Arrange
