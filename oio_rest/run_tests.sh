@@ -24,8 +24,8 @@ export MOX_AMQP_USER="guest"
 export MOX_AMQP_PASS="guest"
 export MOX_AMQP_VHOST="/"
 
-# Install common lib
-$PYTHON -m pip install -e ../lib/common
+# Install common lib & oio_rest
+$PYTHON -m pip install -e .
 
 # Execute tests
 $PYTHON -m pip install -r requirements-test.txt
