@@ -110,7 +110,7 @@ patch --fuzz=3 -i ../patches/as_search_tilstand.sql.diff
 
 cd ..
 
-oiotypes=$($PYTHON -m oio_rest_lib.db_structure)
+oiotypes=$($PYTHON -m oio_common.db_structure)
 
 templates1=( dbtyper-specific tbls-specific _remove_nulls_in_array )
 
