@@ -5,7 +5,7 @@ set -ex
 cd $(dirname $0)
 
 # Virtualenv / Python
-TEST_ENV=.python-test
+TEST_ENV=python-testenv
 PYTHON=${TEST_ENV}/bin/python
 
 # Create virtualenv
