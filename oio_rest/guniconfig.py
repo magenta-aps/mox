@@ -9,10 +9,10 @@ import os
 env = os.environ.get
 
 # Location of access log file
-accesslog = env("GUNICORN_ACCESS_LOG", "/tmp/oio_access.log")
+accesslog = env("GUNICORN_ACCESS_LOG", "/var/log/mox/oio_access.log")
 
 # Location of error log file
-errorlog = env("GUNICORN_ERROR_LOG", "/tmp/oio_error.log")
+errorlog = env("GUNICORN_ERROR_LOG", "/var/log/mox/oio_error.log")
 
 # Gunicorn log level
 loglevel = env("GUNICORN_LOG_LEVEL", "warning")
