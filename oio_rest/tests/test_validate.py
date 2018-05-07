@@ -312,6 +312,91 @@ class TestGenerateJSONSchema(unittest.TestCase):
             validate._generate_relationer('tilstand')
         )
 
+    def test_relationer_sag(self):
+        self.relation_nul_til_mange['items']['properties']['indeks'] = {
+            'type': 'integer'}
+        self.assertEqual(
+            {
+                'type': 'object',
+                'properties': {
+                    'behandlingarkiv': self.relation_nul_til_en,
+                    'afleveringsarkiv': self.relation_nul_til_en,
+                    'primaerklasse': self.relation_nul_til_en,
+                    'opgaveklasse': self.relation_nul_til_en,
+                    'handlingsklasse': self.relation_nul_til_en,
+                    'kontoklasse': self.relation_nul_til_en,
+                    'sikkerhedsklasse': self.relation_nul_til_en,
+                    'foelsomhedsklasse': self.relation_nul_til_en,
+                    'indsatsklasse': self.relation_nul_til_en,
+                    'ydelsesklasse': self.relation_nul_til_en,
+                    'ejer': self.relation_nul_til_en,
+                    'ansvarlig': self.relation_nul_til_en,
+                    'primaerbehandler': self.relation_nul_til_en,
+                    'udlaanttil': self.relation_nul_til_en,
+                    'primaerpart': self.relation_nul_til_en,
+                    'ydelsesmodtager': self.relation_nul_til_en,
+                    'oversag': self.relation_nul_til_en,
+                    'praecedens': self.relation_nul_til_en,
+                    'afgiftsobjekt': self.relation_nul_til_en,
+                    'ejendomsskat': self.relation_nul_til_en,
+                    'andetarkiv': self.relation_nul_til_mange,
+                    'andrebehandlere': self.relation_nul_til_mange,
+                    'sekundaerpart': self.relation_nul_til_mange,
+                    'andresager': self.relation_nul_til_mange,
+                    'byggeri': self.relation_nul_til_mange,
+                    'fredning': self.relation_nul_til_mange,
+                    'journalpost': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'indeks': {'type': 'integer'},
+                                'journaldokument': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'dokumenttitel': {'type': 'string'},
+                                        'offentlighedundtaget': {
+                                            '$ref': '#/definitions/'
+                                                    'offentlighedundtaget'
+                                        }
+                                    },
+                                    'required': ['dokumenttitel',
+                                                 'offentlighedundtaget'],
+                                    'additionalProperties': False,
+                                },
+                                'journalnotat': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'format': {'type': 'string'},
+                                        'notat': {'type': 'string'},
+                                        'titel': {'type': 'string'}
+                                    },
+                                    'required': ['titel', 'notat', 'format'],
+                                    'additionalProperties': False,
+                                },
+                                'journalpostkode': {
+                                    'type': 'string',
+                                    'enum': ['journalnotat', 'vedlagtdokument'],
+                                },
+                                'uuid': {
+                                    'type': 'string',
+                                    'pattern': '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-'
+                                               '[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-'
+                                               '[a-fA-F0-9]{12}$',
+                                },
+                                'virkning': {'$ref': '#/definitions/virkning'},
+                                'objekttype': {'type': 'string'}
+                            },
+                            'required': ['uuid', 'virkning', 'journalpostkode'],
+                            'additionalProperties': False
+                        },
+                    }
+                },
+                'additionalProperties': False
+            },
+            validate._generate_relationer('sag')
+        )
+
     def test_attributter_organisation(self):
         self.assertEqual(
             {
