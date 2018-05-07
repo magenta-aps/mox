@@ -1,1 +1,1 @@
-from oio_rest import app
+from oio_rest.app import app
