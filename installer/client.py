@@ -102,8 +102,18 @@ def notify_and_log(executed_tasks):
 
         # Include changes in the log file
         include_changes = ["diff", "stdout"]
+	
+        if not task_changes:
+            return	
+
 
         for change in include_changes:
-            content = task_changes[change]
+            #if not change:
+            #    return
 
+            content = task_changes.get(change)
+
+            if not content:
+                return
+	    
             simple_log(content)
