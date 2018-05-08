@@ -17,10 +17,10 @@ DECLARE
 	{{oio_type}}_passed_auth_filter uuid[]:=ARRAY[]::uuid[];
 	{{oio_type}}_candidates uuid[];
 	--to_be_applyed_filter_uuids uuid[];
-	{%-for attribut , attribut_fields in attributter.iteritems() %} 
+	{%-for attribut , attribut_fields in attributter.items() %} 
 	attr{{attribut|title}}TypeObj {{oio_type|title}}{{attribut|title}}AttrType;
 	{%- endfor %}
-	{% for tilstand, tilstand_values in tilstande.iteritems() %}
+	{% for tilstand, tilstand_values in tilstande.items() %}
   	tils{{tilstand|title}}TypeObj {{oio_type|title}}{{tilstand|title}}TilsType;
   	{%- endfor %}
 	relationTypeObj {{oio_type|title}}RelationType;
@@ -57,7 +57,7 @@ LOOP
 
 --filter on attributes
 
-{%-for attribut , attribut_fields in attributter.iteritems() %} 
+{%-for attribut , attribut_fields in attributter.items() %} 
 --/**********************************************************//
 --Filtration on attribute: {{attribut|title}}
 --/**********************************************************//
@@ -123,7 +123,7 @@ END IF;
 
 --RAISE DEBUG 'registrering,%',registreringObj;
 
-{% for tilstand, tilstand_values in tilstande.iteritems() %}
+{% for tilstand, tilstand_values in tilstande.items() %}
 --/**********************************************************//
 --Filtration on state: {{tilstand|title}}
 --/**********************************************************//
