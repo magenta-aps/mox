@@ -1,15 +1,16 @@
-from base64 import b64decode
-from functools import wraps
 import os
-from flask import request
-from custom_exceptions import UnauthorizedException
-from custom_exceptions import AuthorizationFailedException
 import zlib
 import uuid
+from base64 import b64decode
+from functools import wraps
 
-from auth.saml2 import Saml2_Assertion
+from flask import request
 
-from . import settings
+from .custom_exceptions import UnauthorizedException
+from .custom_exceptions import AuthorizationFailedException
+from .auth.saml2 import Saml2_Assertion
+
+import settings
 
 
 # Read the IdP certificate file into memory

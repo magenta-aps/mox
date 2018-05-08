@@ -24,7 +24,7 @@ import pytest
 
 from oio_rest import app
 from oio_rest import db
-from oio_rest import settings
+import settings
 
 TESTS_DIR = os.path.dirname(__file__)
 BASE_DIR = os.path.dirname(TESTS_DIR)
@@ -129,10 +129,10 @@ class TestCaseMixin(object):
         dsn = self.psql.dsn()
 
         self.patches = [
-            mock.patch('oio_rest.settings.LOG_AMQP_SERVER', None),
-            mock.patch('oio_rest.settings.DB_HOST', dsn['host'],
+            mock.patch('settings.LOG_AMQP_SERVER', None),
+            mock.patch('settings.DB_HOST', dsn['host'],
                        create=True),
-            mock.patch('oio_rest.settings.DB_PORT', dsn['port'],
+            mock.patch('settings.DB_PORT', dsn['port'],
                        create=True),
         ]
 

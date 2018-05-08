@@ -4,19 +4,28 @@ set -ex
 
 cd $(dirname $0)
 
-if [[ ! -e oio_rest/settings.py ]]; then
-    NO_SETTINGS=true
-    cp oio_rest/settings.py.base oio_rest/settings.py
-fi
+# Virtualenv / Python
+TEST_ENV=python-testenv
+PYTHON=${TEST_ENV}/bin/python
 
-python -m virtualenv --quiet venv
+# Create virtualenv
+python -m virtualenv --quiet $TEST_ENV
 
-. ./venv/bin/activate
+# Temporary workaround
+# These variables are needed to run $ROOT/db/mkdb.sh
+export SUPER_USER="postgres"
+export MOX_DB="mox"
+export MOX_DB_USER="mox"
+export MOX_DB_PASSWORD="mox"
 
-python -m pip install -r requirements-test.txt
-python -m flake8 --exit-zero
-python -m pytest
+export MOX_AMQP_HOST="localhost"
+export MOX_AMQP_PORT=5672
+export MOX_AMQP_USER="guest"
+export MOX_AMQP_PASS="guest"
+export MOX_AMQP_VHOST="/"
 
-if [[ "$NO_SETTINGS" = true ]]; then
-    rm oio_rest/settings.py
-fi
+# Execute tests
+$PYTHON -m pip install -e .
+$PYTHON -m pip install -r requirements-test.txt
+$PYTHON -m flake8 --exit-zero
+$PYTHON -m pytest

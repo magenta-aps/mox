@@ -1,12 +1,10 @@
 #!/bin/bash -e
 set -b
 
-DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-MOXDIR=$(cd $DIR/..; pwd)
-PYTHON="$MOXDIR/python-env/bin/python"
+MOXDIR=${BASE_DIR}
+DIR=${DB_DIR}
 
-cd $DIR
-source ./config.sh
+PYTHON=${PYTHON_EXEC}
 
 export PGPASSWORD="$MOX_DB_PASSWORD"
 # TODO: Support remote $SUPER_USER DB server
@@ -54,7 +52,7 @@ psql -d $MOX_DB -U $MOX_DB_USER -f funcs/_amqp_functions.sql
 cd ./db-templating/
 $PYTHON ../../oio_rest/apply-templates.py
 
-oiotypes=$($PYTHON -m oio_rest.db_helpers)
+oiotypes=$($PYTHON -m oio_common.db_structure)
 
 templates1=( dbtyper-specific tbls-specific _remove_nulls_in_array )
 

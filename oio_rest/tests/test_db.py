@@ -3,7 +3,7 @@ import unittest
 
 from mock import MagicMock, call, patch
 
-import oio_rest.db as db
+from oio_rest import db
 from oio_rest.custom_exceptions import (BadRequestException, DBException,
                                         NotFoundException)
 
@@ -30,9 +30,9 @@ class TestDB(unittest.TestCase):
         )
 
         # Act
-        with patch('oio_rest.settings.DATABASE', new=database), \
-                patch('oio_rest.settings.DB_USER', new=user), \
-                patch('oio_rest.settings.DB_PASSWORD', new=password):
+        with patch('settings.DATABASE', new=database), \
+                patch('settings.DB_USER', new=user), \
+                patch('settings.DB_PASSWORD', new=password):
 
             db.get_connection()
 
@@ -1293,6 +1293,7 @@ class TestPGErrors(unittest.TestCase):
         # Act
         with self.assertRaises(DBException):
             db.create_or_import_object('', '', '', '')
+
 
     @patch("oio_rest.db.psycopg2.Error", new=TestException)
     @patch('oio_rest.db.object_exists', new=lambda *x: False)

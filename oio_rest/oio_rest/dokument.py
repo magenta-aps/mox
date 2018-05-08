@@ -4,7 +4,7 @@ from authentication import requires_auth
 from contentstore import content_store
 import db
 
-from oio_rest import OIORestObject, OIOStandardHierarchy
+from .oio_rest import OIORestObject, OIOStandardHierarchy
 
 
 class Dokument(OIORestObject):

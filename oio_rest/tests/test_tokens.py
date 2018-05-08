@@ -7,7 +7,7 @@ from mock import MagicMock, patch
 
 from oio_rest.auth import tokens
 
-from . import util
+from tests import util
 
 
 class TestTokens(TestCase):
@@ -289,8 +289,8 @@ class TestTokens(TestCase):
         mock_urllib3_dw.assert_called()
 
     @requests_mock.mock()
-    @patch('oio_rest.settings.SAML_IDP_URL', 'http://example.com/auth')
-    @patch('oio_rest.settings.SAML_IDP_TYPE', 'wso2')
+    @patch('settings.SAML_IDP_URL', 'http://example.com/auth')
+    @patch('settings.SAML_IDP_TYPE', 'wso2')
     def test_wso2_login(self, m):
         m.post(
             'http://example.com/auth',
@@ -302,8 +302,8 @@ class TestTokens(TestCase):
         self.assertEqual(assertion, tokens.get_token('hest', 'fest'))
 
     @requests_mock.mock()
-    @patch('oio_rest.settings.SAML_IDP_URL', 'http://example.com/auth')
-    @patch('oio_rest.settings.SAML_IDP_TYPE', 'adfs')
+    @patch('settings.SAML_IDP_URL', 'http://example.com/auth')
+    @patch('settings.SAML_IDP_TYPE', 'adfs')
     def test_adfs_login(self, m):
         m.post(
             'http://example.com/auth',
@@ -315,8 +315,8 @@ class TestTokens(TestCase):
         self.assertEqual(assertion, tokens.get_token('hest', 'fest'))
 
     @requests_mock.mock()
-    @patch('oio_rest.settings.SAML_IDP_URL', 'http://example.com/auth')
-    @patch('oio_rest.settings.SAML_IDP_TYPE', 'wso2')
+    @patch('settings.SAML_IDP_URL', 'http://example.com/auth')
+    @patch('settings.SAML_IDP_TYPE', 'wso2')
     def test_wso2_login_failure(self, m):
         m.post(
             'http://example.com/auth',
@@ -331,8 +331,8 @@ class TestTokens(TestCase):
         ))
 
     @requests_mock.mock()
-    @patch('oio_rest.settings.SAML_IDP_URL', 'http://example.com/auth')
-    @patch('oio_rest.settings.SAML_IDP_TYPE', 'adfs')
+    @patch('settings.SAML_IDP_URL', 'http://example.com/auth')
+    @patch('settings.SAML_IDP_TYPE', 'adfs')
     def test_adfs_login_failure(self, m):
         m.post(
             'http://example.com/auth',
