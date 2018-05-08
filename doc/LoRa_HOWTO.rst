@@ -62,7 +62,8 @@ At present, however, a token is acquired by calling the function
 This can be done manually, through a browser, or through the command
 line::
 
-    curl https://moxdev.magenta-aps.dk/get-token -X POST -d "username=example&password=password"
+    curl -X POST -d "username=example&password=password" \
+      https://moxdev.magenta-aps.dk/get-token
 
 
 This token will, in the current application, be valid for five minutes.
@@ -86,7 +87,10 @@ In order to *read* an object, you can access its URL with its UUID, e.g.
 (and supposing we have stored the token as obtained above in the shell
 variable AUTH_TOKEN)::
 
-    curl -k -sH "Content-Type: application/json" -H "Authorization: $AUTH_TOKEN" -X GET https://moxdev.magenta-aps.dk/klassifikation/facet/81b362ee-8402-4371-873d-f8b4a749d241
+    curl -k -sH "Content-Type: application/json" \
+      -H "Authorization: $AUTH_TOKEN" \
+      -X GET \
+      https://moxdev.magenta-aps.dk/klassifikation/facet/81b362ee-8402-4371-873d-f8b4a749d241
 
 The JSON representation of the desired object will be returned.
 
@@ -97,7 +101,10 @@ Apart from accessing a single object at its URL, you can also list
 objects by specifying one or more UUIDs as parameters. E.g., to list two
 objects of type OrganisationEnhed::
 
-    curl -k -sH "Content-Type: application/json" -H "Authorization $AUTH_TOKEN" -X GET "https://moxdev.magenta-aps.dk/organisation/organisationenhed?uuid=7c6e38f8-e5b5-4b87-af52-9693e074f5ee&uuid=9765cdbf-9f42-4e9d-897b-909af549aba8"
+    curl -k -sH "Content-Type: application/json" \
+      -H "Authorization $AUTH_TOKEN" \
+      -X GET \
+      "https://moxdev.magenta-aps.dk/organisation/organisationenhed?uuid=7c6e38f8-e5b5-4b87-af52-9693e074f5ee&uuid=9765cdbf-9f42-4e9d-897b-909af549aba8"
 
 The listed objects will be given in their JSON representation.
 
@@ -115,7 +122,10 @@ You can also *search* for an object by specifying values of attributes
 or relations as search parameters. You can, e.g., find *all* objects of
 class Klassifikation by searching for any value of "brugervendtnoegle"::
 
-    curl -k -sH "Content-Type: application/json" -H "Authorization: $AUTH_TOKEN" -X GET https://organisation/organisation?brugervendtnoegle=%
+    curl -k -sH "Content-Type: application/json" \
+      -H "Authorization: $AUTH_TOKEN" \
+      -X GET \
+      https://organisation/organisation?brugervendtnoegle=%
 
 
 Note that "%" has been used as wildcard. "bvn" can be used as shorthand
@@ -127,7 +137,10 @@ It is possible to search for relations (links) as well by specifying
 the value, which may be either an UUID or a URN. E.g., for finding all
 instances of OrganisationFunktion which belongs to "Direktion"::
 
-    curl -k -sH "Content-Type: application/json" -H "Authorization $AUTH_TOKEN" -X GET https://moxdev.magenta-aps.dk/organisation/organisationfunktion?tilknyttedeenheder=urn:Direktion
+    curl -k -sH "Content-Type: application/json" \
+      -H "Authorization $AUTH_TOKEN" \
+      -X GET \
+      https://moxdev.magenta-aps.dk/organisation/organisationfunktion?tilknyttedeenheder=urn:Direktion
 
 
 Search parameters may be combined and may include the time restrictions
@@ -139,7 +152,10 @@ the JSON representation of the object(s) returned, the result of a
 *search* operation is always given as a list of UUIDs which may later be
 retrieved with a list or read operation - e.g::
 
-    agger@gefion:~/src/mox/interface_test$ curl -k -sH "Content-Type: application/json" -H "Authorization: $AUTH_TOKEN" -X GET "https://moxdev.magenta-aps.dk/organisation/organisationenhed?brugervendtnoegle=Direktion&tilhoerer=urn:KL&enhedstype=urn:Direktion"
+    $ curl -k -sH "Content-Type: application/json" \
+    >  -H "Authorization: $AUTH_TOKEN" \
+    >  -X GET \
+    >  "https://moxdev.magenta-aps.dk/organisation/organisationenhed?brugervendtnoegle=Direktion&tilhoerer=urn:KL&enhedstype=urn:Direktion"
     {
     "results": [
         [
@@ -178,7 +194,10 @@ To create a new object, ``POST`` the JSON representation of its attributes,
 states and relations to the URL of the class - e.g., to create a new
 Klasse. ::
 
-    curl -k -H "Content-Type: application/json" -X POST -d "<JSON DATA>"-H "Authorization: $AUTH_TOKEN"  https://moxdev.magenta-aps.dk/klassifikation/klasse)
+    curl -k -H "Content-Type: application/json" \
+      -X POST -d "<JSON DATA>" \
+      -H "Authorization: $AUTH_TOKEN" \
+      https://moxdev.magenta-aps.dk/klassifikation/klasse)
 
 
 This will create a new Registrering of the object, valid from now to
@@ -197,7 +216,10 @@ UUID.
 
 An example::
 
-    curl -k -sH "Content-Type: application/json" -X PUT -d "<JSON DATA>" -H "Authorization: $AUTH_TOKEN" https://moxdev.magenta-aps.dk/klassifikation/klasse/39a6ef88-ae26-4557-a48c-7d7c5662c609
+    curl -k -sH "Content-Type: application/json" \
+      -X PUT -d "<JSON DATA>" \
+      -H "Authorization: $AUTH_TOKEN" \
+      https://moxdev.magenta-aps.dk/klassifikation/klasse/39a6ef88-ae26-4557-a48c-7d7c5662c609
 
 Alternatively, use a ``PATCH`` to only update certain fields.
 
@@ -216,7 +238,10 @@ its UUID.
 
 An example::
 
-    curl -k -sH "Content-Type: application/json" -H "Authorization: $AUTH_TOKEN" -X PUT -d "JSON DATA" /klassifikation/facet/1b1e2de1-6d95-4200-9b60-f85e70cc37cf
+    curl -k -sH "Content-Type: application/json" \
+      -H "Authorization: $AUTH_TOKEN" \
+      -X PUT -d "JSON DATA" \
+      /klassifikation/facet/1b1e2de1-6d95-4200-9b60-f85e70cc37cf
 
 
 Passivating and deleting data
@@ -247,7 +272,11 @@ Delete
 An object is deleted by sending a ``DELETE`` request. This might e.g.
 look like this::
 
-    curl -k -sH "Content-Type: application/json" -H "Authorization: $AUTH_TOKEN" -X DELETE -d "$(cat test_data/facet_slet.json)" https://moxdev.magenta-aps.dk/organisation/organisationenhed/7c6e38f8-e5b5-4b87-af52-9693e074f5ee
+    curl -k -sH "Content-Type: application/json" \
+      -H "Authorization: $AUTH_TOKEN" \
+      -X DELETE \
+      -d "$(cat test_data/facet_slet.json)" \
+      https://moxdev.magenta-aps.dk/organisation/organisationenhed/7c6e38f8-e5b5-4b87-af52-9693e074f5ee
 
 After an object is deleted, it may still be retrieved by a read or list
 operation, but it will not appear in search results unless the
