@@ -25,10 +25,10 @@ export MOX_AMQP_PASS="guest"
 export MOX_AMQP_VHOST="/"
 
 # Install common lib & oio_rest
-$PYTHON -m pip install -e .
 $PYTHON -m pip install -e ../oio_common
 
 # Execute tests
+$PYTHON -m pip install -r requirements.txt
 $PYTHON -m pip install -r requirements-test.txt
 $PYTHON -m flake8 --exit-zero
 $PYTHON -m pytest
