@@ -16,10 +16,10 @@ CREATE OR REPLACE FUNCTION as_update_{{oio_type}}(
   brugerref uuid,
   note text,
   livscykluskode Livscykluskode,
-  {%-for attribut , attribut_fields in attributter.iteritems() %}           
+  {%-for attribut , attribut_fields in attributter.items() %}           
   attr{{attribut|title}} {{oio_type|title}}{{attribut|title}}AttrType[],
   {%- endfor %}
-  {%- for tilstand, tilstand_values in tilstande.iteritems() %}
+  {%- for tilstand, tilstand_values in tilstande.items() %}
   tils{{tilstand|title}} {{oio_type|title}}{{tilstand|title}}TilsType[],
   {%- endfor %}
   relationer {{oio_type|title}}RelationType[],
@@ -36,7 +36,7 @@ DECLARE
   new_{{oio_type}}_registrering {{oio_type}}_registrering;
   prev_{{oio_type}}_registrering {{oio_type}}_registrering;
   {{oio_type}}_relation_navn {{oio_type|title}}RelationKode;
-  {%- for attribut , attribut_fields in attributter.iteritems() %}
+  {%- for attribut , attribut_fields in attributter.items() %}
   attr{{attribut|title}}Obj {{oio_type|title}}{{attribut|title}}AttrType;{%- endfor %}
   auth_filtered_uuids uuid[];
 BEGIN
@@ -192,7 +192,7 @@ END IF;
 /**********************/
 -- handle tilstande (states)
 
-{%- for tilstand, tilstand_values in tilstande.iteritems() %}
+{%- for tilstand, tilstand_values in tilstande.items() %}
 
 IF tils{{tilstand|title}} IS NOT NULL AND coalesce(array_length(tils{{tilstand|title}},1),0)=0 THEN
 --raise debug 'Skipping [{{tilstand|title}}] as it is explicit set to empty array';
@@ -258,7 +258,7 @@ END IF;
 /**********************/
 --Handle attributter (attributes) 
 
-{%-for attribut , attribut_fields in attributter.iteritems() %} 
+{%-for attribut , attribut_fields in attributter.items() %} 
 
 /********************************************/
 --{{oio_type}}_attr_{{attribut}}
@@ -435,9 +435,9 @@ END IF;
 
 read_new_{{oio_type}}_reg:=ROW(
 ROW(null,(read_new_{{oio_type}}.registrering[1].registrering).livscykluskode,null,null)::registreringBase,
-{%- for tilstand, tilstand_values in tilstande.iteritems() %}
+{%- for tilstand, tilstand_values in tilstande.items() %}
 (read_new_{{oio_type}}.registrering[1]).tils{{tilstand|title}} ,{% endfor %}
-{%-for attribut , attribut_fields in attributter.iteritems() %}
+{%-for attribut , attribut_fields in attributter.items() %}
 (read_new_{{oio_type}}.registrering[1]).attr{{attribut|title}} ,{% endfor %}
 (read_new_{{oio_type}}.registrering[1]).relationer 
 )::{{oio_type}}RegistreringType
@@ -445,9 +445,9 @@ ROW(null,(read_new_{{oio_type}}.registrering[1].registrering).livscykluskode,nul
 
 read_prev_{{oio_type}}_reg:=ROW(
 ROW(null,(read_prev_{{oio_type}}.registrering[1].registrering).livscykluskode,null,null)::registreringBase,
-{%- for tilstand, tilstand_values in tilstande.iteritems() %}
+{%- for tilstand, tilstand_values in tilstande.items() %}
 (read_prev_{{oio_type}}.registrering[1]).tils{{tilstand|title}} ,{% endfor %}
-{%-for attribut , attribut_fields in attributter.iteritems() %}
+{%-for attribut , attribut_fields in attributter.items() %}
 (read_prev_{{oio_type}}.registrering[1]).attr{{attribut|title}} ,{% endfor %}
 (read_prev_{{oio_type}}.registrering[1]).relationer 
 )::{{oio_type}}RegistreringType

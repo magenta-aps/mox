@@ -15,9 +15,9 @@ CREATE OR REPLACE FUNCTION as_create_or_import_{{oio_type}}(
 $$
 DECLARE
   {{oio_type}}_registrering_id bigint;
-  {%for attribut , attribut_fields in attributter.iteritems() %}{{oio_type}}_attr_{{attribut}}_obj {{oio_type}}{{attribut|title}}AttrType;
+  {%for attribut , attribut_fields in attributter.items() %}{{oio_type}}_attr_{{attribut}}_obj {{oio_type}}{{attribut|title}}AttrType;
   {% endfor %}
-  {% for tilstand, tilstand_values in tilstande.iteritems() %}{{oio_type}}_tils_{{tilstand}}_obj {{oio_type}}{{tilstand|title}}TilsType;
+  {% for tilstand, tilstand_values in tilstande.items() %}{{oio_type}}_tils_{{tilstand}}_obj {{oio_type}}{{tilstand|title}}TilsType;
   {% endfor %}
   {{oio_type}}_relationer {{oio_type|title}}RelationType;
   auth_filtered_uuids uuid[];
@@ -94,7 +94,7 @@ END IF;
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
- {%for attribut , attribut_fields in attributter.iteritems() %}
+ {%for attribut , attribut_fields in attributter.items() %}
 IF coalesce(array_length({{oio_type}}_registrering.attr{{attribut|title}}, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet attribut [{{attribut}}] for [{{oio_type}}]. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
@@ -123,7 +123,7 @@ END IF;
 /*********************************/
 --Insert states (tilstande)
 
-{% for tilstand, tilstand_values in tilstande.iteritems() %}
+{% for tilstand, tilstand_values in tilstande.items() %}
 --Verification
 --For now all declared states are mandatory.
 IF coalesce(array_length({{oio_type}}_registrering.tils{{tilstand|title}}, 1),0)<1  THEN

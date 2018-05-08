@@ -8,7 +8,7 @@
 {% block body %}
 --create custom type sans db-ids to be able to do "clean" function signatures "for the outside world".
 
-{% for tilstand, tilstand_values in tilstande.iteritems() %}CREATE TYPE {{oio_type|title}}{{tilstand|title}}Tils AS ENUM ({% for enum_val in tilstand_values %}'{{enum_val}}',{% endfor %}''); --'' means undefined (which is needed to clear previous defined tilstand_values in an already registered virksnings-periode)
+{% for tilstand, tilstand_values in tilstande.items() %}CREATE TYPE {{oio_type|title}}{{tilstand|title}}Tils AS ENUM ({% for enum_val in tilstand_values %}'{{enum_val}}',{% endfor %}''); --'' means undefined (which is needed to clear previous defined tilstand_values in an already registered virksnings-periode)
 
 CREATE TYPE {{oio_type|title}}{{tilstand|title}}TilsType AS (
     virkning Virkning,
@@ -17,7 +17,7 @@ CREATE TYPE {{oio_type|title}}{{tilstand|title}}TilsType AS (
 ;
 {% endfor %}
 
-{%-for attribut , attribut_fields in attributter.iteritems() %}
+{%-for attribut , attribut_fields in attributter.items() %}
 CREATE TYPE {{oio_type|title}}{{attribut|title}}AttrType AS (
 {%- for field in attribut_fields %}
 {%- if  attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][field] is defined and attributter_metadata[attribut][field]['type'] is defined %} 
@@ -49,9 +49,9 @@ CREATE TYPE {{oio_type|title}}RelationType AS (
 CREATE TYPE {{oio_type|title}}RegistreringType AS
 (
 registrering RegistreringBase,
-{%- for tilstand, tilstand_values in tilstande.iteritems() %}
+{%- for tilstand, tilstand_values in tilstande.items() %}
 tils{{tilstand|title}} {{oio_type|title}}{{tilstand|title}}TilsType[],{% endfor %}
-{%-for attribut , attribut_fields in attributter.iteritems() %}
+{%-for attribut , attribut_fields in attributter.items() %}
 attr{{attribut|title}} {{oio_type|title}}{{attribut|title}}AttrType[],{% endfor %}
 relationer {{oio_type|title}}RelationType[]
 );

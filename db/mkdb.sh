@@ -79,6 +79,8 @@ cat $DIR/funcs/_as_search_match_array.sql
 cat $DIR/funcs/_as_search_ilike_array.sql
 cat $DIR/funcs/_json_object_delete_keys.sql
 
+$PYTHON "$DIR/../oio_rest/apply-templates.py" 1>&2
+
 oiotypes=$($PYTHON -m oio_rest.db_helpers)
 
 templates1=( dbtyper-specific tbls-specific _remove_nulls_in_array )

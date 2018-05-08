@@ -83,7 +83,7 @@ CREATE INDEX {{oio_type}}_registrering_pat_note
 
 
 /****************************************************************************************************/
-{%for attribut , attribut_fields in attributter.iteritems() %}
+{%for attribut , attribut_fields in attributter.items() %}
 
 CREATE SEQUENCE {{oio_type}}_attr_{{attribut}}_id_seq
   INCREMENT 1
@@ -197,7 +197,7 @@ CREATE INDEX {{oio_type}}_attr_{{attribut}}_pat_virkning_notetekst
 {% endfor %}
 /****************************************************************************************************/
 
-{% for tilstand, tilstand_values in tilstande.iteritems() %}
+{% for tilstand, tilstand_values in tilstande.items() %}
 
 CREATE SEQUENCE {{oio_type}}_tils_{{tilstand}}_id_seq
   INCREMENT 1
