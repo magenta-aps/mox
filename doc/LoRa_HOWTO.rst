@@ -6,8 +6,6 @@ HOWTO use LoRa for querying data
    :depth: 5
 
 
-
-
 Introduction
 ++++++++++++
 
@@ -74,13 +72,13 @@ Different time spans or authentication schemes should be considered.
 Reading data
 ++++++++++++
 
-In order to search and read data from the REST interface, the HTTP GET
+In order to search and read data from the REST interface, the HTTP ``GET``
 method is used.
 
 It is only possible to search in a given class, i.e. in a definite point
 in the hierarchy.
 
-Read 
+Read
 ----
 
 
@@ -173,10 +171,10 @@ as ``application/json`` as form data with a :http:header:`Content-Type` of
 Examples of valid JSON data for creation, update and import can be found
 in the directory `interface_test/test_data` in the source code.
 
-Create 
+Create
 ------
 
-To create a new object, POST the JSON representation of its attributes,
+To create a new object, ``POST`` the JSON representation of its attributes,
 states and relations to the URL of the class - e.g., to create a new
 Klasse. ::
 
@@ -190,11 +188,11 @@ infinity.
 Update
 ------
 
-To change an object, issue a PUT request containing the JSON
+To change an object, issue a ``PUT`` request containing the JSON
 representation of the changes as they apply to the object's attributes,
 states and relations.
 
-The PUT request must be issued to the object's URL - i.e., including the
+The ``PUT`` request must be issued to the object's URL - i.e., including the
 UUID.
 
 An example: ::
@@ -227,9 +225,9 @@ Passivating and deleting data
 Passivate
 ---------
 
-An object is passivated by sending a special update (PUT) request whose
-JSON data only contains two fields, an optional note field and the life
-cycle code "Passiv".
+An object is passivated by sending a special update, ``PUT``, request
+whose JSON data only contains two fields, an optional note field and
+the life cycle code "Passiv".
 
 E.g., the JSON may look like this: ::
 
@@ -246,8 +244,8 @@ updated.
 Delete
 ------
 
-An object is deleted by sending a DELETE request. This might e.g. look
-like this: ::
+An object is deleted by sending a ``DELETE`` request. This might e.g.
+look like this: ::
 
     curl -k -sH "Content-Type: application/json" -H "Authorization: $AUTH_TOKEN" -X DELETE -d "$(cat test_data/facet_slet.json)" https://moxdev.magenta-aps.dk/organisation/organisationenhed/7c6e38f8-e5b5-4b87-af52-9693e074f5ee
 
