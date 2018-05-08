@@ -24,16 +24,13 @@ INSTALLER=${INSTALLER_DIR}/install_application.py
 REQUIREMENTS=${INSTALLER_DIR}/install_requirements.txt
 
 # Path to (python) virtual environment
-VIRTUALENV=${BASE_DIR}/venv-linux
+export VIRTUALENV=${BASE_DIR}/python-env
 
 # Path to python executable
-PYTHON_EXEC=${VIRTUALENV}/bin/python
+export PYTHON_EXEC=${VIRTUALENV}/bin/python
 
 ## Install system dependencies
 sudo apt-get install python3 python3-venv python3-dev gcc
-
-# Backwards compatibility
-sudo apt-get install python-virtualenv
 
 ## Create virtual environment
 /usr/bin/env python3 -m venv ${VIRTUALENV}

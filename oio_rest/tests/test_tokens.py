@@ -34,7 +34,7 @@ class TestTokens(TestCase):
                 </RequestSecurityTokenResponse>
             </Body>'''
 
-        expected = '''<Assertion whatever="1">
+        expected = b'''<Assertion whatever="1">
                             <Issuer>issuer</Issuer>
                             <Subject>subject</Subject>
                             <Conditions>conditions</Conditions>
@@ -45,7 +45,7 @@ class TestTokens(TestCase):
         actual = tokens.get_token(username, passwd, pretty_print=True)
 
         # Assert
-        self.assertEquals(expected, actual)
+        self.assertEqual(expected, actual)
 
     @patch('oio_rest.auth.tokens.requests')
     def test_get_token(self, mock_requests):
@@ -66,8 +66,8 @@ class TestTokens(TestCase):
         </Body>
         '''
 
-        expected_result = ('saml-gzipped H4sIAAAAAAAC/7NxLC5OLSrJzM9TKM9I'
-                           'LEktSy2yVTJU0rfjUkADALryg9gqAAAA')
+        expected_result = (b'saml-gzipped H4sIAAAAAAAC/7NxLC5OLSrJzM9TKM9I'
+                           b'LEktSy2yVTJU0rfjUkADALryg9gqAAAA')
 
         # Act
         actual_result = tokens.get_token(username, passwd)
@@ -297,7 +297,7 @@ class TestTokens(TestCase):
             text=util.get_fixture('wso2-successful-login.xml'),
         )
 
-        assertion = util.get_fixture('wso2-assertion.txt')
+        assertion = util.get_fixture('wso2-assertion.txt', 'rb')
 
         self.assertEqual(assertion, tokens.get_token('hest', 'fest'))
 
@@ -310,7 +310,7 @@ class TestTokens(TestCase):
             text=util.get_fixture('adfs-successful-login.xml'),
         )
 
-        assertion = util.get_fixture('adfs-assertion.txt')
+        assertion = util.get_fixture('adfs-assertion.txt', 'rb')
 
         self.assertEqual(assertion, tokens.get_token('hest', 'fest'))
 

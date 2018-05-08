@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 import os
-from urlparse import urlparse
+from urllib.parse import urlparse
 import uuid
 import errno
 import time

@@ -6,7 +6,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
-from __future__ import print_function
 
 import json
 import os
@@ -32,16 +31,14 @@ TOP_DIR = os.path.dirname(BASE_DIR)
 FIXTURE_DIR = os.path.join(TESTS_DIR, 'fixtures')
 
 
-def get_fixture(fixture_name):
+def get_fixture(fixture_name, mode='rt'):
     """Reads data from fixture folder. If the file name ends with
     ``.json``, we parse it, otherwise, we just return it as text.
     """
-    if os.path.splitext(fixture_name)[1] == '.json':
-        with open(os.path.join(FIXTURE_DIR, fixture_name)) as fp:
+    with open(os.path.join(FIXTURE_DIR, fixture_name), mode) as fp:
+        if os.path.splitext(fixture_name)[1] == '.json':
             return json.load(fp)
-
-    else:
-        with open(os.path.join(FIXTURE_DIR, fixture_name)) as fp:
+        else:
             return fp.read()
 
 
@@ -164,9 +161,9 @@ class TestCaseMixin(object):
         r = self._perform_request(path, **kwargs)
 
         actual = (
-            json.loads(r.get_data(True))
+            json.loads(r.get_data(as_text=True))
             if r.mimetype == 'application/json'
-            else r.get_data(True)
+            else r.get_data(as_text=True)
         )
 
         for k in drop_keys:
@@ -236,7 +233,7 @@ class TestCaseMixin(object):
             if isinstance(obj, dict):
                 return {
                     k: sort_inner_lists(v)
-                    for k, v in obj.iteritems()
+                    for k, v in obj.items()
                 }
             elif isinstance(obj, (list, tuple)):
                 return sorted(
@@ -334,7 +331,7 @@ class TestCaseMixin(object):
 
         objid = r.json.get('uuid')
 
-        print(r.get_data('True'), path)
+        print(r.get_data(as_text=True), path)
         self.assertTrue(objid)
 
         return objid

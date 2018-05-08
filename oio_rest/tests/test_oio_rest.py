@@ -191,7 +191,7 @@ class TestOIORestObject(TestCase):
             actual_json = self.testclass.get_json()
 
         # Assert
-        self.assertEquals(expected_json, actual_json)
+        self.assertEqual(expected_json, actual_json)
 
     def test_get_json_returns_json_if_form_json(self):
         # Arrange
@@ -205,7 +205,7 @@ class TestOIORestObject(TestCase):
             actual_json = self.testclass.get_json()
 
         # Assert
-        self.assertEquals(expected_json, actual_json)
+        self.assertEqual(expected_json, actual_json)
 
     def test_get_json_returns_badrequest_if_malformed_form_json(self):
         # Arrange
@@ -228,7 +228,7 @@ class TestOIORestObject(TestCase):
             actual_json = self.testclass.get_json()
 
         # Assert
-        self.assertEquals(expected_json, actual_json)
+        self.assertEqual(expected_json, actual_json)
 
     @patch('oio_rest.db.create_or_import_object')
     def test_create_object_with_input_returns_uuid_and_code_201(self, mock):
@@ -246,7 +246,7 @@ class TestOIORestObject(TestCase):
                                            content_type='application/json',
                                            method='POST'):
             result = self.testclass.create_object()
-            actual_data = json.loads(result[0].data)
+            actual_data = json.loads(result[0].get_data(as_text=True))
             actual_code = result[1]
 
         # Assert
@@ -261,7 +261,7 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='POST'):
             result = self.testclass.create_object()
-            actual_data = json.loads(result[0].data)
+            actual_data = json.loads(result[0].get_data(as_text=True))
             actual_code = result[1]
 
         # Assert
@@ -291,10 +291,11 @@ class TestOIORestObject(TestCase):
                       new=db_structure):
 
             # Act
-            actual_fields = json.loads(self.testclass.get_fields().data)
+            actual_fields = json.loads(
+                self.testclass.get_fields().get_data(as_text=True))
 
             # Assert
-            self.assertEquals(expected_fields, actual_fields)
+            self.assertEqual(expected_fields, actual_fields)
 
     def test_get_fields_raises_on_unknown_args(self):
         # Arrange
@@ -329,7 +330,8 @@ class TestOIORestObject(TestCase):
 
         # Act
         with self.app.test_request_context(method='GET'):
-            actual_result_json = self.testclass.get_objects().data
+            actual_result_json = self.testclass.get_objects().get_data(
+                as_text=True)
             actual_result = json.loads(actual_result_json)
 
         # Assert
@@ -371,7 +373,8 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='GET',
                                            query_string=request_params):
-            actual_result_json = self.testclass.get_objects().data
+            actual_result_json = self.testclass.get_objects().get_data(
+                as_text=True)
             actual_result = json.loads(actual_result_json)
 
         # Assert
@@ -389,7 +392,8 @@ class TestOIORestObject(TestCase):
 
         # Act
         with self.app.test_request_context(method='GET'):
-            actual_result_json = self.testclass.get_objects().data
+            actual_result_json = self.testclass.get_objects().get_data(
+                as_text=True)
             actual_result = json.loads(actual_result_json)
 
         expected_result = {"results": []}
@@ -428,7 +432,8 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='GET',
                                            query_string=request_params):
-            actual_result_json = self.testclass.get_objects().data
+            actual_result_json = self.testclass.get_objects().get_data(
+                as_text=True)
             actual_result = json.loads(actual_result_json)
 
         # Assert
@@ -490,7 +495,8 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='GET',
                                            query_string=request_params):
-            actual_result_json = self.testclass.get_objects().data
+            actual_result_json = self.testclass.get_objects().get_data(
+                as_text=True)
             actual_result = json.loads(actual_result_json)
 
         # Assert
@@ -572,7 +578,8 @@ class TestOIORestObject(TestCase):
 
         # Act
         with self.app.test_request_context(method='GET'):
-            actual_result_json = self.testclass.get_object(uuid).data
+            actual_result_json = self.testclass.get_object(uuid).get_data(
+                as_text=True)
             actual_result = json.loads(actual_result_json)
 
         # Assert
@@ -620,7 +627,8 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='GET',
                                            query_string=request_params):
-            actual_result_json = self.testclass.get_object(uuid).data
+            actual_result_json = self.testclass.get_object(uuid).get_data(
+                as_text=True)
             actual_result = json.loads(actual_result_json)
 
         # Assert
@@ -690,7 +698,7 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='PUT'):
             result = self.testclass.put_object(uuid)
-            actual_data = json.loads(result[0].data)
+            actual_data = json.loads(result[0].get_data(as_text=True))
             actual_code = result[1]
 
         # Assert
@@ -714,7 +722,7 @@ class TestOIORestObject(TestCase):
                                            content_type='application/json',
                                            method='PUT'):
             result = self.testclass.put_object(uuid)
-            actual_data = json.loads(result[0].data)
+            actual_data = json.loads(result[0].get_data(as_text=True))
             actual_code = result[1]
 
         # Assert
@@ -747,7 +755,7 @@ class TestOIORestObject(TestCase):
                                            content_type='application/json',
                                            method='PUT'):
             result = self.testclass.patch_object(uuid)
-            actual_data = json.loads(result[0].data)
+            actual_data = json.loads(result[0].get_data(as_text=True))
             actual_code = result[1]
 
         # Assert
@@ -779,7 +787,7 @@ class TestOIORestObject(TestCase):
                                            content_type='application/json',
                                            method='PUT'):
             result = self.testclass.patch_object(uuid)
-            actual_data = json.loads(result[0].data)
+            actual_data = json.loads(result[0].get_data(as_text=True))
             actual_code = result[1]
 
         # Assert
@@ -811,7 +819,7 @@ class TestOIORestObject(TestCase):
                                            content_type='application/json',
                                            method='PUT'):
             result = self.testclass.patch_object(uuid)
-            actual_data = json.loads(result[0].data)
+            actual_data = json.loads(result[0].get_data(as_text=True))
             actual_code = result[1]
 
         # Assert
@@ -847,7 +855,7 @@ class TestOIORestObject(TestCase):
                                            content_type='application/json',
                                            method='PUT'):
             result = self.testclass.delete_object(uuid)
-            actual_data = json.loads(result[0].data)
+            actual_data = json.loads(result[0].get_data(as_text=True))
             actual_code = result[1]
         # Assert
         self.assertDictEqual(expected_data, actual_data)
@@ -1016,8 +1024,8 @@ class TestOIOStandardHierarchy(TestCase):
         keyword_args = flask.add_url_rule.call_args[1]
 
         self.assertIn('GET', keyword_args['methods'])
-        self.assertEquals(u'URL/testclass/classes', ordered_args[0])
-        self.assertEquals(u'testclass_classes', ordered_args[1])
+        self.assertEqual('URL/testclass/classes', ordered_args[0])
+        self.assertEqual('testclass_classes', ordered_args[1])
         self.assertIsInstance(ordered_args[2], types.FunctionType)
 
     def test_setup_api_get_classes_returns_correct_result(self):
@@ -1048,7 +1056,8 @@ class TestOIOStandardHierarchy(TestCase):
             get_classes = flask.add_url_rule.call_args[0][2]
 
             with self.app.test_request_context():
-                actual_result = json.loads(get_classes().data)
+                actual_result = json.loads(
+                        get_classes().get_data(as_text=True))
 
             self.assertDictEqual(actual_result, expected_result)
 

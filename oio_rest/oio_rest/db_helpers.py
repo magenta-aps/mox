@@ -1,6 +1,6 @@
 """"Encapsulate details about the database structure."""
 from collections import namedtuple
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 from flask import request
 from psycopg2._range import DateTimeTZRange
@@ -33,7 +33,7 @@ def get_attribute_fields(attribute_name):
 def get_field_type(attribute_name, field_name):
     for c in db_struct:
         if "attributter_type_override" in db_struct[c]:
-            for a, fs in db_struct[c]["attributter_type_override"].iteritems():
+            for a, fs in db_struct[c]["attributter_type_override"].items():
                 if attribute_name == c + a:
                     if field_name in fs:
                         return fs[field_name]
@@ -381,10 +381,10 @@ class NamedTupleAdapter(object):
         return x
 
     def getquoted(self):
-        values = map(self.prepare_and_adapt, self._tuple_obj)
+        values = list(map(self.prepare_and_adapt, self._tuple_obj))
         values = [v.getquoted() for v in values]
-        sql = ('ROW(' + ','.join(values) + ') :: ' +
-               self._tuple_obj.__class__.__name__)
+        sql = (b'ROW(' + b','.join(values) + b') :: ' +
+               self._tuple_obj.__class__.__name__.encode('ascii'))
         return sql
 
     def __str__(self):
@@ -394,18 +394,18 @@ class NamedTupleAdapter(object):
 class AktoerAttrAdapter(NamedTupleAdapter):
 
     def getquoted(self):
-        values = map(self.prepare_and_adapt, self._tuple_obj)
+        values = list(map(self.prepare_and_adapt, self._tuple_obj))
         values = [v.getquoted() for v in values]
         qaa = AktoerAttr(*values)  # quoted_aktoer_attr
         values = [
-            qaa.obligatorisk + '::AktivitetAktoerAttrObligatoriskKode',
-            qaa.accepteret + '::AktivitetAktoerAttrAccepteretKode',
-            qaa.repraesentation_uuid + '::uuid',
+            qaa.obligatorisk + b'::AktivitetAktoerAttrObligatoriskKode',
+            qaa.accepteret + b'::AktivitetAktoerAttrAccepteretKode',
+            qaa.repraesentation_uuid + b'::uuid',
             qaa.repraesentation_urn
         ]
 
-        sql = ('ROW(' + ','.join(values) + ') :: ' +
-               self._tuple_obj.__class__.__name__)
+        sql = (b'ROW(' + b','.join(values) + b') :: ' +
+               self._tuple_obj.__class__.__name__.encode('ascii'))
         return sql
 
 
@@ -424,4 +424,3 @@ psyco_register_adapter(DokumentVariantEgenskaberType, NamedTupleAdapter)
 psyco_register_adapter(DokumentDelType, NamedTupleAdapter)
 psyco_register_adapter(DokumentDelEgenskaberType, NamedTupleAdapter)
 psyco_register_adapter(DokumentDelRelationType, NamedTupleAdapter)
-

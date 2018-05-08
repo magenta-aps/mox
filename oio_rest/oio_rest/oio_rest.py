@@ -30,10 +30,6 @@ def typed_get(d, field, default):
     if v is None:
         return default
 
-    # special case strings
-    if t is str or t is unicode:
-        t = basestring
-
     if not isinstance(v, t):
         raise BadRequestException('expected %s for %r, found %s: %s' %
                                   (t.__name__, field, type(v).__name__,
@@ -95,7 +91,8 @@ class ArgumentDict(ImmutableOrderedMultiDict):
     }
 
     @classmethod
-    def _process_item(cls, (key, value)):
+    def _process_item(cls, xxx_todo_changeme):
+        (key, value) = xxx_todo_changeme
         key = to_lower_param(key)
 
         return (cls.PARAM_ALIASES.get(key, key), value)
@@ -106,7 +103,7 @@ class ArgumentDict(ImmutableOrderedMultiDict):
         # happens to be the case when contructing the dictionary from
         # query arguments
         super(ArgumentDict, self).__init__(
-            map(self._process_item, mapping)
+            list(map(self._process_item, mapping))
         )
 
 
@@ -132,7 +129,7 @@ class OIOStandardHierarchy(object):
             c.create_api(cls._name, flask, base_url)
 
         hierarchy = cls._name.lower()
-        classes_url = u"{0}/{1}/{2}".format(base_url, hierarchy, u"classes")
+        classes_url = "{0}/{1}/{2}".format(base_url, hierarchy, "classes")
 
         def get_classes():
             structure = db_structure.REAL_DB_STRUCTURE
@@ -141,7 +138,7 @@ class OIOStandardHierarchy(object):
             return jsonify(hierarchy_dict)
 
         flask.add_url_rule(
-            classes_url, u'_'.join([hierarchy, 'classes']),
+            classes_url, '_'.join([hierarchy, 'classes']),
             get_classes, methods=['GET']
         )
 
@@ -292,7 +289,7 @@ class OIORestObject(object):
 
         virkning_fra, virkning_til = get_virkning_dates(args)
 
-        request.api_operation = u'Læs'
+        request.api_operation = 'Læs'
         request.uuid = uuid
         object_list = db.list_objects(cls.__name__, [uuid], virkning_fra,
                                       virkning_til, registreret_fra,
@@ -438,15 +435,15 @@ class OIORestObject(object):
         cls.service_name = hierarchy
         hierarchy = hierarchy.lower()
         class_name = cls.__name__.lower()
-        class_url = u"{0}/{1}/{2}".format(base_url,
-                                          hierarchy,
-                                          class_name)
-        cls_fields_url = u"{0}/{1}".format(class_url, u"fields")
+        class_url = "{0}/{1}/{2}".format(base_url,
+                                         hierarchy,
+                                         class_name)
+        cls_fields_url = "{0}/{1}".format(class_url, "fields")
         uuid_regex = (
             "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}" +
             "-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
         )
-        object_url = u'{0}/<regex("{1}"):uuid>'.format(
+        object_url = '{0}/<regex("{1}"):uuid>'.format(
             class_url,
             uuid_regex
         )
@@ -454,31 +451,31 @@ class OIORestObject(object):
         def get_classes_for_hierarchy():
             return cls.get_classes(hierarchy)
 
-        flask.add_url_rule(class_url, u'_'.join([cls.__name__, 'get_objects']),
+        flask.add_url_rule(class_url, '_'.join([cls.__name__, 'get_objects']),
                            cls.get_objects, methods=['GET'],
                            strict_slashes=False)
 
-        flask.add_url_rule(object_url, u'_'.join([cls.__name__, 'get_object']),
+        flask.add_url_rule(object_url, '_'.join([cls.__name__, 'get_object']),
                            cls.get_object, methods=['GET'])
 
-        flask.add_url_rule(object_url, u'_'.join([cls.__name__, 'put_object']),
+        flask.add_url_rule(object_url, '_'.join([cls.__name__, 'put_object']),
                            cls.put_object, methods=['PUT'])
         flask.add_url_rule(object_url,
-                           u'_'.join([cls.__name__, 'patch_object']),
+                           '_'.join([cls.__name__, 'patch_object']),
                            cls.patch_object, methods=['PATCH'])
         flask.add_url_rule(
-            class_url, u'_'.join([cls.__name__, 'create_object']),
+            class_url, '_'.join([cls.__name__, 'create_object']),
             cls.create_object, methods=['POST']
         )
 
         flask.add_url_rule(
-            object_url, u'_'.join([cls.__name__, 'delete_object']),
+            object_url, '_'.join([cls.__name__, 'delete_object']),
             cls.delete_object, methods=['DELETE']
         )
 
         # Structure URLs
         flask.add_url_rule(
-            cls_fields_url, u'_'.join([cls.__name__, 'fields']),
+            cls_fields_url, '_'.join([cls.__name__, 'fields']),
             cls.get_fields, methods=['GET']
         )
 
