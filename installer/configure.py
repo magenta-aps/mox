@@ -4,6 +4,7 @@ import os
 import pwd
 import grp
 import json
+from os import getenv
 from socket import gethostname
 from client import caller
 
@@ -24,8 +25,8 @@ user = pwd.getpwuid(uid).pw_name
 group = grp.getgrgid(gid).gr_name
 
 # Virtual environment and python executable
-virtualenv = "{root}/python-env".format(root=base_dir)
-python_exec = "{venv}/bin/python".format(venv=virtualenv)
+virtualenv = getenv("VIRTUALENV")
+python_exec = getenv("PYTHON_EXEC")
 
 # Create config
 db_config = {

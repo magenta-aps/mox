@@ -8,12 +8,8 @@ install_system_dependencies:
     - pkgs:
 
       # SYSTEM
-      - python-dev
-      - python-jinja2
       - build-essential
       - libxmlsec1-dev
-      - swig
-      - libpq-dev
       - ca-certificates
       - software-properties-common
 
@@ -27,13 +23,6 @@ install_system_dependencies:
 
       # AMQP
       - rabbitmq-server
-
-
-create_virtual_environment_for_application:
-  virtualenv.managed:
-    - name: {{ config.virtualenv }}
-    - system_site_packages: False
-    - user: {{ config.user }}
 
 
 create_upload_directory:
