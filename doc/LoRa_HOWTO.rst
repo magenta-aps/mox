@@ -16,7 +16,7 @@ writing data is described.
 
 The examples are given with the ``curl`` terminal command but should
 work equally well with a browser plugin capable of sending HTTP ``POST``,
-``PUT`` and ``DELETE`` requests.
+``PUT``, ``PATCH`` and ``DELETE`` requests.
 
 .. note::
    As an example, the REST interface for Organisation is specified
@@ -164,9 +164,11 @@ retrieved with a list or read operation - e.g: ::
 Updating and creating data
 ++++++++++++++++++++++++++
 
-To update existing and create new objects, the HTTP PUT and POST methods
-are used, respectively. The data related to the object are supplied as
-PUT or POST data as might e.g. be submitted from a form.
+To update existing and create new objects, the HTTP ``PUT``,
+``POST`` and ``PATCH`` methods are used, respectively. Use the request
+body to supply the data in _JSON_ form. Either directly with the :http:header:`Content-Type`
+as ``application/json`` as form data with a :http:header:`Content-Type` of
+``multipart/form-data`` and a single field, `json`, containing the data.
 
 Examples of valid JSON data for creation, update and import can be found
 in the directory `interface_test/test_data` in the source code.
@@ -199,6 +201,7 @@ An example: ::
 
     curl -k -sH "Content-Type: application/json" -X PUT -d "<JSON DATA>" -H "Authorization: $AUTH_TOKEN" https://moxdev.magenta-aps.dk/klassifikation/klasse/39a6ef88-ae26-4557-a48c-7d7c5662c609
 
+Alternatively, use a ``PATCH`` to only update certain fields.
 
 Import
 ------
