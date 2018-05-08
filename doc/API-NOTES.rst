@@ -212,7 +212,7 @@ particular REST operations can be seen in the folder
 Please note that the only distinction between an Update and an Import
 operation is that in the Import, an object with the corresponding UUID
 doesn't exist in the database. If it does, the PUT operation is
-interpreted as an Update.
+interpreted as an Update to replace the entire contents of the object.
 
 List/Search/Read operation common parameters
 --------------------------------------------
@@ -1295,7 +1295,7 @@ where
   "passivate" or "delete", but you can specify your own) 
 
 * ``method`` denotes the HTTP method to use when connecting to the REST interface.
-  Available are: GET, POST, PUT, DELETE and HEAD)
+  Available are: GET, POST, PUT, PATCH, DELETE and HEAD)
 
 * ``path`` denotes the REST path, e.g. "/klassifikation/facet/[uuid]", and ``[uuid]`` will be
   replaced with a uuid you specify when calling the operation
