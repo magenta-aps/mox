@@ -24,10 +24,10 @@ DECLARE
 	{{oio_type}}_candidates uuid[];
 	{{oio_type}}_candidates_is_initialized boolean;
 	--to_be_applyed_filter_uuids uuid[];
-	{%-for attribut , attribut_fields in attributter.iteritems() %} 
+	{%-for attribut , attribut_fields in attributter.items() %} 
 	attr{{attribut|title}}TypeObj {{oio_type|title}}{{attribut|title}}AttrType;
 	{%- endfor %}
-	{% for tilstand, tilstand_values in tilstande.iteritems() %}
+	{% for tilstand, tilstand_values in tilstande.items() %}
   	tils{{tilstand|title}}TypeObj {{oio_type|title}}{{tilstand|title}}TilsType;
   	{%- endfor %}
 	relationTypeObj {{oio_type|title}}RelationType;
@@ -72,7 +72,7 @@ END IF;
 --/****************************//
 --filter on attributes
 
-{%-for attribut , attribut_fields in attributter.iteritems() %} 
+{%-for attribut , attribut_fields in attributter.items() %} 
 --/**********************************************************//
 --Filtration on attribute: {{attribut|title}}
 --/**********************************************************//
@@ -188,7 +188,7 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 	LOOP
 		{{oio_type}}_candidates:=array(
 
-			{%-for attribut , attribut_fields in attributter.iteritems() %} 
+			{%-for attribut , attribut_fields in attributter.items() %} 
 
 			SELECT DISTINCT
 			b.{{oio_type}}_id 
@@ -242,7 +242,7 @@ END IF;
 
 --RAISE DEBUG 'registrering,%',registreringObj;
 
-{% for tilstand, tilstand_values in tilstande.iteritems() %}
+{% for tilstand, tilstand_values in tilstande.items() %}
 --/**********************************************************//
 --Filtration on state: {{tilstand|title}}
 --/**********************************************************//
