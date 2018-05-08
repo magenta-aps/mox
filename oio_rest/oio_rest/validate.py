@@ -40,6 +40,7 @@ def _generate_schema_object(properties, required, kwargs=None):
 
 # Mapping from DATABASE_STRUCTURE types to JSON schema types
 
+
 TYPE_MAP = {
     'aktoerattr': _generate_schema_object(
         {
@@ -207,7 +208,7 @@ def _handle_relation_metadata_all(obj, relation):
     """
     metadata_all = _get_metadata(obj, 'relationer', 'all')
     for key in metadata_all:
-        if metadata_all[key].has_key('type'):
+        if 'type' in metadata_all[key]:
             relation['items']['properties'][key] = TYPE_MAP[
                 metadata_all[key]['type']]
     return relation
@@ -229,9 +230,9 @@ def _handle_relation_metadata_specific(obj, relation_schema):
         properties = relation_schema[relation]['items']['properties']
         metadata = metadata_specific[relation]
         for key in metadata:
-            if metadata[key].has_key('type'):
+            if 'type' in metadata[key]:
                 properties[key] = TYPE_MAP[metadata[key]['type']]
-            if metadata[key].has_key('enum'):
+            if 'enum' in metadata[key]:
                 # Enum implies type = text
                 properties[key] = {
                     'type': 'string',

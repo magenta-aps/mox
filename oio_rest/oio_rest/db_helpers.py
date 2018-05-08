@@ -47,8 +47,7 @@ def get_relation_field_type(class_name, field_name):
         metadata = class_info['relationer_metadata']
         for relation in metadata:
             for key in metadata[relation]:
-                if field_name == key and metadata[relation][key].has_key(
-                        'type'):
+                if field_name == key and 'type' in metadata[relation][key]:
                     return metadata[relation][key]['type']
     return "text"
 
@@ -90,7 +89,7 @@ def get_relation_names(class_name):
         for c in db_struct:
             _relation_names[c] = [
                 a for a in db_struct[c]['relationer_nul_til_en'] +
-                           [b for b in db_struct[c]['relationer_nul_til_mange']]
+                [b for b in db_struct[c]['relationer_nul_til_mange']]
             ]
     return _relation_names[class_name.lower()]
 
@@ -139,10 +138,10 @@ def get_valid_search_parameters(class_name):
 
         # Add 'Dokument'-specific parameters not present in db_struct
         if _search_params.get('dokument'):
-            _search_params['dokument'].update([
-                                                  'varianttekst', 'deltekst'] +
-                                              get_document_part_relation_names()
-                                              )
+            _search_params['dokument'].update(
+                ['varianttekst', 'deltekst'] +
+                get_document_part_relation_names()
+            )
 
     return _search_params[class_name.lower()]
 

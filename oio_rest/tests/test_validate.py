@@ -28,8 +28,8 @@ class TestGetMandatory(unittest.TestCase):
 
     def test_sag(self):
         self.assertEqual(
-            ['beskrivelse', 'brugervendtnoegle', 'kassationskode', 'sagsnummer',
-             'titel'],
+            ['beskrivelse', 'brugervendtnoegle', 'kassationskode',
+             'sagsnummer', 'titel'],
             validate._get_mandatory('sag', 'egenskaber')
         )
 
@@ -376,18 +376,20 @@ class TestGenerateJSONSchema(unittest.TestCase):
                                 },
                                 'journalpostkode': {
                                     'type': 'string',
-                                    'enum': ['journalnotat', 'vedlagtdokument'],
+                                    'enum': ['journalnotat',
+                                             'vedlagtdokument'],
                                 },
                                 'uuid': {
                                     'type': 'string',
-                                    'pattern': '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-'
-                                               '[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-'
-                                               '[a-fA-F0-9]{12}$',
+                                    'pattern': '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}'
+                                               '-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}'
+                                               '-[a-fA-F0-9]{12}$',
                                 },
                                 'virkning': {'$ref': '#/definitions/virkning'},
                                 'objekttype': {'type': 'string'}
                             },
-                            'required': ['uuid', 'virkning', 'journalpostkode'],
+                            'required': ['uuid', 'virkning',
+                                         'journalpostkode'],
                             'additionalProperties': False
                         },
                     }
@@ -533,7 +535,8 @@ class TestGenerateJSONSchema(unittest.TestCase):
                                 'beskrivelse': {'type': 'string'},
                                 'hjemmel': {'type': 'string'},
                                 'offentlighedundtaget': {
-                                    '$ref': '#/definitions/offentlighedundtaget'
+                                    '$ref': '#/definitions/'
+                                            'offentlighedundtaget'
                                 },
                                 'principiel': {'type': 'boolean'},
                                 'kassationskode': {'type': 'string'},
@@ -571,7 +574,8 @@ class TestGenerateJSONSchema(unittest.TestCase):
                                 'major': {'type': 'integer'},
                                 'minor': {'type': 'integer'},
                                 'offentlighedundtaget': {
-                                    '$ref': '#/definitions/offentlighedundtaget'
+                                    '$ref': '#/definitions/'
+                                            'offentlighedundtaget'
                                 },
                                 'titel': {'type': 'string'},
                                 'virkning': {'$ref': '#/definitions/virkning'}
@@ -619,8 +623,9 @@ class TestGenerateJSONSchema(unittest.TestCase):
 
     def test_index_not_allowed_for_non_special_nul_til_mange_relations(self):
         relationer = validate._generate_relationer('organisation')
-        self.assertFalse(relationer['properties']['ansatte']['items'][
-                             'properties'].has_key('indeks'))
+        self.assertFalse(
+            'indeks' in relationer['properties']['ansatte']['items'][
+                'properties'])
 
     def test_object_type_is_organisation(self):
         quasi_org = {
@@ -853,7 +858,8 @@ class TestFacetSystematically(unittest.TestCase):
         See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
         further details
         """
-        del self.facet['attributter']['facetegenskaber'][0]['brugervendtnoegle']
+        del self.facet['attributter']['facetegenskaber'][0][
+            'brugervendtnoegle']
         self.assertValidationError()
 
     def test_bvn_not_string(self):
@@ -862,7 +868,8 @@ class TestFacetSystematically(unittest.TestCase):
         See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
         further details
         """
-        self.facet['attributter']['facetegenskaber'][0]['brugervendtnoegle'] = {
+        self.facet['attributter']['facetegenskaber'][0][
+            'brugervendtnoegle'] = {
             'dummy': 'This is not a string'
         }
         self.assertValidationError()
