@@ -60,7 +60,7 @@ At present, however, a token is acquired by calling the function
 `get-token` in the REST interface.
 
 This can be done manually, through a browser, or through the command
-line: ::
+line::
 
     curl https://moxdev.magenta-aps.dk/get-token -X POST -d "username=example&password=password"
 
@@ -84,7 +84,7 @@ Read
 
 In order to *read* an object, you can access its URL with its UUID, e.g.
 (and supposing we have stored the token as obtained above in the shell
-variable AUTH_TOKEN): ::
+variable AUTH_TOKEN)::
 
     curl -k -sH "Content-Type: application/json" -H "Authorization: $AUTH_TOKEN" -X GET https://moxdev.magenta-aps.dk/klassifikation/facet/81b362ee-8402-4371-873d-f8b4a749d241
 
@@ -95,7 +95,7 @@ List
 
 Apart from accessing a single object at its URL, you can also list
 objects by specifying one or more UUIDs as parameters. E.g., to list two
-objects of type OrganisationEnhed: ::
+objects of type OrganisationEnhed::
 
     curl -k -sH "Content-Type: application/json" -H "Authorization $AUTH_TOKEN" -X GET "https://moxdev.magenta-aps.dk/organisation/organisationenhed?uuid=7c6e38f8-e5b5-4b87-af52-9693e074f5ee&uuid=9765cdbf-9f42-4e9d-897b-909af549aba8"
 
@@ -113,7 +113,7 @@ Search
 
 You can also *search* for an object by specifying values of attributes
 or relations as search parameters. You can, e.g., find *all* objects of
-class Klassifikation by searching for any value of "brugervendtnoegle": ::
+class Klassifikation by searching for any value of "brugervendtnoegle"::
 
     curl -k -sH "Content-Type: application/json" -H "Authorization: $AUTH_TOKEN" -X GET https://organisation/organisation?brugervendtnoegle=%
 
@@ -125,7 +125,7 @@ have, but apart from that, the attribute names should be spelled out.
 
 It is possible to search for relations (links) as well by specifying
 the value, which may be either an UUID or a URN. E.g., for finding all
-instances of OrganisationFunktion which belongs to "Direktion": ::
+instances of OrganisationFunktion which belongs to "Direktion"::
 
     curl -k -sH "Content-Type: application/json" -H "Authorization $AUTH_TOKEN" -X GET https://moxdev.magenta-aps.dk/organisation/organisationfunktion?tilknyttedeenheder=urn:Direktion
 
@@ -137,7 +137,7 @@ a given time or interval.
 Note that while the result of a *list* or *read* operation is given as
 the JSON representation of the object(s) returned, the result of a
 *search* operation is always given as a list of UUIDs which may later be
-retrieved with a list or read operation - e.g: ::
+retrieved with a list or read operation - e.g::
 
     agger@gefion:~/src/mox/interface_test$ curl -k -sH "Content-Type: application/json" -H "Authorization: $AUTH_TOKEN" -X GET "https://moxdev.magenta-aps.dk/organisation/organisationenhed?brugervendtnoegle=Direktion&tilhoerer=urn:KL&enhedstype=urn:Direktion"
     {
@@ -195,7 +195,7 @@ states and relations.
 The ``PUT`` request must be issued to the object's URL - i.e., including the
 UUID.
 
-An example: ::
+An example::
 
     curl -k -sH "Content-Type: application/json" -X PUT -d "<JSON DATA>" -H "Authorization: $AUTH_TOKEN" https://moxdev.magenta-aps.dk/klassifikation/klasse/39a6ef88-ae26-4557-a48c-7d7c5662c609
 
@@ -214,7 +214,7 @@ The data must contain a complete object in exactly the same format as
 for the create operation, but must be PUT to the objects URL as given by
 its UUID.
 
-An example: ::
+An example::
 
     curl -k -sH "Content-Type: application/json" -H "Authorization: $AUTH_TOKEN" -X PUT -d "JSON DATA" /klassifikation/facet/1b1e2de1-6d95-4200-9b60-f85e70cc37cf
 
@@ -229,7 +229,7 @@ An object is passivated by sending a special update, ``PUT``, request
 whose JSON data only contains two fields, an optional note field and
 the life cycle code "Passiv".
 
-E.g., the JSON may look like this: ::
+E.g., the JSON may look like this::
 
     {
         "Note": "Passivate this object!",
@@ -245,7 +245,7 @@ Delete
 ------
 
 An object is deleted by sending a ``DELETE`` request. This might e.g.
-look like this: ::
+look like this::
 
     curl -k -sH "Content-Type: application/json" -H "Authorization: $AUTH_TOKEN" -X DELETE -d "$(cat test_data/facet_slet.json)" https://moxdev.magenta-aps.dk/organisation/organisationenhed/7c6e38f8-e5b5-4b87-af52-9693e074f5ee
 
