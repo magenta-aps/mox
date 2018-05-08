@@ -26,5 +26,6 @@ export MOX_AMQP_VHOST="/"
 
 # Execute tests
 $PYTHON -m pip install -e .
+$PYTHON -m pip install -r requirements-test.txt
 $PYTHON -m flake8 --exit-zero
 $PYTHON -m pytest
