@@ -63,7 +63,7 @@ This can be done manually, through a browser, or through the command
 line::
 
     curl -X POST -d "username=example&password=password" \
-      https://moxdev.magenta-aps.dk/get-token
+      https://mox/get-token
 
 
 This token will, in the current application, be valid for five minutes.
@@ -90,7 +90,7 @@ variable AUTH_TOKEN)::
     curl -k -sH "Content-Type: application/json" \
       -H "Authorization: $AUTH_TOKEN" \
       -X GET \
-      https://moxdev.magenta-aps.dk/klassifikation/facet/81b362ee-8402-4371-873d-f8b4a749d241
+      https://mox/klassifikation/facet/81b362ee-8402-4371-873d-f8b4a749d241
 
 The JSON representation of the desired object will be returned.
 
@@ -104,7 +104,7 @@ objects of type OrganisationEnhed::
     curl -k -sH "Content-Type: application/json" \
       -H "Authorization $AUTH_TOKEN" \
       -X GET \
-      "https://moxdev.magenta-aps.dk/organisation/organisationenhed?uuid=7c6e38f8-e5b5-4b87-af52-9693e074f5ee&uuid=9765cdbf-9f42-4e9d-897b-909af549aba8"
+      "https://mox/organisation/organisationenhed?uuid=7c6e38f8-e5b5-4b87-af52-9693e074f5ee&uuid=9765cdbf-9f42-4e9d-897b-909af549aba8"
 
 The listed objects will be given in their JSON representation.
 
@@ -140,7 +140,7 @@ instances of OrganisationFunktion which belongs to "Direktion"::
     curl -k -sH "Content-Type: application/json" \
       -H "Authorization $AUTH_TOKEN" \
       -X GET \
-      https://moxdev.magenta-aps.dk/organisation/organisationfunktion?tilknyttedeenheder=urn:Direktion
+      https://mox/organisation/organisationfunktion?tilknyttedeenheder=urn:Direktion
 
 
 Search parameters may be combined and may include the time restrictions
@@ -155,7 +155,7 @@ retrieved with a list or read operation - e.g::
     $ curl -k -sH "Content-Type: application/json" \
     >  -H "Authorization: $AUTH_TOKEN" \
     >  -X GET \
-    >  "https://moxdev.magenta-aps.dk/organisation/organisationenhed?brugervendtnoegle=Direktion&tilhoerer=urn:KL&enhedstype=urn:Direktion"
+    >  "https://mox/organisation/organisationenhed?brugervendtnoegle=Direktion&tilhoerer=urn:KL&enhedstype=urn:Direktion"
     {
     "results": [
         [
@@ -197,7 +197,7 @@ Klasse. ::
     curl -k -H "Content-Type: application/json" \
       -X POST -d "<JSON DATA>" \
       -H "Authorization: $AUTH_TOKEN" \
-      https://moxdev.magenta-aps.dk/klassifikation/klasse)
+      https://mox/klassifikation/klasse)
 
 
 This will create a new Registrering of the object, valid from now to
@@ -219,7 +219,7 @@ An example::
     curl -k -sH "Content-Type: application/json" \
       -X PUT -d "<JSON DATA>" \
       -H "Authorization: $AUTH_TOKEN" \
-      https://moxdev.magenta-aps.dk/klassifikation/klasse/39a6ef88-ae26-4557-a48c-7d7c5662c609
+      https://mox/klassifikation/klasse/39a6ef88-ae26-4557-a48c-7d7c5662c609
 
 Alternatively, use a ``PATCH`` to only update certain fields.
 
@@ -276,7 +276,7 @@ look like this::
       -H "Authorization: $AUTH_TOKEN" \
       -X DELETE \
       -d "$(cat test_data/facet_slet.json)" \
-      https://moxdev.magenta-aps.dk/organisation/organisationenhed/7c6e38f8-e5b5-4b87-af52-9693e074f5ee
+      https://mox/organisation/organisationenhed/7c6e38f8-e5b5-4b87-af52-9693e074f5ee
 
 After an object is deleted, it may still be retrieved by a read or list
 operation, but it will not appear in search results unless the
@@ -289,12 +289,12 @@ Appendix: Self-documentation
 
 * On a running LoRa system, it will always be possible to acquire, in
   JSON,  a sitemap of valid URLs on the ``/site-map/`` URL, e.g. located
-  at https://moxdev.magenta-aps.dk/site-map.
+  at https://mox/site-map.
 
 * Similarly, for each service, a JSON representation of the
   hierarchy's classes and their fields may be found at the URL
   ``/<service>/classes/``, e.g. at
-  https://moxdev.magenta-aps.dk/dokument/classes.
+  https://mox/dokument/classes.
 
 
 
