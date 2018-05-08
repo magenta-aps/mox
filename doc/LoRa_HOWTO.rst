@@ -207,21 +207,22 @@ infinity.
 Update
 ------
 
-To change an object, issue a ``PUT`` request containing the JSON
+To change an object, issue a ``PATCH`` request containing the JSON
 representation of the changes as they apply to the object's attributes,
 states and relations.
 
-The ``PUT`` request must be issued to the object's URL - i.e., including the
+The ``PATCH`` request must be issued to the object's URL - i.e., including the
 UUID.
 
 An example::
 
     curl -k -sH "Content-Type: application/json" \
-      -X PUT -d "<JSON DATA>" \
+      -X PATCH -d "<JSON DATA>" \
       -H "Authorization: $AUTH_TOKEN" \
       https://mox/klassifikation/klasse/39a6ef88-ae26-4557-a48c-7d7c5662c609
 
-Alternatively, use a ``PATCH`` to only update certain fields.
+Alternatively, use a ``PUT`` to replace the entire object, including all
+Virkning periods.
 
 Import
 ------
