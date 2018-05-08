@@ -297,11 +297,11 @@ Appendix: Self-documentation
   https://mox/dokument/classes.
 
 
+.. caution::
 
-**TODO:** The JSON representing the classes should probably be
-pretty-printed as is the case with the JSON for the sitemap. Also note
-that the structure of each class is not completely analogous to the
-structure of the input JSON as it uses the concept of "overrides". This
-should also be fixed.
-
+   The JSON representing the classes should probably be
+   pretty-printed as is the case with the JSON for the sitemap. Also
+   note that the structure of each class is not completely analogous
+   to the structure of the input JSON as it uses the concept of
+   "overrides". This should also be fixed.
 
