@@ -1,7 +1,7 @@
 import pika
 import json
 
-from . import settings
+import settings
 
 
 def log_service_call(service_name, class_name, time,

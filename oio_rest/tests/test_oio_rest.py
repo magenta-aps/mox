@@ -291,7 +291,8 @@ class TestOIORestObject(TestCase):
                       new=db_structure):
 
             # Act
-            actual_fields = json.loads(self.testclass.get_fields().data)
+            actual_fields = json.loads(
+                self.testclass.get_fields().get_data(as_text=True))
 
             # Assert
             self.assertEqual(expected_fields, actual_fields)
@@ -1055,7 +1056,8 @@ class TestOIOStandardHierarchy(TestCase):
             get_classes = flask.add_url_rule.call_args[0][2]
 
             with self.app.test_request_context():
-                actual_result = json.loads(get_classes().data)
+                actual_result = json.loads(
+                        get_classes().get_data(as_text=True))
 
             self.assertDictEqual(actual_result, expected_result)
 
