@@ -39,7 +39,7 @@ until we actually have more than one version of the protocol to support.
 A note for developers
 ---------------------
 
-This guide assumes that the LoRA is configured to use SAML
+This guide assumes that the LoRA installation uses SAML
 authentication, which is the case when interacting with deployed
 instances. For development, however, it is frequently easier to
 disable authentication in ``settings.py``::
