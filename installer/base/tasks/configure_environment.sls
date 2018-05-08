@@ -36,17 +36,6 @@ create_virtual_environment_for_application:
     - user: {{ config.user }}
 
 
-install_common_lib:
-  virtualenv.managed:
-    - name: {{ config.virtualenv }}
-    - system_site_packages: False
-    - user: {{ config.user }}
-    - pip_pkgs:
-      - {{ config.base_dir }}/lib/common
-    - require:
-      - create_virtual_environment_for_application
-
-
 create_upload_directory:
   file.directory:
     - name: /var/mox
