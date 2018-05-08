@@ -11,6 +11,7 @@ from __future__ import print_function
 import json
 import os
 import pprint
+import re
 import subprocess
 import sys
 import tempfile
@@ -342,6 +343,57 @@ class TestCaseMixin(object):
 
 class TestCase(TestCaseMixin, flask_testing.TestCase):
     pass
+
+
+class TestCreateObject(TestCase):
+    UUID_REGEX = re.compile('[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-'
+                            '[a-fA-F0-9]{4}-[a-fA-F0-9]{12}')
+
+    def setUp(self):
+        super(TestCreateObject, self).setUp()
+        self.standard_virkning1 = {
+            "from": "2000-01-01 12:00:00+01",
+            "from_included": True,
+            "to": "2020-01-01 12:00:00+01",
+            "to_included": False
+        }
+        self.standard_virkning2 = {
+            "from": "2020-01-01 12:00:00+01",
+            "from_included": True,
+            "to": "2030-01-01 12:00:00+01",
+            "to_included": False
+        }
+        self.reference = {
+            'uuid': '00000000-0000-0000-0000-000000000000',
+            'virkning': self.standard_virkning1
+        }
+
+    def post(self, url, payload):
+        """
+        Make HTTP POST request to Lora url
+        :param payload: dictionary containing payload to LoRa
+        :param url: E.g. '/organisation/organisation'
+        :return: Response from LoRa
+        """
+        r = self.client.post(
+            url,
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        return r
+
+    def check_response_201(self, response):
+        """
+        Verify that the response from LoRa is 201 and contains the correct
+        JSON.
+        :param response: Response from LoRa when creating a new object
+        """
+        self.assertEquals(201, response.status_code)
+        self.assertEquals(1, len(response.json))
+        self.assertTrue(self.UUID_REGEX.match(response.json['uuid']))
+
+    def check_response_400(self, url, obj):
+        self.assertRequestFails(url, 400, json=obj)
 
 
 @click.command()
