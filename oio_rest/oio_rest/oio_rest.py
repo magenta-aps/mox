@@ -140,7 +140,7 @@ class OIOStandardHierarchy(object):
             structure = db_structure.REAL_DB_STRUCTURE
             clsnms = [c.__name__.lower() for c in cls._classes]
             hierarchy_dict = {c: structure[c] for c in clsnms}
-            return json.dumps(hierarchy_dict)
+            return jsonify(hierarchy_dict)
 
         flask.add_url_rule(
             classes_url, u'_'.join([hierarchy, 'classes']),
@@ -438,7 +438,7 @@ class OIORestObject(object):
         class_key = cls.__name__.lower()
         # TODO: Perform some transformations to improve readability.
         class_dict = structure[class_key]
-        return json.dumps(class_dict)
+        return jsonify(class_dict)
 
     @classmethod
     def create_api(cls, hierarchy, flask, base_url):

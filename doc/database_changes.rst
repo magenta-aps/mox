@@ -69,7 +69,7 @@ will help you discover situations where a patch failed to apply.
    `.org` file in which you can introduce your changes. If, as an
    example, you are planning to make changes to the function
    `as_create_or_import_tilstand`, you should execute the command below
-   to complete this step: ::
+   to complete this step::
 
     cp ./generated-files/as_create_or_import_tilstand.sql ./patches/as_create_or_import_tilstand.org.sql
 
@@ -97,7 +97,7 @@ will help you discover situations where a patch failed to apply.
 7. Make sure that the patch is applied in the relevant section of the
    `recreatedb.sh` script. That is, undo what you did in step 5 or - if
    targeting a previously unpatched function/file - introduce a line
-   similar to the one below, substituting names as needed: ::
+   similar to the one below, substituting names as needed::
 
     patch --fuzz=3 -i ../patches/as_create_or_import_tilstand.sql.diff
 

@@ -33,7 +33,7 @@ be obtained by running the command ::
 
 in a command prompt. Note that this requires Python Docutils to be
 installed - on Ubuntu or Debian, this can be done with the following
-command: ::
+command::
 
     sudo apt-get install python-docutils
 
@@ -94,7 +94,7 @@ Run ``install.sh -h`` for a list of options.
 **NOTE:** PostgreSQL 9.3 or later is required. If PostgreSQL is not installed
 on your system already, it will be during installation.
 
-To run the API for testing or development purposes, run: ::
+To run the API for testing or development purposes, run::
 
     oio_rest/oio_api.sh 
 
@@ -105,15 +105,15 @@ The install.sh script creates an Apache VirtualHost for oio rest and
 MoxDocumentUpload.
 
 To run the OIO Rest Mox Agent (the one listening for messages and
-relaying them onwards to the REST interface), run: ::
+relaying them onwards to the REST interface), run::
 
     agents/MoxRestFrontend/moxrestfrontend.sh
 
-**NOTE:** You can start the agent in the background by running: ::
+**NOTE:** You can start the agent in the background by running::
 
     sudo service moxrestfrontend start
 
-To test sending messages through the agent, run: ::
+To test sending messages through the agent, run::
 
     ./test.sh
 
@@ -122,7 +122,7 @@ which is enabled by default. If you need to test without SAML authentication,
 you will need to turn it off as described below. 
 
 To request a token for the username from the IdP and output it in
-base64-encoded gzipped format, run: ::
+base64-encoded gzipped format, run::
 
     ./auth.sh -u <username> -p
 
@@ -139,7 +139,7 @@ Quick install
 -------------
 
 These commands should get you up and running quickly on a machine with a 
-completely new Ubuntu 14.04 Server Edition: ::
+completely new Ubuntu 14.04 Server Edition::
 
     sudo apt-get install git
     cd /srv
@@ -171,19 +171,19 @@ Make sure the parameter ``moxrestfrontend.rest.host`` in
 ``agents/MoxRestFrontend/moxrestfrontend.conf`` is set to
 ``http://localhost:5000``.
 
-Start the (AMQP) MOX REST frontend agent: ::
+Start the (AMQP) MOX REST frontend agent::
 
     sudo service moxrestfrontend start
 
-Start the REST API: ::
+Start the REST API::
 
     oio_rest/oio_api.sh
 
-Run the tests: ::
+Run the tests::
 
     ./test.sh
 
-This should give you a lot of output like this: ::
+This should give you a lot of output like this::
 
     Deleting bruger, uuid: 1e874f85-07e5-40e5-81ed-42f21fc3fc9e
     Getting authtoken
@@ -212,14 +212,14 @@ particular REST operations can be seen in the folder
 Please note that the only distinction between an Update and an Import
 operation is that in the Import, an object with the corresponding UUID
 doesn't exist in the database. If it does, the PUT operation is
-interpreted as an Update.
+interpreted as an Update to replace the entire contents of the object.
 
 List/Search/Read operation common parameters
 --------------------------------------------
 
 All parameter names are case-insensitive.
 
-Both the list, search, and read operations accept the following parameters: ::
+Both the list, search, and read operations accept the following parameters::
 
     &virkningFra=<datotid>&virkningTil=<datotid>
     &registreretFra=<datotid>&registreretTil=<datotid>
@@ -233,7 +233,7 @@ giving the "actual state" as the results.
 The results that are returned are filtered by those that overlap with the
 given date/time ranges.
 
-Alternatively the following parameters can be used: ::
+Alternatively the following parameters can be used::
 
    &virkningstid=<datotid>
    &registreringstid=<datotid>
@@ -247,19 +247,19 @@ List operation
 A GET request is interpreted as a list operation if, apart from date
 ranges as specified above, only UUIDs are specified.
 
-It's possible to *access* a single object at its URL, e.g.: ::
+It's possible to *access* a single object at its URL, e.g.::
 
     https://referencedata.dk/klassifikation/klasse/1ab754c7-7126-494e-8a4d-9ee3054709fa
 
 
 It's also possible to use a slightly different syntax to *list* objects,
-e.g.: ::
+e.g.::
 
     https://referencedata.dk/klassifikation/klasse?uuid=1ab754c7-7126-494e-8a4d-9ee3054709fa
 
 The point of the last operation is that it is possible to list more than
 one UUID. Accessing the following URL will, for instance, retrieve the
-contents of three objects of the type Klasse: ::
+contents of three objects of the type Klasse::
 
    curl -H "Authorization: $AUTH_TOKEN" 'https://referencedata.dk/klassifikation/klasse?uuid=1ab754c7-7126-494e-8a4d-9ee3054709fa&uuid=a75af34e-1ce3-44d5-ae9a-76f246fd4b10&uuid=77cd9b29-ef12-418b-bde4-6703aea007e3' 
 
@@ -287,7 +287,7 @@ object.
 
 Search parameter names (attributes, relations, states, etc...) are
 case-insensitive, e.g. to search on the "Ejer" attribute, one can specify
-either: ::
+either::
 
     &ejer=urn:cpr12312323 or &Ejer=urn:cpr12312323
 
@@ -307,7 +307,7 @@ value "abc%def". Contrary, to typical SQL LIKE syntax, the character "_"
 (underscore) matches only the underscore character (and not "any character").
 
 When searching on relations, one can limit the relation to a specific object
-type by specifying a search parameter of the format: ::
+type by specifying a search parameter of the format::
 
     &<relation>:<objecttype>=<uuid|urn>
 
@@ -340,7 +340,7 @@ To search on the sub-fields of the "JournalPost" relation in Sag, requires a
 special dot-notation syntax, due to possible ambiguity with other search
 parameters (for example, the "titel" parameter).
 
-The following are some examples: ::
+The following are some examples::
 
   &journalpostkode=vedlagtdokument
   &journalnotat.titel=Kommentarer
@@ -377,7 +377,7 @@ request as separate "form" fields.
 
 The "indhold" attribute of any DokumentDel may be a URI pointing to
 one of these uploaded file "fields". In that case, the URI must be of the
-format: ::
+format::
 
     field:myfield
 
@@ -395,7 +395,7 @@ File download
 When performing a read/list operation on a Dokument, the DokumentDel
 subobjects returned will include an "indhold" attribute. This attribute has
 a value that is the "content URI" of that file on the OIO REST API server.
-An example: ::
+An example::
 
     "indhold": "store:2015/08/14/11/53/4096a8df-ace7-477e-bda1-d5fdd7428a95.bin"
 
@@ -442,7 +442,7 @@ Examples Of The Effects Of The Merging Logic When Updating Attributes
 ----------------------------------------------------------------------
 
 As an example (purely made up to suit the purpose), lets say we have a Facet 
-object in the DB, where the current 'Egenskaber' looks like this: ::
+object in the DB, where the current 'Egenskaber' looks like this::
 
   ...
   "facetegenskaber": [ 
@@ -465,7 +465,7 @@ object in the DB, where the current 'Egenskaber' looks like this: ::
   ...
 
 Let's say we now supply the following fragment as part of the JSON body to the 
-update operation: ::
+update operation::
 
   ...
   "facetegenskaber": [ 
@@ -482,7 +482,7 @@ update operation: ::
   ]
   ...
 
-The resulting 'Egenskaber' of the Facet would look like this: ::
+The resulting 'Egenskaber' of the Facet would look like this::
 
   ...
   "facetegenskaber": [ 
@@ -547,7 +547,7 @@ Examples Of The Effects Of The Merging Logic When Updating States
 ----------------------------------------------------------------------
 
 Lets say we have a Facet object, where the state 'Publiceret' look likes this 
-in the DB: ::
+in the DB::
 
   ...
   "tilstande": { 
@@ -566,7 +566,7 @@ in the DB: ::
   ...
 
 Lets say that we now, provide the following fragment as part of the JSON body to 
-the update operation of the REST-api: ::
+the update operation of the REST-api::
 
   ...
   "tilstande": { 
@@ -585,7 +585,7 @@ the update operation of the REST-api: ::
   ...
 
 The resulting 'Publiceret' state produced by the update operation, would look 
-like this: ::
+like this::
 
   ...
   "tilstande": { 
@@ -637,7 +637,7 @@ Relations When Updating Object' we differentiate between relations with
 cardinality 0..1 and 0..n (see beforementioned section).
 
 Lets say we have an Facet object in the database, which has the following 
-'ansvarlig' (cardinality 0..1) relation in place: ::
+'ansvarlig' (cardinality 0..1) relation in place::
 
   ...
   "relationer": { 
@@ -658,7 +658,7 @@ Lets say we have an Facet object in the database, which has the following
 
 
 Lets say we now provide the following fragment as part of the incoming JSON 
-body sent to the update operation: ::
+body sent to the update operation::
 
   ...
   "relationer": { 
@@ -677,7 +677,7 @@ body sent to the update operation: ::
         }
   ...
 
-The resulting 'ansvarlig' relation of the Facet object would look like this: ::
+The resulting 'ansvarlig' relation of the Facet object would look like this::
 
   ...
   "relationer": { 
@@ -725,7 +725,7 @@ If you wish to delete / clear relations, see the section regading
 If we want to update relations of a type with unlimited cardinality, we need to
 supply *the full list* of the relations of that particalar type to the update
 operation. Lets say we have a Facet object in the DB with the following 
-'redaktoerer'-relations in place: ::
+'redaktoerer'-relations in place::
 
   ...
   "relationer": { 
@@ -756,7 +756,7 @@ operation. Lets say we have a Facet object in the DB with the following
 
 
 Lets say we now provide the following fragment as part of the JSON body sent to
-the update operation: ::
+the update operation::
 
   ...
   "relationer": { 
@@ -776,7 +776,7 @@ the update operation: ::
   ...
 
 The resulting 'redaktoerer' part of the relations of the Facet object, 
-will look like this: ::
+will look like this::
 
   ...
   "relationer": { 
@@ -818,7 +818,7 @@ without specifying the full list of the relations of the given type. You can
 update a specific relation instance, making use of its index value.
 
 Lets say that you have a 'Sag' object with the following 'andrebehandlere' 
-relations in place in the DB: ::
+relations in place in the DB::
 
   ...
   "relationer": {
@@ -851,7 +851,7 @@ relations in place in the DB: ::
   ...
 
 Lets say you now provide the following fragment as part of the JSON body 
-provided to the update operation of the Sag object: ::
+provided to the update operation of the Sag object::
 
   ...
   "relationer": {
@@ -883,7 +883,7 @@ provided to the update operation of the Sag object: ::
   }
   ...
 
-The result would be the following: ::
+The result would be the following::
 
   ...
   "relationer": {
@@ -956,7 +956,7 @@ Deleting / Clearing Attributes
 
 To clear / delete a previously set attribute value – lets say the
 egenskab 'supplement' of a Facet object – specify the empty string as
-the attribute value in the JSON body: ::
+the attribute value in the JSON body::
 
   …
   "attributter": { 
@@ -978,7 +978,7 @@ the attribute value in the JSON body: ::
 To delete all previously set attribute values of a specific kind - for
 all 'virknings' periods - you may simply specify an empty list for the
 given type of attribute. Eg. to clear all 'egenskaber' for a Facet - for
-all 'virknings' periods, you should do this: ::
+all 'virknings' periods, you should do this::
 
   …
   "attributter": { 
@@ -1005,7 +1005,7 @@ Similar to the procedure stated above for the attributes -
 clearing/deleting previously set states is done be supplying the empty
 string as value and the desired virknings period. Eg. to clear state
 'publiceret' of a Facet object, the relevant part of the JSON body
-should look like this: ::
+should look like this::
 
   ...
    "tilstande": { 
@@ -1054,7 +1054,7 @@ Again, similar to the procedure stated above for the attributes and
 states, clearing a previously set relation with cardinality 0..1 is done
 by supplying empty strings for both uuid and urn of the relation. Eg. to
 clear a previously set the 'ansvarlig' of a Facet object, the specific part
-of the JSON body would look like this: ::
+of the JSON body would look like this::
 
   ...
   "relationer": { 
@@ -1088,7 +1088,7 @@ uuid and urn and with a 'virknings' period as desired.
 
 
 Specifying an explicitly empty object will clear all the relations of
-the object. Eg.: ::
+the object. Eg.::
 
   ...
     "relationer": {}
@@ -1120,7 +1120,7 @@ this: ::
   ...
 
 To delete / clear all the "varianter" of a Dokument, you should
-explicitly specify an empty list in the JSON body. Eg. : ::
+explicitly specify an empty list in the JSON body. Eg. ::
 
   ...
   "varianter": [],
@@ -1137,7 +1137,7 @@ To clear / delete a specify Dokument Del of a Dokument Variant you
 should clear all the Dokument Del 'egenskaber' and Dokument Del
 relations explicitly. Eg. to clear the 'Kap. 1' Del of the
 "offentliggørelsesvariant", you should supply the specific part of the
-JSON body to the update Dokument operation like this: ::
+JSON body to the update Dokument operation like this::
 
   ...
   "varianter": [
@@ -1154,7 +1154,7 @@ JSON body to the update Dokument operation like this: ::
 
 To clear / delete all the "Dele" of a Variant, you should explicitly
 specify an empty list. Eg. for Del 'Kap. 1'  of a
-"offentliggørelsesvariant, it would look like this: ::
+"offentliggørelsesvariant, it would look like this::
 
   ...
   "varianter": [
@@ -1190,7 +1190,7 @@ To clear some or all the 'egenskaber' of a Dokument Del for a particular
 'virknings' period, you should use the empty string to clear the
 unwanted values. Eg. to clear 'lokation' egenskab value of 'Kap. 1' of a
 'offentliggørelsesvariant' for the year 2014 the particular part of the
-JSON body would look like this: ::
+JSON body would look like this::
 
   ...
   "varianter": [
@@ -1221,7 +1221,7 @@ Deleting / Clearing relations of a Dokument Del
 To clear all the relations of a particular Dokument Del, you should
 explictly specify an empty list. Eg. to clear all the relations of the
 'Kap. 1' Dokument Del of the 'offentliggørelsesvariant' Variant, the
-specific part of the JSON body would look like this: ::
+specific part of the JSON body would look like this::
 
   ...
   "varianter": [
@@ -1268,12 +1268,12 @@ or ::
 
     Map<String, ObjectType> objectTypes = ObjectType.load(Properties properties). 
     
-The properties must contain a set of keys adhering to the format: ::
+The properties must contain a set of keys adhering to the format::
 
     type.[name].[operation].method = [method]
     type.[name].[operation].path = [path]
 
-For example: ::
+For example::
 
     type.facet.create.method = POST
     type.facet.create.path = /klassifikation/facet
@@ -1295,14 +1295,14 @@ where
   "passivate" or "delete", but you can specify your own) 
 
 * ``method`` denotes the HTTP method to use when connecting to the REST interface.
-  Available are: GET, POST, PUT, DELETE and HEAD)
+  Available are: GET, POST, PUT, PATCH, DELETE and HEAD)
 
 * ``path`` denotes the REST path, e.g. "/klassifikation/facet/[uuid]", and ``[uuid]`` will be
   replaced with a uuid you specify when calling the operation
 
 
 
-You also need a ``MessageSender``  object, which can be created with: ::
+You also need a ``MessageSender``  object, which can be created with::
 
     new MessageSender(String queueInterface, String queue);
     
