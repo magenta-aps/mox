@@ -1,7 +1,3 @@
-# Install oio_common
--e ../oio_common
-
-# PyPi
 requests==2.18.4
 pytz>=2018.3
 Flask==0.12.2

@@ -10,7 +10,6 @@ install_oio_rest_requirements:
     - system_site_packages: False
     - user: {{ config.user }}
     - pip_pkgs:
-      - {{ config.base_dir }}/oio_common
       - {{ config.base_dir }}/oio_rest
       - gunicorn
 
