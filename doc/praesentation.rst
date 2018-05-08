@@ -152,7 +152,8 @@ standardiseret REST-interface. Hvert objekt "bor" på stien ::
    https://mox.magenta-aps.dk/organisation/bruger/de305d54-75b4-431b-adb2-eb6b9e546014
 
 Som det er standard i REST-interfaces, kan man oprette, opdatere og læse
-objekter ved hjælp af HTTP-protokollens kommandoer PUT, POST og GET.
+objekter ved hjælp af HTTP-protokollens kommandoer PUT, PATCH, POST og
+GET.
 
 Kildekoden understøtter alle ud af boksen og ved en
 standard-installation alle fire services, men det er muligt at lave en

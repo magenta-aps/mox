@@ -1,5 +1,18 @@
-# Install this package (oio_rest)
--e .
-
 # Install oio_common
 -e ../oio_common
+
+# PyPi
+requests==2.18.4
+pytz>=2018.3
+Flask==0.12.2
+Jinja2==2.10
+MarkupSafe==1.0
+Werkzeug==0.14.1
+enum34==1.1.6
+itsdangerous==0.24
+psycopg2-binary==2.7.4
+wsgiref==0.1.2
+python3-saml==1.4.0
+pexpect==4.4.0
+python-dateutil==2.7.0
+pika>=0.10.0
