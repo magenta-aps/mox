@@ -251,7 +251,7 @@ DATABASE_STRUCTURE = {
             "byggeri", "fredning", "journalpost"
         ],
         'relationer_metadata': {
-            'all': {
+            '*': {
                 'indeks': {'type': 'int'}
             },
             'journalpost': {
@@ -319,7 +319,7 @@ DATABASE_STRUCTURE = {
             "samtykke", "tilstandsdokument"
         ],
         'relationer_metadata': {
-            'all': {
+            '*': {
                 'indeks': {'type': 'int'}
             },
             'tilstandsvaerdi': {
@@ -358,7 +358,7 @@ DATABASE_STRUCTURE = {
             "udfoerer", "deltager"
         ],
         'relationer_metadata': {
-            'all': {
+            '*': {
                 'indeks': {'type': 'int'},
                 'aktoerattr': {'type': 'aktoerattr'}
             },
@@ -391,7 +391,7 @@ DATABASE_STRUCTURE = {
             "indsatsdokument"
         ],
         'relationer_metadata': {
-            'all': {
+            '*': {
                 'indeks': {'type': 'int'}
             },
         }

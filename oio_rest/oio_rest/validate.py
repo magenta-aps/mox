@@ -206,7 +206,7 @@ def _handle_relation_metadata_all(obj, relation):
     :param relation: The base relation to update.
     :return: Dictionary representing the updated relation.
     """
-    metadata_all = _get_metadata(obj, 'relationer', 'all')
+    metadata_all = _get_metadata(obj, 'relationer', '*')
     for key in metadata_all:
         if 'type' in metadata_all[key]:
             relation['items']['properties'][key] = TYPE_MAP[
@@ -226,7 +226,7 @@ def _handle_relation_metadata_specific(obj, relation_schema):
     """
     metadata_specific = db.REAL_DB_STRUCTURE[obj].get('relationer_metadata',
                                                       [])
-    for relation in [key for key in metadata_specific if not key == 'all']:
+    for relation in [key for key in metadata_specific if not key == '*']:
         properties = relation_schema[relation]['items']['properties']
         metadata = metadata_specific[relation]
         for key in metadata:

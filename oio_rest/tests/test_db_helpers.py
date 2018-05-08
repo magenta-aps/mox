@@ -139,7 +139,7 @@ class TestDBHelpers(TestCase):
     @patch('oio_rest.db_helpers.db_struct', new={
         'testclass1': {
             'relationer_metadata': {
-                'all': {
+                '*': {
                     'indeks': {'type': 'int'},
                     'key1': {'type': 'value_override1'},
                 },
@@ -167,7 +167,7 @@ class TestDBHelpers(TestCase):
     @patch('oio_rest.db_helpers.db_struct', new={
         'testclass1': {
             'relationer_metadata': {
-                'all': {
+                '*': {
                     'indeks': {'type': 'int'},
                     'key1': {'type': 'value_override1'},
                 },
