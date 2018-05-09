@@ -23,12 +23,11 @@ Attach to the container by doing::
 
   $ sudo lxc-attach -n mox
 
-You will now get root access to the container. Add a normal user (let’s call
-him "clint"), add this user to the sudoers group and install and start an
-SSH-server::
+You will now get root access to the container.
+Add a unix user account: ::
 
-  $ adduser clint
-  $ usermod -aG sudo clint
+  $ adduser operator
+  $ addgroup operator sudo
   $ apt install ssh
 
 Lookup the IP-address of the container::
@@ -54,7 +53,7 @@ Lookup the IP-address of the container::
 We see that the IP-address in this case is 10.0.3.248. Log out of the container
 and SSH back in::
 
-  $ ssh -l clint 10.0.3.248
+  $ ssh -l operator 10.0.3.248
 
 Installing and configuring LoRa
 -------------------------------
@@ -67,72 +66,13 @@ Following the instructions on the
   $ cd mox
   $ ./install.sh
 
-This can take a while... Please note that you should get a message saying
-“Install succeeded!!!”; otherwise the installation failed. For convenience we
-will disable HTTPS and use HTTP instead - this is done by editing the Apache
-HTTP Webserver configuration file for LoRa
-(located at ``/home/clint/mox/apache/mox.conf``) to look like this::
+This can take a while...
 
-  ServerName temp
-
-
-  #<VirtualHost *:80>
-  #
-  #    DocumentRoot                    /var/www/html
-  #    RewriteEngine               On
-  #    RewriteCond                 %{HTTPS}        off
-  #    RewriteRule                 (.*)            https://%{SERVER_NAME}$1 [R=308]
-  #
-  #</VirtualHost>
-
-  <VirtualHost *:80>
-
-
-      TimeOut    1200
-
-
-      DocumentRoot                    /var/www/html
-
-
-  #    SSLEngine                    On
-  #    SSLProtocol                    All -SSLv2 -SSLv3
-
-
-  #    SSLCertificateFile              /etc/ssl/certs/ssl-cert-snakeoil.pem
-  #    SSLCertificateKeyFile           /etc/ssl/private/ssl-cert-snakeoil.key
-  #    #SSLCACertificateFile            /dev/null
-
-
-      CustomLog                    /var/log/mox/access.log combined
-      ErrorLog                    /var/log/mox/error.log
-
-
-      ### MOX INCLUDE BEGIN ###
-      Include /home/clint/mox/agents/MoxDocumentDownload/setup/moxdocumentdownload.conf
-      Include /home/clint/mox/agents/MoxDocumentUpload/setup/moxdocumentupload.conf
-      Include /home/clint/mox/oio_rest/server-setup/oio_rest.conf
-      ### MOX INCLUDE END ###
-
-
-      Alias                            /info /var/www/html/
-      <Directory /var/www/html>
-              AllowOverride            All
-              Require                    all granted
-      </Directory>
-
-  </VirtualHost>
-
-I.e. we have removed the virtual host originally listening on port 80 and
-changed the virtual host that used to listen on port 443 to listen on port 80
-instead - and commented out all SSL configuration. Then do the following::
-
-  $ sudo a2dissite 000-default
-  $ sudo systemctl restart apache2
-
-Check that LoRa is up an running::
+Once the installation process is complete,
+you may confirm that the OIO rest api is running::
 
   $ apt install curl
-  $ curl http://localhost/site-map
+  $ curl http://localhost:8080
 
 which should give a JSON response like::
 
