@@ -4,10 +4,13 @@ import json
 import datetime
 
 import dateutil
+import jsonschema
 from flask import jsonify, request
+
 from werkzeug.datastructures import ImmutableOrderedMultiDict
 
 from . import db
+from . import validate
 from .db_helpers import get_valid_search_parameters, TEMPORALITY_PARAMS
 from .utils.build_registration import build_registration, to_lower_param
 from .custom_exceptions import BadRequestException, NotFoundException
@@ -189,6 +192,12 @@ class OIORestObject(object):
         input = cls.get_json()
         if not input:
             return jsonify({'uuid': None}), 400
+
+        # Validate JSON input
+        try:
+            validate.validate(input)
+        except jsonschema.exceptions.ValidationError as e:
+            return jsonify({'message': e.message}), 400
 
         note = typed_get(input, "note", "")
         registration = cls.gather_registration(input)

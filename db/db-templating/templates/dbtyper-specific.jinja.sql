@@ -20,11 +20,11 @@ CREATE TYPE {{oio_type|title}}{{tilstand|title}}TilsType AS (
 {%-for attribut , attribut_fields in attributter.items() %}
 CREATE TYPE {{oio_type|title}}{{attribut|title}}AttrType AS (
 {%- for field in attribut_fields %}
-{%- if  attributter_type_override is defined and attributter_type_override[attribut] is defined and attributter_type_override[attribut][field] is defined %} 
-{%- if attributter_type_override[attribut][field] =='int' or attributter_type_override[attribut][field] =='date' or attributter_type_override[attribut][field]=='boolean' %}
-{{field}} Clearable{{attributter_type_override[attribut][field]|title}},
+{%- if  attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][field] is defined and attributter_metadata[attribut][field]['type'] is defined %} 
+{%- if attributter_metadata[attribut][field]['type'] =='int' or attributter_metadata[attribut][field]['type'] =='date' or attributter_metadata[attribut][field]['type']=='boolean' %}
+{{field}} Clearable{{attributter_metadata[attribut][field]['type']|title}},
 {%- else %}
-{{field}} {{attributter_type_override[attribut][field]}}, 
+{{field}} {{attributter_metadata[attribut][field]['type']}}, 
 {%-endif %}
 {%- else %}
 {{field}} text,

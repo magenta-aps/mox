@@ -24,19 +24,18 @@ def get_attribute_fields(attribute_name):
         "Initialize attr fields for ease of use."
         for c in db_struct:
             for a in db_struct[c]["attributter"]:
-                _attribute_fields[
-                    c + a
-                ] = db_struct[c]["attributter"][a] + ['virkning']
+                _attribute_fields[c + a] = db_struct[c]["attributter"][a] + [
+                    'virkning']
     return _attribute_fields[attribute_name.lower()]
 
 
 def get_field_type(attribute_name, field_name):
     for c in db_struct:
-        if "attributter_type_override" in db_struct[c]:
-            for a, fs in db_struct[c]["attributter_type_override"].items():
+        if "attributter_metadata" in db_struct[c]:
+            for a, fs in db_struct[c]["attributter_metadata"].items():
                 if attribute_name == c + a:
-                    if field_name in fs:
-                        return fs[field_name]
+                    if field_name in fs and 'type' in fs[field_name]:
+                        return fs[field_name]['type']
     return "text"
 
 
@@ -45,9 +44,12 @@ _attribute_names = {}
 
 def get_relation_field_type(class_name, field_name):
     class_info = db_struct[class_name.lower()]
-    if "relationer_type_override" in class_info:
-        if field_name in class_info["relationer_type_override"]:
-            return class_info["relationer_type_override"][field_name]
+    if 'relationer_metadata' in class_info:
+        metadata = class_info['relationer_metadata']
+        for relation in metadata:
+            for key in metadata[relation]:
+                if field_name == key and 'type' in metadata[relation][key]:
+                    return metadata[relation][key]['type']
     return "text"
 
 
@@ -62,8 +64,7 @@ def get_attribute_names(class_name):
             # specifically, the two state types of 'aktivitet' can
             # trigger occasional errors
             _attribute_names[c] = sorted(
-                c + a for a in db_struct[c]['attributter']
-            )
+                c + a for a in db_struct[c]['attributter'])
     return _attribute_names[class_name.lower()]
 
 
@@ -138,8 +139,8 @@ def get_valid_search_parameters(class_name):
 
         # Add 'Dokument'-specific parameters not present in db_struct
         if _search_params.get('dokument'):
-            _search_params['dokument'].update([
-                'varianttekst', 'deltekst'] +
+            _search_params['dokument'].update(
+                ['varianttekst', 'deltekst'] +
                 get_document_part_relation_names()
             )
 

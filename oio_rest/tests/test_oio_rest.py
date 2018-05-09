@@ -15,6 +15,7 @@ from oio_rest.custom_exceptions import (BadRequestException, NotFoundException,
 from oio_rest.oio_rest import OIOStandardHierarchy, OIORestObject
 from oio_rest import oio_rest
 
+
 class TestClassRestObject(OIORestObject):
     pass
 
@@ -101,7 +102,6 @@ class TestOIORestObjectCreateApi(TestCase):
 
 
 class TestOIORestObject(TestCase):
-
     db_struct = {
         'testclassrestobject': {
             'attributter': {'egenskaber': ['attribut']},
@@ -239,7 +239,32 @@ class TestOIORestObject(TestCase):
 
         mock.return_value = uuid
 
-        data = {'note': "NOTE"}
+        data = {
+            "note": "NOTE",
+            "attributter": {
+                "organisationegenskaber": [
+                    {
+                        "brugervendtnoegle": "bvn",
+                        "organisationsnavn": "name",
+                        "virkning": {
+                            "from": "2017-01-01 12:00:00",
+                            "to": "infinity"
+                        }
+                    }
+                ]
+            },
+            "tilstande": {
+                "organisationgyldighed": [
+                    {
+                        "gyldighed": "Aktiv",
+                        "virkning": {
+                            "from": "2017-01-01 12:00:00",
+                            "to": "infinity"
+                        }
+                    }
+                ]
+            },
+        }
 
         # Act
         with self.app.test_request_context(data=json.dumps(data),
@@ -730,7 +755,6 @@ class TestOIORestObject(TestCase):
         self.assertDictEqual(expected_data, actual_data)
         self.assertEqual(200, actual_code)
 
-
     @patch("oio_rest.db.get_life_cycle_code")
     @patch("oio_rest.db.object_exists")
     @patch("oio_rest.db.update_object")
@@ -763,7 +787,6 @@ class TestOIORestObject(TestCase):
         self.assertDictEqual(expected_data, actual_data)
         self.assertEqual(200, actual_code)
 
-
     @patch("oio_rest.db.get_life_cycle_code")
     @patch("oio_rest.db.object_exists")
     @patch("oio_rest.db.update_object")
@@ -794,7 +817,6 @@ class TestOIORestObject(TestCase):
         mock_update.assert_called()
         self.assertDictEqual(expected_data, actual_data)
         self.assertEqual(200, actual_code)
-
 
     @patch("oio_rest.db.get_life_cycle_code")
     @patch("oio_rest.db.object_exists")
@@ -1046,7 +1068,6 @@ class TestOIOStandardHierarchy(TestCase):
 
         with patch("oio_common.db_structure.REAL_DB_STRUCTURE",
                    new=db_structure):
-
             # Act
             self.testclass.setup_api(base_url="URL", flask=flask)
 
@@ -1057,7 +1078,7 @@ class TestOIOStandardHierarchy(TestCase):
 
             with self.app.test_request_context():
                 actual_result = json.loads(
-                        get_classes().get_data(as_text=True))
+                    get_classes().get_data(as_text=True))
 
             self.assertDictEqual(actual_result, expected_result)
 

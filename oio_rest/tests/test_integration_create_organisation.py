@@ -8,35 +8,14 @@
 
 import copy
 import json
-import re
 import unittest
 
-from tests import util
-
-UUID_REGEX = re.compile('[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-'
-                        '[a-fA-F0-9]{4}-[a-fA-F0-9]{12}')
+from tests.test_integration_create_helper import TestCreateObject
 
 
-class TestCreateOrganisation(util.TestCase):
-
+class TestCreateOrganisation(TestCreateObject):
     def setUp(self):
         super(TestCreateOrganisation, self).setUp()
-        self.standard_virkning1 = {
-            "from": "2000-01-01 12:00:00+01",
-            "from_included": True,
-            "to": "2020-01-01 12:00:00+01",
-            "to_included": False
-        }
-        self.standard_virkning2 = {
-            "from": "2020-01-01 12:00:00+01",
-            "from_included": True,
-            "to": "2030-01-01 12:00:00+01",
-            "to_included": False
-        }
-        self.reference = {
-            'uuid': '00000000-0000-0000-0000-000000000000',
-            'virkning': self.standard_virkning1
-        }
         self.org = {
             "attributter": {
                 "organisationegenskaber": [
@@ -56,36 +35,7 @@ class TestCreateOrganisation(util.TestCase):
                 ]
             },
         }
-
-    def _post(self, payload, url='/organisation/organisation'):
-        """
-        Make HTTP POST request to /organisation/organisation
-        :param payload: dictionary containing payload to LoRa
-        :return: Response from LoRa
-        """
-        r = self.client.post(
-            url,
-            data=json.dumps(payload),
-            content_type='application/json'
-        )
-        return r
-
-    def _check_response_201(self, response):
-        """
-        Verify that the response from LoRa is 201 and contains the correct
-        JSON.
-        :param response: Response from LoRa when creating a new organisation
-        """
-        self.assertEqual(201, response.status_code)
-        self.assertEqual(1, len(response.json))
-        self.assertTrue(UUID_REGEX.match(response.json['uuid']))
-
-    def _check_response_400(self):
-        self.assertRequestFails(
-            '/organisation/organisation',
-            400,
-            json=self.org
-        )
+        self.URL = '/organisation/organisation'
 
     def test_no_note_valid_bvn_no_org_name_no_relations(self):
         """
@@ -98,10 +48,10 @@ class TestCreateOrganisation(util.TestCase):
         del self.org['attributter']['organisationegenskaber'][0][
             'organisationsnavn']
 
-        r = self._post(self.org)
+        r = self.perform_request(self.URL, json=self.org)
 
         # Check response
-        self._check_response_201(r)
+        self.assert201(r)
 
         # Check persisted data
         self.org['livscykluskode'] = 'Opstaaet'
@@ -127,10 +77,10 @@ class TestCreateOrganisation(util.TestCase):
                 "virkning": self.standard_virkning2
             }
         )
-        r = self._post(self.org)
+        r = self.perform_request(self.URL, json=self.org)
 
         # Check response
-        self._check_response_201(r)
+        self.assert201(r)
 
         # Check persisted data
         self.org['livscykluskode'] = 'Opstaaet'
@@ -150,10 +100,8 @@ class TestCreateOrganisation(util.TestCase):
         """
 
         self.org['note'] = ['Note cannot be e.g. a list']
-        self._check_response_400()
+        self.assertRequestFails(self.URL, 400, json=self.org)
 
-    @unittest.skip(
-        'We are allowed to leave out the bvn - this should not be the case')
     def test_bvn_missing(self):
         """
         Equivalence classes covered: [4]
@@ -163,9 +111,8 @@ class TestCreateOrganisation(util.TestCase):
 
         del self.org['attributter']['organisationegenskaber'][0][
             'brugervendtnoegle']
-        self._check_response_400()
+        self.assertRequestFails(self.URL, 400, json=self.org)
 
-    @unittest.skip('The REST interface accepts a bvn which is not a string')
     def test_bvn_not_string(self):
         """
         Equivalence classes covered: [5]
@@ -175,11 +122,8 @@ class TestCreateOrganisation(util.TestCase):
 
         self.org['attributter']['organisationegenskaber'][0][
             'brugervendtnoegle'] = ['BVN cannot be a list']
-        self._check_response_400()
+        self.assertRequestFails(self.URL, 400, json=self.org)
 
-    @unittest.skip(
-        'The REST interface accepts an organisation name which is not a string'
-    )
     def test_org_name_not_string(self):
         """
         Equivalence classes covered: [8]
@@ -189,10 +133,8 @@ class TestCreateOrganisation(util.TestCase):
 
         self.org['attributter']['organisationegenskaber'][0][
             'organisationnavn'] = ['Organisationnavn cannot be a list']
-        self._check_response_400()
+        self.assertRequestFails(self.URL, 400, json=self.org)
 
-    @unittest.skip('When sending a JSON attribute without virkning, '
-                   'we do not get a 400 status')
     def test_virkning_missing_attributter(self):
         """
         Equivalence classes covered: [11]
@@ -201,7 +143,7 @@ class TestCreateOrganisation(util.TestCase):
         """
 
         del self.org['attributter']['organisationegenskaber'][0]['virkning']
-        self._check_response_400()
+        self.assertRequestFails(self.URL, 400, json=self.org)
 
     def test_org_egenskaber_missing(self):
         """
@@ -211,7 +153,7 @@ class TestCreateOrganisation(util.TestCase):
         """
 
         self.org['attributter']['organisationegenskaber'].pop()
-        self._check_response_400()
+        self.assertRequestFails(self.URL, 400, json=self.org)
 
     def test_virkning_malformed_attributter(self):
         """
@@ -224,7 +166,7 @@ class TestCreateOrganisation(util.TestCase):
             "from": "xyz",
             "to": "xyz",
         }
-        self._check_response_400()
+        self.assertRequestFails(self.URL, 400, json=self.org)
 
     @unittest.skip('When sending org names that overlap in '
                    'virkning we do not get status 400')
@@ -247,7 +189,7 @@ class TestCreateOrganisation(util.TestCase):
                 }
             }
         )
-        self._check_response_400()
+        self.assertRequestFails(self.URL, 400, json=self.org)
 
     def test_empty_org_not_allowed(self):
         """
@@ -257,7 +199,7 @@ class TestCreateOrganisation(util.TestCase):
         """
 
         self.org = {}
-        self._check_response_400()
+        self.assertRequestFails(self.URL, 400, json=self.org)
 
     def test_attributter_missing(self):
         """
@@ -267,7 +209,7 @@ class TestCreateOrganisation(util.TestCase):
         """
 
         del self.org['attributter']
-        self._check_response_400()
+        self.assertRequestFails(self.URL, 400, json=self.org)
 
     @unittest.skip('Setting "attributter" several times in the request '
                    'JSON does not result in status code 400')
@@ -282,7 +224,7 @@ class TestCreateOrganisation(util.TestCase):
             self.org['attributter']) + '}'
         self.org = json.loads(org)
 
-        self._check_response_400()
+        self.assertRequestFails(self.URL, 400, json=self.org)
 
     def test_two_valid_org_gyldigheder_one_gyldighed_inactive(self):
         """
@@ -299,10 +241,10 @@ class TestCreateOrganisation(util.TestCase):
                 "virkning": self.standard_virkning2
             }
         )
-        r = self._post(self.org)
+        r = self.perform_request(self.URL, json=self.org)
 
         # Check response
-        self._check_response_201(r)
+        self.assert201(r)
 
         # Check persisted data
         self.org['livscykluskode'] = 'Opstaaet'
@@ -322,7 +264,7 @@ class TestCreateOrganisation(util.TestCase):
         """
 
         del self.org['tilstande']
-        self._check_response_400()
+        self.assertRequestFails(self.URL, 400, json=self.org)
 
     @unittest.skip('Setting "tilstande" several times in the request '
                    'JSON does not result in status code 400')
@@ -337,7 +279,7 @@ class TestCreateOrganisation(util.TestCase):
             self.org['tilstande']) + '}'
         self.org = json.loads(org)
 
-        self._check_response_400()
+        self.assertRequestFails(self.URL, 400, json=self.org)
 
     def test_org_gyldighed_missing(self):
         """
@@ -347,7 +289,7 @@ class TestCreateOrganisation(util.TestCase):
         """
 
         self.org['tilstande']['organisationgyldighed'].pop()
-        self._check_response_400()
+        self.assertRequestFails(self.URL, 400, json=self.org)
 
     def test_gyldighed_invalid(self):
         """
@@ -358,10 +300,8 @@ class TestCreateOrganisation(util.TestCase):
 
         self.org['tilstande']['organisationgyldighed'][0][
             'gyldighed'] = 'invalid'
-        self._check_response_400()
+        self.assertRequestFails(self.URL, 400, json=self.org)
 
-    @unittest.skip('When sending a JSON tilstand without gyldighed, '
-                   'we do not get a 400 status')
     def test_gyldighed_missing(self):
         """
         Equivalence classes covered: [26]
@@ -370,10 +310,8 @@ class TestCreateOrganisation(util.TestCase):
         """
 
         del self.org['tilstande']['organisationgyldighed'][0]['gyldighed']
-        self._check_response_400()
+        self.assertRequestFails(self.URL, 400, json=self.org)
 
-    @unittest.skip('When sending a JSON attribute without virkning, '
-                   'we do not get a 400 status')
     def test_virkning_missing_tilstande(self):
         """
         Equivalence classes covered: [27]
@@ -382,7 +320,7 @@ class TestCreateOrganisation(util.TestCase):
         """
 
         del self.org['tilstande']['organisationgyldighed'][0]['virkning']
-        self._check_response_400()
+        self.assertRequestFails(self.URL, 400, json=self.org)
 
     def test_virkning_malformed_tilstande(self):
         """
@@ -395,7 +333,7 @@ class TestCreateOrganisation(util.TestCase):
             "from": "xyz",
             "to": "xyz",
         }
-        self._check_response_400()
+        self.assertRequestFails(self.URL, 400, json=self.org)
 
     @unittest.skip('When sending gyldigheder that overlap in '
                    'virkning we do not get status 400')
@@ -417,7 +355,7 @@ class TestCreateOrganisation(util.TestCase):
                 }
             }
         )
-        self._check_response_400()
+        self.assertRequestFails(self.URL, 400, json=self.org)
 
     def test_empty_list_of_relations(self):
         """
@@ -428,10 +366,10 @@ class TestCreateOrganisation(util.TestCase):
 
         # Create organisation
         self.org['relationer'] = {}
-        r = self._post(self.org)
+        r = self.perform_request(self.URL, json=self.org)
 
         # Check response
-        self._check_response_201(r)
+        self.assert201(r)
 
         # Check persisted data
         self.org['livscykluskode'] = 'Opstaaet'
@@ -453,10 +391,10 @@ class TestCreateOrganisation(util.TestCase):
         self.org['relationer'] = {
             'overordnet': []
         }
-        r = self._post(self.org)
+        r = self.perform_request(self.URL, json=self.org)
 
         # Check response
-        self._check_response_201(r)
+        self.assert201(r)
 
         # Check persisted data
         self.org['livscykluskode'] = 'Opstaaet'
@@ -494,8 +432,8 @@ class TestCreateOrganisation(util.TestCase):
                 ]
             }
         }
-        r = self._post(klasse, '/klassifikation/klasse')
-        self._check_response_201(r)
+        r = self.perform_request('/klassifikation/klasse', json=klasse)
+        self.assert201(r)
 
         relationtype = copy.copy(self.reference)
         relationtype['uuid'] = r.json['uuid']
@@ -522,10 +460,10 @@ class TestCreateOrganisation(util.TestCase):
             'virksomhed': [self.reference],
             'virksomhedstype': [relationtype]
         }
-        r = self._post(self.org)
+        r = self.perform_request(self.URL, json=self.org)
 
         # Check response
-        self._check_response_201(r)
+        self.assert201(r)
 
         # Check persisted data
         self.org['livscykluskode'] = 'Opstaaet'
@@ -555,10 +493,10 @@ class TestCreateOrganisation(util.TestCase):
                 }
             ]
         }
-        r = self._post(self.org)
+        r = self.perform_request(self.URL, json=self.org)
 
         # Check response
-        self._check_response_201(r)
+        self.assert201(r)
 
         # Check persisted data
         self.org['livscykluskode'] = 'Opstaaet'
@@ -583,7 +521,7 @@ class TestCreateOrganisation(util.TestCase):
                 }
             ]
         }
-        self._check_response_400()
+        self.assertRequestFails(self.URL, 400, json=self.org)
 
     def test_invalid_relation_name_not_allowed(self):
         """
@@ -595,7 +533,7 @@ class TestCreateOrganisation(util.TestCase):
         self.org['relationer'] = {
             'unknown': [self.reference]
         }
-        self._check_response_400()
+        self.assertRequestFails(self.URL, 400, json=self.org)
 
     @unittest.skip('Setting "relationer" several times in the request '
                    'JSON does not result in status code 400')
@@ -613,4 +551,4 @@ class TestCreateOrganisation(util.TestCase):
             self.org['relationer']) + '}'
         self.org = json.loads(org)
 
-        self._check_response_400()
+        self.assertRequestFails(self.URL, 400, json=self.org)

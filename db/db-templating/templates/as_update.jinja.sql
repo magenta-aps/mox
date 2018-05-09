@@ -299,7 +299,7 @@ IF attr{{attribut|title}} IS NOT null THEN
     ,{{oio_type}}_registrering_id
   )
   SELECT {%-for fieldname in attribut_fields %}
-  {%- if  attributter_type_override is defined and attributter_type_override[attribut] is defined and attributter_type_override[attribut][fieldname] is defined and ( attributter_type_override[attribut][fieldname] =='int' or attributter_type_override[attribut][fieldname] =='date' or attributter_type_override[attribut][fieldname]=='boolean')  %} 
+  {%- if  attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][fieldname] is defined and attributter_metadata[attribut][fieldname]['type'] is defined and ( attributter_metadata[attribut][fieldname]['type'] =='int' or attributter_metadata[attribut][fieldname]['type'] =='date' or attributter_metadata[attribut][fieldname]['type']=='boolean')  %} 
     CASE WHEN (attr{{attribut|title}}Obj.{{fieldname}}).cleared THEN NULL 
     ELSE coalesce((attr{{attribut|title}}Obj.{{fieldname}}).value,a.{{fieldname}})
     END,

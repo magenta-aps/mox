@@ -58,8 +58,7 @@
             ], 
             "tilstandsobjekt": [
               {
-                "indeks": 2,
-                "objekttype": "Person", 
+                "objekttype": "Person",
                 "uuid": "f7109356-e87e-4b10-ad5d-36de6e3ee09f", 
                 "virkning": {
                   "aktoerref": "17036ab1-6298-42a6-897f-0fb7bffb0762", 
@@ -74,7 +73,7 @@
             ], 
             "tilstandsvaerdi": [
               {
-                "indeks": 3, 
+                "indeks": 2,
                 "tilstandsvaerdiattr": {
                   "forventet": true, 
                   "nominelvaerdi": "82"

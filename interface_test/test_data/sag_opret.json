@@ -4,8 +4,10 @@
         "sagegenskaber": [
         {
             "brugervendtnoegle": "SAG1234567890",
+            "sagsnummer": "12345",
             "titel": "Sag nr. 12345",
             "hjemmel": "ingen",
+            "beskrivelse": "Dette er en sagsbeskrivelse",
             "offentlighedundtaget": {
                 "alternativtitel": "s1kr3t!",
                 "hjemmel": "ingen"
