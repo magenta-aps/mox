@@ -14,24 +14,31 @@ Backwards incompatible changes:
 
 New features:
 
- * Framework for building integration tests based on the standards.
- * Unit tests for all functions in the REST API.
- * Integration tests.
+ * Comprehensive test suite, including:
+
+   * Unit tests of our REST API.
+   * Integration tests based on the standards.
+   * End-to-end integration tests of the REST API and database layer.
+   * Continuous integration infrastructure that runs our test suite on
+     each push to GitHub.
+
  * JSON Schema validation when creating new objects.
- * Return error if a search is made for a non-existing parameter.
- * Allow requesting objects at a certain time, rather than just now or
-   an interval. 
- * More clear semantics for DELETE - old effective periods no longer
-   merged with new imports.
+ * Validate query parameters given during search, return an error when
+   given unrecognised or unsupported arguments.
+ * Allow requesting objects at a certain registration or validity
+   time. Previously, we either allowed searching within an interval or
+   the current time.
  * Migration to Python 3; minimum version required is now Python 3.5
    rather than 2.7.
- * New and improved installer based on SaltStack to allow provisioning
+ * New and improved installer based on SaltStack to enable provisioning
    of client installations.
 
 Bug fixes:
- 
+
  * An update with an empty list of relations deleted all
    relations.
+ * Fixed semantics for DELETE, so that we no longer merge old entries
+   when reviving an object.
 
 
 Version 0.3.1.1, 4 September 2017
