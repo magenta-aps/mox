@@ -10,3 +10,4 @@ python3-saml==1.4.0
 pexpect==4.4.0
 python-dateutil==2.7.0
 pika>=0.10.0
+jsonschema==2.6.0

@@ -8,7 +8,12 @@ DATABASE_STRUCTURE = {
             "egenskaber": [
                 "brugervendtnoegle", "beskrivelse", "opbygning", "ophavsret",
                 "plan", "supplement", "retskilde"
-            ]
+            ],
+        },
+        "attributter_metadata": {
+            'egenskaber': {
+                'brugervendtnoegle': {'mandatory': True}
+            }
         },
         "tilstande": {
             "publiceret": ["Publiceret", "IkkePubliceret"]
@@ -22,7 +27,12 @@ DATABASE_STRUCTURE = {
             "egenskaber": [
                 "brugervendtnoegle", "beskrivelse", "kaldenavn",
                 "ophavsret",
-            ]
+            ],
+        },
+        "attributter_metadata": {
+            'egenskaber': {
+                'brugervendtnoegle': {'mandatory': True}
+            }
         },
         "tilstande": {
             "publiceret": ["Publiceret", "IkkePubliceret"]
@@ -38,8 +48,13 @@ DATABASE_STRUCTURE = {
         "attributter": {
             "egenskaber": [
                 "brugervendtnoegle", "beskrivelse", "eksempel", "omfang",
-                "titel", "retskilde", "aendringsnotat"
-            ]
+                "titel", "retskilde", "aendringsnotat"],
+        },
+        "attributter_metadata": {
+            'egenskaber': {
+                'brugervendtnoegle': {'mandatory': True},
+                'titel': {'mandatory': True},
+            }
         },
         "tilstande": {
             "publiceret": ["Publiceret", "IkkePubliceret"]
@@ -57,7 +72,12 @@ DATABASE_STRUCTURE = {
         "attributter": {
             "egenskaber": [
                 "brugervendtnoegle", "brugernavn", "brugertype"
-            ]
+            ],
+        },
+        "attributter_metadata": {
+            'egenskaber': {
+                'brugervendtnoegle': {'mandatory': True}
+            }
         },
         "tilstande": {
             "gyldighed": ["Aktiv", "Inaktiv"]
@@ -76,7 +96,12 @@ DATABASE_STRUCTURE = {
             "egenskaber": [
                 "brugervendtnoegle", "interessefaellesskabsnavn",
                 "interessefaellesskabstype"
-            ]
+            ],
+        },
+        "attributter_metadata": {
+            'egenskaber': {
+                'brugervendtnoegle': {'mandatory': True}
+            }
         },
         "tilstande": {
             "gyldighed": ["Aktiv", "Inaktiv"]
@@ -96,11 +121,12 @@ DATABASE_STRUCTURE = {
         "attributter": {
             "egenskaber": [
                 "brugervendtnoegle", "itsystemnavn", "itsystemtype",
-                "konfigurationreference"]
+                "konfigurationreference"],
         },
-        "attributter_type_override": {
-            "egenskaber": {
-                "konfigurationreference": "text[]"
+        "attributter_metadata": {
+            'egenskaber': {
+                'brugervendtnoegle': {'mandatory': True},
+                'konfigurationreference': {'type': 'text[]'}
             }
         },
         "tilstande": {
@@ -119,7 +145,12 @@ DATABASE_STRUCTURE = {
 
     "organisation": {
         "attributter": {
-            "egenskaber": ["brugervendtnoegle", "organisationsnavn"]
+            "egenskaber": ["brugervendtnoegle", "organisationsnavn"],
+        },
+        "attributter_metadata": {
+            'egenskaber': {
+                'brugervendtnoegle': {'mandatory': True}
+            }
         },
         "tilstande": {
             "gyldighed": ["Aktiv", "Inaktiv"]
@@ -138,7 +169,12 @@ DATABASE_STRUCTURE = {
 
     "organisationenhed": {
         "attributter": {
-            "egenskaber": ["brugervendtnoegle", "enhedsnavn"]
+            "egenskaber": ["brugervendtnoegle", "enhedsnavn"],
+        },
+        "attributter_metadata": {
+            'egenskaber': {
+                'brugervendtnoegle': {'mandatory': True}
+            }
         },
         "tilstande": {
             "gyldighed": ["Aktiv", "Inaktiv"]
@@ -158,7 +194,12 @@ DATABASE_STRUCTURE = {
 
     "organisationfunktion": {
         "attributter": {
-            "egenskaber": ["brugervendtnoegle", "funktionsnavn"]
+            "egenskaber": ["brugervendtnoegle", "funktionsnavn"],
+        },
+        "attributter_metadata": {
+            'egenskaber': {
+                'brugervendtnoegle': {'mandatory': True}
+            }
         },
         "tilstande": {
             "gyldighed": ["Aktiv", "Inaktiv"]
@@ -176,13 +217,18 @@ DATABASE_STRUCTURE = {
             "egenskaber": ["brugervendtnoegle", "afleveret", "beskrivelse",
                            "hjemmel", "kassationskode",
                            "offentlighedundtaget", "principiel", "sagsnummer",
-                           "titel"]
+                           "titel"],
         },
-        "attributter_type_override": {
-            "egenskaber": {
-                "afleveret": "boolean",
-                "principiel": "boolean",
-                "offentlighedundtaget": "offentlighedundtagettype"
+        "attributter_metadata": {
+            'egenskaber': {
+                'afleveret': {'type': 'boolean'},
+                'beskrivelse': {'mandatory': True},
+                'brugervendtnoegle': {'mandatory': True},
+                'kassationskode': {'mandatory': True},
+                'offentlighedundtaget': {'type': 'offentlighedundtagettype'},
+                'principiel': {'type': 'boolean'},
+                'sagsnummer': {'mandatory': True},
+                'titel': {'mandatory': True},
             }
         },
         "tilstande": {
@@ -203,22 +249,38 @@ DATABASE_STRUCTURE = {
         "relationer_nul_til_mange": [
             "andetarkiv", "andrebehandlere", "sekundaerpart", "andresager",
             "byggeri", "fredning", "journalpost"
-        ]
-
+        ],
+        'relationer_metadata': {
+            '*': {
+                'indeks': {'type': 'int'}
+            },
+            'journalpost': {
+                'journalpostkode': {
+                    'enum': ['journalnotat', 'vedlagtdokument'],
+                    'mandatory': True,
+                },
+                'journalnotat': {'type': 'journalnotat'},
+                'journaldokument': {'type': 'journaldokument'},
+            },
+        }
     },
 
     "dokument": {
         "attributter": {
             "egenskaber": ["brugervendtnoegle", "beskrivelse", "brevdato",
                            "kassationskode", "major", "minor",
-                           "offentlighedundtaget", "titel", "dokumenttype"]
+                           "offentlighedundtaget", "titel", "dokumenttype"],
         },
-        "attributter_type_override": {
-            "egenskaber": {
-                "brevdato": "date",
-                "major": "int",
-                "minor": "int",
-                "offentlighedundtaget": "offentlighedundtagettype"
+        "attributter_metadata": {
+            'egenskaber': {
+                'beskrivelse': {'mandatory': True},
+                'brevdato': {'mandatory': True, 'type': 'date'},
+                'brugervendtnoegle': {'mandatory': True},
+                'dokumenttype': {'mandatory': True},
+                'major': {'type': 'int'},
+                'minor': {'type': 'int'},
+                'offentlighedundtaget': {'type': 'offentlighedundtagettype'},
+                'titel': {'mandatory': True},
             }
         },
         "tilstande": {
@@ -235,10 +297,16 @@ DATABASE_STRUCTURE = {
                                      "andrebehandlere", "parter",
                                      "kopiparter", "tilknyttedesager"]
     },
+
     "tilstand": {
         "attributter": {
             "egenskaber": [
-                "brugervendtnoegle", "beskrivelse"]
+                "brugervendtnoegle", "beskrivelse"],
+        },
+        "attributter_metadata": {
+            'egenskaber': {
+                'brugervendtnoegle': {'mandatory': True}
+            }
         },
         "tilstande": [
             ("status", ["Inaktiv", "Aktiv"]),
@@ -249,20 +317,30 @@ DATABASE_STRUCTURE = {
             "tilstandsvaerdi", "begrundelse", "tilstandskvalitet",
             "tilstandsvurdering", "tilstandsaktoer", "tilstandsudstyr",
             "samtykke", "tilstandsdokument"
-        ]
+        ],
+        'relationer_metadata': {
+            '*': {
+                'indeks': {'type': 'int'}
+            },
+            'tilstandsvaerdi': {
+                'tilstandsvaerdiattr': {'type': 'vaerdirelationattr'},
+            }
+        }
     },
+
     "aktivitet": {
         "attributter": {
             "egenskaber": [
                 "brugervendtnoegle", "aktivitetnavn", "beskrivelse",
                 "starttidspunkt", "sluttidspunkt", "tidsforbrug", "formaal"
-            ]
+            ],
         },
-        "attributter_type_override": {
-            "egenskaber": {
-                "starttidspunkt": "timestamptz",
-                "sluttidspunkt": "timestamptz",
-                "tidsforbrug": "interval(0)"
+        "attributter_metadata": {
+            'egenskaber': {
+                'brugervendtnoegle': {'mandatory': True},
+                'starttidspunkt': {'type': 'timestamptz'},
+                'sluttidspunkt': {'type': 'timestamptz'},
+                'tidsforbrug': {'type': 'interval(0)'}
             }
         },
         "tilstande": [
@@ -278,19 +356,27 @@ DATABASE_STRUCTURE = {
             "geoobjekt", "position", "facilitet", "lokale",
             "aktivitetdokument", "aktivitetgrundlag", "aktivitetresultat",
             "udfoerer", "deltager"
-        ]
+        ],
+        'relationer_metadata': {
+            '*': {
+                'indeks': {'type': 'int'},
+                'aktoerattr': {'type': 'aktoerattr'}
+            },
+        }
     },
+
     "indsats": {
         "attributter": {
             "egenskaber": [
                 "brugervendtnoegle", "beskrivelse", "starttidspunkt",
                 "sluttidspunkt"
-            ]
+            ],
         },
-        "attributter_type_override": {
-            "egenskaber": {
-                "starttidspunkt": "timestamptz",
-                "sluttidspunkt": "timestamptz",
+        "attributter_metadata": {
+            'egenskaber': {
+                'brugervendtnoegle': {'mandatory': True},
+                'starttidspunkt': {'type': 'timestamptz'},
+                'sluttidspunkt': {'type': 'timestamptz'},
             }
         },
         "tilstande": [
@@ -303,43 +389,31 @@ DATABASE_STRUCTURE = {
         "relationer_nul_til_mange": [
             "indsatskvalitet", "indsatsaktoer", "samtykke", "indsatssag",
             "indsatsdokument"
-        ]
+        ],
+        'relationer_metadata': {
+            '*': {
+                'indeks': {'type': 'int'}
+            },
+        }
     },
 
     "loghaendelse": {
         "attributter": {
             "egenskaber": ["service", "klasse", "tidspunkt", "operation",
-                           "objekttype", "returkode", "returtekst", "note"]
+                           "objekttype", "returkode", "returtekst", "note"],
         },
         "tilstande": {
             "gyldighed": ["Rettet", "Ikke rettet"]
         },
         "relationer_nul_til_en": ["objekt", "bruger", "brugerrolle"],
-
-        "relationer_nul_til_mange": []
-
+        "relationer_nul_til_mange": [],
     }
 }
 
 REAL_DB_STRUCTURE = deepcopy(DATABASE_STRUCTURE)
 REAL_DB_STRUCTURE["klasse"]["attributter"]["egenskaber"].append("soegeord")
-REAL_DB_STRUCTURE["klasse"]["attributter_type_override"] = {
-    "egenskaber": {
-        "soegeord": "soegeord"
-    }
-}
-REAL_DB_STRUCTURE["sag"]["relationer_type_override"] = {
-    "journalnotat": "journalnotat",
-    "journaldokument": "journaldokument"
-}
-
-REAL_DB_STRUCTURE["aktivitet"]["relationer_type_override"] = {
-    "aktoerattr": "aktoerattr"
-}
-
-REAL_DB_STRUCTURE["tilstand"]["relationer_type_override"] = {
-    "tilstandsvaerdiattr": "vaerdirelationattr"
-}
+REAL_DB_STRUCTURE['klasse']['attributter_metadata']['egenskaber'][
+    'soegeord'] = {'type': 'soegeord'}
 
 DB_TEMPLATE_EXTRA_OPTIONS = {
     "dokument": {

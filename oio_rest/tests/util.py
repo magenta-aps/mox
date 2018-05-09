@@ -13,6 +13,7 @@ import pprint
 import subprocess
 import sys
 import tempfile
+import uuid
 
 import click
 import flask_testing
@@ -158,7 +159,7 @@ class TestCaseMixin(object):
 
         '''
 
-        r = self._perform_request(path, **kwargs)
+        r = self.perform_request(path, **kwargs)
 
         actual = (
             json.loads(r.get_data(as_text=True))
@@ -209,11 +210,11 @@ class TestCaseMixin(object):
         '''
         message = message or "request {!r} didn't fail properly".format(path)
 
-        r = self._perform_request(path, **kwargs)
+        r = self.perform_request(path, **kwargs)
 
         self.assertEqual(r.status_code, code, message)
 
-    def _perform_request(self, path, **kwargs):
+    def perform_request(self, path, **kwargs):
         if 'json' in kwargs:
             kwargs.setdefault('method', 'POST')
             kwargs.setdefault('data', json.dumps(kwargs.pop('json'), indent=2))
@@ -259,8 +260,24 @@ class TestCaseMixin(object):
             message,
         )
 
+    def assertUUID(self, s):
+        try:
+            uuid.UUID(s)
+        except (TypeError, ValueError):
+            self.fail('{!r} is not a uuid!'.format(s))
+
+    def assert201(self, response):
+        """
+        Verify that the response from LoRa is 201 and contains the correct
+        JSON.
+        :param response: Response from LoRa when creating a new object
+        """
+        self.assertEquals(201, response.status_code)
+        self.assertEquals(1, len(response.json))
+        self.assertUUID(response.json['uuid'])
+
     def get(self, path, **params):
-        r = self._perform_request(path, query_string=params)
+        r = self.perform_request(path, query_string=params)
         self.assertLess(r.status_code, 300)
         self.assertGreaterEqual(r.status_code, 200)
 
@@ -277,21 +294,21 @@ class TestCaseMixin(object):
             return registrations[0]
 
     def put(self, path, json):
-        r = self._perform_request(path, json=json, method="PUT")
+        r = self.perform_request(path, json=json, method="PUT")
         self.assertLess(r.status_code, 300)
         self.assertGreaterEqual(r.status_code, 200)
 
         return r.json['uuid']
 
     def patch(self, path, json):
-        r = self._perform_request(path, json=json, method="PATCH")
+        r = self.perform_request(path, json=json, method="PATCH")
         self.assertLess(r.status_code, 300)
         self.assertGreaterEqual(r.status_code, 200)
 
         return r.json['uuid']
 
     def post(self, path, json):
-        r = self._perform_request(path, json=json, method="POST")
+        r = self.perform_request(path, json=json, method="POST")
         self.assertLess(r.status_code, 300)
         self.assertGreaterEqual(r.status_code, 200)
 
@@ -323,7 +340,7 @@ class TestCaseMixin(object):
         else:
             method = 'POST'
 
-        r = self._perform_request(
+        r = self.perform_request(
             path, json=get_fixture(fixture_name), method=method,
         )
 

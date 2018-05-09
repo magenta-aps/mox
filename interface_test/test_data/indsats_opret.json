@@ -44,7 +44,7 @@
 		"relationer": {
 			"indsatsaktoer": [
 			{
-                                "index": 1,
+				"indeks": 1,
 				"uuid": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
 				"virkning": {
 					"from": "2014-05-19 12:02:32",

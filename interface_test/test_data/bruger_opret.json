@@ -5,8 +5,7 @@
             {
             "brugervendtnoegle": "CKA", 
             "brugernavn": "agger", 
-            "itsystemtype": "Kommunalt sysæøtem", 
-            "virkning": { 
+            "virkning": {
                 "from": "2015-01-01 00:00:00", 
                 "to": "infinity", 
                 "aktoerref": "cb904af2-83a1-11e5-b3b8-83a8f6a26e42", 

@@ -47,4 +47,5 @@ coverage.xml
 .coverage
 .eggs
 .pytest_cache
-venv
+python-testenv
+

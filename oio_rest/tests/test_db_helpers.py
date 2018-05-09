@@ -86,9 +86,9 @@ class TestDBHelpers(TestCase):
 
     @patch('oio_rest.db_helpers.db_struct', new={
         'testclass1': {
-            'attributter_type_override': {
+            'attributter_metadata': {
                 'testattribut': {
-                    'value': 'value_override'
+                    'value': {'type': 'value_override'}
                 }
             }
         }
@@ -106,9 +106,9 @@ class TestDBHelpers(TestCase):
 
     @patch('oio_rest.db_helpers.db_struct', new={
         'testclass1': {
-            'attributter_type_override': {
+            'attributter_metadata': {
                 'testattribut': {
-                    'value': 'value_override'
+                    'value': {'type': 'value_override'}
                 }
             }
         }
@@ -138,26 +138,42 @@ class TestDBHelpers(TestCase):
 
     @patch('oio_rest.db_helpers.db_struct', new={
         'testclass1': {
-            'relationer_type_override': {
-                'value': 'value_override'
+            'relationer_metadata': {
+                '*': {
+                    'indeks': {'type': 'int'},
+                    'key1': {'type': 'value_override1'},
+                },
+                'specific': {
+                    'key2': {'type': 'value_override2'},
+                }
             }
         }
     })
     def test_get_relation_field_type_override(self):
         # Arrange
-        expected_result = 'value_override'
+        expected_result1 = 'value_override1'
+        expected_result2 = 'value_override2'
 
         # Act
-        actual_result = db_helpers.get_relation_field_type('testclass1',
-                                                           'value')
+        actual_result1 = db_helpers.get_relation_field_type('testclass1',
+                                                            'key1')
+        actual_result2 = db_helpers.get_relation_field_type('testclass1',
+                                                            'key2')
 
         # Assert
-        self.assertEqual(expected_result, actual_result)
+        self.assertEqual(expected_result1, actual_result1)
+        self.assertEqual(expected_result2, actual_result2)
 
     @patch('oio_rest.db_helpers.db_struct', new={
         'testclass1': {
-            'relationer_type_override': {
-                'value': 'value_override'
+            'relationer_metadata': {
+                '*': {
+                    'indeks': {'type': 'int'},
+                    'key1': {'type': 'value_override1'},
+                },
+                'specific': {
+                    'key2': {'type': 'value_override2'},
+                }
             }
         }
     })

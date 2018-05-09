@@ -77,11 +77,11 @@ ELSE
 				(
 					attr{{attribut|title}}TypeObj.{{attribut_field}} IS NULL
 					OR
-					 {%- if  attributter_type_override is defined and attributter_type_override[attribut] is defined and attributter_type_override[attribut][attribut_field] is defined %} 
-						{%-if attributter_type_override[attribut][attribut_field] == "text[]" %}
+					 {%- if  attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][attribut_field] is defined and attributter_metadata[attribut][attribut_field]['type'] is defined %} 
+						{%-if attributter_metadata[attribut][attribut_field]['type'] == "text[]" %}
 						( (coalesce(array_length(attr{{attribut|title}}TypeObj.{{attribut_field}},1),0)=0 AND coalesce(array_length(a.{{attribut_field}},1),0)=0 ) OR (attr{{attribut|title}}TypeObj.{{attribut_field}} @> a.{{attribut_field}} AND a.{{attribut_field}} @>attr{{attribut|title}}TypeObj.{{attribut_field}}  )) 
 						{%- else %} 
-						{%-if attributter_type_override[attribut][attribut_field] == "offentlighedundtagettype" %}
+						{%-if attributter_metadata[attribut][attribut_field]['type'] == "offentlighedundtagettype" %}
 						(
 							(
 								(attr{{attribut|title}}TypeObj.{{attribut_field}}).AlternativTitel IS NULL
