@@ -65,8 +65,8 @@ the SSL certificate on your own.
 System requirements
 ===================
 
-LoRA currently supports Ubuntu 14.04 and 16.04. We recommend running
-it on a VM with the following allocation:
+LoRA currently supports Ubuntu 16.04 (Xenial).
+We recommend running it on a VM with the following allocation:
 
 .. list-table::
    :header-rows: 1
@@ -107,36 +107,87 @@ To install the OIO REST API, run ``install.sh``::
   $ cd mox
   $ ./install.sh
 
-**NOTE:** PostgreSQL 9.3 or later is required. If PostgreSQL is not installed
-on your system already, it will be during installation.
+**NOTE:**
+   Using the built in installer should be considered
+   a "developer installation".
+   In the current state of the installer,
+   we recommend to use on a newly installed system only.
+   It is definitely an intention to provide more flexible
+   installation options in the near future.
+
+The default location of the log directory is: ::
+
+   /var/log/mox
+
+The following log files are created:
+
+ - Audit log: /var/log/mox/audit.log
+ - OIO REST HTTP access log: /var/log/mox/oio_access.log
+ - OIO REST HTTP error log: /var/log/mox/oio_error.log
+
+Additionally a directory for file uploads is created: ::
+
+   # settings.py
+   FILE_UPLOAD_FOLDER = getenv('FILE_UPLOAD_FOLDER', '/var/mox')
+
+
+The oio rest api is installed as a service,
+for more information, see the oio_rest.service.
+
+By default the oio_rest service can be reached as follows:
+
+   http://localhost:8080
+
+Example: ::
+
+   curl http://localhost:8080/organisation/bruger
+
+**NOTE**
+   In a production environment,
+   it is recommended to bind the oio_rest service to a unix socket,
+   then expose the socket using a HTTP proxy of your own choosing.
+
+   (Recommended: Nginx or Apache)
+
+   More on how to configure in the advanced configuration document.
+   Link: ``Document is currently being written``
+
 
 Configuration
 -------------
 
-Installation creates a file for REST settings in
-``oio_rest/oio_rest/settings.py`` as well as individual configuration
-files for the agents within the ``agents`` directory. In addition,
-``db/config.sh`` contains configuration for the database, such as
-which username/password to use to connect to the database, and which
-database name to use.
+Most configurable parameters of oio_rest can be injected with
+environment variables, alternatively you may set the parameters
+explicitly in the "settings.py" file.
 
-To setup the database to send notifications to an AMQP message exchange,
-the database must know how to connect to the AMQP server. The defaults
-assume you have a local AMQP server and use the guest user. However,
-these can be changed in ``db/config.sh`` prior to performing
-installation.
+(Please see $ROOT/oio_rest/settings.py)
 
-The file REST settings specify the generation of the database
-structure and the REST API. Set ``DATABASE``, ``DB_USER`` and
-``DB_PASSWORD`` according to what you have chosen in ``db/config.sh``.
+As mentioned, most parameters are accessible,
+if NOT set, we have provided sensible fallback values.
 
-The ``FILE_UPLOAD_FOLDER`` setting allows you to change where the
-database stores its files (used for storing the contents of binary
-files in the Dokument hierarchy). The default is ``/var/mox``, and
-this is automatically created by the install script.
+Example: ::
 
-Some other settings can be changed; please see the comments in the
-file for a description of their purpose.
+   # settings.py
+
+   # DB (Postgres) settings
+   DATABASE = getenv('DB_NAME', 'mox')
+   DB_USER = getenv('DB_USER', 'mox')
+   DB_PASSWORD = getenv('DB_PASS', 'mox')
+
+
+The oio rest api is served using the wsgi server gunicorn.
+The gunicorn server can be configured through the "guniconfig.py" file.
+
+(Please see $ROOT/oio_rest/guniconfig.py)
+
+Similar to the oio rest settings file,
+gunicorn can be configured using environment variables: ::
+
+   # guniconfig.py
+
+   # Bind address (Can be either TCP or Unix socket)
+   bind = env("GUNICORN_BIND_ADDRESS", '127.0.0.1:8080')
+
 
 Components
 ==========
@@ -152,9 +203,9 @@ PostgreSQL
     state database as well as validation and verification of the basic
     constraints.
 
-Apache
-    HTTP web server providing the REST API as well as certain other
-    web servers, described below.
+Gunicorn
+    WSGI server for the oio rest api.
+    Ideally used with a frontend HTTP proxy in production.
 
 RabbitMQ
     AMQP message broker providing interprocess communication between
@@ -295,7 +346,7 @@ distribution.
 When configuring the REST API to use your IdP, you must specify your
 IdP's public certificate file by setting in settings.py::
 
-    SAML_IDP_CERTIFICATE = '/my/idp/certificate.pem'
+    export SAML_IDP_CERTIFICATE=/path/to/idp_certificate.pem
 
 In settings.py, SAML authentication can be turned off by setting::
 
@@ -310,7 +361,7 @@ token in the correct base64-encoded gzipped format for use with the API.
 
 Visit the following URL of the OIO REST server::
 
-    http://referencedata.dk/get-token
+    http://localhost:8080/get-token
 
 Alternatively, you can run the following command locally on the server::
 
