@@ -10,8 +10,8 @@ from collections import OrderedDict
 
 import jinja2
 
-from oio_rest.db_structure import DATABASE_STRUCTURE
-from oio_rest.db_structure import DB_TEMPLATE_EXTRA_OPTIONS
+from oio_common.db_structure import DATABASE_STRUCTURE
+from oio_common.db_structure import DB_TEMPLATE_EXTRA_OPTIONS
 
 
 DIR = os.path.realpath(os.path.join(

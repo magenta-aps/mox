@@ -22,6 +22,6 @@ with open(assertion_file, 'rb') as f_in, gzip.open(tmpfilename, "wb") as f_out:
 with open(tmpfilename) as f:
     zipped_data = f.read()
 
-print "Authorization: saml-gzipped %s" % b64encode(zipped_data)
+print("Authorization: saml-gzipped %s" % b64encode(zipped_data))
 
 os.remove(tmpfilename)

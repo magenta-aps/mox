@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from mock import patch
 
-from oio_rest import app as flaskapp
+import oio_rest.app as flaskapp
 
 
 class TestApp(TestCase):
@@ -45,4 +45,4 @@ class TestApp(TestCase):
 
         # Assert
         self.assertEqual(200, result.status_code)
-        self.assertEqual('testtoken', result.data)
+        self.assertEqual(b'testtoken', result.data)

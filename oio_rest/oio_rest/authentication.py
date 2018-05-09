@@ -1,15 +1,16 @@
-from base64 import b64decode
-from functools import wraps
 import os
-from flask import request
-from custom_exceptions import UnauthorizedException
-from custom_exceptions import AuthorizationFailedException
 import zlib
 import uuid
+from base64 import b64decode
+from functools import wraps
 
-from auth.saml2 import Saml2_Assertion
+from flask import request
 
-from . import settings
+from .custom_exceptions import UnauthorizedException
+from .custom_exceptions import AuthorizationFailedException
+from .auth.saml2 import Saml2_Assertion
+
+import settings
 
 
 # Read the IdP certificate file into memory
@@ -66,7 +67,7 @@ def check_saml_authentication():
         assertion.check_validity()
 
         name_id = assertion.get_nameid()
-        print "SAML Assertion valid for: %s" % name_id
+        print("SAML Assertion valid for: %s" % name_id)
 
         # Add the username and SAML attributes to the request object
         request.saml_attributes = assertion.get_attributes()
@@ -87,7 +88,7 @@ def check_saml_authentication():
         # print "TOKEN: ", token
     except Exception as e:
         errmsg = "SAML token validation failed: {}".format(
-            e.message or (e.args and e.args[0]) or str(e)
+            e.args and e.args[0] or str(e)
         )
         raise AuthorizationFailedException(errmsg)
 

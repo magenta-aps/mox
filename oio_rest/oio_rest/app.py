@@ -2,7 +2,7 @@
 
 import os
 import datetime
-import urlparse
+import urllib.parse
 import traceback
 
 from flask import Flask, jsonify, redirect, request, url_for, Response
@@ -10,17 +10,17 @@ from werkzeug.routing import BaseConverter
 from jinja2 import Environment, FileSystemLoader
 from psycopg2 import DataError
 
-from authentication import get_authenticated_user
-from log_client import log_service_call
+from . import sag, indsats, dokument, tilstand, aktivitet, organisation
+from . import log, klassifikation
+from .authentication import get_authenticated_user
+from .log_client import log_service_call
 
-from custom_exceptions import OIOFlaskException, AuthorizationFailedException
-from custom_exceptions import BadRequestException
-from auth import tokens
+from .custom_exceptions import OIOFlaskException, AuthorizationFailedException
+from .custom_exceptions import BadRequestException
+from .auth import tokens
+
 import settings
 
-from . import klassifikation, log, organisation
-from . import dokument, sag
-from . import tilstand, indsats, aktivitet
 
 app = Flask(__name__)
 
@@ -78,7 +78,7 @@ def get_token():
             text = tokens.get_token(username, password)
         except Exception as e:
             traceback.print_exc()
-            raise AuthorizationFailedException(e.message)
+            raise AuthorizationFailedException(*e.args)
 
         return Response(text, mimetype='text/plain')
 
@@ -112,7 +112,7 @@ def page_not_found(e):
 
 def get_service_name():
     'Get the hierarchy of the present method call from the request URL'
-    u = urlparse.urlparse(request.url)
+    u = urllib.parse.urlparse(request.url)
     urlpath = u.path
     service_name = urlpath.split('/')[1].capitalize()
 
@@ -121,7 +121,7 @@ def get_service_name():
 
 def get_class_name():
     'Get the hierarchy of the present method call from the request URL'
-    url = urlparse.urlparse(request.url)
+    url = urllib.parse.urlparse(request.url)
     class_name = url.path.split('/')[2].capitalize()
     return class_name
 
@@ -145,7 +145,8 @@ def log_api_call(response):
 
 @app.errorhandler(DataError)
 def handle_db_error(error):
-    message, context = error.message.split('\n', 1)
+    message = error.diag.message_primary
+    context = error.diag.context or error.pgerror.split('\n', 1)[-1]
     return jsonify(message=message, context=context), 400
 
 

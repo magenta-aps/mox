@@ -80,13 +80,13 @@ def log_service_call(service_name, class_name, time,
     channel = connection.channel()
     channel.queue_declare(queue=settings.MOX_LOG_QUEUE)
     channel.exchange_declare(exchange=settings.MOX_LOG_EXCHANGE,
-                             type='fanout')
+                             exchange_type='fanout')
     channel.queue_bind(settings.MOX_LOG_QUEUE,
                        exchange=settings.MOX_LOG_EXCHANGE)
 
     message = json.dumps(logevent_dict)
     # print "Log exchange", LOG_EXCHANGE
-    with open('/var/log/mox/audit.log', 'at') as fp:
+    with open(settings.AUDIT_LOG_FILE, 'at') as fp:
         json.dump(logevent_dict, fp, indent=2)
         fp.write('\n')
         fp.flush()

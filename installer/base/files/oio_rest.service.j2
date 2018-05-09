@@ -1,0 +1,15 @@
+[Unit]
+Description="{{ service_description }}"
+
+[Service]
+Type=simple
+Restart=on-failure
+
+User={{ user }}
+Group={{ group }}
+
+WorkingDirectory={{ working_directory }}
+ExecStart={{ gunicorn }} -c guniconfig.py wsgi:app
+
+[Install]
+WantedBy=multi-user.target

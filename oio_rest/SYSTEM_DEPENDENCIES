@@ -1,9 +1,0 @@
-python-virtualenv
-libxmlsec1-dev
-swig
-postgresql-common
-libpq-dev
-python-dev
-libapache2-mod-wsgi
-build-essential
-

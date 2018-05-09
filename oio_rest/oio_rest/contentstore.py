@@ -1,13 +1,12 @@
 # encoding: utf-8
 
 import os
-from urlparse import urlparse
+from urllib.parse import urlparse
 import uuid
 import errno
 import time
 
 from settings import FILE_UPLOAD_FOLDER
-
 
 def _mkdir_p(path):
     try:

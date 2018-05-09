@@ -3,27 +3,25 @@ from enum import Enum
 from datetime import datetime, timedelta
 
 import psycopg2
-
 from psycopg2.extras import DateTimeTZRange
 from psycopg2.extensions import AsIs, QuotedString, adapt as psyco_adapt
-
 from jinja2 import Environment, FileSystemLoader
 from dateutil import parser as date_parser
 
-from . import settings
-
-from db_helpers import get_attribute_fields, get_attribute_names
-from db_helpers import get_field_type, get_state_names, get_relation_field_type
-from db_helpers import (Soegeord, OffentlighedUndtaget, JournalNotat,
+from .db_helpers import get_attribute_fields, get_attribute_names
+from .db_helpers import get_field_type, get_state_names, get_relation_field_type
+from .db_helpers import (Soegeord, OffentlighedUndtaget, JournalNotat,
                         JournalDokument, DokumentVariantType, AktoerAttr,
                         VaerdiRelationAttr)
 
-from authentication import get_authenticated_user
+from .authentication import get_authenticated_user
 
-from auth.restrictions import Operation, get_restrictions
-from utils.build_registration import restriction_to_registration
-from custom_exceptions import NotFoundException, NotAllowedException
-from custom_exceptions import DBException, BadRequestException
+from .auth.restrictions import Operation, get_restrictions
+from .utils.build_registration import restriction_to_registration
+from .custom_exceptions import NotFoundException, NotAllowedException
+from .custom_exceptions import DBException, BadRequestException
+
+import settings
 
 """
     Jinja2 Environment
@@ -43,7 +41,7 @@ def adapt(value):
     adapter = psyco_adapt(value)
     if hasattr(adapter, 'prepare'):
         adapter.prepare(adapt.connection)
-    return unicode(adapter.getquoted(), adapt.connection.encoding)
+    return str(adapter.getquoted(), adapt.connection.encoding)
 
 
 jinja_env.filters['adapt'] = adapt
@@ -277,17 +275,12 @@ def sql_get_registration(class_name, time_period, life_cycle_code,
 
 def sql_convert_restrictions(class_name, restrictions):
     """Convert a list of restrictions to SQL."""
-    registrations = map(
-        lambda r: restriction_to_registration(class_name, r),
-        restrictions
-    )
-    sql_restrictions = map(
-        lambda r: sql_get_registration(
-            class_name, None, None, None, None,
-            sql_convert_registration(r, class_name)
-        ),
-        registrations
-    )
+    registrations = [restriction_to_registration(class_name, r)
+                     for r in restrictions]
+    sql_restrictions = [sql_get_registration(
+        class_name, None, None, None, None,
+        sql_convert_registration(r, class_name)
+    ) for r in registrations]
     return sql_restrictions
 
 
@@ -323,7 +316,7 @@ def object_exists(class_name, uuid):
     except psycopg2.Error as e:
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.message)
+            raise DBException(status_code, e.pgerror)
         else:
             raise
 
@@ -351,7 +344,7 @@ where de.indhold = %s"""
     except psycopg2.Error as e:
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.message)
+            raise DBException(status_code, e.pgerror)
         else:
             raise
 
@@ -404,7 +397,7 @@ def create_or_import_object(class_name, note, registration,
     except psycopg2.Error as e:
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.message)
+            raise DBException(status_code, e.pgerror)
         else:
             raise
 
@@ -457,7 +450,7 @@ def delete_object(class_name, registration, note, uuid):
     except psycopg2.Error as e:
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.message)
+            raise DBException(status_code, e.pgerror)
         else:
             raise
 
@@ -497,7 +490,7 @@ def passivate_object(class_name, note, registration, uuid):
     except psycopg2.Error as e:
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.message)
+            raise DBException(status_code, e.pgerror)
         else:
             raise
 
@@ -542,11 +535,11 @@ def update_object(class_name, note, registration, uuid=None,
                         class_name.lower(), uuid
                     ))
 
-        if e.message.startswith(noop_msg):
+        if e.pgerror.startswith(noop_msg):
             return uuid
         elif e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.message)
+            raise DBException(status_code, e.pgerror)
         else:
             raise
 
@@ -588,7 +581,7 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
     except psycopg2.Error as e:
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.message)
+            raise DBException(status_code, e.pgerror)
         else:
             raise
 
@@ -621,7 +614,7 @@ def simplify_cleared_wrappers(o):
             # Handle clearable wrapper db-types.
             return o.get("value", None)
         else:
-            return {k: simplify_cleared_wrappers(v) for k, v in o.iteritems()}
+            return {k: simplify_cleared_wrappers(v) for k, v in o.items()}
     elif isinstance(o, list):
         return [simplify_cleared_wrappers(v) for v in o]
     elif isinstance(o, tuple):
@@ -644,13 +637,13 @@ def transform_virkning(o):
                 f = f[1:-1]
             if t[0] == '"':
                 t = t[1:-1]
-            items = o.items() + [
+            items = list(o.items()) + [
                 ('from', f), ('to', t), ("from_included", from_included),
                 ("to_included", to_included)
             ]
             return {k: v for k, v in items if k != "timeperiod"}
         else:
-            return {k: transform_virkning(v) for k, v in o.iteritems()}
+            return {k: transform_virkning(v) for k, v in o.items()}
     elif isinstance(o, list):
         return [transform_virkning(v) for v in o]
     elif isinstance(o, tuple):
@@ -661,14 +654,14 @@ def transform_virkning(o):
 
 def filter_empty(d):
     """Recursively filter out empty dictionary keys."""
-    if type(d) is dict:
+    if isinstance(d, dict):
         return dict(
-            (k, filter_empty(v)) for k, v in d.iteritems() if v and
+            (k, filter_empty(v)) for k, v in d.items() if v and
             filter_empty(v)
         )
-    elif type(d) is list:
+    elif isinstance(d, list):
         return [filter_empty(v) for v in d if v and filter_empty(v)]
-    elif type(d) is tuple:
+    elif isinstance(d, tuple):
         return tuple(filter_empty(v) for v in d if v and filter_empty(v))
     else:
         return d
@@ -693,7 +686,7 @@ def transform_relations(o):
             o["relationer"] = rel_dict
             return o
         else:
-            return {k: transform_relations(v) for k, v in o.iteritems()}
+            return {k: transform_relations(v) for k, v in o.items()}
     elif isinstance(o, list):
         return [transform_relations(v) for v in o]
     elif isinstance(o, tuple):
@@ -714,7 +707,7 @@ def filter_nulls(o):
             # Handle clearable wrapper db-types.
             return o.get("value", None)
         else:
-            return {k: filter_nulls(v) for k, v in o.iteritems()
+            return {k: filter_nulls(v) for k, v in o.items()
                     if v is not None and filter_nulls(v) is not None}
     elif isinstance(o, list):
         return [filter_nulls(v) for v in o]
@@ -736,7 +729,7 @@ def search_objects(class_name, uuid, registration,
     if not any_rel_uuid_arr:
         any_rel_uuid_arr = []
     if uuid is not None:
-        assert isinstance(uuid, basestring)
+        assert isinstance(uuid, str)
 
     time_period = None
     if registreret_fra is not None or registreret_til is not None:
@@ -778,7 +771,7 @@ def search_objects(class_name, uuid, registration,
     except psycopg2.Error as e:
         if e.pgcode[:2] == 'MO':
             status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.message)
+            raise DBException(status_code, e.pgerror)
         else:
             raise
 

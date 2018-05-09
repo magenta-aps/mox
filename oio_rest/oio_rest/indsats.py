@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-from oio_rest import OIORestObject, OIOStandardHierarchy
+from .oio_rest import OIORestObject, OIOStandardHierarchy
 
 
 class Indsats(OIORestObject):

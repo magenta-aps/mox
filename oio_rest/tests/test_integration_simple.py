@@ -6,7 +6,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
-from . import util
+from tests import util
 
 
 UUID_PATTERN = (
@@ -106,7 +106,7 @@ class Tests(util.TestCase):
             if endpoint.endswith(UUID_PATTERN)
         ]
 
-        self.assertEquals(
+        self.assertEqual(
             [
                 '/aktivitet/aktivitet',
                 '/dokument/dokument',

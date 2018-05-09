@@ -1,5 +1,5 @@
 import base64
-import cStringIO
+import io
 import datetime
 import gzip
 import os
@@ -11,7 +11,7 @@ from lxml import etree
 import jinja2
 import pytz
 
-from .. import settings
+import settings
 
 curdir = os.path.dirname(os.path.realpath(__file__))
 jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(
@@ -25,12 +25,11 @@ IDP_TEMPLATES = {
 
 
 def _gzipstring(s):
-    buf = cStringIO.StringIO()
+    with io.BytesIO() as buf:
+        with gzip.GzipFile(mode='wb', fileobj=buf, mtime=0) as fp:
+            fp.write(s)
 
-    with gzip.GzipFile(mode='wb', fileobj=buf, mtime=0) as fp:
-        fp.write(s)
-
-    return buf.getvalue()
+        return buf.getvalue()
 
 
 def get_token(username, passwd, pretty_print=False, insecure=False):
@@ -95,7 +94,7 @@ def get_token(username, passwd, pretty_print=False, insecure=False):
         text = \
             base64.standard_b64encode(_gzipstring(etree.tostring(tokens[0])))
 
-        return 'saml-gzipped ' + text
+        return b'saml-gzipped ' + text
 
 
 def main(*args):
@@ -126,7 +125,7 @@ def main(*args):
 
     def my_input(prompt):
         sys.stderr.write(prompt)
-        return raw_input()
+        return input()
 
     username = options.user or my_input('User: ')
     password = options.password or getpass.getpass('Password: ')
@@ -143,7 +142,7 @@ def main(*args):
         msg = ('SSL request failed; you probably need to install the '
                'appropriate certificate authority, or use the correct host '
                'name')
-        print >> sys.stderr, msg, e
+        print(msg, e, file=sys.stderr)
         return 1
 
     if not options.cert_only:

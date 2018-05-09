@@ -999,14 +999,14 @@ class TestNamedTupleAdapter(TestCase):
     def test_get_quoted(self):
         # Arrange
         a = MagicMock()
-        a.getquoted.return_value = 'first value'
+        a.getquoted.return_value = b'first value'
         b = MagicMock()
-        b.getquoted.return_value = 'second value'
+        b.getquoted.return_value = b'second value'
 
         nta = TestNamedTupleAdapter.TestClass((a, b))
         nta.prepare_and_adapt = MagicMock(side_effect=lambda x: x)
 
-        expected_result = 'ROW(first value,second value) :: tuple'
+        expected_result = b'ROW(first value,second value) :: tuple'
 
         # Act
         actual_result = nta.getquoted()
@@ -1024,21 +1024,21 @@ class TestAktoerAttrAdapter(TestCase):
     def test_get_quoted(self):
         # Arrange
         accepteret = MagicMock()
-        accepteret.getquoted.return_value = 'accepteret'
+        accepteret.getquoted.return_value = b'accepteret'
         obligatorisk = MagicMock()
-        obligatorisk.getquoted.return_value = 'obligatorisk'
+        obligatorisk.getquoted.return_value = b'obligatorisk'
         uuid = MagicMock()
-        uuid.getquoted.return_value = 'uuid'
+        uuid.getquoted.return_value = b'uuid'
         urn = MagicMock()
-        urn.getquoted.return_value = 'urn'
+        urn.getquoted.return_value = b'urn'
 
         aaa = TestAktoerAttrAdapter.TestClass(
             (accepteret, obligatorisk, uuid, urn))
         aaa.prepare_and_adapt = MagicMock(side_effect=lambda x: x)
 
-        expected_result = ('ROW(obligatorisk::AktivitetAktoerAttr'
-                           'ObligatoriskKode,accepteret::AktivitetAktoerAttr'
-                           'AccepteretKode,uuid::uuid,urn) :: tuple')
+        expected_result = (b'ROW(obligatorisk::AktivitetAktoerAttr'
+                           b'ObligatoriskKode,accepteret::AktivitetAktoerAttr'
+                           b'AccepteretKode,uuid::uuid,urn) :: tuple')
 
         # Act
         actual_result = aaa.getquoted()

@@ -1,15 +1,16 @@
 """"Encapsulate details about the database structure."""
 from collections import namedtuple
-from urlparse import urlparse
-from flask import request
+from urllib.parse import urlparse
 
+from flask import request
 from psycopg2._range import DateTimeTZRange
 from psycopg2.extensions import adapt as psyco_adapt, ISQLQuote
 from psycopg2.extensions import register_adapter as psyco_register_adapter
-from contentstore import content_store
 
-from db_structure import REAL_DB_STRUCTURE as db_struct
-from custom_exceptions import BadRequestException
+from .contentstore import content_store
+from .custom_exceptions import BadRequestException
+
+from oio_common.db_structure import REAL_DB_STRUCTURE as db_struct
 
 _attribute_fields = {}
 
@@ -31,7 +32,7 @@ def get_attribute_fields(attribute_name):
 def get_field_type(attribute_name, field_name):
     for c in db_struct:
         if "attributter_metadata" in db_struct[c]:
-            for a, fs in db_struct[c]["attributter_metadata"].iteritems():
+            for a, fs in db_struct[c]["attributter_metadata"].items():
                 if attribute_name == c + a:
                     if field_name in fs and 'type' in fs[field_name]:
                         return fs[field_name]['type']
@@ -381,10 +382,10 @@ class NamedTupleAdapter(object):
         return x
 
     def getquoted(self):
-        values = map(self.prepare_and_adapt, self._tuple_obj)
+        values = list(map(self.prepare_and_adapt, self._tuple_obj))
         values = [v.getquoted() for v in values]
-        sql = ('ROW(' + ','.join(values) + ') :: ' +
-               self._tuple_obj.__class__.__name__)
+        sql = (b'ROW(' + b','.join(values) + b') :: ' +
+               self._tuple_obj.__class__.__name__.encode('ascii'))
         return sql
 
     def __str__(self):
@@ -394,18 +395,18 @@ class NamedTupleAdapter(object):
 class AktoerAttrAdapter(NamedTupleAdapter):
 
     def getquoted(self):
-        values = map(self.prepare_and_adapt, self._tuple_obj)
+        values = list(map(self.prepare_and_adapt, self._tuple_obj))
         values = [v.getquoted() for v in values]
         qaa = AktoerAttr(*values)  # quoted_aktoer_attr
         values = [
-            qaa.obligatorisk + '::AktivitetAktoerAttrObligatoriskKode',
-            qaa.accepteret + '::AktivitetAktoerAttrAccepteretKode',
-            qaa.repraesentation_uuid + '::uuid',
+            qaa.obligatorisk + b'::AktivitetAktoerAttrObligatoriskKode',
+            qaa.accepteret + b'::AktivitetAktoerAttrAccepteretKode',
+            qaa.repraesentation_uuid + b'::uuid',
             qaa.repraesentation_urn
         ]
 
-        sql = ('ROW(' + ','.join(values) + ') :: ' +
-               self._tuple_obj.__class__.__name__)
+        sql = (b'ROW(' + b','.join(values) + b') :: ' +
+               self._tuple_obj.__class__.__name__.encode('ascii'))
         return sql
 
 
@@ -424,6 +425,3 @@ psyco_register_adapter(DokumentVariantEgenskaberType, NamedTupleAdapter)
 psyco_register_adapter(DokumentDelType, NamedTupleAdapter)
 psyco_register_adapter(DokumentDelEgenskaberType, NamedTupleAdapter)
 psyco_register_adapter(DokumentDelRelationType, NamedTupleAdapter)
-
-if __name__ == '__main__':
-    print '\n'.join(sorted(db_struct))

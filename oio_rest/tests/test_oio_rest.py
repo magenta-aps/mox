@@ -8,10 +8,12 @@ import freezegun
 from mock import MagicMock, patch
 from werkzeug.exceptions import BadRequest
 
-from oio_rest import oio_rest, db, db_helpers
+from oio_rest import db
+from oio_rest import db_helpers
 from oio_rest.custom_exceptions import (BadRequestException, NotFoundException,
                                         GoneException)
 from oio_rest.oio_rest import OIOStandardHierarchy, OIORestObject
+from oio_rest import oio_rest
 
 
 class TestClassRestObject(OIORestObject):
@@ -189,7 +191,7 @@ class TestOIORestObject(TestCase):
             actual_json = self.testclass.get_json()
 
         # Assert
-        self.assertEquals(expected_json, actual_json)
+        self.assertEqual(expected_json, actual_json)
 
     def test_get_json_returns_json_if_form_json(self):
         # Arrange
@@ -203,7 +205,7 @@ class TestOIORestObject(TestCase):
             actual_json = self.testclass.get_json()
 
         # Assert
-        self.assertEquals(expected_json, actual_json)
+        self.assertEqual(expected_json, actual_json)
 
     def test_get_json_returns_badrequest_if_malformed_form_json(self):
         # Arrange
@@ -226,9 +228,9 @@ class TestOIORestObject(TestCase):
             actual_json = self.testclass.get_json()
 
         # Assert
-        self.assertEquals(expected_json, actual_json)
+        self.assertEqual(expected_json, actual_json)
 
-    @patch('oio_rest.oio_rest.db.create_or_import_object')
+    @patch('oio_rest.db.create_or_import_object')
     def test_create_object_with_input_returns_uuid_and_code_201(self, mock):
         # Arrange
         uuid = "c98d1e8b-0655-40a0-8e86-bb0cc07b0d59"
@@ -269,7 +271,7 @@ class TestOIORestObject(TestCase):
                                            content_type='application/json',
                                            method='POST'):
             result = self.testclass.create_object()
-            actual_data = json.loads(result[0].data)
+            actual_data = json.loads(result[0].get_data(as_text=True))
             actual_code = result[1]
 
         # Assert
@@ -284,7 +286,7 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='POST'):
             result = self.testclass.create_object()
-            actual_data = json.loads(result[0].data)
+            actual_data = json.loads(result[0].get_data(as_text=True))
             actual_code = result[1]
 
         # Assert
@@ -310,14 +312,15 @@ class TestOIORestObject(TestCase):
                         "garbage": ["garbage"]}
 
         with self.app.test_request_context(method='GET'), \
-                patch("oio_rest.db_structure.REAL_DB_STRUCTURE",
+                patch("oio_common.db_structure.REAL_DB_STRUCTURE",
                       new=db_structure):
 
             # Act
-            actual_fields = json.loads(self.testclass.get_fields().data)
+            actual_fields = json.loads(
+                self.testclass.get_fields().get_data(as_text=True))
 
             # Assert
-            self.assertEquals(expected_fields, actual_fields)
+            self.assertEqual(expected_fields, actual_fields)
 
     def test_get_fields_raises_on_unknown_args(self):
         # Arrange
@@ -332,7 +335,7 @@ class TestOIORestObject(TestCase):
             self.testclass.get_fields()
 
     @freezegun.freeze_time('2017-01-01', tz_offset=1)
-    @patch('oio_rest.oio_rest.db.list_objects')
+    @patch('oio_rest.db.list_objects')
     @patch('oio_rest.db_helpers.db_struct', new=db_struct)
     def test_get_objects_list_uses_default_params(self,
                                                   mock_list):
@@ -352,7 +355,8 @@ class TestOIORestObject(TestCase):
 
         # Act
         with self.app.test_request_context(method='GET'):
-            actual_result_json = self.testclass.get_objects().data
+            actual_result_json = self.testclass.get_objects().get_data(
+                as_text=True)
             actual_result = json.loads(actual_result_json)
 
         # Assert
@@ -361,7 +365,7 @@ class TestOIORestObject(TestCase):
         self.assertEqual(expected_args, actual_args)
         self.assertDictEqual(expected_result, actual_result)
 
-    @patch('oio_rest.oio_rest.db.list_objects')
+    @patch('oio_rest.db.list_objects')
     @patch('oio_rest.db_helpers.db_struct', new=db_struct)
     def test_get_objects_list_uses_supplied_params(self, mock):
         # Arrange
@@ -394,7 +398,8 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='GET',
                                            query_string=request_params):
-            actual_result_json = self.testclass.get_objects().data
+            actual_result_json = self.testclass.get_objects().get_data(
+                as_text=True)
             actual_result = json.loads(actual_result_json)
 
         # Assert
@@ -403,7 +408,7 @@ class TestOIORestObject(TestCase):
         self.assertEqual(expected_args, actual_args)
         self.assertDictEqual(expected_result, actual_result)
 
-    @patch('oio_rest.oio_rest.db.list_objects')
+    @patch('oio_rest.db.list_objects')
     @patch('oio_rest.db_helpers.db_struct', new=db_struct)
     def test_get_objects_returns_empty_list_on_no_results(self, mock):
         # Arrange
@@ -412,7 +417,8 @@ class TestOIORestObject(TestCase):
 
         # Act
         with self.app.test_request_context(method='GET'):
-            actual_result_json = self.testclass.get_objects().data
+            actual_result_json = self.testclass.get_objects().get_data(
+                as_text=True)
             actual_result = json.loads(actual_result_json)
 
         expected_result = {"results": []}
@@ -422,7 +428,7 @@ class TestOIORestObject(TestCase):
     @freezegun.freeze_time('2017-01-01', tz_offset=1)
     @patch('oio_rest.db_helpers.db_struct', new=db_struct)
     @patch('oio_rest.oio_rest.build_registration')
-    @patch('oio_rest.oio_rest.db.search_objects')
+    @patch('oio_rest.db.search_objects')
     def test_get_objects_search_uses_default_params(self, mock_search,
                                                     mock_br):
         # Arrange
@@ -451,7 +457,8 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='GET',
                                            query_string=request_params):
-            actual_result_json = self.testclass.get_objects().data
+            actual_result_json = self.testclass.get_objects().get_data(
+                as_text=True)
             actual_result = json.loads(actual_result_json)
 
         # Assert
@@ -462,7 +469,7 @@ class TestOIORestObject(TestCase):
 
     @patch('oio_rest.db_helpers.db_struct', new=db_struct)
     @patch('oio_rest.oio_rest.build_registration')
-    @patch('oio_rest.oio_rest.db.search_objects')
+    @patch('oio_rest.db.search_objects')
     def test_get_objects_search_uses_supplied_params(self, mock_search,
                                                      mock_br):
         # Arrange
@@ -513,7 +520,8 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='GET',
                                            query_string=request_params):
-            actual_result_json = self.testclass.get_objects().data
+            actual_result_json = self.testclass.get_objects().get_data(
+                as_text=True)
             actual_result = json.loads(actual_result_json)
 
         # Assert
@@ -523,8 +531,8 @@ class TestOIORestObject(TestCase):
         self.assertDictEqual(expected_result, actual_result)
 
     @patch('oio_rest.db_helpers.db_struct', new=db_struct)
-    @patch('oio_rest.oio_rest.build_registration')
-    @patch('oio_rest.oio_rest.db.search_objects')
+    @patch('oio_rest.utils.build_registration')
+    @patch('oio_rest.db.search_objects')
     def test_get_objects_search_raises_exception_on_multi_uuid(
             self,
             mock_search,
@@ -551,7 +559,7 @@ class TestOIORestObject(TestCase):
             self.testclass.get_objects()
 
     @patch('oio_rest.db_helpers.db_struct', new=db_struct)
-    @patch('oio_rest.oio_rest.db.search_objects')
+    @patch('oio_rest.db.search_objects')
     def test_get_objects_search_raises_exception_on_unknown_args(self,
                                                                  mock_search):
         # Arrange
@@ -567,7 +575,7 @@ class TestOIORestObject(TestCase):
                 self.assertRaises(BadRequestException):
             self.testclass.get_objects()
 
-    @patch('oio_rest.oio_rest.db.list_objects')
+    @patch('oio_rest.db.list_objects')
     @freezegun.freeze_time('2017-01-01', tz_offset=1)
     def test_get_object_uses_default_params(self, mock_list):
         # Arrange
@@ -595,7 +603,8 @@ class TestOIORestObject(TestCase):
 
         # Act
         with self.app.test_request_context(method='GET'):
-            actual_result_json = self.testclass.get_object(uuid).data
+            actual_result_json = self.testclass.get_object(uuid).get_data(
+                as_text=True)
             actual_result = json.loads(actual_result_json)
 
         # Assert
@@ -604,7 +613,7 @@ class TestOIORestObject(TestCase):
         self.assertEqual(expected_args, actual_args)
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.oio_rest.db.list_objects')
+    @patch('oio_rest.db.list_objects')
     def test_get_object_uses_supplied_params(self, mock):
         # Arrange
         data = [
@@ -643,7 +652,8 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='GET',
                                            query_string=request_params):
-            actual_result_json = self.testclass.get_object(uuid).data
+            actual_result_json = self.testclass.get_object(uuid).get_data(
+                as_text=True)
             actual_result = json.loads(actual_result_json)
 
         # Assert
@@ -652,7 +662,7 @@ class TestOIORestObject(TestCase):
         self.assertEqual(expected_args, actual_args)
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.oio_rest.db.list_objects')
+    @patch('oio_rest.db.list_objects')
     def test_get_object_raises_on_no_results(self, mock):
         # Arrange
         data = []
@@ -665,7 +675,7 @@ class TestOIORestObject(TestCase):
                 self.assertRaises(NotFoundException):
             self.testclass.get_object(uuid)
 
-    @patch('oio_rest.oio_rest.db.list_objects')
+    @patch('oio_rest.db.list_objects')
     def test_get_object_raises_on_deleted_object(self, mock_list):
         # Arrange
         data = [
@@ -687,7 +697,7 @@ class TestOIORestObject(TestCase):
             self.testclass.get_object(uuid)
 
     @patch('oio_rest.db_helpers.db_struct', new=db_struct)
-    @patch('oio_rest.oio_rest.db.list_objects')
+    @patch('oio_rest.db.list_objects')
     def test_get_object_raises_on_unknown_args(self, mock_list):
         # Arrange
         uuid = "4efbbbde-e197-47be-9d40-e08f1cd00259"
@@ -713,15 +723,15 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(method='PUT'):
             result = self.testclass.put_object(uuid)
-            actual_data = json.loads(result[0].data)
+            actual_data = json.loads(result[0].get_data(as_text=True))
             actual_code = result[1]
 
         # Assert
         self.assertDictEqual(expected_data, actual_data)
         self.assertEqual(400, actual_code)
 
-    @patch("oio_rest.oio_rest.db.object_exists")
-    @patch("oio_rest.oio_rest.db.create_or_import_object")
+    @patch("oio_rest.db.object_exists")
+    @patch("oio_rest.db.create_or_import_object")
     def test_put_object_create_if_not_exists(self, mock_create, mock_exists):
         # type: (MagicMock, MagicMock) -> None
         # Arrange
@@ -737,7 +747,7 @@ class TestOIORestObject(TestCase):
                                            content_type='application/json',
                                            method='PUT'):
             result = self.testclass.put_object(uuid)
-            actual_data = json.loads(result[0].data)
+            actual_data = json.loads(result[0].get_data(as_text=True))
             actual_code = result[1]
 
         # Assert
@@ -745,9 +755,9 @@ class TestOIORestObject(TestCase):
         self.assertDictEqual(expected_data, actual_data)
         self.assertEqual(200, actual_code)
 
-    @patch("oio_rest.oio_rest.db.get_life_cycle_code")
-    @patch("oio_rest.oio_rest.db.object_exists")
-    @patch("oio_rest.oio_rest.db.update_object")
+    @patch("oio_rest.db.get_life_cycle_code")
+    @patch("oio_rest.db.object_exists")
+    @patch("oio_rest.db.update_object")
     def test_patch_object_update_if_deleted_or_passive(self, mock_update,
                                                        mock_exists,
                                                        mock_life_cycle):
@@ -769,7 +779,7 @@ class TestOIORestObject(TestCase):
                                            content_type='application/json',
                                            method='PUT'):
             result = self.testclass.patch_object(uuid)
-            actual_data = json.loads(result[0].data)
+            actual_data = json.loads(result[0].get_data(as_text=True))
             actual_code = result[1]
 
         # Assert
@@ -777,9 +787,9 @@ class TestOIORestObject(TestCase):
         self.assertDictEqual(expected_data, actual_data)
         self.assertEqual(200, actual_code)
 
-    @patch("oio_rest.oio_rest.db.get_life_cycle_code")
-    @patch("oio_rest.oio_rest.db.object_exists")
-    @patch("oio_rest.oio_rest.db.update_object")
+    @patch("oio_rest.db.get_life_cycle_code")
+    @patch("oio_rest.db.object_exists")
+    @patch("oio_rest.db.update_object")
     def test_patch_object_update_if_not_deleted_or_passive(self, mock_update,
                                                            mock_exists,
                                                            mock_life_cycle):
@@ -800,7 +810,7 @@ class TestOIORestObject(TestCase):
                                            content_type='application/json',
                                            method='PUT'):
             result = self.testclass.patch_object(uuid)
-            actual_data = json.loads(result[0].data)
+            actual_data = json.loads(result[0].get_data(as_text=True))
             actual_code = result[1]
 
         # Assert
@@ -808,9 +818,9 @@ class TestOIORestObject(TestCase):
         self.assertDictEqual(expected_data, actual_data)
         self.assertEqual(200, actual_code)
 
-    @patch("oio_rest.oio_rest.db.get_life_cycle_code")
-    @patch("oio_rest.oio_rest.db.object_exists")
-    @patch("oio_rest.oio_rest.db.passivate_object")
+    @patch("oio_rest.db.get_life_cycle_code")
+    @patch("oio_rest.db.object_exists")
+    @patch("oio_rest.db.passivate_object")
     def test_patch_object_passivate_if_livscyklus_passiv(self, mock_passivate,
                                                          mock_exists,
                                                          mock_life_cycle):
@@ -831,7 +841,7 @@ class TestOIORestObject(TestCase):
                                            content_type='application/json',
                                            method='PUT'):
             result = self.testclass.patch_object(uuid)
-            actual_data = json.loads(result[0].data)
+            actual_data = json.loads(result[0].get_data(as_text=True))
             actual_code = result[1]
 
         # Assert
@@ -853,7 +863,7 @@ class TestOIORestObject(TestCase):
                 self.assertRaises(BadRequestException):
             self.testclass.put_object(uuid)
 
-    @patch("oio_rest.oio_rest.db.delete_object")
+    @patch("oio_rest.db.delete_object")
     def test_delete_object_returns_expected_result_and_202(self, mock_delete):
         # type: (MagicMock) -> None
         # Arrange
@@ -867,13 +877,13 @@ class TestOIORestObject(TestCase):
                                            content_type='application/json',
                                            method='PUT'):
             result = self.testclass.delete_object(uuid)
-            actual_data = json.loads(result[0].data)
+            actual_data = json.loads(result[0].get_data(as_text=True))
             actual_code = result[1]
         # Assert
         self.assertDictEqual(expected_data, actual_data)
         self.assertEqual(202, actual_code)
 
-    @patch("oio_rest.oio_rest.db.delete_object")
+    @patch("oio_rest.db.delete_object")
     def test_delete_object_called_with_empty_reg_and_uuid(self, mock_delete):
         # type: (MagicMock) -> None
         # Arrange
@@ -1036,8 +1046,8 @@ class TestOIOStandardHierarchy(TestCase):
         keyword_args = flask.add_url_rule.call_args[1]
 
         self.assertIn('GET', keyword_args['methods'])
-        self.assertEquals(u'URL/testclass/classes', ordered_args[0])
-        self.assertEquals(u'testclass_classes', ordered_args[1])
+        self.assertEqual('URL/testclass/classes', ordered_args[0])
+        self.assertEqual('testclass_classes', ordered_args[1])
         self.assertIsInstance(ordered_args[2], types.FunctionType)
 
     def test_setup_api_get_classes_returns_correct_result(self):
@@ -1056,7 +1066,7 @@ class TestOIOStandardHierarchy(TestCase):
         db_structure = expected_result.copy()
         db_structure.update({"garbage": "1234"})
 
-        with patch("oio_rest.db_structure.REAL_DB_STRUCTURE",
+        with patch("oio_common.db_structure.REAL_DB_STRUCTURE",
                    new=db_structure):
             # Act
             self.testclass.setup_api(base_url="URL", flask=flask)
@@ -1067,7 +1077,8 @@ class TestOIOStandardHierarchy(TestCase):
             get_classes = flask.add_url_rule.call_args[0][2]
 
             with self.app.test_request_context():
-                actual_result = json.loads(get_classes().data)
+                actual_result = json.loads(
+                    get_classes().get_data(as_text=True))
 
             self.assertDictEqual(actual_result, expected_result)
 

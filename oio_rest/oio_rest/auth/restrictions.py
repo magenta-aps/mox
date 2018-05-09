@@ -2,8 +2,8 @@
 from enum import Enum
 from importlib import import_module
 
-from ..settings import AUTH_RESTRICTION_MODULE, AUTH_RESTRICTION_FUNCTION
-from ..settings import DO_ENABLE_RESTRICTIONS
+from settings import AUTH_RESTRICTION_MODULE, AUTH_RESTRICTION_FUNCTION
+from settings import DO_ENABLE_RESTRICTIONS
 
 
 class Operation(Enum):
@@ -92,7 +92,7 @@ def get_restrictions(user, object_type, operation):
         auth_function = getattr(auth_module, AUTH_RESTRICTION_FUNCTION)
         return auth_function(user, object_type, operation)
     except (AttributeError, ImportError):
-        print "Config error: Unable to load authorization module!"
+        print("Config error: Unable to load authorization module!")
         raise
 
 

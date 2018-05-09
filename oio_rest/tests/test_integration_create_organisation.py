@@ -10,7 +10,7 @@ import copy
 import json
 import unittest
 
-from . import util
+from tests import util
 
 
 class TestCreateOrganisation(util.TestCreateObject):

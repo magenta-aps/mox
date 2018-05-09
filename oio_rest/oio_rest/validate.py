@@ -1,7 +1,7 @@
 import copy
 import jsonschema
 
-import db_structure as db
+import oio_common.db_structure as db
 
 # A very nice reference explaining the JSON schema syntax can be found
 # here: https://spacetelescope.github.io/understanding-json-schema/
@@ -37,6 +37,7 @@ def _generate_schema_object(properties, required, kwargs=None):
     if kwargs:
         schema_obj.update(kwargs)
     return schema_obj
+
 
 # Mapping from DATABASE_STRUCTURE types to JSON schema types
 
@@ -242,7 +243,6 @@ def _handle_relation_metadata_specific(obj, relation_schema):
                 relation_schema[relation]['items']['required'].append(key)
 
     if obj == 'tilstand':
-
         # Handle special case for 'tilstand' where UUID not allowed
 
         del relation_schema['tilstandsvaerdi']['items']['properties']['uuid']
@@ -349,11 +349,11 @@ def get_lora_object_type(req):
 
     if not len(req['attributter']) == 1:
         raise jsonschema.exceptions.ValidationError('ups')
-    if not req['attributter'].keys()[0] in [key + 'egenskaber' for key in
-                                            db.REAL_DB_STRUCTURE.keys()]:
+    if not list(req['attributter'].keys())[0] in [key + 'egenskaber' for key in
+                                                  db.REAL_DB_STRUCTURE.keys()]:
         raise jsonschema.exceptions.ValidationError('ups2')
 
-    return req['attributter'].keys()[0].split('egenskaber')[0]
+    return list(req['attributter'].keys())[0].split('egenskaber')[0]
 
 
 def generate_json_schema(obj):
