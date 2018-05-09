@@ -52,7 +52,7 @@ pipeline {
         dir('mora') {
           timeout(15) {
             ansiColor('xterm') {
-              sh "venv/bin/python -m pytest --verbose --junitxml=tests.xml tests"
+              sh "venv/bin/python -m pytest --verbose --junitxml=tests.xml tests --junit-prefix=MO"
             }
           }
         }
