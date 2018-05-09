@@ -7,38 +7,38 @@ and integration tests.
 
 Backwards incompatible changes:
 
- * Allow replacing an object with PUT - updates now use PATCH (non-
-   compatible with previous versions).
- * Return an explicit error (410 Gone) on attempts to access a deleted
-   object.
+* Allow replacing an object with PUT - updates now use PATCH (non-
+  compatible with previous versions).
+* Return an explicit error (410 Gone) on attempts to access a deleted
+  object.
 
 New features:
 
- * Comprehensive test suite, including:
+* Comprehensive test suite, including:
 
-   * Unit tests of our REST API.
-   * Integration tests based on the standards.
-   * End-to-end integration tests of the REST API and database layer.
-   * Continuous integration infrastructure that runs our test suite on
-     each push to GitHub.
+  * Unit tests of our REST API.
+  * Integration tests based on the standards.
+  * End-to-end integration tests of the REST API and database layer.
+  * Continuous integration infrastructure that runs our test suite on
+    each push to GitHub.
 
- * JSON Schema validation when creating new objects.
- * Validate query parameters given during search, return an error when
-   given unrecognised or unsupported arguments.
- * Allow requesting objects at a certain registration or validity
-   time. Previously, we either allowed searching within an interval or
-   the current time.
- * Migration to Python 3; minimum version required is now Python 3.5
-   rather than 2.7.
- * New and improved installer based on SaltStack to enable provisioning
-   of client installations.
+* JSON Schema validation when creating new objects.
+* Validate query parameters given during search, return an error when
+  given unrecognised or unsupported arguments.
+* Allow requesting objects at a certain registration or validity
+  time. Previously, we either allowed searching within an interval or
+  the current time.
+* Migration to Python 3; minimum version required is now Python 3.5
+  rather than 2.7.
+* New and improved installer based on SaltStack to enable provisioning
+  of client installations.
 
 Bug fixes:
 
- * An update with an empty list of relations deleted all
-   relations.
- * Fixed semantics for DELETE, so that we no longer merge old entries
-   when reviving an object.
+* An update with an empty list of relations deleted all
+  relations.
+* Fixed semantics for DELETE, so that we no longer merge old entries
+  when reviving an object.
 
 
 Version 0.3.1.1, 4 September 2017
@@ -88,17 +88,17 @@ Version 0.2.17, 8 February 2017
 
 This version contains various installer cleanups, including:
 
- * Don't prompt for WSO installation during install - it's broken
- * Consolidate all Python virtual environemnts into one
- * Add support for Ubuntu 16.04 Xenial Xerus
- * Fix agents by using 'localhost' for AMQP queues
- * Install the headless JDK
- * Fix installing with recommended dependancies turned off system-wide
- * Fix initial install -- don't assume users exist
- * Suppress prompt for resetting the database, and factor out doing to
-   a separate script
- * Don't overwrite pre-existing configurations when re-installing
- * Handle SSL errors gracefully in 'auth.sh'
+* Don't prompt for WSO installation during install - it's broken
+* Consolidate all Python virtual environemnts into one
+* Add support for Ubuntu 16.04 Xenial Xerus
+* Fix agents by using 'localhost' for AMQP queues
+* Install the headless JDK
+* Fix installing with recommended dependancies turned off system-wide
+* Fix initial install -- don't assume users exist
+* Suppress prompt for resetting the database, and factor out doing to
+  a separate script
+* Don't overwrite pre-existing configurations when re-installing
+* Handle SSL errors gracefully in 'auth.sh'
 
 In addition, the README was updated to document how to set up AD FS
 authentication.
@@ -361,7 +361,7 @@ Version 0.1.1, 9 March 2015
 
 New in this version:
 
- - Added missing classes from the Organisation hierarchy.
+- Added missing classes from the Organisation hierarchy.
 
 
 Version 0.1.0, 23 February 2015
@@ -369,6 +369,6 @@ Version 0.1.0, 23 February 2015
 
 Initial release.
 
- - Status is "alpha"
- - First version of ActualState database has been handed over to KL and
-   Frederiksberg Kommune for testing.
+- Status is "alpha"
+- First version of ActualState database has been handed over to KL and
+  Frederiksberg Kommune for testing.
