@@ -1,5 +1,4 @@
 import copy
-import json
 import jsonschema
 
 import oio_common.db_structure as db
@@ -211,7 +210,6 @@ def _handle_relation_metadata_all(obj, relation):
     metadata_all = _get_metadata(obj, 'relationer', '*')
     for key in metadata_all:
         if 'type' in metadata_all[key]:
-            print(json.dumps(relation, indent=2))
             relation['items']['oneOf'][0]['properties'][key] = TYPE_MAP[
                 metadata_all[key]['type']]
             relation['items']['oneOf'][1]['properties'][key] = TYPE_MAP[
