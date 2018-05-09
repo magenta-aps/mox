@@ -1,4 +1,5 @@
 import copy
+import json
 import jsonschema
 
 import oio_common.db_structure as db
@@ -210,7 +211,10 @@ def _handle_relation_metadata_all(obj, relation):
     metadata_all = _get_metadata(obj, 'relationer', '*')
     for key in metadata_all:
         if 'type' in metadata_all[key]:
-            relation['items']['properties'][key] = TYPE_MAP[
+            print(json.dumps(relation, indent=2))
+            relation['items']['oneOf'][0]['properties'][key] = TYPE_MAP[
+                metadata_all[key]['type']]
+            relation['items']['oneOf'][1]['properties'][key] = TYPE_MAP[
                 metadata_all[key]['type']]
     return relation
 
@@ -228,26 +232,30 @@ def _handle_relation_metadata_specific(obj, relation_schema):
     metadata_specific = db.REAL_DB_STRUCTURE[obj].get('relationer_metadata',
                                                       [])
     for relation in [key for key in metadata_specific if not key == '*']:
-        properties = relation_schema[relation]['items']['properties']
-        metadata = metadata_specific[relation]
-        for key in metadata:
-            if 'type' in metadata[key]:
-                properties[key] = TYPE_MAP[metadata[key]['type']]
-            if 'enum' in metadata[key]:
-                # Enum implies type = text
-                properties[key] = {
-                    'type': 'string',
-                    'enum': metadata[key]['enum']
-                }
-            if metadata[key].get('mandatory', False):
-                relation_schema[relation]['items']['required'].append(key)
+        for i in range(2):
+            properties = relation_schema[relation]['items']['oneOf'][i][
+                'properties']
+            metadata = metadata_specific[relation]
+            for key in metadata:
+                if 'type' in metadata[key]:
+                    properties[key] = TYPE_MAP[metadata[key]['type']]
+                if 'enum' in metadata[key]:
+                    # Enum implies type = text
+                    properties[key] = {
+                        'type': 'string',
+                        'enum': metadata[key]['enum']
+                    }
+                if metadata[key].get('mandatory', False):
+                    relation_schema[relation]['items']['oneOf'][i][
+                        'required'].append(key)
 
     if obj == 'tilstand':
         # Handle special case for 'tilstand' where UUID not allowed
 
-        del relation_schema['tilstandsvaerdi']['items']['properties']['uuid']
-        relation_schema['tilstandsvaerdi']['items']['required'].remove(
-            'uuid')
+        item = relation_schema['tilstandsvaerdi']['items']['oneOf'][0]
+        del item['properties']['uuid']
+        item['required'].remove('uuid')
+        relation_schema['tilstandsvaerdi']['items'] = item
 
     return relation_schema
 
@@ -263,14 +271,26 @@ def _generate_relationer(obj):
         'relationer_nul_til_mange']
 
     relation_nul_til_mange = _generate_schema_array(
-        _generate_schema_object(
-            {
-                'uuid': UUID,
-                'virkning': {'$ref': '#/definitions/virkning'},
-                'objekttype': STRING
-            },
-            ['uuid', 'virkning']
-        )
+        {
+            'oneOf': [
+                _generate_schema_object(
+                    {
+                        'uuid': UUID,
+                        'virkning': {'$ref': '#/definitions/virkning'},
+                        'objekttype': STRING
+                    },
+                    ['uuid', 'virkning']
+                ),
+                _generate_schema_object(
+                    {
+                        'urn': STRING,
+                        'virkning': {'$ref': '#/definitions/virkning'},
+                        'objekttype': STRING
+                    },
+                    ['urn', 'virkning']
+                )
+            ]
+        }
     )
 
     relation_nul_til_mange = _handle_relation_metadata_all(
@@ -282,7 +302,8 @@ def _generate_relationer(obj):
     }
 
     relation_nul_til_en = copy.deepcopy(relation_nul_til_mange)
-    relation_nul_til_en['items']['properties'].pop('indeks', None)
+    relation_nul_til_en['items']['oneOf'][0]['properties'].pop('indeks', None)
+    relation_nul_til_en['items']['oneOf'][1]['properties'].pop('indeks', None)
     relation_nul_til_en['maxItems'] = 1
 
     for relation in relationer_nul_til_en:

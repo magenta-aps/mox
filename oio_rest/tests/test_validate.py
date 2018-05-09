@@ -52,21 +52,38 @@ class TestGenerateJSONSchema(unittest.TestCase):
         self.relation_nul_til_mange = {
             'type': 'array',
             'items': {
-                'type': 'object',
-                'properties': {
-                    'uuid': {
-                        'type': 'string',
-                        'pattern': '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-'
-                                   '[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-'
-                                   '[a-fA-F0-9]{12}$'
+                'oneOf': [
+                    {
+                        'type': 'object',
+                        'properties': {
+                            'uuid': {
+                                'type': 'string',
+                                'pattern': '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-'
+                                           '[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-'
+                                           '[a-fA-F0-9]{12}$'
+                            },
+                            'virkning': {'$ref': '#/definitions/virkning'},
+                            'objekttype': {'type': 'string'}
+                        },
+                        'required': ['uuid', 'virkning'],
+                        'additionalProperties': False
                     },
-                    'virkning': {'$ref': '#/definitions/virkning'},
-                    'objekttype': {'type': 'string'}
-                },
-                'required': ['uuid', 'virkning'],
-                'additionalProperties': False
+                    {
+                        'type': 'object',
+                        'properties': {
+                            'urn': {
+                                'type': 'string',
+                            },
+                            'virkning': {'$ref': '#/definitions/virkning'},
+                            'objekttype': {'type': 'string'}
+                        },
+                        'required': ['urn', 'virkning'],
+                        'additionalProperties': False
+                    }
+                ]
             },
         }
+
         self.relation_nul_til_en = copy.deepcopy(self.relation_nul_til_mange)
         self.relation_nul_til_en['maxItems'] = 1
 
@@ -210,10 +227,15 @@ class TestGenerateJSONSchema(unittest.TestCase):
                 'additionalProperties': False
             }
         }
-        self.relation_nul_til_en['items']['properties'].update(
+        self.relation_nul_til_en['items']['oneOf'][0]['properties'].update(
+            copy.deepcopy(aktoerattr))
+        self.relation_nul_til_en['items']['oneOf'][1]['properties'].update(
             copy.deepcopy(aktoerattr))
         aktoerattr['indeks'] = {'type': 'integer'}
-        self.relation_nul_til_mange['items']['properties'].update(aktoerattr)
+        self.relation_nul_til_mange['items']['oneOf'][0]['properties'].update(
+            aktoerattr)
+        self.relation_nul_til_mange['items']['oneOf'][1]['properties'].update(
+            aktoerattr)
 
         self.assertEqual(
             {
@@ -249,8 +271,10 @@ class TestGenerateJSONSchema(unittest.TestCase):
         )
 
     def test_relationer_indsats(self):
-        self.relation_nul_til_mange['items']['properties']['indeks'] = {
-            'type': 'integer'}
+        self.relation_nul_til_mange['items']['oneOf'][0]['properties'][
+            'indeks'] = {'type': 'integer'}
+        self.relation_nul_til_mange['items']['oneOf'][1]['properties'][
+            'indeks'] = {'type': 'integer'}
         self.assertEqual(
             {
                 'type': 'object',
@@ -269,8 +293,10 @@ class TestGenerateJSONSchema(unittest.TestCase):
         )
 
     def test_relationer_tilstand(self):
-        self.relation_nul_til_mange['items']['properties']['indeks'] = {
-            'type': 'integer'}
+        self.relation_nul_til_mange['items']['oneOf'][0]['properties'][
+            'indeks'] = {'type': 'integer'}
+        self.relation_nul_til_mange['items']['oneOf'][1]['properties'][
+            'indeks'] = {'type': 'integer'}
         self.assertEqual(
             {
                 'type': 'object',
@@ -313,8 +339,10 @@ class TestGenerateJSONSchema(unittest.TestCase):
         )
 
     def test_relationer_sag(self):
-        self.relation_nul_til_mange['items']['properties']['indeks'] = {
-            'type': 'integer'}
+        self.relation_nul_til_mange['items']['oneOf'][0]['properties'][
+            'indeks'] = {'type': 'integer'}
+        self.relation_nul_til_mange['items']['oneOf'][1]['properties'][
+            'indeks'] = {'type': 'integer'}
         self.assertEqual(
             {
                 'type': 'object',
@@ -348,49 +376,109 @@ class TestGenerateJSONSchema(unittest.TestCase):
                     'journalpost': {
                         'type': 'array',
                         'items': {
-                            'type': 'object',
-                            'properties': {
-                                'indeks': {'type': 'integer'},
-                                'journaldokument': {
+                            'oneOf': [
+                                {
                                     'type': 'object',
                                     'properties': {
-                                        'dokumenttitel': {'type': 'string'},
-                                        'offentlighedundtaget': {
-                                            '$ref': '#/definitions/'
-                                                    'offentlighedundtaget'
-                                        }
+                                        'indeks': {'type': 'integer'},
+                                        'journaldokument': {
+                                            'type': 'object',
+                                            'properties': {
+                                                'dokumenttitel': {
+                                                    'type': 'string'},
+                                                'offentlighedundtaget': {
+                                                    '$ref': '#/definitions/'
+                                                            'offentlighed'
+                                                            'undtaget'
+                                                }
+                                            },
+                                            'required': [
+                                                'dokumenttitel',
+                                                'offentlighedundtaget'
+                                            ],
+                                            'additionalProperties': False,
+                                        },
+                                        'journalnotat': {
+                                            'type': 'object',
+                                            'properties': {
+                                                'format': {'type': 'string'},
+                                                'notat': {'type': 'string'},
+                                                'titel': {'type': 'string'}
+                                            },
+                                            'required': ['titel', 'notat',
+                                                         'format'],
+                                            'additionalProperties': False,
+                                        },
+                                        'journalpostkode': {
+                                            'type': 'string',
+                                            'enum': ['journalnotat',
+                                                     'vedlagtdokument'],
+                                        },
+                                        'uuid': {
+                                            'type': 'string',
+                                            'pattern': '^[a-fA-F0-9]{8}-'
+                                                       '[a-fA-F0-9]{4}'
+                                                       '-[a-fA-F0-9]{4}-'
+                                                       '[a-fA-F0-9]{4}'
+                                                       '-[a-fA-F0-9]{12}$',
+                                        },
+                                        'virkning': {
+                                            '$ref': '#/definitions/virkning'},
+                                        'objekttype': {'type': 'string'}
                                     },
-                                    'required': ['dokumenttitel',
-                                                 'offentlighedundtaget'],
-                                    'additionalProperties': False,
+                                    'required': ['uuid', 'virkning',
+                                                 'journalpostkode'],
+                                    'additionalProperties': False
                                 },
-                                'journalnotat': {
+                                {
                                     'type': 'object',
                                     'properties': {
-                                        'format': {'type': 'string'},
-                                        'notat': {'type': 'string'},
-                                        'titel': {'type': 'string'}
+                                        'indeks': {'type': 'integer'},
+                                        'journaldokument': {
+                                            'type': 'object',
+                                            'properties': {
+                                                'dokumenttitel': {
+                                                    'type': 'string'},
+                                                'offentlighedundtaget': {
+                                                    '$ref': '#/definitions/'
+                                                            'offentlighed'
+                                                            'undtaget'
+                                                }
+                                            },
+                                            'required': [
+                                                'dokumenttitel',
+                                                'offentlighedundtaget'
+                                            ],
+                                            'additionalProperties': False,
+                                        },
+                                        'journalnotat': {
+                                            'type': 'object',
+                                            'properties': {
+                                                'format': {'type': 'string'},
+                                                'notat': {'type': 'string'},
+                                                'titel': {'type': 'string'}
+                                            },
+                                            'required': ['titel', 'notat',
+                                                         'format'],
+                                            'additionalProperties': False,
+                                        },
+                                        'journalpostkode': {
+                                            'type': 'string',
+                                            'enum': ['journalnotat',
+                                                     'vedlagtdokument'],
+                                        },
+                                        'urn': {
+                                            'type': 'string',
+                                        },
+                                        'virkning': {
+                                            '$ref': '#/definitions/virkning'},
+                                        'objekttype': {'type': 'string'}
                                     },
-                                    'required': ['titel', 'notat', 'format'],
-                                    'additionalProperties': False,
-                                },
-                                'journalpostkode': {
-                                    'type': 'string',
-                                    'enum': ['journalnotat',
-                                             'vedlagtdokument'],
-                                },
-                                'uuid': {
-                                    'type': 'string',
-                                    'pattern': '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}'
-                                               '-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}'
-                                               '-[a-fA-F0-9]{12}$',
-                                },
-                                'virkning': {'$ref': '#/definitions/virkning'},
-                                'objekttype': {'type': 'string'}
-                            },
-                            'required': ['uuid', 'virkning',
-                                         'journalpostkode'],
-                            'additionalProperties': False
+                                    'required': ['urn', 'virkning',
+                                                 'journalpostkode'],
+                                    'additionalProperties': False
+                                }
+                            ]
                         },
                     }
                 },
@@ -597,35 +685,54 @@ class TestGenerateJSONSchema(unittest.TestCase):
         relationer = validate._generate_relationer('aktivitet')
         self.assertEqual(
             {'type': 'integer'},
-            relationer['properties']['deltager']['items']['properties'][
-                'indeks'])
+            relationer['properties']['deltager']['items']['oneOf'][0][
+                'properties']['indeks'])
+        self.assertEqual(
+            {'type': 'integer'},
+            relationer['properties']['deltager']['items']['oneOf'][1][
+                'properties']['indeks'])
 
     def test_index_allowed_in_relations_for_sag(self):
         relationer = validate._generate_relationer('sag')
         self.assertEqual(
             {'type': 'integer'},
-            relationer['properties']['andrebehandlere']['items']['properties'][
-                'indeks'])
+            relationer['properties']['andrebehandlere']['items']['oneOf'][0][
+                'properties']['indeks'])
+        self.assertEqual(
+            {'type': 'integer'},
+            relationer['properties']['andrebehandlere']['items']['oneOf'][1][
+                'properties']['indeks'])
 
     def test_index_allowed_in_relations_for_tilstand(self):
         relationer = validate._generate_relationer('tilstand')
         self.assertEqual(
             {'type': 'integer'},
-            relationer['properties']['samtykke']['items']['properties'][
-                'indeks'])
+            relationer['properties']['samtykke']['items']['oneOf'][0][
+                'properties']['indeks'])
+        self.assertEqual(
+            {'type': 'integer'},
+            relationer['properties']['samtykke']['items']['oneOf'][1][
+                'properties']['indeks'])
 
     def test_index_allowed_in_relations_for_indsats(self):
         relationer = validate._generate_relationer('indsats')
         self.assertEqual(
             {'type': 'integer'},
-            relationer['properties']['samtykke']['items']['properties'][
-                'indeks'])
+            relationer['properties']['samtykke']['items']['oneOf'][0][
+                'properties']['indeks'])
+        self.assertEqual(
+            {'type': 'integer'},
+            relationer['properties']['samtykke']['items']['oneOf'][1][
+                'properties']['indeks'])
 
     def test_index_not_allowed_for_non_special_nul_til_mange_relations(self):
         relationer = validate._generate_relationer('organisation')
         self.assertFalse(
             'indeks' in relationer['properties']['ansatte']['items'][
-                'properties'])
+                'oneOf'][0]['properties'])
+        self.assertFalse(
+            'indeks' in relationer['properties']['ansatte']['items'][
+                'oneOf'][1]['properties'])
 
     def test_object_type_is_organisation(self):
         quasi_org = {
@@ -830,15 +937,19 @@ class TestFacetSystematically(unittest.TestCase):
 
     def test_valid_equivalence_classes4(self):
         """
-        Equivalence classes covered: [71][74][76]
+        Equivalence classes covered: [71][74][76][112]
         See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
         further details
         """
+        urn = {
+            'urn': 'This is an URN',
+            'virkning': self.standard_virkning1
+        }
         self.facet['relationer'] = {
             'ansvarlig': [self.reference],
-            'ejer': [self.reference],
+            'ejer': [urn],
             'facettilhoerer': [self.reference],
-            'redaktoerer': [self.reference, self.reference]
+            'redaktoerer': [self.reference, urn]
         }
 
         jsonschema.validate(self.facet, validate.SCHEMA['facet'])
