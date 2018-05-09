@@ -5,10 +5,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-from . import util
+
+from tests.test_integration_create_helper import TestCreateObject
 
 
-class TestCreateTilstand(util.TestCreateObject):
+class TestCreateTilstand(TestCreateObject):
     def setUp(self):
         super(TestCreateTilstand, self).setUp()
 
@@ -62,10 +63,10 @@ class TestCreateTilstand(util.TestCreateObject):
 
         }
 
-        r = self.post('/tilstand/tilstand', tilstand)
+        r = self.perform_request('/tilstand/tilstand', json=tilstand)
 
         # Check response
-        self.check_response_201(r)
+        self.assert201(r)
 
         # Check persisted data
         tilstand['livscykluskode'] = 'Opstaaet'

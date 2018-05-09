@@ -6,10 +6,10 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
-from . import util
+from tests.test_integration_create_helper import TestCreateObject
 
 
-class TestCreateItsystem(util.TestCreateObject):
+class TestCreateItsystem(TestCreateObject):
     def setUp(self):
         super(TestCreateItsystem, self).setUp()
 
@@ -39,10 +39,10 @@ class TestCreateItsystem(util.TestCreateObject):
             },
         }
 
-        r = self.post('/organisation/itsystem', itsystem)
+        r = self.perform_request('/organisation/itsystem', json=itsystem)
 
         # Check response
-        self.check_response_201(r)
+        self.assert201(r)
 
         # Check persisted data
         itsystem['livscykluskode'] = 'Opstaaet'
