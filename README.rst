@@ -108,11 +108,15 @@ To install the OIO REST API, run ``install.sh``::
   $ ./install.sh
 
 **NOTE:**
-   Using the built in installer should be considered
-   a "developer installation".
+
+   Using the built-in installer should be considered
+   a "developer installation". Please note that it *will not* work
+   with a machine with less than 1GB of RAM.
+
    In the current state of the installer,
-   we recommend to use on a newly installed system only.
-   It is definitely an intention to provide more flexible
+   we recommend to use on a newly installed system only,
+   preferrably in a dedicated container or VM.
+   It is our intention to provide more flexible
    installation options in the near future.
 
 The default location of the log directory is: ::
@@ -125,7 +129,7 @@ The following log files are created:
  - OIO REST HTTP access log: /var/log/mox/oio_access.log
  - OIO REST HTTP error log: /var/log/mox/oio_error.log
 
-Additionally a directory for file uploads is created: ::
+Additionally, a directory for file uploads is created: ::
 
    # settings.py
    FILE_UPLOAD_FOLDER = getenv('FILE_UPLOAD_FOLDER', '/var/mox')
@@ -162,8 +166,8 @@ explicitly in the "settings.py" file.
 
 (Please see $ROOT/oio_rest/settings.py)
 
-As mentioned, most parameters are accessible,
-if NOT set, we have provided sensible fallback values.
+As mentioned, most parameters are accessible.
+If they are NOT set by you, we have provided sensible fallback values.
 
 Example: ::
 
