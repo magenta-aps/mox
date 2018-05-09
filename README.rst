@@ -107,19 +107,19 @@ To install the OIO REST API, run ``install.sh``::
   $ cd mox
   $ ./install.sh
 
-**NOTE:**
+.. note::
 
    Using the built-in installer should be considered
    a "developer installation". Please note that it *will not* work
-   with a machine with less than 1GB of RAM.
+   on a machine with less than 1GB of RAM.
 
    In the current state of the installer,
-   we recommend to use on a newly installed system only,
+   we recommend using it only on a newly installed system,
    preferrably in a dedicated container or VM.
    It is our intention to provide more flexible
    installation options in the near future.
 
-The default location of the log directory is: ::
+The default location of the log directory is::
 
    /var/log/mox
 
@@ -129,7 +129,7 @@ The following log files are created:
  - OIO REST HTTP access log: /var/log/mox/oio_access.log
  - OIO REST HTTP error log: /var/log/mox/oio_error.log
 
-Additionally, a directory for file uploads is created: ::
+Additionally, a directory for file uploads is created::
 
    # settings.py
    FILE_UPLOAD_FOLDER = getenv('FILE_UPLOAD_FOLDER', '/var/mox')
@@ -138,15 +138,15 @@ Additionally, a directory for file uploads is created: ::
 The oio rest api is installed as a service,
 for more information, see the oio_rest.service.
 
-By default the oio_rest service can be reached as follows:
+By default the oio_rest service can be reached as follows::
 
    http://localhost:8080
 
-Example: ::
+Example::
 
    curl http://localhost:8080/organisation/bruger
 
-**NOTE**
+.. note::
    In a production environment,
    it is recommended to bind the oio_rest service to a unix socket,
    then expose the socket using a HTTP proxy of your own choosing.
@@ -169,7 +169,7 @@ explicitly in the "settings.py" file.
 As mentioned, most parameters are accessible.
 If they are NOT set by you, we have provided sensible fallback values.
 
-Example: ::
+Example::
 
    # settings.py
 
@@ -393,7 +393,9 @@ REST client`_ for Chrome or `REST Easy`_ for Firefox.
 Requesting a SAML token manually
 --------------------------------
 
-**NOTE:** This section only applies covers using the *WSO2* IdP.
+.. note::
+    
+    This section only applies covers using the *WSO2* IdP.
 
 Although the Java MOX agent does this automatically, it can be useful
 to request a SAML token manually, for testing purposes.
@@ -462,7 +464,7 @@ relaying them onwards to the REST interface), run::
 
     $ agents/MoxRestFrontend/moxrestfrontend.sh
 
-**NOTE:** You can start the agent in the background by running::
+NOTE:** You can start the agent in the background by running::
 
     $ sudo service moxrestfrontend start
 
