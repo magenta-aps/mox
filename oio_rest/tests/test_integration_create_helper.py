@@ -47,6 +47,3 @@ class TestCreateObject(util.TestCase):
         self.assertEquals(201, response.status_code)
         self.assertEquals(1, len(response.json))
         self.assertUUID(response.json['uuid'])
-
-    # def check_response_400(self, url, obj):
-    #     self.assertRequestFails(url, 400, json=obj)
