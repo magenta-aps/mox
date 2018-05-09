@@ -1,3 +1,33 @@
+* Version 0.9.0, 7 May 2018
+
+This is a major version, including non-backwards-compatible changes to
+the REST protocol, parameter checks, JSON input validation, unit tests
+and integration tests.
+
+Backwards incompatible changes:
+
+ * Make it possible to replace an object with PUT - updates now use
+   PATCH (non-compatible with previous versions).
+ * Return an explicit error (410 Gone) on attempts to access a deleted
+   object.
+
+New in this version:
+
+ * Framework for building integration tests based on the standards.
+ * Unit tests for all functions in the REST API.
+ * Integration tests.
+ * JSON Schema validation when creating new objects.
+ * Return error if a search is made for a non-existing parameter.
+ * Make it possible to request an object as it looks at a certain time.
+ * More clear semantics for DELETE - old effective periods no longer
+   merged with new imports.
+ * Bug fix: An empty list of relations made all relations fall off.
+ * Migration to Python 3; minimum version required is now Python 3.5
+   rather than 2.7.
+ * New and improved installer based on SaltStack to allow provisioning
+   of client installations.
+
+
 * Version 0.3.1.1, 4 September 2017
 
 This hotfix adds a missing import to 'settings.py.base'; other than
