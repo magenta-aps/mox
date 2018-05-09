@@ -1,4 +1,5 @@
-* Version 0.9.0, 7 May 2018
+Version 0.9.0, 7 May 2018
+-------------------------
 
 This is a major version, including non-backwards-compatible changes to
 the REST protocol, parameter checks, JSON input validation, unit tests
@@ -33,20 +34,24 @@ Bug fixes:
    relations.
 
 
-* Version 0.3.1.1, 4 September 2017
+Version 0.3.1.1, 4 September 2017
+---------------------------------
 
 This hotfix adds a missing import to 'settings.py.base'; other than
 that, there is change of functionality.
 
-* Version 0.3.1, 23 August 2017
+Version 0.3.1, 23 August 2017
+-----------------------------
 
 This is a minor update that fixes searching by validity.
 
-* Version 0.3.0.1, 28 March 2017
+Version 0.3.0.1, 28 March 2017
+------------------------------
 
 This quick hotfix addresses a missing variables that broke installation.
 
-* Version 0.3.0, 28 March 2017
+Version 0.3.0, 28 March 2017
+----------------------------
 
 This is a major release, adding four new services:
 
@@ -71,7 +76,8 @@ In addition, it fixes the following bugs:
 * Install mox_advis by default
 
 
-* Version 0.2.17, 8 February 2017
+Version 0.2.17, 8 February 2017
+-------------------------------
 
 This version contains various installer cleanups, including:
 
@@ -91,14 +97,16 @@ In addition, the README was updated to document how to set up AD FS
 authentication.
 
 
-* Version 0.2.16.1, 12 January 2017
+Version 0.2.16.1, 12 January 2017
+---------------------------------
 
 Hotfix:
 
 * Fix check for SAML authentication in get-token template
 * Fix reading user name from prompt in 'auth.sh' script
 
-* Version 0.2.16, 10 January 2017
+Version 0.2.16, 10 January 2017
+-------------------------------
 
 New in this version:
 
@@ -106,7 +114,8 @@ New in this version:
 * Factor out JDK installation to a separate script
 * Consolidate WSGI webapp installers
 
-* Version 0.2.15, 21 December 2016
+Version 0.2.15, 21 December 2016
+--------------------------------
 
 New in this version:
 
@@ -119,7 +128,8 @@ New in this version:
 * Refactored get-token to support authentication against WSO2 and AD FS.
 
 
-* Version 0.2.14.1, 30 June 2016
+Version 0.2.14.1, 30 June 2016
+------------------------------
 
 Hotfix:
 
@@ -127,7 +137,8 @@ Hotfix:
 * Commit new configuration to git.
 
 
-* Version 0.2.14, 28 June 2016
+Version 0.2.14, 28 June 2016
+----------------------------
 
 New in this version:
 
@@ -142,28 +153,32 @@ New in this version:
 * Thorough documentation of how to use REST interface (examples in curl)
 
 
-* Version 0.2.13.3, 27 April 2016
+Version 0.2.13.3, 27 April 2016
+-------------------------------
 
 Hotfix:
 
 * Fix README and installation procedure.
 
 
-* Version 0.2.13.2, 19 April 2016
+Version 0.2.13.2, 19 April 2016
+-------------------------------
 
 Hotfix:
 
 * Place Tomcat dependencies where the installer can find them
 * Create settings.py soft link before running database installation.
 
-* Version 0.2.13.1, 19 April 2016
+Version 0.2.13.1, 19 April 2016
+-------------------------------
 
 Hotfix:
 
 * Fix installation order of Java components (dependencies).
 
 
-* Version 0.2.13, 3 March 2016
+Version 0.2.13, 3 March 2016
+----------------------------
 
 New in this version:
 
@@ -175,14 +190,16 @@ New in this version:
 * Rename message queues by their recipient
 
 
-* Version 0.2.12.1, 15 February 2016
+Version 0.2.12.1, 15 February 2016
+----------------------------------
 
 Hotfix:
 
 * Mox Advis should not crash if receiving one UUID as string.
 
 
-* Version 0.2.12, 4 January 2016
+Version 0.2.12, 4 January 2016
+------------------------------
 
 New in this version:
 
@@ -197,7 +214,8 @@ New in this version:
 * Spreadsheet servlet begun
 
 
-* Version 0.2.11, 10 December 2015
+Version 0.2.11, 10 December 2015
+--------------------------------
 
 New in this version:
 
@@ -206,14 +224,16 @@ New in this version:
 * Bug in Update Klassifikation due to wrong formatting of empty array.
 
 
-* Version 0.2.10, 3 November 2015
+Version 0.2.10, 3 November 2015
+-------------------------------
 
 New in this version:
 
 * aktoerref and notetekst should not be mandatory in Virkning.
 
 
-* Version 0.2.9, 26 October 2015
+Version 0.2.9, 26 October 2015
+------------------------------
 
 New in this version:
 
@@ -221,7 +241,8 @@ New in this version:
 
 
 
-* Version 0.2.8, 7 October 2015
+Version 0.2.8, 7 October 2015
+-----------------------------
 
 New in this version:
 
@@ -232,7 +253,8 @@ New in this version:
 
 
 
-* Version 0.2.7, 23 September 2015
+Version 0.2.7, 23 September 2015
+--------------------------------
 
 New in this version:
 
@@ -241,7 +263,8 @@ New in this version:
 
 
 
-* Version 0.2.6, 22 September 2015
+Version 0.2.6, 22 September 2015
+--------------------------------
 
 New in this version:
 
@@ -252,7 +275,8 @@ New in this version:
 
 
 
-* Version 0.2.5, 21 September 2015
+Version 0.2.5, 21 September 2015
+--------------------------------
 
 New in this version:
 
@@ -262,7 +286,8 @@ New in this version:
 
 
 
-* Version 0.2.4, 21 September 2015
+Version 0.2.4, 21 September 2015
+--------------------------------
 
 New in this version:
 
@@ -279,14 +304,16 @@ New in this version:
  
 
 
-* Version 0.2.3, 18 September 2015
+Version 0.2.3, 18 September 2015
+--------------------------------
 
 New in this version:
 
 * Fix for bug in previous hotfix related to /get-token script.
 
 
-* Version 0.2.2, 18 September 2015
+Version 0.2.2, 18 September 2015
+--------------------------------
 
 New in this version:
 
@@ -294,7 +321,8 @@ New in this version:
   of agent.sh script.
 
 
-* Version 0.2.1, 18 September 2015
+Version 0.2.1, 18 September 2015
+--------------------------------
 
 New in this version:
 
@@ -309,7 +337,8 @@ New in this version:
 * Add WSO2's nexus repository to Java agent Maven project.
 
 
-* Version 0.2.0, 2 September 2015
+Version 0.2.0, 2 September 2015
+-------------------------------
 
 New in this version:
 
@@ -320,14 +349,16 @@ New in this version:
 * Support for authentication with SAML tokens.
 
 
-* Version 0.1.1, 9 March 2015
+Version 0.1.1, 9 March 2015
+---------------------------
 
 New in this version:
 
  - Added missing classes from the Organisation hierarchy.
 
 
-* Version 0.1.0, 23 February 2015
+Version 0.1.0, 23 February 2015
+-------------------------------
 
 Initial release.
 
