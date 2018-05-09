@@ -6,9 +6,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
-import json
-import uuid
-
 from tests import util
 
 
@@ -31,19 +28,3 @@ class TestCreateObject(util.TestCase):
             'uuid': '00000000-0000-0000-0000-000000000000',
             'virkning': self.standard_virkning1
         }
-
-    def assertUUID(self, s):
-        try:
-            uuid.UUID(s)
-        except (TypeError, ValueError):
-            self.fail('{!r} is not a uuid!'.format(s))
-
-    def assert201(self, response):
-        """
-        Verify that the response from LoRa is 201 and contains the correct
-        JSON.
-        :param response: Response from LoRa when creating a new object
-        """
-        self.assertEquals(201, response.status_code)
-        self.assertEquals(1, len(response.json))
-        self.assertUUID(response.json['uuid'])

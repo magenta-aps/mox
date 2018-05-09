@@ -10,10 +10,10 @@
 import json
 import os
 import pprint
-import re
 import subprocess
 import sys
 import tempfile
+import uuid
 
 import click
 import flask_testing
@@ -259,6 +259,22 @@ class TestCaseMixin(object):
             sort_inner_lists(actual),
             message,
         )
+
+    def assertUUID(self, s):
+        try:
+            uuid.UUID(s)
+        except (TypeError, ValueError):
+            self.fail('{!r} is not a uuid!'.format(s))
+
+    def assert201(self, response):
+        """
+        Verify that the response from LoRa is 201 and contains the correct
+        JSON.
+        :param response: Response from LoRa when creating a new object
+        """
+        self.assertEquals(201, response.status_code)
+        self.assertEquals(1, len(response.json))
+        self.assertUUID(response.json['uuid'])
 
     def get(self, path, **params):
         r = self.perform_request(path, query_string=params)
