@@ -51,58 +51,28 @@ the SSL certificate on your own.
 Getting started
 ===============
 
-Configuration
--------------
+These commands should get you up and running quickly on a machine with a
+completely new Ubuntu 16.04 Server Edition::
 
-The file ``db/config.sh`` contains configuration for the database, such
-as which username/password to use to connect to the database, and which
-database name to use.
+    # Install git
+    $ sudo apt-get install git
 
-To setup the database to send notifications to an AMQP message exchange,
-the database must know how to connect to the AMQP server. The defaults
-assume you have a local AMQP server and use the guest user. However,
-these can be changed in ``db/config.sh`` prior to performing
-installation.
+    # Clone the mox repository
+    $ git clone https://github.com/magenta-aps/mox
 
-The file ``oio_rest/oio_rest/settings.py`` contains configuration for
-the generation of the database structure and the REST API. Set the
-DATABASE, DB_USER and DB_PASSWORD settings according to what you have
-chosen in ``db/config.sh``.
+    # Begin installation process
+    $ cd mox
+    $ ./install.sh
 
-The FILE_UPLOAD_FOLDER setting allows you to change where the database
-stores its files (used for storing the contents of binary files in the
-Dokument hierarchy). The default is ``/var/mox``, and this is
-automatically created by the install script.
-
-There are some other settings that can be changed, and there should be
-comments describing their purpose, or they are described in another
-section of this document.
 
 Installing
 ----------
 
 To install the OIO REST API, run ``install.sh``
 
-By default, you will be prompted to reinstall the python virtualenv
-if it already exists, and reinstall/overwrite the database
-if it already exists.
-
-To always answer yes to these questions, pass the ``-y`` parameter.
-
-Run ``install.sh -h`` for a list of options.
-
-**NOTE:** PostgreSQL 9.3 or later is required. If PostgreSQL is not installed
-on your system already, it will be during installation.
-
-To run the API for testing or development purposes, run::
-
-    oio_rest/oio_api.sh 
-
-Then, go to http://localhost:5000/site-map to see a map of all available
-URLs, assuming you're running this on your local machine.
-
-The install.sh script creates an Apache VirtualHost for oio rest and 
-MoxDocumentUpload.
+The oio rest api is installed in development mode,
+once the installation process is complete you may query the rest interface
+at the default uri: http://localhost:8080.
 
 To run the OIO Rest Mox Agent (the one listening for messages and
 relaying them onwards to the REST interface), run::
@@ -134,32 +104,6 @@ If SAML authentication is turned on (i.e., if the parameter
 ``True``), the IDP must be configured correctly - see the corresponding
 sections below for instruction on how to do this.
 
-
-Quick install
--------------
-
-These commands should get you up and running quickly on a machine with a 
-completely new Ubuntu 14.04 Server Edition::
-
-    sudo apt-get install git
-    cd /srv
-    sudo git clone https://github.com/magenta-aps/mox
-    sudo chown -R <username>:<username> mox/
-    cd mox
-    ./install.sh
-
-**Note:** The <username> must belong to the sudo user you're using for the
-installation. We recommend creating a dedicated "mox" user and stripping its
-sudo rights when everything works.
-
-**Note:** This will install the system in ``/srv/mox``. It is of course
-possible to install in any other location, but we do not recommend this 
-for a quick install as it means a lot of configuration files need to be 
-changed. In a later version, the user will be prompted for the location and 
-the configuration will be generated accordingly.
-
-**Note:** All commands, e.g. ``./test.sh``, are assumed to be issued from the
-installation root directory, by default ``/srv/mox``.
 
 Quick test
 ----------
