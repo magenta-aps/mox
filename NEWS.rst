@@ -11,6 +11,9 @@ Backwards incompatible changes:
   compatible with previous versions).
 * Return an explicit error (410 Gone) on attempts to access a deleted
   object.
+* Validate query parameters given during search, return an error when
+  given unrecognised or unsupported arguments.
+* JSON Schema validation when creating new objects.
 
 New features:
 
@@ -22,9 +25,6 @@ New features:
   * Continuous integration infrastructure that runs our test suite on
     each push to GitHub.
 
-* JSON Schema validation when creating new objects.
-* Validate query parameters given during search, return an error when
-  given unrecognised or unsupported arguments.
 * Allow requesting objects at a certain registration or validity
   time. Previously, we either allowed searching within an interval or
   the current time.
