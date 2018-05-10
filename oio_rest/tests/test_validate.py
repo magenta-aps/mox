@@ -942,7 +942,7 @@ class TestFacetSystematically(unittest.TestCase):
         further details
         """
         urn = {
-            'urn': 'This is an URN',
+            'urn': 'urn:This is an URN',
             'virkning': self.standard_virkning1
         }
         self.facet['relationer'] = {
