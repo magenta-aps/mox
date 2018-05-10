@@ -30,7 +30,7 @@ uuid=$(expr "$result" : '.*"uuid": "\([^"]*\)"')
 
 # Passivate object.
 
- curl -k -H "Authorization: $AUTH_TOKEN" -sH "Content-Type: application/json" -X PUT -d "$(cat $DIR/test_data/facet_passiv.json)" $HOST_URL/klassifikation/facet/$uuid
+ curl -k -H "Authorization: $AUTH_TOKEN" -sH "Content-Type: application/json" -X PATCH -d "$(cat $DIR/test_data/facet_passiv.json)" $HOST_URL/klassifikation/facet/$uuid
 
  # Import object.
 

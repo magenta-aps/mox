@@ -1,8 +1,8 @@
-{% if relations is none -%}
+{% if not relations -%}
 NULL
 {% else -%}
     ARRAY[
-    {% for r, relation_periods in relations.iteritems() -%}
+    {% for r, relation_periods in relations.items() -%}
     {% set outer_loop = loop %}
     {% for rel in relation_periods -%}
     ROW(

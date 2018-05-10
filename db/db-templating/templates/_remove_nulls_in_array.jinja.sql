@@ -8,7 +8,7 @@
 {% block body %}
 
 
-{% for tilstand, tilstand_values in tilstande.iteritems() %}
+{% for tilstand, tilstand_values in tilstande.items() %}
 
 CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr {{oio_type|title}}{{tilstand|title}}TilsType[])
   RETURNS {{oio_type|title}}{{tilstand|title}}TilsType[] AS
@@ -39,7 +39,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr {{oio_type|title}}{{t
 {% endfor %}
 
 
-{%-for attribut , attribut_fields in attributter.iteritems() %}
+{%-for attribut , attribut_fields in attributter.items() %}
 
 CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr {{oio_type|title}}{{attribut|title}}AttrType[])
   RETURNS {{oio_type|title}}{{attribut|title}}AttrType[] AS

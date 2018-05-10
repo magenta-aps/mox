@@ -6,7 +6,7 @@ MOXDIR=$(cd $DIR/../..; pwd)
 PYTHON="$MOXDIR/python-env/bin/python"
 export PYTHONIOENCODING=UTF-8
 
-oiotypes=$($PYTHON -m oio_rest.db_helpers)
+oiotypes=$($PYTHON -m oio_common.db_structure)
 
 templates=( dbtyper-specific tbls-specific _as_get_prev_registrering _as_create_registrering as_update  as_create_or_import  as_list as_read as_search _remove_nulls_in_array json-cast-functions _as_filter_unauth )
 

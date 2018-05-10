@@ -1,9 +1,10 @@
 import sys
 
-from oio_rest.settings import SAML_MOX_ENTITY_ID, SAML_IDP_ENTITY_ID
+from .oio_rest.auth.saml2 import Saml2_Assertion
+from .oio_rest.authentication import get_idp_cert
 
-from oio_rest.auth.saml2 import Saml2_Assertion
-from oio_rest.authentication import get_idp_cert
+from settings import SAML_MOX_ENTITY_ID, SAML_IDP_ENTITY_ID
+
 
 if len(sys.argv) > 1:
     assertion_file = sys.argv[1]
@@ -18,8 +19,8 @@ assertion = Saml2_Assertion(assertion_body, SAML_MOX_ENTITY_ID,
 
 try:
     assertion.check_validity()
-    print "Assertion valid"
-    print "Name ID: %s" % assertion.get_nameid()
+    print("Assertion valid")
+    print("Name ID: %s" % assertion.get_nameid())
 except Exception as e:
-    print "Assertion NOT valid!"
-    print str(e)
+    print("Assertion NOT valid!")
+    print(str(e))

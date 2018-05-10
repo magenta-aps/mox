@@ -2,7 +2,7 @@
 
 import os
 import datetime
-import urlparse
+import urllib.parse
 import traceback
 
 from flask import Flask, jsonify, redirect, request, url_for, Response
@@ -10,14 +10,17 @@ from werkzeug.routing import BaseConverter
 from jinja2 import Environment, FileSystemLoader
 from psycopg2 import DataError
 
-from authentication import get_authenticated_user
-from log_client import log_service_call
+from . import sag, indsats, dokument, tilstand, aktivitet, organisation
+from . import log, klassifikation
+from .authentication import get_authenticated_user
+from .log_client import log_service_call
 
-from settings import MOX_BASE_DIR, SAML_IDP_URL
-from custom_exceptions import OIOFlaskException, AuthorizationFailedException
-from custom_exceptions import BadRequestException
-from auth import tokens
+from .custom_exceptions import OIOFlaskException, AuthorizationFailedException
+from .custom_exceptions import BadRequestException
+from .auth import tokens
+
 import settings
+
 
 app = Flask(__name__)
 
@@ -39,6 +42,18 @@ class RegexConverter(BaseConverter):
 
 
 app.url_map.converters['regex'] = RegexConverter
+
+klassifikation.KlassifikationsHierarki.setup_api(
+    base_url=settings.BASE_URL, flask=app,
+)
+log.LogHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
+sag.SagsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
+organisation.OrganisationsHierarki.setup_api(base_url=settings.BASE_URL,
+                                             flask=app)
+dokument.DokumentHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
+aktivitet.AktivitetsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
+indsats.IndsatsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
+tilstand.TilstandsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
 
 
 @app.route('/')
@@ -63,7 +78,7 @@ def get_token():
             text = tokens.get_token(username, password)
         except Exception as e:
             traceback.print_exc()
-            raise AuthorizationFailedException(e.message)
+            raise AuthorizationFailedException(*e.args)
 
         return Response(text, mimetype='text/plain')
 
@@ -97,7 +112,7 @@ def page_not_found(e):
 
 def get_service_name():
     'Get the hierarchy of the present method call from the request URL'
-    u = urlparse.urlparse(request.url)
+    u = urllib.parse.urlparse(request.url)
     urlpath = u.path
     service_name = urlpath.split('/')[1].capitalize()
 
@@ -106,7 +121,7 @@ def get_service_name():
 
 def get_class_name():
     'Get the hierarchy of the present method call from the request URL'
-    url = urlparse.urlparse(request.url)
+    url = urllib.parse.urlparse(request.url)
     class_name = url.path.split('/')[2].capitalize()
     return class_name
 
@@ -130,37 +145,10 @@ def log_api_call(response):
 
 @app.errorhandler(DataError)
 def handle_db_error(error):
-    message, context = error.message.split('\n', 1)
+    message = error.diag.message_primary
+    context = error.diag.context or error.pgerror.split('\n', 1)[-1]
     return jsonify(message=message, context=context), 400
 
 
-def setup_api():
-
-    from settings import BASE_URL
-    from klassifikation import KlassifikationsHierarki
-    from organisation import OrganisationsHierarki
-    from sag import SagsHierarki
-    from dokument import DokumentHierarki
-    from aktivitet import AktivitetsHierarki
-    from indsats import IndsatsHierarki
-    from tilstand import TilstandsHierarki
-    from log import LogHierarki
-
-    KlassifikationsHierarki.setup_api(base_url=BASE_URL, flask=app)
-    LogHierarki.setup_api(base_url=BASE_URL, flask=app)
-    SagsHierarki.setup_api(base_url=BASE_URL, flask=app)
-    OrganisationsHierarki.setup_api(base_url=BASE_URL, flask=app)
-    DokumentHierarki.setup_api(base_url=BASE_URL, flask=app)
-    AktivitetsHierarki.setup_api(base_url=BASE_URL, flask=app)
-    IndsatsHierarki.setup_api(base_url=BASE_URL, flask=app)
-    TilstandsHierarki.setup_api(base_url=BASE_URL, flask=app)
-
-
-def main():
-
-    setup_api()
-    app.run(debug=True)
-
-
 if __name__ == '__main__':
-    main()
+    app.run(debug=True)

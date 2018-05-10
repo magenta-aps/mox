@@ -1,12 +1,10 @@
 #!/bin/bash -e
 set -b
 
-DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-MOXDIR=$(cd $DIR/..; pwd)
-PYTHON="$MOXDIR/python-env/bin/python"
+MOXDIR=${BASE_DIR}
+DIR=${DB_DIR}
 
-cd $DIR
-source ./config.sh
+PYTHON=${PYTHON_EXEC}
 
 export PGPASSWORD="$MOX_DB_PASSWORD"
 # TODO: Support remote $SUPER_USER DB server
@@ -52,67 +50,9 @@ psql -d $MOX_DB -U $MOX_DB_USER -f funcs/_amqp_functions.sql
 
 
 cd ./db-templating/
-./generate-sql-tbls-types-funcs-for-oiotype.sh
+$PYTHON ../../oio_rest/apply-templates.py
 
-#Apply patches 
-cd ./generated-files/
-#klasse
-patch --fuzz=3 -i  ../patches/dbtyper-specific_klasse.sql.diff
-patch --fuzz=3 -i  ../patches/tbls-specific_klasse.sql.diff
-patch --fuzz=3 -i  ../patches/as_create_or_import_klasse.sql.diff
-patch --fuzz=3 -i  ../patches/as_list_klasse.sql.diff
-patch --fuzz=3 -i  ../patches/as_search_klasse.sql.diff
-patch --fuzz=3 -i  ../patches/as_update_klasse.sql.diff
-patch --fuzz=3 -i  ../patches/_remove_nulls_in_array_klasse.sql.diff
-#sag
-patch --fuzz=3 -i  ../patches/tbls-specific_sag.sql.diff
-patch --fuzz=3 -i  ../patches/dbtyper-specific_sag.sql.diff
-patch --fuzz=3 -i  ../patches/as_list_sag.sql.diff
-patch --fuzz=3 -i  ../patches/_remove_nulls_in_array_sag.sql.diff
-patch --fuzz=3 -i  ../patches/as_create_or_import_sag.sql.diff
-patch --fuzz=3 -i  ../patches/as_update_sag.sql.diff
-patch --fuzz=3 -i  ../patches/json-cast-functions_sag.sql.diff
-patch --fuzz=3 -i  ../patches/as_search_sag.sql.diff
-#dokument
-patch --fuzz=3 -i  ../patches/dbtyper-specific_dokument.sql.diff
-patch --fuzz=3 -i  ../patches/tbls-specific_dokument.sql.diff
-patch --fuzz=3 -i  ../patches/as_create_or_import_dokument.sql.diff
-patch --fuzz=3 -i  ../patches/as_update_dokument.sql.diff
-patch --fuzz=3 -i  ../patches/_remove_nulls_in_array_dokument.sql.diff
-patch --fuzz=3 -i  ../patches/as_list_dokument.sql.diff
-patch --fuzz=3 -i  ../patches/json-cast-functions_dokument.sql.diff
-patch --fuzz=3 -i  ../patches/as_search_dokument.sql.diff
-#aktivitet
-patch --fuzz=3 -i  ../patches/tbls-specific_aktivitet.sql.diff
-patch --fuzz=3 -i  ../patches/dbtyper-specific_aktivitet.sql.diff
-patch --fuzz=3 -i  ../patches/as_list_aktivitet.sql.diff
-patch --fuzz=3 -i  ../patches/_remove_nulls_in_array_aktivitet.sql.diff
-patch --fuzz=3 -i  ../patches/as_create_or_import_aktivitet.sql.diff
-patch --fuzz=3 -i  ../patches/as_update_aktivitet.sql.diff
-patch --fuzz=3 -i  ../patches/json-cast-functions_aktivitet.sql.diff
-patch --fuzz=3 -i  ../patches/as_search_aktivitet.sql.diff
-#indsats
-patch --fuzz=3 -i  ../patches/tbls-specific_indsats.sql.diff
-patch --fuzz=3 -i  ../patches/dbtyper-specific_indsats.sql.diff
-patch --fuzz=3 -i  ../patches/as_list_indsats.sql.diff
-patch --fuzz=3 -i  ../patches/_remove_nulls_in_array_indsats.sql.diff
-patch --fuzz=3 -i  ../patches/as_create_or_import_indsats.sql.diff
-patch --fuzz=3 -i  ../patches/as_update_indsats.sql.diff
-patch --fuzz=3 -i  ../patches/json-cast-functions_indsats.sql.diff
-patch --fuzz=3 -i  ../patches/as_search_indsats.sql.diff
-#tilstand
-patch --fuzz=3 -i  ../patches/tbls-specific_tilstand.sql.diff
-patch --fuzz=3 -i  ../patches/dbtyper-specific_tilstand.sql.diff
-patch --fuzz=3 -i  ../patches/as_list_tilstand.sql.diff
-patch --fuzz=3 -i  ../patches/_remove_nulls_in_array_tilstand.sql.diff
-patch --fuzz=3 -i  ../patches/as_create_or_import_tilstand.sql.diff
-patch --fuzz=3 -i  ../patches/as_update_tilstand.sql.diff
-patch --fuzz=3 -i  ../patches/json-cast-functions_tilstand.sql.diff
-patch --fuzz=3 -i ../patches/as_search_tilstand.sql.diff
-
-cd ..
-
-oiotypes=$($PYTHON -m oio_rest.db_helpers)
+oiotypes=$($PYTHON -m oio_common.db_structure)
 
 templates1=( dbtyper-specific tbls-specific _remove_nulls_in_array )
 

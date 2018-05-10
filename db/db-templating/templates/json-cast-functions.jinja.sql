@@ -31,7 +31,7 @@ FROM
     FROM 
       (
         SELECT 
-        {%-for attribut , attribut_fields in attributter.iteritems() %}
+        {%-for attribut , attribut_fields in attributter.items() %}
         CASE 
         WHEN coalesce(array_length($1.attr{{attribut|title}},1),0)>0 THEN to_json($1.attr{{attribut|title}}) 
         ELSE 
@@ -49,7 +49,7 @@ FROM
     FROM 
       ( 
         SELECT 
-        {% for tilstand, tilstand_values in tilstande.iteritems() %}
+        {% for tilstand, tilstand_values in tilstande.items() %}
         CASE 
         WHEN coalesce(array_length($1.tils{{tilstand|title}},1),0)>0 THEN to_json($1.tils{{tilstand|title}}) 
         ELSE 

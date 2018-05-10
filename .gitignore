@@ -6,6 +6,7 @@
 install.log
 python-env
 oio_rest/oio_api
+/oio_rest/venv*
 *.orig
 *.bak
 *.rej
@@ -36,10 +37,15 @@ agentbase/python/mox/mox.pth
 agents/MoxRestFrontend/install.log
 agents/MoxRestFrontend/moxrestfrontend.conf
 agents/MoxTabel/install.log
-python_agents/mox_advis.py
-python_agents/mox_elk_log.py
 agents/MoxDocumentUpload/setup/moxdocumentupload.conf
 agents/MoxDocumentUpload/setup/moxdocumentupload.wsgi
 agents/MoxRestFrontend/moxrestfrontend.conf
 agents/MoxTabel/moxtabel.conf
 agents/MoxTabel/setup/moxtabel.conf
+tests.xml
+coverage.xml
+.coverage
+.eggs
+.pytest_cache
+python-testenv
+

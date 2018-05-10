@@ -25,11 +25,9 @@ DECLARE
   
   indsats_relationer IndsatsRelationType;
   auth_filtered_uuids uuid[];
-  indsats_relation_kode indsatsRelationKode;
-  indsats_uuid_underscores text;
-  indsats_rel_seq_name text;
-  indsats_rel_type_cardinality_unlimited indsatsRelationKode[]:=ARRAY['indsatskvalitet'::IndsatsRelationKode,'indsatsaktoer'::IndsatsRelationKode,'samtykke'::IndsatsRelationKode,'indsatssag'::IndsatsRelationKode,'indsatsdokument'::IndsatsRelationKode]::indsatsRelationKode[];
-  indsats_rel_type_cardinality_unlimited_present_in_argument indsatsRelationKode[];
+  does_exist boolean;
+  new_indsats_registrering indsats_registrering;
+  prev_indsats_registrering indsats_registrering;
 BEGIN
 
 IF indsats_uuid IS NULL THEN
@@ -41,42 +39,57 @@ END IF;
 
 
 IF EXISTS (SELECT id from indsats WHERE id=indsats_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing indsats with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_indsats (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',indsats_uuid USING ERRCODE='MO500';
+    does_exist = True;
+ELSE
+
+    does_exist = False;
 END IF;
 
-IF  (indsats_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (indsats_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
+IF  (indsats_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (indsats_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (indsats_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
   RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_indsats.',(indsats_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
+IF NOT does_exist THEN
 
-INSERT INTO 
-      indsats (ID)
-SELECT
-      indsats_uuid
-;
+    INSERT INTO
+          indsats (ID)
+    SELECT
+          indsats_uuid;
+END IF;
 
 
 /*********************************/
 --Insert new registrering
 
-indsats_registrering_id:=nextval('indsats_registrering_id_seq');
+IF NOT does_exist THEN
+    indsats_registrering_id:=nextval('indsats_registrering_id_seq');
 
-INSERT INTO indsats_registrering (
-      id,
-        indsats_id,
+    INSERT INTO indsats_registrering (
+          id,
+          indsats_id,
           registrering
         )
-SELECT
-      indsats_registrering_id,
-        indsats_uuid,
-          ROW (
-            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-            (indsats_registrering.registrering).livscykluskode,
-            (indsats_registrering.registrering).brugerref,
-            (indsats_registrering.registrering).note
-              ):: RegistreringBase
-;
+    SELECT
+          indsats_registrering_id,
+           indsats_uuid,
+           ROW (
+             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+             (indsats_registrering.registrering).livscykluskode,
+             (indsats_registrering.registrering).brugerref,
+             (indsats_registrering.registrering).note
+               ):: RegistreringBase ;
+ELSE
+    -- This is an update, not an import or create
+        new_indsats_registrering := _as_create_indsats_registrering(
+             indsats_uuid,
+             (indsats_registrering.registrering).livscykluskode,
+             (indsats_registrering.registrering).brugerref,
+             (indsats_registrering.registrering).note);
+
+        indsats_registrering_id := new_indsats_registrering.id;
+END IF;
+
 
 /*********************************/
 --Insert attributes
@@ -171,35 +184,13 @@ END IF;
 /*********************************/
 --Insert relations
 
-IF coalesce(array_length(indsats_registrering.relationer,1),0)>0 THEN
-
---Create temporary sequences
-indsats_uuid_underscores:=replace(indsats_uuid::text, '-', '_');
-
-SELECT array_agg( DISTINCT a.RelType) into indsats_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(indsats_registrering.relationer) a WHERE a.RelType = any (indsats_rel_type_cardinality_unlimited) ;
-IF coalesce(array_length(indsats_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
-FOREACH indsats_relation_kode IN ARRAY (indsats_rel_type_cardinality_unlimited_present_in_argument)
-  LOOP
-  indsats_rel_seq_name := 'indsats_' || indsats_relation_kode::text || indsats_uuid_underscores;
-
-  EXECUTE 'CREATE TEMPORARY SEQUENCE ' || indsats_rel_seq_name || '
-  INCREMENT 1
-  MINVALUE 1
-  MAXVALUE 9223372036854775807
-  START 1
-  CACHE 1;';
-
-END LOOP;
-END IF;
-
     INSERT INTO indsats_relation (
       indsats_registrering_id,
       virkning,
       rel_maal_uuid,
       rel_maal_urn,
       rel_type,
-      objekt_type,
-      rel_index
+      objekt_type
     )
     SELECT
       indsats_registrering_id,
@@ -207,26 +198,10 @@ END IF;
       a.uuid,
       a.urn,
       a.relType,
-      a.objektType,
-        CASE WHEN a.relType = any (indsats_rel_type_cardinality_unlimited) THEN --rel_index
-        nextval('indsats_' || a.relType::text || indsats_uuid_underscores)
-        ELSE 
-        NULL
-        END
+      a.objektType
     FROM unnest(indsats_registrering.relationer) a
-    ;
+  ;
 
-
---Drop temporary sequences
-IF coalesce(array_length(indsats_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
-FOREACH indsats_relation_kode IN ARRAY (indsats_rel_type_cardinality_unlimited_present_in_argument)
-  LOOP
-  indsats_rel_seq_name := 'indsats_' || indsats_relation_kode::text || indsats_uuid_underscores;
-  EXECUTE 'DROP  SEQUENCE ' || indsats_rel_seq_name || ';';
-END LOOP;
-END IF;
-
-END IF;
 
 /*** Verify that the object meets the stipulated access allowed criteria  ***/
 /*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/

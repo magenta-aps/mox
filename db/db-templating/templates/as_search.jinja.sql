@@ -24,10 +24,10 @@ DECLARE
 	{{oio_type}}_candidates uuid[];
 	{{oio_type}}_candidates_is_initialized boolean;
 	--to_be_applyed_filter_uuids uuid[];
-	{%-for attribut , attribut_fields in attributter.iteritems() %} 
+	{%-for attribut , attribut_fields in attributter.items() %} 
 	attr{{attribut|title}}TypeObj {{oio_type|title}}{{attribut|title}}AttrType;
 	{%- endfor %}
-	{% for tilstand, tilstand_values in tilstande.iteritems() %}
+	{% for tilstand, tilstand_values in tilstande.items() %}
   	tils{{tilstand|title}}TypeObj {{oio_type|title}}{{tilstand|title}}TilsType;
   	{%- endfor %}
 	relationTypeObj {{oio_type|title}}RelationType;
@@ -72,7 +72,7 @@ END IF;
 --/****************************//
 --filter on attributes
 
-{%-for attribut , attribut_fields in attributter.iteritems() %} 
+{%-for attribut , attribut_fields in attributter.items() %} 
 --/**********************************************************//
 --Filtration on attribute: {{attribut|title}}
 --/**********************************************************//
@@ -132,11 +132,11 @@ ELSE
 				(
 					attr{{attribut|title}}TypeObj.{{attribut_field}} IS NULL
 					OR
-					 {%- if  attributter_type_override is defined and attributter_type_override[attribut] is defined and attributter_type_override[attribut][attribut_field] is defined %} 
-						{%-if attributter_type_override[attribut][attribut_field] == "text[]" %}
+					 {%- if  attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][attribut_field] is defined and attributter_metadata[attribut][attribut_field]['type'] %}
+						{%-if attributter_metadata[attribut][attribut_field]['type'] == "text[]" %}
 					_as_search_match_array(attr{{attribut|title}}TypeObj.{{attribut_field}},a.{{attribut_field}})  
 						{%- else %} 
-						{%-if attributter_type_override[attribut][attribut_field] == "offentlighedundtagettype" %}
+						{%-if attributter_metadata[attribut][attribut_field]['type'] == "offentlighedundtagettype" %}
 						(
 							(
 								(attr{{attribut|title}}TypeObj.{{attribut_field}}).AlternativTitel IS NULL
@@ -188,7 +188,7 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 	LOOP
 		{{oio_type}}_candidates:=array(
 
-			{%-for attribut , attribut_fields in attributter.iteritems() %} 
+			{%-for attribut , attribut_fields in attributter.items() %} 
 
 			SELECT DISTINCT
 			b.{{oio_type}}_id 
@@ -197,14 +197,14 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 			WHERE
 			(
 				{%- for attribut_field in attribut_fields %}
-					{%- if  attributter_type_override is defined and attributter_type_override[attribut] is defined and attributter_type_override[attribut][attribut_field] is defined %} 
-						{%-if attributter_type_override[attribut][attribut_field] == "text[]" %}
+					{%- if  attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][attribut_field] is defined and attributter_metadata[attribut][attribut_field]['type'] %}
+						{%-if attributter_metadata[attribut][attribut_field]['type'] == "text[]" %}
 							  _as_search_ilike_array(anyAttrValue,a.{{attribut_field}})  {%- if (not loop.last)%} OR {%- endif %}
 						{%-else %}
-							{%-if attributter_type_override[attribut][attribut_field] == "boolean" %}
+							{%-if attributter_metadata[attribut][attribut_field]['type'] == "boolean" %}
 								{# boolean is skipped intentionally #}
 							{%-else %}
-								{%-if attributter_type_override[attribut][attribut_field] == "offentlighedundtagettype" %}
+								{%-if attributter_metadata[attribut][attribut_field]['type'] == "offentlighedundtagettype" %}
 									(a.{{attribut_field}}).Hjemmel ilike anyAttrValue OR (a.{{attribut_field}}).AlternativTitel ilike anyAttrValue {%- if (not loop.last)%} OR {%- endif %}
 								{%-else %}
 									a.{{attribut_field}}::text ilike anyAttrValue  {%- if (not loop.last)%} OR {%- endif %}
@@ -242,7 +242,7 @@ END IF;
 
 --RAISE DEBUG 'registrering,%',registreringObj;
 
-{% for tilstand, tilstand_values in tilstande.iteritems() %}
+{% for tilstand, tilstand_values in tilstande.items() %}
 --/**********************************************************//
 --Filtration on state: {{tilstand|title}}
 --/**********************************************************//

@@ -1,20 +1,21 @@
-from base64 import b64decode
-from functools import wraps
 import os
-from flask import request
-from custom_exceptions import UnauthorizedException
-from custom_exceptions import AuthorizationFailedException
 import zlib
 import uuid
+from base64 import b64decode
+from functools import wraps
 
-from auth.saml2 import Saml2_Assertion
-from settings import SAML_IDP_CERTIFICATE, SAML_MOX_ENTITY_ID
-from settings import SAML_IDP_ENTITY_ID, USE_SAML_AUTHENTICATION
-from settings import SAML_USER_ID_ATTIBUTE
+from flask import request
+
+from .custom_exceptions import UnauthorizedException
+from .custom_exceptions import AuthorizationFailedException
+from .auth.saml2 import Saml2_Assertion
+
+import settings
+
 
 # Read the IdP certificate file into memory
 with open(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                       SAML_IDP_CERTIFICATE)) as f:
+                       settings.SAML_IDP_CERTIFICATE)) as f:
     __IDP_CERT = f.read()
 
 
@@ -57,20 +58,22 @@ def check_saml_authentication():
     # https://rationalpie.wordpress.com/2010/06/02/
     #           python-streaming-gzip-decompression/
 
-    assertion = Saml2_Assertion(token, SAML_MOX_ENTITY_ID,
-                                SAML_IDP_ENTITY_ID, get_idp_cert())
+    assertion = Saml2_Assertion(token, settings.SAML_MOX_ENTITY_ID,
+                                settings.SAML_IDP_ENTITY_ID,
+                                settings.SAML_IDP_URL,
+                                get_idp_cert())
 
     try:
         assertion.check_validity()
 
         name_id = assertion.get_nameid()
-        print "SAML Assertion valid for: %s" % name_id
+        print("SAML Assertion valid for: %s" % name_id)
 
         # Add the username and SAML attributes to the request object
         request.saml_attributes = assertion.get_attributes()
 
         userid = request.saml_attributes[
-            SAML_USER_ID_ATTIBUTE
+            settings.SAML_USER_ID_ATTIBUTE
         ][0]
 
         # Active Directory sends the UUID as a Base64-encoded string
@@ -85,7 +88,7 @@ def check_saml_authentication():
         # print "TOKEN: ", token
     except Exception as e:
         errmsg = "SAML token validation failed: {}".format(
-            e.message or (e.args and e.args[0]) or str(e)
+            e.args and e.args[0] or str(e)
         )
         raise AuthorizationFailedException(errmsg)
 
@@ -93,7 +96,7 @@ def check_saml_authentication():
 def requires_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        if USE_SAML_AUTHENTICATION:
+        if settings.USE_SAML_AUTHENTICATION:
             check_saml_authentication()
         return f(*args, **kwargs)
 
@@ -102,7 +105,7 @@ def requires_auth(f):
 
 def get_authenticated_user():
     """Return hardcoded UUID if authentication is switched off."""
-    if USE_SAML_AUTHENTICATION:
+    if settings.USE_SAML_AUTHENTICATION:
         return request.saml_user_id
     else:
         return "42c432e8-9c4a-11e6-9f62-873cf34a735f"

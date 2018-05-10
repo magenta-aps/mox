@@ -1,0 +1,13 @@
+-r requirements.txt
+Flask-Testing
+testing.postgresql
+pytest
+pytest-cov
+mock
+requests_mock
+coverage
+freezegun
+flake8
+flake8-imports
+flake8-module-name
+jsonschema==2.6.0

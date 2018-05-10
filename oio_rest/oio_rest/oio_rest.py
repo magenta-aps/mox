@@ -2,18 +2,24 @@
 """Superclasses for OIO objects and object hierarchies."""
 import json
 import datetime
-import urlparse
 
+import dateutil
+import jsonschema
 from flask import jsonify, request
-from custom_exceptions import BadRequestException
+
 from werkzeug.datastructures import ImmutableOrderedMultiDict
 
-import db
-import db_structure
-from utils.build_registration import build_registration, to_lower_param
+from . import db
+from . import validate
+from .db_helpers import get_valid_search_parameters, TEMPORALITY_PARAMS
+from .utils.build_registration import build_registration, to_lower_param
+from .custom_exceptions import BadRequestException, NotFoundException
+from .custom_exceptions import GoneException
 
 # Just a helper during debug
-from authentication import requires_auth
+from .authentication import requires_auth
+
+from oio_common import db_structure
 
 
 def j(t):
@@ -27,16 +33,54 @@ def typed_get(d, field, default):
     if v is None:
         return default
 
-    # special case strings
-    if t is str or t is unicode:
-        t = basestring
-
     if not isinstance(v, t):
         raise BadRequestException('expected %s for %r, found %s: %s' %
                                   (t.__name__, field, type(v).__name__,
                                    json.dumps(v)))
 
     return v
+
+
+def get_virkning_dates(args):
+    virkning_fra = args.get('virkningfra')
+    virkning_til = args.get('virkningtil')
+    virkningstid = args.get('virkningstid')
+
+    if virkningstid:
+        if virkning_fra or virkning_til:
+            raise BadRequestException("'virkningfra'/'virkningtil' conflict "
+                                      "with 'virkningstid'")
+        # Timespan has to be non-zero length of time, so we add one
+        # microsecond
+        dt = dateutil.parser.isoparse(virkningstid)
+        virkning_fra = dt
+        virkning_til = dt + datetime.timedelta(microseconds=1)
+    else:
+        if virkning_fra is None and virkning_til is None:
+            # TODO: Use the equivalent of TSTZRANGE(current_timestamp,
+            # current_timestamp,'[]') if possible
+            virkning_fra = datetime.datetime.now()
+            virkning_til = virkning_fra + datetime.timedelta(
+                microseconds=1)
+    return virkning_fra, virkning_til
+
+
+def get_registreret_dates(args):
+    registreret_fra = args.get('registreretfra')
+    registreret_til = args.get('registrerettil')
+    registreringstid = args.get('registreringstid')
+
+    if registreringstid:
+        if registreret_fra or registreret_til:
+            raise BadRequestException("'registreretfra'/'registrerettil' "
+                                      "conflict with 'registreringstid'")
+        else:
+            # Timespan has to be non-zero length of time, so we add one
+            # microsecond
+            dt = dateutil.parser.isoparse(registreringstid)
+            registreret_fra = dt
+            registreret_til = dt + datetime.timedelta(microseconds=1)
+    return registreret_fra, registreret_til
 
 
 class ArgumentDict(ImmutableOrderedMultiDict):
@@ -50,7 +94,8 @@ class ArgumentDict(ImmutableOrderedMultiDict):
     }
 
     @classmethod
-    def _process_item(cls, (key, value)):
+    def _process_item(cls, xxx_todo_changeme):
+        (key, value) = xxx_todo_changeme
         key = to_lower_param(key)
 
         return (cls.PARAM_ALIASES.get(key, key), value)
@@ -61,7 +106,7 @@ class ArgumentDict(ImmutableOrderedMultiDict):
         # happens to be the case when contructing the dictionary from
         # query arguments
         super(ArgumentDict, self).__init__(
-            map(self._process_item, mapping)
+            list(map(self._process_item, mapping))
         )
 
 
@@ -87,16 +132,16 @@ class OIOStandardHierarchy(object):
             c.create_api(cls._name, flask, base_url)
 
         hierarchy = cls._name.lower()
-        classes_url = u"{0}/{1}/{2}".format(base_url, hierarchy, u"classes")
+        classes_url = "{0}/{1}/{2}".format(base_url, hierarchy, "classes")
 
         def get_classes():
             structure = db_structure.REAL_DB_STRUCTURE
             clsnms = [c.__name__.lower() for c in cls._classes]
             hierarchy_dict = {c: structure[c] for c in clsnms}
-            return json.dumps(hierarchy_dict)
+            return jsonify(hierarchy_dict)
 
         flask.add_url_rule(
-            classes_url, u'_'.join([hierarchy, 'classes']),
+            classes_url, '_'.join([hierarchy, 'classes']),
             get_classes, methods=['GET']
         )
 
@@ -107,6 +152,9 @@ class OIORestObject(object):
 
     This class is intended to be subclassed, but not to be initialized.
     """
+
+    # The name of the current service. This is set by the create_api() method.
+    service_name = None
 
     @classmethod
     def get_json(cls):
@@ -139,9 +187,17 @@ class OIORestObject(object):
         """
         CREATE object, generate new UUID.
         """
+        cls.verify_args()
+
         input = cls.get_json()
         if not input:
             return jsonify({'uuid': None}), 400
+
+        # Validate JSON input
+        try:
+            validate.validate(input)
+        except jsonschema.exceptions.ValidationError as e:
+            return jsonify({'message': e.message}), 400
 
         note = typed_get(input, "note", "")
         registration = cls.gather_registration(input)
@@ -158,7 +214,7 @@ class OIORestObject(object):
         """
         return {to_lower_param(k): (request.args.get(k) if not as_lists else
                                     request.args.getlist(k))
-                for k in request.args.keys()}
+                for k in request.args}
 
     @classmethod
     @requires_auth
@@ -168,27 +224,20 @@ class OIORestObject(object):
         """
         request.parameter_storage_class = ArgumentDict
 
+        cls.verify_args(*get_valid_search_parameters(cls.__name__))
+
         # Convert arguments to lowercase, getting them as lists
         list_args = cls._get_args(True)
         args = cls._get_args()
-        virkning_fra = args.get('virkningfra', None)
-        virkning_til = args.get('virkningtil', None)
-        registreret_fra = args.get('registreretfra', None)
-        registreret_til = args.get('registrerettil', None)
-
-        if virkning_fra is None and virkning_til is None:
-            # TODO: Use the equivalent of TSTZRANGE(current_timestamp,
-            # current_timestamp,'[]') if possible
-            virkning_fra = datetime.datetime.now()
-            virkning_til = datetime.datetime.now()
+        registreret_fra, registreret_til = get_registreret_dates(args)
+        virkning_fra, virkning_til = get_virkning_dates(args)
 
         uuid_param = list_args.get('uuid', None)
 
-        valid_list_args = {'virkningfra', 'virkningtil', 'registreretfra',
-                           'registrerettil', 'uuid'}
+        valid_list_args = TEMPORALITY_PARAMS | {'uuid'}
 
         # Assume the search operation if other params were specified
-        if not set(args.keys()).issubset(valid_list_args):
+        if not valid_list_args.issuperset(args):
             # Only one uuid is supported through the search operation
             if uuid_param is not None and len(uuid_param) > 1:
                 raise BadRequestException("Multiple uuid parameters passed "
@@ -242,16 +291,14 @@ class OIORestObject(object):
         """
         READ an object, return as JSON.
         """
-        args = cls._get_args()
-        virkning_fra = args.get('virkningfra', None)
-        virkning_til = args.get('virkningtil', None)
-        registreret_fra = args.get('registreretfra', None)
-        registreret_til = args.get('registrerettil', None)
+        cls.verify_args(*TEMPORALITY_PARAMS)
 
-        if virkning_fra is None and virkning_til is None:
-            virkning_fra = datetime.datetime.now()
-            virkning_til = datetime.datetime.now()
-        request.api_operation = u'Læs'
+        args = cls._get_args()
+        registreret_fra, registreret_til = get_registreret_dates(args)
+
+        virkning_fra, virkning_til = get_virkning_dates(args)
+
+        request.api_operation = 'Læs'
         request.uuid = uuid
         object_list = db.list_objects(cls.__name__, [uuid], virkning_fra,
                                       virkning_til, registreret_fra,
@@ -259,7 +306,17 @@ class OIORestObject(object):
         try:
             object = object_list[0]
         except IndexError:
-            object = None
+            # No object found with that ID.
+            raise NotFoundException(
+                "No {} with ID {} found in service {}".format(
+                    cls.__name__, uuid, cls.service_name
+                )
+            )
+        # Raise 410 Gone if object is deleted.
+        if object[0]["registreringer"][0][
+            "livscykluskode"
+        ] == db.Livscyklus.SLETTET.value:
+            raise GoneException("This object has been deleted.")
         return jsonify({uuid: object})
 
     @classmethod
@@ -267,7 +324,7 @@ class OIORestObject(object):
         """Return a registration dict from the input dict."""
         attributes = typed_get(input, "attributter", {})
         states = typed_get(input, "tilstande", {})
-        relations = input.get("relationer", None)
+        relations = typed_get(input, "relationer", {})
         return {"states": states,
                 "attributes": attributes,
                 "relations": relations}
@@ -276,8 +333,10 @@ class OIORestObject(object):
     @requires_auth
     def put_object(cls, uuid):
         """
-        UPDATE, IMPORT or PASSIVIZE an  object.
+        IMPORT or UPDATE an  object, replacing its contents entirely.
         """
+        cls.verify_args()
+
         input = cls.get_json()
         if not input:
             return jsonify({'uuid': None}), 400
@@ -299,8 +358,7 @@ class OIORestObject(object):
         if not exists:
             # Do import.
             request.api_operation = "Import"
-            db.create_or_import_object(cls.__name__, note,
-                                       registration, uuid)
+            db.create_or_import_object(cls.__name__, note, registration, uuid)
             return jsonify({'uuid': uuid}), 200
         elif deleted_or_passive:
             # Import.
@@ -309,29 +367,55 @@ class OIORestObject(object):
                              uuid=uuid,
                              life_cycle_code=db.Livscyklus.IMPORTERET.value)
             return jsonify({'uuid': uuid}), 200
-
         else:
-            "Edit or passivate."
-            if typed_get(input, 'livscyklus', '').lower() == 'passiv':
-                # Passivate
-                request.api_operation = "Passiver"
-                registration = cls.gather_registration({})
-                db.passivate_object(
-                    cls.__name__, note, registration, uuid
+            # Edit.
+            request.api_operation = "Ret"
+            db.create_or_import_object(cls.__name__, note, registration, uuid)
+
+            return jsonify({'uuid': uuid}), 200
+
+    @classmethod
+    @requires_auth
+    def patch_object(cls, uuid):
+        """UPDATE or PASSIVIZE this object."""
+
+        # If the object doesn't exist, we can't patch it.
+        if not db.object_exists(cls.__name__, uuid):
+            raise NotFoundException(
+                "No {} with ID {} found in service {}".format(
+                    cls.__name__, uuid, cls.service_name
                 )
-                return jsonify({'uuid': uuid}), 200
-            else:
-                # Edit/change
-                request.api_operation = "Ret"
-                db.update_object(cls.__name__, note, registration,
-                                 uuid)
-                return jsonify({'uuid': uuid}), 200
-        return j(u"Forkerte parametre!"), 405
+            )
+
+        input = cls.get_json()
+        if not input:
+            return jsonify({'uuid': None}), 400
+        # Get most common parameters if available.
+        note = typed_get(input, "note", "")
+        registration = cls.gather_registration(input)
+
+        if typed_get(input, 'livscyklus', '').lower() == 'passiv':
+            # Passivate
+            request.api_operation = "Passiver"
+            registration = cls.gather_registration({})
+            db.passivate_object(
+                cls.__name__, note, registration, uuid
+            )
+            return jsonify({'uuid': uuid}), 200
+        else:
+            # Edit/change
+            request.api_operation = "Ret"
+            db.update_object(cls.__name__, note, registration,
+                             uuid)
+            return jsonify({'uuid': uuid}), 200
 
     @classmethod
     @requires_auth
     def delete_object(cls, uuid):
-        # Delete facet
+
+        """Logically delete this object."""
+        cls.verify_args()
+
         input = cls.get_json() or {}
         note = typed_get(input, "note", "")
         class_name = cls.__name__
@@ -341,31 +425,34 @@ class OIORestObject(object):
         request.uuid = uuid
         db.delete_object(class_name, registration, note, uuid)
 
-        return jsonify({'uuid': uuid}), 200
+        return jsonify({'uuid': uuid}), 202
 
     @classmethod
     def get_fields(cls):
+        cls.verify_args()
+
         """Set up API with correct database access functions."""
         structure = db_structure.REAL_DB_STRUCTURE
         class_key = cls.__name__.lower()
         # TODO: Perform some transformations to improve readability.
         class_dict = structure[class_key]
-        return json.dumps(class_dict)
+        return jsonify(class_dict)
 
     @classmethod
     def create_api(cls, hierarchy, flask, base_url):
         """Set up API with correct database access functions."""
+        cls.service_name = hierarchy
         hierarchy = hierarchy.lower()
         class_name = cls.__name__.lower()
-        class_url = u"{0}/{1}/{2}".format(base_url,
-                                          hierarchy,
-                                          class_name)
-        cls_fields_url = u"{0}/{1}".format(class_url, u"fields")
+        class_url = "{0}/{1}/{2}".format(base_url,
+                                         hierarchy,
+                                         class_name)
+        cls_fields_url = "{0}/{1}".format(class_url, "fields")
         uuid_regex = (
             "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}" +
             "-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
         )
-        object_url = u'{0}/<regex("{1}"):uuid>'.format(
+        object_url = '{0}/<regex("{1}"):uuid>'.format(
             class_url,
             uuid_regex
         )
@@ -373,28 +460,31 @@ class OIORestObject(object):
         def get_classes_for_hierarchy():
             return cls.get_classes(hierarchy)
 
-        flask.add_url_rule(class_url, u'_'.join([cls.__name__, 'get_objects']),
+        flask.add_url_rule(class_url, '_'.join([cls.__name__, 'get_objects']),
                            cls.get_objects, methods=['GET'],
                            strict_slashes=False)
 
-        flask.add_url_rule(object_url, u'_'.join([cls.__name__, 'get_object']),
+        flask.add_url_rule(object_url, '_'.join([cls.__name__, 'get_object']),
                            cls.get_object, methods=['GET'])
 
-        flask.add_url_rule(object_url, u'_'.join([cls.__name__, 'put_object']),
+        flask.add_url_rule(object_url, '_'.join([cls.__name__, 'put_object']),
                            cls.put_object, methods=['PUT'])
+        flask.add_url_rule(object_url,
+                           '_'.join([cls.__name__, 'patch_object']),
+                           cls.patch_object, methods=['PATCH'])
         flask.add_url_rule(
-            class_url, u'_'.join([cls.__name__, 'create_object']),
+            class_url, '_'.join([cls.__name__, 'create_object']),
             cls.create_object, methods=['POST']
         )
 
         flask.add_url_rule(
-            object_url, u'_'.join([cls.__name__, 'delete_object']),
+            object_url, '_'.join([cls.__name__, 'delete_object']),
             cls.delete_object, methods=['DELETE']
         )
 
         # Structure URLs
         flask.add_url_rule(
-            cls_fields_url, u'_'.join([cls.__name__, 'fields']),
+            cls_fields_url, '_'.join([cls.__name__, 'fields']),
             cls.get_fields, methods=['GET']
         )
 
@@ -402,3 +492,12 @@ class OIORestObject(object):
     # Templates may only be overridden on subclass if they are explicitly
     # listed here.
     RELATIONS_TEMPLATE = 'relations_array.sql'
+
+    @classmethod
+    def verify_args(cls, *allowed):
+        req_args = cls._get_args()
+        difference = set(req_args).difference(allowed)
+        if difference:
+            arg_string = ', '.join(difference)
+            raise BadRequestException('Unsupported argument(s): {}'
+                                      .format(arg_string))

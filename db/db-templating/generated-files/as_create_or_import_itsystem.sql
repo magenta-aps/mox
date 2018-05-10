@@ -24,6 +24,8 @@ DECLARE
   
   itsystem_relationer ItsystemRelationType;
   auth_filtered_uuids uuid[];
+  does_exist boolean;
+  new_itsystem_registrering itsystem_registrering;
 BEGIN
 
 IF itsystem_uuid IS NULL THEN
@@ -35,42 +37,57 @@ END IF;
 
 
 IF EXISTS (SELECT id from itsystem WHERE id=itsystem_uuid) THEN
-  RAISE EXCEPTION 'Error creating or importing itsystem with uuid [%]. If you did not supply the uuid when invoking as_create_or_import_itsystem (i.e. create operation) please try to repeat the invocation/operation, that id collison with randomly generated uuids might in theory occur, albeit very very very rarely.',itsystem_uuid USING ERRCODE='MO500';
+    does_exist = True;
+ELSE
+
+    does_exist = False;
 END IF;
 
-IF  (itsystem_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (itsystem_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode THEN
+IF  (itsystem_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (itsystem_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (itsystem_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
   RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_itsystem.',(itsystem_registrering.registrering).livscykluskode USING ERRCODE='MO400';
 END IF;
 
 
+IF NOT does_exist THEN
 
-INSERT INTO 
-      itsystem (ID)
-SELECT
-      itsystem_uuid
-;
+    INSERT INTO
+          itsystem (ID)
+    SELECT
+          itsystem_uuid;
+END IF;
 
 
 /*********************************/
 --Insert new registrering
 
-itsystem_registrering_id:=nextval('itsystem_registrering_id_seq');
+IF NOT does_exist THEN
+    itsystem_registrering_id:=nextval('itsystem_registrering_id_seq');
 
-INSERT INTO itsystem_registrering (
-      id,
-        itsystem_id,
+    INSERT INTO itsystem_registrering (
+          id,
+          itsystem_id,
           registrering
         )
-SELECT
-      itsystem_registrering_id,
-        itsystem_uuid,
-          ROW (
-            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-            (itsystem_registrering.registrering).livscykluskode,
-            (itsystem_registrering.registrering).brugerref,
-            (itsystem_registrering.registrering).note
-              ):: RegistreringBase
-;
+    SELECT
+          itsystem_registrering_id,
+           itsystem_uuid,
+           ROW (
+             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+             (itsystem_registrering.registrering).livscykluskode,
+             (itsystem_registrering.registrering).brugerref,
+             (itsystem_registrering.registrering).note
+               ):: RegistreringBase ;
+ELSE
+    -- This is an update, not an import or create
+        new_itsystem_registrering := _as_create_itsystem_registrering(
+             itsystem_uuid,
+             (itsystem_registrering.registrering).livscykluskode,
+             (itsystem_registrering.registrering).brugerref,
+             (itsystem_registrering.registrering).note);
+
+        itsystem_registrering_id := new_itsystem_registrering.id;
+END IF;
+
 
 /*********************************/
 --Insert attributes

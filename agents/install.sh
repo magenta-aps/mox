@@ -2,9 +2,6 @@
 
 DIR=$(cd $(dirname $0) && pwd)
 
-# Query for hostname
-DOMAIN="$1"
-
 if test -n "$DOMAIN"
 then
     REST_URL="https://$DOMAIN"

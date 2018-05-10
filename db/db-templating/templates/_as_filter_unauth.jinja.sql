@@ -17,10 +17,10 @@ DECLARE
 	{{oio_type}}_passed_auth_filter uuid[]:=ARRAY[]::uuid[];
 	{{oio_type}}_candidates uuid[];
 	--to_be_applyed_filter_uuids uuid[];
-	{%-for attribut , attribut_fields in attributter.iteritems() %} 
+	{%-for attribut , attribut_fields in attributter.items() %} 
 	attr{{attribut|title}}TypeObj {{oio_type|title}}{{attribut|title}}AttrType;
 	{%- endfor %}
-	{% for tilstand, tilstand_values in tilstande.iteritems() %}
+	{% for tilstand, tilstand_values in tilstande.items() %}
   	tils{{tilstand|title}}TypeObj {{oio_type|title}}{{tilstand|title}}TilsType;
   	{%- endfor %}
 	relationTypeObj {{oio_type|title}}RelationType;
@@ -57,7 +57,7 @@ LOOP
 
 --filter on attributes
 
-{%-for attribut , attribut_fields in attributter.iteritems() %} 
+{%-for attribut , attribut_fields in attributter.items() %} 
 --/**********************************************************//
 --Filtration on attribute: {{attribut|title}}
 --/**********************************************************//
@@ -77,11 +77,11 @@ ELSE
 				(
 					attr{{attribut|title}}TypeObj.{{attribut_field}} IS NULL
 					OR
-					 {%- if  attributter_type_override is defined and attributter_type_override[attribut] is defined and attributter_type_override[attribut][attribut_field] is defined %} 
-						{%-if attributter_type_override[attribut][attribut_field] == "text[]" %}
+					 {%- if  attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][attribut_field] is defined and attributter_metadata[attribut][attribut_field]['type'] is defined %} 
+						{%-if attributter_metadata[attribut][attribut_field]['type'] == "text[]" %}
 						( (coalesce(array_length(attr{{attribut|title}}TypeObj.{{attribut_field}},1),0)=0 AND coalesce(array_length(a.{{attribut_field}},1),0)=0 ) OR (attr{{attribut|title}}TypeObj.{{attribut_field}} @> a.{{attribut_field}} AND a.{{attribut_field}} @>attr{{attribut|title}}TypeObj.{{attribut_field}}  )) 
 						{%- else %} 
-						{%-if attributter_type_override[attribut][attribut_field] == "offentlighedundtagettype" %}
+						{%-if attributter_metadata[attribut][attribut_field]['type'] == "offentlighedundtagettype" %}
 						(
 							(
 								(attr{{attribut|title}}TypeObj.{{attribut_field}}).AlternativTitel IS NULL
@@ -123,7 +123,7 @@ END IF;
 
 --RAISE DEBUG 'registrering,%',registreringObj;
 
-{% for tilstand, tilstand_values in tilstande.iteritems() %}
+{% for tilstand, tilstand_values in tilstande.items() %}
 --/**********************************************************//
 --Filtration on state: {{tilstand|title}}
 --/**********************************************************//

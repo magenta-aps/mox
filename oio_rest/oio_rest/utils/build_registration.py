@@ -1,11 +1,12 @@
+import itertools
 import uuid
 from werkzeug.datastructures import MultiDict
 
-from ..db_helpers import get_attribute_names, get_attribute_fields
-from ..db_helpers import get_state_names, get_relation_names
-from ..db_helpers import get_document_part_relation_names
-from ..db_helpers import DokumentVariantEgenskaberType
-from ..db_helpers import DokumentDelEgenskaberType
+from oio_rest.db_helpers import get_attribute_names, get_attribute_fields
+from oio_rest.db_helpers import get_state_names, get_relation_names
+from oio_rest.db_helpers import get_document_part_relation_names
+from oio_rest.db_helpers import DokumentVariantEgenskaberType
+from oio_rest.db_helpers import DokumentDelEgenskaberType
 
 
 def is_urn(s):
@@ -205,11 +206,11 @@ def build_registration(class_name, list_args):
 def restriction_to_registration(class_name, restriction):
     states, attributes, relations = restriction
 
-    def flatten(d):
-        return [(k, v) for k, v in d.items()]
-
-    all_fields = MultiDict(flatten(states) + flatten(attributes) +
-                           flatten(relations))
+    all_fields = MultiDict(itertools.chain(
+        states.items(),
+        attributes.items(),
+        relations.items(),
+    ))
     list_args = {k.lower(): all_fields.getlist(k) for k in all_fields}
 
     return build_registration(class_name, list_args)
