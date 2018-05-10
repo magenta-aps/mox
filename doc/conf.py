@@ -59,9 +59,9 @@ author = 'Magenta ApS'
 # built documents.
 #
 # The full version, including alpha/beta/rc tags.
-with open('../NEWS') as fp:
+with open('../NEWS.rst') as fp:
   release = [l.split()[2].rstrip(',')
-             for l in fp if l.startswith('* Version')][0]
+             for l in fp if l.startswith('Version')][0]
 
 # The short X.Y version.
 version = release
