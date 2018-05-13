@@ -10,6 +10,10 @@ import oio_common.db_structure as db
 BOOLEAN = {'type': 'boolean'}
 INTEGER = {'type': 'integer'}
 STRING = {'type': 'string'}
+URN = {
+    'type': 'string',
+    'pattern': '^urn:.'
+}
 UUID = {
     'type': 'string',
     'pattern': '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-'
@@ -281,7 +285,7 @@ def _generate_relationer(obj):
                 ),
                 _generate_schema_object(
                     {
-                        'urn': STRING,
+                        'urn': URN,
                         'virkning': {'$ref': '#/definitions/virkning'},
                         'objekttype': STRING
                     },

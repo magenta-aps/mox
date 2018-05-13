@@ -73,6 +73,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                         'properties': {
                             'urn': {
                                 'type': 'string',
+                                'pattern': '^urn:.'
                             },
                             'virkning': {'$ref': '#/definitions/virkning'},
                             'objekttype': {'type': 'string'}
@@ -469,6 +470,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                                         },
                                         'urn': {
                                             'type': 'string',
+                                            'pattern': '^urn:.'
                                         },
                                         'virkning': {
                                             '$ref': '#/definitions/virkning'},
@@ -1170,6 +1172,31 @@ class TestFacetSystematically(unittest.TestCase):
         self.reference['uuid'] = 'This is not an UUID'
         self.facet['relationer'] = {
             'ansvarlig': [self.reference],
+        }
+        self.assertValidationError()
+
+    def test_urn_reference_not_valid(self):
+        """
+        Equivalence classes covered: [114]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.reference.pop('uuid')
+        self.reference['urn'] = 'This is not an URN'
+        self.facet['relationer'] = {
+            'ansvarlig': [self.reference]
+        }
+        self.assertValidationError()
+
+    def test_uuid_and_urn_not_allowed_simultaneously_in_reference(self):
+        """
+        Equivalence classes covered: [113]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.reference['urn'] = 'urn:This is an URN'
+        self.facet['relationer'] = {
+            'ansvarlig': [self.reference]
         }
         self.assertValidationError()
 
