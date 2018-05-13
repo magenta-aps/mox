@@ -56,12 +56,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                     {
                         'type': 'object',
                         'properties': {
-                            'uuid': {
-                                'type': 'string',
-                                'pattern': '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-'
-                                           '[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-'
-                                           '[a-fA-F0-9]{12}$'
-                            },
+                            'uuid': {'$ref': '#/definitions/uuid'},
                             'virkning': {'$ref': '#/definitions/virkning'},
                             'objekttype': {'type': 'string'}
                         },
@@ -71,10 +66,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                     {
                         'type': 'object',
                         'properties': {
-                            'urn': {
-                                'type': 'string',
-                                'pattern': '^urn:.'
-                            },
+                            'urn': {'$ref': '#/definitions/urn'},
                             'virkning': {'$ref': '#/definitions/virkning'},
                             'objekttype': {'type': 'string'}
                         },
@@ -216,12 +208,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                 'properties': {
                     'accepteret': {'type': 'string'},
                     'obligatorisk': {'type': 'string'},
-                    'repraesentation_uuid': {
-                        'type': 'string',
-                        'pattern': '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-'
-                                   '[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-'
-                                   '[a-fA-F0-9]{12}$'
-                    },
+                    'repraesentation_uuid': {'$ref': '#/definitions/uuid'},
                 },
                 'required': ['accepteret', 'obligatorisk',
                              'repraesentation_uuid'],
@@ -415,14 +402,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                                             'enum': ['journalnotat',
                                                      'vedlagtdokument'],
                                         },
-                                        'uuid': {
-                                            'type': 'string',
-                                            'pattern': '^[a-fA-F0-9]{8}-'
-                                                       '[a-fA-F0-9]{4}'
-                                                       '-[a-fA-F0-9]{4}-'
-                                                       '[a-fA-F0-9]{4}'
-                                                       '-[a-fA-F0-9]{12}$',
-                                        },
+                                        'uuid': {'$ref': '#/definitions/uuid'},
                                         'virkning': {
                                             '$ref': '#/definitions/virkning'},
                                         'objekttype': {'type': 'string'}
@@ -468,10 +448,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                                             'enum': ['journalnotat',
                                                      'vedlagtdokument'],
                                         },
-                                        'urn': {
-                                            'type': 'string',
-                                            'pattern': '^urn:.'
-                                        },
+                                        'urn': {'$ref': '#/definitions/urn'},
                                         'virkning': {
                                             '$ref': '#/definitions/virkning'},
                                         'objekttype': {'type': 'string'}

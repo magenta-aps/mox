@@ -10,15 +10,6 @@ import oio_common.db_structure as db
 BOOLEAN = {'type': 'boolean'}
 INTEGER = {'type': 'integer'}
 STRING = {'type': 'string'}
-URN = {
-    'type': 'string',
-    'pattern': '^urn:.'
-}
-UUID = {
-    'type': 'string',
-    'pattern': '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-'
-               '[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$'
-}
 
 
 def _generate_schema_array(items, maxItems=None):
@@ -51,7 +42,7 @@ TYPE_MAP = {
         {
             'accepteret': STRING,
             'obligatorisk': STRING,
-            'repraesentation_uuid': UUID,
+            'repraesentation_uuid': {'$ref': '#/definitions/uuid'},
         },
         ['accepteret', 'obligatorisk', 'repraesentation_uuid']
     ),
@@ -277,7 +268,7 @@ def _generate_relationer(obj):
             'oneOf': [
                 _generate_schema_object(
                     {
-                        'uuid': UUID,
+                        'uuid': {'$ref': '#/definitions/uuid'},
                         'virkning': {'$ref': '#/definitions/virkning'},
                         'objekttype': STRING
                     },
@@ -285,7 +276,7 @@ def _generate_relationer(obj):
                 ),
                 _generate_schema_object(
                     {
-                        'urn': URN,
+                        'urn': {'$ref': '#/definitions/urn'},
                         'virkning': {'$ref': '#/definitions/virkning'},
                         'objekttype': STRING
                     },
@@ -400,13 +391,22 @@ def generate_json_schema(obj):
     schema['id'] = 'http://github.com/magenta-aps/mox'
 
     schema['definitions'] = {
+        'urn': {
+            'type': 'string',
+            'pattern': '^urn:.'
+        },
+        'uuid': {
+            'type': 'string',
+            'pattern': '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-'
+                       '[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$'
+        },
         'virkning': _generate_schema_object(
             {
                 'from': STRING,
                 'to': STRING,
                 'from_included': BOOLEAN,
                 'to_included': BOOLEAN,
-                'aktoerref': UUID,
+                'aktoerref': {'$ref': '#/definitions/uuid'},
                 'aktoertypekode': STRING,
                 'notetekst': STRING,
             },
