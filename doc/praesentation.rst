@@ -13,7 +13,7 @@ MOX er som koncept opfundet og beskrevet af Kommunernes Landsforening i
 samarbejde med en lang række kommuner, og der er blandt andet en
 gennemgang af det her:
 
-http://www.kl.dk/Fagomrader/Administration-og-digitalisering/Den-faelleskommunale-rammearkitektur/Rammearkitektur-i-praksis/Projekt-Sager-pa-tvars/
+http://beta.rammearkitektur.dk/index.php/MOX_konceptet
 
 Dette notat vil omhandle det MOX-system, som Magenta har udviklet i
 samarbejde Kommunernes Landsforening, Sager på Tværs og Frederiksberg
@@ -52,14 +52,14 @@ MOX-systemet består grundlæggende af fem komponenter:
 
 Som systemet er implementeret, har det følgende features/egenskaber:
 
-Autentikering
-+++++++++++++
+Autentificering
++++++++++++++++
 
 Denne foregår ved hjælp af SAML-tokens. Når MOX-agenten får besked om en
 ændring af fagsystemets data, sørger den for, at der genereres en
 SAML-token på den indloggede brugers vegne. Denne SAML-token
 repræsenterer den indloggede brugers digitale signatur af de pågældende
-ændringer. I REST-interfacet autentikeres brugerens identitet op mod en
+ændringer. I REST-interfacet autentificeres brugerens identitet op mod en
 SAML Identity Provider, og de pågældende ændringer logges med brugerens
 brugerid (UUID).
 
@@ -79,13 +79,13 @@ fuld implementation af version 1.1 af OIOXML-standarderne
 Klassifikation og Organisation, Dokument version 1.1.1 og Sag version
 1.2 - det vil sige de nugældende standarder som defineret her:
 
-https://digitaliser.dk/pages/ResourceView.aspx?ResourceView=444163
+https://digitaliser.dk/resource/444163
 
 Hvis du gerne vil se en skematisk oversigt over, hvad en sådan service
 mere konkret indeholder, kan du f.eks. se "Informations- og
 meddelelsesmodeller for Organisation" for enden af dette link: 
 
-https://digitaliser.dk/resource/991439/artefact/Informations-+og+meddelelsesmodeller+for+Organisation+%5bvs.+1.1%5d.pdf
+https://www.digitaliser.dk/resource/991439/artefact/Informations-ogmeddelelsesmodellerforOrganisation%5bvs.1.1%5d.pdf?artefact=true&PID=1602187
 
 Når nu formatet netop hedder OIO *XML*, bør det bemærkes, at
 Digitaliseringsstyrelsen har defineret en række XSD'er (XML-skemaer) for
