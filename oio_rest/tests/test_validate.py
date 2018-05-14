@@ -56,12 +56,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                     {
                         'type': 'object',
                         'properties': {
-                            'uuid': {
-                                'type': 'string',
-                                'pattern': '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-'
-                                           '[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-'
-                                           '[a-fA-F0-9]{12}$'
-                            },
+                            'uuid': {'$ref': '#/definitions/uuid'},
                             'virkning': {'$ref': '#/definitions/virkning'},
                             'objekttype': {'type': 'string'}
                         },
@@ -71,9 +66,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                     {
                         'type': 'object',
                         'properties': {
-                            'urn': {
-                                'type': 'string',
-                            },
+                            'urn': {'$ref': '#/definitions/urn'},
                             'virkning': {'$ref': '#/definitions/virkning'},
                             'objekttype': {'type': 'string'}
                         },
@@ -215,12 +208,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                 'properties': {
                     'accepteret': {'type': 'string'},
                     'obligatorisk': {'type': 'string'},
-                    'repraesentation_uuid': {
-                        'type': 'string',
-                        'pattern': '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-'
-                                   '[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-'
-                                   '[a-fA-F0-9]{12}$'
-                    },
+                    'repraesentation_uuid': {'$ref': '#/definitions/uuid'},
                 },
                 'required': ['accepteret', 'obligatorisk',
                              'repraesentation_uuid'],
@@ -414,14 +402,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                                             'enum': ['journalnotat',
                                                      'vedlagtdokument'],
                                         },
-                                        'uuid': {
-                                            'type': 'string',
-                                            'pattern': '^[a-fA-F0-9]{8}-'
-                                                       '[a-fA-F0-9]{4}'
-                                                       '-[a-fA-F0-9]{4}-'
-                                                       '[a-fA-F0-9]{4}'
-                                                       '-[a-fA-F0-9]{12}$',
-                                        },
+                                        'uuid': {'$ref': '#/definitions/uuid'},
                                         'virkning': {
                                             '$ref': '#/definitions/virkning'},
                                         'objekttype': {'type': 'string'}
@@ -467,9 +448,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                                             'enum': ['journalnotat',
                                                      'vedlagtdokument'],
                                         },
-                                        'urn': {
-                                            'type': 'string',
-                                        },
+                                        'urn': {'$ref': '#/definitions/urn'},
                                         'virkning': {
                                             '$ref': '#/definitions/virkning'},
                                         'objekttype': {'type': 'string'}
@@ -1170,6 +1149,31 @@ class TestFacetSystematically(unittest.TestCase):
         self.reference['uuid'] = 'This is not an UUID'
         self.facet['relationer'] = {
             'ansvarlig': [self.reference],
+        }
+        self.assertValidationError()
+
+    def test_urn_reference_not_valid(self):
+        """
+        Equivalence classes covered: [114]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.reference.pop('uuid')
+        self.reference['urn'] = 'This is not an URN'
+        self.facet['relationer'] = {
+            'ansvarlig': [self.reference]
+        }
+        self.assertValidationError()
+
+    def test_uuid_and_urn_not_allowed_simultaneously_in_reference(self):
+        """
+        Equivalence classes covered: [113]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.reference['urn'] = 'urn:This is an URN'
+        self.facet['relationer'] = {
+            'ansvarlig': [self.reference]
         }
         self.assertValidationError()
 
