@@ -324,10 +324,15 @@ class OIORestObject(object):
         """Return a registration dict from the input dict."""
         attributes = typed_get(input, "attributter", {})
         states = typed_get(input, "tilstande", {})
+
         relations = typed_get(input, "relationer", {})
+        filtered_relations = {
+            key: val for key, val in relations.items() if val
+        }
+
         return {"states": states,
                 "attributes": attributes,
-                "relations": relations}
+                "relations": filtered_relations}
 
     @classmethod
     @requires_auth
