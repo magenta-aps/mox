@@ -10,6 +10,7 @@ from werkzeug.routing import BaseConverter
 from jinja2 import Environment, FileSystemLoader
 from psycopg2 import DataError
 
+import oio_common.db_structure
 from . import sag, indsats, dokument, tilstand, aktivitet, organisation
 from . import log, klassifikation
 from .authentication import get_authenticated_user
@@ -18,9 +19,9 @@ from .log_client import log_service_call
 from .custom_exceptions import OIOFlaskException, AuthorizationFailedException
 from .custom_exceptions import BadRequestException
 from .auth import tokens
+from . import validate
 
 import settings
-
 
 app = Flask(__name__)
 
@@ -59,6 +60,16 @@ tilstand.TilstandsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
 @app.route('/')
 def root():
     return redirect(url_for('sitemap'), code=308)
+
+
+@app.route('/get-json-schema')
+def get_json_schema():
+    obj = request.args.get('obj', None)
+    if obj not in oio_common.db_structure.DATABASE_STRUCTURE.keys():
+        return jsonify(
+            {'message': 'JSON schema for {} not found'.format(obj)}), 404
+    else:
+        return jsonify(validate.SCHEMA[obj])
 
 
 @app.route('/get-token', methods=['GET', 'POST'])
@@ -104,7 +115,7 @@ def handle_not_allowed(error):
 
 @app.errorhandler(404)
 def page_not_found(e):
-        return jsonify(error=404, text=str(e)), 404
+    return jsonify(error=404, text=str(e)), 404
 
 
 # After request handle for logging.

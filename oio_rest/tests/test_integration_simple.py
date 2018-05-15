@@ -37,6 +37,7 @@ class Tests(util.TestCase):
                     "/dokument/dokument/" + UUID_PATTERN,
                     "/dokument/dokument/" + CONTENT_PATH_PATTERN,
                     "/dokument/dokument/fields",
+                    "/get-json-schema",
                     "/get-token",
                     "/indsats/classes",
                     "/indsats/indsats",
