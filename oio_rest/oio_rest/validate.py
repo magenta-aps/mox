@@ -429,6 +429,11 @@ SCHEMA = {
     for obj in db.REAL_DB_STRUCTURE.keys()
 }
 
+# Due to an inconsistency between the way LoRa handles
+# "DokumentVariantEgenskaber" and the specs' we will have to do this for now,
+# i.e. we allow any JSON-object for "Dokument"
+SCHEMA['dokument'] = {'type': 'object'}
+
 
 def validate(input_json):
     """
