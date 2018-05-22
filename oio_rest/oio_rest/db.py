@@ -1,6 +1,6 @@
+import datetime
+import enum
 import os
-from enum import Enum
-from datetime import datetime, timedelta
 
 import psycopg2
 import flask
@@ -111,7 +111,9 @@ def convert_attr_value(attribute_name, attribute_field_name,
                 attribute_field_value.get('alternativtitel', None),
                 attribute_field_value.get('hjemmel', None))
     elif field_type == "date":
-        return datetime.strptime(attribute_field_value, "%Y-%m-%d").date()
+        return datetime.datetime.strptime(
+            attribute_field_value, "%Y-%m-%d",
+        ).date()
     elif field_type == "timestamptz":
         return date_parser.parse(attribute_field_value)
     elif field_type == "interval(0)":
@@ -199,7 +201,7 @@ def convert_variants(variants):
     return [DokumentVariantType.input(variant) for variant in variants]
 
 
-class Livscyklus(Enum):
+class Livscyklus(enum.Enum):
     OPSTAAET = 'Opstaaet'
     IMPORTERET = 'Importeret'
     PASSIVERET = 'Passiveret'
@@ -808,8 +810,8 @@ def search_objects(class_name, uuid, registration,
 
 
 def get_life_cycle_code(class_name, uuid):
-    n = datetime.now()
-    n1 = n + timedelta(seconds=1)
+    n = datetime.datetime.now()
+    n1 = n + datetime.timedelta(seconds=1)
     regs = list_objects(class_name, [uuid], n, n1, None, None)
     reg = regs[0][0]
     livscykluskode = reg['registreringer'][0]['livscykluskode']
