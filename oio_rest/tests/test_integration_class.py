@@ -408,3 +408,46 @@ class Tests(util.TestCase):
             method='POST',
             json=data,
         )
+
+    def test_lowercase_state(self):
+        objid = self.load_fixture('/klassifikation/klasse',
+                                  'klasse_opret.json')
+
+        self.assertRequestFails(
+            '/klassifikation/klasse/' + objid,
+            400,
+            method='PATCH',
+            json={
+                'tilstande': {
+                    'publiceret': [
+                        {
+                            "publiceret": "publiceret",
+                            "virkning": {
+                                "from": "2015-01-01",
+                                "to": "2016-01-01",
+                                "notetekst": "odd case!"
+                            },
+                        },
+                    ],
+                },
+            })
+
+        self.assertRequestFails(
+            '/klassifikation/klasse/' + objid,
+            400,
+            method='PATCH',
+            json={
+                'tilstande': {
+                    'publiceret': [
+                        {
+                            "publiceret": "iKKEpUBLICERET",
+                            "virkning": {
+                                "from": "2016-01-01",
+                                "to": "2017-01-01",
+                                "notetekst": "lowercase!"
+                            }
+                        }
+                    ]
+                }
+            },
+        )
