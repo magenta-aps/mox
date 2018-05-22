@@ -193,12 +193,12 @@ class TestCaseMixin(object):
 
         try:
             if status_code is None:
-                self.assertLess(r.status_code, 300, status_message)
-                self.assertGreaterEqual(r.status_code, 200, status_message)
+                self.assertOK(r, status_message)
             else:
                 self.assertEqual(r.status_code, status_code, status_message)
 
             self.assertEqual(expected, actual, content_message)
+
         except AssertionError:
             print(path)
             print(r.status_code)
@@ -268,6 +268,12 @@ class TestCaseMixin(object):
             message,
         )
 
+    def assertOK(self, response, message=None):
+        assert 200 <= response.status_code < 300, \
+            message or 'request failed with {}!'.format(
+                response.status,
+            )
+
     def assertUUID(self, s):
         try:
             uuid.UUID(s)
@@ -286,8 +292,8 @@ class TestCaseMixin(object):
 
     def get(self, path, **params):
         r = self.perform_request(path, query_string=params)
-        self.assertLess(r.status_code, 300)
-        self.assertGreaterEqual(r.status_code, 200)
+
+        self.assertOK(r)
 
         d = r.json['results'][0]
 
@@ -303,22 +309,19 @@ class TestCaseMixin(object):
 
     def put(self, path, json):
         r = self.perform_request(path, json=json, method="PUT")
-        self.assertLess(r.status_code, 300)
-        self.assertGreaterEqual(r.status_code, 200)
+        self.assertOK(r)
 
         return r.json['uuid']
 
     def patch(self, path, json):
         r = self.perform_request(path, json=json, method="PATCH")
-        self.assertLess(r.status_code, 300)
-        self.assertGreaterEqual(r.status_code, 200)
+        self.assertOK(r)
 
         return r.json['uuid']
 
     def post(self, path, json):
         r = self.perform_request(path, json=json, method="POST")
-        self.assertLess(r.status_code, 300)
-        self.assertGreaterEqual(r.status_code, 200)
+        self.assertOK(r)
 
         return r.json['uuid']
 
