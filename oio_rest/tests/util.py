@@ -183,7 +183,7 @@ class TestCaseMixin(object):
 
         if not message:
             status_message = 'request {!r} failed with status {}'.format(
-                path, r.status_code,
+                path, r.status,
             )
             content_message = 'request {!r} yielded an expected result'.format(
                 path,
@@ -201,7 +201,7 @@ class TestCaseMixin(object):
 
         except AssertionError:
             print(path)
-            print(r.status_code)
+            print(r.status)
             pprint.pprint(actual)
 
             raise
@@ -355,12 +355,20 @@ class TestCaseMixin(object):
             path, json=get_fixture(fixture_name), method=method,
         )
 
-        assert r, 'write of {!r} to {!r} failed!'.format(fixture_name, path)
+        msg = 'write of {!r} to {!r} failed!'.format(fixture_name, path)
 
-        objid = r.json.get('uuid')
+        try:
+            self.assertOK(r, msg)
 
-        print(r.get_data(as_text=True), path)
-        self.assertTrue(objid)
+            objid = r.json.get('uuid')
+
+            self.assertTrue(objid)
+        except AssertionError:
+            print(path)
+            print(r.status)
+            print(r.get_data(as_text=True))
+
+            raise
 
         return objid
 
