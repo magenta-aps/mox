@@ -11,11 +11,12 @@ from psycopg2.pool import ThreadedConnectionPool
 from jinja2 import Environment, FileSystemLoader
 from dateutil import parser as date_parser
 
-from .db_helpers import get_attribute_fields, get_attribute_names
-from .db_helpers import get_field_type, get_state_names, get_relation_field_type
-from .db_helpers import (Soegeord, OffentlighedUndtaget, JournalNotat,
-                        JournalDokument, DokumentVariantType, AktoerAttr,
-                        VaerdiRelationAttr)
+from .db_helpers import (
+    get_attribute_fields, get_attribute_names, get_field_type,
+    get_state_names, get_relation_field_type, Soegeord, OffentlighedUndtaget,
+    JournalNotat, JournalDokument, DokumentVariantType, AktoerAttr,
+    VaerdiRelationAttr,
+)
 
 from .authentication import get_authenticated_user
 
