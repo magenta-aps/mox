@@ -3,8 +3,11 @@ from enum import Enum
 from datetime import datetime, timedelta
 
 import psycopg2
+import flask
+
 from psycopg2.extras import DateTimeTZRange
 from psycopg2.extensions import AsIs, QuotedString, adapt as psyco_adapt
+from psycopg2.pool import ThreadedConnectionPool
 from jinja2 import Environment, FileSystemLoader
 from dateutil import parser as date_parser
 
@@ -35,33 +38,58 @@ jinja_env = Environment(loader=FileSystemLoader(
 
 
 def adapt(value):
-    if not hasattr(adapt, 'connection'):
-        adapt.connection = get_connection()
+    connection = get_connection()
 
     adapter = psyco_adapt(value)
     if hasattr(adapter, 'prepare'):
-        adapter.prepare(adapt.connection)
-    return str(adapter.getquoted(), adapt.connection.encoding)
+        adapter.prepare(connection)
+    return str(adapter.getquoted(), connection.encoding)
 
 
 jinja_env.filters['adapt'] = adapt
 
-"""
-    GENERAL FUNCTION AND CLASS DEFINITIONS
-"""
+pool = ThreadedConnectionPool(
+    settings.DB_MIN_CONNECTIONS,
+    settings.DB_MAX_CONNECTIONS,
+    database=settings.DATABASE,
+    user=settings.DB_USER,
+    password=settings.DB_PASSWORD,
+    host=getattr(settings, 'DB_HOST', 'localhost'),
+    port=getattr(settings, 'DB_PORT', 5432),
+)
 
 
 def get_connection():
-    """Handle all intricacies of connecting to Postgres."""
-    connection = psycopg2.connect(
-        database=settings.DATABASE,
-        user=settings.DB_USER,
-        password=settings.DB_PASSWORD,
-        host=getattr(settings, 'DB_HOST', 'localhost'),
-        port=getattr(settings, 'DB_PORT', 5432),
-    )
-    connection.autocommit = True
-    return connection
+    """Handle all intricacies of connecting to Postgres.
+
+    We stash the current connection using Flask's `application
+    globals`_, ``g``, to avoid continually re-establishing the
+    connection.
+
+    This is a common pattern, and when combined with a pool, we even
+    avoid re-connecting every request.
+
+    .. _application globals: http://flask.pocoo.org/docs/api/#flask.g
+
+    """
+
+    if 'connection' not in flask.g:
+        flask.g.connection = pool.getconn()
+        flask.g.connection.autocommit = True
+
+    return flask.g.connection
+
+
+def close_connection(exc=None):
+    conn = flask.g.pop('connection', None)
+
+    if conn:
+        pool.putconn(conn)
+
+
+#
+# GENERAL FUNCTION AND CLASS DEFINITIONS
+#
 
 
 def convert_attr_value(attribute_name, attribute_field_name,

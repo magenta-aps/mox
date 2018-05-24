@@ -19,11 +19,11 @@ import click
 import flask_testing
 import mock
 import testing.postgresql
-import psycopg2
+import psycopg2.pool
 import pytest
 
 from oio_rest import app
-from oio_rest import db
+
 import settings
 
 TESTS_DIR = os.path.dirname(__file__)
@@ -132,14 +132,22 @@ class TestCaseMixin(object):
                        create=True),
             mock.patch('settings.DB_PORT', dsn['port'],
                        create=True),
+            mock.patch(
+                'oio_rest.db.pool',
+                psycopg2.pool.SimpleConnectionPool(
+                    1, 1,
+                    database=settings.DATABASE,
+                    user=settings.DB_USER,
+                    password=settings.DB_PASSWORD,
+                    host=dsn['host'],
+                    port=dsn['port'],
+                ),
+            ),
         ]
 
         for p in self.patches:
             p.start()
             self.addCleanup(p.stop)
-
-        if hasattr(db.adapt, 'connection'):
-            del db.adapt.connection
 
     def tearDown(self):
         super(TestCaseMixin, self).tearDown()

@@ -11,6 +11,12 @@ DATABASE = getenv('DB_NAME', 'mox')
 DB_USER = getenv('DB_USER', 'mox')
 DB_PASSWORD = getenv('DB_PASS', 'mox')
 
+# Per-process limits on the amount of database connections. Setting
+# the minimum to a non-zero value ensures that the webapp opens this
+# amount at load, failing if the database isn't available.
+DB_MIN_CONNECTIONS = int(getenv('DB_MIN_CONNECTIONS', '0'))
+DB_MAX_CONNECTIONS = int(getenv('DB_MAX_CONNECTIONS', '10'))
+
 # This is where file uploads are stored. It must be readable and writable by
 # the mox user, running the REST API server. This is used in the Dokument
 # hierarchy.
