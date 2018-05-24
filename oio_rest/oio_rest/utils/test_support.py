@@ -6,6 +6,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
+import atexit
 import os
 import subprocess
 import sys
@@ -25,7 +26,7 @@ BASE_DIR = os.path.dirname(settings.__file__)
 TOP_DIR = os.path.dirname(BASE_DIR)
 
 
-def initdb(psql):
+def _initdb(psql):
     dsn = psql.dsn()
 
     env = os.environ.copy()
@@ -69,6 +70,13 @@ def initdb(psql):
         curs.execute(subprocess.check_output([mkdb_path], env=env))
 
 
+psql_factory = testing.postgresql.PostgresqlFactory(
+    cache_initialized_db=True,
+    on_initialized=_initdb
+)
+atexit.register(psql_factory.clear_cache)
+
+
 @pytest.mark.slow
 class TestCaseMixin(object):
 
@@ -85,28 +93,13 @@ class TestCaseMixin(object):
 
         return app.app
 
-    @classmethod
-    def setUpClass(cls):
-        super(TestCaseMixin, cls).setUpClass()
-
-        cls.psql_factory = testing.postgresql.PostgresqlFactory(
-            cache_initialized_db=True,
-            on_initialized=initdb
-        )
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.psql_factory.clear_cache()
-
-        super(TestCaseMixin, cls).tearDownClass()
-
     def setUp(self):
         super(TestCaseMixin, self).setUp()
 
-        self.psql = self.psql_factory()
-        self.psql.wait_booting()
+        psql = psql_factory()
+        psql.wait_booting()
 
-        dsn = self.psql.dsn()
+        dsn = psql.dsn()
 
         self.patches = [
             mock.patch('settings.LOG_AMQP_SERVER', None),
@@ -155,7 +148,7 @@ def run_with_db(**kwargs):
         settings.DB_HOST = psql.dsn()['host']
         settings.DB_PORT = psql.dsn()['port']
 
-        initdb(psql)
+        _initdb(psql)
 
         app.app.run(**kwargs)
 
