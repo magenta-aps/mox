@@ -101,7 +101,7 @@ class TestCaseMixin(object):
 
         dsn = psql.dsn()
 
-        self.patches = [
+        patches = [
             mock.patch('settings.LOG_AMQP_SERVER', None),
             mock.patch('settings.DB_HOST', dsn['host'],
                        create=True),
@@ -120,14 +120,12 @@ class TestCaseMixin(object):
             ),
         ]
 
-        for p in self.patches:
+        for p in patches:
             p.start()
             self.addCleanup(p.stop)
 
-    def tearDown(self):
-        super(TestCaseMixin, self).tearDown()
+        self.addCleanup(psql.stop)
 
-        self.psql.stop()
 
 
 @click.command()
