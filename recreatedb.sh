@@ -13,7 +13,7 @@ BASE_DIR=$( pwd )
 INSTALLER_DIR=${BASE_DIR}/installer
 
 # Path to (python) virtual environment
-VIRTUALENV=${BASE_DIR}/venv-linux
+VIRTUALENV=${BASE_DIR}/python-env
 
 # Path to python executable
 PYTHON_EXEC=${VIRTUALENV}/bin/python
