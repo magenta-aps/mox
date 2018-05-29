@@ -31,8 +31,8 @@ sudo -u $SUPER_USER psql -d $MOX_DB -c "SELECT amqp.exchange_declare(1, 'mox.not
 
 psql -d $MOX_DB -U $MOX_DB_USER -c "CREATE SCHEMA actual_state AUTHORIZATION $MOX_DB_USER "
 sudo -u postgres psql -c "ALTER database $MOX_DB SET search_path TO actual_state,public;"
-sudo -u postgres psql -c "ALTER database mox SET DATESTYLE to 'ISO, YMD';" #Please notice that the db-tests are run, using a different datestyle
-sudo -u postgres psql -c "ALTER database mox SET INTERVALSTYLE to 'sql_standard';" 
+sudo -u postgres psql -c "ALTER database $MOX_DB SET DATESTYLE to 'ISO, YMD';" #Please notice that the db-tests are run, using a different datestyle
+sudo -u postgres psql -c "ALTER database $MOX_DB SET INTERVALSTYLE to 'sql_standard';"
 
 psql -d $MOX_DB -U $MOX_DB_USER -c "CREATE SCHEMA test AUTHORIZATION $MOX_DB_USER "
 psql -d $MOX_DB -U $MOX_DB_USER -f basis/common_types.sql
