@@ -1,18 +1,22 @@
+import datetime
+import enum
 import os
-from enum import Enum
-from datetime import datetime, timedelta
 
 import psycopg2
+import flask
+
 from psycopg2.extras import DateTimeTZRange
 from psycopg2.extensions import AsIs, QuotedString, adapt as psyco_adapt
+from psycopg2.pool import ThreadedConnectionPool
 from jinja2 import Environment, FileSystemLoader
 from dateutil import parser as date_parser
 
-from .db_helpers import get_attribute_fields, get_attribute_names
-from .db_helpers import get_field_type, get_state_names, get_relation_field_type
-from .db_helpers import (Soegeord, OffentlighedUndtaget, JournalNotat,
-                        JournalDokument, DokumentVariantType, AktoerAttr,
-                        VaerdiRelationAttr)
+from .db_helpers import (
+    get_attribute_fields, get_attribute_names, get_field_type,
+    get_state_names, get_relation_field_type, Soegeord, OffentlighedUndtaget,
+    JournalNotat, JournalDokument, DokumentVariantType, AktoerAttr,
+    VaerdiRelationAttr,
+)
 
 from .authentication import get_authenticated_user
 
@@ -35,33 +39,58 @@ jinja_env = Environment(loader=FileSystemLoader(
 
 
 def adapt(value):
-    if not hasattr(adapt, 'connection'):
-        adapt.connection = get_connection()
+    connection = get_connection()
 
     adapter = psyco_adapt(value)
     if hasattr(adapter, 'prepare'):
-        adapter.prepare(adapt.connection)
-    return str(adapter.getquoted(), adapt.connection.encoding)
+        adapter.prepare(connection)
+    return str(adapter.getquoted(), connection.encoding)
 
 
 jinja_env.filters['adapt'] = adapt
 
-"""
-    GENERAL FUNCTION AND CLASS DEFINITIONS
-"""
+pool = ThreadedConnectionPool(
+    settings.DB_MIN_CONNECTIONS,
+    settings.DB_MAX_CONNECTIONS,
+    database=settings.DATABASE,
+    user=settings.DB_USER,
+    password=settings.DB_PASSWORD,
+    host=getattr(settings, 'DB_HOST', 'localhost'),
+    port=getattr(settings, 'DB_PORT', 5432),
+)
 
 
 def get_connection():
-    """Handle all intricacies of connecting to Postgres."""
-    connection = psycopg2.connect(
-        database=settings.DATABASE,
-        user=settings.DB_USER,
-        password=settings.DB_PASSWORD,
-        host=getattr(settings, 'DB_HOST', 'localhost'),
-        port=getattr(settings, 'DB_PORT', 5432),
-    )
-    connection.autocommit = True
-    return connection
+    """Handle all intricacies of connecting to Postgres.
+
+    We stash the current connection using Flask's `application
+    globals`_, ``g``, to avoid continually re-establishing the
+    connection.
+
+    This is a common pattern, and when combined with a pool, we even
+    avoid re-connecting every request.
+
+    .. _application globals: http://flask.pocoo.org/docs/api/#flask.g
+
+    """
+
+    if 'connection' not in flask.g:
+        flask.g.connection = pool.getconn()
+        flask.g.connection.autocommit = True
+
+    return flask.g.connection
+
+
+def close_connection(exc=None):
+    conn = flask.g.pop('connection', None)
+
+    if conn:
+        pool.putconn(conn)
+
+
+#
+# GENERAL FUNCTION AND CLASS DEFINITIONS
+#
 
 
 def convert_attr_value(attribute_name, attribute_field_name,
@@ -83,7 +112,9 @@ def convert_attr_value(attribute_name, attribute_field_name,
                 attribute_field_value.get('alternativtitel', None),
                 attribute_field_value.get('hjemmel', None))
     elif field_type == "date":
-        return datetime.strptime(attribute_field_value, "%Y-%m-%d").date()
+        return datetime.datetime.strptime(
+            attribute_field_value, "%Y-%m-%d",
+        ).date()
     elif field_type == "timestamptz":
         return date_parser.parse(attribute_field_value)
     elif field_type == "interval(0)":
@@ -171,7 +202,7 @@ def convert_variants(variants):
     return [DokumentVariantType.input(variant) for variant in variants]
 
 
-class Livscyklus(Enum):
+class Livscyklus(enum.Enum):
     OPSTAAET = 'Opstaaet'
     IMPORTERET = 'Importeret'
     PASSIVERET = 'Passiveret'
@@ -780,8 +811,8 @@ def search_objects(class_name, uuid, registration,
 
 
 def get_life_cycle_code(class_name, uuid):
-    n = datetime.now()
-    n1 = n + timedelta(seconds=1)
+    n = datetime.datetime.now()
+    n1 = n + datetime.timedelta(seconds=1)
     regs = list_objects(class_name, [uuid], n, n1, None, None)
     reg = regs[0][0]
     livscykluskode = reg['registreringer'][0]['livscykluskode']

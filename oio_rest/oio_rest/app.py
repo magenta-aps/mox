@@ -14,6 +14,7 @@ from . import sag, indsats, dokument, tilstand, aktivitet, organisation
 from . import log, klassifikation
 from .authentication import get_authenticated_user
 from .log_client import log_service_call
+from . import db
 
 from .custom_exceptions import OIOFlaskException, AuthorizationFailedException
 from .custom_exceptions import BadRequestException
@@ -42,6 +43,8 @@ class RegexConverter(BaseConverter):
 
 
 app.url_map.converters['regex'] = RegexConverter
+
+app.teardown_request(db.close_connection)
 
 klassifikation.KlassifikationsHierarki.setup_api(
     base_url=settings.BASE_URL, flask=app,

@@ -14,6 +14,7 @@ oio_rest/oio_api
 *~
 .ropeproject
 oio_rest/dist
+oio_rest/build
 *.idea/
 *.iml
 **/target/

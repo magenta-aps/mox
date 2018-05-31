@@ -4,6 +4,16 @@ set -b
 MOXDIR=${BASE_DIR}
 DIR=${DB_DIR}
 
+test -z "$DIR" && DIR=$(cd $(dirname $0); pwd)
+test -z "$BASE_DIR" && BASE_DIR=$(cd $(dirname $DIR); pwd)
+test -z "$PYTHON_EXEC" && PYTHON_EXEC=${BASE_DIR}/python-env/bin/python
+test -z "$SUPER_USER" && SUPER_USER=postgres
+test -z "$MOX_DB" && MOX_DB=mox
+test -z "$MOX_DB_USER" && MOX_DB_USER=mox
+test -z "$MOX_DB_PASSWORD" && MOX_DB_PASSWORD=mox
+
+cd $DIR
+
 PYTHON=${PYTHON_EXEC}
 
 export PGPASSWORD="$MOX_DB_PASSWORD"
@@ -17,10 +27,13 @@ sudo -u postgres psql -c "GRANT ALL ON DATABASE $MOX_DB TO $MOX_DB_USER"
 sudo -u postgres psql -d $MOX_DB -f basis/dbserver_prep.sql
 
 # Setup AMQP server settings
-sudo -u $SUPER_USER psql -d $MOX_DB -c "insert into amqp.broker
+if test -n "$MOX_AMQP_HOST"
+then
+    sudo -u $SUPER_USER psql -d $MOX_DB -c "insert into amqp.broker
 (host, port, vhost, username, password)
 values ('$MOX_AMQP_HOST', $MOX_AMQP_PORT, '$MOX_AMQP_VHOST', '$MOX_AMQP_USER',
 '$MOX_AMQP_PASS');"
+fi
 
 # Grant mox user privileges to publish to AMQP
 sudo -u $SUPER_USER psql -d $MOX_DB -c "GRANT ALL PRIVILEGES ON SCHEMA amqp TO $MOX_DB_USER;
