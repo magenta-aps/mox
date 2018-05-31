@@ -36,7 +36,7 @@ pipeline {
     stage('Fetch MO') {
       steps {
         dir('mora') {
-          git url: 'https://github.com/magenta-aps/mora', branch: 'feature/internal-lora-tests'
+          git url: 'https://github.com/magenta-aps/mora', branch: 'development'
 
           timeout(5) {
             sh 'python3 -m venv venv'
