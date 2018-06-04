@@ -2,58 +2,18 @@ import collections
 import datetime
 import unittest
 
+import flask_testing
 from mock import MagicMock, call, patch
 
 from oio_rest import db
+from oio_rest import app
 from oio_rest.custom_exceptions import (BadRequestException, DBException,
                                         NotFoundException)
 
 
-class TestDB(unittest.TestCase):
-    @patch('oio_rest.db.psycopg2')
-    def test_get_connection(self, mock):
-        # Arrange
-        mock.connect = MagicMock()
-
-        database = "database"
-        user = "user"
-        password = "password"
-
-        expected_args = (
-            (),
-            {
-                'database': database,
-                'user': user,
-                'password': password,
-                'host': 'localhost',
-                'port': 5432,
-            },
-        )
-
-        # Act
-        with patch('settings.DATABASE', new=database), \
-                patch('settings.DB_USER', new=user), \
-                patch('settings.DB_PASSWORD', new=password):
-
-            db.get_connection()
-
-        # Assert
-        self.assertEqual(expected_args, mock.connect.call_args)
-
-    @patch('oio_rest.db.str', new=MagicMock())
-    @patch('oio_rest.db.psyco_adapt', new=MagicMock())
-    @patch('oio_rest.db.get_connection')
-    def test_adapt_only_creates_one_connection(self, mock_get_conn):
-        # type: (MagicMock) -> None
-        # Arrange
-
-        # Act
-        db.adapt('')
-        db.adapt('')
-        db.adapt('')
-
-        # Assert
-        self.assertEqual(1, mock_get_conn.call_count)
+class TestDB(flask_testing.TestCase):
+    def create_app(self):
+        return app.app
 
     @patch('oio_rest.db.get_relation_field_type')
     def test_convert_relation_value_default(self, mock_get_rel):
@@ -1298,7 +1258,6 @@ class TestPGErrors(unittest.TestCase):
         # Act
         with self.assertRaises(DBException):
             db.create_or_import_object('', '', '', '')
-
 
     @patch("oio_rest.db.psycopg2.Error", new=TestException)
     @patch('oio_rest.db.object_exists', new=lambda *x: False)
