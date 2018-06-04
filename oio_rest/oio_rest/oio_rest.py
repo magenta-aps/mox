@@ -466,9 +466,6 @@ class OIORestObject(object):
             uuid_regex
         )
 
-        def get_classes_for_hierarchy():
-            return cls.get_classes(hierarchy)
-
         flask.add_url_rule(class_url, '_'.join([cls.__name__, 'get_objects']),
                            cls.get_objects, methods=['GET'],
                            strict_slashes=False)
