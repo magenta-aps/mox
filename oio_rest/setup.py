@@ -5,9 +5,10 @@ import os
 
 from setuptools import find_packages, setup
 
-version = '0.0.1'
-authors = 'C. Agger, Jørgen Ulrik B. Krag, Thomas Kristensen, Seth Yastrov'
 basedir = os.path.dirname(__file__)
+
+with open(os.path.join(basedir, '..', 'VERSION')) as fp:
+    version = fp.read().strip()
 
 with open(os.path.join(basedir, 'requirements.txt')) as fp:
     install_requires = fp.readlines()
@@ -25,7 +26,7 @@ setup(
     OIOXML standard for the exchange of public administration documents.""",
     classifiers=[],
     keywords='',
-    author=authors,
+    author='Magenta ApS',
     author_email='info@magenta.dk',
     url='https://github.com/magenta-aps/mox',
     license='Mozilla Public License Version 2.0',
