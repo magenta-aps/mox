@@ -10,6 +10,7 @@ Restart=on-failure
 User={{ user }}
 Group={{ group }}
 Environment="GUNICORN_BIND_ADDRESS=/run/{{ name }}.socket"
+Environment="DB_MIN_CONNECTIONS=1"
 
 WorkingDirectory={{ working_directory }}
 ExecStart={{ gunicorn }} -c guniconfig.py wsgi:app
