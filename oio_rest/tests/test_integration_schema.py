@@ -7,11 +7,10 @@
 #
 
 import json
-import unittest
-
-import oio_rest.app as flaskapp
+import flask_testing
 
 from oio_rest import aktivitet
+from oio_rest import app
 from oio_rest import dokument
 from oio_rest import indsats
 from oio_rest import klassifikation
@@ -21,10 +20,10 @@ from oio_rest import sag
 from oio_rest import tilstand
 
 
-class TestSchemaEndPoints(unittest.TestCase):
-    def setUp(self):
-        flaskapp.app.testing = True
-        self.app = flaskapp.app.test_client()
+class TestSchemaEndPoints(flask_testing.TestCase):
+    def create_app(self):
+        app.app.config['TESTING'] = True
+        return app.app
 
     def assertSchemaOK(self, hierarchy):
         """
@@ -37,7 +36,7 @@ class TestSchemaEndPoints(unittest.TestCase):
         for obj in hierarchy._classes:
             url = '/{}/{}/schema'.format(hierarchy._name.lower(),
                                          obj.__name__.lower())
-            r = self.app.get(url)
+            r = self.client.get(url)
             self.assertEqual(200, r.status_code)
             json.loads(r.data.decode('utf-8'))
 
