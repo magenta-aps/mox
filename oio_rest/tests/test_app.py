@@ -10,6 +10,10 @@ class TestApp(TestCase):
         flaskapp.app.testing = True
         self.app = flaskapp.app.test_client()
 
+    def test_route_get_json_schema_returns_404_on_missing_obj(self):
+        result = self.app.get('/get-json-schema')
+        self.assertEqual(404, result.status_code)
+
     def test_route_get_token_post_returns_400_on_missing_user_and_pass(self):
         # Arrange
 

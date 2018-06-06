@@ -444,6 +444,10 @@ class OIORestObject(object):
         return jsonify(class_dict)
 
     @classmethod
+    def get_schema(cls):
+        return jsonify(validate.SCHEMA[cls.__name__.lower()])
+
+    @classmethod
     def create_api(cls, hierarchy, flask, base_url):
         """Set up API with correct database access functions."""
         cls.service_name = hierarchy
@@ -461,9 +465,6 @@ class OIORestObject(object):
             class_url,
             uuid_regex
         )
-
-        def get_classes_for_hierarchy():
-            return cls.get_classes(hierarchy)
 
         flask.add_url_rule(class_url, '_'.join([cls.__name__, 'get_objects']),
                            cls.get_objects, methods=['GET'],
@@ -491,6 +492,12 @@ class OIORestObject(object):
         flask.add_url_rule(
             cls_fields_url, '_'.join([cls.__name__, 'fields']),
             cls.get_fields, methods=['GET']
+        )
+
+        # JSON schemas
+        flask.add_url_rule(
+            '{}/{}'.format(class_url, 'schema'),
+            '_'.join([cls.__name__, 'schema']),cls.get_schema, methods=['GET']
         )
 
     # Templates which may be overridden on subclass.

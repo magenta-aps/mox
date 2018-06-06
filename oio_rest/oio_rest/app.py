@@ -22,7 +22,6 @@ from .auth import tokens
 
 import settings
 
-
 app = Flask(__name__)
 
 """
@@ -107,7 +106,7 @@ def handle_not_allowed(error):
 
 @app.errorhandler(404)
 def page_not_found(e):
-        return jsonify(error=404, text=str(e)), 404
+    return jsonify(error=404, text=str(e)), 404
 
 
 # After request handle for logging.
