@@ -13,7 +13,7 @@ fi
 ## Variables
 
 # Base directory (current)
-BASE_DIR=$( pwd )
+BASE_DIR=$(cd $(dirname $0); pwd)
 
 # Setup directory
 INSTALLER_DIR=${BASE_DIR}/installer

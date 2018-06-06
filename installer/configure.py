@@ -13,7 +13,7 @@ from client import caller
 #TODO: Run state to check and verify system current state
 
 # Base dir / root of git repository
-base_dir = os.getcwd()
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Hostname
 hostname = gethostname()
