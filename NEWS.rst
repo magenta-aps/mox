@@ -1,3 +1,9 @@
+Version 0.9.0-post1, 1 June 2018
+--------------------------------
+
+This hotfix contains no code changes, but updates the version metadata
+for the ``oio_rest`` package.
+
 Version 0.9.0, 7 May 2018
 -------------------------
 
