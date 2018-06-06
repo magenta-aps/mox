@@ -2,6 +2,8 @@
 # DOES NOT AUTOMATICALLY INSTALL THE FOLLOWING COMPONENTS:
 # Mox Rest Frontend, Mox Advis, Mox Elk log
 
+set -e
+
 ## Check if executed as root
 if [ $( whoami ) == "root" ]; then
     echo "Do not run as root. We'll sudo when necessary"
