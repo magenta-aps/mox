@@ -19,10 +19,8 @@ base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 hostname = gethostname()
 
 # User details
-uid = os.getuid()
-gid = os.getgid()
-user = pwd.getpwuid(uid).pw_name
-group = grp.getgrgid(gid).gr_name
+user = 'mox'
+group = 'mox'
 
 # Virtual environment and python executable
 virtualenv = getenv("VIRTUALENV")
