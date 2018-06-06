@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 
 basedir = os.path.dirname(__file__)
 
-with open(os.path.join(basedir, '..', 'VERSION')) as fp:
+with open(os.path.join(basedir, 'VERSION')) as fp:
     version = fp.read().strip()
 
 with open(os.path.join(basedir, 'requirements.txt')) as fp:
