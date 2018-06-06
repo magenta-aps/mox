@@ -53,7 +53,11 @@ mox_config = {
     "virtualenv": virtualenv,
     "python_exec": python_exec,
     "db": db_config,
-    "amqp": amqp_config
+    "amqp": amqp_config,
+    "http_port": 80,
+    "https_port": 443,
+    "ssl_certificate": None,
+    "ssl_certificate_key": None,
 }
 
 # Set grains (configuration)

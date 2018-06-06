@@ -1,5 +1,7 @@
 [Unit]
 Description="{{ service_description }}"
+Requires={{ name }}.socket
+After=network.target
 
 [Service]
 Type=simple
@@ -7,6 +9,7 @@ Restart=on-failure
 
 User={{ user }}
 Group={{ group }}
+Environment="GUNICORN_BIND_ADDRESS=/run/{{ name }}.socket"
 
 WorkingDirectory={{ working_directory }}
 ExecStart={{ gunicorn }} -c guniconfig.py wsgi:app

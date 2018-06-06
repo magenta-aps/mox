@@ -12,6 +12,7 @@ install_system_dependencies:
       - libxmlsec1-dev
       - ca-certificates
       - software-properties-common
+      - nginx
 
       # POSTGRESQL
       - postgresql
