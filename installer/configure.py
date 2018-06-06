@@ -60,7 +60,7 @@ mox_config = {
 # grains.setval key value
 set_grains = caller.cmd("grains.setval", "mox_config", mox_config)
 
-formatted = json.dumps(set_grains, indent=2)
+formatted = json.dumps(set_grains, indent=2, sort_keys=True)
 
 print("""
 Set grain/system values for the installation process
