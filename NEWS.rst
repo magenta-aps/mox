@@ -1,3 +1,8 @@
+Version 0.9.0-post2, 7 June 2018
+--------------------------------
+
+Fix installer, accidentally broken in previous post-release.
+
 Version 0.9.0-post1, 1 June 2018
 --------------------------------
 
