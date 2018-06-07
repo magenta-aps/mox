@@ -1,16 +1,21 @@
 # -- coding: utf-8 --
 
+import datetime
+import json
+import operator
 import os
+import sys
+
 from salt import client
 from salt import config
-
-# log file
-log_file = "install.log"
 
 # Installer directory
 installer_dir = os.path.dirname(
     os.path.abspath(__file__)
 )
+
+# log file
+log_file = os.path.join(installer_dir, "..", "install.log")
 
 # Path to config
 salt_config = os.path.join(installer_dir, "salt.conf")
@@ -40,9 +45,10 @@ def simple_log(text, log_file=log_file):
     :param log_file:    Name/full path to the log file
     """
 
-    with open(log_file, "w") as log:
-        log.write(text + "\n")
-
+    with open(log_file, "at") as log:
+        ts = datetime.datetime.now().isoformat()
+        log.write('[{}] {}\n'.format(ts, text))
+        log.flush()
 
 def notify_and_log(executed_tasks):
     """
@@ -67,10 +73,12 @@ def notify_and_log(executed_tasks):
     :return:
     """
 
-    if type(executed_tasks) is not dict:
+    if not isinstance(executed_tasks, dict):
+        simple_log('EXECUTED: ' + json.dumps(executed_tasks, indent=2))
         return
 
-    for id, task in executed_tasks.items():
+    for task in sorted(executed_tasks.values(),
+                       key=operator.itemgetter('start_time')):
         # Map dict
         task_id = task.get("__id__")
         task_result = task.get("result")
@@ -84,7 +92,7 @@ def notify_and_log(executed_tasks):
             result = "not ok"
 
         # ID
-        print("""
+        msg = """
         Task:   {id}
         Time:   {duration}
         Result: {result}
@@ -92,7 +100,10 @@ def notify_and_log(executed_tasks):
             id=task_id,
             duration=task_duration,
             result=result
-        ))
+        )
+
+        print(msg)
+        simple_log(msg)
 
         # Log task
         simple_log(task_id)
@@ -102,10 +113,9 @@ def notify_and_log(executed_tasks):
 
         # Include changes in the log file
         include_changes = ["diff", "stdout"]
-	
-        if not task_changes:
-            return	
 
+        if not task_changes:
+            continue
 
         for change in include_changes:
             #if not change:
@@ -113,7 +123,5 @@ def notify_and_log(executed_tasks):
 
             content = task_changes.get(change)
 
-            if not content:
-                return
-	    
-            simple_log(content)
+            if content:
+                simple_log(content)

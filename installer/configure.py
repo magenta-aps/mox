@@ -13,16 +13,14 @@ from client import caller
 #TODO: Run state to check and verify system current state
 
 # Base dir / root of git repository
-base_dir = os.getcwd()
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Hostname
 hostname = gethostname()
 
 # User details
-uid = os.getuid()
-gid = os.getgid()
-user = pwd.getpwuid(uid).pw_name
-group = grp.getgrgid(gid).gr_name
+user = 'mox'
+group = 'mox'
 
 # Virtual environment and python executable
 virtualenv = getenv("VIRTUALENV")
@@ -53,14 +51,18 @@ mox_config = {
     "virtualenv": virtualenv,
     "python_exec": python_exec,
     "db": db_config,
-    "amqp": amqp_config
+    "amqp": amqp_config,
+    "http_port": 80,
+    "https_port": 443,
+    "ssl_certificate": None,
+    "ssl_certificate_key": None,
 }
 
 # Set grains (configuration)
 # grains.setval key value
 set_grains = caller.cmd("grains.setval", "mox_config", mox_config)
 
-formatted = json.dumps(set_grains, indent=2)
+formatted = json.dumps(set_grains, indent=2, sort_keys=True)
 
 print("""
 Set grain/system values for the installation process

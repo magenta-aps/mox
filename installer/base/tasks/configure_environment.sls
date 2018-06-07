@@ -12,6 +12,7 @@ install_system_dependencies:
       - libxmlsec1-dev
       - ca-certificates
       - software-properties-common
+      - nginx
 
       # POSTGRESQL
       - postgresql
@@ -23,6 +24,21 @@ install_system_dependencies:
 
       # AMQP
       - rabbitmq-server
+
+
+create_account_group:
+  group.present:
+    - name: {{ config.group }}
+    - system: True
+
+create_account_user:
+  user.present:
+    - name: {{ config.user }}
+    - gid: {{ config.group }}
+    - groups:
+        - {{ config.group }}
+    - home: {{ config.base_dir }}
+    - system: True
 
 
 create_upload_directory:
