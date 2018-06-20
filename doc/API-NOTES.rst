@@ -307,6 +307,18 @@ journaldokument.dokumenttitel = "Rapport XYZ" ::
 
   &journalpostkode=vedlagtdokument&journaldokument.dokumenttitel=Rapport+XYZ
 
+Paged search
+++++++++++++
+
+The search function supports paged searches by adding the parameters
+maximalantalresultater and foersteresultat as in this example ::
+
+  &funktionsnavn=Engagement&maximalantalresultater=20&foersteresultat=0
+
+Since pagination only makes sense if the order of the results are predictable
+the search will be sorted by brugervendtnoegle if pagination is used.
+
+  
 File upload
 -----------
 
