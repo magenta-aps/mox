@@ -1460,7 +1460,7 @@ END IF;
 auth_filtered_uuids:=_as_filter_unauth_indsats(indsats_candidates,auth_criteria_arr); 
 /*********************/
 IF firstResult > 0 or maxResults < 2147483647 THEN
-   auth_filtered_uuids = _as_sorted_bruger(auth_filtered_uuids, firstResult, maxResults);
+   auth_filtered_uuids = _as_sorted_indsats(auth_filtered_uuids, firstResult, maxResults);
 END IF;
 return auth_filtered_uuids;
 
