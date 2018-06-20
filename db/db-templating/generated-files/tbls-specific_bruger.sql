@@ -83,6 +83,8 @@ CREATE INDEX bruger_registrering_pat_note
   USING  gin
   (((registrering).note) gin_trgm_ops);
 
+CREATE INDEX bruger_id_idx
+   ON bruger_registrering (bruger_id)
 
 
 /****************************************************************************************************/

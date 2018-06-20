@@ -83,6 +83,8 @@ CREATE INDEX organisationfunktion_registrering_pat_note
   USING  gin
   (((registrering).note) gin_trgm_ops);
 
+CREATE INDEX organisationfunktion_id_idx
+   ON organisationfunktion_registrering (organisationfunktion_id)
 
 
 /****************************************************************************************************/

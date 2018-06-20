@@ -80,6 +80,8 @@ CREATE INDEX {{oio_type}}_registrering_pat_note
   USING  gin
   (((registrering).note) gin_trgm_ops);
 
+CREATE INDEX {{oio_type}}_id_idx
+   ON {{oio_type}}_registrering ({{oio_type}}_id)
 
 
 /****************************************************************************************************/

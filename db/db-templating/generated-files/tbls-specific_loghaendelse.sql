@@ -83,6 +83,8 @@ CREATE INDEX loghaendelse_registrering_pat_note
   USING  gin
   (((registrering).note) gin_trgm_ops);
 
+CREATE INDEX loghaendelse_id_idx
+   ON loghaendelse_registrering (loghaendelse_id)
 
 
 /****************************************************************************************************/
