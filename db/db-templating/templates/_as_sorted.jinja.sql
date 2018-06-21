@@ -21,7 +21,7 @@ CREATE OR REPLACE FUNCTION _as_sorted_{{oio_type}}(
 {{oio_type}}_sorted_uuid:=array(
 SELECT b.{{oio_type}}_id
     FROM  {{oio_type}}_attr_egenskaber a
-    JOIN {{oio_type}}_registrering b on a.{{oio_type}}_registrering_id=b.id
+    JOIN (select distinct on ({{oio_type}}_id) {{oio_type}}_id, id from {{oio_type}}_registrering) b on a.{{oio_type}}_registrering_id=b.id
     WHERE b.{{oio_type}}_id = ANY ({{oio_type}}_uuids)
     order by a.brugervendtnoegle
          limit maxResults offset firstResult

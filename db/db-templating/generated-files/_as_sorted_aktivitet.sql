@@ -24,7 +24,7 @@ CREATE OR REPLACE FUNCTION _as_sorted_aktivitet(
 aktivitet_sorted_uuid:=array(
 SELECT b.aktivitet_id
     FROM  aktivitet_attr_egenskaber a
-    JOIN aktivitet_registrering b on a.aktivitet_registrering_id=b.id
+    JOIN (select distinct on (aktivitet_id) aktivitet_id, id from aktivitet_registrering) b on a.aktivitet_registrering_id=b.id
     WHERE b.aktivitet_id = ANY (aktivitet_uuids)
     order by a.brugervendtnoegle
          limit maxResults offset firstResult

@@ -24,7 +24,7 @@ CREATE OR REPLACE FUNCTION _as_sorted_itsystem(
 itsystem_sorted_uuid:=array(
 SELECT b.itsystem_id
     FROM  itsystem_attr_egenskaber a
-    JOIN itsystem_registrering b on a.itsystem_registrering_id=b.id
+    JOIN (select distinct on (itsystem_id) itsystem_id, id from itsystem_registrering) b on a.itsystem_registrering_id=b.id
     WHERE b.itsystem_id = ANY (itsystem_uuids)
     order by a.brugervendtnoegle
          limit maxResults offset firstResult

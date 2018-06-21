@@ -24,7 +24,7 @@ CREATE OR REPLACE FUNCTION _as_sorted_klasse(
 klasse_sorted_uuid:=array(
 SELECT b.klasse_id
     FROM  klasse_attr_egenskaber a
-    JOIN klasse_registrering b on a.klasse_registrering_id=b.id
+    JOIN (select distinct on (klasse_id) klasse_id, id from klasse_registrering) b on a.klasse_registrering_id=b.id
     WHERE b.klasse_id = ANY (klasse_uuids)
     order by a.brugervendtnoegle
          limit maxResults offset firstResult

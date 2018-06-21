@@ -24,7 +24,7 @@ CREATE OR REPLACE FUNCTION _as_sorted_loghaendelse(
 loghaendelse_sorted_uuid:=array(
 SELECT b.loghaendelse_id
     FROM  loghaendelse_attr_egenskaber a
-    JOIN loghaendelse_registrering b on a.loghaendelse_registrering_id=b.id
+    JOIN (select distinct on (loghaendelse_id) loghaendelse_id, id from loghaendelse_registrering) b on a.loghaendelse_registrering_id=b.id
     WHERE b.loghaendelse_id = ANY (loghaendelse_uuids)
     order by a.brugervendtnoegle
          limit maxResults offset firstResult

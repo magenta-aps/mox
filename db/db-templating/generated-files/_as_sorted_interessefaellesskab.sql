@@ -24,7 +24,7 @@ CREATE OR REPLACE FUNCTION _as_sorted_interessefaellesskab(
 interessefaellesskab_sorted_uuid:=array(
 SELECT b.interessefaellesskab_id
     FROM  interessefaellesskab_attr_egenskaber a
-    JOIN interessefaellesskab_registrering b on a.interessefaellesskab_registrering_id=b.id
+    JOIN (select distinct on (interessefaellesskab_id) interessefaellesskab_id, id from interessefaellesskab_registrering) b on a.interessefaellesskab_registrering_id=b.id
     WHERE b.interessefaellesskab_id = ANY (interessefaellesskab_uuids)
     order by a.brugervendtnoegle
          limit maxResults offset firstResult

@@ -24,7 +24,7 @@ CREATE OR REPLACE FUNCTION _as_sorted_bruger(
 bruger_sorted_uuid:=array(
 SELECT b.bruger_id
     FROM  bruger_attr_egenskaber a
-    JOIN bruger_registrering b on a.bruger_registrering_id=b.id
+    JOIN (select distinct on (bruger_id) bruger_id, id from bruger_registrering) b on a.bruger_registrering_id=b.id
     WHERE b.bruger_id = ANY (bruger_uuids)
     order by a.brugervendtnoegle
          limit maxResults offset firstResult
