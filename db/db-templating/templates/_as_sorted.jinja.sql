@@ -20,8 +20,8 @@ CREATE OR REPLACE FUNCTION _as_sorted_{{oio_type}}(
 
 {{oio_type}}_sorted_uuid:=array(
 SELECT b.{{oio_type}}_id
-    FROM  {{oio_type}}_attr_egenskaber a
-    JOIN (SELECT DISTINCT ON ({{oio_type}}_id) {{oio_type}}_id, id FROM {{oio_type}}_registrering) b ON a.{{oio_type}}_registrering_id=b.id
+    FROM  {{oio_type}}_registrering b
+    JOIN (SELECT DISTINCT ON ({{oio_type}}_registrering_id) {{oio_type}}_registrering_id, id, brugervendtnoegle FROM {{oio_type}}_attr_egenskaber) a ON a.{{oio_type}}_registrering_id=b.id    
     WHERE b.{{oio_type}}_id = ANY ({{oio_type}}_uuids)
     ORDER BY a.brugervendtnoegle
          LIMIT maxResults OFFSET firstResult
@@ -31,6 +31,5 @@ RETURN {{oio_type}}_sorted_uuid;
 
 END;
 $$ LANGUAGE plpgsql STABLE;
-
 
 {% endblock %}

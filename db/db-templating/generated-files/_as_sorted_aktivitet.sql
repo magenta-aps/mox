@@ -23,8 +23,8 @@ CREATE OR REPLACE FUNCTION _as_sorted_aktivitet(
 
 aktivitet_sorted_uuid:=array(
 SELECT b.aktivitet_id
-    FROM  aktivitet_attr_egenskaber a
-    JOIN (SELECT DISTINCT ON (aktivitet_id) aktivitet_id, id FROM aktivitet_registrering) b ON a.aktivitet_registrering_id=b.id
+    FROM  aktivitet_registrering b
+    JOIN (SELECT DISTINCT ON (aktivitet_registrering_id) aktivitet_registrering_id, id, brugervendtnoegle FROM aktivitet_attr_egenskaber) a ON a.aktivitet_registrering_id=b.id    
     WHERE b.aktivitet_id = ANY (aktivitet_uuids)
     ORDER BY a.brugervendtnoegle
          LIMIT maxResults OFFSET firstResult
@@ -34,7 +34,6 @@ RETURN aktivitet_sorted_uuid;
 
 END;
 $$ LANGUAGE plpgsql STABLE;
-
 
 
 

@@ -23,8 +23,8 @@ CREATE OR REPLACE FUNCTION _as_sorted_dokument(
 
 dokument_sorted_uuid:=array(
 SELECT b.dokument_id
-    FROM  dokument_attr_egenskaber a
-    JOIN (SELECT DISTINCT ON (dokument_id) dokument_id, id FROM dokument_registrering) b ON a.dokument_registrering_id=b.id
+    FROM  dokument_registrering b
+    JOIN (SELECT DISTINCT ON (dokument_registrering_id) dokument_registrering_id, id, brugervendtnoegle FROM dokument_attr_egenskaber) a ON a.dokument_registrering_id=b.id    
     WHERE b.dokument_id = ANY (dokument_uuids)
     ORDER BY a.brugervendtnoegle
          LIMIT maxResults OFFSET firstResult
@@ -34,7 +34,6 @@ RETURN dokument_sorted_uuid;
 
 END;
 $$ LANGUAGE plpgsql STABLE;
-
 
 
 

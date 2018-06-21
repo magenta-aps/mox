@@ -23,8 +23,8 @@ CREATE OR REPLACE FUNCTION _as_sorted_loghaendelse(
 
 loghaendelse_sorted_uuid:=array(
 SELECT b.loghaendelse_id
-    FROM  loghaendelse_attr_egenskaber a
-    JOIN (SELECT DISTINCT ON (loghaendelse_id) loghaendelse_id, id FROM loghaendelse_registrering) b ON a.loghaendelse_registrering_id=b.id
+    FROM  loghaendelse_registrering b
+    JOIN (SELECT DISTINCT ON (loghaendelse_registrering_id) loghaendelse_registrering_id, id, brugervendtnoegle FROM loghaendelse_attr_egenskaber) a ON a.loghaendelse_registrering_id=b.id    
     WHERE b.loghaendelse_id = ANY (loghaendelse_uuids)
     ORDER BY a.brugervendtnoegle
          LIMIT maxResults OFFSET firstResult
@@ -34,7 +34,6 @@ RETURN loghaendelse_sorted_uuid;
 
 END;
 $$ LANGUAGE plpgsql STABLE;
-
 
 
 

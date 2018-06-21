@@ -23,8 +23,8 @@ CREATE OR REPLACE FUNCTION _as_sorted_itsystem(
 
 itsystem_sorted_uuid:=array(
 SELECT b.itsystem_id
-    FROM  itsystem_attr_egenskaber a
-    JOIN (SELECT DISTINCT ON (itsystem_id) itsystem_id, id FROM itsystem_registrering) b ON a.itsystem_registrering_id=b.id
+    FROM  itsystem_registrering b
+    JOIN (SELECT DISTINCT ON (itsystem_registrering_id) itsystem_registrering_id, id, brugervendtnoegle FROM itsystem_attr_egenskaber) a ON a.itsystem_registrering_id=b.id    
     WHERE b.itsystem_id = ANY (itsystem_uuids)
     ORDER BY a.brugervendtnoegle
          LIMIT maxResults OFFSET firstResult
@@ -34,7 +34,6 @@ RETURN itsystem_sorted_uuid;
 
 END;
 $$ LANGUAGE plpgsql STABLE;
-
 
 
 

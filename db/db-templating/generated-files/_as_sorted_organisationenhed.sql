@@ -23,8 +23,8 @@ CREATE OR REPLACE FUNCTION _as_sorted_organisationenhed(
 
 organisationenhed_sorted_uuid:=array(
 SELECT b.organisationenhed_id
-    FROM  organisationenhed_attr_egenskaber a
-    JOIN (SELECT DISTINCT ON (organisationenhed_id) organisationenhed_id, id FROM organisationenhed_registrering) b ON a.organisationenhed_registrering_id=b.id
+    FROM  organisationenhed_registrering b
+    JOIN (SELECT DISTINCT ON (organisationenhed_registrering_id) organisationenhed_registrering_id, id, brugervendtnoegle FROM organisationenhed_attr_egenskaber) a ON a.organisationenhed_registrering_id=b.id    
     WHERE b.organisationenhed_id = ANY (organisationenhed_uuids)
     ORDER BY a.brugervendtnoegle
          LIMIT maxResults OFFSET firstResult
@@ -34,7 +34,6 @@ RETURN organisationenhed_sorted_uuid;
 
 END;
 $$ LANGUAGE plpgsql STABLE;
-
 
 
 

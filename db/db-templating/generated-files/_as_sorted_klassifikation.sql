@@ -23,8 +23,8 @@ CREATE OR REPLACE FUNCTION _as_sorted_klassifikation(
 
 klassifikation_sorted_uuid:=array(
 SELECT b.klassifikation_id
-    FROM  klassifikation_attr_egenskaber a
-    JOIN (SELECT DISTINCT ON (klassifikation_id) klassifikation_id, id FROM klassifikation_registrering) b ON a.klassifikation_registrering_id=b.id
+    FROM  klassifikation_registrering b
+    JOIN (SELECT DISTINCT ON (klassifikation_registrering_id) klassifikation_registrering_id, id, brugervendtnoegle FROM klassifikation_attr_egenskaber) a ON a.klassifikation_registrering_id=b.id    
     WHERE b.klassifikation_id = ANY (klassifikation_uuids)
     ORDER BY a.brugervendtnoegle
          LIMIT maxResults OFFSET firstResult
@@ -34,7 +34,6 @@ RETURN klassifikation_sorted_uuid;
 
 END;
 $$ LANGUAGE plpgsql STABLE;
-
 
 
 
