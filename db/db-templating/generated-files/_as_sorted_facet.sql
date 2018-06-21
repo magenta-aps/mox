@@ -24,10 +24,10 @@ CREATE OR REPLACE FUNCTION _as_sorted_facet(
 facet_sorted_uuid:=array(
 SELECT b.facet_id
     FROM  facet_attr_egenskaber a
-    JOIN (select distinct on (facet_id) facet_id, id from facet_registrering) b on a.facet_registrering_id=b.id
+    JOIN (SELECT DISTINCT ON (facet_id) facet_id, id FROM facet_registrering) b ON a.facet_registrering_id=b.id
     WHERE b.facet_id = ANY (facet_uuids)
-    order by a.brugervendtnoegle
-         limit maxResults offset firstResult
+    ORDER BY a.brugervendtnoegle
+         LIMIT maxResults OFFSET firstResult
 );
 
 RETURN facet_sorted_uuid;

@@ -24,10 +24,10 @@ CREATE OR REPLACE FUNCTION _as_sorted_itsystem(
 itsystem_sorted_uuid:=array(
 SELECT b.itsystem_id
     FROM  itsystem_attr_egenskaber a
-    JOIN (select distinct on (itsystem_id) itsystem_id, id from itsystem_registrering) b on a.itsystem_registrering_id=b.id
+    JOIN (SELECT DISTINCT ON (itsystem_id) itsystem_id, id FROM itsystem_registrering) b ON a.itsystem_registrering_id=b.id
     WHERE b.itsystem_id = ANY (itsystem_uuids)
-    order by a.brugervendtnoegle
-         limit maxResults offset firstResult
+    ORDER BY a.brugervendtnoegle
+         LIMIT maxResults OFFSET firstResult
 );
 
 RETURN itsystem_sorted_uuid;

@@ -24,10 +24,10 @@ CREATE OR REPLACE FUNCTION _as_sorted_organisationfunktion(
 organisationfunktion_sorted_uuid:=array(
 SELECT b.organisationfunktion_id
     FROM  organisationfunktion_attr_egenskaber a
-    JOIN (select distinct on (organisationfunktion_id) organisationfunktion_id, id from organisationfunktion_registrering) b on a.organisationfunktion_registrering_id=b.id
+    JOIN (SELECT DISTINCT ON (organisationfunktion_id) organisationfunktion_id, id FROM organisationfunktion_registrering) b ON a.organisationfunktion_registrering_id=b.id
     WHERE b.organisationfunktion_id = ANY (organisationfunktion_uuids)
-    order by a.brugervendtnoegle
-         limit maxResults offset firstResult
+    ORDER BY a.brugervendtnoegle
+         LIMIT maxResults OFFSET firstResult
 );
 
 RETURN organisationfunktion_sorted_uuid;

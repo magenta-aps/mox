@@ -24,10 +24,10 @@ CREATE OR REPLACE FUNCTION _as_sorted_sag(
 sag_sorted_uuid:=array(
 SELECT b.sag_id
     FROM  sag_attr_egenskaber a
-    JOIN (select distinct on (sag_id) sag_id, id from sag_registrering) b on a.sag_registrering_id=b.id
+    JOIN (SELECT DISTINCT ON (sag_id) sag_id, id FROM sag_registrering) b ON a.sag_registrering_id=b.id
     WHERE b.sag_id = ANY (sag_uuids)
-    order by a.brugervendtnoegle
-         limit maxResults offset firstResult
+    ORDER BY a.brugervendtnoegle
+         LIMIT maxResults OFFSET firstResult
 );
 
 RETURN sag_sorted_uuid;

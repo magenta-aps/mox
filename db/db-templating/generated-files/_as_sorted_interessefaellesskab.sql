@@ -24,10 +24,10 @@ CREATE OR REPLACE FUNCTION _as_sorted_interessefaellesskab(
 interessefaellesskab_sorted_uuid:=array(
 SELECT b.interessefaellesskab_id
     FROM  interessefaellesskab_attr_egenskaber a
-    JOIN (select distinct on (interessefaellesskab_id) interessefaellesskab_id, id from interessefaellesskab_registrering) b on a.interessefaellesskab_registrering_id=b.id
+    JOIN (SELECT DISTINCT ON (interessefaellesskab_id) interessefaellesskab_id, id FROM interessefaellesskab_registrering) b ON a.interessefaellesskab_registrering_id=b.id
     WHERE b.interessefaellesskab_id = ANY (interessefaellesskab_uuids)
-    order by a.brugervendtnoegle
-         limit maxResults offset firstResult
+    ORDER BY a.brugervendtnoegle
+         LIMIT maxResults OFFSET firstResult
 );
 
 RETURN interessefaellesskab_sorted_uuid;

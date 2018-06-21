@@ -24,10 +24,10 @@ CREATE OR REPLACE FUNCTION _as_sorted_dokument(
 dokument_sorted_uuid:=array(
 SELECT b.dokument_id
     FROM  dokument_attr_egenskaber a
-    JOIN (select distinct on (dokument_id) dokument_id, id from dokument_registrering) b on a.dokument_registrering_id=b.id
+    JOIN (SELECT DISTINCT ON (dokument_id) dokument_id, id FROM dokument_registrering) b ON a.dokument_registrering_id=b.id
     WHERE b.dokument_id = ANY (dokument_uuids)
-    order by a.brugervendtnoegle
-         limit maxResults offset firstResult
+    ORDER BY a.brugervendtnoegle
+         LIMIT maxResults OFFSET firstResult
 );
 
 RETURN dokument_sorted_uuid;

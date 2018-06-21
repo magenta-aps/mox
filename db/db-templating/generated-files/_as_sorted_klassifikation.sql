@@ -24,10 +24,10 @@ CREATE OR REPLACE FUNCTION _as_sorted_klassifikation(
 klassifikation_sorted_uuid:=array(
 SELECT b.klassifikation_id
     FROM  klassifikation_attr_egenskaber a
-    JOIN (select distinct on (klassifikation_id) klassifikation_id, id from klassifikation_registrering) b on a.klassifikation_registrering_id=b.id
+    JOIN (SELECT DISTINCT ON (klassifikation_id) klassifikation_id, id FROM klassifikation_registrering) b ON a.klassifikation_registrering_id=b.id
     WHERE b.klassifikation_id = ANY (klassifikation_uuids)
-    order by a.brugervendtnoegle
-         limit maxResults offset firstResult
+    ORDER BY a.brugervendtnoegle
+         LIMIT maxResults OFFSET firstResult
 );
 
 RETURN klassifikation_sorted_uuid;
