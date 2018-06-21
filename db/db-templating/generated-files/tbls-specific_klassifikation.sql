@@ -84,7 +84,7 @@ CREATE INDEX klassifikation_registrering_pat_note
   (((registrering).note) gin_trgm_ops);
 
 CREATE INDEX klassifikation_id_idx
-   ON klassifikation_registrering (klassifikation_id)
+   ON klassifikation_registrering (klassifikation_id);
 
 
 /****************************************************************************************************/

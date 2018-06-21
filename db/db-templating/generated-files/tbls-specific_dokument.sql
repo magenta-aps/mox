@@ -84,7 +84,7 @@ CREATE INDEX dokument_registrering_pat_note
   (((registrering).note) gin_trgm_ops);
 
 CREATE INDEX dokument_id_idx
-   ON dokument_registrering (dokument_id)
+   ON dokument_registrering (dokument_id);
 
 
 /****************************************************************************************************/

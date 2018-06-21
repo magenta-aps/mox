@@ -84,7 +84,7 @@ CREATE INDEX indsats_registrering_pat_note
   (((registrering).note) gin_trgm_ops);
 
 CREATE INDEX indsats_id_idx
-   ON indsats_registrering (indsats_id)
+   ON indsats_registrering (indsats_id);
 
 
 /****************************************************************************************************/

@@ -84,7 +84,7 @@ CREATE INDEX loghaendelse_registrering_pat_note
   (((registrering).note) gin_trgm_ops);
 
 CREATE INDEX loghaendelse_id_idx
-   ON loghaendelse_registrering (loghaendelse_id)
+   ON loghaendelse_registrering (loghaendelse_id);
 
 
 /****************************************************************************************************/

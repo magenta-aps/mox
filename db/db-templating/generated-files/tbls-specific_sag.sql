@@ -84,7 +84,7 @@ CREATE INDEX sag_registrering_pat_note
   (((registrering).note) gin_trgm_ops);
 
 CREATE INDEX sag_id_idx
-   ON sag_registrering (sag_id)
+   ON sag_registrering (sag_id);
 
 
 /****************************************************************************************************/

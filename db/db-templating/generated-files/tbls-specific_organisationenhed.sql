@@ -84,7 +84,7 @@ CREATE INDEX organisationenhed_registrering_pat_note
   (((registrering).note) gin_trgm_ops);
 
 CREATE INDEX organisationenhed_id_idx
-   ON organisationenhed_registrering (organisationenhed_id)
+   ON organisationenhed_registrering (organisationenhed_id);
 
 
 /****************************************************************************************************/

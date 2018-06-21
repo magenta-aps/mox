@@ -84,7 +84,7 @@ CREATE INDEX facet_registrering_pat_note
   (((registrering).note) gin_trgm_ops);
 
 CREATE INDEX facet_id_idx
-   ON facet_registrering (facet_id)
+   ON facet_registrering (facet_id);
 
 
 /****************************************************************************************************/

@@ -84,7 +84,7 @@ CREATE INDEX interessefaellesskab_registrering_pat_note
   (((registrering).note) gin_trgm_ops);
 
 CREATE INDEX interessefaellesskab_id_idx
-   ON interessefaellesskab_registrering (interessefaellesskab_id)
+   ON interessefaellesskab_registrering (interessefaellesskab_id);
 
 
 /****************************************************************************************************/
