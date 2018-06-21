@@ -980,11 +980,11 @@ END IF;
 IF NOT interessefaellesskab_candidates_is_initialized THEN
 	--No filters applied!
 	interessefaellesskab_candidates:=array(
-		SELECT DISTINCT id FROM interessefaellesskab a LIMIT maxResults
+		SELECT DISTINCT id FROM interessefaellesskab a
 	);
 ELSE
 	interessefaellesskab_candidates:=array(
-		SELECT DISTINCT id FROM unnest(interessefaellesskab_candidates) as a(id) LIMIT maxResults
+		SELECT DISTINCT id FROM unnest(interessefaellesskab_candidates) as a(id)
 		);
 END IF;
 

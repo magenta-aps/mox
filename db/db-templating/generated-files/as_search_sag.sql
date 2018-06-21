@@ -1100,11 +1100,11 @@ END IF;
 IF NOT sag_candidates_is_initialized THEN
 	--No filters applied!
 	sag_candidates:=array(
-		SELECT DISTINCT id FROM sag a LIMIT maxResults
+		SELECT DISTINCT id FROM sag a
 	);
 ELSE
 	sag_candidates:=array(
-		SELECT DISTINCT id FROM unnest(sag_candidates) as a(id) LIMIT maxResults
+		SELECT DISTINCT id FROM unnest(sag_candidates) as a(id)
 		);
 END IF;
 

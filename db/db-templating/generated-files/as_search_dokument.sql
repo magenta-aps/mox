@@ -1611,11 +1611,11 @@ END IF;
 IF NOT dokument_candidates_is_initialized THEN
 	--No filters applied!
 	dokument_candidates:=array(
-		SELECT DISTINCT id FROM dokument a LIMIT maxResults
+		SELECT DISTINCT id FROM dokument a
 	);
 ELSE
 	dokument_candidates:=array(
-		SELECT DISTINCT id FROM unnest(dokument_candidates) as a(id) LIMIT maxResults
+		SELECT DISTINCT id FROM unnest(dokument_candidates) as a(id)
 		);
 END IF;
 

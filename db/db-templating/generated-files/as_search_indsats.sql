@@ -1443,11 +1443,11 @@ END IF;
 IF NOT indsats_candidates_is_initialized THEN
 	--No filters applied!
 	indsats_candidates:=array(
-		SELECT DISTINCT id FROM indsats a LIMIT maxResults
+		SELECT DISTINCT id FROM indsats a
 	);
 ELSE
 	indsats_candidates:=array(
-		SELECT DISTINCT id FROM unnest(indsats_candidates) as a(id) LIMIT maxResults
+		SELECT DISTINCT id FROM unnest(indsats_candidates) as a(id)
 		);
 END IF;
 

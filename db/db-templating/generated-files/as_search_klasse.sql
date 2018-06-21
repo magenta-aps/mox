@@ -1071,11 +1071,11 @@ END IF;
 IF NOT klasse_candidates_is_initialized THEN
 	--No filters applied!
 	klasse_candidates:=array(
-		SELECT DISTINCT id FROM klasse a LIMIT maxResults
+		SELECT DISTINCT id FROM klasse a
 	);
 ELSE
 	klasse_candidates:=array(
-		SELECT DISTINCT id FROM unnest(klasse_candidates) as a(id) LIMIT maxResults
+		SELECT DISTINCT id FROM unnest(klasse_candidates) as a(id)
 		);
 END IF;
 

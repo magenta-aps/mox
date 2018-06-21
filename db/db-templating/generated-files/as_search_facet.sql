@@ -1008,11 +1008,11 @@ END IF;
 IF NOT facet_candidates_is_initialized THEN
 	--No filters applied!
 	facet_candidates:=array(
-		SELECT DISTINCT id FROM facet a LIMIT maxResults
+		SELECT DISTINCT id FROM facet a
 	);
 ELSE
 	facet_candidates:=array(
-		SELECT DISTINCT id FROM unnest(facet_candidates) as a(id) LIMIT maxResults
+		SELECT DISTINCT id FROM unnest(facet_candidates) as a(id)
 		);
 END IF;
 

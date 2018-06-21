@@ -1540,11 +1540,11 @@ END IF;
 IF NOT aktivitet_candidates_is_initialized THEN
 	--No filters applied!
 	aktivitet_candidates:=array(
-		SELECT DISTINCT id FROM aktivitet a LIMIT maxResults
+		SELECT DISTINCT id FROM aktivitet a
 	);
 ELSE
 	aktivitet_candidates:=array(
-		SELECT DISTINCT id FROM unnest(aktivitet_candidates) as a(id) LIMIT maxResults
+		SELECT DISTINCT id FROM unnest(aktivitet_candidates) as a(id)
 		);
 END IF;
 

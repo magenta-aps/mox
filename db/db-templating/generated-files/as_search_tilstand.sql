@@ -1132,11 +1132,11 @@ END IF;
 IF NOT tilstand_candidates_is_initialized THEN
 	--No filters applied!
 	tilstand_candidates:=array(
-		SELECT DISTINCT id FROM tilstand a LIMIT maxResults
+		SELECT DISTINCT id FROM tilstand a
 	);
 ELSE
 	tilstand_candidates:=array(
-		SELECT DISTINCT id FROM unnest(tilstand_candidates) as a(id) LIMIT maxResults
+		SELECT DISTINCT id FROM unnest(tilstand_candidates) as a(id)
 		);
 END IF;
 

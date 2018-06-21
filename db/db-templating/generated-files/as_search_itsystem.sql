@@ -987,11 +987,11 @@ END IF;
 IF NOT itsystem_candidates_is_initialized THEN
 	--No filters applied!
 	itsystem_candidates:=array(
-		SELECT DISTINCT id FROM itsystem a LIMIT maxResults
+		SELECT DISTINCT id FROM itsystem a
 	);
 ELSE
 	itsystem_candidates:=array(
-		SELECT DISTINCT id FROM unnest(itsystem_candidates) as a(id) LIMIT maxResults
+		SELECT DISTINCT id FROM unnest(itsystem_candidates) as a(id)
 		);
 END IF;
 

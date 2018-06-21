@@ -1015,11 +1015,11 @@ END IF;
 IF NOT loghaendelse_candidates_is_initialized THEN
 	--No filters applied!
 	loghaendelse_candidates:=array(
-		SELECT DISTINCT id FROM loghaendelse a LIMIT maxResults
+		SELECT DISTINCT id FROM loghaendelse a
 	);
 ELSE
 	loghaendelse_candidates:=array(
-		SELECT DISTINCT id FROM unnest(loghaendelse_candidates) as a(id) LIMIT maxResults
+		SELECT DISTINCT id FROM unnest(loghaendelse_candidates) as a(id)
 		);
 END IF;
 

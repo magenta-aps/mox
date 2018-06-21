@@ -973,11 +973,11 @@ END IF;
 IF NOT organisationenhed_candidates_is_initialized THEN
 	--No filters applied!
 	organisationenhed_candidates:=array(
-		SELECT DISTINCT id FROM organisationenhed a LIMIT maxResults
+		SELECT DISTINCT id FROM organisationenhed a
 	);
 ELSE
 	organisationenhed_candidates:=array(
-		SELECT DISTINCT id FROM unnest(organisationenhed_candidates) as a(id) LIMIT maxResults
+		SELECT DISTINCT id FROM unnest(organisationenhed_candidates) as a(id)
 		);
 END IF;
 

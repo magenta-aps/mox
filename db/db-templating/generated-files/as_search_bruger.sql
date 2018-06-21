@@ -980,11 +980,11 @@ END IF;
 IF NOT bruger_candidates_is_initialized THEN
 	--No filters applied!
 	bruger_candidates:=array(
-		SELECT DISTINCT id FROM bruger a LIMIT maxResults
+		SELECT DISTINCT id FROM bruger a
 	);
 ELSE
 	bruger_candidates:=array(
-		SELECT DISTINCT id FROM unnest(bruger_candidates) as a(id) LIMIT maxResults
+		SELECT DISTINCT id FROM unnest(bruger_candidates) as a(id)
 		);
 END IF;
 
