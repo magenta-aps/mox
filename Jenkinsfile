@@ -72,6 +72,8 @@ pipeline {
 
       cobertura coberturaReportFile: 'oio_rest/coverage.xml',    \
         maxNumberOfBuilds: 0
+
+      cleanWs()
     }
   }
 }
