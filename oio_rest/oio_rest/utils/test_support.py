@@ -17,7 +17,6 @@ import click
 import mock
 import testing.postgresql
 import psycopg2.pool
-import pytest
 
 from .. import app
 
@@ -84,7 +83,6 @@ def _initdb():
             curs.execute(sql)
 
 
-@pytest.mark.slow
 class TestCaseMixin(object):
 
     '''Base class for LoRA test cases with database access.
