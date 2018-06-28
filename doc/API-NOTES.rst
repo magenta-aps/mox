@@ -318,7 +318,23 @@ maximalantalresultater and foersteresultat as in this example ::
 Since pagination only makes sense if the order of the results are predictable
 the search will be sorted by brugervendtnoegle if pagination is used.
 
-  
+Note: The pagination function is implemented by a number of changes in the
+atabase. In order to use this on an existing installation you will need to
+apply all as_search*sql and all _as_sorted*sql files in generated_files.
+
+Also new indexes have to be applied to all *_registrering
+tables, as shown in tbls-specific.jinja.sql:
+
+CREATE INDEX {{oio_type}}_id_idx
+   ON {{oio_type}}_registrering ({{oio_type}}_id)
+
+Finally two new options needs to be added to the final lines of
+postgres.conf:
+# Hint to the optimizer to help find the correct index in complicated searches
+enable_hashagg = False
+enable_sort = False
+
+   
 File upload
 -----------
 
