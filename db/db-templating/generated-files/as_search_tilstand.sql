@@ -1132,11 +1132,11 @@ END IF;
 IF NOT tilstand_candidates_is_initialized THEN
 	--No filters applied!
 	tilstand_candidates:=array(
-		SELECT DISTINCT id FROM tilstand a LIMIT maxResults
+		SELECT DISTINCT id FROM tilstand a
 	);
 ELSE
 	tilstand_candidates:=array(
-		SELECT DISTINCT id FROM unnest(tilstand_candidates) as a(id) LIMIT maxResults
+		SELECT DISTINCT id FROM unnest(tilstand_candidates) as a(id)
 		);
 END IF;
 
@@ -1148,8 +1148,9 @@ END IF;
 /*** Filter out the objects that does not meets the stipulated access criteria  ***/
 auth_filtered_uuids:=_as_filter_unauth_tilstand(tilstand_candidates,auth_criteria_arr); 
 /*********************/
-
-
+IF firstResult > 0 or maxResults < 2147483647 THEN
+   auth_filtered_uuids = _as_sorted_tilstand(auth_filtered_uuids, firstResult, maxResults);
+END IF;
 return auth_filtered_uuids;
 
 

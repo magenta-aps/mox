@@ -83,6 +83,8 @@ CREATE INDEX klasse_registrering_pat_note
   USING  gin
   (((registrering).note) gin_trgm_ops);
 
+CREATE INDEX klasse_id_idx
+   ON klasse_registrering (klasse_id);
 
 
 /****************************************************************************************************/
