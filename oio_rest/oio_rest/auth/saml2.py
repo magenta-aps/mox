@@ -34,15 +34,22 @@ class Saml2_Assertion(OneLogin_Saml2_Response):
         self.idp_entity_id = idp_entity_id
         self.idp_cert = idp_cert
 
-        # OneLogin's methods expect the data wrapped in a Response element,
-        # so we fake it here.
-        self.response = """
-        <samlp:Response xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
-                        xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion">
-            %s
-        </samlp:Response>""" % assertion_xml
+        document = fromstring(assertion_xml)
+        if 'Response' not in document.tag:
+            # OneLogin's methods expect the data wrapped in a Response element,
+            # so we fake it here.
+            response = """
+            <samlp:Response xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
+                            xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion">
+                %s
+            </samlp:Response>""" % assertion_xml
 
-        self.original_document = fromstring(self.response)
+            document = fromstring(response)
+            self.response = response.encode('ascii')
+        else:
+            self.response = assertion_xml
+
+        self.original_document = document
 
         super(Saml2_Assertion, self).__init__(
             OneLogin_Saml2_Settings(
@@ -60,7 +67,7 @@ class Saml2_Assertion(OneLogin_Saml2_Response):
                 },
                 sp_validation_only=True,
             ),
-            base64.b64encode(self.response.encode('ascii')),
+            base64.b64encode(self.response),
         )
 
     def __query(self, query):
