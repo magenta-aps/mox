@@ -6,6 +6,10 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
+import datetime
+import time
+import unittest
+import uuid
 
 from tests import util
 
@@ -320,4 +324,255 @@ class Tests(util.TestCase):
             },
             status_code=202,
             method='DELETE',
+        )
+
+    def test_searching(self):
+        objid = self.load_fixture('/aktivitet/aktivitet',
+                                  'aktivitet_opret.json')
+
+        self.assertRequestResponse(
+            '/aktivitet/aktivitet/{}'.format(objid),
+            {
+                'uuid': objid,
+            },
+            json=util.get_fixture('aktivitet_opdater.json'),
+            method='PATCH',
+        )
+
+        expected_found = {
+            "results": [
+                [
+                    objid,
+                ],
+            ],
+        }
+
+        expected_nothing = {
+            "results": [
+                [],
+            ],
+        }
+
+        self.assertRequestResponse(
+            'aktivitet/aktivitet?bvn=JOGGING',
+            expected_found,
+        )
+
+        self.assertRequestResponse(
+            'aktivitet/aktivitet?bvn=JOGGING&status=Aktiv',
+            expected_found,
+        )
+
+        self.assertRequestFails(
+            'aktivitet/aktivitet?bvn=JOGGING&gyldighed=Aktiv',
+            400,
+        )
+
+        self.assertRequestResponse(
+            'aktivitet/aktivitet?bvn=JOGGING&status=Aktiv&foersteresultat=0',
+            expected_found,
+        )
+
+        self.assertRequestResponse(
+            'aktivitet/aktivitet?bvn=JOGGING&status=Inaktiv',
+            expected_nothing,
+        )
+
+        self.assertRequestResponse(
+            'aktivitet/aktivitet?bvn=JOGGING&status=Inaktiv',
+            expected_nothing,
+        )
+
+        self.assertRequestResponse(
+            'aktivitet/aktivitet?bvn=JOGGING&maximalantalresultater=0',
+            expected_nothing,
+        )
+
+    @unittest.expectedFailure
+    def test_searching_with_limit(self):
+        objid = self.load_fixture('/aktivitet/aktivitet',
+                                  'aktivitet_opret.json')
+
+        self.assertRequestResponse(
+            '/aktivitet/aktivitet/{}'.format(objid),
+            {
+                'uuid': objid,
+            },
+            json=util.get_fixture('aktivitet_opdater.json'),
+            method='PATCH',
+        )
+
+        self.assertRequestResponse(
+            'aktivitet/aktivitet?bvn=JOGGING&maximalantalresultater=2000',
+            {
+                "results": [
+                    [
+                        objid,
+                    ],
+                ],
+            },
+        )
+
+        self.assertRequestResponse(
+            'aktivitet/aktivitet?bvn=JOGGING&status=Aktiv&foersteresultat=1',
+            {
+                "results": [
+                    [],
+                ],
+            },
+        )
+
+    @unittest.expectedFailure
+    def test_searching_with_limit_after_editing_bvn(self):
+        objid = self.load_fixture('/aktivitet/aktivitet',
+                                  'aktivitet_opret.json')
+
+        self.assertRequestResponse(
+            '/aktivitet/aktivitet/{}'.format(objid),
+            {
+                'uuid': objid,
+            },
+            json=util.get_fixture('aktivitet_opdater.json'),
+            method='PATCH',
+        )
+
+        self.assertRequestResponse(
+            '/aktivitet/aktivitet/{}'.format(objid),
+            {
+                'uuid': objid,
+            },
+            json={
+	        "note": "Ret BVN",
+		"attributter": {
+			"aktivitetegenskaber": [
+			    {
+			        "brugervendtnoegle": "JOGGINGLØB",
+			        "virkning": {
+				    "from": "2017-01-01 00:00:00",
+				    "to": "infinity",
+			        }
+                            },
+                        ],
+                },
+	    },
+            method='PATCH',
+        )
+
+        self.assertRequestResponse(
+            'aktivitet/aktivitet?bvn=JOG%&maximalantalresultater=2000',
+            {
+                "results": [
+                    [
+                        objid,
+                    ],
+                ],
+            },
+        )
+
+        self.assertRequestResponse(
+            'aktivitet/aktivitet?bvn=JOG%&status=Aktiv&foersteresultat=1',
+            {
+                "results": [
+                    [],
+                ],
+            },
+        )
+
+    @unittest.expectedFailure
+    def test_searching_temporal_order(self):
+        start_time = datetime.datetime.now()
+
+        objids = [str(uuid.UUID(int=i)) for i in range(3)]
+
+        no_time = datetime.datetime.now()
+
+        time.sleep(0.01)
+
+        for objid in objids:
+            self.load_fixture('/aktivitet/aktivitet',
+                              'aktivitet_opret.json',
+                              objid)
+
+        # the two are the same so we expect them to be ordered by UUID
+        self.assertRequestResponse(
+            '/aktivitet/aktivitet/?bvn=%&maximalantalresultater=10',
+            {
+                'results': [objids],
+            },
+        )
+
+        time.sleep(0.01)
+
+        exists_time = datetime.datetime.now()
+
+        time.sleep(0.01)
+
+        self.assertRequestResponse(
+            '/aktivitet/aktivitet/{}'.format(objids[1]),
+            {
+                'uuid': objids[1],
+            },
+            json={
+	        "note": "Ret BVN",
+		"attributter": {
+			"aktivitetegenskaber": [
+			    {
+			        "brugervendtnoegle": "TESTFÆTTER",
+			        "virkning": {
+				    "from": "2017-01-01 00:00:00",
+				    "to": "infinity",
+			        }
+                            },
+			    {
+			        "brugervendtnoegle": "ABEKAT",
+			        "virkning": {
+				    "from": "2015-01-01 00:00:00",
+				    "to": "2017-01-01 00:00:00",
+			        }
+                            },
+                        ],
+                },
+	    },
+            method='PATCH',
+        )
+
+        time.sleep(0.01)
+
+        self.assertRequestResponse(
+            '/aktivitet/aktivitet/?bvn=%&maximalantalresultater=10',
+            {
+                'results': [[
+                    objids[0],
+                    objids[2],
+                    objids[1],
+                ]],
+            },
+        )
+
+        self.assertRequestResponse(
+            '/aktivitet/aktivitet/?bvn=%&maximalantalresultater=10'
+            '&virkningstid=2016-01-01',
+            {
+                'results': [[
+                    objids[1],
+                    objids[0],
+                    objids[2],
+                ]],
+            },
+        )
+
+        self.assertRequestResponse(
+            '/aktivitet/aktivitet/?bvn=%&maximalantalresultater=10'
+            '&registreringstid=' + exists_time.isoformat(),
+            {
+                'results': [objids],
+            },
+        )
+
+        self.assertRequestResponse(
+            '/aktivitet/aktivitet/?bvn=%&maximalantalresultater=10'
+            '&registreringstid=' + no_time.isoformat(),
+            {
+                'results': [[]],
+            },
         )
