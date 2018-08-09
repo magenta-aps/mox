@@ -973,11 +973,11 @@ END IF;
 IF NOT organisationfunktion_candidates_is_initialized THEN
 	--No filters applied!
 	organisationfunktion_candidates:=array(
-		SELECT DISTINCT id FROM organisationfunktion a LIMIT maxResults
+		SELECT DISTINCT id FROM organisationfunktion a
 	);
 ELSE
 	organisationfunktion_candidates:=array(
-		SELECT DISTINCT id FROM unnest(organisationfunktion_candidates) as a(id) LIMIT maxResults
+		SELECT DISTINCT id FROM unnest(organisationfunktion_candidates) as a(id)
 		);
 END IF;
 
@@ -989,8 +989,9 @@ END IF;
 /*** Filter out the objects that does not meets the stipulated access criteria  ***/
 auth_filtered_uuids:=_as_filter_unauth_organisationfunktion(organisationfunktion_candidates,auth_criteria_arr); 
 /*********************/
-
-
+IF firstResult > 0 or maxResults < 2147483647 THEN
+   auth_filtered_uuids = _as_sorted_organisationfunktion(auth_filtered_uuids, firstResult, maxResults);
+END IF;
 return auth_filtered_uuids;
 
 

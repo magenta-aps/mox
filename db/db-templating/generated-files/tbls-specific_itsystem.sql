@@ -83,6 +83,8 @@ CREATE INDEX itsystem_registrering_pat_note
   USING  gin
   (((registrering).note) gin_trgm_ops);
 
+CREATE INDEX itsystem_id_idx
+   ON itsystem_registrering (itsystem_id);
 
 
 /****************************************************************************************************/

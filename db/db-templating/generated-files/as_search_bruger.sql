@@ -980,11 +980,11 @@ END IF;
 IF NOT bruger_candidates_is_initialized THEN
 	--No filters applied!
 	bruger_candidates:=array(
-		SELECT DISTINCT id FROM bruger a LIMIT maxResults
+		SELECT DISTINCT id FROM bruger a
 	);
 ELSE
 	bruger_candidates:=array(
-		SELECT DISTINCT id FROM unnest(bruger_candidates) as a(id) LIMIT maxResults
+		SELECT DISTINCT id FROM unnest(bruger_candidates) as a(id)
 		);
 END IF;
 
@@ -996,8 +996,9 @@ END IF;
 /*** Filter out the objects that does not meets the stipulated access criteria  ***/
 auth_filtered_uuids:=_as_filter_unauth_bruger(bruger_candidates,auth_criteria_arr); 
 /*********************/
-
-
+IF firstResult > 0 or maxResults < 2147483647 THEN
+   auth_filtered_uuids = _as_sorted_bruger(auth_filtered_uuids, firstResult, maxResults);
+END IF;
 return auth_filtered_uuids;
 
 

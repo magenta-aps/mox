@@ -491,11 +491,11 @@ END IF;
 IF NOT {{oio_type}}_candidates_is_initialized THEN
 	--No filters applied!
 	{{oio_type}}_candidates:=array(
-		SELECT DISTINCT id FROM {{oio_type}} a LIMIT maxResults
+		SELECT DISTINCT id FROM {{oio_type}} a
 	);
 ELSE
 	{{oio_type}}_candidates:=array(
-		SELECT DISTINCT id FROM unnest({{oio_type}}_candidates) as a(id) LIMIT maxResults
+		SELECT DISTINCT id FROM unnest({{oio_type}}_candidates) as a(id)
 		);
 END IF;
 
@@ -507,8 +507,9 @@ END IF;
 /*** Filter out the objects that does not meets the stipulated access criteria  ***/
 auth_filtered_uuids:=_as_filter_unauth_{{oio_type}}({{oio_type}}_candidates,auth_criteria_arr); 
 /*********************/
-
-
+IF firstResult > 0 or maxResults < 2147483647 THEN
+   auth_filtered_uuids = _as_sorted_{{oio_type}}(auth_filtered_uuids, firstResult, maxResults);
+END IF;
 return auth_filtered_uuids;
 
 

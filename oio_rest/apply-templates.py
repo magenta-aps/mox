@@ -30,6 +30,7 @@ TEMPLATES = (
     'as_search',
     '_remove_nulls_in_array',
     'json-cast-functions',
+    '_as_sorted',
     '_as_filter_unauth'
 )
 

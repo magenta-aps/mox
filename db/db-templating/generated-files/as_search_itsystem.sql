@@ -987,11 +987,11 @@ END IF;
 IF NOT itsystem_candidates_is_initialized THEN
 	--No filters applied!
 	itsystem_candidates:=array(
-		SELECT DISTINCT id FROM itsystem a LIMIT maxResults
+		SELECT DISTINCT id FROM itsystem a
 	);
 ELSE
 	itsystem_candidates:=array(
-		SELECT DISTINCT id FROM unnest(itsystem_candidates) as a(id) LIMIT maxResults
+		SELECT DISTINCT id FROM unnest(itsystem_candidates) as a(id)
 		);
 END IF;
 
@@ -1003,8 +1003,9 @@ END IF;
 /*** Filter out the objects that does not meets the stipulated access criteria  ***/
 auth_filtered_uuids:=_as_filter_unauth_itsystem(itsystem_candidates,auth_criteria_arr); 
 /*********************/
-
-
+IF firstResult > 0 or maxResults < 2147483647 THEN
+   auth_filtered_uuids = _as_sorted_itsystem(auth_filtered_uuids, firstResult, maxResults);
+END IF;
 return auth_filtered_uuids;
 
 

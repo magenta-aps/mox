@@ -980,11 +980,11 @@ END IF;
 IF NOT interessefaellesskab_candidates_is_initialized THEN
 	--No filters applied!
 	interessefaellesskab_candidates:=array(
-		SELECT DISTINCT id FROM interessefaellesskab a LIMIT maxResults
+		SELECT DISTINCT id FROM interessefaellesskab a
 	);
 ELSE
 	interessefaellesskab_candidates:=array(
-		SELECT DISTINCT id FROM unnest(interessefaellesskab_candidates) as a(id) LIMIT maxResults
+		SELECT DISTINCT id FROM unnest(interessefaellesskab_candidates) as a(id)
 		);
 END IF;
 
@@ -996,8 +996,9 @@ END IF;
 /*** Filter out the objects that does not meets the stipulated access criteria  ***/
 auth_filtered_uuids:=_as_filter_unauth_interessefaellesskab(interessefaellesskab_candidates,auth_criteria_arr); 
 /*********************/
-
-
+IF firstResult > 0 or maxResults < 2147483647 THEN
+   auth_filtered_uuids = _as_sorted_interessefaellesskab(auth_filtered_uuids, firstResult, maxResults);
+END IF;
 return auth_filtered_uuids;
 
 
