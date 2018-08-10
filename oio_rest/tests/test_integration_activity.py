@@ -388,7 +388,6 @@ class Tests(util.TestCase):
             expected_nothing,
         )
 
-    @unittest.expectedFailure
     def test_searching_with_limit(self):
         objid = self.load_fixture('/aktivitet/aktivitet',
                                   'aktivitet_opret.json')
@@ -422,7 +421,6 @@ class Tests(util.TestCase):
             },
         )
 
-    @unittest.expectedFailure
     def test_searching_with_limit_after_editing_bvn(self):
         objid = self.load_fixture('/aktivitet/aktivitet',
                                   'aktivitet_opret.json')
@@ -478,7 +476,6 @@ class Tests(util.TestCase):
             },
         )
 
-    @unittest.expectedFailure
     def test_searching_temporal_order(self):
         start_time = datetime.datetime.now()
 

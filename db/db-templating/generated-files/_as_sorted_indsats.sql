@@ -12,6 +12,8 @@ NOTICE: This file is auto-generated using the script: apply-template.py indsats 
 
 CREATE OR REPLACE FUNCTION _as_sorted_indsats(
         indsats_uuids uuid[],
+        virkningSoeg TSTZRANGE,
+        registreringObj IndsatsRegistreringType,
 	    firstResult int,
 	    maxResults int
         )
@@ -19,15 +21,25 @@ CREATE OR REPLACE FUNCTION _as_sorted_indsats(
   $$
   DECLARE
           indsats_sorted_uuid uuid[];
+          registreringSoeg TSTZRANGE;
   BEGIN
 
+IF registreringObj IS NULL OR (registreringObj.registrering).timePeriod IS NULL THEN
+   registreringSoeg = TSTZRANGE(current_timestamp, current_timestamp, '[]');
+ELSE
+    registreringSoeg = (registreringObj.registrering).timePeriod;
+END IF;
+
 indsats_sorted_uuid:=array(
-SELECT b.indsats_id
-    FROM  indsats_registrering b
-    JOIN (SELECT DISTINCT ON (indsats_registrering_id) indsats_registrering_id, id, brugervendtnoegle FROM indsats_attr_egenskaber) a ON a.indsats_registrering_id=b.id    
-    WHERE b.indsats_id = ANY (indsats_uuids)
-    ORDER BY a.brugervendtnoegle
-         LIMIT maxResults OFFSET firstResult
+       SELECT b.indsats_id
+       FROM indsats_registrering b
+       JOIN indsats_attr_egenskaber a ON a.indsats_registrering_id=b.id
+       WHERE b.indsats_id = ANY (indsats_uuids)
+             AND (b.registrering).timeperiod && registreringSoeg
+             AND (a.virkning).timePeriod && virkningSoeg
+       GROUP BY b.indsats_id
+       ORDER BY array_agg(DISTINCT a.brugervendtnoegle), b.indsats_id
+       LIMIT maxResults OFFSET firstResult
 );
 
 RETURN indsats_sorted_uuid;

@@ -12,6 +12,8 @@ NOTICE: This file is auto-generated using the script: apply-template.py loghaend
 
 CREATE OR REPLACE FUNCTION _as_sorted_loghaendelse(
         loghaendelse_uuids uuid[],
+        virkningSoeg TSTZRANGE,
+        registreringObj LoghaendelseRegistreringType,
 	    firstResult int,
 	    maxResults int
         )
@@ -19,15 +21,25 @@ CREATE OR REPLACE FUNCTION _as_sorted_loghaendelse(
   $$
   DECLARE
           loghaendelse_sorted_uuid uuid[];
+          registreringSoeg TSTZRANGE;
   BEGIN
 
+IF registreringObj IS NULL OR (registreringObj.registrering).timePeriod IS NULL THEN
+   registreringSoeg = TSTZRANGE(current_timestamp, current_timestamp, '[]');
+ELSE
+    registreringSoeg = (registreringObj.registrering).timePeriod;
+END IF;
+
 loghaendelse_sorted_uuid:=array(
-SELECT b.loghaendelse_id
-    FROM  loghaendelse_registrering b
-    JOIN (SELECT DISTINCT ON (loghaendelse_registrering_id) loghaendelse_registrering_id, id, brugervendtnoegle FROM loghaendelse_attr_egenskaber) a ON a.loghaendelse_registrering_id=b.id    
-    WHERE b.loghaendelse_id = ANY (loghaendelse_uuids)
-    ORDER BY a.brugervendtnoegle
-         LIMIT maxResults OFFSET firstResult
+       SELECT b.loghaendelse_id
+       FROM loghaendelse_registrering b
+       JOIN loghaendelse_attr_egenskaber a ON a.loghaendelse_registrering_id=b.id
+       WHERE b.loghaendelse_id = ANY (loghaendelse_uuids)
+             AND (b.registrering).timeperiod && registreringSoeg
+             AND (a.virkning).timePeriod && virkningSoeg
+       GROUP BY b.loghaendelse_id
+       ORDER BY array_agg(DISTINCT a.brugervendtnoegle), b.loghaendelse_id
+       LIMIT maxResults OFFSET firstResult
 );
 
 RETURN loghaendelse_sorted_uuid;

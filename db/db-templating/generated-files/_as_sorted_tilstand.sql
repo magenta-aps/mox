@@ -12,6 +12,8 @@ NOTICE: This file is auto-generated using the script: apply-template.py tilstand
 
 CREATE OR REPLACE FUNCTION _as_sorted_tilstand(
         tilstand_uuids uuid[],
+        virkningSoeg TSTZRANGE,
+        registreringObj TilstandRegistreringType,
 	    firstResult int,
 	    maxResults int
         )
@@ -19,15 +21,25 @@ CREATE OR REPLACE FUNCTION _as_sorted_tilstand(
   $$
   DECLARE
           tilstand_sorted_uuid uuid[];
+          registreringSoeg TSTZRANGE;
   BEGIN
 
+IF registreringObj IS NULL OR (registreringObj.registrering).timePeriod IS NULL THEN
+   registreringSoeg = TSTZRANGE(current_timestamp, current_timestamp, '[]');
+ELSE
+    registreringSoeg = (registreringObj.registrering).timePeriod;
+END IF;
+
 tilstand_sorted_uuid:=array(
-SELECT b.tilstand_id
-    FROM  tilstand_registrering b
-    JOIN (SELECT DISTINCT ON (tilstand_registrering_id) tilstand_registrering_id, id, brugervendtnoegle FROM tilstand_attr_egenskaber) a ON a.tilstand_registrering_id=b.id    
-    WHERE b.tilstand_id = ANY (tilstand_uuids)
-    ORDER BY a.brugervendtnoegle
-         LIMIT maxResults OFFSET firstResult
+       SELECT b.tilstand_id
+       FROM tilstand_registrering b
+       JOIN tilstand_attr_egenskaber a ON a.tilstand_registrering_id=b.id
+       WHERE b.tilstand_id = ANY (tilstand_uuids)
+             AND (b.registrering).timeperiod && registreringSoeg
+             AND (a.virkning).timePeriod && virkningSoeg
+       GROUP BY b.tilstand_id
+       ORDER BY array_agg(DISTINCT a.brugervendtnoegle), b.tilstand_id
+       LIMIT maxResults OFFSET firstResult
 );
 
 RETURN tilstand_sorted_uuid;

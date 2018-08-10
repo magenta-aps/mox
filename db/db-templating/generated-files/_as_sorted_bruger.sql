@@ -12,6 +12,8 @@ NOTICE: This file is auto-generated using the script: apply-template.py bruger _
 
 CREATE OR REPLACE FUNCTION _as_sorted_bruger(
         bruger_uuids uuid[],
+        virkningSoeg TSTZRANGE,
+        registreringObj BrugerRegistreringType,
 	    firstResult int,
 	    maxResults int
         )
@@ -19,15 +21,25 @@ CREATE OR REPLACE FUNCTION _as_sorted_bruger(
   $$
   DECLARE
           bruger_sorted_uuid uuid[];
+          registreringSoeg TSTZRANGE;
   BEGIN
 
+IF registreringObj IS NULL OR (registreringObj.registrering).timePeriod IS NULL THEN
+   registreringSoeg = TSTZRANGE(current_timestamp, current_timestamp, '[]');
+ELSE
+    registreringSoeg = (registreringObj.registrering).timePeriod;
+END IF;
+
 bruger_sorted_uuid:=array(
-SELECT b.bruger_id
-    FROM  bruger_registrering b
-    JOIN (SELECT DISTINCT ON (bruger_registrering_id) bruger_registrering_id, id, brugervendtnoegle FROM bruger_attr_egenskaber) a ON a.bruger_registrering_id=b.id    
-    WHERE b.bruger_id = ANY (bruger_uuids)
-    ORDER BY a.brugervendtnoegle
-         LIMIT maxResults OFFSET firstResult
+       SELECT b.bruger_id
+       FROM bruger_registrering b
+       JOIN bruger_attr_egenskaber a ON a.bruger_registrering_id=b.id
+       WHERE b.bruger_id = ANY (bruger_uuids)
+             AND (b.registrering).timeperiod && registreringSoeg
+             AND (a.virkning).timePeriod && virkningSoeg
+       GROUP BY b.bruger_id
+       ORDER BY array_agg(DISTINCT a.brugervendtnoegle), b.bruger_id
+       LIMIT maxResults OFFSET firstResult
 );
 
 RETURN bruger_sorted_uuid;

@@ -12,6 +12,8 @@ NOTICE: This file is auto-generated using the script: apply-template.py klassifi
 
 CREATE OR REPLACE FUNCTION _as_sorted_klassifikation(
         klassifikation_uuids uuid[],
+        virkningSoeg TSTZRANGE,
+        registreringObj KlassifikationRegistreringType,
 	    firstResult int,
 	    maxResults int
         )
@@ -19,15 +21,25 @@ CREATE OR REPLACE FUNCTION _as_sorted_klassifikation(
   $$
   DECLARE
           klassifikation_sorted_uuid uuid[];
+          registreringSoeg TSTZRANGE;
   BEGIN
 
+IF registreringObj IS NULL OR (registreringObj.registrering).timePeriod IS NULL THEN
+   registreringSoeg = TSTZRANGE(current_timestamp, current_timestamp, '[]');
+ELSE
+    registreringSoeg = (registreringObj.registrering).timePeriod;
+END IF;
+
 klassifikation_sorted_uuid:=array(
-SELECT b.klassifikation_id
-    FROM  klassifikation_registrering b
-    JOIN (SELECT DISTINCT ON (klassifikation_registrering_id) klassifikation_registrering_id, id, brugervendtnoegle FROM klassifikation_attr_egenskaber) a ON a.klassifikation_registrering_id=b.id    
-    WHERE b.klassifikation_id = ANY (klassifikation_uuids)
-    ORDER BY a.brugervendtnoegle
-         LIMIT maxResults OFFSET firstResult
+       SELECT b.klassifikation_id
+       FROM klassifikation_registrering b
+       JOIN klassifikation_attr_egenskaber a ON a.klassifikation_registrering_id=b.id
+       WHERE b.klassifikation_id = ANY (klassifikation_uuids)
+             AND (b.registrering).timeperiod && registreringSoeg
+             AND (a.virkning).timePeriod && virkningSoeg
+       GROUP BY b.klassifikation_id
+       ORDER BY array_agg(DISTINCT a.brugervendtnoegle), b.klassifikation_id
+       LIMIT maxResults OFFSET firstResult
 );
 
 RETURN klassifikation_sorted_uuid;

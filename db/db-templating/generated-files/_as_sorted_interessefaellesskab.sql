@@ -12,6 +12,8 @@ NOTICE: This file is auto-generated using the script: apply-template.py interess
 
 CREATE OR REPLACE FUNCTION _as_sorted_interessefaellesskab(
         interessefaellesskab_uuids uuid[],
+        virkningSoeg TSTZRANGE,
+        registreringObj InteressefaellesskabRegistreringType,
 	    firstResult int,
 	    maxResults int
         )
@@ -19,15 +21,25 @@ CREATE OR REPLACE FUNCTION _as_sorted_interessefaellesskab(
   $$
   DECLARE
           interessefaellesskab_sorted_uuid uuid[];
+          registreringSoeg TSTZRANGE;
   BEGIN
 
+IF registreringObj IS NULL OR (registreringObj.registrering).timePeriod IS NULL THEN
+   registreringSoeg = TSTZRANGE(current_timestamp, current_timestamp, '[]');
+ELSE
+    registreringSoeg = (registreringObj.registrering).timePeriod;
+END IF;
+
 interessefaellesskab_sorted_uuid:=array(
-SELECT b.interessefaellesskab_id
-    FROM  interessefaellesskab_registrering b
-    JOIN (SELECT DISTINCT ON (interessefaellesskab_registrering_id) interessefaellesskab_registrering_id, id, brugervendtnoegle FROM interessefaellesskab_attr_egenskaber) a ON a.interessefaellesskab_registrering_id=b.id    
-    WHERE b.interessefaellesskab_id = ANY (interessefaellesskab_uuids)
-    ORDER BY a.brugervendtnoegle
-         LIMIT maxResults OFFSET firstResult
+       SELECT b.interessefaellesskab_id
+       FROM interessefaellesskab_registrering b
+       JOIN interessefaellesskab_attr_egenskaber a ON a.interessefaellesskab_registrering_id=b.id
+       WHERE b.interessefaellesskab_id = ANY (interessefaellesskab_uuids)
+             AND (b.registrering).timeperiod && registreringSoeg
+             AND (a.virkning).timePeriod && virkningSoeg
+       GROUP BY b.interessefaellesskab_id
+       ORDER BY array_agg(DISTINCT a.brugervendtnoegle), b.interessefaellesskab_id
+       LIMIT maxResults OFFSET firstResult
 );
 
 RETURN interessefaellesskab_sorted_uuid;

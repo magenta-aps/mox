@@ -12,6 +12,8 @@ NOTICE: This file is auto-generated using the script: apply-template.py organisa
 
 CREATE OR REPLACE FUNCTION _as_sorted_organisation(
         organisation_uuids uuid[],
+        virkningSoeg TSTZRANGE,
+        registreringObj OrganisationRegistreringType,
 	    firstResult int,
 	    maxResults int
         )
@@ -19,15 +21,25 @@ CREATE OR REPLACE FUNCTION _as_sorted_organisation(
   $$
   DECLARE
           organisation_sorted_uuid uuid[];
+          registreringSoeg TSTZRANGE;
   BEGIN
 
+IF registreringObj IS NULL OR (registreringObj.registrering).timePeriod IS NULL THEN
+   registreringSoeg = TSTZRANGE(current_timestamp, current_timestamp, '[]');
+ELSE
+    registreringSoeg = (registreringObj.registrering).timePeriod;
+END IF;
+
 organisation_sorted_uuid:=array(
-SELECT b.organisation_id
-    FROM  organisation_registrering b
-    JOIN (SELECT DISTINCT ON (organisation_registrering_id) organisation_registrering_id, id, brugervendtnoegle FROM organisation_attr_egenskaber) a ON a.organisation_registrering_id=b.id    
-    WHERE b.organisation_id = ANY (organisation_uuids)
-    ORDER BY a.brugervendtnoegle
-         LIMIT maxResults OFFSET firstResult
+       SELECT b.organisation_id
+       FROM organisation_registrering b
+       JOIN organisation_attr_egenskaber a ON a.organisation_registrering_id=b.id
+       WHERE b.organisation_id = ANY (organisation_uuids)
+             AND (b.registrering).timeperiod && registreringSoeg
+             AND (a.virkning).timePeriod && virkningSoeg
+       GROUP BY b.organisation_id
+       ORDER BY array_agg(DISTINCT a.brugervendtnoegle), b.organisation_id
+       LIMIT maxResults OFFSET firstResult
 );
 
 RETURN organisation_sorted_uuid;

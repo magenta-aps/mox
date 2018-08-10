@@ -12,6 +12,8 @@ NOTICE: This file is auto-generated using the script: apply-template.py sag _as_
 
 CREATE OR REPLACE FUNCTION _as_sorted_sag(
         sag_uuids uuid[],
+        virkningSoeg TSTZRANGE,
+        registreringObj SagRegistreringType,
 	    firstResult int,
 	    maxResults int
         )
@@ -19,15 +21,25 @@ CREATE OR REPLACE FUNCTION _as_sorted_sag(
   $$
   DECLARE
           sag_sorted_uuid uuid[];
+          registreringSoeg TSTZRANGE;
   BEGIN
 
+IF registreringObj IS NULL OR (registreringObj.registrering).timePeriod IS NULL THEN
+   registreringSoeg = TSTZRANGE(current_timestamp, current_timestamp, '[]');
+ELSE
+    registreringSoeg = (registreringObj.registrering).timePeriod;
+END IF;
+
 sag_sorted_uuid:=array(
-SELECT b.sag_id
-    FROM  sag_registrering b
-    JOIN (SELECT DISTINCT ON (sag_registrering_id) sag_registrering_id, id, brugervendtnoegle FROM sag_attr_egenskaber) a ON a.sag_registrering_id=b.id    
-    WHERE b.sag_id = ANY (sag_uuids)
-    ORDER BY a.brugervendtnoegle
-         LIMIT maxResults OFFSET firstResult
+       SELECT b.sag_id
+       FROM sag_registrering b
+       JOIN sag_attr_egenskaber a ON a.sag_registrering_id=b.id
+       WHERE b.sag_id = ANY (sag_uuids)
+             AND (b.registrering).timeperiod && registreringSoeg
+             AND (a.virkning).timePeriod && virkningSoeg
+       GROUP BY b.sag_id
+       ORDER BY array_agg(DISTINCT a.brugervendtnoegle), b.sag_id
+       LIMIT maxResults OFFSET firstResult
 );
 
 RETURN sag_sorted_uuid;
