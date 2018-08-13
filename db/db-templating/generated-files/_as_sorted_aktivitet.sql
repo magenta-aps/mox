@@ -12,6 +12,8 @@ NOTICE: This file is auto-generated using the script: apply-template.py aktivite
 
 CREATE OR REPLACE FUNCTION _as_sorted_aktivitet(
         aktivitet_uuids uuid[],
+        virkningSoeg TSTZRANGE,
+        registreringObj AktivitetRegistreringType,
 	    firstResult int,
 	    maxResults int
         )
@@ -19,15 +21,25 @@ CREATE OR REPLACE FUNCTION _as_sorted_aktivitet(
   $$
   DECLARE
           aktivitet_sorted_uuid uuid[];
+          registreringSoeg TSTZRANGE;
   BEGIN
 
+IF registreringObj IS NULL OR (registreringObj.registrering).timePeriod IS NULL THEN
+   registreringSoeg = TSTZRANGE(current_timestamp, current_timestamp, '[]');
+ELSE
+    registreringSoeg = (registreringObj.registrering).timePeriod;
+END IF;
+
 aktivitet_sorted_uuid:=array(
-SELECT b.aktivitet_id
-    FROM  aktivitet_registrering b
-    JOIN (SELECT DISTINCT ON (aktivitet_registrering_id) aktivitet_registrering_id, id, brugervendtnoegle FROM aktivitet_attr_egenskaber) a ON a.aktivitet_registrering_id=b.id    
-    WHERE b.aktivitet_id = ANY (aktivitet_uuids)
-    ORDER BY a.brugervendtnoegle
-         LIMIT maxResults OFFSET firstResult
+       SELECT b.aktivitet_id
+       FROM aktivitet_registrering b
+       JOIN aktivitet_attr_egenskaber a ON a.aktivitet_registrering_id=b.id
+       WHERE b.aktivitet_id = ANY (aktivitet_uuids)
+             AND (b.registrering).timeperiod && registreringSoeg
+             AND (a.virkning).timePeriod && virkningSoeg
+       GROUP BY b.aktivitet_id
+       ORDER BY array_agg(DISTINCT a.brugervendtnoegle), b.aktivitet_id
+       LIMIT maxResults OFFSET firstResult
 );
 
 RETURN aktivitet_sorted_uuid;

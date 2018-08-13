@@ -12,6 +12,8 @@ NOTICE: This file is auto-generated using the script: apply-template.py dokument
 
 CREATE OR REPLACE FUNCTION _as_sorted_dokument(
         dokument_uuids uuid[],
+        virkningSoeg TSTZRANGE,
+        registreringObj DokumentRegistreringType,
 	    firstResult int,
 	    maxResults int
         )
@@ -19,15 +21,25 @@ CREATE OR REPLACE FUNCTION _as_sorted_dokument(
   $$
   DECLARE
           dokument_sorted_uuid uuid[];
+          registreringSoeg TSTZRANGE;
   BEGIN
 
+IF registreringObj IS NULL OR (registreringObj.registrering).timePeriod IS NULL THEN
+   registreringSoeg = TSTZRANGE(current_timestamp, current_timestamp, '[]');
+ELSE
+    registreringSoeg = (registreringObj.registrering).timePeriod;
+END IF;
+
 dokument_sorted_uuid:=array(
-SELECT b.dokument_id
-    FROM  dokument_registrering b
-    JOIN (SELECT DISTINCT ON (dokument_registrering_id) dokument_registrering_id, id, brugervendtnoegle FROM dokument_attr_egenskaber) a ON a.dokument_registrering_id=b.id    
-    WHERE b.dokument_id = ANY (dokument_uuids)
-    ORDER BY a.brugervendtnoegle
-         LIMIT maxResults OFFSET firstResult
+       SELECT b.dokument_id
+       FROM dokument_registrering b
+       JOIN dokument_attr_egenskaber a ON a.dokument_registrering_id=b.id
+       WHERE b.dokument_id = ANY (dokument_uuids)
+             AND (b.registrering).timeperiod && registreringSoeg
+             AND (a.virkning).timePeriod && virkningSoeg
+       GROUP BY b.dokument_id
+       ORDER BY array_agg(DISTINCT a.brugervendtnoegle), b.dokument_id
+       LIMIT maxResults OFFSET firstResult
 );
 
 RETURN dokument_sorted_uuid;

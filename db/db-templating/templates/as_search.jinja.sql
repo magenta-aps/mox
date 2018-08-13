@@ -508,7 +508,7 @@ END IF;
 auth_filtered_uuids:=_as_filter_unauth_{{oio_type}}({{oio_type}}_candidates,auth_criteria_arr); 
 /*********************/
 IF firstResult > 0 or maxResults < 2147483647 THEN
-   auth_filtered_uuids = _as_sorted_{{oio_type}}(auth_filtered_uuids, firstResult, maxResults);
+   auth_filtered_uuids = _as_sorted_{{oio_type}}(auth_filtered_uuids, virkningSoeg, registreringObj, firstResult, maxResults);
 END IF;
 return auth_filtered_uuids;
 

@@ -12,6 +12,8 @@ NOTICE: This file is auto-generated using the script: apply-template.py klasse _
 
 CREATE OR REPLACE FUNCTION _as_sorted_klasse(
         klasse_uuids uuid[],
+        virkningSoeg TSTZRANGE,
+        registreringObj KlasseRegistreringType,
 	    firstResult int,
 	    maxResults int
         )
@@ -19,15 +21,25 @@ CREATE OR REPLACE FUNCTION _as_sorted_klasse(
   $$
   DECLARE
           klasse_sorted_uuid uuid[];
+          registreringSoeg TSTZRANGE;
   BEGIN
 
+IF registreringObj IS NULL OR (registreringObj.registrering).timePeriod IS NULL THEN
+   registreringSoeg = TSTZRANGE(current_timestamp, current_timestamp, '[]');
+ELSE
+    registreringSoeg = (registreringObj.registrering).timePeriod;
+END IF;
+
 klasse_sorted_uuid:=array(
-SELECT b.klasse_id
-    FROM  klasse_registrering b
-    JOIN (SELECT DISTINCT ON (klasse_registrering_id) klasse_registrering_id, id, brugervendtnoegle FROM klasse_attr_egenskaber) a ON a.klasse_registrering_id=b.id    
-    WHERE b.klasse_id = ANY (klasse_uuids)
-    ORDER BY a.brugervendtnoegle
-         LIMIT maxResults OFFSET firstResult
+       SELECT b.klasse_id
+       FROM klasse_registrering b
+       JOIN klasse_attr_egenskaber a ON a.klasse_registrering_id=b.id
+       WHERE b.klasse_id = ANY (klasse_uuids)
+             AND (b.registrering).timeperiod && registreringSoeg
+             AND (a.virkning).timePeriod && virkningSoeg
+       GROUP BY b.klasse_id
+       ORDER BY array_agg(DISTINCT a.brugervendtnoegle), b.klasse_id
+       LIMIT maxResults OFFSET firstResult
 );
 
 RETURN klasse_sorted_uuid;

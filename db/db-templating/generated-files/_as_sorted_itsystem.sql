@@ -12,6 +12,8 @@ NOTICE: This file is auto-generated using the script: apply-template.py itsystem
 
 CREATE OR REPLACE FUNCTION _as_sorted_itsystem(
         itsystem_uuids uuid[],
+        virkningSoeg TSTZRANGE,
+        registreringObj ItsystemRegistreringType,
 	    firstResult int,
 	    maxResults int
         )
@@ -19,15 +21,25 @@ CREATE OR REPLACE FUNCTION _as_sorted_itsystem(
   $$
   DECLARE
           itsystem_sorted_uuid uuid[];
+          registreringSoeg TSTZRANGE;
   BEGIN
 
+IF registreringObj IS NULL OR (registreringObj.registrering).timePeriod IS NULL THEN
+   registreringSoeg = TSTZRANGE(current_timestamp, current_timestamp, '[]');
+ELSE
+    registreringSoeg = (registreringObj.registrering).timePeriod;
+END IF;
+
 itsystem_sorted_uuid:=array(
-SELECT b.itsystem_id
-    FROM  itsystem_registrering b
-    JOIN (SELECT DISTINCT ON (itsystem_registrering_id) itsystem_registrering_id, id, brugervendtnoegle FROM itsystem_attr_egenskaber) a ON a.itsystem_registrering_id=b.id    
-    WHERE b.itsystem_id = ANY (itsystem_uuids)
-    ORDER BY a.brugervendtnoegle
-         LIMIT maxResults OFFSET firstResult
+       SELECT b.itsystem_id
+       FROM itsystem_registrering b
+       JOIN itsystem_attr_egenskaber a ON a.itsystem_registrering_id=b.id
+       WHERE b.itsystem_id = ANY (itsystem_uuids)
+             AND (b.registrering).timeperiod && registreringSoeg
+             AND (a.virkning).timePeriod && virkningSoeg
+       GROUP BY b.itsystem_id
+       ORDER BY array_agg(DISTINCT a.brugervendtnoegle), b.itsystem_id
+       LIMIT maxResults OFFSET firstResult
 );
 
 RETURN itsystem_sorted_uuid;

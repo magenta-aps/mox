@@ -12,6 +12,8 @@ NOTICE: This file is auto-generated using the script: apply-template.py organisa
 
 CREATE OR REPLACE FUNCTION _as_sorted_organisationenhed(
         organisationenhed_uuids uuid[],
+        virkningSoeg TSTZRANGE,
+        registreringObj OrganisationenhedRegistreringType,
 	    firstResult int,
 	    maxResults int
         )
@@ -19,15 +21,25 @@ CREATE OR REPLACE FUNCTION _as_sorted_organisationenhed(
   $$
   DECLARE
           organisationenhed_sorted_uuid uuid[];
+          registreringSoeg TSTZRANGE;
   BEGIN
 
+IF registreringObj IS NULL OR (registreringObj.registrering).timePeriod IS NULL THEN
+   registreringSoeg = TSTZRANGE(current_timestamp, current_timestamp, '[]');
+ELSE
+    registreringSoeg = (registreringObj.registrering).timePeriod;
+END IF;
+
 organisationenhed_sorted_uuid:=array(
-SELECT b.organisationenhed_id
-    FROM  organisationenhed_registrering b
-    JOIN (SELECT DISTINCT ON (organisationenhed_registrering_id) organisationenhed_registrering_id, id, brugervendtnoegle FROM organisationenhed_attr_egenskaber) a ON a.organisationenhed_registrering_id=b.id    
-    WHERE b.organisationenhed_id = ANY (organisationenhed_uuids)
-    ORDER BY a.brugervendtnoegle
-         LIMIT maxResults OFFSET firstResult
+       SELECT b.organisationenhed_id
+       FROM organisationenhed_registrering b
+       JOIN organisationenhed_attr_egenskaber a ON a.organisationenhed_registrering_id=b.id
+       WHERE b.organisationenhed_id = ANY (organisationenhed_uuids)
+             AND (b.registrering).timeperiod && registreringSoeg
+             AND (a.virkning).timePeriod && virkningSoeg
+       GROUP BY b.organisationenhed_id
+       ORDER BY array_agg(DISTINCT a.brugervendtnoegle), b.organisationenhed_id
+       LIMIT maxResults OFFSET firstResult
 );
 
 RETURN organisationenhed_sorted_uuid;
