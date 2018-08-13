@@ -8,6 +8,7 @@
 
 import atexit
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -16,7 +17,6 @@ import click
 import mock
 import testing.postgresql
 import psycopg2.pool
-import pytest
 
 from .. import app
 
@@ -32,7 +32,12 @@ psql = testing.postgresql.Postgresql(
     base_dir=tempfile.mkdtemp(prefix='mox-db-', dir=TEMP_DIR),
 )
 
-atexit.register(psql.stop)
+def _stop_db():
+    psql.stop()
+    shutil.rmtree(psql.base_dir)
+
+
+atexit.register(_stop_db)
 
 
 def _initdb():
@@ -57,8 +62,15 @@ def _initdb():
                 settings.DATABASE, settings.DB_PASSWORD,
             ))
 
-    mkdb_path = os.path.join(BASE_DIR, '..', 'db', 'mkdb.sh')
-    sql = subprocess.check_output([mkdb_path], env=env)
+    with subprocess.Popen(
+        [os.path.join(BASE_DIR, '..', 'db', 'mkdb.sh')],
+        env=env,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        stdin=subprocess.DEVNULL,
+    ) as proc:
+        sql, errortext = proc.communicate()
+
+    assert proc.returncode == 0, 'mkdb failed:\n\n' + errortext.decode()
 
     with psycopg2.connect(psql.url(
             database=settings.DATABASE,
@@ -71,7 +83,6 @@ def _initdb():
             curs.execute(sql)
 
 
-@pytest.mark.slow
 class TestCaseMixin(object):
 
     '''Base class for LoRA test cases with database access.
