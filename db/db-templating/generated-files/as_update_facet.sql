@@ -466,7 +466,7 @@ END IF;
 
 /******************************************************************/
 
-PERFORM actual_state._amqp_publish_notification('Facet', livscykluskode, facet_uuid);
+
 
 return new_facet_registrering.id;
 

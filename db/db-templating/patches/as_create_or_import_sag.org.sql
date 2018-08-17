@@ -198,7 +198,7 @@ END IF;
 /*********************/
 
 
-  PERFORM actual_state._amqp_publish_notification('Sag', (sag_registrering.registrering).livscykluskode, sag_uuid);
+
 
 RETURN sag_uuid;
 

@@ -441,7 +441,7 @@ END IF;
 
 /******************************************************************/
 
-PERFORM actual_state._amqp_publish_notification('Organisationfunktion', livscykluskode, organisationfunktion_uuid);
+
 
 return new_organisationfunktion_registrering.id;
 

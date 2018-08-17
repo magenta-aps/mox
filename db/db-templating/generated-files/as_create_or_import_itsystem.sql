@@ -187,7 +187,7 @@ END IF;
 /*********************/
 
 
-  PERFORM actual_state._amqp_publish_notification('Itsystem', (itsystem_registrering.registrering).livscykluskode, itsystem_uuid);
+
 
 RETURN itsystem_uuid;
 

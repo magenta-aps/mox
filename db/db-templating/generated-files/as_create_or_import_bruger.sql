@@ -185,7 +185,7 @@ END IF;
 /*********************/
 
 
-  PERFORM actual_state._amqp_publish_notification('Bruger', (bruger_registrering.registrering).livscykluskode, bruger_uuid);
+
 
 RETURN bruger_uuid;
 

@@ -26,22 +26,6 @@ sudo -u postgres psql -c "ALTER USER $MOX_DB_USER WITH PASSWORD '$MOX_DB_PASSWOR
 sudo -u postgres psql -c "GRANT ALL ON DATABASE $MOX_DB TO $MOX_DB_USER"
 sudo -u postgres psql -d $MOX_DB -f basis/dbserver_prep.sql
 
-# Setup AMQP server settings
-if test -n "$MOX_AMQP_HOST"
-then
-    sudo -u $SUPER_USER psql -d $MOX_DB -c "insert into amqp.broker
-(host, port, vhost, username, password)
-values ('$MOX_AMQP_HOST', $MOX_AMQP_PORT, '$MOX_AMQP_VHOST', '$MOX_AMQP_USER',
-'$MOX_AMQP_PASS');"
-fi
-
-# Grant mox user privileges to publish to AMQP
-sudo -u $SUPER_USER psql -d $MOX_DB -c "GRANT ALL PRIVILEGES ON SCHEMA amqp TO $MOX_DB_USER;
-GRANT SELECT ON ALL TABLES IN SCHEMA amqp TO $MOX_DB_USER;"
-
-# Declare AMQP MOX notifications exchange as type fanout
-sudo -u $SUPER_USER psql -d $MOX_DB -c "SELECT amqp.exchange_declare(1, 'mox.notifications', 'fanout', false, true, false);"
-
 psql -d $MOX_DB -U $MOX_DB_USER -c "CREATE SCHEMA actual_state AUTHORIZATION $MOX_DB_USER "
 sudo -u postgres psql -c "ALTER database $MOX_DB SET search_path TO actual_state,public;"
 sudo -u postgres psql -c "ALTER database $MOX_DB SET DATESTYLE to 'ISO, YMD';" #Please notice that the db-tests are run, using a different datestyle
@@ -56,11 +40,6 @@ psql -d $MOX_DB -U $MOX_DB_USER -f funcs/_as_valid_registrering_livscyklus_trans
 psql -d $MOX_DB -U $MOX_DB_USER -f funcs/_as_search_match_array.sql
 psql -d $MOX_DB -U $MOX_DB_USER -f funcs/_as_search_ilike_array.sql
 psql -d $MOX_DB -U $MOX_DB_USER -f funcs/_json_object_delete_keys.sql
-psql -d $MOX_DB -U $MOX_DB_USER -f funcs/_amqp_functions.sql
-
-
-
-
 
 cd ./db-templating/
 $PYTHON ../../oio_rest/apply-templates.py

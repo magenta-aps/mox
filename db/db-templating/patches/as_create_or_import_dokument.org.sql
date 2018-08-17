@@ -198,7 +198,7 @@ END IF;
 /*********************/
 
 
-  PERFORM actual_state._amqp_publish_notification('Dokument', (dokument_registrering.registrering).livscykluskode, dokument_uuid);
+
 
 RETURN dokument_uuid;
 

@@ -265,7 +265,7 @@ END IF;
 /*********************/
 
 
-  PERFORM actual_state._amqp_publish_notification('Tilstand', (tilstand_registrering.registrering).livscykluskode, tilstand_uuid);
+
 
 RETURN tilstand_uuid;
 
