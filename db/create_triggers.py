@@ -9,7 +9,7 @@ conn = psycopg2.connect(
 
 curs = conn.cursor()
 conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
-curs.execute("SELECT * FROM pg_catalog.pg_tables")
+curs.execute("SELECT * FROM pg_catalog.pg_tables where tablename like '%registrering'")
 rows = curs.fetchall()
 for row in rows:
     query = ("create trigger notify_{0} after insert or update or delete on {0} " +
