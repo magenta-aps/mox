@@ -14,14 +14,14 @@ CREATE OR REPLACE FUNCTION notify_event() RETURNS TRIGGER AS $$
             data = row_to_json(NEW);
         END IF;
 
-        -- Contruct the notification as a JSON string.
+        -- Contruct the notification
         notification = json_build_object(
                       'table',TG_TABLE_NAME,
                       'action', TG_OP,
                       'data', data);
 
         -- Execute pg_notify(channel, notification)
-        PERFORM pg_notify('events',notification::text);
+        PERFORM pg_notify('mox_notifications',notification::text);
 
         -- Result is ignored since this is an AFTER trigger
         RETURN NULL;

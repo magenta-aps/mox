@@ -54,9 +54,11 @@ cat $DIR/funcs/_as_valid_registrering_livscyklus_transition.sql
 cat $DIR/funcs/_as_search_match_array.sql
 cat $DIR/funcs/_as_search_ilike_array.sql
 cat $DIR/funcs/_json_object_delete_keys.sql
-
+cat $DIR/funcs/_create_notify.sql
 
 $PYTHON "$DIR/../oio_rest/apply-templates.py" 1>&2
+
+$PYTHON create_triggers.py
 
 oiotypes=$($PYTHON -m oio_common.db_structure)
 

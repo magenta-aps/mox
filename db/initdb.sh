@@ -40,9 +40,12 @@ psql -d $MOX_DB -U $MOX_DB_USER -f funcs/_as_valid_registrering_livscyklus_trans
 psql -d $MOX_DB -U $MOX_DB_USER -f funcs/_as_search_match_array.sql
 psql -d $MOX_DB -U $MOX_DB_USER -f funcs/_as_search_ilike_array.sql
 psql -d $MOX_DB -U $MOX_DB_USER -f funcs/_json_object_delete_keys.sql
+psql -d $MOX_DB -U $MOX_DB_USER -f funcs/_create_notify.sql
 
 cd ./db-templating/
 $PYTHON ../../oio_rest/apply-templates.py
+
+$PYTHON create_triggers.py
 
 oiotypes=$($PYTHON -m oio_common.db_structure)
 
