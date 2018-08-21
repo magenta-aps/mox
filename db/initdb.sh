@@ -45,8 +45,6 @@ psql -d $MOX_DB -U $MOX_DB_USER -f funcs/_create_notify.sql
 cd ./db-templating/
 $PYTHON ../../oio_rest/apply-templates.py
 
-$PYTHON create_triggers.py
-
 oiotypes=$($PYTHON -m oio_common.db_structure)
 
 templates1=( dbtyper-specific tbls-specific _remove_nulls_in_array )

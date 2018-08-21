@@ -87,6 +87,10 @@ CREATE INDEX tilstand_id_idx
    ON tilstand_registrering (tilstand_id);
 
 
+CREATE TRIGGER notify_tilstand
+    AFTER INSERT OR UPDATE OR DELETE ON tilstand_registrering
+    FOR EACH ROW EXECUTE PROCEDURE notify_event();
+
 /****************************************************************************************************/
 
 

@@ -58,8 +58,6 @@ cat $DIR/funcs/_create_notify.sql
 
 $PYTHON "$DIR/../oio_rest/apply-templates.py" 1>&2
 
-$PYTHON create_triggers.py
-
 oiotypes=$($PYTHON -m oio_common.db_structure)
 
 templates1=( dbtyper-specific tbls-specific _remove_nulls_in_array )

@@ -87,6 +87,10 @@ CREATE INDEX bruger_id_idx
    ON bruger_registrering (bruger_id);
 
 
+CREATE TRIGGER notify_bruger
+    AFTER INSERT OR UPDATE OR DELETE ON bruger_registrering
+    FOR EACH ROW EXECUTE PROCEDURE notify_event();
+
 /****************************************************************************************************/
 
 

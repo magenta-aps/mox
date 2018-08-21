@@ -87,6 +87,10 @@ CREATE INDEX sag_id_idx
    ON sag_registrering (sag_id);
 
 
+CREATE TRIGGER notify_sag
+    AFTER INSERT OR UPDATE OR DELETE ON sag_registrering
+    FOR EACH ROW EXECUTE PROCEDURE notify_event();
+
 /****************************************************************************************************/
 
 

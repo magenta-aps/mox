@@ -87,6 +87,10 @@ CREATE INDEX dokument_id_idx
    ON dokument_registrering (dokument_id);
 
 
+CREATE TRIGGER notify_dokument
+    AFTER INSERT OR UPDATE OR DELETE ON dokument_registrering
+    FOR EACH ROW EXECUTE PROCEDURE notify_event();
+
 /****************************************************************************************************/
 
 
