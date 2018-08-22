@@ -1,7 +1,13 @@
 MOX python agents
 =================
 
-This directory contains the following 2 (legacy) mox agents:
+This directory contains the Notify to AMQP service, which serves as an working
+example of a relay of the internal PostgresSQL notifications to a publicly
+available notification services.
+
+Legacy agents
+-------------
+Besides, this directory contains the following 2 (legacy) mox agents:
 
 +-------------+----------------+
 | MOX Advis   | mox_advis.py   |

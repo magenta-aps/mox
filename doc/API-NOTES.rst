@@ -1406,14 +1406,15 @@ Notification Messages
 +++++++++++++++++++++
 
 Each time a write operation (create/import/passivate/update/delete) is
-performed, a notification messages is sent out by the database to an AMQP
-message exchange called "mox.notifications".
+performed, an internal notification messages is sent out in the PostgreSQL
+database, using the Notify system. These messages can be read from PostgresSQL
+and relayed to other services as needed. An example of this is provided in the
+form of notify_to_amqp_service.py and the corresponding systemd rules which
+allows the program to run as a service. This service will be installed pr default
+by the installer. The serivice will create an AMQP message exchange called
+"mox.notifications".
 
-This exchange is automatically created during the DB installation
-using the "fanout" exchange type.
-However, this can be modified later on the AMQP server.
-
-The notification message has the following headers:
+The notification message consists of a JSON-string with the following keys:
 
 * "beskedtype" - always contains the value 'Notification'
 
@@ -1424,4 +1425,6 @@ The notification message has the following headers:
 * "livscykluskode" - i.e. 'Opstaaet', 'Importeret', 'Passiveret', 'Slettet' or
   'Rettet'
 
-The notification message has an empty body.
+Besides "mox.notifications", an additional exchange called "mox.heartbeat" will
+be created which will periodically publish the current timestamp. This allows a
+client to veryfy that the service is running.
