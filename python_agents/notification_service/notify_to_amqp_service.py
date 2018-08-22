@@ -4,13 +4,19 @@ import time
 import json
 import pika
 import psycopg2
-
+from os import getenv
 
 class PgnotifyToAmqp(object):
-    def __init__(self):
-        # TODO: Fix hard-coded connection params
-        self.pg_conn = psycopg2.connect(database='mox', user='mox',
-                                        password='mox', host='localhost')
+    def __init__(self, database, user, password, host):
+        """
+
+        :param database:
+        :param user:
+        :param password:
+        :param host:
+        """
+
+        self.pg_conn = psycopg2.connect(database, user, password, host)
         self.pg_cursor = self.pg_conn.cursor()
 
         pika_params = pika.ConnectionParameters('localhost')
@@ -55,5 +61,12 @@ class PgnotifyToAmqp(object):
                                         body=json.dumps(amqp_payload))
 
 if __name__ == '__main__':
-    notify2amqp = PgnotifyToAmqp()
+
+    notify2amqp = PgnotifyToAmqp(
+        database=getenv("DB_NAME", "mox"),
+        user=getenv("DB_USER", "mox"),
+        password=getenv("DB_PASS", "mox"),
+        host=getenv("DB_HOST", "localhost")
+    )
+
     notify2amqp.main()
