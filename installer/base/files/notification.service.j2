@@ -1,0 +1,20 @@
+[Unit]
+Description={{ SERVICE_DESCRIPTION }}
+
+[Service]
+Type=simple
+Restart=on-failure
+
+User={{ SERVICE_USER }}
+Group={{ SERVICE_GROUP }}
+
+Environment=DB_NAME={{ DB_NAME }}
+Environment=DB_USER={{ DB_USER }}
+Environment=DB_PASS={{ DB_PASS }}
+Environment=DB_HOST={{ DB_HOST }}
+
+WorkingDirectory={{  }}
+ExecStart={{ config.python_exec }} notify_to_amqp_service.py
+
+[Install]
+WantedBy=multi-user.target
