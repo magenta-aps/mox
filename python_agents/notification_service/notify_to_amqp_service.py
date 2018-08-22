@@ -16,7 +16,8 @@ class PgnotifyToAmqp(object):
         :param host:
         """
 
-        self.pg_conn = psycopg2.connect(database, user, password, host)
+        self.pg_conn = psycopg2.connect(database=database, user=user,
+                                        password=password, host=host)
         self.pg_cursor = self.pg_conn.cursor()
 
         pika_params = pika.ConnectionParameters('localhost')

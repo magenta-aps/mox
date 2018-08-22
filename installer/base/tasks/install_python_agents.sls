@@ -45,3 +45,5 @@ Deploy notification service file:
 ensure_that_notification_service_is_running:
   service.running:
     - name: notification
+    - enable: True
+    - reload: True
