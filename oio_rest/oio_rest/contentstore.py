@@ -8,6 +8,7 @@ import time
 
 from settings import FILE_UPLOAD_FOLDER
 
+
 def _mkdir_p(path):
     try:
         os.makedirs(path)

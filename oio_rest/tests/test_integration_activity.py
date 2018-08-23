@@ -8,7 +8,6 @@
 
 import datetime
 import time
-import unittest
 import uuid
 
 from tests import util
@@ -440,19 +439,19 @@ class Tests(util.TestCase):
                 'uuid': objid,
             },
             json={
-	        "note": "Ret BVN",
-		"attributter": {
-			"aktivitetegenskaber": [
-			    {
-			        "brugervendtnoegle": "JOGGINGLØB",
-			        "virkning": {
-				    "from": "2017-01-01 00:00:00",
-				    "to": "infinity",
-			        }
+                "note": "Ret BVN",
+                "attributter": {
+                        "aktivitetegenskaber": [
+                            {
+                                "brugervendtnoegle": "JOGGINGLØB",
+                                "virkning": {
+                                    "from": "2017-01-01 00:00:00",
+                                    "to": "infinity",
+                                }
                             },
                         ],
                 },
-	    },
+            },
             method='PATCH',
         )
 
@@ -477,8 +476,6 @@ class Tests(util.TestCase):
         )
 
     def test_searching_temporal_order(self):
-        start_time = datetime.datetime.now()
-
         objids = [str(uuid.UUID(int=i)) for i in range(3)]
 
         no_time = datetime.datetime.now()
@@ -510,26 +507,26 @@ class Tests(util.TestCase):
                 'uuid': objids[1],
             },
             json={
-	        "note": "Ret BVN",
-		"attributter": {
-			"aktivitetegenskaber": [
-			    {
-			        "brugervendtnoegle": "TESTFÆTTER",
-			        "virkning": {
-				    "from": "2017-01-01 00:00:00",
-				    "to": "infinity",
-			        }
+                "note": "Ret BVN",
+                "attributter": {
+                        "aktivitetegenskaber": [
+                            {
+                                "brugervendtnoegle": "TESTFÆTTER",
+                                "virkning": {
+                                    "from": "2017-01-01 00:00:00",
+                                    "to": "infinity",
+                                }
                             },
-			    {
-			        "brugervendtnoegle": "ABEKAT",
-			        "virkning": {
-				    "from": "2015-01-01 00:00:00",
-				    "to": "2017-01-01 00:00:00",
-			        }
+                            {
+                                "brugervendtnoegle": "ABEKAT",
+                                "virkning": {
+                                    "from": "2015-01-01 00:00:00",
+                                    "to": "2017-01-01 00:00:00",
+                                }
                             },
                         ],
                 },
-	    },
+            },
             method='PATCH',
         )
 
