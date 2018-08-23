@@ -13,6 +13,7 @@ import unittest
 
 from . import util
 
+
 class VersionTest(unittest.TestCase):
     def test_versions(self):
         with open(os.path.join(util.TOP_DIR, 'VERSION')) as fp:

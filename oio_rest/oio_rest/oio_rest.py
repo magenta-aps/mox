@@ -497,7 +497,8 @@ class OIORestObject(object):
         # JSON schemas
         flask.add_url_rule(
             '{}/{}'.format(class_url, 'schema'),
-            '_'.join([cls.__name__, 'schema']),cls.get_schema, methods=['GET']
+            '_'.join([cls.__name__, 'schema']),
+            cls.get_schema, methods=['GET']
         )
 
     # Templates which may be overridden on subclass.
