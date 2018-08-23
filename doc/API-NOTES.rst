@@ -1414,6 +1414,11 @@ allows the program to run as a service. This service will be installed pr defaul
 by the installer. The serivice will create an AMQP message exchange called
 "mox.notifications".
 
+To query the status of the service, run the command::
+     sudo systemctl status notification 
+
+systemctl can also be used to start and stop the service.
+     
 The notification message consists of a JSON-string with the following keys:
 
 * "beskedtype" - always contains the value 'Notification'
@@ -1426,5 +1431,5 @@ The notification message consists of a JSON-string with the following keys:
   'Rettet'
 
 Besides "mox.notifications", an additional exchange called "mox.heartbeat" will
-be created which will periodically publish the current timestamp. This allows a
-client to veryfy that the service is running.
+be created. This exchange will publish the current timestamp approximately
+every two seconds . This allows a client to veryfy that the service is running.
