@@ -9,25 +9,21 @@ import psycopg2
 from os import getenv
 
 
-class Heartbeat(threading.Thread):
-    """ Heartbeat thread. Will ensure a heartbeat message approximately
-    every two seconds """
-    def __init__(self):
-        threading.Thread.__init__(self)
-        pika_params = pika.ConnectionParameters('localhost')
-        pika_connection = pika.BlockingConnection(pika_params)
-        self.amqp = pika_connection.channel()
-        self.amqp.queue_declare(queue='mox.heartbeat')
-
-    def run(self):
-        while True:
-            time.sleep(2)
-            self.amqp.basic_publish(exchange='',
-                                    routing_key='mox.heartbeat',
-                                    body=json.dumps(time.time()))
+def Heartbeat(amqp_notifier):
+    pika_params = pika.ConnectionParameters('localhost')
+    pika_connection = pika.BlockingConnection(pika_params)
+    amqp = pika_connection.channel()
+    amqp.queue_declare(queue='mox.heartbeat')
+    while amqp_notifier.ttl > 0:  # Ensure AMQPNotifier is running
+        amqp_notifier.ttl -= 1
+        print(amqp_notifier.ttl)
+        time.sleep(2)
+        amqp.basic_publish(exchange='',
+                           routing_key='mox.heartbeat',
+                           body=str(time.time()))
 
 
-class PgnotifyToAmqp(threading.Thread):
+class AMQPNotifier(threading.Thread):
     """ Main notification thread. Will send a heartbeat
     approximately every minute if no messages is
     recieved """
@@ -47,49 +43,53 @@ class PgnotifyToAmqp(threading.Thread):
         self.amqp = pika_connection.channel()
         self.amqp.queue_declare(queue='mox.notifications')
         self.amqp.queue_declare(queue='mox.heartbeat')
+        self.ttl = 50
 
     def run(self):
         while True:
+            self.ttl = 50  # Will be updated at least every 60s
             self.pg_cursor.execute("LISTEN mox_notifications;")
             self.pg_conn.poll()
             self.pg_conn.commit()
             if select.select([self.pg_conn], [], [], 60) == ([], [], []):
-                print('timeout')
                 self.amqp.basic_publish(exchange='',
                                         routing_key='mox.heartbeat',
-                                        body=json.dumps(time.time()))
+                                        body=str(time.time()))
             else:
                 self.pg_conn.poll()
                 self.pg_conn.commit()
                 while self.pg_conn.notifies:
                     notify = self.pg_conn.notifies.pop(0)
                     payload_dict = json.loads(notify.payload)
-                    amqp_payload = {}
+
                     table = payload_dict['table']
                     objekttype = table[0:table.find('registrering')-1]
-                    amqp_payload['beskedtype'] = 'Notification'
                     objecktID = payload_dict['data'][objekttype + '_id']
-                    amqp_payload['objecktID'] = objecktID
-                    amqp_payload['objekttype'] = objekttype
-                    lc = payload_dict['data']['registrering']['livscykluskode']
-                    amqp_payload['livscykluskode'] = lc
+                    registrering = payload_dict['data']['registrering']
+                    livscykluskode = registrering['livscykluskode']
+
+                    amqp_payload = {'beskedtype': 'Notification',
+                                    'objecktID': objecktID,
+                                    'objekttype': objekttype,
+                                    'livscykluskode': livscykluskode}
+
                     self.amqp.basic_publish(exchange='',
                                             routing_key='mox.notifications',
                                             body=json.dumps(amqp_payload))
 
 if __name__ == '__main__':
 
-    notify2amqp = PgnotifyToAmqp(
+    amqp_notifier = AMQPNotifier(
         database=getenv("DB_NAME", "mox"),
         user=getenv("DB_USER", "mox"),
         password=getenv("DB_PASS", "mox"),
         host=getenv("DB_HOST", "localhost")
     )
-    heartbeat = Heartbeat()
+
+    heartbeat = threading.Thread(target=Heartbeat, args=[amqp_notifier])
     heartbeat.daemon = True
-    notify2amqp.start()
+    amqp_notifier.start()
     heartbeat.start()
 
-    while notify2amqp.is_alive():
+    while amqp_notifier.is_alive():
         time.sleep(2)
-
