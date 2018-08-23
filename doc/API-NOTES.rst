@@ -1429,7 +1429,3 @@ The notification message consists of a JSON-string with the following keys:
 
 * "livscykluskode" - i.e. 'Opstaaet', 'Importeret', 'Passiveret', 'Slettet' or
   'Rettet'
-
-Besides "mox.notifications", an additional exchange called "mox.heartbeat" will
-be created. This exchange will publish the current timestamp approximately
-every two seconds . This allows a client to veryfy that the service is running.
