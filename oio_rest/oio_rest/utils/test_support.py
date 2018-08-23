@@ -7,11 +7,11 @@
 #
 
 import atexit
+import functools
 import os
 import shutil
 import subprocess
 import sys
-import tempfile
 
 import click
 import mock
@@ -24,20 +24,21 @@ import settings
 
 BASE_DIR = os.path.dirname(settings.__file__)
 TOP_DIR = os.path.dirname(BASE_DIR)
-TEMP_DIR = os.path.join(BASE_DIR, 'build', 'tmp')
-
-os.makedirs(TEMP_DIR, exist_ok=True)
-
-psql = testing.postgresql.Postgresql(
-    base_dir=tempfile.mkdtemp(prefix='mox-db-', dir=TEMP_DIR),
-)
-
-def _stop_db():
-    psql.stop()
-    shutil.rmtree(psql.base_dir)
+DB_DIR = os.path.join(BASE_DIR, 'build', 'db')
 
 
-atexit.register(_stop_db)
+@functools.lru_cache()
+def psql():
+    os.makedirs(DB_DIR, exist_ok=True)
+
+    psql = testing.postgresql.Postgresql(
+        base_dir=DB_DIR,
+    )
+
+    atexit.register(psql.stop)
+    atexit.register(lambda: shutil.rmtree(DB_DIR))
+
+    return psql
 
 
 def _initdb():
@@ -50,7 +51,7 @@ def _initdb():
         'MOX_DB_PASSWORD': settings.DB_PASSWORD,
     }
 
-    with psycopg2.connect(psql.url()) as conn:
+    with psycopg2.connect(psql().url()) as conn:
         conn.autocommit = True
 
         with conn.cursor() as curs:
@@ -72,7 +73,7 @@ def _initdb():
 
     assert proc.returncode == 0, 'mkdb failed:\n\n' + errortext.decode()
 
-    with psycopg2.connect(psql.url(
+    with psycopg2.connect(psql().url(
             database=settings.DATABASE,
             user=settings.DB_USER,
             password=settings.DB_PASSWORD,
@@ -89,7 +90,6 @@ class TestCaseMixin(object):
     '''
 
     maxDiff = None
-    psql = None
 
     def get_lora_app(self):
         app.app.config['DEBUG'] = False
@@ -116,22 +116,22 @@ class TestCaseMixin(object):
     def setUp(self):
         super(TestCaseMixin, self).setUp()
 
-        self.db_url = psql.url(
+        self.db_url = psql().url(
             database=settings.DATABASE,
             user=settings.DB_USER,
             password=settings.DB_PASSWORD,
         )
 
         try:
-            with psycopg2.connect(self.db_url) as conn:
+            with psycopg2.connect(self.db_url):
                 pass
         except psycopg2.DatabaseError:
             _initdb()
 
         self.addCleanup(self.__reset_db)
 
-        db_host = psql.dsn()['host']
-        db_port = psql.dsn()['port']
+        db_host = psql().dsn()['host']
+        db_port = psql().dsn()['port']
 
         for p in [
             mock.patch('settings.LOG_AMQP_SERVER', None),
@@ -174,8 +174,8 @@ class TestCaseMixin(object):
 def run_with_db(**kwargs):
     from oio_rest import db
 
-    with psql:
-        dsn = psql.dsn()
+    with psql():
+        dsn = psql().dsn()
 
         # We take over the process, given that this is a CLI command.
         # Hence, there's no need to restore these variables afterwards
