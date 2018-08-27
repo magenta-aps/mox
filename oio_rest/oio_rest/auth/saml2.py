@@ -35,7 +35,7 @@ class Saml2_Assertion(OneLogin_Saml2_Response):
         self.idp_cert = idp_cert
 
         document = fromstring(assertion_xml)
-        if 'Response' not in document.tag:
+        if document.tag != '{urn:oasis:names:tc:SAML:2.0:protocol}Response':
             # OneLogin's methods expect the data wrapped in a Response element,
             # so we fake it here.
             response = """
