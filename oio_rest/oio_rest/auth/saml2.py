@@ -41,8 +41,8 @@ class Saml2_Assertion(OneLogin_Saml2_Response):
             response = """
             <samlp:Response xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
                             xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion">
-                %s
-            </samlp:Response>""" % assertion_xml
+                {}
+            </samlp:Response>""".format(assertion_xml)
 
             document = fromstring(response)
             self.response = response.encode('ascii')
