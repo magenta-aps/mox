@@ -87,6 +87,10 @@ CREATE INDEX indsats_id_idx
    ON indsats_registrering (indsats_id);
 
 
+CREATE TRIGGER notify_indsats
+    AFTER INSERT OR UPDATE OR DELETE ON indsats_registrering
+    FOR EACH ROW EXECUTE PROCEDURE notify_event();
+
 /****************************************************************************************************/
 
 

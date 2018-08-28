@@ -195,7 +195,7 @@ END IF;
 /*********************/
 
 
-  PERFORM actual_state._amqp_publish_notification('Loghaendelse', (loghaendelse_registrering.registrering).livscykluskode, loghaendelse_uuid);
+
 
 RETURN loghaendelse_uuid;
 

@@ -14,26 +14,6 @@ update_postgresql_configuration:
     - context:
         db_user: {{ config.db.user }}
 
-
-# Install pg_amqp - Postgres AMQP extension
-# We depend on a specific fork, which supports setting of
-# message headers
-# https://github.com/duncanburke/pg_amqp.git
-clone_repository_for_pg_amqp_extension:
-  git.latest:
-    - name: https://github.com/magenta-aps/pg_amqp.git
-    - target: /tmp/pg_amqp
-    - branch: master
-
-
-compile_extension:
-  cmd.run:
-    - name: make install -C /tmp/pg_amqp PG_CONFIG=$PG_CONFIG
-    - runas: root
-    - env:
-      - PG_CONFIG: /usr/lib/postgresql/9.5/bin/pg_config
-
-
 # Apply changes
 restart_postgresql:
   module.run:

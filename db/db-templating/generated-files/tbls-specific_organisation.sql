@@ -87,6 +87,10 @@ CREATE INDEX organisation_id_idx
    ON organisation_registrering (organisation_id);
 
 
+CREATE TRIGGER notify_organisation
+    AFTER INSERT OR UPDATE OR DELETE ON organisation_registrering
+    FOR EACH ROW EXECUTE PROCEDURE notify_event();
+
 /****************************************************************************************************/
 
 

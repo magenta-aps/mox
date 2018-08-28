@@ -87,6 +87,10 @@ CREATE INDEX klassifikation_id_idx
    ON klassifikation_registrering (klassifikation_id);
 
 
+CREATE TRIGGER notify_klassifikation
+    AFTER INSERT OR UPDATE OR DELETE ON klassifikation_registrering
+    FOR EACH ROW EXECUTE PROCEDURE notify_event();
+
 /****************************************************************************************************/
 
 

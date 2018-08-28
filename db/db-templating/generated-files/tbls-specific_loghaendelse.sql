@@ -87,6 +87,10 @@ CREATE INDEX loghaendelse_id_idx
    ON loghaendelse_registrering (loghaendelse_id);
 
 
+CREATE TRIGGER notify_loghaendelse
+    AFTER INSERT OR UPDATE OR DELETE ON loghaendelse_registrering
+    FOR EACH ROW EXECUTE PROCEDURE notify_event();
+
 /****************************************************************************************************/
 
 

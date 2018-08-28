@@ -626,7 +626,7 @@ END IF;
 
 /******************************************************************/
 
-PERFORM actual_state._amqp_publish_notification('Aktivitet', livscykluskode, aktivitet_uuid);
+
 
 return new_aktivitet_registrering.id;
 

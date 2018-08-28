@@ -87,6 +87,10 @@ CREATE INDEX itsystem_id_idx
    ON itsystem_registrering (itsystem_id);
 
 
+CREATE TRIGGER notify_itsystem
+    AFTER INSERT OR UPDATE OR DELETE ON itsystem_registrering
+    FOR EACH ROW EXECUTE PROCEDURE notify_event();
+
 /****************************************************************************************************/
 
 

@@ -87,6 +87,10 @@ CREATE INDEX facet_id_idx
    ON facet_registrering (facet_id);
 
 
+CREATE TRIGGER notify_facet
+    AFTER INSERT OR UPDATE OR DELETE ON facet_registrering
+    FOR EACH ROW EXECUTE PROCEDURE notify_event();
+
 /****************************************************************************************************/
 
 

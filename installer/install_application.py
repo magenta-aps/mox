@@ -20,3 +20,7 @@ notify_and_log(install_oio_rest)
 print("## Initializing database ##")
 init_db = caller.cmd("state.apply", "tasks.initialize_database")
 notify_and_log(init_db)
+
+print("## Install notifcation service ##")
+notification_service = caller.cmd("state.apply", "tasks.install_python_agents")
+notify_and_log(notification_service)

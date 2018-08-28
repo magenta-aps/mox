@@ -183,7 +183,7 @@ END IF;
 /*********************/
 
 
-  PERFORM actual_state._amqp_publish_notification('Organisationenhed', (organisationenhed_registrering.registrering).livscykluskode, organisationenhed_uuid);
+
 
 RETURN organisationenhed_uuid;
 

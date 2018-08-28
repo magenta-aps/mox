@@ -84,6 +84,10 @@ CREATE INDEX {{oio_type}}_id_idx
    ON {{oio_type}}_registrering ({{oio_type}}_id);
 
 
+CREATE TRIGGER notify_{{oio_type}}
+    AFTER INSERT OR UPDATE OR DELETE ON {{oio_type}}_registrering
+    FOR EACH ROW EXECUTE PROCEDURE notify_event();
+
 /****************************************************************************************************/
 {%for attribut , attribut_fields in attributter.items() %}
 

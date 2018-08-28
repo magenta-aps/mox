@@ -194,7 +194,7 @@ END IF;
 /*********************/
 
 
-  PERFORM actual_state._amqp_publish_notification('Klasse', (klasse_registrering.registrering).livscykluskode, klasse_uuid);
+
 
 RETURN klasse_uuid;
 

@@ -87,6 +87,10 @@ CREATE INDEX aktivitet_id_idx
    ON aktivitet_registrering (aktivitet_id);
 
 
+CREATE TRIGGER notify_aktivitet
+    AFTER INSERT OR UPDATE OR DELETE ON aktivitet_registrering
+    FOR EACH ROW EXECUTE PROCEDURE notify_event();
+
 /****************************************************************************************************/
 
 

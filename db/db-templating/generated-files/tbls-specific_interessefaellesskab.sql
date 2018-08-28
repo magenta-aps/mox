@@ -87,6 +87,10 @@ CREATE INDEX interessefaellesskab_id_idx
    ON interessefaellesskab_registrering (interessefaellesskab_id);
 
 
+CREATE TRIGGER notify_interessefaellesskab
+    AFTER INSERT OR UPDATE OR DELETE ON interessefaellesskab_registrering
+    FOR EACH ROW EXECUTE PROCEDURE notify_event();
+
 /****************************************************************************************************/
 
 
