@@ -7,7 +7,7 @@ Hotfix:
 
 
 Version 0.9.0-post3, 18 June 2018
---------------------------------
+---------------------------------
 
 Fix issue in installer related to permissions
 
