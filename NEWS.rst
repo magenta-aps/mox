@@ -1,3 +1,11 @@
+Version 0.9.1, 30 August 2018
+--------------------------------
+
+Hotfix:
+
+* Added support for verifying SAML2 assertions already wrapped in responses.
+
+
 Version 0.9.0-post3, 18 June 2018
 --------------------------------
 
