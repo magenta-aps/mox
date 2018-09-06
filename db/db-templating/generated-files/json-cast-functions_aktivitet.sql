@@ -75,8 +75,10 @@ FROM
     (
       SELECT
       e.relType,
+
       array_agg( _json_object_delete_keys(row_to_json(ROW(e.relType,e.virkning,e.uuid,e.urn,e.objektType,e.indeks,e.aktoerAttr)::AktivitetRelationType),ARRAY['reltype']::text[])) rel_json_arr
-      from unnest($1.relationer) e(relType,virkning,uuid,urn,objektType,indeks,aktoerAttr) 
+      from unnest($1.relationer) e(relType,virkning,uuid,urn,objektType,indeks,aktoerAttr)
+
       group by e.relType
       order by e.relType asc
     ) as f
@@ -94,11 +96,12 @@ FROM
     ELSE
     '{}'::json
     END relationer
+
   FROM
     (
     SELECT
-     (SELECT LOWER(($1.registrering).TimePeriod)) as TidsstempelDatoTid 
-    ,(SELECT lower_inc(($1.registrering).TimePeriod)) as GraenseIndikator 
+     (SELECT LOWER(($1.registrering).TimePeriod)) as TidsstempelDatoTid
+    ,(SELECT lower_inc(($1.registrering).TimePeriod)) as GraenseIndikator
     ) as  FraTidspunkt,
     (
     SELECT

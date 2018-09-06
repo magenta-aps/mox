@@ -68,8 +68,10 @@ FROM
     (
       SELECT
       e.relType,
+
       array_agg( _json_object_delete_keys(row_to_json(ROW(e.relType,e.virkning,e.uuid,e.urn,e.objektType)::DokumentRelationType),ARRAY['reltype']::text[])) rel_json_arr
-      from unnest($1.relationer) e(relType,virkning,uuid,urn,objektType) 
+      from unnest($1.relationer) e(relType,virkning,uuid,urn,objektType)
+
       group by e.relType
       order by e.relType asc
     ) as f
@@ -87,7 +89,7 @@ FROM
     ELSE
     '{}'::json
     END relationer
-  ,$1.varianter  
+  ,$1.varianter
   FROM
     (
     SELECT
