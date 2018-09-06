@@ -164,6 +164,9 @@ CREATE INDEX organisation_attr_egenskaber_pat_virkning_notetekst
 
 
 
+
+
+
 /****************************************************************************************************/
 
 
@@ -244,17 +247,22 @@ CREATE TABLE organisation_relation
   rel_maal_urn text null,
   rel_type OrganisationRelationKode not null,
   objekt_type text null,
+
  CONSTRAINT organisation_relation_forkey_organisationregistrering  FOREIGN KEY (organisation_registrering_id) REFERENCES organisation_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
  CONSTRAINT organisation_relation_pkey PRIMARY KEY (id),
  CONSTRAINT organisation_relation_no_virkning_overlap EXCLUDE USING gist (organisation_registrering_id WITH =, _as_convert_organisation_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('adresser'::OrganisationRelationKode ) AND rel_type<>('ansatte'::OrganisationRelationKode ) AND rel_type<>('opgaver'::OrganisationRelationKode ) AND rel_type<>('tilknyttedebrugere'::OrganisationRelationKode ) AND rel_type<>('tilknyttedeenheder'::OrganisationRelationKode ) AND rel_type<>('tilknyttedefunktioner'::OrganisationRelationKode ) AND rel_type<>('tilknyttedeinteressefaellesskaber'::OrganisationRelationKode ) AND rel_type<>('tilknyttedeorganisationer'::OrganisationRelationKode ) AND rel_type<>('tilknyttedepersoner'::OrganisationRelationKode ) AND rel_type<>('tilknyttedeitsystemer'::OrganisationRelationKode )) ,-- no overlapping virkning except for 0..n --relations
  CONSTRAINT organisation_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
+
 );
+
 
 
 CREATE INDEX organisation_relation_idx_rel_maal_obj_uuid
   ON organisation_relation
   USING btree
   (rel_type,objekt_type,rel_maal_uuid);
+
+
 
 CREATE INDEX organisation_relation_idx_rel_maal_obj_urn
   ON organisation_relation

@@ -247,6 +247,9 @@ CREATE INDEX dokument_attr_egenskaber_pat_virkning_notetekst
 
 
 
+
+
+
 /****************************************************************************************************/
 
 
@@ -327,17 +330,22 @@ CREATE TABLE dokument_relation
   rel_maal_urn text null,
   rel_type DokumentRelationKode not null,
   objekt_type text null,
+
  CONSTRAINT dokument_relation_forkey_dokumentregistrering  FOREIGN KEY (dokument_registrering_id) REFERENCES dokument_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
  CONSTRAINT dokument_relation_pkey PRIMARY KEY (id),
  CONSTRAINT dokument_relation_no_virkning_overlap EXCLUDE USING gist (dokument_registrering_id WITH =, _as_convert_dokument_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('arkiver'::DokumentRelationKode ) AND rel_type<>('besvarelser'::DokumentRelationKode ) AND rel_type<>('udgangspunkter'::DokumentRelationKode ) AND rel_type<>('kommentarer'::DokumentRelationKode ) AND rel_type<>('bilag'::DokumentRelationKode ) AND rel_type<>('andredokumenter'::DokumentRelationKode ) AND rel_type<>('andreklasser'::DokumentRelationKode ) AND rel_type<>('andrebehandlere'::DokumentRelationKode ) AND rel_type<>('parter'::DokumentRelationKode ) AND rel_type<>('kopiparter'::DokumentRelationKode ) AND rel_type<>('tilknyttedesager'::DokumentRelationKode )) ,-- no overlapping virkning except for 0..n --relations
  CONSTRAINT dokument_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
+
 );
+
 
 
 CREATE INDEX dokument_relation_idx_rel_maal_obj_uuid
   ON dokument_relation
   USING btree
   (rel_type,objekt_type,rel_maal_uuid);
+
+
 
 CREATE INDEX dokument_relation_idx_rel_maal_obj_urn
   ON dokument_relation
@@ -383,7 +391,6 @@ CREATE INDEX dokument_relation_pat_virkning_notetekst
   ON dokument_relation
   USING gin
   (((virkning).notetekst) gin_trgm_ops);
-
 
 
 
@@ -707,4 +714,6 @@ CREATE INDEX dokument_del_relation_pat_virkning_notetekst
   ON dokument_del_relation
   USING gin
   (((virkning).notetekst) gin_trgm_ops);
+
+
 
