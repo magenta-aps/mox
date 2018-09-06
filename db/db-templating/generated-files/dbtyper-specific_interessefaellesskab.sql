@@ -19,24 +19,33 @@ CREATE TYPE InteressefaellesskabGyldighedTilsType AS (
 )
 ;
 
+
+
 CREATE TYPE InteressefaellesskabEgenskaberAttrType AS (
 brugervendtnoegle text,
 interessefaellesskabsnavn text,
 interessefaellesskabstype text,
+
  virkning Virkning
 );
 
 
+
+
 CREATE TYPE InteressefaellesskabRelationKode AS ENUM  ('branche','interessefaellesskabstype','overordnet','tilhoerer','adresser','opgaver','tilknyttedebrugere','tilknyttedeenheder','tilknyttedefunktioner','tilknyttedeinteressefaellesskaber','tilknyttedeorganisationer','tilknyttedepersoner','tilknyttedeitsystemer');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_interessefaellesskab_relation_kode_to_txt is invoked.
+
+
 
 CREATE TYPE InteressefaellesskabRelationType AS (
   relType InteressefaellesskabRelationKode,
   virkning Virkning,
   uuid uuid,
   urn  text,
-  objektType text 
+  objektType text
 )
 ;
+
+
 
 CREATE TYPE InteressefaellesskabRegistreringType AS
 (
@@ -51,6 +60,9 @@ CREATE TYPE InteressefaellesskabType AS
   id uuid,
   registrering InteressefaellesskabRegistreringType[]
 );  
+
+
+
 
 
 

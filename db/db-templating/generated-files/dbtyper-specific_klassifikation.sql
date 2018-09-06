@@ -19,25 +19,34 @@ CREATE TYPE KlassifikationPubliceretTilsType AS (
 )
 ;
 
+
+
 CREATE TYPE KlassifikationEgenskaberAttrType AS (
 brugervendtnoegle text,
 beskrivelse text,
 kaldenavn text,
 ophavsret text,
+
  virkning Virkning
 );
 
 
+
+
 CREATE TYPE KlassifikationRelationKode AS ENUM  ('ansvarlig','ejer');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_klassifikation_relation_kode_to_txt is invoked.
+
+
 
 CREATE TYPE KlassifikationRelationType AS (
   relType KlassifikationRelationKode,
   virkning Virkning,
   uuid uuid,
   urn  text,
-  objektType text 
+  objektType text
 )
 ;
+
+
 
 CREATE TYPE KlassifikationRegistreringType AS
 (
@@ -52,6 +61,9 @@ CREATE TYPE KlassifikationType AS
   id uuid,
   registrering KlassifikationRegistreringType[]
 );  
+
+
+
 
 
 

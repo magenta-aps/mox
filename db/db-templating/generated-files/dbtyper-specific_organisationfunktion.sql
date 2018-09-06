@@ -19,23 +19,32 @@ CREATE TYPE OrganisationfunktionGyldighedTilsType AS (
 )
 ;
 
+
+
 CREATE TYPE OrganisationfunktionEgenskaberAttrType AS (
 brugervendtnoegle text,
 funktionsnavn text,
+
  virkning Virkning
 );
 
 
+
+
 CREATE TYPE OrganisationfunktionRelationKode AS ENUM  ('organisatoriskfunktionstype','adresser','opgaver','tilknyttedebrugere','tilknyttedeenheder','tilknyttedeorganisationer','tilknyttedeitsystemer','tilknyttedeinteressefaellesskaber','tilknyttedepersoner');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_organisationfunktion_relation_kode_to_txt is invoked.
+
+
 
 CREATE TYPE OrganisationfunktionRelationType AS (
   relType OrganisationfunktionRelationKode,
   virkning Virkning,
   uuid uuid,
   urn  text,
-  objektType text 
+  objektType text
 )
 ;
+
+
 
 CREATE TYPE OrganisationfunktionRegistreringType AS
 (
@@ -50,6 +59,9 @@ CREATE TYPE OrganisationfunktionType AS
   id uuid,
   registrering OrganisationfunktionRegistreringType[]
 );  
+
+
+
 
 
 

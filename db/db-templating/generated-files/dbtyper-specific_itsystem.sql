@@ -19,25 +19,34 @@ CREATE TYPE ItsystemGyldighedTilsType AS (
 )
 ;
 
+
+
 CREATE TYPE ItsystemEgenskaberAttrType AS (
 brugervendtnoegle text,
 itsystemnavn text,
 itsystemtype text,
 konfigurationreference text[],
+
  virkning Virkning
 );
 
 
+
+
 CREATE TYPE ItsystemRelationKode AS ENUM  ('tilhoerer','tilknyttedeorganisationer','tilknyttedeenheder','tilknyttedefunktioner','tilknyttedebrugere','tilknyttedeinteressefaellesskaber','tilknyttedeitsystemer','tilknyttedepersoner','systemtyper','opgaver','adresser');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_itsystem_relation_kode_to_txt is invoked.
+
+
 
 CREATE TYPE ItsystemRelationType AS (
   relType ItsystemRelationKode,
   virkning Virkning,
   uuid uuid,
   urn  text,
-  objektType text 
+  objektType text
 )
 ;
+
+
 
 CREATE TYPE ItsystemRegistreringType AS
 (
@@ -52,6 +61,9 @@ CREATE TYPE ItsystemType AS
   id uuid,
   registrering ItsystemRegistreringType[]
 );  
+
+
+
 
 
 

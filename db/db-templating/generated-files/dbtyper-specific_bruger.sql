@@ -19,24 +19,33 @@ CREATE TYPE BrugerGyldighedTilsType AS (
 )
 ;
 
+
+
 CREATE TYPE BrugerEgenskaberAttrType AS (
 brugervendtnoegle text,
 brugernavn text,
 brugertype text,
+
  virkning Virkning
 );
 
 
+
+
 CREATE TYPE BrugerRelationKode AS ENUM  ('tilhoerer','adresser','brugertyper','opgaver','tilknyttedeenheder','tilknyttedefunktioner','tilknyttedeinteressefaellesskaber','tilknyttedeorganisationer','tilknyttedepersoner','tilknyttedeitsystemer');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_bruger_relation_kode_to_txt is invoked.
+
+
 
 CREATE TYPE BrugerRelationType AS (
   relType BrugerRelationKode,
   virkning Virkning,
   uuid uuid,
   urn  text,
-  objektType text 
+  objektType text
 )
 ;
+
+
 
 CREATE TYPE BrugerRegistreringType AS
 (
@@ -51,6 +60,9 @@ CREATE TYPE BrugerType AS
   id uuid,
   registrering BrugerRegistreringType[]
 );  
+
+
+
 
 
 

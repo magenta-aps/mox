@@ -19,6 +19,8 @@ CREATE TYPE FacetPubliceretTilsType AS (
 )
 ;
 
+
+
 CREATE TYPE FacetEgenskaberAttrType AS (
 brugervendtnoegle text,
 beskrivelse text,
@@ -27,20 +29,27 @@ ophavsret text,
 plan text,
 supplement text,
 retskilde text,
+
  virkning Virkning
 );
 
 
+
+
 CREATE TYPE FacetRelationKode AS ENUM  ('ansvarlig','ejer','facettilhoerer','redaktoerer');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_facet_relation_kode_to_txt is invoked.
+
+
 
 CREATE TYPE FacetRelationType AS (
   relType FacetRelationKode,
   virkning Virkning,
   uuid uuid,
   urn  text,
-  objektType text 
+  objektType text
 )
 ;
+
+
 
 CREATE TYPE FacetRegistreringType AS
 (
@@ -55,6 +64,9 @@ CREATE TYPE FacetType AS
   id uuid,
   registrering FacetRegistreringType[]
 );  
+
+
+
 
 
 

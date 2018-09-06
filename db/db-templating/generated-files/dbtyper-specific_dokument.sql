@@ -19,31 +19,40 @@ CREATE TYPE DokumentFremdriftTilsType AS (
 )
 ;
 
+
+
 CREATE TYPE DokumentEgenskaberAttrType AS (
 brugervendtnoegle text,
 beskrivelse text,
 brevdato ClearableDate,
+
 kassationskode text,
 major ClearableInt,
+
 minor ClearableInt,
+
 offentlighedundtaget offentlighedundtagettype,
 titel text,
 dokumenttype text,
+
  virkning Virkning
 );
 
 
+
+
 CREATE TYPE DokumentRelationKode AS ENUM  ('nyrevision','primaerklasse','ejer','ansvarlig','primaerbehandler','fordelttil','arkiver','besvarelser','udgangspunkter','kommentarer','bilag','andredokumenter','andreklasser','andrebehandlere','parter','kopiparter','tilknyttedesager');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_dokument_relation_kode_to_txt is invoked.
+
+
 
 CREATE TYPE DokumentRelationType AS (
   relType DokumentRelationKode,
   virkning Virkning,
   uuid uuid,
   urn  text,
-  objektType text 
+  objektType text
 )
 ;
-
 
 
 /**************************************************/
@@ -102,6 +111,7 @@ CREATE TYPE DokumentVariantType AS
 
 /**************************************************/
 
+
 CREATE TYPE DokumentRegistreringType AS
 (
 registrering RegistreringBase,
@@ -117,9 +127,14 @@ CREATE TYPE DokumentType AS
   registrering DokumentRegistreringType[]
 );  
 
-/**************************************************/
+
 CREATE TYPE _DokumentVariantDelKey AS
 (
   varianttekst text,
   deltekst text
 );
+
+
+
+
+

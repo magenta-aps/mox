@@ -19,23 +19,32 @@ CREATE TYPE SagFremdriftTilsType AS (
 )
 ;
 
+
+
 CREATE TYPE SagEgenskaberAttrType AS (
 brugervendtnoegle text,
 afleveret ClearableBoolean,
+
 beskrivelse text,
 hjemmel text,
 kassationskode text,
 offentlighedundtaget offentlighedundtagettype,
 principiel ClearableBoolean,
+
 sagsnummer text,
 titel text,
+
  virkning Virkning
 );
 
 
-CREATE TYPE SagRelationKode AS ENUM  ('behandlingarkiv','afleveringsarkiv','primaerklasse','opgaveklasse','handlingsklasse','kontoklasse','sikkerhedsklasse','foelsomhedsklasse','indsatsklasse','ydelsesklasse','ejer','ansvarlig','primaerbehandler','udlaanttil','primaerpart','ydelsesmodtager','oversag','praecedens','afgiftsobjekt','ejendomsskat','andetarkiv','andrebehandlere','sekundaerpart','andresager','byggeri','fredning','journalpost');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_sag_relation_kode_to_txt is invoked.
-CREATE TYPE SagRelationJournalPostSpecifikKode AS ENUM ('journalnotat','vedlagtdokument','tilakteretdokument');
 
+
+CREATE TYPE SagRelationKode AS ENUM  ('behandlingarkiv','afleveringsarkiv','primaerklasse','opgaveklasse','handlingsklasse','kontoklasse','sikkerhedsklasse','foelsomhedsklasse','indsatsklasse','ydelsesklasse','ejer','ansvarlig','primaerbehandler','udlaanttil','primaerpart','ydelsesmodtager','oversag','praecedens','afgiftsobjekt','ejendomsskat','andetarkiv','andrebehandlere','sekundaerpart','andresager','byggeri','fredning','journalpost');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_sag_relation_kode_to_txt is invoked.
+
+
+CREATE TYPE SagRelationJournalPostSpecifikKode AS ENUM ('journalnotat','vedlagtdokument','tilakteretdokument');
+ 
 CREATE TYPE JournalNotatType AS (
 titel text,
 notat text,
@@ -61,6 +70,8 @@ CREATE TYPE SagRelationType AS (
 )
 ;
 
+
+
 CREATE TYPE SagRegistreringType AS
 (
 registrering RegistreringBase,
@@ -75,9 +86,14 @@ CREATE TYPE SagType AS
   registrering SagRegistreringType[]
 );  
 
+
 CREATE Type _SagRelationMaxIndex AS
 (
   relType SagRelationKode,
   indeks int
 );
+
+
+
+
 

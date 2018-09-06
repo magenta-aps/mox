@@ -19,23 +19,32 @@ CREATE TYPE OrganisationenhedGyldighedTilsType AS (
 )
 ;
 
+
+
 CREATE TYPE OrganisationenhedEgenskaberAttrType AS (
 brugervendtnoegle text,
 enhedsnavn text,
+
  virkning Virkning
 );
 
 
+
+
 CREATE TYPE OrganisationenhedRelationKode AS ENUM  ('branche','enhedstype','overordnet','produktionsenhed','skatteenhed','tilhoerer','adresser','ansatte','opgaver','tilknyttedebrugere','tilknyttedeenheder','tilknyttedefunktioner','tilknyttedeinteressefaellesskaber','tilknyttedeorganisationer','tilknyttedepersoner','tilknyttedeitsystemer');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_organisationenhed_relation_kode_to_txt is invoked.
+
+
 
 CREATE TYPE OrganisationenhedRelationType AS (
   relType OrganisationenhedRelationKode,
   virkning Virkning,
   uuid uuid,
   urn  text,
-  objektType text 
+  objektType text
 )
 ;
+
+
 
 CREATE TYPE OrganisationenhedRegistreringType AS
 (
@@ -50,6 +59,9 @@ CREATE TYPE OrganisationenhedType AS
   id uuid,
   registrering OrganisationenhedRegistreringType[]
 );  
+
+
+
 
 
 

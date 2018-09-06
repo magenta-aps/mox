@@ -19,6 +19,8 @@ CREATE TYPE LoghaendelseGyldighedTilsType AS (
 )
 ;
 
+
+
 CREATE TYPE LoghaendelseEgenskaberAttrType AS (
 service text,
 klasse text,
@@ -28,20 +30,27 @@ objekttype text,
 returkode text,
 returtekst text,
 note text,
+
  virkning Virkning
 );
 
 
+
+
 CREATE TYPE LoghaendelseRelationKode AS ENUM  ('objekt','bruger','brugerrolle');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_loghaendelse_relation_kode_to_txt is invoked.
+
+
 
 CREATE TYPE LoghaendelseRelationType AS (
   relType LoghaendelseRelationKode,
   virkning Virkning,
   uuid uuid,
   urn  text,
-  objektType text 
+  objektType text
 )
 ;
+
+
 
 CREATE TYPE LoghaendelseRegistreringType AS
 (
@@ -56,6 +65,9 @@ CREATE TYPE LoghaendelseType AS
   id uuid,
   registrering LoghaendelseRegistreringType[]
 );  
+
+
+
 
 
 
