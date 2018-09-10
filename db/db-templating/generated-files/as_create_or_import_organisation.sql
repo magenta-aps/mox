@@ -23,7 +23,9 @@ DECLARE
   organisation_tils_gyldighed_obj organisationGyldighedTilsType;
   
   organisation_relationer OrganisationRelationType;
+  
   auth_filtered_uuids uuid[];
+  
   does_exist boolean;
   new_organisation_registrering organisation_registrering;
 BEGIN
@@ -108,20 +110,23 @@ IF organisation_registrering.attrEgenskaber IS NOT NULL and coalesce(array_lengt
   FOREACH organisation_attr_egenskaber_obj IN ARRAY organisation_registrering.attrEgenskaber
   LOOP
 
+  
     INSERT INTO organisation_attr_egenskaber (
+      
       brugervendtnoegle,
       organisationsnavn,
       virkning,
       organisation_registrering_id
     )
     SELECT
+     
      organisation_attr_egenskaber_obj.brugervendtnoegle,
       organisation_attr_egenskaber_obj.organisationsnavn,
       organisation_attr_egenskaber_obj.virkning,
       organisation_registrering_id
     ;
- 
-
+  
+    
   END LOOP;
 END IF;
 
@@ -155,6 +160,8 @@ END IF;
 /*********************************/
 --Insert relations
 
+
+
     INSERT INTO organisation_relation (
       organisation_registrering_id,
       virkning,
@@ -172,6 +179,8 @@ END IF;
       a.objektType
     FROM unnest(organisation_registrering.relationer) a
   ;
+
+
 
 
 /*** Verify that the object meets the stipulated access allowed criteria  ***/

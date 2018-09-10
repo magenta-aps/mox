@@ -23,7 +23,9 @@ DECLARE
   facet_tils_publiceret_obj facetPubliceretTilsType;
   
   facet_relationer FacetRelationType;
+  
   auth_filtered_uuids uuid[];
+  
   does_exist boolean;
   new_facet_registrering facet_registrering;
 BEGIN
@@ -108,7 +110,9 @@ IF facet_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(facet
   FOREACH facet_attr_egenskaber_obj IN ARRAY facet_registrering.attrEgenskaber
   LOOP
 
+  
     INSERT INTO facet_attr_egenskaber (
+      
       brugervendtnoegle,
       beskrivelse,
       opbygning,
@@ -120,6 +124,7 @@ IF facet_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(facet
       facet_registrering_id
     )
     SELECT
+     
      facet_attr_egenskaber_obj.brugervendtnoegle,
       facet_attr_egenskaber_obj.beskrivelse,
       facet_attr_egenskaber_obj.opbygning,
@@ -130,8 +135,8 @@ IF facet_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(facet
       facet_attr_egenskaber_obj.virkning,
       facet_registrering_id
     ;
- 
-
+  
+    
   END LOOP;
 END IF;
 
@@ -165,6 +170,8 @@ END IF;
 /*********************************/
 --Insert relations
 
+
+
     INSERT INTO facet_relation (
       facet_registrering_id,
       virkning,
@@ -182,6 +189,8 @@ END IF;
       a.objektType
     FROM unnest(facet_registrering.relationer) a
   ;
+
+
 
 
 /*** Verify that the object meets the stipulated access allowed criteria  ***/

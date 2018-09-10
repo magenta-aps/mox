@@ -23,7 +23,9 @@ DECLARE
   klassifikation_tils_publiceret_obj klassifikationPubliceretTilsType;
   
   klassifikation_relationer KlassifikationRelationType;
+  
   auth_filtered_uuids uuid[];
+  
   does_exist boolean;
   new_klassifikation_registrering klassifikation_registrering;
 BEGIN
@@ -108,7 +110,9 @@ IF klassifikation_registrering.attrEgenskaber IS NOT NULL and coalesce(array_len
   FOREACH klassifikation_attr_egenskaber_obj IN ARRAY klassifikation_registrering.attrEgenskaber
   LOOP
 
+  
     INSERT INTO klassifikation_attr_egenskaber (
+      
       brugervendtnoegle,
       beskrivelse,
       kaldenavn,
@@ -117,6 +121,7 @@ IF klassifikation_registrering.attrEgenskaber IS NOT NULL and coalesce(array_len
       klassifikation_registrering_id
     )
     SELECT
+     
      klassifikation_attr_egenskaber_obj.brugervendtnoegle,
       klassifikation_attr_egenskaber_obj.beskrivelse,
       klassifikation_attr_egenskaber_obj.kaldenavn,
@@ -124,8 +129,8 @@ IF klassifikation_registrering.attrEgenskaber IS NOT NULL and coalesce(array_len
       klassifikation_attr_egenskaber_obj.virkning,
       klassifikation_registrering_id
     ;
- 
-
+  
+    
   END LOOP;
 END IF;
 
@@ -159,6 +164,8 @@ END IF;
 /*********************************/
 --Insert relations
 
+
+
     INSERT INTO klassifikation_relation (
       klassifikation_registrering_id,
       virkning,
@@ -176,6 +183,8 @@ END IF;
       a.objektType
     FROM unnest(klassifikation_registrering.relationer) a
   ;
+
+
 
 
 /*** Verify that the object meets the stipulated access allowed criteria  ***/

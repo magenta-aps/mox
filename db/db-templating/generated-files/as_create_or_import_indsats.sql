@@ -24,12 +24,15 @@ DECLARE
   indsats_tils_fremdrift_obj indsatsFremdriftTilsType;
   
   indsats_relationer IndsatsRelationType;
+  
   auth_filtered_uuids uuid[];
+  
   indsats_relation_kode indsatsRelationKode;
   indsats_uuid_underscores text;
   indsats_rel_seq_name text;
   indsats_rel_type_cardinality_unlimited indsatsRelationKode[]:=ARRAY['indsatskvalitet'::IndsatsRelationKode,'indsatsaktoer'::IndsatsRelationKode,'samtykke'::IndsatsRelationKode,'indsatssag'::IndsatsRelationKode,'indsatsdokument'::IndsatsRelationKode]::indsatsRelationKode[];
   indsats_rel_type_cardinality_unlimited_present_in_argument indsatsRelationKode[];
+  
   does_exist boolean;
   new_indsats_registrering indsats_registrering;
 BEGIN
@@ -114,7 +117,9 @@ IF indsats_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(ind
   FOREACH indsats_attr_egenskaber_obj IN ARRAY indsats_registrering.attrEgenskaber
   LOOP
 
+  
     INSERT INTO indsats_attr_egenskaber (
+      
       brugervendtnoegle,
       beskrivelse,
       starttidspunkt,
@@ -123,6 +128,7 @@ IF indsats_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(ind
       indsats_registrering_id
     )
     SELECT
+     
      indsats_attr_egenskaber_obj.brugervendtnoegle,
       indsats_attr_egenskaber_obj.beskrivelse,
       indsats_attr_egenskaber_obj.starttidspunkt,
@@ -130,8 +136,8 @@ IF indsats_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(ind
       indsats_attr_egenskaber_obj.virkning,
       indsats_registrering_id
     ;
- 
-
+  
+    
   END LOOP;
 END IF;
 
@@ -188,6 +194,7 @@ END IF;
 /*********************************/
 --Insert relations
 
+
 IF coalesce(array_length(indsats_registrering.relationer,1),0)>0 THEN
 
 --Create temporary sequences
@@ -195,6 +202,7 @@ indsats_uuid_underscores:=replace(indsats_uuid::text, '-', '_');
 
 SELECT array_agg( DISTINCT a.RelType) into indsats_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(indsats_registrering.relationer) a WHERE a.RelType = any (indsats_rel_type_cardinality_unlimited) ;
 IF coalesce(array_length(indsats_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
+
 FOREACH indsats_relation_kode IN ARRAY (indsats_rel_type_cardinality_unlimited_present_in_argument)
   LOOP
   indsats_rel_seq_name := 'indsats_' || indsats_relation_kode::text || indsats_uuid_underscores;
@@ -208,6 +216,7 @@ FOREACH indsats_relation_kode IN ARRAY (indsats_rel_type_cardinality_unlimited_p
 
 END LOOP;
 END IF;
+
 
     INSERT INTO indsats_relation (
       indsats_registrering_id,
@@ -225,13 +234,14 @@ END IF;
       a.urn,
       a.relType,
       a.objektType,
-        CASE WHEN a.relType = any (indsats_rel_type_cardinality_unlimited) THEN --rel_index
-        nextval('indsats_' || a.relType::text || indsats_uuid_underscores)
-        ELSE 
-        NULL
-        END
+      CASE WHEN a.relType = any (indsats_rel_type_cardinality_unlimited) THEN --rel_index
+      nextval('indsats_' || a.relType::text || indsats_uuid_underscores)
+      ELSE 
+      NULL
+      END
     FROM unnest(indsats_registrering.relationer) a
-    ;
+  ;
+
 
 
 --Drop temporary sequences
@@ -242,6 +252,7 @@ FOREACH indsats_relation_kode IN ARRAY (indsats_rel_type_cardinality_unlimited_p
   EXECUTE 'DROP  SEQUENCE ' || indsats_rel_seq_name || ';';
 END LOOP;
 END IF;
+
 
 END IF;
 
