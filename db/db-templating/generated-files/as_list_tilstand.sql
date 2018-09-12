@@ -65,13 +65,15 @@ FROM
 				b.rel_maal_uuid,
 				b.rel_maal_urn,
 				b.objekt_type,
- 				b.rel_index,
-				b.tilstand_vaerdi_attr  
+                b.rel_index,
+                b.tilstand_vaerdi_attr
 			):: TilstandRelationType
 		ELSE
 		NULL
 		END
+        
 		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.objekt_type,b.rel_index,b.tilstand_vaerdi_attr,b.virkning
+        
 	)) TilstandRelationArr
 	FROM
 	(
@@ -119,18 +121,25 @@ FROM
 					a.tilstand_registrering_id,
 					a.registrering,
 					_remove_nulls_in_array(array_agg(
-						CASE 
+						CASE
+                        
 						WHEN b.id is not null THEN
+                        
 						ROW(
+                            
 					 		b.brugervendtnoegle,
 					 		b.beskrivelse,
-					   		b.virkning 
+					   		b.virkning
+                            
 							)::TilstandEgenskaberAttrType
 						ELSE
 						NULL
 						END
+                        
 						order by b.brugervendtnoegle,b.beskrivelse,b.virkning
-					)) TilstandAttrEgenskaberArr 
+                        
+					)) TilstandAttrEgenskaberArr
+                    
 					FROM
 					(
 					SELECT
@@ -141,7 +150,8 @@ FROM
 					JOIN 		tilstand_registrering b 	ON b.tilstand_id=a.id
 					WHERE a.id = ANY (tilstand_uuids) AND ((registrering_tstzrange is null AND upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
 					) as a
-					LEFT JOIN tilstand_attr_egenskaber as b ON b.tilstand_registrering_id=a.tilstand_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
+					LEFT JOIN tilstand_attr_egenskaber as b ON b.tilstand_registrering_id=a.tilstand_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given
+                    
 					GROUP BY 
 					a.tilstand_id,
 					a.tilstand_registrering_id,
@@ -171,6 +181,7 @@ FROM
 	a.TilstandTilsPubliceretArr,
 	a.TilstandTilsStatusArr
 ) as a
+
 WHERE a.tilstand_id IS NOT NULL
 GROUP BY 
 a.tilstand_id

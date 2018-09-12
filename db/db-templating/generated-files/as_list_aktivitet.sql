@@ -65,13 +65,15 @@ FROM
 				b.rel_maal_uuid,
 				b.rel_maal_urn,
 				b.objekt_type,
-				b.rel_index,
-				b.aktoer_attr 
+                b.rel_index,
+                b.aktoer_attr
 			):: AktivitetRelationType
 		ELSE
 		NULL
 		END
+        
 		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.objekt_type,b.rel_index,b.aktoer_attr,b.virkning
+        
 	)) AktivitetRelationArr
 	FROM
 	(
@@ -119,9 +121,12 @@ FROM
 					a.aktivitet_registrering_id,
 					a.registrering,
 					_remove_nulls_in_array(array_agg(
-						CASE 
+						CASE
+                        
 						WHEN b.id is not null THEN
+                        
 						ROW(
+                            
 					 		b.brugervendtnoegle,
 					 		b.aktivitetnavn,
 					 		b.beskrivelse,
@@ -129,13 +134,17 @@ FROM
 					 		b.sluttidspunkt,
 					 		b.tidsforbrug,
 					 		b.formaal,
-					   		b.virkning 
+					   		b.virkning
+                            
 							)::AktivitetEgenskaberAttrType
 						ELSE
 						NULL
 						END
+                        
 						order by b.brugervendtnoegle,b.aktivitetnavn,b.beskrivelse,b.starttidspunkt,b.sluttidspunkt,b.tidsforbrug,b.formaal,b.virkning
-					)) AktivitetAttrEgenskaberArr 
+                        
+					)) AktivitetAttrEgenskaberArr
+                    
 					FROM
 					(
 					SELECT
@@ -146,7 +155,8 @@ FROM
 					JOIN 		aktivitet_registrering b 	ON b.aktivitet_id=a.id
 					WHERE a.id = ANY (aktivitet_uuids) AND ((registrering_tstzrange is null AND upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
 					) as a
-					LEFT JOIN aktivitet_attr_egenskaber as b ON b.aktivitet_registrering_id=a.aktivitet_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
+					LEFT JOIN aktivitet_attr_egenskaber as b ON b.aktivitet_registrering_id=a.aktivitet_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given
+                    
 					GROUP BY 
 					a.aktivitet_id,
 					a.aktivitet_registrering_id,
@@ -176,6 +186,7 @@ FROM
 	a.AktivitetTilsPubliceretArr,
 	a.AktivitetTilsStatusArr
 ) as a
+
 WHERE a.aktivitet_id IS NOT NULL
 GROUP BY 
 a.aktivitet_id

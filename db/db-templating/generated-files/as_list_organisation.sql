@@ -62,12 +62,14 @@ FROM
 				b.virkning,
 				b.rel_maal_uuid,
 				b.rel_maal_urn,
-				b.objekt_type 
+				b.objekt_type
 			):: OrganisationRelationType
 		ELSE
 		NULL
 		END
+        
 		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.objekt_type,b.virkning
+        
 	)) OrganisationRelationArr
 	FROM
 	(
@@ -95,18 +97,25 @@ FROM
 					a.organisation_registrering_id,
 					a.registrering,
 					_remove_nulls_in_array(array_agg(
-						CASE 
+						CASE
+                        
 						WHEN b.id is not null THEN
+                        
 						ROW(
+                            
 					 		b.brugervendtnoegle,
 					 		b.organisationsnavn,
-					   		b.virkning 
+					   		b.virkning
+                            
 							)::OrganisationEgenskaberAttrType
 						ELSE
 						NULL
 						END
+                        
 						order by b.brugervendtnoegle,b.organisationsnavn,b.virkning
-					)) OrganisationAttrEgenskaberArr 
+                        
+					)) OrganisationAttrEgenskaberArr
+                    
 					FROM
 					(
 					SELECT
@@ -117,7 +126,8 @@ FROM
 					JOIN 		organisation_registrering b 	ON b.organisation_id=a.id
 					WHERE a.id = ANY (organisation_uuids) AND ((registrering_tstzrange is null AND upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
 					) as a
-					LEFT JOIN organisation_attr_egenskaber as b ON b.organisation_registrering_id=a.organisation_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
+					LEFT JOIN organisation_attr_egenskaber as b ON b.organisation_registrering_id=a.organisation_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given
+                    
 					GROUP BY 
 					a.organisation_id,
 					a.organisation_registrering_id,
@@ -138,6 +148,7 @@ FROM
 	a.OrganisationAttrEgenskaberArr,
 	a.OrganisationTilsGyldighedArr
 ) as a
+
 WHERE a.organisation_id IS NOT NULL
 GROUP BY 
 a.organisation_id

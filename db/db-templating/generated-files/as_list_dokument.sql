@@ -42,7 +42,7 @@ ROW(
 			a.DokumentTilsFremdriftArr,
 			a.DokumentAttrEgenskaberArr,
 			a.DokumentRelationArr,
-			b.varianter
+            b.varianter
 		)::DokumentRegistreringType
 		order by upper((a.registrering).TimePeriod) DESC		
 	) 
@@ -63,12 +63,14 @@ FROM
 				b.virkning,
 				b.rel_maal_uuid,
 				b.rel_maal_urn,
-				b.objekt_type 
+				b.objekt_type
 			):: DokumentRelationType
 		ELSE
 		NULL
 		END
+        
 		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.objekt_type,b.virkning
+        
 	)) DokumentRelationArr
 	FROM
 	(
@@ -96,9 +98,12 @@ FROM
 					a.dokument_registrering_id,
 					a.registrering,
 					_remove_nulls_in_array(array_agg(
-						CASE 
+						CASE
+                        
 						WHEN b.id is not null THEN
+                        
 						ROW(
+                            
 					 		b.brugervendtnoegle,
 					 		b.beskrivelse,
 					 		b.brevdato,
@@ -108,13 +113,17 @@ FROM
 					 		b.offentlighedundtaget,
 					 		b.titel,
 					 		b.dokumenttype,
-					   		b.virkning 
+					   		b.virkning
+                            
 							)::DokumentEgenskaberAttrType
 						ELSE
 						NULL
 						END
+                        
 						order by b.brugervendtnoegle,b.beskrivelse,b.brevdato,b.kassationskode,b.major,b.minor,b.offentlighedundtaget,b.titel,b.dokumenttype,b.virkning
-					)) DokumentAttrEgenskaberArr 
+                        
+					)) DokumentAttrEgenskaberArr
+                    
 					FROM
 					(
 					SELECT
@@ -125,7 +134,8 @@ FROM
 					JOIN 		dokument_registrering b 	ON b.dokument_id=a.id
 					WHERE a.id = ANY (dokument_uuids) AND ((registrering_tstzrange is null AND upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
 					) as a
-					LEFT JOIN dokument_attr_egenskaber as b ON b.dokument_registrering_id=a.dokument_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
+					LEFT JOIN dokument_attr_egenskaber as b ON b.dokument_registrering_id=a.dokument_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given
+                    
 					GROUP BY 
 					a.dokument_id,
 					a.dokument_registrering_id,
@@ -146,7 +156,9 @@ FROM
 	a.DokumentAttrEgenskaberArr,
 	a.DokumentTilsFremdriftArr
 ) as a
+
 LEFT JOIN _as_list_dokument_varianter(dokument_uuids,registrering_tstzrange,virkning_tstzrange) b on a.dokument_registrering_id=b.dokument_registrering_id
+
 WHERE a.dokument_id IS NOT NULL
 GROUP BY 
 a.dokument_id

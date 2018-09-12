@@ -62,12 +62,14 @@ FROM
 				b.virkning,
 				b.rel_maal_uuid,
 				b.rel_maal_urn,
-				b.objekt_type 
+				b.objekt_type
 			):: InteressefaellesskabRelationType
 		ELSE
 		NULL
 		END
+        
 		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.objekt_type,b.virkning
+        
 	)) InteressefaellesskabRelationArr
 	FROM
 	(
@@ -95,19 +97,26 @@ FROM
 					a.interessefaellesskab_registrering_id,
 					a.registrering,
 					_remove_nulls_in_array(array_agg(
-						CASE 
+						CASE
+                        
 						WHEN b.id is not null THEN
+                        
 						ROW(
+                            
 					 		b.brugervendtnoegle,
 					 		b.interessefaellesskabsnavn,
 					 		b.interessefaellesskabstype,
-					   		b.virkning 
+					   		b.virkning
+                            
 							)::InteressefaellesskabEgenskaberAttrType
 						ELSE
 						NULL
 						END
+                        
 						order by b.brugervendtnoegle,b.interessefaellesskabsnavn,b.interessefaellesskabstype,b.virkning
-					)) InteressefaellesskabAttrEgenskaberArr 
+                        
+					)) InteressefaellesskabAttrEgenskaberArr
+                    
 					FROM
 					(
 					SELECT
@@ -118,7 +127,8 @@ FROM
 					JOIN 		interessefaellesskab_registrering b 	ON b.interessefaellesskab_id=a.id
 					WHERE a.id = ANY (interessefaellesskab_uuids) AND ((registrering_tstzrange is null AND upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
 					) as a
-					LEFT JOIN interessefaellesskab_attr_egenskaber as b ON b.interessefaellesskab_registrering_id=a.interessefaellesskab_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
+					LEFT JOIN interessefaellesskab_attr_egenskaber as b ON b.interessefaellesskab_registrering_id=a.interessefaellesskab_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given
+                    
 					GROUP BY 
 					a.interessefaellesskab_id,
 					a.interessefaellesskab_registrering_id,
@@ -139,6 +149,7 @@ FROM
 	a.InteressefaellesskabAttrEgenskaberArr,
 	a.InteressefaellesskabTilsGyldighedArr
 ) as a
+
 WHERE a.interessefaellesskab_id IS NOT NULL
 GROUP BY 
 a.interessefaellesskab_id
