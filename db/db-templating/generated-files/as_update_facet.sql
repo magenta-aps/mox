@@ -22,6 +22,7 @@ CREATE OR REPLACE FUNCTION as_update_facet(
   attrEgenskaber FacetEgenskaberAttrType[],
   tilsPubliceret FacetPubliceretTilsType[],
   relationer FacetRelationType[],
+  
   lostUpdatePreventionTZ TIMESTAMPTZ = null,
   auth_criteria_arr FacetRegistreringType[]=null
 	)
@@ -36,7 +37,9 @@ DECLARE
   prev_facet_registrering facet_registrering;
   facet_relation_navn FacetRelationKode;
   attrEgenskaberObj FacetEgenskaberAttrType;
+  
   auth_filtered_uuids uuid[];
+  
 BEGIN
 
 --create a new registrering
@@ -76,9 +79,13 @@ IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
 ELSE
 
   --1) Insert relations given as part of this update
-  --2) Insert relations of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
+  --2) for aktivitet: Insert relations of previous registration, with index values not included in this update. Please notice that for the logic to work,
+   --  it is very important that the index sequences start with the max value for index of the same type in the previous registration
+  --2) for everthing else: Insert relations of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
 
   --Ad 1)
+
+
 
 
 
@@ -98,16 +105,20 @@ ELSE
                 a.relType,
                   a.objektType
       FROM unnest(relationer) as a
+      
     ;
+
 
    
   --Ad 2)
 
   /**********************/
-  -- 0..1 relations 
+  -- 0..1 relations
+  
    
-
+  
   FOREACH facet_relation_navn in array  ARRAY['ansvarlig'::FacetRelationKode,'ejer'::FacetRelationKode,'facettilhoerer'::FacetRelationKode]::FacetRelationKode[]
+  
   LOOP
 
     INSERT INTO facet_relation (
@@ -153,10 +164,12 @@ ELSE
   --We only have to check if there are any of the relations with the given name present in the new registration, otherwise copy the ones from the previous registration
 
 
+
   FOREACH facet_relation_navn in array ARRAY['redaktoerer'::FacetRelationKode]::FacetRelationKode[]
   LOOP
 
     IF NOT EXISTS  (SELECT 1 FROM facet_relation WHERE facet_registrering_id=new_facet_registrering.id and rel_type=facet_relation_navn) THEN
+
 
       INSERT INTO facet_relation (
             facet_registrering_id,
@@ -168,6 +181,7 @@ ELSE
           )
       SELECT 
             new_facet_registrering.id,
+            
               virkning,
                 rel_maal_uuid,
                   rel_maal_urn,
@@ -178,9 +192,11 @@ ELSE
       and rel_type=facet_relation_navn 
       ;
 
+
     END IF;
               
   END LOOP;
+
 
 
 /**********************/
@@ -290,6 +306,7 @@ IF attrEgenskaber IS NOT null THEN
    (attrEgenskaberObj).retskilde is null 
   THEN
 
+
   INSERT INTO
   facet_attr_egenskaber
   (
@@ -298,12 +315,19 @@ IF attrEgenskaber IS NOT null THEN
     ,facet_registrering_id
   )
   SELECT
+  
     coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+  
     coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
+  
     coalesce(attrEgenskaberObj.opbygning,a.opbygning),
+  
     coalesce(attrEgenskaberObj.ophavsret,a.ophavsret),
+  
     coalesce(attrEgenskaberObj.plan,a.plan),
+  
     coalesce(attrEgenskaberObj.supplement,a.supplement),
+  
     coalesce(attrEgenskaberObj.retskilde,a.retskilde),
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
@@ -316,7 +340,8 @@ IF attrEgenskaber IS NOT null THEN
   WHERE
     a.facet_registrering_id=prev_facet_registrering.id 
     and (a.virkning).TimePeriod && (attrEgenskaberObj.virkning).TimePeriod
-  ;
+  
+ ;
 
   --For any periods within the virkning of the attrEgenskaberObj, that is NOT covered by any "merged" rows inserted above, generate and insert rows
 
@@ -328,12 +353,19 @@ IF attrEgenskaber IS NOT null THEN
     ,facet_registrering_id
   )
   SELECT 
+    
     attrEgenskaberObj.brugervendtnoegle, 
+    
     attrEgenskaberObj.beskrivelse, 
+    
     attrEgenskaberObj.opbygning, 
+    
     attrEgenskaberObj.ophavsret, 
+    
     attrEgenskaberObj.plan, 
+    
     attrEgenskaberObj.supplement, 
+    
     attrEgenskaberObj.retskilde,
 	  ROW (
 	       b.tz_range_leftover,
@@ -351,10 +383,13 @@ IF attrEgenskaber IS NOT null THEN
        b.facet_registrering_id=new_facet_registrering.id
   ) as a
   JOIN unnest(_subtract_tstzrange_arr((attrEgenskaberObj.virkning).TimePeriod,a.tzranges_of_new_reg)) as b(tz_range_leftover) on true
-  ;
+  
+;
 
   ELSE
     --insert attrEgenskaberObj raw (if there were no null-valued fields) 
+
+    
 
     INSERT INTO
     facet_attr_egenskaber
@@ -363,7 +398,8 @@ IF attrEgenskaber IS NOT null THEN
     ,virkning
     ,facet_registrering_id
     )
-    VALUES ( 
+    VALUES (
+     
     attrEgenskaberObj.brugervendtnoegle, 
     attrEgenskaberObj.beskrivelse, 
     attrEgenskaberObj.opbygning, 
@@ -373,7 +409,9 @@ IF attrEgenskaber IS NOT null THEN
     attrEgenskaberObj.retskilde,
     attrEgenskaberObj.virkning,
     new_facet_registrering.id
+    
     );
+    
 
   END IF;
 
@@ -387,12 +425,14 @@ ELSE
 
 --Handle egenskaber of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
 
+
 INSERT INTO facet_attr_egenskaber (
     brugervendtnoegle,beskrivelse,opbygning,ophavsret,plan,supplement,retskilde
     ,virkning
     ,facet_registrering_id
 )
-SELECT
+SELECT 
+   
       a.brugervendtnoegle,
       a.beskrivelse,
       a.opbygning,
@@ -417,7 +457,8 @@ FROM
 ) d
   JOIN facet_attr_egenskaber a ON true  
   JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
-  WHERE a.facet_registrering_id=prev_facet_registrering.id     
+  WHERE a.facet_registrering_id=prev_facet_registrering.id
+  
 ;
 
 
@@ -425,6 +466,13 @@ FROM
 
 
 END IF;
+
+
+
+
+
+
+
 
 
 /******************************************************************/
@@ -445,7 +493,7 @@ read_new_facet_reg:=ROW(
 ROW(null,(read_new_facet.registrering[1].registrering).livscykluskode,null,null)::registreringBase,
 (read_new_facet.registrering[1]).tilsPubliceret ,
 (read_new_facet.registrering[1]).attrEgenskaber ,
-(read_new_facet.registrering[1]).relationer 
+(read_new_facet.registrering[1]).relationer
 )::facetRegistreringType
 ;
 
@@ -453,7 +501,7 @@ read_prev_facet_reg:=ROW(
 ROW(null,(read_prev_facet.registrering[1].registrering).livscykluskode,null,null)::registreringBase,
 (read_prev_facet.registrering[1]).tilsPubliceret ,
 (read_prev_facet.registrering[1]).attrEgenskaber ,
-(read_prev_facet.registrering[1]).relationer 
+(read_prev_facet.registrering[1]).relationer
 )::facetRegistreringType
 ;
 

@@ -22,7 +22,9 @@ CREATE OR REPLACE FUNCTION as_update_dokument(
   attrEgenskaber DokumentEgenskaberAttrType[],
   tilsFremdrift DokumentFremdriftTilsType[],
   relationer DokumentRelationType[],
-  varianter  DokumentVariantType[],
+  
+  varianter DokumentVariantType[],
+  
   lostUpdatePreventionTZ TIMESTAMPTZ = null,
   auth_criteria_arr DokumentRegistreringType[]=null
 	)
@@ -37,7 +39,9 @@ DECLARE
   prev_dokument_registrering dokument_registrering;
   dokument_relation_navn DokumentRelationKode;
   attrEgenskaberObj DokumentEgenskaberAttrType;
+  
   auth_filtered_uuids uuid[];
+  
   dokument_variant_obj DokumentVariantType;
   dokument_variant_egenskab_obj DokumentVariantEgenskaberType;
   dokument_del_obj DokumentDelType;
@@ -56,6 +60,7 @@ DECLARE
   dokument_variant_del_prev_reg _DokumentVariantDelKey;
   dokument_del_id bigint;
   dokument_variant_del_prev_reg_rel_transfer _DokumentVariantDelKey[];
+  
 BEGIN
 
 --create a new registrering
@@ -95,9 +100,13 @@ IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
 ELSE
 
   --1) Insert relations given as part of this update
-  --2) Insert relations of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
+  --2) for aktivitet: Insert relations of previous registration, with index values not included in this update. Please notice that for the logic to work,
+   --  it is very important that the index sequences start with the max value for index of the same type in the previous registration
+  --2) for everthing else: Insert relations of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
 
   --Ad 1)
+
+
 
 
 
@@ -117,16 +126,20 @@ ELSE
                 a.relType,
                   a.objektType
       FROM unnest(relationer) as a
+      
     ;
+
 
    
   --Ad 2)
 
   /**********************/
-  -- 0..1 relations 
+  -- 0..1 relations
+  
    
-
+  
   FOREACH dokument_relation_navn in array  ARRAY['nyrevision'::DokumentRelationKode,'primaerklasse'::DokumentRelationKode,'ejer'::DokumentRelationKode,'ansvarlig'::DokumentRelationKode,'primaerbehandler'::DokumentRelationKode,'fordelttil'::DokumentRelationKode]::DokumentRelationKode[]
+  
   LOOP
 
     INSERT INTO dokument_relation (
@@ -172,10 +185,12 @@ ELSE
   --We only have to check if there are any of the relations with the given name present in the new registration, otherwise copy the ones from the previous registration
 
 
+
   FOREACH dokument_relation_navn in array ARRAY['arkiver'::DokumentRelationKode,'besvarelser'::DokumentRelationKode,'udgangspunkter'::DokumentRelationKode,'kommentarer'::DokumentRelationKode,'bilag'::DokumentRelationKode,'andredokumenter'::DokumentRelationKode,'andreklasser'::DokumentRelationKode,'andrebehandlere'::DokumentRelationKode,'parter'::DokumentRelationKode,'kopiparter'::DokumentRelationKode,'tilknyttedesager'::DokumentRelationKode]::DokumentRelationKode[]
   LOOP
 
     IF NOT EXISTS  (SELECT 1 FROM dokument_relation WHERE dokument_registrering_id=new_dokument_registrering.id and rel_type=dokument_relation_navn) THEN
+
 
       INSERT INTO dokument_relation (
             dokument_registrering_id,
@@ -187,6 +202,7 @@ ELSE
           )
       SELECT 
             new_dokument_registrering.id,
+            
               virkning,
                 rel_maal_uuid,
                   rel_maal_urn,
@@ -197,9 +213,11 @@ ELSE
       and rel_type=dokument_relation_navn 
       ;
 
+
     END IF;
               
   END LOOP;
+
 
 
 /**********************/
@@ -311,6 +329,7 @@ IF attrEgenskaber IS NOT null THEN
    (attrEgenskaberObj).dokumenttype is null 
   THEN
 
+
   INSERT INTO
   dokument_attr_egenskaber
   (
@@ -319,20 +338,29 @@ IF attrEgenskaber IS NOT null THEN
     ,dokument_registrering_id
   )
   SELECT
+  
     coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
-    coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse), 
-    CASE WHEN (attrEgenskaberObj.brevdato).cleared THEN NULL 
+  
+    coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
+   
+    CASE WHEN ((attrEgenskaberObj.brevdato).cleared) THEN NULL
     ELSE coalesce((attrEgenskaberObj.brevdato).value,a.brevdato)
     END,
-    coalesce(attrEgenskaberObj.kassationskode,a.kassationskode), 
-    CASE WHEN (attrEgenskaberObj.major).cleared THEN NULL 
+  
+    coalesce(attrEgenskaberObj.kassationskode,a.kassationskode),
+   
+    CASE WHEN ((attrEgenskaberObj.major).cleared) THEN NULL
     ELSE coalesce((attrEgenskaberObj.major).value,a.major)
-    END, 
-    CASE WHEN (attrEgenskaberObj.minor).cleared THEN NULL 
+    END,
+   
+    CASE WHEN ((attrEgenskaberObj.minor).cleared) THEN NULL
     ELSE coalesce((attrEgenskaberObj.minor).value,a.minor)
     END,
+  
     coalesce(attrEgenskaberObj.offentlighedundtaget,a.offentlighedundtaget),
+  
     coalesce(attrEgenskaberObj.titel,a.titel),
+  
     coalesce(attrEgenskaberObj.dokumenttype,a.dokumenttype),
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
@@ -345,7 +373,8 @@ IF attrEgenskaber IS NOT null THEN
   WHERE
     a.dokument_registrering_id=prev_dokument_registrering.id 
     and (a.virkning).TimePeriod && (attrEgenskaberObj.virkning).TimePeriod
-  ;
+  
+ ;
 
   --For any periods within the virkning of the attrEgenskaberObj, that is NOT covered by any "merged" rows inserted above, generate and insert rows
 
@@ -357,14 +386,23 @@ IF attrEgenskaber IS NOT null THEN
     ,dokument_registrering_id
   )
   SELECT 
+    
     attrEgenskaberObj.brugervendtnoegle, 
+    
     attrEgenskaberObj.beskrivelse, 
+    
     attrEgenskaberObj.brevdato, 
+    
     attrEgenskaberObj.kassationskode, 
+    
     attrEgenskaberObj.major, 
+    
     attrEgenskaberObj.minor, 
+    
     attrEgenskaberObj.offentlighedundtaget, 
+    
     attrEgenskaberObj.titel, 
+    
     attrEgenskaberObj.dokumenttype,
 	  ROW (
 	       b.tz_range_leftover,
@@ -382,10 +420,13 @@ IF attrEgenskaber IS NOT null THEN
        b.dokument_registrering_id=new_dokument_registrering.id
   ) as a
   JOIN unnest(_subtract_tstzrange_arr((attrEgenskaberObj.virkning).TimePeriod,a.tzranges_of_new_reg)) as b(tz_range_leftover) on true
-  ;
+  
+;
 
   ELSE
     --insert attrEgenskaberObj raw (if there were no null-valued fields) 
+
+    
 
     INSERT INTO
     dokument_attr_egenskaber
@@ -394,7 +435,8 @@ IF attrEgenskaber IS NOT null THEN
     ,virkning
     ,dokument_registrering_id
     )
-    VALUES ( 
+    VALUES (
+     
     attrEgenskaberObj.brugervendtnoegle, 
     attrEgenskaberObj.beskrivelse, 
     attrEgenskaberObj.brevdato, 
@@ -406,7 +448,9 @@ IF attrEgenskaber IS NOT null THEN
     attrEgenskaberObj.dokumenttype,
     attrEgenskaberObj.virkning,
     new_dokument_registrering.id
+    
     );
+    
 
   END IF;
 
@@ -420,12 +464,14 @@ ELSE
 
 --Handle egenskaber of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
 
+
 INSERT INTO dokument_attr_egenskaber (
     brugervendtnoegle,beskrivelse,brevdato,kassationskode,major,minor,offentlighedundtaget,titel,dokumenttype
     ,virkning
     ,dokument_registrering_id
 )
-SELECT
+SELECT 
+   
       a.brugervendtnoegle,
       a.beskrivelse,
       a.brevdato,
@@ -452,7 +498,8 @@ FROM
 ) d
   JOIN dokument_attr_egenskaber a ON true  
   JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
-  WHERE a.dokument_registrering_id=prev_dokument_registrering.id     
+  WHERE a.dokument_registrering_id=prev_dokument_registrering.id
+  
 ;
 
 
@@ -460,6 +507,7 @@ FROM
 
 
 END IF;
+
 
 /******************************************************************/
 --Handling document variants and document parts
@@ -1009,6 +1057,16 @@ END IF; --block: there are relations to transfer
 END IF; --else block for skip on empty array for variants.
 
 
+
+
+
+
+
+
+
+
+
+
 /******************************************************************/
 --If the new registrering is identical to the previous one, we need to throw an exception to abort the transaction. 
 
@@ -1028,7 +1086,7 @@ ROW(null,(read_new_dokument.registrering[1].registrering).livscykluskode,null,nu
 (read_new_dokument.registrering[1]).tilsFremdrift ,
 (read_new_dokument.registrering[1]).attrEgenskaber ,
 (read_new_dokument.registrering[1]).relationer,
-(read_new_dokument.registrering[1]).varianter 
+(read_new_dokument.registrering[1]).varianter
 )::dokumentRegistreringType
 ;
 

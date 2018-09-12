@@ -23,6 +23,7 @@ CREATE OR REPLACE FUNCTION as_update_aktivitet(
   tilsStatus AktivitetStatusTilsType[],
   tilsPubliceret AktivitetPubliceretTilsType[],
   relationer AktivitetRelationType[],
+  
   lostUpdatePreventionTZ TIMESTAMPTZ = null,
   auth_criteria_arr AktivitetRegistreringType[]=null
 	)
@@ -37,13 +38,16 @@ DECLARE
   prev_aktivitet_registrering aktivitet_registrering;
   aktivitet_relation_navn AktivitetRelationKode;
   attrEgenskaberObj AktivitetEgenskaberAttrType;
+  
   auth_filtered_uuids uuid[];
+  
   rel_type_max_index_prev_rev int;
   rel_type_max_index_arr _aktivitetRelationMaxIndex[];
   aktivitet_rel_type_cardinality_unlimited aktivitetRelationKode[]:=ARRAY['udfoererklasse'::AktivitetRelationKode,'deltagerklasse'::AktivitetRelationKode,'objektklasse'::AktivitetRelationKode,'resultatklasse'::AktivitetRelationKode,'grundlagklasse'::AktivitetRelationKode,'facilitetklasse'::AktivitetRelationKode,'adresse'::AktivitetRelationKode,'geoobjekt'::AktivitetRelationKode,'position'::AktivitetRelationKode,'facilitet'::AktivitetRelationKode,'lokale'::AktivitetRelationKode,'aktivitetdokument'::AktivitetRelationKode,'aktivitetgrundlag'::AktivitetRelationKode,'aktivitetresultat'::AktivitetRelationKode,'udfoerer'::AktivitetRelationKode,'deltager'::AktivitetRelationKode]::aktivitetRelationKode[];
   aktivitet_uuid_underscores text;
   aktivitet_rel_seq_name text;
   aktivitet_rel_type_cardinality_unlimited_present_in_argument aktivitetRelationKode[];
+  
 BEGIN
 
 --create a new registrering
@@ -75,6 +79,7 @@ END IF;
 
 
 
+
 --handle relationer (relations)
 
 IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
@@ -82,10 +87,13 @@ IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
 ELSE
 
   --1) Insert relations given as part of this update
-  --2) Insert relations of previous registration, with index values not included in this update. Please notice that for the logic to work,
-  --  it is very important that the index sequences start with the max value for index of the same type in the previous registration
+  --2) for aktivitet: Insert relations of previous registration, with index values not included in this update. Please notice that for the logic to work,
+   --  it is very important that the index sequences start with the max value for index of the same type in the previous registration
+  --2) for everthing else: Insert relations of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
 
   --Ad 1)
+
+
 
 --build array with the max index values of the different types of relations of the previous registration
 SELECT array_agg(rel_type_max_index)::_aktivitetRelationMaxIndex[] into rel_type_max_index_arr
@@ -100,8 +108,8 @@ FROM
 ) as a
 ;
 
-
---Create temporary sequences
+ 
+---Create temporary sequences
 aktivitet_uuid_underscores:=replace(aktivitet_uuid::text, '-', '_');
 
 SELECT array_agg( DISTINCT a.RelType) into aktivitet_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(relationer) a WHERE a.RelType = any (aktivitet_rel_type_cardinality_unlimited) ;
@@ -134,6 +142,8 @@ FOREACH aktivitet_relation_navn IN ARRAY (aktivitet_rel_type_cardinality_unlimit
 END LOOP;
 END IF;
 
+
+
       INSERT INTO aktivitet_relation (
         aktivitet_registrering_id,
           virkning,
@@ -162,13 +172,13 @@ END IF;
                     NULL
                     END,
                     CASE 
-                  WHEN a.relType =('udfoerer'::AktivitetRelationKode)  OR rel_type=('deltager'::AktivitetRelationKode) OR rel_type=('ansvarlig'::AktivitetRelationKode) 
+                 WHEN a.relType =('udfoerer'::AktivitetRelationKode)  OR rel_type=('deltager'::AktivitetRelationKode) OR rel_type=('ansvarlig'::AktivitetRelationKode) 
                   AND NOT (a.aktoerAttr IS NULL)
                   AND (
                     (a.aktoerAttr).obligatorisk IS NOT NULL
                     OR
                     (a.aktoerAttr).accepteret IS NOT NULL
-                    OR
+                   OR
                       (
                         (a.aktoerAttr).repraesentation_uuid IS NOT NULL
                         OR
@@ -180,26 +190,38 @@ END IF;
                   NULL
                 END
       FROM unnest(relationer) as a
+      
       LEFT JOIN aktivitet_relation b on a.relType = any (aktivitet_rel_type_cardinality_unlimited) and b.aktivitet_registrering_id=prev_aktivitet_registrering.id and a.relType=b.rel_type and a.indeks=b.rel_index
+      
     ;
 
 
 --Drop temporary sequences
 IF coalesce(array_length(aktivitet_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
+
 FOREACH aktivitet_relation_navn IN ARRAY (aktivitet_rel_type_cardinality_unlimited_present_in_argument)
+
   LOOP
   aktivitet_rel_seq_name := 'aktivitet_' || aktivitet_relation_navn::text || aktivitet_uuid_underscores;
   EXECUTE 'DROP  SEQUENCE ' || aktivitet_rel_seq_name || ';';
 END LOOP;
 END IF;
 
+   
   --Ad 2)
 
   /**********************/
-  -- 0..1 relations 
-  --Please notice, that for 0..1 relations for aktivitet, we're ignoring index here, and handling it the same way, that is done for other object types (like Facet, Klasse etc). That is, you only make changes for the virkningsperiod that you explicitly specify (unless you delete all relations) 
-
-  FOREACH aktivitet_relation_navn in array ARRAY['aktivitetstype'::AktivitetRelationKode,'emne'::AktivitetRelationKode,'foelsomhedklasse'::AktivitetRelationKode,'ansvarligklasse'::AktivitetRelationKode,'rekvirentklasse'::AktivitetRelationKode,'ansvarlig'::AktivitetRelationKode,'tilhoerer'::AktivitetRelationKode]::AktivitetRelationKode[]
+  -- 0..1 relations
+  
+  --Please notice, that for 0..1 relations for aktivitet, we're ignoring index
+  --here, and handling it the same way, that is done for other object types (like
+  --Facet, Klasse etc). That is, you only make changes for the
+  --virkningsperiod that you explicitly specify (unless you delete all relations) 
+  
+   
+  
+  FOREACH aktivitet_relation_navn in array  ARRAY['aktivitetstype'::AktivitetRelationKode,'emne'::AktivitetRelationKode,'foelsomhedklasse'::AktivitetRelationKode,'ansvarligklasse'::AktivitetRelationKode,'rekvirentklasse'::AktivitetRelationKode,'ansvarlig'::AktivitetRelationKode,'tilhoerer'::AktivitetRelationKode]::AktivitetRelationKode[]
+  
   LOOP
 
     INSERT INTO aktivitet_relation (
@@ -211,7 +233,6 @@ END IF;
                   objekt_type,
                     rel_index,
                       aktoer_attr
-
       )
     SELECT 
         new_aktivitet_registrering.id, 
@@ -225,7 +246,7 @@ END IF;
               a.rel_maal_urn,
                 a.rel_type,
                   a.objekt_type,
-                    NULL,--a.rel_index, rel_index is not to be used for 0..1 relations     
+                    NULL,--a.rel_index, rel_index is not to be used for 0..1 relations
                       a.aktoer_attr
     FROM
     (
@@ -246,7 +267,12 @@ END IF;
 
   /**********************/
   -- 0..n relations
-  
+
+  --We only have to check if there are any of the relations with the given name present in the new registration, otherwise copy the ones from the previous registration
+
+
+
+
       INSERT INTO aktivitet_relation (
             aktivitet_registrering_id,
               virkning,
@@ -259,6 +285,7 @@ END IF;
           )
       SELECT 
             new_aktivitet_registrering.id,
+            
               a.virkning,
                 a.rel_maal_uuid,
                   a.rel_maal_urn,
@@ -271,7 +298,11 @@ END IF;
       WHERE a.aktivitet_registrering_id=prev_aktivitet_registrering.id 
       and a.rel_type = any (aktivitet_rel_type_cardinality_unlimited)
       and b.id is null --don't transfer relations of prev. registrering, if the index was specified in data given to the/this update-function
+            
       ;
+
+
+
 
 /**********************/
 
@@ -442,6 +473,7 @@ IF attrEgenskaber IS NOT null THEN
    (attrEgenskaberObj).formaal is null 
   THEN
 
+
   INSERT INTO
   aktivitet_attr_egenskaber
   (
@@ -450,18 +482,25 @@ IF attrEgenskaber IS NOT null THEN
     ,aktivitet_registrering_id
   )
   SELECT
+  
     coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+  
     coalesce(attrEgenskaberObj.aktivitetnavn,a.aktivitetnavn),
+  
     coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
-    CASE WHEN ((attrEgenskaberObj.starttidspunkt).cleared) THEN NULL 
-        ELSE coalesce((attrEgenskaberObj.starttidspunkt).value,a.starttidspunkt)
-        END,
-    CASE WHEN ((attrEgenskaberObj.sluttidspunkt).cleared) THEN NULL 
-        ELSE coalesce((attrEgenskaberObj.sluttidspunkt).value,a.sluttidspunkt)
-        END,
-    CASE WHEN ((attrEgenskaberObj.tidsforbrug).cleared) THEN NULL 
-        ELSE coalesce((attrEgenskaberObj.tidsforbrug).value,a.tidsforbrug)
-        END,
+   
+    CASE WHEN ((attrEgenskaberObj.starttidspunkt).cleared) THEN NULL
+    ELSE coalesce((attrEgenskaberObj.starttidspunkt).value,a.starttidspunkt)
+    END,
+   
+    CASE WHEN ((attrEgenskaberObj.sluttidspunkt).cleared) THEN NULL
+    ELSE coalesce((attrEgenskaberObj.sluttidspunkt).value,a.sluttidspunkt)
+    END,
+   
+    CASE WHEN ((attrEgenskaberObj.tidsforbrug).cleared) THEN NULL
+    ELSE coalesce((attrEgenskaberObj.tidsforbrug).value,a.tidsforbrug)
+    END,
+  
     coalesce(attrEgenskaberObj.formaal,a.formaal),
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
@@ -474,7 +513,8 @@ IF attrEgenskaber IS NOT null THEN
   WHERE
     a.aktivitet_registrering_id=prev_aktivitet_registrering.id 
     and (a.virkning).TimePeriod && (attrEgenskaberObj.virkning).TimePeriod
-  ;
+  
+ ;
 
   --For any periods within the virkning of the attrEgenskaberObj, that is NOT covered by any "merged" rows inserted above, generate and insert rows
 
@@ -486,12 +526,19 @@ IF attrEgenskaber IS NOT null THEN
     ,aktivitet_registrering_id
   )
   SELECT 
+    
     attrEgenskaberObj.brugervendtnoegle, 
+    
     attrEgenskaberObj.aktivitetnavn, 
+    
     attrEgenskaberObj.beskrivelse, 
+    
     attrEgenskaberObj.starttidspunkt, 
+    
     attrEgenskaberObj.sluttidspunkt, 
+    
     attrEgenskaberObj.tidsforbrug, 
+    
     attrEgenskaberObj.formaal,
 	  ROW (
 	       b.tz_range_leftover,
@@ -509,10 +556,13 @@ IF attrEgenskaber IS NOT null THEN
        b.aktivitet_registrering_id=new_aktivitet_registrering.id
   ) as a
   JOIN unnest(_subtract_tstzrange_arr((attrEgenskaberObj.virkning).TimePeriod,a.tzranges_of_new_reg)) as b(tz_range_leftover) on true
-  ;
+  
+;
 
   ELSE
     --insert attrEgenskaberObj raw (if there were no null-valued fields) 
+
+    
 
     INSERT INTO
     aktivitet_attr_egenskaber
@@ -521,7 +571,8 @@ IF attrEgenskaber IS NOT null THEN
     ,virkning
     ,aktivitet_registrering_id
     )
-    VALUES ( 
+    VALUES (
+     
     attrEgenskaberObj.brugervendtnoegle, 
     attrEgenskaberObj.aktivitetnavn, 
     attrEgenskaberObj.beskrivelse, 
@@ -531,7 +582,9 @@ IF attrEgenskaber IS NOT null THEN
     attrEgenskaberObj.formaal,
     attrEgenskaberObj.virkning,
     new_aktivitet_registrering.id
+    
     );
+    
 
   END IF;
 
@@ -545,12 +598,14 @@ ELSE
 
 --Handle egenskaber of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
 
+
 INSERT INTO aktivitet_attr_egenskaber (
     brugervendtnoegle,aktivitetnavn,beskrivelse,starttidspunkt,sluttidspunkt,tidsforbrug,formaal
     ,virkning
     ,aktivitet_registrering_id
 )
-SELECT
+SELECT 
+   
       a.brugervendtnoegle,
       a.aktivitetnavn,
       a.beskrivelse,
@@ -575,7 +630,8 @@ FROM
 ) d
   JOIN aktivitet_attr_egenskaber a ON true  
   JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
-  WHERE a.aktivitet_registrering_id=prev_aktivitet_registrering.id     
+  WHERE a.aktivitet_registrering_id=prev_aktivitet_registrering.id
+  
 ;
 
 
@@ -583,6 +639,13 @@ FROM
 
 
 END IF;
+
+
+
+
+
+
+
 
 
 /******************************************************************/
@@ -604,7 +667,7 @@ ROW(null,(read_new_aktivitet.registrering[1].registrering).livscykluskode,null,n
 (read_new_aktivitet.registrering[1]).tilsStatus ,
 (read_new_aktivitet.registrering[1]).tilsPubliceret ,
 (read_new_aktivitet.registrering[1]).attrEgenskaber ,
-(read_new_aktivitet.registrering[1]).relationer 
+(read_new_aktivitet.registrering[1]).relationer
 )::aktivitetRegistreringType
 ;
 
@@ -613,7 +676,7 @@ ROW(null,(read_prev_aktivitet.registrering[1].registrering).livscykluskode,null,
 (read_prev_aktivitet.registrering[1]).tilsStatus ,
 (read_prev_aktivitet.registrering[1]).tilsPubliceret ,
 (read_prev_aktivitet.registrering[1]).attrEgenskaber ,
-(read_prev_aktivitet.registrering[1]).relationer 
+(read_prev_aktivitet.registrering[1]).relationer
 )::aktivitetRegistreringType
 ;
 
