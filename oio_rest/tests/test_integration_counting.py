@@ -67,8 +67,8 @@ class Tests(util.TestCase):
         r = self.perform_request(self.path, json=obj)
         self.assert201(r)
 
-    def check(self, query_string, n):
-        with self.subTest('{!r} - {}'.format(query_string, n)):
+    def check(self, query_string, expected):
+        with self.subTest(query_string):
             r1 = self.perform_request(self.path,
                                       query_string=query_string)
             self.assert200(r1)
@@ -77,12 +77,11 @@ class Tests(util.TestCase):
                                       query_string=query_string + '&count=1')
             self.assert200(r2)
 
-            self.assertEqual(
-                len(r1.json['results'][0]),
-                r2.json['results'][0],
-            )
+            actual_search = len(r1.json['results'][0])
+            actual_count = r2.json['results'][0]
 
-            self.assertEqual(n, r2.json['results'][0])
+            self.assertEqual(expected, actual_search)
+            self.assertEqual(actual_search, actual_count)
 
     def test_counting(self):
         for i in range(0, 50, 5):
@@ -102,6 +101,7 @@ class Tests(util.TestCase):
         self.check('bvn=unit10&organisationsnavn=unit15', 0)
 
         self.check('gyldighed=Aktiv', 5)
+        self.check('gyldighed=Aktiv&gyldighed=Inaktiv', 0)
 
         self.check('bvn=unit1%&gyldighed=Aktiv', 1)
 
@@ -113,4 +113,11 @@ class Tests(util.TestCase):
         self.check('bvn=unit1%&gyldighed=Inaktiv&ansatte=urn:15', 0)
         self.check('bvn=unit1%&ansatte=urn:10', 1)
         self.check('bvn=unit1%&ansatte=urn:10&ansatte=urn:15', 0)
-        self.check('bvn=unit1%&gyldighed=Aktiv&ansatte=urn:10&ansatte=urn:15', 0)
+        self.check('bvn=unit1%&gyldighed=Aktiv&ansatte=urn:10&ansatte=urn:15',
+                   0)
+
+        self.check('ansatte=00000000-0000-0000-0000-000000000010&ansatte=urn:10',
+                   1)
+
+        self.check('vilkaarligattr=unit20', 1)
+        self.check('vilkaarligattr=unit2%', 2)
