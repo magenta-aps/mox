@@ -236,6 +236,14 @@ class OIORestObject(object):
 
         valid_list_args = TEMPORALITY_PARAMS | {'uuid'}
 
+        if args.get('count') and args['count'] == '1':
+            registration = build_registration(cls.__name__, list_args)
+
+            return jsonify({
+                'results':
+                db.count_objects(cls.__name__.lower(), registration),
+            })
+
         # Assume the search operation if other params were specified
         if not valid_list_args.issuperset(args):
             # Only one uuid is supported through the search operation

@@ -810,6 +810,38 @@ def search_objects(class_name, uuid, registration,
     return output
 
 
+def count_objects(class_name, registration):
+    for groupname, group in registration.items():
+        if isinstance(group, dict):
+            for values in group.values():
+                for value in values:
+                    assert value['virkning'] is None, value.get('virkning')
+
+                    del value['virkning']
+        else:
+            # TODO :(
+            raise NotImplementedError('cannot handle ' + groupname)
+
+    sql_template = jinja_env.get_template('count_objects.sql')
+
+    sql = sql_template.render(
+        cls=class_name,
+        reg=registration,
+    )
+
+    with get_connection() as conn, conn.cursor() as cursor:
+        try:
+            cursor.execute(sql)
+        except psycopg2.Error as e:
+            if e.pgcode[:2] == 'MO':
+                status_code = int(e.pgcode[2:])
+                raise DBException(status_code, e.pgerror)
+            else:
+                raise
+
+        return cursor.fetchone()
+
+
 def get_life_cycle_code(class_name, uuid):
     n = datetime.datetime.now()
     n1 = n + datetime.timedelta(seconds=1)

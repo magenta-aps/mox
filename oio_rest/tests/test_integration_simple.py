@@ -142,11 +142,26 @@ class Tests(util.TestCase):
             endpoints)
 
         for endpoint in endpoints:
-            self.assertRequestResponse(
-                endpoint + '?bvn=%',
-                {
-                    'results': [
-                        [],
-                    ],
-                },
-            )
+            with self.subTest(endpoint):
+                self.assertRequestResponse(
+                    endpoint + '?bvn=%',
+                    {
+                        'results': [
+                            [],
+                        ],
+                    },
+                )
+
+                self.assertRequestResponse(
+                    endpoint + '?count=1&bvn=%',
+                    {
+                        'results': [0],
+                    },
+                )
+
+                self.assertRequestResponse(
+                    endpoint + '?count=1',
+                    {
+                        'results': [0],
+                    },
+                )

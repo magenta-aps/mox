@@ -107,6 +107,7 @@ GENERAL_SEARCH_PARAMS = {
     'uuid',
     'vilkaarligattr',
     'vilkaarligrel',
+    'count',
 }
 
 TEMPORALITY_PARAMS = {
