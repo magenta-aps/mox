@@ -39,9 +39,10 @@ pipeline {
           git url: 'https://github.com/magenta-aps/mora', branch: 'development'
 
           timeout(5) {
-            sh 'python3 -m venv venv'
-            sh 'venv/bin/python -m pip install -e $WORKSPACE/oio_rest'
-            sh 'venv/bin/python -m pip install -r requirements-test.txt'
+            sh 'backend/.jenkins/1-build.sh'
+
+            // kind of horrible, but works
+            sh 'echo $WORKSPACE/oio_rest > venv/lib/python3.5/site-packages/oio_rest.egg-link'
           }
         }
       }
@@ -49,13 +50,15 @@ pipeline {
 
     stage('Test MO') {
       steps {
-        dir('mora') {
+        dir('mora/backend') {
           timeout(15) {
             ansiColor('xterm') {
-              sh "venv/bin/python -m pytest --verbose --junitxml=tests.xml tests --junit-prefix=MO"
+              sh '.jenkins/3-tests.sh'
             }
           }
         }
+
+        sh 'find $WORKSPACE -name "*.xml"'
       }
     }
   }
@@ -63,7 +66,7 @@ pipeline {
   post {
     always {
       junit healthScaleFactor: 200.0,           \
-        testResults: '*/tests.xml'
+        testResults: '**/build/reports/*.xml'
 
       warnings canRunOnFailed: true, consoleParsers: [
         [parserName: 'Sphinx-build'],
