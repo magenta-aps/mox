@@ -66,7 +66,7 @@ pipeline {
   post {
     always {
       junit healthScaleFactor: 200.0,           \
-        testResults: '**/build/reports/*.xml'
+        testResults: 'oio_rest/TEST-*.xml'
 
       warnings canRunOnFailed: true, consoleParsers: [
         [parserName: 'Sphinx-build'],
@@ -75,6 +75,9 @@ pipeline {
 
       cobertura coberturaReportFile: 'oio_rest/coverage.xml',    \
         maxNumberOfBuilds: 0
+
+      junit healthScaleFactor: 200.0,     \
+        testResults: 'mora/build/reports/*.xml'
 
       cleanWs()
     }

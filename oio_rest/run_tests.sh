@@ -28,4 +28,7 @@ export MOX_AMQP_VHOST="/"
 $PYTHON -m pip install -e .
 $PYTHON -m pip install -r requirements-test.txt
 $PYTHON -m flake8 --exit-zero
-$PYTHON -m pytest
+
+$PYTHON -m coverage run -m xmlrunner "$@"
+$PYTHON -m coverage report
+$PYTHON -m coverage xml coverage.xml
