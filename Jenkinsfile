@@ -75,7 +75,7 @@ pipeline {
         [parserName: 'Pep8']
       ]
 
-      cobertura coberturaReportFile: 'oio_rest/coverage.xml',    \
+      cobertura coberturaReportFile: 'oio_rest/build/coverage/*.xml',    \
         maxNumberOfBuilds: 0
 
       cleanWs()

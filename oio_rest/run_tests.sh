@@ -37,4 +37,8 @@ $PYTHON -m pip install -e '.[tests]'
 
 # Execute tests
 $PYTHON -m flake8 --exit-zero
-$PYTHON -m pytest
+
+$PYTHON -m coverage run -m xmlrunner \
+        --verbose --buffer --output build/reports "$@"
+$PYTHON -m coverage report
+$PYTHON -m coverage xml -o build/coverage/coverage.xml

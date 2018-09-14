@@ -2,8 +2,7 @@
 Flask-Testing
 testing.postgresql
 tap.py
-pytest
-pytest-cov
+unittest-xml-reporting
 mock
 requests_mock
 coverage
