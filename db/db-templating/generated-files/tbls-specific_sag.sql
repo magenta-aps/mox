@@ -344,11 +344,9 @@ CREATE TABLE sag_relation
  CONSTRAINT sag_relation_pkey PRIMARY KEY (id),
  CONSTRAINT sag_relation_no_virkning_overlap EXCLUDE USING gist (sag_registrering_id WITH =, _as_convert_sag_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('andetarkiv'::SagRelationKode ) AND rel_type<>('andrebehandlere'::SagRelationKode ) AND rel_type<>('sekundaerpart'::SagRelationKode ) AND rel_type<>('andresager'::SagRelationKode ) AND rel_type<>('byggeri'::SagRelationKode ) AND rel_type<>('fredning'::SagRelationKode ) AND rel_type<>('journalpost'::SagRelationKode )) ,-- no overlapping virkning except for 0..n --relations
  CONSTRAINT sag_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
-
  ,CONSTRAINT sag_relation_rel_type_spec_null_other_than_journalpost CHECK (rel_type_spec IS NULL OR rel_type='journalpost'::SagRelationKode )
  ,CONSTRAINT sag_relation_journal_dok_attr_only_vedlagtdok_tilakteretdok CHECK (journal_dokument_attr IS NULL OR rel_type_spec IN ('vedlagtdokument'::SagRelationJournalPostSpecifikKode,'tilakteretdokument'::SagRelationJournalPostSpecifikKode))
  ,CONSTRAINT sag_journal_notat_only_for_notat_type CHECK (journal_notat IS NULL OR rel_type_spec='journalnotat' )
-
 );
 
 

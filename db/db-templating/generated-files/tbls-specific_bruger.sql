@@ -264,7 +264,6 @@ CREATE TABLE bruger_relation
  CONSTRAINT bruger_relation_pkey PRIMARY KEY (id),
  CONSTRAINT bruger_relation_no_virkning_overlap EXCLUDE USING gist (bruger_registrering_id WITH =, _as_convert_bruger_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('adresser'::BrugerRelationKode ) AND rel_type<>('brugertyper'::BrugerRelationKode ) AND rel_type<>('opgaver'::BrugerRelationKode ) AND rel_type<>('tilknyttedeenheder'::BrugerRelationKode ) AND rel_type<>('tilknyttedefunktioner'::BrugerRelationKode ) AND rel_type<>('tilknyttedeinteressefaellesskaber'::BrugerRelationKode ) AND rel_type<>('tilknyttedeorganisationer'::BrugerRelationKode ) AND rel_type<>('tilknyttedepersoner'::BrugerRelationKode ) AND rel_type<>('tilknyttedeitsystemer'::BrugerRelationKode )) ,-- no overlapping virkning except for 0..n --relations
  CONSTRAINT bruger_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
-
 );
 
 

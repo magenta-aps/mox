@@ -335,7 +335,6 @@ CREATE TABLE dokument_relation
  CONSTRAINT dokument_relation_pkey PRIMARY KEY (id),
  CONSTRAINT dokument_relation_no_virkning_overlap EXCLUDE USING gist (dokument_registrering_id WITH =, _as_convert_dokument_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('arkiver'::DokumentRelationKode ) AND rel_type<>('besvarelser'::DokumentRelationKode ) AND rel_type<>('udgangspunkter'::DokumentRelationKode ) AND rel_type<>('kommentarer'::DokumentRelationKode ) AND rel_type<>('bilag'::DokumentRelationKode ) AND rel_type<>('andredokumenter'::DokumentRelationKode ) AND rel_type<>('andreklasser'::DokumentRelationKode ) AND rel_type<>('andrebehandlere'::DokumentRelationKode ) AND rel_type<>('parter'::DokumentRelationKode ) AND rel_type<>('kopiparter'::DokumentRelationKode ) AND rel_type<>('tilknyttedesager'::DokumentRelationKode )) ,-- no overlapping virkning except for 0..n --relations
  CONSTRAINT dokument_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
-
 );
 
 

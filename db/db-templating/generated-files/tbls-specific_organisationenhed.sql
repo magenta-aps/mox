@@ -252,7 +252,6 @@ CREATE TABLE organisationenhed_relation
  CONSTRAINT organisationenhed_relation_pkey PRIMARY KEY (id),
  CONSTRAINT organisationenhed_relation_no_virkning_overlap EXCLUDE USING gist (organisationenhed_registrering_id WITH =, _as_convert_organisationenhed_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('adresser'::OrganisationenhedRelationKode ) AND rel_type<>('ansatte'::OrganisationenhedRelationKode ) AND rel_type<>('opgaver'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedebrugere'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedeenheder'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedefunktioner'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedeinteressefaellesskaber'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedeorganisationer'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedepersoner'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedeitsystemer'::OrganisationenhedRelationKode )) ,-- no overlapping virkning except for 0..n --relations
  CONSTRAINT organisationenhed_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
-
 );
 
 

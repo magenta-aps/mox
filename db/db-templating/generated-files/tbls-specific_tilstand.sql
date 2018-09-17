@@ -309,9 +309,8 @@ CREATE TABLE tilstand_relation
  CONSTRAINT tilstand_relation_forkey_tilstandregistrering  FOREIGN KEY (tilstand_registrering_id) REFERENCES tilstand_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
  CONSTRAINT tilstand_relation_pkey PRIMARY KEY (id),
  CONSTRAINT tilstand_relation_no_virkning_overlap EXCLUDE USING gist (tilstand_registrering_id WITH =, _as_convert_tilstand_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('tilstandsvaerdi'::TilstandRelationKode ) AND rel_type<>('begrundelse'::TilstandRelationKode ) AND rel_type<>('tilstandskvalitet'::TilstandRelationKode ) AND rel_type<>('tilstandsvurdering'::TilstandRelationKode ) AND rel_type<>('tilstandsaktoer'::TilstandRelationKode ) AND rel_type<>('tilstandsudstyr'::TilstandRelationKode ) AND rel_type<>('samtykke'::TilstandRelationKode ) AND rel_type<>('tilstandsdokument'::TilstandRelationKode )) ,-- no overlapping virkning except for 0..n --relations
- CONSTRAINT tilstand_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
-
- ,CONSTRAINT tilstand_relation_nominel_vaerdi_relevant_null_check CHECK (tilstand_vaerdi_attr IS NULL OR rel_type='tilstandsvaerdi')
+ CONSTRAINT tilstand_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>''))),
+ CONSTRAINT tilstand_relation_nominel_vaerdi_relevant_null_check CHECK (tilstand_vaerdi_attr IS NULL OR rel_type='tilstandsvaerdi')
 
 );
 

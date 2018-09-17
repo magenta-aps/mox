@@ -264,7 +264,6 @@ CREATE TABLE interessefaellesskab_relation
  CONSTRAINT interessefaellesskab_relation_pkey PRIMARY KEY (id),
  CONSTRAINT interessefaellesskab_relation_no_virkning_overlap EXCLUDE USING gist (interessefaellesskab_registrering_id WITH =, _as_convert_interessefaellesskab_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('adresser'::InteressefaellesskabRelationKode ) AND rel_type<>('opgaver'::InteressefaellesskabRelationKode ) AND rel_type<>('tilknyttedebrugere'::InteressefaellesskabRelationKode ) AND rel_type<>('tilknyttedeenheder'::InteressefaellesskabRelationKode ) AND rel_type<>('tilknyttedefunktioner'::InteressefaellesskabRelationKode ) AND rel_type<>('tilknyttedeinteressefaellesskaber'::InteressefaellesskabRelationKode ) AND rel_type<>('tilknyttedeorganisationer'::InteressefaellesskabRelationKode ) AND rel_type<>('tilknyttedepersoner'::InteressefaellesskabRelationKode ) AND rel_type<>('tilknyttedeitsystemer'::InteressefaellesskabRelationKode )) ,-- no overlapping virkning except for 0..n --relations
  CONSTRAINT interessefaellesskab_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
-
 );
 
 

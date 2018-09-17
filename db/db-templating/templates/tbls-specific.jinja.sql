@@ -353,16 +353,13 @@ CREATE TABLE {{oio_type}}_relation
  CONSTRAINT {{oio_type}}_relation_forkey_{{oio_type}}registrering  FOREIGN KEY ({{oio_type}}_registrering_id) REFERENCES {{oio_type}}_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
  CONSTRAINT {{oio_type}}_relation_pkey PRIMARY KEY (id),
  CONSTRAINT {{oio_type}}_relation_no_virkning_overlap EXCLUDE USING gist ({{oio_type}}_registrering_id WITH =, _as_convert_{{oio_type}}_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&) {% if relationer_nul_til_mange %} WHERE ({% for nul_til_mange_rel in relationer_nul_til_mange %} rel_type<>('{{nul_til_mange_rel}}'::{{oio_type|title}}RelationKode ){% if not loop.last %} AND{% endif %}{% endfor %}) {% endif %},-- no overlapping virkning except for 0..n --relations
- CONSTRAINT {{oio_type}}_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
-{% if oio_type == "aktivitet" %}
- ,CONSTRAINT aktivitet_relation_check_aktoer_attr_rel_type CHECK (aktoer_attr IS NULL OR rel_type=('udfoerer'::AktivitetRelationKode)  OR rel_type=('deltager'::AktivitetRelationKode) OR rel_type=('ansvarlig'::AktivitetRelationKode)),
- CONSTRAINT aktivitet_relation_aktoer_repr_either_uri_or_urn CHECK (aktoer_attr IS NULL OR ( _aktivitet_aktoer_attr_repr_uuid_to_text(aktoer_attr) IS NULL AND _aktivitet_aktoer_attr_repr_urn_to_text(aktoer_attr) IS NULL  ) OR ((_aktivitet_aktoer_attr_repr_urn_to_text(aktoer_attr) IS NOT NULL AND _aktivitet_aktoer_attr_repr_uuid_to_text(aktoer_attr) IS NULL ) OR  (_aktivitet_aktoer_attr_repr_urn_to_text(aktoer_attr) IS NULL AND _aktivitet_aktoer_attr_repr_uuid_to_text(aktoer_attr) IS NOT NULL )))
-{% elif oio_type == "sag" %}
+ CONSTRAINT {{oio_type}}_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>''))){% if oio_type == "aktivitet" %},
+ CONSTRAINT aktivitet_relation_check_aktoer_attr_rel_type CHECK (aktoer_attr IS NULL OR rel_type=('udfoerer'::AktivitetRelationKode)  OR rel_type=('deltager'::AktivitetRelationKode) OR rel_type=('ansvarlig'::AktivitetRelationKode)),
+ CONSTRAINT aktivitet_relation_aktoer_repr_either_uri_or_urn CHECK (aktoer_attr IS NULL OR ( _aktivitet_aktoer_attr_repr_uuid_to_text(aktoer_attr) IS NULL AND _aktivitet_aktoer_attr_repr_urn_to_text(aktoer_attr) IS NULL  ) OR ((_aktivitet_aktoer_attr_repr_urn_to_text(aktoer_attr) IS NOT NULL AND _aktivitet_aktoer_attr_repr_uuid_to_text(aktoer_attr) IS NULL ) OR  (_aktivitet_aktoer_attr_repr_urn_to_text(aktoer_attr) IS NULL AND _aktivitet_aktoer_attr_repr_uuid_to_text(aktoer_attr) IS NOT NULL ))){% elif oio_type == "sag" %}
  ,CONSTRAINT sag_relation_rel_type_spec_null_other_than_journalpost CHECK (rel_type_spec IS NULL OR rel_type='journalpost'::SagRelationKode )
  ,CONSTRAINT sag_relation_journal_dok_attr_only_vedlagtdok_tilakteretdok CHECK (journal_dokument_attr IS NULL OR rel_type_spec IN ('vedlagtdokument'::SagRelationJournalPostSpecifikKode,'tilakteretdokument'::SagRelationJournalPostSpecifikKode))
- ,CONSTRAINT sag_journal_notat_only_for_notat_type CHECK (journal_notat IS NULL OR rel_type_spec='journalnotat' )
-{% elif oio_type == "tilstand" %}
- ,CONSTRAINT tilstand_relation_nominel_vaerdi_relevant_null_check CHECK (tilstand_vaerdi_attr IS NULL OR rel_type='tilstandsvaerdi')
+ ,CONSTRAINT sag_journal_notat_only_for_notat_type CHECK (journal_notat IS NULL OR rel_type_spec='journalnotat' ){% elif oio_type == "tilstand" %},
+ CONSTRAINT tilstand_relation_nominel_vaerdi_relevant_null_check CHECK (tilstand_vaerdi_attr IS NULL OR rel_type='tilstandsvaerdi')
 {% endif %}
 );
 

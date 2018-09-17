@@ -276,7 +276,6 @@ CREATE TABLE klassifikation_relation
  CONSTRAINT klassifikation_relation_pkey PRIMARY KEY (id),
  CONSTRAINT klassifikation_relation_no_virkning_overlap EXCLUDE USING gist (klassifikation_registrering_id WITH =, _as_convert_klassifikation_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&) ,-- no overlapping virkning except for 0..n --relations
  CONSTRAINT klassifikation_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
-
 );
 
 

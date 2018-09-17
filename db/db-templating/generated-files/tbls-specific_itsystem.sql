@@ -271,7 +271,6 @@ CREATE TABLE itsystem_relation
  CONSTRAINT itsystem_relation_pkey PRIMARY KEY (id),
  CONSTRAINT itsystem_relation_no_virkning_overlap EXCLUDE USING gist (itsystem_registrering_id WITH =, _as_convert_itsystem_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('tilknyttedeorganisationer'::ItsystemRelationKode ) AND rel_type<>('tilknyttedeenheder'::ItsystemRelationKode ) AND rel_type<>('tilknyttedefunktioner'::ItsystemRelationKode ) AND rel_type<>('tilknyttedebrugere'::ItsystemRelationKode ) AND rel_type<>('tilknyttedeinteressefaellesskaber'::ItsystemRelationKode ) AND rel_type<>('tilknyttedeitsystemer'::ItsystemRelationKode ) AND rel_type<>('tilknyttedepersoner'::ItsystemRelationKode ) AND rel_type<>('systemtyper'::ItsystemRelationKode ) AND rel_type<>('opgaver'::ItsystemRelationKode ) AND rel_type<>('adresser'::ItsystemRelationKode )) ,-- no overlapping virkning except for 0..n --relations
  CONSTRAINT itsystem_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
-
 );
 
 

@@ -325,7 +325,6 @@ CREATE TABLE indsats_relation
  CONSTRAINT indsats_relation_pkey PRIMARY KEY (id),
  CONSTRAINT indsats_relation_no_virkning_overlap EXCLUDE USING gist (indsats_registrering_id WITH =, _as_convert_indsats_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('indsatskvalitet'::IndsatsRelationKode ) AND rel_type<>('indsatsaktoer'::IndsatsRelationKode ) AND rel_type<>('samtykke'::IndsatsRelationKode ) AND rel_type<>('indsatssag'::IndsatsRelationKode ) AND rel_type<>('indsatsdokument'::IndsatsRelationKode )) ,-- no overlapping virkning except for 0..n --relations
  CONSTRAINT indsats_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
-
 );
 
 

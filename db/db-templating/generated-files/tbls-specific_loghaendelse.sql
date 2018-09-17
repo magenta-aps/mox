@@ -324,7 +324,6 @@ CREATE TABLE loghaendelse_relation
  CONSTRAINT loghaendelse_relation_pkey PRIMARY KEY (id),
  CONSTRAINT loghaendelse_relation_no_virkning_overlap EXCLUDE USING gist (loghaendelse_registrering_id WITH =, _as_convert_loghaendelse_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&) ,-- no overlapping virkning except for 0..n --relations
  CONSTRAINT loghaendelse_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
-
 );
 
 
