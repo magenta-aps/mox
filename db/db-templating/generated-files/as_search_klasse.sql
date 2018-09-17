@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py klasse as_search.jinja.sql
+NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
 
@@ -151,8 +151,8 @@ IF registreringObj IS NULL OR (registreringObj).attrEgenskaber IS NULL THEN
 ELSE
 
 
----To help facilitate the comparrison efforts (while diverging at a minimum form the templated db-kode,
----we'll manipulate the attrEgenskaber array so to make sure that every object only has 1 sogeord element - duplicating the parent elements in attrEgenskaber as needed
+--To help facilitate the comparrison efforts (while diverging at a minimum form the templated db-kode,
+--we'll manipulate the attrEgenskaber array so to make sure that every object only has 1 sogeord element - duplicating the parent elements in attrEgenskaber as needed  )
 
 FOREACH attrEgenskaberTypeObj IN ARRAY registreringObj.attrEgenskaber
 LOOP

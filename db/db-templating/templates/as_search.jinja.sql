@@ -97,8 +97,8 @@ IF registreringObj IS NULL OR (registreringObj).attr{{attribut|title}} IS NULL T
 ELSE
 {% if oio_type == "klasse" %}
 
----To help facilitate the comparrison efforts (while diverging at a minimum form the templated db-kode,
----we'll manipulate the attrEgenskaber array so to make sure that every object only has 1 sogeord element - duplicating the parent elements in attrEgenskaber as needed
+--To help facilitate the comparrison efforts (while diverging at a minimum form the templated db-kode,
+--we'll manipulate the attrEgenskaber array so to make sure that every object only has 1 sogeord element - duplicating the parent elements in attrEgenskaber as needed  )
 
 FOREACH attrEgenskaberTypeObj IN ARRAY registreringObj.attrEgenskaber
 LOOP
