@@ -96,11 +96,15 @@ ELSE
 
 
 --build array with the max index values of the different types of relations of the previous registration
+
 SELECT array_agg(rel_type_max_index)::_tilstandRelationMaxIndex[] into rel_type_max_index_arr
+
 FROM
 (
   SELECT
-  (ROW(rel_type,coalesce(max(rel_index),0))::_tilstandRelationMaxIndex) rel_type_max_index  
+  
+  (ROW(rel_type,coalesce(max(rel_index),0))::_tilstandRelationMaxIndex) rel_type_max_index
+  
   FROM tilstand_relation a
   where a.tilstand_registrering_id=prev_tilstand_registrering.id
   and a.rel_type = any (tilstand_rel_type_cardinality_unlimited)
@@ -110,9 +114,12 @@ FROM
 
  
 ---Create temporary sequences
-tilstand_uuid_underscores:=replace(tilstand_uuid::text, '-', '_');
+
 
 SELECT array_agg( DISTINCT a.RelType) into tilstand_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(relationer) a WHERE a.RelType = any (tilstand_rel_type_cardinality_unlimited) ;
+
+tilstand_uuid_underscores:=replace(tilstand_uuid::text, '-', '_');
+
 IF coalesce(array_length(tilstand_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 FOREACH tilstand_relation_navn IN ARRAY (tilstand_rel_type_cardinality_unlimited_present_in_argument)
   LOOP

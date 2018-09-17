@@ -95,11 +95,15 @@ ELSE
 
 
 --build array with the max index values of the different types of relations of the previous registration
-SELECT array_agg(rel_type_max_index)::_sagRelationMaxIndex[] into rel_type_max_index_arr
+
+SELECT array_agg(rel_type_max_index)::_SagRelationMaxIndex[] into rel_type_max_index_arr
+
 FROM
 (
   SELECT
-  (ROW(rel_type,coalesce(max(rel_index),0))::_sagRelationMaxIndex) rel_type_max_index  
+  
+  (ROW(rel_type,coalesce(max(rel_index),0))::_SagRelationMaxIndex) rel_type_max_index
+  
   FROM sag_relation a
   where a.sag_registrering_id=prev_sag_registrering.id
   and a.rel_type = any (sag_rel_type_cardinality_unlimited)
@@ -109,9 +113,12 @@ FROM
 
  
 ---Create temporary sequences
+
 sag_uuid_underscores:=replace(sag_uuid::text, '-', '_');
 
+
 SELECT array_agg( DISTINCT a.RelType) into sag_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(relationer) a WHERE a.RelType = any (sag_rel_type_cardinality_unlimited) ;
+
 IF coalesce(array_length(sag_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 FOREACH sag_relation_navn IN ARRAY (sag_rel_type_cardinality_unlimited_present_in_argument)
   LOOP

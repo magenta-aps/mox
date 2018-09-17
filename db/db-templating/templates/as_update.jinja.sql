@@ -142,11 +142,19 @@ ELSE
 
 {% if oio_type in ("aktivitet", "indsats", "sag", "tilstand") %}
 --build array with the max index values of the different types of relations of the previous registration
+{% if oio_type == "sag" %}
+SELECT array_agg(rel_type_max_index)::_{{oio_type|title}}RelationMaxIndex[] into rel_type_max_index_arr
+{% else %}
 SELECT array_agg(rel_type_max_index)::_{{oio_type}}RelationMaxIndex[] into rel_type_max_index_arr
+{% endif %}
 FROM
 (
   SELECT
-  (ROW(rel_type,coalesce(max(rel_index),0))::_{{oio_type}}RelationMaxIndex) rel_type_max_index  
+  {% if oio_type == "sag" %}
+  (ROW(rel_type,coalesce(max(rel_index),0))::_{{oio_type|title}}RelationMaxIndex) rel_type_max_index
+  {% else %}
+  (ROW(rel_type,coalesce(max(rel_index),0))::_{{oio_type}}RelationMaxIndex) rel_type_max_index
+  {% endif %}
   FROM {{oio_type}}_relation a
   where a.{{oio_type}}_registrering_id=prev_{{oio_type}}_registrering.id
   and a.rel_type = any ({{oio_type}}_rel_type_cardinality_unlimited)
@@ -156,9 +164,14 @@ FROM
 
  
 ---Create temporary sequences
+{% if oio_type != "tilstand" %}
 {{oio_type}}_uuid_underscores:=replace({{oio_type}}_uuid::text, '-', '_');
+{% endif %}
 
 SELECT array_agg( DISTINCT a.RelType) into {{oio_type}}_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(relationer) a WHERE a.RelType = any ({{oio_type}}_rel_type_cardinality_unlimited) ;
+{% if oio_type == "tilstand" %}
+{{oio_type}}_uuid_underscores:=replace({{oio_type}}_uuid::text, '-', '_');
+{% endif %}
 IF coalesce(array_length({{oio_type}}_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 FOREACH {{oio_type}}_relation_navn IN ARRAY ({{oio_type}}_rel_type_cardinality_unlimited_present_in_argument)
   LOOP

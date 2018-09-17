@@ -96,11 +96,15 @@ ELSE
 
 
 --build array with the max index values of the different types of relations of the previous registration
+
 SELECT array_agg(rel_type_max_index)::_aktivitetRelationMaxIndex[] into rel_type_max_index_arr
+
 FROM
 (
   SELECT
-  (ROW(rel_type,coalesce(max(rel_index),0))::_aktivitetRelationMaxIndex) rel_type_max_index  
+  
+  (ROW(rel_type,coalesce(max(rel_index),0))::_aktivitetRelationMaxIndex) rel_type_max_index
+  
   FROM aktivitet_relation a
   where a.aktivitet_registrering_id=prev_aktivitet_registrering.id
   and a.rel_type = any (aktivitet_rel_type_cardinality_unlimited)
@@ -110,9 +114,12 @@ FROM
 
  
 ---Create temporary sequences
+
 aktivitet_uuid_underscores:=replace(aktivitet_uuid::text, '-', '_');
 
+
 SELECT array_agg( DISTINCT a.RelType) into aktivitet_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(relationer) a WHERE a.RelType = any (aktivitet_rel_type_cardinality_unlimited) ;
+
 IF coalesce(array_length(aktivitet_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 FOREACH aktivitet_relation_navn IN ARRAY (aktivitet_rel_type_cardinality_unlimited_present_in_argument)
   LOOP
