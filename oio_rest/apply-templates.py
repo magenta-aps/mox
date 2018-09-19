@@ -40,7 +40,7 @@ TEMPLATES = (
     "tbls-specific",
 )
 
-template_env = Environment(loader=FileSystemLoader([TEMPLATE_DIR]))
+template_env = Environment(loader=FileSystemLoader([str(TEMPLATE_DIR)]))
 
 for oio_type in sorted(DATABASE_STRUCTURE):
     for template_name in sorted(TEMPLATES):
@@ -71,7 +71,7 @@ for oio_type in sorted(DATABASE_STRUCTURE):
         except KeyError:
             context["include_mixin"] = "empty.jinja"
 
-        generated_file = Path(BUILD_DIR, "%s_%s.sql" % (template_name, oio_type))
+        generated_file = BUILD_DIR / ("%s_%s.sql" % (template_name, oio_type))
         with open(generated_file, "wb") as f:
             template.stream(context).dump(f, encoding="utf-8")
             f.write(b"\n")
