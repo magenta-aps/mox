@@ -73,6 +73,6 @@ for oio_type in sorted(DATABASE_STRUCTURE):
             context["include_mixin"] = "empty.jinja"
 
         generated_file = BUILD_DIR / ("%s_%s.sql" % (template_name, oio_type))
-        with open(generated_file, "wb") as f:
+        with open(str(generated_file), "wb") as f:
             template.stream(context).dump(f, encoding="utf-8")
             f.write(b"\n")
