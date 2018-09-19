@@ -204,7 +204,7 @@ END IF;
 
 
 
--/*********************************/
+--/*********************************/
 --Insert document variants (and parts)
 
 IF dokument_registrering.varianter IS NOT NULL AND coalesce(array_length(dokument_registrering.varianter,1),0)>0 THEN
