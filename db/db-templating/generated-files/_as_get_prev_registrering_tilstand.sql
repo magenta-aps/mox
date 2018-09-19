@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py tilstand _as_get_prev_registrering.jinja.sql
+NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
 

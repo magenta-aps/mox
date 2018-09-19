@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py klasse as_search.jinja.sql
+NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
 
@@ -34,9 +34,12 @@ DECLARE
 	anyAttrValue text;
 	anyuuid uuid;
 	anyurn text;
+    
 	auth_filtered_uuids uuid[];
-	manipulatedAttrEgenskaberArr KlasseEgenskaberAttrType[]:='{}';
-	soegeordObj KlasseSoegeordType;
+    
+    manipulatedAttrEgenskaberArr KlasseEgenskaberAttrType[]:='{}';
+    soegeordObj KlasseSoegeordType;
+    
 BEGIN
 
 --RAISE DEBUG 'step 0:registreringObj:%',registreringObj;
@@ -147,48 +150,52 @@ IF registreringObj IS NULL OR (registreringObj).attrEgenskaber IS NULL THEN
 	--RAISE DEBUG 'as_search_klasse: skipping filtration on attrEgenskaber';
 ELSE
 
---To help facilitate the comparrison efforts (while diverging at a minimum form the templated db-kode, 
+
+--To help facilitate the comparrison efforts (while diverging at a minimum form the templated db-kode,
 --we'll manipulate the attrEgenskaber array so to make sure that every object only has 1 sogeord element - duplicating the parent elements in attrEgenskaber as needed  )
 
 FOREACH attrEgenskaberTypeObj IN ARRAY registreringObj.attrEgenskaber
 LOOP
-	IF  (attrEgenskaberTypeObj).soegeord IS NULL OR coalesce(array_length((attrEgenskaberTypeObj).soegeord,1),0)<2 THEN
-	manipulatedAttrEgenskaberArr:=array_append(manipulatedAttrEgenskaberArr,attrEgenskaberTypeObj); --The element only has 0 or 1 soegeord element, så no manipulations is needed.
-	ELSE
-		FOREACH soegeordObj IN ARRAY (attrEgenskaberTypeObj).soegeord
-		LOOP
-			manipulatedAttrEgenskaberArr:=array_append(manipulatedAttrEgenskaberArr,
-				ROW (
-					attrEgenskaberTypeObj.brugervendtnoegle,
-					attrEgenskaberTypeObj.beskrivelse,
-					attrEgenskaberTypeObj.eksempel,
-					attrEgenskaberTypeObj.omfang,
-					attrEgenskaberTypeObj.titel,
-					attrEgenskaberTypeObj.retskilde,
-					attrEgenskaberTypeObj.aendringsnotat,
-					ARRAY[soegeordObj]::KlasseSoegeordType[], --NOTICE: Only 1 element in array
-					attrEgenskaberTypeObj.virkning
-					)::KlasseEgenskaberAttrType
-				);
-		END LOOP;
-	END IF;
+       IF  (attrEgenskaberTypeObj).soegeord IS NULL OR coalesce(array_length((attrEgenskaberTypeObj).soegeord,1),0)<2 THEN
+       manipulatedAttrEgenskaberArr:=array_append(manipulatedAttrEgenskaberArr,attrEgenskaberTypeObj); --The element only has 0 or 1 soegeord element, så no manipulations is needed.
+       ELSE
+               FOREACH soegeordObj IN ARRAY (attrEgenskaberTypeObj).soegeord
+               LOOP
+                       manipulatedAttrEgenskaberArr:=array_append(manipulatedAttrEgenskaberArr,
+                               ROW (
+                                       attrEgenskaberTypeObj.brugervendtnoegle,
+                                       attrEgenskaberTypeObj.beskrivelse,
+                                       attrEgenskaberTypeObj.eksempel,
+                                       attrEgenskaberTypeObj.omfang,
+                                       attrEgenskaberTypeObj.titel,
+                                       attrEgenskaberTypeObj.retskilde,
+                                       attrEgenskaberTypeObj.aendringsnotat,
+                                       ARRAY[soegeordObj]::KlasseSoegeordType[], --NOTICE: Only 1 element in array
+                                       attrEgenskaberTypeObj.virkning
+                                       )::KlasseEgenskaberAttrType
+                               );
+               END LOOP;
+       END IF;
 END LOOP;
 
-
 	IF (coalesce(array_length(klasse_candidates,1),0)>0 OR NOT klasse_candidates_is_initialized) THEN
+        
 		FOREACH attrEgenskaberTypeObj IN ARRAY manipulatedAttrEgenskaberArr
+        
 		LOOP
 			klasse_candidates:=array(
 			SELECT DISTINCT
 			b.klasse_id 
 			FROM  klasse_attr_egenskaber a
 			JOIN klasse_registrering b on a.klasse_registrering_id=b.id
-			LEFT JOIN klasse_attr_egenskaber_soegeord c on a.id=c.klasse_attr_egenskaber_id
+            
+            LEFT JOIN klasse_attr_egenskaber_soegeord c on a.id=c.klasse_attr_egenskaber_id
+            
 			WHERE
 				(
-					attrEgenskaberTypeObj.virkning IS NULL
-					OR
 					(
+						attrEgenskaberTypeObj.virkning IS NULL 
+						OR
 						(
 							(
 								(
@@ -267,31 +274,33 @@ END LOOP;
 					a.aendringsnotat ILIKE attrEgenskaberTypeObj.aendringsnotat --case insensitive 
 				)
 				AND
-				(
-					(attrEgenskaberTypeObj.soegeord IS NULL OR array_length(attrEgenskaberTypeObj.soegeord,1)=0)
-					OR
-					(
+                
+                (
+                        (attrEgenskaberTypeObj.soegeord IS NULL OR array_length(attrEgenskaberTypeObj.soegeord,1)=0)
+                        OR
+                        (
+                                (
+                                        (attrEgenskaberTypeObj.soegeord[1]).soegeordidentifikator IS NULL
+                                        OR
+                                        c.soegeordidentifikator ILIKE (attrEgenskaberTypeObj.soegeord[1]).soegeordidentifikator  
+                                )
+                                AND
+                                (
+                                        (attrEgenskaberTypeObj.soegeord[1]).beskrivelse IS NULL
+                                        OR
+                                        c.beskrivelse ILIKE (attrEgenskaberTypeObj.soegeord[1]).beskrivelse  
+                                )               
+                                AND
+                                (
+                                        (attrEgenskaberTypeObj.soegeord[1]).soegeordskategori IS NULL
+                                        OR
+                                        c.soegeordskategori ILIKE (attrEgenskaberTypeObj.soegeord[1]).soegeordskategori  
+                                )
+                        )
+                )
+                AND
+                
 						(
-							(attrEgenskaberTypeObj.soegeord[1]).soegeordidentifikator IS NULL
-							OR
-							c.soegeordidentifikator ILIKE (attrEgenskaberTypeObj.soegeord[1]).soegeordidentifikator  
-						)
-						AND
-						(
-							(attrEgenskaberTypeObj.soegeord[1]).beskrivelse IS NULL
-							OR
-							c.beskrivelse ILIKE (attrEgenskaberTypeObj.soegeord[1]).beskrivelse  
-						)		
-						AND
-						(
-							(attrEgenskaberTypeObj.soegeord[1]).soegeordskategori IS NULL
-							OR
-							c.soegeordskategori ILIKE (attrEgenskaberTypeObj.soegeord[1]).soegeordskategori  
-						)
-					)
-				)
-				AND
-				(
 				(registreringObj.registrering) IS NULL 
 				OR
 				(
@@ -381,10 +390,13 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 		klasse_candidates:=array( 
 
 			SELECT DISTINCT
-			b.klasse_id 
+			b.klasse_id
+            
 			FROM  klasse_attr_egenskaber a
 			JOIN klasse_registrering b on a.klasse_registrering_id=b.id
-			LEFT JOIN klasse_attr_egenskaber_soegeord c on a.id=c.klasse_attr_egenskaber_id
+            
+            LEFT JOIN klasse_attr_egenskaber_soegeord c on a.id=c.klasse_attr_egenskaber_id
+            
 			WHERE
 			(
 						a.brugervendtnoegle ILIKE anyAttrValue OR
@@ -394,12 +406,14 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 						a.titel ILIKE anyAttrValue OR
 						a.retskilde ILIKE anyAttrValue OR
 						a.aendringsnotat ILIKE anyAttrValue
+                
 				OR 
 				c.soegeordidentifikator ILIKE anyAttrValue
 				OR 
 				c.beskrivelse ILIKE anyAttrValue
 				OR
-				c.soegeordskategori ILIKE anyAttrValue
+                c.soegeordskategori ILIKE anyAttrValue
+                
 			)
 			AND
 			(
@@ -408,6 +422,7 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 				virkningSoeg && (a.virkning).TimePeriod
 			)
 			AND
+            
 					(
 				(registreringObj.registrering) IS NULL 
 				OR
@@ -706,6 +721,8 @@ ELSE
 					OR
 					relationTypeObj.urn = a.rel_maal_urn
 				)
+                
+                
 				AND
 						(
 				(registreringObj.registrering) IS NULL 
@@ -792,16 +809,20 @@ IF coalesce(array_length(anyuuidArr ,1),0)>0 THEN
 		klasse_candidates:=array(
 			SELECT DISTINCT
 			b.klasse_id 
+            
 			FROM  klasse_relation a
 			JOIN klasse_registrering b on a.klasse_registrering_id=b.id
 			WHERE
+            
 			anyuuid = a.rel_maal_uuid
+            
 			AND
 			(
 				virkningSoeg IS NULL
 				OR
 				virkningSoeg && (a.virkning).TimePeriod
 			)
+            
 			AND
 					(
 				(registreringObj.registrering) IS NULL 
@@ -887,16 +908,20 @@ IF coalesce(array_length(anyurnArr ,1),0)>0 THEN
 		klasse_candidates:=array(
 			SELECT DISTINCT
 			b.klasse_id 
+            
 			FROM  klasse_relation a
 			JOIN klasse_registrering b on a.klasse_registrering_id=b.id
 			WHERE
+            
 			anyurn = a.rel_maal_urn
+            
 			AND
 			(
 				virkningSoeg IS NULL
 				OR
 				virkningSoeg && (a.virkning).TimePeriod
 			)
+            
 			AND
 					(
 				(registreringObj.registrering) IS NULL 
@@ -976,6 +1001,7 @@ END IF;
 --/**********************//
 
  
+
 
 
 

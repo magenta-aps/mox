@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py klasse as_create_or_import.jinja.sql AND applying a patch (as_create_or_import_klasse.sql.diff)
+NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
 CREATE OR REPLACE FUNCTION as_create_or_import_klasse(
@@ -23,9 +23,12 @@ DECLARE
   klasse_tils_publiceret_obj klassePubliceretTilsType;
   
   klasse_relationer KlasseRelationType;
+  
   klasse_attr_egenskaber_id bigint;
   klasse_attr_egenskaber_soegeord_obj KlasseSoegeordType;
+  
   auth_filtered_uuids uuid[];
+  
   does_exist boolean;
   new_klasse_registrering klasse_registrering;
 BEGIN
@@ -110,7 +113,9 @@ IF klasse_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(klas
   FOREACH klasse_attr_egenskaber_obj IN ARRAY klasse_registrering.attrEgenskaber
   LOOP
 
+  
   klasse_attr_egenskaber_id:=nextval('klasse_attr_egenskaber_id_seq');
+  
     INSERT INTO klasse_attr_egenskaber (
       id,
       brugervendtnoegle,
@@ -135,34 +140,35 @@ IF klasse_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(klas
       klasse_attr_egenskaber_obj.virkning,
       klasse_registrering_id
     ;
- 
-
+  
+    
  /************/
  --Insert Soegeord
-   IF klasse_attr_egenskaber_obj.soegeord IS NOT NULL AND coalesce(array_length(klasse_attr_egenskaber_obj.soegeord,1),0)>1  THEN
-     FOREACH klasse_attr_egenskaber_soegeord_obj IN ARRAY klasse_attr_egenskaber_obj.soegeord
-       LOOP
+  IF klasse_attr_egenskaber_obj.soegeord IS NOT NULL AND coalesce(array_length(klasse_attr_egenskaber_obj.soegeord,1),0)>1  THEN
+    FOREACH klasse_attr_egenskaber_soegeord_obj IN ARRAY klasse_attr_egenskaber_obj.soegeord
+      LOOP
+
+      IF (klasse_attr_egenskaber_soegeord_obj.soegeordidentifikator IS NOT NULL AND klasse_attr_egenskaber_soegeord_obj.soegeordidentifikator<>'') 
+      OR (klasse_attr_egenskaber_soegeord_obj.beskrivelse IS NOT NULL AND klasse_attr_egenskaber_soegeord_obj.beskrivelse<>'' )
+      OR (klasse_attr_egenskaber_soegeord_obj.soegeordskategori IS NOT NULL AND klasse_attr_egenskaber_soegeord_obj.soegeordskategori<>'') THEN
+
+      INSERT INTO klasse_attr_egenskaber_soegeord (
+        soegeordidentifikator,
+        beskrivelse,
+        soegeordskategori,
+        klasse_attr_egenskaber_id
+      )
+      SELECT
+        klasse_attr_egenskaber_soegeord_obj.soegeordidentifikator,
+        klasse_attr_egenskaber_soegeord_obj.beskrivelse,
+        klasse_attr_egenskaber_soegeord_obj.soegeordskategori,
+        klasse_attr_egenskaber_id
+      ;
+      END IF;
  
-       IF (klasse_attr_egenskaber_soegeord_obj.soegeordidentifikator IS NOT NULL AND klasse_attr_egenskaber_soegeord_obj.soegeordidentifikator<>'') 
-       OR (klasse_attr_egenskaber_soegeord_obj.beskrivelse IS NOT NULL AND klasse_attr_egenskaber_soegeord_obj.beskrivelse<>'' )
-       OR (klasse_attr_egenskaber_soegeord_obj.soegeordskategori IS NOT NULL AND klasse_attr_egenskaber_soegeord_obj.soegeordskategori<>'') THEN
- 
-       INSERT INTO klasse_attr_egenskaber_soegeord (
-         soegeordidentifikator,
-         beskrivelse,
-         soegeordskategori,
-         klasse_attr_egenskaber_id
-       )
-       SELECT
-         klasse_attr_egenskaber_soegeord_obj.soegeordidentifikator,
-         klasse_attr_egenskaber_soegeord_obj.beskrivelse,
-         klasse_attr_egenskaber_soegeord_obj.soegeordskategori,
-         klasse_attr_egenskaber_id
-       ;
-       END IF;
-  
-      END LOOP;
-     END IF;
+     END LOOP;
+    END IF;
+    
   END LOOP;
 END IF;
 
@@ -196,6 +202,8 @@ END IF;
 /*********************************/
 --Insert relations
 
+
+
     INSERT INTO klasse_relation (
       klasse_registrering_id,
       virkning,
@@ -213,6 +221,8 @@ END IF;
       a.objektType
     FROM unnest(klasse_registrering.relationer) a
   ;
+
+
 
 
 /*** Verify that the object meets the stipulated access allowed criteria  ***/

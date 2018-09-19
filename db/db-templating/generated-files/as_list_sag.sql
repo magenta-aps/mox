@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py sag as_list.jinja.sql
+NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
 CREATE OR REPLACE FUNCTION as_list_sag(sag_uuids uuid[],
@@ -63,15 +63,17 @@ FROM
 				b.rel_maal_uuid,
 				b.rel_maal_urn,
 				b.objekt_type,
-				b.rel_index,
-				b.rel_type_spec,
-				b.journal_notat,
-				b.journal_dokument_attr
+                b.rel_index,
+                b.rel_type_spec,
+                b.journal_notat,
+                b.journal_dokument_attr
 			):: SagRelationType
 		ELSE
 		NULL
 		END
-		order by b.rel_type,b.rel_index,b.rel_maal_uuid,b.rel_maal_urn,b.objekt_type,b.rel_type_spec,b.journal_notat,b.journal_dokument_attr,b.virkning
+        
+        order by b.rel_type,b.rel_index,b.rel_maal_uuid,b.rel_maal_urn,b.objekt_type,b.rel_type_spec,b.journal_notat,b.journal_dokument_attr,b.virkning
+        
 	)) SagRelationArr
 	FROM
 	(
@@ -99,9 +101,12 @@ FROM
 					a.sag_registrering_id,
 					a.registrering,
 					_remove_nulls_in_array(array_agg(
-						CASE 
+						CASE
+                        
 						WHEN b.id is not null THEN
+                        
 						ROW(
+                            
 					 		b.brugervendtnoegle,
 					 		b.afleveret,
 					 		b.beskrivelse,
@@ -111,13 +116,17 @@ FROM
 					 		b.principiel,
 					 		b.sagsnummer,
 					 		b.titel,
-					   		b.virkning 
+					   		b.virkning
+                            
 							)::SagEgenskaberAttrType
 						ELSE
 						NULL
 						END
+                        
 						order by b.brugervendtnoegle,b.afleveret,b.beskrivelse,b.hjemmel,b.kassationskode,b.offentlighedundtaget,b.principiel,b.sagsnummer,b.titel,b.virkning
-					)) SagAttrEgenskaberArr 
+                        
+					)) SagAttrEgenskaberArr
+                    
 					FROM
 					(
 					SELECT
@@ -128,7 +137,8 @@ FROM
 					JOIN 		sag_registrering b 	ON b.sag_id=a.id
 					WHERE a.id = ANY (sag_uuids) AND ((registrering_tstzrange is null AND upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
 					) as a
-					LEFT JOIN sag_attr_egenskaber as b ON b.sag_registrering_id=a.sag_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
+					LEFT JOIN sag_attr_egenskaber as b ON b.sag_registrering_id=a.sag_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given
+                    
 					GROUP BY 
 					a.sag_id,
 					a.sag_registrering_id,
@@ -149,6 +159,7 @@ FROM
 	a.SagAttrEgenskaberArr,
 	a.SagTilsFremdriftArr
 ) as a
+
 WHERE a.sag_id IS NOT NULL
 GROUP BY 
 a.sag_id

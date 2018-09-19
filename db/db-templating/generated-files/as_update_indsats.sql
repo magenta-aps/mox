@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py indsats as_update.jinja.sql
+NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
 
@@ -23,6 +23,7 @@ CREATE OR REPLACE FUNCTION as_update_indsats(
   tilsPubliceret IndsatsPubliceretTilsType[],
   tilsFremdrift IndsatsFremdriftTilsType[],
   relationer IndsatsRelationType[],
+  
   lostUpdatePreventionTZ TIMESTAMPTZ = null,
   auth_criteria_arr IndsatsRegistreringType[]=null
 	)
@@ -37,13 +38,16 @@ DECLARE
   prev_indsats_registrering indsats_registrering;
   indsats_relation_navn IndsatsRelationKode;
   attrEgenskaberObj IndsatsEgenskaberAttrType;
+  
   auth_filtered_uuids uuid[];
+  
   rel_type_max_index_prev_rev int;
   rel_type_max_index_arr _indsatsRelationMaxIndex[];
   indsats_rel_type_cardinality_unlimited indsatsRelationKode[]:=ARRAY['indsatskvalitet'::IndsatsRelationKode,'indsatsaktoer'::IndsatsRelationKode,'samtykke'::IndsatsRelationKode,'indsatssag'::IndsatsRelationKode,'indsatsdokument'::IndsatsRelationKode];
   indsats_uuid_underscores text;
   indsats_rel_seq_name text;
   indsats_rel_type_cardinality_unlimited_present_in_argument IndsatsRelationKode[];
+  
 BEGIN
 
 --create a new registrering
@@ -75,6 +79,7 @@ END IF;
 
 
 
+
 --handle relationer (relations)
 
 IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
@@ -82,17 +87,24 @@ IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
 ELSE
 
   --1) Insert relations given as part of this update
-  --2) Insert relations of previous registration, with index values not included in this update. Please notice that for the logic to work,
-  --  it is very important that the index sequences start with the max value for index of the same type in the previous registration
+  --2) for aktivitet: Insert relations of previous registration, with index values not included in this update. Please notice that for the logic to work,
+   --  it is very important that the index sequences start with the max value for index of the same type in the previous registration
+  --2) for everthing else: Insert relations of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
 
   --Ad 1)
 
+
+
 --build array with the max index values of the different types of relations of the previous registration
+
 SELECT array_agg(rel_type_max_index)::_indsatsRelationMaxIndex[] into rel_type_max_index_arr
+
 FROM
 (
   SELECT
-  (ROW(rel_type,coalesce(max(rel_index),0))::_indsatsRelationMaxIndex) rel_type_max_index  
+  
+  (ROW(rel_type,coalesce(max(rel_index),0))::_indsatsRelationMaxIndex) rel_type_max_index
+  
   FROM indsats_relation a
   where a.indsats_registrering_id=prev_indsats_registrering.id
   and a.rel_type = any (indsats_rel_type_cardinality_unlimited)
@@ -100,11 +112,14 @@ FROM
 ) as a
 ;
 
+ 
+---Create temporary sequences
 
---Create temporary sequences
 indsats_uuid_underscores:=replace(indsats_uuid::text, '-', '_');
 
+
 SELECT array_agg( DISTINCT a.RelType) into indsats_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(relationer) a WHERE a.RelType = any (indsats_rel_type_cardinality_unlimited) ;
+
 IF coalesce(array_length(indsats_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 FOREACH indsats_relation_navn IN ARRAY (indsats_rel_type_cardinality_unlimited_present_in_argument)
   LOOP
@@ -134,6 +149,8 @@ FOREACH indsats_relation_navn IN ARRAY (indsats_rel_type_cardinality_unlimited_p
 END LOOP;
 END IF;
 
+
+
       INSERT INTO indsats_relation (
         indsats_registrering_id,
           virkning,
@@ -160,27 +177,40 @@ END IF;
                     ELSE
                     NULL
                     END
+                
       FROM unnest(relationer) as a
+      
       LEFT JOIN indsats_relation b on a.relType = any (indsats_rel_type_cardinality_unlimited) and b.indsats_registrering_id=prev_indsats_registrering.id and a.relType=b.rel_type and a.indeks=b.rel_index
+      
     ;
 
 
 --Drop temporary sequences
 IF coalesce(array_length(indsats_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
+
 FOREACH indsats_relation_navn IN ARRAY (indsats_rel_type_cardinality_unlimited_present_in_argument)
+
   LOOP
   indsats_rel_seq_name := 'indsats_' || indsats_relation_navn::text || indsats_uuid_underscores;
   EXECUTE 'DROP  SEQUENCE ' || indsats_rel_seq_name || ';';
 END LOOP;
 END IF;
 
+   
   --Ad 2)
 
   /**********************/
-  -- 0..1 relations 
-  --Please notice, that for 0..1 relations for indsats, we're ignoring index here, and handling it the same way, that is done for other object types (like Facet, Klasse etc). That is, you only make changes for the virkningsperiod that you explicitly specify (unless you delete all relations) 
-
+  -- 0..1 relations
+  
+  --Please notice, that for 0..1 relations for aktivitet, we're ignoring index
+  --here, and handling it the same way, that is done for other object types (like
+  --Facet, Klasse etc). That is, you only make changes for the
+  --virkningsperiod that you explicitly specify (unless you delete all relations) 
+  
+   
+  
   FOREACH indsats_relation_navn in array ARRAY['indsatstype'::IndsatsRelationKode,'indsatsmodtager'::IndsatsRelationKode]::IndsatsRelationKode[]
+  
   LOOP
 
     INSERT INTO indsats_relation (
@@ -190,7 +220,7 @@ END IF;
               rel_maal_urn,
                 rel_type,
                   objekt_type,
-                    rel_index          
+                    rel_index
       )
     SELECT 
         new_indsats_registrering.id, 
@@ -204,7 +234,8 @@ END IF;
               a.rel_maal_urn,
                 a.rel_type,
                   a.objekt_type,
-                    NULL--a.rel_index, rel_index is not to be used for 0..1 relations        
+                    NULL--a.rel_index, rel_index is not to be used for 0..1 relations
+                  
     FROM
     (
       --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to _subtract_tstzrange_arr on the relations of the previous registrering 
@@ -224,7 +255,12 @@ END IF;
 
   /**********************/
   -- 0..n relations
-  
+
+  --We only have to check if there are any of the relations with the given name present in the new registration, otherwise copy the ones from the previous registration
+
+
+
+
       INSERT INTO indsats_relation (
             indsats_registrering_id,
               virkning,
@@ -236,6 +272,7 @@ END IF;
           )
       SELECT 
             new_indsats_registrering.id,
+            
               a.virkning,
                 a.rel_maal_uuid,
                   a.rel_maal_urn,
@@ -247,7 +284,11 @@ END IF;
       WHERE a.indsats_registrering_id=prev_indsats_registrering.id 
       and a.rel_type = any (indsats_rel_type_cardinality_unlimited)
       and b.id is null --don't transfer relations of prev. registrering, if the index was specified in data given to the/this update-function
+            
       ;
+
+
+
 
 /**********************/
 
@@ -415,6 +456,7 @@ IF attrEgenskaber IS NOT null THEN
    (attrEgenskaberObj).sluttidspunkt is null 
   THEN
 
+
   INSERT INTO
   indsats_attr_egenskaber
   (
@@ -423,14 +465,18 @@ IF attrEgenskaber IS NOT null THEN
     ,indsats_registrering_id
   )
   SELECT
+  
     coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+  
     coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
-    CASE WHEN ((attrEgenskaberObj.starttidspunkt).cleared) THEN NULL 
-        ELSE coalesce((attrEgenskaberObj.starttidspunkt).value,a.starttidspunkt)
-        END,
-    CASE WHEN ((attrEgenskaberObj.sluttidspunkt).cleared) THEN NULL 
-        ELSE coalesce((attrEgenskaberObj.sluttidspunkt).value,a.sluttidspunkt)
-        END,
+   
+    CASE WHEN ((attrEgenskaberObj.starttidspunkt).cleared) THEN NULL
+    ELSE coalesce((attrEgenskaberObj.starttidspunkt).value,a.starttidspunkt)
+    END,
+   
+    CASE WHEN ((attrEgenskaberObj.sluttidspunkt).cleared) THEN NULL
+    ELSE coalesce((attrEgenskaberObj.sluttidspunkt).value,a.sluttidspunkt)
+    END,
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
 	  (attrEgenskaberObj.virkning).AktoerRef,
@@ -442,7 +488,8 @@ IF attrEgenskaber IS NOT null THEN
   WHERE
     a.indsats_registrering_id=prev_indsats_registrering.id 
     and (a.virkning).TimePeriod && (attrEgenskaberObj.virkning).TimePeriod
-  ;
+  
+ ;
 
   --For any periods within the virkning of the attrEgenskaberObj, that is NOT covered by any "merged" rows inserted above, generate and insert rows
 
@@ -454,9 +501,13 @@ IF attrEgenskaber IS NOT null THEN
     ,indsats_registrering_id
   )
   SELECT 
+    
     attrEgenskaberObj.brugervendtnoegle, 
+    
     attrEgenskaberObj.beskrivelse, 
+    
     attrEgenskaberObj.starttidspunkt, 
+    
     attrEgenskaberObj.sluttidspunkt,
 	  ROW (
 	       b.tz_range_leftover,
@@ -474,10 +525,13 @@ IF attrEgenskaber IS NOT null THEN
        b.indsats_registrering_id=new_indsats_registrering.id
   ) as a
   JOIN unnest(_subtract_tstzrange_arr((attrEgenskaberObj.virkning).TimePeriod,a.tzranges_of_new_reg)) as b(tz_range_leftover) on true
-  ;
+  
+;
 
   ELSE
     --insert attrEgenskaberObj raw (if there were no null-valued fields) 
+
+    
 
     INSERT INTO
     indsats_attr_egenskaber
@@ -486,14 +540,17 @@ IF attrEgenskaber IS NOT null THEN
     ,virkning
     ,indsats_registrering_id
     )
-    VALUES ( 
+    VALUES (
+     
     attrEgenskaberObj.brugervendtnoegle, 
     attrEgenskaberObj.beskrivelse, 
     attrEgenskaberObj.starttidspunkt, 
     attrEgenskaberObj.sluttidspunkt,
     attrEgenskaberObj.virkning,
     new_indsats_registrering.id
+    
     );
+    
 
   END IF;
 
@@ -507,12 +564,14 @@ ELSE
 
 --Handle egenskaber of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
 
+
 INSERT INTO indsats_attr_egenskaber (
     brugervendtnoegle,beskrivelse,starttidspunkt,sluttidspunkt
     ,virkning
     ,indsats_registrering_id
 )
-SELECT
+SELECT 
+   
       a.brugervendtnoegle,
       a.beskrivelse,
       a.starttidspunkt,
@@ -534,7 +593,8 @@ FROM
 ) d
   JOIN indsats_attr_egenskaber a ON true  
   JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
-  WHERE a.indsats_registrering_id=prev_indsats_registrering.id     
+  WHERE a.indsats_registrering_id=prev_indsats_registrering.id
+  
 ;
 
 
@@ -542,6 +602,13 @@ FROM
 
 
 END IF;
+
+
+
+
+
+
+
 
 
 /******************************************************************/
@@ -563,7 +630,7 @@ ROW(null,(read_new_indsats.registrering[1].registrering).livscykluskode,null,nul
 (read_new_indsats.registrering[1]).tilsPubliceret ,
 (read_new_indsats.registrering[1]).tilsFremdrift ,
 (read_new_indsats.registrering[1]).attrEgenskaber ,
-(read_new_indsats.registrering[1]).relationer 
+(read_new_indsats.registrering[1]).relationer
 )::indsatsRegistreringType
 ;
 
@@ -572,7 +639,7 @@ ROW(null,(read_prev_indsats.registrering[1].registrering).livscykluskode,null,nu
 (read_prev_indsats.registrering[1]).tilsPubliceret ,
 (read_prev_indsats.registrering[1]).tilsFremdrift ,
 (read_prev_indsats.registrering[1]).attrEgenskaber ,
-(read_prev_indsats.registrering[1]).relationer 
+(read_prev_indsats.registrering[1]).relationer
 )::indsatsRegistreringType
 ;
 

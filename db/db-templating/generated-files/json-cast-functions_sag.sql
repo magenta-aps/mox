@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py sag json-cast-functions.jinja.sql
+NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
 
@@ -68,13 +68,15 @@ FROM
     (
       SELECT
       e.relType,
+
       array_agg( _json_object_delete_keys(row_to_json(ROW(e.relType,e.virkning,e.uuid,e.urn,e.objektType,e.indeks,e.relTypeSpec,e.journalNotat,e.journalDokumentAttr)::SagRelationType),ARRAY['reltype']::text[])) rel_json_arr
-      from unnest($1.relationer) e(relType,virkning,uuid,urn,objektType,indeks,relTypeSpec,journalNotat,journalDokumentAttr) 
+      from unnest($1.relationer) e(relType,virkning,uuid,urn,objektType,indeks,relTypeSpec,journalNotat,journalDokumentAttr)
+
       group by e.relType
       order by e.relType asc
     ) as f
   )
-  SELECT
+  SELECT 
   row_to_json(FraTidspunkt.*) FraTidspunkt
   ,row_to_json(TilTidspunkt.*) TilTidspunkt
   ,($1.registrering).livscykluskode
@@ -87,6 +89,7 @@ FROM
     ELSE
     '{}'::json
     END relationer
+
   FROM
     (
     SELECT

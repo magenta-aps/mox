@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py klassifikation dbtyper-specific.jinja.sql
+NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
 --create custom type sans db-ids to be able to do "clean" function signatures "for the outside world".
@@ -19,25 +19,34 @@ CREATE TYPE KlassifikationPubliceretTilsType AS (
 )
 ;
 
+
+
 CREATE TYPE KlassifikationEgenskaberAttrType AS (
 brugervendtnoegle text,
 beskrivelse text,
 kaldenavn text,
 ophavsret text,
+
  virkning Virkning
 );
 
 
+
+
 CREATE TYPE KlassifikationRelationKode AS ENUM  ('ansvarlig','ejer');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_klassifikation_relation_kode_to_txt is invoked.
+
+
 
 CREATE TYPE KlassifikationRelationType AS (
   relType KlassifikationRelationKode,
   virkning Virkning,
   uuid uuid,
   urn  text,
-  objektType text 
+  objektType text
 )
 ;
+
+
 
 CREATE TYPE KlassifikationRegistreringType AS
 (
@@ -52,6 +61,9 @@ CREATE TYPE KlassifikationType AS
   id uuid,
   registrering KlassifikationRegistreringType[]
 );  
+
+
+
 
 
 

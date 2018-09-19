@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py indsats dbtyper-specific.jinja.sql
+NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
 --create custom type sans db-ids to be able to do "clean" function signatures "for the outside world".
@@ -26,16 +26,25 @@ CREATE TYPE IndsatsFremdriftTilsType AS (
 )
 ;
 
+
+
 CREATE TYPE IndsatsEgenskaberAttrType AS (
 brugervendtnoegle text,
 beskrivelse text,
 starttidspunkt ClearableTimestamptz,
+
 sluttidspunkt ClearableTimestamptz,
+
+
  virkning Virkning
 );
 
 
+
+
 CREATE TYPE IndsatsRelationKode AS ENUM  ('indsatsmodtager','indsatstype','indsatskvalitet','indsatsaktoer','samtykke','indsatssag','indsatsdokument');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_indsats_relation_kode_to_txt is invoked.
+
+
 
 CREATE TYPE IndsatsRelationType AS (
   relType IndsatsRelationKode,
@@ -43,9 +52,11 @@ CREATE TYPE IndsatsRelationType AS (
   uuid uuid,
   urn  text,
   objektType text,
-indeks int 
+indeks int
 )
 ;
+
+
 
 CREATE TYPE IndsatsRegistreringType AS
 (
@@ -62,9 +73,14 @@ CREATE TYPE IndsatsType AS
   registrering IndsatsRegistreringType[]
 );  
 
+
  CREATE Type _IndsatsRelationMaxIndex AS
  (
    relType IndsatsRelationKode,
    indeks int
  );
+
+
+
+
 

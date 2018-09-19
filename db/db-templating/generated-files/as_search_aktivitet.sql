@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py aktivitet as_search.jinja.sql
+NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
 
@@ -20,8 +20,9 @@ CREATE OR REPLACE FUNCTION as_search_aktivitet(
 	anyuuidArr	uuid[] = '{}'::uuid[],
 	anyurnArr text[] = '{}'::text[],
 	auth_criteria_arr AktivitetRegistreringType[]=null,
-	search_operator_greater_than_or_equal_attr_egenskaber AktivitetEgenskaberAttrType[]=null,
-	search_operator_less_than_or_equal_attr_egenskaber AktivitetEgenskaberAttrType[]=null
+    search_operator_greater_than_or_equal_attr_egenskaber AktivitetEgenskaberAttrType[]=null,
+    search_operator_less_than_or_equal_attr_egenskaber AktivitetEgenskaberAttrType[]=null
+    
 	)
   RETURNS uuid[] AS 
 $$
@@ -37,7 +38,9 @@ DECLARE
 	anyAttrValue text;
 	anyuuid uuid;
 	anyurn text;
+    
 	auth_filtered_uuids uuid[];
+    
 BEGIN
 
 --RAISE DEBUG 'step 0:registreringObj:%',registreringObj;
@@ -147,14 +150,18 @@ END IF;
 IF registreringObj IS NULL OR (registreringObj).attrEgenskaber IS NULL THEN
 	--RAISE DEBUG 'as_search_aktivitet: skipping filtration on attrEgenskaber';
 ELSE
+
 	IF (coalesce(array_length(aktivitet_candidates,1),0)>0 OR NOT aktivitet_candidates_is_initialized) THEN
+        
 		FOREACH attrEgenskaberTypeObj IN ARRAY registreringObj.attrEgenskaber
+        
 		LOOP
 			aktivitet_candidates:=array(
 			SELECT DISTINCT
 			b.aktivitet_id 
 			FROM  aktivitet_attr_egenskaber a
 			JOIN aktivitet_registrering b on a.aktivitet_registrering_id=b.id
+            
 			WHERE
 				(
 					(
@@ -238,6 +245,7 @@ ELSE
 					a.formaal ILIKE attrEgenskaberTypeObj.formaal --case insensitive 
 				)
 				AND
+                
 						(
 				(registreringObj.registrering) IS NULL 
 				OR
@@ -328,9 +336,11 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 		aktivitet_candidates:=array( 
 
 			SELECT DISTINCT
-			b.aktivitet_id 
+			b.aktivitet_id
+            
 			FROM  aktivitet_attr_egenskaber a
 			JOIN aktivitet_registrering b on a.aktivitet_registrering_id=b.id
+            
 			WHERE
 			(
 						a.brugervendtnoegle ILIKE anyAttrValue OR
@@ -340,6 +350,7 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 									a.sluttidspunkt::text ilike anyAttrValue OR
 									a.tidsforbrug::text ilike anyAttrValue OR
 						a.formaal ILIKE anyAttrValue
+                
 			)
 			AND
 			(
@@ -348,6 +359,7 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 				virkningSoeg && (a.virkning).TimePeriod
 			)
 			AND
+            
 					(
 				(registreringObj.registrering) IS NULL 
 				OR
@@ -779,42 +791,46 @@ ELSE
 					OR
 					relationTypeObj.urn = a.rel_maal_urn
 				)
-				AND
-				(
- 					relationTypeObj.indeks IS NULL
- 					OR
- 					relationTypeObj.indeks = a.rel_index
- 				)
-				AND
-				(
-					relationTypeObj.aktoerAttr IS NULL
-					OR
-					(
-						(
-							(relationTypeObj.aktoerAttr).obligatorisk IS NULL
-							OR
-							(relationTypeObj.aktoerAttr).obligatorisk = (a.aktoer_attr).obligatorisk					
-						)
-						AND
-						(
-							(relationTypeObj.aktoerAttr).accepteret IS NULL
-							OR
-							(relationTypeObj.aktoerAttr).accepteret = (a.aktoer_attr).accepteret
-						)
-						AND
-						(
-							(relationTypeObj.aktoerAttr).repraesentation_uuid IS NULL
-							OR
-							(relationTypeObj.aktoerAttr).repraesentation_uuid = (a.aktoer_attr).repraesentation_uuid
-						)
-						AND
-						(
-							(relationTypeObj.aktoerAttr).repraesentation_urn IS NULL
-							OR
-							(relationTypeObj.aktoerAttr).repraesentation_urn = (a.aktoer_attr).repraesentation_urn
-						)
-					)
-				) 
+                
+                AND
+                (
+                        relationTypeObj.indeks IS NULL
+                        OR
+                        relationTypeObj.indeks = a.rel_index
+                )
+                
+                
+                AND
+                (
+                        relationTypeObj.aktoerAttr IS NULL
+                        OR
+                        (
+                                (
+                                        (relationTypeObj.aktoerAttr).obligatorisk IS NULL
+                                        OR
+                                        (relationTypeObj.aktoerAttr).obligatorisk = (a.aktoer_attr).obligatorisk                                        
+                                )
+                                AND
+                                (
+                                        (relationTypeObj.aktoerAttr).accepteret IS NULL
+                                        OR
+                                        (relationTypeObj.aktoerAttr).accepteret = (a.aktoer_attr).accepteret
+                                )
+                                AND
+                                (
+                                        (relationTypeObj.aktoerAttr).repraesentation_uuid IS NULL
+                                        OR
+                                        (relationTypeObj.aktoerAttr).repraesentation_uuid = (a.aktoer_attr).repraesentation_uuid
+                                )
+                                AND
+                                (
+                                        (relationTypeObj.aktoerAttr).repraesentation_urn IS NULL
+                                        OR
+                                        (relationTypeObj.aktoerAttr).repraesentation_urn = (a.aktoer_attr).repraesentation_urn
+                                )
+                        )
+                )
+                
 				AND
 						(
 				(registreringObj.registrering) IS NULL 
@@ -901,20 +917,24 @@ IF coalesce(array_length(anyuuidArr ,1),0)>0 THEN
 		aktivitet_candidates:=array(
 			SELECT DISTINCT
 			b.aktivitet_id 
+            
 			FROM  aktivitet_relation a
 			JOIN aktivitet_registrering b on a.aktivitet_registrering_id=b.id
 			WHERE
-			(
-				anyuuid = a.rel_maal_uuid
-			OR  
-				((NOT (a.aktoer_attr IS NULL)) AND anyuuid = (a.aktoer_attr).repraesentation_uuid )
-			)
+            
+            (
+                    anyuuid = a.rel_maal_uuid
+            OR  
+                    ((NOT (a.aktoer_attr IS NULL)) AND anyuuid = (a.aktoer_attr).repraesentation_uuid )
+            )
+            
 			AND
 			(
 				virkningSoeg IS NULL
 				OR
 				virkningSoeg && (a.virkning).TimePeriod
 			)
+            
 			AND
 					(
 				(registreringObj.registrering) IS NULL 
@@ -1000,20 +1020,24 @@ IF coalesce(array_length(anyurnArr ,1),0)>0 THEN
 		aktivitet_candidates:=array(
 			SELECT DISTINCT
 			b.aktivitet_id 
+            
 			FROM  aktivitet_relation a
 			JOIN aktivitet_registrering b on a.aktivitet_registrering_id=b.id
 			WHERE
-			(
-				anyurn = a.rel_maal_urn
-				OR 
-				((NOT (a.aktoer_attr IS NULL)) AND anyurn = (a.aktoer_attr).repraesentation_urn)
-			)
+            
+            (
+            anyurn = a.rel_maal_urn
+                    OR 
+                   ((NOT (a.aktoer_attr IS NULL)) AND anyurn = (a.aktoer_attr).repraesentation_urn)
+            )
+            
 			AND
 			(
 				virkningSoeg IS NULL
 				OR
 				virkningSoeg && (a.virkning).TimePeriod
 			)
+            
 			AND
 					(
 				(registreringObj.registrering) IS NULL 
@@ -1092,178 +1116,185 @@ END IF;
 
 --/**********************//
 
+ 
+
+
  --/**********************************************************//
---Filtration using operator 'greather than or equal': Egenskaber
---/**********************************************************//
+---Filtration using operator 'greather than or equal': Egenskaber
+---/**********************************************************//
 IF coalesce(array_length(search_operator_greater_than_or_equal_attr_egenskaber,1),0)>0 THEN
-	IF (coalesce(array_length(aktivitet_candidates,1),0)>0 OR NOT aktivitet_candidates_is_initialized) THEN
-		FOREACH attrEgenskaberTypeObj IN ARRAY search_operator_greater_than_or_equal_attr_egenskaber
-		LOOP
-			aktivitet_candidates:=array(
-			SELECT DISTINCT
-			b.aktivitet_id 
-			FROM  aktivitet_attr_egenskaber a
-			JOIN aktivitet_registrering b on a.aktivitet_registrering_id=b.id
-			WHERE
-				(
-					(
-						attrEgenskaberTypeObj.virkning IS NULL 
-						OR
-						(
-							(
-								(
-							 		(attrEgenskaberTypeObj.virkning).TimePeriod IS NULL
-								)
-								OR
-								(
-									(attrEgenskaberTypeObj.virkning).TimePeriod && (a.virkning).TimePeriod
-								)
-							)
-							AND
-							(
-									(attrEgenskaberTypeObj.virkning).AktoerRef IS NULL OR (attrEgenskaberTypeObj.virkning).AktoerRef=(a.virkning).AktoerRef
-							)
-							AND
-							(
-									(attrEgenskaberTypeObj.virkning).AktoerTypeKode IS NULL OR (attrEgenskaberTypeObj.virkning).AktoerTypeKode=(a.virkning).AktoerTypeKode
-							)
-							AND
-							(
-									(attrEgenskaberTypeObj.virkning).NoteTekst IS NULL OR  (a.virkning).NoteTekst ILIKE (attrEgenskaberTypeObj.virkning).NoteTekst  
-							)
-						)
-					)
-				)
-				AND
-				(
-					(NOT (attrEgenskaberTypeObj.virkning IS NULL OR (attrEgenskaberTypeObj.virkning).TimePeriod IS NULL)) --we have already filtered on virkning above
-					OR
-					(
-						virkningSoeg IS NULL
-						OR
-						virkningSoeg && (a.virkning).TimePeriod
-					)
-				)
-				AND
-				(
-					attrEgenskaberTypeObj.brugervendtnoegle IS NULL
-					OR 
-					a.brugervendtnoegle >= attrEgenskaberTypeObj.brugervendtnoegle 
-				)
-				AND
-				(
-					attrEgenskaberTypeObj.aktivitetnavn IS NULL
-					OR 
-					a.aktivitetnavn >= attrEgenskaberTypeObj.aktivitetnavn 
-				)
-				AND
-				(
-					attrEgenskaberTypeObj.beskrivelse IS NULL
-					OR 
-					a.beskrivelse >= attrEgenskaberTypeObj.beskrivelse 
-				)
-				AND
-				(
-					attrEgenskaberTypeObj.starttidspunkt IS NULL
-					OR 
-					a.starttidspunkt >= attrEgenskaberTypeObj.starttidspunkt 
-				)
-				AND
-				(
-					attrEgenskaberTypeObj.sluttidspunkt IS NULL
-					OR 
-					a.sluttidspunkt >= attrEgenskaberTypeObj.sluttidspunkt 
-				)
-				AND
-				(
-					attrEgenskaberTypeObj.tidsforbrug IS NULL
-					OR 
-					a.tidsforbrug >= attrEgenskaberTypeObj.tidsforbrug 
-				)
-				AND
-				(
-					attrEgenskaberTypeObj.formaal IS NULL
-					OR 
-					a.formaal >= attrEgenskaberTypeObj.formaal 
-				)
-				AND
-						(
-				(registreringObj.registrering) IS NULL 
-				OR
-				(
-					(
-						(registreringObj.registrering).timeperiod IS NULL 
-						OR
-						(registreringObj.registrering).timeperiod && (b.registrering).timeperiod
-					)
-					AND
-					(
-						(registreringObj.registrering).livscykluskode IS NULL 
-						OR
-						(registreringObj.registrering).livscykluskode = (b.registrering).livscykluskode 		
-					) 
-					AND
-					(
-						(registreringObj.registrering).brugerref IS NULL
-						OR
-						(registreringObj.registrering).brugerref = (b.registrering).brugerref
-					)
-					AND
-					(
-						(registreringObj.registrering).note IS NULL
-						OR
-						(b.registrering).note ILIKE (registreringObj.registrering).note
-					)
-			)
-		)
-		AND
-		(
-			(
-				((b.registrering).livscykluskode <> 'Slettet'::Livscykluskode )
-				AND
-					(
-						(registreringObj.registrering) IS NULL 
-						OR
-						(registreringObj.registrering).livscykluskode IS NULL 
-					)
-			)
-			OR
-			(
-				(NOT ((registreringObj.registrering) IS NULL))
-				AND
-				(registreringObj.registrering).livscykluskode IS NOT NULL 
-			)
-		)
-		AND
-		(
-			(
-			  (
-			  	(registreringObj.registrering) IS NULL
-			  	OR
-			  	(registreringObj.registrering).timeperiod IS NULL
-			  )
-			  AND
-			  upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ
-			)  	
-		OR
-			(
-				(NOT ((registreringObj.registrering) IS NULL))
-				AND
-				((registreringObj.registrering).timeperiod IS NOT NULL)
-			)
-		)
-		AND
-		( (NOT aktivitet_candidates_is_initialized) OR b.aktivitet_id = ANY (aktivitet_candidates) )
+       IF (coalesce(array_length(aktivitet_candidates,1),0)>0 OR NOT aktivitet_candidates_is_initialized) THEN
+               FOREACH attrEgenskaberTypeObj IN ARRAY search_operator_greater_than_or_equal_attr_egenskaber
+               LOOP
+                       aktivitet_candidates:=array(
+                       SELECT DISTINCT
+                       b.aktivitet_id 
+                       FROM  aktivitet_attr_egenskaber a
+                       JOIN aktivitet_registrering b on a.aktivitet_registrering_id=b.id
+                       WHERE
+                               (
+                                       (
+                                               attrEgenskaberTypeObj.virkning IS NULL 
+                                               OR
+                                               (
+                                                       (
+                                                               (
+                                                                       (attrEgenskaberTypeObj.virkning).TimePeriod IS NULL
+                                                               )
+                                                               OR
+                                                               (
+                                                                       (attrEgenskaberTypeObj.virkning).TimePeriod && (a.virkning).TimePeriod
+                                                               )
+                                                       )
+                                                       AND
+                                                       (
+                                                                       (attrEgenskaberTypeObj.virkning).AktoerRef IS NULL OR (attrEgenskaberTypeObj.virkning).AktoerRef=(a.virkning).AktoerRef
+                                                       )
+                                                       AND
+                                                       (
+                                                                       (attrEgenskaberTypeObj.virkning).AktoerTypeKode IS NULL OR (attrEgenskaberTypeObj.virkning).AktoerTypeKode=(a.virkning).AktoerTypeKode
+                                                       )
+                                                       AND
+                                                       (
+                                                                       (attrEgenskaberTypeObj.virkning).NoteTekst IS NULL OR  (a.virkning).NoteTekst ILIKE (attrEgenskaberTypeObj.virkning).NoteTekst  
+                                                       )
+                                               )
+                                       )
+                               )
+                               AND
+                               (
+                                       (NOT (attrEgenskaberTypeObj.virkning IS NULL OR (attrEgenskaberTypeObj.virkning).TimePeriod IS NULL)) --we have already filtered on virkning above
+                                       OR
+                                       (
+                                               virkningSoeg IS NULL
+                                               OR
+                                               virkningSoeg && (a.virkning).TimePeriod
+                                       )
+                               )
+                               AND
+                               (
+                                       attrEgenskaberTypeObj.brugervendtnoegle IS NULL
+                                       OR 
+                                       a.brugervendtnoegle >= attrEgenskaberTypeObj.brugervendtnoegle 
+                               )
+                               
+                               AND
+                               (
+                                       attrEgenskaberTypeObj.aktivitetnavn IS NULL
+                                       OR 
+                                       a.aktivitetnavn >= attrEgenskaberTypeObj.aktivitetnavn 
+                               )
+                               
+                               AND
+                               (
+                                       attrEgenskaberTypeObj.beskrivelse IS NULL
+                                       OR 
+                                       a.beskrivelse >= attrEgenskaberTypeObj.beskrivelse 
+                               )
+                               AND
+                               (
+                                       attrEgenskaberTypeObj.starttidspunkt IS NULL
+                                       OR 
+                                       a.starttidspunkt >= attrEgenskaberTypeObj.starttidspunkt 
+                               )
+                               AND
+                               (
+                                       attrEgenskaberTypeObj.sluttidspunkt IS NULL
+                                       OR 
+                                       a.sluttidspunkt >= attrEgenskaberTypeObj.sluttidspunkt 
+                               )
+                               
+                               AND
+                               (
+                                       attrEgenskaberTypeObj.tidsforbrug IS NULL
+                                       OR 
+                                       a.tidsforbrug >= attrEgenskaberTypeObj.tidsforbrug 
+                               )
+                               AND
+                               (
+                                       attrEgenskaberTypeObj.formaal IS NULL
+                                       OR 
+                                       a.formaal >= attrEgenskaberTypeObj.formaal 
+                               )
+                               
+                               AND
+                                               (
+                               (registreringObj.registrering) IS NULL 
+                               OR
+                               (
+                                       (
+                                               (registreringObj.registrering).timeperiod IS NULL 
+                                               OR
+                                               (registreringObj.registrering).timeperiod && (b.registrering).timeperiod
+                                       )
+                                       AND
+                                       (
+                                               (registreringObj.registrering).livscykluskode IS NULL 
+                                               OR
+                                               (registreringObj.registrering).livscykluskode = (b.registrering).livscykluskode                 
+                                       ) 
+                                       AND
+                                       (
+                                               (registreringObj.registrering).brugerref IS NULL
+                                               OR
+                                               (registreringObj.registrering).brugerref = (b.registrering).brugerref
+                                       )
+                                       AND
+                                       (
+                                               (registreringObj.registrering).note IS NULL
+                                               OR
+                                               (b.registrering).note ILIKE (registreringObj.registrering).note
+                                       )
+                       )
+               )
+               AND
+               (
+                       (
+                               ((b.registrering).livscykluskode <> 'Slettet'::Livscykluskode )
+                               AND
+                                       (
+                                               (registreringObj.registrering) IS NULL 
+                                               OR
+                                               (registreringObj.registrering).livscykluskode IS NULL 
+                                       )
+                       )
+                       OR
+                       (
+                               (NOT ((registreringObj.registrering) IS NULL))
+                               AND
+                               (registreringObj.registrering).livscykluskode IS NOT NULL 
+                       )
+               )
+               AND
+               (
+                       (
+                         (
+                               (registreringObj.registrering) IS NULL
+                               OR
+                               (registreringObj.registrering).timeperiod IS NULL
+                         )
+                         AND
+                         upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ
+                       )       
+               OR
+                       (
+                               (NOT ((registreringObj.registrering) IS NULL))
+                               AND
+                               ((registreringObj.registrering).timeperiod IS NOT NULL)
+                       )
+               )
+               AND
+               ( (NOT aktivitet_candidates_is_initialized) OR b.aktivitet_id = ANY (aktivitet_candidates) )
 
-			);
-			
+                       );
+                       
 
-			aktivitet_candidates_is_initialized:=true;
-			
-			
-			END LOOP;
-		END IF;	
-	END IF;
+                       aktivitet_candidates_is_initialized:=true;
+                       
+                       
+                       END LOOP;
+               END IF; 
+       END IF;
 
 --RAISE DEBUG 'aktivitet_candidates_is_initialized step 3:%',aktivitet_candidates_is_initialized;
 --RAISE DEBUG 'aktivitet_candidates step 3:%',aktivitet_candidates;
@@ -1272,174 +1303,178 @@ IF coalesce(array_length(search_operator_greater_than_or_equal_attr_egenskaber,1
 --Filtration using operator 'less than or equal': Egenskaber
 --/**********************************************************//
 IF coalesce(array_length(search_operator_less_than_or_equal_attr_egenskaber,1),0)>0 THEN
-	IF (coalesce(array_length(aktivitet_candidates,1),0)>0 OR NOT aktivitet_candidates_is_initialized) THEN
-		FOREACH attrEgenskaberTypeObj IN ARRAY search_operator_less_than_or_equal_attr_egenskaber
-		LOOP
-			aktivitet_candidates:=array(
-			SELECT DISTINCT
-			b.aktivitet_id 
-			FROM  aktivitet_attr_egenskaber a
-			JOIN aktivitet_registrering b on a.aktivitet_registrering_id=b.id
-			WHERE
-				(
-					(
-						attrEgenskaberTypeObj.virkning IS NULL 
-						OR
-						(
-							(
-								(
-							 		(attrEgenskaberTypeObj.virkning).TimePeriod IS NULL
-								)
-								OR
-								(
-									(attrEgenskaberTypeObj.virkning).TimePeriod && (a.virkning).TimePeriod
-								)
-							)
-							AND
-							(
-									(attrEgenskaberTypeObj.virkning).AktoerRef IS NULL OR (attrEgenskaberTypeObj.virkning).AktoerRef=(a.virkning).AktoerRef
-							)
-							AND
-							(
-									(attrEgenskaberTypeObj.virkning).AktoerTypeKode IS NULL OR (attrEgenskaberTypeObj.virkning).AktoerTypeKode=(a.virkning).AktoerTypeKode
-							)
-							AND
-							(
-									(attrEgenskaberTypeObj.virkning).NoteTekst IS NULL OR  (a.virkning).NoteTekst ILIKE (attrEgenskaberTypeObj.virkning).NoteTekst  
-							)
-						)
-					)
-				)
-				AND
-				(
-					(NOT (attrEgenskaberTypeObj.virkning IS NULL OR (attrEgenskaberTypeObj.virkning).TimePeriod IS NULL)) --we have already filtered on virkning above
-					OR
-					(
-						virkningSoeg IS NULL
-						OR
-						virkningSoeg && (a.virkning).TimePeriod
-					)
-				)
-				AND
-				(
-					attrEgenskaberTypeObj.brugervendtnoegle IS NULL
-					OR 
-					a.brugervendtnoegle <= attrEgenskaberTypeObj.brugervendtnoegle 
-				)
-				AND
-				(
-					attrEgenskaberTypeObj.aktivitetnavn IS NULL
-					OR 
-					a.aktivitetnavn <= attrEgenskaberTypeObj.aktivitetnavn 
-				)
-				AND
-				(
-					attrEgenskaberTypeObj.beskrivelse IS NULL
-					OR 
-					a.beskrivelse <= attrEgenskaberTypeObj.beskrivelse 
-				)
-				AND
-				(
-					attrEgenskaberTypeObj.starttidspunkt IS NULL
-					OR 
-					a.starttidspunkt <= attrEgenskaberTypeObj.starttidspunkt 
-				)
-				AND
-				(
-					attrEgenskaberTypeObj.sluttidspunkt IS NULL
-					OR 
-					a.sluttidspunkt <= attrEgenskaberTypeObj.sluttidspunkt 
-				)
-				AND
-				(
-					attrEgenskaberTypeObj.tidsforbrug IS NULL
-					OR 
-					a.tidsforbrug <= attrEgenskaberTypeObj.tidsforbrug 
-				)
-				AND
-				(
-					attrEgenskaberTypeObj.formaal IS NULL
-					OR 
-					a.formaal <= attrEgenskaberTypeObj.formaal 
-				)
-				AND
-						(
-				(registreringObj.registrering) IS NULL 
-				OR
-				(
-					(
-						(registreringObj.registrering).timeperiod IS NULL 
-						OR
-						(registreringObj.registrering).timeperiod && (b.registrering).timeperiod
-					)
-					AND
-					(
-						(registreringObj.registrering).livscykluskode IS NULL 
-						OR
-						(registreringObj.registrering).livscykluskode = (b.registrering).livscykluskode 		
-					) 
-					AND
-					(
-						(registreringObj.registrering).brugerref IS NULL
-						OR
-						(registreringObj.registrering).brugerref = (b.registrering).brugerref
-					)
-					AND
-					(
-						(registreringObj.registrering).note IS NULL
-						OR
-						(b.registrering).note ILIKE (registreringObj.registrering).note
-					)
-			)
-		)
-		AND
-		(
-			(
-				((b.registrering).livscykluskode <> 'Slettet'::Livscykluskode )
-				AND
-					(
-						(registreringObj.registrering) IS NULL 
-						OR
-						(registreringObj.registrering).livscykluskode IS NULL 
-					)
-			)
-			OR
-			(
-				(NOT ((registreringObj.registrering) IS NULL))
-				AND
-				(registreringObj.registrering).livscykluskode IS NOT NULL 
-			)
-		)
-		AND
-		(
-			(
-			  (
-			  	(registreringObj.registrering) IS NULL
-			  	OR
-			  	(registreringObj.registrering).timeperiod IS NULL
-			  )
-			  AND
-			  upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ
-			)  	
-		OR
-			(
-				(NOT ((registreringObj.registrering) IS NULL))
-				AND
-				((registreringObj.registrering).timeperiod IS NOT NULL)
-			)
-		)
-		AND
-		( (NOT aktivitet_candidates_is_initialized) OR b.aktivitet_id = ANY (aktivitet_candidates) )
+       IF (coalesce(array_length(aktivitet_candidates,1),0)>0 OR NOT aktivitet_candidates_is_initialized) THEN
+               FOREACH attrEgenskaberTypeObj IN ARRAY search_operator_less_than_or_equal_attr_egenskaber
+               LOOP
+                       aktivitet_candidates:=array(
+                       SELECT DISTINCT
+                       b.aktivitet_id 
+                       FROM  aktivitet_attr_egenskaber a
+                       JOIN aktivitet_registrering b on a.aktivitet_registrering_id=b.id
+                       WHERE
+                               (
+                                       (
+                                               attrEgenskaberTypeObj.virkning IS NULL 
+                                               OR
+                                               (
+                                                       (
+                                                               (
+                                                                       (attrEgenskaberTypeObj.virkning).TimePeriod IS NULL
+                                                               )
+                                                               OR
+                                                               (
+                                                                       (attrEgenskaberTypeObj.virkning).TimePeriod && (a.virkning).TimePeriod
+                                                               )
+                                                       )
+                                                       AND
+                                                       (
+                                                                       (attrEgenskaberTypeObj.virkning).AktoerRef IS NULL OR (attrEgenskaberTypeObj.virkning).AktoerRef=(a.virkning).AktoerRef
+                                                       )
+                                                       AND
+                                                       (
+                                                                       (attrEgenskaberTypeObj.virkning).AktoerTypeKode IS NULL OR (attrEgenskaberTypeObj.virkning).AktoerTypeKode=(a.virkning).AktoerTypeKode
+                                                       )
+                                                       AND
+                                                       (
+                                                                       (attrEgenskaberTypeObj.virkning).NoteTekst IS NULL OR  (a.virkning).NoteTekst ILIKE (attrEgenskaberTypeObj.virkning).NoteTekst  
+                                                       )
+                                               )
+                                       )
+                               )
+                               AND
+                               (
+                                       (NOT (attrEgenskaberTypeObj.virkning IS NULL OR (attrEgenskaberTypeObj.virkning).TimePeriod IS NULL)) --we have already filtered on virkning above
+                                       OR
+                                       (
+                                               virkningSoeg IS NULL
+                                               OR
+                                               virkningSoeg && (a.virkning).TimePeriod
+                                       )
+                               )
+                               AND
+                               (
+                                       attrEgenskaberTypeObj.brugervendtnoegle IS NULL
+                                       OR 
+                                       a.brugervendtnoegle <= attrEgenskaberTypeObj.brugervendtnoegle 
+                               )
+                               
+                               AND
+                               (
+                                       attrEgenskaberTypeObj.aktivitetnavn IS NULL
+                                       OR 
+                                       a.aktivitetnavn <= attrEgenskaberTypeObj.aktivitetnavn 
+                               )
+                               
+                               AND
+                               (
+                                       attrEgenskaberTypeObj.beskrivelse IS NULL
+                                       OR 
+                                       a.beskrivelse <= attrEgenskaberTypeObj.beskrivelse 
+                               )
+                               AND
+                               (
+                                       attrEgenskaberTypeObj.starttidspunkt IS NULL
+                                       OR 
+                                       a.starttidspunkt <= attrEgenskaberTypeObj.starttidspunkt 
+                               )
+                               AND
+                               (
+                                       attrEgenskaberTypeObj.sluttidspunkt IS NULL
+                                       OR 
+                                       a.sluttidspunkt <= attrEgenskaberTypeObj.sluttidspunkt 
+                               )
+                               
+                               AND
+                               (
+                                       attrEgenskaberTypeObj.tidsforbrug IS NULL
+                                       OR 
+                                       a.tidsforbrug <= attrEgenskaberTypeObj.tidsforbrug 
+                               )
+                               AND
+                               (
+                                       attrEgenskaberTypeObj.formaal IS NULL
+                                       OR 
+                                       a.formaal <= attrEgenskaberTypeObj.formaal 
+                               )
+                               
+                               AND
+                                               (
+                               (registreringObj.registrering) IS NULL 
+                               OR
+                               (
+                                       (
+                                               (registreringObj.registrering).timeperiod IS NULL 
+                                               OR
+                                               (registreringObj.registrering).timeperiod && (b.registrering).timeperiod
+                                       )
+                                       AND
+                                       (
+                                               (registreringObj.registrering).livscykluskode IS NULL 
+                                               OR
+                                               (registreringObj.registrering).livscykluskode = (b.registrering).livscykluskode                 
+                                       ) 
+                                       AND
+                                       (
+                                               (registreringObj.registrering).brugerref IS NULL
+                                               OR
+                                               (registreringObj.registrering).brugerref = (b.registrering).brugerref
+                                       )
+                                       AND
+                                       (
+                                               (registreringObj.registrering).note IS NULL
+                                               OR
+                                               (b.registrering).note ILIKE (registreringObj.registrering).note
+                                       )
+                       )
+               )
+               AND
+               (
+                       (
+                               ((b.registrering).livscykluskode <> 'Slettet'::Livscykluskode )
+                               AND
+                                       (
+                                               (registreringObj.registrering) IS NULL 
+                                               OR
+                                               (registreringObj.registrering).livscykluskode IS NULL 
+                                       )
+                       )
+                       OR
+                       (
+                               (NOT ((registreringObj.registrering) IS NULL))
+                               AND
+                               (registreringObj.registrering).livscykluskode IS NOT NULL 
+                       )
+               )
+               AND
+               (
+                       (
+                         (
+                               (registreringObj.registrering) IS NULL
+                               OR
+                               (registreringObj.registrering).timeperiod IS NULL
+                         )
+                         AND
+                         upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ
+                       )       
+               OR
+                       (
+                               (NOT ((registreringObj.registrering) IS NULL))
+                               AND
+                               ((registreringObj.registrering).timeperiod IS NOT NULL)
+                       )
+               )
+               AND
+               ( (NOT aktivitet_candidates_is_initialized) OR b.aktivitet_id = ANY (aktivitet_candidates) )
 
-			);
-			
+                       );
+                       
 
-			aktivitet_candidates_is_initialized:=true;
-			
-			
-			END LOOP;
-		END IF;	
-	END IF;
+                       aktivitet_candidates_is_initialized:=true;
+                       
+                       
+                       END LOOP;
+               END IF; 
+       END IF;
 
 --RAISE DEBUG 'aktivitet_candidates_is_initialized step 3:%',aktivitet_candidates_is_initialized;
 --RAISE DEBUG 'aktivitet_candidates step 3:%',aktivitet_candidates;

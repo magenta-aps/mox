@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py sag tbls-specific.jinja.sql
+NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
 /******************** FUNCTIONS (NEEDED FOR TABLE/INDEX-DEFS) DEFS ***********************************/
@@ -257,6 +257,9 @@ CREATE INDEX sag_attr_egenskaber_pat_virkning_notetekst
 
 
 
+
+
+
 /****************************************************************************************************/
 
 
@@ -337,25 +340,31 @@ CREATE TABLE sag_relation
   rel_maal_urn text null,
   rel_type SagRelationKode not null,
   objekt_type text null,
+
   rel_index int null,
   rel_type_spec SagRelationJournalPostSpecifikKode null,
   journal_notat JournalNotatType null,
   journal_dokument_attr JournalPostDokumentAttrType null,
+
  CONSTRAINT sag_relation_forkey_sagregistrering  FOREIGN KEY (sag_registrering_id) REFERENCES sag_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
  CONSTRAINT sag_relation_pkey PRIMARY KEY (id),
  CONSTRAINT sag_relation_no_virkning_overlap EXCLUDE USING gist (sag_registrering_id WITH =, _as_convert_sag_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('andetarkiv'::SagRelationKode ) AND rel_type<>('andrebehandlere'::SagRelationKode ) AND rel_type<>('sekundaerpart'::SagRelationKode ) AND rel_type<>('andresager'::SagRelationKode ) AND rel_type<>('byggeri'::SagRelationKode ) AND rel_type<>('fredning'::SagRelationKode ) AND rel_type<>('journalpost'::SagRelationKode )) ,-- no overlapping virkning except for 0..n --relations
  CONSTRAINT sag_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
  ,CONSTRAINT sag_relation_rel_type_spec_null_other_than_journalpost CHECK (rel_type_spec IS NULL OR rel_type='journalpost'::SagRelationKode )
  ,CONSTRAINT sag_relation_journal_dok_attr_only_vedlagtdok_tilakteretdok CHECK (journal_dokument_attr IS NULL OR rel_type_spec IN ('vedlagtdokument'::SagRelationJournalPostSpecifikKode,'tilakteretdokument'::SagRelationJournalPostSpecifikKode))
- ,CONSTRAINT sag_journal_notat_only_for_notat_type CHECK (journal_notat IS NULL OR rel_type_spec='journalnotat' ) 
+ ,CONSTRAINT sag_journal_notat_only_for_notat_type CHECK (journal_notat IS NULL OR rel_type_spec='journalnotat' )
 );
 
+
 CREATE UNIQUE INDEX sag_relation_unique_index_within_type  ON sag_relation (sag_registrering_id,rel_type,rel_index) WHERE ( rel_type IN ('andetarkiv'::SagRelationKode,'andrebehandlere'::SagRelationKode,'sekundaerpart'::SagRelationKode,'andresager'::SagRelationKode,'byggeri'::SagRelationKode,'fredning'::SagRelationKode,'journalpost'::SagRelationKode));
+
 
 CREATE INDEX sag_relation_idx_rel_maal_obj_uuid
   ON sag_relation
   USING btree
   (rel_type,objekt_type,rel_maal_uuid);
+
+
 
 CREATE INDEX sag_relation_idx_rel_maal_obj_urn
   ON sag_relation
@@ -401,4 +410,7 @@ CREATE INDEX sag_relation_pat_virkning_notetekst
   ON sag_relation
   USING gin
   (((virkning).notetekst) gin_trgm_ops);
+
+
+
 
