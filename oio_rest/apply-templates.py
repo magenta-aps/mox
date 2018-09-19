@@ -21,8 +21,9 @@ from oio_common.db_structure import DATABASE_STRUCTURE
 from oio_common.db_structure import DB_TEMPLATE_EXTRA_OPTIONS
 
 
-TEMPLATE_DIR = Path("../db/db-templating/templates")
-BUILD_DIR = Path("../db/db-templating/generated-files")
+DIR = Path(__file__).parent / ".." / "db" / "db-templating"
+TEMPLATE_DIR = DIR / "templates"
+BUILD_DIR = DIR / "generated-files"
 
 TEMPLATES = (
     "_as_create_registrering",
