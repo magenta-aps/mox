@@ -26,7 +26,7 @@ result=$(curl -s -S -k -X POST \
     -F "del_indhold3=@$DIR/test_data/test.xls" \
     $HOST_URL/dokument/dokument)
 
-uuid=$(echo $result | python3 -c "print(eval(input())['uuid'])")
+uuid=$(echo $result | python3 -c "import json, sys; print(json.load(sys.stdin)['uuid'])")
 
 
 if [ ! -z "$uuid" ]
