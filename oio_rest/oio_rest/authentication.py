@@ -5,6 +5,7 @@ from base64 import b64decode
 from functools import wraps
 
 from flask import request
+import flask_saml_sso
 
 from .custom_exceptions import UnauthorizedException
 from .custom_exceptions import AuthorizationFailedException
@@ -98,6 +99,8 @@ def requires_auth(f):
     def decorated(*args, **kwargs):
         if settings.USE_SAML_AUTHENTICATION:
             check_saml_authentication()
+        elif settings.SAML_AUTH_ENABLE:
+            flask_saml_sso.check_saml_authentication()
         return f(*args, **kwargs)
 
     return decorated
