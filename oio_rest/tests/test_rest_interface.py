@@ -481,3 +481,68 @@ class TestTilstand(_TestInterface):
         )
         assert result.status_code == 200
         assert result.get_json()["uuid"] == uuid_
+
+
+class TestFacet(_TestInterface):
+    def test_facet(self):
+        result = self.client.post(
+            "klassifikation/facet",
+            data={
+                "json": open("tests/fixtures/facet_opret.json", "rt").read(),
+            },
+        )
+        assert result.status_code == 201
+        uuid_ = result.get_json()["uuid"]
+        assert is_uuid(uuid_)
+
+        import_uuid = str(uuid.uuid4())
+        with self.subTest("Import new facet"):
+            result_import = self.client.put(
+                "klassifikation/facet/%s" % import_uuid,
+                data={
+                    "json": open("tests/fixtures/facet_opret.json", "rt").read(),
+                },
+            )
+            assert result_import.status_code == 200
+            assert result_import.get_json()["uuid"] == import_uuid
+
+        with self.subTest("Update facet"):
+            result_patch = self.client.patch(
+                "klassifikation/facet/%s" % uuid_,
+                data={
+                    "json": open("tests/fixtures/facet_opdater.json", "rt").read(),
+                },
+            )
+            assert result_patch.status_code == 200
+            assert result_patch.get_json()["uuid"] == uuid_
+
+        with self.subTest("Replace the facet content with old ones"):
+            result_put = self.client.put(
+                "klassifikation/facet/%s" % uuid_,
+                data={
+                    "json": open("tests/fixtures/facet_opret.json", "rt").read(),
+                },
+            )
+            assert result_put.status_code == 200
+            assert result_put.get_json()["uuid"] == uuid_
+
+        with self.subTest("Passivate facet"):
+            result_patch = self.client.patch(
+                "klassifikation/facet/%s" % uuid_,
+                data={
+                    "json": open("tests/fixtures/facet_passiv.json", "rt").read(),
+                },
+            )
+            assert result_patch.status_code == 200
+            assert result_patch.get_json()["uuid"] == uuid_
+
+        with self.subTest("Delete facet"):
+            result_delete = self.client.delete(
+                "klassifikation/facet/%s" % uuid_,
+                data={
+                    "json": open("tests/fixtures/facet_slet.json", "rt").read(),
+                },
+            )
+            assert result_delete.status_code == 202
+            assert result_delete.get_json()["uuid"] == uuid_
+
