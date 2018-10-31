@@ -1,14 +1,9 @@
-import io
 import pytest
-import sys
 import unittest
 import uuid
 
-import flask
 import flask_testing
 
-from .util import get_fixture
-from oio_rest import app
 from oio_rest.utils import test_support
 from oio_rest.utils.build_registration import is_uuid
 
