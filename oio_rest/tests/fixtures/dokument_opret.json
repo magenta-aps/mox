@@ -1,0 +1,223 @@
+{
+  "note": "Ny dokument",
+  "attributter": {
+    "dokumentegenskaber": [
+      {
+        "brugervendtnoegle": "DOK1234567890",
+        "titel": "Dokument nr. 12345",
+        "beskrivelse": "Dette er en dokument",
+        "offentlighedundtaget": {
+          "alternativtitel": "s1kr3t!",
+          "hjemmel": "ingen"
+        },
+        "kassationskode": "kasseret",
+        "dokumenttype": "Brev",
+        "brevdato": "2015-08-20",
+        "virkning": {
+          "from": "2014-05-19 12:02:32",
+          "to": "infinity",
+          "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+          "aktoertypekode": "Bruger",
+          "notetekst": "Nothing to see here!"
+        }
+      }
+    ]
+  },
+  "tilstande": {
+    "dokumentfremdrift": [
+      {
+        "fremdrift": "Modtaget",
+        "virkning": {
+          "from": "2014-05-19 12:02:32",
+          "to": "infinity",
+          "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+          "aktoertypekode": "Bruger",
+          "notetekst": "Nothing to see here!"
+        }
+      }
+    ]
+  },
+  "relationer": {
+    "ejer": [
+      {
+        "objekttype": "Organisation",
+        "virkning": {
+          "from": "2014-05-19 12:02:32",
+          "to": "infinity",
+          "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+          "aktoertypekode": "Bruger",
+          "notetekst": "Nothing to see here!"
+        },
+        "uuid": "ef2713ee-1a38-4c23-8fcb-3c4331262194"
+      }
+    ]
+  },
+  "varianter": [
+    {
+      "varianttekst": "PDF",
+      "egenskaber": [
+        {
+          "arkivering": false,
+          "delvisscannet": false,
+          "offentliggoerelse": true,
+          "produktion": true,
+          "virkning": {
+            "from": "2014-05-19 12:02:32",
+            "to": "2015-05-19 12:02:32",
+            "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+            "aktoertypekode": "Bruger",
+            "notetekst": "Nothing to see here!"
+          }
+        },
+        {
+          "arkivering": true,
+          "delvisscannet": false,
+          "offentliggoerelse": true,
+          "produktion": false,
+          "virkning": {
+            "from": "2015-05-19 12:02:32",
+            "to": "infinity",
+            "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+            "aktoertypekode": "Bruger",
+            "notetekst": "Nothing to see here!"
+          }
+        }
+      ],
+      "dele": [
+        {
+          "deltekst": "doc_deltekst1A",
+          "egenskaber": [
+            {
+              "indeks": 1,
+              "indhold": "field:del_indhold1",
+              "lokation": "del_lokation1",
+              "mimetype": "text/plain",
+              "virkning": {
+                "from": "2014-05-19 12:02:32",
+                "to": "infinity",
+                "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+                "aktoertypekode": "Bruger",
+                "notetekst": "Nothing to see here!"
+              }
+            }
+          ],
+          "relationer": {
+            "underredigeringaf": [
+              {
+                "virkning": {
+                  "from": "2014-05-19 12:02:32",
+                  "to": "infinity",
+                  "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+                  "aktoertypekode": "Bruger",
+                  "notetekst": "Nothing to see here!"
+                },
+                "urn": "urn:cpr8883394",
+                "objekttype": "Bruger"
+              }
+            ]
+          }
+        },
+        {
+          "deltekst": "doc_deltekst1B",
+          "egenskaber": [
+            {
+              "indeks": 98,
+              "indhold": "field:del_indhold2",
+              "lokation": "del_lokation2",
+              "mimetype": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+              "virkning": {
+                "from": "2014-05-19 12:02:32",
+                "to": "infinity",
+                "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+                "aktoertypekode": "Bruger",
+                "notetekst": "Nothing to see here!"
+              }
+            }
+          ]
+        },
+        {
+          "deltekst": "doc_deltekst1C",
+          "egenskaber": [
+            {
+              "indeks": 100,
+              "indhold": "http://www.google.com/",
+              "lokation": "del_lokation1C",
+              "mimetype": "text/html",
+              "virkning": {
+                "from": "2014-05-19 12:02:32",
+                "to": "infinity",
+                "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+                "aktoertypekode": "Bruger",
+                "notetekst": "Nothing to see here!"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "varianttekst": "doc_varianttekst2",
+      "egenskaber": [
+        {
+          "arkivering": false,
+          "delvisscannet": true,
+          "offentliggoerelse": false,
+          "produktion": false,
+          "virkning": {
+            "from": "2015-05-19 12:02:32",
+            "to": "infinity",
+            "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+            "aktoertypekode": "Bruger",
+            "notetekst": "Nothing to see here!"
+          }
+        }
+      ],
+      "dele": [
+        {
+          "deltekst": "doc_deltekst2A",
+          "egenskaber": [
+            {
+              "indeks": 8,
+              "indhold": "field:del_indhold3",
+              "lokation": "del_lokation3",
+              "mimetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              "virkning": {
+                "from": "2014-05-19 12:02:32",
+                "to": "infinity",
+                "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+                "aktoertypekode": "Bruger",
+                "notetekst": "Nothing to see here!"
+              }
+            }
+          ]
+        },
+        {
+          "deltekst": "doc_deltekst2B",
+          "egenskaber": [
+            {
+              "indeks": 8,
+              "virkning": {
+                "from": "2014-05-19 12:02:32",
+                "to": "infinity"
+              }
+            }],
+          "relationer": {
+            "underredigeringaf": [
+              {
+                "virkning": {
+                  "from": "2014-05-19 12:02:32",
+                  "to": "infinity",
+                  "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+                  "aktoertypekode": "Bruger",
+                  "notetekst": "Nothing to see here!"
+                },
+                "urn": "urn:cpr8883394",
+                "objekttype": "Bruger"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
