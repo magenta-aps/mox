@@ -1,0 +1,62 @@
+{
+	"note": "Ny indsats",
+		"attributter": {
+			"indsatsegenskaber": [
+			{
+				"brugervendtnoegle": "BESOEG",
+				"beskrivelse": "Hjemmebesøg",
+				"starttidspunkt": "2014-05-19 12:02:32+00:00",
+				"sluttidspunkt": "2016-05-19 14:02:32+00:00",
+				"virkning": {
+					"from": "2014-05-19 12:02:32",
+					"to": "infinity",
+					"aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+					"aktoertypekode": "Bruger",
+					"notetekst": "Nothing to see here!"
+				}
+			}
+			]
+		},
+		"tilstande": {
+			"indsatsfremdrift": [{
+				"fremdrift": "Uoplyst",
+				"virkning": {
+					"from": "2014-05-19 12:02:32",
+					"to": "infinity",
+					"aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+					"aktoertypekode": "Bruger",
+					"notetekst": "Nothing to see here!"
+				}
+			}
+			],
+			"indsatspubliceret": [{
+				"publiceret": "IkkePubliceret",
+				"virkning": {
+					"from": "2014-05-19 12:02:32",
+					"to": "infinity",
+					"aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+					"aktoertypekode": "Bruger",
+					"notetekst": "Nothing to see here!"
+				}
+			}
+                        ]
+		},
+		"relationer": {
+			"indsatsaktoer": [
+			{
+				"indeks": 1,
+				"uuid": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+				"virkning": {
+					"from": "2014-05-19 12:02:32",
+					"to": "infinity",
+					"aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+					"aktoertypekode": "Bruger",
+					"notetekst": "Nothing to see here!"
+
+				},
+				"objekttype": "Bruger"
+			}
+			]
+		}
+
+}

@@ -1,0 +1,94 @@
+{
+	"note": "Ny tilstand",
+		"attributter": {
+			"tilstandegenskaber": [
+			{
+				"brugervendtnoegle": "RASK",
+				"beskrivelse": "Alt OK",
+				"virkning": {
+					"from": "2014-05-19 12:02:32",
+					"to": "infinity",
+					"aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+					"aktoertypekode": "Bruger",
+					"notetekst": "Nothing to see here!"
+				}
+			}
+			]
+		},
+		"tilstande": {
+			"tilstandstatus": [{
+				"status": "Aktiv",
+				"virkning": {
+					"from": "2014-05-19 12:02:32",
+					"to": "infinity",
+					"aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+					"aktoertypekode": "Bruger",
+					"notetekst": "Nothing to see here!"
+				}
+			}
+			],
+			"tilstandpubliceret": [{
+				"publiceret": "Normal",
+				"virkning": {
+					"from": "2014-05-19 12:02:32",
+					"to": "infinity",
+					"aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae",
+					"aktoertypekode": "Bruger",
+					"notetekst": "Nothing to see here!"
+				}
+			}
+                        ]
+		},
+          "relationer": {
+            "tilstandskvalitet": [
+              {
+                "indeks": 1, 
+                "objekttype": "Klasse", 
+                "uuid": "f7109356-e87e-4b10-ad5d-36de6e3ee09d", 
+                "virkning": {
+                  "aktoerref": "dc745944-8ad7-4a5a-8323-d65936217f02", 
+                  "aktoertypekode": "Bruger", 
+                  "from": "2015-04-10 00:00:00+00", 
+                  "from_included": true, 
+                  "notetekst": "NoteEx23", 
+                  "to": "infinity", 
+                  "to_included": false
+                }
+              }
+            ], 
+            "tilstandsobjekt": [
+              {
+                "objekttype": "Person",
+                "uuid": "f7109356-e87e-4b10-ad5d-36de6e3ee09f", 
+                "virkning": {
+                  "aktoerref": "17036ab1-6298-42a6-897f-0fb7bffb0762", 
+                  "aktoertypekode": "Bruger", 
+                  "from": "2015-05-11 00:00:00+00", 
+                  "from_included": true, 
+                  "notetekst": "NoteEx2", 
+                  "to": "infinity", 
+                  "to_included": false
+                }
+              }
+            ], 
+            "tilstandsvaerdi": [
+              {
+                "indeks": 2,
+                "tilstandsvaerdiattr": {
+                  "forventet": true, 
+                  "nominelvaerdi": "82"
+                }, 
+                "virkning": {
+                  "aktoerref": "d345bfc3-a189-44ff-bdc6-2cbc0ac88610", 
+                  "aktoertypekode": "Bruger", 
+                  "from": "2015-05-10 00:00:00+00", 
+                  "from_included": true, 
+                  "notetekst": "NoteEx3", 
+                  "to": "infinity", 
+                  "to_included": false
+                }
+              }
+            ]
+          }
+
+}

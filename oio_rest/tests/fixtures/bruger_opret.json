@@ -1,0 +1,43 @@
+{ 
+    "note": "Test-bruger",
+    "attributter": { 
+        "brugeregenskaber": [ 
+            {
+            "brugervendtnoegle": "CKA", 
+            "brugernavn": "agger", 
+            "virkning": {
+                "from": "2015-01-01 00:00:00", 
+                "to": "infinity", 
+                "aktoerref": "cb904af2-83a1-11e5-b3b8-83a8f6a26e42", 
+                "aktoertypekode": "Bruger", 
+                "notetekst": "Test af email-integration, Mox Advis m.m." 
+            } 
+            }
+        ] 
+    }, 
+    "tilstande": { 
+        "brugergyldighed": [{ 
+            "gyldighed": "Aktiv", 
+            "virkning": { 
+                "from": "2015-01-01 00:00:00", 
+                "to": "infinity", 
+                "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae"
+            } 
+        }
+        ] 
+    },
+    "relationer": { 
+        "tilhoerer": [
+        { 
+            "uuid": "ddc99abd-c1b0-48c2-aef7-74fea841adae", 
+            "virkning": { 
+                "from": "2014-05-19 12:02:32", 
+                "to": "infinity", 
+                "aktoerref": "ddc99abd-c1b0-48c2-aef7-74fea841adae" 
+            
+            }
+        }
+        ]
+    } 
+
+}
