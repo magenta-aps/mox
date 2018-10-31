@@ -324,3 +324,56 @@ class TestKlasse(_TestInterface):
         )
         assert result_patch.status_code == 200
         assert result_patch.get_json()["uuid"] == uuid_
+
+
+class TestImportDeletedPassivated(_TestInterface):
+    def test_klasse(self):
+        result = self.client.post(
+            "klassifikation/facet",
+            data={
+                "json": open("tests/fixtures/facet_opret.json", "rt").read(),
+            },
+        )
+        assert result.status_code == 201
+        uuid_ = result.get_json()["uuid"]
+        assert is_uuid(uuid_)
+
+        with self.subTest("Passivate object"):
+            result_patch = self.client.patch(
+                "klassifikation/facet/%s" % uuid_,
+                data={
+                    "json": open("tests/fixtures/facet_passiv.json", "rt").read(),
+                },
+            )
+            assert result_patch.status_code == 200
+            assert result_patch.get_json()["uuid"] == uuid_
+
+        with self.subTest("Import object"):
+            result_put = self.client.put(
+                "klassifikation/facet/%s" % uuid_,
+                data={
+                    "json": open("tests/fixtures/facet_opret.json", "rt").read(),
+                },
+            )
+            assert result_put.status_code == 200
+            assert result_put.get_json()["uuid"] == uuid_
+
+        with self.subTest("Delete object"):
+            result_delete = self.client.delete(
+                "klassifikation/facet/%s" % uuid_,
+                data={
+                    "json": open("tests/fixtures/facet_slet.json", "rt").read(),
+                },
+            )
+            assert result_delete.status_code == 202
+            assert result_delete.get_json()["uuid"] == uuid_
+
+        with self.subTest("Import object"):
+            result_import = self.client.put(
+                "klassifikation/facet/%s" % uuid_,
+                data={
+                    "json": open("tests/fixtures/facet_opret.json", "rt").read(),
+                },
+            )
+            assert result_import.status_code == 200
+            assert result_import.get_json()["uuid"] == uuid_
