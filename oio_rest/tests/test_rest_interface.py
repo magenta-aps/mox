@@ -267,3 +267,25 @@ class TestDokumentInterface(_TestInterface):
             # assert r.status_code == 200
             # assert import_uuid_b in r.get_data()
             pass
+
+
+class Test21660PutUpdate(_TestInterface):
+    def test_21660(self):
+        result = self.client.post(
+            "klassifikation/facet",
+            data={
+                "json": open("tests/fixtures/facet_opret.json", "rt").read(),
+            },
+        )
+        assert result.status_code == 201
+        uuid_ = result.get_json()["uuid"]
+        assert is_uuid(uuid_)
+
+        result_put = self.client.put(
+            "klassifikation/facet/%s" % uuid_,
+            data={
+                "json": open("tests/fixtures/facet_reduce_effective_time_21660.json", "rt").read(),
+            },
+        )
+        assert result_put.status_code == 200
+        assert result_put.get_json()["uuid"] == uuid_
