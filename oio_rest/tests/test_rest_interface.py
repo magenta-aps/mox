@@ -302,3 +302,25 @@ class TestItSystem(_TestInterface):
         assert result.status_code == 201
         uuid_ = result.get_json()["uuid"]
         assert is_uuid(uuid_)
+
+
+class TestKlasse(_TestInterface):
+    def test_klasse(self):
+        result = self.client.post(
+            "klassifikation/klasse",
+            data={
+                "json": open("tests/fixtures/klasse_opret.json", "rt").read(),
+            },
+        )
+        assert result.status_code == 201
+        uuid_ = result.get_json()["uuid"]
+        assert is_uuid(uuid_)
+
+        result_patch = self.client.patch(
+            "klassifikation/klasse/%s" % uuid_,
+            data={
+                "json": open("tests/fixtures/klasse_opdater.json", "rt").read(),
+            },
+        )
+        assert result_patch.status_code == 200
+        assert result_patch.get_json()["uuid"] == uuid_
