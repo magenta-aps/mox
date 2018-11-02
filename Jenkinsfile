@@ -4,7 +4,8 @@ pipeline {
   agent any
 
   environment {
-    PYTEST_ADDOPTS = '--color=yes'
+    PYTEST_ADDOPTS     = '--color=yes'
+    FILE_UPLOAD_FOLDER = './mox-upload'
   }
 
   stages {
