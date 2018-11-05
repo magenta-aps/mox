@@ -13,7 +13,6 @@ CREATE SCHEMA actual_state AUTHORIZATION $MOX_DB_USER;
 
 ALTER DATABASE $MOX_DB SET search_path TO actual_state,public;
 
--- Please notice that the db-tests are run, using a different datestyle
 ALTER DATABASE $MOX_DB SET DATESTYLE to 'ISO, YMD';
 
 ALTER DATABASE $MOX_DB SET INTERVALSTYLE to 'sql_standard';
@@ -31,7 +30,6 @@ CREATE SCHEMA actual_state AUTHORIZATION $MOX_DB_USER;
 
 ALTER DATABASE $MOX_DB SET search_path TO actual_state,public;
 
--- Please notice that the db-tests are run, using a different datestyle
 ALTER DATABASE $MOX_DB SET DATESTYLE to 'ISO, YMD';
 
 ALTER DATABASE $MOX_DB SET INTERVALSTYLE to 'sql_standard';

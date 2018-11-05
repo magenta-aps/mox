@@ -168,7 +168,7 @@ virkFremdrift,
 dokumentEgenskab1 := ROW (
 'doc_brugervendtnoegle1',
 'doc_beskrivelse1', 
-'10-31-2015'::date,
+'2015-10-31'::date,
 'doc_kassationskode1', 
 4, --major int
 9, --minor int
@@ -182,7 +182,7 @@ ROW('doc_Offentlighedundtaget_AlternativTitel1','doc_Offentlighedundtaget_Hjemme
 dokumentEgenskab2 := ROW (
 'doc_brugervendtnoegle2',
 'doc_beskrivelse2', 
-'09-20-2014'::date,
+'2014-09-20'::date,
 'doc_kassationskode2', 
 5, --major int
 10, --minor int
