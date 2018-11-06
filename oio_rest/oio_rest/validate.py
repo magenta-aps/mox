@@ -77,7 +77,8 @@ TYPE_MAP = {
             'nominelvaerdi': STRING
         },
         ['forventet', 'nominelvaerdi']
-    )
+    ),
+    'json': STRING,
 }
 
 
