@@ -14,6 +14,7 @@ import subprocess
 import sys
 
 import click
+import flask_testing
 import mock
 import testing.postgresql
 import psycopg2.pool
@@ -153,6 +154,12 @@ class TestCaseMixin(object):
         ]:
             p.start()
             self.addCleanup(p.stop)
+
+
+class TestRestInterface(TestCaseMixin, flask_testing.TestCase):
+    """This class is used in `tests/test_rest_*.py` tests."""
+    def create_app(self):
+        return self.get_lora_app()
 
 
 @click.command()
