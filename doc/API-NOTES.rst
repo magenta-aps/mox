@@ -116,8 +116,8 @@ Make sure the parameter ``moxrestfrontend.rest.host`` in
 ``http://localhost:5000``.
 
 Make sure to set the local time to the same as Europe/Copenhagen when testing.
-This can be done with the following command: ``cp
-/usr/share/zoneinfo/Europe/Copenhagen /etc/localtime``.
+This can be done with the following command: ``sudo timedatectl set-timezone
+ Europe/Copenhagen``.
 
 Start the (AMQP) MOX REST frontend agent::
 
