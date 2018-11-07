@@ -25,10 +25,5 @@ class VersionTest(unittest.TestCase):
 
         readme_version = all_versions[0]
 
-        package_version = subprocess.check_output(
-            [os.path.join(util.BASE_DIR, 'setup.py',), '--version'],
-        ).decode().strip()
-
         self.assertIn(main_version, all_versions)
         self.assertEqual(main_version, readme_version)
-        self.assertEqual(main_version.replace('-', '.'), package_version)
