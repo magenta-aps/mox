@@ -1,11 +1,11 @@
 import unittest
 import uuid
 
-from oio_rest.utils import test_support
 from oio_rest.utils.build_registration import is_uuid
+from tests import util
 
 
-class TestLogHaendelse(test_support.TestRestInterface):
+class TestLogHaendelse(util.TestCase):
     def test_log_haendelse(self):
         result = self.client.post(
             "log/loghaendelse",

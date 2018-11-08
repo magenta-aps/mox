@@ -1,11 +1,11 @@
 import unittest
 import uuid
 
-from oio_rest.utils import test_support
 from oio_rest.utils.build_registration import is_uuid
+from tests import util
 
 
-class TestDokument(test_support.TestRestInterface):
+class TestDokument(util.TestCase):
     @unittest.skip("I don't know what should happen here.")
     def test_create_dokument_empty_dict(self):
         result = self.client.post(

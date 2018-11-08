@@ -1,11 +1,11 @@
 import unittest
 import uuid
 
-from oio_rest.utils import test_support
 from oio_rest.utils.build_registration import is_uuid
+from tests import util
 
 
-class TestIndsats(test_support.TestRestInterface):
+class TestIndsats(util.TestCase):
     def test_indsats_create(self):
         result = self.client.post(
             "indsats/indsats",

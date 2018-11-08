@@ -1,11 +1,11 @@
 import unittest
 import uuid
 
-from oio_rest.utils import test_support
 from oio_rest.utils.build_registration import is_uuid
+from tests import util
 
 
-class TestSag(test_support.TestRestInterface):
+class TestSag(util.TestCase):
     @unittest.expectedFailure
     def test_sag(self):
         with self.subTest("Create sag"):

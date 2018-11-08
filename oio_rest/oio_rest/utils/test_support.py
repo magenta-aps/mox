@@ -156,12 +156,6 @@ class TestCaseMixin(object):
             self.addCleanup(p.stop)
 
 
-class TestRestInterface(TestCaseMixin, flask_testing.TestCase):
-    """This class is used in `tests/test_rest_*.py` tests."""
-    def create_app(self):
-        return self.get_lora_app()
-
-
 @click.command()
 @click.option('--host', '-h', default='::1',
               help='The interface to bind to.')

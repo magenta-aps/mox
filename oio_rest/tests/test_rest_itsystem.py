@@ -1,10 +1,10 @@
 import unittest
 
-from oio_rest.utils import test_support
 from oio_rest.utils.build_registration import is_uuid
+from tests import util
 
 
-class TestItSystem(test_support.TestRestInterface):
+class TestItSystem(util.TestCase):
     def test_it_system(self):
         result = self.client.post(
             "organisation/itsystem",

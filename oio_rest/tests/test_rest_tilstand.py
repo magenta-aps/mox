@@ -1,11 +1,11 @@
 import unittest
 import uuid
 
-from oio_rest.utils import test_support
 from oio_rest.utils.build_registration import is_uuid
+from tests import util
 
 
-class TestTilstand(test_support.TestRestInterface):
+class TestTilstand(util.TestCase):
     def test_tilstand_create(self):
         result = self.client.post(
             "tilstand/tilstand",

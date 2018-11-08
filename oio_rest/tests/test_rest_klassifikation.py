@@ -1,11 +1,11 @@
 import unittest
 import uuid
 
-from oio_rest.utils import test_support
 from oio_rest.utils.build_registration import is_uuid
+from tests import util
 
 
-class Test21660PutUpdate(test_support.TestRestInterface):
+class Test21660PutUpdate(util.TestCase):
     def test_21660(self):
         result = self.client.post(
             "klassifikation/facet",
@@ -27,7 +27,7 @@ class Test21660PutUpdate(test_support.TestRestInterface):
         assert result_put.get_json()["uuid"] == uuid_
 
 
-class TestKlasse(test_support.TestRestInterface):
+class TestKlasse(util.TestCase):
     def test_klasse(self):
         result = self.client.post(
             "klassifikation/klasse",
@@ -49,7 +49,7 @@ class TestKlasse(test_support.TestRestInterface):
         assert result_patch.get_json()["uuid"] == uuid_
 
 
-class TestImportDeletedPassivated(test_support.TestRestInterface):
+class TestImportDeletedPassivated(util.TestCase):
     def test_import_delete_passivated(self):
         result = self.client.post(
             "klassifikation/facet",
@@ -102,7 +102,7 @@ class TestImportDeletedPassivated(test_support.TestRestInterface):
             assert result_import.get_json()["uuid"] == uuid_
 
 
-class TestFacet(test_support.TestRestInterface):
+class TestFacet(util.TestCase):
     def test_facet(self):
         result = self.client.post(
             "klassifikation/facet",
