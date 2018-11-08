@@ -63,7 +63,7 @@ def _get_db_setup_sql(db_name, db_user):
     def listdir(dirname):
         # os.listdir() but with prefix
         return [os.path.join(dirname, filename)
-                for filename in os.listdir(dirname)]
+                for filename in sorted(os.listdir(dirname))]
 
     # <mess>
     # this mess is necessary because the db relies on a particular order
@@ -104,9 +104,10 @@ def _get_db_setup_sql(db_name, db_user):
         return False
 
     templates = listdir('../db/db-templating/generated-files')
-    templates.sort(key=template_sort_key)
     templates1 = list(filter(is_template1, templates))
     templates2 = list(set(templates) ^ set(templates1))
+    templates1.sort(key=template_sort_key)
+    templates2.sort(key=template_sort_key)
     funcs1 = [
         "../db/funcs/_index_helper_funcs.sql",
         "../db/funcs/_subtract_tstzrange.sql",
@@ -118,6 +119,7 @@ def _get_db_setup_sql(db_name, db_user):
         "../db/funcs/_create_notify.sql",
     ]
     funcs2 = list(set(listdir('../db/funcs')) ^ set(funcs1))
+    funcs2.sort()
 
     files = [
         *listdir('../db/basis'),
