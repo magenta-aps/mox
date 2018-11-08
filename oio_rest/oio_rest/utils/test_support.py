@@ -135,6 +135,7 @@ class TestCaseMixin(object):
         db_port = psql().dsn()['port']
 
         for p in [
+            mock.patch('settings.FILE_UPLOAD_FOLDER', './mox-upload'),
             mock.patch('settings.LOG_AMQP_SERVER', None),
             mock.patch('settings.DB_HOST', db_host,
                        create=True),
