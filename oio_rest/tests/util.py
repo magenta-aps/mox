@@ -15,6 +15,7 @@ import uuid
 import flask_testing
 
 from oio_rest.utils import test_support
+import settings
 
 TESTS_DIR = os.path.dirname(__file__)
 BASE_DIR = os.path.dirname(TESTS_DIR)
@@ -152,10 +153,10 @@ class TestCase(test_support.TestCaseMixin, flask_testing.TestCase):
         )
 
     def assertOK(self, response, message=None):
-        assert 200 <= response.status_code < 300, \
-            message or 'request failed with {}!'.format(
-                response.status,
-            )
+        self.assertTrue(
+            200 <= response.status_code < 300,
+            message or 'request failed with {}!'.format(response.status)
+        )
 
     def assertUUID(self, s):
         try:
@@ -169,8 +170,8 @@ class TestCase(test_support.TestCaseMixin, flask_testing.TestCase):
         JSON.
         :param response: Response from LoRa when creating a new object
         """
-        self.assertEquals(201, response.status_code)
-        self.assertEquals(1, len(response.json))
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(1, len(response.json))
         self.assertUUID(response.json['uuid'])
 
     def get(self, path, **params):
@@ -180,14 +181,14 @@ class TestCase(test_support.TestCaseMixin, flask_testing.TestCase):
 
         d = r.json['results'][0]
 
-        assert len(d) == 1
+        self.assertEqual(len(d), 1)
         registrations = d[0]['registreringer']
 
         if set(params.keys()) & {'registreretfra', 'registrerettil',
                                  'registreringstid'}:
             return registrations
         else:
-            assert len(registrations) == 1
+            self.assertEqual(len(registrations), 1)
             return registrations[0]
 
     def put(self, path, json):
