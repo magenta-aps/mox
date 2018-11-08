@@ -82,7 +82,8 @@ class TestGenerateJSONSchema(unittest.TestCase):
 
     def _json_to_dict(self, filename):
         """
-        Load a JSON file from tests/fixtures and return it as JSON
+        Load a JSON file from ``tests/fixtures`` and return it as JSON.
+
         :param filename: The filename e.g. 'facet_opret.json'
         :return: Dictionary representing the JSON file
         """
