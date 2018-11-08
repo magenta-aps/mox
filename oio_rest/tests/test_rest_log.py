@@ -13,9 +13,9 @@ class TestLogHaendelse(util.TestCase):
                 "json": open("tests/fixtures/loghaendelse_opret.json", "rt").read(),
             },
         )
-        assert result.status_code == 201
+        self.assertEqual(result.status_code, 201)
         uuid_ = result.get_json()["uuid"]
-        assert is_uuid(uuid_)
+        self.assertTrue(is_uuid(uuid_))
 
         with self.subTest("Import loghaendelse"):
             result_import = self.client.patch(
@@ -24,8 +24,8 @@ class TestLogHaendelse(util.TestCase):
                     "json": open("tests/fixtures/loghaendelse_opdater.json", "rt").read(),
                 },
             )
-            assert result_import.status_code == 200
-            assert result_import.get_json()["uuid"] == uuid_
+            self.assertEqual(result_import.status_code, 200)
+            self.assertEqual(result_import.get_json()["uuid"], uuid_)
 
         with self.subTest("Delete loghaendelse"):
             result_delete = self.client.delete(
@@ -34,5 +34,5 @@ class TestLogHaendelse(util.TestCase):
                     "json": open("tests/fixtures/loghaendelse_slet.json", "rt").read(),
                 },
             )
-            assert result_delete.status_code == 202
-            assert result_delete.get_json()["uuid"] == uuid_
+            self.assertEqual(result_delete.status_code, 202)
+            self.assertEqual(result_delete.get_json()["uuid"], uuid_)

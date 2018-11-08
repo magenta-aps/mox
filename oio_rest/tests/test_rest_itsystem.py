@@ -12,6 +12,6 @@ class TestItSystem(util.TestCase):
                 "json": open("tests/fixtures/itsystem_opret.json", "rt").read(),
             },
         )
-        assert result.status_code == 201
+        self.assertEqual(result.status_code, 201)
         uuid_ = result.get_json()["uuid"]
-        assert is_uuid(uuid_)
+        self.assertTrue(is_uuid(uuid_))

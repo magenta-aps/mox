@@ -12,7 +12,7 @@ class TestDokument(util.TestCase):
             "/dokument/dokument",
             data={"json": "{}"},
         ).get_json()
-        assert result["uuid"] is not None
+        self.assertIsNotNone(result["uuid"])
 
     def test_create_dokument_missing_files(self):
         result = self.client.post(
@@ -21,7 +21,8 @@ class TestDokument(util.TestCase):
                 "json": open("tests/fixtures/dokument_opret.json", "rb").read(),
             }
         ).get_json()
-        assert "uuid" not in result and result["message"]
+        self.assertNotIn("uuid", result)
+        self.assertTrue(result["message"])
 
     @unittest.expectedFailure
     def test_dokument(self):
@@ -36,7 +37,7 @@ class TestDokument(util.TestCase):
                     "del_indhold3": ("tests/fixtures/test.xls", "del_indhold3"),
                 }
             ).get_json()
-            assert is_uuid(result["uuid"])
+            self.assertTrue(is_uuid(result["uuid"]))
             upload_uuid = result["uuid"]  # the subtests rely on this variable
 
         import_uuid = str(uuid.uuid4())
@@ -52,7 +53,8 @@ class TestDokument(util.TestCase):
                     "del_indhold3": ("tests/fixtures/test.xls", "del_indhold3"),
                 }
             ).get_json()
-            assert is_uuid(result["uuid"]) and result["uuid"] == import_uuid
+            self.assertTrue(is_uuid(result["uuid"]))
+            self.assertEqual(result["uuid"], import_uuid)
 
         files = []
         with self.subTest("List files / get content urls"):
@@ -68,23 +70,29 @@ class TestDokument(util.TestCase):
                     # the test data makes one of these a link to google
                     # what does that mean?
                     # print(path, "is not a store: path", file=sys.stderr)
-            assert len(files) == 2
+            self.assertEqual(len(files), 2)
 
         for filename in files:
             with self.subTest("Download dokument", filename=filename):
-                assert b"This is a test" == self.client.get("dokument/dokument/%s" % filename).get_data()
+                self.assertEqual(
+                    b"This is a test",
+                    self.client.get("dokument/dokument/%s" % filename).get_data()
+                )
 
         with self.subTest("Search on DokumentDel relations"):
             # currently doesnt accept parameter "variant", redmine issue #24569
-            assert "message" not in self.client.get(
-                "dokument/dokument",
-                query_string={
-                    "variant": "doc_varianttekst2",
-                    "deltekst": "doc_deltekst2B",
-                    "underredigeringaf": "urn:cpr8883394",
-                    "uuid": upload_uuid,
-                }
-            ).get_json()
+            self.assertNotIn(
+                "message",
+                self.client.get(
+                    "dokument/dokument",
+                    query_string={
+                        "variant": "doc_varianttekst2",
+                        "deltekst": "doc_deltekst2B",
+                        "underredigeringaf": "urn:cpr8883394",
+                        "uuid": upload_uuid,
+                    }
+                ).get_json()
+            )
 
         with self.subTest("Update dokument"):
             result = self.client.patch(
@@ -95,14 +103,17 @@ class TestDokument(util.TestCase):
                 },
                 query_string={"uuid": upload_uuid},
             )
-            assert result.status_code == 200
+            self.assertEqual(result.status_code, 200)
 
         with self.subTest("Download updated dokument"):
             result = self.client.get(
                 "dokument/dokument",
                 query_string={"uuid": upload_uuid},
             ).get_json()
-            assert result["results"][0][0]["registreringer"][0]["note"] == "Opdateret dokument"
+            self.assertEqual(
+                result["results"][0][0]["registreringer"][0]["note"],
+                "Opdateret dokument",
+            )
 
         with self.subTest("Update dokument with file upload"):
             result = self.client.patch(
@@ -115,42 +126,51 @@ class TestDokument(util.TestCase):
                 },
                 query_string={"uuid": upload_uuid},
             )
-            assert result.status_code == 200
+            self.assertEqual(result.status_code, 200)
 
         with self.subTest("Download updated dokument 2"):
             result = self.client.get(
                 "dokument/dokument", query_string={"uuid": upload_uuid})
-            assert result.status_code == 200
+            self.assertEqual(result.status_code, 200)
             for r in result.get_json()["results"][0][0]["registreringer"][0]["varianter"][0]["dele"]:
                 path = r["egenskaber"][0]["indhold"]
                 if path.startswith("store:"):
                     if b"This is an updated test" in self.client.get("dokument/dokument/%s" % path[6:]).get_data():
                         break
             else:
-                assert 0, "Uploaded file was not updated"
+                raise NotImplementedError("Uploaded file was not updated")
 
         with self.subTest("Delete DokumentDel relation"):
-            assert self.client.get(
-                "dokument/dokument/",
-                query_string={
-                    "variant": "doc_varianttekst2",
-                    "deltekst": "doc_deltekst2B",
-                    "underredigeringaf": "urn:cpr8883394",
-                    "uuid": upload_uuid,
-                },
-            ).status_code == 200
+            self.assertEqual(
+                self.client.get(
+                    "dokument/dokument/",
+                    query_string={
+                        "variant": "doc_varianttekst2",
+                        "deltekst": "doc_deltekst2B",
+                        "underredigeringaf": "urn:cpr8883394",
+                        "uuid": upload_uuid,
+                    },
+                ).status_code,
+                200,
+            )
 
         with self.subTest("Passivate dokument"):
-            assert self.client.patch(
-                "dokument/dokument/%s" % upload_uuid,
-                data=open("tests/fixtures/facet_passiv.json", "rt").read(),
-            ).status_code == 200
+            self.assertEqual(
+                self.client.patch(
+                    "dokument/dokument/%s" % upload_uuid,
+                    data=open("tests/fixtures/facet_passiv.json", "rt").read(),
+                ).status_code,
+                200,
+            )
 
         with self.subTest("Delete dokument"):
-            assert self.client.delete(
-                "dokument/dokument/%s" % upload_uuid,
-                data=open("tests/fixtures/dokument_slet.json", "rt").read(),
-            ).status_code == 200
+            self.assertEqual(
+                self.client.delete(
+                    "dokument/dokument/%s" % upload_uuid,
+                    data=open("tests/fixtures/dokument_slet.json", "rt").read(),
+                ).status_code,
+                200,
+            )
 
         with self.subTest("Search on imported dokument"):
             r = self.client.get(
@@ -161,8 +181,8 @@ class TestDokument(util.TestCase):
                     "uuid": import_uuid,
                 },
             )
-            assert r.status_code == 200
-            assert import_uuid_b not in r.get_data()
+            self.assertEqual(r.status_code, 200)
+            self.assertNotIn(import_uuid_b, r.get_data())
 
         with self.subTest("Search for del 1"):
             # currently doesnt accept parameter mimetype, redmine issue #24631
@@ -175,8 +195,8 @@ class TestDokument(util.TestCase):
                     "uuid": import_uuid,
                 },
             )
-            assert r.status_code == 200
-            assert import_uuid_b in r.get_data()
+            self.assertEqual(r.status_code, 200)
+            self.assertIn(import_uuid_b, r.get_data())
 
         with self.subTest("Search for del 2"):
             r = self.client.get(
@@ -188,8 +208,8 @@ class TestDokument(util.TestCase):
                     "uuid": import_uuid,
                 },
             )
-            assert r.status_code == 200
-            assert import_uuid_b in r.get_data()
+            self.assertEqual(r.status_code, 200)
+            self.assertIn(import_uuid_b, r.get_data())
 
         with self.subTest("Search on del relation URN"):
             r = self.client.get(
@@ -199,8 +219,8 @@ class TestDokument(util.TestCase):
                     "uuid": import_uuid,
                 },
             )
-            assert r.status_code == 200
-            assert import_uuid_b in r.get_data()
+            self.assertEqual(r.status_code, 200)
+            self.assertIn(import_uuid_b, r.get_data())
 
         with self.subTest("Search on relation with objekttype"):
             # currently doesnt't accept objekttype parameter, redmine issue
@@ -213,8 +233,8 @@ class TestDokument(util.TestCase):
                     "uuid": import_uuid,
                 },
             )
-            assert r.status_code == 200
-            assert import_uuid_b in r.get_data()
+            self.assertEqual(r.status_code, 200)
+            self.assertIn(import_uuid_b, r.get_data())
 
         with self.subTest("Search on relation with invalid objekttype"):
             r = self.client.get(
@@ -224,8 +244,8 @@ class TestDokument(util.TestCase):
                     "uuid": import_uuid,
                 },
             )
-            assert r.status_code != 200
-            assert import_uuid_b not in r.get_data()
+            self.assertNotEqual(r.status_code != 200)
+            self.assertNotIn(import_uuid_b, r.get_data())
 
         with self.subTest("Search on del relation with objekttype"):
             r = self.client.get(
@@ -235,5 +255,5 @@ class TestDokument(util.TestCase):
                     "uuid": import_uuid,
                 },
             )
-            assert r.status_code == 200
-            assert import_uuid_b in r.get_data()
+            self.assertEqual(r.status_code, 200)
+            self.assertIn(import_uuid_b, r.get_data())

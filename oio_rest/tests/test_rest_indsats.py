@@ -13,9 +13,9 @@ class TestIndsats(util.TestCase):
                 "json": open("tests/fixtures/indsats_opret.json", "rt").read(),
             },
         )
-        assert result.status_code == 201
+        self.assertEqual(result.status_code, 201)
         uuid_ = result.get_json()["uuid"]
-        assert is_uuid(uuid_)
+        self.assertTrue(is_uuid(uuid_))
 
     def test_indsats_put(self):
         uuid_ = str(uuid.uuid4())
@@ -25,5 +25,5 @@ class TestIndsats(util.TestCase):
                 "json": open("tests/fixtures/indsats_opret.json", "rt").read(),
             },
         )
-        assert result.status_code == 200
-        assert result.get_json()["uuid"] == uuid_
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.get_json()["uuid"], uuid_)

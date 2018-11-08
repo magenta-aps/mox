@@ -13,9 +13,9 @@ class TestAktivitet(util.TestCase):
                 "json": open("tests/fixtures/aktivitet_opret.json", "rt").read(),
             },
         )
-        assert result.status_code == 201
+        self.assertEqual(result.status_code, 201)
         uuid_ = result.get_json()["uuid"]
-        assert is_uuid(uuid_)
+        self.assertTrue(is_uuid(uuid_))
 
         with self.subTest("Update aktivitet"):
             result_patch = self.client.patch(
@@ -24,5 +24,5 @@ class TestAktivitet(util.TestCase):
                     "json": open("tests/fixtures/aktivitet_opdater.json", "rt").read(),
                 },
             )
-            assert result_patch.status_code == 200
-            assert result_patch.get_json()["uuid"] == uuid_
+            self.assertEqual(result_patch.status_code, 200)
+            self.assertEqual(result_patch.get_json()["uuid"], uuid_)
