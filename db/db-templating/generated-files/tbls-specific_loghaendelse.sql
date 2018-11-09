@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py loghaendelse tbls-specific.jinja.sql
+NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
 /******************** FUNCTIONS (NEEDED FOR TABLE/INDEX-DEFS) DEFS ***********************************/
@@ -242,6 +242,9 @@ CREATE INDEX loghaendelse_attr_egenskaber_pat_virkning_notetekst
 
 
 
+
+
+
 /****************************************************************************************************/
 
 
@@ -322,6 +325,7 @@ CREATE TABLE loghaendelse_relation
   rel_maal_urn text null,
   rel_type LoghaendelseRelationKode not null,
   objekt_type text null,
+
  CONSTRAINT loghaendelse_relation_forkey_loghaendelseregistrering  FOREIGN KEY (loghaendelse_registrering_id) REFERENCES loghaendelse_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
  CONSTRAINT loghaendelse_relation_pkey PRIMARY KEY (id),
  CONSTRAINT loghaendelse_relation_no_virkning_overlap EXCLUDE USING gist (loghaendelse_registrering_id WITH =, _as_convert_loghaendelse_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&) ,-- no overlapping virkning except for 0..n --relations
@@ -329,10 +333,13 @@ CREATE TABLE loghaendelse_relation
 );
 
 
+
 CREATE INDEX loghaendelse_relation_idx_rel_maal_obj_uuid
   ON loghaendelse_relation
   USING btree
   (rel_type,objekt_type,rel_maal_uuid);
+
+
 
 CREATE INDEX loghaendelse_relation_idx_rel_maal_obj_urn
   ON loghaendelse_relation

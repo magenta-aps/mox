@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py interessefaellesskab as_create_or_import.jinja.sql
+NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
 CREATE OR REPLACE FUNCTION as_create_or_import_interessefaellesskab(
@@ -23,7 +23,9 @@ DECLARE
   interessefaellesskab_tils_gyldighed_obj interessefaellesskabGyldighedTilsType;
   
   interessefaellesskab_relationer InteressefaellesskabRelationType;
+  
   auth_filtered_uuids uuid[];
+  
   does_exist boolean;
   new_interessefaellesskab_registrering interessefaellesskab_registrering;
 BEGIN
@@ -108,7 +110,9 @@ IF interessefaellesskab_registrering.attrEgenskaber IS NOT NULL and coalesce(arr
   FOREACH interessefaellesskab_attr_egenskaber_obj IN ARRAY interessefaellesskab_registrering.attrEgenskaber
   LOOP
 
+  
     INSERT INTO interessefaellesskab_attr_egenskaber (
+      
       brugervendtnoegle,
       interessefaellesskabsnavn,
       interessefaellesskabstype,
@@ -116,14 +120,15 @@ IF interessefaellesskab_registrering.attrEgenskaber IS NOT NULL and coalesce(arr
       interessefaellesskab_registrering_id
     )
     SELECT
+     
      interessefaellesskab_attr_egenskaber_obj.brugervendtnoegle,
       interessefaellesskab_attr_egenskaber_obj.interessefaellesskabsnavn,
       interessefaellesskab_attr_egenskaber_obj.interessefaellesskabstype,
       interessefaellesskab_attr_egenskaber_obj.virkning,
       interessefaellesskab_registrering_id
     ;
- 
-
+  
+    
   END LOOP;
 END IF;
 
@@ -157,6 +162,8 @@ END IF;
 /*********************************/
 --Insert relations
 
+
+
     INSERT INTO interessefaellesskab_relation (
       interessefaellesskab_registrering_id,
       virkning,
@@ -174,6 +181,8 @@ END IF;
       a.objektType
     FROM unnest(interessefaellesskab_registrering.relationer) a
   ;
+
+
 
 
 /*** Verify that the object meets the stipulated access allowed criteria  ***/

@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py indsats tbls-specific.jinja.sql
+NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
 /******************** FUNCTIONS (NEEDED FOR TABLE/INDEX-DEFS) DEFS ***********************************/
@@ -186,6 +186,9 @@ CREATE INDEX indsats_attr_egenskaber_pat_virkning_notetekst
 
 
 
+
+
+
 /****************************************************************************************************/
 
 
@@ -321,19 +324,25 @@ CREATE TABLE indsats_relation
   rel_maal_urn text null,
   rel_type IndsatsRelationKode not null,
   objekt_type text null,
+
  rel_index int null,
+
  CONSTRAINT indsats_relation_forkey_indsatsregistrering  FOREIGN KEY (indsats_registrering_id) REFERENCES indsats_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
  CONSTRAINT indsats_relation_pkey PRIMARY KEY (id),
  CONSTRAINT indsats_relation_no_virkning_overlap EXCLUDE USING gist (indsats_registrering_id WITH =, _as_convert_indsats_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('indsatskvalitet'::IndsatsRelationKode ) AND rel_type<>('indsatsaktoer'::IndsatsRelationKode ) AND rel_type<>('samtykke'::IndsatsRelationKode ) AND rel_type<>('indsatssag'::IndsatsRelationKode ) AND rel_type<>('indsatsdokument'::IndsatsRelationKode )) ,-- no overlapping virkning except for 0..n --relations
  CONSTRAINT indsats_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
 );
 
+
 CREATE UNIQUE INDEX indsats_relation_unique_index_within_type  ON indsats_relation (indsats_registrering_id,rel_type,rel_index) WHERE ( rel_type IN ('indsatskvalitet'::IndsatsRelationKode,'indsatsaktoer'::IndsatsRelationKode,'samtykke'::IndsatsRelationKode,'indsatssag'::IndsatsRelationKode,'indsatsdokument'::IndsatsRelationKode));
+
 
 CREATE INDEX indsats_relation_idx_rel_maal_obj_uuid
   ON indsats_relation
   USING btree
   (rel_type,objekt_type,rel_maal_uuid);
+
+
 
 CREATE INDEX indsats_relation_idx_rel_maal_obj_urn
   ON indsats_relation

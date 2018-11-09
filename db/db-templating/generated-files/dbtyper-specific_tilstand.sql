@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py tilstand dbtyper-specific.jinja.sql
+NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
 --create custom type sans db-ids to be able to do "clean" function signatures "for the outside world".
@@ -26,11 +26,15 @@ CREATE TYPE TilstandPubliceretTilsType AS (
 )
 ;
 
+
+
 CREATE TYPE TilstandEgenskaberAttrType AS (
 brugervendtnoegle text,
 beskrivelse text,
+
  virkning Virkning
 );
+
 
 
 CREATE TYPE TilstandVaerdiRelationAttrType AS (
@@ -38,7 +42,10 @@ CREATE TYPE TilstandVaerdiRelationAttrType AS (
   nominelVaerdi text
 );
 
+
 CREATE TYPE TilstandRelationKode AS ENUM  ('tilstandsobjekt','tilstandstype','tilstandsvaerdi','begrundelse','tilstandskvalitet','tilstandsvurdering','tilstandsaktoer','tilstandsudstyr','samtykke','tilstandsdokument');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_tilstand_relation_kode_to_txt is invoked.
+
+
 
 CREATE TYPE TilstandRelationType AS (
   relType TilstandRelationKode,
@@ -48,8 +55,11 @@ CREATE TYPE TilstandRelationType AS (
   objektType text,
   indeks int,
   tilstandsVaerdiAttr TilstandVaerdiRelationAttrType
+
 )
 ;
+
+
 
 CREATE TYPE TilstandRegistreringType AS
 (
@@ -66,11 +76,14 @@ CREATE TYPE TilstandType AS
   registrering TilstandRegistreringType[]
 );  
 
+
  CREATE Type _TilstandRelationMaxIndex AS
  (
    relType TilstandRelationKode,
    indeks int
  );
+
+
 
 
 

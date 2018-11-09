@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py bruger as_update.jinja.sql
+NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
 
@@ -22,6 +22,7 @@ CREATE OR REPLACE FUNCTION as_update_bruger(
   attrEgenskaber BrugerEgenskaberAttrType[],
   tilsGyldighed BrugerGyldighedTilsType[],
   relationer BrugerRelationType[],
+  
   lostUpdatePreventionTZ TIMESTAMPTZ = null,
   auth_criteria_arr BrugerRegistreringType[]=null
 	)
@@ -36,7 +37,9 @@ DECLARE
   prev_bruger_registrering bruger_registrering;
   bruger_relation_navn BrugerRelationKode;
   attrEgenskaberObj BrugerEgenskaberAttrType;
+  
   auth_filtered_uuids uuid[];
+  
 BEGIN
 
 --create a new registrering
@@ -76,9 +79,13 @@ IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
 ELSE
 
   --1) Insert relations given as part of this update
-  --2) Insert relations of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
+  --2) for aktivitet: Insert relations of previous registration, with index values not included in this update. Please notice that for the logic to work,
+   --  it is very important that the index sequences start with the max value for index of the same type in the previous registration
+  --2) for everthing else: Insert relations of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
 
   --Ad 1)
+
+
 
 
 
@@ -98,16 +105,20 @@ ELSE
                 a.relType,
                   a.objektType
       FROM unnest(relationer) as a
+      
     ;
+
 
    
   --Ad 2)
 
   /**********************/
-  -- 0..1 relations 
+  -- 0..1 relations
+  
    
-
+  
   FOREACH bruger_relation_navn in array  ARRAY['tilhoerer'::BrugerRelationKode]::BrugerRelationKode[]
+  
   LOOP
 
     INSERT INTO bruger_relation (
@@ -153,10 +164,12 @@ ELSE
   --We only have to check if there are any of the relations with the given name present in the new registration, otherwise copy the ones from the previous registration
 
 
+
   FOREACH bruger_relation_navn in array ARRAY['adresser'::BrugerRelationKode,'brugertyper'::BrugerRelationKode,'opgaver'::BrugerRelationKode,'tilknyttedeenheder'::BrugerRelationKode,'tilknyttedefunktioner'::BrugerRelationKode,'tilknyttedeinteressefaellesskaber'::BrugerRelationKode,'tilknyttedeorganisationer'::BrugerRelationKode,'tilknyttedepersoner'::BrugerRelationKode,'tilknyttedeitsystemer'::BrugerRelationKode]::BrugerRelationKode[]
   LOOP
 
     IF NOT EXISTS  (SELECT 1 FROM bruger_relation WHERE bruger_registrering_id=new_bruger_registrering.id and rel_type=bruger_relation_navn) THEN
+
 
       INSERT INTO bruger_relation (
             bruger_registrering_id,
@@ -168,6 +181,7 @@ ELSE
           )
       SELECT 
             new_bruger_registrering.id,
+            
               virkning,
                 rel_maal_uuid,
                   rel_maal_urn,
@@ -178,9 +192,11 @@ ELSE
       and rel_type=bruger_relation_navn 
       ;
 
+
     END IF;
               
   END LOOP;
+
 
 
 /**********************/
@@ -286,6 +302,7 @@ IF attrEgenskaber IS NOT null THEN
    (attrEgenskaberObj).brugertype is null 
   THEN
 
+
   INSERT INTO
   bruger_attr_egenskaber
   (
@@ -294,8 +311,11 @@ IF attrEgenskaber IS NOT null THEN
     ,bruger_registrering_id
   )
   SELECT
+  
     coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+  
     coalesce(attrEgenskaberObj.brugernavn,a.brugernavn),
+  
     coalesce(attrEgenskaberObj.brugertype,a.brugertype),
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
@@ -308,7 +328,8 @@ IF attrEgenskaber IS NOT null THEN
   WHERE
     a.bruger_registrering_id=prev_bruger_registrering.id 
     and (a.virkning).TimePeriod && (attrEgenskaberObj.virkning).TimePeriod
-  ;
+  
+ ;
 
   --For any periods within the virkning of the attrEgenskaberObj, that is NOT covered by any "merged" rows inserted above, generate and insert rows
 
@@ -320,8 +341,11 @@ IF attrEgenskaber IS NOT null THEN
     ,bruger_registrering_id
   )
   SELECT 
+    
     attrEgenskaberObj.brugervendtnoegle, 
+    
     attrEgenskaberObj.brugernavn, 
+    
     attrEgenskaberObj.brugertype,
 	  ROW (
 	       b.tz_range_leftover,
@@ -339,10 +363,13 @@ IF attrEgenskaber IS NOT null THEN
        b.bruger_registrering_id=new_bruger_registrering.id
   ) as a
   JOIN unnest(_subtract_tstzrange_arr((attrEgenskaberObj.virkning).TimePeriod,a.tzranges_of_new_reg)) as b(tz_range_leftover) on true
-  ;
+  
+;
 
   ELSE
     --insert attrEgenskaberObj raw (if there were no null-valued fields) 
+
+    
 
     INSERT INTO
     bruger_attr_egenskaber
@@ -351,13 +378,16 @@ IF attrEgenskaber IS NOT null THEN
     ,virkning
     ,bruger_registrering_id
     )
-    VALUES ( 
+    VALUES (
+     
     attrEgenskaberObj.brugervendtnoegle, 
     attrEgenskaberObj.brugernavn, 
     attrEgenskaberObj.brugertype,
     attrEgenskaberObj.virkning,
     new_bruger_registrering.id
+    
     );
+    
 
   END IF;
 
@@ -371,12 +401,14 @@ ELSE
 
 --Handle egenskaber of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
 
+
 INSERT INTO bruger_attr_egenskaber (
     brugervendtnoegle,brugernavn,brugertype
     ,virkning
     ,bruger_registrering_id
 )
-SELECT
+SELECT 
+   
       a.brugervendtnoegle,
       a.brugernavn,
       a.brugertype,
@@ -397,7 +429,8 @@ FROM
 ) d
   JOIN bruger_attr_egenskaber a ON true  
   JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
-  WHERE a.bruger_registrering_id=prev_bruger_registrering.id     
+  WHERE a.bruger_registrering_id=prev_bruger_registrering.id
+  
 ;
 
 
@@ -405,6 +438,13 @@ FROM
 
 
 END IF;
+
+
+
+
+
+
+
 
 
 /******************************************************************/
@@ -425,7 +465,7 @@ read_new_bruger_reg:=ROW(
 ROW(null,(read_new_bruger.registrering[1].registrering).livscykluskode,null,null)::registreringBase,
 (read_new_bruger.registrering[1]).tilsGyldighed ,
 (read_new_bruger.registrering[1]).attrEgenskaber ,
-(read_new_bruger.registrering[1]).relationer 
+(read_new_bruger.registrering[1]).relationer
 )::brugerRegistreringType
 ;
 
@@ -433,7 +473,7 @@ read_prev_bruger_reg:=ROW(
 ROW(null,(read_prev_bruger.registrering[1].registrering).livscykluskode,null,null)::registreringBase,
 (read_prev_bruger.registrering[1]).tilsGyldighed ,
 (read_prev_bruger.registrering[1]).attrEgenskaber ,
-(read_prev_bruger.registrering[1]).relationer 
+(read_prev_bruger.registrering[1]).relationer
 )::brugerRegistreringType
 ;
 

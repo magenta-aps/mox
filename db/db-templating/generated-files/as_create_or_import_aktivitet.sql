@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py aktivitet as_create_or_import.jinja.sql
+NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
 CREATE OR REPLACE FUNCTION as_create_or_import_aktivitet(
@@ -24,13 +24,15 @@ DECLARE
   aktivitet_tils_publiceret_obj aktivitetPubliceretTilsType;
   
   aktivitet_relationer AktivitetRelationType;
+  
   auth_filtered_uuids uuid[];
+  
   aktivitet_relation_kode aktivitetRelationKode;
   aktivitet_uuid_underscores text;
   aktivitet_rel_seq_name text;
   aktivitet_rel_type_cardinality_unlimited aktivitetRelationKode[]:=ARRAY['udfoererklasse'::AktivitetRelationKode,'deltagerklasse'::AktivitetRelationKode,'objektklasse'::AktivitetRelationKode,'resultatklasse'::AktivitetRelationKode,'grundlagklasse'::AktivitetRelationKode,'facilitetklasse'::AktivitetRelationKode,'adresse'::AktivitetRelationKode,'geoobjekt'::AktivitetRelationKode,'position'::AktivitetRelationKode,'facilitet'::AktivitetRelationKode,'lokale'::AktivitetRelationKode,'aktivitetdokument'::AktivitetRelationKode,'aktivitetgrundlag'::AktivitetRelationKode,'aktivitetresultat'::AktivitetRelationKode,'udfoerer'::AktivitetRelationKode,'deltager'::AktivitetRelationKode]::aktivitetRelationKode[];
   aktivitet_rel_type_cardinality_unlimited_present_in_argument aktivitetRelationKode[];
-
+  
   does_exist boolean;
   new_aktivitet_registrering aktivitet_registrering;
 BEGIN
@@ -115,7 +117,9 @@ IF aktivitet_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(a
   FOREACH aktivitet_attr_egenskaber_obj IN ARRAY aktivitet_registrering.attrEgenskaber
   LOOP
 
+  
     INSERT INTO aktivitet_attr_egenskaber (
+      
       brugervendtnoegle,
       aktivitetnavn,
       beskrivelse,
@@ -127,6 +131,7 @@ IF aktivitet_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(a
       aktivitet_registrering_id
     )
     SELECT
+     
      aktivitet_attr_egenskaber_obj.brugervendtnoegle,
       aktivitet_attr_egenskaber_obj.aktivitetnavn,
       aktivitet_attr_egenskaber_obj.beskrivelse,
@@ -137,8 +142,8 @@ IF aktivitet_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(a
       aktivitet_attr_egenskaber_obj.virkning,
       aktivitet_registrering_id
     ;
- 
-
+  
+    
   END LOOP;
 END IF;
 
@@ -195,6 +200,7 @@ END IF;
 /*********************************/
 --Insert relations
 
+
 IF coalesce(array_length(aktivitet_registrering.relationer,1),0)>0 THEN
 
 --Create temporary sequences
@@ -217,6 +223,7 @@ FOREACH aktivitet_relation_kode IN ARRAY (aktivitet_rel_type_cardinality_unlimit
 END LOOP;
 END IF;
 
+
     INSERT INTO aktivitet_relation (
       aktivitet_registrering_id,
       virkning,
@@ -234,31 +241,33 @@ END IF;
       a.urn,
       a.relType,
       a.objektType,
-        CASE WHEN a.relType = any (aktivitet_rel_type_cardinality_unlimited) THEN --rel_index
-        nextval('aktivitet_' || a.relType::text || aktivitet_uuid_underscores)
-        ELSE 
+      CASE WHEN a.relType = any (aktivitet_rel_type_cardinality_unlimited) THEN --rel_index
+      nextval('aktivitet_' || a.relType::text || aktivitet_uuid_underscores)
+      ELSE 
+      NULL
+      END,
+      CASE 
+        WHEN a.relType =('udfoerer'::AktivitetRelationKode)  OR a.relType=('deltager'::AktivitetRelationKode) OR a.relType=('ansvarlig'::AktivitetRelationKode) 
+        AND NOT (a.aktoerAttr IS NULL)
+        AND (
+          (a.aktoerAttr).obligatorisk IS NOT NULL
+          OR
+          (a.aktoerAttr).accepteret IS NOT NULL
+          OR
+            (
+              (a.aktoerAttr).repraesentation_uuid IS NOT NULL
+              OR
+              ((a.aktoerAttr).repraesentation_urn IS NOT NULL AND (a.aktoerAttr).repraesentation_urn<>'')
+            )
+          ) 
+        THEN a.aktoerAttr
+        ELSE
         NULL
-        END,
-        CASE 
-          WHEN a.relType =('udfoerer'::AktivitetRelationKode)  OR a.relType=('deltager'::AktivitetRelationKode) OR a.relType=('ansvarlig'::AktivitetRelationKode) 
-          AND NOT (a.aktoerAttr IS NULL)
-          AND (
-            (a.aktoerAttr).obligatorisk IS NOT NULL
-            OR
-            (a.aktoerAttr).accepteret IS NOT NULL
-            OR
-              (
-                (a.aktoerAttr).repraesentation_uuid IS NOT NULL
-                OR
-                ((a.aktoerAttr).repraesentation_urn IS NOT NULL AND (a.aktoerAttr).repraesentation_urn<>'')
-              )
-            ) 
-          THEN a.aktoerAttr
-          ELSE
-          NULL
-        END
+      END
+      
     FROM unnest(aktivitet_registrering.relationer) a
-    ;
+  ;
+
 
 
 --Drop temporary sequences

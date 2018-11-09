@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py aktivitet dbtyper-specific.jinja.sql
+NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
 --create custom type sans db-ids to be able to do "clean" function signatures "for the outside world".
@@ -26,19 +26,27 @@ CREATE TYPE AktivitetPubliceretTilsType AS (
 )
 ;
 
+
+
 CREATE TYPE AktivitetEgenskaberAttrType AS (
 brugervendtnoegle text,
 aktivitetnavn text,
 beskrivelse text,
 starttidspunkt ClearableTimestamptz,
+
 sluttidspunkt ClearableTimestamptz,
+
 tidsforbrug ClearableInterval,
 formaal text,
+
  virkning Virkning
 );
 
 
+
+
 CREATE TYPE AktivitetRelationKode AS ENUM  ('aktivitetstype','emne','foelsomhedklasse','ansvarligklasse','rekvirentklasse','ansvarlig','tilhoerer','udfoererklasse','deltagerklasse','objektklasse','resultatklasse','grundlagklasse','facilitetklasse','adresse','geoobjekt','position','facilitet','lokale','aktivitetdokument','aktivitetgrundlag','aktivitetresultat','udfoerer','deltager');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_aktivitet_relation_kode_to_txt is invoked.
+
 
 CREATE TYPE AktivitetAktoerAttrObligatoriskKode AS ENUM ('noedvendig','valgfri');
 
@@ -63,6 +71,8 @@ CREATE TYPE AktivitetRelationType AS (
 )
 ;
 
+
+
 CREATE TYPE AktivitetRegistreringType AS
 (
 registrering RegistreringBase,
@@ -78,12 +88,18 @@ CREATE TYPE AktivitetType AS
   registrering AktivitetRegistreringType[]
 );  
 
+
  CREATE Type _AktivitetRelationMaxIndex AS
  (
    relType AktivitetRelationKode,
    indeks int
  );
 
---we'll add two small functions here, that will help with placing CHECK CONSTRAINT on the composite type AktivitetAktoerAttr in the db-table.
+---we'll add two small functions here, that will help with placing CHECK CONSTRAINT on the composite type AktivitetAktoerAttr in the db-table.
 CREATE OR REPLACE FUNCTION _aktivitet_aktoer_attr_repr_uuid_to_text(AktivitetAktoerAttr) RETURNS TEXT AS 'SELECT $1.repraesentation_uuid::TEXT' LANGUAGE sql IMMUTABLE;
 CREATE OR REPLACE FUNCTION _aktivitet_aktoer_attr_repr_urn_to_text(AktivitetAktoerAttr) RETURNS TEXT AS 'SELECT NULLIF($1.repraesentation_urn::TEXT,'''') ' LANGUAGE sql IMMUTABLE;
+
+
+
+
+

@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py organisationenhed tbls-specific.jinja.sql
+NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
 /******************** FUNCTIONS (NEEDED FOR TABLE/INDEX-DEFS) DEFS ***********************************/
@@ -170,6 +170,9 @@ CREATE INDEX organisationenhed_attr_egenskaber_pat_virkning_notetekst
 
 
 
+
+
+
 /****************************************************************************************************/
 
 
@@ -250,6 +253,7 @@ CREATE TABLE organisationenhed_relation
   rel_maal_urn text null,
   rel_type OrganisationenhedRelationKode not null,
   objekt_type text null,
+
  CONSTRAINT organisationenhed_relation_forkey_organisationenhedregistrering  FOREIGN KEY (organisationenhed_registrering_id) REFERENCES organisationenhed_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
  CONSTRAINT organisationenhed_relation_pkey PRIMARY KEY (id),
  CONSTRAINT organisationenhed_relation_no_virkning_overlap EXCLUDE USING gist (organisationenhed_registrering_id WITH =, _as_convert_organisationenhed_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('adresser'::OrganisationenhedRelationKode ) AND rel_type<>('ansatte'::OrganisationenhedRelationKode ) AND rel_type<>('opgaver'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedebrugere'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedeenheder'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedefunktioner'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedeinteressefaellesskaber'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedeorganisationer'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedepersoner'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedeitsystemer'::OrganisationenhedRelationKode )) ,-- no overlapping virkning except for 0..n --relations
@@ -257,10 +261,13 @@ CREATE TABLE organisationenhed_relation
 );
 
 
+
 CREATE INDEX organisationenhed_relation_idx_rel_maal_obj_uuid
   ON organisationenhed_relation
   USING btree
   (rel_type,objekt_type,rel_maal_uuid);
+
+
 
 CREATE INDEX organisationenhed_relation_idx_rel_maal_obj_urn
   ON organisationenhed_relation

@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py sag as_update.jinja.sql
+NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
 
@@ -22,6 +22,7 @@ CREATE OR REPLACE FUNCTION as_update_sag(
   attrEgenskaber SagEgenskaberAttrType[],
   tilsFremdrift SagFremdriftTilsType[],
   relationer SagRelationType[],
+  
   lostUpdatePreventionTZ TIMESTAMPTZ = null,
   auth_criteria_arr SagRegistreringType[]=null
 	)
@@ -36,14 +37,16 @@ DECLARE
   prev_sag_registrering sag_registrering;
   sag_relation_navn SagRelationKode;
   attrEgenskaberObj SagEgenskaberAttrType;
+  
   auth_filtered_uuids uuid[];
+  
   rel_type_max_index_prev_rev int;
   rel_type_max_index_arr _SagRelationMaxIndex[];
   sag_rel_type_cardinality_unlimited SagRelationKode[]:=ARRAY['andetarkiv'::SagRelationKode,'andrebehandlere'::SagRelationKode,'sekundaerpart'::SagRelationKode,'andresager'::SagRelationKode,'byggeri'::SagRelationKode,'fredning'::SagRelationKode,'journalpost'::SagRelationKode]::SagRelationKode[];
   sag_uuid_underscores text;
   sag_rel_seq_name text;
   sag_rel_type_cardinality_unlimited_present_in_argument sagRelationKode[];
-
+  
 BEGIN
 
 --create a new registrering
@@ -83,17 +86,24 @@ IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
 ELSE
 
   --1) Insert relations given as part of this update
-  --2) Insert relations of previous registration, with index values not included in this update. Please notice that for the logic to work,
-  --  it is very important that the index sequences start with the max value for index of the same type in the previous registration
+  --2) for aktivitet: Insert relations of previous registration, with index values not included in this update. Please notice that for the logic to work,
+   --  it is very important that the index sequences start with the max value for index of the same type in the previous registration
+  --2) for everthing else: Insert relations of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
 
   --Ad 1)
 
+
+
 --build array with the max index values of the different types of relations of the previous registration
+
 SELECT array_agg(rel_type_max_index)::_SagRelationMaxIndex[] into rel_type_max_index_arr
+
 FROM
 (
   SELECT
-  (ROW(rel_type,coalesce(max(rel_index),0))::_SagRelationMaxIndex) rel_type_max_index  
+  
+  (ROW(rel_type,coalesce(max(rel_index),0))::_SagRelationMaxIndex) rel_type_max_index
+  
   FROM sag_relation a
   where a.sag_registrering_id=prev_sag_registrering.id
   and a.rel_type = any (sag_rel_type_cardinality_unlimited)
@@ -101,9 +111,12 @@ FROM
 ) as a
 ;
 
+ 
+---Create temporary sequences
 
---Create temporary sequences
 sag_uuid_underscores:=replace(sag_uuid::text, '-', '_');
+
+
 SELECT array_agg( DISTINCT a.RelType) into sag_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(relationer) a WHERE a.RelType = any (sag_rel_type_cardinality_unlimited) ;
 
 IF coalesce(array_length(sag_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
@@ -134,6 +147,8 @@ FOREACH sag_relation_navn IN ARRAY (sag_rel_type_cardinality_unlimited_present_i
 
 END LOOP;
 END IF;
+
+
 
       INSERT INTO sag_relation (
         sag_registrering_id,
@@ -205,27 +220,40 @@ END IF;
                             ELSE
                             NULL
                           END
+                
       FROM unnest(relationer) as a
+      
       LEFT JOIN sag_relation b on a.relType = any (sag_rel_type_cardinality_unlimited) and b.sag_registrering_id=prev_sag_registrering.id and a.relType=b.rel_type and a.indeks=b.rel_index
+      
     ;
 
 
 --Drop temporary sequences
 IF coalesce(array_length(sag_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
+
 FOREACH sag_relation_navn IN ARRAY (sag_rel_type_cardinality_unlimited_present_in_argument)
+
   LOOP
   sag_rel_seq_name := 'sag_' || sag_relation_navn::text || sag_uuid_underscores;
   EXECUTE 'DROP  SEQUENCE ' || sag_rel_seq_name || ';';
 END LOOP;
 END IF;
 
+   
   --Ad 2)
 
   /**********************/
-  -- 0..1 relations 
-  --Please notice, that for 0..1 relations for Sag, we're ignoring index here, and handling it the same way, that is done for other object types (like Facet, Klasse etc). That is, you only make changes for the virkningsperiod that you explicitly specify (unless you delete all relations) 
-
+  -- 0..1 relations
+  
+  --Please notice, that for 0..1 relations for aktivitet, we're ignoring index
+  --here, and handling it the same way, that is done for other object types (like
+  --Facet, Klasse etc). That is, you only make changes for the
+  --virkningsperiod that you explicitly specify (unless you delete all relations) 
+  
+   
+  
   FOREACH sag_relation_navn in array  ARRAY['behandlingarkiv'::SagRelationKode,'afleveringsarkiv'::SagRelationKode,'primaerklasse'::SagRelationKode,'opgaveklasse'::SagRelationKode,'handlingsklasse'::SagRelationKode,'kontoklasse'::SagRelationKode,'sikkerhedsklasse'::SagRelationKode,'foelsomhedsklasse'::SagRelationKode,'indsatsklasse'::SagRelationKode,'ydelsesklasse'::SagRelationKode,'ejer'::SagRelationKode,'ansvarlig'::SagRelationKode,'primaerbehandler'::SagRelationKode,'udlaanttil'::SagRelationKode,'primaerpart'::SagRelationKode,'ydelsesmodtager'::SagRelationKode,'oversag'::SagRelationKode,'praecedens'::SagRelationKode,'afgiftsobjekt'::SagRelationKode,'ejendomsskat'::SagRelationKode]::SagRelationKode[]
+  
   LOOP
 
     INSERT INTO sag_relation (
@@ -239,7 +267,6 @@ END IF;
                       rel_type_spec,
                         journal_notat,
                           journal_dokument_attr
-
       )
     SELECT 
         new_sag_registrering.id, 
@@ -257,6 +284,7 @@ END IF;
                       a.rel_type_spec,
                         a.journal_notat,
                           a.journal_dokument_attr
+                  
     FROM
     (
       --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to _subtract_tstzrange_arr on the relations of the previous registrering 
@@ -276,7 +304,12 @@ END IF;
 
   /**********************/
   -- 0..n relations
-  
+
+  --We only have to check if there are any of the relations with the given name present in the new registration, otherwise copy the ones from the previous registration
+
+
+
+
       INSERT INTO sag_relation (
             sag_registrering_id,
               virkning,
@@ -291,6 +324,7 @@ END IF;
           )
       SELECT 
             new_sag_registrering.id,
+            
               a.virkning,
                 a.rel_maal_uuid,
                   a.rel_maal_urn,
@@ -305,7 +339,11 @@ END IF;
       WHERE a.sag_registrering_id=prev_sag_registrering.id 
       and a.rel_type = any (sag_rel_type_cardinality_unlimited)
       and b.id is null --don't transfer relations of prev. registrering, if the index was specified in data given to the/this update-function
+            
       ;
+
+
+
 
 /**********************/
 
@@ -416,6 +454,7 @@ IF attrEgenskaber IS NOT null THEN
    (attrEgenskaberObj).titel is null 
   THEN
 
+
   INSERT INTO
   sag_attr_egenskaber
   (
@@ -424,18 +463,27 @@ IF attrEgenskaber IS NOT null THEN
     ,sag_registrering_id
   )
   SELECT
-    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle), 
-    CASE WHEN (attrEgenskaberObj.afleveret).cleared THEN NULL 
+  
+    coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
+   
+    CASE WHEN ((attrEgenskaberObj.afleveret).cleared) THEN NULL
     ELSE coalesce((attrEgenskaberObj.afleveret).value,a.afleveret)
     END,
+  
     coalesce(attrEgenskaberObj.beskrivelse,a.beskrivelse),
+  
     coalesce(attrEgenskaberObj.hjemmel,a.hjemmel),
+  
     coalesce(attrEgenskaberObj.kassationskode,a.kassationskode),
-    coalesce(attrEgenskaberObj.offentlighedundtaget,a.offentlighedundtaget), 
-    CASE WHEN (attrEgenskaberObj.principiel).cleared THEN NULL 
+  
+    coalesce(attrEgenskaberObj.offentlighedundtaget,a.offentlighedundtaget),
+   
+    CASE WHEN ((attrEgenskaberObj.principiel).cleared) THEN NULL
     ELSE coalesce((attrEgenskaberObj.principiel).value,a.principiel)
     END,
+  
     coalesce(attrEgenskaberObj.sagsnummer,a.sagsnummer),
+  
     coalesce(attrEgenskaberObj.titel,a.titel),
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
@@ -448,7 +496,8 @@ IF attrEgenskaber IS NOT null THEN
   WHERE
     a.sag_registrering_id=prev_sag_registrering.id 
     and (a.virkning).TimePeriod && (attrEgenskaberObj.virkning).TimePeriod
-  ;
+  
+ ;
 
   --For any periods within the virkning of the attrEgenskaberObj, that is NOT covered by any "merged" rows inserted above, generate and insert rows
 
@@ -460,14 +509,23 @@ IF attrEgenskaber IS NOT null THEN
     ,sag_registrering_id
   )
   SELECT 
+    
     attrEgenskaberObj.brugervendtnoegle, 
+    
     attrEgenskaberObj.afleveret, 
+    
     attrEgenskaberObj.beskrivelse, 
+    
     attrEgenskaberObj.hjemmel, 
+    
     attrEgenskaberObj.kassationskode, 
+    
     attrEgenskaberObj.offentlighedundtaget, 
+    
     attrEgenskaberObj.principiel, 
+    
     attrEgenskaberObj.sagsnummer, 
+    
     attrEgenskaberObj.titel,
 	  ROW (
 	       b.tz_range_leftover,
@@ -485,10 +543,13 @@ IF attrEgenskaber IS NOT null THEN
        b.sag_registrering_id=new_sag_registrering.id
   ) as a
   JOIN unnest(_subtract_tstzrange_arr((attrEgenskaberObj.virkning).TimePeriod,a.tzranges_of_new_reg)) as b(tz_range_leftover) on true
-  ;
+  
+;
 
   ELSE
     --insert attrEgenskaberObj raw (if there were no null-valued fields) 
+
+    
 
     INSERT INTO
     sag_attr_egenskaber
@@ -497,7 +558,8 @@ IF attrEgenskaber IS NOT null THEN
     ,virkning
     ,sag_registrering_id
     )
-    VALUES ( 
+    VALUES (
+     
     attrEgenskaberObj.brugervendtnoegle, 
     attrEgenskaberObj.afleveret, 
     attrEgenskaberObj.beskrivelse, 
@@ -509,7 +571,9 @@ IF attrEgenskaber IS NOT null THEN
     attrEgenskaberObj.titel,
     attrEgenskaberObj.virkning,
     new_sag_registrering.id
+    
     );
+    
 
   END IF;
 
@@ -523,12 +587,14 @@ ELSE
 
 --Handle egenskaber of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
 
+
 INSERT INTO sag_attr_egenskaber (
     brugervendtnoegle,afleveret,beskrivelse,hjemmel,kassationskode,offentlighedundtaget,principiel,sagsnummer,titel
     ,virkning
     ,sag_registrering_id
 )
-SELECT
+SELECT 
+   
       a.brugervendtnoegle,
       a.afleveret,
       a.beskrivelse,
@@ -555,7 +621,8 @@ FROM
 ) d
   JOIN sag_attr_egenskaber a ON true  
   JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
-  WHERE a.sag_registrering_id=prev_sag_registrering.id     
+  WHERE a.sag_registrering_id=prev_sag_registrering.id
+  
 ;
 
 
@@ -563,6 +630,13 @@ FROM
 
 
 END IF;
+
+
+
+
+
+
+
 
 
 /******************************************************************/
@@ -583,7 +657,7 @@ read_new_sag_reg:=ROW(
 ROW(null,(read_new_sag.registrering[1].registrering).livscykluskode,null,null)::registreringBase,
 (read_new_sag.registrering[1]).tilsFremdrift ,
 (read_new_sag.registrering[1]).attrEgenskaber ,
-(read_new_sag.registrering[1]).relationer 
+(read_new_sag.registrering[1]).relationer
 )::sagRegistreringType
 ;
 
@@ -591,7 +665,7 @@ read_prev_sag_reg:=ROW(
 ROW(null,(read_prev_sag.registrering[1].registrering).livscykluskode,null,null)::registreringBase,
 (read_prev_sag.registrering[1]).tilsFremdrift ,
 (read_prev_sag.registrering[1]).attrEgenskaber ,
-(read_prev_sag.registrering[1]).relationer 
+(read_prev_sag.registrering[1]).relationer
 )::sagRegistreringType
 ;
 

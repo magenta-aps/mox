@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: apply-template.py sag as_create_or_import.jinja.sql AND running a patch (as_create_or_import_sag.sql.diff)
+NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
 CREATE OR REPLACE FUNCTION as_create_or_import_sag(
@@ -23,13 +23,16 @@ DECLARE
   sag_tils_fremdrift_obj sagFremdriftTilsType;
   
   sag_relationer SagRelationType;
+  
   sag_relation_kode SagRelationKode;
   sag_uuid_underscores text;
   sag_rel_seq_name text;
   sag_rel_type_cardinality_unlimited SagRelationKode[]:=ARRAY['andetarkiv'::SagRelationKode,'andrebehandlere'::SagRelationKode,'sekundaerpart'::SagRelationKode,'andresager'::SagRelationKode,'byggeri'::SagRelationKode,'fredning'::SagRelationKode,'journalpost'::SagRelationKode]::SagRelationKode[];
+  
   auth_filtered_uuids uuid[];
+  
   sag_rel_type_cardinality_unlimited_present_in_argument sagRelationKode[];
-
+  
   does_exist boolean;
   new_sag_registrering sag_registrering;
 BEGIN
@@ -114,7 +117,9 @@ IF sag_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(sag_reg
   FOREACH sag_attr_egenskaber_obj IN ARRAY sag_registrering.attrEgenskaber
   LOOP
 
+  
     INSERT INTO sag_attr_egenskaber (
+      
       brugervendtnoegle,
       afleveret,
       beskrivelse,
@@ -128,6 +133,7 @@ IF sag_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(sag_reg
       sag_registrering_id
     )
     SELECT
+     
      sag_attr_egenskaber_obj.brugervendtnoegle,
       sag_attr_egenskaber_obj.afleveret,
       sag_attr_egenskaber_obj.beskrivelse,
@@ -140,8 +146,8 @@ IF sag_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(sag_reg
       sag_attr_egenskaber_obj.virkning,
       sag_registrering_id
     ;
- 
-
+  
+    
   END LOOP;
 END IF;
 
@@ -175,6 +181,7 @@ END IF;
 /*********************************/
 --Insert relations
 
+
 IF coalesce(array_length(sag_registrering.relationer,1),0)>0 THEN
 
 --Create temporary sequences
@@ -182,6 +189,7 @@ sag_uuid_underscores:=replace(sag_uuid::text, '-', '_');
 
 SELECT array_agg( DISTINCT a.RelType) into sag_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(sag_registrering.relationer) a WHERE a.RelType = any (sag_rel_type_cardinality_unlimited) ;
 IF coalesce(array_length(sag_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
+
 FOREACH sag_relation_kode IN ARRAY (sag_rel_type_cardinality_unlimited_present_in_argument)
   LOOP
   sag_rel_seq_name := 'sag_' || sag_relation_kode::text || sag_uuid_underscores;
@@ -195,7 +203,8 @@ FOREACH sag_relation_kode IN ARRAY (sag_rel_type_cardinality_unlimited_present_i
 
 END LOOP;
 END IF;
- 
+
+
     INSERT INTO sag_relation (
       sag_registrering_id,
       virkning,
@@ -215,54 +224,56 @@ END IF;
       a.urn,
       a.relType,
       a.objektType,
-        CASE WHEN a.relType = any (sag_rel_type_cardinality_unlimited) THEN --rel_index
-        nextval('sag_' || a.relType::text || sag_uuid_underscores)
-        ELSE 
-        NULL
-        END,
-        CASE 
-          WHEN a.relType='journalpost' THEN a.relTypeSpec  --rel_type_spec
-          ELSE
-          NULL
-        END,
+      CASE WHEN a.relType = any (sag_rel_type_cardinality_unlimited) THEN --rel_index
+      nextval('sag_' || a.relType::text || sag_uuid_underscores)
+      ELSE 
+      NULL
+      END,
       CASE 
-          WHEN  
-            (NOT (a.journalNotat IS NULL)) 
-            AND
-            (
-              (a.journalNotat).titel IS NOT NULL
-              OR
-              (a.journalNotat).notat IS NOT NULL
-              OR
-              (a.journalNotat).format IS NOT NULL
-            )
-           THEN a.journalNotat
-           ELSE
-           NULL
-      END
-      ,CASE 
-        WHEN ( 
-                (NOT a.journalDokumentAttr IS NULL)
-                AND
-                (
-                  (a.journalDokumentAttr).dokumenttitel IS NOT NULL
-                  OR
-                  (
-                    NOT ((a.journalDokumentAttr).offentlighedUndtaget IS NULL)
-                    AND
-                    (
-                      ((a.journalDokumentAttr).offentlighedUndtaget).AlternativTitel IS NOT NULL
-                       OR
-                       ((a.journalDokumentAttr).offentlighedUndtaget).Hjemmel IS NOT NULL
-                     )
-                   )
-                )
-              ) THEN a.journalDokumentAttr
+        WHEN a.relType='journalpost' THEN a.relTypeSpec  --rel_type_spec
+        ELSE
+        NULL
+      END,
+    CASE 
+        WHEN  
+          (NOT (a.journalNotat IS NULL)) 
+          AND
+          (
+            (a.journalNotat).titel IS NOT NULL
+            OR
+            (a.journalNotat).notat IS NOT NULL
+            OR
+            (a.journalNotat).format IS NOT NULL
+          )
+         THEN a.journalNotat
          ELSE
          NULL
-       END
+    END
+    ,CASE 
+      WHEN ( 
+              (NOT a.journalDokumentAttr IS NULL)
+              AND
+              (
+                (a.journalDokumentAttr).dokumenttitel IS NOT NULL
+                OR
+                (
+                  NOT ((a.journalDokumentAttr).offentlighedUndtaget IS NULL)
+                  AND
+                  (
+                    ((a.journalDokumentAttr).offentlighedUndtaget).AlternativTitel IS NOT NULL
+                     OR
+                     ((a.journalDokumentAttr).offentlighedUndtaget).Hjemmel IS NOT NULL
+                   )
+                 )
+              )
+            ) THEN a.journalDokumentAttr
+       ELSE
+       NULL
+      END
+      
     FROM unnest(sag_registrering.relationer) a
-    ;
+  ;
+
 
 
 --Drop temporary sequences
@@ -276,7 +287,6 @@ END IF;
 
 
 END IF;
-
 
 
 /*** Verify that the object meets the stipulated access allowed criteria  ***/

@@ -1,92 +1,78 @@
 #!/usr/bin/env python
-# Usage E.g: ./apply-template.py
+"""
+    apply-templates.py
+    ~~~~~~~~~~~~~~~~~~
 
-import copy
-import glob
-import os
-import subprocess
+    This script generates a bunch of sql files from jinja2 templates.
+
+    More information in `../db/db-templating/`.
+
+    Example usage:
+        $ ./apply-template.py  # from a Python 3 environment
+"""
 
 from collections import OrderedDict
+import copy
+from pathlib import Path
 
-import jinja2
+from jinja2 import Environment, FileSystemLoader
 
 from oio_common.db_structure import DATABASE_STRUCTURE
 from oio_common.db_structure import DB_TEMPLATE_EXTRA_OPTIONS
 
 
-DIR = os.path.realpath(os.path.join(
-    os.path.dirname(__file__), '..', 'db', 'db-templating'),
-)
+DIR = Path(__file__).parent / ".." / "db" / "db-templating"
+TEMPLATE_DIR = DIR / "templates"
+BUILD_DIR = DIR / "generated-files"
 
 TEMPLATES = (
-    'dbtyper-specific',
-    'tbls-specific',
-    '_as_get_prev_registrering',
-    '_as_create_registrering',
-    'as_update',
-    'as_create_or_import',
-    'as_list',
-    'as_read',
-    'as_search',
-    '_remove_nulls_in_array',
-    'json-cast-functions',
-    '_as_sorted',
-    '_as_filter_unauth'
+    "_as_create_registrering",
+    "_as_filter_unauth",
+    "_as_get_prev_registrering",
+    "_as_sorted",
+    "_remove_nulls_in_array",
+    "as_create_or_import",
+    "as_list",
+    "as_read",
+    "as_search",
+    "as_update",
+    "dbtyper-specific",
+    "json-cast-functions",
+    "tbls-specific",
 )
 
-templateLoader = jinja2.FileSystemLoader(
-    searchpath=os.path.join(DIR, "templates"),
-)
-templateEnv = jinja2.Environment(loader=templateLoader)
+template_env = Environment(loader=FileSystemLoader([str(TEMPLATE_DIR)]))
 
-for oiotype in sorted(DATABASE_STRUCTURE):
+for oio_type in sorted(DATABASE_STRUCTURE):
     for template_name in sorted(TEMPLATES):
-        TEMPLATE_FILE = template_name + '.jinja.sql'
+        template_file = "%s.jinja.sql" % template_name
+        template = template_env.get_template(template_file)
 
-        template = templateEnv.get_template(TEMPLATE_FILE)
-        templateVars = copy.deepcopy(DATABASE_STRUCTURE[oiotype])
-        templateVars["script_signature"] = (
-            "apply-template.py " + oiotype + " " + TEMPLATE_FILE
+        context = copy.deepcopy(DATABASE_STRUCTURE[oio_type])
+        context["script_signature"] = "apply-template.py %s %s" % (
+            oio_type,
+            template_file,
         )
-        # it is important that the order is stable, as some templates
-        # rely on this
-        templateVars['tilstande'] = OrderedDict(templateVars['tilstande'])
-        # it is important that the order is stable, as some templates
-        # rely on this
-        templateVars['attributter'] = OrderedDict(templateVars['attributter'])
-        templateVars['oio_type'] = oiotype.lower()
-
+        # it is important that the order is stable, as some templates rely on this
+        context["tilstande"] = OrderedDict(context["tilstande"])
+        context["attributter"] = OrderedDict(context["attributter"])
+        context["oio_type"] = oio_type.lower()
         # create version of 'tilstande' and 'attributter' in reverse order
-        tilstande_items = list(templateVars['tilstande'].items())
-        attributter_items = list(templateVars['attributter'].items())
-        tilstande_items.reverse()
-        attributter_items.reverse()
-        templateVars['tilstande_revorder'] = OrderedDict(tilstande_items)
-        templateVars['attributter_revorder'] = OrderedDict(attributter_items)
+        context["tilstande_revorder"] = OrderedDict(
+            reversed(context["tilstande"].items())
+        )
+        context["attributter_revorder"] = OrderedDict(
+            reversed(context["attributter"].items())
+        )
 
-        if (
-            oiotype in DB_TEMPLATE_EXTRA_OPTIONS and
-            TEMPLATE_FILE in DB_TEMPLATE_EXTRA_OPTIONS[oiotype] and
-            'include_mixin' in
-                DB_TEMPLATE_EXTRA_OPTIONS[oiotype][TEMPLATE_FILE]
-        ):
-            templateVars['include_mixin'] = (
-                DB_TEMPLATE_EXTRA_OPTIONS[oiotype]
-                [TEMPLATE_FILE]['include_mixin']
-            )
-        else:
-            templateVars['include_mixin'] = "empty.jinja"
+        try:
+            context["include_mixin"] = DB_TEMPLATE_EXTRA_OPTIONS[oio_type][
+                template_file
+            ]["include_mixin"]
+        except KeyError:
+            context["include_mixin"] = "empty.jinja"
 
-        outputPath = os.path.join(DIR, 'generated-files',
-                                  '{}_{}.sql'.format(template_name, oiotype))
-
-        with open(outputPath, 'wb') as fp:
-            template.stream(templateVars).dump(fp, encoding='utf-8')
-            fp.write(b'\n')
-
-
-for patch in glob.glob(os.path.join(DIR, 'patches', '*.diff')):
-    subprocess.check_call(
-        ['patch', '--fuzz=3', '-i', patch],
-        cwd=os.path.join(DIR, 'generated-files'),
-    )
+        generated_file = BUILD_DIR / ("%s_%s.sql" % (template_name, oio_type))
+        with open(str(generated_file), "wb") as f:
+            template.stream(context).dump(f, encoding="utf-8")
+            f.write(b"\n")
