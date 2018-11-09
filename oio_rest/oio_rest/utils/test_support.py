@@ -42,103 +42,6 @@ def psql():
     return psql
 
 
-def _get_db_setup_sql(db_name, db_user):
-    """Return the postgresql + pl/pgsql code necessary for our database
-    to work.
-
-    Brave souls can find db/mkdb.sh in the git history to see what this
-    function replaces."""
-
-    init = """
-    GRANT ALL ON DATABASE "{db_name}" TO "{db_user}";
-
-    CREATE SCHEMA actual_state AUTHORIZATION "{db_user}";
-
-    ALTER DATABASE "{db_name}" SET search_path TO actual_state,public;
-    ALTER DATABASE "{db_name}" SET DATESTYLE to 'ISO, YMD';
-    ALTER DATABASE "{db_name}" SET INTERVALSTYLE to 'sql_standard';
-
-    CREATE SCHEMA test AUTHORIZATION "{db_user}";
-    """.format(db_name=db_name, db_user=db_user)
-
-    def listdir(dirname):
-        # os.listdir() but with prefix
-        return [os.path.join(dirname, filename)
-                for filename in sorted(os.listdir(dirname))]
-
-    # <mess>
-    # this mess is necessary because the db relies on a particular order
-    # first its needs a bunch of functions "funcs1"
-    # then it needs some of the templates "templates1"
-    # then the remaining functions "funcs2"
-    # and finally "templates1"
-
-    # 5$ to anyone who can come up with a better way to express our
-    #     dependency graph...
-    template1_types = [
-        "dbtyper-specific",
-        "tbls-specific",
-        "_remove_nulls_in_array",
-    ]
-    template2_types = [
-        "_as_get_prev_registrering",
-        "_as_create_registrering",
-        "as_update",
-        "as_create_or_import",
-        "as_list",
-        "as_read",
-        "as_search",
-        "json-cast-functions",
-        "_as_sorted",
-        "_as_filter_unauth",
-    ]
-    def template_sort_key(template_name):
-        for i, template_type in enumerate(template1_types + template2_types):
-            if template_type in template_name:
-                return i, template_name
-        raise ValueError("template name invalid: ", template_name)
-
-    def is_template1(template):
-        for template_type in template1_types:
-            if template_type in template:
-                return True
-        return False
-
-    templates = listdir('../db/db-templating/generated-files')
-    templates1 = list(filter(is_template1, templates))
-    templates2 = list(set(templates) ^ set(templates1))
-    templates1.sort(key=template_sort_key)
-    templates2.sort(key=template_sort_key)
-    funcs1 = [
-        "../db/funcs/_index_helper_funcs.sql",
-        "../db/funcs/_subtract_tstzrange.sql",
-        "../db/funcs/_subtract_tstzrange_arr.sql",
-        "../db/funcs/_as_valid_registrering_livscyklus_transition.sql",
-        "../db/funcs/_as_search_match_array.sql",
-        "../db/funcs/_as_search_ilike_array.sql",
-        "../db/funcs/_json_object_delete_keys.sql",
-        "../db/funcs/_create_notify.sql",
-    ]
-    funcs2 = list(set(listdir('../db/funcs')) ^ set(funcs1))
-    funcs2.sort()
-
-    files = [
-        *listdir('../db/basis'),
-        *funcs1,
-        *templates1,
-        *funcs2,
-        *templates2,
-        *listdir('../db/tests'),
-    ]
-    # </mess>
-
-    file_contents = []
-    for filename in files:
-        with open(filename, 'rt') as f:
-            file_contents.append(f.read())
-    return init + '\n'.join(file_contents)
-
-
 def _initdb():
     env = {
         **os.environ,
@@ -161,7 +64,16 @@ def _initdb():
                 settings.DATABASE, settings.DB_PASSWORD,
             ))
 
-    sql = _get_db_setup_sql(settings.DATABASE, settings.DB_USER)
+    with subprocess.Popen(
+        [os.path.join(BASE_DIR, '..', 'db', 'mkdb.sh')],
+        env=env,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        stdin=subprocess.DEVNULL,
+    ) as proc:
+        sql, errortext = proc.communicate()
+
+    assert proc.returncode == 0, 'mkdb failed:\n\n' + errortext.decode()
+
     with psycopg2.connect(psql().url(
             database=settings.DATABASE,
             user=settings.DB_USER,

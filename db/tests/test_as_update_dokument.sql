@@ -208,7 +208,7 @@ doc1_virkFremdrift,
 doc1_dokumentEgenskab1 := ROW (
 'doc_brugervendtnoegle1',
 'doc_beskrivelse1', 
-'2015-10-31'::date,
+'10-31-2015'::date,
 'doc_kassationskode1', 
 4, --major int
 9, --minor int
@@ -222,7 +222,7 @@ ROW('doc_Offentlighedundtaget_AlternativTitel1','doc_Offentlighedundtaget_Hjemme
 doc1_dokumentEgenskab2 := ROW (
 'doc_brugervendtnoegle2',
 'doc_beskrivelse2', 
-'2014-09-20'::date,
+'09-20-2014'::date,
 'doc_kassationskode2', 
 5, --major int
 10, --minor int
@@ -617,7 +617,7 @@ doc2_virkFremdrift,
 doc2_dokumentEgenskab1 := ROW (
 'doc_brugervendtnoegle2_1',
 'doc_beskrivelse2_1', 
-'2014-01-10'::date,
+'01-10-2014'::date,
 null, --'doc_kassationskode2_1', 
 null, --major int
 ''::text, --minor int
@@ -631,7 +631,7 @@ ROW('doc_Offentlighedundtaget_AlternativTitel2_1','doc_Offentlighedundtaget_Hjem
 doc2_dokumentEgenskab2 := ROW (
 'doc_brugervendtnoegle2_2',
 'doc_beskrivelse2_2', 
-'2013-08-28'::date,
+'08-28-2013'::date,
 'doc_kassationskode2_2', 
 12, --major int
 6, --minor int
@@ -985,7 +985,7 @@ expected_dokument1:=ROW(
 			ROW (
 				'doc_brugervendtnoegle1',
 				'doc_beskrivelse1', 
-				'2015-10-31'::date,
+				'10-31-2015'::date,
 				'doc_kassationskode1', 
 				4, --major int
 				9, --minor int
@@ -1001,7 +1001,7 @@ expected_dokument1:=ROW(
 				ROW (
 				'doc_brugervendtnoegle2',
 				'doc_beskrivelse2', 
-				'2014-09-20'::date,
+				'09-20-2014'::date,
 				'doc_kassationskode2', 
 				5, --major int
 				10, --minor int
@@ -1018,7 +1018,7 @@ expected_dokument1:=ROW(
 				ROW (
 					'doc_brugervendtnoegle2_1',
 					'doc_beskrivelse2_1', 
-					'2014-01-10'::date,
+					'01-10-2014'::date,
 					'doc_kassationskode1', --'doc_kassationskode2_1', 
 					4, --major int
 					ROW(null,null)::ClearableInt, --minor int
@@ -1035,7 +1035,7 @@ expected_dokument1:=ROW(
 				,ROW (
 					'doc_brugervendtnoegle2_1',
 					'doc_beskrivelse2_1', 
-					'2014-01-10'::date,
+					'01-10-2014'::date,
 					'doc_kassationskode2', --'doc_kassationskode2_1', 
 					5, --major int
 					ROW(null,null)::ClearableInt, --minor int
@@ -1052,7 +1052,7 @@ expected_dokument1:=ROW(
 				,ROW (
 					'doc_brugervendtnoegle2_2',
 					'doc_beskrivelse2_2', 
-					'2013-08-28'::date,
+					'08-28-2013'::date,
 					'doc_kassationskode2_2', 
 					12, --major int
 					6, --minor int

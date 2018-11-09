@@ -222,7 +222,7 @@ read_Indsats1 := as_read_indsats(new_uuid1,
 	null, --registrering_tstzrange
 	null --virkning_tstzrange
 	);
---raise notice 'read_Indsats1:%',to_json(read_Indsats1);
+raise notice 'read_Indsats1:%',to_json(read_Indsats1);
 
 expected_indsats1:=ROW(
 		new_uuid1,

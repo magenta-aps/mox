@@ -373,7 +373,7 @@ doc1_virkFremdrift,
 doc1_dokumentEgenskab1 := ROW (
 'doc_brugervendtnoegle1',
 'doc_beskrivelse1', 
-'2015-10-31'::date,
+'10-31-2015'::date,
 'doc_kassationskode1', 
 4, --major int
 9, --minor int
@@ -387,7 +387,7 @@ ROW('doc_Offentlighedundtaget_AlternativTitel1','doc_Offentlighedundtaget_Hjemme
 doc1_dokumentEgenskab2 := ROW (
 'doc_brugervendtnoegle2',
 'doc_beskrivelse2', 
-'2014-09-20'::date,
+'09-20-2014'::date,
 'doc_kassationskode2', 
 5, --major int
 10, --minor int
@@ -704,7 +704,7 @@ search_result1 :=as_search_dokument(
 		ROW(
 			NULL--'doc_brugervendtnoegle1',
 			,NULL--'doc_beskrivelse1', 
-			,'2015-10-31'::date
+			,'10-31-2015'::date
 			,NULL --'doc_kassationskode1', 
 			,NULL --4, --major int
 			,NULL --9, --minor int
@@ -740,7 +740,7 @@ search_result2 :=as_search_dokument(
 		ROW(
 			NULL--'doc_brugervendtnoegle1',
 			,NULL--'doc_beskrivelse1', 
-			,'2015-10-30'::date
+			,'10-30-2015'::date
 			,NULL --'doc_kassationskode1', 
 			,NULL --4, --major int
 			,NULL --9, --minor int
@@ -1093,7 +1093,7 @@ doc2_virkFremdrift,
 doc2_dokumentEgenskab1 := ROW (
 'doc2_brugervendtnoegle1',
 'doc_beskrivelse1', 
-'2015-09-30'::date,
+'09-30-2015'::date,
 'doc2_kassationskode1', 
 3, --major int
 34, --minor int
@@ -1107,7 +1107,7 @@ ROW('doc2_Offentlighedundtaget_AlternativTitel1','doc2_Offentlighedundtaget_Hjem
 doc2_dokumentEgenskab2 := ROW (
 'doc2_brugervendtnoegle2',
 'doc_beskrivelse1', 
-'2014-08-20'::date,
+'08-20-2014'::date,
 'doc2_kassationskode2', 
 8, --major int
 12, --minor int
@@ -1497,7 +1497,7 @@ doc3_virkFremdrift,
 doc3_dokumentEgenskab1 := ROW (
 'doc_brugervendtnoegle1_doc3',
 'doc_beskrivelse1', 
-'2015-10-31'::date,
+'10-31-2015'::date,
 'doc_kassationskode1_doc3', 
 4, --major int
 9, --minor int
@@ -1511,7 +1511,7 @@ ROW('doc_Offentlighedundtaget_AlternativTitel1','doc_Offentlighedundtaget_Hjemme
 doc3_dokumentEgenskab2 := ROW (
 'doc_brugervendtnoegle2_doc3',
 'doc_beskrivelse1', 
-'2014-09-20'::date,
+'09-20-2014'::date,
 'doc_kassationskode2_doc3', 
 5, --major int
 10, --minor int
@@ -1838,7 +1838,7 @@ search_reg11:= ROW (
 	 ROW (
 		 null --'doc2_brugervendtnoegle1',
 		,'doc_beskrivelse1'
-		,null --'2015-09-30'::date,
+		,null --'09-30-2015'::date,
 		,null --'doc2_kassationskode1', 
 		,null --3, --major int
 		,null --minor int
@@ -1879,7 +1879,7 @@ search_reg12:= ROW (
 	 ROW (
 		 null --'doc2_brugervendtnoegle1',
 		,null --'doc_beskrivelse1'
-		,null --'2015-09-30'::date,
+		,null --'09-30-2015'::date,
 		,'doc_kassationskode1'
 		,null --3, --major int
 		,null --minor int
