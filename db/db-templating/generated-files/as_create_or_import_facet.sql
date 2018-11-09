@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated using the script: apply-template.py facet as_create_or_import.jinja.sql
 */
 
 CREATE OR REPLACE FUNCTION as_create_or_import_facet(
@@ -23,9 +23,7 @@ DECLARE
   facet_tils_publiceret_obj facetPubliceretTilsType;
   
   facet_relationer FacetRelationType;
-  
   auth_filtered_uuids uuid[];
-  
   does_exist boolean;
   new_facet_registrering facet_registrering;
 BEGIN
@@ -110,9 +108,7 @@ IF facet_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(facet
   FOREACH facet_attr_egenskaber_obj IN ARRAY facet_registrering.attrEgenskaber
   LOOP
 
-  
     INSERT INTO facet_attr_egenskaber (
-      
       brugervendtnoegle,
       beskrivelse,
       opbygning,
@@ -124,7 +120,6 @@ IF facet_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(facet
       facet_registrering_id
     )
     SELECT
-     
      facet_attr_egenskaber_obj.brugervendtnoegle,
       facet_attr_egenskaber_obj.beskrivelse,
       facet_attr_egenskaber_obj.opbygning,
@@ -135,8 +130,8 @@ IF facet_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(facet
       facet_attr_egenskaber_obj.virkning,
       facet_registrering_id
     ;
-  
-    
+ 
+
   END LOOP;
 END IF;
 
@@ -170,8 +165,6 @@ END IF;
 /*********************************/
 --Insert relations
 
-
-
     INSERT INTO facet_relation (
       facet_registrering_id,
       virkning,
@@ -189,8 +182,6 @@ END IF;
       a.objektType
     FROM unnest(facet_registrering.relationer) a
   ;
-
-
 
 
 /*** Verify that the object meets the stipulated access allowed criteria  ***/

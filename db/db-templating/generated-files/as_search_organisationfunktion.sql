@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated using the script: apply-template.py organisationfunktion as_search.jinja.sql
 */
 
 
@@ -34,9 +34,7 @@ DECLARE
 	anyAttrValue text;
 	anyuuid uuid;
 	anyurn text;
-    
 	auth_filtered_uuids uuid[];
-    
 BEGIN
 
 --RAISE DEBUG 'step 0:registreringObj:%',registreringObj;
@@ -146,18 +144,14 @@ END IF;
 IF registreringObj IS NULL OR (registreringObj).attrEgenskaber IS NULL THEN
 	--RAISE DEBUG 'as_search_organisationfunktion: skipping filtration on attrEgenskaber';
 ELSE
-
 	IF (coalesce(array_length(organisationfunktion_candidates,1),0)>0 OR NOT organisationfunktion_candidates_is_initialized) THEN
-        
 		FOREACH attrEgenskaberTypeObj IN ARRAY registreringObj.attrEgenskaber
-        
 		LOOP
 			organisationfunktion_candidates:=array(
 			SELECT DISTINCT
 			b.organisationfunktion_id 
 			FROM  organisationfunktion_attr_egenskaber a
 			JOIN organisationfunktion_registrering b on a.organisationfunktion_registrering_id=b.id
-            
 			WHERE
 				(
 					(
@@ -211,7 +205,6 @@ ELSE
 					a.funktionsnavn ILIKE attrEgenskaberTypeObj.funktionsnavn --case insensitive 
 				)
 				AND
-                
 						(
 				(registreringObj.registrering) IS NULL 
 				OR
@@ -302,16 +295,13 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 		organisationfunktion_candidates:=array( 
 
 			SELECT DISTINCT
-			b.organisationfunktion_id
-            
+			b.organisationfunktion_id 
 			FROM  organisationfunktion_attr_egenskaber a
 			JOIN organisationfunktion_registrering b on a.organisationfunktion_registrering_id=b.id
-            
 			WHERE
 			(
 						a.brugervendtnoegle ILIKE anyAttrValue OR
 						a.funktionsnavn ILIKE anyAttrValue
-                
 			)
 			AND
 			(
@@ -320,7 +310,6 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 				virkningSoeg && (a.virkning).TimePeriod
 			)
 			AND
-            
 					(
 				(registreringObj.registrering) IS NULL 
 				OR
@@ -619,8 +608,6 @@ ELSE
 					OR
 					relationTypeObj.urn = a.rel_maal_urn
 				)
-                
-                
 				AND
 						(
 				(registreringObj.registrering) IS NULL 
@@ -707,20 +694,16 @@ IF coalesce(array_length(anyuuidArr ,1),0)>0 THEN
 		organisationfunktion_candidates:=array(
 			SELECT DISTINCT
 			b.organisationfunktion_id 
-            
 			FROM  organisationfunktion_relation a
 			JOIN organisationfunktion_registrering b on a.organisationfunktion_registrering_id=b.id
 			WHERE
-            
 			anyuuid = a.rel_maal_uuid
-            
 			AND
 			(
 				virkningSoeg IS NULL
 				OR
 				virkningSoeg && (a.virkning).TimePeriod
 			)
-            
 			AND
 					(
 				(registreringObj.registrering) IS NULL 
@@ -806,20 +789,16 @@ IF coalesce(array_length(anyurnArr ,1),0)>0 THEN
 		organisationfunktion_candidates:=array(
 			SELECT DISTINCT
 			b.organisationfunktion_id 
-            
 			FROM  organisationfunktion_relation a
 			JOIN organisationfunktion_registrering b on a.organisationfunktion_registrering_id=b.id
 			WHERE
-            
 			anyurn = a.rel_maal_urn
-            
 			AND
 			(
 				virkningSoeg IS NULL
 				OR
 				virkningSoeg && (a.virkning).TimePeriod
 			)
-            
 			AND
 					(
 				(registreringObj.registrering) IS NULL 
@@ -899,7 +878,6 @@ END IF;
 --/**********************//
 
  
-
 
 
 

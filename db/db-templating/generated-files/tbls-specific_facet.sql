@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated using the script: apply-template.py facet tbls-specific.jinja.sql
 */
 
 /******************** FUNCTIONS (NEEDED FOR TABLE/INDEX-DEFS) DEFS ***********************************/
@@ -230,9 +230,6 @@ CREATE INDEX facet_attr_egenskaber_pat_virkning_notetekst
 
 
 
-
-
-
 /****************************************************************************************************/
 
 
@@ -313,7 +310,6 @@ CREATE TABLE facet_relation
   rel_maal_urn text null,
   rel_type FacetRelationKode not null,
   objekt_type text null,
-
  CONSTRAINT facet_relation_forkey_facetregistrering  FOREIGN KEY (facet_registrering_id) REFERENCES facet_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
  CONSTRAINT facet_relation_pkey PRIMARY KEY (id),
  CONSTRAINT facet_relation_no_virkning_overlap EXCLUDE USING gist (facet_registrering_id WITH =, _as_convert_facet_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('redaktoerer'::FacetRelationKode )) ,-- no overlapping virkning except for 0..n --relations
@@ -321,13 +317,10 @@ CREATE TABLE facet_relation
 );
 
 
-
 CREATE INDEX facet_relation_idx_rel_maal_obj_uuid
   ON facet_relation
   USING btree
   (rel_type,objekt_type,rel_maal_uuid);
-
-
 
 CREATE INDEX facet_relation_idx_rel_maal_obj_urn
   ON facet_relation

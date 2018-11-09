@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated using the script: apply-template.py organisationenhed as_update.jinja.sql
 */
 
 
@@ -22,7 +22,6 @@ CREATE OR REPLACE FUNCTION as_update_organisationenhed(
   attrEgenskaber OrganisationenhedEgenskaberAttrType[],
   tilsGyldighed OrganisationenhedGyldighedTilsType[],
   relationer OrganisationenhedRelationType[],
-  
   lostUpdatePreventionTZ TIMESTAMPTZ = null,
   auth_criteria_arr OrganisationenhedRegistreringType[]=null
 	)
@@ -37,9 +36,7 @@ DECLARE
   prev_organisationenhed_registrering organisationenhed_registrering;
   organisationenhed_relation_navn OrganisationenhedRelationKode;
   attrEgenskaberObj OrganisationenhedEgenskaberAttrType;
-  
   auth_filtered_uuids uuid[];
-  
 BEGIN
 
 --create a new registrering
@@ -79,13 +76,9 @@ IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
 ELSE
 
   --1) Insert relations given as part of this update
-  --2) for aktivitet: Insert relations of previous registration, with index values not included in this update. Please notice that for the logic to work,
-   --  it is very important that the index sequences start with the max value for index of the same type in the previous registration
-  --2) for everthing else: Insert relations of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
+  --2) Insert relations of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
 
   --Ad 1)
-
-
 
 
 
@@ -105,20 +98,16 @@ ELSE
                 a.relType,
                   a.objektType
       FROM unnest(relationer) as a
-      
     ;
-
 
    
   --Ad 2)
 
   /**********************/
-  -- 0..1 relations
-  
+  -- 0..1 relations 
    
-  
+
   FOREACH organisationenhed_relation_navn in array  ARRAY['branche'::OrganisationenhedRelationKode,'enhedstype'::OrganisationenhedRelationKode,'overordnet'::OrganisationenhedRelationKode,'produktionsenhed'::OrganisationenhedRelationKode,'skatteenhed'::OrganisationenhedRelationKode,'tilhoerer'::OrganisationenhedRelationKode]::OrganisationenhedRelationKode[]
-  
   LOOP
 
     INSERT INTO organisationenhed_relation (
@@ -164,12 +153,10 @@ ELSE
   --We only have to check if there are any of the relations with the given name present in the new registration, otherwise copy the ones from the previous registration
 
 
-
   FOREACH organisationenhed_relation_navn in array ARRAY['adresser'::OrganisationenhedRelationKode,'ansatte'::OrganisationenhedRelationKode,'opgaver'::OrganisationenhedRelationKode,'tilknyttedebrugere'::OrganisationenhedRelationKode,'tilknyttedeenheder'::OrganisationenhedRelationKode,'tilknyttedefunktioner'::OrganisationenhedRelationKode,'tilknyttedeinteressefaellesskaber'::OrganisationenhedRelationKode,'tilknyttedeorganisationer'::OrganisationenhedRelationKode,'tilknyttedepersoner'::OrganisationenhedRelationKode,'tilknyttedeitsystemer'::OrganisationenhedRelationKode]::OrganisationenhedRelationKode[]
   LOOP
 
     IF NOT EXISTS  (SELECT 1 FROM organisationenhed_relation WHERE organisationenhed_registrering_id=new_organisationenhed_registrering.id and rel_type=organisationenhed_relation_navn) THEN
-
 
       INSERT INTO organisationenhed_relation (
             organisationenhed_registrering_id,
@@ -181,7 +168,6 @@ ELSE
           )
       SELECT 
             new_organisationenhed_registrering.id,
-            
               virkning,
                 rel_maal_uuid,
                   rel_maal_urn,
@@ -192,11 +178,9 @@ ELSE
       and rel_type=organisationenhed_relation_navn 
       ;
 
-
     END IF;
               
   END LOOP;
-
 
 
 /**********************/
@@ -301,7 +285,6 @@ IF attrEgenskaber IS NOT null THEN
    (attrEgenskaberObj).enhedsnavn is null 
   THEN
 
-
   INSERT INTO
   organisationenhed_attr_egenskaber
   (
@@ -310,9 +293,7 @@ IF attrEgenskaber IS NOT null THEN
     ,organisationenhed_registrering_id
   )
   SELECT
-  
     coalesce(attrEgenskaberObj.brugervendtnoegle,a.brugervendtnoegle),
-  
     coalesce(attrEgenskaberObj.enhedsnavn,a.enhedsnavn),
 	ROW (
 	  (a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
@@ -325,8 +306,7 @@ IF attrEgenskaber IS NOT null THEN
   WHERE
     a.organisationenhed_registrering_id=prev_organisationenhed_registrering.id 
     and (a.virkning).TimePeriod && (attrEgenskaberObj.virkning).TimePeriod
-  
- ;
+  ;
 
   --For any periods within the virkning of the attrEgenskaberObj, that is NOT covered by any "merged" rows inserted above, generate and insert rows
 
@@ -338,9 +318,7 @@ IF attrEgenskaber IS NOT null THEN
     ,organisationenhed_registrering_id
   )
   SELECT 
-    
     attrEgenskaberObj.brugervendtnoegle, 
-    
     attrEgenskaberObj.enhedsnavn,
 	  ROW (
 	       b.tz_range_leftover,
@@ -358,13 +336,10 @@ IF attrEgenskaber IS NOT null THEN
        b.organisationenhed_registrering_id=new_organisationenhed_registrering.id
   ) as a
   JOIN unnest(_subtract_tstzrange_arr((attrEgenskaberObj.virkning).TimePeriod,a.tzranges_of_new_reg)) as b(tz_range_leftover) on true
-  
-;
+  ;
 
   ELSE
     --insert attrEgenskaberObj raw (if there were no null-valued fields) 
-
-    
 
     INSERT INTO
     organisationenhed_attr_egenskaber
@@ -373,15 +348,12 @@ IF attrEgenskaber IS NOT null THEN
     ,virkning
     ,organisationenhed_registrering_id
     )
-    VALUES (
-     
+    VALUES ( 
     attrEgenskaberObj.brugervendtnoegle, 
     attrEgenskaberObj.enhedsnavn,
     attrEgenskaberObj.virkning,
     new_organisationenhed_registrering.id
-    
     );
-    
 
   END IF;
 
@@ -395,14 +367,12 @@ ELSE
 
 --Handle egenskaber of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
 
-
 INSERT INTO organisationenhed_attr_egenskaber (
     brugervendtnoegle,enhedsnavn
     ,virkning
     ,organisationenhed_registrering_id
 )
-SELECT 
-   
+SELECT
       a.brugervendtnoegle,
       a.enhedsnavn,
 	  ROW(
@@ -422,8 +392,7 @@ FROM
 ) d
   JOIN organisationenhed_attr_egenskaber a ON true  
   JOIN unnest(_subtract_tstzrange_arr((a.virkning).TimePeriod,tzranges_of_new_reg)) as c(tz_range_leftover) on true
-  WHERE a.organisationenhed_registrering_id=prev_organisationenhed_registrering.id
-  
+  WHERE a.organisationenhed_registrering_id=prev_organisationenhed_registrering.id     
 ;
 
 
@@ -431,13 +400,6 @@ FROM
 
 
 END IF;
-
-
-
-
-
-
-
 
 
 /******************************************************************/
@@ -458,7 +420,7 @@ read_new_organisationenhed_reg:=ROW(
 ROW(null,(read_new_organisationenhed.registrering[1].registrering).livscykluskode,null,null)::registreringBase,
 (read_new_organisationenhed.registrering[1]).tilsGyldighed ,
 (read_new_organisationenhed.registrering[1]).attrEgenskaber ,
-(read_new_organisationenhed.registrering[1]).relationer
+(read_new_organisationenhed.registrering[1]).relationer 
 )::organisationenhedRegistreringType
 ;
 
@@ -466,7 +428,7 @@ read_prev_organisationenhed_reg:=ROW(
 ROW(null,(read_prev_organisationenhed.registrering[1].registrering).livscykluskode,null,null)::registreringBase,
 (read_prev_organisationenhed.registrering[1]).tilsGyldighed ,
 (read_prev_organisationenhed.registrering[1]).attrEgenskaber ,
-(read_prev_organisationenhed.registrering[1]).relationer
+(read_prev_organisationenhed.registrering[1]).relationer 
 )::organisationenhedRegistreringType
 ;
 

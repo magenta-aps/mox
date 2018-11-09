@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated using the script: apply-template.py organisationenhed as_create_or_import.jinja.sql
 */
 
 CREATE OR REPLACE FUNCTION as_create_or_import_organisationenhed(
@@ -23,9 +23,7 @@ DECLARE
   organisationenhed_tils_gyldighed_obj organisationenhedGyldighedTilsType;
   
   organisationenhed_relationer OrganisationenhedRelationType;
-  
   auth_filtered_uuids uuid[];
-  
   does_exist boolean;
   new_organisationenhed_registrering organisationenhed_registrering;
 BEGIN
@@ -110,23 +108,20 @@ IF organisationenhed_registrering.attrEgenskaber IS NOT NULL and coalesce(array_
   FOREACH organisationenhed_attr_egenskaber_obj IN ARRAY organisationenhed_registrering.attrEgenskaber
   LOOP
 
-  
     INSERT INTO organisationenhed_attr_egenskaber (
-      
       brugervendtnoegle,
       enhedsnavn,
       virkning,
       organisationenhed_registrering_id
     )
     SELECT
-     
      organisationenhed_attr_egenskaber_obj.brugervendtnoegle,
       organisationenhed_attr_egenskaber_obj.enhedsnavn,
       organisationenhed_attr_egenskaber_obj.virkning,
       organisationenhed_registrering_id
     ;
-  
-    
+ 
+
   END LOOP;
 END IF;
 
@@ -160,8 +155,6 @@ END IF;
 /*********************************/
 --Insert relations
 
-
-
     INSERT INTO organisationenhed_relation (
       organisationenhed_registrering_id,
       virkning,
@@ -179,8 +172,6 @@ END IF;
       a.objektType
     FROM unnest(organisationenhed_registrering.relationer) a
   ;
-
-
 
 
 /*** Verify that the object meets the stipulated access allowed criteria  ***/

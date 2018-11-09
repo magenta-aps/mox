@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated using the script: apply-template.py sag as_search.jinja.sql
 */
 
 
@@ -34,9 +34,7 @@ DECLARE
 	anyAttrValue text;
 	anyuuid uuid;
 	anyurn text;
-    
 	auth_filtered_uuids uuid[];
-    
 BEGIN
 
 --RAISE DEBUG 'step 0:registreringObj:%',registreringObj;
@@ -146,18 +144,14 @@ END IF;
 IF registreringObj IS NULL OR (registreringObj).attrEgenskaber IS NULL THEN
 	--RAISE DEBUG 'as_search_sag: skipping filtration on attrEgenskaber';
 ELSE
-
 	IF (coalesce(array_length(sag_candidates,1),0)>0 OR NOT sag_candidates_is_initialized) THEN
-        
 		FOREACH attrEgenskaberTypeObj IN ARRAY registreringObj.attrEgenskaber
-        
 		LOOP
 			sag_candidates:=array(
 			SELECT DISTINCT
 			b.sag_id 
 			FROM  sag_attr_egenskaber a
 			JOIN sag_registrering b on a.sag_registrering_id=b.id
-            
 			WHERE
 				(
 					(
@@ -265,7 +259,6 @@ ELSE
 					a.titel ILIKE attrEgenskaberTypeObj.titel --case insensitive 
 				)
 				AND
-                
 						(
 				(registreringObj.registrering) IS NULL 
 				OR
@@ -356,11 +349,9 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 		sag_candidates:=array( 
 
 			SELECT DISTINCT
-			b.sag_id
-            
+			b.sag_id 
 			FROM  sag_attr_egenskaber a
 			JOIN sag_registrering b on a.sag_registrering_id=b.id
-            
 			WHERE
 			(
 						a.brugervendtnoegle ILIKE anyAttrValue OR
@@ -372,7 +363,6 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 								
 						a.sagsnummer ILIKE anyAttrValue OR
 						a.titel ILIKE anyAttrValue
-                
 			)
 			AND
 			(
@@ -381,7 +371,6 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 				virkningSoeg && (a.virkning).TimePeriod
 			)
 			AND
-            
 					(
 				(registreringObj.registrering) IS NULL 
 				OR
@@ -680,75 +669,72 @@ ELSE
 					OR
 					relationTypeObj.urn = a.rel_maal_urn
 				)
-                
-                AND
-                (
-                        relationTypeObj.indeks IS NULL
-                        OR
-                        relationTypeObj.indeks = a.rel_index
-                )
-                AND
-                (
-                        relationTypeObj.relTypeSpec IS NULL
-                        OR
-                        relationTypeObj.relTypeSpec = rel_type_spec
-                )
-                AND
-                (
-                        relationTypeObj.journalNotat IS NULL
-                        OR
-                        (
-                                (
-                                        (relationTypeObj.journalNotat).titel IS NULL
-                                        OR
-                                        (a.journal_notat).titel ILIKE (relationTypeObj.journalNotat).titel
-                                )
-                                AND
-                                (
-                                        (relationTypeObj.journalNotat).notat IS NULL
-                                        OR
-                                        (a.journal_notat).notat ILIKE (relationTypeObj.journalNotat).notat
-                                )
-                                AND
-                                (
-                                        (relationTypeObj.journalNotat).format IS NULL
-                                        OR
-                                        (a.journal_notat).format ILIKE (relationTypeObj.journalNotat).format
-                                )
-                        )
-                )
-                AND
-                (
-                        relationTypeObj.journalDokumentAttr IS NULL
-                        OR
-                        (
-                                (
-                                        (relationTypeObj.journalDokumentAttr).dokumenttitel IS NULL
-                                        OR
-                                        (a.journal_dokument_attr).dokumenttitel ILIKE (relationTypeObj.journalDokumentAttr).dokumenttitel
-                                )
-                                AND
-                                (
-                                        (relationTypeObj.journalDokumentAttr).offentlighedundtaget IS NULL
-                                        OR
-                                                (
-                                                        (
-                                                                ((relationTypeObj.journalDokumentAttr).offentlighedundtaget).AlternativTitel IS NULL
-                                                                OR
-                                                                ((a.journal_dokument_attr).offentlighedundtaget).AlternativTitel ILIKE ((relationTypeObj.journalDokumentAttr).offentlighedundtaget).AlternativTitel 
-                                                        )
-                                                        AND
-                                                        (
-                                                                ((relationTypeObj.journalDokumentAttr).offentlighedundtaget).Hjemmel IS NULL
-                                                                OR
-                                                                ((a.journal_dokument_attr).offentlighedundtaget).Hjemmel ILIKE ((relationTypeObj.journalDokumentAttr).offentlighedundtaget).Hjemmel
-                                                        )
-                                                )
-                                )
-                        )
-                )
-                
-                
+				AND
+				(
+					relationTypeObj.indeks IS NULL
+					OR
+					relationTypeObj.indeks = a.rel_index
+				)
+				AND
+				(
+					relationTypeObj.relTypeSpec IS NULL
+					OR
+					relationTypeObj.relTypeSpec = rel_type_spec
+				)
+				AND
+				(
+					relationTypeObj.journalNotat IS NULL
+					OR
+					(
+						(
+							(relationTypeObj.journalNotat).titel IS NULL
+							OR
+						 	(a.journal_notat).titel ILIKE (relationTypeObj.journalNotat).titel
+						)
+						AND
+						(
+							(relationTypeObj.journalNotat).notat IS NULL
+							OR
+						 	(a.journal_notat).notat ILIKE (relationTypeObj.journalNotat).notat
+						)
+						AND
+						(
+							(relationTypeObj.journalNotat).format IS NULL
+							OR
+						 	(a.journal_notat).format ILIKE (relationTypeObj.journalNotat).format
+						)
+					)
+				)
+				AND
+				(
+					relationTypeObj.journalDokumentAttr IS NULL
+					OR
+					(
+						(
+							(relationTypeObj.journalDokumentAttr).dokumenttitel IS NULL
+							OR
+							(a.journal_dokument_attr).dokumenttitel ILIKE (relationTypeObj.journalDokumentAttr).dokumenttitel
+						)
+						AND
+						(
+							(relationTypeObj.journalDokumentAttr).offentlighedundtaget IS NULL
+							OR
+								(
+									(
+										((relationTypeObj.journalDokumentAttr).offentlighedundtaget).AlternativTitel IS NULL
+										OR
+										((a.journal_dokument_attr).offentlighedundtaget).AlternativTitel ILIKE ((relationTypeObj.journalDokumentAttr).offentlighedundtaget).AlternativTitel 
+									)
+									AND
+									(
+										((relationTypeObj.journalDokumentAttr).offentlighedundtaget).Hjemmel IS NULL
+										OR
+										((a.journal_dokument_attr).offentlighedundtaget).Hjemmel ILIKE ((relationTypeObj.journalDokumentAttr).offentlighedundtaget).Hjemmel
+									)
+								)
+						)
+					)
+				)
 				AND
 						(
 				(registreringObj.registrering) IS NULL 
@@ -835,20 +821,16 @@ IF coalesce(array_length(anyuuidArr ,1),0)>0 THEN
 		sag_candidates:=array(
 			SELECT DISTINCT
 			b.sag_id 
-            
 			FROM  sag_relation a
 			JOIN sag_registrering b on a.sag_registrering_id=b.id
 			WHERE
-            
 			anyuuid = a.rel_maal_uuid
-            
 			AND
 			(
 				virkningSoeg IS NULL
 				OR
 				virkningSoeg && (a.virkning).TimePeriod
 			)
-            
 			AND
 					(
 				(registreringObj.registrering) IS NULL 
@@ -934,20 +916,16 @@ IF coalesce(array_length(anyurnArr ,1),0)>0 THEN
 		sag_candidates:=array(
 			SELECT DISTINCT
 			b.sag_id 
-            
 			FROM  sag_relation a
 			JOIN sag_registrering b on a.sag_registrering_id=b.id
 			WHERE
-            
 			anyurn = a.rel_maal_urn
-            
 			AND
 			(
 				virkningSoeg IS NULL
 				OR
 				virkningSoeg && (a.virkning).TimePeriod
 			)
-            
 			AND
 					(
 				(registreringObj.registrering) IS NULL 
@@ -1027,7 +1005,6 @@ END IF;
 --/**********************//
 
  
-
 
 
 

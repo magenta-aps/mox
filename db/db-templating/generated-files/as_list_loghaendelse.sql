@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated using the script: apply-template.py loghaendelse as_list.jinja.sql
 */
 
 CREATE OR REPLACE FUNCTION as_list_loghaendelse(loghaendelse_uuids uuid[],
@@ -62,14 +62,12 @@ FROM
 				b.virkning,
 				b.rel_maal_uuid,
 				b.rel_maal_urn,
-				b.objekt_type
+				b.objekt_type 
 			):: LoghaendelseRelationType
 		ELSE
 		NULL
 		END
-        
 		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.objekt_type,b.virkning
-        
 	)) LoghaendelseRelationArr
 	FROM
 	(
@@ -97,12 +95,9 @@ FROM
 					a.loghaendelse_registrering_id,
 					a.registrering,
 					_remove_nulls_in_array(array_agg(
-						CASE
-                        
+						CASE 
 						WHEN b.id is not null THEN
-                        
 						ROW(
-                            
 					 		b.service,
 					 		b.klasse,
 					 		b.tidspunkt,
@@ -111,17 +106,13 @@ FROM
 					 		b.returkode,
 					 		b.returtekst,
 					 		b.note,
-					   		b.virkning
-                            
+					   		b.virkning 
 							)::LoghaendelseEgenskaberAttrType
 						ELSE
 						NULL
 						END
-                        
 						order by b.service,b.klasse,b.tidspunkt,b.operation,b.objekttype,b.returkode,b.returtekst,b.note,b.virkning
-                        
-					)) LoghaendelseAttrEgenskaberArr
-                    
+					)) LoghaendelseAttrEgenskaberArr 
 					FROM
 					(
 					SELECT
@@ -132,8 +123,7 @@ FROM
 					JOIN 		loghaendelse_registrering b 	ON b.loghaendelse_id=a.id
 					WHERE a.id = ANY (loghaendelse_uuids) AND ((registrering_tstzrange is null AND upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
 					) as a
-					LEFT JOIN loghaendelse_attr_egenskaber as b ON b.loghaendelse_registrering_id=a.loghaendelse_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given
-                    
+					LEFT JOIN loghaendelse_attr_egenskaber as b ON b.loghaendelse_registrering_id=a.loghaendelse_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
 					GROUP BY 
 					a.loghaendelse_id,
 					a.loghaendelse_registrering_id,
@@ -154,7 +144,6 @@ FROM
 	a.LoghaendelseAttrEgenskaberArr,
 	a.LoghaendelseTilsGyldighedArr
 ) as a
-
 WHERE a.loghaendelse_id IS NOT NULL
 GROUP BY 
 a.loghaendelse_id

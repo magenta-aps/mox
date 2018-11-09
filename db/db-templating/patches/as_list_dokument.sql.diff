@@ -1,0 +1,42 @@
+*** ./generated-files/as_list_dokument.sql	2015-08-12 16:23:21.428499571 +0200
+--- ./patches/as_list_dokument.org.sql	2015-08-12 16:29:35.812518217 +0200
+***************
+*** 33,43 ****
+  	array_agg(
+  		ROW (
+  			a.registrering,
+  			a.DokumentTilsFremdriftArr,
+  			a.DokumentAttrEgenskaberArr,
+! 			a.DokumentRelationArr
+  		)::DokumentRegistreringType
+  		order by upper((a.registrering).TimePeriod) DESC		
+  	) 
+  ):: DokumentType
+  FROM
+--- 33,44 ----
+  	array_agg(
+  		ROW (
+  			a.registrering,
+  			a.DokumentTilsFremdriftArr,
+  			a.DokumentAttrEgenskaberArr,
+! 			a.DokumentRelationArr,
+! 			b.varianter
+  		)::DokumentRegistreringType
+  		order by upper((a.registrering).TimePeriod) DESC		
+  	) 
+  ):: DokumentType
+  FROM
+***************
+*** 137,146 ****
+--- 138,148 ----
+  	a.dokument_registrering_id,
+  	a.registrering,
+  	a.DokumentAttrEgenskaberArr,
+  	a.DokumentTilsFremdriftArr
+  ) as a
++ LEFT JOIN _as_list_dokument_varianter(dokument_uuids,registrering_tstzrange,virkning_tstzrange) b on a.dokument_registrering_id=b.dokument_registrering_id
+  WHERE a.dokument_id IS NOT NULL
+  GROUP BY 
+  a.dokument_id
+  ) as x
+  ;

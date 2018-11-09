@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated using the script: apply-template.py tilstand as_create_or_import.jinja.sql
 */
 
 CREATE OR REPLACE FUNCTION as_create_or_import_tilstand(
@@ -24,15 +24,13 @@ DECLARE
   tilstand_tils_publiceret_obj tilstandPubliceretTilsType;
   
   tilstand_relationer TilstandRelationType;
-  
   auth_filtered_uuids uuid[];
-  
   tilstand_relation_kode tilstandRelationKode;
   tilstand_uuid_underscores text;
   tilstand_rel_seq_name text;
   tilstand_rel_type_cardinality_unlimited tilstandRelationKode[]:=ARRAY['tilstandsvaerdi'::TilstandRelationKode,'begrundelse'::TilstandRelationKode,'tilstandskvalitet'::TilstandRelationKode,'tilstandsvurdering'::TilstandRelationKode,'tilstandsaktoer'::TilstandRelationKode,'tilstandsudstyr'::TilstandRelationKode,'samtykke'::TilstandRelationKode,'tilstandsdokument'::TilstandRelationKode]::TilstandRelationKode[];
   tilstand_rel_type_cardinality_unlimited_present_in_argument tilstandRelationKode[];
-  
+
   does_exist boolean;
   new_tilstand_registrering tilstand_registrering;
 BEGIN
@@ -117,23 +115,20 @@ IF tilstand_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(ti
   FOREACH tilstand_attr_egenskaber_obj IN ARRAY tilstand_registrering.attrEgenskaber
   LOOP
 
-  
     INSERT INTO tilstand_attr_egenskaber (
-      
       brugervendtnoegle,
       beskrivelse,
       virkning,
       tilstand_registrering_id
     )
     SELECT
-     
      tilstand_attr_egenskaber_obj.brugervendtnoegle,
       tilstand_attr_egenskaber_obj.beskrivelse,
       tilstand_attr_egenskaber_obj.virkning,
       tilstand_registrering_id
     ;
-  
-    
+ 
+
   END LOOP;
 END IF;
 
@@ -190,15 +185,14 @@ END IF;
 /*********************************/
 --Insert relations
 
-
 IF coalesce(array_length(tilstand_registrering.relationer,1),0)>0 THEN
 
 --Create temporary sequences
 tilstand_uuid_underscores:=replace(tilstand_uuid::text, '-', '_');
 
+
 SELECT array_agg( DISTINCT a.RelType) into tilstand_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(tilstand_registrering.relationer) a WHERE a.RelType = any (tilstand_rel_type_cardinality_unlimited) ;
 IF coalesce(array_length(tilstand_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
-
 FOREACH tilstand_relation_kode IN ARRAY (tilstand_rel_type_cardinality_unlimited_present_in_argument)
   LOOP
   tilstand_rel_seq_name := 'tilstand_' || tilstand_relation_kode::text || tilstand_uuid_underscores;
@@ -212,7 +206,6 @@ FOREACH tilstand_relation_kode IN ARRAY (tilstand_rel_type_cardinality_unlimited
 
 END LOOP;
 END IF;
-
 
     INSERT INTO tilstand_relation (
       tilstand_registrering_id,
@@ -231,12 +224,12 @@ END IF;
       a.urn,
       a.relType,
       a.objektType,
-      CASE WHEN a.relType = any (tilstand_rel_type_cardinality_unlimited) THEN --rel_index
-      nextval('tilstand_' || a.relType::text || tilstand_uuid_underscores)
-      ELSE 
-      NULL
-      END,
-      CASE
+        CASE WHEN a.relType = any (tilstand_rel_type_cardinality_unlimited) THEN --rel_index
+        nextval('tilstand_' || a.relType::text || tilstand_uuid_underscores)
+        ELSE 
+        NULL
+        END,
+     CASE
         WHEN a.relType='tilstandsvaerdi' AND
           ( NOT (a.tilstandsVaerdiAttr IS NULL))
           AND 
@@ -248,10 +241,8 @@ END IF;
         ELSE
         NULL
       END
-    
-    FROM unnest(tilstand_registrering.relationer) a
+      FROM unnest(tilstand_registrering.relationer) a
   ;
-
 
 
 --Drop temporary sequences
@@ -263,9 +254,7 @@ FOREACH tilstand_relation_kode IN ARRAY (tilstand_rel_type_cardinality_unlimited
 END LOOP;
 END IF;
 
-
 END IF;
-
 
 /*** Verify that the object meets the stipulated access allowed criteria  ***/
 /*** NOTICE: We are doing this check *after* the insertion of data BUT *before* transaction commit, to reuse code / avoid fragmentation  ***/

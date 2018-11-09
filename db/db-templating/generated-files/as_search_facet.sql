@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated using the script: apply-template.py facet as_search.jinja.sql
 */
 
 
@@ -34,9 +34,7 @@ DECLARE
 	anyAttrValue text;
 	anyuuid uuid;
 	anyurn text;
-    
 	auth_filtered_uuids uuid[];
-    
 BEGIN
 
 --RAISE DEBUG 'step 0:registreringObj:%',registreringObj;
@@ -146,18 +144,14 @@ END IF;
 IF registreringObj IS NULL OR (registreringObj).attrEgenskaber IS NULL THEN
 	--RAISE DEBUG 'as_search_facet: skipping filtration on attrEgenskaber';
 ELSE
-
 	IF (coalesce(array_length(facet_candidates,1),0)>0 OR NOT facet_candidates_is_initialized) THEN
-        
 		FOREACH attrEgenskaberTypeObj IN ARRAY registreringObj.attrEgenskaber
-        
 		LOOP
 			facet_candidates:=array(
 			SELECT DISTINCT
 			b.facet_id 
 			FROM  facet_attr_egenskaber a
 			JOIN facet_registrering b on a.facet_registrering_id=b.id
-            
 			WHERE
 				(
 					(
@@ -241,7 +235,6 @@ ELSE
 					a.retskilde ILIKE attrEgenskaberTypeObj.retskilde --case insensitive 
 				)
 				AND
-                
 						(
 				(registreringObj.registrering) IS NULL 
 				OR
@@ -332,11 +325,9 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 		facet_candidates:=array( 
 
 			SELECT DISTINCT
-			b.facet_id
-            
+			b.facet_id 
 			FROM  facet_attr_egenskaber a
 			JOIN facet_registrering b on a.facet_registrering_id=b.id
-            
 			WHERE
 			(
 						a.brugervendtnoegle ILIKE anyAttrValue OR
@@ -346,7 +337,6 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 						a.plan ILIKE anyAttrValue OR
 						a.supplement ILIKE anyAttrValue OR
 						a.retskilde ILIKE anyAttrValue
-                
 			)
 			AND
 			(
@@ -355,7 +345,6 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 				virkningSoeg && (a.virkning).TimePeriod
 			)
 			AND
-            
 					(
 				(registreringObj.registrering) IS NULL 
 				OR
@@ -654,8 +643,6 @@ ELSE
 					OR
 					relationTypeObj.urn = a.rel_maal_urn
 				)
-                
-                
 				AND
 						(
 				(registreringObj.registrering) IS NULL 
@@ -742,20 +729,16 @@ IF coalesce(array_length(anyuuidArr ,1),0)>0 THEN
 		facet_candidates:=array(
 			SELECT DISTINCT
 			b.facet_id 
-            
 			FROM  facet_relation a
 			JOIN facet_registrering b on a.facet_registrering_id=b.id
 			WHERE
-            
 			anyuuid = a.rel_maal_uuid
-            
 			AND
 			(
 				virkningSoeg IS NULL
 				OR
 				virkningSoeg && (a.virkning).TimePeriod
 			)
-            
 			AND
 					(
 				(registreringObj.registrering) IS NULL 
@@ -841,20 +824,16 @@ IF coalesce(array_length(anyurnArr ,1),0)>0 THEN
 		facet_candidates:=array(
 			SELECT DISTINCT
 			b.facet_id 
-            
 			FROM  facet_relation a
 			JOIN facet_registrering b on a.facet_registrering_id=b.id
 			WHERE
-            
 			anyurn = a.rel_maal_urn
-            
 			AND
 			(
 				virkningSoeg IS NULL
 				OR
 				virkningSoeg && (a.virkning).TimePeriod
 			)
-            
 			AND
 					(
 				(registreringObj.registrering) IS NULL 
@@ -934,7 +913,6 @@ END IF;
 --/**********************//
 
  
-
 
 
 

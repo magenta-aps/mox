@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated using the script: apply-template.py dokument as_create_or_import.jinja.sql AND applying a patch.
 */
 
 CREATE OR REPLACE FUNCTION as_create_or_import_dokument(
@@ -23,7 +23,6 @@ DECLARE
   dokument_tils_fremdrift_obj dokumentFremdriftTilsType;
   
   dokument_relationer DokumentRelationType;
-  
   dokument_variant_obj DokumentVariantType;
   dokument_variant_egenskab_obj DokumentVariantEgenskaberType;
   dokument_del_obj DokumentDelType;
@@ -31,9 +30,7 @@ DECLARE
   dokument_del_relation_obj DokumentDelRelationType;
   dokument_variant_new_id bigint;
   dokument_del_new_id bigint;
-  
   auth_filtered_uuids uuid[];
-  
   does_exist boolean;
   new_dokument_registrering dokument_registrering;
 BEGIN
@@ -118,9 +115,7 @@ IF dokument_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(do
   FOREACH dokument_attr_egenskaber_obj IN ARRAY dokument_registrering.attrEgenskaber
   LOOP
 
-  
     INSERT INTO dokument_attr_egenskaber (
-      
       brugervendtnoegle,
       beskrivelse,
       brevdato,
@@ -134,7 +129,6 @@ IF dokument_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(do
       dokument_registrering_id
     )
     SELECT
-     
      dokument_attr_egenskaber_obj.brugervendtnoegle,
       dokument_attr_egenskaber_obj.beskrivelse,
       dokument_attr_egenskaber_obj.brevdato,
@@ -147,8 +141,8 @@ IF dokument_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(do
       dokument_attr_egenskaber_obj.virkning,
       dokument_registrering_id
     ;
-  
-    
+ 
+
   END LOOP;
 END IF;
 
@@ -182,8 +176,6 @@ END IF;
 /*********************************/
 --Insert relations
 
-
-
     INSERT INTO dokument_relation (
       dokument_registrering_id,
       virkning,
@@ -202,9 +194,7 @@ END IF;
     FROM unnest(dokument_registrering.relationer) a
   ;
 
-
-
---/*********************************/
+/*********************************/
 --Insert document variants (and parts)
 
 IF dokument_registrering.varianter IS NOT NULL AND coalesce(array_length(dokument_registrering.varianter,1),0)>0 THEN

@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated using the script: apply-template.py dokument as_search.jinja.sql
 */
 
 
@@ -34,17 +34,14 @@ DECLARE
 	anyAttrValue text;
 	anyuuid uuid;
 	anyurn text;
-    
-    variantTypeObj DokumentVariantType;
-    variantEgenskaberTypeObj DokumentVariantEgenskaberType;
-    delTypeObj DokumentDelType;
-    delEgenskaberTypeObj DokumentDelEgenskaberType;
-    delRelationTypeObj DokumentdelRelationType;
-    variant_candidates_ids bigint[];
-    variant_candidates_is_initialized boolean;
-    
+	variantTypeObj DokumentVariantType;
+	variantEgenskaberTypeObj DokumentVariantEgenskaberType;
+	delTypeObj DokumentDelType;
+	delEgenskaberTypeObj DokumentDelEgenskaberType;
+	delRelationTypeObj DokumentdelRelationType;
+	variant_candidates_ids bigint[];
+	variant_candidates_is_initialized boolean;
 	auth_filtered_uuids uuid[];
-    
 BEGIN
 
 --RAISE DEBUG 'step 0:registreringObj:%',registreringObj;
@@ -154,18 +151,14 @@ END IF;
 IF registreringObj IS NULL OR (registreringObj).attrEgenskaber IS NULL THEN
 	--RAISE DEBUG 'as_search_dokument: skipping filtration on attrEgenskaber';
 ELSE
-
 	IF (coalesce(array_length(dokument_candidates,1),0)>0 OR NOT dokument_candidates_is_initialized) THEN
-        
 		FOREACH attrEgenskaberTypeObj IN ARRAY registreringObj.attrEgenskaber
-        
 		LOOP
 			dokument_candidates:=array(
 			SELECT DISTINCT
 			b.dokument_id 
 			FROM  dokument_attr_egenskaber a
 			JOIN dokument_registrering b on a.dokument_registrering_id=b.id
-            
 			WHERE
 				(
 					(
@@ -273,7 +266,6 @@ ELSE
 					a.dokumenttype ILIKE attrEgenskaberTypeObj.dokumenttype --case insensitive 
 				)
 				AND
-                
 						(
 				(registreringObj.registrering) IS NULL 
 				OR
@@ -364,15 +356,14 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 		dokument_candidates:=array( 
 
 			SELECT DISTINCT
-			b.dokument_id
-            
-            FROM  dokument_registrering b 
-            LEFT JOIN dokument_attr_egenskaber a on a.dokument_registrering_id=b.id and (virkningSoeg IS NULL or virkningSoeg && (a.virkning).TimePeriod )
-            LEFT JOIN dokument_variant c on c.dokument_registrering_id=b.id 
-            LEFT JOIN dokument_del f on f.variant_id=c.id
-            LEFT JOIN dokument_del_egenskaber d on d.del_id = f.id and (virkningSoeg IS NULL or virkningSoeg && (d.virkning).TimePeriod )
-            LEFT JOIN dokument_variant_egenskaber e on e.variant_id = c.id and (virkningSoeg IS NULL or virkningSoeg && (e.virkning).TimePeriod )
-            WHERE
+			b.dokument_id 
+			FROM  dokument_registrering b 
+			LEFT JOIN dokument_attr_egenskaber a on a.dokument_registrering_id=b.id and (virkningSoeg IS NULL or virkningSoeg && (a.virkning).TimePeriod )
+			LEFT JOIN dokument_variant c on c.dokument_registrering_id=b.id 
+			LEFT JOIN dokument_del f on f.variant_id=c.id
+			LEFT JOIN dokument_del_egenskaber d on d.del_id = f.id and (virkningSoeg IS NULL or virkningSoeg && (d.virkning).TimePeriod )
+			LEFT JOIN dokument_variant_egenskaber e on e.variant_id = c.id and (virkningSoeg IS NULL or virkningSoeg && (e.virkning).TimePeriod )
+			WHERE
 			(
 				(
 					a.brugervendtnoegle ILIKE anyAttrValue OR
@@ -401,9 +392,8 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 					OR
 					d.mimetype ILIKE anyAttrValue
 				)
-            )
-            AND
-            
+			)
+			AND
 					(
 				(registreringObj.registrering) IS NULL 
 				OR
@@ -702,8 +692,6 @@ ELSE
 					OR
 					relationTypeObj.urn = a.rel_maal_urn
 				)
-                
-                
 				AND
 						(
 				(registreringObj.registrering) IS NULL 
@@ -790,15 +778,13 @@ IF coalesce(array_length(anyuuidArr ,1),0)>0 THEN
 		dokument_candidates:=array(
 			SELECT DISTINCT
 			b.dokument_id 
-            
-            FROM dokument_registrering b  
-            LEFT JOIN dokument_relation a on a.dokument_registrering_id=b.id and (virkningSoeg IS NULL or (virkningSoeg && (a.virkning).TimePeriod) )
-            LEFT JOIN dokument_variant c on c.dokument_registrering_id=b.id
-            LEFT JOIN dokument_del d on d.variant_id=c.id 
-            LEFT JOIN dokument_del_relation e on d.id=e.del_id and (virkningSoeg IS NULL or (virkningSoeg && (e.virkning).TimePeriod) )
-            WHERE
-            (anyuuid = a.rel_maal_uuid OR anyuuid = e.rel_maal_uuid)
-            
+ 			FROM dokument_registrering b  
+ 			LEFT JOIN dokument_relation a on a.dokument_registrering_id=b.id and (virkningSoeg IS NULL or (virkningSoeg && (a.virkning).TimePeriod) )
+ 			LEFT JOIN dokument_variant c on c.dokument_registrering_id=b.id
+ 			LEFT JOIN dokument_del d on d.variant_id=c.id 
+ 			LEFT JOIN dokument_del_relation e on d.id=e.del_id and (virkningSoeg IS NULL or (virkningSoeg && (e.virkning).TimePeriod) )
+  			WHERE
+ 			(anyuuid = a.rel_maal_uuid OR anyuuid = e.rel_maal_uuid)
 			AND
 					(
 				(registreringObj.registrering) IS NULL 
@@ -884,15 +870,13 @@ IF coalesce(array_length(anyurnArr ,1),0)>0 THEN
 		dokument_candidates:=array(
 			SELECT DISTINCT
 			b.dokument_id 
-            
-            FROM dokument_registrering b  
-            LEFT JOIN dokument_relation a on a.dokument_registrering_id=b.id and (virkningSoeg IS NULL or virkningSoeg && (a.virkning).TimePeriod )
-            LEFT JOIN dokument_variant c on c.dokument_registrering_id=b.id
-            LEFT JOIN dokument_del d on d.variant_id=c.id
-            LEFT JOIN dokument_del_relation e on d.id=e.del_id and (virkningSoeg IS NULL or virkningSoeg && (e.virkning).TimePeriod)
-            WHERE
-            (anyurn = a.rel_maal_urn OR anyurn = e.rel_maal_urn)
-            
+ 			FROM dokument_registrering b  
+ 			LEFT JOIN dokument_relation a on a.dokument_registrering_id=b.id and (virkningSoeg IS NULL or virkningSoeg && (a.virkning).TimePeriod )
+ 			LEFT JOIN dokument_variant c on c.dokument_registrering_id=b.id
+ 			LEFT JOIN dokument_del d on d.variant_id=c.id
+ 			LEFT JOIN dokument_del_relation e on d.id=e.del_id and (virkningSoeg IS NULL or virkningSoeg && (e.virkning).TimePeriod)
+  			WHERE
+ 			(anyurn = a.rel_maal_urn OR anyurn = e.rel_maal_urn)
 			AND
 					(
 				(registreringObj.registrering) IS NULL 
@@ -1532,7 +1516,6 @@ ELSE
 		
 		END IF; --varianter exists
 	END IF; --array registreringObj.varianter exists 
-
 
 
 

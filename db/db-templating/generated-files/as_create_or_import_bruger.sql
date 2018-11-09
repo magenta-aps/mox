@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated using the script: apply-template.py bruger as_create_or_import.jinja.sql
 */
 
 CREATE OR REPLACE FUNCTION as_create_or_import_bruger(
@@ -23,9 +23,7 @@ DECLARE
   bruger_tils_gyldighed_obj brugerGyldighedTilsType;
   
   bruger_relationer BrugerRelationType;
-  
   auth_filtered_uuids uuid[];
-  
   does_exist boolean;
   new_bruger_registrering bruger_registrering;
 BEGIN
@@ -110,9 +108,7 @@ IF bruger_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(brug
   FOREACH bruger_attr_egenskaber_obj IN ARRAY bruger_registrering.attrEgenskaber
   LOOP
 
-  
     INSERT INTO bruger_attr_egenskaber (
-      
       brugervendtnoegle,
       brugernavn,
       brugertype,
@@ -120,15 +116,14 @@ IF bruger_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(brug
       bruger_registrering_id
     )
     SELECT
-     
      bruger_attr_egenskaber_obj.brugervendtnoegle,
       bruger_attr_egenskaber_obj.brugernavn,
       bruger_attr_egenskaber_obj.brugertype,
       bruger_attr_egenskaber_obj.virkning,
       bruger_registrering_id
     ;
-  
-    
+ 
+
   END LOOP;
 END IF;
 
@@ -162,8 +157,6 @@ END IF;
 /*********************************/
 --Insert relations
 
-
-
     INSERT INTO bruger_relation (
       bruger_registrering_id,
       virkning,
@@ -181,8 +174,6 @@ END IF;
       a.objektType
     FROM unnest(bruger_registrering.relationer) a
   ;
-
-
 
 
 /*** Verify that the object meets the stipulated access allowed criteria  ***/

@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated using the script: apply-template.py organisationfunktion dbtyper-specific.jinja.sql
 */
 
 --create custom type sans db-ids to be able to do "clean" function signatures "for the outside world".
@@ -19,32 +19,23 @@ CREATE TYPE OrganisationfunktionGyldighedTilsType AS (
 )
 ;
 
-
-
 CREATE TYPE OrganisationfunktionEgenskaberAttrType AS (
 brugervendtnoegle text,
 funktionsnavn text,
-
  virkning Virkning
 );
 
 
-
-
 CREATE TYPE OrganisationfunktionRelationKode AS ENUM  ('organisatoriskfunktionstype','adresser','opgaver','tilknyttedebrugere','tilknyttedeenheder','tilknyttedeorganisationer','tilknyttedeitsystemer','tilknyttedeinteressefaellesskaber','tilknyttedepersoner');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_organisationfunktion_relation_kode_to_txt is invoked.
-
-
 
 CREATE TYPE OrganisationfunktionRelationType AS (
   relType OrganisationfunktionRelationKode,
   virkning Virkning,
   uuid uuid,
   urn  text,
-  objektType text
+  objektType text 
 )
 ;
-
-
 
 CREATE TYPE OrganisationfunktionRegistreringType AS
 (
@@ -59,9 +50,6 @@ CREATE TYPE OrganisationfunktionType AS
   id uuid,
   registrering OrganisationfunktionRegistreringType[]
 );  
-
-
-
 
 
 

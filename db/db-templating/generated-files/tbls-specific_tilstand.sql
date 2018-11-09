@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated using the script: apply-template.py tilstand tbls-specific.jinja.sql
 */
 
 /******************** FUNCTIONS (NEEDED FOR TABLE/INDEX-DEFS) DEFS ***********************************/
@@ -170,9 +170,6 @@ CREATE INDEX tilstand_attr_egenskaber_pat_virkning_notetekst
 
 
 
-
-
-
 /****************************************************************************************************/
 
 
@@ -308,28 +305,21 @@ CREATE TABLE tilstand_relation
   rel_maal_urn text null,
   rel_type TilstandRelationKode not null,
   objekt_type text null,
-
   rel_index int null,
   tilstand_vaerdi_attr TilstandVaerdiRelationAttrType null,
-
  CONSTRAINT tilstand_relation_forkey_tilstandregistrering  FOREIGN KEY (tilstand_registrering_id) REFERENCES tilstand_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
  CONSTRAINT tilstand_relation_pkey PRIMARY KEY (id),
  CONSTRAINT tilstand_relation_no_virkning_overlap EXCLUDE USING gist (tilstand_registrering_id WITH =, _as_convert_tilstand_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('tilstandsvaerdi'::TilstandRelationKode ) AND rel_type<>('begrundelse'::TilstandRelationKode ) AND rel_type<>('tilstandskvalitet'::TilstandRelationKode ) AND rel_type<>('tilstandsvurdering'::TilstandRelationKode ) AND rel_type<>('tilstandsaktoer'::TilstandRelationKode ) AND rel_type<>('tilstandsudstyr'::TilstandRelationKode ) AND rel_type<>('samtykke'::TilstandRelationKode ) AND rel_type<>('tilstandsdokument'::TilstandRelationKode )) ,-- no overlapping virkning except for 0..n --relations
  CONSTRAINT tilstand_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>''))),
  CONSTRAINT tilstand_relation_nominel_vaerdi_relevant_null_check CHECK (tilstand_vaerdi_attr IS NULL OR rel_type='tilstandsvaerdi')
-
 );
 
-
 CREATE UNIQUE INDEX tilstand_relation_unique_index_within_type  ON tilstand_relation (tilstand_registrering_id,rel_type,rel_index) WHERE ( rel_type IN ('tilstandsvaerdi'::TilstandRelationKode,'begrundelse'::TilstandRelationKode,'tilstandskvalitet'::TilstandRelationKode,'tilstandsvurdering'::TilstandRelationKode,'tilstandsaktoer'::TilstandRelationKode,'tilstandsudstyr'::TilstandRelationKode,'samtykke'::TilstandRelationKode,'tilstandsdokument'::TilstandRelationKode));
-
 
 CREATE INDEX tilstand_relation_idx_rel_maal_obj_uuid
   ON tilstand_relation
   USING btree
   (rel_type,objekt_type,rel_maal_uuid);
-
-
 
 CREATE INDEX tilstand_relation_idx_rel_maal_obj_urn
   ON tilstand_relation

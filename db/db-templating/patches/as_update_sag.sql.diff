@@ -1,0 +1,360 @@
+*** ./generated-files/as_update_sag.sql	2016-12-11 15:08:57.000000000 +0100
+--- ./patches/as_update_sag.org.sql	2016-12-11 15:01:16.000000000 +0100
+***************
+*** 35,44 ****
+--- 35,51 ----
+    new_sag_registrering sag_registrering;
+    prev_sag_registrering sag_registrering;
+    sag_relation_navn SagRelationKode;
+    attrEgenskaberObj SagEgenskaberAttrType;
+    auth_filtered_uuids uuid[];
++   rel_type_max_index_prev_rev int;
++   rel_type_max_index_arr _SagRelationMaxIndex[];
++   sag_rel_type_cardinality_unlimited SagRelationKode[]:=ARRAY['andetarkiv'::SagRelationKode,'andrebehandlere'::SagRelationKode,'sekundaerpart'::SagRelationKode,'andresager'::SagRelationKode,'byggeri'::SagRelationKode,'fredning'::SagRelationKode,'journalpost'::SagRelationKode]::SagRelationKode[];
++   sag_uuid_underscores text;
++   sag_rel_seq_name text;
++   sag_rel_type_cardinality_unlimited_present_in_argument sagRelationKode[];
++ 
+  BEGIN
+  
+  --create a new registrering
+  
+  IF NOT EXISTS (select a.id from sag a join sag_registrering b on b.sag_id=a.id  where a.id=sag_uuid) THEN
+***************
+*** 74,124 ****
+  IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
+  --raise notice 'Skipping relations, as it is explicit set to empty array. Update note [%]',note;
+  ELSE
+  
+    --1) Insert relations given as part of this update
+!   --2) Insert relations of previous registration, taking overlapping virknings into consideration (using function subtract_tstzrange)
+  
+    --Ad 1)
+  
+  
+  
+        INSERT INTO sag_relation (
+          sag_registrering_id,
+            virkning,
+              rel_maal_uuid,
+                rel_maal_urn,
+                  rel_type,
+!                   objekt_type
+        )
+        SELECT
+          new_sag_registrering.id,
+            a.virkning,
+              a.uuid,
+                a.urn,
+                  a.relType,
+!                   a.objektType
+        FROM unnest(relationer) as a
+      ;
+  
+!    
+    --Ad 2)
+  
+    /**********************/
+    -- 0..1 relations 
+!    
+  
+    FOREACH sag_relation_navn in array  ARRAY['behandlingarkiv'::SagRelationKode,'afleveringsarkiv'::SagRelationKode,'primaerklasse'::SagRelationKode,'opgaveklasse'::SagRelationKode,'handlingsklasse'::SagRelationKode,'kontoklasse'::SagRelationKode,'sikkerhedsklasse'::SagRelationKode,'foelsomhedsklasse'::SagRelationKode,'indsatsklasse'::SagRelationKode,'ydelsesklasse'::SagRelationKode,'ejer'::SagRelationKode,'ansvarlig'::SagRelationKode,'primaerbehandler'::SagRelationKode,'udlaanttil'::SagRelationKode,'primaerpart'::SagRelationKode,'ydelsesmodtager'::SagRelationKode,'oversag'::SagRelationKode,'praecedens'::SagRelationKode,'afgiftsobjekt'::SagRelationKode,'ejendomsskat'::SagRelationKode]::SagRelationKode[]
+    LOOP
+  
+      INSERT INTO sag_relation (
+          sag_registrering_id,
+            virkning,
+              rel_maal_uuid,
+                rel_maal_urn,
+                  rel_type,
+!                   objekt_type
+        )
+      SELECT 
+          new_sag_registrering.id, 
+            ROW(
+              c.tz_range_leftover,
+--- 81,247 ----
+  IF relationer IS NOT NULL AND coalesce(array_length(relationer,1),0)=0 THEN
+  --raise notice 'Skipping relations, as it is explicit set to empty array. Update note [%]',note;
+  ELSE
+  
+    --1) Insert relations given as part of this update
+!   --2) Insert relations of previous registration, with index values not included in this update. Please notice that for the logic to work,
+!   --  it is very important that the index sequences start with the max value for index of the same type in the previous registration
+  
+    --Ad 1)
+  
++ --build array with the max index values of the different types of relations of the previous registration
++ SELECT array_agg(rel_type_max_index)::_SagRelationMaxIndex[] into rel_type_max_index_arr
++ FROM
++ (
++   SELECT
++   (ROW(rel_type,coalesce(max(rel_index),0))::_SagRelationMaxIndex) rel_type_max_index  
++   FROM sag_relation a
++   where a.sag_registrering_id=prev_sag_registrering.id
++   and a.rel_type = any (sag_rel_type_cardinality_unlimited)
++   group by rel_type
++ ) as a
++ ;
++ 
++ 
++ --Create temporary sequences
++ sag_uuid_underscores:=replace(sag_uuid::text, '-', '_');
++ SELECT array_agg( DISTINCT a.RelType) into sag_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(relationer) a WHERE a.RelType = any (sag_rel_type_cardinality_unlimited) ;
+  
++ IF coalesce(array_length(sag_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
++ FOREACH sag_relation_navn IN ARRAY (sag_rel_type_cardinality_unlimited_present_in_argument)
++   LOOP
++   sag_rel_seq_name := 'sag_' || sag_relation_navn::text || sag_uuid_underscores;
++ 
++   rel_type_max_index_prev_rev:=null;
++ 
++   SELECT 
++     a.indeks into rel_type_max_index_prev_rev
++   FROM
++     unnest(rel_type_max_index_arr) a(relType,indeks)
++   WHERE
++     a.relType=sag_relation_navn
++   ;
++   
++   IF rel_type_max_index_prev_rev IS NULL THEN
++     rel_type_max_index_prev_rev:=0;
++   END IF;
++ 
++   EXECUTE 'CREATE TEMPORARY SEQUENCE ' || sag_rel_seq_name || '
++   INCREMENT 1
++   MINVALUE 1
++   MAXVALUE 9223372036854775807
++   START ' ||  (rel_type_max_index_prev_rev+1)::text ||'
++   CACHE 1;';
++ 
++ END LOOP;
++ END IF;
+  
+        INSERT INTO sag_relation (
+          sag_registrering_id,
+            virkning,
+              rel_maal_uuid,
+                rel_maal_urn,
+                  rel_type,
+!                   objekt_type,
+!                     rel_index,
+!                       rel_type_spec,
+!                         journal_notat,
+!                           journal_dokument_attr
+        )
+        SELECT
+          new_sag_registrering.id,
+            a.virkning,
+              a.uuid,
+                a.urn,
+                  a.relType,
+!                   a.objektType,
+!                     CASE 
+!                     WHEN a.relType = any (sag_rel_type_cardinality_unlimited) THEN
+!                       CASE WHEN a.indeks IS NULL OR b.id IS NULL THEN --for new relations and relations with index given that is not found in prev registrering, we'll assign new index values 
+!                         nextval('sag_' || a.relType::text || sag_uuid_underscores)
+!                       ELSE
+!                         a.indeks
+!                       END
+!                     ELSE
+!                     NULL
+!                     END,
+!                       CASE 
+!                         WHEN a.relType='journalpost' THEN a.relTypeSpec
+!                         ELSE
+!                         NULL
+!                       END,
+!                         CASE 
+!                           WHEN  
+!                             (NOT (a.journalNotat IS NULL)) 
+!                             AND
+!                             (
+!                               (a.journalNotat).titel IS NOT NULL
+!                               OR
+!                               (a.journalNotat).notat IS NOT NULL
+!                               OR
+!                               (a.journalNotat).format IS NOT NULL
+!                             )
+!                            THEN a.journalNotat
+!                           ELSE
+!                            NULL
+!                         END
+!                           ,CASE 
+!                             WHEN ( 
+!                                     (NOT a.journalDokumentAttr IS NULL)
+!                                     AND
+!                                     (
+!                                       (a.journalDokumentAttr).dokumenttitel IS NOT NULL
+!                                       OR
+!                                       (
+!                                         NOT ((a.journalDokumentAttr).offentlighedUndtaget IS NULL)
+!                                         AND
+!                                         (
+!                                           ((a.journalDokumentAttr).offentlighedUndtaget).AlternativTitel IS NOT NULL
+!                                           OR
+!                                           ((a.journalDokumentAttr).offentlighedUndtaget).Hjemmel IS NOT NULL
+!                                         )
+!                                       )
+!                                    )
+!                                  ) THEN a.journalDokumentAttr
+!                             ELSE
+!                             NULL
+!                           END
+        FROM unnest(relationer) as a
++       LEFT JOIN sag_relation b on a.relType = any (sag_rel_type_cardinality_unlimited) and b.sag_registrering_id=prev_sag_registrering.id and a.relType=b.rel_type and a.indeks=b.rel_index
+      ;
+  
+! 
+! --Drop temporary sequences
+! IF coalesce(array_length(sag_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
+! FOREACH sag_relation_navn IN ARRAY (sag_rel_type_cardinality_unlimited_present_in_argument)
+!   LOOP
+!   sag_rel_seq_name := 'sag_' || sag_relation_navn::text || sag_uuid_underscores;
+!   EXECUTE 'DROP  SEQUENCE ' || sag_rel_seq_name || ';';
+! END LOOP;
+! END IF;
+! 
+    --Ad 2)
+  
+    /**********************/
+    -- 0..1 relations 
+!   --Please notice, that for 0..1 relations for Sag, we're ignoring index here, and handling it the same way, that is done for other object types (like Facet, Klasse etc). That is, you only make changes for the virkningsperiod that you explicitly specify (unless you delete all relations) 
+  
+    FOREACH sag_relation_navn in array  ARRAY['behandlingarkiv'::SagRelationKode,'afleveringsarkiv'::SagRelationKode,'primaerklasse'::SagRelationKode,'opgaveklasse'::SagRelationKode,'handlingsklasse'::SagRelationKode,'kontoklasse'::SagRelationKode,'sikkerhedsklasse'::SagRelationKode,'foelsomhedsklasse'::SagRelationKode,'indsatsklasse'::SagRelationKode,'ydelsesklasse'::SagRelationKode,'ejer'::SagRelationKode,'ansvarlig'::SagRelationKode,'primaerbehandler'::SagRelationKode,'udlaanttil'::SagRelationKode,'primaerpart'::SagRelationKode,'ydelsesmodtager'::SagRelationKode,'oversag'::SagRelationKode,'praecedens'::SagRelationKode,'afgiftsobjekt'::SagRelationKode,'ejendomsskat'::SagRelationKode]::SagRelationKode[]
+    LOOP
+  
+      INSERT INTO sag_relation (
+          sag_registrering_id,
+            virkning,
+              rel_maal_uuid,
+                rel_maal_urn,
+                  rel_type,
+!                   objekt_type,
+!                     rel_index,
+!                       rel_type_spec,
+!                         journal_notat,
+!                           journal_dokument_attr
+! 
+        )
+      SELECT 
+          new_sag_registrering.id, 
+            ROW(
+              c.tz_range_leftover,
+***************
+*** 127,137 ****
+                (a.virkning).NoteTekst
+            ) :: virkning,
+              a.rel_maal_uuid,
+                a.rel_maal_urn,
+                  a.rel_type,
+!                   a.objekt_type
+      FROM
+      (
+        --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to _subtract_tstzrange_arr on the relations of the previous registrering 
+        SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
+        FROM sag_relation b
+--- 250,264 ----
+                (a.virkning).NoteTekst
+            ) :: virkning,
+              a.rel_maal_uuid,
+                a.rel_maal_urn,
+                  a.rel_type,
+!                   a.objekt_type,
+!                     NULL,--a.rel_index, rel_index is not to be used for 0..1 relations
+!                       a.rel_type_spec,
+!                         a.journal_notat,
+!                           a.journal_dokument_attr
+      FROM
+      (
+        --build an array of the timeperiod of the virkning of the relations of the new registrering to pass to _subtract_tstzrange_arr on the relations of the previous registrering 
+        SELECT coalesce(array_agg((b.virkning).TimePeriod),array[]::TSTZRANGE[]) tzranges_of_new_reg
+        FROM sag_relation b
+***************
+*** 147,190 ****
+      ;
+    END LOOP;
+  
+    /**********************/
+    -- 0..n relations
+! 
+!   --We only have to check if there are any of the relations with the given name present in the new registration, otherwise copy the ones from the previous registration
+! 
+! 
+!   FOREACH sag_relation_navn in array ARRAY['andetarkiv'::SagRelationKode,'andrebehandlere'::SagRelationKode,'sekundaerpart'::SagRelationKode,'andresager'::SagRelationKode,'byggeri'::SagRelationKode,'fredning'::SagRelationKode,'journalpost'::SagRelationKode]::SagRelationKode[]
+!   LOOP
+! 
+!     IF NOT EXISTS  (SELECT 1 FROM sag_relation WHERE sag_registrering_id=new_sag_registrering.id and rel_type=sag_relation_navn) THEN
+! 
+        INSERT INTO sag_relation (
+              sag_registrering_id,
+                virkning,
+                  rel_maal_uuid,
+                    rel_maal_urn,
+                      rel_type,
+!                       objekt_type
+            )
+        SELECT 
+              new_sag_registrering.id,
+!               virkning,
+!                 rel_maal_uuid,
+!                   rel_maal_urn,
+!                     rel_type,
+!                       objekt_type
+!       FROM sag_relation
+!       WHERE sag_registrering_id=prev_sag_registrering.id 
+!       and rel_type=sag_relation_navn 
+        ;
+  
+-     END IF;
+-               
+-   END LOOP;
+- 
+- 
+  /**********************/
+  
+  
+  END IF;
+  /**********************/
+--- 274,314 ----
+      ;
+    END LOOP;
+  
+    /**********************/
+    -- 0..n relations
+!   
+        INSERT INTO sag_relation (
+              sag_registrering_id,
+                virkning,
+                  rel_maal_uuid,
+                    rel_maal_urn,
+                      rel_type,
+!                       objekt_type,
+!                         rel_index,
+!                           rel_type_spec,
+!                             journal_notat,
+!                               journal_dokument_attr
+            )
+        SELECT 
+              new_sag_registrering.id,
+!               a.virkning,
+!                 a.rel_maal_uuid,
+!                   a.rel_maal_urn,
+!                     a.rel_type,
+!                       a.objekt_type,
+!                         a.rel_index,
+!                           a.rel_type_spec,
+!                             a.journal_notat,
+!                               a.journal_dokument_attr
+!       FROM sag_relation a
+!       LEFT JOIN sag_relation b on b.sag_registrering_id=new_sag_registrering.id and b.rel_type=a.rel_type and b.rel_index=a.rel_index
+!       WHERE a.sag_registrering_id=prev_sag_registrering.id 
+!       and a.rel_type = any (sag_rel_type_cardinality_unlimited)
+!       and b.id is null --don't transfer relations of prev. registrering, if the index was specified in data given to the/this update-function
+        ;
+  
+  /**********************/
+  
+  
+  END IF;
+  /**********************/

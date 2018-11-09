@@ -40,8 +40,7 @@ ROW(
 			a.{{oio_type|title}}Tils{{tilstand_inner_loop|title}}Arr,{%- endfor %}
 			{%-for attribut_inner_loop , attribut_fields_inner_loop in attributter.items() %}
 			a.{{oio_type|title}}Attr{{attribut_inner_loop|title}}Arr,{%- endfor %}
-			a.{{oio_type|title}}RelationArr{% if oio_type == "dokument" %},
-            b.varianter{% endif %}
+			a.{{oio_type|title}}RelationArr
 		)::{{oio_type|title}}RegistreringType
 		order by upper((a.registrering).TimePeriod) DESC		
 	) 
@@ -64,31 +63,12 @@ FROM
 				b.virkning,
 				b.rel_maal_uuid,
 				b.rel_maal_urn,
-				b.objekt_type{% if oio_type == "aktivitet" %},
-                b.rel_index,
-                b.aktoer_attr{% elif oio_type == "indsats" %},
-                b.rel_index{% elif oio_type == "sag" %},
-                b.rel_index,
-                b.rel_type_spec,
-                b.journal_notat,
-                b.journal_dokument_attr{% elif oio_type == "tilstand" %},
-                b.rel_index,
-                b.tilstand_vaerdi_attr{% endif %}
+				b.objekt_type 
 			):: {{oio_type|title}}RelationType
 		ELSE
 		NULL
 		END
-        {% if oio_type == "aktivitet" %}
-		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.objekt_type,b.rel_index,b.aktoer_attr,b.virkning
-        {% elif oio_type == "indsats" %}
-		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.objekt_type,b.rel_index,b.virkning
-        {% elif oio_type == "sag" %}
-        order by b.rel_type,b.rel_index,b.rel_maal_uuid,b.rel_maal_urn,b.objekt_type,b.rel_type_spec,b.journal_notat,b.journal_dokument_attr,b.virkning
-        {% elif oio_type == "tilstand" %}
-		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.objekt_type,b.rel_index,b.tilstand_vaerdi_attr,b.virkning
-        {% else %}
 		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.objekt_type,b.virkning
-        {% endif %}
 	)) {{oio_type|title}}RelationArr
 	FROM
 	(
@@ -126,69 +106,19 @@ FROM
 						{%- if loop.index>outer_loop.index  %}
 					a.{{oio_type|title}}Attr{{attribut_inner_loop|title}}Arr,{%- endif %}{%- endfor %}
 					_remove_nulls_in_array(array_agg(
-						CASE
-                        {% if oio_type == "klasse" %}
-						WHEN a.attr_id is not null THEN
-                        {% else %}
+						CASE 
 						WHEN b.id is not null THEN
-                        {% endif %}
 						ROW(
-                            {% if oio_type == "klasse" %}
-                                                       a.brugervendtnoegle,
-                                                       a.beskrivelse,
-                                                       a.eksempel,
-                                                       a.omfang,
-                                                       a.titel,
-                                                       a.retskilde,
-                                                       a.aendringsnotat,
-                                                       a.KlasseAttrEgenskaberSoegeordTypeArr,
-                                                       a.virkning 
-                            {% else %}
 							{%-for field in attribut_fields %}
 					 		b.{{field}},
 							{%- endfor %}
-					   		b.virkning
-                            {% endif %}
+					   		b.virkning 
 							)::{{oio_type|title}}{{attribut|title}}AttrType
 						ELSE
 						NULL
 						END
-                        {% if oio_type == "klasse" %}
-                        order by  a.brugervendtnoegle,a.beskrivelse,a.eksempel,a.omfang,a.titel,a.retskilde,a.aendringsnotat,a.virkning,a.KlasseAttrEgenskaberSoegeordTypeArr
-                        {% else %}
 						order by b.{{attribut_fields|join(',b.')}},b.virkning
-                        {% endif %}
-					)) {{oio_type|title}}Attr{{attribut|title}}Arr
-                    {% if oio_type == "klasse" %}
-                               FROM            
-                               (
-                                               SELECT
-                                               a.klasse_id,
-                                               a.klasse_registrering_id,
-                                               a.registrering,
-                                               b.id attr_id,
-                                               b.brugervendtnoegle,
-                                               b.beskrivelse,
-                                               b.eksempel,
-                                               b.omfang,
-                                               b.titel,
-                                               b.retskilde,
-                                               b.aendringsnotat,
-                                               b.virkning,     
-                                               _remove_nulls_in_array(array_agg(
-                                                       CASE 
-                                                       WHEN c.id is not null THEN
-                                                       ROW(
-                                                               c.soegeordidentifikator,
-                                                               c.beskrivelse,
-                                                               c.soegeordskategori 
-                                                       )::KlasseSoegeordType
-                                               ELSE
-                                               NULL
-                                               END
-                                               order by c.soegeordidentifikator,c.beskrivelse,c.soegeordskategori
-                                       )) KlasseAttrEgenskaberSoegeordTypeArr
-                    {% endif %}
+					)) {{oio_type|title}}Attr{{attribut|title}}Arr 
 					FROM
 					(
 				{%- endfor %}
@@ -201,24 +131,7 @@ FROM
 					WHERE a.id = ANY ({{oio_type}}_uuids) AND ((registrering_tstzrange is null AND upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
 				{%-for attribut , attribut_fields in attributter_revorder.items() %}{% set outer_loop = loop %}
 					) as a
-					LEFT JOIN {{oio_type}}_attr_{{attribut}} as b ON b.{{oio_type}}_registrering_id=a.{{oio_type}}_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given
-                    {% if oio_type == "klasse" %}
-                                               LEFT JOIN klasse_attr_egenskaber_soegeord as c ON c.klasse_attr_egenskaber_id=b.id
-                                               GROUP BY 
-                                               a.klasse_id,
-                                               a.klasse_registrering_id,
-                                               a.registrering,
-                                               b.id,
-                                               b.brugervendtnoegle,
-                                               b.beskrivelse,
-                                               b.eksempel,
-                                               b.omfang,
-                                               b.titel,
-                                               b.retskilde,
-                                               b.aendringsnotat,
-                                               b.virkning
-                               ) as a
-                    {% endif %}
+					LEFT JOIN {{oio_type}}_attr_{{attribut}} as b ON b.{{oio_type}}_registrering_id=a.{{oio_type}}_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
 					GROUP BY 
 					a.{{oio_type}}_id,
 					a.{{oio_type}}_registrering_id,
@@ -253,9 +166,6 @@ FROM
 	{%-for tilstand_inner_loop , tilstand_values_inner_loop in tilstande_revorder.items() %}
 	a.{{oio_type|title}}Tils{{tilstand_inner_loop|title}}Arr{%- if (not loop.last)%},{%- endif%}{%- endfor %}
 ) as a
-{% if oio_type == "dokument" %}
-LEFT JOIN _as_list_dokument_varianter(dokument_uuids,registrering_tstzrange,virkning_tstzrange) b on a.dokument_registrering_id=b.dokument_registrering_id
-{% endif %}
 WHERE a.{{oio_type}}_id IS NOT NULL
 GROUP BY 
 a.{{oio_type}}_id

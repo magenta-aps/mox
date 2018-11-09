@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated using the script: apply-template.py aktivitet tbls-specific.jinja.sql
 */
 
 /******************** FUNCTIONS (NEEDED FOR TABLE/INDEX-DEFS) DEFS ***********************************/
@@ -218,9 +218,6 @@ CREATE INDEX aktivitet_attr_egenskaber_pat_virkning_notetekst
 
 
 
-
-
-
 /****************************************************************************************************/
 
 
@@ -356,10 +353,8 @@ CREATE TABLE aktivitet_relation
   rel_maal_urn text null,
   rel_type AktivitetRelationKode not null,
   objekt_type text null,
-
   rel_index int null,
   aktoer_attr AktivitetAktoerAttr null,
-
  CONSTRAINT aktivitet_relation_forkey_aktivitetregistrering  FOREIGN KEY (aktivitet_registrering_id) REFERENCES aktivitet_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
  CONSTRAINT aktivitet_relation_pkey PRIMARY KEY (id),
  CONSTRAINT aktivitet_relation_no_virkning_overlap EXCLUDE USING gist (aktivitet_registrering_id WITH =, _as_convert_aktivitet_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('udfoererklasse'::AktivitetRelationKode ) AND rel_type<>('deltagerklasse'::AktivitetRelationKode ) AND rel_type<>('objektklasse'::AktivitetRelationKode ) AND rel_type<>('resultatklasse'::AktivitetRelationKode ) AND rel_type<>('grundlagklasse'::AktivitetRelationKode ) AND rel_type<>('facilitetklasse'::AktivitetRelationKode ) AND rel_type<>('adresse'::AktivitetRelationKode ) AND rel_type<>('geoobjekt'::AktivitetRelationKode ) AND rel_type<>('position'::AktivitetRelationKode ) AND rel_type<>('facilitet'::AktivitetRelationKode ) AND rel_type<>('lokale'::AktivitetRelationKode ) AND rel_type<>('aktivitetdokument'::AktivitetRelationKode ) AND rel_type<>('aktivitetgrundlag'::AktivitetRelationKode ) AND rel_type<>('aktivitetresultat'::AktivitetRelationKode ) AND rel_type<>('udfoerer'::AktivitetRelationKode ) AND rel_type<>('deltager'::AktivitetRelationKode )) ,-- no overlapping virkning except for 0..n --relations
@@ -368,15 +363,12 @@ CREATE TABLE aktivitet_relation
  CONSTRAINT aktivitet_relation_aktoer_repr_either_uri_or_urn CHECK (aktoer_attr IS NULL OR ( _aktivitet_aktoer_attr_repr_uuid_to_text(aktoer_attr) IS NULL AND _aktivitet_aktoer_attr_repr_urn_to_text(aktoer_attr) IS NULL  ) OR ((_aktivitet_aktoer_attr_repr_urn_to_text(aktoer_attr) IS NOT NULL AND _aktivitet_aktoer_attr_repr_uuid_to_text(aktoer_attr) IS NULL ) OR  (_aktivitet_aktoer_attr_repr_urn_to_text(aktoer_attr) IS NULL AND _aktivitet_aktoer_attr_repr_uuid_to_text(aktoer_attr) IS NOT NULL )))
 );
 
-
 CREATE UNIQUE INDEX aktivitet_relation_unique_index_within_type  ON aktivitet_relation (aktivitet_registrering_id,rel_type,rel_index) WHERE ( rel_type IN ('udfoererklasse'::AktivitetRelationKode,'deltagerklasse'::AktivitetRelationKode,'objektklasse'::AktivitetRelationKode,'resultatklasse'::AktivitetRelationKode,'grundlagklasse'::AktivitetRelationKode,'facilitetklasse'::AktivitetRelationKode,'adresse'::AktivitetRelationKode,'geoobjekt'::AktivitetRelationKode,'position'::AktivitetRelationKode,'facilitet'::AktivitetRelationKode,'lokale'::AktivitetRelationKode,'aktivitetdokument'::AktivitetRelationKode,'aktivitetgrundlag'::AktivitetRelationKode,'aktivitetresultat'::AktivitetRelationKode,'udfoerer'::AktivitetRelationKode,'deltager'::AktivitetRelationKode));
-
 
 CREATE INDEX aktivitet_relation_idx_rel_maal_obj_uuid
   ON aktivitet_relation
   USING btree
   (rel_type,objekt_type,rel_maal_uuid);
-
 
   CREATE INDEX aktivitet_relation_idx_repr_uuid
   ON aktivitet_relation
@@ -387,7 +379,6 @@ CREATE INDEX aktivitet_relation_idx_repr_urn
   ON aktivitet_relation
   USING btree
   (((aktoer_attr).repraesentation_urn));
-
 
 CREATE INDEX aktivitet_relation_idx_rel_maal_obj_urn
   ON aktivitet_relation

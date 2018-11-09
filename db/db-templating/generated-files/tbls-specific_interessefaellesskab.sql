@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated using the script: apply-template.py interessefaellesskab tbls-specific.jinja.sql
 */
 
 /******************** FUNCTIONS (NEEDED FOR TABLE/INDEX-DEFS) DEFS ***********************************/
@@ -182,9 +182,6 @@ CREATE INDEX interessefaellesskab_attr_egenskaber_pat_virkning_notetekst
 
 
 
-
-
-
 /****************************************************************************************************/
 
 
@@ -265,7 +262,6 @@ CREATE TABLE interessefaellesskab_relation
   rel_maal_urn text null,
   rel_type InteressefaellesskabRelationKode not null,
   objekt_type text null,
-
  CONSTRAINT interessefaellesskab_relation_forkey_interessefaellesskabregistrering  FOREIGN KEY (interessefaellesskab_registrering_id) REFERENCES interessefaellesskab_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
  CONSTRAINT interessefaellesskab_relation_pkey PRIMARY KEY (id),
  CONSTRAINT interessefaellesskab_relation_no_virkning_overlap EXCLUDE USING gist (interessefaellesskab_registrering_id WITH =, _as_convert_interessefaellesskab_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('adresser'::InteressefaellesskabRelationKode ) AND rel_type<>('opgaver'::InteressefaellesskabRelationKode ) AND rel_type<>('tilknyttedebrugere'::InteressefaellesskabRelationKode ) AND rel_type<>('tilknyttedeenheder'::InteressefaellesskabRelationKode ) AND rel_type<>('tilknyttedefunktioner'::InteressefaellesskabRelationKode ) AND rel_type<>('tilknyttedeinteressefaellesskaber'::InteressefaellesskabRelationKode ) AND rel_type<>('tilknyttedeorganisationer'::InteressefaellesskabRelationKode ) AND rel_type<>('tilknyttedepersoner'::InteressefaellesskabRelationKode ) AND rel_type<>('tilknyttedeitsystemer'::InteressefaellesskabRelationKode )) ,-- no overlapping virkning except for 0..n --relations
@@ -273,13 +269,10 @@ CREATE TABLE interessefaellesskab_relation
 );
 
 
-
 CREATE INDEX interessefaellesskab_relation_idx_rel_maal_obj_uuid
   ON interessefaellesskab_relation
   USING btree
   (rel_type,objekt_type,rel_maal_uuid);
-
-
 
 CREATE INDEX interessefaellesskab_relation_idx_rel_maal_obj_urn
   ON interessefaellesskab_relation

@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated using the script: apply-template.py klasse dbtyper-specific.jinja.sql AND applying a patch (dbtyper-specific_klasse.sql.diff)
 */
 
 --create custom type sans db-ids to be able to do "clean" function signatures "for the outside world".
@@ -18,8 +18,6 @@ CREATE TYPE KlassePubliceretTilsType AS (
     publiceret KlassePubliceretTils
 )
 ;
-
-
 
 CREATE TYPE KlasseSoegeordType AS (
 soegeordidentifikator text,
@@ -36,29 +34,21 @@ omfang text,
 titel text,
 retskilde text,
 aendringsnotat text,
-
 soegeord KlasseSoegeordType[],
-
  virkning Virkning
 );
 
 
-
-
 CREATE TYPE KlasseRelationKode AS ENUM  ('ejer','ansvarlig','overordnetklasse','facet','redaktoerer','sideordnede','mapninger','tilfoejelser','erstatter','lovligekombinationer');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_klasse_relation_kode_to_txt is invoked.
-
-
 
 CREATE TYPE KlasseRelationType AS (
   relType KlasseRelationKode,
   virkning Virkning,
   uuid uuid,
   urn  text,
-  objektType text
+  objektType text 
 )
 ;
-
-
 
 CREATE TYPE KlasseRegistreringType AS
 (
@@ -73,9 +63,6 @@ CREATE TYPE KlasseType AS
   id uuid,
   registrering KlasseRegistreringType[]
 );  
-
-
-
 
 
 

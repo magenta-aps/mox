@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated using the script: apply-template.py organisationfunktion as_create_or_import.jinja.sql
 */
 
 CREATE OR REPLACE FUNCTION as_create_or_import_organisationfunktion(
@@ -23,9 +23,7 @@ DECLARE
   organisationfunktion_tils_gyldighed_obj organisationfunktionGyldighedTilsType;
   
   organisationfunktion_relationer OrganisationfunktionRelationType;
-  
   auth_filtered_uuids uuid[];
-  
   does_exist boolean;
   new_organisationfunktion_registrering organisationfunktion_registrering;
 BEGIN
@@ -110,23 +108,20 @@ IF organisationfunktion_registrering.attrEgenskaber IS NOT NULL and coalesce(arr
   FOREACH organisationfunktion_attr_egenskaber_obj IN ARRAY organisationfunktion_registrering.attrEgenskaber
   LOOP
 
-  
     INSERT INTO organisationfunktion_attr_egenskaber (
-      
       brugervendtnoegle,
       funktionsnavn,
       virkning,
       organisationfunktion_registrering_id
     )
     SELECT
-     
      organisationfunktion_attr_egenskaber_obj.brugervendtnoegle,
       organisationfunktion_attr_egenskaber_obj.funktionsnavn,
       organisationfunktion_attr_egenskaber_obj.virkning,
       organisationfunktion_registrering_id
     ;
-  
-    
+ 
+
   END LOOP;
 END IF;
 
@@ -160,8 +155,6 @@ END IF;
 /*********************************/
 --Insert relations
 
-
-
     INSERT INTO organisationfunktion_relation (
       organisationfunktion_registrering_id,
       virkning,
@@ -179,8 +172,6 @@ END IF;
       a.objektType
     FROM unnest(organisationfunktion_registrering.relationer) a
   ;
-
-
 
 
 /*** Verify that the object meets the stipulated access allowed criteria  ***/

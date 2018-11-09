@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated using the script: apply-template.py loghaendelse as_create_or_import.jinja.sql
 */
 
 CREATE OR REPLACE FUNCTION as_create_or_import_loghaendelse(
@@ -23,9 +23,7 @@ DECLARE
   loghaendelse_tils_gyldighed_obj loghaendelseGyldighedTilsType;
   
   loghaendelse_relationer LoghaendelseRelationType;
-  
   auth_filtered_uuids uuid[];
-  
   does_exist boolean;
   new_loghaendelse_registrering loghaendelse_registrering;
 BEGIN
@@ -110,9 +108,7 @@ IF loghaendelse_registrering.attrEgenskaber IS NOT NULL and coalesce(array_lengt
   FOREACH loghaendelse_attr_egenskaber_obj IN ARRAY loghaendelse_registrering.attrEgenskaber
   LOOP
 
-  
     INSERT INTO loghaendelse_attr_egenskaber (
-      
       service,
       klasse,
       tidspunkt,
@@ -125,7 +121,6 @@ IF loghaendelse_registrering.attrEgenskaber IS NOT NULL and coalesce(array_lengt
       loghaendelse_registrering_id
     )
     SELECT
-     
      loghaendelse_attr_egenskaber_obj.service,
       loghaendelse_attr_egenskaber_obj.klasse,
       loghaendelse_attr_egenskaber_obj.tidspunkt,
@@ -137,8 +132,8 @@ IF loghaendelse_registrering.attrEgenskaber IS NOT NULL and coalesce(array_lengt
       loghaendelse_attr_egenskaber_obj.virkning,
       loghaendelse_registrering_id
     ;
-  
-    
+ 
+
   END LOOP;
 END IF;
 
@@ -172,8 +167,6 @@ END IF;
 /*********************************/
 --Insert relations
 
-
-
     INSERT INTO loghaendelse_relation (
       loghaendelse_registrering_id,
       virkning,
@@ -191,8 +184,6 @@ END IF;
       a.objektType
     FROM unnest(loghaendelse_registrering.relationer) a
   ;
-
-
 
 
 /*** Verify that the object meets the stipulated access allowed criteria  ***/

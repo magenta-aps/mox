@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated using the script: apply-template.py itsystem as_create_or_import.jinja.sql
 */
 
 CREATE OR REPLACE FUNCTION as_create_or_import_itsystem(
@@ -23,9 +23,7 @@ DECLARE
   itsystem_tils_gyldighed_obj itsystemGyldighedTilsType;
   
   itsystem_relationer ItsystemRelationType;
-  
   auth_filtered_uuids uuid[];
-  
   does_exist boolean;
   new_itsystem_registrering itsystem_registrering;
 BEGIN
@@ -110,9 +108,7 @@ IF itsystem_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(it
   FOREACH itsystem_attr_egenskaber_obj IN ARRAY itsystem_registrering.attrEgenskaber
   LOOP
 
-  
     INSERT INTO itsystem_attr_egenskaber (
-      
       brugervendtnoegle,
       itsystemnavn,
       itsystemtype,
@@ -121,7 +117,6 @@ IF itsystem_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(it
       itsystem_registrering_id
     )
     SELECT
-     
      itsystem_attr_egenskaber_obj.brugervendtnoegle,
       itsystem_attr_egenskaber_obj.itsystemnavn,
       itsystem_attr_egenskaber_obj.itsystemtype,
@@ -129,8 +124,8 @@ IF itsystem_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(it
       itsystem_attr_egenskaber_obj.virkning,
       itsystem_registrering_id
     ;
-  
-    
+ 
+
   END LOOP;
 END IF;
 
@@ -164,8 +159,6 @@ END IF;
 /*********************************/
 --Insert relations
 
-
-
     INSERT INTO itsystem_relation (
       itsystem_registrering_id,
       virkning,
@@ -183,8 +176,6 @@ END IF;
       a.objektType
     FROM unnest(itsystem_registrering.relationer) a
   ;
-
-
 
 
 /*** Verify that the object meets the stipulated access allowed criteria  ***/

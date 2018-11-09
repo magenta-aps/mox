@@ -1,0 +1,131 @@
+*** ./generated-files/as_list_klasse.sql	2015-08-12 16:23:16.928499347 +0200
+--- ./patches/as_list_klasse.org.sql	2015-08-12 16:25:24.004505676 +0200
+***************
+*** 88,128 ****
+  					a.klasse_id,
+  					a.klasse_registrering_id,
+  					a.registrering,
+  					_remove_nulls_in_array(array_agg(
+  						CASE 
+! 						WHEN b.id is not null THEN
+  						ROW(
+! 					 		b.brugervendtnoegle,
+! 					 		b.beskrivelse,
+! 					 		b.eksempel,
+! 					 		b.omfang,
+! 					 		b.titel,
+! 					 		b.retskilde,
+! 					 		b.aendringsnotat,
+! 					   		b.virkning 
+! 							)::KlasseEgenskaberAttrType
+  						ELSE
+  						NULL
+  						END
+! 						order by b.brugervendtnoegle,b.beskrivelse,b.eksempel,b.omfang,b.titel,b.retskilde,b.aendringsnotat,b.virkning
+! 					)) KlasseAttrEgenskaberArr 
+  					FROM
+! 					(
+! 					SELECT
+! 					a.id klasse_id,
+! 					b.id klasse_registrering_id,
+! 					b.registrering			
+! 					FROM		klasse a
+! 					JOIN 		klasse_registrering b 	ON b.klasse_id=a.id
+! 					WHERE a.id = ANY (klasse_uuids) AND ((registrering_tstzrange is null AND upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
+! 					) as a
+! 					LEFT JOIN klasse_attr_egenskaber as b ON b.klasse_registrering_id=a.klasse_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
+! 					GROUP BY 
+! 					a.klasse_id,
+! 					a.klasse_registrering_id,
+! 					a.registrering	
+  			) as a
+  			LEFT JOIN klasse_tils_publiceret as b ON b.klasse_registrering_id=a.klasse_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
+  			GROUP BY 
+  			a.klasse_id,
+  			a.klasse_registrering_id,
+--- 88,172 ----
+  					a.klasse_id,
+  					a.klasse_registrering_id,
+  					a.registrering,
+  					_remove_nulls_in_array(array_agg(
+  						CASE 
+! 						WHEN a.attr_id is not null THEN
+  						ROW(
+! 					 		a.brugervendtnoegle,
+! 					 		a.beskrivelse,
+! 					 		a.eksempel,
+! 					 		a.omfang,
+! 					 		a.titel,
+! 					 		a.retskilde,
+! 					 		a.aendringsnotat,
+! 					 		a.KlasseAttrEgenskaberSoegeordTypeArr,
+! 					   		a.virkning 
+! 						)::KlasseEgenskaberAttrType
+  						ELSE
+  						NULL
+  						END
+! 					order by  a.brugervendtnoegle,a.beskrivelse,a.eksempel,a.omfang,a.titel,a.retskilde,a.aendringsnotat,a.virkning,a.KlasseAttrEgenskaberSoegeordTypeArr
+! 				)) KlasseAttrEgenskaberArr 
+! 				FROM		
+! 				(
+! 						SELECT
+! 						a.klasse_id,
+! 						a.klasse_registrering_id,
+! 						a.registrering,
+! 						b.id attr_id,
+! 						b.brugervendtnoegle,
+! 						b.beskrivelse,
+! 						b.eksempel,
+! 						b.omfang,
+! 						b.titel,
+! 						b.retskilde,
+! 						b.aendringsnotat,
+! 						b.virkning,	
+! 						_remove_nulls_in_array(array_agg(
+! 							CASE 
+! 							WHEN c.id is not null THEN
+! 							ROW(
+! 						 		c.soegeordidentifikator,
+! 						 		c.beskrivelse,
+! 						 		c.soegeordskategori 
+! 							)::KlasseSoegeordType
+! 						ELSE
+! 						NULL
+! 						END
+! 						order by c.soegeordidentifikator,c.beskrivelse,c.soegeordskategori
+! 					)) KlasseAttrEgenskaberSoegeordTypeArr 
+  					FROM
+! 						(
+! 								SELECT
+! 								a.id klasse_id,
+! 								b.id klasse_registrering_id,
+! 								b.registrering			
+! 								FROM		klasse a
+! 								JOIN 		klasse_registrering b 	ON b.klasse_id=a.id
+! 								WHERE a.id = ANY (klasse_uuids) AND ((registrering_tstzrange is null AND upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
+! 							) as a
+! 						LEFT JOIN klasse_attr_egenskaber as b ON b.klasse_registrering_id=a.klasse_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
+! 						LEFT JOIN klasse_attr_egenskaber_soegeord as c ON c.klasse_attr_egenskaber_id=b.id
+! 						GROUP BY 
+! 						a.klasse_id,
+! 						a.klasse_registrering_id,
+! 						a.registrering,
+! 						b.id,
+! 						b.brugervendtnoegle,
+! 						b.beskrivelse,
+! 						b.eksempel,
+! 						b.omfang,
+! 						b.titel,
+! 						b.retskilde,
+! 						b.aendringsnotat,
+! 						b.virkning
+! 				) as a
+! 			GROUP BY 
+! 			a.klasse_id,
+! 			a.klasse_registrering_id,
+! 			a.registrering
+  			) as a
+  			LEFT JOIN klasse_tils_publiceret as b ON b.klasse_registrering_id=a.klasse_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
+  			GROUP BY 
+  			a.klasse_id,
+  			a.klasse_registrering_id,

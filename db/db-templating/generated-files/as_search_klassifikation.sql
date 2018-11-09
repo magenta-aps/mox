@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated using the script: apply-template.py klassifikation as_search.jinja.sql
 */
 
 
@@ -34,9 +34,7 @@ DECLARE
 	anyAttrValue text;
 	anyuuid uuid;
 	anyurn text;
-    
 	auth_filtered_uuids uuid[];
-    
 BEGIN
 
 --RAISE DEBUG 'step 0:registreringObj:%',registreringObj;
@@ -146,18 +144,14 @@ END IF;
 IF registreringObj IS NULL OR (registreringObj).attrEgenskaber IS NULL THEN
 	--RAISE DEBUG 'as_search_klassifikation: skipping filtration on attrEgenskaber';
 ELSE
-
 	IF (coalesce(array_length(klassifikation_candidates,1),0)>0 OR NOT klassifikation_candidates_is_initialized) THEN
-        
 		FOREACH attrEgenskaberTypeObj IN ARRAY registreringObj.attrEgenskaber
-        
 		LOOP
 			klassifikation_candidates:=array(
 			SELECT DISTINCT
 			b.klassifikation_id 
 			FROM  klassifikation_attr_egenskaber a
 			JOIN klassifikation_registrering b on a.klassifikation_registrering_id=b.id
-            
 			WHERE
 				(
 					(
@@ -223,7 +217,6 @@ ELSE
 					a.ophavsret ILIKE attrEgenskaberTypeObj.ophavsret --case insensitive 
 				)
 				AND
-                
 						(
 				(registreringObj.registrering) IS NULL 
 				OR
@@ -314,18 +307,15 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 		klassifikation_candidates:=array( 
 
 			SELECT DISTINCT
-			b.klassifikation_id
-            
+			b.klassifikation_id 
 			FROM  klassifikation_attr_egenskaber a
 			JOIN klassifikation_registrering b on a.klassifikation_registrering_id=b.id
-            
 			WHERE
 			(
 						a.brugervendtnoegle ILIKE anyAttrValue OR
 						a.beskrivelse ILIKE anyAttrValue OR
 						a.kaldenavn ILIKE anyAttrValue OR
 						a.ophavsret ILIKE anyAttrValue
-                
 			)
 			AND
 			(
@@ -334,7 +324,6 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 				virkningSoeg && (a.virkning).TimePeriod
 			)
 			AND
-            
 					(
 				(registreringObj.registrering) IS NULL 
 				OR
@@ -633,8 +622,6 @@ ELSE
 					OR
 					relationTypeObj.urn = a.rel_maal_urn
 				)
-                
-                
 				AND
 						(
 				(registreringObj.registrering) IS NULL 
@@ -721,20 +708,16 @@ IF coalesce(array_length(anyuuidArr ,1),0)>0 THEN
 		klassifikation_candidates:=array(
 			SELECT DISTINCT
 			b.klassifikation_id 
-            
 			FROM  klassifikation_relation a
 			JOIN klassifikation_registrering b on a.klassifikation_registrering_id=b.id
 			WHERE
-            
 			anyuuid = a.rel_maal_uuid
-            
 			AND
 			(
 				virkningSoeg IS NULL
 				OR
 				virkningSoeg && (a.virkning).TimePeriod
 			)
-            
 			AND
 					(
 				(registreringObj.registrering) IS NULL 
@@ -820,20 +803,16 @@ IF coalesce(array_length(anyurnArr ,1),0)>0 THEN
 		klassifikation_candidates:=array(
 			SELECT DISTINCT
 			b.klassifikation_id 
-            
 			FROM  klassifikation_relation a
 			JOIN klassifikation_registrering b on a.klassifikation_registrering_id=b.id
 			WHERE
-            
 			anyurn = a.rel_maal_urn
-            
 			AND
 			(
 				virkningSoeg IS NULL
 				OR
 				virkningSoeg && (a.virkning).TimePeriod
 			)
-            
 			AND
 					(
 				(registreringObj.registrering) IS NULL 
@@ -913,7 +892,6 @@ END IF;
 --/**********************//
 
  
-
 
 
 

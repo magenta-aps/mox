@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated using the script: apply-template.py facet as_list.jinja.sql
 */
 
 CREATE OR REPLACE FUNCTION as_list_facet(facet_uuids uuid[],
@@ -62,14 +62,12 @@ FROM
 				b.virkning,
 				b.rel_maal_uuid,
 				b.rel_maal_urn,
-				b.objekt_type
+				b.objekt_type 
 			):: FacetRelationType
 		ELSE
 		NULL
 		END
-        
 		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.objekt_type,b.virkning
-        
 	)) FacetRelationArr
 	FROM
 	(
@@ -97,12 +95,9 @@ FROM
 					a.facet_registrering_id,
 					a.registrering,
 					_remove_nulls_in_array(array_agg(
-						CASE
-                        
+						CASE 
 						WHEN b.id is not null THEN
-                        
 						ROW(
-                            
 					 		b.brugervendtnoegle,
 					 		b.beskrivelse,
 					 		b.opbygning,
@@ -110,17 +105,13 @@ FROM
 					 		b.plan,
 					 		b.supplement,
 					 		b.retskilde,
-					   		b.virkning
-                            
+					   		b.virkning 
 							)::FacetEgenskaberAttrType
 						ELSE
 						NULL
 						END
-                        
 						order by b.brugervendtnoegle,b.beskrivelse,b.opbygning,b.ophavsret,b.plan,b.supplement,b.retskilde,b.virkning
-                        
-					)) FacetAttrEgenskaberArr
-                    
+					)) FacetAttrEgenskaberArr 
 					FROM
 					(
 					SELECT
@@ -131,8 +122,7 @@ FROM
 					JOIN 		facet_registrering b 	ON b.facet_id=a.id
 					WHERE a.id = ANY (facet_uuids) AND ((registrering_tstzrange is null AND upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
 					) as a
-					LEFT JOIN facet_attr_egenskaber as b ON b.facet_registrering_id=a.facet_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given
-                    
+					LEFT JOIN facet_attr_egenskaber as b ON b.facet_registrering_id=a.facet_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
 					GROUP BY 
 					a.facet_id,
 					a.facet_registrering_id,
@@ -153,7 +143,6 @@ FROM
 	a.FacetAttrEgenskaberArr,
 	a.FacetTilsPubliceretArr
 ) as a
-
 WHERE a.facet_id IS NOT NULL
 GROUP BY 
 a.facet_id

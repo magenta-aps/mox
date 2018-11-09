@@ -1,0 +1,41 @@
+*** ./generated-files/as_list_sag.sql	2015-08-12 16:23:20.860499543 +0200
+--- ./patches/as_list_sag.org.sql	2015-08-12 16:27:18.700511388 +0200
+***************
+*** 54,69 ****
+  		ROW (
+  				b.rel_type,
+  				b.virkning,
+  				b.rel_maal_uuid,
+  				b.rel_maal_urn,
+! 				b.objekt_type 
+  			):: SagRelationType
+  		ELSE
+  		NULL
+  		END
+! 		order by b.rel_maal_uuid,b.rel_maal_urn,b.rel_type,b.objekt_type,b.virkning
+  	)) SagRelationArr
+  	FROM
+  	(
+  			SELECT
+  			a.sag_id,
+--- 54,73 ----
+  		ROW (
+  				b.rel_type,
+  				b.virkning,
+  				b.rel_maal_uuid,
+  				b.rel_maal_urn,
+! 				b.objekt_type,
+! 				b.rel_index,
+! 				b.rel_type_spec,
+! 				b.journal_notat,
+! 				b.journal_dokument_attr
+  			):: SagRelationType
+  		ELSE
+  		NULL
+  		END
+! 		order by b.rel_type,b.rel_index,b.rel_maal_uuid,b.rel_maal_urn,b.objekt_type,b.rel_type_spec,b.journal_notat,b.journal_dokument_attr,b.virkning
+  	)) SagRelationArr
+  	FROM
+  	(
+  			SELECT
+  			a.sag_id,

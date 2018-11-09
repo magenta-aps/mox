@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated using the script: apply-template.py bruger tbls-specific.jinja.sql
 */
 
 /******************** FUNCTIONS (NEEDED FOR TABLE/INDEX-DEFS) DEFS ***********************************/
@@ -182,9 +182,6 @@ CREATE INDEX bruger_attr_egenskaber_pat_virkning_notetekst
 
 
 
-
-
-
 /****************************************************************************************************/
 
 
@@ -265,7 +262,6 @@ CREATE TABLE bruger_relation
   rel_maal_urn text null,
   rel_type BrugerRelationKode not null,
   objekt_type text null,
-
  CONSTRAINT bruger_relation_forkey_brugerregistrering  FOREIGN KEY (bruger_registrering_id) REFERENCES bruger_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
  CONSTRAINT bruger_relation_pkey PRIMARY KEY (id),
  CONSTRAINT bruger_relation_no_virkning_overlap EXCLUDE USING gist (bruger_registrering_id WITH =, _as_convert_bruger_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('adresser'::BrugerRelationKode ) AND rel_type<>('brugertyper'::BrugerRelationKode ) AND rel_type<>('opgaver'::BrugerRelationKode ) AND rel_type<>('tilknyttedeenheder'::BrugerRelationKode ) AND rel_type<>('tilknyttedefunktioner'::BrugerRelationKode ) AND rel_type<>('tilknyttedeinteressefaellesskaber'::BrugerRelationKode ) AND rel_type<>('tilknyttedeorganisationer'::BrugerRelationKode ) AND rel_type<>('tilknyttedepersoner'::BrugerRelationKode ) AND rel_type<>('tilknyttedeitsystemer'::BrugerRelationKode )) ,-- no overlapping virkning except for 0..n --relations
@@ -273,13 +269,10 @@ CREATE TABLE bruger_relation
 );
 
 
-
 CREATE INDEX bruger_relation_idx_rel_maal_obj_uuid
   ON bruger_relation
   USING btree
   (rel_type,objekt_type,rel_maal_uuid);
-
-
 
 CREATE INDEX bruger_relation_idx_rel_maal_obj_urn
   ON bruger_relation

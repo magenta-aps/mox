@@ -1,0 +1,99 @@
+*** ../generated-files/tbls-specific_klasse.sql	2015-06-11 16:26:00.722994803 +0200
+--- ../patches/tbls-specific_klasse.sql.org	2015-06-11 16:25:28.718995377 +0200
+***************
+*** 4,14 ****
+  -- This Source Code Form is subject to the terms of the Mozilla Public
+  -- License, v. 2.0. If a copy of the MPL was not distributed with this
+  -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+  
+  /*
+! NOTICE: This file is auto-generated using the script: apply-template.py klasse tbls-specific.jinja.sql
+  */
+  
+  /******************** FUNCTIONS (NEEDED FOR TABLE/INDEX-DEFS) DEFS ***********************************/
+  
+  CREATE or replace FUNCTION _as_convert_klasse_relation_kode_to_txt (
+--- 4,14 ----
+  -- This Source Code Form is subject to the terms of the Mozilla Public
+  -- License, v. 2.0. If a copy of the MPL was not distributed with this
+  -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+  
+  /*
+! NOTICE: This file is auto-generated using the script: apply-template.py klasse tbls-specific.jinja.sql AND applying a patch (tbls-specific_klasse.sql.diff)
+  */
+  
+  /******************** FUNCTIONS (NEEDED FOR TABLE/INDEX-DEFS) DEFS ***********************************/
+  
+  CREATE or replace FUNCTION _as_convert_klasse_relation_kode_to_txt (
+***************
+*** 227,237 ****
+--- 227,295 ----
+  CREATE INDEX klasse_attr_egenskaber_pat_virkning_notetekst
+    ON klasse_attr_egenskaber
+    USING gin
+    (((virkning).notetekst) gin_trgm_ops);
+  
++ /**********************************************/
+  
++ CREATE SEQUENCE klasse_attr_egenskaber_soegeord_id_seq
++   INCREMENT 1
++   MINVALUE 1
++   MAXVALUE 9223372036854775807
++   START 1
++   CACHE 1;
++ ALTER TABLE klasse_attr_egenskaber_soegeord_id_seq
++   OWNER TO mox;
++ 
++ 
++ CREATE TABLE klasse_attr_egenskaber_soegeord
++ (
++   id bigint NOT NULL DEFAULT nextval('klasse_attr_egenskaber_soegeord_id_seq'::regclass),
++     soegeordidentifikator text null,
++     beskrivelse text null,
++     soegeordskategori text null,
++     klasse_attr_egenskaber_id bigint not null,
++ CONSTRAINT klasse_attr_egenskaber_soegeord_pkey PRIMARY KEY (id),
++ CONSTRAINT klasse_attr_egenskaber_soegeord_forkey_klasse_attr_egenskaber  FOREIGN KEY (klasse_attr_egenskaber_id) REFERENCES klasse_attr_egenskaber (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION
++ ,CONSTRAINT klasse_attr_egenskaber_soegeord_chk_not_all_null CHECK (NOT  (soegeordidentifikator IS NULL AND beskrivelse IS NULL AND soegeordskategori IS NULL))
++ )
++ WITH (
++   OIDS=FALSE
++ );
++ ALTER TABLE klasse_attr_egenskaber_soegeord
++   OWNER TO mox;
++ 
++ 
++ CREATE INDEX klasse_attr_egenskaber_soegeord_idx_soegeordidentifikator
++   ON klasse_attr_egenskaber_soegeord
++   USING btree
++   (soegeordidentifikator);
++ 
++ CREATE INDEX klasse_attr_egenskaber_soegeord_pat_soegeordidentifikator
++   ON klasse_attr_egenskaber_soegeord
++   USING gin
++   (soegeordidentifikator gin_trgm_ops);
++ 
++ CREATE INDEX klasse_attr_egenskaber_soegeord_idx_beskrivelse
++   ON klasse_attr_egenskaber_soegeord
++   USING btree
++   (beskrivelse);
++ 
++ CREATE INDEX klasse_attr_egenskaber_soegeord_pat_beskrivelse
++   ON klasse_attr_egenskaber_soegeord
++   USING gin
++   (beskrivelse gin_trgm_ops);
++ 
++ CREATE INDEX klasse_attr_egenskaber_soegeord_idx_soegeordskategori
++   ON klasse_attr_egenskaber_soegeord
++   USING btree
++   (soegeordskategori);
++ 
++ CREATE INDEX klasse_attr_egenskaber_soegeord_pat_soegeordskategori
++   ON klasse_attr_egenskaber_soegeord
++   USING gin
++   (soegeordskategori gin_trgm_ops);
+  
+  /****************************************************************************************************/
+  
+  
+  
