@@ -61,10 +61,11 @@ def _get_db_setup_sql(db_name, db_user):
     CREATE SCHEMA test AUTHORIZATION "{db_user}";
     """.format(db_name=db_name, db_user=db_user)
 
-    def listdir(dirname):
-        # os.listdir() but with prefix
-        return [os.path.join(dirname, filename)
-                for filename in sorted(os.listdir(dirname))]
+    def dblistdir(dirname):
+        # os.listdir() but with prefix, of mox/db
+        return [os.path.join(TOP_DIR, "db", dirname, filename)
+                for filename in sorted(
+                    os.listdir(os.path.join(TOP_DIR, "db", dirname)))]
 
     # <mess>
     # this mess is necessary because the db relies on a particular order
@@ -104,31 +105,31 @@ def _get_db_setup_sql(db_name, db_user):
                 return True
         return False
 
-    templates = listdir('../db/db-templating/generated-files')
+    templates = dblistdir("db-templating/generated-files")
     templates1 = list(filter(is_template1, templates))
     templates2 = list(set(templates) ^ set(templates1))
     templates1.sort(key=template_sort_key)
     templates2.sort(key=template_sort_key)
     funcs1 = [
-        "../db/funcs/_index_helper_funcs.sql",
-        "../db/funcs/_subtract_tstzrange.sql",
-        "../db/funcs/_subtract_tstzrange_arr.sql",
-        "../db/funcs/_as_valid_registrering_livscyklus_transition.sql",
-        "../db/funcs/_as_search_match_array.sql",
-        "../db/funcs/_as_search_ilike_array.sql",
-        "../db/funcs/_json_object_delete_keys.sql",
-        "../db/funcs/_create_notify.sql",
+        os.path.join(TOP_DIR, "db/funcs/_index_helper_funcs.sql"),
+        os.path.join(TOP_DIR, "db/funcs/_subtract_tstzrange.sql"),
+        os.path.join(TOP_DIR, "db/funcs/_subtract_tstzrange_arr.sql"),
+        os.path.join(TOP_DIR, "db/funcs/_as_valid_registrering_livscyklus_transition.sql"),
+        os.path.join(TOP_DIR, "db/funcs/_as_search_match_array.sql"),
+        os.path.join(TOP_DIR, "db/funcs/_as_search_ilike_array.sql"),
+        os.path.join(TOP_DIR, "db/funcs/_json_object_delete_keys.sql"),
+        os.path.join(TOP_DIR, "db/funcs/_create_notify.sql"),
     ]
-    funcs2 = list(set(listdir('../db/funcs')) ^ set(funcs1))
+    funcs2 = list(set(dblistdir('funcs')) ^ set(funcs1))
     funcs2.sort()
 
     files = [
-        *listdir('../db/basis'),
+        *dblistdir('basis'),
         *funcs1,
         *templates1,
         *funcs2,
         *templates2,
-        *listdir('../db/tests'),
+        *dblistdir('tests'),
     ]
     # </mess>
 
