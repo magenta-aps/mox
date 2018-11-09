@@ -41,10 +41,15 @@ pipeline {
           timeout(5) {
             sh 'backend/.jenkins/1-build.sh'
 
-            // kind of horrible, but works -- and make sure that we
-            // _never_ use the pip installed one
+            // kind of horrible, but works
+            sh 'backend/venv/bin/pip uninstall -y oio_rest'
             sh 'backend/venv/bin/pip install -e "$WORKSPACE/oio_rest"'
+
+            // make sure that we _never_ use the originally installed one
             sh 'rm -rf backend/venv/src/oio-rest'
+
+            // just for debugging
+            sh 'backend/venv/bin/python -c "import oio_rest; print(oio_rest.__file__)"'
           }
         }
       }
@@ -59,8 +64,6 @@ pipeline {
             }
           }
         }
-
-        sh 'find $WORKSPACE -name "*.xml"'
       }
     }
   }
