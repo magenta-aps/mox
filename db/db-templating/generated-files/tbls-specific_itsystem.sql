@@ -335,4 +335,3 @@ CREATE INDEX itsystem_relation_pat_virkning_notetekst
 
 
 
-

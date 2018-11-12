@@ -9,86 +9,77 @@
 NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
-CREATE OR REPLACE FUNCTION as_create_or_import_itsystem(
-  itsystem_registrering ItsystemRegistreringType,
-  itsystem_uuid uuid DEFAULT NULL,
-  auth_criteria_arr ItsystemRegistreringType[] DEFAULT NULL
-	)
-  RETURNS uuid AS 
-$$
-DECLARE
-  itsystem_registrering_id bigint;
-  itsystem_attr_egenskaber_obj itsystemEgenskaberAttrType;
-  
-  itsystem_tils_gyldighed_obj itsystemGyldighedTilsType;
-  
-  itsystem_relationer ItsystemRelationType;
-  
-  auth_filtered_uuids uuid[];
-  
-  does_exist boolean;
-  new_itsystem_registrering itsystem_registrering;
+
+CREATE OR REPLACE FUNCTION as_create_or_import_itsystem (
+    itsystem_registrering ItsystemRegistreringType,
+    itsystem_uuid uuid DEFAULT NULL, auth_criteria_arr
+    ItsystemRegistreringType[] DEFAULT NULL) RETURNS uuid AS
+$$ DECLARE itsystem_registrering_id bigint;
+
+    
+    itsystem_attr_egenskaber_obj itsystemEgenskaberAttrType;
+    
+
+    
+    itsystem_tils_gyldighed_obj itsystemGyldighedTilsType;
+    
+
+    itsystem_relationer ItsystemRelationType;
+
+    
+
+    auth_filtered_uuids uuid[];
+
+    
+
+    does_exist                    boolean;
+    new_itsystem_registrering itsystem_registrering;
 BEGIN
+    IF itsystem_uuid IS NULL THEN LOOP
+        itsystem_uuid:=uuid_generate_v4(); EXIT WHEN NOT EXISTS (SELECT id
+            from itsystem WHERE id=itsystem_uuid); END LOOP; END IF;
 
-IF itsystem_uuid IS NULL THEN
-    LOOP
-    itsystem_uuid:=uuid_generate_v4();
-    EXIT WHEN NOT EXISTS (SELECT id from itsystem WHERE id=itsystem_uuid); 
-    END LOOP;
-END IF;
+    IF EXISTS (SELECT id from itsystem WHERE id=itsystem_uuid) THEN
+        does_exist = True; ELSE
 
+        does_exist = False; END IF;
 
-IF EXISTS (SELECT id from itsystem WHERE id=itsystem_uuid) THEN
-    does_exist = True;
-ELSE
+    IF
+        (itsystem_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode
+        and
+        (itsystem_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode
+        and
+        (itsystem_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode
+        THEN RAISE EXCEPTION 'Invalid livscykluskode[%] invoking
+        as_create_or_import_itsystem.',(itsystem_registrering.registrering).livscykluskode
+        USING ERRCODE='MO400'; END IF;
 
-    does_exist = False;
-END IF;
+    IF NOT does_exist THEN INSERT INTO itsystem (ID) SELECT
+        itsystem_uuid; END IF;
 
-IF  (itsystem_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (itsystem_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (itsystem_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_itsystem.',(itsystem_registrering.registrering).livscykluskode USING ERRCODE='MO400';
-END IF;
+    /*********************************/
+    --Insert new registrering
 
+    IF NOT does_exist THEN
+        itsystem_registrering_id:=nextval('itsystem_registrering_id_seq');
 
-IF NOT does_exist THEN
+        INSERT INTO itsystem_registrering ( id, itsystem_id,
+            registrering) SELECT itsystem_registrering_id,
+        itsystem_uuid, ROW (
+            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+        (itsystem_registrering.registrering).livscykluskode,
+        (itsystem_registrering.registrering).brugerref,
+        (itsystem_registrering.registrering).note):: RegistreringBase ;
+    ELSE
+        -- This is an update, not an import or create
+            new_itsystem_registrering :=
+            _as_create_itsystem_registrering( itsystem_uuid,
+                (itsystem_registrering.registrering).livscykluskode,
+                (itsystem_registrering.registrering).brugerref,
+                (itsystem_registrering.registrering).note);
 
-    INSERT INTO
-          itsystem (ID)
-    SELECT
-          itsystem_uuid;
-END IF;
-
-
-/*********************************/
---Insert new registrering
-
-IF NOT does_exist THEN
-    itsystem_registrering_id:=nextval('itsystem_registrering_id_seq');
-
-    INSERT INTO itsystem_registrering (
-          id,
-          itsystem_id,
-          registrering
-        )
-    SELECT
-          itsystem_registrering_id,
-           itsystem_uuid,
-           ROW (
-             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-             (itsystem_registrering.registrering).livscykluskode,
-             (itsystem_registrering.registrering).brugerref,
-             (itsystem_registrering.registrering).note
-               ):: RegistreringBase ;
-ELSE
-    -- This is an update, not an import or create
-        new_itsystem_registrering := _as_create_itsystem_registrering(
-             itsystem_uuid,
-             (itsystem_registrering.registrering).livscykluskode,
-             (itsystem_registrering.registrering).brugerref,
-             (itsystem_registrering.registrering).note);
-
-        itsystem_registrering_id := new_itsystem_registrering.id;
-END IF;
+            itsystem_registrering_id := new_itsystem_registrering.id;
+    END IF;
 
 
 /*********************************/
@@ -99,10 +90,10 @@ END IF;
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
- 
-IF coalesce(array_length(itsystem_registrering.attrEgenskaber, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [itsystem]. Oprettelse afbrydes.' USING ERRCODE='MO400';
-END IF;
+
+IF coalesce(array_length(itsystem_registrering.attrEgenskaber,
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    [itsystem]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
 
@@ -202,5 +193,4 @@ RETURN itsystem_uuid;
 
 END;
 $$ LANGUAGE plpgsql VOLATILE;
-
 

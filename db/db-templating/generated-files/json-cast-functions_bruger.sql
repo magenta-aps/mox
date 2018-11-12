@@ -159,4 +159,3 @@ create cast (BrugerType as json) with function actual_state._cast_brugerType_to_
 
 
 
-

@@ -65,4 +65,3 @@ CREATE TYPE BrugerType AS
 
 
 
-

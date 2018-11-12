@@ -83,4 +83,3 @@ CREATE TYPE IndsatsType AS
 
 
 
-

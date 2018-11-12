@@ -9,86 +9,77 @@
 NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
-CREATE OR REPLACE FUNCTION as_create_or_import_organisation(
-  organisation_registrering OrganisationRegistreringType,
-  organisation_uuid uuid DEFAULT NULL,
-  auth_criteria_arr OrganisationRegistreringType[] DEFAULT NULL
-	)
-  RETURNS uuid AS 
-$$
-DECLARE
-  organisation_registrering_id bigint;
-  organisation_attr_egenskaber_obj organisationEgenskaberAttrType;
-  
-  organisation_tils_gyldighed_obj organisationGyldighedTilsType;
-  
-  organisation_relationer OrganisationRelationType;
-  
-  auth_filtered_uuids uuid[];
-  
-  does_exist boolean;
-  new_organisation_registrering organisation_registrering;
+
+CREATE OR REPLACE FUNCTION as_create_or_import_organisation (
+    organisation_registrering OrganisationRegistreringType,
+    organisation_uuid uuid DEFAULT NULL, auth_criteria_arr
+    OrganisationRegistreringType[] DEFAULT NULL) RETURNS uuid AS
+$$ DECLARE organisation_registrering_id bigint;
+
+    
+    organisation_attr_egenskaber_obj organisationEgenskaberAttrType;
+    
+
+    
+    organisation_tils_gyldighed_obj organisationGyldighedTilsType;
+    
+
+    organisation_relationer OrganisationRelationType;
+
+    
+
+    auth_filtered_uuids uuid[];
+
+    
+
+    does_exist                    boolean;
+    new_organisation_registrering organisation_registrering;
 BEGIN
+    IF organisation_uuid IS NULL THEN LOOP
+        organisation_uuid:=uuid_generate_v4(); EXIT WHEN NOT EXISTS (SELECT id
+            from organisation WHERE id=organisation_uuid); END LOOP; END IF;
 
-IF organisation_uuid IS NULL THEN
-    LOOP
-    organisation_uuid:=uuid_generate_v4();
-    EXIT WHEN NOT EXISTS (SELECT id from organisation WHERE id=organisation_uuid); 
-    END LOOP;
-END IF;
+    IF EXISTS (SELECT id from organisation WHERE id=organisation_uuid) THEN
+        does_exist = True; ELSE
 
+        does_exist = False; END IF;
 
-IF EXISTS (SELECT id from organisation WHERE id=organisation_uuid) THEN
-    does_exist = True;
-ELSE
+    IF
+        (organisation_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode
+        and
+        (organisation_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode
+        and
+        (organisation_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode
+        THEN RAISE EXCEPTION 'Invalid livscykluskode[%] invoking
+        as_create_or_import_organisation.',(organisation_registrering.registrering).livscykluskode
+        USING ERRCODE='MO400'; END IF;
 
-    does_exist = False;
-END IF;
+    IF NOT does_exist THEN INSERT INTO organisation (ID) SELECT
+        organisation_uuid; END IF;
 
-IF  (organisation_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (organisation_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (organisation_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_organisation.',(organisation_registrering.registrering).livscykluskode USING ERRCODE='MO400';
-END IF;
+    /*********************************/
+    --Insert new registrering
 
+    IF NOT does_exist THEN
+        organisation_registrering_id:=nextval('organisation_registrering_id_seq');
 
-IF NOT does_exist THEN
+        INSERT INTO organisation_registrering ( id, organisation_id,
+            registrering) SELECT organisation_registrering_id,
+        organisation_uuid, ROW (
+            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+        (organisation_registrering.registrering).livscykluskode,
+        (organisation_registrering.registrering).brugerref,
+        (organisation_registrering.registrering).note):: RegistreringBase ;
+    ELSE
+        -- This is an update, not an import or create
+            new_organisation_registrering :=
+            _as_create_organisation_registrering( organisation_uuid,
+                (organisation_registrering.registrering).livscykluskode,
+                (organisation_registrering.registrering).brugerref,
+                (organisation_registrering.registrering).note);
 
-    INSERT INTO
-          organisation (ID)
-    SELECT
-          organisation_uuid;
-END IF;
-
-
-/*********************************/
---Insert new registrering
-
-IF NOT does_exist THEN
-    organisation_registrering_id:=nextval('organisation_registrering_id_seq');
-
-    INSERT INTO organisation_registrering (
-          id,
-          organisation_id,
-          registrering
-        )
-    SELECT
-          organisation_registrering_id,
-           organisation_uuid,
-           ROW (
-             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-             (organisation_registrering.registrering).livscykluskode,
-             (organisation_registrering.registrering).brugerref,
-             (organisation_registrering.registrering).note
-               ):: RegistreringBase ;
-ELSE
-    -- This is an update, not an import or create
-        new_organisation_registrering := _as_create_organisation_registrering(
-             organisation_uuid,
-             (organisation_registrering.registrering).livscykluskode,
-             (organisation_registrering.registrering).brugerref,
-             (organisation_registrering.registrering).note);
-
-        organisation_registrering_id := new_organisation_registrering.id;
-END IF;
+            organisation_registrering_id := new_organisation_registrering.id;
+    END IF;
 
 
 /*********************************/
@@ -99,10 +90,10 @@ END IF;
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
- 
-IF coalesce(array_length(organisation_registrering.attrEgenskaber, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [organisation]. Oprettelse afbrydes.' USING ERRCODE='MO400';
-END IF;
+
+IF coalesce(array_length(organisation_registrering.attrEgenskaber,
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    [organisation]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
 
@@ -198,5 +189,4 @@ RETURN organisation_uuid;
 
 END;
 $$ LANGUAGE plpgsql VOLATILE;
-
 

@@ -78,4 +78,3 @@ CREATE TYPE KlasseType AS
 
 
 
-

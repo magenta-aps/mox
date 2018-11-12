@@ -159,4 +159,3 @@ create cast (ItsystemType as json) with function actual_state._cast_itsystemType
 
 
 
-

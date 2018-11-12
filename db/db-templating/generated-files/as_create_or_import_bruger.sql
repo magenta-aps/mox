@@ -9,86 +9,77 @@
 NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
-CREATE OR REPLACE FUNCTION as_create_or_import_bruger(
-  bruger_registrering BrugerRegistreringType,
-  bruger_uuid uuid DEFAULT NULL,
-  auth_criteria_arr BrugerRegistreringType[] DEFAULT NULL
-	)
-  RETURNS uuid AS 
-$$
-DECLARE
-  bruger_registrering_id bigint;
-  bruger_attr_egenskaber_obj brugerEgenskaberAttrType;
-  
-  bruger_tils_gyldighed_obj brugerGyldighedTilsType;
-  
-  bruger_relationer BrugerRelationType;
-  
-  auth_filtered_uuids uuid[];
-  
-  does_exist boolean;
-  new_bruger_registrering bruger_registrering;
+
+CREATE OR REPLACE FUNCTION as_create_or_import_bruger (
+    bruger_registrering BrugerRegistreringType,
+    bruger_uuid uuid DEFAULT NULL, auth_criteria_arr
+    BrugerRegistreringType[] DEFAULT NULL) RETURNS uuid AS
+$$ DECLARE bruger_registrering_id bigint;
+
+    
+    bruger_attr_egenskaber_obj brugerEgenskaberAttrType;
+    
+
+    
+    bruger_tils_gyldighed_obj brugerGyldighedTilsType;
+    
+
+    bruger_relationer BrugerRelationType;
+
+    
+
+    auth_filtered_uuids uuid[];
+
+    
+
+    does_exist                    boolean;
+    new_bruger_registrering bruger_registrering;
 BEGIN
+    IF bruger_uuid IS NULL THEN LOOP
+        bruger_uuid:=uuid_generate_v4(); EXIT WHEN NOT EXISTS (SELECT id
+            from bruger WHERE id=bruger_uuid); END LOOP; END IF;
 
-IF bruger_uuid IS NULL THEN
-    LOOP
-    bruger_uuid:=uuid_generate_v4();
-    EXIT WHEN NOT EXISTS (SELECT id from bruger WHERE id=bruger_uuid); 
-    END LOOP;
-END IF;
+    IF EXISTS (SELECT id from bruger WHERE id=bruger_uuid) THEN
+        does_exist = True; ELSE
 
+        does_exist = False; END IF;
 
-IF EXISTS (SELECT id from bruger WHERE id=bruger_uuid) THEN
-    does_exist = True;
-ELSE
+    IF
+        (bruger_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode
+        and
+        (bruger_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode
+        and
+        (bruger_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode
+        THEN RAISE EXCEPTION 'Invalid livscykluskode[%] invoking
+        as_create_or_import_bruger.',(bruger_registrering.registrering).livscykluskode
+        USING ERRCODE='MO400'; END IF;
 
-    does_exist = False;
-END IF;
+    IF NOT does_exist THEN INSERT INTO bruger (ID) SELECT
+        bruger_uuid; END IF;
 
-IF  (bruger_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (bruger_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (bruger_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_bruger.',(bruger_registrering.registrering).livscykluskode USING ERRCODE='MO400';
-END IF;
+    /*********************************/
+    --Insert new registrering
 
+    IF NOT does_exist THEN
+        bruger_registrering_id:=nextval('bruger_registrering_id_seq');
 
-IF NOT does_exist THEN
+        INSERT INTO bruger_registrering ( id, bruger_id,
+            registrering) SELECT bruger_registrering_id,
+        bruger_uuid, ROW (
+            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+        (bruger_registrering.registrering).livscykluskode,
+        (bruger_registrering.registrering).brugerref,
+        (bruger_registrering.registrering).note):: RegistreringBase ;
+    ELSE
+        -- This is an update, not an import or create
+            new_bruger_registrering :=
+            _as_create_bruger_registrering( bruger_uuid,
+                (bruger_registrering.registrering).livscykluskode,
+                (bruger_registrering.registrering).brugerref,
+                (bruger_registrering.registrering).note);
 
-    INSERT INTO
-          bruger (ID)
-    SELECT
-          bruger_uuid;
-END IF;
-
-
-/*********************************/
---Insert new registrering
-
-IF NOT does_exist THEN
-    bruger_registrering_id:=nextval('bruger_registrering_id_seq');
-
-    INSERT INTO bruger_registrering (
-          id,
-          bruger_id,
-          registrering
-        )
-    SELECT
-          bruger_registrering_id,
-           bruger_uuid,
-           ROW (
-             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-             (bruger_registrering.registrering).livscykluskode,
-             (bruger_registrering.registrering).brugerref,
-             (bruger_registrering.registrering).note
-               ):: RegistreringBase ;
-ELSE
-    -- This is an update, not an import or create
-        new_bruger_registrering := _as_create_bruger_registrering(
-             bruger_uuid,
-             (bruger_registrering.registrering).livscykluskode,
-             (bruger_registrering.registrering).brugerref,
-             (bruger_registrering.registrering).note);
-
-        bruger_registrering_id := new_bruger_registrering.id;
-END IF;
+            bruger_registrering_id := new_bruger_registrering.id;
+    END IF;
 
 
 /*********************************/
@@ -99,10 +90,10 @@ END IF;
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
- 
-IF coalesce(array_length(bruger_registrering.attrEgenskaber, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [bruger]. Oprettelse afbrydes.' USING ERRCODE='MO400';
-END IF;
+
+IF coalesce(array_length(bruger_registrering.attrEgenskaber,
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    [bruger]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
 
@@ -200,5 +191,4 @@ RETURN bruger_uuid;
 
 END;
 $$ LANGUAGE plpgsql VOLATILE;
-
 

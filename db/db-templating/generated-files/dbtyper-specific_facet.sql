@@ -69,4 +69,3 @@ CREATE TYPE FacetType AS
 
 
 
-

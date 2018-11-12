@@ -11,41 +11,36 @@ NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.p
 
 
 CREATE OR REPLACE FUNCTION _as_sorted_sag(
-        sag_uuids uuid[],
-        virkningSoeg TSTZRANGE,
-        registreringObj SagRegistreringType,
-	    firstResult int,
-	    maxResults int
-        )
-  RETURNS uuid[] AS
-  $$
-  DECLARE
-          sag_sorted_uuid uuid[];
-          registreringSoeg TSTZRANGE;
-  BEGIN
+    sag_uuids uuid[],
+    virkningSoeg       TSTZRANGE,
+    registreringObj    SagRegistreringType,
+    firstResult        int,
+    maxResults         int
+) RETURNS uuid[] AS $$
+DECLARE
+    sag_sorted_uuid uuid[];
+    registreringSoeg         TSTZRANGE;
+BEGIN
+    IF registreringObj IS NULL OR (registreringObj.registrering).timePeriod IS NULL THEN
+        registreringSoeg = TSTZRANGE(current_timestamp, current_timestamp, '[]');
+    ELSE
+        registreringSoeg = (registreringObj.registrering).timePeriod;
+    END IF;
 
-IF registreringObj IS NULL OR (registreringObj.registrering).timePeriod IS NULL THEN
-   registreringSoeg = TSTZRANGE(current_timestamp, current_timestamp, '[]');
-ELSE
-    registreringSoeg = (registreringObj.registrering).timePeriod;
-END IF;
-
-sag_sorted_uuid:=array(
-       SELECT b.sag_id
-       FROM sag_registrering b
-       JOIN sag_attr_egenskaber a ON a.sag_registrering_id=b.id
-       WHERE b.sag_id = ANY (sag_uuids)
+    sag_sorted_uuid:=array(
+          SELECT b.sag_id
+            FROM sag_registrering b
+            JOIN sag_attr_egenskaber a ON a.sag_registrering_id=b.id
+           WHERE b.sag_id = ANY (sag_uuids)
              AND (b.registrering).timeperiod && registreringSoeg
              AND (a.virkning).timePeriod && virkningSoeg
-       GROUP BY b.sag_id
-       ORDER BY array_agg(DISTINCT a.brugervendtnoegle), b.sag_id
-       LIMIT maxResults OFFSET firstResult
-);
+        GROUP BY b.sag_id
+        ORDER BY array_agg(DISTINCT a.brugervendtnoegle), b.sag_id
+           LIMIT maxResults OFFSET firstResult
+    );
 
-RETURN sag_sorted_uuid;
-
+    RETURN sag_sorted_uuid;
 END;
 $$ LANGUAGE plpgsql STABLE;
-
 
 

@@ -436,4 +436,3 @@ CREATE INDEX aktivitet_relation_pat_virkning_notetekst
 
 
 
-

@@ -86,4 +86,3 @@ CREATE TYPE TilstandType AS
 
 
 
-

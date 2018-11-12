@@ -102,4 +102,3 @@ CREATE OR REPLACE FUNCTION _aktivitet_aktoer_attr_repr_urn_to_text(AktivitetAkto
 
 
 
-

@@ -328,4 +328,3 @@ CREATE INDEX interessefaellesskab_relation_pat_virkning_notetekst
 
 
 
-

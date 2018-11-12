@@ -391,4 +391,3 @@ CREATE INDEX indsats_relation_pat_virkning_notetekst
 
 
 
-

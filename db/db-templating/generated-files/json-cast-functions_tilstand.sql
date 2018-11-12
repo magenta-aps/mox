@@ -166,4 +166,3 @@ create cast (TilstandType as json) with function actual_state._cast_tilstandType
 
 
 
-

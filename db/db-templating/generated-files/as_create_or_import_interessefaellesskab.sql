@@ -9,86 +9,77 @@
 NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
-CREATE OR REPLACE FUNCTION as_create_or_import_interessefaellesskab(
-  interessefaellesskab_registrering InteressefaellesskabRegistreringType,
-  interessefaellesskab_uuid uuid DEFAULT NULL,
-  auth_criteria_arr InteressefaellesskabRegistreringType[] DEFAULT NULL
-	)
-  RETURNS uuid AS 
-$$
-DECLARE
-  interessefaellesskab_registrering_id bigint;
-  interessefaellesskab_attr_egenskaber_obj interessefaellesskabEgenskaberAttrType;
-  
-  interessefaellesskab_tils_gyldighed_obj interessefaellesskabGyldighedTilsType;
-  
-  interessefaellesskab_relationer InteressefaellesskabRelationType;
-  
-  auth_filtered_uuids uuid[];
-  
-  does_exist boolean;
-  new_interessefaellesskab_registrering interessefaellesskab_registrering;
+
+CREATE OR REPLACE FUNCTION as_create_or_import_interessefaellesskab (
+    interessefaellesskab_registrering InteressefaellesskabRegistreringType,
+    interessefaellesskab_uuid uuid DEFAULT NULL, auth_criteria_arr
+    InteressefaellesskabRegistreringType[] DEFAULT NULL) RETURNS uuid AS
+$$ DECLARE interessefaellesskab_registrering_id bigint;
+
+    
+    interessefaellesskab_attr_egenskaber_obj interessefaellesskabEgenskaberAttrType;
+    
+
+    
+    interessefaellesskab_tils_gyldighed_obj interessefaellesskabGyldighedTilsType;
+    
+
+    interessefaellesskab_relationer InteressefaellesskabRelationType;
+
+    
+
+    auth_filtered_uuids uuid[];
+
+    
+
+    does_exist                    boolean;
+    new_interessefaellesskab_registrering interessefaellesskab_registrering;
 BEGIN
+    IF interessefaellesskab_uuid IS NULL THEN LOOP
+        interessefaellesskab_uuid:=uuid_generate_v4(); EXIT WHEN NOT EXISTS (SELECT id
+            from interessefaellesskab WHERE id=interessefaellesskab_uuid); END LOOP; END IF;
 
-IF interessefaellesskab_uuid IS NULL THEN
-    LOOP
-    interessefaellesskab_uuid:=uuid_generate_v4();
-    EXIT WHEN NOT EXISTS (SELECT id from interessefaellesskab WHERE id=interessefaellesskab_uuid); 
-    END LOOP;
-END IF;
+    IF EXISTS (SELECT id from interessefaellesskab WHERE id=interessefaellesskab_uuid) THEN
+        does_exist = True; ELSE
 
+        does_exist = False; END IF;
 
-IF EXISTS (SELECT id from interessefaellesskab WHERE id=interessefaellesskab_uuid) THEN
-    does_exist = True;
-ELSE
+    IF
+        (interessefaellesskab_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode
+        and
+        (interessefaellesskab_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode
+        and
+        (interessefaellesskab_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode
+        THEN RAISE EXCEPTION 'Invalid livscykluskode[%] invoking
+        as_create_or_import_interessefaellesskab.',(interessefaellesskab_registrering.registrering).livscykluskode
+        USING ERRCODE='MO400'; END IF;
 
-    does_exist = False;
-END IF;
+    IF NOT does_exist THEN INSERT INTO interessefaellesskab (ID) SELECT
+        interessefaellesskab_uuid; END IF;
 
-IF  (interessefaellesskab_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (interessefaellesskab_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (interessefaellesskab_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_interessefaellesskab.',(interessefaellesskab_registrering.registrering).livscykluskode USING ERRCODE='MO400';
-END IF;
+    /*********************************/
+    --Insert new registrering
 
+    IF NOT does_exist THEN
+        interessefaellesskab_registrering_id:=nextval('interessefaellesskab_registrering_id_seq');
 
-IF NOT does_exist THEN
+        INSERT INTO interessefaellesskab_registrering ( id, interessefaellesskab_id,
+            registrering) SELECT interessefaellesskab_registrering_id,
+        interessefaellesskab_uuid, ROW (
+            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+        (interessefaellesskab_registrering.registrering).livscykluskode,
+        (interessefaellesskab_registrering.registrering).brugerref,
+        (interessefaellesskab_registrering.registrering).note):: RegistreringBase ;
+    ELSE
+        -- This is an update, not an import or create
+            new_interessefaellesskab_registrering :=
+            _as_create_interessefaellesskab_registrering( interessefaellesskab_uuid,
+                (interessefaellesskab_registrering.registrering).livscykluskode,
+                (interessefaellesskab_registrering.registrering).brugerref,
+                (interessefaellesskab_registrering.registrering).note);
 
-    INSERT INTO
-          interessefaellesskab (ID)
-    SELECT
-          interessefaellesskab_uuid;
-END IF;
-
-
-/*********************************/
---Insert new registrering
-
-IF NOT does_exist THEN
-    interessefaellesskab_registrering_id:=nextval('interessefaellesskab_registrering_id_seq');
-
-    INSERT INTO interessefaellesskab_registrering (
-          id,
-          interessefaellesskab_id,
-          registrering
-        )
-    SELECT
-          interessefaellesskab_registrering_id,
-           interessefaellesskab_uuid,
-           ROW (
-             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-             (interessefaellesskab_registrering.registrering).livscykluskode,
-             (interessefaellesskab_registrering.registrering).brugerref,
-             (interessefaellesskab_registrering.registrering).note
-               ):: RegistreringBase ;
-ELSE
-    -- This is an update, not an import or create
-        new_interessefaellesskab_registrering := _as_create_interessefaellesskab_registrering(
-             interessefaellesskab_uuid,
-             (interessefaellesskab_registrering.registrering).livscykluskode,
-             (interessefaellesskab_registrering.registrering).brugerref,
-             (interessefaellesskab_registrering.registrering).note);
-
-        interessefaellesskab_registrering_id := new_interessefaellesskab_registrering.id;
-END IF;
+            interessefaellesskab_registrering_id := new_interessefaellesskab_registrering.id;
+    END IF;
 
 
 /*********************************/
@@ -99,10 +90,10 @@ END IF;
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
- 
-IF coalesce(array_length(interessefaellesskab_registrering.attrEgenskaber, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [interessefaellesskab]. Oprettelse afbrydes.' USING ERRCODE='MO400';
-END IF;
+
+IF coalesce(array_length(interessefaellesskab_registrering.attrEgenskaber,
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    [interessefaellesskab]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
 
@@ -200,5 +191,4 @@ RETURN interessefaellesskab_uuid;
 
 END;
 $$ LANGUAGE plpgsql VOLATILE;
-
 

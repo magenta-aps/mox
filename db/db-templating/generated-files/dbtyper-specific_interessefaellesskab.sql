@@ -65,4 +65,3 @@ CREATE TYPE InteressefaellesskabType AS
 
 
 
-

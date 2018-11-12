@@ -721,4 +721,3 @@ CREATE INDEX dokument_del_relation_pat_virkning_notetekst
   (((virkning).notetekst) gin_trgm_ops);
 
 
-

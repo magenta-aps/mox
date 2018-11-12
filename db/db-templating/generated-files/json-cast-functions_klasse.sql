@@ -159,4 +159,3 @@ create cast (KlasseType as json) with function actual_state._cast_klasseType_to_
 
 
 
-

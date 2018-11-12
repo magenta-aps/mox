@@ -66,4 +66,3 @@ CREATE TYPE KlassifikationType AS
 
 
 
-

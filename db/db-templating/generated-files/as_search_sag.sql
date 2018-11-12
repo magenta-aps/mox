@@ -11,31 +11,37 @@ NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.p
 
 
 CREATE OR REPLACE FUNCTION as_search_sag(
-	firstResult int,--TOOD ??
-	sag_uuid uuid,
-	registreringObj SagRegistreringType,
-	virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
-	maxResults int = 2147483647,
-	anyAttrValueArr text[] = '{}'::text[],
-	anyuuidArr	uuid[] = '{}'::uuid[],
-	anyurnArr text[] = '{}'::text[],
-	auth_criteria_arr SagRegistreringType[]=null
-	)
-  RETURNS uuid[] AS 
-$$
-DECLARE
-	sag_candidates uuid[];
-	sag_candidates_is_initialized boolean;
-	--to_be_applyed_filter_uuids uuid[]; 
-	attrEgenskaberTypeObj SagEgenskaberAttrType;
-	
-  	tilsFremdriftTypeObj SagFremdriftTilsType;
-	relationTypeObj SagRelationType;
-	anyAttrValue text;
-	anyuuid uuid;
-	anyurn text;
+    firstResult       int,--TOOD ??
+    sag_uuid uuid,
+    registreringObj   SagRegistreringType,
+    virkningSoeg      TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+    maxResults        int = 2147483647,
+    anyAttrValueArr   text[] = '{}'::text[],
+    anyuuidArr        uuid[] = '{}'::uuid[],
+    anyurnArr         text[] = '{}'::text[],
+    auth_criteria_arr SagRegistreringType[]=null
+
     
-	auth_filtered_uuids uuid[];
+
+) RETURNS uuid[] AS $$
+DECLARE
+    sag_candidates                uuid[];
+    sag_candidates_is_initialized boolean;
+    --to_be_applyed_filter_uuids uuid[];
+    attrEgenskaberTypeObj SagEgenskaberAttrType;
+
+    
+    tilsFremdriftTypeObj SagFremdriftTilsType;
+
+    relationTypeObj SagRelationType;
+    anyAttrValue    text;
+    anyuuid         uuid;
+    anyurn          text;
+
+    
+
+    auth_filtered_uuids uuid[];
+
     
 BEGIN
 
@@ -44,19 +50,19 @@ BEGIN
 sag_candidates_is_initialized := false;
 
 IF sag_uuid is not NULL THEN
-	sag_candidates:= ARRAY[sag_uuid];
-	sag_candidates_is_initialized:=true;
-	IF registreringObj IS NULL THEN
-	--RAISE DEBUG 'no registreringObj'
-	ELSE	
-		sag_candidates:=array(
-				SELECT DISTINCT
-				b.sag_id 
-				FROM
-				sag a
-				JOIN sag_registrering b on b.sag_id=a.id
-				WHERE
-						(
+    sag_candidates:= ARRAY[sag_uuid];
+    sag_candidates_is_initialized:=true;
+    IF registreringObj IS NULL THEN
+    --RAISE DEBUG 'no registreringObj'
+    ELSE
+        sag_candidates:=array(
+                SELECT DISTINCT
+                b.sag_id
+                FROM
+                sag a
+                JOIN sag_registrering b on b.sag_id=a.id
+                WHERE
+                		(
 				(registreringObj.registrering) IS NULL 
 				OR
 				(
@@ -124,9 +130,8 @@ IF sag_uuid is not NULL THEN
 		AND
 		( (NOT sag_candidates_is_initialized) OR b.sag_id = ANY (sag_candidates) )
 
-		);		
-	END IF;
-	
+        );
+    END IF;
 END IF;
 
 
@@ -144,129 +149,129 @@ END IF;
 --Filtration on attribute: Egenskaber
 --/**********************************************************//
 IF registreringObj IS NULL OR (registreringObj).attrEgenskaber IS NULL THEN
-	--RAISE DEBUG 'as_search_sag: skipping filtration on attrEgenskaber';
+    --RAISE DEBUG 'as_search_sag: skipping filtration on attrEgenskaber';
 ELSE
 
-	IF (coalesce(array_length(sag_candidates,1),0)>0 OR NOT sag_candidates_is_initialized) THEN
+    IF (coalesce(array_length(sag_candidates,1),0)>0 OR NOT sag_candidates_is_initialized) THEN
         
-		FOREACH attrEgenskaberTypeObj IN ARRAY registreringObj.attrEgenskaber
+        FOREACH attrEgenskaberTypeObj IN ARRAY registreringObj.attrEgenskaber
         
-		LOOP
-			sag_candidates:=array(
-			SELECT DISTINCT
-			b.sag_id 
-			FROM  sag_attr_egenskaber a
-			JOIN sag_registrering b on a.sag_registrering_id=b.id
+        LOOP
+            sag_candidates:=array(
+            SELECT DISTINCT
+            b.sag_id
+            FROM  sag_attr_egenskaber a
+            JOIN sag_registrering b on a.sag_registrering_id=b.id
             
-			WHERE
-				(
-					(
-						attrEgenskaberTypeObj.virkning IS NULL 
-						OR
-						(
-							(
-								(
-							 		(attrEgenskaberTypeObj.virkning).TimePeriod IS NULL
-								)
-								OR
-								(
-									(attrEgenskaberTypeObj.virkning).TimePeriod && (a.virkning).TimePeriod
-								)
-							)
-							AND
-							(
-									(attrEgenskaberTypeObj.virkning).AktoerRef IS NULL OR (attrEgenskaberTypeObj.virkning).AktoerRef=(a.virkning).AktoerRef
-							)
-							AND
-							(
-									(attrEgenskaberTypeObj.virkning).AktoerTypeKode IS NULL OR (attrEgenskaberTypeObj.virkning).AktoerTypeKode=(a.virkning).AktoerTypeKode
-							)
-							AND
-							(
-									(attrEgenskaberTypeObj.virkning).NoteTekst IS NULL OR  (a.virkning).NoteTekst ILIKE (attrEgenskaberTypeObj.virkning).NoteTekst  
-							)
-						)
-					)
-				)
-				AND
-				(
-					(NOT (attrEgenskaberTypeObj.virkning IS NULL OR (attrEgenskaberTypeObj.virkning).TimePeriod IS NULL)) --we have already filtered on virkning above
-					OR
-					(
-						virkningSoeg IS NULL
-						OR
-						virkningSoeg && (a.virkning).TimePeriod
-					)
-				)
-				AND
-				(
-					attrEgenskaberTypeObj.brugervendtnoegle IS NULL
-					OR 
-					a.brugervendtnoegle ILIKE attrEgenskaberTypeObj.brugervendtnoegle --case insensitive 
-				)
-				AND
-				(
-					attrEgenskaberTypeObj.afleveret IS NULL
-					OR 
-					a.afleveret = attrEgenskaberTypeObj.afleveret 
-				)
-				AND
-				(
-					attrEgenskaberTypeObj.beskrivelse IS NULL
-					OR 
-					a.beskrivelse ILIKE attrEgenskaberTypeObj.beskrivelse --case insensitive 
-				)
-				AND
-				(
-					attrEgenskaberTypeObj.hjemmel IS NULL
-					OR 
-					a.hjemmel ILIKE attrEgenskaberTypeObj.hjemmel --case insensitive 
-				)
-				AND
-				(
-					attrEgenskaberTypeObj.kassationskode IS NULL
-					OR 
-					a.kassationskode ILIKE attrEgenskaberTypeObj.kassationskode --case insensitive 
-				)
-				AND
-				(
-					attrEgenskaberTypeObj.offentlighedundtaget IS NULL
-					OR
-						(
-							(
-								(attrEgenskaberTypeObj.offentlighedundtaget).AlternativTitel IS NULL
-								OR
-								(a.offentlighedundtaget).AlternativTitel ILIKE (attrEgenskaberTypeObj.offentlighedundtaget).AlternativTitel 
-							)
-							AND
-							(
-								(attrEgenskaberTypeObj.offentlighedundtaget).Hjemmel IS NULL
-								OR
-								(a.offentlighedundtaget).Hjemmel ILIKE (attrEgenskaberTypeObj.offentlighedundtaget).Hjemmel
-							)
-						) 
-				)
-				AND
-				(
-					attrEgenskaberTypeObj.principiel IS NULL
-					OR 
-					a.principiel = attrEgenskaberTypeObj.principiel 
-				)
-				AND
-				(
-					attrEgenskaberTypeObj.sagsnummer IS NULL
-					OR 
-					a.sagsnummer ILIKE attrEgenskaberTypeObj.sagsnummer --case insensitive 
-				)
-				AND
-				(
-					attrEgenskaberTypeObj.titel IS NULL
-					OR 
-					a.titel ILIKE attrEgenskaberTypeObj.titel --case insensitive 
-				)
-				AND
+            WHERE
+                (
+                    (
+                        attrEgenskaberTypeObj.virkning IS NULL 
+                        OR
+                        (
+                            (
+                                (
+                                     (attrEgenskaberTypeObj.virkning).TimePeriod IS NULL
+                                )
+                                OR
+                                (
+                                    (attrEgenskaberTypeObj.virkning).TimePeriod && (a.virkning).TimePeriod
+                                )
+                            )
+                            AND
+                            (
+                                    (attrEgenskaberTypeObj.virkning).AktoerRef IS NULL OR (attrEgenskaberTypeObj.virkning).AktoerRef=(a.virkning).AktoerRef
+                            )
+                            AND
+                            (
+                                    (attrEgenskaberTypeObj.virkning).AktoerTypeKode IS NULL OR (attrEgenskaberTypeObj.virkning).AktoerTypeKode=(a.virkning).AktoerTypeKode
+                            )
+                            AND
+                            (
+                                    (attrEgenskaberTypeObj.virkning).NoteTekst IS NULL OR  (a.virkning).NoteTekst ILIKE (attrEgenskaberTypeObj.virkning).NoteTekst  
+                            )
+                        )
+                    )
+                )
+                AND
+                (
+                    (NOT (attrEgenskaberTypeObj.virkning IS NULL OR (attrEgenskaberTypeObj.virkning).TimePeriod IS NULL)) --we have already filtered on virkning above
+                    OR
+                    (
+                        virkningSoeg IS NULL
+                        OR
+                        virkningSoeg && (a.virkning).TimePeriod
+                    )
+                )
+                AND
+                (
+                    attrEgenskaberTypeObj.brugervendtnoegle IS NULL
+                    OR
+                    a.brugervendtnoegle ILIKE attrEgenskaberTypeObj.brugervendtnoegle --case insensitive
+                )
+                AND
+                (
+                    attrEgenskaberTypeObj.afleveret IS NULL
+                    OR
+                    a.afleveret = attrEgenskaberTypeObj.afleveret
+                )
+                AND
+                (
+                    attrEgenskaberTypeObj.beskrivelse IS NULL
+                    OR
+                    a.beskrivelse ILIKE attrEgenskaberTypeObj.beskrivelse --case insensitive
+                )
+                AND
+                (
+                    attrEgenskaberTypeObj.hjemmel IS NULL
+                    OR
+                    a.hjemmel ILIKE attrEgenskaberTypeObj.hjemmel --case insensitive
+                )
+                AND
+                (
+                    attrEgenskaberTypeObj.kassationskode IS NULL
+                    OR
+                    a.kassationskode ILIKE attrEgenskaberTypeObj.kassationskode --case insensitive
+                )
+                AND
+                (
+                    attrEgenskaberTypeObj.offentlighedundtaget IS NULL
+                    OR
+                        (
+                            (
+                                (attrEgenskaberTypeObj.offentlighedundtaget).AlternativTitel IS NULL
+                                OR
+                                (a.offentlighedundtaget).AlternativTitel ILIKE (attrEgenskaberTypeObj.offentlighedundtaget).AlternativTitel
+                            )
+                            AND
+                            (
+                                (attrEgenskaberTypeObj.offentlighedundtaget).Hjemmel IS NULL
+                                OR
+                                (a.offentlighedundtaget).Hjemmel ILIKE (attrEgenskaberTypeObj.offentlighedundtaget).Hjemmel
+                            )
+                        )
+                )
+                AND
+                (
+                    attrEgenskaberTypeObj.principiel IS NULL
+                    OR
+                    a.principiel = attrEgenskaberTypeObj.principiel
+                )
+                AND
+                (
+                    attrEgenskaberTypeObj.sagsnummer IS NULL
+                    OR
+                    a.sagsnummer ILIKE attrEgenskaberTypeObj.sagsnummer --case insensitive
+                )
+                AND
+                (
+                    attrEgenskaberTypeObj.titel IS NULL
+                    OR
+                    a.titel ILIKE attrEgenskaberTypeObj.titel --case insensitive
+                )
+                AND
                 
-						(
+                		(
 				(registreringObj.registrering) IS NULL 
 				OR
 				(
@@ -334,14 +339,13 @@ ELSE
 		AND
 		( (NOT sag_candidates_is_initialized) OR b.sag_id = ANY (sag_candidates) )
 
-			);
-			
+            );
 
-			sag_candidates_is_initialized:=true;
-			
 
-		END LOOP;
-	END IF;
+            sag_candidates_is_initialized:=true;
+
+        END LOOP;
+    END IF;
 END IF;
 --RAISE DEBUG 'sag_candidates_is_initialized step 3:%',sag_candidates_is_initialized;
 --RAISE DEBUG 'sag_candidates step 3:%',sag_candidates;
@@ -351,38 +355,38 @@ END IF;
 --/**********************************************************//
 IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 
-	FOREACH anyAttrValue IN ARRAY anyAttrValueArr
-	LOOP
-		sag_candidates:=array( 
+    FOREACH anyAttrValue IN ARRAY anyAttrValueArr
+    LOOP
+        sag_candidates:=array(
 
-			SELECT DISTINCT
-			b.sag_id
+            SELECT DISTINCT
+            b.sag_id
             
-			FROM  sag_attr_egenskaber a
-			JOIN sag_registrering b on a.sag_registrering_id=b.id
+            FROM  sag_attr_egenskaber a
+            JOIN sag_registrering b on a.sag_registrering_id=b.id
             
-			WHERE
-			(
-						a.brugervendtnoegle ILIKE anyAttrValue OR
-								
-						a.beskrivelse ILIKE anyAttrValue OR
-						a.hjemmel ILIKE anyAttrValue OR
-						a.kassationskode ILIKE anyAttrValue OR
-									(a.offentlighedundtaget).Hjemmel ilike anyAttrValue OR (a.offentlighedundtaget).AlternativTitel ilike anyAttrValue OR
-								
-						a.sagsnummer ILIKE anyAttrValue OR
-						a.titel ILIKE anyAttrValue
+            WHERE
+            (
+                        a.brugervendtnoegle ILIKE anyAttrValue OR
+                                
+                        a.beskrivelse ILIKE anyAttrValue OR
+                        a.hjemmel ILIKE anyAttrValue OR
+                        a.kassationskode ILIKE anyAttrValue OR
+                                    (a.offentlighedundtaget).Hjemmel ilike anyAttrValue OR (a.offentlighedundtaget).AlternativTitel ilike anyAttrValue OR
+                                
+                        a.sagsnummer ILIKE anyAttrValue OR
+                        a.titel ILIKE anyAttrValue
                 
-			)
-			AND
-			(
-				virkningSoeg IS NULL
-				OR
-				virkningSoeg && (a.virkning).TimePeriod
-			)
-			AND
+            )
+            AND
+            (
+                virkningSoeg IS NULL
+                OR
+                virkningSoeg && (a.virkning).TimePeriod
+            )
+            AND
             
-					(
+            		(
 				(registreringObj.registrering) IS NULL 
 				OR
 				(
@@ -451,11 +455,11 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 		( (NOT sag_candidates_is_initialized) OR b.sag_id = ANY (sag_candidates) )
 
 
-		);
+        );
 
-	sag_candidates_is_initialized:=true;
+    sag_candidates_is_initialized:=true;
 
-	END LOOP;
+    END LOOP;
 
 END IF;
 
@@ -468,59 +472,59 @@ END IF;
 --Filtration on state: Fremdrift
 --/**********************************************************//
 IF registreringObj IS NULL OR (registreringObj).tilsFremdrift IS NULL THEN
-	--RAISE DEBUG 'as_search_sag: skipping filtration on tilsFremdrift';
+    --RAISE DEBUG 'as_search_sag: skipping filtration on tilsFremdrift';
 ELSE
-	IF (coalesce(array_length(sag_candidates,1),0)>0 OR sag_candidates_is_initialized IS FALSE ) THEN 
+    IF (coalesce(array_length(sag_candidates,1),0)>0 OR sag_candidates_is_initialized IS FALSE ) THEN
 
-		FOREACH tilsFremdriftTypeObj IN ARRAY registreringObj.tilsFremdrift
-		LOOP
-			sag_candidates:=array(
-			SELECT DISTINCT
-			b.sag_id 
-			FROM  sag_tils_fremdrift a
-			JOIN sag_registrering b on a.sag_registrering_id=b.id
-			WHERE
-				(
-					tilsFremdriftTypeObj.virkning IS NULL
-					OR
-					(
-						(
-					 		(tilsFremdriftTypeObj.virkning).TimePeriod IS NULL 
-							OR
-							(tilsFremdriftTypeObj.virkning).TimePeriod && (a.virkning).TimePeriod
-						)
-						AND
-						(
-								(tilsFremdriftTypeObj.virkning).AktoerRef IS NULL OR (tilsFremdriftTypeObj.virkning).AktoerRef=(a.virkning).AktoerRef
-						)
-						AND
-						(
-								(tilsFremdriftTypeObj.virkning).AktoerTypeKode IS NULL OR (tilsFremdriftTypeObj.virkning).AktoerTypeKode=(a.virkning).AktoerTypeKode
-						)
-						AND
-						(
-								(tilsFremdriftTypeObj.virkning).NoteTekst IS NULL OR (a.virkning).NoteTekst ILIKE (tilsFremdriftTypeObj.virkning).NoteTekst
-						)
-					)
-				)
-				AND
-				(
-					(NOT ((tilsFremdriftTypeObj.virkning) IS NULL OR (tilsFremdriftTypeObj.virkning).TimePeriod IS NULL)) --we have already filtered on virkning above
-					OR
-					(
-						virkningSoeg IS NULL
-						OR
-						virkningSoeg && (a.virkning).TimePeriod
-					)
-				)
-				AND
-				(
-					tilsFremdriftTypeObj.fremdrift IS NULL
-					OR
-					tilsFremdriftTypeObj.fremdrift = a.fremdrift
-				)
-				AND
-						(
+        FOREACH tilsFremdriftTypeObj IN ARRAY registreringObj.tilsFremdrift
+        LOOP
+            sag_candidates:=array(
+            SELECT DISTINCT
+            b.sag_id
+            FROM  sag_tils_fremdrift a
+            JOIN sag_registrering b on a.sag_registrering_id=b.id
+            WHERE
+                (
+                    tilsFremdriftTypeObj.virkning IS NULL
+                    OR
+                    (
+                        (
+                             (tilsFremdriftTypeObj.virkning).TimePeriod IS NULL
+                            OR
+                            (tilsFremdriftTypeObj.virkning).TimePeriod && (a.virkning).TimePeriod
+                        )
+                        AND
+                        (
+                                (tilsFremdriftTypeObj.virkning).AktoerRef IS NULL OR (tilsFremdriftTypeObj.virkning).AktoerRef=(a.virkning).AktoerRef
+                        )
+                        AND
+                        (
+                                (tilsFremdriftTypeObj.virkning).AktoerTypeKode IS NULL OR (tilsFremdriftTypeObj.virkning).AktoerTypeKode=(a.virkning).AktoerTypeKode
+                        )
+                        AND
+                        (
+                                (tilsFremdriftTypeObj.virkning).NoteTekst IS NULL OR (a.virkning).NoteTekst ILIKE (tilsFremdriftTypeObj.virkning).NoteTekst
+                        )
+                    )
+                )
+                AND
+                (
+                    (NOT ((tilsFremdriftTypeObj.virkning) IS NULL OR (tilsFremdriftTypeObj.virkning).TimePeriod IS NULL)) --we have already filtered on virkning above
+                    OR
+                    (
+                        virkningSoeg IS NULL
+                        OR
+                        virkningSoeg && (a.virkning).TimePeriod
+                    )
+                )
+                AND
+                (
+                    tilsFremdriftTypeObj.fremdrift IS NULL
+                    OR
+                    tilsFremdriftTypeObj.fremdrift = a.fremdrift
+                )
+                AND
+                		(
 				(registreringObj.registrering) IS NULL 
 				OR
 				(
@@ -588,14 +592,14 @@ ELSE
 		AND
 		( (NOT sag_candidates_is_initialized) OR b.sag_id = ANY (sag_candidates) )
 
-	);
-			
+    );
 
-			sag_candidates_is_initialized:=true;
-			
 
-		END LOOP;
-	END IF;
+            sag_candidates_is_initialized:=true;
+
+
+        END LOOP;
+    END IF;
 END IF;
 
 /*
@@ -612,74 +616,74 @@ END IF;
 
 
 IF registreringObj IS NULL OR (registreringObj).relationer IS NULL THEN
-	--RAISE DEBUG 'as_search_sag: skipping filtration on relationer';
+    --RAISE DEBUG 'as_search_sag: skipping filtration on relationer';
 ELSE
-	IF (coalesce(array_length(sag_candidates,1),0)>0 OR NOT sag_candidates_is_initialized) AND (registreringObj).relationer IS NOT NULL THEN
-		FOREACH relationTypeObj IN ARRAY registreringObj.relationer
-		LOOP
-			sag_candidates:=array(
-			SELECT DISTINCT
-			b.sag_id 
-			FROM  sag_relation a
-			JOIN sag_registrering b on a.sag_registrering_id=b.id
-			WHERE
-				(
-					relationTypeObj.virkning IS NULL
-					OR
-					(
-						(
-						 	(relationTypeObj.virkning).TimePeriod IS NULL 
-							OR
-							(relationTypeObj.virkning).TimePeriod && (a.virkning).TimePeriod
-						)
-						AND
-						(
-								(relationTypeObj.virkning).AktoerRef IS NULL OR (relationTypeObj.virkning).AktoerRef=(a.virkning).AktoerRef
-						)
-						AND
-						(
-								(relationTypeObj.virkning).AktoerTypeKode IS NULL OR (relationTypeObj.virkning).AktoerTypeKode=(a.virkning).AktoerTypeKode
-						)
-						AND
-						(
-								(relationTypeObj.virkning).NoteTekst IS NULL OR (a.virkning).NoteTekst ILIKE (relationTypeObj.virkning).NoteTekst
-						)
-					)
-				)
-				AND
-				(
-					(NOT (relationTypeObj.virkning IS NULL OR (relationTypeObj.virkning).TimePeriod IS NULL)) --we have already filtered on virkning above
-					OR
-					(
-						virkningSoeg IS NULL
-						OR
-						virkningSoeg && (a.virkning).TimePeriod
-					)
-				)
-				AND
-				(	
-					relationTypeObj.relType IS NULL
-					OR
-					relationTypeObj.relType = a.rel_type
-				)
-				AND
-				(
-					relationTypeObj.uuid IS NULL
-					OR
-					relationTypeObj.uuid = a.rel_maal_uuid	
-				)
-				AND
-				(
-					relationTypeObj.objektType IS NULL
-					OR
-					relationTypeObj.objektType = a.objekt_type
-				)
-				AND
-				(
-					relationTypeObj.urn IS NULL
-					OR
-					relationTypeObj.urn = a.rel_maal_urn
-				)
+    IF (coalesce(array_length(sag_candidates,1),0)>0 OR NOT sag_candidates_is_initialized) AND (registreringObj).relationer IS NOT NULL THEN
+        FOREACH relationTypeObj IN ARRAY registreringObj.relationer
+        LOOP
+            sag_candidates:=array(
+            SELECT DISTINCT
+            b.sag_id
+            FROM  sag_relation a
+            JOIN sag_registrering b on a.sag_registrering_id=b.id
+            WHERE
+                (
+                    relationTypeObj.virkning IS NULL
+                    OR
+                    (
+                        (
+                             (relationTypeObj.virkning).TimePeriod IS NULL
+                            OR
+                            (relationTypeObj.virkning).TimePeriod && (a.virkning).TimePeriod
+                        )
+                        AND
+                        (
+                                (relationTypeObj.virkning).AktoerRef IS NULL OR (relationTypeObj.virkning).AktoerRef=(a.virkning).AktoerRef
+                        )
+                        AND
+                        (
+                                (relationTypeObj.virkning).AktoerTypeKode IS NULL OR (relationTypeObj.virkning).AktoerTypeKode=(a.virkning).AktoerTypeKode
+                        )
+                        AND
+                        (
+                                (relationTypeObj.virkning).NoteTekst IS NULL OR (a.virkning).NoteTekst ILIKE (relationTypeObj.virkning).NoteTekst
+                        )
+                    )
+                )
+                AND
+                (
+                    (NOT (relationTypeObj.virkning IS NULL OR (relationTypeObj.virkning).TimePeriod IS NULL)) --we have already filtered on virkning above
+                    OR
+                    (
+                        virkningSoeg IS NULL
+                        OR
+                        virkningSoeg && (a.virkning).TimePeriod
+                    )
+                )
+                AND
+                (
+                    relationTypeObj.relType IS NULL
+                    OR
+                    relationTypeObj.relType = a.rel_type
+                )
+                AND
+                (
+                    relationTypeObj.uuid IS NULL
+                    OR
+                    relationTypeObj.uuid = a.rel_maal_uuid
+                )
+                AND
+                (
+                    relationTypeObj.objektType IS NULL
+                    OR
+                    relationTypeObj.objektType = a.objekt_type
+                )
+                AND
+                (
+                    relationTypeObj.urn IS NULL
+                    OR
+                    relationTypeObj.urn = a.rel_maal_urn
+                )
                 
                 AND
                 (
@@ -749,8 +753,8 @@ ELSE
                 )
                 
                 
-				AND
-						(
+                AND
+                		(
 				(registreringObj.registrering) IS NULL 
 				OR
 				(
@@ -818,39 +822,38 @@ ELSE
 		AND
 		( (NOT sag_candidates_is_initialized) OR b.sag_id = ANY (sag_candidates) )
 
-	);
-			
-			sag_candidates_is_initialized:=true;
-			
+    );
 
-		END LOOP;
-	END IF;
+            sag_candidates_is_initialized:=true;
+
+        END LOOP;
+    END IF;
 END IF;
 --/**********************//
 
 IF coalesce(array_length(anyuuidArr ,1),0)>0 THEN
 
-	FOREACH anyuuid IN ARRAY anyuuidArr
-	LOOP
-		sag_candidates:=array(
-			SELECT DISTINCT
-			b.sag_id 
+    FOREACH anyuuid IN ARRAY anyuuidArr
+    LOOP
+        sag_candidates:=array(
+            SELECT DISTINCT
+            b.sag_id
             
-			FROM  sag_relation a
-			JOIN sag_registrering b on a.sag_registrering_id=b.id
-			WHERE
+            FROM  sag_relation a
+            JOIN sag_registrering b on a.sag_registrering_id=b.id
+            WHERE
             
-			anyuuid = a.rel_maal_uuid
+            anyuuid = a.rel_maal_uuid
             
-			AND
-			(
-				virkningSoeg IS NULL
-				OR
-				virkningSoeg && (a.virkning).TimePeriod
-			)
+            AND
+            (
+                virkningSoeg IS NULL
+                OR
+                virkningSoeg && (a.virkning).TimePeriod
+            )
             
-			AND
-					(
+            AND
+            		(
 				(registreringObj.registrering) IS NULL 
 				OR
 				(
@@ -919,37 +922,37 @@ IF coalesce(array_length(anyuuidArr ,1),0)>0 THEN
 		( (NOT sag_candidates_is_initialized) OR b.sag_id = ANY (sag_candidates) )
 
 
-			);
+            );
 
-	sag_candidates_is_initialized:=true;
-	END LOOP;
+    sag_candidates_is_initialized:=true;
+    END LOOP;
 END IF;
 
 --/**********************//
 
 IF coalesce(array_length(anyurnArr ,1),0)>0 THEN
 
-	FOREACH anyurn IN ARRAY anyurnArr
-	LOOP
-		sag_candidates:=array(
-			SELECT DISTINCT
-			b.sag_id 
+    FOREACH anyurn IN ARRAY anyurnArr
+    LOOP
+        sag_candidates:=array(
+            SELECT DISTINCT
+            b.sag_id
             
-			FROM  sag_relation a
-			JOIN sag_registrering b on a.sag_registrering_id=b.id
-			WHERE
+            FROM  sag_relation a
+            JOIN sag_registrering b on a.sag_registrering_id=b.id
+            WHERE
             
-			anyurn = a.rel_maal_urn
+            anyurn = a.rel_maal_urn
             
-			AND
-			(
-				virkningSoeg IS NULL
-				OR
-				virkningSoeg && (a.virkning).TimePeriod
-			)
+            AND
+            (
+                virkningSoeg IS NULL
+                OR
+                virkningSoeg && (a.virkning).TimePeriod
+            )
             
-			AND
-					(
+            AND
+            		(
 				(registreringObj.registrering) IS NULL 
 				OR
 				(
@@ -1018,10 +1021,10 @@ IF coalesce(array_length(anyurnArr ,1),0)>0 THEN
 		( (NOT sag_candidates_is_initialized) OR b.sag_id = ANY (sag_candidates) )
 
 
-			);
+            );
 
-	sag_candidates_is_initialized:=true;
-	END LOOP;
+    sag_candidates_is_initialized:=true;
+    END LOOP;
 END IF;
 
 --/**********************//
@@ -1035,16 +1038,16 @@ END IF;
 --RAISE DEBUG 'sag_candidates step 5:%',sag_candidates;
 
 IF registreringObj IS NULL THEN
-	--RAISE DEBUG 'registreringObj IS NULL';
+    --RAISE DEBUG 'registreringObj IS NULL';
 ELSE
-	IF NOT sag_candidates_is_initialized THEN 
-		sag_candidates:=array(
-		SELECT DISTINCT
-			sag_id
-		FROM
-			sag_registrering b
-		WHERE
-				(
+    IF NOT sag_candidates_is_initialized THEN
+        sag_candidates:=array(
+        SELECT DISTINCT
+            sag_id
+        FROM
+            sag_registrering b
+        WHERE
+        		(
 				(registreringObj.registrering) IS NULL 
 				OR
 				(
@@ -1112,30 +1115,29 @@ ELSE
 		AND
 		( (NOT sag_candidates_is_initialized) OR b.sag_id = ANY (sag_candidates) )
 
-		)
-		;
+        )
+        ;
 
-		sag_candidates_is_initialized:=true;
-	END IF;
+        sag_candidates_is_initialized:=true;
+    END IF;
 END IF;
 
 
 IF NOT sag_candidates_is_initialized THEN
-	--No filters applied!
-	sag_candidates:=array(
-		SELECT DISTINCT id FROM sag a
-	);
+    --No filters applied!
+    sag_candidates:=array(
+        SELECT DISTINCT id FROM sag a
+    );
 ELSE
-	sag_candidates:=array(
-		SELECT DISTINCT id FROM unnest(sag_candidates) as a(id)
-		);
+    sag_candidates:=array(
+        SELECT DISTINCT id FROM unnest(sag_candidates) as a(id)
+        );
 END IF;
 
 --RAISE DEBUG 'sag_candidates_is_initialized step 6:%',sag_candidates_is_initialized;
 --RAISE DEBUG 'sag_candidates step 6:%',sag_candidates;
 
 
-										 
 /*** Filter out the objects that does not meets the stipulated access criteria  ***/
 auth_filtered_uuids:=_as_filter_unauth_sag(sag_candidates,auth_criteria_arr); 
 /*********************/
@@ -1147,7 +1149,6 @@ return auth_filtered_uuids;
 
 END;
 $$ LANGUAGE plpgsql STABLE; 
-
 
 
 

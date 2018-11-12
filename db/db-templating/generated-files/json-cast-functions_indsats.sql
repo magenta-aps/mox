@@ -166,4 +166,3 @@ create cast (IndsatsType as json) with function actual_state._cast_indsatsType_t
 
 
 
-

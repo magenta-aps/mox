@@ -70,4 +70,3 @@ CREATE TYPE LoghaendelseType AS
 
 
 
-

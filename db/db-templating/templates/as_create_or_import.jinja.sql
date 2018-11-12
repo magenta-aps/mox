@@ -1,127 +1,121 @@
 {% extends "basis.jinja.sql" %}
+
 -- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
 -- License, v. 2.0. If a copy of the MPL was not distributed with this
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
 {% block body %}
-CREATE OR REPLACE FUNCTION as_create_or_import_{{oio_type}}(
-  {{oio_type}}_registrering {{oio_type|title}}RegistreringType,
-  {{oio_type}}_uuid uuid DEFAULT NULL,
-  auth_criteria_arr {{oio_type|title}}RegistreringType[] DEFAULT NULL
-	)
-  RETURNS uuid AS 
-$$
-DECLARE
-  {{oio_type}}_registrering_id bigint;
-  {%for attribut , attribut_fields in attributter.items() %}{{oio_type}}_attr_{{attribut}}_obj {{oio_type}}{{attribut|title}}AttrType;
-  {% endfor %}
-  {% for tilstand, tilstand_values in tilstande.items() %}{{oio_type}}_tils_{{tilstand}}_obj {{oio_type}}{{tilstand|title}}TilsType;
-  {% endfor %}
-  {{oio_type}}_relationer {{oio_type|title}}RelationType;
-  {% if oio_type == "dokument" %}
-  dokument_variant_obj DokumentVariantType;
-  dokument_variant_egenskab_obj DokumentVariantEgenskaberType;
-  dokument_del_obj DokumentDelType;
-  dokument_del_egenskaber_obj DokumentDelEgenskaberType;
-  dokument_del_relation_obj DokumentDelRelationType;
-  dokument_variant_new_id bigint;
-  dokument_del_new_id bigint;
-  {% elif oio_type == "klasse" %}
-  klasse_attr_egenskaber_id bigint;
-  klasse_attr_egenskaber_soegeord_obj KlasseSoegeordType;
-  {% elif oio_type == "sag" %}
-  sag_relation_kode SagRelationKode;
-  sag_uuid_underscores text;
-  sag_rel_seq_name text;
-  sag_rel_type_cardinality_unlimited SagRelationKode[]:=ARRAY['andetarkiv'::SagRelationKode,'andrebehandlere'::SagRelationKode,'sekundaerpart'::SagRelationKode,'andresager'::SagRelationKode,'byggeri'::SagRelationKode,'fredning'::SagRelationKode,'journalpost'::SagRelationKode]::SagRelationKode[];
-  {% endif %}
-  auth_filtered_uuids uuid[];
-  {% if oio_type == "aktivitet" %}
-  aktivitet_relation_kode aktivitetRelationKode;
-  aktivitet_uuid_underscores text;
-  aktivitet_rel_seq_name text;
-  aktivitet_rel_type_cardinality_unlimited aktivitetRelationKode[]:=ARRAY['udfoererklasse'::AktivitetRelationKode,'deltagerklasse'::AktivitetRelationKode,'objektklasse'::AktivitetRelationKode,'resultatklasse'::AktivitetRelationKode,'grundlagklasse'::AktivitetRelationKode,'facilitetklasse'::AktivitetRelationKode,'adresse'::AktivitetRelationKode,'geoobjekt'::AktivitetRelationKode,'position'::AktivitetRelationKode,'facilitet'::AktivitetRelationKode,'lokale'::AktivitetRelationKode,'aktivitetdokument'::AktivitetRelationKode,'aktivitetgrundlag'::AktivitetRelationKode,'aktivitetresultat'::AktivitetRelationKode,'udfoerer'::AktivitetRelationKode,'deltager'::AktivitetRelationKode]::aktivitetRelationKode[];
-  aktivitet_rel_type_cardinality_unlimited_present_in_argument aktivitetRelationKode[];
-  {% elif oio_type == "indsats" %}
-  indsats_relation_kode indsatsRelationKode;
-  indsats_uuid_underscores text;
-  indsats_rel_seq_name text;
-  indsats_rel_type_cardinality_unlimited indsatsRelationKode[]:=ARRAY['indsatskvalitet'::IndsatsRelationKode,'indsatsaktoer'::IndsatsRelationKode,'samtykke'::IndsatsRelationKode,'indsatssag'::IndsatsRelationKode,'indsatsdokument'::IndsatsRelationKode]::indsatsRelationKode[];
-  indsats_rel_type_cardinality_unlimited_present_in_argument indsatsRelationKode[];
-  {% elif oio_type == "sag" %}
-  sag_rel_type_cardinality_unlimited_present_in_argument sagRelationKode[];
-  {% elif oio_type == "tilstand" %}
-  tilstand_relation_kode tilstandRelationKode;
-  tilstand_uuid_underscores text;
-  tilstand_rel_seq_name text;
-  tilstand_rel_type_cardinality_unlimited tilstandRelationKode[]:=ARRAY['tilstandsvaerdi'::TilstandRelationKode,'begrundelse'::TilstandRelationKode,'tilstandskvalitet'::TilstandRelationKode,'tilstandsvurdering'::TilstandRelationKode,'tilstandsaktoer'::TilstandRelationKode,'tilstandsudstyr'::TilstandRelationKode,'samtykke'::TilstandRelationKode,'tilstandsdokument'::TilstandRelationKode]::TilstandRelationKode[];
-  tilstand_rel_type_cardinality_unlimited_present_in_argument tilstandRelationKode[];
-  {% endif %}
-  does_exist boolean;
-  new_{{oio_type}}_registrering {{oio_type}}_registrering;
+
+CREATE OR REPLACE FUNCTION as_create_or_import_{{oio_type}} (
+    {{oio_type}}_registrering {{oio_type|title}}RegistreringType,
+    {{oio_type}}_uuid uuid DEFAULT NULL, auth_criteria_arr
+    {{oio_type|title}}RegistreringType[] DEFAULT NULL) RETURNS uuid AS
+$$ DECLARE {{oio_type}}_registrering_id bigint;
+
+    {%for attribut , attribut_fields in attributter.items() %}
+    {{oio_type}}_attr_{{attribut}}_obj {{oio_type}}{{attribut|title}}AttrType;
+    {% endfor %}
+
+    {% for tilstand, tilstand_values in tilstande.items() %}
+    {{oio_type}}_tils_{{tilstand}}_obj {{oio_type}}{{tilstand|title}}TilsType;
+    {% endfor %}
+
+    {{oio_type}}_relationer {{oio_type|title}}RelationType;
+
+    {% if oio_type == "dokument" %}
+    dokument_variant_obj          DokumentVariantType;
+    dokument_variant_egenskab_obj DokumentVariantEgenskaberType;
+    dokument_del_obj              DokumentDelType;
+    dokument_del_egenskaber_obj   DokumentDelEgenskaberType;
+    dokument_del_relation_obj     DokumentDelRelationType;
+    dokument_variant_new_id       bigint;
+    dokument_del_new_id           bigint;
+    {% elif oio_type == "klasse" %}
+    klasse_attr_egenskaber_id           bigint;
+    klasse_attr_egenskaber_soegeord_obj KlasseSoegeordType;
+    {% elif oio_type == "sag" %}
+    sag_relation_kode                  SagRelationKode;
+    sag_uuid_underscores               text;
+    sag_rel_seq_name                   text;
+    sag_rel_type_cardinality_unlimited SagRelationKode[]:=ARRAY['andetarkiv'::SagRelationKode,'andrebehandlere'::SagRelationKode,'sekundaerpart'::SagRelationKode,'andresager'::SagRelationKode,'byggeri'::SagRelationKode,'fredning'::SagRelationKode,'journalpost'::SagRelationKode]::SagRelationKode[];
+    {% endif %}
+
+    auth_filtered_uuids uuid[];
+
+    {% if oio_type == "aktivitet" %}
+    aktivitet_relation_kode    aktivitetRelationKode;
+    aktivitet_uuid_underscores text;
+    aktivitet_rel_seq_name     text;
+    aktivitet_rel_type_cardinality_unlimited                     aktivitetRelationKode[]:=ARRAY['udfoererklasse'::AktivitetRelationKode,'deltagerklasse'::AktivitetRelationKode,'objektklasse'::AktivitetRelationKode,'resultatklasse'::AktivitetRelationKode,'grundlagklasse'::AktivitetRelationKode,'facilitetklasse'::AktivitetRelationKode,'adresse'::AktivitetRelationKode,'geoobjekt'::AktivitetRelationKode,'position'::AktivitetRelationKode,'facilitet'::AktivitetRelationKode,'lokale'::AktivitetRelationKode,'aktivitetdokument'::AktivitetRelationKode,'aktivitetgrundlag'::AktivitetRelationKode,'aktivitetresultat'::AktivitetRelationKode,'udfoerer'::AktivitetRelationKode,'deltager'::AktivitetRelationKode]::aktivitetRelationKode[];
+    aktivitet_rel_type_cardinality_unlimited_present_in_argument aktivitetRelationKode[];
+    {% elif oio_type == "indsats" %}
+    indsats_relation_kode    indsatsRelationKode;
+    indsats_uuid_underscores text;
+    indsats_rel_seq_name     text;
+    indsats_rel_type_cardinality_unlimited                     indsatsRelationKode[]:=ARRAY['indsatskvalitet'::IndsatsRelationKode,'indsatsaktoer'::IndsatsRelationKode,'samtykke'::IndsatsRelationKode,'indsatssag'::IndsatsRelationKode,'indsatsdokument'::IndsatsRelationKode]::indsatsRelationKode[];
+    indsats_rel_type_cardinality_unlimited_present_in_argument indsatsRelationKode[];
+    {% elif oio_type == "sag" %}
+    sag_rel_type_cardinality_unlimited_present_in_argument sagRelationKode[];
+    {% elif oio_type == "tilstand" %}
+    tilstand_relation_kode    tilstandRelationKode;
+    tilstand_uuid_underscores text;
+    tilstand_rel_seq_name     text;
+    tilstand_rel_type_cardinality_unlimited                     tilstandRelationKode[]:=ARRAY['tilstandsvaerdi'::TilstandRelationKode,'begrundelse'::TilstandRelationKode,'tilstandskvalitet'::TilstandRelationKode,'tilstandsvurdering'::TilstandRelationKode,'tilstandsaktoer'::TilstandRelationKode,'tilstandsudstyr'::TilstandRelationKode,'samtykke'::TilstandRelationKode,'tilstandsdokument'::TilstandRelationKode]::TilstandRelationKode[];
+    tilstand_rel_type_cardinality_unlimited_present_in_argument tilstandRelationKode[];
+    {% endif %}
+
+    does_exist                    boolean;
+    new_{{oio_type}}_registrering {{oio_type}}_registrering;
 BEGIN
+    IF {{oio_type}}_uuid IS NULL THEN LOOP
+        {{oio_type}}_uuid:=uuid_generate_v4(); EXIT WHEN NOT EXISTS (SELECT id
+            from {{oio_type}} WHERE id={{oio_type}}_uuid); END LOOP; END IF;
 
-IF {{oio_type}}_uuid IS NULL THEN
-    LOOP
-    {{oio_type}}_uuid:=uuid_generate_v4();
-    EXIT WHEN NOT EXISTS (SELECT id from {{oio_type}} WHERE id={{oio_type}}_uuid); 
-    END LOOP;
-END IF;
+    IF EXISTS (SELECT id from {{oio_type}} WHERE id={{oio_type}}_uuid) THEN
+        does_exist = True; ELSE
 
+        does_exist = False; END IF;
 
-IF EXISTS (SELECT id from {{oio_type}} WHERE id={{oio_type}}_uuid) THEN
-    does_exist = True;
-ELSE
+    IF
+        ({{oio_type}}_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode
+        and
+        ({{oio_type}}_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode
+        and
+        ({{oio_type}}_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode
+        THEN RAISE EXCEPTION 'Invalid livscykluskode[%] invoking
+        as_create_or_import_{{oio_type}}.',({{oio_type}}_registrering.registrering).livscykluskode
+        USING ERRCODE='MO400'; END IF;
 
-    does_exist = False;
-END IF;
+    IF NOT does_exist THEN INSERT INTO {{oio_type}} (ID) SELECT
+        {{oio_type}}_uuid; END IF;
 
-IF  ({{oio_type}}_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and ({{oio_type}}_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and ({{oio_type}}_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_{{oio_type}}.',({{oio_type}}_registrering.registrering).livscykluskode USING ERRCODE='MO400';
-END IF;
+    /*********************************/
+    --Insert new registrering
 
+    IF NOT does_exist THEN
+        {{oio_type}}_registrering_id:=nextval('{{oio_type}}_registrering_id_seq');
 
-IF NOT does_exist THEN
+        INSERT INTO {{oio_type}}_registrering ( id, {{oio_type}}_id,
+            registrering) SELECT {{oio_type}}_registrering_id,
+        {{oio_type}}_uuid, ROW (
+            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+        ({{oio_type}}_registrering.registrering).livscykluskode,
+        ({{oio_type}}_registrering.registrering).brugerref,
+        ({{oio_type}}_registrering.registrering).note):: RegistreringBase ;
+    ELSE
+        -- This is an update, not an import or create
+            new_{{oio_type}}_registrering :=
+            _as_create_{{oio_type}}_registrering( {{oio_type}}_uuid,
+                ({{oio_type}}_registrering.registrering).livscykluskode,
+                ({{oio_type}}_registrering.registrering).brugerref,
+                ({{oio_type}}_registrering.registrering).note);
 
-    INSERT INTO
-          {{oio_type}} (ID)
-    SELECT
-          {{oio_type}}_uuid;
-END IF;
-
-
-/*********************************/
---Insert new registrering
-
-IF NOT does_exist THEN
-    {{oio_type}}_registrering_id:=nextval('{{oio_type}}_registrering_id_seq');
-
-    INSERT INTO {{oio_type}}_registrering (
-          id,
-          {{oio_type}}_id,
-          registrering
-        )
-    SELECT
-          {{oio_type}}_registrering_id,
-           {{oio_type}}_uuid,
-           ROW (
-             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-             ({{oio_type}}_registrering.registrering).livscykluskode,
-             ({{oio_type}}_registrering.registrering).brugerref,
-             ({{oio_type}}_registrering.registrering).note
-               ):: RegistreringBase ;
-ELSE
-    -- This is an update, not an import or create
-        new_{{oio_type}}_registrering := _as_create_{{oio_type}}_registrering(
-             {{oio_type}}_uuid,
-             ({{oio_type}}_registrering.registrering).livscykluskode,
-             ({{oio_type}}_registrering.registrering).brugerref,
-             ({{oio_type}}_registrering.registrering).note);
-
-        {{oio_type}}_registrering_id := new_{{oio_type}}_registrering.id;
-END IF;
+            {{oio_type}}_registrering_id := new_{{oio_type}}_registrering.id;
+    END IF;
 
 
 /*********************************/
@@ -132,10 +126,10 @@ END IF;
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
- {%for attribut , attribut_fields in attributter.items() %}
-IF coalesce(array_length({{oio_type}}_registrering.attr{{attribut|title}}, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet attribut [{{attribut}}] for [{{oio_type}}]. Oprettelse afbrydes.' USING ERRCODE='MO400';
-END IF;
+{% for attribut , attribut_fields in attributter.items() %}
+IF coalesce(array_length({{oio_type}}_registrering.attr{{attribut|title}},
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [{{attribut}}] for
+    [{{oio_type}}]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
 

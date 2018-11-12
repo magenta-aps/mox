@@ -413,4 +413,3 @@ CREATE INDEX sag_relation_pat_virkning_notetekst
 
 
 
-

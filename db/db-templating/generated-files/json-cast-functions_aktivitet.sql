@@ -166,4 +166,3 @@ create cast (AktivitetType as json) with function actual_state._cast_aktivitetTy
 
 
 
-

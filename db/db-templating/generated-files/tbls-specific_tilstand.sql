@@ -378,4 +378,3 @@ CREATE INDEX tilstand_relation_pat_virkning_notetekst
 
 
 
-

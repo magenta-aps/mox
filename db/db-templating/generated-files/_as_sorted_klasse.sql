@@ -11,41 +11,36 @@ NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.p
 
 
 CREATE OR REPLACE FUNCTION _as_sorted_klasse(
-        klasse_uuids uuid[],
-        virkningSoeg TSTZRANGE,
-        registreringObj KlasseRegistreringType,
-	    firstResult int,
-	    maxResults int
-        )
-  RETURNS uuid[] AS
-  $$
-  DECLARE
-          klasse_sorted_uuid uuid[];
-          registreringSoeg TSTZRANGE;
-  BEGIN
+    klasse_uuids uuid[],
+    virkningSoeg       TSTZRANGE,
+    registreringObj    KlasseRegistreringType,
+    firstResult        int,
+    maxResults         int
+) RETURNS uuid[] AS $$
+DECLARE
+    klasse_sorted_uuid uuid[];
+    registreringSoeg         TSTZRANGE;
+BEGIN
+    IF registreringObj IS NULL OR (registreringObj.registrering).timePeriod IS NULL THEN
+        registreringSoeg = TSTZRANGE(current_timestamp, current_timestamp, '[]');
+    ELSE
+        registreringSoeg = (registreringObj.registrering).timePeriod;
+    END IF;
 
-IF registreringObj IS NULL OR (registreringObj.registrering).timePeriod IS NULL THEN
-   registreringSoeg = TSTZRANGE(current_timestamp, current_timestamp, '[]');
-ELSE
-    registreringSoeg = (registreringObj.registrering).timePeriod;
-END IF;
-
-klasse_sorted_uuid:=array(
-       SELECT b.klasse_id
-       FROM klasse_registrering b
-       JOIN klasse_attr_egenskaber a ON a.klasse_registrering_id=b.id
-       WHERE b.klasse_id = ANY (klasse_uuids)
+    klasse_sorted_uuid:=array(
+          SELECT b.klasse_id
+            FROM klasse_registrering b
+            JOIN klasse_attr_egenskaber a ON a.klasse_registrering_id=b.id
+           WHERE b.klasse_id = ANY (klasse_uuids)
              AND (b.registrering).timeperiod && registreringSoeg
              AND (a.virkning).timePeriod && virkningSoeg
-       GROUP BY b.klasse_id
-       ORDER BY array_agg(DISTINCT a.brugervendtnoegle), b.klasse_id
-       LIMIT maxResults OFFSET firstResult
-);
+        GROUP BY b.klasse_id
+        ORDER BY array_agg(DISTINCT a.brugervendtnoegle), b.klasse_id
+           LIMIT maxResults OFFSET firstResult
+    );
 
-RETURN klasse_sorted_uuid;
-
+    RETURN klasse_sorted_uuid;
 END;
 $$ LANGUAGE plpgsql STABLE;
-
 
 

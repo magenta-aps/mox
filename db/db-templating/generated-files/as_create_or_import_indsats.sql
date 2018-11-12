@@ -9,93 +9,85 @@
 NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
-CREATE OR REPLACE FUNCTION as_create_or_import_indsats(
-  indsats_registrering IndsatsRegistreringType,
-  indsats_uuid uuid DEFAULT NULL,
-  auth_criteria_arr IndsatsRegistreringType[] DEFAULT NULL
-	)
-  RETURNS uuid AS 
-$$
-DECLARE
-  indsats_registrering_id bigint;
-  indsats_attr_egenskaber_obj indsatsEgenskaberAttrType;
-  
-  indsats_tils_publiceret_obj indsatsPubliceretTilsType;
-  indsats_tils_fremdrift_obj indsatsFremdriftTilsType;
-  
-  indsats_relationer IndsatsRelationType;
-  
-  auth_filtered_uuids uuid[];
-  
-  indsats_relation_kode indsatsRelationKode;
-  indsats_uuid_underscores text;
-  indsats_rel_seq_name text;
-  indsats_rel_type_cardinality_unlimited indsatsRelationKode[]:=ARRAY['indsatskvalitet'::IndsatsRelationKode,'indsatsaktoer'::IndsatsRelationKode,'samtykke'::IndsatsRelationKode,'indsatssag'::IndsatsRelationKode,'indsatsdokument'::IndsatsRelationKode]::indsatsRelationKode[];
-  indsats_rel_type_cardinality_unlimited_present_in_argument indsatsRelationKode[];
-  
-  does_exist boolean;
-  new_indsats_registrering indsats_registrering;
+
+CREATE OR REPLACE FUNCTION as_create_or_import_indsats (
+    indsats_registrering IndsatsRegistreringType,
+    indsats_uuid uuid DEFAULT NULL, auth_criteria_arr
+    IndsatsRegistreringType[] DEFAULT NULL) RETURNS uuid AS
+$$ DECLARE indsats_registrering_id bigint;
+
+    
+    indsats_attr_egenskaber_obj indsatsEgenskaberAttrType;
+    
+
+    
+    indsats_tils_publiceret_obj indsatsPubliceretTilsType;
+    
+    indsats_tils_fremdrift_obj indsatsFremdriftTilsType;
+    
+
+    indsats_relationer IndsatsRelationType;
+
+    
+
+    auth_filtered_uuids uuid[];
+
+    
+    indsats_relation_kode    indsatsRelationKode;
+    indsats_uuid_underscores text;
+    indsats_rel_seq_name     text;
+    indsats_rel_type_cardinality_unlimited                     indsatsRelationKode[]:=ARRAY['indsatskvalitet'::IndsatsRelationKode,'indsatsaktoer'::IndsatsRelationKode,'samtykke'::IndsatsRelationKode,'indsatssag'::IndsatsRelationKode,'indsatsdokument'::IndsatsRelationKode]::indsatsRelationKode[];
+    indsats_rel_type_cardinality_unlimited_present_in_argument indsatsRelationKode[];
+    
+
+    does_exist                    boolean;
+    new_indsats_registrering indsats_registrering;
 BEGIN
+    IF indsats_uuid IS NULL THEN LOOP
+        indsats_uuid:=uuid_generate_v4(); EXIT WHEN NOT EXISTS (SELECT id
+            from indsats WHERE id=indsats_uuid); END LOOP; END IF;
 
-IF indsats_uuid IS NULL THEN
-    LOOP
-    indsats_uuid:=uuid_generate_v4();
-    EXIT WHEN NOT EXISTS (SELECT id from indsats WHERE id=indsats_uuid); 
-    END LOOP;
-END IF;
+    IF EXISTS (SELECT id from indsats WHERE id=indsats_uuid) THEN
+        does_exist = True; ELSE
 
+        does_exist = False; END IF;
 
-IF EXISTS (SELECT id from indsats WHERE id=indsats_uuid) THEN
-    does_exist = True;
-ELSE
+    IF
+        (indsats_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode
+        and
+        (indsats_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode
+        and
+        (indsats_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode
+        THEN RAISE EXCEPTION 'Invalid livscykluskode[%] invoking
+        as_create_or_import_indsats.',(indsats_registrering.registrering).livscykluskode
+        USING ERRCODE='MO400'; END IF;
 
-    does_exist = False;
-END IF;
+    IF NOT does_exist THEN INSERT INTO indsats (ID) SELECT
+        indsats_uuid; END IF;
 
-IF  (indsats_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (indsats_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (indsats_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_indsats.',(indsats_registrering.registrering).livscykluskode USING ERRCODE='MO400';
-END IF;
+    /*********************************/
+    --Insert new registrering
 
+    IF NOT does_exist THEN
+        indsats_registrering_id:=nextval('indsats_registrering_id_seq');
 
-IF NOT does_exist THEN
+        INSERT INTO indsats_registrering ( id, indsats_id,
+            registrering) SELECT indsats_registrering_id,
+        indsats_uuid, ROW (
+            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+        (indsats_registrering.registrering).livscykluskode,
+        (indsats_registrering.registrering).brugerref,
+        (indsats_registrering.registrering).note):: RegistreringBase ;
+    ELSE
+        -- This is an update, not an import or create
+            new_indsats_registrering :=
+            _as_create_indsats_registrering( indsats_uuid,
+                (indsats_registrering.registrering).livscykluskode,
+                (indsats_registrering.registrering).brugerref,
+                (indsats_registrering.registrering).note);
 
-    INSERT INTO
-          indsats (ID)
-    SELECT
-          indsats_uuid;
-END IF;
-
-
-/*********************************/
---Insert new registrering
-
-IF NOT does_exist THEN
-    indsats_registrering_id:=nextval('indsats_registrering_id_seq');
-
-    INSERT INTO indsats_registrering (
-          id,
-          indsats_id,
-          registrering
-        )
-    SELECT
-          indsats_registrering_id,
-           indsats_uuid,
-           ROW (
-             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-             (indsats_registrering.registrering).livscykluskode,
-             (indsats_registrering.registrering).brugerref,
-             (indsats_registrering.registrering).note
-               ):: RegistreringBase ;
-ELSE
-    -- This is an update, not an import or create
-        new_indsats_registrering := _as_create_indsats_registrering(
-             indsats_uuid,
-             (indsats_registrering.registrering).livscykluskode,
-             (indsats_registrering.registrering).brugerref,
-             (indsats_registrering.registrering).note);
-
-        indsats_registrering_id := new_indsats_registrering.id;
-END IF;
+            indsats_registrering_id := new_indsats_registrering.id;
+    END IF;
 
 
 /*********************************/
@@ -106,10 +98,10 @@ END IF;
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
- 
-IF coalesce(array_length(indsats_registrering.attrEgenskaber, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [indsats]. Oprettelse afbrydes.' USING ERRCODE='MO400';
-END IF;
+
+IF coalesce(array_length(indsats_registrering.attrEgenskaber,
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    [indsats]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
 
@@ -272,5 +264,4 @@ RETURN indsats_uuid;
 
 END;
 $$ LANGUAGE plpgsql VOLATILE;
-
 
