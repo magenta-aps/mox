@@ -6,8 +6,8 @@ MarkupSafe==1.0
 Werkzeug==0.14.1
 itsdangerous==0.24
 psycopg2cffi-compat==1.1
-python3-saml==1.4.1
 pexpect==4.6.0
 python-dateutil==2.7.3
 pika==0.12.0
 jsonschema==2.6.0
+-e git+https://github.com/magenta-aps/flask_saml_sso@master#egg=flask_saml_sso

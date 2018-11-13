@@ -10,12 +10,6 @@ basedir = os.path.dirname(__file__)
 with open(os.path.join(basedir, 'VERSION')) as fp:
     version = fp.read().strip()
 
-with open(os.path.join(basedir, 'requirements.txt')) as fp:
-    install_requires = fp.readlines()
-
-with open(os.path.join(basedir, 'requirements-test.txt')) as fp:
-    test_requires = [s for s in fp.readlines() if not s.startswith('-')]
-
 setup(
     name='oio_rest',
     version=version,
@@ -36,15 +30,10 @@ setup(
     },
     include_package_data=True,
     zip_safe=False,
-    install_requires=install_requires,
     entry_points={
         # -*- Entry points: -*-
         'console_scripts': [
             'oio_api = oio_rest.app:app.run',
         ],
     },
-    tests_require=test_requires,
-    extras_require={
-        'tests': test_requires,
-    }
 )

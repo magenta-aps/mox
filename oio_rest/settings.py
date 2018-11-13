@@ -87,3 +87,21 @@ LOG_IGNORED_SERVICES = ['Log', ]
 
 # Log files
 AUDIT_LOG_FILE = getenv('AUDIT_LOG_FILE', '/var/log/mox/audit.log')
+
+SAML_IDP_METADATA_URL = getenv(
+    'SAML_IDP_METADATA_URL',
+    'https://172.16.20.100/simplesaml/saml2/idp/metadata.php'
+)
+SAML_IDP_INSECURE = getenv('SAML_IDP_INSECURE', False)
+SAML_REQUESTS_SIGNED = getenv('SAML_REQUESTS_SIGNED', False)
+SAML_KEY_FILE = getenv('SAML_KEY_FILE', None)
+SAML_CERT_FILE = getenv('SAML_CERT_FILE', None)
+SAML_AUTH_ENABLE = getenv('SAML_AUTH_ENABLE', False)
+
+SQLALCHEMY_DATABASE_URI = getenv(
+    'SQLALCHEMY_DATABASE_URI',
+    "postgresql://sessions:sessions@127.0.0.1/sessions"
+)
+SESSION_SQLALCHEMY_TABLE = getenv('SESSION_SQLALCHEMY_TABLE', 'sessions')
+SESSION_PERMANENT = getenv('SESSION_PERMANENT', True)
+PERMANENT_SESSION_LIFETIME = getenv('PERMANENT_SESSION_LIFETIME', 3600)

@@ -20,6 +20,8 @@ from .custom_exceptions import OIOFlaskException, AuthorizationFailedException
 from .custom_exceptions import BadRequestException
 from .auth import tokens
 
+import flask_saml_sso
+
 import settings
 
 app = Flask(__name__)
@@ -56,6 +58,9 @@ dokument.DokumentHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
 aktivitet.AktivitetsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
 indsats.IndsatsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
 tilstand.TilstandsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
+
+app.config.from_object(settings)
+flask_saml_sso.init_app(app)
 
 
 @app.route('/')
