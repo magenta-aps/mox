@@ -19,7 +19,7 @@ BEGIN
         a.dokument_registrering_id = reg_id
         AND a.varianttekst = current_variant_text;
     IF res_variant_id IS NULL THEN
-        res_variant_id: = nextval('dokument_variant_id_seq'::regclass);
+        res_variant_id := nextval('dokument_variant_id_seq'::regclass);
         INSERT INTO dokument_variant (id, varianttekst, dokument_registrering_id)
             VALUES (res_variant_id, current_variant_text, reg_id);
     END IF;

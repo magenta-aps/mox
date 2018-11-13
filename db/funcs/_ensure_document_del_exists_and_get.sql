@@ -21,7 +21,7 @@ BEGIN
         AND a.id = current_variant_id
         AND b.deltekst = current_deltekst;
     IF res_del_id IS NULL THEN
-        res_del_id: = nextval('dokument_del_id_seq'::regclass);
+        res_del_id := nextval('dokument_del_id_seq'::regclass);
         INSERT INTO dokument_del (id, deltekst, variant_id)
             VALUES (res_del_id, current_deltekst, current_variant_id);
     END IF;

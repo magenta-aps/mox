@@ -18,10 +18,10 @@ BEGIN
     result[1] := rangeA;
     IF rangeArr IS NOT NULL THEN
         FOREACH rangeB IN ARRAY rangeArr LOOP
-            temp_result: = result;
-            result: = '{}';
+            temp_result := result;
+            result := '{}';
             FOREACH rangeA_leftover IN ARRAY temp_result LOOP
-                result: = array_cat(result, _subtract_tstzrange (rangeA_leftover, rangeB));
+                result := array_cat(result, _subtract_tstzrange (rangeA_leftover, rangeB));
             END LOOP;
         END LOOP;
     END IF;
