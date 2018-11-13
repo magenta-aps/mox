@@ -2,6 +2,9 @@
 
 from os import getenv
 
+import json
+
+CONFIG_FILE = getenv('OIO_REST_CONFIG_FILE', None)
 
 # Base url
 BASE_URL = getenv('BASE_URL', '')
@@ -102,6 +105,25 @@ SQLALCHEMY_DATABASE_URI = getenv(
     'SQLALCHEMY_DATABASE_URI',
     "postgresql://sessions:sessions@127.0.0.1/sessions"
 )
-SESSION_SQLALCHEMY_TABLE = getenv('SESSION_SQLALCHEMY_TABLE', 'sessions')
 SESSION_PERMANENT = getenv('SESSION_PERMANENT', True)
 PERMANENT_SESSION_LIFETIME = getenv('PERMANENT_SESSION_LIFETIME', 3600)
+
+
+def update_config(mapping, config_path):
+    """load the JSON configuration at the given path """
+    if not config_path:
+        return
+
+    try:
+        with open(config_path) as fp:
+            overrides = json.load(fp)
+
+        for key in overrides.keys():
+            mapping[key] = overrides[key]
+
+    except IOError:
+        print('Unable to read config {}'.format(config_path))
+        pass
+
+
+update_config(globals(), CONFIG_FILE)
