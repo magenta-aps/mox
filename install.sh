@@ -24,6 +24,7 @@ INSTALLER=${INSTALLER_DIR}/install_application.py
 
 # Setup requirements
 REQUIREMENTS=${INSTALLER_DIR}/install_requirements.txt
+OIO_REST_REQUIREMENTS=${BASE_DIR}/oio_rest/requirements.txt
 
 # Path to (python) virtual environment
 export VIRTUALENV=${BASE_DIR}/python-env
@@ -39,7 +40,7 @@ sudo apt-get -qy install python3 python3-venv python3-dev gcc
 /usr/bin/env python3 -m venv ${VIRTUALENV}
 
 ## Install python (installer) dependencies
-$PYTHON_EXEC -m pip install -r $REQUIREMENTS
+$PYTHON_EXEC -m pip install -r $REQUIREMENTS -r $OIO_REST_REQUIREMENTS
 
 # Collect info and set information (grains)
 $PYTHON_EXEC $CONFIGURE
