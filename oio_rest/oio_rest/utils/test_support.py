@@ -59,6 +59,7 @@ def _get_db_setup_sql(db_name, db_user):
     ALTER DATABASE "{db_name}" SET INTERVALSTYLE to 'sql_standard';
 
     CREATE SCHEMA test AUTHORIZATION "{db_user}";
+    CREATE EXTENSION IF NOT EXISTS "pgtap";
     """.format(db_name=db_name, db_user=db_user)
 
     def dblistdir(dirname):
