@@ -8,6 +8,7 @@ install_oio_rest_requirements:
   virtualenv.managed:
     - name: {{ config.virtualenv }}
     - system_site_packages: False
+    - requirements: {{ config.base_dir }}/oio_rest/requirements.txt
     - pip_pkgs:
       - {{ config.base_dir }}/oio_rest
       - gunicorn
@@ -52,10 +53,6 @@ undeploy_ubuntu_nginx_site:
 
 
 deploy_nginx_site:
-  service.running:
-    - name: nginx
-    - enable: True
-    - reload: True
   file.managed:
     - name: /etc/nginx/sites-enabled/oio_rest
     - source: salt://files/nginx.j2
@@ -76,3 +73,13 @@ enable_and_reload_oio_rest:
     - name: oio_rest
     - enable: True
     - reload: True
+
+
+enable_and_reload_nginx:
+  service.running:
+    - name: nginx
+    - enable: True
+    - reload: True
+    - watch:
+        - file: /etc/nginx/sites-enabled/oio_rest
+
