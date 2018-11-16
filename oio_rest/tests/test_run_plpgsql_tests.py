@@ -1,5 +1,8 @@
+import os
 import re
 import subprocess
+
+import psycopg2
 
 from oio_rest.utils import test_support
 import settings
@@ -22,6 +25,18 @@ class TestPLpgSQLTests(util.TestCase):
     E       Files=1, Tests=34,  1 wallclock secs ( 0.02 usr  0.00 sys +  0.03 cusr  0.00 csys =  0.05 CPU)
     E       Result: FAIL
     """
+    def setUp(self):
+        super().setUp()
+        test_folder = os.path.join(os.path.dirname(__file__), "../../db/tests")
+
+        with psycopg2.connect(self.db_url) as conn:
+            conn.autocommit = True
+
+            with conn.cursor() as curs:
+                curs.execute('CREATE EXTENSION IF NOT EXISTS "pgtap";')
+                for filename in os.listdir(test_folder):
+                    with open(os.path.join(test_folder, filename), "rt") as f:
+                        curs.execute(f.read())
 
     def test_pg_prove(self):
         process = subprocess.Popen(
