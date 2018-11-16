@@ -8,6 +8,7 @@
 
 import atexit
 import functools
+import glob
 import os
 import shutil
 import subprocess
@@ -62,10 +63,7 @@ def _get_db_setup_sql(db_name, db_user):
     """.format(db_name=db_name, db_user=db_user)
 
     def dblistdir(dirname):
-        # os.listdir() but with prefix, of mox/db
-        return [os.path.join(TOP_DIR, "db", dirname, filename)
-                for filename in sorted(
-                    os.listdir(os.path.join(TOP_DIR, "db", dirname)))]
+        return glob.glob(os.path.join(TOP_DIR, 'db', dirname, '*.sql'))
 
     # <mess>
     # this mess is necessary because the db relies on a particular order
