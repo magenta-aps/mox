@@ -130,6 +130,8 @@ def _get_db_setup_sql(db_name, db_user):
     ]
     # </mess>
 
+    assert sorted(files) == sorted(set(files)), 'duplicates!!!!'
+
     file_contents = []
     for filename in files:
         with open(filename, 'rt') as f:
