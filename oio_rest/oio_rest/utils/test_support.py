@@ -7,11 +7,11 @@
 #
 
 import atexit
+import contextlib
 import functools
 import glob
 import os
 import shutil
-import subprocess
 import sys
 
 import click
@@ -140,15 +140,6 @@ def _get_db_setup_sql(db_name, db_user):
 
 
 def _initdb():
-    env = {
-        **os.environ,
-        'TESTING': '1',
-        'PYTHON': sys.executable,
-        'MOX_DB': settings.DATABASE,
-        'MOX_DB_USER': settings.DB_USER,
-        'MOX_DB_PASSWORD': settings.DB_PASSWORD,
-    }
-
     with psycopg2.connect(psql().url()) as conn:
         conn.autocommit = True
 
@@ -162,6 +153,7 @@ def _initdb():
             ))
 
     sql = _get_db_setup_sql(settings.DATABASE, settings.DB_USER)
+
     with psycopg2.connect(psql().url(
             database=settings.DATABASE,
             user=settings.DB_USER,
@@ -188,19 +180,24 @@ class TestCaseMixin(object):
 
         return app.app
 
-    def __reset_db(self):
+    @contextlib.contextmanager
+    def cursor(self):
         with psycopg2.connect(self.db_url) as conn:
             conn.autocommit = True
 
             with conn.cursor() as curs:
-                from oio_common.db_structure import DATABASE_STRUCTURE
+                yield curs
 
-                try:
-                    curs.execute("TRUNCATE TABLE {} CASCADE".format(
-                        ', '.join(sorted(DATABASE_STRUCTURE)),
-                    ))
-                except psycopg2.ProgrammingError:
-                    pass
+    def reset_db(self):
+        from oio_common.db_structure import DATABASE_STRUCTURE
+
+        with self.cursor() as curs:
+            curs.execute("TRUNCATE TABLE {} RESTART IDENTITY CASCADE".format(
+                ', '.join(sorted(DATABASE_STRUCTURE)),
+            ))
+
+    # for compatibility :-/
+    __reset_db = reset_db
 
     def setUp(self):
         super(TestCaseMixin, self).setUp()
