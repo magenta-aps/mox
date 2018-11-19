@@ -2,8 +2,6 @@ import os
 import re
 import subprocess
 
-import psycopg2
-
 from oio_rest.utils import test_support
 import settings
 from tests import util
@@ -29,14 +27,11 @@ class TestPLpgSQLTests(util.TestCase):
         super().setUp()
         test_folder = os.path.join(os.path.dirname(__file__), "../../db/tests")
 
-        with psycopg2.connect(self.db_url) as conn:
-            conn.autocommit = True
-
-            with conn.cursor() as curs:
-                curs.execute('CREATE EXTENSION IF NOT EXISTS "pgtap";')
-                for filename in os.listdir(test_folder):
-                    with open(os.path.join(test_folder, filename), "rt") as f:
-                        curs.execute(f.read())
+        with self.cursor() as curs:
+            curs.execute('CREATE EXTENSION IF NOT EXISTS "pgtap";')
+            for filename in os.listdir(test_folder):
+                with open(os.path.join(test_folder, filename), "rt") as f:
+                    curs.execute(f.read())
 
     def test_pg_prove(self):
         process = subprocess.Popen(
