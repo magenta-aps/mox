@@ -43,6 +43,10 @@ def psql():
     return psql
 
 
+def list_db_sql(dirname):
+    return glob.glob(os.path.join(TOP_DIR, 'db', dirname, '*.sql'))
+
+
 def _get_db_setup_sql(db_name, db_user):
     """Return the postgresql + pl/pgsql code necessary for our database
     to work.
@@ -62,8 +66,6 @@ def _get_db_setup_sql(db_name, db_user):
     CREATE SCHEMA test AUTHORIZATION "{db_user}";
     """.format(db_name=db_name, db_user=db_user)
 
-    def dblistdir(dirname):
-        return glob.glob(os.path.join(TOP_DIR, 'db', dirname, '*.sql'))
 
     # <mess>
     # this mess is necessary because the db relies on a particular order
@@ -103,7 +105,7 @@ def _get_db_setup_sql(db_name, db_user):
                 return True
         return False
 
-    templates = dblistdir("db-templating/generated-files")
+    templates = list_db_sql("db-templating/generated-files")
     templates1 = list(filter(is_template1, templates))
     templates2 = list(set(templates) ^ set(templates1))
     templates1.sort(key=template_sort_key)
@@ -118,11 +120,11 @@ def _get_db_setup_sql(db_name, db_user):
         os.path.join(TOP_DIR, "db/funcs/_json_object_delete_keys.sql"),
         os.path.join(TOP_DIR, "db/funcs/_create_notify.sql"),
     ]
-    funcs2 = list(set(dblistdir('funcs')) ^ set(funcs1))
+    funcs2 = list(set(list_db_sql('funcs')) ^ set(funcs1))
     funcs2.sort()
 
     files = [
-        *dblistdir('basis'),
+        *list_db_sql('basis'),
         *funcs1,
         *templates1,
         *funcs2,
