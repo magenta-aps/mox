@@ -42,4 +42,5 @@ class SQLTests(util.TestCase):
                     if result.skip:
                         raise unittest.SkipTest()
                     elif not result.ok:
-                        self.fail(result.diagnostics)
+                        self.fail(result.diagnostics or
+                                  result.description)
