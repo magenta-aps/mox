@@ -183,7 +183,11 @@ class TestCaseMixin(object):
         return app.app
 
     @contextlib.contextmanager
-    def cursor(self):
+    def db_cursor(self):
+        '''Context manager for querying the database
+
+        :see: `psycopg2.cursor <http://initd.org/psycopg/docs/cursor.html>`_
+        '''
         with psycopg2.connect(self.db_url) as conn:
             conn.autocommit = True
 
@@ -193,7 +197,7 @@ class TestCaseMixin(object):
     def reset_db(self):
         from oio_common.db_structure import DATABASE_STRUCTURE
 
-        with self.cursor() as curs:
+        with self.db_cursor() as curs:
             curs.execute("TRUNCATE TABLE {} RESTART IDENTITY CASCADE".format(
                 ', '.join(sorted(DATABASE_STRUCTURE)),
             ))

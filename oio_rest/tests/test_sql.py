@@ -9,19 +9,19 @@ import settings
 from tests import util
 
 
-class TestPLpgSQLTests(util.TestCase):
+class SQLTests(util.TestCase):
     def setUp(self):
         super().setUp()
 
-        with self.cursor() as curs:
+        with self.db_cursor() as curs:
             curs.execute('CREATE EXTENSION IF NOT EXISTS "pgtap";')
 
             for dbfile in test_support.list_db_sql('tests'):
                 with open(dbfile) as fp:
                     curs.execute(fp.read())
 
-    def test_pg_prove(self):
-        with self.cursor() as curs:
+    def test_pgsql(self):
+        with self.db_cursor() as curs:
             curs.execute("SELECT * FROM runtests ('test'::name)")
 
             self.assertGreater(curs.rowcount, 0)
