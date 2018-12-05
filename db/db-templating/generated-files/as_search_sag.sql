@@ -128,7 +128,7 @@ IF sag_uuid is not NULL THEN
 			)
 		)
 		AND
-		( (NOT sag_candidates_is_initialized) OR b.sag_id = ANY (sag_candidates) )
+		((NOT sag_candidates_is_initialized) OR b.sag_id = ANY (sag_candidates) )
 
         );
     END IF;
@@ -337,7 +337,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT sag_candidates_is_initialized) OR b.sag_id = ANY (sag_candidates) )
+		((NOT sag_candidates_is_initialized) OR b.sag_id = ANY (sag_candidates) )
 
             );
 
@@ -452,7 +452,7 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT sag_candidates_is_initialized) OR b.sag_id = ANY (sag_candidates) )
+		((NOT sag_candidates_is_initialized) OR b.sag_id = ANY (sag_candidates) )
 
 
         );
@@ -590,7 +590,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT sag_candidates_is_initialized) OR b.sag_id = ANY (sag_candidates) )
+		((NOT sag_candidates_is_initialized) OR b.sag_id = ANY (sag_candidates) )
 
     );
 
@@ -820,7 +820,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT sag_candidates_is_initialized) OR b.sag_id = ANY (sag_candidates) )
+		((NOT sag_candidates_is_initialized) OR b.sag_id = ANY (sag_candidates) )
 
     );
 
@@ -919,7 +919,7 @@ IF coalesce(array_length(anyuuidArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT sag_candidates_is_initialized) OR b.sag_id = ANY (sag_candidates) )
+		((NOT sag_candidates_is_initialized) OR b.sag_id = ANY (sag_candidates) )
 
 
             );
@@ -1018,7 +1018,7 @@ IF coalesce(array_length(anyurnArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT sag_candidates_is_initialized) OR b.sag_id = ANY (sag_candidates) )
+		((NOT sag_candidates_is_initialized) OR b.sag_id = ANY (sag_candidates) )
 
 
             );
@@ -1113,7 +1113,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT sag_candidates_is_initialized) OR b.sag_id = ANY (sag_candidates) )
+		((NOT sag_candidates_is_initialized) OR b.sag_id = ANY (sag_candidates) )
 
         )
         ;

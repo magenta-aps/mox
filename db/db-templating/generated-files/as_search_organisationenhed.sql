@@ -128,7 +128,7 @@ IF organisationenhed_uuid is not NULL THEN
 			)
 		)
 		AND
-		( (NOT organisationenhed_candidates_is_initialized) OR b.organisationenhed_id = ANY (organisationenhed_candidates) )
+		((NOT organisationenhed_candidates_is_initialized) OR b.organisationenhed_id = ANY (organisationenhed_candidates) )
 
         );
     END IF;
@@ -283,7 +283,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT organisationenhed_candidates_is_initialized) OR b.organisationenhed_id = ANY (organisationenhed_candidates) )
+		((NOT organisationenhed_candidates_is_initialized) OR b.organisationenhed_id = ANY (organisationenhed_candidates) )
 
             );
 
@@ -391,7 +391,7 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT organisationenhed_candidates_is_initialized) OR b.organisationenhed_id = ANY (organisationenhed_candidates) )
+		((NOT organisationenhed_candidates_is_initialized) OR b.organisationenhed_id = ANY (organisationenhed_candidates) )
 
 
         );
@@ -529,7 +529,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT organisationenhed_candidates_is_initialized) OR b.organisationenhed_id = ANY (organisationenhed_candidates) )
+		((NOT organisationenhed_candidates_is_initialized) OR b.organisationenhed_id = ANY (organisationenhed_candidates) )
 
     );
 
@@ -692,7 +692,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT organisationenhed_candidates_is_initialized) OR b.organisationenhed_id = ANY (organisationenhed_candidates) )
+		((NOT organisationenhed_candidates_is_initialized) OR b.organisationenhed_id = ANY (organisationenhed_candidates) )
 
     );
 
@@ -791,7 +791,7 @@ IF coalesce(array_length(anyuuidArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT organisationenhed_candidates_is_initialized) OR b.organisationenhed_id = ANY (organisationenhed_candidates) )
+		((NOT organisationenhed_candidates_is_initialized) OR b.organisationenhed_id = ANY (organisationenhed_candidates) )
 
 
             );
@@ -890,7 +890,7 @@ IF coalesce(array_length(anyurnArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT organisationenhed_candidates_is_initialized) OR b.organisationenhed_id = ANY (organisationenhed_candidates) )
+		((NOT organisationenhed_candidates_is_initialized) OR b.organisationenhed_id = ANY (organisationenhed_candidates) )
 
 
             );
@@ -985,7 +985,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT organisationenhed_candidates_is_initialized) OR b.organisationenhed_id = ANY (organisationenhed_candidates) )
+		((NOT organisationenhed_candidates_is_initialized) OR b.organisationenhed_id = ANY (organisationenhed_candidates) )
 
         )
         ;

@@ -27,7 +27,7 @@ END IF;
 /*********************/
 
 SELECT 
-array_agg( x.{{oio_type}}Obj) into result
+array_agg(x.{{oio_type}}Obj) into result
 FROM
 (
 SELECT

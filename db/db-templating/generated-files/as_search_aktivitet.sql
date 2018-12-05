@@ -132,7 +132,7 @@ IF aktivitet_uuid is not NULL THEN
 			)
 		)
 		AND
-		( (NOT aktivitet_candidates_is_initialized) OR b.aktivitet_id = ANY (aktivitet_candidates) )
+		((NOT aktivitet_candidates_is_initialized) OR b.aktivitet_id = ANY (aktivitet_candidates) )
 
         );
     END IF;
@@ -317,7 +317,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT aktivitet_candidates_is_initialized) OR b.aktivitet_id = ANY (aktivitet_candidates) )
+		((NOT aktivitet_candidates_is_initialized) OR b.aktivitet_id = ANY (aktivitet_candidates) )
 
             );
 
@@ -430,7 +430,7 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT aktivitet_candidates_is_initialized) OR b.aktivitet_id = ANY (aktivitet_candidates) )
+		((NOT aktivitet_candidates_is_initialized) OR b.aktivitet_id = ANY (aktivitet_candidates) )
 
 
         );
@@ -568,7 +568,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT aktivitet_candidates_is_initialized) OR b.aktivitet_id = ANY (aktivitet_candidates) )
+		((NOT aktivitet_candidates_is_initialized) OR b.aktivitet_id = ANY (aktivitet_candidates) )
 
     );
 
@@ -701,7 +701,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT aktivitet_candidates_is_initialized) OR b.aktivitet_id = ANY (aktivitet_candidates) )
+		((NOT aktivitet_candidates_is_initialized) OR b.aktivitet_id = ANY (aktivitet_candidates) )
 
     );
 
@@ -902,7 +902,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT aktivitet_candidates_is_initialized) OR b.aktivitet_id = ANY (aktivitet_candidates) )
+		((NOT aktivitet_candidates_is_initialized) OR b.aktivitet_id = ANY (aktivitet_candidates) )
 
     );
 
@@ -1005,7 +1005,7 @@ IF coalesce(array_length(anyuuidArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT aktivitet_candidates_is_initialized) OR b.aktivitet_id = ANY (aktivitet_candidates) )
+		((NOT aktivitet_candidates_is_initialized) OR b.aktivitet_id = ANY (aktivitet_candidates) )
 
 
             );
@@ -1108,7 +1108,7 @@ IF coalesce(array_length(anyurnArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT aktivitet_candidates_is_initialized) OR b.aktivitet_id = ANY (aktivitet_candidates) )
+		((NOT aktivitet_candidates_is_initialized) OR b.aktivitet_id = ANY (aktivitet_candidates) )
 
 
             );
@@ -1287,7 +1287,7 @@ IF coalesce(array_length(search_operator_greater_than_or_equal_attr_egenskaber,1
                        )
                )
                AND
-               ( (NOT aktivitet_candidates_is_initialized) OR b.aktivitet_id = ANY (aktivitet_candidates) )
+               ((NOT aktivitet_candidates_is_initialized) OR b.aktivitet_id = ANY (aktivitet_candidates) )
 
                        );
                        
@@ -1467,7 +1467,7 @@ IF coalesce(array_length(search_operator_less_than_or_equal_attr_egenskaber,1),0
                        )
                )
                AND
-               ( (NOT aktivitet_candidates_is_initialized) OR b.aktivitet_id = ANY (aktivitet_candidates) )
+               ((NOT aktivitet_candidates_is_initialized) OR b.aktivitet_id = ANY (aktivitet_candidates) )
 
                        );
                        
@@ -1565,7 +1565,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT aktivitet_candidates_is_initialized) OR b.aktivitet_id = ANY (aktivitet_candidates) )
+		((NOT aktivitet_candidates_is_initialized) OR b.aktivitet_id = ANY (aktivitet_candidates) )
 
         )
         ;

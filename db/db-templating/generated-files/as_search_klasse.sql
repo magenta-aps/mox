@@ -131,7 +131,7 @@ IF klasse_uuid is not NULL THEN
 			)
 		)
 		AND
-		( (NOT klasse_candidates_is_initialized) OR b.klasse_id = ANY (klasse_candidates) )
+		((NOT klasse_candidates_is_initialized) OR b.klasse_id = ANY (klasse_candidates) )
 
         );
     END IF;
@@ -371,7 +371,7 @@ END LOOP;
 			)
 		)
 		AND
-		( (NOT klasse_candidates_is_initialized) OR b.klasse_id = ANY (klasse_candidates) )
+		((NOT klasse_candidates_is_initialized) OR b.klasse_id = ANY (klasse_candidates) )
 
             );
 
@@ -493,7 +493,7 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT klasse_candidates_is_initialized) OR b.klasse_id = ANY (klasse_candidates) )
+		((NOT klasse_candidates_is_initialized) OR b.klasse_id = ANY (klasse_candidates) )
 
 
         );
@@ -631,7 +631,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT klasse_candidates_is_initialized) OR b.klasse_id = ANY (klasse_candidates) )
+		((NOT klasse_candidates_is_initialized) OR b.klasse_id = ANY (klasse_candidates) )
 
     );
 
@@ -794,7 +794,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT klasse_candidates_is_initialized) OR b.klasse_id = ANY (klasse_candidates) )
+		((NOT klasse_candidates_is_initialized) OR b.klasse_id = ANY (klasse_candidates) )
 
     );
 
@@ -893,7 +893,7 @@ IF coalesce(array_length(anyuuidArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT klasse_candidates_is_initialized) OR b.klasse_id = ANY (klasse_candidates) )
+		((NOT klasse_candidates_is_initialized) OR b.klasse_id = ANY (klasse_candidates) )
 
 
             );
@@ -992,7 +992,7 @@ IF coalesce(array_length(anyurnArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT klasse_candidates_is_initialized) OR b.klasse_id = ANY (klasse_candidates) )
+		((NOT klasse_candidates_is_initialized) OR b.klasse_id = ANY (klasse_candidates) )
 
 
             );
@@ -1087,7 +1087,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT klasse_candidates_is_initialized) OR b.klasse_id = ANY (klasse_candidates) )
+		((NOT klasse_candidates_is_initialized) OR b.klasse_id = ANY (klasse_candidates) )
 
         )
         ;

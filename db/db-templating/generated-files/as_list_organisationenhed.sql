@@ -30,7 +30,7 @@ END IF;
 /*********************/
 
 SELECT 
-array_agg( x.organisationenhedObj) into result
+array_agg(x.organisationenhedObj) into result
 FROM
 (
 SELECT

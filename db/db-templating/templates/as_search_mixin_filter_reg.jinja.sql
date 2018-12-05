@@ -64,5 +64,5 @@
 			)
 		)
 		AND
-		( (NOT {{oio_type}}_candidates_is_initialized) OR b.{{oio_type}}_id = ANY ({{oio_type}}_candidates) )
+		((NOT {{oio_type}}_candidates_is_initialized) OR b.{{oio_type}}_id = ANY ({{oio_type}}_candidates) )
 

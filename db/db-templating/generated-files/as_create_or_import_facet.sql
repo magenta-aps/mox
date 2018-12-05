@@ -63,7 +63,7 @@ BEGIN
     IF NOT does_exist THEN
         facet_registrering_id:=nextval('facet_registrering_id_seq');
 
-        INSERT INTO facet_registrering ( id, facet_id,
+        INSERT INTO facet_registrering (id, facet_id,
             registrering) SELECT facet_registrering_id,
         facet_uuid, ROW (
             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
@@ -73,7 +73,7 @@ BEGIN
     ELSE
         -- This is an update, not an import or create
             new_facet_registrering :=
-            _as_create_facet_registrering( facet_uuid,
+            _as_create_facet_registrering(facet_uuid,
                 (facet_registrering.registrering).livscykluskode,
                 (facet_registrering.registrering).brugerref,
                 (facet_registrering.registrering).note);

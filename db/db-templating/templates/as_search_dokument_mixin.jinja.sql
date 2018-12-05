@@ -117,7 +117,7 @@ ELSE
 			)
 			AND
 			{% include 'as_search_mixin_filter_reg.jinja.sql' %}
-			AND ( (NOT variant_candidates_is_initialized) OR a.id = ANY (variant_candidates_ids) )
+			AND ((NOT variant_candidates_is_initialized) OR a.id = ANY (variant_candidates_ids) )
 			);
 
 			variant_candidates_is_initialized:=true;
@@ -233,7 +233,7 @@ ELSE
 			)
 			AND
 			{% include 'as_search_mixin_filter_reg.jinja.sql' %}
-			AND ( (NOT variant_candidates_is_initialized) OR a.id = ANY (variant_candidates_ids) )
+			AND ((NOT variant_candidates_is_initialized) OR a.id = ANY (variant_candidates_ids) )
 			);
 
 			variant_candidates_is_initialized:=true;
@@ -320,7 +320,7 @@ ELSE
 			)
 			AND
 			{% include 'as_search_mixin_filter_reg.jinja.sql' %}
-			AND ( (NOT variant_candidates_is_initialized) OR a.id = ANY (variant_candidates_ids) )
+			AND ((NOT variant_candidates_is_initialized) OR a.id = ANY (variant_candidates_ids) )
 			);
 			
 			variant_candidates_is_initialized:=true;
@@ -346,7 +346,7 @@ ELSE
 			WHERE
 			a.id = ANY (variant_candidates_ids)
 			AND
-			( (NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
+			((NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
 			);
 
 			dokument_candidates_is_initialized:=true;

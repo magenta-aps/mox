@@ -63,7 +63,7 @@ BEGIN
     IF NOT does_exist THEN
         loghaendelse_registrering_id:=nextval('loghaendelse_registrering_id_seq');
 
-        INSERT INTO loghaendelse_registrering ( id, loghaendelse_id,
+        INSERT INTO loghaendelse_registrering (id, loghaendelse_id,
             registrering) SELECT loghaendelse_registrering_id,
         loghaendelse_uuid, ROW (
             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
@@ -73,7 +73,7 @@ BEGIN
     ELSE
         -- This is an update, not an import or create
             new_loghaendelse_registrering :=
-            _as_create_loghaendelse_registrering( loghaendelse_uuid,
+            _as_create_loghaendelse_registrering(loghaendelse_uuid,
                 (loghaendelse_registrering.registrering).livscykluskode,
                 (loghaendelse_registrering.registrering).brugerref,
                 (loghaendelse_registrering.registrering).note);

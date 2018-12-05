@@ -71,7 +71,7 @@ BEGIN
     IF NOT does_exist THEN
         dokument_registrering_id:=nextval('dokument_registrering_id_seq');
 
-        INSERT INTO dokument_registrering ( id, dokument_id,
+        INSERT INTO dokument_registrering (id, dokument_id,
             registrering) SELECT dokument_registrering_id,
         dokument_uuid, ROW (
             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
@@ -81,7 +81,7 @@ BEGIN
     ELSE
         -- This is an update, not an import or create
             new_dokument_registrering :=
-            _as_create_dokument_registrering( dokument_uuid,
+            _as_create_dokument_registrering(dokument_uuid,
                 (dokument_registrering.registrering).livscykluskode,
                 (dokument_registrering.registrering).brugerref,
                 (dokument_registrering.registrering).note);

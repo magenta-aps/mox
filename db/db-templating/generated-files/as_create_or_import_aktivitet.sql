@@ -71,7 +71,7 @@ BEGIN
     IF NOT does_exist THEN
         aktivitet_registrering_id:=nextval('aktivitet_registrering_id_seq');
 
-        INSERT INTO aktivitet_registrering ( id, aktivitet_id,
+        INSERT INTO aktivitet_registrering (id, aktivitet_id,
             registrering) SELECT aktivitet_registrering_id,
         aktivitet_uuid, ROW (
             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
@@ -81,7 +81,7 @@ BEGIN
     ELSE
         -- This is an update, not an import or create
             new_aktivitet_registrering :=
-            _as_create_aktivitet_registrering( aktivitet_uuid,
+            _as_create_aktivitet_registrering(aktivitet_uuid,
                 (aktivitet_registrering.registrering).livscykluskode,
                 (aktivitet_registrering.registrering).brugerref,
                 (aktivitet_registrering.registrering).note);
@@ -198,7 +198,7 @@ IF coalesce(array_length(aktivitet_registrering.relationer,1),0)>0 THEN
 --Create temporary sequences
 aktivitet_uuid_underscores:=replace(aktivitet_uuid::text, '-', '_');
 
-SELECT array_agg( DISTINCT a.RelType) into aktivitet_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(aktivitet_registrering.relationer) a WHERE a.RelType = any (aktivitet_rel_type_cardinality_unlimited) ;
+SELECT array_agg(DISTINCT a.RelType) into aktivitet_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(aktivitet_registrering.relationer) a WHERE a.RelType = any (aktivitet_rel_type_cardinality_unlimited) ;
 IF coalesce(array_length(aktivitet_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 
 FOREACH aktivitet_relation_kode IN ARRAY (aktivitet_rel_type_cardinality_unlimited_present_in_argument)

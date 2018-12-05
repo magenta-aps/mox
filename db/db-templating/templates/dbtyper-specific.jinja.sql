@@ -142,7 +142,7 @@ CREATE TYPE DokumentDelType AS
 /*					Dokumentvariant               */
 /**************************************************/
 
-CREATE TYPE DokumentVariantEgenskaberType AS ( 
+CREATE TYPE DokumentVariantEgenskaberType AS (
 arkivering ClearableBoolean, 
 delvisscannet ClearableBoolean, 
 offentliggoerelse ClearableBoolean, 

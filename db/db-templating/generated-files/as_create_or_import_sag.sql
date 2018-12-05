@@ -70,7 +70,7 @@ BEGIN
     IF NOT does_exist THEN
         sag_registrering_id:=nextval('sag_registrering_id_seq');
 
-        INSERT INTO sag_registrering ( id, sag_id,
+        INSERT INTO sag_registrering (id, sag_id,
             registrering) SELECT sag_registrering_id,
         sag_uuid, ROW (
             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
@@ -80,7 +80,7 @@ BEGIN
     ELSE
         -- This is an update, not an import or create
             new_sag_registrering :=
-            _as_create_sag_registrering( sag_uuid,
+            _as_create_sag_registrering(sag_uuid,
                 (sag_registrering.registrering).livscykluskode,
                 (sag_registrering.registrering).brugerref,
                 (sag_registrering.registrering).note);
@@ -178,7 +178,7 @@ IF coalesce(array_length(sag_registrering.relationer,1),0)>0 THEN
 --Create temporary sequences
 sag_uuid_underscores:=replace(sag_uuid::text, '-', '_');
 
-SELECT array_agg( DISTINCT a.RelType) into sag_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(sag_registrering.relationer) a WHERE a.RelType = any (sag_rel_type_cardinality_unlimited) ;
+SELECT array_agg(DISTINCT a.RelType) into sag_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(sag_registrering.relationer) a WHERE a.RelType = any (sag_rel_type_cardinality_unlimited) ;
 IF coalesce(array_length(sag_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 
 FOREACH sag_relation_kode IN ARRAY (sag_rel_type_cardinality_unlimited_present_in_argument)
@@ -241,7 +241,7 @@ END IF;
          NULL
     END
     ,CASE 
-      WHEN ( 
+      WHEN (
               (NOT a.journalDokumentAttr IS NULL)
               AND
               (

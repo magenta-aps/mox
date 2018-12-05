@@ -799,7 +799,7 @@ FOREACH dokument_variant_egenskab_obj IN ARRAY dokument_variant_obj.egenskaber
               produktion,
                 virkning
     )
-    VALUES ( 
+    VALUES (
       dokument_variant_new_id,
         dokument_variant_egenskab_obj.arkivering, 
           dokument_variant_egenskab_obj.delvisscannet, 
@@ -834,7 +834,7 @@ FOREACH dokument_del_obj IN ARRAY dokument_variant_obj.dele
     dokument_del_new_id:=_ensure_document_del_exists_and_get(new_dokument_registrering.id, dokument_variant_new_id, dokument_del_obj.deltekst);
 
     IF dokument_del_obj.egenskaber IS NOT NULL AND coalesce(array_length(dokument_del_obj.egenskaber,1),0)=0 THEN
-    dokument_variant_del_egenskaber_deleted:=array_append(dokument_variant_del_egenskaber_deleted,ROW( dokument_variant_obj.varianttekst, dokument_del_obj.deltekst)::_DokumentVariantDelKey);
+    dokument_variant_del_egenskaber_deleted:=array_append(dokument_variant_del_egenskaber_deleted,ROW(dokument_variant_obj.varianttekst, dokument_del_obj.deltekst)::_DokumentVariantDelKey);
     ELSE
 
     IF dokument_del_obj.egenskaber IS NOT NULL AND coalesce(array_length(dokument_del_obj.egenskaber,1),0)>0 THEN  
@@ -966,7 +966,7 @@ FOREACH dokument_del_obj IN ARRAY dokument_variant_obj.dele
     END IF; --else block: explicit empty array of variant del egenskaber given
 
      IF dokument_del_obj.relationer IS NOT NULL AND coalesce(array_length(dokument_del_obj.relationer,1),0)=0 THEN
-     dokument_variant_del_relationer_deleted:=array_append(dokument_variant_del_relationer_deleted,ROW( dokument_variant_obj.varianttekst, dokument_del_obj.deltekst)::_DokumentVariantDelKey);
+     dokument_variant_del_relationer_deleted:=array_append(dokument_variant_del_relationer_deleted,ROW(dokument_variant_obj.varianttekst, dokument_del_obj.deltekst)::_DokumentVariantDelKey);
     
     ELSE
 
@@ -1163,7 +1163,7 @@ FROM
   JOIN dokument_variant c on b.variant_id=c.id
   LEFT JOIN unnest(dokument_variant_del_relationer_deleted) d(varianttekst,deltekst) on d.varianttekst=c.varianttekst and d.deltekst=b.deltekst
   WHERE c.dokument_registrering_id=prev_dokument_registrering.id
-  AND ( d.varianttekst IS NULL AND d.deltekst IS NULL) 
+  AND (d.varianttekst IS NULL AND d.deltekst IS NULL) 
   EXCEPT
   SELECT
   c.varianttekst,b.deltekst

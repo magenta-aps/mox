@@ -128,7 +128,7 @@ IF organisationfunktion_uuid is not NULL THEN
 			)
 		)
 		AND
-		( (NOT organisationfunktion_candidates_is_initialized) OR b.organisationfunktion_id = ANY (organisationfunktion_candidates) )
+		((NOT organisationfunktion_candidates_is_initialized) OR b.organisationfunktion_id = ANY (organisationfunktion_candidates) )
 
         );
     END IF;
@@ -283,7 +283,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT organisationfunktion_candidates_is_initialized) OR b.organisationfunktion_id = ANY (organisationfunktion_candidates) )
+		((NOT organisationfunktion_candidates_is_initialized) OR b.organisationfunktion_id = ANY (organisationfunktion_candidates) )
 
             );
 
@@ -391,7 +391,7 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT organisationfunktion_candidates_is_initialized) OR b.organisationfunktion_id = ANY (organisationfunktion_candidates) )
+		((NOT organisationfunktion_candidates_is_initialized) OR b.organisationfunktion_id = ANY (organisationfunktion_candidates) )
 
 
         );
@@ -529,7 +529,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT organisationfunktion_candidates_is_initialized) OR b.organisationfunktion_id = ANY (organisationfunktion_candidates) )
+		((NOT organisationfunktion_candidates_is_initialized) OR b.organisationfunktion_id = ANY (organisationfunktion_candidates) )
 
     );
 
@@ -692,7 +692,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT organisationfunktion_candidates_is_initialized) OR b.organisationfunktion_id = ANY (organisationfunktion_candidates) )
+		((NOT organisationfunktion_candidates_is_initialized) OR b.organisationfunktion_id = ANY (organisationfunktion_candidates) )
 
     );
 
@@ -791,7 +791,7 @@ IF coalesce(array_length(anyuuidArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT organisationfunktion_candidates_is_initialized) OR b.organisationfunktion_id = ANY (organisationfunktion_candidates) )
+		((NOT organisationfunktion_candidates_is_initialized) OR b.organisationfunktion_id = ANY (organisationfunktion_candidates) )
 
 
             );
@@ -890,7 +890,7 @@ IF coalesce(array_length(anyurnArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT organisationfunktion_candidates_is_initialized) OR b.organisationfunktion_id = ANY (organisationfunktion_candidates) )
+		((NOT organisationfunktion_candidates_is_initialized) OR b.organisationfunktion_id = ANY (organisationfunktion_candidates) )
 
 
             );
@@ -985,7 +985,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT organisationfunktion_candidates_is_initialized) OR b.organisationfunktion_id = ANY (organisationfunktion_candidates) )
+		((NOT organisationfunktion_candidates_is_initialized) OR b.organisationfunktion_id = ANY (organisationfunktion_candidates) )
 
         )
         ;

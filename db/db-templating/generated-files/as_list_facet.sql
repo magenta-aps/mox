@@ -30,7 +30,7 @@ END IF;
 /*********************/
 
 SELECT 
-array_agg( x.facetObj) into result
+array_agg(x.facetObj) into result
 FROM
 (
 SELECT

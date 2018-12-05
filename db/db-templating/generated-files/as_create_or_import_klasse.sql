@@ -66,7 +66,7 @@ BEGIN
     IF NOT does_exist THEN
         klasse_registrering_id:=nextval('klasse_registrering_id_seq');
 
-        INSERT INTO klasse_registrering ( id, klasse_id,
+        INSERT INTO klasse_registrering (id, klasse_id,
             registrering) SELECT klasse_registrering_id,
         klasse_uuid, ROW (
             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
@@ -76,7 +76,7 @@ BEGIN
     ELSE
         -- This is an update, not an import or create
             new_klasse_registrering :=
-            _as_create_klasse_registrering( klasse_uuid,
+            _as_create_klasse_registrering(klasse_uuid,
                 (klasse_registrering.registrering).livscykluskode,
                 (klasse_registrering.registrering).brugerref,
                 (klasse_registrering.registrering).note);

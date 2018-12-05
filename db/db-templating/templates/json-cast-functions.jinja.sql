@@ -47,7 +47,7 @@ FROM
       d.*
       ) tils_json
     FROM 
-      ( 
+      (
         SELECT 
         {% for tilstand, tilstand_values in tilstande.items() %}
         CASE 
@@ -61,25 +61,25 @@ FROM
   ),
   rel as (
     SELECT 
-    ('{' || string_agg(   to_json(f.relType::text) || ':' || array_to_json(f.rel_json_arr,false) ,',') || '}')::json rel_json
+    ('{' || string_agg(  to_json(f.relType::text) || ':' || array_to_json(f.rel_json_arr,false) ,',') || '}')::json rel_json
     FROM
     (
       SELECT
       e.relType,
 {% if oio_type == "aktivitet" %}
-      array_agg( _json_object_delete_keys(row_to_json(ROW(e.relType,e.virkning,e.uuid,e.urn,e.objektType,e.indeks,e.aktoerAttr)::AktivitetRelationType),ARRAY['reltype']::text[])) rel_json_arr
+      array_agg(_json_object_delete_keys(row_to_json(ROW(e.relType,e.virkning,e.uuid,e.urn,e.objektType,e.indeks,e.aktoerAttr)::AktivitetRelationType),ARRAY['reltype']::text[])) rel_json_arr
       from unnest($1.relationer) e(relType,virkning,uuid,urn,objektType,indeks,aktoerAttr)
 {% elif oio_type == "indsats" %}
-      array_agg( _json_object_delete_keys(row_to_json(ROW(e.relType,e.virkning,e.uuid,e.urn,e.objektType,e.indeks)::IndsatsRelationType),ARRAY['reltype']::text[])) rel_json_arr
+      array_agg(_json_object_delete_keys(row_to_json(ROW(e.relType,e.virkning,e.uuid,e.urn,e.objektType,e.indeks)::IndsatsRelationType),ARRAY['reltype']::text[])) rel_json_arr
       from unnest($1.relationer) e(relType,virkning,uuid,urn,objektType,indeks)
 {% elif oio_type == "sag" %}
-      array_agg( _json_object_delete_keys(row_to_json(ROW(e.relType,e.virkning,e.uuid,e.urn,e.objektType,e.indeks,e.relTypeSpec,e.journalNotat,e.journalDokumentAttr)::SagRelationType),ARRAY['reltype']::text[])) rel_json_arr
+      array_agg(_json_object_delete_keys(row_to_json(ROW(e.relType,e.virkning,e.uuid,e.urn,e.objektType,e.indeks,e.relTypeSpec,e.journalNotat,e.journalDokumentAttr)::SagRelationType),ARRAY['reltype']::text[])) rel_json_arr
       from unnest($1.relationer) e(relType,virkning,uuid,urn,objektType,indeks,relTypeSpec,journalNotat,journalDokumentAttr)
 {% elif oio_type == "tilstand" %}
-      array_agg( _json_object_delete_keys(row_to_json(ROW(e.relType,e.virkning,e.uuid,e.urn,e.objektType,e.indeks,e.tilstandsVaerdiAttr)::TilstandRelationType),ARRAY['reltype']::text[])) rel_json_arr
+      array_agg(_json_object_delete_keys(row_to_json(ROW(e.relType,e.virkning,e.uuid,e.urn,e.objektType,e.indeks,e.tilstandsVaerdiAttr)::TilstandRelationType),ARRAY['reltype']::text[])) rel_json_arr
       from unnest($1.relationer) e(relType,virkning,uuid,urn,objektType,indeks,tilstandsVaerdiAttr)
 {% else %}
-      array_agg( _json_object_delete_keys(row_to_json(ROW(e.relType,e.virkning,e.uuid,e.urn,e.objektType)::{{oio_type|title}}RelationType),ARRAY['reltype']::text[])) rel_json_arr
+      array_agg(_json_object_delete_keys(row_to_json(ROW(e.relType,e.virkning,e.uuid,e.urn,e.objektType)::{{oio_type|title}}RelationType),ARRAY['reltype']::text[])) rel_json_arr
       from unnest($1.relationer) e(relType,virkning,uuid,urn,objektType)
 {% endif %}
       group by e.relType

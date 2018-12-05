@@ -63,7 +63,7 @@ BEGIN
     IF NOT does_exist THEN
         klassifikation_registrering_id:=nextval('klassifikation_registrering_id_seq');
 
-        INSERT INTO klassifikation_registrering ( id, klassifikation_id,
+        INSERT INTO klassifikation_registrering (id, klassifikation_id,
             registrering) SELECT klassifikation_registrering_id,
         klassifikation_uuid, ROW (
             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
@@ -73,7 +73,7 @@ BEGIN
     ELSE
         -- This is an update, not an import or create
             new_klassifikation_registrering :=
-            _as_create_klassifikation_registrering( klassifikation_uuid,
+            _as_create_klassifikation_registrering(klassifikation_uuid,
                 (klassifikation_registrering.registrering).livscykluskode,
                 (klassifikation_registrering.registrering).brugerref,
                 (klassifikation_registrering.registrering).note);

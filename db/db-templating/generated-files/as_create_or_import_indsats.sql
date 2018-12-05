@@ -71,7 +71,7 @@ BEGIN
     IF NOT does_exist THEN
         indsats_registrering_id:=nextval('indsats_registrering_id_seq');
 
-        INSERT INTO indsats_registrering ( id, indsats_id,
+        INSERT INTO indsats_registrering (id, indsats_id,
             registrering) SELECT indsats_registrering_id,
         indsats_uuid, ROW (
             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
@@ -81,7 +81,7 @@ BEGIN
     ELSE
         -- This is an update, not an import or create
             new_indsats_registrering :=
-            _as_create_indsats_registrering( indsats_uuid,
+            _as_create_indsats_registrering(indsats_uuid,
                 (indsats_registrering.registrering).livscykluskode,
                 (indsats_registrering.registrering).brugerref,
                 (indsats_registrering.registrering).note);
@@ -192,7 +192,7 @@ IF coalesce(array_length(indsats_registrering.relationer,1),0)>0 THEN
 --Create temporary sequences
 indsats_uuid_underscores:=replace(indsats_uuid::text, '-', '_');
 
-SELECT array_agg( DISTINCT a.RelType) into indsats_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(indsats_registrering.relationer) a WHERE a.RelType = any (indsats_rel_type_cardinality_unlimited) ;
+SELECT array_agg(DISTINCT a.RelType) into indsats_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(indsats_registrering.relationer) a WHERE a.RelType = any (indsats_rel_type_cardinality_unlimited) ;
 IF coalesce(array_length(indsats_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 
 FOREACH indsats_relation_kode IN ARRAY (indsats_rel_type_cardinality_unlimited_present_in_argument)

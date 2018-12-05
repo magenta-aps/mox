@@ -63,7 +63,7 @@ BEGIN
     IF NOT does_exist THEN
         interessefaellesskab_registrering_id:=nextval('interessefaellesskab_registrering_id_seq');
 
-        INSERT INTO interessefaellesskab_registrering ( id, interessefaellesskab_id,
+        INSERT INTO interessefaellesskab_registrering (id, interessefaellesskab_id,
             registrering) SELECT interessefaellesskab_registrering_id,
         interessefaellesskab_uuid, ROW (
             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
@@ -73,7 +73,7 @@ BEGIN
     ELSE
         -- This is an update, not an import or create
             new_interessefaellesskab_registrering :=
-            _as_create_interessefaellesskab_registrering( interessefaellesskab_uuid,
+            _as_create_interessefaellesskab_registrering(interessefaellesskab_uuid,
                 (interessefaellesskab_registrering.registrering).livscykluskode,
                 (interessefaellesskab_registrering.registrering).brugerref,
                 (interessefaellesskab_registrering.registrering).note);

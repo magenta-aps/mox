@@ -99,7 +99,7 @@ BEGIN
     IF NOT does_exist THEN
         {{oio_type}}_registrering_id:=nextval('{{oio_type}}_registrering_id_seq');
 
-        INSERT INTO {{oio_type}}_registrering ( id, {{oio_type}}_id,
+        INSERT INTO {{oio_type}}_registrering (id, {{oio_type}}_id,
             registrering) SELECT {{oio_type}}_registrering_id,
         {{oio_type}}_uuid, ROW (
             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
@@ -109,7 +109,7 @@ BEGIN
     ELSE
         -- This is an update, not an import or create
             new_{{oio_type}}_registrering :=
-            _as_create_{{oio_type}}_registrering( {{oio_type}}_uuid,
+            _as_create_{{oio_type}}_registrering({{oio_type}}_uuid,
                 ({{oio_type}}_registrering.registrering).livscykluskode,
                 ({{oio_type}}_registrering.registrering).brugerref,
                 ({{oio_type}}_registrering.registrering).note);
@@ -220,7 +220,7 @@ IF coalesce(array_length({{oio_type}}_registrering.relationer,1),0)>0 THEN
 --Create temporary sequences
 {{oio_type}}_uuid_underscores:=replace({{oio_type}}_uuid::text, '-', '_');
 
-SELECT array_agg( DISTINCT a.RelType) into {{oio_type}}_rel_type_cardinality_unlimited_present_in_argument FROM  unnest({{oio_type}}_registrering.relationer) a WHERE a.RelType = any ({{oio_type}}_rel_type_cardinality_unlimited) ;
+SELECT array_agg(DISTINCT a.RelType) into {{oio_type}}_rel_type_cardinality_unlimited_present_in_argument FROM  unnest({{oio_type}}_registrering.relationer) a WHERE a.RelType = any ({{oio_type}}_rel_type_cardinality_unlimited) ;
 IF coalesce(array_length({{oio_type}}_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 
 FOREACH {{oio_type}}_relation_kode IN ARRAY ({{oio_type}}_rel_type_cardinality_unlimited_present_in_argument)
@@ -312,7 +312,7 @@ END IF;
          NULL
     END
     ,CASE 
-      WHEN ( 
+      WHEN (
               (NOT a.journalDokumentAttr IS NULL)
               AND
               (
@@ -335,7 +335,7 @@ END IF;
       {% elif oio_type == "tilstand" %},
       CASE
         WHEN a.relType='tilstandsvaerdi' AND
-          ( NOT (a.tilstandsVaerdiAttr IS NULL))
+          (NOT (a.tilstandsVaerdiAttr IS NULL))
           AND 
           (
             (a.tilstandsVaerdiAttr).forventet IS NOT NULL

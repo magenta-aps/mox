@@ -30,7 +30,7 @@ END IF;
 /*********************/
 
 SELECT 
-array_agg( x.itsystemObj) into result
+array_agg(x.itsystemObj) into result
 FROM
 (
 SELECT

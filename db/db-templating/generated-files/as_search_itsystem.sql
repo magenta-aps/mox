@@ -128,7 +128,7 @@ IF itsystem_uuid is not NULL THEN
 			)
 		)
 		AND
-		( (NOT itsystem_candidates_is_initialized) OR b.itsystem_id = ANY (itsystem_candidates) )
+		((NOT itsystem_candidates_is_initialized) OR b.itsystem_id = ANY (itsystem_candidates) )
 
         );
     END IF;
@@ -295,7 +295,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT itsystem_candidates_is_initialized) OR b.itsystem_id = ANY (itsystem_candidates) )
+		((NOT itsystem_candidates_is_initialized) OR b.itsystem_id = ANY (itsystem_candidates) )
 
             );
 
@@ -405,7 +405,7 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT itsystem_candidates_is_initialized) OR b.itsystem_id = ANY (itsystem_candidates) )
+		((NOT itsystem_candidates_is_initialized) OR b.itsystem_id = ANY (itsystem_candidates) )
 
 
         );
@@ -543,7 +543,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT itsystem_candidates_is_initialized) OR b.itsystem_id = ANY (itsystem_candidates) )
+		((NOT itsystem_candidates_is_initialized) OR b.itsystem_id = ANY (itsystem_candidates) )
 
     );
 
@@ -706,7 +706,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT itsystem_candidates_is_initialized) OR b.itsystem_id = ANY (itsystem_candidates) )
+		((NOT itsystem_candidates_is_initialized) OR b.itsystem_id = ANY (itsystem_candidates) )
 
     );
 
@@ -805,7 +805,7 @@ IF coalesce(array_length(anyuuidArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT itsystem_candidates_is_initialized) OR b.itsystem_id = ANY (itsystem_candidates) )
+		((NOT itsystem_candidates_is_initialized) OR b.itsystem_id = ANY (itsystem_candidates) )
 
 
             );
@@ -904,7 +904,7 @@ IF coalesce(array_length(anyurnArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT itsystem_candidates_is_initialized) OR b.itsystem_id = ANY (itsystem_candidates) )
+		((NOT itsystem_candidates_is_initialized) OR b.itsystem_id = ANY (itsystem_candidates) )
 
 
             );
@@ -999,7 +999,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT itsystem_candidates_is_initialized) OR b.itsystem_id = ANY (itsystem_candidates) )
+		((NOT itsystem_candidates_is_initialized) OR b.itsystem_id = ANY (itsystem_candidates) )
 
         )
         ;

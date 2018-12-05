@@ -128,7 +128,7 @@ IF facet_uuid is not NULL THEN
 			)
 		)
 		AND
-		( (NOT facet_candidates_is_initialized) OR b.facet_id = ANY (facet_candidates) )
+		((NOT facet_candidates_is_initialized) OR b.facet_id = ANY (facet_candidates) )
 
         );
     END IF;
@@ -313,7 +313,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT facet_candidates_is_initialized) OR b.facet_id = ANY (facet_candidates) )
+		((NOT facet_candidates_is_initialized) OR b.facet_id = ANY (facet_candidates) )
 
             );
 
@@ -426,7 +426,7 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT facet_candidates_is_initialized) OR b.facet_id = ANY (facet_candidates) )
+		((NOT facet_candidates_is_initialized) OR b.facet_id = ANY (facet_candidates) )
 
 
         );
@@ -564,7 +564,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT facet_candidates_is_initialized) OR b.facet_id = ANY (facet_candidates) )
+		((NOT facet_candidates_is_initialized) OR b.facet_id = ANY (facet_candidates) )
 
     );
 
@@ -727,7 +727,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT facet_candidates_is_initialized) OR b.facet_id = ANY (facet_candidates) )
+		((NOT facet_candidates_is_initialized) OR b.facet_id = ANY (facet_candidates) )
 
     );
 
@@ -826,7 +826,7 @@ IF coalesce(array_length(anyuuidArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT facet_candidates_is_initialized) OR b.facet_id = ANY (facet_candidates) )
+		((NOT facet_candidates_is_initialized) OR b.facet_id = ANY (facet_candidates) )
 
 
             );
@@ -925,7 +925,7 @@ IF coalesce(array_length(anyurnArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT facet_candidates_is_initialized) OR b.facet_id = ANY (facet_candidates) )
+		((NOT facet_candidates_is_initialized) OR b.facet_id = ANY (facet_candidates) )
 
 
             );
@@ -1020,7 +1020,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT facet_candidates_is_initialized) OR b.facet_id = ANY (facet_candidates) )
+		((NOT facet_candidates_is_initialized) OR b.facet_id = ANY (facet_candidates) )
 
         )
         ;

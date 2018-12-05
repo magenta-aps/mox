@@ -30,7 +30,7 @@ END IF;
 /*********************/
 
 SELECT 
-array_agg( x.loghaendelseObj) into result
+array_agg(x.loghaendelseObj) into result
 FROM
 (
 SELECT

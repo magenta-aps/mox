@@ -136,7 +136,7 @@ IF dokument_uuid is not NULL THEN
 			)
 		)
 		AND
-		( (NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
+		((NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
 
         );
     END IF;
@@ -345,7 +345,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
+		((NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
 
             );
 
@@ -391,11 +391,11 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
                 )
                 OR
                 (
-                    ( c.varianttekst ilike anyAttrValue and e.id is not null) --varianttekst handled like it is logically part of variant egenskaber
+                    (c.varianttekst ilike anyAttrValue and e.id is not null) --varianttekst handled like it is logically part of variant egenskaber
                 )
                 OR
                 (
-                    ( f.deltekst ilike anyAttrValue and d.id is not null ) --deltekst handled like it is logically part of del egenskaber
+                    (f.deltekst ilike anyAttrValue and d.id is not null ) --deltekst handled like it is logically part of del egenskaber
                     OR
                     d.indeks::text = anyAttrValue
                     OR
@@ -474,7 +474,7 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
+		((NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
 
 
         );
@@ -612,7 +612,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
+		((NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
 
     );
 
@@ -775,7 +775,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
+		((NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
 
     );
 
@@ -869,7 +869,7 @@ IF coalesce(array_length(anyuuidArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
+		((NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
 
 
             );
@@ -963,7 +963,7 @@ IF coalesce(array_length(anyurnArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
+		((NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
 
 
             );
@@ -1158,9 +1158,9 @@ ELSE
 			)
 		)
 		AND
-		( (NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
+		((NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
 
-			AND ( (NOT variant_candidates_is_initialized) OR a.id = ANY (variant_candidates_ids) )
+			AND ((NOT variant_candidates_is_initialized) OR a.id = ANY (variant_candidates_ids) )
 			);
 
 			variant_candidates_is_initialized:=true;
@@ -1341,9 +1341,9 @@ ELSE
 			)
 		)
 		AND
-		( (NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
+		((NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
 
-			AND ( (NOT variant_candidates_is_initialized) OR a.id = ANY (variant_candidates_ids) )
+			AND ((NOT variant_candidates_is_initialized) OR a.id = ANY (variant_candidates_ids) )
 			);
 
 			variant_candidates_is_initialized:=true;
@@ -1495,9 +1495,9 @@ ELSE
 			)
 		)
 		AND
-		( (NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
+		((NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
 
-			AND ( (NOT variant_candidates_is_initialized) OR a.id = ANY (variant_candidates_ids) )
+			AND ((NOT variant_candidates_is_initialized) OR a.id = ANY (variant_candidates_ids) )
 			);
 			
 			variant_candidates_is_initialized:=true;
@@ -1523,7 +1523,7 @@ ELSE
 			WHERE
 			a.id = ANY (variant_candidates_ids)
 			AND
-			( (NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
+			((NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
 			);
 
 			dokument_candidates_is_initialized:=true;
@@ -1618,7 +1618,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
+		((NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
 
         )
         ;

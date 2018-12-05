@@ -71,7 +71,7 @@ BEGIN
     IF NOT does_exist THEN
         tilstand_registrering_id:=nextval('tilstand_registrering_id_seq');
 
-        INSERT INTO tilstand_registrering ( id, tilstand_id,
+        INSERT INTO tilstand_registrering (id, tilstand_id,
             registrering) SELECT tilstand_registrering_id,
         tilstand_uuid, ROW (
             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
@@ -81,7 +81,7 @@ BEGIN
     ELSE
         -- This is an update, not an import or create
             new_tilstand_registrering :=
-            _as_create_tilstand_registrering( tilstand_uuid,
+            _as_create_tilstand_registrering(tilstand_uuid,
                 (tilstand_registrering.registrering).livscykluskode,
                 (tilstand_registrering.registrering).brugerref,
                 (tilstand_registrering.registrering).note);
@@ -188,7 +188,7 @@ IF coalesce(array_length(tilstand_registrering.relationer,1),0)>0 THEN
 --Create temporary sequences
 tilstand_uuid_underscores:=replace(tilstand_uuid::text, '-', '_');
 
-SELECT array_agg( DISTINCT a.RelType) into tilstand_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(tilstand_registrering.relationer) a WHERE a.RelType = any (tilstand_rel_type_cardinality_unlimited) ;
+SELECT array_agg(DISTINCT a.RelType) into tilstand_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(tilstand_registrering.relationer) a WHERE a.RelType = any (tilstand_rel_type_cardinality_unlimited) ;
 IF coalesce(array_length(tilstand_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 
 FOREACH tilstand_relation_kode IN ARRAY (tilstand_rel_type_cardinality_unlimited_present_in_argument)
@@ -230,7 +230,7 @@ END IF;
       END,
       CASE
         WHEN a.relType='tilstandsvaerdi' AND
-          ( NOT (a.tilstandsVaerdiAttr IS NULL))
+          (NOT (a.tilstandsVaerdiAttr IS NULL))
           AND 
           (
             (a.tilstandsVaerdiAttr).forventet IS NOT NULL

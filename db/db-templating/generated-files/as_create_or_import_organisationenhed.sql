@@ -63,7 +63,7 @@ BEGIN
     IF NOT does_exist THEN
         organisationenhed_registrering_id:=nextval('organisationenhed_registrering_id_seq');
 
-        INSERT INTO organisationenhed_registrering ( id, organisationenhed_id,
+        INSERT INTO organisationenhed_registrering (id, organisationenhed_id,
             registrering) SELECT organisationenhed_registrering_id,
         organisationenhed_uuid, ROW (
             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
@@ -73,7 +73,7 @@ BEGIN
     ELSE
         -- This is an update, not an import or create
             new_organisationenhed_registrering :=
-            _as_create_organisationenhed_registrering( organisationenhed_uuid,
+            _as_create_organisationenhed_registrering(organisationenhed_uuid,
                 (organisationenhed_registrering.registrering).livscykluskode,
                 (organisationenhed_registrering.registrering).brugerref,
                 (organisationenhed_registrering.registrering).note);

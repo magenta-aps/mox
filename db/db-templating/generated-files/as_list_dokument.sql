@@ -30,7 +30,7 @@ END IF;
 /*********************/
 
 SELECT 
-array_agg( x.dokumentObj) into result
+array_agg(x.dokumentObj) into result
 FROM
 (
 SELECT

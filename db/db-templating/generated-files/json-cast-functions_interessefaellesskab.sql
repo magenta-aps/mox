@@ -49,7 +49,7 @@ FROM
       d.*
       ) tils_json
     FROM 
-      ( 
+      (
         SELECT 
         
         CASE 
@@ -63,13 +63,13 @@ FROM
   ),
   rel as (
     SELECT 
-    ('{' || string_agg(   to_json(f.relType::text) || ':' || array_to_json(f.rel_json_arr,false) ,',') || '}')::json rel_json
+    ('{' || string_agg(  to_json(f.relType::text) || ':' || array_to_json(f.rel_json_arr,false) ,',') || '}')::json rel_json
     FROM
     (
       SELECT
       e.relType,
 
-      array_agg( _json_object_delete_keys(row_to_json(ROW(e.relType,e.virkning,e.uuid,e.urn,e.objektType)::InteressefaellesskabRelationType),ARRAY['reltype']::text[])) rel_json_arr
+      array_agg(_json_object_delete_keys(row_to_json(ROW(e.relType,e.virkning,e.uuid,e.urn,e.objektType)::InteressefaellesskabRelationType),ARRAY['reltype']::text[])) rel_json_arr
       from unnest($1.relationer) e(relType,virkning,uuid,urn,objektType)
 
       group by e.relType

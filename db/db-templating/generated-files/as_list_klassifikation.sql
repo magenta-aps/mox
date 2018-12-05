@@ -30,7 +30,7 @@ END IF;
 /*********************/
 
 SELECT 
-array_agg( x.klassifikationObj) into result
+array_agg(x.klassifikationObj) into result
 FROM
 (
 SELECT

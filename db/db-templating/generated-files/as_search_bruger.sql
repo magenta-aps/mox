@@ -128,7 +128,7 @@ IF bruger_uuid is not NULL THEN
 			)
 		)
 		AND
-		( (NOT bruger_candidates_is_initialized) OR b.bruger_id = ANY (bruger_candidates) )
+		((NOT bruger_candidates_is_initialized) OR b.bruger_id = ANY (bruger_candidates) )
 
         );
     END IF;
@@ -289,7 +289,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT bruger_candidates_is_initialized) OR b.bruger_id = ANY (bruger_candidates) )
+		((NOT bruger_candidates_is_initialized) OR b.bruger_id = ANY (bruger_candidates) )
 
             );
 
@@ -398,7 +398,7 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT bruger_candidates_is_initialized) OR b.bruger_id = ANY (bruger_candidates) )
+		((NOT bruger_candidates_is_initialized) OR b.bruger_id = ANY (bruger_candidates) )
 
 
         );
@@ -536,7 +536,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT bruger_candidates_is_initialized) OR b.bruger_id = ANY (bruger_candidates) )
+		((NOT bruger_candidates_is_initialized) OR b.bruger_id = ANY (bruger_candidates) )
 
     );
 
@@ -699,7 +699,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT bruger_candidates_is_initialized) OR b.bruger_id = ANY (bruger_candidates) )
+		((NOT bruger_candidates_is_initialized) OR b.bruger_id = ANY (bruger_candidates) )
 
     );
 
@@ -798,7 +798,7 @@ IF coalesce(array_length(anyuuidArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT bruger_candidates_is_initialized) OR b.bruger_id = ANY (bruger_candidates) )
+		((NOT bruger_candidates_is_initialized) OR b.bruger_id = ANY (bruger_candidates) )
 
 
             );
@@ -897,7 +897,7 @@ IF coalesce(array_length(anyurnArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT bruger_candidates_is_initialized) OR b.bruger_id = ANY (bruger_candidates) )
+		((NOT bruger_candidates_is_initialized) OR b.bruger_id = ANY (bruger_candidates) )
 
 
             );
@@ -992,7 +992,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT bruger_candidates_is_initialized) OR b.bruger_id = ANY (bruger_candidates) )
+		((NOT bruger_candidates_is_initialized) OR b.bruger_id = ANY (bruger_candidates) )
 
         )
         ;

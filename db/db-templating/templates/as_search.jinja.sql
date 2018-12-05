@@ -300,11 +300,11 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
                 )
                 OR
                 (
-                    ( c.varianttekst ilike anyAttrValue and e.id is not null) --varianttekst handled like it is logically part of variant egenskaber
+                    (c.varianttekst ilike anyAttrValue and e.id is not null) --varianttekst handled like it is logically part of variant egenskaber
                 )
                 OR
                 (
-                    ( f.deltekst ilike anyAttrValue and d.id is not null ) --deltekst handled like it is logically part of del egenskaber
+                    (f.deltekst ilike anyAttrValue and d.id is not null ) --deltekst handled like it is logically part of del egenskaber
                     OR
                     d.indeks::text = anyAttrValue
                     OR
@@ -935,7 +935,7 @@ IF coalesce(array_length(search_operator_greater_than_or_equal_attr_egenskaber,1
                        )
                )
                AND
-               ( (NOT {{oio_type}}_candidates_is_initialized) OR b.{{oio_type}}_id = ANY ({{oio_type}}_candidates) )
+               ((NOT {{oio_type}}_candidates_is_initialized) OR b.{{oio_type}}_id = ANY ({{oio_type}}_candidates) )
 
                        );
                        
@@ -1115,7 +1115,7 @@ IF coalesce(array_length(search_operator_less_than_or_equal_attr_egenskaber,1),0
                        )
                )
                AND
-               ( (NOT {{oio_type}}_candidates_is_initialized) OR b.{{oio_type}}_id = ANY ({{oio_type}}_candidates) )
+               ((NOT {{oio_type}}_candidates_is_initialized) OR b.{{oio_type}}_id = ANY ({{oio_type}}_candidates) )
 
                        );
                        

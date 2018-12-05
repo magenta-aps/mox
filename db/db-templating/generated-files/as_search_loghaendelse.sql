@@ -128,7 +128,7 @@ IF loghaendelse_uuid is not NULL THEN
 			)
 		)
 		AND
-		( (NOT loghaendelse_candidates_is_initialized) OR b.loghaendelse_id = ANY (loghaendelse_candidates) )
+		((NOT loghaendelse_candidates_is_initialized) OR b.loghaendelse_id = ANY (loghaendelse_candidates) )
 
         );
     END IF;
@@ -319,7 +319,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT loghaendelse_candidates_is_initialized) OR b.loghaendelse_id = ANY (loghaendelse_candidates) )
+		((NOT loghaendelse_candidates_is_initialized) OR b.loghaendelse_id = ANY (loghaendelse_candidates) )
 
             );
 
@@ -433,7 +433,7 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT loghaendelse_candidates_is_initialized) OR b.loghaendelse_id = ANY (loghaendelse_candidates) )
+		((NOT loghaendelse_candidates_is_initialized) OR b.loghaendelse_id = ANY (loghaendelse_candidates) )
 
 
         );
@@ -571,7 +571,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT loghaendelse_candidates_is_initialized) OR b.loghaendelse_id = ANY (loghaendelse_candidates) )
+		((NOT loghaendelse_candidates_is_initialized) OR b.loghaendelse_id = ANY (loghaendelse_candidates) )
 
     );
 
@@ -734,7 +734,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT loghaendelse_candidates_is_initialized) OR b.loghaendelse_id = ANY (loghaendelse_candidates) )
+		((NOT loghaendelse_candidates_is_initialized) OR b.loghaendelse_id = ANY (loghaendelse_candidates) )
 
     );
 
@@ -833,7 +833,7 @@ IF coalesce(array_length(anyuuidArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT loghaendelse_candidates_is_initialized) OR b.loghaendelse_id = ANY (loghaendelse_candidates) )
+		((NOT loghaendelse_candidates_is_initialized) OR b.loghaendelse_id = ANY (loghaendelse_candidates) )
 
 
             );
@@ -932,7 +932,7 @@ IF coalesce(array_length(anyurnArr ,1),0)>0 THEN
 			)
 		)
 		AND
-		( (NOT loghaendelse_candidates_is_initialized) OR b.loghaendelse_id = ANY (loghaendelse_candidates) )
+		((NOT loghaendelse_candidates_is_initialized) OR b.loghaendelse_id = ANY (loghaendelse_candidates) )
 
 
             );
@@ -1027,7 +1027,7 @@ ELSE
 			)
 		)
 		AND
-		( (NOT loghaendelse_candidates_is_initialized) OR b.loghaendelse_id = ANY (loghaendelse_candidates) )
+		((NOT loghaendelse_candidates_is_initialized) OR b.loghaendelse_id = ANY (loghaendelse_candidates) )
 
         )
         ;

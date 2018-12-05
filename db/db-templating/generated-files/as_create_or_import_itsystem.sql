@@ -63,7 +63,7 @@ BEGIN
     IF NOT does_exist THEN
         itsystem_registrering_id:=nextval('itsystem_registrering_id_seq');
 
-        INSERT INTO itsystem_registrering ( id, itsystem_id,
+        INSERT INTO itsystem_registrering (id, itsystem_id,
             registrering) SELECT itsystem_registrering_id,
         itsystem_uuid, ROW (
             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
@@ -73,7 +73,7 @@ BEGIN
     ELSE
         -- This is an update, not an import or create
             new_itsystem_registrering :=
-            _as_create_itsystem_registrering( itsystem_uuid,
+            _as_create_itsystem_registrering(itsystem_uuid,
                 (itsystem_registrering.registrering).livscykluskode,
                 (itsystem_registrering.registrering).brugerref,
                 (itsystem_registrering.registrering).note);
