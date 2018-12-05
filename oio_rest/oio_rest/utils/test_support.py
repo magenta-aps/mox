@@ -7,10 +7,11 @@
 #
 
 import atexit
+import contextlib
 import functools
+import glob
 import os
 import shutil
-import subprocess
 import sys
 
 import click
@@ -42,6 +43,10 @@ def psql():
     return psql
 
 
+def list_db_sql(dirname):
+    return glob.glob(os.path.join(TOP_DIR, 'db', dirname, '*.sql'))
+
+
 def _get_db_setup_sql(db_name, db_user):
     """Return the postgresql + pl/pgsql code necessary for our database
     to work.
@@ -61,11 +66,6 @@ def _get_db_setup_sql(db_name, db_user):
     CREATE SCHEMA test AUTHORIZATION "{db_user}";
     """.format(db_name=db_name, db_user=db_user)
 
-    def dblistdir(dirname):
-        # os.listdir() but with prefix, of mox/db
-        return [os.path.join(TOP_DIR, "db", dirname, filename)
-                for filename in sorted(
-                    os.listdir(os.path.join(TOP_DIR, "db", dirname)))]
 
     # <mess>
     # this mess is necessary because the db relies on a particular order
@@ -105,7 +105,7 @@ def _get_db_setup_sql(db_name, db_user):
                 return True
         return False
 
-    templates = dblistdir("db-templating/generated-files")
+    templates = list_db_sql("db-templating/generated-files")
     templates1 = list(filter(is_template1, templates))
     templates2 = list(set(templates) ^ set(templates1))
     templates1.sort(key=template_sort_key)
@@ -120,18 +120,19 @@ def _get_db_setup_sql(db_name, db_user):
         os.path.join(TOP_DIR, "db/funcs/_json_object_delete_keys.sql"),
         os.path.join(TOP_DIR, "db/funcs/_create_notify.sql"),
     ]
-    funcs2 = list(set(dblistdir('funcs')) ^ set(funcs1))
+    funcs2 = list(set(list_db_sql('funcs')) ^ set(funcs1))
     funcs2.sort()
 
     files = [
-        *dblistdir('basis'),
+        *list_db_sql('basis'),
         *funcs1,
         *templates1,
         *funcs2,
         *templates2,
-        *dblistdir('tests'),
     ]
     # </mess>
+
+    assert sorted(files) == sorted(set(files)), 'duplicates!!!!'
 
     file_contents = []
     for filename in files:
@@ -141,15 +142,6 @@ def _get_db_setup_sql(db_name, db_user):
 
 
 def _initdb():
-    env = {
-        **os.environ,
-        'TESTING': '1',
-        'PYTHON': sys.executable,
-        'MOX_DB': settings.DATABASE,
-        'MOX_DB_USER': settings.DB_USER,
-        'MOX_DB_PASSWORD': settings.DB_PASSWORD,
-    }
-
     with psycopg2.connect(psql().url()) as conn:
         conn.autocommit = True
 
@@ -163,6 +155,7 @@ def _initdb():
             ))
 
     sql = _get_db_setup_sql(settings.DATABASE, settings.DB_USER)
+
     with psycopg2.connect(psql().url(
             database=settings.DATABASE,
             user=settings.DB_USER,
@@ -189,19 +182,28 @@ class TestCaseMixin(object):
 
         return app.app
 
-    def __reset_db(self):
+    @contextlib.contextmanager
+    def db_cursor(self):
+        '''Context manager for querying the database
+
+        :see: `psycopg2.cursor <http://initd.org/psycopg/docs/cursor.html>`_
+        '''
         with psycopg2.connect(self.db_url) as conn:
             conn.autocommit = True
 
             with conn.cursor() as curs:
-                from oio_common.db_structure import DATABASE_STRUCTURE
+                yield curs
 
-                try:
-                    curs.execute("TRUNCATE TABLE {} CASCADE".format(
-                        ', '.join(sorted(DATABASE_STRUCTURE)),
-                    ))
-                except psycopg2.ProgrammingError:
-                    pass
+    def reset_db(self):
+        from oio_common.db_structure import DATABASE_STRUCTURE
+
+        with self.db_cursor() as curs:
+            curs.execute("TRUNCATE TABLE {} RESTART IDENTITY CASCADE".format(
+                ', '.join(sorted(DATABASE_STRUCTURE)),
+            ))
+
+    # for compatibility :-/
+    __reset_db = reset_db
 
     def setUp(self):
         super(TestCaseMixin, self).setUp()

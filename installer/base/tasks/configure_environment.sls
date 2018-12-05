@@ -15,6 +15,7 @@ install_system_dependencies:
       - nginx
 
       # POSTGRESQL
+      # Note: This will only work on Ubuntu 16.04 (Xenial)
       - postgresql
       - postgresql-common
       - postgresql-client

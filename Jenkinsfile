@@ -42,7 +42,7 @@ pipeline {
             sh 'backend/.jenkins/1-build.sh'
 
             // kind of horrible, but works
-            sh 'echo $WORKSPACE/oio_rest > venv/lib/python3.5/site-packages/oio_rest.egg-link'
+            sh 'echo $WORKSPACE/oio_rest > backend/venv/lib/python3.5/site-packages/oio_rest.egg-link'
           }
         }
       }
