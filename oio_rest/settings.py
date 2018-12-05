@@ -2,6 +2,9 @@
 
 from os import getenv
 
+import json
+
+CONFIG_FILE = getenv('OIO_REST_CONFIG_FILE', None)
 
 # Base url
 BASE_URL = getenv('BASE_URL', '')
@@ -87,3 +90,40 @@ LOG_IGNORED_SERVICES = ['Log', ]
 
 # Log files
 AUDIT_LOG_FILE = getenv('AUDIT_LOG_FILE', '/var/log/mox/audit.log')
+
+SAML_IDP_METADATA_URL = getenv(
+    'SAML_IDP_METADATA_URL',
+    'https://172.16.20.100/simplesaml/saml2/idp/metadata.php'
+)
+SAML_IDP_INSECURE = getenv('SAML_IDP_INSECURE', False)
+SAML_REQUESTS_SIGNED = getenv('SAML_REQUESTS_SIGNED', False)
+SAML_KEY_FILE = getenv('SAML_KEY_FILE', None)
+SAML_CERT_FILE = getenv('SAML_CERT_FILE', None)
+SAML_AUTH_ENABLE = getenv('SAML_AUTH_ENABLE', False)
+
+SQLALCHEMY_DATABASE_URI = getenv(
+    'SQLALCHEMY_DATABASE_URI',
+    "postgresql://sessions:sessions@127.0.0.1/sessions"
+)
+SESSION_PERMANENT = getenv('SESSION_PERMANENT', True)
+PERMANENT_SESSION_LIFETIME = getenv('PERMANENT_SESSION_LIFETIME', 3600)
+
+
+def update_config(mapping, config_path):
+    """load the JSON configuration at the given path """
+    if not config_path:
+        return
+
+    try:
+        with open(config_path) as fp:
+            overrides = json.load(fp)
+
+        for key in overrides.keys():
+            mapping[key] = overrides[key]
+
+    except IOError:
+        print('Unable to read config {}'.format(config_path))
+        pass
+
+
+update_config(globals(), CONFIG_FILE)
