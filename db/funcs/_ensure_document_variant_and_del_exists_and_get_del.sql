@@ -9,7 +9,7 @@
 CREATE OR REPLACE FUNCTION _ensure_document_variant_and_del_exists_and_get_del (reg_id bigint, current_variant_text text, current_deltekst text)
     RETURNS int AS $$
 DECLARE
-    current_del_id     bigint;
+    current_del_id bigint;
     current_variant_id bigint;
 BEGIN
     current_variant_id := _ensure_document_variant_exists_and_get (reg_id,

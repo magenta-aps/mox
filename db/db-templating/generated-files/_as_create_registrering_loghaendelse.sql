@@ -12,14 +12,14 @@ NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.p
 
 CREATE OR REPLACE FUNCTION _as_create_loghaendelse_registrering(
     loghaendelse_uuid uuid,
-    livscykluskode    Livscykluskode,
-    brugerref         uuid,
-    note              text DEFAULT ''::text
+    livscykluskode Livscykluskode,
+    brugerref uuid,
+    note text DEFAULT ''::text
 ) RETURNS loghaendelse_registrering AS $$
 DECLARE
-    registreringTime             TIMESTAMPTZ := clock_timestamp();
-    registreringObj              RegistreringBase;
-    rows_affected                int;
+    registreringTime TIMESTAMPTZ := clock_timestamp();
+    registreringObj RegistreringBase;
+    rows_affected int;
     loghaendelse_registrering_id bigint;
     loghaendelse_registrering    loghaendelse_registrering;
 BEGIN

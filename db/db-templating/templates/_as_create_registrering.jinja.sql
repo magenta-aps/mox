@@ -12,14 +12,14 @@
 
 CREATE OR REPLACE FUNCTION _as_create_{{oio_type}}_registrering(
     {{oio_type}}_uuid uuid,
-    livscykluskode    Livscykluskode,
-    brugerref         uuid,
-    note              text DEFAULT ''::text
+    livscykluskode Livscykluskode,
+    brugerref uuid,
+    note text DEFAULT ''::text
 ) RETURNS {{oio_type}}_registrering AS $$
 DECLARE
-    registreringTime             TIMESTAMPTZ := clock_timestamp();
-    registreringObj              RegistreringBase;
-    rows_affected                int;
+    registreringTime TIMESTAMPTZ := clock_timestamp();
+    registreringObj RegistreringBase;
+    rows_affected int;
     {{oio_type}}_registrering_id bigint;
     {{oio_type}}_registrering    {{oio_type}}_registrering;
 BEGIN

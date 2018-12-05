@@ -11,21 +11,21 @@ NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.p
 
 
 CREATE OR REPLACE FUNCTION as_search_dokument(
-    firstResult       int,--TOOD ??
+    firstResult int,--TOOD ??
     dokument_uuid uuid,
     registreringObj   DokumentRegistreringType,
-    virkningSoeg      TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
-    maxResults        int = 2147483647,
-    anyAttrValueArr   text[] = '{}'::text[],
-    anyuuidArr        uuid[] = '{}'::uuid[],
-    anyurnArr         text[] = '{}'::text[],
+    virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+    maxResults int = 2147483647,
+    anyAttrValueArr text[] = '{}'::text[],
+    anyuuidArr uuid[] = '{}'::uuid[],
+    anyurnArr text[] = '{}'::text[],
     auth_criteria_arr DokumentRegistreringType[]=null
 
     
 
 ) RETURNS uuid[] AS $$
 DECLARE
-    dokument_candidates                uuid[];
+    dokument_candidates uuid[];
     dokument_candidates_is_initialized boolean;
     --to_be_applyed_filter_uuids uuid[];
     attrEgenskaberTypeObj DokumentEgenskaberAttrType;
@@ -34,17 +34,17 @@ DECLARE
     tilsFremdriftTypeObj DokumentFremdriftTilsType;
 
     relationTypeObj DokumentRelationType;
-    anyAttrValue    text;
-    anyuuid         uuid;
-    anyurn          text;
+    anyAttrValue text;
+    anyuuid uuid;
+    anyurn text;
 
     
-    variantTypeObj                    DokumentVariantType;
-    variantEgenskaberTypeObj          DokumentVariantEgenskaberType;
-    delTypeObj                        DokumentDelType;
-    delEgenskaberTypeObj              DokumentDelEgenskaberType;
-    delRelationTypeObj                DokumentdelRelationType;
-    variant_candidates_ids            bigint[];
+    variantTypeObj DokumentVariantType;
+    variantEgenskaberTypeObj DokumentVariantEgenskaberType;
+    delTypeObj DokumentDelType;
+    delEgenskaberTypeObj DokumentDelEgenskaberType;
+    delRelationTypeObj DokumentdelRelationType;
+    variant_candidates_ids bigint[];
     variant_candidates_is_initialized boolean;
     
 
@@ -370,7 +370,7 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
             SELECT DISTINCT
             b.dokument_id
             
-            FROM  dokument_registrering b 
+            FROM dokument_registrering b 
             LEFT JOIN dokument_attr_egenskaber a on a.dokument_registrering_id=b.id and (virkningSoeg IS NULL or virkningSoeg && (a.virkning).TimePeriod )
             LEFT JOIN dokument_variant c on c.dokument_registrering_id=b.id 
             LEFT JOIN dokument_del f on f.variant_id=c.id
@@ -982,7 +982,7 @@ END IF;
 IF registreringObj IS NULL OR (registreringObj).varianter IS NULL THEN
 	--RAISE DEBUG 'as_search_dokument: skipping filtration on relationer';
 ELSE
-		IF (registreringObj).varianter IS NOT NULL AND coalesce(array_length(registreringObj.varianter,1),0)>0  THEN
+		IF (registreringObj).varianter IS NOT NULL AND coalesce(array_length(registreringObj.varianter,1),0)>0 THEN
 		FOREACH variantTypeObj IN ARRAY registreringObj.varianter
 		LOOP
 
@@ -1003,7 +1003,7 @@ ELSE
 
 		IF (coalesce(array_length(variant_candidates_ids,1),0)>0 OR not variant_candidates_is_initialized) THEN
 
-			IF  variantTypeObj.varianttekst IS NOT NULL OR
+			IF variantTypeObj.varianttekst IS NOT NULL OR
 				(
 					(NOT (variantEgenskaberTypeObj.arkivering IS NULL))
 					OR
@@ -1020,7 +1020,7 @@ ELSE
 			variant_candidates_ids:=array(
 			SELECT DISTINCT
 			a.id
-			FROM  dokument_variant a
+			FROM dokument_variant a
 			JOIN dokument_registrering b on a.dokument_registrering_id=b.id
 			JOIN dokument_variant_egenskaber c on c.variant_id=a.id  --we require the presence egenskaber (variant name is logically part of it)
 			WHERE
@@ -1205,7 +1205,7 @@ ELSE
 			variant_candidates_ids:=array(
 			SELECT DISTINCT
 			a.id
-			FROM  dokument_variant a
+			FROM dokument_variant a
 			JOIN dokument_registrering b on a.dokument_registrering_id=b.id
 			JOIN dokument_del c on c.variant_id=a.id
 			JOIN dokument_del_egenskaber d on d.del_id=c.id --we require the presence egenskaber (del name is logically part of it)
@@ -1364,7 +1364,7 @@ ELSE
 			variant_candidates_ids:=array(
 			SELECT DISTINCT
 			a.id
-			FROM  dokument_variant a
+			FROM dokument_variant a
 			JOIN dokument_registrering b on a.dokument_registrering_id=b.id
 			JOIN dokument_del c on c.variant_id=a.id
 			JOIN dokument_del_relation d on d.del_id=c.id
@@ -1518,7 +1518,7 @@ ELSE
 			dokument_candidates:=array(
 			SELECT DISTINCT
 			b.dokument_id 
-			FROM  dokument_variant a
+			FROM dokument_variant a
 			JOIN dokument_registrering b on a.dokument_registrering_id=b.id
 			WHERE
 			a.id = ANY (variant_candidates_ids)

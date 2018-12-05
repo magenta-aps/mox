@@ -12,14 +12,14 @@ NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.p
 
 CREATE OR REPLACE FUNCTION _as_create_facet_registrering(
     facet_uuid uuid,
-    livscykluskode    Livscykluskode,
-    brugerref         uuid,
-    note              text DEFAULT ''::text
+    livscykluskode Livscykluskode,
+    brugerref uuid,
+    note text DEFAULT ''::text
 ) RETURNS facet_registrering AS $$
 DECLARE
-    registreringTime             TIMESTAMPTZ := clock_timestamp();
-    registreringObj              RegistreringBase;
-    rows_affected                int;
+    registreringTime TIMESTAMPTZ := clock_timestamp();
+    registreringObj RegistreringBase;
+    rows_affected int;
     facet_registrering_id bigint;
     facet_registrering    facet_registrering;
 BEGIN

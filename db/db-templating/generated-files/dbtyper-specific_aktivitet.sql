@@ -52,7 +52,7 @@ CREATE TYPE AktivitetAktoerAttrObligatoriskKode AS ENUM ('noedvendig','valgfri')
 
 CREATE TYPE AktivitetAktoerAttrAccepteretKode AS ENUM ('accepteret','foreloebigt','afslaaet');
 
-CREATE TYPE  AktivitetAktoerAttr AS (
+CREATE TYPE AktivitetAktoerAttr AS (
   obligatorisk AktivitetAktoerAttrObligatoriskKode,
   accepteret AktivitetAktoerAttrAccepteretKode,
   repraesentation_uuid uuid,
@@ -64,7 +64,7 @@ CREATE TYPE AktivitetRelationType AS (
   relType AktivitetRelationKode,
   virkning Virkning,
   uuid uuid,
-  urn  text,
+  urn text,
   objektType text,
   indeks int,
   aktoerAttr AktivitetAktoerAttr

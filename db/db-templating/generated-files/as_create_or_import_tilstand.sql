@@ -33,14 +33,14 @@ $$ DECLARE tilstand_registrering_id bigint;
     auth_filtered_uuids uuid[];
 
     
-    tilstand_relation_kode    tilstandRelationKode;
+    tilstand_relation_kode tilstandRelationKode;
     tilstand_uuid_underscores text;
-    tilstand_rel_seq_name     text;
-    tilstand_rel_type_cardinality_unlimited                     tilstandRelationKode[]:=ARRAY['tilstandsvaerdi'::TilstandRelationKode,'begrundelse'::TilstandRelationKode,'tilstandskvalitet'::TilstandRelationKode,'tilstandsvurdering'::TilstandRelationKode,'tilstandsaktoer'::TilstandRelationKode,'tilstandsudstyr'::TilstandRelationKode,'samtykke'::TilstandRelationKode,'tilstandsdokument'::TilstandRelationKode]::TilstandRelationKode[];
+    tilstand_rel_seq_name text;
+    tilstand_rel_type_cardinality_unlimited tilstandRelationKode[]:=ARRAY['tilstandsvaerdi'::TilstandRelationKode,'begrundelse'::TilstandRelationKode,'tilstandskvalitet'::TilstandRelationKode,'tilstandsvurdering'::TilstandRelationKode,'tilstandsaktoer'::TilstandRelationKode,'tilstandsudstyr'::TilstandRelationKode,'samtykke'::TilstandRelationKode,'tilstandsdokument'::TilstandRelationKode]::TilstandRelationKode[];
     tilstand_rel_type_cardinality_unlimited_present_in_argument tilstandRelationKode[];
     
 
-    does_exist                    boolean;
+    does_exist boolean;
     new_tilstand_registrering tilstand_registrering;
 BEGIN
     IF tilstand_uuid IS NULL THEN LOOP
@@ -135,7 +135,7 @@ END IF;
 
 --Verification
 --For now all declared states are mandatory.
-IF coalesce(array_length(tilstand_registrering.tilsStatus, 1),0)<1  THEN
+IF coalesce(array_length(tilstand_registrering.tilsStatus, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [status] for tilstand. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
@@ -158,7 +158,7 @@ END IF;
 
 --Verification
 --For now all declared states are mandatory.
-IF coalesce(array_length(tilstand_registrering.tilsPubliceret, 1),0)<1  THEN
+IF coalesce(array_length(tilstand_registrering.tilsPubliceret, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [publiceret] for tilstand. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
@@ -188,7 +188,7 @@ IF coalesce(array_length(tilstand_registrering.relationer,1),0)>0 THEN
 --Create temporary sequences
 tilstand_uuid_underscores:=replace(tilstand_uuid::text, '-', '_');
 
-SELECT array_agg(DISTINCT a.RelType) into tilstand_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(tilstand_registrering.relationer) a WHERE a.RelType = any (tilstand_rel_type_cardinality_unlimited) ;
+SELECT array_agg(DISTINCT a.RelType) into tilstand_rel_type_cardinality_unlimited_present_in_argument FROM unnest(tilstand_registrering.relationer) a WHERE a.RelType = any (tilstand_rel_type_cardinality_unlimited) ;
 IF coalesce(array_length(tilstand_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 
 FOREACH tilstand_relation_kode IN ARRAY (tilstand_rel_type_cardinality_unlimited_present_in_argument)
@@ -251,7 +251,7 @@ IF coalesce(array_length(tilstand_rel_type_cardinality_unlimited_present_in_argu
 FOREACH tilstand_relation_kode IN ARRAY (tilstand_rel_type_cardinality_unlimited_present_in_argument)
   LOOP
   tilstand_rel_seq_name := 'tilstand_' || tilstand_relation_kode::text || tilstand_uuid_underscores;
-  EXECUTE 'DROP  SEQUENCE ' || tilstand_rel_seq_name || ';';
+  EXECUTE 'DROP SEQUENCE ' || tilstand_rel_seq_name || ';';
 END LOOP;
 END IF;
 

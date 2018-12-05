@@ -27,20 +27,20 @@ $$ DECLARE dokument_registrering_id bigint;
     dokument_relationer DokumentRelationType;
 
     
-    dokument_variant_obj          DokumentVariantType;
+    dokument_variant_obj DokumentVariantType;
     dokument_variant_egenskab_obj DokumentVariantEgenskaberType;
-    dokument_del_obj              DokumentDelType;
-    dokument_del_egenskaber_obj   DokumentDelEgenskaberType;
-    dokument_del_relation_obj     DokumentDelRelationType;
-    dokument_variant_new_id       bigint;
-    dokument_del_new_id           bigint;
+    dokument_del_obj DokumentDelType;
+    dokument_del_egenskaber_obj DokumentDelEgenskaberType;
+    dokument_del_relation_obj DokumentDelRelationType;
+    dokument_variant_new_id bigint;
+    dokument_del_new_id bigint;
     
 
     auth_filtered_uuids uuid[];
 
     
 
-    does_exist                    boolean;
+    does_exist boolean;
     new_dokument_registrering dokument_registrering;
 BEGIN
     IF dokument_uuid IS NULL THEN LOOP
@@ -149,7 +149,7 @@ END IF;
 
 --Verification
 --For now all declared states are mandatory.
-IF coalesce(array_length(dokument_registrering.tilsFremdrift, 1),0)<1  THEN
+IF coalesce(array_length(dokument_registrering.tilsFremdrift, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [fremdrift] for dokument. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 

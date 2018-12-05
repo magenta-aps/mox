@@ -61,7 +61,7 @@ CREATE TYPE SagRelationType AS (
   relType SagRelationKode,
   virkning Virkning,
   uuid uuid,
-  urn  text,
+  urn text,
   objektType text,
   indeks int,
   relTypeSpec SagRelationJournalPostSpecifikKode,

@@ -16,9 +16,9 @@ NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.p
 -- 'logically consistent'-arrays of objects with overlapping virknings)
 CREATE OR REPLACE FUNCTION as_update_sag(
     sag_uuid uuid,
-    brugerref         uuid,
-    note              text,
-    livscykluskode    Livscykluskode,
+    brugerref uuid,
+    note text,
+    livscykluskode Livscykluskode,
 
     
     attrEgenskaber SagEgenskaberAttrType[],
@@ -53,11 +53,11 @@ DECLARE
     auth_filtered_uuids uuid[];
 
     
-    rel_type_max_index_prev_rev                            int;
-    rel_type_max_index_arr                                 _SagRelationMaxIndex[];
-    sag_rel_type_cardinality_unlimited                     SagRelationKode[]:=ARRAY['andetarkiv'::SagRelationKode,'andrebehandlere'::SagRelationKode,'sekundaerpart'::SagRelationKode,'andresager'::SagRelationKode,'byggeri'::SagRelationKode,'fredning'::SagRelationKode,'journalpost'::SagRelationKode]::SagRelationKode[];
-    sag_uuid_underscores                                   text;
-    sag_rel_seq_name                                       text;
+    rel_type_max_index_prev_rev int;
+    rel_type_max_index_arr _SagRelationMaxIndex[];
+    sag_rel_type_cardinality_unlimited SagRelationKode[]:=ARRAY['andetarkiv'::SagRelationKode,'andrebehandlere'::SagRelationKode,'sekundaerpart'::SagRelationKode,'andresager'::SagRelationKode,'byggeri'::SagRelationKode,'fredning'::SagRelationKode,'journalpost'::SagRelationKode]::SagRelationKode[];
+    sag_uuid_underscores text;
+    sag_rel_seq_name text;
     sag_rel_type_cardinality_unlimited_present_in_argument sagRelationKode[];
     
 BEGIN
@@ -209,7 +209,7 @@ BEGIN
         
         LOOP
           sag_rel_seq_name := 'sag_' || sag_relation_navn::text || sag_uuid_underscores;
-          EXECUTE 'DROP  SEQUENCE ' || sag_rel_seq_name || ';';
+          EXECUTE 'DROP SEQUENCE ' || sag_rel_seq_name || ';';
         END LOOP;
     END IF;
     

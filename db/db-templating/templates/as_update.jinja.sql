@@ -16,9 +16,9 @@
 -- 'logically consistent'-arrays of objects with overlapping virknings)
 CREATE OR REPLACE FUNCTION as_update_{{oio_type}}(
     {{oio_type}}_uuid uuid,
-    brugerref         uuid,
-    note              text,
-    livscykluskode    Livscykluskode,
+    brugerref uuid,
+    note text,
+    livscykluskode Livscykluskode,
 
     {% for attribut, attribut_fields in attributter.items() %}
     attr{{attribut|title}} {{oio_type|title}}{{attribut|title}}AttrType[],
@@ -58,51 +58,51 @@ DECLARE
     auth_filtered_uuids uuid[];
 
     {% if oio_type == "aktivitet" %}
-    rel_type_max_index_prev_rev                                  int;
-    rel_type_max_index_arr                                       _aktivitetRelationMaxIndex[];
-    aktivitet_rel_type_cardinality_unlimited                     aktivitetRelationKode[]:=ARRAY['udfoererklasse'::AktivitetRelationKode,'deltagerklasse'::AktivitetRelationKode,'objektklasse'::AktivitetRelationKode,'resultatklasse'::AktivitetRelationKode,'grundlagklasse'::AktivitetRelationKode,'facilitetklasse'::AktivitetRelationKode,'adresse'::AktivitetRelationKode,'geoobjekt'::AktivitetRelationKode,'position'::AktivitetRelationKode,'facilitet'::AktivitetRelationKode,'lokale'::AktivitetRelationKode,'aktivitetdokument'::AktivitetRelationKode,'aktivitetgrundlag'::AktivitetRelationKode,'aktivitetresultat'::AktivitetRelationKode,'udfoerer'::AktivitetRelationKode,'deltager'::AktivitetRelationKode]::aktivitetRelationKode[];
-    aktivitet_uuid_underscores                                   text;
-    aktivitet_rel_seq_name                                       text;
+    rel_type_max_index_prev_rev int;
+    rel_type_max_index_arr _aktivitetRelationMaxIndex[];
+    aktivitet_rel_type_cardinality_unlimited aktivitetRelationKode[]:=ARRAY['udfoererklasse'::AktivitetRelationKode,'deltagerklasse'::AktivitetRelationKode,'objektklasse'::AktivitetRelationKode,'resultatklasse'::AktivitetRelationKode,'grundlagklasse'::AktivitetRelationKode,'facilitetklasse'::AktivitetRelationKode,'adresse'::AktivitetRelationKode,'geoobjekt'::AktivitetRelationKode,'position'::AktivitetRelationKode,'facilitet'::AktivitetRelationKode,'lokale'::AktivitetRelationKode,'aktivitetdokument'::AktivitetRelationKode,'aktivitetgrundlag'::AktivitetRelationKode,'aktivitetresultat'::AktivitetRelationKode,'udfoerer'::AktivitetRelationKode,'deltager'::AktivitetRelationKode]::aktivitetRelationKode[];
+    aktivitet_uuid_underscores text;
+    aktivitet_rel_seq_name text;
     aktivitet_rel_type_cardinality_unlimited_present_in_argument aktivitetRelationKode[];
     {% elif oio_type == "dokument" %}
-    dokument_variant_obj                              DokumentVariantType;
-    dokument_variant_egenskab_obj                     DokumentVariantEgenskaberType;
-    dokument_del_obj                                  DokumentDelType;
-    dokument_del_egenskaber_obj                       DokumentDelEgenskaberType;
-    dokument_del_relation_obj                         DokumentDelRelationType;
-    dokument_variant_new_id                           bigint;
-    dokument_del_new_id                               bigint;
-    dokument_variant_egenskaber_expl_deleted          text[]:=array[]::text[];
-    dokument_variant_dele_all_expl_deleted            text[]:=array[]::text[];
-    dokument_variant_del_egenskaber_deleted           _DokumentVariantDelKey[]:=array[]::_DokumentVariantDelKey[];
-    dokument_variant_del_relationer_deleted           _DokumentVariantDelKey[]:=array[]::_DokumentVariantDelKey[];
-    dokument_variants_prev_reg_arr                    text[];
+    dokument_variant_obj DokumentVariantType;
+    dokument_variant_egenskab_obj DokumentVariantEgenskaberType;
+    dokument_del_obj DokumentDelType;
+    dokument_del_egenskaber_obj DokumentDelEgenskaberType;
+    dokument_del_relation_obj DokumentDelRelationType;
+    dokument_variant_new_id bigint;
+    dokument_del_new_id bigint;
+    dokument_variant_egenskaber_expl_deleted text[]:=array[]::text[];
+    dokument_variant_dele_all_expl_deleted text[]:=array[]::text[];
+    dokument_variant_del_egenskaber_deleted _DokumentVariantDelKey[]:=array[]::_DokumentVariantDelKey[];
+    dokument_variant_del_relationer_deleted _DokumentVariantDelKey[]:=array[]::_DokumentVariantDelKey[];
+    dokument_variants_prev_reg_arr text[];
     dokument_variant_egenskaber_prev_reg_varianttekst text;
-    dokument_variant_id                               bigint;
-    dokument_variant_del_prev_reg_arr                 _DokumentVariantDelKey[];
-    dokument_variant_del_prev_reg                     _DokumentVariantDelKey;
-    dokument_del_id                                   bigint;
-    dokument_variant_del_prev_reg_rel_transfer        _DokumentVariantDelKey[];
+    dokument_variant_id bigint;
+    dokument_variant_del_prev_reg_arr _DokumentVariantDelKey[];
+    dokument_variant_del_prev_reg _DokumentVariantDelKey;
+    dokument_del_id bigint;
+    dokument_variant_del_prev_reg_rel_transfer _DokumentVariantDelKey[];
     {% elif oio_type == "indsats" %}
-    rel_type_max_index_prev_rev                                int;
-    rel_type_max_index_arr                                     _indsatsRelationMaxIndex[];
-    indsats_rel_type_cardinality_unlimited                     indsatsRelationKode[]:=ARRAY['indsatskvalitet'::IndsatsRelationKode,'indsatsaktoer'::IndsatsRelationKode,'samtykke'::IndsatsRelationKode,'indsatssag'::IndsatsRelationKode,'indsatsdokument'::IndsatsRelationKode];
-    indsats_uuid_underscores                                   text;
-    indsats_rel_seq_name                                       text;
+    rel_type_max_index_prev_rev int;
+    rel_type_max_index_arr _indsatsRelationMaxIndex[];
+    indsats_rel_type_cardinality_unlimited indsatsRelationKode[]:=ARRAY['indsatskvalitet'::IndsatsRelationKode,'indsatsaktoer'::IndsatsRelationKode,'samtykke'::IndsatsRelationKode,'indsatssag'::IndsatsRelationKode,'indsatsdokument'::IndsatsRelationKode];
+    indsats_uuid_underscores text;
+    indsats_rel_seq_name text;
     indsats_rel_type_cardinality_unlimited_present_in_argument IndsatsRelationKode[];
     {% elif oio_type == "sag" %}
-    rel_type_max_index_prev_rev                            int;
-    rel_type_max_index_arr                                 _SagRelationMaxIndex[];
-    sag_rel_type_cardinality_unlimited                     SagRelationKode[]:=ARRAY['andetarkiv'::SagRelationKode,'andrebehandlere'::SagRelationKode,'sekundaerpart'::SagRelationKode,'andresager'::SagRelationKode,'byggeri'::SagRelationKode,'fredning'::SagRelationKode,'journalpost'::SagRelationKode]::SagRelationKode[];
-    sag_uuid_underscores                                   text;
-    sag_rel_seq_name                                       text;
+    rel_type_max_index_prev_rev int;
+    rel_type_max_index_arr _SagRelationMaxIndex[];
+    sag_rel_type_cardinality_unlimited SagRelationKode[]:=ARRAY['andetarkiv'::SagRelationKode,'andrebehandlere'::SagRelationKode,'sekundaerpart'::SagRelationKode,'andresager'::SagRelationKode,'byggeri'::SagRelationKode,'fredning'::SagRelationKode,'journalpost'::SagRelationKode]::SagRelationKode[];
+    sag_uuid_underscores text;
+    sag_rel_seq_name text;
     sag_rel_type_cardinality_unlimited_present_in_argument sagRelationKode[];
     {% elif oio_type == "tilstand" %}
-    rel_type_max_index_prev_rev                                 int;
-    rel_type_max_index_arr                                      _tilstandRelationMaxIndex[];
-    tilstand_rel_type_cardinality_unlimited                     tilstandRelationKode[]:=ARRAY['tilstandsvaerdi'::TilstandRelationKode,'begrundelse'::TilstandRelationKode,'tilstandskvalitet'::TilstandRelationKode,'tilstandsvurdering'::TilstandRelationKode,'tilstandsaktoer'::TilstandRelationKode,'tilstandsudstyr'::TilstandRelationKode,'samtykke'::TilstandRelationKode,'tilstandsdokument'::TilstandRelationKode]::TilstandRelationKode[];
-    tilstand_uuid_underscores                                   text;
-    tilstand_rel_seq_name                                       text;
+    rel_type_max_index_prev_rev int;
+    rel_type_max_index_arr _tilstandRelationMaxIndex[];
+    tilstand_rel_type_cardinality_unlimited tilstandRelationKode[]:=ARRAY['tilstandsvaerdi'::TilstandRelationKode,'begrundelse'::TilstandRelationKode,'tilstandskvalitet'::TilstandRelationKode,'tilstandsvurdering'::TilstandRelationKode,'tilstandsaktoer'::TilstandRelationKode,'tilstandsudstyr'::TilstandRelationKode,'samtykke'::TilstandRelationKode,'tilstandsdokument'::TilstandRelationKode]::TilstandRelationKode[];
+    tilstand_uuid_underscores text;
+    tilstand_rel_seq_name text;
     tilstand_rel_type_cardinality_unlimited_present_in_argument tilstandRelationKode[];
     {% endif %}
 BEGIN
@@ -323,7 +323,7 @@ BEGIN
         {% endif %}
         LOOP
           {{oio_type}}_rel_seq_name := '{{oio_type}}_' || {{oio_type}}_relation_navn::text || {{oio_type}}_uuid_underscores;
-          EXECUTE 'DROP  SEQUENCE ' || {{oio_type}}_rel_seq_name || ';';
+          EXECUTE 'DROP SEQUENCE ' || {{oio_type}}_rel_seq_name || ';';
         END LOOP;
     END IF;
     {% endif %}
@@ -696,7 +696,7 @@ IF dokument_variant_obj.egenskaber IS NOT NULL AND coalesce(array_length(dokumen
   SELECT
   a.*
   FROM unnest(dokument_variant_obj.egenskaber) a
-  JOIN  unnest(dokument_variant_obj.egenskaber) b on (a.virkning).TimePeriod && (b.virkning).TimePeriod
+  JOIN unnest(dokument_variant_obj.egenskaber) b on (a.virkning).TimePeriod && (b.virkning).TimePeriod
   GROUP BY a.arkivering,a.delvisscannet,a.offentliggoerelse,a.produktion, a.virkning
   HAVING COUNT(*)>1
   ) THEN
@@ -845,7 +845,7 @@ FOREACH dokument_del_obj IN ARRAY dokument_variant_obj.dele
       SELECT
       a.*
       FROM unnest(dokument_del_obj.egenskaber) a
-      JOIN  unnest(dokument_del_obj.egenskaber) b on (a.virkning).TimePeriod && (b.virkning).TimePeriod
+      JOIN unnest(dokument_del_obj.egenskaber) b on (a.virkning).TimePeriod && (b.virkning).TimePeriod
       GROUP BY a.indeks,a.indhold,a.lokation,a.mimetype, a.virkning
       HAVING COUNT(*)>1
     ) THEN

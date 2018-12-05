@@ -12,14 +12,14 @@
 
 CREATE OR REPLACE FUNCTION _as_sorted_{{oio_type}}(
     {{oio_type}}_uuids uuid[],
-    virkningSoeg       TSTZRANGE,
+    virkningSoeg TSTZRANGE,
     registreringObj    {{oio_type|title}}RegistreringType,
-    firstResult        int,
-    maxResults         int
+    firstResult int,
+    maxResults int
 ) RETURNS uuid[] AS $$
 DECLARE
     {{oio_type}}_sorted_uuid uuid[];
-    registreringSoeg         TSTZRANGE;
+    registreringSoeg TSTZRANGE;
 BEGIN
     IF registreringObj IS NULL OR (registreringObj.registrering).timePeriod IS NULL THEN
         registreringSoeg = TSTZRANGE(current_timestamp, current_timestamp, '[]');

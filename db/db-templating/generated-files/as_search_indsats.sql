@@ -11,14 +11,14 @@ NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.p
 
 
 CREATE OR REPLACE FUNCTION as_search_indsats(
-    firstResult       int,--TOOD ??
+    firstResult int,--TOOD ??
     indsats_uuid uuid,
     registreringObj   IndsatsRegistreringType,
-    virkningSoeg      TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
-    maxResults        int = 2147483647,
-    anyAttrValueArr   text[] = '{}'::text[],
-    anyuuidArr        uuid[] = '{}'::uuid[],
-    anyurnArr         text[] = '{}'::text[],
+    virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+    maxResults int = 2147483647,
+    anyAttrValueArr text[] = '{}'::text[],
+    anyuuidArr uuid[] = '{}'::uuid[],
+    anyurnArr text[] = '{}'::text[],
     auth_criteria_arr IndsatsRegistreringType[]=null
 
     ,
@@ -28,7 +28,7 @@ CREATE OR REPLACE FUNCTION as_search_indsats(
 
 ) RETURNS uuid[] AS $$
 DECLARE
-    indsats_candidates                uuid[];
+    indsats_candidates uuid[];
     indsats_candidates_is_initialized boolean;
     --to_be_applyed_filter_uuids uuid[];
     attrEgenskaberTypeObj IndsatsEgenskaberAttrType;
@@ -38,9 +38,9 @@ DECLARE
     tilsFremdriftTypeObj IndsatsFremdriftTilsType;
 
     relationTypeObj IndsatsRelationType;
-    anyAttrValue    text;
-    anyuuid         uuid;
-    anyurn          text;
+    anyAttrValue text;
+    anyuuid uuid;
+    anyurn text;
 
     
 

@@ -12,14 +12,14 @@ NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.p
 
 CREATE OR REPLACE FUNCTION _as_sorted_interessefaellesskab(
     interessefaellesskab_uuids uuid[],
-    virkningSoeg       TSTZRANGE,
+    virkningSoeg TSTZRANGE,
     registreringObj    InteressefaellesskabRegistreringType,
-    firstResult        int,
-    maxResults         int
+    firstResult int,
+    maxResults int
 ) RETURNS uuid[] AS $$
 DECLARE
     interessefaellesskab_sorted_uuid uuid[];
-    registreringSoeg         TSTZRANGE;
+    registreringSoeg TSTZRANGE;
 BEGIN
     IF registreringObj IS NULL OR (registreringObj.registrering).timePeriod IS NULL THEN
         registreringSoeg = TSTZRANGE(current_timestamp, current_timestamp, '[]');

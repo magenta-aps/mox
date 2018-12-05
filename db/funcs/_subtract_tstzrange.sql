@@ -10,9 +10,9 @@
 CREATE OR REPLACE FUNCTION _subtract_tstzrange (rangeA tstzrange, rangeB tstzrange)
     RETURNS tstzrange[] AS $$
 DECLARE
-    result                 tstzrange[];
-    str_tzrange1_inc_excl  text;
-    str_tzrange2_inc_excl  text;
+    result tstzrange[];
+    str_tzrange1_inc_excl text;
+    str_tzrange2_inc_excl text;
     result_non_cont_part_a tstzrange;
     result_non_cont_part_b tstzrange;
 BEGIN

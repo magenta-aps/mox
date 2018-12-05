@@ -44,7 +44,7 @@ CREATE TYPE FacetRelationType AS (
   relType FacetRelationKode,
   virkning Virkning,
   uuid uuid,
-  urn  text,
+  urn text,
   objektType text
 )
 ;

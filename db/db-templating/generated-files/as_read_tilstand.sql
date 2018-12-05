@@ -11,9 +11,9 @@ NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.p
 
 
 CREATE OR REPLACE FUNCTION as_read_tilstand(
-    tilstand_uuid      uuid,
+    tilstand_uuid uuid,
     registrering_tstzrange tstzrange,
-    virkning_tstzrange     tstzrange,
+    virkning_tstzrange tstzrange,
     auth_criteria_arr      TilstandRegistreringType[]=null
 ) RETURNS TilstandType AS $$
 DECLARE

@@ -10,10 +10,10 @@ CREATE OR REPLACE FUNCTION _as_valid_registrering_livscyklus_transition (current
     AS $$
 DECLARE
     IMPORTERET Livscykluskode := 'Importeret'::Livscykluskode;
-    OPSTAAET   Livscykluskode := 'Opstaaet'::Livscykluskode;
+    OPSTAAET Livscykluskode := 'Opstaaet'::Livscykluskode;
     PASSIVERET Livscykluskode := 'Passiveret'::Livscykluskode;
-    SLETTET    Livscykluskode := 'Slettet'::Livscykluskode;
-    RETTET     Livscykluskode := 'Rettet'::Livscykluskode;
+    SLETTET Livscykluskode := 'Slettet'::Livscykluskode;
+    RETTET Livscykluskode := 'Rettet'::Livscykluskode;
 BEGIN
     CASE current_reg_livscykluskode
     WHEN OPSTAAET THEN

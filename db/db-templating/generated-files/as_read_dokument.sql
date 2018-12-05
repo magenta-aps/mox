@@ -11,9 +11,9 @@ NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.p
 
 
 CREATE OR REPLACE FUNCTION as_read_dokument(
-    dokument_uuid      uuid,
+    dokument_uuid uuid,
     registrering_tstzrange tstzrange,
-    virkning_tstzrange     tstzrange,
+    virkning_tstzrange tstzrange,
     auth_criteria_arr      DokumentRegistreringType[]=null
 ) RETURNS DokumentType AS $$
 DECLARE

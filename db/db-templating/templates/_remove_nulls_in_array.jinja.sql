@@ -18,7 +18,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr {{oio_type|title}}{{t
   BEGIN
 
  IF inputArr IS NOT NULL THEN
-    FOREACH element IN ARRAY  inputArr
+    FOREACH element IN ARRAY inputArr
     LOOP
       IF element IS NULL OR (( element.{{tilstand}} IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
      -- RAISE DEBUG 'Skipping element';
@@ -49,7 +49,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr {{oio_type|title}}{{a
   BEGIN
 
   IF inputArr IS NOT NULL THEN
-    FOREACH element IN ARRAY  inputArr
+    FOREACH element IN ARRAY inputArr
     LOOP
 {% if oio_type == "klasse" %}
       IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.beskrivelse IS NULL AND element.eksempel IS NULL AND element.omfang IS NULL AND element.titel IS NULL AND element.retskilde IS NULL AND element.aendringsnotat IS NULL ) AND element.virkning IS NULL AND (element.soegeord IS NULL OR coalesce(array_length(element.soegeord,1),0)=0 )) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....)
@@ -83,7 +83,7 @@ $$
   BEGIN
 
    IF inputArr IS NOT NULL THEN
-    FOREACH element IN ARRAY  inputArr
+    FOREACH element IN ARRAY inputArr
     LOOP
 {% if oio_type == "aktivitet" %}
       IF element IS NULL OR ( element.relType IS NULL AND element.uuid IS NULL AND element.urn IS NULL AND element.objektType IS NULL AND element.indeks IS NULL AND (element.aktoerAttr IS NULL OR ((element.aktoerAttr).obligatorisk IS NULL AND (element.aktoerAttr).accepteret IS NULL AND (element.aktoerAttr).repraesentation_uuid IS NULL AND (element.aktoerAttr).repraesentation_urn IS NULL    )) AND element.virkning IS NULL  ) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
@@ -122,7 +122,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr KlasseSoegeordType[])
   BEGIN
 
  IF inputArr IS NOT NULL THEN
-    FOREACH element IN ARRAY  inputArr
+    FOREACH element IN ARRAY inputArr
     LOOP
       IF element IS NULL OR (element.soegeordidentifikator IS NULL AND element.beskrivelse IS NULL AND element.soegeordskategori IS NULL ) THEN
      -- RAISE DEBUG 'Skipping element';
@@ -157,7 +157,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr DokumentVariantEgensk
   BEGIN
 
   IF inputArr IS NOT NULL THEN
-    FOREACH element IN ARRAY  inputArr
+    FOREACH element IN ARRAY inputArr
     LOOP
       IF element IS NULL OR (( element.arkivering IS NULL AND element.delvisscannet IS NULL AND element.offentliggoerelse IS NULL AND element.produktion IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
     --  RAISE DEBUG 'Skipping element';
@@ -185,7 +185,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr DokumentDelEgenskaber
   BEGIN
 
   IF inputArr IS NOT NULL THEN
-    FOREACH element IN ARRAY  inputArr
+    FOREACH element IN ARRAY inputArr
     LOOP
       IF element IS NULL OR (( element.indeks IS NULL AND element.indhold IS NULL AND element.lokation IS NULL AND element.mimetype IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
     --  RAISE DEBUG 'Skipping element';
@@ -214,7 +214,7 @@ $$
   BEGIN
 
    IF inputArr IS NOT NULL THEN
-    FOREACH element IN ARRAY  inputArr
+    FOREACH element IN ARRAY inputArr
     LOOP
       IF element IS NULL OR ( element.relType IS NULL AND element.uuid IS NULL AND element.urn IS NULL AND element.objektType IS NULL AND element.virkning IS NULL  ) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
       --RAISE DEBUG 'Skipping element';
@@ -241,9 +241,9 @@ $$
   BEGIN
 
    IF inputArr IS NOT NULL THEN
-    FOREACH element IN ARRAY  inputArr
+    FOREACH element IN ARRAY inputArr
     LOOP
-      IF element IS NULL OR ( element.deltekst IS NULL AND (element.egenskaber IS NULL OR  coalesce(array_length(element.egenskaber,1),0)=0) AND (element.relationer IS NULL OR  coalesce(array_length(element.relationer,1),0)=0)  ) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+      IF element IS NULL OR ( element.deltekst IS NULL AND (element.egenskaber IS NULL OR coalesce(array_length(element.egenskaber,1),0)=0) AND (element.relationer IS NULL OR coalesce(array_length(element.relationer,1),0)=0)  ) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
       --RAISE DEBUG 'Skipping element';
       ELSE
       result:=array_append(result,element);
@@ -268,9 +268,9 @@ $$
   BEGIN
 
    IF inputArr IS NOT NULL THEN
-    FOREACH element IN ARRAY  inputArr
+    FOREACH element IN ARRAY inputArr
     LOOP
-      IF element IS NULL OR ( element.varianttekst IS NULL AND (element.egenskaber IS NULL OR  coalesce(array_length(element.egenskaber,1),0)=0) AND (element.dele IS NULL OR  coalesce(array_length(element.dele,1),0)=0)  ) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+      IF element IS NULL OR ( element.varianttekst IS NULL AND (element.egenskaber IS NULL OR coalesce(array_length(element.egenskaber,1),0)=0) AND (element.dele IS NULL OR coalesce(array_length(element.dele,1),0)=0)  ) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
       --RAISE DEBUG 'Skipping element';
       ELSE
       result:=array_append(result,element);

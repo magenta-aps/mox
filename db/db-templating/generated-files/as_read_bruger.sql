@@ -11,9 +11,9 @@ NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.p
 
 
 CREATE OR REPLACE FUNCTION as_read_bruger(
-    bruger_uuid      uuid,
+    bruger_uuid uuid,
     registrering_tstzrange tstzrange,
-    virkning_tstzrange     tstzrange,
+    virkning_tstzrange tstzrange,
     auth_criteria_arr      BrugerRegistreringType[]=null
 ) RETURNS BrugerType AS $$
 DECLARE

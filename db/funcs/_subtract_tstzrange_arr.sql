@@ -10,9 +10,9 @@
 CREATE OR REPLACE FUNCTION _subtract_tstzrange_arr (rangeA tstzrange, rangeArr tstzrange[])
     RETURNS tstzrange[] AS $$
 DECLARE
-    result          tstzrange[];
-    temp_result     tstzrange[];
-    rangeB          tstzrange;
+    result tstzrange[];
+    temp_result tstzrange[];
+    rangeB tstzrange;
     rangeA_leftover tstzrange;
 BEGIN
     result[1] := rangeA;

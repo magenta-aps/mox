@@ -45,7 +45,7 @@ CREATE TYPE LoghaendelseRelationType AS (
   relType LoghaendelseRelationKode,
   virkning Virkning,
   uuid uuid,
-  urn  text,
+  urn text,
   objektType text
 )
 ;

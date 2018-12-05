@@ -39,7 +39,7 @@ CREATE TYPE OrganisationRelationType AS (
   relType OrganisationRelationKode,
   virkning Virkning,
   uuid uuid,
-  urn  text,
+  urn text,
   objektType text
 )
 ;

@@ -11,9 +11,9 @@ NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.p
 
 
 CREATE OR REPLACE FUNCTION as_read_aktivitet(
-    aktivitet_uuid      uuid,
+    aktivitet_uuid uuid,
     registrering_tstzrange tstzrange,
-    virkning_tstzrange     tstzrange,
+    virkning_tstzrange tstzrange,
     auth_criteria_arr      AktivitetRegistreringType[]=null
 ) RETURNS AktivitetType AS $$
 DECLARE

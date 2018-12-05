@@ -51,7 +51,7 @@ CREATE TYPE TilstandRelationType AS (
   relType TilstandRelationKode,
   virkning Virkning,
   uuid uuid,
-  urn  text,
+  urn text,
   objektType text,
   indeks int,
   tilstandsVaerdiAttr TilstandVaerdiRelationAttrType

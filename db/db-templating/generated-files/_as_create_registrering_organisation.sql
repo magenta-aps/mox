@@ -12,14 +12,14 @@ NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.p
 
 CREATE OR REPLACE FUNCTION _as_create_organisation_registrering(
     organisation_uuid uuid,
-    livscykluskode    Livscykluskode,
-    brugerref         uuid,
-    note              text DEFAULT ''::text
+    livscykluskode Livscykluskode,
+    brugerref uuid,
+    note text DEFAULT ''::text
 ) RETURNS organisation_registrering AS $$
 DECLARE
-    registreringTime             TIMESTAMPTZ := clock_timestamp();
-    registreringObj              RegistreringBase;
-    rows_affected                int;
+    registreringTime TIMESTAMPTZ := clock_timestamp();
+    registreringObj RegistreringBase;
+    rows_affected int;
     organisation_registrering_id bigint;
     organisation_registrering    organisation_registrering;
 BEGIN

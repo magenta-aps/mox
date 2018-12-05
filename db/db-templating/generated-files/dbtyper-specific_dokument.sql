@@ -49,7 +49,7 @@ CREATE TYPE DokumentRelationType AS (
   relType DokumentRelationKode,
   virkning Virkning,
   uuid uuid,
-  urn  text,
+  urn text,
   objektType text
 )
 ;
@@ -75,7 +75,7 @@ CREATE TYPE DokumentdelRelationType AS (
   relType DokumentdelRelationKode,
   virkning Virkning,
   uuid uuid,
-  urn  text,
+  urn text,
   objektType text 
 )
 ;

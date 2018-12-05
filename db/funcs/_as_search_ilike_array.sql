@@ -13,7 +13,7 @@ BEGIN
     IF searchFor IS NULL OR coalesce(array_length(searchInArr, 1), 0) = 0 THEN
         RETURN FALSE;
     ELSE
-        -- RAISE NOTICE 'SQL part  searchForArr[%], searchInArr[%]',to_json(searchForArr),to_json(searchInArr);
+        -- RAISE NOTICE 'SQL part searchForArr[%], searchInArr[%]',to_json(searchForArr),to_json(searchInArr);
         IF EXISTS (
                 SELECT
                     a.searchInElement

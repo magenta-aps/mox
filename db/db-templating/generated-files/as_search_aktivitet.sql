@@ -11,14 +11,14 @@ NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.p
 
 
 CREATE OR REPLACE FUNCTION as_search_aktivitet(
-    firstResult       int,--TOOD ??
+    firstResult int,--TOOD ??
     aktivitet_uuid uuid,
     registreringObj   AktivitetRegistreringType,
-    virkningSoeg      TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
-    maxResults        int = 2147483647,
-    anyAttrValueArr   text[] = '{}'::text[],
-    anyuuidArr        uuid[] = '{}'::uuid[],
-    anyurnArr         text[] = '{}'::text[],
+    virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+    maxResults int = 2147483647,
+    anyAttrValueArr text[] = '{}'::text[],
+    anyuuidArr uuid[] = '{}'::uuid[],
+    anyurnArr text[] = '{}'::text[],
     auth_criteria_arr AktivitetRegistreringType[]=null
 
     ,
@@ -28,7 +28,7 @@ CREATE OR REPLACE FUNCTION as_search_aktivitet(
 
 ) RETURNS uuid[] AS $$
 DECLARE
-    aktivitet_candidates                uuid[];
+    aktivitet_candidates uuid[];
     aktivitet_candidates_is_initialized boolean;
     --to_be_applyed_filter_uuids uuid[];
     attrEgenskaberTypeObj AktivitetEgenskaberAttrType;
@@ -38,9 +38,9 @@ DECLARE
     tilsPubliceretTypeObj AktivitetPubliceretTilsType;
 
     relationTypeObj AktivitetRelationType;
-    anyAttrValue    text;
-    anyuuid         uuid;
-    anyurn          text;
+    anyAttrValue text;
+    anyuuid uuid;
+    anyurn text;
 
     
 

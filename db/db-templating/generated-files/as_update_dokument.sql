@@ -16,9 +16,9 @@ NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.p
 -- 'logically consistent'-arrays of objects with overlapping virknings)
 CREATE OR REPLACE FUNCTION as_update_dokument(
     dokument_uuid uuid,
-    brugerref         uuid,
-    note              text,
-    livscykluskode    Livscykluskode,
+    brugerref uuid,
+    note text,
+    livscykluskode Livscykluskode,
 
     
     attrEgenskaber DokumentEgenskaberAttrType[],
@@ -55,24 +55,24 @@ DECLARE
     auth_filtered_uuids uuid[];
 
     
-    dokument_variant_obj                              DokumentVariantType;
-    dokument_variant_egenskab_obj                     DokumentVariantEgenskaberType;
-    dokument_del_obj                                  DokumentDelType;
-    dokument_del_egenskaber_obj                       DokumentDelEgenskaberType;
-    dokument_del_relation_obj                         DokumentDelRelationType;
-    dokument_variant_new_id                           bigint;
-    dokument_del_new_id                               bigint;
-    dokument_variant_egenskaber_expl_deleted          text[]:=array[]::text[];
-    dokument_variant_dele_all_expl_deleted            text[]:=array[]::text[];
-    dokument_variant_del_egenskaber_deleted           _DokumentVariantDelKey[]:=array[]::_DokumentVariantDelKey[];
-    dokument_variant_del_relationer_deleted           _DokumentVariantDelKey[]:=array[]::_DokumentVariantDelKey[];
-    dokument_variants_prev_reg_arr                    text[];
+    dokument_variant_obj DokumentVariantType;
+    dokument_variant_egenskab_obj DokumentVariantEgenskaberType;
+    dokument_del_obj DokumentDelType;
+    dokument_del_egenskaber_obj DokumentDelEgenskaberType;
+    dokument_del_relation_obj DokumentDelRelationType;
+    dokument_variant_new_id bigint;
+    dokument_del_new_id bigint;
+    dokument_variant_egenskaber_expl_deleted text[]:=array[]::text[];
+    dokument_variant_dele_all_expl_deleted text[]:=array[]::text[];
+    dokument_variant_del_egenskaber_deleted _DokumentVariantDelKey[]:=array[]::_DokumentVariantDelKey[];
+    dokument_variant_del_relationer_deleted _DokumentVariantDelKey[]:=array[]::_DokumentVariantDelKey[];
+    dokument_variants_prev_reg_arr text[];
     dokument_variant_egenskaber_prev_reg_varianttekst text;
-    dokument_variant_id                               bigint;
-    dokument_variant_del_prev_reg_arr                 _DokumentVariantDelKey[];
-    dokument_variant_del_prev_reg                     _DokumentVariantDelKey;
-    dokument_del_id                                   bigint;
-    dokument_variant_del_prev_reg_rel_transfer        _DokumentVariantDelKey[];
+    dokument_variant_id bigint;
+    dokument_variant_del_prev_reg_arr _DokumentVariantDelKey[];
+    dokument_variant_del_prev_reg _DokumentVariantDelKey;
+    dokument_del_id bigint;
+    dokument_variant_del_prev_reg_rel_transfer _DokumentVariantDelKey[];
     
 BEGIN
     -- Create a new registrering
@@ -462,7 +462,7 @@ IF dokument_variant_obj.egenskaber IS NOT NULL AND coalesce(array_length(dokumen
   SELECT
   a.*
   FROM unnest(dokument_variant_obj.egenskaber) a
-  JOIN  unnest(dokument_variant_obj.egenskaber) b on (a.virkning).TimePeriod && (b.virkning).TimePeriod
+  JOIN unnest(dokument_variant_obj.egenskaber) b on (a.virkning).TimePeriod && (b.virkning).TimePeriod
   GROUP BY a.arkivering,a.delvisscannet,a.offentliggoerelse,a.produktion, a.virkning
   HAVING COUNT(*)>1
   ) THEN
@@ -611,7 +611,7 @@ FOREACH dokument_del_obj IN ARRAY dokument_variant_obj.dele
       SELECT
       a.*
       FROM unnest(dokument_del_obj.egenskaber) a
-      JOIN  unnest(dokument_del_obj.egenskaber) b on (a.virkning).TimePeriod && (b.virkning).TimePeriod
+      JOIN unnest(dokument_del_obj.egenskaber) b on (a.virkning).TimePeriod && (b.virkning).TimePeriod
       GROUP BY a.indeks,a.indhold,a.lokation,a.mimetype, a.virkning
       HAVING COUNT(*)>1
     ) THEN

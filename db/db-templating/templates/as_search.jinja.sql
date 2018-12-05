@@ -11,14 +11,14 @@
 {% block body %}
 
 CREATE OR REPLACE FUNCTION as_search_{{oio_type}}(
-    firstResult       int,--TOOD ??
+    firstResult int,--TOOD ??
     {{oio_type}}_uuid uuid,
     registreringObj   {{oio_type|title}}RegistreringType,
-    virkningSoeg      TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
-    maxResults        int = 2147483647,
-    anyAttrValueArr   text[] = '{}'::text[],
-    anyuuidArr        uuid[] = '{}'::uuid[],
-    anyurnArr         text[] = '{}'::text[],
+    virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+    maxResults int = 2147483647,
+    anyAttrValueArr text[] = '{}'::text[],
+    anyuuidArr uuid[] = '{}'::uuid[],
+    anyurnArr text[] = '{}'::text[],
     auth_criteria_arr {{oio_type|title}}RegistreringType[]=null
 
     {% if oio_type in ("aktivitet", "indsats") %},
@@ -28,7 +28,7 @@ CREATE OR REPLACE FUNCTION as_search_{{oio_type}}(
 
 ) RETURNS uuid[] AS $$
 DECLARE
-    {{oio_type}}_candidates                uuid[];
+    {{oio_type}}_candidates uuid[];
     {{oio_type}}_candidates_is_initialized boolean;
     --to_be_applyed_filter_uuids uuid[];
 
@@ -41,17 +41,17 @@ DECLARE
     {%- endfor %}
 
     relationTypeObj {{oio_type|title}}RelationType;
-    anyAttrValue    text;
-    anyuuid         uuid;
-    anyurn          text;
+    anyAttrValue text;
+    anyuuid uuid;
+    anyurn text;
 
     {% if oio_type == "dokument" %}
-    variantTypeObj                    DokumentVariantType;
-    variantEgenskaberTypeObj          DokumentVariantEgenskaberType;
-    delTypeObj                        DokumentDelType;
-    delEgenskaberTypeObj              DokumentDelEgenskaberType;
-    delRelationTypeObj                DokumentdelRelationType;
-    variant_candidates_ids            bigint[];
+    variantTypeObj DokumentVariantType;
+    variantEgenskaberTypeObj DokumentVariantEgenskaberType;
+    delTypeObj DokumentDelType;
+    delEgenskaberTypeObj DokumentDelEgenskaberType;
+    delRelationTypeObj DokumentdelRelationType;
+    variant_candidates_ids bigint[];
     variant_candidates_is_initialized boolean;
     {% endif %}
 
@@ -59,7 +59,7 @@ DECLARE
 
     {% if oio_type == "klasse" %}
     manipulatedAttrEgenskaberArr KlasseEgenskaberAttrType[]:='{}';
-    soegeordObj                  KlasseSoegeordType;
+    soegeordObj KlasseSoegeordType;
     {% endif %}
 BEGIN
 
@@ -193,7 +193,7 @@ END LOOP;
                 (
                     attr{{attribut|title}}TypeObj.{{attribut_field}} IS NULL
                     OR
-                     {%- if  attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][attribut_field] is defined and attributter_metadata[attribut][attribut_field]['type'] %}
+                     {%- if attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][attribut_field] is defined and attributter_metadata[attribut][attribut_field]['type'] %}
                         {%-if attributter_metadata[attribut][attribut_field]['type'] == "text[]" %}
                     _as_search_match_array(attr{{attribut|title}}TypeObj.{{attribut_field}},a.{{attribut_field}})  
                         {%- else %}
@@ -279,7 +279,7 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
             SELECT DISTINCT
             b.{{oio_type}}_id
             {% if oio_type == "dokument" %}
-            FROM  dokument_registrering b 
+            FROM dokument_registrering b 
             LEFT JOIN dokument_attr_egenskaber a on a.dokument_registrering_id=b.id and (virkningSoeg IS NULL or virkningSoeg && (a.virkning).TimePeriod )
             LEFT JOIN dokument_variant c on c.dokument_registrering_id=b.id 
             LEFT JOIN dokument_del f on f.variant_id=c.id
@@ -325,7 +325,7 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
             WHERE
             (
                 {%- for attribut_field in attribut_fields %}
-                    {%- if  attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][attribut_field] is defined and attributter_metadata[attribut][attribut_field]['type'] %}
+                    {%- if attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][attribut_field] is defined and attributter_metadata[attribut][attribut_field]['type'] %}
                         {%-if attributter_metadata[attribut][attribut_field]['type'] == "text[]" %}
                               _as_search_ilike_array(anyAttrValue,a.{{attribut_field}})  {%- if (not loop.last)%} OR {%- endif %}
                         {%-else %}
@@ -767,7 +767,7 @@ END IF;
 
 --/**********************//
 
-{% include  include_mixin  %} 
+{% include include_mixin  %} 
 
 {% if oio_type in ("aktivitet", "indsats") %}
  --/**********************************************************//

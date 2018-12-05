@@ -40,7 +40,7 @@ CREATE TYPE InteressefaellesskabRelationType AS (
   relType InteressefaellesskabRelationKode,
   virkning Virkning,
   uuid uuid,
-  urn  text,
+  urn text,
   objektType text
 )
 ;

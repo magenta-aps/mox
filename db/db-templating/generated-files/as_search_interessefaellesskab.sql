@@ -11,21 +11,21 @@ NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.p
 
 
 CREATE OR REPLACE FUNCTION as_search_interessefaellesskab(
-    firstResult       int,--TOOD ??
+    firstResult int,--TOOD ??
     interessefaellesskab_uuid uuid,
     registreringObj   InteressefaellesskabRegistreringType,
-    virkningSoeg      TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
-    maxResults        int = 2147483647,
-    anyAttrValueArr   text[] = '{}'::text[],
-    anyuuidArr        uuid[] = '{}'::uuid[],
-    anyurnArr         text[] = '{}'::text[],
+    virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+    maxResults int = 2147483647,
+    anyAttrValueArr text[] = '{}'::text[],
+    anyuuidArr uuid[] = '{}'::uuid[],
+    anyurnArr text[] = '{}'::text[],
     auth_criteria_arr InteressefaellesskabRegistreringType[]=null
 
     
 
 ) RETURNS uuid[] AS $$
 DECLARE
-    interessefaellesskab_candidates                uuid[];
+    interessefaellesskab_candidates uuid[];
     interessefaellesskab_candidates_is_initialized boolean;
     --to_be_applyed_filter_uuids uuid[];
     attrEgenskaberTypeObj InteressefaellesskabEgenskaberAttrType;
@@ -34,9 +34,9 @@ DECLARE
     tilsGyldighedTypeObj InteressefaellesskabGyldighedTilsType;
 
     relationTypeObj InteressefaellesskabRelationType;
-    anyAttrValue    text;
-    anyuuid         uuid;
-    anyurn          text;
+    anyAttrValue text;
+    anyuuid uuid;
+    anyurn text;
 
     
 

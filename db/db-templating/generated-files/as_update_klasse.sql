@@ -16,9 +16,9 @@ NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.p
 -- 'logically consistent'-arrays of objects with overlapping virknings)
 CREATE OR REPLACE FUNCTION as_update_klasse(
     klasse_uuid uuid,
-    brugerref         uuid,
-    note              text,
-    livscykluskode    Livscykluskode,
+    brugerref uuid,
+    note text,
+    livscykluskode Livscykluskode,
 
     
     attrEgenskaber KlasseEgenskaberAttrType[],

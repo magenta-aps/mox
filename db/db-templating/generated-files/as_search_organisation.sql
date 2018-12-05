@@ -11,21 +11,21 @@ NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.p
 
 
 CREATE OR REPLACE FUNCTION as_search_organisation(
-    firstResult       int,--TOOD ??
+    firstResult int,--TOOD ??
     organisation_uuid uuid,
     registreringObj   OrganisationRegistreringType,
-    virkningSoeg      TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
-    maxResults        int = 2147483647,
-    anyAttrValueArr   text[] = '{}'::text[],
-    anyuuidArr        uuid[] = '{}'::uuid[],
-    anyurnArr         text[] = '{}'::text[],
+    virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+    maxResults int = 2147483647,
+    anyAttrValueArr text[] = '{}'::text[],
+    anyuuidArr uuid[] = '{}'::uuid[],
+    anyurnArr text[] = '{}'::text[],
     auth_criteria_arr OrganisationRegistreringType[]=null
 
     
 
 ) RETURNS uuid[] AS $$
 DECLARE
-    organisation_candidates                uuid[];
+    organisation_candidates uuid[];
     organisation_candidates_is_initialized boolean;
     --to_be_applyed_filter_uuids uuid[];
     attrEgenskaberTypeObj OrganisationEgenskaberAttrType;
@@ -34,9 +34,9 @@ DECLARE
     tilsGyldighedTypeObj OrganisationGyldighedTilsType;
 
     relationTypeObj OrganisationRelationType;
-    anyAttrValue    text;
-    anyuuid         uuid;
-    anyurn          text;
+    anyAttrValue text;
+    anyuuid uuid;
+    anyurn text;
 
     
 

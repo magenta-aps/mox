@@ -27,9 +27,9 @@ $$ DECLARE sag_registrering_id bigint;
     sag_relationer SagRelationType;
 
     
-    sag_relation_kode                  SagRelationKode;
-    sag_uuid_underscores               text;
-    sag_rel_seq_name                   text;
+    sag_relation_kode SagRelationKode;
+    sag_uuid_underscores text;
+    sag_rel_seq_name text;
     sag_rel_type_cardinality_unlimited SagRelationKode[]:=ARRAY['andetarkiv'::SagRelationKode,'andrebehandlere'::SagRelationKode,'sekundaerpart'::SagRelationKode,'andresager'::SagRelationKode,'byggeri'::SagRelationKode,'fredning'::SagRelationKode,'journalpost'::SagRelationKode]::SagRelationKode[];
     
 
@@ -39,7 +39,7 @@ $$ DECLARE sag_registrering_id bigint;
     sag_rel_type_cardinality_unlimited_present_in_argument sagRelationKode[];
     
 
-    does_exist                    boolean;
+    does_exist boolean;
     new_sag_registrering sag_registrering;
 BEGIN
     IF sag_uuid IS NULL THEN LOOP
@@ -148,7 +148,7 @@ END IF;
 
 --Verification
 --For now all declared states are mandatory.
-IF coalesce(array_length(sag_registrering.tilsFremdrift, 1),0)<1  THEN
+IF coalesce(array_length(sag_registrering.tilsFremdrift, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [fremdrift] for sag. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
@@ -178,7 +178,7 @@ IF coalesce(array_length(sag_registrering.relationer,1),0)>0 THEN
 --Create temporary sequences
 sag_uuid_underscores:=replace(sag_uuid::text, '-', '_');
 
-SELECT array_agg(DISTINCT a.RelType) into sag_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(sag_registrering.relationer) a WHERE a.RelType = any (sag_rel_type_cardinality_unlimited) ;
+SELECT array_agg(DISTINCT a.RelType) into sag_rel_type_cardinality_unlimited_present_in_argument FROM unnest(sag_registrering.relationer) a WHERE a.RelType = any (sag_rel_type_cardinality_unlimited) ;
 IF coalesce(array_length(sag_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 
 FOREACH sag_relation_kode IN ARRAY (sag_rel_type_cardinality_unlimited_present_in_argument)
@@ -272,7 +272,7 @@ IF coalesce(array_length(sag_rel_type_cardinality_unlimited_present_in_argument,
 FOREACH sag_relation_kode IN ARRAY (sag_rel_type_cardinality_unlimited_present_in_argument)
   LOOP
   sag_rel_seq_name := 'sag_' || sag_relation_kode::text || sag_uuid_underscores;
-  EXECUTE 'DROP  SEQUENCE ' || sag_rel_seq_name || ';';
+  EXECUTE 'DROP SEQUENCE ' || sag_rel_seq_name || ';';
 END LOOP;
 END IF;
 

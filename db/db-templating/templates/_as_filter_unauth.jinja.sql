@@ -38,7 +38,7 @@ IF coalesce(array_length(registreringObjArr,1),0)=0 THEN
 	RETURN ARRAY[]::uuid[]; --special case: Nothing is allowed. Empty list of criteria where at least one has to be met.				
 END IF; 
 
-IF {{oio_type}}_uuids IS NULL OR  coalesce(array_length({{oio_type}}_uuids,1),0)=0 THEN
+IF {{oio_type}}_uuids IS NULL OR coalesce(array_length({{oio_type}}_uuids,1),0)=0 THEN
 	RETURN ARRAY[]::uuid[]; --special case: No candidates given to filter.
 END IF;
 
@@ -77,7 +77,7 @@ ELSE
 				(
 					attr{{attribut|title}}TypeObj.{{attribut_field}} IS NULL
 					OR
-					 {%- if  attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][attribut_field] is defined and attributter_metadata[attribut][attribut_field]['type'] is defined %} 
+					 {%- if attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][attribut_field] is defined and attributter_metadata[attribut][attribut_field]['type'] is defined %} 
 						{%-if attributter_metadata[attribut][attribut_field]['type'] == "text[]" %}
 						((coalesce(array_length(attr{{attribut|title}}TypeObj.{{attribut_field}},1),0)=0 AND coalesce(array_length(a.{{attribut_field}},1),0)=0 ) OR (attr{{attribut|title}}TypeObj.{{attribut_field}} @> a.{{attribut_field}} AND a.{{attribut_field}} @>attr{{attribut|title}}TypeObj.{{attribut_field}}  )) 
 						{%- else %} 

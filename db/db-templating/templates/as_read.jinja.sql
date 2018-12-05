@@ -11,9 +11,9 @@
 {% block body %}
 
 CREATE OR REPLACE FUNCTION as_read_{{oio_type}}(
-    {{oio_type}}_uuid      uuid,
+    {{oio_type}}_uuid uuid,
     registrering_tstzrange tstzrange,
-    virkning_tstzrange     tstzrange,
+    virkning_tstzrange tstzrange,
     auth_criteria_arr      {{oio_type|title}}RegistreringType[]=null
 ) RETURNS {{oio_type|title}}Type AS $$
 DECLARE

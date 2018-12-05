@@ -27,7 +27,7 @@ $$ DECLARE klasse_registrering_id bigint;
     klasse_relationer KlasseRelationType;
 
     
-    klasse_attr_egenskaber_id           bigint;
+    klasse_attr_egenskaber_id bigint;
     klasse_attr_egenskaber_soegeord_obj KlasseSoegeordType;
     
 
@@ -35,7 +35,7 @@ $$ DECLARE klasse_registrering_id bigint;
 
     
 
-    does_exist                    boolean;
+    does_exist boolean;
     new_klasse_registrering klasse_registrering;
 BEGIN
     IF klasse_uuid IS NULL THEN LOOP
@@ -135,7 +135,7 @@ IF klasse_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(klas
     
  /************/
  --Insert Soegeord
-  IF klasse_attr_egenskaber_obj.soegeord IS NOT NULL AND coalesce(array_length(klasse_attr_egenskaber_obj.soegeord,1),0)>1  THEN
+  IF klasse_attr_egenskaber_obj.soegeord IS NOT NULL AND coalesce(array_length(klasse_attr_egenskaber_obj.soegeord,1),0)>1 THEN
     FOREACH klasse_attr_egenskaber_soegeord_obj IN ARRAY klasse_attr_egenskaber_obj.soegeord
       LOOP
 
@@ -169,7 +169,7 @@ END IF;
 
 --Verification
 --For now all declared states are mandatory.
-IF coalesce(array_length(klasse_registrering.tilsPubliceret, 1),0)<1  THEN
+IF coalesce(array_length(klasse_registrering.tilsPubliceret, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [publiceret] for klasse. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 

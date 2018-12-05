@@ -32,7 +32,7 @@ $$ DECLARE facet_registrering_id bigint;
 
     
 
-    does_exist                    boolean;
+    does_exist boolean;
     new_facet_registrering facet_registrering;
 BEGIN
     IF facet_uuid IS NULL THEN LOOP
@@ -137,7 +137,7 @@ END IF;
 
 --Verification
 --For now all declared states are mandatory.
-IF coalesce(array_length(facet_registrering.tilsPubliceret, 1),0)<1  THEN
+IF coalesce(array_length(facet_registrering.tilsPubliceret, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [publiceret] for facet. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 

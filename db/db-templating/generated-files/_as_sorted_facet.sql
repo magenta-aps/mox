@@ -12,14 +12,14 @@ NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.p
 
 CREATE OR REPLACE FUNCTION _as_sorted_facet(
     facet_uuids uuid[],
-    virkningSoeg       TSTZRANGE,
+    virkningSoeg TSTZRANGE,
     registreringObj    FacetRegistreringType,
-    firstResult        int,
-    maxResults         int
+    firstResult int,
+    maxResults int
 ) RETURNS uuid[] AS $$
 DECLARE
     facet_sorted_uuid uuid[];
-    registreringSoeg         TSTZRANGE;
+    registreringSoeg TSTZRANGE;
 BEGIN
     IF registreringObj IS NULL OR (registreringObj.registrering).timePeriod IS NULL THEN
         registreringSoeg = TSTZRANGE(current_timestamp, current_timestamp, '[]');

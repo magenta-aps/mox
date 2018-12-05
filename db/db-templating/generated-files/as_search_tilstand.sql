@@ -11,21 +11,21 @@ NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.p
 
 
 CREATE OR REPLACE FUNCTION as_search_tilstand(
-    firstResult       int,--TOOD ??
+    firstResult int,--TOOD ??
     tilstand_uuid uuid,
     registreringObj   TilstandRegistreringType,
-    virkningSoeg      TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
-    maxResults        int = 2147483647,
-    anyAttrValueArr   text[] = '{}'::text[],
-    anyuuidArr        uuid[] = '{}'::uuid[],
-    anyurnArr         text[] = '{}'::text[],
+    virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+    maxResults int = 2147483647,
+    anyAttrValueArr text[] = '{}'::text[],
+    anyuuidArr uuid[] = '{}'::uuid[],
+    anyurnArr text[] = '{}'::text[],
     auth_criteria_arr TilstandRegistreringType[]=null
 
     
 
 ) RETURNS uuid[] AS $$
 DECLARE
-    tilstand_candidates                uuid[];
+    tilstand_candidates uuid[];
     tilstand_candidates_is_initialized boolean;
     --to_be_applyed_filter_uuids uuid[];
     attrEgenskaberTypeObj TilstandEgenskaberAttrType;
@@ -35,9 +35,9 @@ DECLARE
     tilsPubliceretTypeObj TilstandPubliceretTilsType;
 
     relationTypeObj TilstandRelationType;
-    anyAttrValue    text;
-    anyuuid         uuid;
-    anyurn          text;
+    anyAttrValue text;
+    anyuuid uuid;
+    anyurn text;
 
     
 

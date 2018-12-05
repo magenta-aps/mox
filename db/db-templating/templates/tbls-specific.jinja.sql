@@ -481,7 +481,7 @@ CREATE TABLE dokument_variant(
     dokument_registrering_id bigint not null,
     UNIQUE(dokument_registrering_id,varianttekst),
     CONSTRAINT dokument_variant_pkey PRIMARY KEY (id),
-    CONSTRAINT dokument_variant_forkey_dokumentregistrering  FOREIGN KEY (dokument_registrering_id) REFERENCES dokument_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION
+    CONSTRAINT dokument_variant_forkey_dokumentregistrering FOREIGN KEY (dokument_registrering_id) REFERENCES dokument_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION
 )
 WITH (
   OIDS=FALSE

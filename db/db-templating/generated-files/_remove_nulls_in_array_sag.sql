@@ -21,7 +21,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr SagFremdriftTilsType[
   BEGIN
 
  IF inputArr IS NOT NULL THEN
-    FOREACH element IN ARRAY  inputArr
+    FOREACH element IN ARRAY inputArr
     LOOP
       IF element IS NULL OR (( element.fremdrift IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
      -- RAISE DEBUG 'Skipping element';
@@ -49,7 +49,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr SagEgenskaberAttrType
   BEGIN
 
   IF inputArr IS NOT NULL THEN
-    FOREACH element IN ARRAY  inputArr
+    FOREACH element IN ARRAY inputArr
     LOOP
 
       IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.afleveret IS NULL AND element.beskrivelse IS NULL AND element.hjemmel IS NULL AND element.kassationskode IS NULL AND element.offentlighedundtaget IS NULL AND element.principiel IS NULL AND element.sagsnummer IS NULL AND element.titel IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
@@ -81,7 +81,7 @@ $$
   BEGIN
 
    IF inputArr IS NOT NULL THEN
-    FOREACH element IN ARRAY  inputArr
+    FOREACH element IN ARRAY inputArr
     LOOP
 
       IF element IS NULL OR ( element.relType IS NULL AND element.uuid IS NULL AND element.urn IS NULL AND element.objektType IS NULL AND element.indeks IS NULL AND element.relTypeSpec IS NULL AND (element.journalNotat IS NULL OR ( (element.journalNotat).titel IS NULL AND (element.journalNotat).notat IS NULL AND (element.journalNotat).format IS NULL )) AND (element.journalDokumentAttr IS NULL OR ((element.journalDokumentAttr).dokumenttitel IS NULL AND (element.journalDokumentAttr).offentlighedUndtaget IS NULL )) AND element.virkning IS NULL  ) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....)

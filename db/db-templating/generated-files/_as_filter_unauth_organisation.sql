@@ -38,7 +38,7 @@ IF coalesce(array_length(registreringObjArr,1),0)=0 THEN
 	RETURN ARRAY[]::uuid[]; --special case: Nothing is allowed. Empty list of criteria where at least one has to be met.				
 END IF; 
 
-IF organisation_uuids IS NULL OR  coalesce(array_length(organisation_uuids,1),0)=0 THEN
+IF organisation_uuids IS NULL OR coalesce(array_length(organisation_uuids,1),0)=0 THEN
 	RETURN ARRAY[]::uuid[]; --special case: No candidates given to filter.
 END IF;
 

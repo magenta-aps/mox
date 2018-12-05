@@ -33,14 +33,14 @@ $$ DECLARE indsats_registrering_id bigint;
     auth_filtered_uuids uuid[];
 
     
-    indsats_relation_kode    indsatsRelationKode;
+    indsats_relation_kode indsatsRelationKode;
     indsats_uuid_underscores text;
-    indsats_rel_seq_name     text;
-    indsats_rel_type_cardinality_unlimited                     indsatsRelationKode[]:=ARRAY['indsatskvalitet'::IndsatsRelationKode,'indsatsaktoer'::IndsatsRelationKode,'samtykke'::IndsatsRelationKode,'indsatssag'::IndsatsRelationKode,'indsatsdokument'::IndsatsRelationKode]::indsatsRelationKode[];
+    indsats_rel_seq_name text;
+    indsats_rel_type_cardinality_unlimited indsatsRelationKode[]:=ARRAY['indsatskvalitet'::IndsatsRelationKode,'indsatsaktoer'::IndsatsRelationKode,'samtykke'::IndsatsRelationKode,'indsatssag'::IndsatsRelationKode,'indsatsdokument'::IndsatsRelationKode]::indsatsRelationKode[];
     indsats_rel_type_cardinality_unlimited_present_in_argument indsatsRelationKode[];
     
 
-    does_exist                    boolean;
+    does_exist boolean;
     new_indsats_registrering indsats_registrering;
 BEGIN
     IF indsats_uuid IS NULL THEN LOOP
@@ -139,7 +139,7 @@ END IF;
 
 --Verification
 --For now all declared states are mandatory.
-IF coalesce(array_length(indsats_registrering.tilsPubliceret, 1),0)<1  THEN
+IF coalesce(array_length(indsats_registrering.tilsPubliceret, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [publiceret] for indsats. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
@@ -162,7 +162,7 @@ END IF;
 
 --Verification
 --For now all declared states are mandatory.
-IF coalesce(array_length(indsats_registrering.tilsFremdrift, 1),0)<1  THEN
+IF coalesce(array_length(indsats_registrering.tilsFremdrift, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [fremdrift] for indsats. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
@@ -192,7 +192,7 @@ IF coalesce(array_length(indsats_registrering.relationer,1),0)>0 THEN
 --Create temporary sequences
 indsats_uuid_underscores:=replace(indsats_uuid::text, '-', '_');
 
-SELECT array_agg(DISTINCT a.RelType) into indsats_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(indsats_registrering.relationer) a WHERE a.RelType = any (indsats_rel_type_cardinality_unlimited) ;
+SELECT array_agg(DISTINCT a.RelType) into indsats_rel_type_cardinality_unlimited_present_in_argument FROM unnest(indsats_registrering.relationer) a WHERE a.RelType = any (indsats_rel_type_cardinality_unlimited) ;
 IF coalesce(array_length(indsats_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 
 FOREACH indsats_relation_kode IN ARRAY (indsats_rel_type_cardinality_unlimited_present_in_argument)
@@ -241,7 +241,7 @@ IF coalesce(array_length(indsats_rel_type_cardinality_unlimited_present_in_argum
 FOREACH indsats_relation_kode IN ARRAY (indsats_rel_type_cardinality_unlimited_present_in_argument)
   LOOP
   indsats_rel_seq_name := 'indsats_' || indsats_relation_kode::text || indsats_uuid_underscores;
-  EXECUTE 'DROP  SEQUENCE ' || indsats_rel_seq_name || ';';
+  EXECUTE 'DROP SEQUENCE ' || indsats_rel_seq_name || ';';
 END LOOP;
 END IF;
 

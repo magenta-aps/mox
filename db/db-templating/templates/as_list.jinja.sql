@@ -154,7 +154,7 @@ FROM
 						NULL
 						END
                         {% if oio_type == "klasse" %}
-                        order by  a.brugervendtnoegle,a.beskrivelse,a.eksempel,a.omfang,a.titel,a.retskilde,a.aendringsnotat,a.virkning,a.KlasseAttrEgenskaberSoegeordTypeArr
+                        order by a.brugervendtnoegle,a.beskrivelse,a.eksempel,a.omfang,a.titel,a.retskilde,a.aendringsnotat,a.virkning,a.KlasseAttrEgenskaberSoegeordTypeArr
                         {% else %}
 						order by b.{{attribut_fields|join(',b.')}},b.virkning
                         {% endif %}

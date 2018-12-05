@@ -16,9 +16,9 @@ NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.p
 -- 'logically consistent'-arrays of objects with overlapping virknings)
 CREATE OR REPLACE FUNCTION as_update_aktivitet(
     aktivitet_uuid uuid,
-    brugerref         uuid,
-    note              text,
-    livscykluskode    Livscykluskode,
+    brugerref uuid,
+    note text,
+    livscykluskode Livscykluskode,
 
     
     attrEgenskaber AktivitetEgenskaberAttrType[],
@@ -55,11 +55,11 @@ DECLARE
     auth_filtered_uuids uuid[];
 
     
-    rel_type_max_index_prev_rev                                  int;
-    rel_type_max_index_arr                                       _aktivitetRelationMaxIndex[];
-    aktivitet_rel_type_cardinality_unlimited                     aktivitetRelationKode[]:=ARRAY['udfoererklasse'::AktivitetRelationKode,'deltagerklasse'::AktivitetRelationKode,'objektklasse'::AktivitetRelationKode,'resultatklasse'::AktivitetRelationKode,'grundlagklasse'::AktivitetRelationKode,'facilitetklasse'::AktivitetRelationKode,'adresse'::AktivitetRelationKode,'geoobjekt'::AktivitetRelationKode,'position'::AktivitetRelationKode,'facilitet'::AktivitetRelationKode,'lokale'::AktivitetRelationKode,'aktivitetdokument'::AktivitetRelationKode,'aktivitetgrundlag'::AktivitetRelationKode,'aktivitetresultat'::AktivitetRelationKode,'udfoerer'::AktivitetRelationKode,'deltager'::AktivitetRelationKode]::aktivitetRelationKode[];
-    aktivitet_uuid_underscores                                   text;
-    aktivitet_rel_seq_name                                       text;
+    rel_type_max_index_prev_rev int;
+    rel_type_max_index_arr _aktivitetRelationMaxIndex[];
+    aktivitet_rel_type_cardinality_unlimited aktivitetRelationKode[]:=ARRAY['udfoererklasse'::AktivitetRelationKode,'deltagerklasse'::AktivitetRelationKode,'objektklasse'::AktivitetRelationKode,'resultatklasse'::AktivitetRelationKode,'grundlagklasse'::AktivitetRelationKode,'facilitetklasse'::AktivitetRelationKode,'adresse'::AktivitetRelationKode,'geoobjekt'::AktivitetRelationKode,'position'::AktivitetRelationKode,'facilitet'::AktivitetRelationKode,'lokale'::AktivitetRelationKode,'aktivitetdokument'::AktivitetRelationKode,'aktivitetgrundlag'::AktivitetRelationKode,'aktivitetresultat'::AktivitetRelationKode,'udfoerer'::AktivitetRelationKode,'deltager'::AktivitetRelationKode]::aktivitetRelationKode[];
+    aktivitet_uuid_underscores text;
+    aktivitet_rel_seq_name text;
     aktivitet_rel_type_cardinality_unlimited_present_in_argument aktivitetRelationKode[];
     
 BEGIN
@@ -202,7 +202,7 @@ BEGIN
         
         LOOP
           aktivitet_rel_seq_name := 'aktivitet_' || aktivitet_relation_navn::text || aktivitet_uuid_underscores;
-          EXECUTE 'DROP  SEQUENCE ' || aktivitet_rel_seq_name || ';';
+          EXECUTE 'DROP SEQUENCE ' || aktivitet_rel_seq_name || ';';
         END LOOP;
     END IF;
     

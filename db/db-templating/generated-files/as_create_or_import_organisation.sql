@@ -32,7 +32,7 @@ $$ DECLARE organisation_registrering_id bigint;
 
     
 
-    does_exist                    boolean;
+    does_exist boolean;
     new_organisation_registrering organisation_registrering;
 BEGIN
     IF organisation_uuid IS NULL THEN LOOP
@@ -127,7 +127,7 @@ END IF;
 
 --Verification
 --For now all declared states are mandatory.
-IF coalesce(array_length(organisation_registrering.tilsGyldighed, 1),0)<1  THEN
+IF coalesce(array_length(organisation_registrering.tilsGyldighed, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [gyldighed] for organisation. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 

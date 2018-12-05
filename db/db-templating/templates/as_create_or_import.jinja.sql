@@ -27,48 +27,48 @@ $$ DECLARE {{oio_type}}_registrering_id bigint;
     {{oio_type}}_relationer {{oio_type|title}}RelationType;
 
     {% if oio_type == "dokument" %}
-    dokument_variant_obj          DokumentVariantType;
+    dokument_variant_obj DokumentVariantType;
     dokument_variant_egenskab_obj DokumentVariantEgenskaberType;
-    dokument_del_obj              DokumentDelType;
-    dokument_del_egenskaber_obj   DokumentDelEgenskaberType;
-    dokument_del_relation_obj     DokumentDelRelationType;
-    dokument_variant_new_id       bigint;
-    dokument_del_new_id           bigint;
+    dokument_del_obj DokumentDelType;
+    dokument_del_egenskaber_obj DokumentDelEgenskaberType;
+    dokument_del_relation_obj DokumentDelRelationType;
+    dokument_variant_new_id bigint;
+    dokument_del_new_id bigint;
     {% elif oio_type == "klasse" %}
-    klasse_attr_egenskaber_id           bigint;
+    klasse_attr_egenskaber_id bigint;
     klasse_attr_egenskaber_soegeord_obj KlasseSoegeordType;
     {% elif oio_type == "sag" %}
-    sag_relation_kode                  SagRelationKode;
-    sag_uuid_underscores               text;
-    sag_rel_seq_name                   text;
+    sag_relation_kode SagRelationKode;
+    sag_uuid_underscores text;
+    sag_rel_seq_name text;
     sag_rel_type_cardinality_unlimited SagRelationKode[]:=ARRAY['andetarkiv'::SagRelationKode,'andrebehandlere'::SagRelationKode,'sekundaerpart'::SagRelationKode,'andresager'::SagRelationKode,'byggeri'::SagRelationKode,'fredning'::SagRelationKode,'journalpost'::SagRelationKode]::SagRelationKode[];
     {% endif %}
 
     auth_filtered_uuids uuid[];
 
     {% if oio_type == "aktivitet" %}
-    aktivitet_relation_kode    aktivitetRelationKode;
+    aktivitet_relation_kode aktivitetRelationKode;
     aktivitet_uuid_underscores text;
-    aktivitet_rel_seq_name     text;
-    aktivitet_rel_type_cardinality_unlimited                     aktivitetRelationKode[]:=ARRAY['udfoererklasse'::AktivitetRelationKode,'deltagerklasse'::AktivitetRelationKode,'objektklasse'::AktivitetRelationKode,'resultatklasse'::AktivitetRelationKode,'grundlagklasse'::AktivitetRelationKode,'facilitetklasse'::AktivitetRelationKode,'adresse'::AktivitetRelationKode,'geoobjekt'::AktivitetRelationKode,'position'::AktivitetRelationKode,'facilitet'::AktivitetRelationKode,'lokale'::AktivitetRelationKode,'aktivitetdokument'::AktivitetRelationKode,'aktivitetgrundlag'::AktivitetRelationKode,'aktivitetresultat'::AktivitetRelationKode,'udfoerer'::AktivitetRelationKode,'deltager'::AktivitetRelationKode]::aktivitetRelationKode[];
+    aktivitet_rel_seq_name text;
+    aktivitet_rel_type_cardinality_unlimited aktivitetRelationKode[]:=ARRAY['udfoererklasse'::AktivitetRelationKode,'deltagerklasse'::AktivitetRelationKode,'objektklasse'::AktivitetRelationKode,'resultatklasse'::AktivitetRelationKode,'grundlagklasse'::AktivitetRelationKode,'facilitetklasse'::AktivitetRelationKode,'adresse'::AktivitetRelationKode,'geoobjekt'::AktivitetRelationKode,'position'::AktivitetRelationKode,'facilitet'::AktivitetRelationKode,'lokale'::AktivitetRelationKode,'aktivitetdokument'::AktivitetRelationKode,'aktivitetgrundlag'::AktivitetRelationKode,'aktivitetresultat'::AktivitetRelationKode,'udfoerer'::AktivitetRelationKode,'deltager'::AktivitetRelationKode]::aktivitetRelationKode[];
     aktivitet_rel_type_cardinality_unlimited_present_in_argument aktivitetRelationKode[];
     {% elif oio_type == "indsats" %}
-    indsats_relation_kode    indsatsRelationKode;
+    indsats_relation_kode indsatsRelationKode;
     indsats_uuid_underscores text;
-    indsats_rel_seq_name     text;
-    indsats_rel_type_cardinality_unlimited                     indsatsRelationKode[]:=ARRAY['indsatskvalitet'::IndsatsRelationKode,'indsatsaktoer'::IndsatsRelationKode,'samtykke'::IndsatsRelationKode,'indsatssag'::IndsatsRelationKode,'indsatsdokument'::IndsatsRelationKode]::indsatsRelationKode[];
+    indsats_rel_seq_name text;
+    indsats_rel_type_cardinality_unlimited indsatsRelationKode[]:=ARRAY['indsatskvalitet'::IndsatsRelationKode,'indsatsaktoer'::IndsatsRelationKode,'samtykke'::IndsatsRelationKode,'indsatssag'::IndsatsRelationKode,'indsatsdokument'::IndsatsRelationKode]::indsatsRelationKode[];
     indsats_rel_type_cardinality_unlimited_present_in_argument indsatsRelationKode[];
     {% elif oio_type == "sag" %}
     sag_rel_type_cardinality_unlimited_present_in_argument sagRelationKode[];
     {% elif oio_type == "tilstand" %}
-    tilstand_relation_kode    tilstandRelationKode;
+    tilstand_relation_kode tilstandRelationKode;
     tilstand_uuid_underscores text;
-    tilstand_rel_seq_name     text;
-    tilstand_rel_type_cardinality_unlimited                     tilstandRelationKode[]:=ARRAY['tilstandsvaerdi'::TilstandRelationKode,'begrundelse'::TilstandRelationKode,'tilstandskvalitet'::TilstandRelationKode,'tilstandsvurdering'::TilstandRelationKode,'tilstandsaktoer'::TilstandRelationKode,'tilstandsudstyr'::TilstandRelationKode,'samtykke'::TilstandRelationKode,'tilstandsdokument'::TilstandRelationKode]::TilstandRelationKode[];
+    tilstand_rel_seq_name text;
+    tilstand_rel_type_cardinality_unlimited tilstandRelationKode[]:=ARRAY['tilstandsvaerdi'::TilstandRelationKode,'begrundelse'::TilstandRelationKode,'tilstandskvalitet'::TilstandRelationKode,'tilstandsvurdering'::TilstandRelationKode,'tilstandsaktoer'::TilstandRelationKode,'tilstandsudstyr'::TilstandRelationKode,'samtykke'::TilstandRelationKode,'tilstandsdokument'::TilstandRelationKode]::TilstandRelationKode[];
     tilstand_rel_type_cardinality_unlimited_present_in_argument tilstandRelationKode[];
     {% endif %}
 
-    does_exist                    boolean;
+    does_exist boolean;
     new_{{oio_type}}_registrering {{oio_type}}_registrering;
 BEGIN
     IF {{oio_type}}_uuid IS NULL THEN LOOP
@@ -156,7 +156,7 @@ IF {{oio_type}}_registrering.attr{{attribut|title}} IS NOT NULL and coalesce(arr
     {% if oio_type == "klasse" %}
  /************/
  --Insert Soegeord
-  IF klasse_attr_egenskaber_obj.soegeord IS NOT NULL AND coalesce(array_length(klasse_attr_egenskaber_obj.soegeord,1),0)>1  THEN
+  IF klasse_attr_egenskaber_obj.soegeord IS NOT NULL AND coalesce(array_length(klasse_attr_egenskaber_obj.soegeord,1),0)>1 THEN
     FOREACH klasse_attr_egenskaber_soegeord_obj IN ARRAY klasse_attr_egenskaber_obj.soegeord
       LOOP
 
@@ -190,7 +190,7 @@ END IF;
 {% for tilstand, tilstand_values in tilstande.items() %}
 --Verification
 --For now all declared states are mandatory.
-IF coalesce(array_length({{oio_type}}_registrering.tils{{tilstand|title}}, 1),0)<1  THEN
+IF coalesce(array_length({{oio_type}}_registrering.tils{{tilstand|title}}, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [{{tilstand}}] for {{oio_type}}. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
@@ -220,7 +220,7 @@ IF coalesce(array_length({{oio_type}}_registrering.relationer,1),0)>0 THEN
 --Create temporary sequences
 {{oio_type}}_uuid_underscores:=replace({{oio_type}}_uuid::text, '-', '_');
 
-SELECT array_agg(DISTINCT a.RelType) into {{oio_type}}_rel_type_cardinality_unlimited_present_in_argument FROM  unnest({{oio_type}}_registrering.relationer) a WHERE a.RelType = any ({{oio_type}}_rel_type_cardinality_unlimited) ;
+SELECT array_agg(DISTINCT a.RelType) into {{oio_type}}_rel_type_cardinality_unlimited_present_in_argument FROM unnest({{oio_type}}_registrering.relationer) a WHERE a.RelType = any ({{oio_type}}_rel_type_cardinality_unlimited) ;
 IF coalesce(array_length({{oio_type}}_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 
 FOREACH {{oio_type}}_relation_kode IN ARRAY ({{oio_type}}_rel_type_cardinality_unlimited_present_in_argument)
@@ -356,7 +356,7 @@ IF coalesce(array_length({{oio_type}}_rel_type_cardinality_unlimited_present_in_
 FOREACH {{oio_type}}_relation_kode IN ARRAY ({{oio_type}}_rel_type_cardinality_unlimited_present_in_argument)
   LOOP
   {{oio_type}}_rel_seq_name := '{{oio_type}}_' || {{oio_type}}_relation_kode::text || {{oio_type}}_uuid_underscores;
-  EXECUTE 'DROP  SEQUENCE ' || {{oio_type}}_rel_seq_name || ';';
+  EXECUTE 'DROP SEQUENCE ' || {{oio_type}}_rel_seq_name || ';';
 END LOOP;
 END IF;
 

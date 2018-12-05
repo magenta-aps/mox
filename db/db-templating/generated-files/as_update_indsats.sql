@@ -16,9 +16,9 @@ NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.p
 -- 'logically consistent'-arrays of objects with overlapping virknings)
 CREATE OR REPLACE FUNCTION as_update_indsats(
     indsats_uuid uuid,
-    brugerref         uuid,
-    note              text,
-    livscykluskode    Livscykluskode,
+    brugerref uuid,
+    note text,
+    livscykluskode Livscykluskode,
 
     
     attrEgenskaber IndsatsEgenskaberAttrType[],
@@ -55,11 +55,11 @@ DECLARE
     auth_filtered_uuids uuid[];
 
     
-    rel_type_max_index_prev_rev                                int;
-    rel_type_max_index_arr                                     _indsatsRelationMaxIndex[];
-    indsats_rel_type_cardinality_unlimited                     indsatsRelationKode[]:=ARRAY['indsatskvalitet'::IndsatsRelationKode,'indsatsaktoer'::IndsatsRelationKode,'samtykke'::IndsatsRelationKode,'indsatssag'::IndsatsRelationKode,'indsatsdokument'::IndsatsRelationKode];
-    indsats_uuid_underscores                                   text;
-    indsats_rel_seq_name                                       text;
+    rel_type_max_index_prev_rev int;
+    rel_type_max_index_arr _indsatsRelationMaxIndex[];
+    indsats_rel_type_cardinality_unlimited indsatsRelationKode[]:=ARRAY['indsatskvalitet'::IndsatsRelationKode,'indsatsaktoer'::IndsatsRelationKode,'samtykke'::IndsatsRelationKode,'indsatssag'::IndsatsRelationKode,'indsatsdokument'::IndsatsRelationKode];
+    indsats_uuid_underscores text;
+    indsats_rel_seq_name text;
     indsats_rel_type_cardinality_unlimited_present_in_argument IndsatsRelationKode[];
     
 BEGIN
@@ -189,7 +189,7 @@ BEGIN
         
         LOOP
           indsats_rel_seq_name := 'indsats_' || indsats_relation_navn::text || indsats_uuid_underscores;
-          EXECUTE 'DROP  SEQUENCE ' || indsats_rel_seq_name || ';';
+          EXECUTE 'DROP SEQUENCE ' || indsats_rel_seq_name || ';';
         END LOOP;
     END IF;
     

@@ -11,21 +11,21 @@ NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.p
 
 
 CREATE OR REPLACE FUNCTION as_search_sag(
-    firstResult       int,--TOOD ??
+    firstResult int,--TOOD ??
     sag_uuid uuid,
     registreringObj   SagRegistreringType,
-    virkningSoeg      TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
-    maxResults        int = 2147483647,
-    anyAttrValueArr   text[] = '{}'::text[],
-    anyuuidArr        uuid[] = '{}'::uuid[],
-    anyurnArr         text[] = '{}'::text[],
+    virkningSoeg TSTZRANGE, -- = TSTZRANGE(current_timestamp,current_timestamp,'[]'),
+    maxResults int = 2147483647,
+    anyAttrValueArr text[] = '{}'::text[],
+    anyuuidArr uuid[] = '{}'::uuid[],
+    anyurnArr text[] = '{}'::text[],
     auth_criteria_arr SagRegistreringType[]=null
 
     
 
 ) RETURNS uuid[] AS $$
 DECLARE
-    sag_candidates                uuid[];
+    sag_candidates uuid[];
     sag_candidates_is_initialized boolean;
     --to_be_applyed_filter_uuids uuid[];
     attrEgenskaberTypeObj SagEgenskaberAttrType;
@@ -34,9 +34,9 @@ DECLARE
     tilsFremdriftTypeObj SagFremdriftTilsType;
 
     relationTypeObj SagRelationType;
-    anyAttrValue    text;
-    anyuuid         uuid;
-    anyurn          text;
+    anyAttrValue text;
+    anyuuid uuid;
+    anyurn text;
 
     
 

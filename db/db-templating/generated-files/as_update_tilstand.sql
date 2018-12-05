@@ -16,9 +16,9 @@ NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.p
 -- 'logically consistent'-arrays of objects with overlapping virknings)
 CREATE OR REPLACE FUNCTION as_update_tilstand(
     tilstand_uuid uuid,
-    brugerref         uuid,
-    note              text,
-    livscykluskode    Livscykluskode,
+    brugerref uuid,
+    note text,
+    livscykluskode Livscykluskode,
 
     
     attrEgenskaber TilstandEgenskaberAttrType[],
@@ -55,11 +55,11 @@ DECLARE
     auth_filtered_uuids uuid[];
 
     
-    rel_type_max_index_prev_rev                                 int;
-    rel_type_max_index_arr                                      _tilstandRelationMaxIndex[];
-    tilstand_rel_type_cardinality_unlimited                     tilstandRelationKode[]:=ARRAY['tilstandsvaerdi'::TilstandRelationKode,'begrundelse'::TilstandRelationKode,'tilstandskvalitet'::TilstandRelationKode,'tilstandsvurdering'::TilstandRelationKode,'tilstandsaktoer'::TilstandRelationKode,'tilstandsudstyr'::TilstandRelationKode,'samtykke'::TilstandRelationKode,'tilstandsdokument'::TilstandRelationKode]::TilstandRelationKode[];
-    tilstand_uuid_underscores                                   text;
-    tilstand_rel_seq_name                                       text;
+    rel_type_max_index_prev_rev int;
+    rel_type_max_index_arr _tilstandRelationMaxIndex[];
+    tilstand_rel_type_cardinality_unlimited tilstandRelationKode[]:=ARRAY['tilstandsvaerdi'::TilstandRelationKode,'begrundelse'::TilstandRelationKode,'tilstandskvalitet'::TilstandRelationKode,'tilstandsvurdering'::TilstandRelationKode,'tilstandsaktoer'::TilstandRelationKode,'tilstandsudstyr'::TilstandRelationKode,'samtykke'::TilstandRelationKode,'tilstandsdokument'::TilstandRelationKode]::TilstandRelationKode[];
+    tilstand_uuid_underscores text;
+    tilstand_rel_seq_name text;
     tilstand_rel_type_cardinality_unlimited_present_in_argument tilstandRelationKode[];
     
 BEGIN
@@ -198,7 +198,7 @@ BEGIN
         
         LOOP
           tilstand_rel_seq_name := 'tilstand_' || tilstand_relation_navn::text || tilstand_uuid_underscores;
-          EXECUTE 'DROP  SEQUENCE ' || tilstand_rel_seq_name || ';';
+          EXECUTE 'DROP SEQUENCE ' || tilstand_rel_seq_name || ';';
         END LOOP;
     END IF;
     

@@ -105,12 +105,12 @@ FROM
     SELECT
      (SELECT LOWER(($1.registrering).TimePeriod)) as TidsstempelDatoTid
     ,(SELECT lower_inc(($1.registrering).TimePeriod)) as GraenseIndikator
-    ) as  FraTidspunkt,
+    ) as FraTidspunkt,
     (
     SELECT
      (SELECT UPPER(($1.registrering).TimePeriod)) as TidsstempelDatoTid
     ,(SELECT upper_inc(($1.registrering).TimePeriod)) as GraenseIndikator
-    ) as  TilTidspunkt
+    ) as TilTidspunkt
   
 
 )
