@@ -14,11 +14,24 @@ class SQLTests(util.TestCase):
         super().setUp()
 
         with self.db_cursor() as curs:
-            curs.execute('CREATE EXTENSION IF NOT EXISTS "pgtap";')
+            curs.execute('CREATE EXTENSION "pgtap";')
+
+            curs.execute(
+                'CREATE SCHEMA test AUTHORIZATION "{}";'.format(
+                    settings.DB_USER,
+                ),
+            )
 
             for dbfile in test_support.list_db_sql('tests'):
                 with open(dbfile) as fp:
                     curs.execute(fp.read())
+
+    def tearDown(self):
+        super().setUp()
+
+        with self.db_cursor() as curs:
+            curs.execute('DROP SCHEMA test CASCADE')
+            curs.execute('DROP EXTENSION IF EXISTS "pgtap" CASCADE;')
 
     def test_pgsql(self):
         with self.db_cursor() as curs:

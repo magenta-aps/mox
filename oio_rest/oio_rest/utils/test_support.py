@@ -68,8 +68,6 @@ def _get_db_setup_sql():
     ALTER DATABASE "{db_name}" SET search_path TO actual_state,public;
     ALTER DATABASE "{db_name}" SET DATESTYLE to 'ISO, YMD';
     ALTER DATABASE "{db_name}" SET INTERVALSTYLE to 'sql_standard';
-
-    CREATE SCHEMA test AUTHORIZATION "{db_user}";
     '''.format(db_name=settings.DATABASE,
                db_user=settings.DB_USER)
 
