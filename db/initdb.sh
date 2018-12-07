@@ -43,7 +43,7 @@ psql -d $MOX_DB -U $MOX_DB_USER -f funcs/_json_object_delete_keys.sql
 psql -d $MOX_DB -U $MOX_DB_USER -f funcs/_create_notify.sql
 
 cd ./db-templating/
-$PYTHON ../../oio_rest/apply-templates.py
+LC_ALL=C.UTF-8 $PYTHON ../../oio_rest/apply-templates.py
 
 oiotypes=$($PYTHON -m oio_common.db_structure)
 
