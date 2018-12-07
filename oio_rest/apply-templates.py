@@ -11,6 +11,7 @@
         $ ./apply-template.py  # from a Python 3 environment
 """
 
+import sys
 from collections import OrderedDict
 import copy
 from pathlib import Path
@@ -43,8 +44,11 @@ TEMPLATES = (
 )
 
 
+@click.option('-w', '--write-to-stdout', is_flag=True,
+              help='write to standard output rather than {}'
+              .format(BUILD_DIR))
 @click.command()
-def main():
+def main(write_to_stdout):
     template_env = Environment(loader=FileSystemLoader([str(TEMPLATE_DIR)]))
 
     for oio_type in sorted(DATABASE_STRUCTURE):
@@ -76,10 +80,21 @@ def main():
             except KeyError:
                 context["include_mixin"] = "empty.jinja"
 
-            generated_file = BUILD_DIR / ("%s_%s.sql" % (template_name, oio_type))
-            with open(str(generated_file), "wb") as f:
-                template.stream(context).dump(f, encoding="utf-8")
-                f.write(b"\n")
+            sqltext = template.render(context) + '\n'
+
+            if write_to_stdout:
+                sys.stdout.write(sqltext)
+
+            else:
+                generated_file = BUILD_DIR / ("%s_%s.sql" % (template_name, oio_type))
+                tmp_file = generated_file.with_name(generated_file.name + '~')
+
+                tmp_file.write_text(sqltext)
+
+                try:
+                    tmp_file.rename(generated_file)
+                except IOError:
+                    tmp_file.delete()
 
 
 if __name__ == '__main__':
