@@ -28,31 +28,33 @@ TEMPLATE_DIR = DIR / "templates"
 BUILD_DIR = DIR / "generated-files"
 
 TEMPLATES = (
-    "_as_create_registrering",
-    "_as_filter_unauth",
-    "_as_get_prev_registrering",
-    "_as_sorted",
+    "dbtyper-specific",
+    "tbls-specific",
     "_remove_nulls_in_array",
+    "_as_get_prev_registrering",
+    "_as_create_registrering",
+    "as_update",
     "as_create_or_import",
     "as_list",
     "as_read",
     "as_search",
-    "as_update",
-    "dbtyper-specific",
     "json-cast-functions",
-    "tbls-specific",
+    "_as_sorted",
+    "_as_filter_unauth",
 )
 
 
 @click.option('-w', '--write-to-stdout', is_flag=True,
               help='write to standard output rather than {}'
               .format(BUILD_DIR))
-@click.command()
+@click.command(context_settings={
+    'help_option_names': ['-h', '--help'],
+})
 def main(write_to_stdout):
     template_env = Environment(loader=FileSystemLoader([str(TEMPLATE_DIR)]))
 
     for oio_type in sorted(DATABASE_STRUCTURE):
-        for template_name in sorted(TEMPLATES):
+        for template_name in TEMPLATES:
             template_file = "%s.jinja.sql" % template_name
             template = template_env.get_template(template_file)
 
