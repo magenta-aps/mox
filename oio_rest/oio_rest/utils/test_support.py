@@ -106,10 +106,11 @@ def _get_db_setup_sql(db_name, db_user):
         return False
 
     templates = list_db_sql("db-templating/generated-files")
-    templates1 = list(filter(is_template1, templates))
-    templates2 = list(set(templates) ^ set(templates1))
-    templates1.sort(key=template_sort_key)
-    templates2.sort(key=template_sort_key)
+    templates1 = sorted(filter(is_template1, templates),
+                        key=template_sort_key)
+    templates2 = sorted(set(templates) ^ set(templates1),
+                        key=template_sort_key)
+
     funcs1 = [
         os.path.join(TOP_DIR, "db/funcs/_index_helper_funcs.sql"),
         os.path.join(TOP_DIR, "db/funcs/_subtract_tstzrange.sql"),
@@ -120,8 +121,7 @@ def _get_db_setup_sql(db_name, db_user):
         os.path.join(TOP_DIR, "db/funcs/_json_object_delete_keys.sql"),
         os.path.join(TOP_DIR, "db/funcs/_create_notify.sql"),
     ]
-    funcs2 = list(set(list_db_sql('funcs')) ^ set(funcs1))
-    funcs2.sort()
+    funcs2 = sorted(set(list_db_sql('funcs')) ^ set(funcs1))
 
     files = [
         *list_db_sql('basis'),
