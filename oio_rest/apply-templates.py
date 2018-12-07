@@ -11,6 +11,7 @@
         $ ./apply-template.py  # from a Python 3 environment
 """
 
+import importlib
 import sys
 from collections import OrderedDict
 import copy
@@ -18,9 +19,6 @@ from pathlib import Path
 
 import click
 from jinja2 import Environment, FileSystemLoader
-
-from oio_common.db_structure import DATABASE_STRUCTURE
-from oio_common.db_structure import DB_TEMPLATE_EXTRA_OPTIONS
 
 
 DIR = Path(__file__).parent / ".." / "db" / "db-templating"
@@ -47,18 +45,26 @@ TEMPLATES = (
 @click.option('-w', '--write-to-stdout', is_flag=True,
               help='write to standard output rather than {}'
               .format(BUILD_DIR))
+@click.option('-m', '--module-name',
+              help='module to read settings from',
+              default='oio_common.db_structure',
+              envvar='APPLY_TEMPLATES_MODULE',
+              show_default=True,
+              show_envvar=True)
 @click.command(context_settings={
     'help_option_names': ['-h', '--help'],
 })
-def main(write_to_stdout):
+def main(write_to_stdout, module_name):
+    structmod = importlib.import_module(module_name)
+
     template_env = Environment(loader=FileSystemLoader([str(TEMPLATE_DIR)]))
 
-    for oio_type in sorted(DATABASE_STRUCTURE):
+    for oio_type in sorted(structmod.DATABASE_STRUCTURE):
         for template_name in TEMPLATES:
             template_file = "%s.jinja.sql" % template_name
             template = template_env.get_template(template_file)
 
-            context = copy.deepcopy(DATABASE_STRUCTURE[oio_type])
+            context = copy.deepcopy(structmod.DATABASE_STRUCTURE[oio_type])
             context["script_signature"] = "apply-template.py %s %s" % (
                 oio_type,
                 template_file,
@@ -76,9 +82,10 @@ def main(write_to_stdout):
             )
 
             try:
-                context["include_mixin"] = DB_TEMPLATE_EXTRA_OPTIONS[oio_type][
-                    template_file
-                ]["include_mixin"]
+                context["include_mixin"] = (
+                    structmod.DB_TEMPLATE_EXTRA_OPTIONS
+                    [oio_type][template_file]["include_mixin"]
+                )
             except KeyError:
                 context["include_mixin"] = "empty.jinja"
 
