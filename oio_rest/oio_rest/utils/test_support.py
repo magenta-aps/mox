@@ -14,6 +14,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 
 import click
 import mock
@@ -25,21 +26,29 @@ from .. import db_templating
 
 import settings
 
+
 BASE_DIR = os.path.dirname(settings.__file__)
 TOP_DIR = os.path.dirname(BASE_DIR)
-DB_DIR = os.path.join(BASE_DIR, 'build', 'db')
 
 
 @functools.lru_cache()
 def psql():
-    os.makedirs(DB_DIR, exist_ok=True)
+    # the jenkins workspace directory
+    workspace_dir = os.getenv('WORKSPACE')
+
+    if workspace_dir:
+        db_dir = os.path.join(workspace_dir + '@tmp', 'db')
+    else:
+        db_dir = tempfile.mkdtemp(prefix='mox-db')
+
+    os.makedirs(db_dir, exist_ok=True)
 
     psql = testing.postgresql.Postgresql(
-        base_dir=DB_DIR,
+        base_dir=db_dir,
     )
 
     atexit.register(psql.stop)
-    atexit.register(lambda: shutil.rmtree(DB_DIR))
+    atexit.register(lambda: shutil.rmtree(db_dir))
 
     return psql
 
