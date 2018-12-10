@@ -112,7 +112,7 @@ def notify_and_log(executed_tasks):
         simple_log(task_comment)
 
         # Include changes in the log file
-        include_changes = ["diff", "stdout"]
+        include_changes = ["retcode", "diff", "stdout", "stderr"]
 
         if not task_changes:
             continue
@@ -124,4 +124,4 @@ def notify_and_log(executed_tasks):
             content = task_changes.get(change)
 
             if content:
-                simple_log(content)
+                simple_log('{}: {}'.format(change, content))
