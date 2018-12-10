@@ -35,9 +35,8 @@ class SQLTests(util.TestCase):
                 ),
             )
 
-            for dbfile in test_support.list_db_sql('tests'):
-                with open(dbfile) as fp:
-                    curs.execute(fp.read())
+            for dbfile in pathlib.Path(util.TESTS_DIR).glob("sql/*.sql"):
+                curs.execute(dbfile.read_text())
 
     def tearDown(self):
         super().setUp()

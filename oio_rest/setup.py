@@ -26,7 +26,13 @@ setup(
     license='Mozilla Public License Version 2.0',
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
     package_data={
-        '': ["*.txt", "*.xml", "*.pem"]
+        'oio_rest': [
+            'dbdata/*/*.sql',
+            "templates/html/*.html",
+            "templates/sql/*.sql",
+            "templates/xml/*.xml",
+            "test_auth_data/idp-certificate.pem",
+        ],
     },
     include_package_data=True,
     zip_safe=False,

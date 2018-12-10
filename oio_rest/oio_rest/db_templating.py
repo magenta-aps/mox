@@ -20,7 +20,7 @@ from jinja2 import Environment, FileSystemLoader
 
 import settings
 
-DB_DIR = Path(__file__).absolute().parent.parent.parent / "db"
+DB_DIR = Path(__file__).parent / "dbdata"
 TEMPLATE_DIR = DB_DIR / "templates"
 
 TEMPLATES = (
@@ -64,7 +64,7 @@ def render_templates():
                     extra_options[oio_type][template_file]["include_mixin"]
                 )
             except KeyError:
-                context["include_mixin"] = "empty.jinja"
+                context["include_mixin"] = "empty.jinja.sql"
 
             yield template.render(context)
 
@@ -81,9 +81,9 @@ def get_sql():
 
     for dirp in (
         DB_DIR / "basis",
-        DB_DIR / "funcs" / "pre",
+        DB_DIR / "pre-funcs",
         None,  # placeholder: put the templates here
-        DB_DIR / "funcs" / "post",
+        DB_DIR / "post-funcs",
     ):
         if dirp is None:
             yield from render_templates()
