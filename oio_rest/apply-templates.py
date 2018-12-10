@@ -72,12 +72,6 @@ def main(output, module_name):
             context["attributter"] = OrderedDict(context["attributter"])
             context["oio_type"] = oio_type.lower()
             # create version of 'tilstande' and 'attributter' in reverse order
-            context["tilstande_revorder"] = OrderedDict(
-                reversed(context["tilstande"].items())
-            )
-            context["attributter_revorder"] = OrderedDict(
-                reversed(context["attributter"].items())
-            )
 
             try:
                 context["include_mixin"] = (

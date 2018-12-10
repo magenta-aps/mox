@@ -199,7 +199,7 @@ FROM
 					FROM		{{oio_type}} a
 					JOIN 		{{oio_type}}_registrering b 	ON b.{{oio_type}}_id=a.id
 					WHERE a.id = ANY ({{oio_type}}_uuids) AND ((registrering_tstzrange is null AND upper((b.registrering).timeperiod)='infinity'::TIMESTAMPTZ) OR registrering_tstzrange && (b.registrering).timeperiod)--filter ON registrering_tstzrange
-				{%-for attribut , attribut_fields in attributter_revorder.items() %}{% set outer_loop = loop %}
+				{%-for attribut , attribut_fields in attributter.items() | reverse %}{% set outer_loop = loop %}
 					) as a
 					LEFT JOIN {{oio_type}}_attr_{{attribut}} as b ON b.{{oio_type}}_registrering_id=a.{{oio_type}}_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given
                     {% if oio_type == "klasse" %}
@@ -223,22 +223,22 @@ FROM
 					a.{{oio_type}}_id,
 					a.{{oio_type}}_registrering_id,
 					a.registrering
-					{%-for attribut_inner_loop , attribut_fields_inner_loop in attributter_revorder.items() %}
+					{%-for attribut_inner_loop , attribut_fields_inner_loop in attributter.items() | reverse %}
 							{%- if loop.index<outer_loop.index  %}{%- if(loop.first) %},{%- endif%}
 					a.{{oio_type|title}}Attr{{attribut_inner_loop|title}}Arr{%- if (not loop.last) and (loop.index+1<outer_loop.index)%},{%- endif%}
 							{%- endif %} 
 					{%- endfor %}
 				{%- endfor %}
-				{%-for tilstand , tilstand_values in tilstande_revorder.items() %}{%- set outer_loop = loop %}	
+				{%-for tilstand , tilstand_values in tilstande.items() | reverse %}{%- set outer_loop = loop %}	
 			) as a
 			LEFT JOIN {{oio_type}}_tils_{{tilstand}} as b ON b.{{oio_type}}_registrering_id=a.{{oio_type}}_registrering_id AND (virkning_tstzrange is null OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given			
 			GROUP BY 
 			a.{{oio_type}}_id,
 			a.{{oio_type}}_registrering_id,
 			a.registrering,
-			{%-for attribut_inner_loop , attribut_fields_inner_loop in attributter_revorder.items() %}
+			{%-for attribut_inner_loop , attribut_fields_inner_loop in attributter.items() | reverse %}
 			a.{{oio_type|title}}Attr{{attribut_inner_loop|title}}Arr{%-if not (loop.last and outer_loop.index==1) %},{%- endif %}{%- endfor %}
-			{%-for tilstand_inner_loop , tilstand_values_inner_loop in tilstande_revorder.items() %}
+			{%-for tilstand_inner_loop , tilstand_values_inner_loop in tilstande.items() | reverse %}
 			{%- if loop.index<outer_loop.index  %}
 			a.{{oio_type|title}}Tils{{tilstand_inner_loop|title}}Arr{%- if (not loop.last) and (loop.index+1<outer_loop.index)%},{%- endif%}{%- endif %}{%- endfor %}
 				{%- endfor %}
@@ -248,9 +248,9 @@ FROM
 	a.{{oio_type}}_id,
 	a.{{oio_type}}_registrering_id,
 	a.registrering,
-	{%-for attribut_inner_loop , attribut_fields_inner_loop in attributter_revorder.items() %}
+	{%-for attribut_inner_loop , attribut_fields_inner_loop in attributter.items() | reverse %}
 	a.{{oio_type|title}}Attr{{attribut_inner_loop|title}}Arr,{%- endfor %}
-	{%-for tilstand_inner_loop , tilstand_values_inner_loop in tilstande_revorder.items() %}
+	{%-for tilstand_inner_loop , tilstand_values_inner_loop in tilstande.items() | reverse %}
 	a.{{oio_type|title}}Tils{{tilstand_inner_loop|title}}Arr{%- if (not loop.last)%},{%- endif%}{%- endfor %}
 ) as a
 {% if oio_type == "dokument" %}
