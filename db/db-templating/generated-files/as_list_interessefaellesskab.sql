@@ -30,7 +30,7 @@ END IF;
 /*********************/
 
 SELECT 
-array_agg( x.interessefaellesskabObj) into result
+array_agg(x.interessefaellesskabObj) into result
 FROM
 (
 SELECT
@@ -163,6 +163,5 @@ RETURN result;
 
 END;
 $$ LANGUAGE plpgsql STABLE;
-
 
 

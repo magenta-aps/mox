@@ -9,89 +9,80 @@
 NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
-CREATE OR REPLACE FUNCTION as_create_or_import_klasse(
-  klasse_registrering KlasseRegistreringType,
-  klasse_uuid uuid DEFAULT NULL,
-  auth_criteria_arr KlasseRegistreringType[] DEFAULT NULL
-	)
-  RETURNS uuid AS 
-$$
-DECLARE
-  klasse_registrering_id bigint;
-  klasse_attr_egenskaber_obj klasseEgenskaberAttrType;
-  
-  klasse_tils_publiceret_obj klassePubliceretTilsType;
-  
-  klasse_relationer KlasseRelationType;
-  
-  klasse_attr_egenskaber_id bigint;
-  klasse_attr_egenskaber_soegeord_obj KlasseSoegeordType;
-  
-  auth_filtered_uuids uuid[];
-  
-  does_exist boolean;
-  new_klasse_registrering klasse_registrering;
+
+CREATE OR REPLACE FUNCTION as_create_or_import_klasse (
+    klasse_registrering KlasseRegistreringType,
+    klasse_uuid uuid DEFAULT NULL, auth_criteria_arr
+    KlasseRegistreringType[] DEFAULT NULL) RETURNS uuid AS
+$$ DECLARE klasse_registrering_id bigint;
+
+    
+    klasse_attr_egenskaber_obj klasseEgenskaberAttrType;
+    
+
+    
+    klasse_tils_publiceret_obj klassePubliceretTilsType;
+    
+
+    klasse_relationer KlasseRelationType;
+
+    
+    klasse_attr_egenskaber_id bigint;
+    klasse_attr_egenskaber_soegeord_obj KlasseSoegeordType;
+    
+
+    auth_filtered_uuids uuid[];
+
+    
+
+    does_exist boolean;
+    new_klasse_registrering klasse_registrering;
 BEGIN
+    IF klasse_uuid IS NULL THEN LOOP
+        klasse_uuid:=uuid_generate_v4(); EXIT WHEN NOT EXISTS (SELECT id
+            from klasse WHERE id=klasse_uuid); END LOOP; END IF;
 
-IF klasse_uuid IS NULL THEN
-    LOOP
-    klasse_uuid:=uuid_generate_v4();
-    EXIT WHEN NOT EXISTS (SELECT id from klasse WHERE id=klasse_uuid); 
-    END LOOP;
-END IF;
+    IF EXISTS (SELECT id from klasse WHERE id=klasse_uuid) THEN
+        does_exist = True; ELSE
 
+        does_exist = False; END IF;
 
-IF EXISTS (SELECT id from klasse WHERE id=klasse_uuid) THEN
-    does_exist = True;
-ELSE
+    IF
+        (klasse_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode
+        and
+        (klasse_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode
+        and
+        (klasse_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode
+        THEN RAISE EXCEPTION 'Invalid livscykluskode[%] invoking
+        as_create_or_import_klasse.',(klasse_registrering.registrering).livscykluskode
+        USING ERRCODE='MO400'; END IF;
 
-    does_exist = False;
-END IF;
+    IF NOT does_exist THEN INSERT INTO klasse (ID) SELECT
+        klasse_uuid; END IF;
 
-IF  (klasse_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (klasse_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (klasse_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_klasse.',(klasse_registrering.registrering).livscykluskode USING ERRCODE='MO400';
-END IF;
+    /*********************************/
+    --Insert new registrering
 
+    IF NOT does_exist THEN
+        klasse_registrering_id:=nextval('klasse_registrering_id_seq');
 
-IF NOT does_exist THEN
+        INSERT INTO klasse_registrering (id, klasse_id,
+            registrering) SELECT klasse_registrering_id,
+        klasse_uuid, ROW (
+            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+        (klasse_registrering.registrering).livscykluskode,
+        (klasse_registrering.registrering).brugerref,
+        (klasse_registrering.registrering).note):: RegistreringBase ;
+    ELSE
+        -- This is an update, not an import or create
+            new_klasse_registrering :=
+            _as_create_klasse_registrering(klasse_uuid,
+                (klasse_registrering.registrering).livscykluskode,
+                (klasse_registrering.registrering).brugerref,
+                (klasse_registrering.registrering).note);
 
-    INSERT INTO
-          klasse (ID)
-    SELECT
-          klasse_uuid;
-END IF;
-
-
-/*********************************/
---Insert new registrering
-
-IF NOT does_exist THEN
-    klasse_registrering_id:=nextval('klasse_registrering_id_seq');
-
-    INSERT INTO klasse_registrering (
-          id,
-          klasse_id,
-          registrering
-        )
-    SELECT
-          klasse_registrering_id,
-           klasse_uuid,
-           ROW (
-             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-             (klasse_registrering.registrering).livscykluskode,
-             (klasse_registrering.registrering).brugerref,
-             (klasse_registrering.registrering).note
-               ):: RegistreringBase ;
-ELSE
-    -- This is an update, not an import or create
-        new_klasse_registrering := _as_create_klasse_registrering(
-             klasse_uuid,
-             (klasse_registrering.registrering).livscykluskode,
-             (klasse_registrering.registrering).brugerref,
-             (klasse_registrering.registrering).note);
-
-        klasse_registrering_id := new_klasse_registrering.id;
-END IF;
+            klasse_registrering_id := new_klasse_registrering.id;
+    END IF;
 
 
 /*********************************/
@@ -102,10 +93,10 @@ END IF;
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
- 
-IF coalesce(array_length(klasse_registrering.attrEgenskaber, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [klasse]. Oprettelse afbrydes.' USING ERRCODE='MO400';
-END IF;
+
+IF coalesce(array_length(klasse_registrering.attrEgenskaber,
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    [klasse]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
 
@@ -144,7 +135,7 @@ IF klasse_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(klas
     
  /************/
  --Insert Soegeord
-  IF klasse_attr_egenskaber_obj.soegeord IS NOT NULL AND coalesce(array_length(klasse_attr_egenskaber_obj.soegeord,1),0)>1  THEN
+  IF klasse_attr_egenskaber_obj.soegeord IS NOT NULL AND coalesce(array_length(klasse_attr_egenskaber_obj.soegeord,1),0)>1 THEN
     FOREACH klasse_attr_egenskaber_soegeord_obj IN ARRAY klasse_attr_egenskaber_obj.soegeord
       LOOP
 
@@ -178,7 +169,7 @@ END IF;
 
 --Verification
 --For now all declared states are mandatory.
-IF coalesce(array_length(klasse_registrering.tilsPubliceret, 1),0)<1  THEN
+IF coalesce(array_length(klasse_registrering.tilsPubliceret, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [publiceret] for klasse. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
@@ -240,5 +231,4 @@ RETURN klasse_uuid;
 
 END;
 $$ LANGUAGE plpgsql VOLATILE;
-
 

@@ -1,4 +1,3 @@
-
 -- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
 -- Contact: info@magenta.dk.
 --

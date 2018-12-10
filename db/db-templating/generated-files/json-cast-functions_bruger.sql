@@ -49,7 +49,7 @@ FROM
       d.*
       ) tils_json
     FROM 
-      ( 
+      (
         SELECT 
         
         CASE 
@@ -63,13 +63,13 @@ FROM
   ),
   rel as (
     SELECT 
-    ('{' || string_agg(   to_json(f.relType::text) || ':' || array_to_json(f.rel_json_arr,false) ,',') || '}')::json rel_json
+    ('{' || string_agg(  to_json(f.relType::text) || ':' || array_to_json(f.rel_json_arr,false) ,',') || '}')::json rel_json
     FROM
     (
       SELECT
       e.relType,
 
-      array_agg( _json_object_delete_keys(row_to_json(ROW(e.relType,e.virkning,e.uuid,e.urn,e.objektType)::BrugerRelationType),ARRAY['reltype']::text[])) rel_json_arr
+      array_agg(_json_object_delete_keys(row_to_json(ROW(e.relType,e.virkning,e.uuid,e.urn,e.objektType)::BrugerRelationType),ARRAY['reltype']::text[])) rel_json_arr
       from unnest($1.relationer) e(relType,virkning,uuid,urn,objektType)
 
       group by e.relType
@@ -95,12 +95,12 @@ FROM
     SELECT
      (SELECT LOWER(($1.registrering).TimePeriod)) as TidsstempelDatoTid
     ,(SELECT lower_inc(($1.registrering).TimePeriod)) as GraenseIndikator
-    ) as  FraTidspunkt,
+    ) as FraTidspunkt,
     (
     SELECT
      (SELECT UPPER(($1.registrering).TimePeriod)) as TidsstempelDatoTid
     ,(SELECT upper_inc(($1.registrering).TimePeriod)) as GraenseIndikator
-    ) as  TilTidspunkt
+    ) as TilTidspunkt
   
 
 )
@@ -155,7 +155,6 @@ $$ LANGUAGE plpgsql immutable;
 
 drop cast if exists (BrugerType as json);
 create cast (BrugerType as json) with function actual_state._cast_brugerType_to_json(BrugerType); 
-
 
 
 

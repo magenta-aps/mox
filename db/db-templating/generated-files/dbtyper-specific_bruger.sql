@@ -40,7 +40,7 @@ CREATE TYPE BrugerRelationType AS (
   relType BrugerRelationKode,
   virkning Virkning,
   uuid uuid,
-  urn  text,
+  urn text,
   objektType text
 )
 ;
@@ -60,7 +60,6 @@ CREATE TYPE BrugerType AS
   id uuid,
   registrering BrugerRegistreringType[]
 );  
-
 
 
 

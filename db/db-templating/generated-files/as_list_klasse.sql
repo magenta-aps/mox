@@ -30,7 +30,7 @@ END IF;
 /*********************/
 
 SELECT 
-array_agg( x.klasseObj) into result
+array_agg(x.klasseObj) into result
 FROM
 (
 SELECT
@@ -118,7 +118,7 @@ FROM
 						NULL
 						END
                         
-                        order by  a.brugervendtnoegle,a.beskrivelse,a.eksempel,a.omfang,a.titel,a.retskilde,a.aendringsnotat,a.virkning,a.KlasseAttrEgenskaberSoegeordTypeArr
+                        order by a.brugervendtnoegle,a.beskrivelse,a.eksempel,a.omfang,a.titel,a.retskilde,a.aendringsnotat,a.virkning,a.KlasseAttrEgenskaberSoegeordTypeArr
                         
 					)) KlasseAttrEgenskaberArr
                     
@@ -213,6 +213,5 @@ RETURN result;
 
 END;
 $$ LANGUAGE plpgsql STABLE;
-
 
 

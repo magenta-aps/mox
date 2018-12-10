@@ -49,7 +49,7 @@ CREATE TYPE DokumentRelationType AS (
   relType DokumentRelationKode,
   virkning Virkning,
   uuid uuid,
-  urn  text,
+  urn text,
   objektType text
 )
 ;
@@ -75,7 +75,7 @@ CREATE TYPE DokumentdelRelationType AS (
   relType DokumentdelRelationKode,
   virkning Virkning,
   uuid uuid,
-  urn  text,
+  urn text,
   objektType text 
 )
 ;
@@ -93,7 +93,7 @@ CREATE TYPE DokumentDelType AS
 /*					Dokumentvariant               */
 /**************************************************/
 
-CREATE TYPE DokumentVariantEgenskaberType AS ( 
+CREATE TYPE DokumentVariantEgenskaberType AS (
 arkivering ClearableBoolean, 
 delvisscannet ClearableBoolean, 
 offentliggoerelse ClearableBoolean, 
@@ -133,7 +133,6 @@ CREATE TYPE _DokumentVariantDelKey AS
   varianttekst text,
   deltekst text
 );
-
 
 
 

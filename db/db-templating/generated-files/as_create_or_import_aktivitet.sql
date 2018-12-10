@@ -9,93 +9,85 @@
 NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
-CREATE OR REPLACE FUNCTION as_create_or_import_aktivitet(
-  aktivitet_registrering AktivitetRegistreringType,
-  aktivitet_uuid uuid DEFAULT NULL,
-  auth_criteria_arr AktivitetRegistreringType[] DEFAULT NULL
-	)
-  RETURNS uuid AS 
-$$
-DECLARE
-  aktivitet_registrering_id bigint;
-  aktivitet_attr_egenskaber_obj aktivitetEgenskaberAttrType;
-  
-  aktivitet_tils_status_obj aktivitetStatusTilsType;
-  aktivitet_tils_publiceret_obj aktivitetPubliceretTilsType;
-  
-  aktivitet_relationer AktivitetRelationType;
-  
-  auth_filtered_uuids uuid[];
-  
-  aktivitet_relation_kode aktivitetRelationKode;
-  aktivitet_uuid_underscores text;
-  aktivitet_rel_seq_name text;
-  aktivitet_rel_type_cardinality_unlimited aktivitetRelationKode[]:=ARRAY['udfoererklasse'::AktivitetRelationKode,'deltagerklasse'::AktivitetRelationKode,'objektklasse'::AktivitetRelationKode,'resultatklasse'::AktivitetRelationKode,'grundlagklasse'::AktivitetRelationKode,'facilitetklasse'::AktivitetRelationKode,'adresse'::AktivitetRelationKode,'geoobjekt'::AktivitetRelationKode,'position'::AktivitetRelationKode,'facilitet'::AktivitetRelationKode,'lokale'::AktivitetRelationKode,'aktivitetdokument'::AktivitetRelationKode,'aktivitetgrundlag'::AktivitetRelationKode,'aktivitetresultat'::AktivitetRelationKode,'udfoerer'::AktivitetRelationKode,'deltager'::AktivitetRelationKode]::aktivitetRelationKode[];
-  aktivitet_rel_type_cardinality_unlimited_present_in_argument aktivitetRelationKode[];
-  
-  does_exist boolean;
-  new_aktivitet_registrering aktivitet_registrering;
+
+CREATE OR REPLACE FUNCTION as_create_or_import_aktivitet (
+    aktivitet_registrering AktivitetRegistreringType,
+    aktivitet_uuid uuid DEFAULT NULL, auth_criteria_arr
+    AktivitetRegistreringType[] DEFAULT NULL) RETURNS uuid AS
+$$ DECLARE aktivitet_registrering_id bigint;
+
+    
+    aktivitet_attr_egenskaber_obj aktivitetEgenskaberAttrType;
+    
+
+    
+    aktivitet_tils_status_obj aktivitetStatusTilsType;
+    
+    aktivitet_tils_publiceret_obj aktivitetPubliceretTilsType;
+    
+
+    aktivitet_relationer AktivitetRelationType;
+
+    
+
+    auth_filtered_uuids uuid[];
+
+    
+    aktivitet_relation_kode aktivitetRelationKode;
+    aktivitet_uuid_underscores text;
+    aktivitet_rel_seq_name text;
+    aktivitet_rel_type_cardinality_unlimited aktivitetRelationKode[]:=ARRAY['udfoererklasse'::AktivitetRelationKode,'deltagerklasse'::AktivitetRelationKode,'objektklasse'::AktivitetRelationKode,'resultatklasse'::AktivitetRelationKode,'grundlagklasse'::AktivitetRelationKode,'facilitetklasse'::AktivitetRelationKode,'adresse'::AktivitetRelationKode,'geoobjekt'::AktivitetRelationKode,'position'::AktivitetRelationKode,'facilitet'::AktivitetRelationKode,'lokale'::AktivitetRelationKode,'aktivitetdokument'::AktivitetRelationKode,'aktivitetgrundlag'::AktivitetRelationKode,'aktivitetresultat'::AktivitetRelationKode,'udfoerer'::AktivitetRelationKode,'deltager'::AktivitetRelationKode]::aktivitetRelationKode[];
+    aktivitet_rel_type_cardinality_unlimited_present_in_argument aktivitetRelationKode[];
+    
+
+    does_exist boolean;
+    new_aktivitet_registrering aktivitet_registrering;
 BEGIN
+    IF aktivitet_uuid IS NULL THEN LOOP
+        aktivitet_uuid:=uuid_generate_v4(); EXIT WHEN NOT EXISTS (SELECT id
+            from aktivitet WHERE id=aktivitet_uuid); END LOOP; END IF;
 
-IF aktivitet_uuid IS NULL THEN
-    LOOP
-    aktivitet_uuid:=uuid_generate_v4();
-    EXIT WHEN NOT EXISTS (SELECT id from aktivitet WHERE id=aktivitet_uuid); 
-    END LOOP;
-END IF;
+    IF EXISTS (SELECT id from aktivitet WHERE id=aktivitet_uuid) THEN
+        does_exist = True; ELSE
 
+        does_exist = False; END IF;
 
-IF EXISTS (SELECT id from aktivitet WHERE id=aktivitet_uuid) THEN
-    does_exist = True;
-ELSE
+    IF
+        (aktivitet_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode
+        and
+        (aktivitet_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode
+        and
+        (aktivitet_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode
+        THEN RAISE EXCEPTION 'Invalid livscykluskode[%] invoking
+        as_create_or_import_aktivitet.',(aktivitet_registrering.registrering).livscykluskode
+        USING ERRCODE='MO400'; END IF;
 
-    does_exist = False;
-END IF;
+    IF NOT does_exist THEN INSERT INTO aktivitet (ID) SELECT
+        aktivitet_uuid; END IF;
 
-IF  (aktivitet_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (aktivitet_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (aktivitet_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_aktivitet.',(aktivitet_registrering.registrering).livscykluskode USING ERRCODE='MO400';
-END IF;
+    /*********************************/
+    --Insert new registrering
 
+    IF NOT does_exist THEN
+        aktivitet_registrering_id:=nextval('aktivitet_registrering_id_seq');
 
-IF NOT does_exist THEN
+        INSERT INTO aktivitet_registrering (id, aktivitet_id,
+            registrering) SELECT aktivitet_registrering_id,
+        aktivitet_uuid, ROW (
+            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+        (aktivitet_registrering.registrering).livscykluskode,
+        (aktivitet_registrering.registrering).brugerref,
+        (aktivitet_registrering.registrering).note):: RegistreringBase ;
+    ELSE
+        -- This is an update, not an import or create
+            new_aktivitet_registrering :=
+            _as_create_aktivitet_registrering(aktivitet_uuid,
+                (aktivitet_registrering.registrering).livscykluskode,
+                (aktivitet_registrering.registrering).brugerref,
+                (aktivitet_registrering.registrering).note);
 
-    INSERT INTO
-          aktivitet (ID)
-    SELECT
-          aktivitet_uuid;
-END IF;
-
-
-/*********************************/
---Insert new registrering
-
-IF NOT does_exist THEN
-    aktivitet_registrering_id:=nextval('aktivitet_registrering_id_seq');
-
-    INSERT INTO aktivitet_registrering (
-          id,
-          aktivitet_id,
-          registrering
-        )
-    SELECT
-          aktivitet_registrering_id,
-           aktivitet_uuid,
-           ROW (
-             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-             (aktivitet_registrering.registrering).livscykluskode,
-             (aktivitet_registrering.registrering).brugerref,
-             (aktivitet_registrering.registrering).note
-               ):: RegistreringBase ;
-ELSE
-    -- This is an update, not an import or create
-        new_aktivitet_registrering := _as_create_aktivitet_registrering(
-             aktivitet_uuid,
-             (aktivitet_registrering.registrering).livscykluskode,
-             (aktivitet_registrering.registrering).brugerref,
-             (aktivitet_registrering.registrering).note);
-
-        aktivitet_registrering_id := new_aktivitet_registrering.id;
-END IF;
+            aktivitet_registrering_id := new_aktivitet_registrering.id;
+    END IF;
 
 
 /*********************************/
@@ -106,10 +98,10 @@ END IF;
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
- 
-IF coalesce(array_length(aktivitet_registrering.attrEgenskaber, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [aktivitet]. Oprettelse afbrydes.' USING ERRCODE='MO400';
-END IF;
+
+IF coalesce(array_length(aktivitet_registrering.attrEgenskaber,
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    [aktivitet]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
 
@@ -153,7 +145,7 @@ END IF;
 
 --Verification
 --For now all declared states are mandatory.
-IF coalesce(array_length(aktivitet_registrering.tilsStatus, 1),0)<1  THEN
+IF coalesce(array_length(aktivitet_registrering.tilsStatus, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [status] for aktivitet. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
@@ -176,7 +168,7 @@ END IF;
 
 --Verification
 --For now all declared states are mandatory.
-IF coalesce(array_length(aktivitet_registrering.tilsPubliceret, 1),0)<1  THEN
+IF coalesce(array_length(aktivitet_registrering.tilsPubliceret, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [publiceret] for aktivitet. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
@@ -206,7 +198,7 @@ IF coalesce(array_length(aktivitet_registrering.relationer,1),0)>0 THEN
 --Create temporary sequences
 aktivitet_uuid_underscores:=replace(aktivitet_uuid::text, '-', '_');
 
-SELECT array_agg( DISTINCT a.RelType) into aktivitet_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(aktivitet_registrering.relationer) a WHERE a.RelType = any (aktivitet_rel_type_cardinality_unlimited) ;
+SELECT array_agg(DISTINCT a.RelType) into aktivitet_rel_type_cardinality_unlimited_present_in_argument FROM unnest(aktivitet_registrering.relationer) a WHERE a.RelType = any (aktivitet_rel_type_cardinality_unlimited) ;
 IF coalesce(array_length(aktivitet_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 
 FOREACH aktivitet_relation_kode IN ARRAY (aktivitet_rel_type_cardinality_unlimited_present_in_argument)
@@ -275,7 +267,7 @@ IF coalesce(array_length(aktivitet_rel_type_cardinality_unlimited_present_in_arg
 FOREACH aktivitet_relation_kode IN ARRAY (aktivitet_rel_type_cardinality_unlimited_present_in_argument)
   LOOP
   aktivitet_rel_seq_name := 'aktivitet_' || aktivitet_relation_kode::text || aktivitet_uuid_underscores;
-  EXECUTE 'DROP  SEQUENCE ' || aktivitet_rel_seq_name || ';';
+  EXECUTE 'DROP SEQUENCE ' || aktivitet_rel_seq_name || ';';
 END LOOP;
 END IF;
 
@@ -298,5 +290,4 @@ RETURN aktivitet_uuid;
 
 END;
 $$ LANGUAGE plpgsql VOLATILE;
-
 

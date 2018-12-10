@@ -9,86 +9,77 @@
 NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
-CREATE OR REPLACE FUNCTION as_create_or_import_organisationenhed(
-  organisationenhed_registrering OrganisationenhedRegistreringType,
-  organisationenhed_uuid uuid DEFAULT NULL,
-  auth_criteria_arr OrganisationenhedRegistreringType[] DEFAULT NULL
-	)
-  RETURNS uuid AS 
-$$
-DECLARE
-  organisationenhed_registrering_id bigint;
-  organisationenhed_attr_egenskaber_obj organisationenhedEgenskaberAttrType;
-  
-  organisationenhed_tils_gyldighed_obj organisationenhedGyldighedTilsType;
-  
-  organisationenhed_relationer OrganisationenhedRelationType;
-  
-  auth_filtered_uuids uuid[];
-  
-  does_exist boolean;
-  new_organisationenhed_registrering organisationenhed_registrering;
+
+CREATE OR REPLACE FUNCTION as_create_or_import_organisationenhed (
+    organisationenhed_registrering OrganisationenhedRegistreringType,
+    organisationenhed_uuid uuid DEFAULT NULL, auth_criteria_arr
+    OrganisationenhedRegistreringType[] DEFAULT NULL) RETURNS uuid AS
+$$ DECLARE organisationenhed_registrering_id bigint;
+
+    
+    organisationenhed_attr_egenskaber_obj organisationenhedEgenskaberAttrType;
+    
+
+    
+    organisationenhed_tils_gyldighed_obj organisationenhedGyldighedTilsType;
+    
+
+    organisationenhed_relationer OrganisationenhedRelationType;
+
+    
+
+    auth_filtered_uuids uuid[];
+
+    
+
+    does_exist boolean;
+    new_organisationenhed_registrering organisationenhed_registrering;
 BEGIN
+    IF organisationenhed_uuid IS NULL THEN LOOP
+        organisationenhed_uuid:=uuid_generate_v4(); EXIT WHEN NOT EXISTS (SELECT id
+            from organisationenhed WHERE id=organisationenhed_uuid); END LOOP; END IF;
 
-IF organisationenhed_uuid IS NULL THEN
-    LOOP
-    organisationenhed_uuid:=uuid_generate_v4();
-    EXIT WHEN NOT EXISTS (SELECT id from organisationenhed WHERE id=organisationenhed_uuid); 
-    END LOOP;
-END IF;
+    IF EXISTS (SELECT id from organisationenhed WHERE id=organisationenhed_uuid) THEN
+        does_exist = True; ELSE
 
+        does_exist = False; END IF;
 
-IF EXISTS (SELECT id from organisationenhed WHERE id=organisationenhed_uuid) THEN
-    does_exist = True;
-ELSE
+    IF
+        (organisationenhed_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode
+        and
+        (organisationenhed_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode
+        and
+        (organisationenhed_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode
+        THEN RAISE EXCEPTION 'Invalid livscykluskode[%] invoking
+        as_create_or_import_organisationenhed.',(organisationenhed_registrering.registrering).livscykluskode
+        USING ERRCODE='MO400'; END IF;
 
-    does_exist = False;
-END IF;
+    IF NOT does_exist THEN INSERT INTO organisationenhed (ID) SELECT
+        organisationenhed_uuid; END IF;
 
-IF  (organisationenhed_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (organisationenhed_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (organisationenhed_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_organisationenhed.',(organisationenhed_registrering.registrering).livscykluskode USING ERRCODE='MO400';
-END IF;
+    /*********************************/
+    --Insert new registrering
 
+    IF NOT does_exist THEN
+        organisationenhed_registrering_id:=nextval('organisationenhed_registrering_id_seq');
 
-IF NOT does_exist THEN
+        INSERT INTO organisationenhed_registrering (id, organisationenhed_id,
+            registrering) SELECT organisationenhed_registrering_id,
+        organisationenhed_uuid, ROW (
+            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+        (organisationenhed_registrering.registrering).livscykluskode,
+        (organisationenhed_registrering.registrering).brugerref,
+        (organisationenhed_registrering.registrering).note):: RegistreringBase ;
+    ELSE
+        -- This is an update, not an import or create
+            new_organisationenhed_registrering :=
+            _as_create_organisationenhed_registrering(organisationenhed_uuid,
+                (organisationenhed_registrering.registrering).livscykluskode,
+                (organisationenhed_registrering.registrering).brugerref,
+                (organisationenhed_registrering.registrering).note);
 
-    INSERT INTO
-          organisationenhed (ID)
-    SELECT
-          organisationenhed_uuid;
-END IF;
-
-
-/*********************************/
---Insert new registrering
-
-IF NOT does_exist THEN
-    organisationenhed_registrering_id:=nextval('organisationenhed_registrering_id_seq');
-
-    INSERT INTO organisationenhed_registrering (
-          id,
-          organisationenhed_id,
-          registrering
-        )
-    SELECT
-          organisationenhed_registrering_id,
-           organisationenhed_uuid,
-           ROW (
-             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-             (organisationenhed_registrering.registrering).livscykluskode,
-             (organisationenhed_registrering.registrering).brugerref,
-             (organisationenhed_registrering.registrering).note
-               ):: RegistreringBase ;
-ELSE
-    -- This is an update, not an import or create
-        new_organisationenhed_registrering := _as_create_organisationenhed_registrering(
-             organisationenhed_uuid,
-             (organisationenhed_registrering.registrering).livscykluskode,
-             (organisationenhed_registrering.registrering).brugerref,
-             (organisationenhed_registrering.registrering).note);
-
-        organisationenhed_registrering_id := new_organisationenhed_registrering.id;
-END IF;
+            organisationenhed_registrering_id := new_organisationenhed_registrering.id;
+    END IF;
 
 
 /*********************************/
@@ -99,10 +90,10 @@ END IF;
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
- 
-IF coalesce(array_length(organisationenhed_registrering.attrEgenskaber, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [organisationenhed]. Oprettelse afbrydes.' USING ERRCODE='MO400';
-END IF;
+
+IF coalesce(array_length(organisationenhed_registrering.attrEgenskaber,
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    [organisationenhed]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
 
@@ -136,7 +127,7 @@ END IF;
 
 --Verification
 --For now all declared states are mandatory.
-IF coalesce(array_length(organisationenhed_registrering.tilsGyldighed, 1),0)<1  THEN
+IF coalesce(array_length(organisationenhed_registrering.tilsGyldighed, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [gyldighed] for organisationenhed. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
@@ -198,5 +189,4 @@ RETURN organisationenhed_uuid;
 
 END;
 $$ LANGUAGE plpgsql VOLATILE;
-
 

@@ -50,7 +50,7 @@ CREATE TYPE IndsatsRelationType AS (
   relType IndsatsRelationKode,
   virkning Virkning,
   uuid uuid,
-  urn  text,
+  urn text,
   objektType text,
 indeks int
 )
@@ -79,7 +79,6 @@ CREATE TYPE IndsatsType AS
    relType IndsatsRelationKode,
    indeks int
  );
-
 
 
 

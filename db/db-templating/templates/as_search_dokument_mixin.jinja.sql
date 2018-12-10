@@ -6,7 +6,7 @@
 IF registreringObj IS NULL OR (registreringObj).varianter IS NULL THEN
 	--RAISE DEBUG 'as_search_dokument: skipping filtration on relationer';
 ELSE
-		IF (registreringObj).varianter IS NOT NULL AND coalesce(array_length(registreringObj.varianter,1),0)>0  THEN
+		IF (registreringObj).varianter IS NOT NULL AND coalesce(array_length(registreringObj.varianter,1),0)>0 THEN
 		FOREACH variantTypeObj IN ARRAY registreringObj.varianter
 		LOOP
 
@@ -27,7 +27,7 @@ ELSE
 
 		IF (coalesce(array_length(variant_candidates_ids,1),0)>0 OR not variant_candidates_is_initialized) THEN
 
-			IF  variantTypeObj.varianttekst IS NOT NULL OR
+			IF variantTypeObj.varianttekst IS NOT NULL OR
 				(
 					(NOT (variantEgenskaberTypeObj.arkivering IS NULL))
 					OR
@@ -44,7 +44,7 @@ ELSE
 			variant_candidates_ids:=array(
 			SELECT DISTINCT
 			a.id
-			FROM  dokument_variant a
+			FROM dokument_variant a
 			JOIN dokument_registrering b on a.dokument_registrering_id=b.id
 			JOIN dokument_variant_egenskaber c on c.variant_id=a.id  --we require the presence egenskaber (variant name is logically part of it)
 			WHERE
@@ -117,7 +117,7 @@ ELSE
 			)
 			AND
 			{% include 'as_search_mixin_filter_reg.jinja.sql' %}
-			AND ( (NOT variant_candidates_is_initialized) OR a.id = ANY (variant_candidates_ids) )
+			AND ((NOT variant_candidates_is_initialized) OR a.id = ANY (variant_candidates_ids) )
 			);
 
 			variant_candidates_is_initialized:=true;
@@ -162,7 +162,7 @@ ELSE
 			variant_candidates_ids:=array(
 			SELECT DISTINCT
 			a.id
-			FROM  dokument_variant a
+			FROM dokument_variant a
 			JOIN dokument_registrering b on a.dokument_registrering_id=b.id
 			JOIN dokument_del c on c.variant_id=a.id
 			JOIN dokument_del_egenskaber d on d.del_id=c.id --we require the presence egenskaber (del name is logically part of it)
@@ -233,7 +233,7 @@ ELSE
 			)
 			AND
 			{% include 'as_search_mixin_filter_reg.jinja.sql' %}
-			AND ( (NOT variant_candidates_is_initialized) OR a.id = ANY (variant_candidates_ids) )
+			AND ((NOT variant_candidates_is_initialized) OR a.id = ANY (variant_candidates_ids) )
 			);
 
 			variant_candidates_is_initialized:=true;
@@ -254,7 +254,7 @@ ELSE
 			variant_candidates_ids:=array(
 			SELECT DISTINCT
 			a.id
-			FROM  dokument_variant a
+			FROM dokument_variant a
 			JOIN dokument_registrering b on a.dokument_registrering_id=b.id
 			JOIN dokument_del c on c.variant_id=a.id
 			JOIN dokument_del_relation d on d.del_id=c.id
@@ -320,7 +320,7 @@ ELSE
 			)
 			AND
 			{% include 'as_search_mixin_filter_reg.jinja.sql' %}
-			AND ( (NOT variant_candidates_is_initialized) OR a.id = ANY (variant_candidates_ids) )
+			AND ((NOT variant_candidates_is_initialized) OR a.id = ANY (variant_candidates_ids) )
 			);
 			
 			variant_candidates_is_initialized:=true;
@@ -341,12 +341,12 @@ ELSE
 			dokument_candidates:=array(
 			SELECT DISTINCT
 			b.dokument_id 
-			FROM  dokument_variant a
+			FROM dokument_variant a
 			JOIN dokument_registrering b on a.dokument_registrering_id=b.id
 			WHERE
 			a.id = ANY (variant_candidates_ids)
 			AND
-			( (NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
+			((NOT dokument_candidates_is_initialized) OR b.dokument_id = ANY (dokument_candidates) )
 			);
 
 			dokument_candidates_is_initialized:=true;

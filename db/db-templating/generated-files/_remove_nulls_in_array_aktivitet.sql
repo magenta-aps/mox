@@ -21,7 +21,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr AktivitetStatusTilsTy
   BEGIN
 
  IF inputArr IS NOT NULL THEN
-    FOREACH element IN ARRAY  inputArr
+    FOREACH element IN ARRAY inputArr
     LOOP
       IF element IS NULL OR (( element.status IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
      -- RAISE DEBUG 'Skipping element';
@@ -49,7 +49,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr AktivitetPubliceretTi
   BEGIN
 
  IF inputArr IS NOT NULL THEN
-    FOREACH element IN ARRAY  inputArr
+    FOREACH element IN ARRAY inputArr
     LOOP
       IF element IS NULL OR (( element.publiceret IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
      -- RAISE DEBUG 'Skipping element';
@@ -77,7 +77,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr AktivitetEgenskaberAt
   BEGIN
 
   IF inputArr IS NOT NULL THEN
-    FOREACH element IN ARRAY  inputArr
+    FOREACH element IN ARRAY inputArr
     LOOP
 
       IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.aktivitetnavn IS NULL AND element.beskrivelse IS NULL AND element.starttidspunkt IS NULL AND element.sluttidspunkt IS NULL AND element.tidsforbrug IS NULL AND element.formaal IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
@@ -109,7 +109,7 @@ $$
   BEGIN
 
    IF inputArr IS NOT NULL THEN
-    FOREACH element IN ARRAY  inputArr
+    FOREACH element IN ARRAY inputArr
     LOOP
 
       IF element IS NULL OR ( element.relType IS NULL AND element.uuid IS NULL AND element.urn IS NULL AND element.objektType IS NULL AND element.indeks IS NULL AND (element.aktoerAttr IS NULL OR ((element.aktoerAttr).obligatorisk IS NULL AND (element.aktoerAttr).accepteret IS NULL AND (element.aktoerAttr).repraesentation_uuid IS NULL AND (element.aktoerAttr).repraesentation_urn IS NULL    )) AND element.virkning IS NULL  ) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
@@ -129,7 +129,6 @@ $$
  
  $$ LANGUAGE plpgsql IMMUTABLE
 ;
-
 
 
 
