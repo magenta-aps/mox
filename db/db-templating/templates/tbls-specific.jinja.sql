@@ -372,6 +372,8 @@ CREATE TABLE {{oio_type}}_relation (
     CONSTRAINT sag_journal_notat_only_for_notat_type CHECK (journal_notat IS NULL OR rel_type_spec='journalnotat' ){% elif oio_type == "tilstand" %},
     CONSTRAINT tilstand_relation_nominel_vaerdi_relevant_null_check CHECK (tilstand_vaerdi_attr IS NULL OR rel_type='tilstandsvaerdi'){% endif %}
 );
+ALTER TABLE {{oio_type}}_relation
+  OWNER TO mox;
 
 
 {% if oio_type == "aktivitet" %}
@@ -699,6 +701,8 @@ CREATE TABLE dokument_del_relation (
     -- CONSTRAINT dokument_del_relation_no_virkning_overlap EXCLUDE USING gist (dokument_del_registrering_id WITH =, _as_convert_dokument_del_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('underredigeringaf'::dokument_delRelationKode )) ,-- no overlapping virkning except for 0..n --relations
     CONSTRAINT dokument_del_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
 );
+ALTER TABLE dokument_del_relation
+  OWNER TO mox;
 
 
 CREATE INDEX dokument_del_relation_idx_rel_maal_obj_uuid

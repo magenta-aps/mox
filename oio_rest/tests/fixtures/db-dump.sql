@@ -499,6 +499,8 @@ CREATE TABLE aktivitet_relation (
     CONSTRAINT aktivitet_relation_check_aktoer_attr_rel_type CHECK (aktoer_attr IS NULL OR rel_type=('udfoerer'::AktivitetRelationKode) OR rel_type=('deltager'::AktivitetRelationKode) OR rel_type=('ansvarlig'::AktivitetRelationKode)),
     CONSTRAINT aktivitet_relation_aktoer_repr_either_uri_or_urn CHECK (aktoer_attr IS NULL OR ( _aktivitet_aktoer_attr_repr_uuid_to_text(aktoer_attr) IS NULL AND _aktivitet_aktoer_attr_repr_urn_to_text(aktoer_attr) IS NULL ) OR ((_aktivitet_aktoer_attr_repr_urn_to_text(aktoer_attr) IS NOT NULL AND _aktivitet_aktoer_attr_repr_uuid_to_text(aktoer_attr) IS NULL ) OR (_aktivitet_aktoer_attr_repr_urn_to_text(aktoer_attr) IS NULL AND _aktivitet_aktoer_attr_repr_uuid_to_text(aktoer_attr) IS NOT NULL )))
 );
+ALTER TABLE aktivitet_relation
+  OWNER TO mox;
 
 
 
@@ -4359,6 +4361,8 @@ CREATE TABLE bruger_relation (
     CONSTRAINT bruger_relation_no_virkning_overlap EXCLUDE USING gist (bruger_registrering_id WITH =, _as_convert_bruger_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('adresser'::BrugerRelationKode ) AND rel_type<>('brugertyper'::BrugerRelationKode ) AND rel_type<>('opgaver'::BrugerRelationKode ) AND rel_type<>('tilknyttedeenheder'::BrugerRelationKode ) AND rel_type<>('tilknyttedefunktioner'::BrugerRelationKode ) AND rel_type<>('tilknyttedeinteressefaellesskaber'::BrugerRelationKode ) AND rel_type<>('tilknyttedeorganisationer'::BrugerRelationKode ) AND rel_type<>('tilknyttedepersoner'::BrugerRelationKode ) AND rel_type<>('tilknyttedeitsystemer'::BrugerRelationKode )) ,-- no overlapping virkning except for 0..n --relations
     CONSTRAINT bruger_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
 );
+ALTER TABLE bruger_relation
+  OWNER TO mox;
 
 
 
@@ -7391,6 +7395,8 @@ CREATE TABLE dokument_relation (
     CONSTRAINT dokument_relation_no_virkning_overlap EXCLUDE USING gist (dokument_registrering_id WITH =, _as_convert_dokument_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('arkiver'::DokumentRelationKode ) AND rel_type<>('besvarelser'::DokumentRelationKode ) AND rel_type<>('udgangspunkter'::DokumentRelationKode ) AND rel_type<>('kommentarer'::DokumentRelationKode ) AND rel_type<>('bilag'::DokumentRelationKode ) AND rel_type<>('andredokumenter'::DokumentRelationKode ) AND rel_type<>('andreklasser'::DokumentRelationKode ) AND rel_type<>('andrebehandlere'::DokumentRelationKode ) AND rel_type<>('parter'::DokumentRelationKode ) AND rel_type<>('kopiparter'::DokumentRelationKode ) AND rel_type<>('tilknyttedesager'::DokumentRelationKode )) ,-- no overlapping virkning except for 0..n --relations
     CONSTRAINT dokument_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
 );
+ALTER TABLE dokument_relation
+  OWNER TO mox;
 
 
 
@@ -7688,6 +7694,8 @@ CREATE TABLE dokument_del_relation (
     -- CONSTRAINT dokument_del_relation_no_virkning_overlap EXCLUDE USING gist (dokument_del_registrering_id WITH =, _as_convert_dokument_del_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('underredigeringaf'::dokument_delRelationKode )) ,-- no overlapping virkning except for 0..n --relations
     CONSTRAINT dokument_del_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
 );
+ALTER TABLE dokument_del_relation
+  OWNER TO mox;
 
 
 CREATE INDEX dokument_del_relation_idx_rel_maal_obj_uuid
@@ -12208,6 +12216,8 @@ CREATE TABLE facet_relation (
     CONSTRAINT facet_relation_no_virkning_overlap EXCLUDE USING gist (facet_registrering_id WITH =, _as_convert_facet_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('redaktoerer'::FacetRelationKode )) ,-- no overlapping virkning except for 0..n --relations
     CONSTRAINT facet_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
 );
+ALTER TABLE facet_relation
+  OWNER TO mox;
 
 
 
@@ -15257,6 +15267,8 @@ CREATE TABLE indsats_relation (
     CONSTRAINT indsats_relation_no_virkning_overlap EXCLUDE USING gist (indsats_registrering_id WITH =, _as_convert_indsats_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('indsatskvalitet'::IndsatsRelationKode ) AND rel_type<>('indsatsaktoer'::IndsatsRelationKode ) AND rel_type<>('samtykke'::IndsatsRelationKode ) AND rel_type<>('indsatssag'::IndsatsRelationKode ) AND rel_type<>('indsatsdokument'::IndsatsRelationKode )) ,-- no overlapping virkning except for 0..n --relations
     CONSTRAINT indsats_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
 );
+ALTER TABLE indsats_relation
+  OWNER TO mox;
 
 
 
@@ -18918,6 +18930,8 @@ CREATE TABLE interessefaellesskab_relation (
     CONSTRAINT interessefaellesskab_relation_no_virkning_overlap EXCLUDE USING gist (interessefaellesskab_registrering_id WITH =, _as_convert_interessefaellesskab_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('adresser'::InteressefaellesskabRelationKode ) AND rel_type<>('opgaver'::InteressefaellesskabRelationKode ) AND rel_type<>('tilknyttedebrugere'::InteressefaellesskabRelationKode ) AND rel_type<>('tilknyttedeenheder'::InteressefaellesskabRelationKode ) AND rel_type<>('tilknyttedefunktioner'::InteressefaellesskabRelationKode ) AND rel_type<>('tilknyttedeinteressefaellesskaber'::InteressefaellesskabRelationKode ) AND rel_type<>('tilknyttedeorganisationer'::InteressefaellesskabRelationKode ) AND rel_type<>('tilknyttedepersoner'::InteressefaellesskabRelationKode ) AND rel_type<>('tilknyttedeitsystemer'::InteressefaellesskabRelationKode )) ,-- no overlapping virkning except for 0..n --relations
     CONSTRAINT interessefaellesskab_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
 );
+ALTER TABLE interessefaellesskab_relation
+  OWNER TO mox;
 
 
 
@@ -21793,6 +21807,8 @@ CREATE TABLE itsystem_relation (
     CONSTRAINT itsystem_relation_no_virkning_overlap EXCLUDE USING gist (itsystem_registrering_id WITH =, _as_convert_itsystem_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('tilknyttedeorganisationer'::ItsystemRelationKode ) AND rel_type<>('tilknyttedeenheder'::ItsystemRelationKode ) AND rel_type<>('tilknyttedefunktioner'::ItsystemRelationKode ) AND rel_type<>('tilknyttedebrugere'::ItsystemRelationKode ) AND rel_type<>('tilknyttedeinteressefaellesskaber'::ItsystemRelationKode ) AND rel_type<>('tilknyttedeitsystemer'::ItsystemRelationKode ) AND rel_type<>('tilknyttedepersoner'::ItsystemRelationKode ) AND rel_type<>('systemtyper'::ItsystemRelationKode ) AND rel_type<>('opgaver'::ItsystemRelationKode ) AND rel_type<>('adresser'::ItsystemRelationKode )) ,-- no overlapping virkning except for 0..n --relations
     CONSTRAINT itsystem_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
 );
+ALTER TABLE itsystem_relation
+  OWNER TO mox;
 
 
 
@@ -24797,6 +24813,8 @@ CREATE TABLE klasse_relation (
     CONSTRAINT klasse_relation_no_virkning_overlap EXCLUDE USING gist (klasse_registrering_id WITH =, _as_convert_klasse_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('redaktoerer'::KlasseRelationKode ) AND rel_type<>('sideordnede'::KlasseRelationKode ) AND rel_type<>('mapninger'::KlasseRelationKode ) AND rel_type<>('tilfoejelser'::KlasseRelationKode ) AND rel_type<>('erstatter'::KlasseRelationKode ) AND rel_type<>('lovligekombinationer'::KlasseRelationKode )) ,-- no overlapping virkning except for 0..n --relations
     CONSTRAINT klasse_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
 );
+ALTER TABLE klasse_relation
+  OWNER TO mox;
 
 
 
@@ -28009,6 +28027,8 @@ CREATE TABLE klassifikation_relation (
     CONSTRAINT klassifikation_relation_no_virkning_overlap EXCLUDE USING gist (klassifikation_registrering_id WITH =, _as_convert_klassifikation_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&) ,-- no overlapping virkning except for 0..n --relations
     CONSTRAINT klassifikation_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
 );
+ALTER TABLE klassifikation_relation
+  OWNER TO mox;
 
 
 
@@ -30960,6 +30980,8 @@ CREATE TABLE loghaendelse_relation (
     CONSTRAINT loghaendelse_relation_no_virkning_overlap EXCLUDE USING gist (loghaendelse_registrering_id WITH =, _as_convert_loghaendelse_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&) ,-- no overlapping virkning except for 0..n --relations
     CONSTRAINT loghaendelse_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
 );
+ALTER TABLE loghaendelse_relation
+  OWNER TO mox;
 
 
 
@@ -33929,6 +33951,8 @@ CREATE TABLE organisation_relation (
     CONSTRAINT organisation_relation_no_virkning_overlap EXCLUDE USING gist (organisation_registrering_id WITH =, _as_convert_organisation_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('adresser'::OrganisationRelationKode ) AND rel_type<>('ansatte'::OrganisationRelationKode ) AND rel_type<>('opgaver'::OrganisationRelationKode ) AND rel_type<>('tilknyttedebrugere'::OrganisationRelationKode ) AND rel_type<>('tilknyttedeenheder'::OrganisationRelationKode ) AND rel_type<>('tilknyttedefunktioner'::OrganisationRelationKode ) AND rel_type<>('tilknyttedeinteressefaellesskaber'::OrganisationRelationKode ) AND rel_type<>('tilknyttedeorganisationer'::OrganisationRelationKode ) AND rel_type<>('tilknyttedepersoner'::OrganisationRelationKode ) AND rel_type<>('tilknyttedeitsystemer'::OrganisationRelationKode )) ,-- no overlapping virkning except for 0..n --relations
     CONSTRAINT organisation_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
 );
+ALTER TABLE organisation_relation
+  OWNER TO mox;
 
 
 
@@ -36754,6 +36778,8 @@ CREATE TABLE organisationenhed_relation (
     CONSTRAINT organisationenhed_relation_no_virkning_overlap EXCLUDE USING gist (organisationenhed_registrering_id WITH =, _as_convert_organisationenhed_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('adresser'::OrganisationenhedRelationKode ) AND rel_type<>('ansatte'::OrganisationenhedRelationKode ) AND rel_type<>('opgaver'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedebrugere'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedeenheder'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedefunktioner'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedeinteressefaellesskaber'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedeorganisationer'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedepersoner'::OrganisationenhedRelationKode ) AND rel_type<>('tilknyttedeitsystemer'::OrganisationenhedRelationKode )) ,-- no overlapping virkning except for 0..n --relations
     CONSTRAINT organisationenhed_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
 );
+ALTER TABLE organisationenhed_relation
+  OWNER TO mox;
 
 
 
@@ -39579,6 +39605,8 @@ CREATE TABLE organisationfunktion_relation (
     CONSTRAINT organisationfunktion_relation_no_virkning_overlap EXCLUDE USING gist (organisationfunktion_registrering_id WITH =, _as_convert_organisationfunktion_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('adresser'::OrganisationfunktionRelationKode ) AND rel_type<>('opgaver'::OrganisationfunktionRelationKode ) AND rel_type<>('tilknyttedebrugere'::OrganisationfunktionRelationKode ) AND rel_type<>('tilknyttedeenheder'::OrganisationfunktionRelationKode ) AND rel_type<>('tilknyttedeorganisationer'::OrganisationfunktionRelationKode ) AND rel_type<>('tilknyttedeitsystemer'::OrganisationfunktionRelationKode ) AND rel_type<>('tilknyttedeinteressefaellesskaber'::OrganisationfunktionRelationKode ) AND rel_type<>('tilknyttedepersoner'::OrganisationfunktionRelationKode )) ,-- no overlapping virkning except for 0..n --relations
     CONSTRAINT organisationfunktion_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
 );
+ALTER TABLE organisationfunktion_relation
+  OWNER TO mox;
 
 
 
@@ -42551,6 +42579,8 @@ CREATE TABLE sag_relation (
     CONSTRAINT sag_relation_journal_dok_attr_only_vedlagtdok_tilakteretdok CHECK (journal_dokument_attr IS NULL OR rel_type_spec IN ('vedlagtdokument'::SagRelationJournalPostSpecifikKode,'tilakteretdokument'::SagRelationJournalPostSpecifikKode)),
     CONSTRAINT sag_journal_notat_only_for_notat_type CHECK (journal_notat IS NULL OR rel_type_spec='journalnotat' )
 );
+ALTER TABLE sag_relation
+  OWNER TO mox;
 
 
 
@@ -45934,6 +45964,8 @@ CREATE TABLE tilstand_relation (
     CONSTRAINT tilstand_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>''))),
     CONSTRAINT tilstand_relation_nominel_vaerdi_relevant_null_check CHECK (tilstand_vaerdi_attr IS NULL OR rel_type='tilstandsvaerdi')
 );
+ALTER TABLE tilstand_relation
+  OWNER TO mox;
 
 
 
