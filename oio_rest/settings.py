@@ -20,6 +20,8 @@ DB_PASSWORD = getenv('DB_PASS', 'mox')
 DB_MIN_CONNECTIONS = int(getenv('DB_MIN_CONNECTIONS', '0'))
 DB_MAX_CONNECTIONS = int(getenv('DB_MAX_CONNECTIONS', '10'))
 
+DB_STRUCTURE_MODULE = getenv('DB_STRUCTURE_MODULE', 'oio_common.db_structure')
+
 # This is where file uploads are stored. It must be readable and writable by
 # the mox user, running the REST API server. This is used in the Dokument
 # hierarchy.

@@ -20,34 +20,11 @@ export PGPASSWORD="$MOX_DB_PASSWORD"
 # TODO: Support remote $SUPER_USER DB server
 #export PGHOST="$MOX_DB_HOST"
 
-sudo -u postgres createdb $MOX_DB
-sudo -u postgres createuser $MOX_DB_USER
-sudo -u postgres psql -c "ALTER USER $MOX_DB_USER WITH PASSWORD '$MOX_DB_PASSWORD';"
-sudo -u postgres psql -c "GRANT ALL ON DATABASE $MOX_DB TO $MOX_DB_USER"
-sudo -u postgres psql -d $MOX_DB -f basis/dbserver_prep.sql
-
-psql -d $MOX_DB -U $MOX_DB_USER -c "CREATE SCHEMA actual_state AUTHORIZATION $MOX_DB_USER "
-sudo -u postgres psql -c "ALTER database $MOX_DB SET search_path TO actual_state,public;"
-sudo -u postgres psql -c "ALTER database $MOX_DB SET DATESTYLE to 'ISO, YMD';"
-sudo -u postgres psql -c "ALTER database $MOX_DB SET INTERVALSTYLE to 'sql_standard';"
-
-psql -d $MOX_DB -U $MOX_DB_USER -c "CREATE SCHEMA test AUTHORIZATION $MOX_DB_USER "
-psql -d $MOX_DB -U $MOX_DB_USER -f basis/common_types.sql
-psql -d $MOX_DB -U $MOX_DB_USER -f funcs/pre/_index_helper_funcs.sql
-psql -d $MOX_DB -U $MOX_DB_USER -f funcs/pre/_subtract_tstzrange.sql
-psql -d $MOX_DB -U $MOX_DB_USER -f funcs/pre/_subtract_tstzrange_arr.sql
-psql -d $MOX_DB -U $MOX_DB_USER -f funcs/pre/_as_valid_registrering_livscyklus_transition.sql
-psql -d $MOX_DB -U $MOX_DB_USER -f funcs/pre/_as_search_match_array.sql
-psql -d $MOX_DB -U $MOX_DB_USER -f funcs/pre/_as_search_ilike_array.sql
-psql -d $MOX_DB -U $MOX_DB_USER -f funcs/pre/_json_object_delete_keys.sql
-psql -d $MOX_DB -U $MOX_DB_USER -f funcs/pre/_create_notify.sql
+sudo -u postgres psql <<EOF
+CREATE USER $MOX_DB_USER WITH PASSWORD '$MOX_DB_PASSWORD';
+CREATE DATABASE $MOX_DB WITH OWNER '$MOX_DB_USER';
+EOF
 
 cd ./db-templating/
-LC_ALL=C.UTF-8 $PYTHON ../../oio_rest/apply-templates.py | psql -d $MOX_DB -U $MOX_DB_USER
-
-
-#Extra functions depending on templated data types 
-psql -d $MOX_DB -U $MOX_DB_USER -f ../funcs/post/_ensure_document_del_exists_and_get.sql
-psql -d $MOX_DB -U $MOX_DB_USER -f ../funcs/post/_ensure_document_variant_exists_and_get.sql
-psql -d $MOX_DB -U $MOX_DB_USER -f ../funcs/post/_ensure_document_variant_and_del_exists_and_get_del.sql
-psql -d $MOX_DB -U $MOX_DB_USER -f ../funcs/post/_as_list_dokument_varianter.sql
+exec $PYTHON -m oio_rest.db_layout \
+    | sudo -u postgres psql -v ON_ERROR_STOP=1 -d $MOX_DB

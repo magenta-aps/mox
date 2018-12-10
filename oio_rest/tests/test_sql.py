@@ -7,6 +7,7 @@ import sys
 import tap.parser
 
 from oio_rest.utils import test_support
+from oio_rest import db_layout
 import settings
 from tests import util
 
@@ -66,15 +67,11 @@ class SQLTests(util.TestCase):
         expected_path = pathlib.Path(SQL_FIXTURE)
         actual_path = expected_path.with_name(expected_path.name + '.new')
 
-        subprocess.check_call(
-            [
-                sys.executable,
-                os.path.join(util.BASE_DIR, 'apply-templates.py'),
-                '-o', str(actual_path),
-            ],
+        actual_path.write_text(
+            '\n'.join(db_layout.render_templates('oio_common.db_structure')),
         )
 
-        self.assertMultiLineEqual(
+        self.assertEqual(
             expected_path.read_text(),
             actual_path.read_text(),
             'contents changed -- new dump is in {}'.format(actual_path),

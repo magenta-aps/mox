@@ -11,18 +11,17 @@
         $ ./apply-template.py  # from a Python 3 environment
 """
 
-import importlib
-import sys
 from collections import OrderedDict
-import copy
 from pathlib import Path
+import copy
+import importlib
 
-import click
 from jinja2 import Environment, FileSystemLoader
 
+import settings
 
-DIR = (Path(__file__).absolute().parent.parent / "db" / "db-templating")
-TEMPLATE_DIR = DIR / "templates"
+DB_DIR = Path(__file__).absolute().parent.parent.parent / "db"
+TEMPLATE_DIR = DB_DIR / "db-templating" / "templates"
 
 TEMPLATES = (
     "dbtyper-specific",
@@ -41,18 +40,7 @@ TEMPLATES = (
 )
 
 
-@click.option('-o', '--output', type=click.File('w'), default='-',
-              help='store output in the given file rather than stdout')
-@click.option('-m', '--module-name',
-              help='module to read settings from',
-              default='oio_common.db_structure',
-              envvar='APPLY_TEMPLATES_MODULE',
-              show_default=True,
-              show_envvar=True)
-@click.command(context_settings={
-    'help_option_names': ['-h', '--help'],
-})
-def main(output, module_name):
+def render_templates(module_name):
     structmod = importlib.import_module(module_name)
 
     template_env = Environment(loader=FileSystemLoader([str(TEMPLATE_DIR)]))
@@ -71,7 +59,6 @@ def main(output, module_name):
             context["tilstande"] = OrderedDict(context["tilstande"])
             context["attributter"] = OrderedDict(context["attributter"])
             context["oio_type"] = oio_type.lower()
-            # create version of 'tilstande' and 'attributter' in reverse order
 
             try:
                 context["include_mixin"] = (
@@ -81,9 +68,31 @@ def main(output, module_name):
             except KeyError:
                 context["include_mixin"] = "empty.jinja"
 
-            template.stream(context).dump(output)
-            output.write('\n')
+            yield template.render(context)
+
+
+def get_sql():
+    yield 'CREATE SCHEMA actual_state AUTHORIZATION {user};'.format(
+        user=settings.DB_USER,
+    )
+    yield '''
+    ALTER database {db} SET search_path TO actual_state, public;
+    ALTER database {db} SET DATESTYLE to 'ISO, YMD';
+    ALTER database {db} SET INTERVALSTYLE to 'sql_standard';
+    '''.format(db=settings.DATABASE)
+
+    for dirp in (
+        DB_DIR / "basis",
+        DB_DIR / "funcs" / "pre",
+        None,  # placeholder: put the templates here
+        DB_DIR / "funcs" / "post",
+    ):
+        if dirp is None:
+            yield from render_templates(settings.DB_STRUCTURE_MODULE)
+        else:
+            for p in dirp.glob('*.sql'):
+                yield p.read_text()
 
 
 if __name__ == '__main__':
-    main()
+    print('\n'.join(get_sql()))
