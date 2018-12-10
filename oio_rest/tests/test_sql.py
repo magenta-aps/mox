@@ -1,12 +1,16 @@
 import os
+import pathlib
 import re
 import subprocess
+import sys
 
 import tap.parser
 
 from oio_rest.utils import test_support
 import settings
 from tests import util
+
+SQL_FIXTURE = os.path.join(util.FIXTURE_DIR, 'db-dump.sql')
 
 
 class SQLTests(util.TestCase):
@@ -57,3 +61,21 @@ class SQLTests(util.TestCase):
                     elif not result.ok:
                         self.fail(result.diagnostics or
                                   result.description)
+
+    def test_sql_unchanged(self):
+        expected_path = pathlib.Path(SQL_FIXTURE)
+        actual_path = expected_path.with_name(expected_path.name + '.new')
+
+        subprocess.check_call(
+            [
+                sys.executable,
+                os.path.join(util.BASE_DIR, 'apply-templates.py'),
+                '-o', str(actual_path),
+            ],
+        )
+
+        self.assertMultiLineEqual(
+            expected_path.read_text(),
+            actual_path.read_text(),
+            'contents changed -- new dump is in {}'.format(actual_path),
+        )

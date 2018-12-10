@@ -43,20 +43,7 @@ psql -d $MOX_DB -U $MOX_DB_USER -f funcs/pre/_json_object_delete_keys.sql
 psql -d $MOX_DB -U $MOX_DB_USER -f funcs/pre/_create_notify.sql
 
 cd ./db-templating/
-LC_ALL=C.UTF-8 $PYTHON ../../oio_rest/apply-templates.py
-
-oiotypes=$($PYTHON -m oio_common.db_structure)
-
-templates1=( dbtyper-specific tbls-specific _remove_nulls_in_array )
-
-
-for oiotype in $oiotypes
-do
-	for template in "${templates1[@]}"
-	do
-		psql -d $MOX_DB -U $MOX_DB_USER -f ./generated-files/${template}_${oiotype}.sql
-	done	
-done
+LC_ALL=C.UTF-8 $PYTHON ../../oio_rest/apply-templates.py | psql -d $MOX_DB -U $MOX_DB_USER
 
 
 #Extra functions depending on templated data types 
@@ -64,17 +51,3 @@ psql -d $MOX_DB -U $MOX_DB_USER -f ../funcs/post/_ensure_document_del_exists_and
 psql -d $MOX_DB -U $MOX_DB_USER -f ../funcs/post/_ensure_document_variant_exists_and_get.sql
 psql -d $MOX_DB -U $MOX_DB_USER -f ../funcs/post/_ensure_document_variant_and_del_exists_and_get_del.sql
 psql -d $MOX_DB -U $MOX_DB_USER -f ../funcs/post/_as_list_dokument_varianter.sql
-
-
-templates2=(  _as_get_prev_registrering _as_create_registrering as_update  as_create_or_import  as_list as_read as_search json-cast-functions _as_sorted _as_filter_unauth )
-
-
-for oiotype in $oiotypes
-do
-	for template in "${templates2[@]}"
-	do
-		psql -d $MOX_DB -U $MOX_DB_USER -f ./generated-files/${template}_${oiotype}.sql
-	done	
-done
-
-cd ..

@@ -1,6 +1,10 @@
 Working with database templates and patches for Magenta's OIO/REST framework
 ============================================================================
 
+.. ATTENTION::
+   This documentation is outdated; We no longer rely on patches and
+   generated files!
+
 The tables, indexes, datatypes and functions in the database of
 Magenta's Mox/LoRa-actual state server are generated when the
 `recreatedb.sh` script is executed. 

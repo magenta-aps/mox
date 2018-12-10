@@ -81,7 +81,6 @@ def _get_db_setup_sql():
     yield subprocess.check_output([
         sys.executable,
         os.path.join(BASE_DIR, 'apply-templates.py'),
-        '-w',
     ]).decode('utf-8')
 
     for filename in list_db_sql('funcs/post'):

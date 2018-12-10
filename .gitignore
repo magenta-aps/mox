@@ -26,6 +26,7 @@ servlets/MoxDocumentUpload/web/WEB-INF/web.xml
 oio_rest/oio_rest/settings.py
 oio_rest/server-setup/oio_rest.conf
 oio_rest/server-setup/oio_rest.wsgi
+/oio_rest/tests/fixtures/db-dump.sql.new
 variables.sh
 mox.conf
 apache/mox.conf

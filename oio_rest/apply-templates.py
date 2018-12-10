@@ -21,9 +21,8 @@ import click
 from jinja2 import Environment, FileSystemLoader
 
 
-DIR = Path(__file__).parent / ".." / "db" / "db-templating"
+DIR = (Path(__file__).absolute().parent.parent / "db" / "db-templating")
 TEMPLATE_DIR = DIR / "templates"
-BUILD_DIR = DIR / "generated-files"
 
 TEMPLATES = (
     "dbtyper-specific",
@@ -42,9 +41,8 @@ TEMPLATES = (
 )
 
 
-@click.option('-w', '--write-to-stdout', is_flag=True,
-              help='write to standard output rather than {}'
-              .format(BUILD_DIR))
+@click.option('-o', '--output', type=click.File('w'), default='-',
+              help='store output in the given file rather than stdout')
 @click.option('-m', '--module-name',
               help='module to read settings from',
               default='oio_common.db_structure',
@@ -54,7 +52,7 @@ TEMPLATES = (
 @click.command(context_settings={
     'help_option_names': ['-h', '--help'],
 })
-def main(write_to_stdout, module_name):
+def main(output, module_name):
     structmod = importlib.import_module(module_name)
 
     template_env = Environment(loader=FileSystemLoader([str(TEMPLATE_DIR)]))
@@ -89,21 +87,8 @@ def main(write_to_stdout, module_name):
             except KeyError:
                 context["include_mixin"] = "empty.jinja"
 
-            sqltext = template.render(context) + '\n'
-
-            if write_to_stdout:
-                sys.stdout.write(sqltext)
-
-            else:
-                generated_file = BUILD_DIR / ("%s_%s.sql" % (template_name, oio_type))
-                tmp_file = generated_file.with_name(generated_file.name + '~')
-
-                tmp_file.write_text(sqltext)
-
-                try:
-                    tmp_file.rename(generated_file)
-                except IOError:
-                    tmp_file.delete()
+            template.stream(context).dump(output)
+            output.write('\n')
 
 
 if __name__ == '__main__':
