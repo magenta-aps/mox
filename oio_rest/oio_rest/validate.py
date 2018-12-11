@@ -1,7 +1,7 @@
 import copy
 import jsonschema
 
-import oio_common.db_structure as db
+import settings
 
 # A very nice reference explaining the JSON schema syntax can be found
 # here: https://spacetelescope.github.io/understanding-json-schema/
@@ -89,7 +89,7 @@ def _get_metadata(obj, metadata_type, key):
     :param key: The attribute to get the metadata from, e.g. 'egenskaber'
     :return: Dictionary containing the metadata for the attribute fields
     """
-    metadata = db.REAL_DB_STRUCTURE[obj].get(
+    metadata = settings.REAL_DB_STRUCTURE[obj].get(
         '{}_metadata'.format(metadata_type), [])
     if not metadata:
         return metadata
@@ -139,7 +139,7 @@ def _generate_attributter(obj):
     :return: Dictionary representing the 'attributter' part of the JSON schema.
     """
 
-    db_attributter = db.REAL_DB_STRUCTURE[obj]['attributter']
+    db_attributter = settings.REAL_DB_STRUCTURE[obj]['attributter']
 
     egenskaber_name = '{}egenskaber'.format(obj)
     egenskaber = {
@@ -169,7 +169,7 @@ def _generate_tilstande(obj):
     :return: Dictionary representing the 'tilstande' part of the JSON schema.
     """
 
-    tilstande = dict(db.REAL_DB_STRUCTURE[obj]['tilstande'])
+    tilstande = dict(settings.REAL_DB_STRUCTURE[obj]['tilstande'])
 
     properties = {}
     required = []
@@ -222,8 +222,10 @@ def _handle_relation_metadata_specific(obj, relation_schema):
     :return: Dictionary representing the updated 'relationer' part of
     the JSON schema.
     """
-    metadata_specific = db.REAL_DB_STRUCTURE[obj].get('relationer_metadata',
-                                                      [])
+    metadata_specific = (
+        settings.REAL_DB_STRUCTURE[obj].get('relationer_metadata', [])
+    )
+
     for relation in [key for key in metadata_specific if not key == '*']:
         for i in range(2):
             properties = relation_schema[relation]['items']['oneOf'][i][
@@ -259,8 +261,9 @@ def _generate_relationer(obj):
     :param obj: The type of LoRa object, i.e. 'bruger', 'organisation' etc.
     :return: Dictionary representing the 'relationer' part of the JSON schema.
     """
-    relationer_nul_til_en = db.REAL_DB_STRUCTURE[obj]['relationer_nul_til_en']
-    relationer_nul_til_mange = db.REAL_DB_STRUCTURE[obj][
+    relationer_nul_til_en = \
+        settings.REAL_DB_STRUCTURE[obj]['relationer_nul_til_en']
+    relationer_nul_til_mange = settings.REAL_DB_STRUCTURE[obj][
         'relationer_nul_til_mange']
 
     relation_nul_til_mange = _generate_schema_array(
@@ -364,7 +367,7 @@ def get_lora_object_type(req):
     if not len(req['attributter']) == 1:
         raise jsonschema.exceptions.ValidationError('ups')
     if not list(req['attributter'].keys())[0] in [key + 'egenskaber' for key in
-                                                  db.REAL_DB_STRUCTURE.keys()]:
+                                                  settings.REAL_DB_STRUCTURE.keys()]:
         raise jsonschema.exceptions.ValidationError('ups2')
 
     return list(req['attributter'].keys())[0].split('egenskaber')[0]
@@ -426,7 +429,7 @@ def generate_json_schema(obj):
 
 SCHEMA = {
     obj: copy.deepcopy(generate_json_schema(obj))
-    for obj in db.REAL_DB_STRUCTURE.keys()
+    for obj in settings.REAL_DB_STRUCTURE.keys()
 }
 
 # Due to an inconsistency between the way LoRa handles

@@ -40,17 +40,18 @@ TEMPLATES = (
 )
 
 
-def render_templates(module_name):
-    structmod = importlib.import_module(module_name)
-
+def render_templates():
     template_env = Environment(loader=FileSystemLoader([str(TEMPLATE_DIR)]))
 
-    for oio_type in sorted(structmod.DATABASE_STRUCTURE):
+    db_structure = settings.DB_STRUCTURE.DATABASE_STRUCTURE
+    extra_options = settings.DB_STRUCTURE.DB_TEMPLATE_EXTRA_OPTIONS
+
+    for oio_type in sorted(db_structure):
         for template_name in TEMPLATES:
             template_file = "%s.jinja.sql" % template_name
             template = template_env.get_template(template_file)
 
-            context = copy.deepcopy(structmod.DATABASE_STRUCTURE[oio_type])
+            context = copy.deepcopy(db_structure[oio_type])
             context["script_signature"] = "apply-template.py %s %s" % (
                 oio_type,
                 template_file,
@@ -62,8 +63,7 @@ def render_templates(module_name):
 
             try:
                 context["include_mixin"] = (
-                    structmod.DB_TEMPLATE_EXTRA_OPTIONS
-                    [oio_type][template_file]["include_mixin"]
+                    extra_options[oio_type][template_file]["include_mixin"]
                 )
             except KeyError:
                 context["include_mixin"] = "empty.jinja"
@@ -88,7 +88,7 @@ def get_sql():
         DB_DIR / "funcs" / "post",
     ):
         if dirp is None:
-            yield from render_templates(settings.DB_STRUCTURE_MODULE)
+            yield from render_templates()
         else:
             for p in dirp.glob('*.sql'):
                 yield p.read_text()

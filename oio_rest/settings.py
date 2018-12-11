@@ -1,5 +1,6 @@
 # -*- python -*-
 
+from importlib import import_module
 from os import getenv
 
 import json
@@ -20,7 +21,9 @@ DB_PASSWORD = getenv('DB_PASS', 'mox')
 DB_MIN_CONNECTIONS = int(getenv('DB_MIN_CONNECTIONS', '0'))
 DB_MAX_CONNECTIONS = int(getenv('DB_MAX_CONNECTIONS', '10'))
 
-DB_STRUCTURE_MODULE = getenv('DB_STRUCTURE_MODULE', 'oio_common.db_structure')
+DB_STRUCTURE = import_module(getenv('DB_STRUCTURE',
+                                    'oio_common.db_structure'))
+REAL_DB_STRUCTURE = DB_STRUCTURE.REAL_DB_STRUCTURE
 
 # This is where file uploads are stored. It must be readable and writable by
 # the mox user, running the REST API server. This is used in the Dokument

@@ -19,7 +19,7 @@ from .custom_exceptions import GoneException
 # Just a helper during debug
 from .authentication import requires_auth
 
-from oio_common import db_structure
+import settings
 
 
 def j(t):
@@ -135,7 +135,7 @@ class OIOStandardHierarchy(object):
         classes_url = "{0}/{1}/{2}".format(base_url, hierarchy, "classes")
 
         def get_classes():
-            structure = db_structure.REAL_DB_STRUCTURE
+            structure = settings.REAL_DB_STRUCTURE
             clsnms = [c.__name__.lower() for c in cls._classes]
             hierarchy_dict = {c: structure[c] for c in clsnms}
             return jsonify(hierarchy_dict)
@@ -437,7 +437,7 @@ class OIORestObject(object):
         cls.verify_args()
 
         """Set up API with correct database access functions."""
-        structure = db_structure.REAL_DB_STRUCTURE
+        structure = settings.REAL_DB_STRUCTURE
         class_key = cls.__name__.lower()
         # TODO: Perform some transformations to improve readability.
         class_dict = structure[class_key]

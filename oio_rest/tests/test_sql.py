@@ -67,9 +67,7 @@ class SQLTests(util.TestCase):
         expected_path = pathlib.Path(SQL_FIXTURE)
         actual_path = expected_path.with_name(expected_path.name + '.new')
 
-        actual_path.write_text(
-            '\n'.join(db_layout.render_templates('oio_common.db_structure')),
-        )
+        actual_path.write_text('\n'.join(db_layout.render_templates()))
 
         self.assertEqual(
             expected_path.read_text(),

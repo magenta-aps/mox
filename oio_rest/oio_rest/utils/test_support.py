@@ -99,11 +99,9 @@ class TestCaseMixin(object):
                 yield curs
 
     def reset_db(self):
-        from oio_common.db_structure import DATABASE_STRUCTURE
-
         with self.db_cursor() as curs:
             curs.execute("TRUNCATE TABLE {} RESTART IDENTITY CASCADE".format(
-                ', '.join(sorted(DATABASE_STRUCTURE)),
+                ', '.join(sorted(settings.DB_STRUCTURE.DATABASE_STRUCTURE)),
             ))
 
     # for compatibility :-/
