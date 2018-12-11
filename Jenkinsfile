@@ -41,8 +41,10 @@ pipeline {
           timeout(5) {
             sh 'backend/.jenkins/1-build.sh'
 
-            // kind of horrible, but works
-            sh 'echo $WORKSPACE/oio_rest > backend/venv/lib/python3.5/site-packages/oio_rest.egg-link'
+            // kind of horrible, but works -- and make sure that we
+            // _never_ use the pip installed one
+            sh 'backend/venv/bin/pip install -e "$WORKSPACE/oio_rest"'
+            sh 'rm -rf backend/venv/src/oio-rest'
           }
         }
       }

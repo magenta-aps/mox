@@ -12,10 +12,10 @@ import functools
 import glob
 import os
 import shutil
+import subprocess
 import sys
 
 import click
-import flask_testing
 import mock
 import testing.postgresql
 import psycopg2.pool
@@ -47,98 +47,46 @@ def list_db_sql(dirname):
     return glob.glob(os.path.join(TOP_DIR, 'db', dirname, '*.sql'))
 
 
-def _get_db_setup_sql(db_name, db_user):
+def _get_db_setup_sql():
     """Return the postgresql + pl/pgsql code necessary for our database
     to work.
 
     Brave souls can find db/mkdb.sh in the git history to see what this
     function replaces."""
 
-    init = """
+    yield '''
     GRANT ALL ON DATABASE "{db_name}" TO "{db_user}";
+    '''.format(db_name=settings.DATABASE,
+               db_user=settings.DB_USER)
 
+    with open(os.path.join(TOP_DIR, "db", "basis", "dbserver_prep.sql")) as fp:
+        yield fp.read()
+
+    yield '''
     CREATE SCHEMA actual_state AUTHORIZATION "{db_user}";
 
     ALTER DATABASE "{db_name}" SET search_path TO actual_state,public;
     ALTER DATABASE "{db_name}" SET DATESTYLE to 'ISO, YMD';
     ALTER DATABASE "{db_name}" SET INTERVALSTYLE to 'sql_standard';
+    '''.format(db_name=settings.DATABASE,
+               db_user=settings.DB_USER)
 
-    CREATE SCHEMA test AUTHORIZATION "{db_user}";
-    """.format(db_name=db_name, db_user=db_user)
+    with open(os.path.join(TOP_DIR, "db", "basis", "common_types.sql")) as fp:
+        yield fp.read()
 
+    for filename in list_db_sql('funcs/pre'):
+        with open(filename) as fp:
+            yield fp.read()
 
-    # <mess>
-    # this mess is necessary because the db relies on a particular order
-    # first its needs a bunch of functions "funcs1"
-    # then it needs some of the templates "templates1"
-    # then the remaining functions "funcs2"
-    # and finally "templates1"
+    yield subprocess.check_output([
+        sys.executable,
+        os.path.join(BASE_DIR, 'apply-templates.py'),
+        '-w',
+    ]).decode('utf-8')
 
-    # 5$ to anyone who can come up with a better way to express our
-    #     dependency graph...
-    template1_types = [
-        "dbtyper-specific",
-        "tbls-specific",
-        "_remove_nulls_in_array",
-    ]
-    template2_types = [
-        "_as_get_prev_registrering",
-        "_as_create_registrering",
-        "as_update",
-        "as_create_or_import",
-        "as_list",
-        "as_read",
-        "as_search",
-        "json-cast-functions",
-        "_as_sorted",
-        "_as_filter_unauth",
-    ]
-    def template_sort_key(template_name):
-        for i, template_type in enumerate(template1_types + template2_types):
-            if template_type in template_name:
-                return i, template_name
-        raise ValueError("template name invalid: ", template_name)
-
-    def is_template1(template):
-        for template_type in template1_types:
-            if template_type in template:
-                return True
-        return False
-
-    templates = list_db_sql("db-templating/generated-files")
-    templates1 = list(filter(is_template1, templates))
-    templates2 = list(set(templates) ^ set(templates1))
-    templates1.sort(key=template_sort_key)
-    templates2.sort(key=template_sort_key)
-    funcs1 = [
-        os.path.join(TOP_DIR, "db/funcs/_index_helper_funcs.sql"),
-        os.path.join(TOP_DIR, "db/funcs/_subtract_tstzrange.sql"),
-        os.path.join(TOP_DIR, "db/funcs/_subtract_tstzrange_arr.sql"),
-        os.path.join(TOP_DIR, "db/funcs/_as_valid_registrering_livscyklus_transition.sql"),
-        os.path.join(TOP_DIR, "db/funcs/_as_search_match_array.sql"),
-        os.path.join(TOP_DIR, "db/funcs/_as_search_ilike_array.sql"),
-        os.path.join(TOP_DIR, "db/funcs/_json_object_delete_keys.sql"),
-        os.path.join(TOP_DIR, "db/funcs/_create_notify.sql"),
-    ]
-    funcs2 = list(set(list_db_sql('funcs')) ^ set(funcs1))
-    funcs2.sort()
-
-    files = [
-        *list_db_sql('basis'),
-        *funcs1,
-        *templates1,
-        *funcs2,
-        *templates2,
-    ]
-    # </mess>
-
-    assert sorted(files) == sorted(set(files)), 'duplicates!!!!'
-
-    file_contents = []
-    for filename in files:
-        with open(filename, 'rt') as f:
-            file_contents.append(f.read())
-    return init + '\n'.join(file_contents)
+    for filename in list_db_sql('funcs/post'):
+        with open(filename) as fp:
+            yield fp.read()
 
 
 def _initdb():
@@ -154,8 +102,6 @@ def _initdb():
                 settings.DATABASE, settings.DB_PASSWORD,
             ))
 
-    sql = _get_db_setup_sql(settings.DATABASE, settings.DB_USER)
-
     with psycopg2.connect(psql().url(
             database=settings.DATABASE,
             user=settings.DB_USER,
@@ -164,7 +110,8 @@ def _initdb():
         conn.autocommit = True
 
         with conn.cursor() as curs:
-            curs.execute(sql)
+            for chunk in _get_db_setup_sql():
+                curs.execute(chunk)
 
 
 class TestCaseMixin(object):
