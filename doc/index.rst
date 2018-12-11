@@ -16,7 +16,6 @@ Welcome to the LoRa MOX documentation!
    API-NOTES.rst
    praesentation.rst
    log_haendelse.rst
-   database_changes.rst
    Systematic_testing.rst
 
 

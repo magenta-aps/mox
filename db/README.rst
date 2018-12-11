@@ -12,8 +12,32 @@ You can run the database tests with the following command::
 
     $ pg_prove --dbname mox --username mox --schema test
 
-The tests are run by Jenkins.
+Alternatively, you can run them within the Python test harness::
 
-The tests are written in `PL/pgSQL` and located in `tests/`. They are
-written in the `pgTAP` framework. More info can be found at
-https://pgtap.org and http://testanything.org.
+    (python-env) $ python -m unittest -vbf tests.test_sql
+
+The tests are written in ``PL/pgSQL`` using the `pgTAP
+<https://pgtap.org>`_ framework and located in ``tests/``.
+
+Templates
+=========
+
+We generate many PostgreSQL files from Jinja2 templates, located
+within the ``db-templating`` folder.
+
+To generate the files, you have to run the ``apply-templates.py`` script
+located in ``../oio_rest/``.
+
+- ``./templates/`` contains the jinja2 templates.
+- ``../oio_rest/tests/fixtures/db-dump.sql`` contains an up-to-date
+  version of the output.
+
+After updating the templates, run the tests mentioned above. One of
+the tests compares the rendered templates to a fixture, and will fail
+if the changes affect the resulting SQL. To fix this, replace the old
+results with the new ones::
+
+  $ mv ../oio_rest/tests/fixtures/db-dump.sql.new \
+  >    ../oio_rest/tests/fixtures/db-dump.sql
+
+Then, inspect the changes using e.g. ``git diff``.
