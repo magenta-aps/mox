@@ -38,7 +38,7 @@ IF coalesce(array_length(registreringObjArr,1),0)=0 THEN
 	RETURN ARRAY[]::uuid[]; --special case: Nothing is allowed. Empty list of criteria where at least one has to be met.				
 END IF; 
 
-IF itsystem_uuids IS NULL OR  coalesce(array_length(itsystem_uuids,1),0)=0 THEN
+IF itsystem_uuids IS NULL OR coalesce(array_length(itsystem_uuids,1),0)=0 THEN
 	RETURN ARRAY[]::uuid[]; --special case: No candidates given to filter.
 END IF;
 
@@ -92,7 +92,7 @@ ELSE
 				(
 					attrEgenskaberTypeObj.konfigurationreference IS NULL
 					OR
-						( (coalesce(array_length(attrEgenskaberTypeObj.konfigurationreference,1),0)=0 AND coalesce(array_length(a.konfigurationreference,1),0)=0 ) OR (attrEgenskaberTypeObj.konfigurationreference @> a.konfigurationreference AND a.konfigurationreference @>attrEgenskaberTypeObj.konfigurationreference  )) 
+						((coalesce(array_length(attrEgenskaberTypeObj.konfigurationreference,1),0)=0 AND coalesce(array_length(a.konfigurationreference,1),0)=0 ) OR (attrEgenskaberTypeObj.konfigurationreference @> a.konfigurationreference AND a.konfigurationreference @>attrEgenskaberTypeObj.konfigurationreference  )) 
 				)
 				AND b.itsystem_id = ANY (itsystem_candidates)
 				AND (a.virkning).TimePeriod @> actual_virkning 
@@ -221,7 +221,6 @@ RETURN itsystem_passed_auth_filter;
 
 END;
 $$ LANGUAGE plpgsql STABLE; 
-
 
 
 

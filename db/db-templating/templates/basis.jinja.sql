@@ -10,4 +10,3 @@ NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.p
 */
 {% block body %}
 {% endblock %}
-

@@ -38,7 +38,7 @@ IF coalesce(array_length(registreringObjArr,1),0)=0 THEN
 	RETURN ARRAY[]::uuid[]; --special case: Nothing is allowed. Empty list of criteria where at least one has to be met.				
 END IF; 
 
-IF dokument_uuids IS NULL OR  coalesce(array_length(dokument_uuids,1),0)=0 THEN
+IF dokument_uuids IS NULL OR coalesce(array_length(dokument_uuids,1),0)=0 THEN
 	RETURN ARRAY[]::uuid[]; --special case: No candidates given to filter.
 END IF;
 
@@ -263,7 +263,6 @@ RETURN dokument_passed_auth_filter;
 
 END;
 $$ LANGUAGE plpgsql STABLE; 
-
 
 
 

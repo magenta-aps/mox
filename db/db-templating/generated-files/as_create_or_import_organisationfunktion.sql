@@ -9,86 +9,77 @@
 NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
-CREATE OR REPLACE FUNCTION as_create_or_import_organisationfunktion(
-  organisationfunktion_registrering OrganisationfunktionRegistreringType,
-  organisationfunktion_uuid uuid DEFAULT NULL,
-  auth_criteria_arr OrganisationfunktionRegistreringType[] DEFAULT NULL
-	)
-  RETURNS uuid AS 
-$$
-DECLARE
-  organisationfunktion_registrering_id bigint;
-  organisationfunktion_attr_egenskaber_obj organisationfunktionEgenskaberAttrType;
-  
-  organisationfunktion_tils_gyldighed_obj organisationfunktionGyldighedTilsType;
-  
-  organisationfunktion_relationer OrganisationfunktionRelationType;
-  
-  auth_filtered_uuids uuid[];
-  
-  does_exist boolean;
-  new_organisationfunktion_registrering organisationfunktion_registrering;
+
+CREATE OR REPLACE FUNCTION as_create_or_import_organisationfunktion (
+    organisationfunktion_registrering OrganisationfunktionRegistreringType,
+    organisationfunktion_uuid uuid DEFAULT NULL, auth_criteria_arr
+    OrganisationfunktionRegistreringType[] DEFAULT NULL) RETURNS uuid AS
+$$ DECLARE organisationfunktion_registrering_id bigint;
+
+    
+    organisationfunktion_attr_egenskaber_obj organisationfunktionEgenskaberAttrType;
+    
+
+    
+    organisationfunktion_tils_gyldighed_obj organisationfunktionGyldighedTilsType;
+    
+
+    organisationfunktion_relationer OrganisationfunktionRelationType;
+
+    
+
+    auth_filtered_uuids uuid[];
+
+    
+
+    does_exist boolean;
+    new_organisationfunktion_registrering organisationfunktion_registrering;
 BEGIN
+    IF organisationfunktion_uuid IS NULL THEN LOOP
+        organisationfunktion_uuid:=uuid_generate_v4(); EXIT WHEN NOT EXISTS (SELECT id
+            from organisationfunktion WHERE id=organisationfunktion_uuid); END LOOP; END IF;
 
-IF organisationfunktion_uuid IS NULL THEN
-    LOOP
-    organisationfunktion_uuid:=uuid_generate_v4();
-    EXIT WHEN NOT EXISTS (SELECT id from organisationfunktion WHERE id=organisationfunktion_uuid); 
-    END LOOP;
-END IF;
+    IF EXISTS (SELECT id from organisationfunktion WHERE id=organisationfunktion_uuid) THEN
+        does_exist = True; ELSE
 
+        does_exist = False; END IF;
 
-IF EXISTS (SELECT id from organisationfunktion WHERE id=organisationfunktion_uuid) THEN
-    does_exist = True;
-ELSE
+    IF
+        (organisationfunktion_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode
+        and
+        (organisationfunktion_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode
+        and
+        (organisationfunktion_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode
+        THEN RAISE EXCEPTION 'Invalid livscykluskode[%] invoking
+        as_create_or_import_organisationfunktion.',(organisationfunktion_registrering.registrering).livscykluskode
+        USING ERRCODE='MO400'; END IF;
 
-    does_exist = False;
-END IF;
+    IF NOT does_exist THEN INSERT INTO organisationfunktion (ID) SELECT
+        organisationfunktion_uuid; END IF;
 
-IF  (organisationfunktion_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (organisationfunktion_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (organisationfunktion_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_organisationfunktion.',(organisationfunktion_registrering.registrering).livscykluskode USING ERRCODE='MO400';
-END IF;
+    /*********************************/
+    --Insert new registrering
 
+    IF NOT does_exist THEN
+        organisationfunktion_registrering_id:=nextval('organisationfunktion_registrering_id_seq');
 
-IF NOT does_exist THEN
+        INSERT INTO organisationfunktion_registrering (id, organisationfunktion_id,
+            registrering) SELECT organisationfunktion_registrering_id,
+        organisationfunktion_uuid, ROW (
+            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+        (organisationfunktion_registrering.registrering).livscykluskode,
+        (organisationfunktion_registrering.registrering).brugerref,
+        (organisationfunktion_registrering.registrering).note):: RegistreringBase ;
+    ELSE
+        -- This is an update, not an import or create
+            new_organisationfunktion_registrering :=
+            _as_create_organisationfunktion_registrering(organisationfunktion_uuid,
+                (organisationfunktion_registrering.registrering).livscykluskode,
+                (organisationfunktion_registrering.registrering).brugerref,
+                (organisationfunktion_registrering.registrering).note);
 
-    INSERT INTO
-          organisationfunktion (ID)
-    SELECT
-          organisationfunktion_uuid;
-END IF;
-
-
-/*********************************/
---Insert new registrering
-
-IF NOT does_exist THEN
-    organisationfunktion_registrering_id:=nextval('organisationfunktion_registrering_id_seq');
-
-    INSERT INTO organisationfunktion_registrering (
-          id,
-          organisationfunktion_id,
-          registrering
-        )
-    SELECT
-          organisationfunktion_registrering_id,
-           organisationfunktion_uuid,
-           ROW (
-             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-             (organisationfunktion_registrering.registrering).livscykluskode,
-             (organisationfunktion_registrering.registrering).brugerref,
-             (organisationfunktion_registrering.registrering).note
-               ):: RegistreringBase ;
-ELSE
-    -- This is an update, not an import or create
-        new_organisationfunktion_registrering := _as_create_organisationfunktion_registrering(
-             organisationfunktion_uuid,
-             (organisationfunktion_registrering.registrering).livscykluskode,
-             (organisationfunktion_registrering.registrering).brugerref,
-             (organisationfunktion_registrering.registrering).note);
-
-        organisationfunktion_registrering_id := new_organisationfunktion_registrering.id;
-END IF;
+            organisationfunktion_registrering_id := new_organisationfunktion_registrering.id;
+    END IF;
 
 
 /*********************************/
@@ -99,10 +90,10 @@ END IF;
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
- 
-IF coalesce(array_length(organisationfunktion_registrering.attrEgenskaber, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [organisationfunktion]. Oprettelse afbrydes.' USING ERRCODE='MO400';
-END IF;
+
+IF coalesce(array_length(organisationfunktion_registrering.attrEgenskaber,
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    [organisationfunktion]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
 
@@ -136,7 +127,7 @@ END IF;
 
 --Verification
 --For now all declared states are mandatory.
-IF coalesce(array_length(organisationfunktion_registrering.tilsGyldighed, 1),0)<1  THEN
+IF coalesce(array_length(organisationfunktion_registrering.tilsGyldighed, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [gyldighed] for organisationfunktion. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
@@ -198,5 +189,4 @@ RETURN organisationfunktion_uuid;
 
 END;
 $$ LANGUAGE plpgsql VOLATILE;
-
 

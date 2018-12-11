@@ -10,16 +10,14 @@ NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.p
 */
 
 
-CREATE OR REPLACE FUNCTION _as_get_prev_organisation_registrering(organisation_registrering)
-  RETURNS organisation_registrering AS
-  $BODY$
-  SELECT  * FROM organisation_registrering as a WHERE
+CREATE OR REPLACE FUNCTION _as_get_prev_organisation_registrering(
+    organisation_registrering
+) RETURNS organisation_registrering AS $BODY$
+  SELECT * FROM organisation_registrering as a WHERE
     organisation_id = $1.organisation_id 
     AND UPPER((a.registrering).TimePeriod) = LOWER(($1.registrering).TimePeriod) 
     AND UPPER_INC((a.registrering).TimePeriod) <> LOWER_INC(($1.registrering).TimePeriod)
     LIMIT 1 --constraints on timeperiod will also ensure max 1 hit
-    $BODY$
-  LANGUAGE sql STABLE
-;
+$BODY$ LANGUAGE sql STABLE;
 
 

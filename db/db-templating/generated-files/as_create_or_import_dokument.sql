@@ -9,94 +9,85 @@
 NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
-CREATE OR REPLACE FUNCTION as_create_or_import_dokument(
-  dokument_registrering DokumentRegistreringType,
-  dokument_uuid uuid DEFAULT NULL,
-  auth_criteria_arr DokumentRegistreringType[] DEFAULT NULL
-	)
-  RETURNS uuid AS 
-$$
-DECLARE
-  dokument_registrering_id bigint;
-  dokument_attr_egenskaber_obj dokumentEgenskaberAttrType;
-  
-  dokument_tils_fremdrift_obj dokumentFremdriftTilsType;
-  
-  dokument_relationer DokumentRelationType;
-  
-  dokument_variant_obj DokumentVariantType;
-  dokument_variant_egenskab_obj DokumentVariantEgenskaberType;
-  dokument_del_obj DokumentDelType;
-  dokument_del_egenskaber_obj DokumentDelEgenskaberType;
-  dokument_del_relation_obj DokumentDelRelationType;
-  dokument_variant_new_id bigint;
-  dokument_del_new_id bigint;
-  
-  auth_filtered_uuids uuid[];
-  
-  does_exist boolean;
-  new_dokument_registrering dokument_registrering;
+
+CREATE OR REPLACE FUNCTION as_create_or_import_dokument (
+    dokument_registrering DokumentRegistreringType,
+    dokument_uuid uuid DEFAULT NULL, auth_criteria_arr
+    DokumentRegistreringType[] DEFAULT NULL) RETURNS uuid AS
+$$ DECLARE dokument_registrering_id bigint;
+
+    
+    dokument_attr_egenskaber_obj dokumentEgenskaberAttrType;
+    
+
+    
+    dokument_tils_fremdrift_obj dokumentFremdriftTilsType;
+    
+
+    dokument_relationer DokumentRelationType;
+
+    
+    dokument_variant_obj DokumentVariantType;
+    dokument_variant_egenskab_obj DokumentVariantEgenskaberType;
+    dokument_del_obj DokumentDelType;
+    dokument_del_egenskaber_obj DokumentDelEgenskaberType;
+    dokument_del_relation_obj DokumentDelRelationType;
+    dokument_variant_new_id bigint;
+    dokument_del_new_id bigint;
+    
+
+    auth_filtered_uuids uuid[];
+
+    
+
+    does_exist boolean;
+    new_dokument_registrering dokument_registrering;
 BEGIN
+    IF dokument_uuid IS NULL THEN LOOP
+        dokument_uuid:=uuid_generate_v4(); EXIT WHEN NOT EXISTS (SELECT id
+            from dokument WHERE id=dokument_uuid); END LOOP; END IF;
 
-IF dokument_uuid IS NULL THEN
-    LOOP
-    dokument_uuid:=uuid_generate_v4();
-    EXIT WHEN NOT EXISTS (SELECT id from dokument WHERE id=dokument_uuid); 
-    END LOOP;
-END IF;
+    IF EXISTS (SELECT id from dokument WHERE id=dokument_uuid) THEN
+        does_exist = True; ELSE
 
+        does_exist = False; END IF;
 
-IF EXISTS (SELECT id from dokument WHERE id=dokument_uuid) THEN
-    does_exist = True;
-ELSE
+    IF
+        (dokument_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode
+        and
+        (dokument_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode
+        and
+        (dokument_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode
+        THEN RAISE EXCEPTION 'Invalid livscykluskode[%] invoking
+        as_create_or_import_dokument.',(dokument_registrering.registrering).livscykluskode
+        USING ERRCODE='MO400'; END IF;
 
-    does_exist = False;
-END IF;
+    IF NOT does_exist THEN INSERT INTO dokument (ID) SELECT
+        dokument_uuid; END IF;
 
-IF  (dokument_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (dokument_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (dokument_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_dokument.',(dokument_registrering.registrering).livscykluskode USING ERRCODE='MO400';
-END IF;
+    /*********************************/
+    --Insert new registrering
 
+    IF NOT does_exist THEN
+        dokument_registrering_id:=nextval('dokument_registrering_id_seq');
 
-IF NOT does_exist THEN
+        INSERT INTO dokument_registrering (id, dokument_id,
+            registrering) SELECT dokument_registrering_id,
+        dokument_uuid, ROW (
+            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+        (dokument_registrering.registrering).livscykluskode,
+        (dokument_registrering.registrering).brugerref,
+        (dokument_registrering.registrering).note):: RegistreringBase ;
+    ELSE
+        -- This is an update, not an import or create
+            new_dokument_registrering :=
+            _as_create_dokument_registrering(dokument_uuid,
+                (dokument_registrering.registrering).livscykluskode,
+                (dokument_registrering.registrering).brugerref,
+                (dokument_registrering.registrering).note);
 
-    INSERT INTO
-          dokument (ID)
-    SELECT
-          dokument_uuid;
-END IF;
-
-
-/*********************************/
---Insert new registrering
-
-IF NOT does_exist THEN
-    dokument_registrering_id:=nextval('dokument_registrering_id_seq');
-
-    INSERT INTO dokument_registrering (
-          id,
-          dokument_id,
-          registrering
-        )
-    SELECT
-          dokument_registrering_id,
-           dokument_uuid,
-           ROW (
-             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-             (dokument_registrering.registrering).livscykluskode,
-             (dokument_registrering.registrering).brugerref,
-             (dokument_registrering.registrering).note
-               ):: RegistreringBase ;
-ELSE
-    -- This is an update, not an import or create
-        new_dokument_registrering := _as_create_dokument_registrering(
-             dokument_uuid,
-             (dokument_registrering.registrering).livscykluskode,
-             (dokument_registrering.registrering).brugerref,
-             (dokument_registrering.registrering).note);
-
-        dokument_registrering_id := new_dokument_registrering.id;
-END IF;
+            dokument_registrering_id := new_dokument_registrering.id;
+    END IF;
 
 
 /*********************************/
@@ -107,10 +98,10 @@ END IF;
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
- 
-IF coalesce(array_length(dokument_registrering.attrEgenskaber, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [dokument]. Oprettelse afbrydes.' USING ERRCODE='MO400';
-END IF;
+
+IF coalesce(array_length(dokument_registrering.attrEgenskaber,
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    [dokument]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
 
@@ -158,7 +149,7 @@ END IF;
 
 --Verification
 --For now all declared states are mandatory.
-IF coalesce(array_length(dokument_registrering.tilsFremdrift, 1),0)<1  THEN
+IF coalesce(array_length(dokument_registrering.tilsFremdrift, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [fremdrift] for dokument. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
@@ -355,5 +346,4 @@ RETURN dokument_uuid;
 
 END;
 $$ LANGUAGE plpgsql VOLATILE;
-
 

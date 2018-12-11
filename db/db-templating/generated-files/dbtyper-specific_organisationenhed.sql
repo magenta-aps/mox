@@ -39,7 +39,7 @@ CREATE TYPE OrganisationenhedRelationType AS (
   relType OrganisationenhedRelationKode,
   virkning Virkning,
   uuid uuid,
-  urn  text,
+  urn text,
   objektType text
 )
 ;
@@ -59,7 +59,6 @@ CREATE TYPE OrganisationenhedType AS
   id uuid,
   registrering OrganisationenhedRegistreringType[]
 );  
-
 
 
 

@@ -9,86 +9,77 @@
 NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
-CREATE OR REPLACE FUNCTION as_create_or_import_loghaendelse(
-  loghaendelse_registrering LoghaendelseRegistreringType,
-  loghaendelse_uuid uuid DEFAULT NULL,
-  auth_criteria_arr LoghaendelseRegistreringType[] DEFAULT NULL
-	)
-  RETURNS uuid AS 
-$$
-DECLARE
-  loghaendelse_registrering_id bigint;
-  loghaendelse_attr_egenskaber_obj loghaendelseEgenskaberAttrType;
-  
-  loghaendelse_tils_gyldighed_obj loghaendelseGyldighedTilsType;
-  
-  loghaendelse_relationer LoghaendelseRelationType;
-  
-  auth_filtered_uuids uuid[];
-  
-  does_exist boolean;
-  new_loghaendelse_registrering loghaendelse_registrering;
+
+CREATE OR REPLACE FUNCTION as_create_or_import_loghaendelse (
+    loghaendelse_registrering LoghaendelseRegistreringType,
+    loghaendelse_uuid uuid DEFAULT NULL, auth_criteria_arr
+    LoghaendelseRegistreringType[] DEFAULT NULL) RETURNS uuid AS
+$$ DECLARE loghaendelse_registrering_id bigint;
+
+    
+    loghaendelse_attr_egenskaber_obj loghaendelseEgenskaberAttrType;
+    
+
+    
+    loghaendelse_tils_gyldighed_obj loghaendelseGyldighedTilsType;
+    
+
+    loghaendelse_relationer LoghaendelseRelationType;
+
+    
+
+    auth_filtered_uuids uuid[];
+
+    
+
+    does_exist boolean;
+    new_loghaendelse_registrering loghaendelse_registrering;
 BEGIN
+    IF loghaendelse_uuid IS NULL THEN LOOP
+        loghaendelse_uuid:=uuid_generate_v4(); EXIT WHEN NOT EXISTS (SELECT id
+            from loghaendelse WHERE id=loghaendelse_uuid); END LOOP; END IF;
 
-IF loghaendelse_uuid IS NULL THEN
-    LOOP
-    loghaendelse_uuid:=uuid_generate_v4();
-    EXIT WHEN NOT EXISTS (SELECT id from loghaendelse WHERE id=loghaendelse_uuid); 
-    END LOOP;
-END IF;
+    IF EXISTS (SELECT id from loghaendelse WHERE id=loghaendelse_uuid) THEN
+        does_exist = True; ELSE
 
+        does_exist = False; END IF;
 
-IF EXISTS (SELECT id from loghaendelse WHERE id=loghaendelse_uuid) THEN
-    does_exist = True;
-ELSE
+    IF
+        (loghaendelse_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode
+        and
+        (loghaendelse_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode
+        and
+        (loghaendelse_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode
+        THEN RAISE EXCEPTION 'Invalid livscykluskode[%] invoking
+        as_create_or_import_loghaendelse.',(loghaendelse_registrering.registrering).livscykluskode
+        USING ERRCODE='MO400'; END IF;
 
-    does_exist = False;
-END IF;
+    IF NOT does_exist THEN INSERT INTO loghaendelse (ID) SELECT
+        loghaendelse_uuid; END IF;
 
-IF  (loghaendelse_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (loghaendelse_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (loghaendelse_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_loghaendelse.',(loghaendelse_registrering.registrering).livscykluskode USING ERRCODE='MO400';
-END IF;
+    /*********************************/
+    --Insert new registrering
 
+    IF NOT does_exist THEN
+        loghaendelse_registrering_id:=nextval('loghaendelse_registrering_id_seq');
 
-IF NOT does_exist THEN
+        INSERT INTO loghaendelse_registrering (id, loghaendelse_id,
+            registrering) SELECT loghaendelse_registrering_id,
+        loghaendelse_uuid, ROW (
+            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+        (loghaendelse_registrering.registrering).livscykluskode,
+        (loghaendelse_registrering.registrering).brugerref,
+        (loghaendelse_registrering.registrering).note):: RegistreringBase ;
+    ELSE
+        -- This is an update, not an import or create
+            new_loghaendelse_registrering :=
+            _as_create_loghaendelse_registrering(loghaendelse_uuid,
+                (loghaendelse_registrering.registrering).livscykluskode,
+                (loghaendelse_registrering.registrering).brugerref,
+                (loghaendelse_registrering.registrering).note);
 
-    INSERT INTO
-          loghaendelse (ID)
-    SELECT
-          loghaendelse_uuid;
-END IF;
-
-
-/*********************************/
---Insert new registrering
-
-IF NOT does_exist THEN
-    loghaendelse_registrering_id:=nextval('loghaendelse_registrering_id_seq');
-
-    INSERT INTO loghaendelse_registrering (
-          id,
-          loghaendelse_id,
-          registrering
-        )
-    SELECT
-          loghaendelse_registrering_id,
-           loghaendelse_uuid,
-           ROW (
-             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-             (loghaendelse_registrering.registrering).livscykluskode,
-             (loghaendelse_registrering.registrering).brugerref,
-             (loghaendelse_registrering.registrering).note
-               ):: RegistreringBase ;
-ELSE
-    -- This is an update, not an import or create
-        new_loghaendelse_registrering := _as_create_loghaendelse_registrering(
-             loghaendelse_uuid,
-             (loghaendelse_registrering.registrering).livscykluskode,
-             (loghaendelse_registrering.registrering).brugerref,
-             (loghaendelse_registrering.registrering).note);
-
-        loghaendelse_registrering_id := new_loghaendelse_registrering.id;
-END IF;
+            loghaendelse_registrering_id := new_loghaendelse_registrering.id;
+    END IF;
 
 
 /*********************************/
@@ -99,10 +90,10 @@ END IF;
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
- 
-IF coalesce(array_length(loghaendelse_registrering.attrEgenskaber, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [loghaendelse]. Oprettelse afbrydes.' USING ERRCODE='MO400';
-END IF;
+
+IF coalesce(array_length(loghaendelse_registrering.attrEgenskaber,
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    [loghaendelse]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
 
@@ -148,7 +139,7 @@ END IF;
 
 --Verification
 --For now all declared states are mandatory.
-IF coalesce(array_length(loghaendelse_registrering.tilsGyldighed, 1),0)<1  THEN
+IF coalesce(array_length(loghaendelse_registrering.tilsGyldighed, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [gyldighed] for loghaendelse. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
@@ -210,5 +201,4 @@ RETURN loghaendelse_uuid;
 
 END;
 $$ LANGUAGE plpgsql VOLATILE;
-
 

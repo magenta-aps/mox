@@ -29,7 +29,7 @@ soegeordskategori text
 {%-for attribut , attribut_fields in attributter.items() %}
 CREATE TYPE {{oio_type|title}}{{attribut|title}}AttrType AS (
 {%- for field in attribut_fields %}
-{%- if  attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][field] is defined and attributter_metadata[attribut][field]['type'] is defined %} 
+{%- if attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][field] is defined and attributter_metadata[attribut][field]['type'] is defined %} 
 {%- if attributter_metadata[attribut][field]['type'] =='int' or attributter_metadata[attribut][field]['type'] =='date' or attributter_metadata[attribut][field]['type']=='boolean' or attributter_metadata[attribut][field]['type']=='timestamptz' %}
 {{field}} Clearable{{attributter_metadata[attribut][field]['type']|title}},
 {% elif attributter_metadata[attribut][field]['type'] == 'interval(0)' %}
@@ -63,7 +63,7 @@ CREATE TYPE AktivitetAktoerAttrObligatoriskKode AS ENUM ('noedvendig','valgfri')
 
 CREATE TYPE AktivitetAktoerAttrAccepteretKode AS ENUM ('accepteret','foreloebigt','afslaaet');
 
-CREATE TYPE  AktivitetAktoerAttr AS (
+CREATE TYPE AktivitetAktoerAttr AS (
   obligatorisk AktivitetAktoerAttrObligatoriskKode,
   accepteret AktivitetAktoerAttrAccepteretKode,
   repraesentation_uuid uuid,
@@ -88,7 +88,7 @@ CREATE TYPE {{oio_type|title}}RelationType AS (
   relType {{oio_type|title}}RelationKode,
   virkning Virkning,
   uuid uuid,
-  urn  text,
+  urn text,
   objektType text{% if oio_type == 'aktivitet' %},
   indeks int,
   aktoerAttr AktivitetAktoerAttr{% elif oio_type == 'indsats' %},
@@ -124,7 +124,7 @@ CREATE TYPE DokumentdelRelationType AS (
   relType DokumentdelRelationKode,
   virkning Virkning,
   uuid uuid,
-  urn  text,
+  urn text,
   objektType text 
 )
 ;
@@ -142,7 +142,7 @@ CREATE TYPE DokumentDelType AS
 /*					Dokumentvariant               */
 /**************************************************/
 
-CREATE TYPE DokumentVariantEgenskaberType AS ( 
+CREATE TYPE DokumentVariantEgenskaberType AS (
 arkivering ClearableBoolean, 
 delvisscannet ClearableBoolean, 
 offentliggoerelse ClearableBoolean, 

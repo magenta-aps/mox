@@ -9,93 +9,85 @@
 NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
-CREATE OR REPLACE FUNCTION as_create_or_import_tilstand(
-  tilstand_registrering TilstandRegistreringType,
-  tilstand_uuid uuid DEFAULT NULL,
-  auth_criteria_arr TilstandRegistreringType[] DEFAULT NULL
-	)
-  RETURNS uuid AS 
-$$
-DECLARE
-  tilstand_registrering_id bigint;
-  tilstand_attr_egenskaber_obj tilstandEgenskaberAttrType;
-  
-  tilstand_tils_status_obj tilstandStatusTilsType;
-  tilstand_tils_publiceret_obj tilstandPubliceretTilsType;
-  
-  tilstand_relationer TilstandRelationType;
-  
-  auth_filtered_uuids uuid[];
-  
-  tilstand_relation_kode tilstandRelationKode;
-  tilstand_uuid_underscores text;
-  tilstand_rel_seq_name text;
-  tilstand_rel_type_cardinality_unlimited tilstandRelationKode[]:=ARRAY['tilstandsvaerdi'::TilstandRelationKode,'begrundelse'::TilstandRelationKode,'tilstandskvalitet'::TilstandRelationKode,'tilstandsvurdering'::TilstandRelationKode,'tilstandsaktoer'::TilstandRelationKode,'tilstandsudstyr'::TilstandRelationKode,'samtykke'::TilstandRelationKode,'tilstandsdokument'::TilstandRelationKode]::TilstandRelationKode[];
-  tilstand_rel_type_cardinality_unlimited_present_in_argument tilstandRelationKode[];
-  
-  does_exist boolean;
-  new_tilstand_registrering tilstand_registrering;
+
+CREATE OR REPLACE FUNCTION as_create_or_import_tilstand (
+    tilstand_registrering TilstandRegistreringType,
+    tilstand_uuid uuid DEFAULT NULL, auth_criteria_arr
+    TilstandRegistreringType[] DEFAULT NULL) RETURNS uuid AS
+$$ DECLARE tilstand_registrering_id bigint;
+
+    
+    tilstand_attr_egenskaber_obj tilstandEgenskaberAttrType;
+    
+
+    
+    tilstand_tils_status_obj tilstandStatusTilsType;
+    
+    tilstand_tils_publiceret_obj tilstandPubliceretTilsType;
+    
+
+    tilstand_relationer TilstandRelationType;
+
+    
+
+    auth_filtered_uuids uuid[];
+
+    
+    tilstand_relation_kode tilstandRelationKode;
+    tilstand_uuid_underscores text;
+    tilstand_rel_seq_name text;
+    tilstand_rel_type_cardinality_unlimited tilstandRelationKode[]:=ARRAY['tilstandsvaerdi'::TilstandRelationKode,'begrundelse'::TilstandRelationKode,'tilstandskvalitet'::TilstandRelationKode,'tilstandsvurdering'::TilstandRelationKode,'tilstandsaktoer'::TilstandRelationKode,'tilstandsudstyr'::TilstandRelationKode,'samtykke'::TilstandRelationKode,'tilstandsdokument'::TilstandRelationKode]::TilstandRelationKode[];
+    tilstand_rel_type_cardinality_unlimited_present_in_argument tilstandRelationKode[];
+    
+
+    does_exist boolean;
+    new_tilstand_registrering tilstand_registrering;
 BEGIN
+    IF tilstand_uuid IS NULL THEN LOOP
+        tilstand_uuid:=uuid_generate_v4(); EXIT WHEN NOT EXISTS (SELECT id
+            from tilstand WHERE id=tilstand_uuid); END LOOP; END IF;
 
-IF tilstand_uuid IS NULL THEN
-    LOOP
-    tilstand_uuid:=uuid_generate_v4();
-    EXIT WHEN NOT EXISTS (SELECT id from tilstand WHERE id=tilstand_uuid); 
-    END LOOP;
-END IF;
+    IF EXISTS (SELECT id from tilstand WHERE id=tilstand_uuid) THEN
+        does_exist = True; ELSE
 
+        does_exist = False; END IF;
 
-IF EXISTS (SELECT id from tilstand WHERE id=tilstand_uuid) THEN
-    does_exist = True;
-ELSE
+    IF
+        (tilstand_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode
+        and
+        (tilstand_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode
+        and
+        (tilstand_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode
+        THEN RAISE EXCEPTION 'Invalid livscykluskode[%] invoking
+        as_create_or_import_tilstand.',(tilstand_registrering.registrering).livscykluskode
+        USING ERRCODE='MO400'; END IF;
 
-    does_exist = False;
-END IF;
+    IF NOT does_exist THEN INSERT INTO tilstand (ID) SELECT
+        tilstand_uuid; END IF;
 
-IF  (tilstand_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (tilstand_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (tilstand_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_tilstand.',(tilstand_registrering.registrering).livscykluskode USING ERRCODE='MO400';
-END IF;
+    /*********************************/
+    --Insert new registrering
 
+    IF NOT does_exist THEN
+        tilstand_registrering_id:=nextval('tilstand_registrering_id_seq');
 
-IF NOT does_exist THEN
+        INSERT INTO tilstand_registrering (id, tilstand_id,
+            registrering) SELECT tilstand_registrering_id,
+        tilstand_uuid, ROW (
+            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+        (tilstand_registrering.registrering).livscykluskode,
+        (tilstand_registrering.registrering).brugerref,
+        (tilstand_registrering.registrering).note):: RegistreringBase ;
+    ELSE
+        -- This is an update, not an import or create
+            new_tilstand_registrering :=
+            _as_create_tilstand_registrering(tilstand_uuid,
+                (tilstand_registrering.registrering).livscykluskode,
+                (tilstand_registrering.registrering).brugerref,
+                (tilstand_registrering.registrering).note);
 
-    INSERT INTO
-          tilstand (ID)
-    SELECT
-          tilstand_uuid;
-END IF;
-
-
-/*********************************/
---Insert new registrering
-
-IF NOT does_exist THEN
-    tilstand_registrering_id:=nextval('tilstand_registrering_id_seq');
-
-    INSERT INTO tilstand_registrering (
-          id,
-          tilstand_id,
-          registrering
-        )
-    SELECT
-          tilstand_registrering_id,
-           tilstand_uuid,
-           ROW (
-             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-             (tilstand_registrering.registrering).livscykluskode,
-             (tilstand_registrering.registrering).brugerref,
-             (tilstand_registrering.registrering).note
-               ):: RegistreringBase ;
-ELSE
-    -- This is an update, not an import or create
-        new_tilstand_registrering := _as_create_tilstand_registrering(
-             tilstand_uuid,
-             (tilstand_registrering.registrering).livscykluskode,
-             (tilstand_registrering.registrering).brugerref,
-             (tilstand_registrering.registrering).note);
-
-        tilstand_registrering_id := new_tilstand_registrering.id;
-END IF;
+            tilstand_registrering_id := new_tilstand_registrering.id;
+    END IF;
 
 
 /*********************************/
@@ -106,10 +98,10 @@ END IF;
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
- 
-IF coalesce(array_length(tilstand_registrering.attrEgenskaber, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [tilstand]. Oprettelse afbrydes.' USING ERRCODE='MO400';
-END IF;
+
+IF coalesce(array_length(tilstand_registrering.attrEgenskaber,
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    [tilstand]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
 
@@ -143,7 +135,7 @@ END IF;
 
 --Verification
 --For now all declared states are mandatory.
-IF coalesce(array_length(tilstand_registrering.tilsStatus, 1),0)<1  THEN
+IF coalesce(array_length(tilstand_registrering.tilsStatus, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [status] for tilstand. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
@@ -166,7 +158,7 @@ END IF;
 
 --Verification
 --For now all declared states are mandatory.
-IF coalesce(array_length(tilstand_registrering.tilsPubliceret, 1),0)<1  THEN
+IF coalesce(array_length(tilstand_registrering.tilsPubliceret, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [publiceret] for tilstand. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
@@ -196,7 +188,7 @@ IF coalesce(array_length(tilstand_registrering.relationer,1),0)>0 THEN
 --Create temporary sequences
 tilstand_uuid_underscores:=replace(tilstand_uuid::text, '-', '_');
 
-SELECT array_agg( DISTINCT a.RelType) into tilstand_rel_type_cardinality_unlimited_present_in_argument FROM  unnest(tilstand_registrering.relationer) a WHERE a.RelType = any (tilstand_rel_type_cardinality_unlimited) ;
+SELECT array_agg(DISTINCT a.RelType) into tilstand_rel_type_cardinality_unlimited_present_in_argument FROM unnest(tilstand_registrering.relationer) a WHERE a.RelType = any (tilstand_rel_type_cardinality_unlimited) ;
 IF coalesce(array_length(tilstand_rel_type_cardinality_unlimited_present_in_argument,1),0)>0 THEN
 
 FOREACH tilstand_relation_kode IN ARRAY (tilstand_rel_type_cardinality_unlimited_present_in_argument)
@@ -238,7 +230,7 @@ END IF;
       END,
       CASE
         WHEN a.relType='tilstandsvaerdi' AND
-          ( NOT (a.tilstandsVaerdiAttr IS NULL))
+          (NOT (a.tilstandsVaerdiAttr IS NULL))
           AND 
           (
             (a.tilstandsVaerdiAttr).forventet IS NOT NULL
@@ -259,7 +251,7 @@ IF coalesce(array_length(tilstand_rel_type_cardinality_unlimited_present_in_argu
 FOREACH tilstand_relation_kode IN ARRAY (tilstand_rel_type_cardinality_unlimited_present_in_argument)
   LOOP
   tilstand_rel_seq_name := 'tilstand_' || tilstand_relation_kode::text || tilstand_uuid_underscores;
-  EXECUTE 'DROP  SEQUENCE ' || tilstand_rel_seq_name || ';';
+  EXECUTE 'DROP SEQUENCE ' || tilstand_rel_seq_name || ';';
 END LOOP;
 END IF;
 
@@ -282,5 +274,4 @@ RETURN tilstand_uuid;
 
 END;
 $$ LANGUAGE plpgsql VOLATILE;
-
 

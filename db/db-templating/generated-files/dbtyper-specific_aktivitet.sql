@@ -52,7 +52,7 @@ CREATE TYPE AktivitetAktoerAttrObligatoriskKode AS ENUM ('noedvendig','valgfri')
 
 CREATE TYPE AktivitetAktoerAttrAccepteretKode AS ENUM ('accepteret','foreloebigt','afslaaet');
 
-CREATE TYPE  AktivitetAktoerAttr AS (
+CREATE TYPE AktivitetAktoerAttr AS (
   obligatorisk AktivitetAktoerAttrObligatoriskKode,
   accepteret AktivitetAktoerAttrAccepteretKode,
   repraesentation_uuid uuid,
@@ -64,7 +64,7 @@ CREATE TYPE AktivitetRelationType AS (
   relType AktivitetRelationKode,
   virkning Virkning,
   uuid uuid,
-  urn  text,
+  urn text,
   objektType text,
   indeks int,
   aktoerAttr AktivitetAktoerAttr
@@ -98,7 +98,6 @@ CREATE TYPE AktivitetType AS
 ---we'll add two small functions here, that will help with placing CHECK CONSTRAINT on the composite type AktivitetAktoerAttr in the db-table.
 CREATE OR REPLACE FUNCTION _aktivitet_aktoer_attr_repr_uuid_to_text(AktivitetAktoerAttr) RETURNS TEXT AS 'SELECT $1.repraesentation_uuid::TEXT' LANGUAGE sql IMMUTABLE;
 CREATE OR REPLACE FUNCTION _aktivitet_aktoer_attr_repr_urn_to_text(AktivitetAktoerAttr) RETURNS TEXT AS 'SELECT NULLIF($1.repraesentation_urn::TEXT,'''') ' LANGUAGE sql IMMUTABLE;
-
 
 
 

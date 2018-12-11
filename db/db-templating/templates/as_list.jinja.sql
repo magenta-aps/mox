@@ -27,7 +27,7 @@ END IF;
 /*********************/
 
 SELECT 
-array_agg( x.{{oio_type}}Obj) into result
+array_agg(x.{{oio_type}}Obj) into result
 FROM
 (
 SELECT
@@ -154,7 +154,7 @@ FROM
 						NULL
 						END
                         {% if oio_type == "klasse" %}
-                        order by  a.brugervendtnoegle,a.beskrivelse,a.eksempel,a.omfang,a.titel,a.retskilde,a.aendringsnotat,a.virkning,a.KlasseAttrEgenskaberSoegeordTypeArr
+                        order by a.brugervendtnoegle,a.beskrivelse,a.eksempel,a.omfang,a.titel,a.retskilde,a.aendringsnotat,a.virkning,a.KlasseAttrEgenskaberSoegeordTypeArr
                         {% else %}
 						order by b.{{attribut_fields|join(',b.')}},b.virkning
                         {% endif %}

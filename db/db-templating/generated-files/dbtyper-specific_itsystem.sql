@@ -41,7 +41,7 @@ CREATE TYPE ItsystemRelationType AS (
   relType ItsystemRelationKode,
   virkning Virkning,
   uuid uuid,
-  urn  text,
+  urn text,
   objektType text
 )
 ;
@@ -61,7 +61,6 @@ CREATE TYPE ItsystemType AS
   id uuid,
   registrering ItsystemRegistreringType[]
 );  
-
 
 
 

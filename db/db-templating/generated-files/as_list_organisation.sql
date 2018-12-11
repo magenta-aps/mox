@@ -30,7 +30,7 @@ END IF;
 /*********************/
 
 SELECT 
-array_agg( x.organisationObj) into result
+array_agg(x.organisationObj) into result
 FROM
 (
 SELECT
@@ -162,6 +162,5 @@ RETURN result;
 
 END;
 $$ LANGUAGE plpgsql STABLE;
-
 
 

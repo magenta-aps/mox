@@ -9,86 +9,77 @@
 NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
 */
 
-CREATE OR REPLACE FUNCTION as_create_or_import_klassifikation(
-  klassifikation_registrering KlassifikationRegistreringType,
-  klassifikation_uuid uuid DEFAULT NULL,
-  auth_criteria_arr KlassifikationRegistreringType[] DEFAULT NULL
-	)
-  RETURNS uuid AS 
-$$
-DECLARE
-  klassifikation_registrering_id bigint;
-  klassifikation_attr_egenskaber_obj klassifikationEgenskaberAttrType;
-  
-  klassifikation_tils_publiceret_obj klassifikationPubliceretTilsType;
-  
-  klassifikation_relationer KlassifikationRelationType;
-  
-  auth_filtered_uuids uuid[];
-  
-  does_exist boolean;
-  new_klassifikation_registrering klassifikation_registrering;
+
+CREATE OR REPLACE FUNCTION as_create_or_import_klassifikation (
+    klassifikation_registrering KlassifikationRegistreringType,
+    klassifikation_uuid uuid DEFAULT NULL, auth_criteria_arr
+    KlassifikationRegistreringType[] DEFAULT NULL) RETURNS uuid AS
+$$ DECLARE klassifikation_registrering_id bigint;
+
+    
+    klassifikation_attr_egenskaber_obj klassifikationEgenskaberAttrType;
+    
+
+    
+    klassifikation_tils_publiceret_obj klassifikationPubliceretTilsType;
+    
+
+    klassifikation_relationer KlassifikationRelationType;
+
+    
+
+    auth_filtered_uuids uuid[];
+
+    
+
+    does_exist boolean;
+    new_klassifikation_registrering klassifikation_registrering;
 BEGIN
+    IF klassifikation_uuid IS NULL THEN LOOP
+        klassifikation_uuid:=uuid_generate_v4(); EXIT WHEN NOT EXISTS (SELECT id
+            from klassifikation WHERE id=klassifikation_uuid); END LOOP; END IF;
 
-IF klassifikation_uuid IS NULL THEN
-    LOOP
-    klassifikation_uuid:=uuid_generate_v4();
-    EXIT WHEN NOT EXISTS (SELECT id from klassifikation WHERE id=klassifikation_uuid); 
-    END LOOP;
-END IF;
+    IF EXISTS (SELECT id from klassifikation WHERE id=klassifikation_uuid) THEN
+        does_exist = True; ELSE
 
+        does_exist = False; END IF;
 
-IF EXISTS (SELECT id from klassifikation WHERE id=klassifikation_uuid) THEN
-    does_exist = True;
-ELSE
+    IF
+        (klassifikation_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode
+        and
+        (klassifikation_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode
+        and
+        (klassifikation_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode
+        THEN RAISE EXCEPTION 'Invalid livscykluskode[%] invoking
+        as_create_or_import_klassifikation.',(klassifikation_registrering.registrering).livscykluskode
+        USING ERRCODE='MO400'; END IF;
 
-    does_exist = False;
-END IF;
+    IF NOT does_exist THEN INSERT INTO klassifikation (ID) SELECT
+        klassifikation_uuid; END IF;
 
-IF  (klassifikation_registrering.registrering).livscykluskode<>'Opstaaet'::Livscykluskode and (klassifikation_registrering.registrering).livscykluskode<>'Importeret'::Livscykluskode  and (klassifikation_registrering.registrering).livscykluskode<>'Rettet'::Livscykluskode THEN
-  RAISE EXCEPTION 'Invalid livscykluskode[%] invoking as_create_or_import_klassifikation.',(klassifikation_registrering.registrering).livscykluskode USING ERRCODE='MO400';
-END IF;
+    /*********************************/
+    --Insert new registrering
 
+    IF NOT does_exist THEN
+        klassifikation_registrering_id:=nextval('klassifikation_registrering_id_seq');
 
-IF NOT does_exist THEN
+        INSERT INTO klassifikation_registrering (id, klassifikation_id,
+            registrering) SELECT klassifikation_registrering_id,
+        klassifikation_uuid, ROW (
+            TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
+        (klassifikation_registrering.registrering).livscykluskode,
+        (klassifikation_registrering.registrering).brugerref,
+        (klassifikation_registrering.registrering).note):: RegistreringBase ;
+    ELSE
+        -- This is an update, not an import or create
+            new_klassifikation_registrering :=
+            _as_create_klassifikation_registrering(klassifikation_uuid,
+                (klassifikation_registrering.registrering).livscykluskode,
+                (klassifikation_registrering.registrering).brugerref,
+                (klassifikation_registrering.registrering).note);
 
-    INSERT INTO
-          klassifikation (ID)
-    SELECT
-          klassifikation_uuid;
-END IF;
-
-
-/*********************************/
---Insert new registrering
-
-IF NOT does_exist THEN
-    klassifikation_registrering_id:=nextval('klassifikation_registrering_id_seq');
-
-    INSERT INTO klassifikation_registrering (
-          id,
-          klassifikation_id,
-          registrering
-        )
-    SELECT
-          klassifikation_registrering_id,
-           klassifikation_uuid,
-           ROW (
-             TSTZRANGE(clock_timestamp(),'infinity'::TIMESTAMPTZ,'[)' ),
-             (klassifikation_registrering.registrering).livscykluskode,
-             (klassifikation_registrering.registrering).brugerref,
-             (klassifikation_registrering.registrering).note
-               ):: RegistreringBase ;
-ELSE
-    -- This is an update, not an import or create
-        new_klassifikation_registrering := _as_create_klassifikation_registrering(
-             klassifikation_uuid,
-             (klassifikation_registrering.registrering).livscykluskode,
-             (klassifikation_registrering.registrering).brugerref,
-             (klassifikation_registrering.registrering).note);
-
-        klassifikation_registrering_id := new_klassifikation_registrering.id;
-END IF;
+            klassifikation_registrering_id := new_klassifikation_registrering.id;
+    END IF;
 
 
 /*********************************/
@@ -99,10 +90,10 @@ END IF;
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
- 
-IF coalesce(array_length(klassifikation_registrering.attrEgenskaber, 1),0)<1 THEN
-  RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for [klassifikation]. Oprettelse afbrydes.' USING ERRCODE='MO400';
-END IF;
+
+IF coalesce(array_length(klassifikation_registrering.attrEgenskaber,
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    [klassifikation]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
 
@@ -140,7 +131,7 @@ END IF;
 
 --Verification
 --For now all declared states are mandatory.
-IF coalesce(array_length(klassifikation_registrering.tilsPubliceret, 1),0)<1  THEN
+IF coalesce(array_length(klassifikation_registrering.tilsPubliceret, 1),0)<1 THEN
   RAISE EXCEPTION 'Savner påkraevet tilstand [publiceret] for klassifikation. Oprettelse afbrydes.' USING ERRCODE='MO400';
 END IF;
 
@@ -202,5 +193,4 @@ RETURN klassifikation_uuid;
 
 END;
 $$ LANGUAGE plpgsql VOLATILE;
-
 
