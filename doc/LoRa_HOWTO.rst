@@ -1,3 +1,5 @@
+.. _LoRaHOWTO:
+
 HOWTO use LoRa for querying data
 ================================
 
