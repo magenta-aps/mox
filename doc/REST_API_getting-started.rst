@@ -10,12 +10,13 @@ An easy way to get a LoRa instance up and running is to install it in a Linux
 Container using LXC. This is done in the following way on an Ubuntu machine::
 
   $ sudo apt install lxc
-  $ sudo lxc-create -t download -n mox
+  $ sudo lxc-create -n mox -t download -- -d ubuntu -r xenial -a amd64
 
-where “mox” is just the name of the container. When prompted for distribution,
-release and architecture choose e.g. ubuntu, xenial and amd64, respectively.
-LXC will now setup an Ubuntu container. To start the container do the
-following::
+where ``mox`` is the name of the container. It uses the lxc ``download``
+template, ``ubuntu`` as the distribution, ``xenial`` as the release and
+``amd64`` as the architecture. LXC will now setup an Ubuntu container.
+
+To start the container do the following::
 
   $ sudo lxc-start -n mox
 
