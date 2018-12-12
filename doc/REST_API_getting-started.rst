@@ -72,7 +72,7 @@ This can take a while...
 Once the installation process is complete,
 you may confirm that the OIO rest api is running::
 
-  $ curl http://localhost:8080
+  $ curl -L http://localhost:8080
 
 which should give a JSON response like::
 
