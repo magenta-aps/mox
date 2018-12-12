@@ -91,9 +91,7 @@ which should give a JSON response like::
 Getting to know LoRas REST API
 ------------------------------
 The following small exercises can be used as an inspiration to getting to know
-LoRas REST API. Read the
-`HOWTO <https://github.com/magenta-aps/mox/blob/master/doc/LoRa_HOWTO.rst>`_
-from the LoRa GitHub page before moving on. Also, have a look at the LoRa
+LoRas REST API. Read :ref:`LoRaHOWTO` before moving on. Also, have a look at the LoRa
 documentation found in Magenta’s Alfresco system.
 
 1. Create an organisation called e.g. “Magenta” valid from 2017-01-01
