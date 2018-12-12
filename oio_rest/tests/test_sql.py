@@ -7,7 +7,7 @@ import sys
 import tap.parser
 
 from oio_rest.utils import test_support
-from oio_rest import db_layout
+from oio_rest import db_templating
 import settings
 from tests import util
 
@@ -67,7 +67,7 @@ class SQLTests(util.TestCase):
         expected_path = pathlib.Path(SQL_FIXTURE)
         actual_path = expected_path.with_name(expected_path.name + '.new')
 
-        actual_path.write_text('\n'.join(db_layout.render_templates()))
+        actual_path.write_text('\n'.join(db_templating.render_templates()))
 
         self.assertEqual(
             expected_path.read_text(),

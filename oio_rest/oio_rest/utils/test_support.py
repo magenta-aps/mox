@@ -21,7 +21,7 @@ import testing.postgresql
 import psycopg2.pool
 
 from .. import app
-from .. import db_layout
+from .. import db_templating
 
 import settings
 
@@ -67,7 +67,7 @@ def _initdb():
         conn.autocommit = True
 
         with conn.cursor() as curs:
-            for chunk in db_layout.get_sql():
+            for chunk in db_templating.get_sql():
                 curs.execute(chunk)
 
 
