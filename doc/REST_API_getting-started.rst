@@ -25,11 +25,12 @@ Attach to the container by doing::
   $ sudo lxc-attach -n mox
 
 You will now get root access to the container.
-Add a unix user account: ::
+Add a unix user account and install some utilities: ::
 
   $ adduser operator
   $ addgroup operator sudo
-  $ apt install ssh
+  $ apt update
+  $ apt install ssh git curl
 
 Lookup the IP-address of the container::
 
@@ -62,7 +63,6 @@ Following the instructions on the
 `LoRa GitHub site <https://github.com/magenta-aps/mox>`_ we can install LoRa
 (use the development branch) in our Linux container in the following way::
 
-  $ sudo apt install git
   $ git clone -b development https://github.com/magenta-aps/mox
   $ cd mox
   $ ./install.sh
@@ -72,7 +72,6 @@ This can take a while...
 Once the installation process is complete,
 you may confirm that the OIO rest api is running::
 
-  $ apt install curl
   $ curl http://localhost:8080
 
 which should give a JSON response like::
