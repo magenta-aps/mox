@@ -32,7 +32,7 @@ Add a unix user account and install some utilities: ::
   $ apt update
   $ apt install ssh git curl
 
-Lookup the IP-address of the container::
+Lookup the IP address of the container::
 
   $ ifconfig
   eth0          Link encap:Ethernet  HWaddr 00:16:3e:d5:57:a9
@@ -88,11 +88,12 @@ which should give a JSON response like::
     ]
   }
 
-Getting to know LoRas REST API
-------------------------------
+Getting to know LoRa's REST API
+-------------------------------
+
 The following small exercises can be used as an inspiration to getting to know
-LoRas REST API. Read :ref:`LoRaHOWTO` before moving on. Also, have a look at the LoRa
-documentation found in Magenta’s Alfresco system.
+LoRa's REST API. Read :ref:`LoRaHOWTO` before moving on. Also, have a look at
+the LoRa documentation found in Magenta’s Alfresco system.
 
 1. Create an organisation called e.g. “Magenta” valid from 2017-01-01
    (included) to 2019-12-31 (excluded).
