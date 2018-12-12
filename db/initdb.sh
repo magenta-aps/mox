@@ -25,6 +25,5 @@ CREATE USER $MOX_DB_USER WITH PASSWORD '$MOX_DB_PASSWORD';
 CREATE DATABASE $MOX_DB WITH OWNER '$MOX_DB_USER';
 EOF
 
-cd ./db-templating/
 exec $PYTHON -m oio_rest.db_layout \
     | sudo -u postgres psql -v ON_ERROR_STOP=1 -d $MOX_DB

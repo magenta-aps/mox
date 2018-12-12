@@ -21,7 +21,7 @@ from jinja2 import Environment, FileSystemLoader
 import settings
 
 DB_DIR = Path(__file__).absolute().parent.parent.parent / "db"
-TEMPLATE_DIR = DB_DIR / "db-templating" / "templates"
+TEMPLATE_DIR = DB_DIR / "templates"
 
 TEMPLATES = (
     "dbtyper-specific",
