@@ -185,7 +185,7 @@ as ``application/json`` as form data with a :http:header:`Content-Type` of
 ``multipart/form-data`` and a single field, `json`, containing the data.
 
 Examples of valid JSON data for creation, update and import can be found
-in the directory `interface_test/test_data` in the source code.
+in the directory ``oio_rest/tests/fixtures/`` in the source code.
 
 Create
 ------
