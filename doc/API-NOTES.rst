@@ -79,7 +79,7 @@ relaying them onwards to the REST interface), run::
 
     agents/MoxRestFrontend/moxrestfrontend.sh
 
-**NOTE:** You can start the agent in the background by running::
+You can start the agent in the background by running::
 
     sudo service moxrestfrontend start
 
@@ -87,9 +87,10 @@ To test sending messages through the agent, run::
 
     ./test.sh
 
-**NOTE:** The install script does not set up an IDP for SAML authentication,
-which is enabled by default. If you need to test without SAML authentication, 
-you will need to turn it off as described below. 
+.. note:: The install script does not set up an IDP for SAML
+          authentication, which is enabled by default. If you need to
+          test without SAML authentication, you will need to turn it
+          off as described below.
 
 To request a token for the username from the IdP and output it in
 base64-encoded gzipped format, run::
@@ -116,8 +117,9 @@ Make sure the parameter ``moxrestfrontend.rest.host`` in
 ``http://localhost:5000``.
 
 Make sure to set the local time to the same as Europe/Copenhagen when testing.
-This can be done with the following command: ``sudo timedatectl set-timezone
- Europe/Copenhagen``.
+This can be done with the following command::
+
+    sudo timedatectl set-timezone Europe/Copenhagen
 
 Start the (AMQP) MOX REST frontend agent::
 
@@ -138,9 +140,10 @@ This should give you a lot of output like this::
     127.0.0.1 - - [27/Apr/2016 15:55:09] "DELETE /organisation/bruger/1e874f85-07e5-40e5-81ed-42f21fc3fc9e HTTP/1.1" 200 -
     Delete succeeded
 
-**Note:** Currently, some of the tests will give the notice: "Result differs
-from the expected". This is due to a bug in the tests, i.e. you should not
-worry about this - if you see output as described above, the system is working.
+.. note:: Currently, some of the tests will give the notice: "Result
+          differs from the expected". This is due to a bug in the
+          tests, i.e. you should not worry about this - if you see
+          output as described above, the system is working.
 
 For more advanced test or production setup, please study the rest of this 
 README and follow your organization's best practices.
@@ -324,19 +327,24 @@ the search will be sorted by brugervendtnoegle if pagination is used.
 
 Note: The pagination function is implemented by a number of changes in the
 atabase. In order to use this on an existing installation you will need to
-apply all as_search*sql and all _as_sorted*sql files in generated_files.
+apply all ``as_search*.sql`` and all ``_as_sorted*.sql`` files in
+``generated_files``.
 
-Also new indexes have to be applied to all *_registrering
-tables, as shown in tbls-specific.jinja.sql:
+Also new indexes have to be applied to all ``*_registrering``
+tables, as shown in ``tbls-specific.jinja.sql``:
 
-CREATE INDEX {{oio_type}}_id_idx
-   ON {{oio_type}}_registrering ({{oio_type}}_id)
+.. sourcecode:: jinja
+
+  CREATE INDEX {{oio_type}}_id_idx
+     ON {{oio_type}}_registrering ({{oio_type}}_id)
 
 Finally two new options needs to be added to the final lines of
-postgres.conf:
-# Hint to the optimizer to help find the correct index in complicated searches
-enable_hashagg = False
-enable_sort = False
+``postgres.conf``::
+
+  # Hint to the optimizer to help find the correct index in
+  # complicated searches
+  enable_hashagg = False
+  enable_sort = False
 
    
 File upload
@@ -360,7 +368,7 @@ format::
 where myfield is the "form" field name of the uploaded file included in
 the request that should be referenced by the DokumentDel.
 
-It is also possible to specify any URI (e.g. "http://....", etc..) as the value
+It is also possible to specify any URI (e.g. ``http://....``, etc.) as the value
 of the "indhold" attribute. In that case, the URI will be stored, however no
 file will be downloaded and stored to the server. It is then expected that the
 consumer of the API knows how to access the URI.
@@ -376,8 +384,9 @@ An example::
     "indhold": "store:2015/08/14/11/53/4096a8df-ace7-477e-bda1-d5fdd7428a95.bin"
 
 To download the file referenced by this URI, you must construct a request
-similar to the following:
-http://localhost:5000/dokument/dokument/2015/08/14/11/53/4096a8df-ace7-477e-bda1-d5fdd7428a95.bin
+similar to the following::
+
+  http://localhost:5000/dokument/dokument/2015/08/14/11/53/4096a8df-ace7-477e-bda1-d5fdd7428a95.bin
 
 Date ranges for Virkning
 ------------------------

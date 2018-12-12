@@ -20,61 +20,10 @@ export PGPASSWORD="$MOX_DB_PASSWORD"
 # TODO: Support remote $SUPER_USER DB server
 #export PGHOST="$MOX_DB_HOST"
 
-sudo -u postgres createdb $MOX_DB
-sudo -u postgres createuser $MOX_DB_USER
-sudo -u postgres psql -c "ALTER USER $MOX_DB_USER WITH PASSWORD '$MOX_DB_PASSWORD';"
-sudo -u postgres psql -c "GRANT ALL ON DATABASE $MOX_DB TO $MOX_DB_USER"
-sudo -u postgres psql -d $MOX_DB -f basis/dbserver_prep.sql
+sudo -u postgres psql <<EOF
+CREATE USER $MOX_DB_USER WITH PASSWORD '$MOX_DB_PASSWORD';
+CREATE DATABASE $MOX_DB WITH OWNER '$MOX_DB_USER';
+EOF
 
-psql -d $MOX_DB -U $MOX_DB_USER -c "CREATE SCHEMA actual_state AUTHORIZATION $MOX_DB_USER "
-sudo -u postgres psql -c "ALTER database $MOX_DB SET search_path TO actual_state,public;"
-sudo -u postgres psql -c "ALTER database $MOX_DB SET DATESTYLE to 'ISO, YMD';"
-sudo -u postgres psql -c "ALTER database $MOX_DB SET INTERVALSTYLE to 'sql_standard';"
-
-psql -d $MOX_DB -U $MOX_DB_USER -c "CREATE SCHEMA test AUTHORIZATION $MOX_DB_USER "
-psql -d $MOX_DB -U $MOX_DB_USER -f basis/common_types.sql
-psql -d $MOX_DB -U $MOX_DB_USER -f funcs/pre/_index_helper_funcs.sql
-psql -d $MOX_DB -U $MOX_DB_USER -f funcs/pre/_subtract_tstzrange.sql
-psql -d $MOX_DB -U $MOX_DB_USER -f funcs/pre/_subtract_tstzrange_arr.sql
-psql -d $MOX_DB -U $MOX_DB_USER -f funcs/pre/_as_valid_registrering_livscyklus_transition.sql
-psql -d $MOX_DB -U $MOX_DB_USER -f funcs/pre/_as_search_match_array.sql
-psql -d $MOX_DB -U $MOX_DB_USER -f funcs/pre/_as_search_ilike_array.sql
-psql -d $MOX_DB -U $MOX_DB_USER -f funcs/pre/_json_object_delete_keys.sql
-psql -d $MOX_DB -U $MOX_DB_USER -f funcs/pre/_create_notify.sql
-
-cd ./db-templating/
-LC_ALL=C.UTF-8 $PYTHON ../../oio_rest/apply-templates.py
-
-oiotypes=$($PYTHON -m oio_common.db_structure)
-
-templates1=( dbtyper-specific tbls-specific _remove_nulls_in_array )
-
-
-for oiotype in $oiotypes
-do
-	for template in "${templates1[@]}"
-	do
-		psql -d $MOX_DB -U $MOX_DB_USER -f ./generated-files/${template}_${oiotype}.sql
-	done	
-done
-
-
-#Extra functions depending on templated data types 
-psql -d $MOX_DB -U $MOX_DB_USER -f ../funcs/post/_ensure_document_del_exists_and_get.sql
-psql -d $MOX_DB -U $MOX_DB_USER -f ../funcs/post/_ensure_document_variant_exists_and_get.sql
-psql -d $MOX_DB -U $MOX_DB_USER -f ../funcs/post/_ensure_document_variant_and_del_exists_and_get_del.sql
-psql -d $MOX_DB -U $MOX_DB_USER -f ../funcs/post/_as_list_dokument_varianter.sql
-
-
-templates2=(  _as_get_prev_registrering _as_create_registrering as_update  as_create_or_import  as_list as_read as_search json-cast-functions _as_sorted _as_filter_unauth )
-
-
-for oiotype in $oiotypes
-do
-	for template in "${templates2[@]}"
-	do
-		psql -d $MOX_DB -U $MOX_DB_USER -f ./generated-files/${template}_${oiotype}.sql
-	done	
-done
-
-cd ..
+exec $PYTHON -m oio_rest.db_templating \
+    | sudo -u postgres psql -v ON_ERROR_STOP=1 -d $MOX_DB

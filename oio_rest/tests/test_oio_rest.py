@@ -313,6 +313,8 @@ class TestOIORestObject(TestCase):
 
         with self.app.test_request_context(method='GET'), \
                 patch("oio_common.db_structure.REAL_DB_STRUCTURE",
+                      new=db_structure), \
+                patch("settings.REAL_DB_STRUCTURE",
                       new=db_structure):
 
             # Act
@@ -1066,7 +1068,10 @@ class TestOIOStandardHierarchy(TestCase):
         db_structure = expected_result.copy()
         db_structure.update({"garbage": "1234"})
 
-        with patch("oio_common.db_structure.REAL_DB_STRUCTURE",
+        with \
+             patch("oio_common.db_structure.REAL_DB_STRUCTURE",
+                   new=db_structure), \
+             patch("settings.REAL_DB_STRUCTURE",
                    new=db_structure):
             # Act
             self.testclass.setup_api(base_url="URL", flask=flask)

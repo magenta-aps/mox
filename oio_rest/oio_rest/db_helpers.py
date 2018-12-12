@@ -7,10 +7,10 @@ from psycopg2._range import DateTimeTZRange
 from psycopg2.extensions import adapt as psyco_adapt, ISQLQuote
 from psycopg2.extensions import register_adapter as psyco_register_adapter
 
+from settings import REAL_DB_STRUCTURE as db_struct
+
 from .contentstore import content_store
 from .custom_exceptions import BadRequestException
-
-from oio_common.db_structure import REAL_DB_STRUCTURE as db_struct
 
 _attribute_fields = {}
 
@@ -20,19 +20,19 @@ def get_attribute_fields(attribute_name):
 
     """
 
-    if len(_attribute_fields) == 0:
-        "Initialize attr fields for ease of use."
-        for c in db_struct:
-            for a in db_struct[c]["attributter"]:
-                _attribute_fields[c + a] = db_struct[c]["attributter"][a] + [
-                    'virkning']
+    if not _attribute_fields:
+        # Initialize attr fields for ease of use.
+        for c, fs in db_struct.items():
+            for a, v in fs["attributter"].items():
+                _attribute_fields[c + a] = v + ['virkning']
+
     return _attribute_fields[attribute_name.lower()]
 
 
 def get_field_type(attribute_name, field_name):
-    for c in db_struct:
-        if "attributter_metadata" in db_struct[c]:
-            for a, fs in db_struct[c]["attributter_metadata"].items():
+    for c, fs in db_struct.items():
+        if "attributter_metadata" in fs:
+            for a, fs in fs["attributter_metadata"].items():
                 if attribute_name == c + a:
                     if field_name in fs and 'type' in fs[field_name]:
                         return fs[field_name]['type']
@@ -55,16 +55,15 @@ def get_relation_field_type(class_name, field_name):
 
 def get_attribute_names(class_name):
     "Return the list of all recognized attributes for this class."
-    if len(_attribute_names) == 0:
-        for c in db_struct:
+    if not _attribute_names:
+        for c, fs in db_struct.items():
             # unfortunately, the ordering of attribute names is of
             # semantic importance to the database code, and the
             # ordering isn't consistent in Python 3.5
             #
             # specifically, the two state types of 'aktivitet' can
             # trigger occasional errors
-            _attribute_names[c] = sorted(
-                c + a for a in db_struct[c]['attributter'])
+            _attribute_names[c] = sorted(c + a for a in fs['attributter'])
     return _attribute_names[class_name.lower()]
 
 
@@ -87,10 +86,10 @@ _relation_names = {}
 def get_relation_names(class_name):
     "Return the list of all recognized relations for this class."
     if len(_relation_names) == 0:
-        for c in db_struct:
+        for c, fs in db_struct.items():
             _relation_names[c] = (
-                db_struct[c]['relationer_nul_til_en'] +
-                db_struct[c]['relationer_nul_til_mange']
+                fs['relationer_nul_til_en'] +
+                fs['relationer_nul_til_mange']
             )
     return _relation_names[class_name.lower()]
 
@@ -137,7 +136,7 @@ def get_valid_search_parameters(class_name):
 
             _search_params[c] = params
 
-        # Add 'Dokument'-specific parameters not present in db_struct
+        # Add 'Dokument'-specific parameters not present in db_structure
         if _search_params.get('dokument'):
             _search_params['dokument'].update(
                 ['varianttekst', 'deltekst'] +

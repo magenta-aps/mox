@@ -21,6 +21,7 @@ import testing.postgresql
 import psycopg2.pool
 
 from .. import app
+from .. import db_templating
 
 import settings
 
@@ -47,54 +48,12 @@ def list_db_sql(dirname):
     return glob.glob(os.path.join(TOP_DIR, 'db', dirname, '*.sql'))
 
 
-def _get_db_setup_sql():
-    """Return the postgresql + pl/pgsql code necessary for our database
-    to work.
-
-    Brave souls can find db/mkdb.sh in the git history to see what this
-    function replaces."""
-
-    yield '''
-    GRANT ALL ON DATABASE "{db_name}" TO "{db_user}";
-    '''.format(db_name=settings.DATABASE,
-               db_user=settings.DB_USER)
-
-    with open(os.path.join(TOP_DIR, "db", "basis", "dbserver_prep.sql")) as fp:
-        yield fp.read()
-
-    yield '''
-    CREATE SCHEMA actual_state AUTHORIZATION "{db_user}";
-
-    ALTER DATABASE "{db_name}" SET search_path TO actual_state,public;
-    ALTER DATABASE "{db_name}" SET DATESTYLE to 'ISO, YMD';
-    ALTER DATABASE "{db_name}" SET INTERVALSTYLE to 'sql_standard';
-    '''.format(db_name=settings.DATABASE,
-               db_user=settings.DB_USER)
-
-    with open(os.path.join(TOP_DIR, "db", "basis", "common_types.sql")) as fp:
-        yield fp.read()
-
-    for filename in list_db_sql('funcs/pre'):
-        with open(filename) as fp:
-            yield fp.read()
-
-    yield subprocess.check_output([
-        sys.executable,
-        os.path.join(BASE_DIR, 'apply-templates.py'),
-        '-w',
-    ]).decode('utf-8')
-
-    for filename in list_db_sql('funcs/post'):
-        with open(filename) as fp:
-            yield fp.read()
-
-
 def _initdb():
     with psycopg2.connect(psql().url()) as conn:
         conn.autocommit = True
 
         with conn.cursor() as curs:
-            curs.execute('CREATE USER {} WITH SUPERUSER PASSWORD {!r}'.format(
+            curs.execute('CREATE USER {} WITH PASSWORD {!r}'.format(
                 settings.DB_USER, settings.DB_PASSWORD,
             ))
 
@@ -103,14 +62,12 @@ def _initdb():
             ))
 
     with psycopg2.connect(psql().url(
-            database=settings.DATABASE,
-            user=settings.DB_USER,
-            password=settings.DB_PASSWORD,
+        database=settings.DATABASE,
     )) as conn:
         conn.autocommit = True
 
         with conn.cursor() as curs:
-            for chunk in _get_db_setup_sql():
+            for chunk in db_templating.get_sql():
                 curs.execute(chunk)
 
 
@@ -142,11 +99,9 @@ class TestCaseMixin(object):
                 yield curs
 
     def reset_db(self):
-        from oio_common.db_structure import DATABASE_STRUCTURE
-
         with self.db_cursor() as curs:
             curs.execute("TRUNCATE TABLE {} RESTART IDENTITY CASCADE".format(
-                ', '.join(sorted(DATABASE_STRUCTURE)),
+                ', '.join(sorted(settings.DB_STRUCTURE.DATABASE_STRUCTURE)),
             ))
 
     # for compatibility :-/
