@@ -6,7 +6,7 @@
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 --create custom type sans db-ids to be able to do "clean" function signatures "for the outside world".
@@ -110,7 +110,7 @@ CREATE OR REPLACE FUNCTION _aktivitet_aktoer_attr_repr_urn_to_text(AktivitetAkto
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -584,7 +584,7 @@ CREATE INDEX aktivitet_relation_pat_virkning_notetekst
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -720,7 +720,7 @@ $$
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -743,7 +743,7 @@ $BODY$ LANGUAGE sql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -812,7 +812,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -1397,7 +1397,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -1690,7 +1690,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 CREATE OR REPLACE FUNCTION as_list_aktivitet(aktivitet_uuids uuid[],
@@ -1894,7 +1894,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -1925,7 +1925,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -3532,7 +3532,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -3700,7 +3700,7 @@ create cast (AktivitetType as json) with function actual_state._cast_aktivitetTy
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -3746,7 +3746,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -4020,7 +4020,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 --create custom type sans db-ids to be able to do "clean" function signatures "for the outside world".
@@ -4087,7 +4087,7 @@ CREATE TYPE BrugerType AS
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -4431,7 +4431,7 @@ CREATE INDEX bruger_relation_pat_virkning_notetekst
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -4539,7 +4539,7 @@ $$
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -4562,7 +4562,7 @@ $BODY$ LANGUAGE sql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -4631,7 +4631,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -5030,7 +5030,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -5224,7 +5224,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 CREATE OR REPLACE FUNCTION as_list_bruger(bruger_uuids uuid[],
@@ -5391,7 +5391,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -5422,7 +5422,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -6456,7 +6456,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -6617,7 +6617,7 @@ create cast (BrugerType as json) with function actual_state._cast_brugerType_to_
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -6663,7 +6663,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -6884,7 +6884,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 --create custom type sans db-ids to be able to do "clean" function signatures "for the outside world".
@@ -7023,7 +7023,7 @@ CREATE TYPE _DokumentVariantDelKey AS
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -7757,7 +7757,7 @@ CREATE INDEX dokument_del_relation_pat_virkning_notetekst
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -8007,7 +8007,7 @@ $$
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -8030,7 +8030,7 @@ $BODY$ LANGUAGE sql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -8099,7 +8099,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -9131,7 +9131,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -9480,7 +9480,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 CREATE OR REPLACE FUNCTION as_list_dokument(dokument_uuids uuid[],
@@ -9656,7 +9656,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -9687,7 +9687,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -11347,7 +11347,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -11508,7 +11508,7 @@ create cast (DokumentType as json) with function actual_state._cast_dokumentType
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -11554,7 +11554,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -11823,7 +11823,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 --create custom type sans db-ids to be able to do "clean" function signatures "for the outside world".
@@ -11894,7 +11894,7 @@ CREATE TYPE FacetType AS
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -12286,7 +12286,7 @@ CREATE INDEX facet_relation_pat_virkning_notetekst
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -12394,7 +12394,7 @@ $$
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -12417,7 +12417,7 @@ $BODY$ LANGUAGE sql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -12486,7 +12486,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -12917,7 +12917,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -13119,7 +13119,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 CREATE OR REPLACE FUNCTION as_list_facet(facet_uuids uuid[],
@@ -13290,7 +13290,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -13321,7 +13321,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -14383,7 +14383,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -14544,7 +14544,7 @@ create cast (FacetType as json) with function actual_state._cast_facetType_to_js
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -14590,7 +14590,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -14835,7 +14835,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 --create custom type sans db-ids to be able to do "clean" function signatures "for the outside world".
@@ -14920,7 +14920,7 @@ CREATE TYPE IndsatsType AS
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -15342,7 +15342,7 @@ CREATE INDEX indsats_relation_pat_virkning_notetekst
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -15478,7 +15478,7 @@ $$
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -15501,7 +15501,7 @@ $BODY$ LANGUAGE sql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -15570,7 +15570,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -16114,7 +16114,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -16381,7 +16381,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 CREATE OR REPLACE FUNCTION as_list_indsats(indsats_uuids uuid[],
@@ -16581,7 +16581,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -16612,7 +16612,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -18119,7 +18119,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -18287,7 +18287,7 @@ create cast (IndsatsType as json) with function actual_state._cast_indsatsType_t
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -18333,7 +18333,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -18589,7 +18589,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 --create custom type sans db-ids to be able to do "clean" function signatures "for the outside world".
@@ -18656,7 +18656,7 @@ CREATE TYPE InteressefaellesskabType AS
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -19000,7 +19000,7 @@ CREATE INDEX interessefaellesskab_relation_pat_virkning_notetekst
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -19108,7 +19108,7 @@ $$
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -19131,7 +19131,7 @@ $BODY$ LANGUAGE sql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -19200,7 +19200,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -19599,7 +19599,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -19793,7 +19793,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 CREATE OR REPLACE FUNCTION as_list_interessefaellesskab(interessefaellesskab_uuids uuid[],
@@ -19960,7 +19960,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -19991,7 +19991,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -21025,7 +21025,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -21186,7 +21186,7 @@ create cast (InteressefaellesskabType as json) with function actual_state._cast_
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -21232,7 +21232,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -21453,7 +21453,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 --create custom type sans db-ids to be able to do "clean" function signatures "for the outside world".
@@ -21521,7 +21521,7 @@ CREATE TYPE ItsystemType AS
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -21877,7 +21877,7 @@ CREATE INDEX itsystem_relation_pat_virkning_notetekst
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -21985,7 +21985,7 @@ $$
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -22008,7 +22008,7 @@ $BODY$ LANGUAGE sql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -22077,7 +22077,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -22484,7 +22484,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -22680,7 +22680,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 CREATE OR REPLACE FUNCTION as_list_itsystem(itsystem_uuids uuid[],
@@ -22848,7 +22848,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -22879,7 +22879,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -23920,7 +23920,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -24081,7 +24081,7 @@ create cast (ItsystemType as json) with function actual_state._cast_itsystemType
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -24127,7 +24127,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -24354,7 +24354,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 --create custom type sans db-ids to be able to do "clean" function signatures "for the outside world".
@@ -24434,7 +24434,7 @@ CREATE TYPE KlasseType AS
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -24883,7 +24883,7 @@ CREATE INDEX klasse_relation_pat_virkning_notetekst
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -25022,7 +25022,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr KlasseSoegeordType[])
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -25045,7 +25045,7 @@ $BODY$ LANGUAGE sql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -25114,7 +25114,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -25610,7 +25610,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -25844,7 +25844,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 CREATE OR REPLACE FUNCTION as_list_klasse(klasse_uuids uuid[],
@@ -26061,7 +26061,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -26092,7 +26092,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -27221,7 +27221,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -27382,7 +27382,7 @@ create cast (KlasseType as json) with function actual_state._cast_klasseType_to_
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -27428,7 +27428,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -27673,7 +27673,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 --create custom type sans db-ids to be able to do "clean" function signatures "for the outside world".
@@ -27741,7 +27741,7 @@ CREATE TYPE KlassifikationType AS
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -28097,7 +28097,7 @@ CREATE INDEX klassifikation_relation_pat_virkning_notetekst
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -28205,7 +28205,7 @@ $$
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -28228,7 +28228,7 @@ $BODY$ LANGUAGE sql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -28297,7 +28297,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -28704,7 +28704,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -28900,7 +28900,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 CREATE OR REPLACE FUNCTION as_list_klassifikation(klassifikation_uuids uuid[],
@@ -29068,7 +29068,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -29099,7 +29099,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -30140,7 +30140,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -30301,7 +30301,7 @@ create cast (KlassifikationType as json) with function actual_state._cast_klassi
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -30347,7 +30347,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -30574,7 +30574,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 --create custom type sans db-ids to be able to do "clean" function signatures "for the outside world".
@@ -30646,7 +30646,7 @@ CREATE TYPE LoghaendelseType AS
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -31050,7 +31050,7 @@ CREATE INDEX loghaendelse_relation_pat_virkning_notetekst
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -31158,7 +31158,7 @@ $$
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -31181,7 +31181,7 @@ $BODY$ LANGUAGE sql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -31250,7 +31250,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -31689,7 +31689,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -31893,7 +31893,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 CREATE OR REPLACE FUNCTION as_list_loghaendelse(loghaendelse_uuids uuid[],
@@ -32065,7 +32065,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -32096,7 +32096,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -33165,7 +33165,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -33326,7 +33326,7 @@ create cast (LoghaendelseType as json) with function actual_state._cast_loghaend
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -33372,7 +33372,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -33623,7 +33623,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 --create custom type sans db-ids to be able to do "clean" function signatures "for the outside world".
@@ -33689,7 +33689,7 @@ CREATE TYPE OrganisationType AS
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -34021,7 +34021,7 @@ CREATE INDEX organisation_relation_pat_virkning_notetekst
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -34129,7 +34129,7 @@ $$
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -34152,7 +34152,7 @@ $BODY$ LANGUAGE sql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -34221,7 +34221,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -34612,7 +34612,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -34804,7 +34804,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 CREATE OR REPLACE FUNCTION as_list_organisation(organisation_uuids uuid[],
@@ -34970,7 +34970,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -35001,7 +35001,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -36028,7 +36028,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -36189,7 +36189,7 @@ create cast (OrganisationType as json) with function actual_state._cast_organisa
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -36235,7 +36235,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -36450,7 +36450,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 --create custom type sans db-ids to be able to do "clean" function signatures "for the outside world".
@@ -36516,7 +36516,7 @@ CREATE TYPE OrganisationenhedType AS
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -36848,7 +36848,7 @@ CREATE INDEX organisationenhed_relation_pat_virkning_notetekst
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -36956,7 +36956,7 @@ $$
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -36979,7 +36979,7 @@ $BODY$ LANGUAGE sql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -37048,7 +37048,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -37439,7 +37439,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -37631,7 +37631,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 CREATE OR REPLACE FUNCTION as_list_organisationenhed(organisationenhed_uuids uuid[],
@@ -37797,7 +37797,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -37828,7 +37828,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -38855,7 +38855,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -39016,7 +39016,7 @@ create cast (OrganisationenhedType as json) with function actual_state._cast_org
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -39062,7 +39062,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -39277,7 +39277,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 --create custom type sans db-ids to be able to do "clean" function signatures "for the outside world".
@@ -39343,7 +39343,7 @@ CREATE TYPE OrganisationfunktionType AS
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -39675,7 +39675,7 @@ CREATE INDEX organisationfunktion_relation_pat_virkning_notetekst
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -39783,7 +39783,7 @@ $$
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -39806,7 +39806,7 @@ $BODY$ LANGUAGE sql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -39875,7 +39875,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -40266,7 +40266,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -40458,7 +40458,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 CREATE OR REPLACE FUNCTION as_list_organisationfunktion(organisationfunktion_uuids uuid[],
@@ -40624,7 +40624,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -40655,7 +40655,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -41682,7 +41682,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -41843,7 +41843,7 @@ create cast (OrganisationfunktionType as json) with function actual_state._cast_
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -41889,7 +41889,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -42104,7 +42104,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 --create custom type sans db-ids to be able to do "clean" function signatures "for the outside world".
@@ -42202,7 +42202,7 @@ CREATE Type _SagRelationMaxIndex AS
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -42654,7 +42654,7 @@ CREATE INDEX sag_relation_pat_virkning_notetekst
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -42762,7 +42762,7 @@ $$
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -42785,7 +42785,7 @@ $BODY$ LANGUAGE sql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -42854,7 +42854,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -43420,7 +43420,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -43718,7 +43718,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 CREATE OR REPLACE FUNCTION as_list_sag(sag_uuids uuid[],
@@ -43895,7 +43895,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -43926,7 +43926,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -45081,7 +45081,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -45242,7 +45242,7 @@ create cast (SagType as json) with function actual_state._cast_sagType_to_json(S
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -45288,7 +45288,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -45557,7 +45557,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 --create custom type sans db-ids to be able to do "clean" function signatures "for the outside world".
@@ -45645,7 +45645,7 @@ CREATE TYPE TilstandType AS
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -46039,7 +46039,7 @@ CREATE INDEX tilstand_relation_pat_virkning_notetekst
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -46175,7 +46175,7 @@ $$
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -46198,7 +46198,7 @@ $BODY$ LANGUAGE sql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -46267,7 +46267,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -46792,7 +46792,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -47069,7 +47069,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 CREATE OR REPLACE FUNCTION as_list_tilstand(tilstand_uuids uuid[],
@@ -47268,7 +47268,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -47299,7 +47299,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -48486,7 +48486,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -48654,7 +48654,7 @@ create cast (TilstandType as json) with function actual_state._cast_tilstandType
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 
@@ -48700,7 +48700,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-NOTICE: This file is auto-generated using the script: oio_rest/apply-templates.py
+NOTICE: This file is auto-generated!
 */
 
 

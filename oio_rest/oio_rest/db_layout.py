@@ -1,14 +1,7 @@
 #!/usr/bin/env python3
-"""
-    apply-templates.py
-    ~~~~~~~~~~~~~~~~~~
+"""This module contains routines for generating the database from
+Jinja2 templates.
 
-    This script generates a bunch of sql files from jinja2 templates.
-
-    More information in `../db/db-templating/`.
-
-    Example usage:
-        $ ./apply-template.py  # from a Python 3 environment
 """
 
 from collections import OrderedDict
@@ -52,13 +45,11 @@ def render_templates():
             template = template_env.get_template(template_file)
 
             context = copy.deepcopy(db_structure[oio_type])
-            context["script_signature"] = "apply-template.py %s %s" % (
-                oio_type,
-                template_file,
-            )
+
             # it is important that the order is stable, as some templates rely on this
             context["tilstande"] = OrderedDict(context["tilstande"])
             context["attributter"] = OrderedDict(context["attributter"])
+
             context["oio_type"] = oio_type.lower()
 
             try:
