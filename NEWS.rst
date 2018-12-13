@@ -1,3 +1,13 @@
+Version 0.9.2, 13 December 2018
+--------------------------------
+
+Hotfix:
+
+* Upgrade `Requests <https://requests.readthedocs.io/>`_ to
+  version 1.21.4.
+* Upgrade `Flask <https://palletsprojects.com/p/flask/>`_ to
+  version 1.0.2.
+
 Version 0.9.1, 30 August 2018
 --------------------------------
 
