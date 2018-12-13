@@ -1,3 +1,11 @@
+Version 0.9.2, 13 December 2018
+--------------------------------
+
+Hotfix:
+
+* Upgrade dependency on `Requests <https://requests.readthedocs.io/en/master/>`_ to
+  version 1.21.4.
+
 Version 0.9.1, 30 August 2018
 --------------------------------
 
