@@ -13,6 +13,7 @@ Welcome to the LoRa MOX documentation!
    user/setup-dev-env.rst
    user/querying-data.rst
    user/rest-tutorial.rst
+   user/api-notes.rst
 
 .. toctree::
    :maxdepth: 1
@@ -28,7 +29,6 @@ Welcome to the LoRa MOX documentation!
    :caption: Contents:
 
    ../README.rst
-   API-NOTES.rst
    praesentation.rst
    log_haendelse.rst
 
