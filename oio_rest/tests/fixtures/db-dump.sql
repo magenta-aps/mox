@@ -217,20 +217,23 @@ ALTER TABLE aktivitet_attr_egenskaber_id_seq
 
 
 CREATE TABLE aktivitet_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('aktivitet_attr_egenskaber_id_seq'::regclass),
+    id bigint NOT NULL DEFAULT nextval('aktivitet_attr_egenskaber_id_seq'::regclass), 
+        brugervendtnoegle text NOT NULL,
      
-       brugervendtnoegle text not null, 
-       aktivitetnavn text  null, 
-       beskrivelse text  null, 
-       starttidspunkt 
-           timestamptz   null, 
-       sluttidspunkt 
-           timestamptz   null, 
-       tidsforbrug 
-           interval(0)   null, 
-       formaal text  null,
-    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
-    aktivitet_registrering_id bigint not null,
+        aktivitetnavn text  NULL,
+     
+        beskrivelse text  NULL,
+     
+        starttidspunkt timestamptz  NULL,
+     
+        sluttidspunkt timestamptz  NULL,
+     
+        tidsforbrug interval(0)  NULL,
+     
+        formaal text  NULL,
+    
+    virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
+    aktivitet_registrering_id bigint NOT NULL,
     CONSTRAINT aktivitet_attr_egenskaber_pkey PRIMARY KEY (id),
     CONSTRAINT aktivitet_attr_egenskaber_forkey_aktivitetregistrering FOREIGN KEY (aktivitet_registrering_id) REFERENCES aktivitet_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT aktivitet_attr_egenskaber_exclude_virkning_overlap EXCLUDE USING gist (aktivitet_registrering_id WITH =, _composite_type_to_time_range(virkning) WITH &&)
@@ -4192,13 +4195,15 @@ ALTER TABLE bruger_attr_egenskaber_id_seq
 
 
 CREATE TABLE bruger_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('bruger_attr_egenskaber_id_seq'::regclass),
+    id bigint NOT NULL DEFAULT nextval('bruger_attr_egenskaber_id_seq'::regclass), 
+        brugervendtnoegle text NOT NULL,
      
-       brugervendtnoegle text not null, 
-       brugernavn text  null, 
-       brugertype text  null,
-    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
-    bruger_registrering_id bigint not null,
+        brugernavn text  NULL,
+     
+        brugertype text  NULL,
+    
+    virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
+    bruger_registrering_id bigint NOT NULL,
     CONSTRAINT bruger_attr_egenskaber_pkey PRIMARY KEY (id),
     CONSTRAINT bruger_attr_egenskaber_forkey_brugerregistrering FOREIGN KEY (bruger_registrering_id) REFERENCES bruger_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT bruger_attr_egenskaber_exclude_virkning_overlap EXCLUDE USING gist (bruger_registrering_id WITH =, _composite_type_to_time_range(virkning) WITH &&)
@@ -7129,23 +7134,27 @@ ALTER TABLE dokument_attr_egenskaber_id_seq
 
 
 CREATE TABLE dokument_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('dokument_attr_egenskaber_id_seq'::regclass),
+    id bigint NOT NULL DEFAULT nextval('dokument_attr_egenskaber_id_seq'::regclass), 
+        brugervendtnoegle text NOT NULL,
      
-       brugervendtnoegle text not null, 
-       beskrivelse text not null, 
-       brevdato 
-           date  not null, 
-       kassationskode text  null, 
-       major 
-           int   null, 
-       minor 
-           int   null, 
-       offentlighedundtaget 
-           offentlighedundtagettype   null, 
-       titel text not null, 
-       dokumenttype text not null,
-    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
-    dokument_registrering_id bigint not null,
+        beskrivelse text NOT NULL,
+     
+        brevdato date NOT NULL,
+     
+        kassationskode text  NULL,
+     
+        major int  NULL,
+     
+        minor int  NULL,
+     
+        offentlighedundtaget offentlighedundtagettype  NULL,
+     
+        titel text NOT NULL,
+     
+        dokumenttype text NOT NULL,
+    
+    virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
+    dokument_registrering_id bigint NOT NULL,
     CONSTRAINT dokument_attr_egenskaber_pkey PRIMARY KEY (id),
     CONSTRAINT dokument_attr_egenskaber_forkey_dokumentregistrering FOREIGN KEY (dokument_registrering_id) REFERENCES dokument_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT dokument_attr_egenskaber_exclude_virkning_overlap EXCLUDE USING gist (dokument_registrering_id WITH =, _composite_type_to_time_range(virkning) WITH &&)
@@ -11997,17 +12006,23 @@ ALTER TABLE facet_attr_egenskaber_id_seq
 
 
 CREATE TABLE facet_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('facet_attr_egenskaber_id_seq'::regclass),
+    id bigint NOT NULL DEFAULT nextval('facet_attr_egenskaber_id_seq'::regclass), 
+        brugervendtnoegle text NOT NULL,
      
-       brugervendtnoegle text not null, 
-       beskrivelse text  null, 
-       opbygning text  null, 
-       ophavsret text  null, 
-       plan text  null, 
-       supplement text  null, 
-       retskilde text  null,
-    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
-    facet_registrering_id bigint not null,
+        beskrivelse text  NULL,
+     
+        opbygning text  NULL,
+     
+        ophavsret text  NULL,
+     
+        plan text  NULL,
+     
+        supplement text  NULL,
+     
+        retskilde text  NULL,
+    
+    virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
+    facet_registrering_id bigint NOT NULL,
     CONSTRAINT facet_attr_egenskaber_pkey PRIMARY KEY (id),
     CONSTRAINT facet_attr_egenskaber_forkey_facetregistrering FOREIGN KEY (facet_registrering_id) REFERENCES facet_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT facet_attr_egenskaber_exclude_virkning_overlap EXCLUDE USING gist (facet_registrering_id WITH =, _composite_type_to_time_range(virkning) WITH &&)
@@ -15024,16 +15039,17 @@ ALTER TABLE indsats_attr_egenskaber_id_seq
 
 
 CREATE TABLE indsats_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('indsats_attr_egenskaber_id_seq'::regclass),
+    id bigint NOT NULL DEFAULT nextval('indsats_attr_egenskaber_id_seq'::regclass), 
+        brugervendtnoegle text NOT NULL,
      
-       brugervendtnoegle text not null, 
-       beskrivelse text  null, 
-       starttidspunkt 
-           timestamptz   null, 
-       sluttidspunkt 
-           timestamptz   null,
-    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
-    indsats_registrering_id bigint not null,
+        beskrivelse text  NULL,
+     
+        starttidspunkt timestamptz  NULL,
+     
+        sluttidspunkt timestamptz  NULL,
+    
+    virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
+    indsats_registrering_id bigint NOT NULL,
     CONSTRAINT indsats_attr_egenskaber_pkey PRIMARY KEY (id),
     CONSTRAINT indsats_attr_egenskaber_forkey_indsatsregistrering FOREIGN KEY (indsats_registrering_id) REFERENCES indsats_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT indsats_attr_egenskaber_exclude_virkning_overlap EXCLUDE USING gist (indsats_registrering_id WITH =, _composite_type_to_time_range(virkning) WITH &&)
@@ -18759,13 +18775,15 @@ ALTER TABLE interessefaellesskab_attr_egenskaber_id_seq
 
 
 CREATE TABLE interessefaellesskab_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('interessefaellesskab_attr_egenskaber_id_seq'::regclass),
+    id bigint NOT NULL DEFAULT nextval('interessefaellesskab_attr_egenskaber_id_seq'::regclass), 
+        brugervendtnoegle text NOT NULL,
      
-       brugervendtnoegle text not null, 
-       interessefaellesskabsnavn text  null, 
-       interessefaellesskabstype text  null,
-    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
-    interessefaellesskab_registrering_id bigint not null,
+        interessefaellesskabsnavn text  NULL,
+     
+        interessefaellesskabstype text  NULL,
+    
+    virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
+    interessefaellesskab_registrering_id bigint NOT NULL,
     CONSTRAINT interessefaellesskab_attr_egenskaber_pkey PRIMARY KEY (id),
     CONSTRAINT interessefaellesskab_attr_egenskaber_forkey_interessefaellesskabregistrering FOREIGN KEY (interessefaellesskab_registrering_id) REFERENCES interessefaellesskab_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT interessefaellesskab_attr_egenskaber_exclude_virkning_overlap EXCLUDE USING gist (interessefaellesskab_registrering_id WITH =, _composite_type_to_time_range(virkning) WITH &&)
@@ -21625,15 +21643,17 @@ ALTER TABLE itsystem_attr_egenskaber_id_seq
 
 
 CREATE TABLE itsystem_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('itsystem_attr_egenskaber_id_seq'::regclass),
+    id bigint NOT NULL DEFAULT nextval('itsystem_attr_egenskaber_id_seq'::regclass), 
+        brugervendtnoegle text NOT NULL,
      
-       brugervendtnoegle text not null, 
-       itsystemnavn text  null, 
-       itsystemtype text  null, 
-       konfigurationreference 
-           text[]   null,
-    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
-    itsystem_registrering_id bigint not null,
+        itsystemnavn text  NULL,
+     
+        itsystemtype text  NULL,
+     
+        konfigurationreference text[]  NULL,
+    
+    virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
+    itsystem_registrering_id bigint NOT NULL,
     CONSTRAINT itsystem_attr_egenskaber_pkey PRIMARY KEY (id),
     CONSTRAINT itsystem_attr_egenskaber_forkey_itsystemregistrering FOREIGN KEY (itsystem_registrering_id) REFERENCES itsystem_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT itsystem_attr_egenskaber_exclude_virkning_overlap EXCLUDE USING gist (itsystem_registrering_id WITH =, _composite_type_to_time_range(virkning) WITH &&)
@@ -24538,17 +24558,23 @@ ALTER TABLE klasse_attr_egenskaber_id_seq
 
 
 CREATE TABLE klasse_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('klasse_attr_egenskaber_id_seq'::regclass),
+    id bigint NOT NULL DEFAULT nextval('klasse_attr_egenskaber_id_seq'::regclass), 
+        brugervendtnoegle text NOT NULL,
      
-       brugervendtnoegle text not null, 
-       beskrivelse text  null, 
-       eksempel text  null, 
-       omfang text  null, 
-       titel text not null, 
-       retskilde text  null, 
-       aendringsnotat text  null,
-    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
-    klasse_registrering_id bigint not null,
+        beskrivelse text  NULL,
+     
+        eksempel text  NULL,
+     
+        omfang text  NULL,
+     
+        titel text NOT NULL,
+     
+        retskilde text  NULL,
+     
+        aendringsnotat text  NULL,
+    
+    virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
+    klasse_registrering_id bigint NOT NULL,
     CONSTRAINT klasse_attr_egenskaber_pkey PRIMARY KEY (id),
     CONSTRAINT klasse_attr_egenskaber_forkey_klasseregistrering FOREIGN KEY (klasse_registrering_id) REFERENCES klasse_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT klasse_attr_egenskaber_exclude_virkning_overlap EXCLUDE USING gist (klasse_registrering_id WITH =, _composite_type_to_time_range(virkning) WITH &&)
@@ -27846,14 +27872,17 @@ ALTER TABLE klassifikation_attr_egenskaber_id_seq
 
 
 CREATE TABLE klassifikation_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('klassifikation_attr_egenskaber_id_seq'::regclass),
+    id bigint NOT NULL DEFAULT nextval('klassifikation_attr_egenskaber_id_seq'::regclass), 
+        brugervendtnoegle text NOT NULL,
      
-       brugervendtnoegle text not null, 
-       beskrivelse text  null, 
-       kaldenavn text  null, 
-       ophavsret text  null,
-    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
-    klassifikation_registrering_id bigint not null,
+        beskrivelse text  NULL,
+     
+        kaldenavn text  NULL,
+     
+        ophavsret text  NULL,
+    
+    virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
+    klassifikation_registrering_id bigint NOT NULL,
     CONSTRAINT klassifikation_attr_egenskaber_pkey PRIMARY KEY (id),
     CONSTRAINT klassifikation_attr_egenskaber_forkey_klassifikationregistrering FOREIGN KEY (klassifikation_registrering_id) REFERENCES klassifikation_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT klassifikation_attr_egenskaber_exclude_virkning_overlap EXCLUDE USING gist (klassifikation_registrering_id WITH =, _composite_type_to_time_range(virkning) WITH &&)
@@ -30752,18 +30781,25 @@ ALTER TABLE loghaendelse_attr_egenskaber_id_seq
 
 
 CREATE TABLE loghaendelse_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('loghaendelse_attr_egenskaber_id_seq'::regclass),
+    id bigint NOT NULL DEFAULT nextval('loghaendelse_attr_egenskaber_id_seq'::regclass), 
+        service text  NULL,
      
-       service text  null, 
-       klasse text  null, 
-       tidspunkt text  null, 
-       operation text  null, 
-       objekttype text  null, 
-       returkode text  null, 
-       returtekst text  null, 
-       note text  null,
-    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
-    loghaendelse_registrering_id bigint not null,
+        klasse text  NULL,
+     
+        tidspunkt text  NULL,
+     
+        operation text  NULL,
+     
+        objekttype text  NULL,
+     
+        returkode text  NULL,
+     
+        returtekst text  NULL,
+     
+        note text  NULL,
+    
+    virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
+    loghaendelse_registrering_id bigint NOT NULL,
     CONSTRAINT loghaendelse_attr_egenskaber_pkey PRIMARY KEY (id),
     CONSTRAINT loghaendelse_attr_egenskaber_forkey_loghaendelseregistrering FOREIGN KEY (loghaendelse_registrering_id) REFERENCES loghaendelse_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT loghaendelse_attr_egenskaber_exclude_virkning_overlap EXCLUDE USING gist (loghaendelse_registrering_id WITH =, _composite_type_to_time_range(virkning) WITH &&)
@@ -33796,12 +33832,13 @@ ALTER TABLE organisation_attr_egenskaber_id_seq
 
 
 CREATE TABLE organisation_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('organisation_attr_egenskaber_id_seq'::regclass),
+    id bigint NOT NULL DEFAULT nextval('organisation_attr_egenskaber_id_seq'::regclass), 
+        brugervendtnoegle text NOT NULL,
      
-       brugervendtnoegle text not null, 
-       organisationsnavn text  null,
-    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
-    organisation_registrering_id bigint not null,
+        organisationsnavn text  NULL,
+    
+    virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
+    organisation_registrering_id bigint NOT NULL,
     CONSTRAINT organisation_attr_egenskaber_pkey PRIMARY KEY (id),
     CONSTRAINT organisation_attr_egenskaber_forkey_organisationregistrering FOREIGN KEY (organisation_registrering_id) REFERENCES organisation_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT organisation_attr_egenskaber_exclude_virkning_overlap EXCLUDE USING gist (organisation_registrering_id WITH =, _composite_type_to_time_range(virkning) WITH &&)
@@ -36624,12 +36661,13 @@ ALTER TABLE organisationenhed_attr_egenskaber_id_seq
 
 
 CREATE TABLE organisationenhed_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('organisationenhed_attr_egenskaber_id_seq'::regclass),
+    id bigint NOT NULL DEFAULT nextval('organisationenhed_attr_egenskaber_id_seq'::regclass), 
+        brugervendtnoegle text NOT NULL,
      
-       brugervendtnoegle text not null, 
-       enhedsnavn text  null,
-    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
-    organisationenhed_registrering_id bigint not null,
+        enhedsnavn text  NULL,
+    
+    virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
+    organisationenhed_registrering_id bigint NOT NULL,
     CONSTRAINT organisationenhed_attr_egenskaber_pkey PRIMARY KEY (id),
     CONSTRAINT organisationenhed_attr_egenskaber_forkey_organisationenhedregistrering FOREIGN KEY (organisationenhed_registrering_id) REFERENCES organisationenhed_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT organisationenhed_attr_egenskaber_exclude_virkning_overlap EXCLUDE USING gist (organisationenhed_registrering_id WITH =, _composite_type_to_time_range(virkning) WITH &&)
@@ -39452,12 +39490,13 @@ ALTER TABLE organisationfunktion_attr_egenskaber_id_seq
 
 
 CREATE TABLE organisationfunktion_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('organisationfunktion_attr_egenskaber_id_seq'::regclass),
+    id bigint NOT NULL DEFAULT nextval('organisationfunktion_attr_egenskaber_id_seq'::regclass), 
+        brugervendtnoegle text NOT NULL,
      
-       brugervendtnoegle text not null, 
-       funktionsnavn text  null,
-    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
-    organisationfunktion_registrering_id bigint not null,
+        funktionsnavn text  NULL,
+    
+    virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
+    organisationfunktion_registrering_id bigint NOT NULL,
     CONSTRAINT organisationfunktion_attr_egenskaber_pkey PRIMARY KEY (id),
     CONSTRAINT organisationfunktion_attr_egenskaber_forkey_organisationfunktionregistrering FOREIGN KEY (organisationfunktion_registrering_id) REFERENCES organisationfunktion_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT organisationfunktion_attr_egenskaber_exclude_virkning_overlap EXCLUDE USING gist (organisationfunktion_registrering_id WITH =, _composite_type_to_time_range(virkning) WITH &&)
@@ -42312,22 +42351,27 @@ ALTER TABLE sag_attr_egenskaber_id_seq
 
 
 CREATE TABLE sag_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('sag_attr_egenskaber_id_seq'::regclass),
+    id bigint NOT NULL DEFAULT nextval('sag_attr_egenskaber_id_seq'::regclass), 
+        brugervendtnoegle text NOT NULL,
      
-       brugervendtnoegle text not null, 
-       afleveret 
-           boolean   null, 
-       beskrivelse text not null, 
-       hjemmel text  null, 
-       kassationskode text not null, 
-       offentlighedundtaget 
-           offentlighedundtagettype   null, 
-       principiel 
-           boolean   null, 
-       sagsnummer text not null, 
-       titel text not null,
-    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
-    sag_registrering_id bigint not null,
+        afleveret boolean  NULL,
+     
+        beskrivelse text NOT NULL,
+     
+        hjemmel text  NULL,
+     
+        kassationskode text NOT NULL,
+     
+        offentlighedundtaget offentlighedundtagettype  NULL,
+     
+        principiel boolean  NULL,
+     
+        sagsnummer text NOT NULL,
+     
+        titel text NOT NULL,
+    
+    virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
+    sag_registrering_id bigint NOT NULL,
     CONSTRAINT sag_attr_egenskaber_pkey PRIMARY KEY (id),
     CONSTRAINT sag_attr_egenskaber_forkey_sagregistrering FOREIGN KEY (sag_registrering_id) REFERENCES sag_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT sag_attr_egenskaber_exclude_virkning_overlap EXCLUDE USING gist (sag_registrering_id WITH =, _composite_type_to_time_range(virkning) WITH &&)
@@ -45753,12 +45797,13 @@ ALTER TABLE tilstand_attr_egenskaber_id_seq
 
 
 CREATE TABLE tilstand_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('tilstand_attr_egenskaber_id_seq'::regclass),
+    id bigint NOT NULL DEFAULT nextval('tilstand_attr_egenskaber_id_seq'::regclass), 
+        brugervendtnoegle text NOT NULL,
      
-       brugervendtnoegle text not null, 
-       beskrivelse text  null,
-    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
-    tilstand_registrering_id bigint not null,
+        beskrivelse text  NULL,
+    
+    virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
+    tilstand_registrering_id bigint NOT NULL,
     CONSTRAINT tilstand_attr_egenskaber_pkey PRIMARY KEY (id),
     CONSTRAINT tilstand_attr_egenskaber_forkey_tilstandregistrering FOREIGN KEY (tilstand_registrering_id) REFERENCES tilstand_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT tilstand_attr_egenskaber_exclude_virkning_overlap EXCLUDE USING gist (tilstand_registrering_id WITH =, _composite_type_to_time_range(virkning) WITH &&)

@@ -114,11 +114,17 @@ ALTER TABLE {{oio_type}}_attr_{{attribut}}_id_seq
 
 CREATE TABLE {{oio_type}}_attr_{{attribut}} (
     id bigint NOT NULL DEFAULT nextval('{{oio_type}}_attr_{{attribut}}_id_seq'::regclass),
-    {% for field in attribut_fields %} 
-       {{field}} {% if attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][field] is defined and attributter_metadata[attribut][field]['type'] is defined %}
-           {{attributter_metadata[attribut][field]['type']}} {% else %}text{% endif %} {% if attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][field] is defined and attributter_metadata[attribut][field]['mandatory'] is defined and attributter_metadata[attribut][field]['mandatory'] %}not{% endif %} null,{% endfor %}
-    virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
-    {{oio_type}}_registrering_id bigint not null,
+    {%- for field in attribut_fields %}
+        {{ field }} {% if attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][field] is defined and attributter_metadata[attribut][field]['type'] is defined -%}
+            {{ attributter_metadata[attribut][field]['type'] }}
+        {%- else -%}
+            text
+        {%- endif %} {% if attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][field] is defined and attributter_metadata[attribut][field]['mandatory'] is defined and attributter_metadata[attribut][field]['mandatory'] -%}
+            NOT
+        {%- endif %} NULL,
+    {% endfor %}
+    virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
+    {{oio_type}}_registrering_id bigint NOT NULL,
     CONSTRAINT {{oio_type}}_attr_{{attribut}}_pkey PRIMARY KEY (id),
     CONSTRAINT {{oio_type}}_attr_{{attribut}}_forkey_{{oio_type}}registrering FOREIGN KEY ({{oio_type}}_registrering_id) REFERENCES {{oio_type}}_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT {{oio_type}}_attr_{{attribut}}_exclude_virkning_overlap EXCLUDE USING gist ({{oio_type}}_registrering_id WITH =, _composite_type_to_time_range(virkning) WITH &&)
