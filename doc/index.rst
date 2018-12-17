@@ -19,6 +19,7 @@ Welcome to the LoRa MOX documentation!
    :caption: Developer Documentation
 
    dev/database.rst
+   dev/testing-rest.rst
    dev/news.rst
 
 .. toctree::
@@ -29,7 +30,6 @@ Welcome to the LoRa MOX documentation!
    API-NOTES.rst
    praesentation.rst
    log_haendelse.rst
-   Systematic_testing.rst
 
 Indices and tables
 ==================
