@@ -347,7 +347,7 @@ virkEgenskaberE:=	ROW (
 ;
 
 klasseEgenskabC := ROW (
-   NULL,--'brugervendt_noegle_text1',
+   'brugervendt_noegle_A',
    NULL, --'klassebeskrivelse_text1',
    NULL,--'eksempel_text1',
 	'omfang_C',
@@ -364,7 +364,7 @@ klasseEgenskabD := ROW (
    'klassebeskrivelse_D',
    'eksempel_D',
    'omfang_D',
-   NULL,-- 'titel_D',
+   'titel_D',
    'retskilde_D',
    NULL, --aendringsnotat
     NULL, --soegeord
@@ -550,7 +550,7 @@ ARRAY[
    				klasseEgenskabD.beskrivelse,
    				klasseEgenskabD.eksempel,
    				klasseEgenskabD.omfang,
-   				NULL, --klasseEgenskabD.titel,
+   				klasseEgenskabD.titel,
    				klasseEgenskabD.retskilde,
    				klasseEgenskabD.aendringsnotat,
    				  ARRAY[NULL]::KlasseSoegeordType[], --soegeord --please notice that this should really be NULL, but because of the form of the query above, it will return an array with a null element.
@@ -567,7 +567,7 @@ ARRAY[
    				klasseEgenskabD.beskrivelse,
    				klasseEgenskabD.eksempel,
    				klasseEgenskabD.omfang,
-   				klasseEgenskabB.titel, --NOTICE
+   				klasseEgenskabD.titel,
    				klasseEgenskabD.retskilde,
    				NULL, --notice
    				  ARRAY[klasseEgenskabB_Soegeord1,klasseEgenskabB_Soegeord2,klasseEgenskabB_Soegeord3,klasseEgenskabB_Soegeord4]::KlasseSoegeordType[], --soegeord
@@ -954,9 +954,9 @@ update_reg_id:=as_update_klasse(
 	  'Rettet'::Livscykluskode,          
 	  array[
 	  ROW(
-		   NULL,--'brugervendt_noegle_text1',
+		   'brugervendt_noegle_A',
 		   NULL, --'klassebeskrivelse_text1',
-		   NULL,--'eksempel_text1',
+		   NULL, --'eksempel_text1',
 		   NULL, --NOTICE!!	'omfang_C', 
 		   'titel_C',
 		   'retskilde_C',
@@ -997,7 +997,7 @@ update_reg_id:=as_update_klasse(
 	  'Rettet'::Livscykluskode,          
 	  array[
 	  ROW(
-		   NULL,--'brugervendt_noegle_text1',
+		   'brugervendt_noegle_text1',
 		   NULL, --'klassebeskrivelse_text1',
 		   'eksempel_textC_new', --NOTICE--'eksempel_text1',
 		   'omfang_C', -- 'omfang_C', 
@@ -1033,7 +1033,7 @@ update_reg_id:=as_update_klasse(
 	  'Rettet'::Livscykluskode,          
 	  array[
 	  ROW(
-		   NULL,--'brugervendt_noegle_text1',
+		   'brugervendt_noegle_text1',
 		   NULL, --'klassebeskrivelse_text1',
 		   '', --NOTICE--'eksempel_text1',
 		   'omfang_C', -- 'omfang_C', 

@@ -333,7 +333,7 @@ virkEgenskaberE:=	ROW (
 ;
 
 klasseEgenskabC := ROW (
-   NULL,--'brugervendt_noegle_text1',
+   'brugervendt_noegle_text1',
    NULL, --'klassebeskrivelse_text1',
    NULL,--'eksempel_text1',
 	'omfang_C',
@@ -350,7 +350,7 @@ klasseEgenskabD := ROW (
    'klassebeskrivelse_D',
    'eksempel_D',
    'omfang_D',
-   NULL,-- 'titel_D',
+   'titel_D',
    'retskilde_D',
    NULL, --aendringsnotat
     NULL, --soegeord

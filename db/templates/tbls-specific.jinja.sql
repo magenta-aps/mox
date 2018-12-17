@@ -114,11 +114,9 @@ ALTER TABLE {{oio_type}}_attr_{{attribut}}_id_seq
 
 CREATE TABLE {{oio_type}}_attr_{{attribut}} (
     id bigint NOT NULL DEFAULT nextval('{{oio_type}}_attr_{{attribut}}_id_seq'::regclass),
-    {%- for field in attribut_fields %} 
+    {% for field in attribut_fields %} 
        {{field}} {% if attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][field] is defined and attributter_metadata[attribut][field]['type'] is defined %}
-           {{attributter_metadata[attribut][field]['type']}}
-       {% else %}text{% endif %} null,
-    {%- endfor %} 
+           {{attributter_metadata[attribut][field]['type']}} {% else %}text{% endif %} {% if attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][field] is defined and attributter_metadata[attribut][field]['mandatory'] is defined and attributter_metadata[attribut][field]['mandatory'] %}not{% endif %} null,{% endfor %}
     virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
     {{oio_type}}_registrering_id bigint not null,
     CONSTRAINT {{oio_type}}_attr_{{attribut}}_pkey PRIMARY KEY (id),

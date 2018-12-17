@@ -217,20 +217,18 @@ ALTER TABLE aktivitet_attr_egenskaber_id_seq
 
 
 CREATE TABLE aktivitet_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('aktivitet_attr_egenskaber_id_seq'::regclass), 
-       brugervendtnoegle text null, 
-       aktivitetnavn text null, 
-       beskrivelse text null, 
+    id bigint NOT NULL DEFAULT nextval('aktivitet_attr_egenskaber_id_seq'::regclass),
+     
+       brugervendtnoegle text not null, 
+       aktivitetnavn text  null, 
+       beskrivelse text  null, 
        starttidspunkt 
-           timestamptz
-        null, 
+           timestamptz   null, 
        sluttidspunkt 
-           timestamptz
-        null, 
+           timestamptz   null, 
        tidsforbrug 
-           interval(0)
-        null, 
-       formaal text null, 
+           interval(0)   null, 
+       formaal text  null,
     virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
     aktivitet_registrering_id bigint not null,
     CONSTRAINT aktivitet_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -4194,10 +4192,11 @@ ALTER TABLE bruger_attr_egenskaber_id_seq
 
 
 CREATE TABLE bruger_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('bruger_attr_egenskaber_id_seq'::regclass), 
-       brugervendtnoegle text null, 
-       brugernavn text null, 
-       brugertype text null, 
+    id bigint NOT NULL DEFAULT nextval('bruger_attr_egenskaber_id_seq'::regclass),
+     
+       brugervendtnoegle text not null, 
+       brugernavn text  null, 
+       brugertype text  null,
     virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
     bruger_registrering_id bigint not null,
     CONSTRAINT bruger_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -7130,24 +7129,21 @@ ALTER TABLE dokument_attr_egenskaber_id_seq
 
 
 CREATE TABLE dokument_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('dokument_attr_egenskaber_id_seq'::regclass), 
-       brugervendtnoegle text null, 
-       beskrivelse text null, 
+    id bigint NOT NULL DEFAULT nextval('dokument_attr_egenskaber_id_seq'::regclass),
+     
+       brugervendtnoegle text not null, 
+       beskrivelse text not null, 
        brevdato 
-           date
-        null, 
-       kassationskode text null, 
+           date  not null, 
+       kassationskode text  null, 
        major 
-           int
-        null, 
+           int   null, 
        minor 
-           int
-        null, 
+           int   null, 
        offentlighedundtaget 
-           offentlighedundtagettype
-        null, 
-       titel text null, 
-       dokumenttype text null, 
+           offentlighedundtagettype   null, 
+       titel text not null, 
+       dokumenttype text not null,
     virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
     dokument_registrering_id bigint not null,
     CONSTRAINT dokument_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -12001,14 +11997,15 @@ ALTER TABLE facet_attr_egenskaber_id_seq
 
 
 CREATE TABLE facet_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('facet_attr_egenskaber_id_seq'::regclass), 
-       brugervendtnoegle text null, 
-       beskrivelse text null, 
-       opbygning text null, 
-       ophavsret text null, 
-       plan text null, 
-       supplement text null, 
-       retskilde text null, 
+    id bigint NOT NULL DEFAULT nextval('facet_attr_egenskaber_id_seq'::regclass),
+     
+       brugervendtnoegle text not null, 
+       beskrivelse text  null, 
+       opbygning text  null, 
+       ophavsret text  null, 
+       plan text  null, 
+       supplement text  null, 
+       retskilde text  null,
     virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
     facet_registrering_id bigint not null,
     CONSTRAINT facet_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -15027,15 +15024,14 @@ ALTER TABLE indsats_attr_egenskaber_id_seq
 
 
 CREATE TABLE indsats_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('indsats_attr_egenskaber_id_seq'::regclass), 
-       brugervendtnoegle text null, 
-       beskrivelse text null, 
+    id bigint NOT NULL DEFAULT nextval('indsats_attr_egenskaber_id_seq'::regclass),
+     
+       brugervendtnoegle text not null, 
+       beskrivelse text  null, 
        starttidspunkt 
-           timestamptz
-        null, 
+           timestamptz   null, 
        sluttidspunkt 
-           timestamptz
-        null, 
+           timestamptz   null,
     virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
     indsats_registrering_id bigint not null,
     CONSTRAINT indsats_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -18763,10 +18759,11 @@ ALTER TABLE interessefaellesskab_attr_egenskaber_id_seq
 
 
 CREATE TABLE interessefaellesskab_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('interessefaellesskab_attr_egenskaber_id_seq'::regclass), 
-       brugervendtnoegle text null, 
-       interessefaellesskabsnavn text null, 
-       interessefaellesskabstype text null, 
+    id bigint NOT NULL DEFAULT nextval('interessefaellesskab_attr_egenskaber_id_seq'::regclass),
+     
+       brugervendtnoegle text not null, 
+       interessefaellesskabsnavn text  null, 
+       interessefaellesskabstype text  null,
     virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
     interessefaellesskab_registrering_id bigint not null,
     CONSTRAINT interessefaellesskab_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -21628,13 +21625,13 @@ ALTER TABLE itsystem_attr_egenskaber_id_seq
 
 
 CREATE TABLE itsystem_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('itsystem_attr_egenskaber_id_seq'::regclass), 
-       brugervendtnoegle text null, 
-       itsystemnavn text null, 
-       itsystemtype text null, 
+    id bigint NOT NULL DEFAULT nextval('itsystem_attr_egenskaber_id_seq'::regclass),
+     
+       brugervendtnoegle text not null, 
+       itsystemnavn text  null, 
+       itsystemtype text  null, 
        konfigurationreference 
-           text[]
-        null, 
+           text[]   null,
     virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
     itsystem_registrering_id bigint not null,
     CONSTRAINT itsystem_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -24541,14 +24538,15 @@ ALTER TABLE klasse_attr_egenskaber_id_seq
 
 
 CREATE TABLE klasse_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('klasse_attr_egenskaber_id_seq'::regclass), 
-       brugervendtnoegle text null, 
-       beskrivelse text null, 
-       eksempel text null, 
-       omfang text null, 
-       titel text null, 
-       retskilde text null, 
-       aendringsnotat text null, 
+    id bigint NOT NULL DEFAULT nextval('klasse_attr_egenskaber_id_seq'::regclass),
+     
+       brugervendtnoegle text not null, 
+       beskrivelse text  null, 
+       eksempel text  null, 
+       omfang text  null, 
+       titel text not null, 
+       retskilde text  null, 
+       aendringsnotat text  null,
     virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
     klasse_registrering_id bigint not null,
     CONSTRAINT klasse_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -27848,11 +27846,12 @@ ALTER TABLE klassifikation_attr_egenskaber_id_seq
 
 
 CREATE TABLE klassifikation_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('klassifikation_attr_egenskaber_id_seq'::regclass), 
-       brugervendtnoegle text null, 
-       beskrivelse text null, 
-       kaldenavn text null, 
-       ophavsret text null, 
+    id bigint NOT NULL DEFAULT nextval('klassifikation_attr_egenskaber_id_seq'::regclass),
+     
+       brugervendtnoegle text not null, 
+       beskrivelse text  null, 
+       kaldenavn text  null, 
+       ophavsret text  null,
     virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
     klassifikation_registrering_id bigint not null,
     CONSTRAINT klassifikation_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -30753,15 +30752,16 @@ ALTER TABLE loghaendelse_attr_egenskaber_id_seq
 
 
 CREATE TABLE loghaendelse_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('loghaendelse_attr_egenskaber_id_seq'::regclass), 
-       service text null, 
-       klasse text null, 
-       tidspunkt text null, 
-       operation text null, 
-       objekttype text null, 
-       returkode text null, 
-       returtekst text null, 
-       note text null, 
+    id bigint NOT NULL DEFAULT nextval('loghaendelse_attr_egenskaber_id_seq'::regclass),
+     
+       service text  null, 
+       klasse text  null, 
+       tidspunkt text  null, 
+       operation text  null, 
+       objekttype text  null, 
+       returkode text  null, 
+       returtekst text  null, 
+       note text  null,
     virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
     loghaendelse_registrering_id bigint not null,
     CONSTRAINT loghaendelse_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -33796,9 +33796,10 @@ ALTER TABLE organisation_attr_egenskaber_id_seq
 
 
 CREATE TABLE organisation_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('organisation_attr_egenskaber_id_seq'::regclass), 
-       brugervendtnoegle text null, 
-       organisationsnavn text null, 
+    id bigint NOT NULL DEFAULT nextval('organisation_attr_egenskaber_id_seq'::regclass),
+     
+       brugervendtnoegle text not null, 
+       organisationsnavn text  null,
     virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
     organisation_registrering_id bigint not null,
     CONSTRAINT organisation_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -36623,9 +36624,10 @@ ALTER TABLE organisationenhed_attr_egenskaber_id_seq
 
 
 CREATE TABLE organisationenhed_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('organisationenhed_attr_egenskaber_id_seq'::regclass), 
-       brugervendtnoegle text null, 
-       enhedsnavn text null, 
+    id bigint NOT NULL DEFAULT nextval('organisationenhed_attr_egenskaber_id_seq'::regclass),
+     
+       brugervendtnoegle text not null, 
+       enhedsnavn text  null,
     virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
     organisationenhed_registrering_id bigint not null,
     CONSTRAINT organisationenhed_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -39450,9 +39452,10 @@ ALTER TABLE organisationfunktion_attr_egenskaber_id_seq
 
 
 CREATE TABLE organisationfunktion_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('organisationfunktion_attr_egenskaber_id_seq'::regclass), 
-       brugervendtnoegle text null, 
-       funktionsnavn text null, 
+    id bigint NOT NULL DEFAULT nextval('organisationfunktion_attr_egenskaber_id_seq'::regclass),
+     
+       brugervendtnoegle text not null, 
+       funktionsnavn text  null,
     virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
     organisationfunktion_registrering_id bigint not null,
     CONSTRAINT organisationfunktion_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -42309,22 +42312,20 @@ ALTER TABLE sag_attr_egenskaber_id_seq
 
 
 CREATE TABLE sag_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('sag_attr_egenskaber_id_seq'::regclass), 
-       brugervendtnoegle text null, 
+    id bigint NOT NULL DEFAULT nextval('sag_attr_egenskaber_id_seq'::regclass),
+     
+       brugervendtnoegle text not null, 
        afleveret 
-           boolean
-        null, 
-       beskrivelse text null, 
-       hjemmel text null, 
-       kassationskode text null, 
+           boolean   null, 
+       beskrivelse text not null, 
+       hjemmel text  null, 
+       kassationskode text not null, 
        offentlighedundtaget 
-           offentlighedundtagettype
-        null, 
+           offentlighedundtagettype   null, 
        principiel 
-           boolean
-        null, 
-       sagsnummer text null, 
-       titel text null, 
+           boolean   null, 
+       sagsnummer text not null, 
+       titel text not null,
     virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
     sag_registrering_id bigint not null,
     CONSTRAINT sag_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -45752,9 +45753,10 @@ ALTER TABLE tilstand_attr_egenskaber_id_seq
 
 
 CREATE TABLE tilstand_attr_egenskaber (
-    id bigint NOT NULL DEFAULT nextval('tilstand_attr_egenskaber_id_seq'::regclass), 
-       brugervendtnoegle text null, 
-       beskrivelse text null, 
+    id bigint NOT NULL DEFAULT nextval('tilstand_attr_egenskaber_id_seq'::regclass),
+     
+       brugervendtnoegle text not null, 
+       beskrivelse text  null,
     virkning Virkning not null CHECK( (virkning).TimePeriod IS NOT NULL AND not isempty((virkning).TimePeriod) ),
     tilstand_registrering_id bigint not null,
     CONSTRAINT tilstand_attr_egenskaber_pkey PRIMARY KEY (id),
