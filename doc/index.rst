@@ -8,10 +8,17 @@ Welcome to the LoRa MOX documentation!
 
 .. toctree::
    :maxdepth: 2
+   :caption: User Documentation
+
+   user/setup-dev-env.rst
+   user/rest-tutorial.rst
+
+
+.. toctree::
+   :maxdepth: 2
    :caption: Contents:
 
    readme.rst
-   REST_API_getting-started.rst
    LoRa_HOWTO.rst
    API-NOTES.rst
    praesentation.rst
