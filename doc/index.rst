@@ -20,6 +20,7 @@ Welcome to the LoRa MOX documentation!
 
    dev/database.rst
    dev/testing-rest.rst
+   dev/beskedfordeler.rst
    dev/news.rst
 
 .. toctree::
