@@ -14,12 +14,17 @@ Welcome to the LoRa MOX documentation!
    user/querying-data.rst
    user/rest-tutorial.rst
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Developer Documentation
+
+   dev/news.rst
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   readme.rst
+   ../README.rst
    API-NOTES.rst
    praesentation.rst
    log_haendelse.rst
