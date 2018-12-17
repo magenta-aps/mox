@@ -2,7 +2,7 @@ Getting to know LoRa's REST API
 ===============================
 
 The following small exercises can be used as an inspiration to getting to know
-LoRa's REST API. Read :ref:`LoRaHOWTO` before moving on. Also, have a look at
+LoRa's REST API. Read :ref:`QueryingData` before moving on. Also, have a look at
 the LoRa documentation found in Magenta’s Alfresco system.
 
 1. Create an organisation called e.g. “Magenta” valid from 2017-01-01

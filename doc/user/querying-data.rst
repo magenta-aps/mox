@@ -1,7 +1,7 @@
-.. _LoRaHOWTO:
+.. _QueryingData:
 
-HOWTO use LoRa for querying data
-================================
+Querying data
+=============
 
 
 .. contents:: `Table of contents`
