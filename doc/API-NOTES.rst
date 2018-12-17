@@ -2,68 +2,8 @@
 OIO REST API Notes
 ==================
 
-Introduction
-============
-
 .. contents:: `Table of contents`
    :depth: 5
-
-
-You can find the current MOX specification here:
-
-http://www.kl.dk/ImageVaultFiles/id_55874/cf_202/MOX_specifikation_version_0.PDF
-
-As an example, you can find the Organisation hierarchy
-here:
-
-http://digitaliser.dk/resource/991439/artefact/Informations-+og+meddelelsesmodeller+for+Organisation+%5bvs.+1.1%5d.pdf
-
-This version of the system implements four OIO hierarchies, namely
-Klassifikation, Sag, Dokument and Organisation. In each installation of
-the service, it is possible to only enable some of the hierarchies.
-
-
-On this documentation
----------------------
-
-This README file is a reStructuredText document, and an HTML version can
-be obtained by running the command ::
-
-    rst2html README.rst README.html
-
-in a command prompt. Note that this requires Python Docutils to be
-installed - on Ubuntu or Debian, this can be done with the following
-command::
-
-    sudo apt-get install python-docutils
-
-If you're reading this on Github, you're probably seeing the HTML
-rendering.
-
-Audience
---------
-
-This is a technical guide. You are not expected to have a profound knowledge of
-the system as such, but you do have to know your way in a Bash prompt - you 
-should be able to change the Apache configuration and e.g. disable or change
-the SSL certificate on your own.
-
-Getting started
-===============
-
-These commands should get you up and running quickly on a machine with a
-completely new Ubuntu 16.04 Server Edition::
-
-    # Install git
-    $ sudo apt-get install git
-
-    # Clone the mox repository
-    $ git clone https://github.com/magenta-aps/mox
-
-    # Begin installation process
-    $ cd mox
-    $ ./install.sh
-
 
 Installing
 ----------
