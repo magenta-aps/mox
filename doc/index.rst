@@ -22,6 +22,7 @@ Welcome to the LoRa MOX documentation!
    dev/database.rst
    dev/test.rst
    dev/testing-rest.rst
+   dev/building-docs.rst
    dev/beskedfordeler.rst
    dev/news.rst
 
