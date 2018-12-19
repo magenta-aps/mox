@@ -1,6 +1,36 @@
 MOX python agents
 =================
 
+.. warning::
+
+   This is outdated. It describes agents which was part of an older iteration of
+   the LoRa stack.
+
+Within the context of the Mox Messaging Service, agents are small
+pieces of software which either listen on an AMQP queue and perform
+operations on the incoming data, or expose certain operations as a web
+service.
+
+The default installation includes the following agents:
+
+MoxDocumentDownload
+    Web service for exporting actual state contents as Excel
+    spreadsheets.
+
+MoxDocumentUpload
+    Web service for importing data from Excel spreadsheets into the
+    actual state database.
+
+MoxRestFrontend
+    AMQP agent bridging the REST API.
+
+MoxTabel
+    AQMP worker agent MoxDocumentDownload & MoxDocumentUpload.
+
+
+``python_agents``-folder
+========================
+
 This directory contains the Notify to AMQP service, which serves as an working
 example of a relay of the internal PostgresSQL notifications to a publicly
 available notification services.

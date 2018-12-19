@@ -21,26 +21,3 @@ RabbitMQ
     the various components.
 
 
-Agents
-------
-
-Within the context of the Mox Messaging Service, agents are small
-pieces of software which either listen on an AMQP queue and perform
-operations on the incoming data, or expose certain operations as a web
-service.
-
-The default installation includes the following agents:
-
-MoxDocumentDownload
-    Web service for exporting actual state contents as Excel
-    spreadsheets.
-
-MoxDocumentUpload
-    Web service for importing data from Excel spreadsheets into the
-    actual state database.
-
-MoxRestFrontend
-    AMQP agent bridging the REST API.
-
-MoxTabel
-    AQMP worker agent MoxDocumentDownload & MoxDocumentUpload.
