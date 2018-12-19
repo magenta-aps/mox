@@ -29,14 +29,14 @@ MoxTabel
 
 
 ``python_agents``-folder
-========================
+------------------------
 
 This directory contains the Notify to AMQP service, which serves as an working
 example of a relay of the internal PostgresSQL notifications to a publicly
 available notification services.
 
 Legacy agents
--------------
++++++++++++++
 Besides, this directory contains the following 2 (legacy) mox agents:
 
 +-------------+----------------+
@@ -51,7 +51,7 @@ However these agents not used in the current release (may be added in the forsee
 The two agents are currently unsupported and not part of the default installation procedure.
 
 Update/Dependencies
--------------------
++++++++++++++++++++
 
 MOX Advis & MOX Elk Log have previouly been coupled with the OIO Rest package.
 The agents have now been de-coupled and do not depend on external settings and python dependencies.
@@ -62,7 +62,8 @@ and will be removed or refactored when the code is moved to Python 3.
 
 
 Installation
-------------
+++++++++++++
+
 A installation strategy (formula) has been created,
 however as previously described the agents have unresolved dependencies.
 
