@@ -40,61 +40,16 @@ decreasing CPU and memory is trivial.
 Getting started
 ---------------
 
-To install the OIO REST API, run ``install.sh``::
+.. warning:: FIXME
+   Fillout this section.
 
-  $ sudo apt-get install git
-  $ git clone https://github.com/magenta-aps/mox
-  $ cd mox
-  $ ./install.sh
+In a production environment, it is recommended to bind the oio_rest service to a
+unix socket, then expose the socket using a HTTP proxy of your own choosing.
 
-.. note::
+(Recommended: Nginx or Apache)
 
-   Using the built-in installer should be considered
-   a "developer installation". Please note that it *will not* work
-   on a machine with less than 1GB of RAM.
-
-   In the current state of the installer,
-   we recommend using it only on a newly installed system,
-   preferrably in a dedicated container or VM.
-   It is our intention to provide more flexible
-   installation options in the near future.
-
-The default location of the log directory is::
-
-   /var/log/mox
-
-The following log files are created:
-
- - Audit log: /var/log/mox/audit.log
- - OIO REST HTTP access log: /var/log/mox/oio_access.log
- - OIO REST HTTP error log: /var/log/mox/oio_error.log
-
-Additionally, a directory for file uploads is created::
-
-   # settings.py
-   FILE_UPLOAD_FOLDER = getenv('FILE_UPLOAD_FOLDER', '/var/mox')
-
-
-The oio rest api is installed as a service,
-for more information, see the oio_rest.service.
-
-By default the oio_rest service can be reached as follows::
-
-   http://localhost:8080
-
-Example::
-
-   curl http://localhost:8080/organisation/bruger
-
-.. note::
-   In a production environment,
-   it is recommended to bind the oio_rest service to a unix socket,
-   then expose the socket using a HTTP proxy of your own choosing.
-
-   (Recommended: Nginx or Apache)
-
-   More on how to configure in the advanced configuration document.
-   Link: ``Document is currently being written``
+More on how to configure in the advanced configuration document. Link:
+``Document is currently being written``
 
 
 Configuration

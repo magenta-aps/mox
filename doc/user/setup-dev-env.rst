@@ -59,6 +59,18 @@ and SSH back in::
 
 Installing and configuring LoRa
 -------------------------------
+
+.. note::
+   Using the built-in installer should be considered
+   a "developer installation". Please note that it *will not* work
+   on a machine with less than 1GB of RAM.
+
+   In the current state of the installer,
+   we recommend using it only on a newly installed system,
+   preferrably in a dedicated container or VM.
+   It is our intention to provide more flexible
+   installation options in the near future.
+
 Following the instructions on the
 `LoRa GitHub site <https://github.com/magenta-aps/mox>`_ we can install LoRa
 (use the development branch) in our Linux container in the following way::
@@ -68,6 +80,24 @@ Following the instructions on the
   $ ./install.sh
 
 This can take a while...
+
+The default location of the log directory is::
+
+   /var/log/mox
+
+The following log files are created:
+
+ - Audit log: /var/log/mox/audit.log
+ - OIO REST HTTP access log: /var/log/mox/oio_access.log
+ - OIO REST HTTP error log: /var/log/mox/oio_error.log
+
+Additionally, a directory for file uploads is created::
+
+   # settings.py
+   FILE_UPLOAD_FOLDER = getenv('FILE_UPLOAD_FOLDER', '/var/mox')
+
+The oio rest api is installed as a service,
+for more information, see the oio_rest.service.
 
 Once the installation process is complete,
 you may confirm that the OIO rest api is running::
