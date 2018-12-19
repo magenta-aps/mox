@@ -1,4 +1,3 @@
-
 MOX - infrastruktur for udveksling af offentlige data
 =====================================================
 

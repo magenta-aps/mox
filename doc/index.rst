@@ -13,6 +13,7 @@ Content
    :caption: User Documentation
 
    user/overview.rst
+   Middle-level overview (in danish) <user/praesentation.rst>
    user/setup-dev-env.rst
    user/querying-data.rst
    user/rest-tutorial.rst
@@ -35,7 +36,6 @@ Content
    :maxdepth: 2
    :caption: Contents:
 
-   praesentation.rst
    log_haendelse.rst
 
 Indices and tables
