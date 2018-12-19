@@ -111,6 +111,11 @@ attributter, tilstande og relationer til andre objekter. Hver
 OIOXML-standard består netop af en definition af en række objekter
 (klasser) og deres relation til andre OIOXML-objekter.
 
+.. figure:: bruger-uml.png
+   :alt: Bruger UML
+
+   Som eksempel vises her objektmodellen for OIOXML-klassen Bruger.
+
 Både databasen og REST-interfacet implementerer OIOXML-objekter på en
 standardiseret måde, der gør det let at tilføje nye objekter - og dermed
 at implementere nye standarder.
