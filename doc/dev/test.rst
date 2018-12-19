@@ -58,7 +58,3 @@ or::
 
 The latter of which will automatically generate a virtual environment, and run the tests
 in it.
-
-
-For more advanced test or production setup, please study the rest of this
-README and follow your organization's best practices.
