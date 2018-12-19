@@ -14,6 +14,7 @@ Welcome to the LoRa MOX documentation!
    user/querying-data.rst
    user/rest-tutorial.rst
    user/api-notes.rst
+   user/auth.rst
    user/deployment.rst
 
 .. toctree::
