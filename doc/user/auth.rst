@@ -143,7 +143,7 @@ following::
 
     Authorization: <output of get-token>
 
-For testing purposes, we recommend the browser extensions `Advanced
+For testing purposes, we recommend ``curl`` or the browser extensions `Advanced
 REST client`_ for Chrome or `REST Easy`_ for Firefox.
 
 .. _Advanced REST client: https://chrome.google.com/webstore/detail/advanced-rest-client/hgmloofddffdnphfgcellkdfbfbjeloo
