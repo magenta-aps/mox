@@ -19,6 +19,7 @@ Content
    user/rest-tutorial.rst
    user/api-notes.rst
    user/log-haendelse.rst
+   user/agents.rst
    user/auth.rst
    user/deployment.rst
 
