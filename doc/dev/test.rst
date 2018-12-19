@@ -16,17 +16,19 @@ relaying them onwards to the REST interface), run::
 
     $ agents/MoxRestFrontend/moxrestfrontend.sh
 
-NOTE:** You can start the agent in the background by running::
+.. note::
+    You can start the agent in the background by running::
 
-    $ sudo service moxrestfrontend start
+        $ sudo service moxrestfrontend start
 
 To test sending messages through the agent, run::
 
     $ ./test.sh
 
-**NOTE:** The install script does not set up an IDP for SAML authentication,
-which is enabled by default. If you need to test without SAML authentication,
-you will need to turn it off as described below.
+.. note::
+   The install script does not set up an IDP for SAML authentication,
+   which is enabled by default. If you need to test without SAML authentication,
+   you will need to turn it off as described below.
 
 To request a token for the username from the IdP and output it in
 base64-encoded gzipped format, run::
