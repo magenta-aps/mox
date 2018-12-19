@@ -46,37 +46,7 @@ sections below for instruction on how to do this.
 Running the tests
 -----------------
 
-Make sure the parameter ``USE_SAML_AUTHENTICATION`` in
-``oio_rest/oio_rest/settings.py`` is `False`.
-
-Make sure the parameter ``moxrestfrontend.rest.host`` in
-``agents/MoxRestFrontend/moxrestfrontend.conf`` is set to
-``http://localhost:5000``.
-
-Start the (AMQP) MOX REST frontend agent::
-
-    $ sudo service moxrestfrontend start
-
-Start the REST API::
-
-    $ oio_rest/oio_api.sh
-
-Run the tests::
-
-    $ ./test.sh
-
-This should give you a lot of output like this::
-
-    Deleting bruger, uuid: 1e874f85-07e5-40e5-81ed-42f21fc3fc9e
-    Getting authtoken
-    127.0.0.1 - - [27/Apr/2016 15:55:09] "DELETE /organisation/bruger/1e874f85-07e5-40e5-81ed-42f21fc3fc9e HTTP/1.1" 200 -
-    Delete succeeded
-
-**Note:** Currently, some of the tests will give the notice: "Result differs
-from the expected". This is due to a bug in the tests, i.e. you should not
-worry about this — if you see output as described above, the system is working.
-
-Additionally, OIO Rest has its own unit test suite::
+OIO Rest has its own unit test suite::
 
     $ cd oio_rest
     $ python setup.py test
