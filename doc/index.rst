@@ -3,11 +3,13 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to the LoRa MOX documentation!
-=======================================================
+.. include:: ../README.rst
+
+Content
+=======
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: User Documentation
 
    user/setup-dev-env.rst
@@ -32,7 +34,6 @@ Welcome to the LoRa MOX documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   ../README.rst
    praesentation.rst
    log_haendelse.rst
 
