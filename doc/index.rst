@@ -18,6 +18,7 @@ Content
    user/querying-data.rst
    user/rest-tutorial.rst
    user/api-notes.rst
+   user/log-haendelse.rst
    user/auth.rst
    user/deployment.rst
 
@@ -32,11 +33,6 @@ Content
    dev/beskedfordeler.rst
    dev/news.rst
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-   log_haendelse.rst
 
 Indices and tables
 ==================
