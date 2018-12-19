@@ -44,12 +44,17 @@ should exclude this when entering the command in your terminal.
 Audience
 --------
 
-This is a technical guide. You are not expected to have a profound knowledge of
-the system as such, but you do have to know your way in a Bash prompt — you 
-should be able to change the Apache configuration and e.g. disable or change
-the SSL certificate on your own.
+This is a technical guide. It is split in two:
 
+User documentation
+    Contains documentation for the REST API and setup documentation. You are not
+    expected to have a profound knowledge of the system as such, but you do have
+    to know your way in a Bash prompt — you should be able to change the Apache
+    configuration and e.g. disable or change the SSL certificate on your own.
 
+Developer documentation
+    Contains documentation for developers of the mox codebase and building and
+    testing instructions.
 
 
 Licensing
