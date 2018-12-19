@@ -12,6 +12,7 @@ Content
    :maxdepth: 1
    :caption: User Documentation
 
+   user/overview.rst
    user/setup-dev-env.rst
    user/querying-data.rst
    user/rest-tutorial.rst
