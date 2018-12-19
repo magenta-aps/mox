@@ -741,7 +741,29 @@ class TestOIORestObject(TestCase):
 
         mock_exists.return_value = False
 
-        data = {'note': "NOTE"}
+        virkning = {
+            "from": "2017-01-01",
+            "from_included": True,
+            "to": "2019-12-31",
+            "to_included": False,
+        }
+
+        data = {
+            "attributter": {
+                "organisationegenskaber": [
+                    {
+                        "brugervendtnoegle": "magenta",
+                        "organisationsnavn": "Magenta ApS",
+                        "virkning": virkning,
+                    }
+                ]
+            },
+            "tilstande": {
+                "organisationgyldighed": [
+                    {"gyldighed": "Aktiv", "virkning": virkning}
+                ]
+            },
+        }
 
         # Act
         with self.app.test_request_context(data=json.dumps(data),
