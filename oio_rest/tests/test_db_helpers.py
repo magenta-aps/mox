@@ -6,6 +6,10 @@ from werkzeug.datastructures import ImmutableMultiDict
 from oio_rest import db_helpers
 from oio_rest.custom_exceptions import BadRequestException
 
+import settings
+
+from . import util
+
 
 class TestDBHelpers(TestCase):
     maxDiff = None
@@ -15,7 +19,7 @@ class TestDBHelpers(TestCase):
         db_helpers._attribute_names = {}
         db_helpers._relation_names = {}
 
-    @patch('oio_rest.db_helpers.db_struct', new={
+    @util.patch_db_struct({
         'testclass1': {
             'attributter': {
                 'testattribut': [
@@ -84,7 +88,7 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.db_helpers.db_struct', new={
+    @util.patch_db_struct({
         'testclass1': {
             'attributter_metadata': {
                 'testattribut': {
@@ -104,7 +108,7 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.db_helpers.db_struct', new={
+    @util.patch_db_struct({
         'testclass1': {
             'attributter_metadata': {
                 'testattribut': {
@@ -124,7 +128,7 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.db_helpers.db_struct')
+    @patch('settings.REAL_DB_STRUCTURE')
     def test_get_relation_field_type_default(self, p):
         # Arrange
         expected_result = 'text'
@@ -136,7 +140,7 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.db_helpers.db_struct', new={
+    @util.patch_db_struct({
         'testclass1': {
             'relationer_metadata': {
                 '*': {
@@ -164,7 +168,7 @@ class TestDBHelpers(TestCase):
         self.assertEqual(expected_result1, actual_result1)
         self.assertEqual(expected_result2, actual_result2)
 
-    @patch('oio_rest.db_helpers.db_struct', new={
+    @util.patch_db_struct({
         'testclass1': {
             'relationer_metadata': {
                 '*': {
@@ -188,7 +192,7 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.db_helpers.db_struct', new={
+    @util.patch_db_struct({
         'testclass1': {
             'attributter': {
                 'testattribut1': [
@@ -266,7 +270,7 @@ class TestDBHelpers(TestCase):
         # Act
         actual_result = {
             c: db_helpers.get_attribute_names(c)
-            for c in db_helpers.db_struct
+            for c in settings.REAL_DB_STRUCTURE
         }
 
         # Assert
@@ -284,7 +288,7 @@ class TestDBHelpers(TestCase):
         self.assertEqual(expected_result, actual_result)
 
     def test_get_state_names(self):
-        with patch('oio_rest.db_helpers.db_struct', new={
+        with util.patch_db_struct({
             'testclass1': {
                 'tilstande': {
                     'testtilstand1': [
@@ -310,7 +314,7 @@ class TestDBHelpers(TestCase):
             # Assert
             self.assertEqual(expected_result, sorted(actual_result))
 
-        with patch('oio_rest.db_helpers.db_struct', new={
+        with util.patch_db_struct({
             'testclass1': {
                 'tilstande': [
                     ('testtilstand1', [
@@ -336,7 +340,7 @@ class TestDBHelpers(TestCase):
             # Assert
             self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.db_helpers.db_struct', new={
+    @util.patch_db_struct({
         'testclass1': {
             'relationer_nul_til_en': [
                 'value1',
@@ -577,7 +581,7 @@ class TestDBHelpers(TestCase):
         # Act
         actual_result = {
             c: db_helpers.get_relation_names(c)
-            for c in db_helpers.db_struct
+            for c in settings.REAL_DB_STRUCTURE
         }
 
         # Assert
@@ -648,7 +652,7 @@ class TestDBHelpers(TestCase):
         # Act
         actual_result = {
             c: list(db_helpers.get_state_names(c))
-            for c in db_helpers.db_struct
+            for c in settings.REAL_DB_STRUCTURE
         }
 
         # Assert
@@ -710,7 +714,7 @@ class TestDBHelpers(TestCase):
         # Act
         actual_result = {
             c: db_helpers.get_state_names(c)
-            for c in db_helpers.db_struct
+            for c in settings.REAL_DB_STRUCTURE
         }
 
         # Assert

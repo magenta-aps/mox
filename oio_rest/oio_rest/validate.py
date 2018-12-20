@@ -427,15 +427,7 @@ def generate_json_schema(obj):
     return schema
 
 
-SCHEMA = {
-    obj: copy.deepcopy(generate_json_schema(obj))
-    for obj in settings.REAL_DB_STRUCTURE.keys()
-}
-
-# Due to an inconsistency between the way LoRa handles
-# "DokumentVariantEgenskaber" and the specs' we will have to do this for now,
-# i.e. we allow any JSON-object for "Dokument"
-SCHEMA['dokument'] = {'type': 'object'}
+SCHEMA = None
 
 
 def validate(input_json):
@@ -445,5 +437,18 @@ def validate(input_json):
     :raise jsonschema.exceptions.ValidationError: If the request JSON is not
     valid according to the JSON schema.
     """
+    global SCHEMA
+
+    if SCHEMA is None:
+        SCHEMA = {
+            obj: copy.deepcopy(generate_json_schema(obj))
+            for obj in settings.REAL_DB_STRUCTURE.keys()
+        }
+
+        # Due to an inconsistency between the way LoRa handles
+        # "DokumentVariantEgenskaber" and the specs' we will have to do this for now,
+        # i.e. we allow any JSON-object for "Dokument"
+        SCHEMA['dokument'] = {'type': 'object'}
+
     obj_type = get_lora_object_type(input_json)
     jsonschema.validate(input_json, SCHEMA[obj_type])
