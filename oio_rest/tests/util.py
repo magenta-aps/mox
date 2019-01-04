@@ -7,7 +7,6 @@
 #
 
 
-import contextlib
 import json
 import os
 import pprint
@@ -34,14 +33,6 @@ def get_fixture(fixture_name, mode='rt'):
             return json.load(fp)
         else:
             return fp.read()
-
-@contextlib.contextmanager
-def patch_db_struct(new):
-    with \
-         unittest.mock.patch('settings.REAL_DB_STRUCTURE', new=new), \
-         unittest.mock.patch('oio_common.db_structure.REAL_DB_STRUCTURE',
-                             new=new):
-        yield
 
 
 class TestCase(test_support.TestCaseMixin, flask_testing.TestCase):

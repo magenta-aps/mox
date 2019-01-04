@@ -30,6 +30,14 @@ TOP_DIR = os.path.dirname(BASE_DIR)
 DB_DIR = os.path.join(BASE_DIR, 'build', 'db')
 
 
+@contextlib.contextmanager
+def patch_db_struct(new):
+    with \
+         mock.patch('settings.REAL_DB_STRUCTURE', new=new), \
+         mock.patch('oio_common.db_structure.REAL_DB_STRUCTURE', new=new):
+        yield
+
+
 @functools.lru_cache()
 def psql():
     os.makedirs(DB_DIR, exist_ok=True)
