@@ -5,10 +5,9 @@ from werkzeug.datastructures import ImmutableMultiDict
 
 from oio_rest import db_helpers
 from oio_rest.custom_exceptions import BadRequestException
+from oio_rest.utils import test_support
 
 import settings
-
-from . import util
 
 
 class TestDBHelpers(TestCase):
@@ -19,7 +18,7 @@ class TestDBHelpers(TestCase):
         db_helpers._attribute_names = {}
         db_helpers._relation_names = {}
 
-    @util.patch_db_struct({
+    @test_support.patch_db_struct({
         'testclass1': {
             'attributter': {
                 'testattribut': [
@@ -88,7 +87,7 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @util.patch_db_struct({
+    @test_support.patch_db_struct({
         'testclass1': {
             'attributter_metadata': {
                 'testattribut': {
@@ -108,7 +107,7 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @util.patch_db_struct({
+    @test_support.patch_db_struct({
         'testclass1': {
             'attributter_metadata': {
                 'testattribut': {
@@ -128,8 +127,8 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('settings.REAL_DB_STRUCTURE')
-    def test_get_relation_field_type_default(self, p):
+    @test_support.patch_db_struct(MagicMock())
+    def test_get_relation_field_type_default(self):
         # Arrange
         expected_result = 'text'
 
@@ -140,7 +139,7 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @util.patch_db_struct({
+    @test_support.patch_db_struct({
         'testclass1': {
             'relationer_metadata': {
                 '*': {
@@ -168,7 +167,7 @@ class TestDBHelpers(TestCase):
         self.assertEqual(expected_result1, actual_result1)
         self.assertEqual(expected_result2, actual_result2)
 
-    @util.patch_db_struct({
+    @test_support.patch_db_struct({
         'testclass1': {
             'relationer_metadata': {
                 '*': {
@@ -192,7 +191,7 @@ class TestDBHelpers(TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @util.patch_db_struct({
+    @test_support.patch_db_struct({
         'testclass1': {
             'attributter': {
                 'testattribut1': [
@@ -288,7 +287,7 @@ class TestDBHelpers(TestCase):
         self.assertEqual(expected_result, actual_result)
 
     def test_get_state_names(self):
-        with util.patch_db_struct({
+        with test_support.patch_db_struct({
             'testclass1': {
                 'tilstande': {
                     'testtilstand1': [
@@ -314,7 +313,7 @@ class TestDBHelpers(TestCase):
             # Assert
             self.assertEqual(expected_result, sorted(actual_result))
 
-        with util.patch_db_struct({
+        with test_support.patch_db_struct({
             'testclass1': {
                 'tilstande': [
                     ('testtilstand1', [
@@ -340,7 +339,7 @@ class TestDBHelpers(TestCase):
             # Assert
             self.assertEqual(expected_result, actual_result)
 
-    @util.patch_db_struct({
+    @test_support.patch_db_struct({
         'testclass1': {
             'relationer_nul_til_en': [
                 'value1',
