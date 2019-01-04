@@ -14,6 +14,8 @@ import os
 import shutil
 import subprocess
 import sys
+import types
+import typing
 
 import click
 import mock
@@ -31,11 +33,16 @@ DB_DIR = os.path.join(BASE_DIR, 'build', 'db')
 
 
 @contextlib.contextmanager
-def patch_db_struct(new):
-    with \
-         mock.patch('settings.REAL_DB_STRUCTURE', new=new), \
-         mock.patch('oio_common.db_structure.REAL_DB_STRUCTURE', new=new):
-        yield
+def patch_db_struct(new: typing.Union[types.ModuleType, dict]):
+    if isinstance(new, types.ModuleType):
+        with \
+             mock.patch('settings.DB_STRUCTURE', new), \
+             mock.patch('settings.REAL_DB_STRUCTURE', new=new.REAL_DB_STRUCTURE):
+            yield
+    else:
+        with \
+             mock.patch('settings.REAL_DB_STRUCTURE', new=new):
+            yield
 
 
 @functools.lru_cache()
