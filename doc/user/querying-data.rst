@@ -22,7 +22,7 @@ work equally well with a browser plugin capable of sending HTTP ``POST``,
    As an example, the REST interface for Organisation is specified
    here: http://beta.rammearkitektur.dk/index.php/LoRA_Organisationsservice
 
-Please note that in comparison with this official implementation, our
+Please note that in comparison with this official specification, our
 system currently does not support the parameters ``-miljø`` and
 ``-version``.
 
@@ -46,7 +46,7 @@ disable authentication in ``settings.py``::
 
   USE_SAML_AUTHENTICATION = False
 
-In this case, you may safely disregard all talk of _SAML_ tokens, the
+In this case, you may safely disregard all talk of *SAML* tokens, the
 :http:header:`Authorization` header and ``AUTH_TOKEN``.
 
 Acquiring a SAML token

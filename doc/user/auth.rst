@@ -1,6 +1,10 @@
 Authentication
 ==============
 
+.. warning::
+   
+    This document is outdated.
+
 SAML token authentication is enabled by default. This requires that
 you have access to a SAML Identity Provider (IdP) which provides a
 Security Token Service (STS). We currently support two types:

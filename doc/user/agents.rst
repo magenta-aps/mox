@@ -1,9 +1,9 @@
-MOX python agents
-=================
+MOX Agents
+==========
 
 .. warning::
 
-   This is outdated. It describes agents which was part of an older iteration of
+   This is outdated. It describes agents which were part of an older iteration of
    the LoRa stack.
 
 Within the context of the Mox Messaging Service, agents are small
@@ -28,12 +28,12 @@ MoxTabel
     AQMP worker agent MoxDocumentDownload & MoxDocumentUpload.
 
 
-``python_agents``-folder
+``python_agents`` folder
 ------------------------
 
-This directory contains the Notify to AMQP service, which serves as an working
+This directory contains the Notify to AMQP service, which serves as a working
 example of a relay of the internal PostgresSQL notifications to a publicly
-available notification services.
+available notification service.
 
 Legacy agents
 +++++++++++++
@@ -46,9 +46,11 @@ Besides, this directory contains the following 2 (legacy) mox agents:
 +-------------+----------------+
 
 These agents were part of the early iterations of the Lora stack.
-However these agents not used in the current release (may be added in the forseeable future).
+However, these agents are not used in the current release (may be added
+in the forseeable future).
 
-The two agents are currently unsupported and not part of the default installation procedure.
+The two agents are currently unsupported and not part of the default
+installation procedure.
 
 Update/Dependencies
 +++++++++++++++++++

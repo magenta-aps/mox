@@ -1,6 +1,11 @@
 Testing
 =======
 
+.. warning::
+
+    This document is outdated. Note that, among other things, we
+    currently don't maintain the MoxRestFrontend agent.
+
 To run the API for testing or development purposes, run::
 
     $ oio_rest/oio_api.sh

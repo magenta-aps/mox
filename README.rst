@@ -4,9 +4,6 @@ MOX Messaging Service and Actual State Database
 Introduction
 ============
 
-.. contents::
-   :depth: 5
-
 This project contains an implementation of the OIO object model, used
 as a standard for data exchange by the Danish government, for use with
 a MOX messaging queue.
@@ -50,7 +47,8 @@ User documentation
     Contains documentation for the REST API and setup documentation. You are not
     expected to have a profound knowledge of the system as such, but you do have
     to know your way in a Bash prompt — you should be able to change the Apache
-    configuration and e.g. disable or change the SSL certificate on your own.
+    or Nginx configuration and e.g. disable or change the SSL certificate on
+    your own.
 
 Developer documentation
     Contains documentation for developers of the mox codebase and building and
