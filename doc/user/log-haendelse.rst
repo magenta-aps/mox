@@ -1,6 +1,15 @@
 Request For Comments: Specifikation af serviceinterface for LogHændelse
 =======================================================================
 
+Introduktion
+++++++++++++
+
+LoRas log-tjeneste er ikke en OIO-standard og er heller ikke som
+Tilstand, Indsats og Aktivitet lavet på baggrund af et forslag om en
+sådan. Log-tjenesten er specificeret af Magenta på bestilling fra
+Naturstyrelsen. Dette dokument er den funktionelle specifikation, der lå
+til grund for den nuværende implementation.
+
 Overordnet sammendrag
 +++++++++++++++++++++
 
@@ -54,8 +63,8 @@ Det drejer sig først og fremmest om
   LogHændelse, hvad der skal stå i dette notefelt.
 
 
-Autentikering
-+++++++++++++
+Autentificering
++++++++++++++++
 
 Log-servicen kunne i princippet genbruge SAML-tokens fra de oprindelige
 hændelser og oprette loghændelserne på vegne af denne bruger.
@@ -64,7 +73,7 @@ Logning må imidlertid opfattes som et særskilt ansvarsområde, og det vil
 derfor være passende, om denne funktion varetages af en bruger med en særlig 
 rolle, som vi kunne kalde Logningsansvarlig. 
 
-Autentikering foregår altså ved, at der for hver af de services, der har adgang
+Autentificering foregår altså ved, at der for hver af de services, der har adgang
 til at bruge LogHændelse, oprettes en bruger, der har rollen Logningsansvarlig
 for netop denne hændelse. Når en tjeneste ønsker at logge en hændelse, skal den
 danne et SAML-token for dens Logansvarlige bruger og medsende som

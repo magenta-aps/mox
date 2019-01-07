@@ -1,1 +1,1 @@
-../doc/database.rst
+../doc/dev/database.rst

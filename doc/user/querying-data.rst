@@ -1,5 +1,7 @@
-HOWTO use LoRa for querying data
-================================
+.. _QueryingData:
+
+Querying data
+=============
 
 
 .. contents:: `Table of contents`
@@ -20,7 +22,7 @@ work equally well with a browser plugin capable of sending HTTP ``POST``,
    As an example, the REST interface for Organisation is specified
    here: http://beta.rammearkitektur.dk/index.php/LoRA_Organisationsservice
 
-Please note that in comparison with this official implementation, our
+Please note that in comparison with this official specification, our
 system currently does not support the parameters ``-miljø`` and
 ``-version``.
 
@@ -44,7 +46,7 @@ disable authentication in ``settings.py``::
 
   USE_SAML_AUTHENTICATION = False
 
-In this case, you may safely disregard all talk of _SAML_ tokens, the
+In this case, you may safely disregard all talk of *SAML* tokens, the
 :http:header:`Authorization` header and ``AUTH_TOKEN``.
 
 Acquiring a SAML token
@@ -185,7 +187,7 @@ as ``application/json`` as form data with a :http:header:`Content-Type` of
 ``multipart/form-data`` and a single field, `json`, containing the data.
 
 Examples of valid JSON data for creation, update and import can be found
-in the directory `interface_test/test_data` in the source code.
+in the directory ``oio_rest/tests/fixtures/`` in the source code.
 
 Create
 ------

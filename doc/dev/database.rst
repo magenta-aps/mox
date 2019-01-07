@@ -6,7 +6,7 @@ underlying database for LoRA.
 
 
 Testing
-=======
+-------
 
 You can run the database tests with the following command::
 
@@ -20,7 +20,7 @@ The tests are written in ``PL/pgSQL`` using the `pgTAP
 <https://pgtap.org>`_ framework and located in ``tests/``.
 
 Organisation
-============
+------------
 
 The templates are organised as follows:
 
@@ -42,7 +42,7 @@ The templates are organised as follows:
     database.
 
 Templates
-=========
+---------
 
 We generate many PostgreSQL functions and definitions from Jinja2
 templates:
