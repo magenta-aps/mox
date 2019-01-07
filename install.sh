@@ -38,11 +38,9 @@ printf "# Installing system dependencies\n"
 printf "## Update system registry\n"
 sudo apt-get -qq update
 printf "## Install Python with venv\n"
-sudo apt-get -qy install python3 python3-venv python3-pip python3-dev gcc
-sudo apt-get -qy install build-essential libxmlsec1-dev
+sudo apt-get -qy install python3 python3-venv python3-pip libxmlsec1-dev
 printf "## Install Postgresql\n"
-sudo apt-get -qy install postgresql postgresql-common postgresql-client \
-    postgresql-server-dev-all postgresql-contrib pgtap
+sudo apt-get -qy install postgresql pgtap
 printf "## Install AMQP\n"
 sudo apt-get -qy install rabbitmq-server
 if [ $FULL -eq 1 ]; then
