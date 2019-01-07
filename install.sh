@@ -31,6 +31,8 @@ sudo apt-get -qy install build-essential libxmlsec1-dev
 echo "## Install Postgresql"
 sudo apt-get -qy install postgresql postgresql-common postgresql-client \
     postgresql-server-dev-all postgresql-contrib pgtap
+echo "## Install AMQP"
+sudo apt-get -qy install rabbitmq-server
 
 
 echo "# Create directories"
