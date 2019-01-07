@@ -34,7 +34,7 @@ the LoRa documentation found in Magenta’s Alfresco system.
    period exceeding the period where the ``organisationenhed`` is active). What
    happens in this case?
 10. Remove all ``address`` from the ``organisationenhed`` Aarhus and confirm that
-   they are gone afterwards.
+    they are gone afterwards.
 11. Make a small script capable of adding ``n`` new ``organisationenhed`` (e.g.
     where 10 < ``n`` < 20) named orgEnhed1, orgEnhed2, orgEnhed3,... These
     ``organisationenhed`` should all be subunits of the ``organisationenhed``
