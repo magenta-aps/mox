@@ -232,7 +232,7 @@ virkEgenskaberD :=	ROW (
 ;
 
 facetEgenskabC := ROW (
-   NULL,--'brugervendt_noegle_text1',
+   'brugervendt_noegle_A',
    NULL, --'facetbeskrivelse_text1',
    NULL,--'facetopbygning_text1',
 	'facetophavsret_C',

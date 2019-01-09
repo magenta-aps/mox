@@ -1,7 +1,7 @@
 #!/bin/bash -e
 set -b
+set -x
 
-MOXDIR=${BASE_DIR}
 DIR=${DB_DIR}
 
 test -z "$DIR" && DIR=$(cd $(dirname $0); pwd)
@@ -11,6 +11,8 @@ test -z "$SUPER_USER" && SUPER_USER=postgres
 test -z "$MOX_DB" && MOX_DB=mox
 test -z "$MOX_DB_USER" && MOX_DB_USER=mox
 test -z "$MOX_DB_PASSWORD" && MOX_DB_PASSWORD=mox
+
+MOXDIR=${BASE_DIR}/oio_rest
 
 cd $DIR
 
@@ -25,5 +27,6 @@ CREATE USER $MOX_DB_USER WITH PASSWORD '$MOX_DB_PASSWORD';
 CREATE DATABASE $MOX_DB WITH OWNER '$MOX_DB_USER';
 EOF
 
+cd $MOXDIR
 exec $PYTHON -m oio_rest.db_templating \
     | sudo -u postgres psql -v ON_ERROR_STOP=1 -d $MOX_DB

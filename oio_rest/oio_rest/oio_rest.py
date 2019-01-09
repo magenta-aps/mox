@@ -345,6 +345,13 @@ class OIORestObject(object):
         input = cls.get_json()
         if not input:
             return jsonify({'uuid': None}), 400
+
+        # Validate JSON input
+        try:
+            validate.validate(input)
+        except jsonschema.exceptions.ValidationError as e:
+            return jsonify({'message': e.message}), 400
+
         # Get most common parameters if available.
         note = typed_get(input, "note", "")
         registration = cls.gather_registration(input)
