@@ -122,7 +122,7 @@ CREATE TABLE {{oio_type}}_attr_{{attribut}} (
         {%- endif %} {% if attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][field] is defined and attributter_metadata[attribut][field]['mandatory'] is defined and attributter_metadata[attribut][field]['mandatory'] -%}
             NOT
         {%- endif %} NULL,
-    {% endfor %}
+    {%- endfor %}
     virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
     {{oio_type}}_registrering_id bigint NOT NULL,
     CONSTRAINT {{oio_type}}_attr_{{attribut}}_pkey PRIMARY KEY (id),
