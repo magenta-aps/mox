@@ -76,6 +76,11 @@ def _initdb():
                 settings.DATABASE, settings.DB_PASSWORD,
             ))
 
+            # The tests are written as if the computer has the local
+            # time zone set to 'Europe/Copenhagen'. This setting
+            # makes postgresql spit out dates in the format the tests
+            # expect. This is not part of the database sql or templates
+            # because we don't want a hardcoded timezone in production.
             curs.execute("ALTER DATABASE {} SET time zone 'Europe/Copenhagen'".format(settings.DATABASE))
 
     with psycopg2.connect(psql().url(
