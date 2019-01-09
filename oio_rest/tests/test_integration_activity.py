@@ -7,6 +7,7 @@
 #
 
 import datetime
+import dateutil
 import time
 import uuid
 
@@ -478,7 +479,8 @@ class Tests(util.TestCase):
     def test_searching_temporal_order(self):
         objids = [str(uuid.UUID(int=i)) for i in range(3)]
 
-        no_time = datetime.datetime.now()
+        tz = dateutil.tz.gettz('Europe/Copenhagen')
+        no_time = datetime.datetime.now(tz).replace(tzinfo=None)
 
         time.sleep(0.01)
 
@@ -497,7 +499,7 @@ class Tests(util.TestCase):
 
         time.sleep(0.01)
 
-        exists_time = datetime.datetime.now()
+        exists_time = datetime.datetime.now(tz).replace(tzinfo=None)
 
         time.sleep(0.01)
 

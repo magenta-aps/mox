@@ -76,6 +76,8 @@ def _initdb():
                 settings.DATABASE, settings.DB_PASSWORD,
             ))
 
+            curs.execute("ALTER DATABASE {} SET time zone 'Europe/Copenhagen'".format(settings.DATABASE))
+
     with psycopg2.connect(psql().url(
         database=settings.DATABASE,
     )) as conn:
