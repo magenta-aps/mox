@@ -5,9 +5,9 @@
 # This script does not automatically install the following components:
 #   Mox Rest Frontend, Mox Advis, Mox Elk log
 
-# Furthermore, it does not install rabbitmq or notification-service,
-#   based on the assumption that it isn't needed in most development
-#   scenarios. An optional flag for that purpose could be added.
+# Furthermore, it does not install notification-service, based on the
+#   assumption that it isn't needed in most development scenarios. An optional
+#   flag for that purpose could be added.
 
 # To get a more complete environment, use `--full`. This will install oio_rest
 #   as a service and run nginx and gunicorn all from a seperate user "mox".
