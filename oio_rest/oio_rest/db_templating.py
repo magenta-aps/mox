@@ -6,7 +6,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-#!/usr/bin/env python3
 """This module contains routines for generating the database from
 Jinja2 templates.
 
