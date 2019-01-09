@@ -1,4 +1,12 @@
 #!/usr/bin/env sh
+# Copyright (C) 2015-2019 Magenta ApS, http://magenta.dk.
+# Contact: info@magenta.dk.
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
 # Use install.sh to get a development environment up and running.
 # Don't use this in production.
 
@@ -11,6 +19,7 @@
 
 # To get a more complete environment, use `--full`. This will install oio_rest
 #   as a service and run nginx and gunicorn all from a seperate user "mox".
+
 
 set -e
 
