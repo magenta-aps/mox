@@ -1,4 +1,4 @@
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -102,7 +102,7 @@ CREATE OR REPLACE FUNCTION _aktivitet_aktoer_attr_repr_urn_to_text(AktivitetAkto
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -570,7 +570,7 @@ CREATE INDEX aktivitet_relation_pat_virkning_notetekst
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -706,7 +706,7 @@ $$
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -729,7 +729,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_aktivitet_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -798,7 +798,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -1383,7 +1383,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -1676,7 +1676,7 @@ RETURN aktivitet_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -1880,7 +1880,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -1911,7 +1911,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -3518,7 +3518,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -3686,7 +3686,7 @@ create cast (AktivitetType as json) with function actual_state._cast_aktivitetTy
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -3732,7 +3732,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -4006,7 +4006,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -4073,7 +4073,7 @@ CREATE TYPE BrugerType AS
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -4417,7 +4417,7 @@ CREATE INDEX bruger_relation_pat_virkning_notetekst
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -4525,7 +4525,7 @@ $$
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -4548,7 +4548,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_bruger_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -4617,7 +4617,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -5016,7 +5016,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -5210,7 +5210,7 @@ RETURN bruger_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -5377,7 +5377,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -5408,7 +5408,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -6442,7 +6442,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -6603,7 +6603,7 @@ create cast (BrugerType as json) with function actual_state._cast_brugerType_to_
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -6649,7 +6649,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -6870,7 +6870,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -7009,7 +7009,7 @@ CREATE TYPE _DokumentVariantDelKey AS
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -7735,7 +7735,7 @@ CREATE INDEX dokument_del_relation_pat_virkning_notetekst
     (((virkning).notetekst) gin_trgm_ops);
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -7985,7 +7985,7 @@ $$
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -8008,7 +8008,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_dokument_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -8077,7 +8077,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -9109,7 +9109,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -9458,7 +9458,7 @@ RETURN dokument_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -9634,7 +9634,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -9665,7 +9665,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -11325,7 +11325,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -11486,7 +11486,7 @@ create cast (DokumentType as json) with function actual_state._cast_dokumentType
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -11532,7 +11532,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -11801,7 +11801,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -11872,7 +11872,7 @@ CREATE TYPE FacetType AS
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -12264,7 +12264,7 @@ CREATE INDEX facet_relation_pat_virkning_notetekst
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -12372,7 +12372,7 @@ $$
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -12395,7 +12395,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_facet_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -12464,7 +12464,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -12895,7 +12895,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -13097,7 +13097,7 @@ RETURN facet_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -13268,7 +13268,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -13299,7 +13299,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -14361,7 +14361,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -14522,7 +14522,7 @@ create cast (FacetType as json) with function actual_state._cast_facetType_to_js
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -14568,7 +14568,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -14813,7 +14813,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -14898,7 +14898,7 @@ CREATE TYPE IndsatsType AS
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -15316,7 +15316,7 @@ CREATE INDEX indsats_relation_pat_virkning_notetekst
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -15452,7 +15452,7 @@ $$
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -15475,7 +15475,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_indsats_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -15544,7 +15544,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -16088,7 +16088,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -16355,7 +16355,7 @@ RETURN indsats_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -16555,7 +16555,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -16586,7 +16586,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -18093,7 +18093,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -18261,7 +18261,7 @@ create cast (IndsatsType as json) with function actual_state._cast_indsatsType_t
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -18307,7 +18307,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -18563,7 +18563,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -18630,7 +18630,7 @@ CREATE TYPE InteressefaellesskabType AS
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -18974,7 +18974,7 @@ CREATE INDEX interessefaellesskab_relation_pat_virkning_notetekst
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -19082,7 +19082,7 @@ $$
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -19105,7 +19105,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_interessefaellesskab_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -19174,7 +19174,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -19573,7 +19573,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -19767,7 +19767,7 @@ RETURN interessefaellesskab_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -19934,7 +19934,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -19965,7 +19965,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -20999,7 +20999,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -21160,7 +21160,7 @@ create cast (InteressefaellesskabType as json) with function actual_state._cast_
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -21206,7 +21206,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -21427,7 +21427,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -21495,7 +21495,7 @@ CREATE TYPE ItsystemType AS
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -21849,7 +21849,7 @@ CREATE INDEX itsystem_relation_pat_virkning_notetekst
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -21957,7 +21957,7 @@ $$
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -21980,7 +21980,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_itsystem_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -22049,7 +22049,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -22456,7 +22456,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -22652,7 +22652,7 @@ RETURN itsystem_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -22820,7 +22820,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -22851,7 +22851,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -23892,7 +23892,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -24053,7 +24053,7 @@ create cast (ItsystemType as json) with function actual_state._cast_itsystemType
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -24099,7 +24099,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -24326,7 +24326,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -24406,7 +24406,7 @@ CREATE TYPE KlasseType AS
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -24855,7 +24855,7 @@ CREATE INDEX klasse_relation_pat_virkning_notetekst
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -24994,7 +24994,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr KlasseSoegeordType[])
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -25017,7 +25017,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_klasse_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -25086,7 +25086,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -25582,7 +25582,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -25816,7 +25816,7 @@ RETURN klasse_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -26033,7 +26033,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -26064,7 +26064,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -27193,7 +27193,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -27354,7 +27354,7 @@ create cast (KlasseType as json) with function actual_state._cast_klasseType_to_
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -27400,7 +27400,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -27645,7 +27645,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -27713,7 +27713,7 @@ CREATE TYPE KlassifikationType AS
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -28069,7 +28069,7 @@ CREATE INDEX klassifikation_relation_pat_virkning_notetekst
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -28177,7 +28177,7 @@ $$
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -28200,7 +28200,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_klassifikation_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -28269,7 +28269,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -28676,7 +28676,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -28872,7 +28872,7 @@ RETURN klassifikation_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -29040,7 +29040,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -29071,7 +29071,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -30112,7 +30112,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -30273,7 +30273,7 @@ create cast (KlassifikationType as json) with function actual_state._cast_klassi
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -30319,7 +30319,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -30546,7 +30546,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -30618,7 +30618,7 @@ CREATE TYPE LoghaendelseType AS
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -31022,7 +31022,7 @@ CREATE INDEX loghaendelse_relation_pat_virkning_notetekst
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -31130,7 +31130,7 @@ $$
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -31153,7 +31153,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_loghaendelse_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -31222,7 +31222,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -31661,7 +31661,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -31865,7 +31865,7 @@ RETURN loghaendelse_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -32037,7 +32037,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -32068,7 +32068,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -33137,7 +33137,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -33298,7 +33298,7 @@ create cast (LoghaendelseType as json) with function actual_state._cast_loghaend
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -33344,7 +33344,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -33595,7 +33595,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -33661,7 +33661,7 @@ CREATE TYPE OrganisationType AS
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -33993,7 +33993,7 @@ CREATE INDEX organisation_relation_pat_virkning_notetekst
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -34101,7 +34101,7 @@ $$
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -34124,7 +34124,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_organisation_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -34193,7 +34193,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -34584,7 +34584,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -34776,7 +34776,7 @@ RETURN organisation_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -34942,7 +34942,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -34973,7 +34973,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -36000,7 +36000,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -36161,7 +36161,7 @@ create cast (OrganisationType as json) with function actual_state._cast_organisa
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -36207,7 +36207,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -36422,7 +36422,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -36488,7 +36488,7 @@ CREATE TYPE OrganisationenhedType AS
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -36820,7 +36820,7 @@ CREATE INDEX organisationenhed_relation_pat_virkning_notetekst
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -36928,7 +36928,7 @@ $$
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -36951,7 +36951,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_organisationenhed_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -37020,7 +37020,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -37411,7 +37411,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -37603,7 +37603,7 @@ RETURN organisationenhed_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -37769,7 +37769,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -37800,7 +37800,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -38827,7 +38827,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -38988,7 +38988,7 @@ create cast (OrganisationenhedType as json) with function actual_state._cast_org
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -39034,7 +39034,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -39249,7 +39249,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -39315,7 +39315,7 @@ CREATE TYPE OrganisationfunktionType AS
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -39647,7 +39647,7 @@ CREATE INDEX organisationfunktion_relation_pat_virkning_notetekst
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -39755,7 +39755,7 @@ $$
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -39778,7 +39778,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_organisationfunktion_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -39847,7 +39847,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -40238,7 +40238,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -40430,7 +40430,7 @@ RETURN organisationfunktion_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -40596,7 +40596,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -40627,7 +40627,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -41654,7 +41654,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -41815,7 +41815,7 @@ create cast (OrganisationfunktionType as json) with function actual_state._cast_
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -41861,7 +41861,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -42076,7 +42076,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -42174,7 +42174,7 @@ CREATE Type _SagRelationMaxIndex AS
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -42620,7 +42620,7 @@ CREATE INDEX sag_relation_pat_virkning_notetekst
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -42728,7 +42728,7 @@ $$
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -42751,7 +42751,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_sag_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -42820,7 +42820,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -43386,7 +43386,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -43684,7 +43684,7 @@ RETURN sag_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -43861,7 +43861,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -43892,7 +43892,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -45047,7 +45047,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -45208,7 +45208,7 @@ create cast (SagType as json) with function actual_state._cast_sagType_to_json(S
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -45254,7 +45254,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -45523,7 +45523,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -45611,7 +45611,7 @@ CREATE TYPE TilstandType AS
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -46005,7 +46005,7 @@ CREATE INDEX tilstand_relation_pat_virkning_notetekst
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -46141,7 +46141,7 @@ $$
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -46164,7 +46164,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_tilstand_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -46233,7 +46233,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -46758,7 +46758,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -47035,7 +47035,7 @@ RETURN tilstand_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -47234,7 +47234,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -47265,7 +47265,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -48452,7 +48452,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -48620,7 +48620,7 @@ create cast (TilstandType as json) with function actual_state._cast_tilstandType
 
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
@@ -48666,7 +48666,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- Copyright (C) 2015 Magenta ApS, http://magenta.dk.
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
 -- This Source Code Form is subject to the terms of the Mozilla Public
