@@ -348,6 +348,16 @@ which may later be retrieved with a list or read operation - e.g:
     ]
     }
 
+Paged search
+++++++++++++
+
+The search function supports paged searches by adding the parameters
+``maximalantalresultater`` (max number of results) and ``foersteresultat``
+(first result).
+
+Since pagination only makes sense if the order of the results are predictable
+the search will be sorted by ``brugervendtnoegle`` if pagination is used.
+
 
 .. _AddOperation:
 
