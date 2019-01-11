@@ -25,10 +25,10 @@ reference document: `Specifikation af serviceinterface for Organisation`_.
 ``organisation``
 ++++++++++++++++
 
-Located at the endpoint ``/organisation/organisation``. A ``organisation`` is a
-legal organisation. A good example of this a municipality. The database does
-support multiple ``organisation``, but in the wild there is usually only one per
-MOX instance.
+Located at the endpoint :http:get:`/organisation/organisation`. A
+``organisation`` is a legal organisation. A good example of this a municipality.
+The database does support multiple ``organisation``, but in the wild there is
+usually only one per MOX instance.
 
 
 .. code-block:: json
@@ -83,7 +83,7 @@ The fields used in the example ``organisation`` are the following:
 ``organisationenhed``
 +++++++++++++++++++++
 
-Located at the endpoint ``/organisation/organisationenhed``. A
+Located at the endpoint :http:get:`/organisation/organisationenhed`. A
 ``organisationenhed`` is a organisational unit. This could be a department,
 section, office, committee, project group, class, team and the like. Usually a
 ``organisation`` contains a single ``organisationenhed`` as a direct decendant
@@ -157,9 +157,9 @@ The fields used in the example ``organisationenhed`` are the following:
 Valid time
 ----------
 
-The database is a `Temporal Database
+The database is a `Bitemporal Database
 <https://en.wikipedia.org/wiki/Temporal_database>`_. All attributes and
-relations have a valid time period associated.
+relations have a valid time period associated as ``virkning``.
 
 
 .. code-block:: json
@@ -178,35 +178,196 @@ relations have a valid time period associated.
 The fields used in the example are the following:
 
 ``from``
-    The time when this facts starts to be true. This can be almost any timestamp format. Required.
+    The time when this facts starts to be true. Date and time input is
+    accepted in almost any reasonable format, including ISO 8601. Required.
 
 ``from_included``
     Whether the ``from`` timestamp is closed or open. Default ``true``.
 
 ``to``
-    The time when this facts stop to be true. This can be almost any timestamp format.  Required.
+    The time when this facts stop to be true. Date and time input is accepted
+    in almost any reasonable format, including ISO 8601. Required.
 
 ``to_included``
     Whether the ``to`` timestamp is closed or open. Default ``false``.
 
 
+All transactions also have a transaction time as ``registreret``.
+
+
 Common operations
 =================
 
-Search
-------
+
+.. _ReadOperation:
 
 Read
 ----
 
+To get a single object. Call :http:method:`GET` on the object endpoint with the
+UUID of the object appended, e.g.:
+
+.. code-block:: http
+
+    GET /organisation/organisationenhed/1ab754c7-7126-494e-8a4d-9ee3054709fa HTTP/1.1
+
+It will only return information which is currently valid. That is the
+information with a :ref:`Valid time` containing the current system time.
+
+To get a information which was valid at another time you can add
+``&virkningFra=<datetime>&virkningTil=<datetime>`` Where ``<datetime>`` is a
+date/time value. Date and time input is accepted in almost any reasonable
+format, including ISO 8601.
+
+Alternatively ``&virkningstid=<datetime>`` can be used. The results returned
+will be those valid at date/time value ``<datetime>,`` giving a 'snapshot' of
+the object's state at a given point in time.
+
+To filter on the transaction time,
+``&registreretFra=<datetime>&registreretTil=<datetime>`` and
+``&registreringstid=<datetime>`` is also available.
+
+See :http:get:`/organisation/organisationenhed/(regex:uuid)` for the complete
+reference for read operation on ``organisationenhed``.
+
+
+.. _ListOperation:
+
+List
+----
+
+It's also possible to use a slightly different syntax to list objects,
+e.g.:
+
+.. code-block:: http
+
+    GET /organisation/organisationenhed/?uuid=1ab754c7-7126-494e-8a4d-9ee3054709fa HTTP/1.1
+
+With this syntax is is possible to list more than one UUID:
+
+.. code-block:: http
+
+    GET /organisation/organisationenhed/?uuid=1ab754c7-7126-494e-8a4d-9ee3054709fa&uuid=a75af34e-1ce3-44d5-ae9a-76f246fd4b10&uuid=77cd9b29-ef12-418b-bde4-6703aea007e3 HTTP/1.1
+
+That is, each UUID is specified by a separate ``&uuid=`` clause.
+
+There is no built-in limit to how many objects can be listed in this way, but it
+is often considered a best practice to limit URIs to a length of about 2000
+characters. Thus, we recommend that you attempt to list a maximum of 45 objects
+in each request.
+
+List operations may include the time parameters ``virkningFra`` and
+``virkningTil`` as well as ``registreringFra`` and ``registreringTil``. In this
+case, only the parts of the objects which fall within these restrictions will be
+given.
+
+Given any parameters other than::
+
+    registreretFra
+    registreretTil
+    registreringstid
+    virkningFra
+    virkningTil
+    virkningstid
+    uuid
+
+the operation is a :ref:`SearchOperation`.
+
+See :http:get:`/organisation/organisationenhed` for the complete reference for
+list and search operation on ``organisationenhed``.
+
+
+.. _SearchOperation:
+
+Search
+------
+
+You can also *search* for an object by specifying values of attributes or
+relations as search parameters. You can, e.g., find all ``organisation`` by
+searching for any value of ``brugervendtnoegle``:
+
+.. code-block:: http
+
+    GET /organisation/organisation?brugervendtnoegle=% HTTP/1.1
+
+All search parameters which search on an attribute value of type TEXT use
+case-insensitive matching, with the possibility to use wildcards. Other
+value types use a simple equality operator.
+
+The wildcard character ``%`` (percent sign) may be used in these search
+parameter values. This character matches zero or more of any characters.
+
+If it is desired to search for attribute values of type TEXT which contain ``%``
+themselves, then the character must be escaped in the search parameters with a
+backslash, like, for example: ``abc\\%def`` would match the value ``abc%def``.
+Contrary, to typical SQL LIKE syntax, the character ``_`` (underscore) matches
+only the underscore character (and not "any character").
+
+``bvn`` can be used as shorthand for ``brugervendtnoegle``, which is an
+attribute field that all objects have, but apart from that, the attribute names
+should be spelled out. Search parameter names are case-insensitive.
+
+
+
+It is possible to search for relations (links) as well by specifying
+the value, which may be either an UUID or a URN. E.g., for finding all
+instances of ``organisationenhed`` which belongs to ``Direktion``:
+
+.. code-block:: http
+
+    GET /organisation/organisationenhed?tilknyttedeenheder=urn:Direktion HTTP/1.1
+
+Search parameters may be combined and may include the time restrictions as for
+:ref:`ListOperation`, so it is possible to search for a value which must exist
+at a given time or interval.
+
+Note that while the result of a :ref:`ListOperation` or :ref:`ReadOperation`
+operation is given as the JSON representation of the object(s) returned, the
+result of a :ref:`SearchOperation` operation is always given as a list of UUIDs
+which may later be retrieved with a list or read operation - e.g:
+
+.. code-block:: http
+
+    GET /organisation/organisationenhed?brugervendtnoegle=Direktion&tilhoerer=urn:KL&enhedstype=urn:Direktion HTTP/1.1
+
+    {
+    "results": [
+        [
+        "7c6e38f8-e5b5-4b87-af52-9693e074f5ee",
+        "9765cdbf-9f42-4e9d-897b-909af549aba8",
+        "3ca64809-acdb-443f-9316-aabb2ee6aff7",
+        "3eaa730c-7800-495a-9c6b-4688cdf7a61f",
+        "7d305acc-2a85-420b-9557-feead3dae339",
+        "1b1e2de1-6d95-4200-9b60-f85e70cc37cf",
+        "8680d348-688e-47f6-ad91-919ed75e4a5c",
+        "2fcf5fdf-fdfc-412a-b6ab-818cbdaecb5b",
+        "603e7977-65cb-47ca-ab82-c6308fd33d27",
+        "c1209882-a402-452b-8663-6c502f758b03",
+        "39a6ef88-ae26-4557-a48c-7d7c5662c609"
+        ]
+    ]
+    }
+
+
+.. _AddOperation:
+
 Add
 ---
+
+
+.. _UpdateOperation:
 
 Update
 ------
 
+
+.. _DeleteOperation:
+
 Delete
 ------
+
+
+.. _ImportOperation:
 
 Import
 ------
