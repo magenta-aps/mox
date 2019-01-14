@@ -34,7 +34,7 @@ DATABASE_STRUCTURE = {
         "attributter": {
             "egenskaber": [
                 "brugervendtnoegle", "beskrivelse", "kaldenavn",
-                "ophavsret",
+                "ophavsret", "integrationsdata",
             ],
         },
         "attributter_metadata": {

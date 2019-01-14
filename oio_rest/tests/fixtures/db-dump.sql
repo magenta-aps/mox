@@ -27710,6 +27710,7 @@ brugervendtnoegle text,
 beskrivelse text,
 kaldenavn text,
 ophavsret text,
+integrationsdata text,
 
  virkning Virkning
 );
@@ -27870,6 +27871,7 @@ CREATE TABLE klassifikation_attr_egenskaber (
         beskrivelse text  NULL,
         kaldenavn text  NULL,
         ophavsret text  NULL,
+        integrationsdata text  NULL,
     virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
     klassifikation_registrering_id bigint NOT NULL,
     CONSTRAINT klassifikation_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -27928,6 +27930,17 @@ ALTER TABLE klassifikation_attr_egenskaber
             ON klassifikation_attr_egenskaber
             USING btree
             (ophavsret); 
+ 
+     
+        CREATE INDEX klassifikation_attr_egenskaber_pat_integrationsdata
+            ON klassifikation_attr_egenskaber
+            USING gin
+            (integrationsdata gin_trgm_ops);
+
+        CREATE INDEX klassifikation_attr_egenskaber_idx_integrationsdata
+            ON klassifikation_attr_egenskaber
+            USING btree
+            (integrationsdata); 
 
 
 
@@ -28160,7 +28173,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr KlassifikationEgenska
     FOREACH element IN ARRAY inputArr
     LOOP
 
-      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.beskrivelse IS NULL AND element.kaldenavn IS NULL AND element.ophavsret IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.beskrivelse IS NULL AND element.kaldenavn IS NULL AND element.ophavsret IS NULL AND element.integrationsdata IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
 
     --  RAISE DEBUG 'Skipping element';
       ELSE
@@ -28531,7 +28544,7 @@ BEGIN
                     unnest(attrEgenskaber) a
                     JOIN unnest(attrEgenskaber) b ON (a.virkning).TimePeriod && (b.virkning).TimePeriod
                 GROUP BY
-                    a.brugervendtnoegle,a.beskrivelse,a.kaldenavn,a.ophavsret,
+                    a.brugervendtnoegle,a.beskrivelse,a.kaldenavn,a.ophavsret,a.integrationsdata,
                     a.virkning
                     
                     HAVING COUNT(*) > 1) THEN
@@ -28542,9 +28555,9 @@ BEGIN
         -- To avoid needless fragmentation we'll check for presence of
         -- null values in the fields - and if none are present, we'll skip
         -- the merging operations
-        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).beskrivelse IS NULL  OR  (attrEgenskaberObj).kaldenavn IS NULL  OR  (attrEgenskaberObj).ophavsret IS NULL  THEN
+        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).beskrivelse IS NULL  OR  (attrEgenskaberObj).kaldenavn IS NULL  OR  (attrEgenskaberObj).ophavsret IS NULL  OR  (attrEgenskaberObj).integrationsdata IS NULL  THEN
             
-            INSERT INTO klassifikation_attr_egenskaber ( brugervendtnoegle,beskrivelse,kaldenavn,ophavsret, virkning, klassifikation_registrering_id)
+            INSERT INTO klassifikation_attr_egenskaber ( brugervendtnoegle,beskrivelse,kaldenavn,ophavsret,integrationsdata, virkning, klassifikation_registrering_id)
                 SELECT
                     
                         
@@ -28563,6 +28576,10 @@ BEGIN
                         
                             coalesce(attrEgenskaberObj.ophavsret, a.ophavsret),
                     
+                        
+                        
+                            coalesce(attrEgenskaberObj.integrationsdata, a.integrationsdata),
+                    
                     ROW ((a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
                             (attrEgenskaberObj.virkning).AktoerRef,
                             (attrEgenskaberObj.virkning).AktoerTypeKode,
@@ -28578,7 +28595,7 @@ BEGIN
         -- that is NOT covered by any "merged" rows inserted above, generate
         -- and insert rows.
         
-            INSERT INTO klassifikation_attr_egenskaber ( brugervendtnoegle,beskrivelse,kaldenavn,ophavsret, virkning, klassifikation_registrering_id)
+            INSERT INTO klassifikation_attr_egenskaber ( brugervendtnoegle,beskrivelse,kaldenavn,ophavsret,integrationsdata, virkning, klassifikation_registrering_id)
                 SELECT
                     
                      attrEgenskaberObj.brugervendtnoegle,
@@ -28588,6 +28605,8 @@ BEGIN
                      attrEgenskaberObj.kaldenavn,
                     
                      attrEgenskaberObj.ophavsret,
+                    
+                     attrEgenskaberObj.integrationsdata,
                     
                     ROW (b.tz_range_leftover,
                         (attrEgenskaberObj.virkning).AktoerRef,
@@ -28608,8 +28627,8 @@ BEGIN
             -- Insert attrEgenskaberObj raw (if there were no null-valued fields)
             
 
-            INSERT INTO klassifikation_attr_egenskaber ( brugervendtnoegle,beskrivelse,kaldenavn,ophavsret, virkning, klassifikation_registrering_id)
-                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.beskrivelse,  attrEgenskaberObj.kaldenavn,  attrEgenskaberObj.ophavsret, attrEgenskaberObj.virkning, new_klassifikation_registrering.id );
+            INSERT INTO klassifikation_attr_egenskaber ( brugervendtnoegle,beskrivelse,kaldenavn,ophavsret,integrationsdata, virkning, klassifikation_registrering_id)
+                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.beskrivelse,  attrEgenskaberObj.kaldenavn,  attrEgenskaberObj.ophavsret,  attrEgenskaberObj.integrationsdata, attrEgenskaberObj.virkning, new_klassifikation_registrering.id );
         END IF;
 
         END LOOP;
@@ -28625,7 +28644,7 @@ BEGIN
 -- Handle egenskaber of previous registration, taking overlapping
 -- virknings into consideration (using function subtract_tstzrange)
 
-    INSERT INTO klassifikation_attr_egenskaber ( brugervendtnoegle,beskrivelse,kaldenavn,ophavsret, virkning, klassifikation_registrering_id)
+    INSERT INTO klassifikation_attr_egenskaber ( brugervendtnoegle,beskrivelse,kaldenavn,ophavsret,integrationsdata, virkning, klassifikation_registrering_id)
     SELECT
         
         
@@ -28636,6 +28655,8 @@ BEGIN
             a.kaldenavn,
         
             a.ophavsret,
+        
+            a.integrationsdata,
         
         ROW (c.tz_range_leftover,
             (a.virkning).AktoerRef,
@@ -28823,6 +28844,7 @@ IF klassifikation_registrering.attrEgenskaber IS NOT NULL and coalesce(array_len
       beskrivelse,
       kaldenavn,
       ophavsret,
+      integrationsdata,
       virkning,
       klassifikation_registrering_id
     )
@@ -28832,6 +28854,7 @@ IF klassifikation_registrering.attrEgenskaber IS NOT NULL and coalesce(array_len
       klassifikation_attr_egenskaber_obj.beskrivelse,
       klassifikation_attr_egenskaber_obj.kaldenavn,
       klassifikation_attr_egenskaber_obj.ophavsret,
+      klassifikation_attr_egenskaber_obj.integrationsdata,
       klassifikation_attr_egenskaber_obj.virkning,
       klassifikation_registrering_id
     ;
@@ -29018,6 +29041,7 @@ FROM
 					 		b.beskrivelse,
 					 		b.kaldenavn,
 					 		b.ophavsret,
+					 		b.integrationsdata,
 					   		b.virkning
                             
 							)::KlassifikationEgenskaberAttrType
@@ -29025,7 +29049,7 @@ FROM
 						NULL
 						END
                         
-						order by b.brugervendtnoegle,b.beskrivelse,b.kaldenavn,b.ophavsret,b.virkning
+						order by b.brugervendtnoegle,b.beskrivelse,b.kaldenavn,b.ophavsret,b.integrationsdata,b.virkning
                         
 					)) KlassifikationAttrEgenskaberArr
                     
@@ -29338,6 +29362,12 @@ ELSE
                     a.ophavsret ILIKE attrEgenskaberTypeObj.ophavsret --case insensitive
                 )
                 AND
+                (
+                    attrEgenskaberTypeObj.integrationsdata IS NULL
+                    OR
+                    a.integrationsdata ILIKE attrEgenskaberTypeObj.integrationsdata --case insensitive
+                )
+                AND
                 
                 		(
 				(registreringObj.registrering) IS NULL 
@@ -29438,7 +29468,8 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
                         a.brugervendtnoegle ILIKE anyAttrValue OR
                         a.beskrivelse ILIKE anyAttrValue OR
                         a.kaldenavn ILIKE anyAttrValue OR
-                        a.ophavsret ILIKE anyAttrValue
+                        a.ophavsret ILIKE anyAttrValue OR
+                        a.integrationsdata ILIKE anyAttrValue
                 
             )
             AND
@@ -30451,6 +30482,12 @@ ELSE
 					attrEgenskaberTypeObj.ophavsret IS NULL
 					OR 
 					a.ophavsret = attrEgenskaberTypeObj.ophavsret 
+				)
+				AND
+				(
+					attrEgenskaberTypeObj.integrationsdata IS NULL
+					OR 
+					a.integrationsdata = attrEgenskaberTypeObj.integrationsdata 
 				)
 				AND b.klassifikation_id = ANY (klassifikation_candidates)
 				AND (a.virkning).TimePeriod @> actual_virkning 
