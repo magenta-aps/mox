@@ -358,6 +358,45 @@ The search function supports paged searches by adding the parameters
 Since pagination only makes sense if the order of the results are predictable
 the search will be sorted by ``brugervendtnoegle`` if pagination is used.
 
+Advanced search
++++++++++++++++
+
+It is possible to search for relations (links) as well by specifying
+the value, which may be either an UUID or a URN. E.g., for finding all
+instances of ``organisationenhed`` which belongs to ``Direktion``:
+
+.. code-block:: http
+
+    GET /organisation/organisationenhed?tilknyttedeenheder=urn:Direktion HTTP/1.1
+
+
+When searching on relations, one can limit the relation to a specific object
+type by specifying a search parameter of the format::
+
+    &<relation>:<objecttype>=<uuid|urn>
+
+Note that the objecttype parameter is case-sensitive.
+
+It is only possible to search on one ``DokumentVariant`` and ``DokumentDel`` at
+a time. For example, if ::
+
+    &deltekst=a&underredigeringaf=<UUID>
+
+is specified, then the search will return documents which have a ``DokumentDel``
+with ``deltekst="a"`` and which has the relation ``underredigeringaf=<UUID>``.
+However, if the deltekst parameter is omitted, e.g. ::
+
+    &underredigeringaf=<UUID>
+
+Then, all documents which have at least one ``DokumentDel`` which has the given
+UUID will be returned.
+
+The same logic applies to the ``varianttekst`` parameter. If it is not
+specified, then all variants are searched across. Note that when
+``varianttekst`` is specified, then any ``DokumentDel`` parameters apply only to
+that specific variant. If the ``DokumentDel`` parameters are matched under a
+different variant, then they are not included in the results.
+
 
 .. _AddOperation:
 
