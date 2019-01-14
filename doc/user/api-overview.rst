@@ -271,7 +271,7 @@ Given any parameters other than::
     virkningstid
     uuid
 
-the operation is a :ref:`SearchOperation`.
+the operation is a :ref:`SearchOperation` and will return a list a of UUIDs.
 
 See :http:get:`/organisation/organisationenhed` for the complete reference for
 list and search operation on ``organisationenhed``.
@@ -308,15 +308,6 @@ attribute field that all objects have, but apart from that, the attribute names
 should be spelled out. Search parameter names are case-insensitive.
 
 
-
-It is possible to search for relations (links) as well by specifying
-the value, which may be either an UUID or a URN. E.g., for finding all
-instances of ``organisationenhed`` which belongs to ``Direktion``:
-
-.. code-block:: http
-
-    GET /organisation/organisationenhed?tilknyttedeenheder=urn:Direktion HTTP/1.1
-
 Search parameters may be combined and may include the time restrictions as for
 :ref:`ListOperation`, so it is possible to search for a value which must exist
 at a given time or interval.
@@ -331,21 +322,13 @@ which may later be retrieved with a list or read operation - e.g:
     GET /organisation/organisationenhed?brugervendtnoegle=Direktion&tilhoerer=urn:KL&enhedstype=urn:Direktion HTTP/1.1
 
     {
-    "results": [
-        [
+    "results": [[
         "7c6e38f8-e5b5-4b87-af52-9693e074f5ee",
         "9765cdbf-9f42-4e9d-897b-909af549aba8",
         "3ca64809-acdb-443f-9316-aabb2ee6aff7",
         "3eaa730c-7800-495a-9c6b-4688cdf7a61f",
-        "7d305acc-2a85-420b-9557-feead3dae339",
-        "1b1e2de1-6d95-4200-9b60-f85e70cc37cf",
-        "8680d348-688e-47f6-ad91-919ed75e4a5c",
-        "2fcf5fdf-fdfc-412a-b6ab-818cbdaecb5b",
-        "603e7977-65cb-47ca-ab82-c6308fd33d27",
-        "c1209882-a402-452b-8663-6c502f758b03",
-        "39a6ef88-ae26-4557-a48c-7d7c5662c609"
-        ]
-    ]
+        "7d305acc-2a85-420b-9557-feead3dae339"
+        ]]
     }
 
 Paged search
