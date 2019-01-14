@@ -19,43 +19,6 @@ doesn't exist in the database. If it does, the PUT operation is
 interpreted as an Update to replace the entire contents of the object.
 
 
-Search operation
-----------------
-
-
-
-Searching on Sag JournalPost relations
-++++++++++++++++++++++++++++++++++++++
-
-To search on the sub-fields of the "JournalPost" relation in Sag, requires a
-special dot-notation syntax, due to possible ambiguity with other search
-parameters (for example, the "titel" parameter).
-
-The following are some examples::
-
-  &journalpostkode=vedlagtdokument
-  &journalnotat.titel=Kommentarer
-  &journalnotat.notat=Læg+mærke+til
-  &journalnotat.format=internt
-  &journaldokument.dokumenttitel=Rapport+XYZ
-  &journaldokument.offentlighedundtaget.alternativtitel=Fortroligt
-  &journaldokument.offentlighedundtaget.hjemmel=nej
-
-All of these parameters support wildcards ("%") and use case-insensitive
-matching, except "journalpostkode", which is treated as-is.
-
-Note that when these parameters are combined, it is not required that the
-matches occur on the *same* JournalPost relation.
-
-For example, the following query would match any Sag which has one or more
-JournalPost relations which has a journalpostkode = "vedlagtdokument" AND
-which has one or more JournalPost relations which has a
-journaldokument.dokumenttitel = "Rapport XYZ" ::
-
-  &journalpostkode=vedlagtdokument&journaldokument.dokumenttitel=Rapport+XYZ
-
-
-   
 File upload
 -----------
 
