@@ -42,7 +42,7 @@ usually only one per MOX instance.
          "organisationsnavn": "Magenta ApS",
          "virkning": {
            "from": "2017-01-01",
-           "to": "2019-03-14",
+           "to": "2019-03-14"
          }
        }]
      },
@@ -51,7 +51,7 @@ usually only one per MOX instance.
          "gyldighed": "Aktiv",
          "virkning": {
            "from": "2017-01-01",
-           "to": "2019-03-14",
+           "to": "2019-03-14"
          }
        }
      ]}
@@ -103,7 +103,7 @@ with similar attributes as the parent ``organisation``. This
          "enhedsnavn": "Copenhagen",
          "virkning": {
            "from": "2017-01-01",
-           "to": "2019-03-14",
+           "to": "2019-03-14"
          }
        }]
      },
@@ -112,7 +112,7 @@ with similar attributes as the parent ``organisation``. This
          "gyldighed": "Aktiv",
          "virkning": {
            "from": "2017-01-01",
-           "to": "2019-03-14",
+           "to": "2019-03-14"
          }
        }]
      },
@@ -121,14 +121,14 @@ with similar attributes as the parent ``organisation``. This
          "uuid": "6ff6cf06-fa47-4bc8-8a0e-7b21763bc30a",
          "virkning": {
            "from": "2017-01-01",
-           "to": "2019-03-14",
+           "to": "2019-03-14"
          }
        }],
        "tilhoerer": [{
          "uuid": "6135c99b-f0fe-4c46-bb50-585b4559b48a",
          "virkning": {
            "from": "2017-01-01",
-           "to": "2019-03-14",
+           "to": "2019-03-14"
          }
        }]
      }
