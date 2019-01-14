@@ -86,21 +86,6 @@ as ``application/json`` as form data with a :http:header:`Content-Type` of
 Examples of valid JSON data for creation, update and import can be found
 in the directory ``oio_rest/tests/fixtures/`` in the source code.
 
-Create
-------
-
-To create a new object, ``POST`` the JSON representation of its attributes,
-states and relations to the URL of the class - e.g., to create a new
-Klasse. ::
-
-    curl -k -H "Content-Type: application/json" \
-      -X POST -d "<JSON DATA>" \
-      -H "Authorization: $AUTH_TOKEN" \
-      https://mox/klassifikation/klasse)
-
-
-This will create a new Registrering of the object, valid from now to
-infinity.
 
 
 Update
