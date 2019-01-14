@@ -98,24 +98,6 @@ An example::
 Passivating and deleting data
 +++++++++++++++++++++++++++++
 
-Passivate
----------
-
-An object is passivated by sending a special update (using a PATCH
-request) whose JSON data only contains two fields, an optional note
-field and the life cycle code "Passiv".
-
-E.g., the JSON may look like this::
-
-    {
-        "Note": "Passivate this object!",
-        "livscyklus": "Passiv"
-    }
-
-
-When an object is passive, it is no longer maintained and may not be
-updated.
-
 
 Delete
 ------
