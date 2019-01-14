@@ -9,6 +9,7 @@ This page will give you a wide but incomplete overview of the REST API. Refer to
 Basic concepts
 ==============
 
+--------------------------
 Overview of some datatypes
 --------------------------
 
@@ -23,7 +24,7 @@ reference document: `Specifikation af serviceinterface for Organisation`_.
 
 
 ``organisation``
-++++++++++++++++
+----------------
 
 Located at the endpoint :http:get:`/organisation/organisation`. A
 ``organisation`` is a legal organisation. A good example of this a municipality.
@@ -81,7 +82,7 @@ The fields used in the example ``organisation`` are the following:
 
 
 ``organisationenhed``
-+++++++++++++++++++++
+---------------------
 
 Located at the endpoint :http:get:`/organisation/organisationenhed`. A
 ``organisationenhed`` is a organisational unit. This could be a department,
@@ -154,6 +155,7 @@ The fields used in the example ``organisationenhed`` are the following:
 
 .. _Valid time:
 
+----------
 Valid time
 ----------
 
@@ -201,8 +203,9 @@ Common operations
 
 .. _ReadOperation:
 
-Read
-----
+--------------
+Read operation
+--------------
 
 To get a single object. Call :http:method:`GET` on the object endpoint with the
 UUID of the object appended, e.g.:
@@ -233,8 +236,9 @@ reference for read operation on ``organisationenhed``.
 
 .. _ListOperation:
 
-List
-----
+--------------
+List operation
+--------------
 
 It's also possible to use a slightly different syntax to list objects,
 e.g.:
@@ -279,8 +283,9 @@ list and search operation on ``organisationenhed``.
 
 .. _SearchOperation:
 
-Search
-------
+----------------
+Search operation
+----------------
 
 You can also *search* for an object by specifying values of attributes or
 relations as search parameters. You can, e.g., find all ``organisation`` by
@@ -331,8 +336,9 @@ which may later be retrieved with a list or read operation - e.g:
         ]]
     }
 
+
 Paged search
-++++++++++++
+------------
 
 The search function supports paged searches by adding the parameters
 ``maximalantalresultater`` (max number of results) and ``foersteresultat``
@@ -341,8 +347,9 @@ The search function supports paged searches by adding the parameters
 Since pagination only makes sense if the order of the results are predictable
 the search will be sorted by ``brugervendtnoegle`` if pagination is used.
 
+
 Advanced search
-+++++++++++++++
+---------------
 
 It is possible to search for relations (links) as well by specifying
 the value, which may be either an UUID or a URN. E.g., for finding all
@@ -382,7 +389,7 @@ different variant, then they are not included in the results.
 
 
 Searching on ``Sag``-``JournalPost``-relations
-++++++++++++++++++++++++++++++++++++++++++++++
+----------------------------------------------
 
 .. warning::
 
@@ -418,8 +425,9 @@ AND which has one or more ``JournalPost`` relations which has a
 
 .. _CreateOperation:
 
-Create
-------
+----------------
+Create operation
+----------------
 
 To create a new object, :http:method:`POST` the JSON representation of its
 attributes, states and relations to the URL of the class. Either directly with
@@ -463,17 +471,20 @@ E.g., to create a new ``organisation``:
 
 .. _UpdateOperation:
 
-Update
-------
+----------------
+Update operation
+----------------
 
 
 .. _DeleteOperation:
 
-Delete
-------
+----------------
+Delete operation
+----------------
 
 
 .. _ImportOperation:
 
-Import
-------
+----------------
+Import operation
+----------------
