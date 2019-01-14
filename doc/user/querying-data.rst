@@ -74,40 +74,6 @@ Different time spans or authentication schemes should be considered.
 
 
 
-Updating and creating data
-++++++++++++++++++++++++++
-
-To update existing and create new objects, the HTTP ``PUT``,
-``POST`` and ``PATCH`` methods are used, respectively. Use the request
-body to supply the data in _JSON_ form. Either directly with the :http:header:`Content-Type`
-as ``application/json`` as form data with a :http:header:`Content-Type` of
-``multipart/form-data`` and a single field, `json`, containing the data.
-
-Examples of valid JSON data for creation, update and import can be found
-in the directory ``oio_rest/tests/fixtures/`` in the source code.
-
-
-
-Update
-------
-
-To change an object, issue a ``PATCH`` request containing the JSON
-representation of the changes as they apply to the object's attributes,
-states and relations.
-
-The ``PATCH`` request must be issued to the object's URL - i.e., including the
-UUID.
-
-An example::
-
-    curl -k -sH "Content-Type: application/json" \
-      -X PATCH -d "<JSON DATA>" \
-      -H "Authorization: $AUTH_TOKEN" \
-      https://mox/klassifikation/klasse/39a6ef88-ae26-4557-a48c-7d7c5662c609
-
-Alternatively, use a ``PUT`` to replace the entire object, including all
-Virkning periods.
-
 Import
 ------
 
