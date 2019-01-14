@@ -126,6 +126,7 @@ facetEgenskab := ROW (
    'facetophavsret_text1',
    'facetsupplement_text1',
    'retskilde_text1',
+   'integrationsdata_text1',
    virkEgenskaber
 ) :: FacetEgenskaberAttrType
 ;

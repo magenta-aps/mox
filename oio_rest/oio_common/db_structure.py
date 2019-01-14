@@ -15,7 +15,7 @@ DATABASE_STRUCTURE = {
         "attributter": {
             "egenskaber": [
                 "brugervendtnoegle", "beskrivelse", "opbygning", "ophavsret",
-                "plan", "supplement", "retskilde"
+                "plan", "supplement", "retskilde", "integrationsdata",
             ],
         },
         "attributter_metadata": {

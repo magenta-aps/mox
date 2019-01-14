@@ -190,6 +190,7 @@ facetEgenskab_A := ROW (
    'facetophavsret_text1',
    'facetsupplement_text1',
    'retskilde_text1',
+   'integrationsdata_text1',
    virkEgenskaber_A
 ) :: FacetEgenskaberAttrType
 ;
@@ -318,6 +319,7 @@ facetEgenskab_B := ROW (
    'facetophavsret_text2',
    'facetsupplement_text2',
    'retskilde_text2',
+   'integrationsdata_text2',
    virkEgenskaber_B
 ) :: FacetEgenskaberAttrType
 ;
@@ -615,6 +617,7 @@ facetEgenskab_C := ROW (
    'facetophavsret_text3',
    'facetsupplement_text3',
    'retskilde_text3',
+   'integrationsdata_text3',
    virkEgenskaber_C
 ) :: FacetEgenskaberAttrType
 ;
@@ -665,6 +668,7 @@ ARRAY[
    		NULL,
    		'facetsupplement_text3',
    		NULL,
+        NULL,
    			ROW(
 				  	'[2015-01-01, 2015-02-01]' :: TSTZRANGE,
 				  	null,null,null
@@ -797,6 +801,7 @@ search_result9 :=as_search_facet(
 	   		,null --'facetophavsret_text3',
 	   		,null --'facetsupplement_text3',
 	   		,null
+            ,null
 	   		,null
 			) :: FacetEgenskaberAttrType		
 	 	]::FacetEgenskaberAttrType[] 
@@ -813,6 +818,7 @@ search_result9 :=as_search_facet(
 	  		,null --'facetopbygning_text3',
 	   		,null --'facetophavsret_text3',
 	   		,null --'facetsupplement_text3',
+            ,null
 	   		,null
 	   		,null
 			) :: FacetEgenskaberAttrType

@@ -232,6 +232,7 @@ facetEgenskabA := ROW (
    'facetophavsret_A',
    'facetsupplement_A',
    NULL,--'retskilde_text1',
+   'facetintegrationsdata_A',
    virkEgenskaber
 ) :: FacetEgenskaberAttrType
 ;
@@ -244,6 +245,7 @@ facetEgenskabB := ROW (
    'facetophavsret_BC',
    'facetsupplement_B',
    NULL, --restkilde
+   'facetintegrationsdata_B',
    virkEgenskaberB
 ) :: FacetEgenskaberAttrType
 ;
@@ -256,6 +258,7 @@ facetEgenskabC := ROW (
    'facetophavsret_BC',
    'facetsupplement_C',
    NULL, --restkilde
+   'facetintegrationsdata_C',
    virkEgenskaberC
 ) :: FacetEgenskaberAttrType
 ;
@@ -269,6 +272,7 @@ facetEgenskabC2 := ROW (
    'facetophavsret_BC',
    'facetsupplement_C2',
    'restkilde_C2',
+   'facetintegrationsdata_C',
    virkEgenskaberC2
 ) :: FacetEgenskaberAttrType
 ;
@@ -351,6 +355,7 @@ filter_reg4:=ROW(
    			,null --'facetophavsret_C',
    			,null --'facetsupplement_C',
    			,NULL --restkilde
+            ,NULL --'facetintegrationsdata_C',
    			,null --virkEgenskaberC
 			)::FacetEgenskaberAttrType
 	]::FacetEgenskaberAttrType[]
@@ -383,6 +388,7 @@ filter_reg5:=ROW(
    			,null --'facetophavsret_C',
    			,null --'facetsupplement_C',
    			,NULL --restkilde
+            ,NULL --'facetintegrationsdata_C',
    			,null --virkEgenskaberC
 			)::FacetEgenskaberAttrType
 	]::FacetEgenskaberAttrType[]
@@ -409,6 +415,7 @@ filter_reg6:=ROW(
    			,null --'facetophavsret_C',
    			,null --'facetsupplement_C',
    			,NULL --restkilde
+            ,NULL --'facetintegrationsdata_C',
    			,null --virkEgenskaberC
 			)::FacetEgenskaberAttrType
 		,
@@ -420,6 +427,7 @@ filter_reg6:=ROW(
    			,null --'facetophavsret_C',
    			,null --'facetsupplement_C',
    			,NULL --restkilde
+            ,NULL --'facetintegrationsdata_C',
    			,null --virkEgenskaberC
 			)::FacetEgenskaberAttrType
 	]::FacetEgenskaberAttrType[]
@@ -445,6 +453,7 @@ filter_reg7A:=ROW(
    			,null --'facetophavsret_C',
    			,null --'facetsupplement_C',
    			,NULL --restkilde
+            ,NULL --'facetintegrationsdata_C',
    			,null --virkEgenskaberC
 			)::FacetEgenskaberAttrType
 	]::FacetEgenskaberAttrType[]
@@ -463,6 +472,7 @@ filter_reg7B:=ROW(
    			,null --'facetophavsret_C',
    			,null --'facetsupplement_C',
    			,NULL --restkilde
+            ,NULL --'facetintegrationsdata_C',
    			,null --virkEgenskaberC
 			)::FacetEgenskaberAttrType
 	]::FacetEgenskaberAttrType[]
@@ -503,6 +513,7 @@ filter_reg8B:=ROW(
    			,null --'facetophavsret_C',
    			,'facetsupplement_C2' --'facetsupplement_C',
    			,NULL --restkilde
+            ,NULL --'facetintegrationsdata_C',
    			,null --virkEgenskaberC
 			)::FacetEgenskaberAttrType
 	]::FacetEgenskaberAttrType[]
@@ -570,6 +581,7 @@ filter_reg9B:=ROW(
    			,null --'facetophavsret_C',
    			,'facetsupplement_C2' --'facetsupplement_C',
    			,NULL --restkilde
+            ,NULL --'facetintegrationsdata_C',
    			,null --virkEgenskaberC
 			)::FacetEgenskaberAttrType
 	]::FacetEgenskaberAttrType[]
@@ -635,6 +647,7 @@ filter_reg10B:=ROW(
    			,null --'facetophavsret_C',
    			,'facetsupplement_C2' --'facetsupplement_C',
    			,NULL --restkilde
+            ,NULL --'facetintegrationsdata_C',
    			,null --virkEgenskaberC
 			)::FacetEgenskaberAttrType
 	]::FacetEgenskaberAttrType[]

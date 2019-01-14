@@ -11832,6 +11832,7 @@ ophavsret text,
 plan text,
 supplement text,
 retskilde text,
+integrationsdata text,
 
  virkning Virkning
 );
@@ -11995,6 +11996,7 @@ CREATE TABLE facet_attr_egenskaber (
         plan text  NULL,
         supplement text  NULL,
         retskilde text  NULL,
+        integrationsdata text  NULL,
     virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
     facet_registrering_id bigint NOT NULL,
     CONSTRAINT facet_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -12086,6 +12088,17 @@ ALTER TABLE facet_attr_egenskaber
             ON facet_attr_egenskaber
             USING btree
             (retskilde); 
+ 
+     
+        CREATE INDEX facet_attr_egenskaber_pat_integrationsdata
+            ON facet_attr_egenskaber
+            USING gin
+            (integrationsdata gin_trgm_ops);
+
+        CREATE INDEX facet_attr_egenskaber_idx_integrationsdata
+            ON facet_attr_egenskaber
+            USING btree
+            (integrationsdata); 
 
 
 
@@ -12318,7 +12331,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr FacetEgenskaberAttrTy
     FOREACH element IN ARRAY inputArr
     LOOP
 
-      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.beskrivelse IS NULL AND element.opbygning IS NULL AND element.ophavsret IS NULL AND element.plan IS NULL AND element.supplement IS NULL AND element.retskilde IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.beskrivelse IS NULL AND element.opbygning IS NULL AND element.ophavsret IS NULL AND element.plan IS NULL AND element.supplement IS NULL AND element.retskilde IS NULL AND element.integrationsdata IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
 
     --  RAISE DEBUG 'Skipping element';
       ELSE
@@ -12689,7 +12702,7 @@ BEGIN
                     unnest(attrEgenskaber) a
                     JOIN unnest(attrEgenskaber) b ON (a.virkning).TimePeriod && (b.virkning).TimePeriod
                 GROUP BY
-                    a.brugervendtnoegle,a.beskrivelse,a.opbygning,a.ophavsret,a.plan,a.supplement,a.retskilde,
+                    a.brugervendtnoegle,a.beskrivelse,a.opbygning,a.ophavsret,a.plan,a.supplement,a.retskilde,a.integrationsdata,
                     a.virkning
                     
                     HAVING COUNT(*) > 1) THEN
@@ -12700,9 +12713,9 @@ BEGIN
         -- To avoid needless fragmentation we'll check for presence of
         -- null values in the fields - and if none are present, we'll skip
         -- the merging operations
-        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).beskrivelse IS NULL  OR  (attrEgenskaberObj).opbygning IS NULL  OR  (attrEgenskaberObj).ophavsret IS NULL  OR  (attrEgenskaberObj).plan IS NULL  OR  (attrEgenskaberObj).supplement IS NULL  OR  (attrEgenskaberObj).retskilde IS NULL  THEN
+        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).beskrivelse IS NULL  OR  (attrEgenskaberObj).opbygning IS NULL  OR  (attrEgenskaberObj).ophavsret IS NULL  OR  (attrEgenskaberObj).plan IS NULL  OR  (attrEgenskaberObj).supplement IS NULL  OR  (attrEgenskaberObj).retskilde IS NULL  OR  (attrEgenskaberObj).integrationsdata IS NULL  THEN
             
-            INSERT INTO facet_attr_egenskaber ( brugervendtnoegle,beskrivelse,opbygning,ophavsret,plan,supplement,retskilde, virkning, facet_registrering_id)
+            INSERT INTO facet_attr_egenskaber ( brugervendtnoegle,beskrivelse,opbygning,ophavsret,plan,supplement,retskilde,integrationsdata, virkning, facet_registrering_id)
                 SELECT
                     
                         
@@ -12733,6 +12746,10 @@ BEGIN
                         
                             coalesce(attrEgenskaberObj.retskilde, a.retskilde),
                     
+                        
+                        
+                            coalesce(attrEgenskaberObj.integrationsdata, a.integrationsdata),
+                    
                     ROW ((a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
                             (attrEgenskaberObj.virkning).AktoerRef,
                             (attrEgenskaberObj.virkning).AktoerTypeKode,
@@ -12748,7 +12765,7 @@ BEGIN
         -- that is NOT covered by any "merged" rows inserted above, generate
         -- and insert rows.
         
-            INSERT INTO facet_attr_egenskaber ( brugervendtnoegle,beskrivelse,opbygning,ophavsret,plan,supplement,retskilde, virkning, facet_registrering_id)
+            INSERT INTO facet_attr_egenskaber ( brugervendtnoegle,beskrivelse,opbygning,ophavsret,plan,supplement,retskilde,integrationsdata, virkning, facet_registrering_id)
                 SELECT
                     
                      attrEgenskaberObj.brugervendtnoegle,
@@ -12764,6 +12781,8 @@ BEGIN
                      attrEgenskaberObj.supplement,
                     
                      attrEgenskaberObj.retskilde,
+                    
+                     attrEgenskaberObj.integrationsdata,
                     
                     ROW (b.tz_range_leftover,
                         (attrEgenskaberObj.virkning).AktoerRef,
@@ -12784,8 +12803,8 @@ BEGIN
             -- Insert attrEgenskaberObj raw (if there were no null-valued fields)
             
 
-            INSERT INTO facet_attr_egenskaber ( brugervendtnoegle,beskrivelse,opbygning,ophavsret,plan,supplement,retskilde, virkning, facet_registrering_id)
-                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.beskrivelse,  attrEgenskaberObj.opbygning,  attrEgenskaberObj.ophavsret,  attrEgenskaberObj.plan,  attrEgenskaberObj.supplement,  attrEgenskaberObj.retskilde, attrEgenskaberObj.virkning, new_facet_registrering.id );
+            INSERT INTO facet_attr_egenskaber ( brugervendtnoegle,beskrivelse,opbygning,ophavsret,plan,supplement,retskilde,integrationsdata, virkning, facet_registrering_id)
+                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.beskrivelse,  attrEgenskaberObj.opbygning,  attrEgenskaberObj.ophavsret,  attrEgenskaberObj.plan,  attrEgenskaberObj.supplement,  attrEgenskaberObj.retskilde,  attrEgenskaberObj.integrationsdata, attrEgenskaberObj.virkning, new_facet_registrering.id );
         END IF;
 
         END LOOP;
@@ -12801,7 +12820,7 @@ BEGIN
 -- Handle egenskaber of previous registration, taking overlapping
 -- virknings into consideration (using function subtract_tstzrange)
 
-    INSERT INTO facet_attr_egenskaber ( brugervendtnoegle,beskrivelse,opbygning,ophavsret,plan,supplement,retskilde, virkning, facet_registrering_id)
+    INSERT INTO facet_attr_egenskaber ( brugervendtnoegle,beskrivelse,opbygning,ophavsret,plan,supplement,retskilde,integrationsdata, virkning, facet_registrering_id)
     SELECT
         
         
@@ -12818,6 +12837,8 @@ BEGIN
             a.supplement,
         
             a.retskilde,
+        
+            a.integrationsdata,
         
         ROW (c.tz_range_leftover,
             (a.virkning).AktoerRef,
@@ -13008,6 +13029,7 @@ IF facet_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(facet
       plan,
       supplement,
       retskilde,
+      integrationsdata,
       virkning,
       facet_registrering_id
     )
@@ -13020,6 +13042,7 @@ IF facet_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(facet
       facet_attr_egenskaber_obj.plan,
       facet_attr_egenskaber_obj.supplement,
       facet_attr_egenskaber_obj.retskilde,
+      facet_attr_egenskaber_obj.integrationsdata,
       facet_attr_egenskaber_obj.virkning,
       facet_registrering_id
     ;
@@ -13209,6 +13232,7 @@ FROM
 					 		b.plan,
 					 		b.supplement,
 					 		b.retskilde,
+					 		b.integrationsdata,
 					   		b.virkning
                             
 							)::FacetEgenskaberAttrType
@@ -13216,7 +13240,7 @@ FROM
 						NULL
 						END
                         
-						order by b.brugervendtnoegle,b.beskrivelse,b.opbygning,b.ophavsret,b.plan,b.supplement,b.retskilde,b.virkning
+						order by b.brugervendtnoegle,b.beskrivelse,b.opbygning,b.ophavsret,b.plan,b.supplement,b.retskilde,b.integrationsdata,b.virkning
                         
 					)) FacetAttrEgenskaberArr
                     
@@ -13547,6 +13571,12 @@ ELSE
                     a.retskilde ILIKE attrEgenskaberTypeObj.retskilde --case insensitive
                 )
                 AND
+                (
+                    attrEgenskaberTypeObj.integrationsdata IS NULL
+                    OR
+                    a.integrationsdata ILIKE attrEgenskaberTypeObj.integrationsdata --case insensitive
+                )
+                AND
                 
                 		(
 				(registreringObj.registrering) IS NULL 
@@ -13650,7 +13680,8 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
                         a.ophavsret ILIKE anyAttrValue OR
                         a.plan ILIKE anyAttrValue OR
                         a.supplement ILIKE anyAttrValue OR
-                        a.retskilde ILIKE anyAttrValue
+                        a.retskilde ILIKE anyAttrValue OR
+                        a.integrationsdata ILIKE anyAttrValue
                 
             )
             AND
@@ -14681,6 +14712,12 @@ ELSE
 					attrEgenskaberTypeObj.retskilde IS NULL
 					OR 
 					a.retskilde = attrEgenskaberTypeObj.retskilde 
+				)
+				AND
+				(
+					attrEgenskaberTypeObj.integrationsdata IS NULL
+					OR 
+					a.integrationsdata = attrEgenskaberTypeObj.integrationsdata 
 				)
 				AND b.facet_id = ANY (facet_candidates)
 				AND (a.virkning).TimePeriod @> actual_virkning 
