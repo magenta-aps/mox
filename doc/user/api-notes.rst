@@ -22,32 +22,7 @@ interpreted as an Update to replace the entire contents of the object.
 Search operation
 ----------------
 
-When searching on relations, one can limit the relation to a specific object
-type by specifying a search parameter of the format::
 
-    &<relation>:<objecttype>=<uuid|urn>
-
-Note that the objecttype parameter is case-sensitive.
-
-It is only possible to search on one DokumentVariant and DokumentDel at a time.
-For example, if ::
-
-    &deltekst=a&underredigeringaf=<UUID>
-
-is specified, then the search will return documents which have a DokumentDel
-with deltekst="a" and which has the relation "underredigeringaf"=<UUID>.
-However, if the deltekst parameter is omitted, e.g. ::
-
-    &underredigeringaf=<UUID>
-
-Then, all documents which have at least one DokumentDel which has the given
-UUID will be returned.
-
-The same logic applies to the "varianttekst" parameter. If it is not
-specified, then all variants are searched across. Note that when
-"varianttekst" is specified, then any DokumentDel parameters apply only
-to that specific variant. If the DokumentDel parameters are matched
-under a different variant, then they are not included in the results.
 
 Searching on Sag JournalPost relations
 ++++++++++++++++++++++++++++++++++++++
