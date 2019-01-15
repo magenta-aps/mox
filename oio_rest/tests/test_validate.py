@@ -620,6 +620,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                                 'principiel': {'type': 'boolean'},
                                 'kassationskode': {'type': 'string'},
                                 'afleveret': {'type': 'boolean'},
+                                'integrationsdata': {'type': 'string'},
                                 'virkning': {'$ref': '#/definitions/virkning'}
                             },
                             'required': ['beskrivelse', 'brugervendtnoegle',

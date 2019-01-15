@@ -231,10 +231,11 @@ DATABASE_STRUCTURE = {
 
     "sag": {
         "attributter": {
-            "egenskaber": ["brugervendtnoegle", "afleveret", "beskrivelse",
-                           "hjemmel", "kassationskode",
-                           "offentlighedundtaget", "principiel", "sagsnummer",
-                           "titel"],
+            "egenskaber": [
+                "brugervendtnoegle", "afleveret", "beskrivelse", "hjemmel",
+                "kassationskode", "offentlighedundtaget", "principiel",
+                "sagsnummer", "titel", "integrationsdata",
+            ],
         },
         "attributter_metadata": {
             'egenskaber': {
