@@ -5,8 +5,7 @@ API overview
 ============
 
 
-This page will give you a wide but incomplete overview of the REST API. Refer to
-:ref:`APIreference` for a complete reference.
+This page will give you a wide but incomplete overview of the REST API.
 
 
 Self-documentation
@@ -66,10 +65,10 @@ reference document: `Specifikation af serviceinterface for Organisation`_.
 ``organisation``
 ----------------
 
-Located at the endpoint :http:get:`/organisation/organisation`. A
-``organisation`` is a legal organisation. A good example of this a municipality.
-The database does support multiple ``organisation``, but in the wild there is
-usually only one per MOX instance.
+Located at the endpoint ``/organisation/organisation``. A ``organisation`` is a
+legal organisation. A good example of this a municipality. The database does
+support multiple ``organisation``, but in the wild there is usually only one per
+MOX instance.
 
 
 .. code-block:: json
@@ -124,7 +123,7 @@ The fields used in the example ``organisation`` are the following:
 ``organisationenhed``
 ---------------------
 
-Located at the endpoint :http:get:`/organisation/organisationenhed`. A
+Located at the endpoint ``/organisation/organisationenhed``. A
 ``organisationenhed`` is a organisational unit. This could be a department,
 section, office, committee, project group, class, team and the like. Usually a
 ``organisation`` contains a single ``organisationenhed`` as a direct decendant
@@ -271,9 +270,6 @@ To filter on the transaction time,
 ``&registreretFra=<datetime>&registreretTil=<datetime>`` and
 ``&registreringstid=<datetime>`` is also available.
 
-See :http:get:`/organisation/organisationenhed/(regex:uuid)` for the complete
-reference for read operation on ``organisationenhed``.
-
 
 .. _ListOperation:
 
@@ -317,9 +313,6 @@ Given any parameters other than::
     uuid
 
 the operation is a :ref:`SearchOperation` and will return a list a of UUIDs.
-
-See :http:get:`/organisation/organisationenhed` for the complete reference for
-list and search operation on ``organisationenhed``.
 
 
 .. _SearchOperation:
