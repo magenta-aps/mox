@@ -1,8 +1,8 @@
 .. _DeleteAttr:
 
-===============================================================
-Deleting attributes, states and relations when updating objects
-===============================================================
+=========================================
+Deleting attributes, states and relations
+=========================================
 
 This page describes deleting attributes, states and relation with an
 :ref:`UpdateOperation`.
