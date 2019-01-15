@@ -30912,6 +30912,7 @@ objekttype text,
 returkode text,
 returtekst text,
 note text,
+integrationsdata text,
 
  virkning Virkning
 );
@@ -31076,6 +31077,7 @@ CREATE TABLE loghaendelse_attr_egenskaber (
         returkode text  NULL,
         returtekst text  NULL,
         note text  NULL,
+        integrationsdata text  NULL,
     virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
     loghaendelse_registrering_id bigint NOT NULL,
     CONSTRAINT loghaendelse_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -31178,6 +31180,17 @@ ALTER TABLE loghaendelse_attr_egenskaber
             ON loghaendelse_attr_egenskaber
             USING btree
             (note); 
+ 
+     
+        CREATE INDEX loghaendelse_attr_egenskaber_pat_integrationsdata
+            ON loghaendelse_attr_egenskaber
+            USING gin
+            (integrationsdata gin_trgm_ops);
+
+        CREATE INDEX loghaendelse_attr_egenskaber_idx_integrationsdata
+            ON loghaendelse_attr_egenskaber
+            USING btree
+            (integrationsdata); 
 
 
 
@@ -31410,7 +31423,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr LoghaendelseEgenskabe
     FOREACH element IN ARRAY inputArr
     LOOP
 
-      IF element IS NULL OR (( element.service IS NULL AND element.klasse IS NULL AND element.tidspunkt IS NULL AND element.operation IS NULL AND element.objekttype IS NULL AND element.returkode IS NULL AND element.returtekst IS NULL AND element.note IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+      IF element IS NULL OR (( element.service IS NULL AND element.klasse IS NULL AND element.tidspunkt IS NULL AND element.operation IS NULL AND element.objekttype IS NULL AND element.returkode IS NULL AND element.returtekst IS NULL AND element.note IS NULL AND element.integrationsdata IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
 
     --  RAISE DEBUG 'Skipping element';
       ELSE
@@ -31781,7 +31794,7 @@ BEGIN
                     unnest(attrEgenskaber) a
                     JOIN unnest(attrEgenskaber) b ON (a.virkning).TimePeriod && (b.virkning).TimePeriod
                 GROUP BY
-                    a.service,a.klasse,a.tidspunkt,a.operation,a.objekttype,a.returkode,a.returtekst,a.note,
+                    a.service,a.klasse,a.tidspunkt,a.operation,a.objekttype,a.returkode,a.returtekst,a.note,a.integrationsdata,
                     a.virkning
                     
                     HAVING COUNT(*) > 1) THEN
@@ -31792,9 +31805,9 @@ BEGIN
         -- To avoid needless fragmentation we'll check for presence of
         -- null values in the fields - and if none are present, we'll skip
         -- the merging operations
-        IF  (attrEgenskaberObj).service IS NULL  OR  (attrEgenskaberObj).klasse IS NULL  OR  (attrEgenskaberObj).tidspunkt IS NULL  OR  (attrEgenskaberObj).operation IS NULL  OR  (attrEgenskaberObj).objekttype IS NULL  OR  (attrEgenskaberObj).returkode IS NULL  OR  (attrEgenskaberObj).returtekst IS NULL  OR  (attrEgenskaberObj).note IS NULL  THEN
+        IF  (attrEgenskaberObj).service IS NULL  OR  (attrEgenskaberObj).klasse IS NULL  OR  (attrEgenskaberObj).tidspunkt IS NULL  OR  (attrEgenskaberObj).operation IS NULL  OR  (attrEgenskaberObj).objekttype IS NULL  OR  (attrEgenskaberObj).returkode IS NULL  OR  (attrEgenskaberObj).returtekst IS NULL  OR  (attrEgenskaberObj).note IS NULL  OR  (attrEgenskaberObj).integrationsdata IS NULL  THEN
             
-            INSERT INTO loghaendelse_attr_egenskaber ( service,klasse,tidspunkt,operation,objekttype,returkode,returtekst,note, virkning, loghaendelse_registrering_id)
+            INSERT INTO loghaendelse_attr_egenskaber ( service,klasse,tidspunkt,operation,objekttype,returkode,returtekst,note,integrationsdata, virkning, loghaendelse_registrering_id)
                 SELECT
                     
                         
@@ -31829,6 +31842,10 @@ BEGIN
                         
                             coalesce(attrEgenskaberObj.note, a.note),
                     
+                        
+                        
+                            coalesce(attrEgenskaberObj.integrationsdata, a.integrationsdata),
+                    
                     ROW ((a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
                             (attrEgenskaberObj.virkning).AktoerRef,
                             (attrEgenskaberObj.virkning).AktoerTypeKode,
@@ -31844,7 +31861,7 @@ BEGIN
         -- that is NOT covered by any "merged" rows inserted above, generate
         -- and insert rows.
         
-            INSERT INTO loghaendelse_attr_egenskaber ( service,klasse,tidspunkt,operation,objekttype,returkode,returtekst,note, virkning, loghaendelse_registrering_id)
+            INSERT INTO loghaendelse_attr_egenskaber ( service,klasse,tidspunkt,operation,objekttype,returkode,returtekst,note,integrationsdata, virkning, loghaendelse_registrering_id)
                 SELECT
                     
                      attrEgenskaberObj.service,
@@ -31862,6 +31879,8 @@ BEGIN
                      attrEgenskaberObj.returtekst,
                     
                      attrEgenskaberObj.note,
+                    
+                     attrEgenskaberObj.integrationsdata,
                     
                     ROW (b.tz_range_leftover,
                         (attrEgenskaberObj.virkning).AktoerRef,
@@ -31882,8 +31901,8 @@ BEGIN
             -- Insert attrEgenskaberObj raw (if there were no null-valued fields)
             
 
-            INSERT INTO loghaendelse_attr_egenskaber ( service,klasse,tidspunkt,operation,objekttype,returkode,returtekst,note, virkning, loghaendelse_registrering_id)
-                VALUES (  attrEgenskaberObj.service,  attrEgenskaberObj.klasse,  attrEgenskaberObj.tidspunkt,  attrEgenskaberObj.operation,  attrEgenskaberObj.objekttype,  attrEgenskaberObj.returkode,  attrEgenskaberObj.returtekst,  attrEgenskaberObj.note, attrEgenskaberObj.virkning, new_loghaendelse_registrering.id );
+            INSERT INTO loghaendelse_attr_egenskaber ( service,klasse,tidspunkt,operation,objekttype,returkode,returtekst,note,integrationsdata, virkning, loghaendelse_registrering_id)
+                VALUES (  attrEgenskaberObj.service,  attrEgenskaberObj.klasse,  attrEgenskaberObj.tidspunkt,  attrEgenskaberObj.operation,  attrEgenskaberObj.objekttype,  attrEgenskaberObj.returkode,  attrEgenskaberObj.returtekst,  attrEgenskaberObj.note,  attrEgenskaberObj.integrationsdata, attrEgenskaberObj.virkning, new_loghaendelse_registrering.id );
         END IF;
 
         END LOOP;
@@ -31899,7 +31918,7 @@ BEGIN
 -- Handle egenskaber of previous registration, taking overlapping
 -- virknings into consideration (using function subtract_tstzrange)
 
-    INSERT INTO loghaendelse_attr_egenskaber ( service,klasse,tidspunkt,operation,objekttype,returkode,returtekst,note, virkning, loghaendelse_registrering_id)
+    INSERT INTO loghaendelse_attr_egenskaber ( service,klasse,tidspunkt,operation,objekttype,returkode,returtekst,note,integrationsdata, virkning, loghaendelse_registrering_id)
     SELECT
         
         
@@ -31918,6 +31937,8 @@ BEGIN
             a.returtekst,
         
             a.note,
+        
+            a.integrationsdata,
         
         ROW (c.tz_range_leftover,
             (a.virkning).AktoerRef,
@@ -32109,6 +32130,7 @@ IF loghaendelse_registrering.attrEgenskaber IS NOT NULL and coalesce(array_lengt
       returkode,
       returtekst,
       note,
+      integrationsdata,
       virkning,
       loghaendelse_registrering_id
     )
@@ -32122,6 +32144,7 @@ IF loghaendelse_registrering.attrEgenskaber IS NOT NULL and coalesce(array_lengt
       loghaendelse_attr_egenskaber_obj.returkode,
       loghaendelse_attr_egenskaber_obj.returtekst,
       loghaendelse_attr_egenskaber_obj.note,
+      loghaendelse_attr_egenskaber_obj.integrationsdata,
       loghaendelse_attr_egenskaber_obj.virkning,
       loghaendelse_registrering_id
     ;
@@ -32312,6 +32335,7 @@ FROM
 					 		b.returkode,
 					 		b.returtekst,
 					 		b.note,
+					 		b.integrationsdata,
 					   		b.virkning
                             
 							)::LoghaendelseEgenskaberAttrType
@@ -32319,7 +32343,7 @@ FROM
 						NULL
 						END
                         
-						order by b.service,b.klasse,b.tidspunkt,b.operation,b.objekttype,b.returkode,b.returtekst,b.note,b.virkning
+						order by b.service,b.klasse,b.tidspunkt,b.operation,b.objekttype,b.returkode,b.returtekst,b.note,b.integrationsdata,b.virkning
                         
 					)) LoghaendelseAttrEgenskaberArr
                     
@@ -32656,6 +32680,12 @@ ELSE
                     a.note ILIKE attrEgenskaberTypeObj.note --case insensitive
                 )
                 AND
+                (
+                    attrEgenskaberTypeObj.integrationsdata IS NULL
+                    OR
+                    a.integrationsdata ILIKE attrEgenskaberTypeObj.integrationsdata --case insensitive
+                )
+                AND
                 
                 		(
 				(registreringObj.registrering) IS NULL 
@@ -32760,7 +32790,8 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
                         a.objekttype ILIKE anyAttrValue OR
                         a.returkode ILIKE anyAttrValue OR
                         a.returtekst ILIKE anyAttrValue OR
-                        a.note ILIKE anyAttrValue
+                        a.note ILIKE anyAttrValue OR
+                        a.integrationsdata ILIKE anyAttrValue
                 
             )
             AND
@@ -33797,6 +33828,12 @@ ELSE
 					attrEgenskaberTypeObj.note IS NULL
 					OR 
 					a.note = attrEgenskaberTypeObj.note 
+				)
+				AND
+				(
+					attrEgenskaberTypeObj.integrationsdata IS NULL
+					OR 
+					a.integrationsdata = attrEgenskaberTypeObj.integrationsdata 
 				)
 				AND b.loghaendelse_id = ANY (loghaendelse_candidates)
 				AND (a.virkning).TimePeriod @> actual_virkning 

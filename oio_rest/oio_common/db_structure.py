@@ -421,8 +421,10 @@ DATABASE_STRUCTURE = {
 
     "loghaendelse": {
         "attributter": {
-            "egenskaber": ["service", "klasse", "tidspunkt", "operation",
-                           "objekttype", "returkode", "returtekst", "note"],
+            "egenskaber": [
+                "service", "klasse", "tidspunkt", "operation", "objekttype",
+                "returkode", "returtekst", "note", "integrationsdata",
+            ],
         },
         "tilstande": {
             "gyldighed": ["Rettet", "Ikke rettet"]
