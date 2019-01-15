@@ -486,6 +486,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                             'properties': {
                                 'brugervendtnoegle': {'type': 'string'},
                                 'organisationsnavn': {'type': 'string'},
+                                'integrationsdata': {'type': 'string'},
                                 'virkning': {'$ref': '#/definitions/virkning'}
                             },
                             'required': ['brugervendtnoegle', 'virkning'],

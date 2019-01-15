@@ -156,7 +156,9 @@ DATABASE_STRUCTURE = {
 
     "organisation": {
         "attributter": {
-            "egenskaber": ["brugervendtnoegle", "organisationsnavn"],
+            "egenskaber": [
+                "brugervendtnoegle", "organisationsnavn", "integrationsdata",
+            ],
         },
         "attributter_metadata": {
             'egenskaber': {
