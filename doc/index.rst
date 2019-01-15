@@ -17,9 +17,7 @@ Content
    user/setup-dev-env.rst
    user/api-overview.rst
    user/api-advanced.rst
-   user/querying-data.rst
    user/rest-tutorial.rst
-   user/api-notes.rst
    user/log-haendelse.rst
    user/agents.rst
    user/auth.rst
