@@ -27,3 +27,4 @@ here.
    :maxdepth: 1
 
    api/file-operations.rst
+   api/deleting-document.rst
