@@ -321,7 +321,8 @@ DATABASE_STRUCTURE = {
     "tilstand": {
         "attributter": {
             "egenskaber": [
-                "brugervendtnoegle", "beskrivelse"],
+                "brugervendtnoegle", "beskrivelse", "integrationsdata",
+            ],
         },
         "attributter_metadata": {
             'egenskaber': {
