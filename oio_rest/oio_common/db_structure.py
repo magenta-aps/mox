@@ -105,7 +105,7 @@ DATABASE_STRUCTURE = {
         "attributter": {
             "egenskaber": [
                 "brugervendtnoegle", "interessefaellesskabsnavn",
-                "interessefaellesskabstype"
+                "interessefaellesskabstype", "integrationsdata",
             ],
         },
         "attributter_metadata": {
