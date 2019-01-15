@@ -508,7 +508,7 @@ An example:
 Alternatively, use a :http:method:`PUT` to replace the entire object, including
 all ``Virkning``-periods.
 
-For the logic of merging see :ref:`API-merging`.
+For the logic of merging see :ref:`API-merging`. To issue a patch that delete part of an object see :ref:`DeleteAttr`.
 
 
 .. _PassivateOperation:
@@ -543,6 +543,11 @@ updated.
 ----------------
 Delete operation
 ----------------
+
+.. note::
+
+   This describes deletion of whole objects. To delete part of an object see
+   :ref:`DeleteAttr`.
 
 An object is deleted by sending a :http:method:`DELETE`-request. This might e.g.
 look like this::
