@@ -8,8 +8,46 @@ API overview
 This page will give you a wide but incomplete overview of the REST API. Refer to
 :ref:`APIreference` for a complete reference.
 
+
+Self-documentation
+==================
+
+* On a running LoRa system, it will always be possible to acquire, in JSON, a
+  sitemap of valid URLs on ``/site-map/``.
+
+* Similarly, for each service, a JSON representation of the hierarchy's classes
+  and their fields may be found at the URL ``/<service>/classes/``. E.g. at
+  ``/organisation/classes``.
+
+* Finally a schema for a given object a schema is provided under
+  ``/<service>/<object>/schema``. E.g.
+  ``/organisation/organisationenhed/schema``
+
+
+.. caution::
+
+   The structure of each class is not completely analogous to the
+   structure of the input JSON as it uses the concept of *"overrides"*.
+   This should also be fixed.
+
+
 Basic concepts
 ==============
+
+.. note::
+   As an example, the REST interface for Organisation is specified
+   here: http://info.rammearkitektur.dk/index.php/LoRA_Organisationsservice
+
+   Please note that in comparison with this official specification, our system
+   currently does not support the parameters ``-miljø`` and ``-version``.
+
+   As regards the parameter ``-miljø`` (which could be ``-prod``, ``-test``,
+   ``-dev``, etc.) we have been trying to convince the customer that we do not
+   recommend running test, development and production on the same systems, so we
+   would prefer not to support that parameter.
+
+   As regards the parameter ``-version``, we have deferred support for it until
+   we actually have more than one version of the protocol to support.
 
 --------------------------
 Overview of some datatypes
@@ -17,7 +55,7 @@ Overview of some datatypes
 
 The database contains a large number of datatypes. To illustrate the basic
 operations of the API we introduce a subset here. Specifically a subset of
-"Organisation".
+``Organisation``.
 
 The complete specifications for all the fields to organisation can be found in
 reference document: `Specifikation af serviceinterface for Organisation`_.

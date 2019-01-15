@@ -8,34 +8,6 @@ Querying data
    :depth: 5
 
 
-Introduction
-++++++++++++
-
-In this document, the use of LoRa's REST interface for reading and
-writing data is described.
-
-The examples are given with the ``curl`` terminal command but should
-work equally well with a browser plugin capable of sending HTTP ``POST``,
-``PUT``, ``PATCH`` and ``DELETE`` requests.
-
-.. note::
-   As an example, the REST interface for Organisation is specified
-   here: http://beta.rammearkitektur.dk/index.php/LoRA_Organisationsservice
-
-Please note that in comparison with this official specification, our
-system currently does not support the parameters ``-miljø`` and
-``-version``.
-
-As regards the parameter ``-miljø`` (which could be ``-prod``,
-``-test``, ``-dev``, etc.) we have been trying to convince the
-customer that we do not recommend running test, development and
-production on the same systems, so we would prefer not to support that
-parameter.
-
-As regards the parameter ``-version``, we have deferred support for it
-until we actually have more than one version of the protocol to support.
-
-
 A note for developers
 ---------------------
 
@@ -71,24 +43,4 @@ line::
 This token will, in the current application, be valid for five minutes.
 Different time spans or authentication schemes should be considered.
 
-
-Appendix: Self-documentation
-++++++++++++++++++++++++++++
-
-
-* On a running LoRa system, it will always be possible to acquire, in
-  JSON,  a sitemap of valid URLs on the ``/site-map/`` URL, e.g. located
-  at https://mox/site-map.
-
-* Similarly, for each service, a JSON representation of the
-  hierarchy's classes and their fields may be found at the URL
-  ``/<service>/classes/``, e.g. at
-  https://mox/dokument/classes.
-
-
-.. caution::
-
-   The structure of each class is not completely analogous to the
-   structure of the input JSON as it uses the concept of *"overrides"*.
-   This should also be fixed.
 
