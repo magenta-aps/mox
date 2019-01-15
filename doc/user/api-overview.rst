@@ -19,7 +19,7 @@ Self-documentation
   and their fields may be found at the URL ``/<service>/classes/``. E.g. at
   ``/organisation/classes``.
 
-* Finally a schema for a given object a schema is provided under
+* Finally a schema for a given object is provided under
   ``/<service>/<object>/schema``. E.g.
   ``/organisation/organisationenhed/schema``
 
@@ -591,7 +591,7 @@ Delete operation
    :ref:`DeleteAttr`.
 
 An object is deleted by sending a :http:method:`DELETE`-request. This might e.g.
-look like this::
+look like this:
 
 .. code-block:: http
 
