@@ -39573,6 +39573,7 @@ CREATE TYPE OrganisationfunktionGyldighedTilsType AS (
 CREATE TYPE OrganisationfunktionEgenskaberAttrType AS (
 brugervendtnoegle text,
 funktionsnavn text,
+integrationsdata text,
 
  virkning Virkning
 );
@@ -39731,6 +39732,7 @@ CREATE TABLE organisationfunktion_attr_egenskaber (
     id bigint NOT NULL DEFAULT nextval('organisationfunktion_attr_egenskaber_id_seq'::regclass),
         brugervendtnoegle text NOT NULL,
         funktionsnavn text  NULL,
+        integrationsdata text  NULL,
     virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
     organisationfunktion_registrering_id bigint NOT NULL,
     CONSTRAINT organisationfunktion_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -39767,6 +39769,17 @@ ALTER TABLE organisationfunktion_attr_egenskaber
             ON organisationfunktion_attr_egenskaber
             USING btree
             (funktionsnavn); 
+ 
+     
+        CREATE INDEX organisationfunktion_attr_egenskaber_pat_integrationsdata
+            ON organisationfunktion_attr_egenskaber
+            USING gin
+            (integrationsdata gin_trgm_ops);
+
+        CREATE INDEX organisationfunktion_attr_egenskaber_idx_integrationsdata
+            ON organisationfunktion_attr_egenskaber
+            USING btree
+            (integrationsdata); 
 
 
 
@@ -39999,7 +40012,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr OrganisationfunktionE
     FOREACH element IN ARRAY inputArr
     LOOP
 
-      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.funktionsnavn IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.funktionsnavn IS NULL AND element.integrationsdata IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
 
     --  RAISE DEBUG 'Skipping element';
       ELSE
@@ -40370,7 +40383,7 @@ BEGIN
                     unnest(attrEgenskaber) a
                     JOIN unnest(attrEgenskaber) b ON (a.virkning).TimePeriod && (b.virkning).TimePeriod
                 GROUP BY
-                    a.brugervendtnoegle,a.funktionsnavn,
+                    a.brugervendtnoegle,a.funktionsnavn,a.integrationsdata,
                     a.virkning
                     
                     HAVING COUNT(*) > 1) THEN
@@ -40381,9 +40394,9 @@ BEGIN
         -- To avoid needless fragmentation we'll check for presence of
         -- null values in the fields - and if none are present, we'll skip
         -- the merging operations
-        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).funktionsnavn IS NULL  THEN
+        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).funktionsnavn IS NULL  OR  (attrEgenskaberObj).integrationsdata IS NULL  THEN
             
-            INSERT INTO organisationfunktion_attr_egenskaber ( brugervendtnoegle,funktionsnavn, virkning, organisationfunktion_registrering_id)
+            INSERT INTO organisationfunktion_attr_egenskaber ( brugervendtnoegle,funktionsnavn,integrationsdata, virkning, organisationfunktion_registrering_id)
                 SELECT
                     
                         
@@ -40393,6 +40406,10 @@ BEGIN
                         
                         
                             coalesce(attrEgenskaberObj.funktionsnavn, a.funktionsnavn),
+                    
+                        
+                        
+                            coalesce(attrEgenskaberObj.integrationsdata, a.integrationsdata),
                     
                     ROW ((a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
                             (attrEgenskaberObj.virkning).AktoerRef,
@@ -40409,12 +40426,14 @@ BEGIN
         -- that is NOT covered by any "merged" rows inserted above, generate
         -- and insert rows.
         
-            INSERT INTO organisationfunktion_attr_egenskaber ( brugervendtnoegle,funktionsnavn, virkning, organisationfunktion_registrering_id)
+            INSERT INTO organisationfunktion_attr_egenskaber ( brugervendtnoegle,funktionsnavn,integrationsdata, virkning, organisationfunktion_registrering_id)
                 SELECT
                     
                      attrEgenskaberObj.brugervendtnoegle,
                     
                      attrEgenskaberObj.funktionsnavn,
+                    
+                     attrEgenskaberObj.integrationsdata,
                     
                     ROW (b.tz_range_leftover,
                         (attrEgenskaberObj.virkning).AktoerRef,
@@ -40435,8 +40454,8 @@ BEGIN
             -- Insert attrEgenskaberObj raw (if there were no null-valued fields)
             
 
-            INSERT INTO organisationfunktion_attr_egenskaber ( brugervendtnoegle,funktionsnavn, virkning, organisationfunktion_registrering_id)
-                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.funktionsnavn, attrEgenskaberObj.virkning, new_organisationfunktion_registrering.id );
+            INSERT INTO organisationfunktion_attr_egenskaber ( brugervendtnoegle,funktionsnavn,integrationsdata, virkning, organisationfunktion_registrering_id)
+                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.funktionsnavn,  attrEgenskaberObj.integrationsdata, attrEgenskaberObj.virkning, new_organisationfunktion_registrering.id );
         END IF;
 
         END LOOP;
@@ -40452,13 +40471,15 @@ BEGIN
 -- Handle egenskaber of previous registration, taking overlapping
 -- virknings into consideration (using function subtract_tstzrange)
 
-    INSERT INTO organisationfunktion_attr_egenskaber ( brugervendtnoegle,funktionsnavn, virkning, organisationfunktion_registrering_id)
+    INSERT INTO organisationfunktion_attr_egenskaber ( brugervendtnoegle,funktionsnavn,integrationsdata, virkning, organisationfunktion_registrering_id)
     SELECT
         
         
             a.brugervendtnoegle,
         
             a.funktionsnavn,
+        
+            a.integrationsdata,
         
         ROW (c.tz_range_leftover,
             (a.virkning).AktoerRef,
@@ -40644,6 +40665,7 @@ IF organisationfunktion_registrering.attrEgenskaber IS NOT NULL and coalesce(arr
       
       brugervendtnoegle,
       funktionsnavn,
+      integrationsdata,
       virkning,
       organisationfunktion_registrering_id
     )
@@ -40651,6 +40673,7 @@ IF organisationfunktion_registrering.attrEgenskaber IS NOT NULL and coalesce(arr
      
      organisationfunktion_attr_egenskaber_obj.brugervendtnoegle,
       organisationfunktion_attr_egenskaber_obj.funktionsnavn,
+      organisationfunktion_attr_egenskaber_obj.integrationsdata,
       organisationfunktion_attr_egenskaber_obj.virkning,
       organisationfunktion_registrering_id
     ;
@@ -40835,6 +40858,7 @@ FROM
                             
 					 		b.brugervendtnoegle,
 					 		b.funktionsnavn,
+					 		b.integrationsdata,
 					   		b.virkning
                             
 							)::OrganisationfunktionEgenskaberAttrType
@@ -40842,7 +40866,7 @@ FROM
 						NULL
 						END
                         
-						order by b.brugervendtnoegle,b.funktionsnavn,b.virkning
+						order by b.brugervendtnoegle,b.funktionsnavn,b.integrationsdata,b.virkning
                         
 					)) OrganisationfunktionAttrEgenskaberArr
                     
@@ -41143,6 +41167,12 @@ ELSE
                     a.funktionsnavn ILIKE attrEgenskaberTypeObj.funktionsnavn --case insensitive
                 )
                 AND
+                (
+                    attrEgenskaberTypeObj.integrationsdata IS NULL
+                    OR
+                    a.integrationsdata ILIKE attrEgenskaberTypeObj.integrationsdata --case insensitive
+                )
+                AND
                 
                 		(
 				(registreringObj.registrering) IS NULL 
@@ -41241,7 +41271,8 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
             WHERE
             (
                         a.brugervendtnoegle ILIKE anyAttrValue OR
-                        a.funktionsnavn ILIKE anyAttrValue
+                        a.funktionsnavn ILIKE anyAttrValue OR
+                        a.integrationsdata ILIKE anyAttrValue
                 
             )
             AND
@@ -42242,6 +42273,12 @@ ELSE
 					attrEgenskaberTypeObj.funktionsnavn IS NULL
 					OR 
 					a.funktionsnavn = attrEgenskaberTypeObj.funktionsnavn 
+				)
+				AND
+				(
+					attrEgenskaberTypeObj.integrationsdata IS NULL
+					OR 
+					a.integrationsdata = attrEgenskaberTypeObj.integrationsdata 
 				)
 				AND b.organisationfunktion_id = ANY (organisationfunktion_candidates)
 				AND (a.virkning).TimePeriod @> actual_virkning 
