@@ -1,8 +1,8 @@
 .. _API-merging:
 
-=============================
-Merging when updating objects
-=============================
+=============
+Merging logic
+=============
 
 When preforming a :ref:`UpdateOperation` some logic is applied to merge the new
 data with the existing data. This page describes this logic.
