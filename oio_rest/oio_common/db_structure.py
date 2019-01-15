@@ -391,7 +391,7 @@ DATABASE_STRUCTURE = {
         "attributter": {
             "egenskaber": [
                 "brugervendtnoegle", "beskrivelse", "starttidspunkt",
-                "sluttidspunkt"
+                "sluttidspunkt", "integrationsdata",
             ],
         },
         "attributter_metadata": {

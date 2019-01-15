@@ -265,6 +265,7 @@ indsatsEgenskab := ROW (
 ,'beskrivelse_indsats_faelles'-- text,
 , '2017-01-20 08:00'::timestamptz  -- starttidspunkt,
 , '2017-01-20 12:00'::timestamptz -- sluttidspunkt,
+,'integrationsdata_1'-- text,
 ,virkEgenskaber
 ) :: indsatsEgenskaberAttrType
 ;
@@ -301,6 +302,7 @@ indsatsEgenskab2 := ROW (
 ,'beskrivelse_indsats_faelles'-- text,
 , '2017-01-25 09:00'::timestamptz  -- starttidspunkt,
 , '2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+,'integrationsdata_2'-- text,
 ,virkEgenskaber2
 ) :: indsatsEgenskaberAttrType
 ;
@@ -343,6 +345,7 @@ actual_search_res_1:=as_search_indsats(null,null,
 ,null--'beskrivelse_indsats_2'-- text,
 , null--'2017-01-25 09:00'::timestamptz  -- starttidspunkt,
 , null--'2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+,null--integrationsdata2
 ,null--virkEgenskaber2
 ) :: indsatsEgenskaberAttrType ]::IndsatsEgenskaberAttrType[],
 			null-- AktivitetRelationType[]
@@ -373,6 +376,7 @@ null --text,
 ,'beskrivelse_indsats_faelles'-- text,
 , null--'2017-01-25 09:00'::timestamptz  -- starttidspunkt,
 , null--'2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+,null--integrationsdata2
 ,null--virkEgenskaber2
 ) :: indsatsEgenskaberAttrType ]::indsatsEgenskaberAttrType[],
 			null-- indsatsRelationType[]
@@ -397,6 +401,7 @@ null --'brugervendtnoegle_indsats_2' --text,
 ,null--'beskrivelse_indsats_2'-- text,
 , null--'2017-01-25 09:00'::timestamptz  -- starttidspunkt,
 , '2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+,null--integrationsdata2
 ,null--virkEgenskaber2
 ) :: indsatsEgenskaberAttrType ]::indsatsEgenskaberAttrType[],
 			null-- indsatsRelationType[]
@@ -480,6 +485,7 @@ null --text,
 ,null--'beskrivelse_indsats_2'-- text,
 , '2017-01-20 08:00'::timestamptz   -- starttidspunkt,
 , null--'2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+,null--integrationsdata
 ,null--virkEgenskaber2
 ) :: indsatsEgenskaberAttrType
 		]::indsatsEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber indsatsEgenskaberAttrType[]=null,
@@ -511,6 +517,7 @@ null --'brugervendtnoegle_indsats_2' --text,
 ,null--'beskrivelse_indsats_2'-- text,
 , '2018-01-20 08:00'::timestamptz   -- starttidspunkt,
 , null--'2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+,null--integrationsdata2
 ,null--virkEgenskaber2
 ) :: indsatsEgenskaberAttrType
 		]::indsatsEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber indsatsEgenskaberAttrType[]=null,
@@ -539,6 +546,7 @@ null --'brugervendtnoegle_indsats_2' --text,
 ,null--'beskrivelse_indsats_2'-- text,
 , '2017-01-22 08:00'::timestamptz   -- starttidspunkt,
 , null--'2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+,null--integrationsdata2
 ,null--virkEgenskaber2
 ) :: indsatsEgenskaberAttrType
 		]::indsatsEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber indsatsEgenskaberAttrType[]=null,
@@ -567,6 +575,7 @@ null --'brugervendtnoegle_indsats_2' --text,
 ,null--'beskrivelse_indsats_2'-- text,
 , null --'2017-01-22 08:00'::timestamptz   -- starttidspunkt,
 , '2017-04-20 18:00'::timestamptz -- sluttidspunkt,
+,null--integrationsdata2
 ,null--virkEgenskaber2
 ) :: indsatsEgenskaberAttrType
 		]::indsatsEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber indsatsEgenskaberAttrType[]=null,
@@ -595,6 +604,7 @@ null --'brugervendtnoegle_indsats_2' --text,
 ,null--'beskrivelse_indsats_2'-- text,
 , null --'2017-01-22 08:00'::timestamptz   -- starttidspunkt,
 , '2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+,null--integrationsdata2
 ,null--virkEgenskaber2
 ) :: indsatsEgenskaberAttrType
 		]::indsatsEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber indsatsEgenskaberAttrType[]=null,
@@ -624,6 +634,7 @@ null --'brugervendtnoegle_indsats_2' --text,
 ,null--'beskrivelse_indsats_2'-- text,
 , null --'2017-01-22 08:00'::timestamptz   -- starttidspunkt,
 , '2017-06-01 12:01'::timestamptz -- sluttidspunkt,
+,null--integrationsdata2
 ,null--virkEgenskaber2
 ) :: indsatsEgenskaberAttrType
 		]::indsatsEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber indsatsEgenskaberAttrType[]=null,
@@ -653,6 +664,7 @@ null --'brugervendtnoegle_indsats_2' --text,
 ,null--'beskrivelse_indsats_2'-- text,
 , null --'2017-01-22 08:00'::timestamptz   -- starttidspunkt,
 , '2017-01-20 08:00'::timestamptz -- sluttidspunkt,
+,null--integrationsdata2
 ,null--virkEgenskaber2
 ) :: indsatsEgenskaberAttrType
 		]::indsatsEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber indsatsEgenskaberAttrType[]=null,
@@ -681,6 +693,7 @@ null --'brugervendtnoegle_indsats_2' --text,
 ,null--'beskrivelse_indsats_2'-- text,
 , null --'2017-01-22 08:00'::timestamptz   -- starttidspunkt,
 , '2017-01-20 08:00'::timestamptz -- sluttidspunkt,
+,null--integrationsdata2
 ,null--virkEgenskaber2
 ) :: indsatsEgenskaberAttrType
 		]::indsatsEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber indsatsEgenskaberAttrType[]=null,
@@ -705,6 +718,7 @@ actual_search_res_15:=as_search_indsats(
 			,null--'beskrivelse_indsats_2'-- text,
 			, null--'2017-01-25 09:00'::timestamptz  -- starttidspunkt,
 			, null--'2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+			,null--integrationsdata2
 			,null--virkEgenskaber2
 			) :: indsatsEgenskaberAttrType ]::indsatsEgenskaberAttrType[],
 						null-- indsatsRelationType[]
@@ -721,6 +735,7 @@ null --text,
 ,null--'beskrivelse_indsats_2'-- text,
 , '2017-01-20 08:00'::timestamptz   -- starttidspunkt,
 , null--'2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+,null--integrationsdata2
 ,null--virkEgenskaber2
 ) :: indsatsEgenskaberAttrType
 		]::indsatsEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber indsatsEgenskaberAttrType[]=null,
@@ -748,6 +763,7 @@ actual_search_res_16:=as_search_indsats(
 			,null--'beskrivelse_indsats_2'-- text,
 			, null--'2017-01-25 09:00'::timestamptz  -- starttidspunkt,
 			, null--'2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+			,null--integrationsdata2
 			,null--virkEgenskaber2
 			) :: indsatsEgenskaberAttrType ]::indsatsEgenskaberAttrType[],
 						null-- indsatsRelationType[]
@@ -765,6 +781,7 @@ null --text,
 ,null--'beskrivelse_indsats_2'-- text,
 , '2017-01-25 09:00'::timestamptz   -- starttidspunkt,
 , null--'2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+,null--integrationsdata2
 ,null--virkEgenskaber2
 ) :: indsatsEgenskaberAttrType
 		]::indsatsEgenskaberAttrType[] --search_operator_less_then_attr_egenskaber indsatsEgenskaberAttrType[]=null
@@ -790,6 +807,7 @@ actual_search_res_17:=as_search_indsats(
 			,'beskrivelse_indsats_faelles'-- text,
 			, null--'2017-01-25 09:00'::timestamptz  -- starttidspunkt,
 			, null--'2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+			,null--integrationsdata2
 			,null--virkEgenskaber2
 			) :: indsatsEgenskaberAttrType ]::indsatsEgenskaberAttrType[],
 						null-- indsatsRelationType[]
@@ -807,6 +825,7 @@ null --text,
 ,null--'beskrivelse_indsats_2'-- text,
 , '2017-01-25 09:00'::timestamptz   -- starttidspunkt,
 , null--'2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+,null--integrationsdata2
 ,null--virkEgenskaber2
 ) :: indsatsEgenskaberAttrType
 		]::indsatsEgenskaberAttrType[] --search_operator_less_then_attr_egenskaber indsatsEgenskaberAttrType[]=null
@@ -834,6 +853,7 @@ actual_search_res_18:=as_search_indsats(
 			,'beskrivelse_indsats_faelles'-- text,
 			, null--'2017-01-25 09:00'::timestamptz  -- starttidspunkt,
 			, null--'2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+			,null--integrationsdata2
 			,null--virkEgenskaber2
 			) :: indsatsEgenskaberAttrType ]::indsatsEgenskaberAttrType[],
 						null-- indsatsRelationType[]
@@ -851,6 +871,7 @@ null --text,
 ,null--'beskrivelse_indsats_2'-- text,
 , '2017-01-25 08:00'::timestamptz   -- starttidspunkt,
 , null--'2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+,null--integrationsdata2
 ,null--virkEgenskaber2
 ) :: indsatsEgenskaberAttrType
 		]::indsatsEgenskaberAttrType[] --search_operator_less_then_attr_egenskaber indsatsEgenskaberAttrType[]=null
@@ -875,6 +896,7 @@ actual_search_res_19:=as_search_indsats(
 			,null --'beskrivelse_indsats_faelles'-- text,
 			, null--'2017-01-25 09:00'::timestamptz  -- starttidspunkt,
 			, null--'2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+			,null--integrationsdata2
 			,null--virkEgenskaber2
 			) :: indsatsEgenskaberAttrType ]::indsatsEgenskaberAttrType[],
 						null-- indsatsRelationType[]
@@ -892,6 +914,7 @@ null --text,
 ,null--'beskrivelse_indsats_2'-- text,
 , '2017-01-25 08:00'::timestamptz   -- starttidspunkt,
 , null--'2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+,null--integrationsdata2
 ,null--virkEgenskaber2
 ) :: indsatsEgenskaberAttrType
 		]::indsatsEgenskaberAttrType[] --search_operator_less_then_attr_egenskaber indsatsEgenskaberAttrType[]=null
@@ -921,6 +944,7 @@ null --text,
 ,null--'beskrivelse_indsats_2'-- text,
 , '2017-01-25 09:00'::timestamptz   -- starttidspunkt,
 , '2017-04-01 18:00'::timestamptz -- sluttidspunkt,
+,null--integrationsdata2
 ,null--virkEgenskaber2
 ) :: indsatsEgenskaberAttrType
 		]::indsatsEgenskaberAttrType[] --search_operator_less_then_attr_egenskaber indsatsEgenskaberAttrType[]=null
@@ -950,6 +974,7 @@ null --text,
 ,null--'beskrivelse_indsats_2'-- text,
 , null -- starttidspunkt
 , '2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+,null--integrationsdata2
 ,null--virkEgenskaber2
 ) :: indsatsEgenskaberAttrType
 		]::indsatsEgenskaberAttrType[] --search_operator_less_then_attr_egenskaber indsatsEgenskaberAttrType[]=null
@@ -978,6 +1003,7 @@ null --text,
 ,null--'beskrivelse_indsats_2'-- text,
 , null -- starttidspunkt
 , '2017-06-01 11:00'::timestamptz -- sluttidspunkt,
+,null--integrationsdata2
 ,null--virkEgenskaber2
 ) :: indsatsEgenskaberAttrType
 		]::indsatsEgenskaberAttrType[] --search_operator_less_then_attr_egenskaber indsatsEgenskaberAttrType[]=null

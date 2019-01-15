@@ -207,6 +207,7 @@ indsatsEgenskab := ROW (
 ,'beskrivelse_indsats_1'-- text,
 , '2017-01-20 08:00'::timestamptz  -- starttidspunkt,
 , '2017-01-20 12:00'::timestamptz -- sluttidspunkt,
+,'integrationsdata_1'-- text,
 ,virkEgenskaber
 ) :: indsatsEgenskaberAttrType
 ;
@@ -252,6 +253,7 @@ null --text,
 ,'beskrivelse_indsats_1A'-- text,
 , ''::text
 , '2017-01-20 13:00'::timestamptz -- sluttidspunkt,
+,'integrationsdata_1A'-- text,
 ,virkEgenskaber1B
 ) :: indsatsEgenskaberAttrType
 ;
@@ -288,6 +290,7 @@ expected_indsats1:=ROW(
 						,'beskrivelse_indsats_1'-- text,
 						, '2017-01-20 08:00'::timestamptz  -- starttidspunkt,
 						, '2017-01-20 12:00'::timestamptz -- sluttidspunkt,
+						,'integrationsdata_1'-- text,
 						,ROW (
 							'[2015-05-12, 2017-01-01)' :: TSTZRANGE,
 								uuidVirkEgenskaber,
@@ -300,6 +303,7 @@ expected_indsats1:=ROW(
 						,'beskrivelse_indsats_1'-- text,
 						, '2017-01-20 08:00'::timestamptz  -- starttidspunkt,
 						, '2017-01-20 12:00'::timestamptz -- sluttidspunkt,
+						,'integrationsdata_1'-- text,
 						,ROW (
 							'(2017-12-31, infinity)' :: TSTZRANGE,
 								uuidVirkEgenskaber,
@@ -312,6 +316,7 @@ expected_indsats1:=ROW(
 						,'beskrivelse_indsats_1A'-- text,
 						, row(null,null)
 						, '2017-01-20 13:00'::timestamptz -- sluttidspunkt,
+						,'integrationsdata_1A'-- text,
 						,virkEgenskaber1B
 						) :: indsatsEgenskaberAttrType
 						

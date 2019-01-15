@@ -234,6 +234,7 @@ indsatsEgenskab := ROW (
 ,'beskrivelse_indsats_faelles'-- text,
 , '2017-01-20 08:00'::timestamptz  -- starttidspunkt,
 , '2017-01-20 12:00'::timestamptz -- sluttidspunkt,
+,'integrationsdata_1'-- text,
 ,virkEgenskaber
 ) :: indsatsEgenskaberAttrType
 ;
@@ -270,6 +271,7 @@ indsatsEgenskab2 := ROW (
 ,'beskrivelse_indsats_faelles'-- text,
 , '2017-01-25 09:00'::timestamptz  -- starttidspunkt,
 , '2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+,'integrationsdata_2'-- text,
 ,virkEgenskaber2
 ) :: indsatsEgenskaberAttrType
 ;
@@ -312,6 +314,7 @@ indsatsEgenskab3 := ROW (
 ,'beskrivelse_indsats_faelles'-- text,
 , '2017-02-25 09:00'::timestamptz  -- starttidspunkt,
 , '2017-02-26 12:00'::timestamptz -- sluttidspunkt,
+,'integrationsdata_3'-- text,
 ,virkEgenskaber3
 ) :: indsatsEgenskaberAttrType
 ;
@@ -404,6 +407,7 @@ actual_filter_res_1:=_as_filter_unauth_indsats(
 ,null--'beskrivelse_indsats_2'-- text,
 , null--'2017-01-25 09:00'::timestamptz  -- starttidspunkt,
 , null--'2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+, null
 ,null--virkEgenskaber2
 ) :: indsatsEgenskaberAttrType ]::IndsatsEgenskaberAttrType[],
 			null-- AktivitetRelationType[]
@@ -436,6 +440,7 @@ null --text,
 ,null--'beskrivelse_indsats_2'-- text,
 , '2017-01-20 08:00'::timestamptz  -- starttidspunkt,
 , null--'2017-06-01 12:00'::timestamptz -- sluttidspunkt,
+,null--integrationsdata2
 ,null--virkEgenskaber2
 ) :: indsatsEgenskaberAttrType ]::IndsatsEgenskaberAttrType[],
 			null-- AktivitetRelationType[]
