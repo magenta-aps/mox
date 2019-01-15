@@ -95,27 +95,6 @@ An example::
       /klassifikation/facet/1b1e2de1-6d95-4200-9b60-f85e70cc37cf
 
 
-Passivating and deleting data
-+++++++++++++++++++++++++++++
-
-
-Delete
-------
-
-An object is deleted by sending a ``DELETE`` request. This might e.g.
-look like this::
-
-    curl -k -sH "Content-Type: application/json" \
-      -H "Authorization: $AUTH_TOKEN" \
-      -X DELETE \
-      -d "$(cat test_data/facet_slet.json)" \
-      https://mox/organisation/organisationenhed/7c6e38f8-e5b5-4b87-af52-9693e074f5ee
-
-After an object is deleted, it may still be retrieved by a read or list
-operation, but it will not appear in search results unless the
-registreretTil and/or registreretFra indicate a period where it did
-exist.
-
 Appendix: Self-documentation
 ++++++++++++++++++++++++++++
 
