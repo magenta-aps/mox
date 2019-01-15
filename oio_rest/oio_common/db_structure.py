@@ -131,7 +131,8 @@ DATABASE_STRUCTURE = {
         "attributter": {
             "egenskaber": [
                 "brugervendtnoegle", "itsystemnavn", "itsystemtype",
-                "konfigurationreference"],
+                "konfigurationreference", "integrationsdata",
+            ],
         },
         "attributter_metadata": {
             'egenskaber': {

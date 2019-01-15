@@ -21566,6 +21566,7 @@ brugervendtnoegle text,
 itsystemnavn text,
 itsystemtype text,
 konfigurationreference text[],
+integrationsdata text,
 
  virkning Virkning
 );
@@ -21726,6 +21727,7 @@ CREATE TABLE itsystem_attr_egenskaber (
         itsystemnavn text  NULL,
         itsystemtype text  NULL,
         konfigurationreference text[]  NULL,
+        integrationsdata text  NULL,
     virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
     itsystem_registrering_id bigint NOT NULL,
     CONSTRAINT itsystem_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -21782,6 +21784,17 @@ ALTER TABLE itsystem_attr_egenskaber
             (konfigurationreference _text_ops);
          
      
+ 
+     
+        CREATE INDEX itsystem_attr_egenskaber_pat_integrationsdata
+            ON itsystem_attr_egenskaber
+            USING gin
+            (integrationsdata gin_trgm_ops);
+
+        CREATE INDEX itsystem_attr_egenskaber_idx_integrationsdata
+            ON itsystem_attr_egenskaber
+            USING btree
+            (integrationsdata); 
 
 
 
@@ -22014,7 +22027,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr ItsystemEgenskaberAtt
     FOREACH element IN ARRAY inputArr
     LOOP
 
-      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.itsystemnavn IS NULL AND element.itsystemtype IS NULL AND element.konfigurationreference IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.itsystemnavn IS NULL AND element.itsystemtype IS NULL AND element.konfigurationreference IS NULL AND element.integrationsdata IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
 
     --  RAISE DEBUG 'Skipping element';
       ELSE
@@ -22385,7 +22398,7 @@ BEGIN
                     unnest(attrEgenskaber) a
                     JOIN unnest(attrEgenskaber) b ON (a.virkning).TimePeriod && (b.virkning).TimePeriod
                 GROUP BY
-                    a.brugervendtnoegle,a.itsystemnavn,a.itsystemtype,a.konfigurationreference,
+                    a.brugervendtnoegle,a.itsystemnavn,a.itsystemtype,a.konfigurationreference,a.integrationsdata,
                     a.virkning
                     
                     HAVING COUNT(*) > 1) THEN
@@ -22396,9 +22409,9 @@ BEGIN
         -- To avoid needless fragmentation we'll check for presence of
         -- null values in the fields - and if none are present, we'll skip
         -- the merging operations
-        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).itsystemnavn IS NULL  OR  (attrEgenskaberObj).itsystemtype IS NULL  OR  (attrEgenskaberObj).konfigurationreference IS NULL  THEN
+        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).itsystemnavn IS NULL  OR  (attrEgenskaberObj).itsystemtype IS NULL  OR  (attrEgenskaberObj).konfigurationreference IS NULL  OR  (attrEgenskaberObj).integrationsdata IS NULL  THEN
             
-            INSERT INTO itsystem_attr_egenskaber ( brugervendtnoegle,itsystemnavn,itsystemtype,konfigurationreference, virkning, itsystem_registrering_id)
+            INSERT INTO itsystem_attr_egenskaber ( brugervendtnoegle,itsystemnavn,itsystemtype,konfigurationreference,integrationsdata, virkning, itsystem_registrering_id)
                 SELECT
                     
                         
@@ -22417,6 +22430,10 @@ BEGIN
                         
                             coalesce(attrEgenskaberObj.konfigurationreference, a.konfigurationreference),
                     
+                        
+                        
+                            coalesce(attrEgenskaberObj.integrationsdata, a.integrationsdata),
+                    
                     ROW ((a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
                             (attrEgenskaberObj.virkning).AktoerRef,
                             (attrEgenskaberObj.virkning).AktoerTypeKode,
@@ -22432,7 +22449,7 @@ BEGIN
         -- that is NOT covered by any "merged" rows inserted above, generate
         -- and insert rows.
         
-            INSERT INTO itsystem_attr_egenskaber ( brugervendtnoegle,itsystemnavn,itsystemtype,konfigurationreference, virkning, itsystem_registrering_id)
+            INSERT INTO itsystem_attr_egenskaber ( brugervendtnoegle,itsystemnavn,itsystemtype,konfigurationreference,integrationsdata, virkning, itsystem_registrering_id)
                 SELECT
                     
                      attrEgenskaberObj.brugervendtnoegle,
@@ -22442,6 +22459,8 @@ BEGIN
                      attrEgenskaberObj.itsystemtype,
                     
                      attrEgenskaberObj.konfigurationreference,
+                    
+                     attrEgenskaberObj.integrationsdata,
                     
                     ROW (b.tz_range_leftover,
                         (attrEgenskaberObj.virkning).AktoerRef,
@@ -22462,8 +22481,8 @@ BEGIN
             -- Insert attrEgenskaberObj raw (if there were no null-valued fields)
             
 
-            INSERT INTO itsystem_attr_egenskaber ( brugervendtnoegle,itsystemnavn,itsystemtype,konfigurationreference, virkning, itsystem_registrering_id)
-                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.itsystemnavn,  attrEgenskaberObj.itsystemtype,  attrEgenskaberObj.konfigurationreference, attrEgenskaberObj.virkning, new_itsystem_registrering.id );
+            INSERT INTO itsystem_attr_egenskaber ( brugervendtnoegle,itsystemnavn,itsystemtype,konfigurationreference,integrationsdata, virkning, itsystem_registrering_id)
+                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.itsystemnavn,  attrEgenskaberObj.itsystemtype,  attrEgenskaberObj.konfigurationreference,  attrEgenskaberObj.integrationsdata, attrEgenskaberObj.virkning, new_itsystem_registrering.id );
         END IF;
 
         END LOOP;
@@ -22479,7 +22498,7 @@ BEGIN
 -- Handle egenskaber of previous registration, taking overlapping
 -- virknings into consideration (using function subtract_tstzrange)
 
-    INSERT INTO itsystem_attr_egenskaber ( brugervendtnoegle,itsystemnavn,itsystemtype,konfigurationreference, virkning, itsystem_registrering_id)
+    INSERT INTO itsystem_attr_egenskaber ( brugervendtnoegle,itsystemnavn,itsystemtype,konfigurationreference,integrationsdata, virkning, itsystem_registrering_id)
     SELECT
         
         
@@ -22490,6 +22509,8 @@ BEGIN
             a.itsystemtype,
         
             a.konfigurationreference,
+        
+            a.integrationsdata,
         
         ROW (c.tz_range_leftover,
             (a.virkning).AktoerRef,
@@ -22677,6 +22698,7 @@ IF itsystem_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(it
       itsystemnavn,
       itsystemtype,
       konfigurationreference,
+      integrationsdata,
       virkning,
       itsystem_registrering_id
     )
@@ -22686,6 +22708,7 @@ IF itsystem_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(it
       itsystem_attr_egenskaber_obj.itsystemnavn,
       itsystem_attr_egenskaber_obj.itsystemtype,
       itsystem_attr_egenskaber_obj.konfigurationreference,
+      itsystem_attr_egenskaber_obj.integrationsdata,
       itsystem_attr_egenskaber_obj.virkning,
       itsystem_registrering_id
     ;
@@ -22872,6 +22895,7 @@ FROM
 					 		b.itsystemnavn,
 					 		b.itsystemtype,
 					 		b.konfigurationreference,
+					 		b.integrationsdata,
 					   		b.virkning
                             
 							)::ItsystemEgenskaberAttrType
@@ -22879,7 +22903,7 @@ FROM
 						NULL
 						END
                         
-						order by b.brugervendtnoegle,b.itsystemnavn,b.itsystemtype,b.konfigurationreference,b.virkning
+						order by b.brugervendtnoegle,b.itsystemnavn,b.itsystemtype,b.konfigurationreference,b.integrationsdata,b.virkning
                         
 					)) ItsystemAttrEgenskaberArr
                     
@@ -23192,6 +23216,12 @@ ELSE
                     _as_search_match_array(attrEgenskaberTypeObj.konfigurationreference,a.konfigurationreference)
                 )
                 AND
+                (
+                    attrEgenskaberTypeObj.integrationsdata IS NULL
+                    OR
+                    a.integrationsdata ILIKE attrEgenskaberTypeObj.integrationsdata --case insensitive
+                )
+                AND
                 
                 		(
 				(registreringObj.registrering) IS NULL 
@@ -23292,7 +23322,8 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
                         a.brugervendtnoegle ILIKE anyAttrValue OR
                         a.itsystemnavn ILIKE anyAttrValue OR
                         a.itsystemtype ILIKE anyAttrValue OR
-                              _as_search_ilike_array(anyAttrValue,a.konfigurationreference)
+                              _as_search_ilike_array(anyAttrValue,a.konfigurationreference) OR
+                        a.integrationsdata ILIKE anyAttrValue
                 
             )
             AND
@@ -24305,6 +24336,12 @@ ELSE
 					attrEgenskaberTypeObj.konfigurationreference IS NULL
 					OR
 						((coalesce(array_length(attrEgenskaberTypeObj.konfigurationreference,1),0)=0 AND coalesce(array_length(a.konfigurationreference,1),0)=0 ) OR (attrEgenskaberTypeObj.konfigurationreference @> a.konfigurationreference AND a.konfigurationreference @>attrEgenskaberTypeObj.konfigurationreference  )) 
+				)
+				AND
+				(
+					attrEgenskaberTypeObj.integrationsdata IS NULL
+					OR 
+					a.integrationsdata = attrEgenskaberTypeObj.integrationsdata 
 				)
 				AND b.itsystem_id = ANY (itsystem_candidates)
 				AND (a.virkning).TimePeriod @> actual_virkning 

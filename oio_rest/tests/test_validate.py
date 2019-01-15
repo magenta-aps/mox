@@ -583,6 +583,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                                     'type': 'array',
                                     'items': {'type': 'string'}
                                 },
+                                'integrationsdata': {'type': 'string'},
                                 'virkning': {'$ref': '#/definitions/virkning'}
                             },
                             'required': ['brugervendtnoegle', 'virkning'],
