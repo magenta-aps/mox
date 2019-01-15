@@ -65,7 +65,7 @@ reference document: `Specifikation af serviceinterface for Organisation`_.
 ``organisation``
 ----------------
 
-Located at the endpoint ``/organisation/organisation``. A ``organisation`` is a
+Located at the endpoint ``/organisation/organisation``. An ``organisation`` is a
 legal organisation. A good example of this a municipality. The database does
 support multiple ``organisation``, but in the wild there is usually only one per
 MOX instance.
