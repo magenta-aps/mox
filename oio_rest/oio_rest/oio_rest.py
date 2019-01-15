@@ -331,7 +331,76 @@ class OIORestObject(object):
     @requires_auth
     def get_object(cls, uuid):
         """
-        READ an object, return as JSON.
+        A :ref:`ReadOperation`. Return the whole object as a JSON-object. Default to return
+        the object as it is currently seen, but can optionally be constrained by
+        ``virking*`` valid time and/or ``registrering*`` transaction time to give an
+        older view.
+
+        **Example request**:
+
+        .. code-block:: http
+
+            GET /organisation/organisation/5729e3f9-2993-4492-a56f-0ef7efc83111 HTTP/1.1
+            Accept: */*
+            Host: example.com
+
+        **Example response**:
+
+        .. code-block:: http
+
+            HTTP/1.0 200 OK
+            Content-Length: 744
+            Content-Type: application/json
+            Date: Tue, 15 Jan 2019 12:27:16 GMT
+            Server: Werkzeug/0.14.1 Python/3.5.2
+
+            {"5729e3f9-2993-4492-a56f-0ef7efc83111": [{
+                     "id": "5729e3f9-2993-4492-a56f-0ef7efc83111",
+                     "registreringer": [{
+                             "attributter": {
+                                 "organisationegenskaber": [{
+                                         "brugervendtnoegle": "magenta-aps",
+                                         "organisationsnavn": "Magenta ApS",
+                                         "virkning": {
+                                             "from": "2017-01-01 00:00:00+00",
+                                             "from_included": true,
+                                             "to": "2019-03-14 00:00:00+00",
+                                             "to_included": false
+                                         }}]},
+                             "brugerref": "42c432e8-9c4a-11e6-9f62-873cf34a735f",
+                             "fratidspunkt": {
+                                 "graenseindikator": true,
+                                 "tidsstempeldatotid": "2019-01-15T10:43:58.122764+00:00"
+                             },
+                             "livscykluskode": "Importeret",
+                             "tilstande": {
+                                 "organisationgyldighed": [{
+                                         "gyldighed": "Aktiv",
+                                         "virkning": {
+                                             "from": "2017-01-01 00:00:00+00",
+                                             "from_included": true,
+                                             "to": "2019-03-14 00:00:00+00",
+                                             "to_included": false
+                                         }}]},
+                             "tiltidspunkt": {
+                                 "tidsstempeldatotid": "infinity"
+                             }}]}]}
+
+
+
+        :query registreretFra: transaction time from timestamp
+        :query registreretTil: transaction time to timestamp
+        :query registreringstid: transaction time 'snapshot' timestamp
+        :query virkningFra: valid time from timestamp
+        :query virkningTil: valid time to timestamp
+        :query virkningstid: valid time 'snapshot' timestamp
+
+        :resheader Content-Type: ``application/json``
+
+        :statuscode 200: no error
+        :statuscode 404: No object of a given class with that uuid.
+        :statuscode 410: The object has been :ref:`Deleted <DeleteOperation>`.
+
         """
         cls.verify_args(temporality=True)
 
