@@ -297,6 +297,7 @@ ROW(
    'titel_E',
    'retskilde_E',
    'aendringsnotat', 
+   'integrationsdata_E', 
     ARRAY[ROW('soegeordidentifikator_klasseEgenskabE_Soegeord1','beskrivelse_klasseEgenskabE_Soegeord1','soegeordskategori_klasseEgenskabE_Soegeord1')::KlasseSoegeordType]
 	,ROW ('[2015-04-13, infinity)' :: TSTZRANGE,'30ba2a98-2c2e-4628-b030-e39e25c81669'::uuid,'Bruger','NoteEx30') :: Virkning
 ):: KlasseEgenskaberAttrType
@@ -312,6 +313,7 @@ ROW(
    'titel_A',
    'retskilde_A',
    'aendringsnotat_A', 
+   'integrationsdata_A', 
     ARRAY[ROW('soegeordidentifikator_klasseEgenskabA_Soegeord1','beskrivelse_klasseEgenskabA_Soegeord1','soegeordskategori_klasseEgenskabA_Soegeord1')::KlasseSoegeordType]
 	,ROW ('[2015-04-12, infinity)' :: TSTZRANGE,'50ba2a98-2c2e-4628-b030-e39e25c81669'::uuid,'Bruger','NoteEx40') :: Virkning
 ):: KlasseEgenskaberAttrType
@@ -327,6 +329,7 @@ ROW(
    'titel_C',
    'retskilde_C',
    'aendringsnotat_C', 
+   'integrationsdata_C', 
     ARRAY[]::KlasseSoegeordType[]
 	,ROW ('[2015-04-12, infinity)' :: TSTZRANGE,'50ba2a98-2c2e-4628-b030-e39e25c81669'::uuid,'Bruger','NoteEx40') :: Virkning
 ):: KlasseEgenskaberAttrType
@@ -341,6 +344,7 @@ ROW(
    'titel_D',
    'retskilde_D',
    'aendringsnotat_D', 
+   'integrationsdata_D', 
     ARRAY[]::KlasseSoegeordType[]
 	,ROW ('[2015-04-12, infinity)' :: TSTZRANGE,'50ba2a98-2D2e-4628-b030-e39e25D81669'::uuid,'Bruger','NoteEx70') :: Virkning
 ):: KlasseEgenskaberAttrType
@@ -377,6 +381,7 @@ egenskaberArr3:=array_append(egenskaberArr,
 	null,
    null,
    null,
+   null,
    null, 
     ARRAY[]::KlasseSoegeordType[]
 	,null
@@ -391,6 +396,7 @@ egenskaberArr3:=array_append(egenskaberArr3,
 	null,
    null,
    null,
+   null, 
    null, 
     null--ARRAY[]::KlasseSoegeordType[]
 	,null

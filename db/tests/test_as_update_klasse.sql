@@ -221,6 +221,7 @@ klasseEgenskabA := ROW (
    'titel_A',
    'retskilde_A',
    NULL,--'aendringsnotat_text1',
+   'integrationsdata_A',
    ARRAY[klasseEgenskabA_Soegeord1,klasseEgenskabA_Soegeord2]::KlasseSoegeordType[], 
    virkEgenskaber
 ) :: KlasseEgenskaberAttrType
@@ -296,6 +297,7 @@ klasseEgenskabB := ROW (
    'titel_B',
    'retskilde_B',
    NULL, --aendringsnotat
+   'integrationsdata_B',
     ARRAY[klasseEgenskabB_Soegeord1,klasseEgenskabB_Soegeord2,klasseEgenskabB_Soegeord3,klasseEgenskabB_Soegeord4]::KlasseSoegeordType[], --soegeord
    virkEgenskaberB
 ) :: KlasseEgenskaberAttrType
@@ -354,6 +356,7 @@ klasseEgenskabC := ROW (
    'titel_C',
    'retskilde_C',
    'aendringsnotat_C',
+   'integrationsdata_C',
    ARRAY[]::KlasseSoegeordType[], --soegeord
    virkEgenskaberC
 ) :: KlasseEgenskaberAttrType
@@ -367,6 +370,7 @@ klasseEgenskabD := ROW (
    'titel_D',
    'retskilde_D',
    NULL, --aendringsnotat
+   'integrationsdata_D',
     NULL, --soegeord
    virkEgenskaberD
 ) :: KlasseEgenskaberAttrType
@@ -380,6 +384,7 @@ klasseEgenskabE := ROW (
    'titel_E',
    'retskilde_E',
    NULL, --aendringsnotat
+   'integrationsdata_E',
     ARRAY[klasseEgenskabE_Soegeord1,klasseEgenskabE_Soegeord2,klasseEgenskabE_Soegeord3,klasseEgenskabE_Soegeord4,klasseEgenskabE_Soegeord5]::KlasseSoegeordType[], --soegeord
    virkEgenskaberE
 ) :: KlasseEgenskaberAttrType
@@ -522,6 +527,7 @@ RETURN NEXT set_eq( 'SELECT
    					a.titel,
    					a.retskilde,
    					a.aendringsnotat,
+   					a.integrationsdata,
    					array_agg(
    						CASE WHEN c.id IS NULL THEN NULL
    						ELSE
@@ -553,6 +559,7 @@ ARRAY[
    				klasseEgenskabD.titel,
    				klasseEgenskabD.retskilde,
    				klasseEgenskabD.aendringsnotat,
+   				klasseEgenskabD.integrationsdata,
    				  ARRAY[NULL]::KlasseSoegeordType[], --soegeord --please notice that this should really be NULL, but because of the form of the query above, it will return an array with a null element.
 					ROW(
 						TSTZRANGE('2013-06-30','2014-05-13','[)'),
@@ -570,6 +577,7 @@ ARRAY[
    				klasseEgenskabD.titel,
    				klasseEgenskabD.retskilde,
    				NULL, --notice
+   				klasseEgenskabD.integrationsdata,
    				  ARRAY[klasseEgenskabB_Soegeord1,klasseEgenskabB_Soegeord2,klasseEgenskabB_Soegeord3,klasseEgenskabB_Soegeord4]::KlasseSoegeordType[], --soegeord
    				ROW(
 						TSTZRANGE('2014-05-13','2014-06-01','[)'),
@@ -587,6 +595,7 @@ ARRAY[
    				klasseEgenskabB.titel,
    				klasseEgenskabB.retskilde,
    				klasseEgenskabB.aendringsnotat,
+   				klasseEgenskabB.integrationsdata,
    				 ARRAY[klasseEgenskabB_Soegeord1,klasseEgenskabB_Soegeord2,klasseEgenskabB_Soegeord3,klasseEgenskabB_Soegeord4]::KlasseSoegeordType[], --soegeord
 					ROW(
 						TSTZRANGE('2014-06-01','2014-08-01','[)'),
@@ -604,6 +613,7 @@ ARRAY[
    				klasseEgenskabE.titel,
    				klasseEgenskabE.retskilde,
    				klasseEgenskabB.aendringsnotat, --NOTICE
+   				klasseEgenskabE.integrationsdata,
    				 ARRAY[klasseEgenskabE_Soegeord1,klasseEgenskabE_Soegeord2,klasseEgenskabE_Soegeord3,klasseEgenskabE_Soegeord4,klasseEgenskabE_Soegeord5]::KlasseSoegeordType[], --soegeord
 					ROW(
 						TSTZRANGE('2014-08-01', '2014-10-20','[)'),
@@ -621,6 +631,7 @@ ARRAY[
    				klasseEgenskabB.titel,
    				klasseEgenskabB.retskilde,
    				klasseEgenskabB.aendringsnotat,
+   				klasseEgenskabB.integrationsdata,
    				 ARRAY[klasseEgenskabB_Soegeord1,klasseEgenskabB_Soegeord2,klasseEgenskabB_Soegeord3,klasseEgenskabB_Soegeord4]::KlasseSoegeordType[], --soegeord
 					ROW(
 						TSTZRANGE('2014-10-20','2015-01-01','[)'),
@@ -639,6 +650,7 @@ ARRAY[
    				klasseEgenskabC.titel,
    				klasseEgenskabC.retskilde,
    				klasseEgenskabC.aendringsnotat,
+   				klasseEgenskabC.integrationsdata,
    				 ARRAY[NULL]::KlasseSoegeordType[], --soegeord --please notice that this should really be NULL, but because of the form of the query above, it will return an array with a null element.
 					ROW(
 						TSTZRANGE('2015-01-13','2015-05-12','[)'),
@@ -656,6 +668,7 @@ ARRAY[
    				klasseEgenskabC.titel,
    				klasseEgenskabC.retskilde,
    				klasseEgenskabC.aendringsnotat,
+   				klasseEgenskabC.integrationsdata,
    				  ARRAY[NULL]::KlasseSoegeordType[], --soegeord
 					ROW(
 						TSTZRANGE('2015-05-12','infinity','[)'),
@@ -961,6 +974,7 @@ update_reg_id:=as_update_klasse(
 		   'titel_C',
 		   'retskilde_C',
 		   'aendringsnotat_C',
+		   'integrationsdata_C',
 		   ARRAY[]::KlasseSoegeordType[], --soegeord
 		   virkEgenskaberC
 	  )::KlasseEgenskaberAttrType
@@ -1004,6 +1018,7 @@ update_reg_id:=as_update_klasse(
 		   'titel_C',
 		   'retskilde_C',
 		   'aendringsnotat_C',
+		   'integrationsdata_C',
 		   ARRAY[]::KlasseSoegeordType[], --soegeord
 		   virkEgenskaberC
 	  )::KlasseEgenskaberAttrType
@@ -1040,6 +1055,7 @@ update_reg_id:=as_update_klasse(
 		   'titel_C',
 		   'retskilde_C',
 		   'aendringsnotat_C',
+		   'integrationsdata_C',
 		   ARRAY[]::KlasseSoegeordType[], --soegeord
 		   virkEgenskaberC
 	  )::KlasseEgenskaberAttrType
@@ -1089,6 +1105,7 @@ klasseEgenskabA := ROW (
    'titel_A',
    'retskilde_A',
    NULL,--'aendringsnotat_text1',
+   'integrationsdata_A',
    ARRAY[klasseEgenskabA_Soegeord1,klasseEgenskabA_Soegeord2]::KlasseSoegeordType[], 
    virkEgenskaber
 ) :: KlasseEgenskaberAttrType
@@ -1103,6 +1120,7 @@ klasseEgenskabB := ROW (
    'titel_B',
    'retskilde_B',
    NULL, --aendringsnotat
+   'integrationsdata_B',
     ARRAY[klasseEgenskabB_Soegeord1,klasseEgenskabB_Soegeord2,klasseEgenskabB_Soegeord3,klasseEgenskabB_Soegeord4]::KlasseSoegeordType[], --soegeord
    virkEgenskaberB
 ) :: KlasseEgenskaberAttrType

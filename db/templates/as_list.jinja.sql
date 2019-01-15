@@ -141,6 +141,7 @@ FROM
                                                        a.titel,
                                                        a.retskilde,
                                                        a.aendringsnotat,
+                                                       a.integrationsdata,
                                                        a.KlasseAttrEgenskaberSoegeordTypeArr,
                                                        a.virkning 
                             {% else %}
@@ -174,6 +175,7 @@ FROM
                                                b.titel,
                                                b.retskilde,
                                                b.aendringsnotat,
+                                               b.integrationsdata,
                                                b.virkning,     
                                                _remove_nulls_in_array(array_agg(
                                                        CASE 
@@ -216,6 +218,7 @@ FROM
                                                b.titel,
                                                b.retskilde,
                                                b.aendringsnotat,
+                                               b.integrationsdata,
                                                b.virkning
                                ) as a
                     {% endif %}

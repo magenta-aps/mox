@@ -24401,6 +24401,7 @@ omfang text,
 titel text,
 retskilde text,
 aendringsnotat text,
+integrationsdata text,
 
 soegeord KlasseSoegeordType[],
 
@@ -24566,6 +24567,7 @@ CREATE TABLE klasse_attr_egenskaber (
         titel text NOT NULL,
         retskilde text  NULL,
         aendringsnotat text  NULL,
+        integrationsdata text  NULL,
     virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
     klasse_registrering_id bigint NOT NULL,
     CONSTRAINT klasse_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -24657,6 +24659,17 @@ ALTER TABLE klasse_attr_egenskaber
             ON klasse_attr_egenskaber
             USING btree
             (aendringsnotat); 
+ 
+     
+        CREATE INDEX klasse_attr_egenskaber_pat_integrationsdata
+            ON klasse_attr_egenskaber
+            USING gin
+            (integrationsdata gin_trgm_ops);
+
+        CREATE INDEX klasse_attr_egenskaber_idx_integrationsdata
+            ON klasse_attr_egenskaber
+            USING btree
+            (integrationsdata); 
 
 
 
@@ -25351,7 +25364,7 @@ BEGIN
                     unnest(attrEgenskaber) a
                     JOIN unnest(attrEgenskaber) b ON (a.virkning).TimePeriod && (b.virkning).TimePeriod
                 GROUP BY
-                    a.brugervendtnoegle,a.beskrivelse,a.eksempel,a.omfang,a.titel,a.retskilde,a.aendringsnotat,
+                    a.brugervendtnoegle,a.beskrivelse,a.eksempel,a.omfang,a.titel,a.retskilde,a.aendringsnotat,a.integrationsdata,
                     a.virkning
                     ,
                         a.soegeord
@@ -25364,9 +25377,9 @@ BEGIN
         -- To avoid needless fragmentation we'll check for presence of
         -- null values in the fields - and if none are present, we'll skip
         -- the merging operations
-        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).beskrivelse IS NULL  OR  (attrEgenskaberObj).eksempel IS NULL  OR  (attrEgenskaberObj).omfang IS NULL  OR  (attrEgenskaberObj).titel IS NULL  OR  (attrEgenskaberObj).retskilde IS NULL  OR  (attrEgenskaberObj).aendringsnotat IS NULL  THEN
+        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).beskrivelse IS NULL  OR  (attrEgenskaberObj).eksempel IS NULL  OR  (attrEgenskaberObj).omfang IS NULL  OR  (attrEgenskaberObj).titel IS NULL  OR  (attrEgenskaberObj).retskilde IS NULL  OR  (attrEgenskaberObj).aendringsnotat IS NULL  OR  (attrEgenskaberObj).integrationsdata IS NULL  THEN
              WITH inserted_merged_attr_egenskaber AS (
-            INSERT INTO klasse_attr_egenskaber ( id,  brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat, virkning, klasse_registrering_id)
+            INSERT INTO klasse_attr_egenskaber ( id,  brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat,integrationsdata, virkning, klasse_registrering_id)
                 SELECT
                     
                          nextval('klasse_attr_egenskaber_id_seq'), 
@@ -25396,6 +25409,10 @@ BEGIN
                         
                         
                             coalesce(attrEgenskaberObj.aendringsnotat, a.aendringsnotat),
+                    
+                        
+                        
+                            coalesce(attrEgenskaberObj.integrationsdata, a.integrationsdata),
                     
                     ROW ((a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
                             (attrEgenskaberObj.virkning).AktoerRef,
@@ -25434,7 +25451,7 @@ BEGIN
         
         WITH inserted_attr_egenskaber AS (
         
-            INSERT INTO klasse_attr_egenskaber ( id,  brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat, virkning, klasse_registrering_id)
+            INSERT INTO klasse_attr_egenskaber ( id,  brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat,integrationsdata, virkning, klasse_registrering_id)
                 SELECT
                     
                      nextval('klasse_attr_egenskaber_id_seq'), attrEgenskaberObj.brugervendtnoegle,
@@ -25450,6 +25467,8 @@ BEGIN
                      attrEgenskaberObj.retskilde,
                     
                      attrEgenskaberObj.aendringsnotat,
+                    
+                     attrEgenskaberObj.integrationsdata,
                     
                     ROW (b.tz_range_leftover,
                         (attrEgenskaberObj.virkning).AktoerRef,
@@ -25484,8 +25503,8 @@ BEGIN
             new_id_klasse_attr_egenskaber := nextval('klasse_attr_egenskaber_id_seq');
             
 
-            INSERT INTO klasse_attr_egenskaber ( id,  brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat, virkning, klasse_registrering_id)
-                VALUES ( new_id_klasse_attr_egenskaber,   attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.beskrivelse,  attrEgenskaberObj.eksempel,  attrEgenskaberObj.omfang,  attrEgenskaberObj.titel,  attrEgenskaberObj.retskilde,  attrEgenskaberObj.aendringsnotat, attrEgenskaberObj.virkning, new_klasse_registrering.id );
+            INSERT INTO klasse_attr_egenskaber ( id,  brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat,integrationsdata, virkning, klasse_registrering_id)
+                VALUES ( new_id_klasse_attr_egenskaber,   attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.beskrivelse,  attrEgenskaberObj.eksempel,  attrEgenskaberObj.omfang,  attrEgenskaberObj.titel,  attrEgenskaberObj.retskilde,  attrEgenskaberObj.aendringsnotat,  attrEgenskaberObj.integrationsdata, attrEgenskaberObj.virkning, new_klasse_registrering.id );
         IF attrEgenskaberObj.soegeord IS NOT NULL THEN
             INSERT INTO klasse_attr_egenskaber_soegeord (soegeordidentifikator, beskrivelse, soegeordskategori, klasse_attr_egenskaber_id)
             SELECT
@@ -25515,7 +25534,7 @@ BEGIN
 
 WITH copied_attr_egenskaber AS (
 
-    INSERT INTO klasse_attr_egenskaber ( id,  brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat, virkning, klasse_registrering_id)
+    INSERT INTO klasse_attr_egenskaber ( id,  brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat,integrationsdata, virkning, klasse_registrering_id)
     SELECT
          nextval('klasse_attr_egenskaber_id_seq'), 
         
@@ -25532,6 +25551,8 @@ WITH copied_attr_egenskaber AS (
             a.retskilde,
         
             a.aendringsnotat,
+        
+            a.integrationsdata,
         
         ROW (c.tz_range_leftover,
             (a.virkning).AktoerRef,
@@ -25737,6 +25758,7 @@ IF klasse_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(klas
       titel,
       retskilde,
       aendringsnotat,
+      integrationsdata,
       virkning,
       klasse_registrering_id
     )
@@ -25749,6 +25771,7 @@ IF klasse_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(klas
       klasse_attr_egenskaber_obj.titel,
       klasse_attr_egenskaber_obj.retskilde,
       klasse_attr_egenskaber_obj.aendringsnotat,
+      klasse_attr_egenskaber_obj.integrationsdata,
       klasse_attr_egenskaber_obj.virkning,
       klasse_registrering_id
     ;
@@ -25965,6 +25988,7 @@ FROM
                                                        a.titel,
                                                        a.retskilde,
                                                        a.aendringsnotat,
+                                                       a.integrationsdata,
                                                        a.KlasseAttrEgenskaberSoegeordTypeArr,
                                                        a.virkning 
                             
@@ -25991,6 +26015,7 @@ FROM
                                                b.titel,
                                                b.retskilde,
                                                b.aendringsnotat,
+                                               b.integrationsdata,
                                                b.virkning,     
                                                _remove_nulls_in_array(array_agg(
                                                        CASE 
@@ -26031,6 +26056,7 @@ FROM
                                                b.titel,
                                                b.retskilde,
                                                b.aendringsnotat,
+                                               b.integrationsdata,
                                                b.virkning
                                ) as a
                     
@@ -26382,6 +26408,12 @@ END LOOP;
                     a.aendringsnotat ILIKE attrEgenskaberTypeObj.aendringsnotat --case insensitive
                 )
                 AND
+                (
+                    attrEgenskaberTypeObj.integrationsdata IS NULL
+                    OR
+                    a.integrationsdata ILIKE attrEgenskaberTypeObj.integrationsdata --case insensitive
+                )
+                AND
                 
                 (
                         (attrEgenskaberTypeObj.soegeord IS NULL OR array_length(attrEgenskaberTypeObj.soegeord,1)=0)
@@ -26512,7 +26544,8 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
                         a.omfang ILIKE anyAttrValue OR
                         a.titel ILIKE anyAttrValue OR
                         a.retskilde ILIKE anyAttrValue OR
-                        a.aendringsnotat ILIKE anyAttrValue
+                        a.aendringsnotat ILIKE anyAttrValue OR
+                        a.integrationsdata ILIKE anyAttrValue
                 
                 OR
                 c.soegeordidentifikator ILIKE anyAttrValue
@@ -27550,6 +27583,12 @@ ELSE
 					attrEgenskaberTypeObj.aendringsnotat IS NULL
 					OR 
 					a.aendringsnotat = attrEgenskaberTypeObj.aendringsnotat 
+				)
+				AND
+				(
+					attrEgenskaberTypeObj.integrationsdata IS NULL
+					OR 
+					a.integrationsdata = attrEgenskaberTypeObj.integrationsdata 
 				)
 				AND b.klasse_id = ANY (klasse_candidates)
 				AND (a.virkning).TimePeriod @> actual_virkning 
