@@ -658,6 +658,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                                             'offentlighedundtaget'
                                 },
                                 'titel': {'type': 'string'},
+                                'integrationsdata': {'type': 'string'},
                                 'virkning': {'$ref': '#/definitions/virkning'}
                             },
                             'required': ['beskrivelse', 'brevdato',

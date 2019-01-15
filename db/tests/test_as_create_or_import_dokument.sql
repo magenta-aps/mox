@@ -175,6 +175,7 @@ dokumentEgenskab1 := ROW (
 ROW('doc_Offentlighedundtaget_AlternativTitel1','doc_Offentlighedundtaget_Hjemmel1') ::OffentlighedundtagetType, --offentlighedundtagettype,
 'doc_titel1',
 'doc_dokumenttype1',
+'integrationsdata1',
    virkEgenskaber1
 ) :: dokumentEgenskaberAttrType
 ;
@@ -189,6 +190,7 @@ dokumentEgenskab2 := ROW (
 ROW('doc_Offentlighedundtaget_AlternativTitel2','doc_Offentlighedundtaget_Hjemmel2') ::OffentlighedundtagetType, --offentlighedundtagettype,
 'doc_titel2',
 'doc_dokumenttype2',
+'integrationsdata2',
    virkEgenskaber2
 ) :: dokumentEgenskaberAttrType
 ;
@@ -519,6 +521,7 @@ SELECT array_agg(
 		a.offentlighedundtaget,
 		a.titel,
 		a.dokumenttype,
+        a.integrationsdata,
  		a.virkning
  )::dokumentEgenskaberAttrType
 	order by a.major ASC

@@ -285,9 +285,11 @@ DATABASE_STRUCTURE = {
 
     "dokument": {
         "attributter": {
-            "egenskaber": ["brugervendtnoegle", "beskrivelse", "brevdato",
-                           "kassationskode", "major", "minor",
-                           "offentlighedundtaget", "titel", "dokumenttype"],
+            "egenskaber": [
+                "brugervendtnoegle", "beskrivelse", "brevdato",
+                "kassationskode", "major", "minor", "offentlighedundtaget",
+                "titel", "dokumenttype", "integrationsdata",
+            ],
         },
         "attributter_metadata": {
             'egenskaber': {

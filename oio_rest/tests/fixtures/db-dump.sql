@@ -6943,6 +6943,7 @@ minor ClearableInt,
 offentlighedundtaget offentlighedundtagettype,
 titel text,
 dokumenttype text,
+integrationsdata text,
 
  virkning Virkning
 );
@@ -7171,6 +7172,7 @@ CREATE TABLE dokument_attr_egenskaber (
         offentlighedundtaget offentlighedundtagettype  NULL,
         titel text NOT NULL,
         dokumenttype text NOT NULL,
+        integrationsdata text  NULL,
     virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
     dokument_registrering_id bigint NOT NULL,
     CONSTRAINT dokument_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -7302,6 +7304,17 @@ ALTER TABLE dokument_attr_egenskaber
             ON dokument_attr_egenskaber
             USING btree
             (dokumenttype); 
+ 
+     
+        CREATE INDEX dokument_attr_egenskaber_pat_integrationsdata
+            ON dokument_attr_egenskaber
+            USING gin
+            (integrationsdata gin_trgm_ops);
+
+        CREATE INDEX dokument_attr_egenskaber_idx_integrationsdata
+            ON dokument_attr_egenskaber
+            USING btree
+            (integrationsdata); 
 
 
 
@@ -7826,7 +7839,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr DokumentEgenskaberAtt
     FOREACH element IN ARRAY inputArr
     LOOP
 
-      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.beskrivelse IS NULL AND element.brevdato IS NULL AND element.kassationskode IS NULL AND element.major IS NULL AND element.minor IS NULL AND element.offentlighedundtaget IS NULL AND element.titel IS NULL AND element.dokumenttype IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.beskrivelse IS NULL AND element.brevdato IS NULL AND element.kassationskode IS NULL AND element.major IS NULL AND element.minor IS NULL AND element.offentlighedundtaget IS NULL AND element.titel IS NULL AND element.dokumenttype IS NULL AND element.integrationsdata IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
 
     --  RAISE DEBUG 'Skipping element';
       ELSE
@@ -8360,7 +8373,7 @@ BEGIN
                     unnest(attrEgenskaber) a
                     JOIN unnest(attrEgenskaber) b ON (a.virkning).TimePeriod && (b.virkning).TimePeriod
                 GROUP BY
-                    a.brugervendtnoegle,a.beskrivelse,a.brevdato,a.kassationskode,a.major,a.minor,a.offentlighedundtaget,a.titel,a.dokumenttype,
+                    a.brugervendtnoegle,a.beskrivelse,a.brevdato,a.kassationskode,a.major,a.minor,a.offentlighedundtaget,a.titel,a.dokumenttype,a.integrationsdata,
                     a.virkning
                     
                     HAVING COUNT(*) > 1) THEN
@@ -8371,9 +8384,9 @@ BEGIN
         -- To avoid needless fragmentation we'll check for presence of
         -- null values in the fields - and if none are present, we'll skip
         -- the merging operations
-        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).beskrivelse IS NULL  OR  (attrEgenskaberObj).brevdato IS NULL  OR  (attrEgenskaberObj).kassationskode IS NULL  OR  (attrEgenskaberObj).major IS NULL  OR  (attrEgenskaberObj).minor IS NULL  OR  (attrEgenskaberObj).offentlighedundtaget IS NULL  OR  (attrEgenskaberObj).titel IS NULL  OR  (attrEgenskaberObj).dokumenttype IS NULL  THEN
+        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).beskrivelse IS NULL  OR  (attrEgenskaberObj).brevdato IS NULL  OR  (attrEgenskaberObj).kassationskode IS NULL  OR  (attrEgenskaberObj).major IS NULL  OR  (attrEgenskaberObj).minor IS NULL  OR  (attrEgenskaberObj).offentlighedundtaget IS NULL  OR  (attrEgenskaberObj).titel IS NULL  OR  (attrEgenskaberObj).dokumenttype IS NULL  OR  (attrEgenskaberObj).integrationsdata IS NULL  THEN
             
-            INSERT INTO dokument_attr_egenskaber ( brugervendtnoegle,beskrivelse,brevdato,kassationskode,major,minor,offentlighedundtaget,titel,dokumenttype, virkning, dokument_registrering_id)
+            INSERT INTO dokument_attr_egenskaber ( brugervendtnoegle,beskrivelse,brevdato,kassationskode,major,minor,offentlighedundtaget,titel,dokumenttype,integrationsdata, virkning, dokument_registrering_id)
                 SELECT
                     
                         
@@ -8427,6 +8440,10 @@ BEGIN
                         
                             coalesce(attrEgenskaberObj.dokumenttype, a.dokumenttype),
                     
+                        
+                        
+                            coalesce(attrEgenskaberObj.integrationsdata, a.integrationsdata),
+                    
                     ROW ((a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
                             (attrEgenskaberObj.virkning).AktoerRef,
                             (attrEgenskaberObj.virkning).AktoerTypeKode,
@@ -8442,7 +8459,7 @@ BEGIN
         -- that is NOT covered by any "merged" rows inserted above, generate
         -- and insert rows.
         
-            INSERT INTO dokument_attr_egenskaber ( brugervendtnoegle,beskrivelse,brevdato,kassationskode,major,minor,offentlighedundtaget,titel,dokumenttype, virkning, dokument_registrering_id)
+            INSERT INTO dokument_attr_egenskaber ( brugervendtnoegle,beskrivelse,brevdato,kassationskode,major,minor,offentlighedundtaget,titel,dokumenttype,integrationsdata, virkning, dokument_registrering_id)
                 SELECT
                     
                      attrEgenskaberObj.brugervendtnoegle,
@@ -8463,6 +8480,8 @@ BEGIN
                     
                      attrEgenskaberObj.dokumenttype,
                     
+                     attrEgenskaberObj.integrationsdata,
+                    
                     ROW (b.tz_range_leftover,
                         (attrEgenskaberObj.virkning).AktoerRef,
                         (attrEgenskaberObj.virkning).AktoerTypeKode,
@@ -8482,8 +8501,8 @@ BEGIN
             -- Insert attrEgenskaberObj raw (if there were no null-valued fields)
             
 
-            INSERT INTO dokument_attr_egenskaber ( brugervendtnoegle,beskrivelse,brevdato,kassationskode,major,minor,offentlighedundtaget,titel,dokumenttype, virkning, dokument_registrering_id)
-                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.beskrivelse,  attrEgenskaberObj.brevdato,  attrEgenskaberObj.kassationskode,  attrEgenskaberObj.major,  attrEgenskaberObj.minor,  attrEgenskaberObj.offentlighedundtaget,  attrEgenskaberObj.titel,  attrEgenskaberObj.dokumenttype, attrEgenskaberObj.virkning, new_dokument_registrering.id );
+            INSERT INTO dokument_attr_egenskaber ( brugervendtnoegle,beskrivelse,brevdato,kassationskode,major,minor,offentlighedundtaget,titel,dokumenttype,integrationsdata, virkning, dokument_registrering_id)
+                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.beskrivelse,  attrEgenskaberObj.brevdato,  attrEgenskaberObj.kassationskode,  attrEgenskaberObj.major,  attrEgenskaberObj.minor,  attrEgenskaberObj.offentlighedundtaget,  attrEgenskaberObj.titel,  attrEgenskaberObj.dokumenttype,  attrEgenskaberObj.integrationsdata, attrEgenskaberObj.virkning, new_dokument_registrering.id );
         END IF;
 
         END LOOP;
@@ -8499,7 +8518,7 @@ BEGIN
 -- Handle egenskaber of previous registration, taking overlapping
 -- virknings into consideration (using function subtract_tstzrange)
 
-    INSERT INTO dokument_attr_egenskaber ( brugervendtnoegle,beskrivelse,brevdato,kassationskode,major,minor,offentlighedundtaget,titel,dokumenttype, virkning, dokument_registrering_id)
+    INSERT INTO dokument_attr_egenskaber ( brugervendtnoegle,beskrivelse,brevdato,kassationskode,major,minor,offentlighedundtaget,titel,dokumenttype,integrationsdata, virkning, dokument_registrering_id)
     SELECT
         
         
@@ -8520,6 +8539,8 @@ BEGIN
             a.titel,
         
             a.dokumenttype,
+        
+            a.integrationsdata,
         
         ROW (c.tz_range_leftover,
             (a.virkning).AktoerRef,
@@ -9269,6 +9290,7 @@ IF dokument_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(do
       offentlighedundtaget,
       titel,
       dokumenttype,
+      integrationsdata,
       virkning,
       dokument_registrering_id
     )
@@ -9283,6 +9305,7 @@ IF dokument_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(do
       dokument_attr_egenskaber_obj.offentlighedundtaget,
       dokument_attr_egenskaber_obj.titel,
       dokument_attr_egenskaber_obj.dokumenttype,
+      dokument_attr_egenskaber_obj.integrationsdata,
       dokument_attr_egenskaber_obj.virkning,
       dokument_registrering_id
     ;
@@ -9610,6 +9633,7 @@ FROM
 					 		b.offentlighedundtaget,
 					 		b.titel,
 					 		b.dokumenttype,
+					 		b.integrationsdata,
 					   		b.virkning
                             
 							)::DokumentEgenskaberAttrType
@@ -9617,7 +9641,7 @@ FROM
 						NULL
 						END
                         
-						order by b.brugervendtnoegle,b.beskrivelse,b.brevdato,b.kassationskode,b.major,b.minor,b.offentlighedundtaget,b.titel,b.dokumenttype,b.virkning
+						order by b.brugervendtnoegle,b.beskrivelse,b.brevdato,b.kassationskode,b.major,b.minor,b.offentlighedundtaget,b.titel,b.dokumenttype,b.integrationsdata,b.virkning
                         
 					)) DokumentAttrEgenskaberArr
                     
@@ -9980,6 +10004,12 @@ ELSE
                     attrEgenskaberTypeObj.dokumenttype IS NULL
                     OR
                     a.dokumenttype ILIKE attrEgenskaberTypeObj.dokumenttype --case insensitive
+                )
+                AND
+                (
+                    attrEgenskaberTypeObj.integrationsdata IS NULL
+                    OR
+                    a.integrationsdata ILIKE attrEgenskaberTypeObj.integrationsdata --case insensitive
                 )
                 AND
                 
@@ -11706,6 +11736,12 @@ ELSE
 					attrEgenskaberTypeObj.dokumenttype IS NULL
 					OR 
 					a.dokumenttype = attrEgenskaberTypeObj.dokumenttype 
+				)
+				AND
+				(
+					attrEgenskaberTypeObj.integrationsdata IS NULL
+					OR 
+					a.integrationsdata = attrEgenskaberTypeObj.integrationsdata 
 				)
 				AND b.dokument_id = ANY (dokument_candidates)
 				AND (a.virkning).TimePeriod @> actual_virkning 

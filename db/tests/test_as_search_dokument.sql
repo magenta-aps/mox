@@ -380,6 +380,7 @@ doc1_dokumentEgenskab1 := ROW (
 ROW('doc_Offentlighedundtaget_AlternativTitel1','doc_Offentlighedundtaget_Hjemmel1') ::OffentlighedundtagetType, --offentlighedundtagettype,
 'doc_titel1',
 'doc_dokumenttype1',
+'integrationsdata1',
    doc1_virkEgenskaber1
 ) :: dokumentEgenskaberAttrType
 ;
@@ -394,6 +395,7 @@ doc1_dokumentEgenskab2 := ROW (
 ROW('doc_Offentlighedundtaget_AlternativTitel2','doc_Offentlighedundtaget_Hjemmel2') ::OffentlighedundtagetType, --offentlighedundtagettype,
 'doc_titel2',
 'doc_dokumenttype2',
+'integrationsdata2',
    doc1_virkEgenskaber2
 ) :: dokumentEgenskaberAttrType
 ;
@@ -711,6 +713,7 @@ search_result1 :=as_search_dokument(
 			,NULL --ROW('doc_Offentlighedundtaget_AlternativTitel1','doc_Offentlighedundtaget_Hjemmel1') ::OffentlighedundtagetType, --offentlighedundtagettype,
 			,NULL --'doc_titel1',
 			,NULL --'doc_dokumenttype1',
+			,NULL --'integrationsdata1',
 	   		,null
 		) :: dokumentEgenskaberAttrType
 		], --egenskaber
@@ -747,6 +750,7 @@ search_result2 :=as_search_dokument(
 			,NULL --ROW('doc_Offentlighedundtaget_AlternativTitel1','doc_Offentlighedundtaget_Hjemmel1') ::OffentlighedundtagetType, --offentlighedundtagettype,
 			,NULL --'doc_titel1',
 			,NULL --'doc_dokumenttype1',
+			,NULL --'integrationsdata1',
 	   		,null
 		) :: dokumentEgenskaberAttrType
 		], --egenskaber
@@ -780,6 +784,7 @@ search_result3 :=as_search_dokument(
 			,NULL --ROW('doc_Offentlighedundtaget_AlternativTitel1','doc_Offentlighedundtaget_Hjemmel1') ::OffentlighedundtagetType, --offentlighedundtagettype,
 			,NULL --'doc_titel1',
 			,NULL --'doc_dokumenttype1',
+			,NULL --'integrationsdata1',
 	   		,null
 		) :: dokumentEgenskaberAttrType
 		], --egenskaber
@@ -813,6 +818,7 @@ search_result4 :=as_search_dokument(
 			,NULL --ROW('doc_Offentlighedundtaget_AlternativTitel1','doc_Offentlighedundtaget_Hjemmel1') ::OffentlighedundtagetType, --offentlighedundtagettype,
 			,NULL --'doc_titel1',
 			,NULL --'doc_dokumenttype1',
+			,NULL --'integrationsdata1',
 	   		,null
 		) :: dokumentEgenskaberAttrType
 		], --egenskaber
@@ -847,6 +853,7 @@ search_result5 :=as_search_dokument(
 			,ROW('doc_Offentlighedundtaget_AlternativTitel3',null) --ROW('doc_Offentlighedundtaget_AlternativTitel1','doc_Offentlighedundtaget_Hjemmel1') ::OffentlighedundtagetType, --offentlighedundtagettype,
 			,NULL --'doc_titel1',
 			,NULL --'doc_dokumenttype1',
+			,NULL --'integrationsdata1',
 	   		,null
 		) :: dokumentEgenskaberAttrType
 		], --egenskaber
@@ -881,6 +888,7 @@ search_result6 :=as_search_dokument(
 			,ROW('doc_Offentlighedundtaget_AlternativTitel2',null) --ROW('doc_Offentlighedundtaget_AlternativTitel1','doc_Offentlighedundtaget_Hjemmel1') ::OffentlighedundtagetType, --offentlighedundtagettype,
 			,NULL --'doc_titel1',
 			,NULL --'doc_dokumenttype1',
+			,NULL --'integrationsdata1',
 	   		,null
 		) :: dokumentEgenskaberAttrType
 		], --egenskaber
@@ -914,6 +922,7 @@ search_result7 :=as_search_dokument(
 			,ROW('doc_Offentlighedundtaget_AlternativTitel2','doc_Offentlighedundtaget_Hjemmel1') --ROW('doc_Offentlighedundtaget_AlternativTitel1','doc_Offentlighedundtaget_Hjemmel1') ::OffentlighedundtagetType, --offentlighedundtagettype,
 			,NULL --'doc_titel1',
 			,NULL --'doc_dokumenttype1',
+			,NULL --'integrationsdata1',
 	   		,null
 		) :: dokumentEgenskaberAttrType
 		], --egenskaber
@@ -948,6 +957,7 @@ search_result8 :=as_search_dokument(
 			,ROW(null,'doc_Offentlighedundtaget_Hjemmel2') --ROW('doc_Offentlighedundtaget_AlternativTitel1','doc_Offentlighedundtaget_Hjemmel1') ::OffentlighedundtagetType, --offentlighedundtagettype,
 			,NULL --'doc_titel1',
 			,NULL --'doc_dokumenttype1',
+			,NULL --'integrationsdata1',
 	   		,null
 		) :: dokumentEgenskaberAttrType
 		], --egenskaber
@@ -983,6 +993,7 @@ search_result9 :=as_search_dokument(
 			,ROW('doc_Offentlighedundtaget_AlternativTitel1','doc_Offentlighedundtaget_Hjemmel1') ::OffentlighedundtagetType --offentlighedundtagettype,
 			,NULL --'doc_titel1',
 			,NULL --'doc_dokumenttype1',
+			,NULL --'integrationsdata1',
 	   		,null
 		) :: dokumentEgenskaberAttrType
 		], --egenskaber
@@ -1100,6 +1111,7 @@ doc2_dokumentEgenskab1 := ROW (
 ROW('doc2_Offentlighedundtaget_AlternativTitel1','doc2_Offentlighedundtaget_Hjemmel1') ::OffentlighedundtagetType, --offentlighedundtagettype,
 'doc2_titel1',
 'doc2_dokumenttype1',
+'integrationsdata1',
    doc2_virkEgenskaber1
 ) :: dokumentEgenskaberAttrType
 ;
@@ -1114,6 +1126,7 @@ doc2_dokumentEgenskab2 := ROW (
 ROW('doc2_Offentlighedundtaget_AlternativTitel2','doc2_Offentlighedundtaget_Hjemmel2') ::OffentlighedundtagetType, --offentlighedundtagettype,
 'doc2_titel2',
 'doc2_dokumenttype2',
+'integrationsdata2',
    doc2_virkEgenskaber2
 ) :: dokumentEgenskaberAttrType
 ;
@@ -1504,6 +1517,7 @@ doc3_dokumentEgenskab1 := ROW (
 ROW('doc_Offentlighedundtaget_AlternativTitel1','doc_Offentlighedundtaget_Hjemmel1') ::OffentlighedundtagetType, --offentlighedundtagettype,
 'doc_titel1',
 'doc_dokumenttype1',
+'integrationsdata1',
    doc3_virkEgenskaber1
 ) :: dokumentEgenskaberAttrType
 ;
@@ -1518,6 +1532,7 @@ doc3_dokumentEgenskab2 := ROW (
 ROW('doc_Offentlighedundtaget_AlternativTitel2','doc_Offentlighedundtaget_Hjemmel2') ::OffentlighedundtagetType, --offentlighedundtagettype,
 'doc_titel2',
 'doc_dokumenttype2',
+'integrationsdata2',
    doc3_virkEgenskaber2
 ) :: dokumentEgenskaberAttrType
 ;
@@ -1845,6 +1860,7 @@ search_reg11:= ROW (
 		,null --ROW('doc2_Offentlighedundtaget_AlternativTitel1','doc2_Offentlighedundtaget_Hjemmel1') ::OffentlighedundtagetType, --offentlighedundtagettype,
 		,null --'doc2_titel1',
 		,null --'doc2_dokumenttype1',
+		,null --'integrationsdata1',
 		,null--   doc2_virkEgenskaber1
 	) :: dokumentEgenskaberAttrType
 	]::dokumentEgenskaberAttrType[]
@@ -1886,6 +1902,7 @@ search_reg12:= ROW (
 		,null --ROW('doc2_Offentlighedundtaget_AlternativTitel1','doc2_Offentlighedundtaget_Hjemmel1') ::OffentlighedundtagetType, --offentlighedundtagettype,
 		,null --'doc2_titel1',
 		,null --'doc2_dokumenttype1',
+		,null --'integrationsdata1',
 		,null--   doc2_virkEgenskaber1
 	) :: dokumentEgenskaberAttrType
 	]::dokumentEgenskaberAttrType[]
