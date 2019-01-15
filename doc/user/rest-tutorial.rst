@@ -1,14 +1,20 @@
-Getting to know LoRa's REST API
-===============================
+.. _api-tutorial:
+
+============
+API tutorial
+============
 
 The following small exercises can be used as an inspiration to getting to know
-LoRa's REST API. Read :ref:`api-overview` before moving on. Also, have a look at
-the LoRa documentation found in Magenta’s Alfresco system.
+LoRa's REST API. :ref:`api-overview` should contain all the information needed, if not look in :ref:`api-reference`.
 
-.. note::
+.. warning::
 
-   The exact end-date for the dateranges are not important, it is however
-   important that they are in the future when you do this tutorial.
+   The exact end-date for the date ranges are not important, it is however
+   important that they are in the *future* when you do this tutorial. If they
+   are not the :ref:`ReadOperation`, :ref:`ListOperation` and
+   :ref:`SearchOperation` will not return the object unless the
+   ``virkning*``-parameters is set.
+
 
 1. Create an ``organisation`` called e.g. “Magenta” valid from 2017-01-01
    (included) to 2025-12-31 (excluded).
