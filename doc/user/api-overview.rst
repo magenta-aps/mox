@@ -222,7 +222,8 @@ information with a :ref:`Valid time` containing the current system time.
 To get a information which was valid at another time you can add
 ``&virkningFra=<datetime>&virkningTil=<datetime>`` Where ``<datetime>`` is a
 date/time value. Date and time input is accepted in almost any reasonable
-format, including ISO 8601.
+format, including ISO 8601. When reading ``virkning``-periods will always
+default to "lower bound included, upper bound not included".
 
 Alternatively ``&virkningstid=<datetime>`` can be used. The results returned
 will be those valid at date/time value ``<datetime>,`` giving a 'snapshot' of
