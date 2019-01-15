@@ -19,6 +19,7 @@
 #
 import os
 import sys
+from unittest.mock import MagicMock
 sys.path.insert(0, os.path.abspath('../oio_rest'))
 
 
@@ -85,6 +86,21 @@ pygments_style = 'sphinx'
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
 
+MOCK_MODULES = [
+  'dateutil',
+  'jsonschema',
+  'flask_saml_sso',
+  'onelogin',
+  'onelogin.saml2',
+  'onelogin.saml2.utils',
+  'onelogin.saml2.response',
+  'onelogin.saml2.settings',
+  'defusedxml',
+  'defusedxml.lxml',
+  'pika',
+  'lxml',
+]
+sys.modules.update((mod_name, MagicMock()) for mod_name in MOCK_MODULES)
 
 # -- Options for HTML output ----------------------------------------------
 
