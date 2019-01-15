@@ -353,7 +353,8 @@ DATABASE_STRUCTURE = {
         "attributter": {
             "egenskaber": [
                 "brugervendtnoegle", "aktivitetnavn", "beskrivelse",
-                "starttidspunkt", "sluttidspunkt", "tidsforbrug", "formaal"
+                "starttidspunkt", "sluttidspunkt", "tidsforbrug", "formaal",
+                "integrationsdata",
             ],
         },
         "attributter_metadata": {

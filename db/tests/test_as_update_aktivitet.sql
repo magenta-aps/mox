@@ -281,7 +281,8 @@ aktivitetEgenskab := ROW (
  '2017-02-25 17:00'::timestamptz,  --'starttidspunkt_aktivitet_1' --text
 '2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
   INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
- 'aktivitet_1_formaal'
+ 'aktivitet_1_formaal',
+ 'integrationsdata_1'
 ,virkEgenskaber
 ) :: aktivitetEgenskaberAttrType
 ;
@@ -293,7 +294,8 @@ aktivitetEgenskab2 := ROW (
  '2016-04-20 10:00'::timestamptz,  --'starttidspunkt_aktivitet_1' --text
 '2017-02-27 12:00'::timestamptz, -- sluttidspunkt,
   INTERVAL '0000-00 01 04:00:01.0', --tidsforbrug
- 'aktivitet_2_formaal'
+ 'aktivitet_2_formaal',
+ 'integrationsdata_2'
 ,virkEgenskaber2
 ) :: aktivitetEgenskaberAttrType
 ;
@@ -417,7 +419,8 @@ aktivitetEgenskab2B := ROW (
  ''::text,  --'starttidspunkt_aktivitet_1' --text
 null, --'2017-02-27 12:00'::timestamptz, -- sluttidspunkt,
  ''::text,-- INTERVAL '0000-00 01 04:00:01.0', --tidsforbrug
- null--'aktivitet_2_formaal'
+ null,--'aktivitet_2_formaal'
+ null--'integrationsdata_2'
 ,virkEgenskaber2
 ) :: aktivitetEgenskaberAttrType
 ;
@@ -478,7 +481,8 @@ expected_aktivitet1:=ROW(
 				Row(null,null)::ClearableTimestamptz,  --was cleared
 				'2017-02-27 12:00'::timestamptz, -- sluttidspunkt,
 				Row(null,null)::ClearableInterval, --was cleared
-				'aktivitet_2_formaal'
+				'aktivitet_2_formaal',
+				'integrationsdata_2'
 				,virkEgenskaber2
 				) :: aktivitetEgenskaberAttrType
 			]::aktivitetEgenskaberAttrType[]
