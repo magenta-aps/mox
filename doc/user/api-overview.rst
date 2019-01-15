@@ -570,3 +570,42 @@ and/or ``registreretFra`` indicate a period where it did exist.
 ----------------
 Import operation
 ----------------
+
+An import is done with a :http:method:`PUT`-request.
+
+The data must contain a complete object in exactly the same format as for the
+:ref:`CreateOperation`, but must be :http:method:`PUT` to the objects URL as
+given by its UUID.
+
+An example:
+
+.. code-block:: http
+
+    PUT /organisation/organisation/1b1e2de1-6d95-4200-9b60-f85e70cc37cf HTTP/1.1
+    Content-Type: application/json
+
+    {
+        "attributter": {
+            "organisationegenskaber": [
+                {
+                    "brugervendtnoegle": "magenta-aps",
+                    "organisationsnavn": "Magenta ApS",
+                    "virkning": {
+                        "from": "2017-01-01",
+                        "to": "2019-03-14"
+                    }
+                }
+            ]
+        },
+        "tilstande": {
+            "organisationgyldighed": [
+                {
+                    "gyldighed": "Aktiv",
+                    "virkning": {
+                        "from": "2017-01-01",
+                        "to": "2019-03-14"
+                    }
+                }
+            ]
+        }
+    }

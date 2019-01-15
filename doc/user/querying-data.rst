@@ -72,29 +72,6 @@ This token will, in the current application, be valid for five minutes.
 Different time spans or authentication schemes should be considered.
 
 
-
-
-Import
-------
-
-As in the case with update, an import is done with a PUT request. This
-basically means that the distinction between an import and an update is
-that in the case of an *import*, no object with the given UUID exists in
-the system. One might say that an import is an update of an object which
-does not (yet) exist in this system.
-
-The data must contain a complete object in exactly the same format as
-for the create operation, but must be PUT to the objects URL as given by
-its UUID.
-
-An example::
-
-    curl -k -sH "Content-Type: application/json" \
-      -H "Authorization: $AUTH_TOKEN" \
-      -X PUT -d "JSON DATA" \
-      /klassifikation/facet/1b1e2de1-6d95-4200-9b60-f85e70cc37cf
-
-
 Appendix: Self-documentation
 ++++++++++++++++++++++++++++
 
