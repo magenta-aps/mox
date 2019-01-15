@@ -512,6 +512,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                                 'brugervendtnoegle': {'type': 'string'},
                                 'brugernavn': {'type': 'string'},
                                 'brugertype': {'type': 'string'},
+                                'integrationsdata': {'type': 'string'},
                                 'virkning': {'$ref': '#/definitions/virkning'}
                             },
                             'required': ['brugervendtnoegle', 'virkning'],
@@ -542,6 +543,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                                 'titel': {'type': 'string'},
                                 'retskilde': {'type': 'string'},
                                 'aendringsnotat': {'type': 'string'},
+                                'integrationsdata': {'type': 'string'},
                                 'soegeord': {
                                     'type': 'array',
                                     'items': {

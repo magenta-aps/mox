@@ -80,7 +80,8 @@ DATABASE_STRUCTURE = {
     "bruger": {
         "attributter": {
             "egenskaber": [
-                "brugervendtnoegle", "brugernavn", "brugertype"
+                "brugervendtnoegle", "brugernavn", "brugertype",
+                "integrationsdata",
             ],
         },
         "attributter_metadata": {
@@ -89,7 +90,7 @@ DATABASE_STRUCTURE = {
             }
         },
         "tilstande": {
-            "gyldighed": ["Aktiv", "Inaktiv"]
+           "gyldighed": ["Aktiv", "Inaktiv"]
         },
         "relationer_nul_til_en": ["tilhoerer"],
         "relationer_nul_til_mange": [
