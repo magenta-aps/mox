@@ -15,9 +15,9 @@ Content
    user/overview.rst
    Middle-level overview (in danish) <user/praesentation.rst>
    user/setup-dev-env.rst
-   user/querying-data.rst
+   user/api-overview.rst
+   user/api-advanced.rst
    user/rest-tutorial.rst
-   user/api-notes.rst
    user/log-haendelse.rst
    user/agents.rst
    user/auth.rst
