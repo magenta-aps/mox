@@ -456,7 +456,8 @@ class TestDBHelpers(TestCase):
                 "tilknyttedeorganisationer",
                 "tilknyttedeitsystemer",
                 "tilknyttedeinteressefaellesskaber",
-                "tilknyttedepersoner"
+                "tilknyttedepersoner",
+                "tilknyttedefunktioner"
             ],
             "organisationenhed": [
                 "branche",

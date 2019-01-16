@@ -225,7 +225,8 @@ DATABASE_STRUCTURE = {
         "relationer_nul_til_mange": [
             "adresser", "opgaver", "tilknyttedebrugere", "tilknyttedeenheder",
             "tilknyttedeorganisationer", "tilknyttedeitsystemer",
-            "tilknyttedeinteressefaellesskaber", "tilknyttedepersoner"
+            "tilknyttedeinteressefaellesskaber", "tilknyttedepersoner",
+            "tilknyttedefunktioner",
         ]
     },
 
