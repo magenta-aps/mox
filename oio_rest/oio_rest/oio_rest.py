@@ -266,10 +266,10 @@ class OIORestObject(object):
         With any the of ``uuid``, ``virking*`` and ``registeret`` parameters, it is a
         :ref:`ListOperation` and will return one or more whole JSON-objects. Given any
         other parameters the operation is a :ref:`SearchOperation` and will only return
-        a list a of UUIDs to the objects.
+        a list of UUIDs to the objects.
 
-        Default to return the object(s) as it is currently seen, but can optionally be
-        constrained by ``virking*`` :ref:`valid time<Valid time>` and/or
+        Default is to return the object(s) as it is currently seen, but can optionally
+        be constrained by ``virking*`` :ref:`valid time<Valid time>` and/or
         ``registrering*`` :ref:`transaction time<transaction time>` to give an older
         view.
 
@@ -415,7 +415,7 @@ class OIORestObject(object):
                      "ccfd6874-09f5-4dec-8d39-781f614bb8a7"
                  ]]}
 
-        :query uuid uuid: The UUID of the object to recieve. Allowed multiple times in :ref:`ListOperation`. Allowed once in :ref:`SearchOperation`.
+        :query uuid uuid: The UUID of the object to receive. Allowed multiple times in :ref:`ListOperation`. Allowed once in :ref:`SearchOperation`.
 
         :query string brugervendtnoegle / bvn: Match text in the ``brugervendtnoegle``-field. Not allowed in List.
         :query string vilkaarligattr: Match text values of *any* ``attributter``-field. Not allowed in List.
@@ -441,16 +441,16 @@ class OIORestObject(object):
         PostgreSQL
         <https://www.postgresql.org/docs/9.5/datatype-datetime.html#DATATYPE-DATETIME-INPUT>`_.
 
-        All *string* parameters match case insensitive and support the wildcard
+        All *string* parameters match case insensitive. They support the wildcard
         operators ``_`` (underscore) to match a single character and ``%`` (percent
         sign) to match zero or more characters. The match is made with `ILIKE from
         PostgresSQL
         <https://www.postgresql.org/docs/9.5/functions-matching.html#FUNCTIONS-LIKE>`_.
 
         In addition to the above general query parameters, each object also have
-        specialiced parameter based on its field. The endpoints
-        ``/<class>/<object>/fields`` lists the fields which also can be used for
-        parameters for a :ref:`SearchOperation`.
+        specialized parameters based on its field. The endpoints
+        ``/<class>/<object>/fields`` lists the fields which can be used for parameters
+        for a :ref:`SearchOperation`.
 
         :resheader Content-Type: ``application/json``
 
@@ -527,8 +527,8 @@ class OIORestObject(object):
     @requires_auth
     def get_object(cls, uuid):
         """
-        A :ref:`ReadOperation`. Return the whole object as a JSON-object. Default to return
-        the object as it is currently seen, but can optionally be constrained by
+        A :ref:`ReadOperation`. Return the whole object as a JSON-object. Default is to
+        return the object as it is currently seen, but can optionally be constrained by
         ``virking*`` :ref:`valid time<Valid time>` and/or ``registrering*``
         :ref:`transaction time<transaction time>` to give an older view.
 
