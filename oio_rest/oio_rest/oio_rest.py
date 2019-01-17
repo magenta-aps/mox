@@ -333,10 +333,12 @@ class OIORestObject(object):
         """
         A :ref:`ReadOperation`. Return the whole object as a JSON-object. Default to return
         the object as it is currently seen, but can optionally be constrained by
-        ``virking*`` valid time and/or ``registrering*`` transaction time to give an
-        older view.
+        ``virking*`` :ref:`valid time<Valid time>` and/or ``registrering*``
+        :ref:`transaction time<transaction time>` to give an older view.
 
-        **Example request**:
+        .. :quickref: :ref:`ReadOperation`
+
+        **Example request** for :http:get:`/organisation/organisation/(regex:uuid)`:
 
         .. code-block:: http
 
@@ -344,7 +346,7 @@ class OIORestObject(object):
             Accept: */*
             Host: example.com
 
-        **Example response**:
+        **Example response** for :http:get:`/organisation/organisation/(regex:uuid)`:
 
         .. code-block:: http
 
@@ -388,18 +390,25 @@ class OIORestObject(object):
 
 
 
-        :query registreretFra: transaction time from timestamp
-        :query registreretTil: transaction time to timestamp
-        :query registreringstid: transaction time 'snapshot' timestamp
-        :query virkningFra: valid time from timestamp
-        :query virkningTil: valid time to timestamp
-        :query virkningstid: valid time 'snapshot' timestamp
+        :query datetime registreretFra: :ref:`Transaction time` 'from' timestamp.
+        :query datetime registreretTil: Transaction time 'to' timestamp.
+        :query datetime registreringstid: Transaction time 'snapshot' timestamp.
+        :query datetime virkningFra: :ref:`Valid time` 'from' timestamp.
+        :query datetime virkningTil: Valid time 'to' timestamp.
+        :query datetime virkningstid: Valid time 'snapshot' timestamp.
+
+        All the ``registeret*`` and ``virkning*`` take a datetime. Input is accepted in
+        almost any reasonable format, including ISO 8601, SQL-compatible, traditional
+        POSTGRES, and others. The accepted values are the `Date/Time Input from
+        PostgreSQL
+        <https://www.postgresql.org/docs/9.5/datatype-datetime.html#DATATYPE-DATETIME-INPUT>`_.
 
         :resheader Content-Type: ``application/json``
 
-        :statuscode 200: no error
-        :statuscode 404: No object of a given class with that uuid.
-        :statuscode 410: The object has been :ref:`Deleted <DeleteOperation>`.
+        :statuscode 200: No error.
+        :statuscode 400: The request is malformed.
+        :statuscode 404: No object of a given class with that UUID.
+        :statuscode 410: The object has been :ref:`deleted <DeleteOperation>`.
 
         """
         cls.verify_args(temporality=True)
