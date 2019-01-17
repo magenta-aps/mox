@@ -393,6 +393,8 @@ which may later be retrieved with a list or read operation - e.g:
     }
 
 
+.. _PagedSearchOperation:
+
 Paged search
 ------------
 
