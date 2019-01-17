@@ -30,9 +30,17 @@ Self-documentation
    structure of the input JSON as it uses the concept of *"overrides"*.
    This should also be fixed.
 
+Some ``Organisation`` datatypes
+===============================
 
-Basic concepts
-==============
+The database contains a large number of datatypes. To illustrate the basic
+operations of the API we introduce a subset here. Specifically a subset of
+``Organisation``.
+
+The complete specifications for all the fields to organisation can be found in
+reference document: `Specifikation af serviceinterface for Organisation`_.
+
+.. _Specifikation af serviceinterface for Organisation: https://www.digitaliser.dk/resource/1569113/artefact/Specifikationafserviceinterfacefororganisation-OIO-Godkendt%5bvs.1.1%5d.pdf?artefact=true&PID=1569586
 
 .. note::
    As an example, the REST interface for Organisation is specified
@@ -49,20 +57,7 @@ Basic concepts
    As regards the parameter ``-version``, we have deferred support for it until
    we actually have more than one version of the protocol to support.
 
---------------------------
-Overview of some datatypes
---------------------------
-
-The database contains a large number of datatypes. To illustrate the basic
-operations of the API we introduce a subset here. Specifically a subset of
-``Organisation``.
-
-The complete specifications for all the fields to organisation can be found in
-reference document: `Specifikation af serviceinterface for Organisation`_.
-
-.. _Specifikation af serviceinterface for Organisation: https://www.digitaliser.dk/resource/1569113/artefact/Specifikationafserviceinterfacefororganisation-OIO-Godkendt%5bvs.1.1%5d.pdf?artefact=true&PID=1569586
-
-
+----------------
 ``organisation``
 ----------------
 
@@ -120,7 +115,7 @@ The fields used in the example ``organisation`` are the following:
     The period when the above ``gyldighed`` is valid. See :ref:`Valid time`.
     Required.
 
-
+---------------------
 ``organisationenhed``
 ---------------------
 
@@ -193,15 +188,23 @@ The fields used in the example ``organisationenhed`` are the following:
   ``organisationenhed``.)
 
 
+
+Bitemporality
+=============
+
+The database is a `Bitemporal Database
+<https://en.wikipedia.org/wiki/Temporal_database>`_ with :ref:`valid time<Valid
+time>` and :ref:`transaction time<transaction time>`.
+
 .. _Valid time:
 
 ----------
 Valid time
 ----------
 
-The database is a `Bitemporal Database
-<https://en.wikipedia.org/wiki/Temporal_database>`_. All attributes and
-relations have a valid time period associated as ``virkning``.
+All attributes and relations have a valid time period associated as
+``virkning``. It is the time period during which the fact is true in the real
+world.
 
 
 .. code-block:: json
@@ -220,21 +223,34 @@ relations have a valid time period associated as ``virkning``.
 The fields used in the example are the following:
 
 ``from``
-    The time when this facts starts to be true. Date and time input is
-    accepted in almost any reasonable format, including ISO 8601. Required.
+    The time when this facts starts to be true in the real world. Date and time
+    input is accepted in almost any reasonable format, including ISO 8601.
+    Required.
 
 ``from_included``
     Whether the ``from`` timestamp is closed or open. Default ``true``.
 
 ``to``
-    The time when this facts stop to be true. Date and time input is accepted
-    in almost any reasonable format, including ISO 8601. Required.
+    The time when this facts stop to be true in the real world. Date and time
+    input is accepted in almost any reasonable format, including ISO 8601.
+    Required.
 
 ``to_included``
     Whether the ``to`` timestamp is closed or open. Default ``false``.
 
 
-All transactions also have a transaction time as ``registreret``.
+
+.. _transaction time:
+
+----------------
+Transaction time
+----------------
+
+All transactions also have a transaction time as ``registreret``. This records
+the the time period during which a given fact is stored in the database. With
+the query parameters to a :ref:`Read <ReadOperation>`, :ref:`List
+<ListOperation>` or :ref:`SearchOperation` it can give you a view of the state
+of the database at give time in the past.
 
 
 Common operations
