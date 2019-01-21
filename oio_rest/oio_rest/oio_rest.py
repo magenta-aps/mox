@@ -976,6 +976,15 @@ class OIORestObject(object):
 
     @classmethod
     def get_fields(cls):
+        """Return a list of all fields a given object have.
+
+         Part of the self-documentation of the API.
+
+        .. :quickref: Lists all fields an object have.
+
+        :statuscode 200: No error.
+
+        """
         cls.verify_args()
 
         """Set up API with correct database access functions."""
