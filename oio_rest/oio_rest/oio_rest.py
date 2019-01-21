@@ -996,6 +996,15 @@ class OIORestObject(object):
 
     @classmethod
     def get_schema(cls):
+        """Returns the JSON schema of an object.
+
+        Part of the self-documentation of the API.
+
+        .. :quickref: Give the schema of an object.
+
+        :statuscode 200: No error.
+
+        """
         cls.verify_args()
         return jsonify(validate.SCHEMA[cls.__name__.lower()])
 
