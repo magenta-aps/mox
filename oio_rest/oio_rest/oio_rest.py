@@ -530,7 +530,7 @@ class OIORestObject(object):
         :resheader Content-Type: ``application/json``
 
         :statuscode 200: No error.
-        :statuscode 400: The request is malformed.
+        :statuscode 400: Malformed JSON or other bad request.
         :statuscode 404: No object of a given class with that UUID.
         :statuscode 410: The object has been :ref:`deleted <DeleteOperation>`.
 
@@ -677,7 +677,7 @@ class OIORestObject(object):
         :resheader Content-Type: ``application/json``
 
         :statuscode 200: No error.
-        :statuscode 400: The request is malformed.
+        :statuscode 400: Malformed JSON or other bad request.
         :statuscode 404: No object of a given class with that UUID.
         :statuscode 410: The object has been :ref:`deleted <DeleteOperation>`.
 
@@ -893,7 +893,7 @@ class OIORestObject(object):
 
         :statuscode 200: Object was updated or passivated.
         :statuscode 400: Malformed JSON or other bad request.
-        :statuscode 404: The object was not found.
+        :statuscode 404: No object of a given class with that UUID.
         """
 
         # If the object doesn't exist, we can't patch it.
