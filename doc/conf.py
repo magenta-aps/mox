@@ -86,6 +86,8 @@ pygments_style = 'sphinx'
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
 
+# We mock the following modules when building the documentation. They are used in
+# oio_rest. Some of them require C libraries that are not installed on readthedocs.
 MOCK_MODULES = [
   'dateutil',
   'jsonschema',
