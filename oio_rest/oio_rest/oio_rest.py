@@ -60,6 +60,11 @@ TEMPORALITY_PARAMS = frozenset({
 '''
 NO_PARAMS = frozenset()
 
+'''Aliases that apply to all operations.'''
+PARAM_ALIASES = {
+    'bvn': 'brugervendtnoegle',
+}
+
 
 def j(t):
     return jsonify(output=t)
@@ -128,16 +133,12 @@ class ArgumentDict(ImmutableOrderedMultiDict):
     arguments.
     '''
 
-    PARAM_ALIASES = {
-        'bvn': 'brugervendtnoegle',
-    }
-
     @classmethod
     def _process_item(cls, item):
         (key, value) = item
         key = to_lower_param(key)
 
-        return (cls.PARAM_ALIASES.get(key, key), value)
+        return (PARAM_ALIASES.get(key, key), value)
 
     def __init__(self, mapping):
         # this code assumes that a) we always get a mapping and b)
