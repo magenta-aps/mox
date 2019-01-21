@@ -719,20 +719,18 @@ class OIORestObject(object):
     @classmethod
     @requires_auth
     def put_object(cls, uuid):
-        """A :ref:`ImportOperation` or :ref:`OverwriteOperation` that creates or overwrites a
-        object from the JSON payload. It returns the UUID for the object.
+        """A :ref:`ImportOperation` that creates or overwrites a object from the JSON payload.
+        It returns the UUID for the object.
 
         If there a no object with the UUID or the object with that UUID have been
-        :ref:`deleted <DeleteOperation>` or :ref:`passivated <PassivateOperation>`, is
-        is an :ref:`ImportOperation`.
+        :ref:`deleted <DeleteOperation>` or :ref:`passivated <PassivateOperation>`, it
+        creates a new object at the specified UUID. It sets ``livscykluskode:
+        "Importeret"``.
 
-        If a object with the UUID exist it is an :ref:`OverwriteOperation`.
+        If a object with the UUID exist it completely overwrite the object. Including
+        all ``virkning``-periods. It sets ``livscykluskode: "Rettet"``.
 
-        The only difference between the two is that an :ref:`ImportOperation` will set
-        ``livscykluskode: "Importeret"`` and an :ref:`OverwriteOperation` will set
-        ``livscykluskode: "Rettet"``.
-
-        .. :quickref: :ref:`OverwriteOperation` or :ref:`ImportOperation`
+        .. :quickref: :ref:`ImportOperation`
 
         **Example request** for :http:put:`/organisation/organisationenhed/(regex:uuid)`:
 

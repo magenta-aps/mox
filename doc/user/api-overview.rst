@@ -584,10 +584,11 @@ An example:
         }
     }
 
-Alternatively, use a :ref:`OverwriteOperation` to replace the entire object,
-including all ``Virkning``-periods.
+Alternatively, use a :ref:`ImportOperation` to replace the entire object,
+including all ``virkning``-periods.
 
-For the logic of merging see :ref:`API-merging`. To issue a patch that delete part of an object see :ref:`DeleteAttr`.
+For the logic of merging see :ref:`API-merging`. To issue a patch that delete
+part of an object see :ref:`DeleteAttr`.
 
 Known as a ``Ret`` operation in `the specification <Generelle egenskaber for
 services på sags- og dokumentområdet>`_.
@@ -650,21 +651,27 @@ Known as a ``Slet`` operation in `the specification <Generelle egenskaber for
 services på sags- og dokumentområdet>`_.
 
 
-.. _OverwriteOperation:
+.. _ImportOperation:
 
--------------------
-Overwrite operation
--------------------
+----------------
+Import operation
+----------------
 
-A overwrite operation completely overwrites an object including all
-``virking``-periods. This is useful when you want to change the
-``virking``-periods.
+A import operation creates a object similar to a :ref:`CreateOperation`, but you
+specify at which UUID. If the UUID of the object does not exist or the object
+with that UUID have been :ref:`deleted <DeleteOperation>` or :ref:`passivated
+<PassivateOperation>`, a new object is created with the property
+``livscykluskode: "Importeret"``.
+
+
+
+If a object the UUID `does` exists the import operation completely overwrites
+the object and set the property ``livscykluskode: "Rettet"``. This is useful
+when you want to change the ``virking``-periods.
 
 The data must contain a complete object in exactly the same format as for the
 :ref:`CreateOperation`, but must be :http:method:`PUT` to the objects URL as
 given by its UUID.
-
-The property ``livscykluskode: "Rettet"`` it set on the object.
 
 An example:
 
@@ -699,17 +706,6 @@ An example:
         }
     }
 
-
-.. _ImportOperation:
-
-----------------
-Import operation
-----------------
-
-An import is nearly identical to a :ref:`OverwriteOperation`. If the UUID of the
-object does not exist or the object with that UUID have been :ref:`deleted
-<DeleteOperation>` or :ref:`passivated <PassivateOperation>`, a new object is
-created with the property ``livscykluskode: "Importeret"``.
 
 Known as a ``Importer`` operation in `the specification <Generelle egenskaber for
 services på sags- og dokumentområdet>`_.
