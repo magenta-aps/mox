@@ -6,7 +6,7 @@ API overview
 
 
 This page will give you a wide but incomplete overview of the REST API. Refer to
-:ref:`APIreference` for a complete reference.
+:ref:`api-reference` for a complete reference.
 
 
 Self-documentation
