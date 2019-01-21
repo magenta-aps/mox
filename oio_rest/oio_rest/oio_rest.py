@@ -133,8 +133,8 @@ class ArgumentDict(ImmutableOrderedMultiDict):
     }
 
     @classmethod
-    def _process_item(cls, xxx_todo_changeme):
-        (key, value) = xxx_todo_changeme
+    def _process_item(cls, item):
+        (key, value) = item
         key = to_lower_param(key)
 
         return (cls.PARAM_ALIASES.get(key, key), value)
