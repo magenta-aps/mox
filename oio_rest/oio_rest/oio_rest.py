@@ -841,7 +841,53 @@ class OIORestObject(object):
     @classmethod
     @requires_auth
     def patch_object(cls, uuid):
-        """UPDATE or PASSIVIZE this object."""
+        """An :ref:`UpdateOperation` or :ref:`PassivateOperation`. Apply the JSON payload as a
+        change to the object. Return the UUID of the object.
+
+        If ``livscyklus: "Passiv"`` is set it is a :ref:`PassivateOperation`. The object
+        will be passivated and afterwards not show up in searches and listings.
+
+        A lot of examples of how the changes are applied are described on
+        :ref:`AdvUpdateOperation`.
+
+        .. :quickref: :ref:`UpdateOperation` or :ref:`PassivateOperation`
+
+        **Example request** for :http:patch:`/organisation/organisationenhed/(regex:uuid)`:
+
+        .. code-block:: http
+
+            PATCH /organisation/organisationenhed/5fc97a7c-70df-4e97-82eb-64dc0a0f5746 HTTP/1.1
+            Content-Type: application/json
+            Host: example.com
+
+            {"relationer": {
+                 "adresser": [{
+                         "urn": "dawa:0a3f50c4-379f-32b8-e044-0003ba298018",
+                         "virkning": {
+                             "from": "2018-01-01",
+                             "to": "2019-09-01"
+                         }}]}}
+
+        **Example response** for :http:patch:`/organisation/organisationenhed/(regex:uuid)`:
+
+        .. code-block:: http
+
+            HTTP/1.0 200 OK
+            Content-Length: 48
+            Content-Type: application/json
+            Date: Mon, 21 Jan 2019 12:40:36 GMT
+            Server: Werkzeug/0.14.1 Python/3.5.2
+
+            {
+                "uuid": "5fc97a7c-70df-4e97-82eb-64dc0a0f5746"
+            }
+
+        :reqheader Content-Type: ``application/json``
+
+        :statuscode 200: Object was updated or passivated.
+        :statuscode 400: Malformed JSON or other bad request.
+        :statuscode 404: The object was not found.
+        """
 
         # If the object doesn't exist, we can't patch it.
         if not db.object_exists(cls.__name__, uuid):

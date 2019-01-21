@@ -5,10 +5,14 @@ Advanced API topics
 These pages contains API topics to specialized to be in the :ref:`api-overview`.
 
 
+
+.. _AdvUpdateOperation:
+
 Updating objects
 ================
 
-The logic related to updating objects are described here.
+The logic related to :ref:`updating objects <UpdateOperation>` are described
+here.
 
 .. toctree::
    :maxdepth: 1
