@@ -149,6 +149,26 @@ class Tests(util.TestCase):
 
         self.assertQueryResponse('/aktivitet/aktivitet', expected, uuid=objid)
 
+        self.assertQueryResponse('/aktivitet/aktivitet',
+                                 [objid],
+                                 bvn='%')
+
+        self.assertQueryResponse('/aktivitet/aktivitet',
+                                 [objid],
+                                 ansvarlig='abcdeabd-c1b0-48c2-aef7-74fea841adae')
+
+        self.assertQueryResponse('/aktivitet/aktivitet',
+                                 [objid],
+                                 brugerref='42c432e8-9c4a-11e6-9f62-873cf34a735f')
+
+        self.assertQueryResponse('/aktivitet/aktivitet',
+                                 [],
+                                 ansvarlig='00000000-0000-0000-0000-000000000000')
+
+        self.assertQueryResponse('/aktivitet/aktivitet',
+                                 [],
+                                 brugerref='00000000-0000-0000-0000-000000000000')
+
     def test_edit(self):
         objid = self.load_fixture('/aktivitet/aktivitet',
                                   'aktivitet_opret.json')
