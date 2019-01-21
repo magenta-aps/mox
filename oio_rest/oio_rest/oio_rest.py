@@ -229,9 +229,10 @@ class OIORestObject(object):
         a newly generated UUID for the created object.
 
         The data can be supplied directly in the request if the header
-        :http:header:`Content-Type`: ``application/json`` is set. Alternatively the the
-        data can be supplied as form-data in the ``json``-field with the header
-        :http:header:`Content-Type`: ``multipart/form-data``.
+        :http:header:`Content-Type`: ``application/json`` is set.
+
+        Alternatively the the data can be supplied as form-data in the ``json``-field
+        with the header :http:header:`Content-Type`: ``multipart/form-data``.
 
         .. :quickref: :ref:`CreateOperation`
 
@@ -286,8 +287,6 @@ class OIORestObject(object):
             {
                 "uuid": "14b2abd4-ae3c-4a0f-b530-7a93443d729d"
             }
-
-        :query json json: The content for the new object. Requires :http:header:`Content-Type`: ``multipart/form-data``.
 
         :reqheader Content-Type: ``application/json`` or ``multipart/form-data``
 
