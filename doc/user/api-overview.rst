@@ -563,8 +563,8 @@ An example:
         }
     }
 
-Alternatively, use a :http:method:`PUT` to replace the entire object, including
-all ``Virkning``-periods.
+Alternatively, use a :ref:`OverwriteOperation` to replace the entire object,
+including all ``Virkning``-periods.
 
 For the logic of merging see :ref:`API-merging`. To issue a patch that delete part of an object see :ref:`DeleteAttr`.
 
@@ -620,17 +620,22 @@ After an object is deleted, it cannot be retrieved by a :ref:`ReadOperation`,
 and/or ``registreretFra`` indicate a period where it did exist.
 
 
-.. _ImportOperation:
 
-----------------
-Import operation
-----------------
+.. _OverwriteOperation:
 
-An import is done with a :http:method:`PUT`-request.
+-------------------
+Overwrite operation
+-------------------
+
+A overwrite operation completely overwrites an object including all
+``virking``-periods. This is useful when you want to change the
+``virking``-periods.
 
 The data must contain a complete object in exactly the same format as for the
 :ref:`CreateOperation`, but must be :http:method:`PUT` to the objects URL as
 given by its UUID.
+
+The property ``livscykluskode: "Rettet"`` it set on the object.
 
 An example:
 
@@ -664,3 +669,15 @@ An example:
             ]
         }
     }
+
+
+.. _ImportOperation:
+
+----------------
+Import operation
+----------------
+
+An import is nearly identical to a :ref:`OverwriteOperation`. If the UUID of the
+object does not exist or the object with that UUID have been :ref:`deleted
+<DeleteOperation>` or :ref:`passivated <PassivateOperation>`, a new object is
+created with the property ``livscykluskode: "Importeret"``.
