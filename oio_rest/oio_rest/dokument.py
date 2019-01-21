@@ -5,9 +5,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-# encoding: utf-8
 import flask
+
+from . import db_helpers
+
 from .authentication import requires_auth
 from .contentstore import content_store
 from . import db
@@ -78,6 +79,16 @@ class Dokument(OIORestObject):
                 "attributes": attributes,
                 "relations": relations,
                 "variants": variants}
+
+    @classmethod
+    def relation_names(cls):
+        extra = set(db_helpers.get_document_part_relation_names())
+
+        return super().relation_names() | extra
+
+    @classmethod
+    def attribute_names(cls):
+        return super().attribute_names() | {'varianttekst', 'deltekst'}
 
 
 class DokumentHierarki(OIOStandardHierarchy):
