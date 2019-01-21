@@ -21,6 +21,7 @@ from . import db
 from . import db_helpers
 from . import validate
 from .utils.build_registration import build_registration, to_lower_param
+from .utils.build_registration import split_param
 from .custom_exceptions import BadRequestException, NotFoundException
 from .custom_exceptions import GoneException
 
@@ -583,7 +584,13 @@ class OIORestObject(object):
             req_args -= TEMPORALITY_PARAMS
             req_args -= cls.attribute_names()
             req_args -= cls.state_names()
-            req_args -= cls.relation_names()
+
+            # special handling of argument with an object type
+            req_args -= {
+                a
+                for a in req_args
+                if split_param(a)[0] in cls.relation_names()
+            }
 
         if req_args:
             arg_string = ', '.join(sorted(req_args))

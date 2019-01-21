@@ -169,6 +169,46 @@ class Tests(util.TestCase):
                                  [],
                                  brugerref='00000000-0000-0000-0000-000000000000')
 
+        self.assertQueryResponse(
+            '/aktivitet/aktivitet',
+            [objid],
+            **{
+                'ansvarlig:Bruger': 'abcdeabd-c1b0-48c2-aef7-74fea841adae',
+            },
+        )
+
+        self.assertQueryResponse(
+            '/aktivitet/aktivitet',
+            [],
+            **{
+                'ansvarlig:xxx': 'abcdeabd-c1b0-48c2-aef7-74fea841adae',
+            },
+        )
+
+        self.assertQueryResponse(
+            '/aktivitet/aktivitet',
+            [],
+            **{
+                'ansvarlig:Bruger': '00000000-0000-0000-0000-000000000000',
+            },
+        )
+
+        self.assertRequestFails(
+            '/aktivitet/aktivitet',
+            400,
+            query_string={
+                'xxx:xxx': '00000000-0000-0000-0000-000000000000',
+            },
+        )
+
+        self.assertRequestFails(
+            '/aktivitet/aktivitet',
+            400,
+            query_string={
+                'brugerref:xxx': '00000000-0000-0000-0000-000000000000',
+            },
+        )
+
     def test_edit(self):
         objid = self.load_fixture('/aktivitet/aktivitet',
                                   'aktivitet_opret.json')
