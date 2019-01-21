@@ -176,6 +176,15 @@ class OIOStandardHierarchy(object):
         classes_url = "{0}/{1}/{2}".format(base_url, hierarchy, "classes")
 
         def get_classes():
+            """Return the classes including their fields under this service.
+
+            Part of the self-documentation of the API.
+
+            .. :quickref: Lists all classed with fields an service have.
+
+            :statuscode 200: No error.
+
+            """
             structure = settings.REAL_DB_STRUCTURE
             clsnms = [c.__name__.lower() for c in cls._classes]
             hierarchy_dict = {c: structure[c] for c in clsnms}
