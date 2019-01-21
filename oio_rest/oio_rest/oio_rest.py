@@ -719,8 +719,78 @@ class OIORestObject(object):
     @classmethod
     @requires_auth
     def put_object(cls, uuid):
-        """
-        IMPORT or UPDATE an  object, replacing its contents entirely.
+        """A :ref:`ImportOperation` or :ref:`OverwriteOperation` that creates or overwrites a
+        object from the JSON payload. It returns the UUID for the object.
+
+        If there a no object with the UUID or the object with that UUID have been
+        :ref:`deleted <DeleteOperation>` or :ref:`passivated <PassivateOperation>`, is
+        is an :ref:`ImportOperation`.
+
+        If a object with the UUID exist it is an :ref:`OverwriteOperation`.
+
+        The only difference between the two is that an :ref:`ImportOperation` will set
+        ``livscykluskode: "Importeret"`` and an :ref:`OverwriteOperation` will set
+        ``livscykluskode: "Rettet"``.
+
+        .. :quickref: :ref:`OverwriteOperation` or :ref:`ImportOperation`
+
+        **Example request** for :http:put:`/organisation/organisationenhed/(regex:uuid)`:
+
+        .. code-block:: http
+
+            PUT /organisation/organisationenhed/841190a7-0e70-468a-bd63-eb11ed615337 HTTP/1.1
+            Content-Type: application/json
+            Host: example.com
+
+            {"attributter": {
+                 "organisationenhedegenskaber": [{
+                         "brugervendtnoegle": "copenhagen",
+                         "enhedsnavn": "Copenhagen",
+                         "virkning": {
+                             "from": "2017-01-01",
+                             "to": "2019-03-14"
+                         }}]},
+             "relationer": {
+                 "overordnet": [{
+                         "uuid": "6ff6cf06-fa47-4bc8-8a0e-7b21763bc30a",
+                         "virkning": {
+                             "from": "2017-01-01",
+                             "to": "2019-03-14"
+                         }}],
+                 "tilhoerer": [{
+                         "uuid": "6135c99b-f0fe-4c46-bb50-585b4559b48a",
+                         "virkning": {
+                             "from": "2017-01-01",
+                             "to": "2019-03-14"
+                         }}]},
+             "tilstande": {
+                 "organisationenhedgyldighed": [{
+                         "gyldighed": "Aktiv",
+                         "virkning": {
+                             "from": "2017-01-01",
+                             "to": "2019-03-14"
+                         }}]}}
+
+
+        **Example response** for :http:put:`/organisation/organisationenhed/(regex:uuid)`:
+
+        .. code-block:: http
+
+            HTTP/1.0 200 OK
+            Content-Length: 48
+            Content-Type: application/json
+            Date: Mon, 21 Jan 2019 10:17:19 GMT
+            Server: Werkzeug/0.14.1 Python/3.5.2
+
+            {
+                "uuid": "841190a7-0e70-468a-bd63-eb11ed615337"
+            }
+
+
+        :reqheader Content-Type: ``application/json``
+
+        :statuscode 200: Object was created or overwritten.
+        :statuscode 400: Malformed JSON or other bad request.
         """
         cls.verify_args()
 
