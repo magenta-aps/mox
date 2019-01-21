@@ -101,6 +101,15 @@ def get_token():
 
 @app.route('/site-map')
 def sitemap():
+    """Returns a site-map over all valid urls.
+
+    Part of the self-documentation of the API.
+
+    .. :quickref: Give the site-map over all URLs.
+
+    :statuscode 200: No error.
+
+    """
     links = []
     for rule in app.url_map.iter_rules():
         # Filter out rules we can't navigate to in a browser
