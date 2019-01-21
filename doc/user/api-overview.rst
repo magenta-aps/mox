@@ -37,10 +37,17 @@ The database contains a large number of datatypes. To illustrate the basic
 operations of the API we introduce a subset here. Specifically a subset of
 ``Organisation``.
 
-The complete specifications for all the fields to organisation can be found in
-reference document: `Specifikation af serviceinterface for Organisation`_.
+The complete reference documentation for the fields can be found in `Generelle
+egenskaber for services på sags- og dokumentområdet`_ with more info for those
+specifically for ``Organisation`` in : `Specifikation af serviceinterface for
+organisation`_.
 
-.. _Specifikation af serviceinterface for Organisation: https://www.digitaliser.dk/resource/1569113/artefact/Specifikationafserviceinterfacefororganisation-OIO-Godkendt%5bvs.1.1%5d.pdf?artefact=true&PID=1569586
+
+.. _Generelle egenskaber for services på sags- og dokumentområdet:
+   https://www.digitaliser.dk/resource/1567464/artefact/Generelleegenskaberforservicesp%c3%a5sags-ogdokumentomr%c3%a5det-OIO-Godkendt%5bvs.1.1%5d.pdf?artefact=true&PID=1763377
+
+.. _Specifikation af serviceinterface for organisation:
+   https://www.digitaliser.dk/resource/1569113/artefact/Specifikationafserviceinterfacefororganisation-OIO-Godkendt%5bvs.1.1%5d.pdf?artefact=true&PID=1569586
 
 .. note::
    As an example, the REST interface for Organisation is specified
@@ -290,6 +297,10 @@ To filter on the transaction time,
 See :http:get:`/organisation/organisationenhed/(regex:uuid)` for the complete
 reference for read operation on ``organisationenhed``.
 
+Known as a ``Læs`` operation in `the specification <Generelle egenskaber for
+services på sags- og dokumentområdet>`_.
+
+
 .. _ListOperation:
 
 --------------
@@ -336,6 +347,10 @@ the operation is a :ref:`SearchOperation` and will return a list a of UUIDs.
 
 See :http:get:`/organisation/organisationenhed` for the complete reference for
 list and search operation on ``organisationenhed``.
+
+Known as a ``List`` operation in `the specification <Generelle egenskaber for
+services på sags- og dokumentområdet>`_.
+
 
 .. _SearchOperation:
 
@@ -392,6 +407,8 @@ which may later be retrieved with a list or read operation - e.g:
         ]]
     }
 
+Known as a ``Søg`` operation in `the specification <Generelle egenskaber for
+services på sags- og dokumentområdet>`_.
 
 .. _PagedSearchOperation:
 
@@ -527,6 +544,10 @@ E.g., to create a new ``organisation``:
     }
 
 
+Known as a ``Opret`` operation in `the specification <Generelle egenskaber for
+services på sags- og dokumentområdet>`_.
+
+
 .. _UpdateOperation:
 
 ----------------
@@ -568,6 +589,9 @@ including all ``Virkning``-periods.
 
 For the logic of merging see :ref:`API-merging`. To issue a patch that delete part of an object see :ref:`DeleteAttr`.
 
+Known as a ``Ret`` operation in `the specification <Generelle egenskaber for
+services på sags- og dokumentområdet>`_.
+
 
 .. _PassivateOperation:
 
@@ -595,6 +619,9 @@ E.g., the JSON may look like this:
 When an object is passive, it is no longer maintained and may not be
 updated.
 
+Known as a ``Passiver`` operation in `the specification <Generelle egenskaber for
+services på sags- og dokumentområdet>`_.
+
 
 .. _DeleteOperation:
 
@@ -619,6 +646,8 @@ After an object is deleted, it cannot be retrieved by a :ref:`ReadOperation`,
 :ref:`ListOperation` and :ref:`SearchOperation` unless the ``registreretTil``
 and/or ``registreretFra`` indicate a period where it did exist.
 
+Known as a ``Slet`` operation in `the specification <Generelle egenskaber for
+services på sags- og dokumentområdet>`_.
 
 
 .. _OverwriteOperation:
@@ -681,3 +710,6 @@ An import is nearly identical to a :ref:`OverwriteOperation`. If the UUID of the
 object does not exist or the object with that UUID have been :ref:`deleted
 <DeleteOperation>` or :ref:`passivated <PassivateOperation>`, a new object is
 created with the property ``livscykluskode: "Importeret"``.
+
+Known as a ``Importer`` operation in `the specification <Generelle egenskaber for
+services på sags- og dokumentområdet>`_.
