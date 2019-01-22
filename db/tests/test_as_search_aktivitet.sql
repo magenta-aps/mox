@@ -332,7 +332,8 @@ aktivitetEgenskab := ROW (
  '2017-02-25 17:00'::timestamptz,  --'starttidspunkt_aktivitet_1' --text
 '2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
   INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
- 'aktivitet_1_formaal'
+ 'aktivitet_1_formaal',
+ 'integrationsdata_1'
 ,virkEgenskaber
 ) :: aktivitetEgenskaberAttrType
 ;
@@ -344,7 +345,8 @@ aktivitetEgenskab2 := ROW (
  '2016-04-20 10:00'::timestamptz,  --'starttidspunkt_aktivitet_1' --text
 '2017-02-27 12:00'::timestamptz, -- sluttidspunkt,
   INTERVAL '0000-00 01 04:00:01.0', --tidsforbrug
- 'aktivitet_2_formaal'
+ 'aktivitet_2_formaal',
+ 'integrationsdata_2'
 ,virkEgenskaber2
 ) :: aktivitetEgenskaberAttrType
 ;
@@ -431,6 +433,7 @@ actual_search_res_1:=as_search_aktivitet(null,null,
  null,--'2017-02-27 12:00'::timestamptz, -- sluttidspunkt,
  null,-- INTERVAL '0000-00 01 04:00:01.0', --tidsforbrug
  null,--'aktivitet_2_formaal'
+ null,--'integrationsdata_2'
  null--virkEgenskaber2
 ) :: aktivitetEgenskaberAttrType ]::aktivitetEgenskaberAttrType[],
 			null-- AktivitetRelationType[]
@@ -458,6 +461,7 @@ actual_search_res_2:=as_search_aktivitet(null,null,
  null,--'2017-02-27 12:00'::timestamptz, -- sluttidspunkt,
  null,-- INTERVAL '0000-00 01 04:00:01.0', --tidsforbrug
  null,--'aktivitet_2_formaal'
+ null,--'integrationsdata_2'
  null--virkEgenskaber2
 ) :: aktivitetEgenskaberAttrType ]::aktivitetEgenskaberAttrType[],
 			null-- AktivitetRelationType[]
@@ -483,6 +487,7 @@ actual_search_res_3:=as_search_aktivitet(null,null,
  null,--'2017-02-27 12:00'::timestamptz, -- sluttidspunkt,
  INTERVAL '0000-00 01 04:00:01.0', --tidsforbrug
  null,--'aktivitet_3_formaal'
+ null,--'integrationsdata_3'
  null--virkEgenskaber2
 ) :: aktivitetEgenskaberAttrType ]::aktivitetEgenskaberAttrType[],
 			null-- AktivitetRelationType[]
@@ -752,6 +757,7 @@ actual_search_res_12:=as_search_aktivitet(
 				null,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
 				null,--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
 				null,--'aktivitet_1_formaal'
+				null,--'integrationsdata_1'
 				null--,virkEgenskaber
 				) :: aktivitetEgenskaberAttrType
 		]::AktivitetEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null,
@@ -785,6 +791,7 @@ actual_search_res_13:=as_search_aktivitet(
 				null,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
 				null,--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
 				null,--'aktivitet_1_formaal'
+				null,--'integrationsdata_1'
 				null--,virkEgenskaber
 				) :: aktivitetEgenskaberAttrType
 		]::AktivitetEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null,
@@ -820,6 +827,7 @@ actual_search_res_14:=as_search_aktivitet(
 				null,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
 				null,--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
 				null,--'aktivitet_1_formaal'
+				null,--'integrationsdata_1'
 						ROW (
 			'[2015-06-01, 2015-06-01]' :: TSTZRANGE,
 				null,
@@ -858,6 +866,7 @@ actual_search_res_15:=as_search_aktivitet(
 				null,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
 				null,--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
 				null,--'aktivitet_1_formaal'
+				null,--'integrationsdata_1'
 						ROW (
 			'[2015-06-10, 2015-06-10]' :: TSTZRANGE,
 				null,
@@ -896,6 +905,7 @@ actual_search_res_16:=as_search_aktivitet(
 				'2017-02-27 09:00'::timestamptz,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
 				null,--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
 				null,--'aktivitet_1_formaal'
+				null,--'integrationsdata_1'
 				null--,virkEgenskaber
 				) :: aktivitetEgenskaberAttrType
 		]::AktivitetEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null,
@@ -928,6 +938,7 @@ actual_search_res_17:=as_search_aktivitet(
 				'2017-02-27 08:00'::timestamptz,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
 				null,--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
 				null,--'aktivitet_1_formaal'
+				null,--'integrationsdata_1'
 				null--,virkEgenskaber
 				) :: aktivitetEgenskaberAttrType
 		]::AktivitetEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null,
@@ -960,6 +971,7 @@ actual_search_res_18:=as_search_aktivitet(
 				'2017-02-27 13:00'::timestamptz,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
 				null,--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
 				null,--'aktivitet_1_formaal'
+				null,--'integrationsdata_1'
 				null--,virkEgenskaber
 				) :: aktivitetEgenskaberAttrType
 		]::AktivitetEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null,
@@ -991,6 +1003,7 @@ actual_search_res_19:=as_search_aktivitet(
 				null,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
 				null,--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
 				null,--'aktivitet_1_formaal'
+				null,--'integrationsdata_1'
 				null--,virkEgenskaber
 				) :: aktivitetEgenskaberAttrType
 		]::AktivitetEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null,
@@ -1023,6 +1036,7 @@ actual_search_res_20:=as_search_aktivitet(
 				null,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
 				INTERVAL '0000-00 01 00:00:00.0',--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
 				null,--'aktivitet_1_formaal'
+				null,--'integrationsdata_1'
 				null--,virkEgenskaber
 				) :: aktivitetEgenskaberAttrType
 		]::AktivitetEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null,
@@ -1054,6 +1068,7 @@ actual_search_res_21:=as_search_aktivitet(
 				null,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
 				INTERVAL '0000-00 02 00:00:00.0',--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
 				null,--'aktivitet_1_formaal'
+				null,--'integrationsdata_1'
 				null--,virkEgenskaber
 				) :: aktivitetEgenskaberAttrType
 		]::AktivitetEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null,
@@ -1085,6 +1100,7 @@ actual_search_res_22:=as_search_aktivitet(
 				null,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
 				INTERVAL '0000-00 01 00:00:00.0',--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
 				null,--'aktivitet_1_formaal'
+				null,--'integrationsdata_1'
 				null--,virkEgenskaber
 				) :: aktivitetEgenskaberAttrType
 		]::AktivitetEgenskaberAttrType[]  --search_operator_greater_then_attr_egenskaber AktivitetEgenskaberAttrType[]=null,
@@ -1116,6 +1132,7 @@ actual_search_res_23:=as_search_aktivitet(
 				null,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
 				INTERVAL '0000-00 02 00:00:00.0',--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
 				null,--'aktivitet_1_formaal'
+				null,--'integrationsdata_1'
 				null--,virkEgenskaber
 				) :: aktivitetEgenskaberAttrType
 		]::AktivitetEgenskaberAttrType[]   --search_operator_less_then_attr_egenskaber
@@ -1148,6 +1165,7 @@ actual_search_res_24:=as_search_aktivitet(
 				null,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
 				INTERVAL '0000-00 01 00:00:00.0',--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
 				null,--'aktivitet_1_formaal'
+				null,--'integrationsdata_1'
 				null--,virkEgenskaber
 				) :: aktivitetEgenskaberAttrType
 		]::AktivitetEgenskaberAttrType[]   --search_operator_less_then_attr_egenskaber
@@ -1180,6 +1198,7 @@ actual_search_res_25:=as_search_aktivitet(
 				null,--'2017-02-27 08:00'::timestamptz, -- sluttidspunkt,
 				INTERVAL '0000-01 00 00:00:00.0',--INTERVAL '0000-00 03 02:30:00.0', --tidsforbrug
 				null,--'aktivitet_1_formaal'
+				null,--'integrationsdata_1'
 				null--,virkEgenskaber
 				) :: aktivitetEgenskaberAttrType
 		]::AktivitetEgenskaberAttrType[]   --search_operator_less_then_attr_egenskaber

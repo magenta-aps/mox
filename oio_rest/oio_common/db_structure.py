@@ -15,7 +15,7 @@ DATABASE_STRUCTURE = {
         "attributter": {
             "egenskaber": [
                 "brugervendtnoegle", "beskrivelse", "opbygning", "ophavsret",
-                "plan", "supplement", "retskilde"
+                "plan", "supplement", "retskilde", "integrationsdata",
             ],
         },
         "attributter_metadata": {
@@ -34,7 +34,7 @@ DATABASE_STRUCTURE = {
         "attributter": {
             "egenskaber": [
                 "brugervendtnoegle", "beskrivelse", "kaldenavn",
-                "ophavsret",
+                "ophavsret", "integrationsdata",
             ],
         },
         "attributter_metadata": {
@@ -56,7 +56,8 @@ DATABASE_STRUCTURE = {
         "attributter": {
             "egenskaber": [
                 "brugervendtnoegle", "beskrivelse", "eksempel", "omfang",
-                "titel", "retskilde", "aendringsnotat"],
+                "titel", "retskilde", "aendringsnotat", "integrationsdata",
+            ],
         },
         "attributter_metadata": {
             'egenskaber': {
@@ -79,7 +80,8 @@ DATABASE_STRUCTURE = {
     "bruger": {
         "attributter": {
             "egenskaber": [
-                "brugervendtnoegle", "brugernavn", "brugertype"
+                "brugervendtnoegle", "brugernavn", "brugertype",
+                "integrationsdata",
             ],
         },
         "attributter_metadata": {
@@ -88,7 +90,7 @@ DATABASE_STRUCTURE = {
             }
         },
         "tilstande": {
-            "gyldighed": ["Aktiv", "Inaktiv"]
+           "gyldighed": ["Aktiv", "Inaktiv"]
         },
         "relationer_nul_til_en": ["tilhoerer"],
         "relationer_nul_til_mange": [
@@ -103,7 +105,7 @@ DATABASE_STRUCTURE = {
         "attributter": {
             "egenskaber": [
                 "brugervendtnoegle", "interessefaellesskabsnavn",
-                "interessefaellesskabstype"
+                "interessefaellesskabstype", "integrationsdata",
             ],
         },
         "attributter_metadata": {
@@ -129,7 +131,8 @@ DATABASE_STRUCTURE = {
         "attributter": {
             "egenskaber": [
                 "brugervendtnoegle", "itsystemnavn", "itsystemtype",
-                "konfigurationreference"],
+                "konfigurationreference", "integrationsdata",
+            ],
         },
         "attributter_metadata": {
             'egenskaber': {
@@ -153,7 +156,9 @@ DATABASE_STRUCTURE = {
 
     "organisation": {
         "attributter": {
-            "egenskaber": ["brugervendtnoegle", "organisationsnavn"],
+            "egenskaber": [
+                "brugervendtnoegle", "organisationsnavn", "integrationsdata",
+            ],
         },
         "attributter_metadata": {
             'egenskaber': {
@@ -177,7 +182,9 @@ DATABASE_STRUCTURE = {
 
     "organisationenhed": {
         "attributter": {
-            "egenskaber": ["brugervendtnoegle", "enhedsnavn"],
+            "egenskaber": [
+                "brugervendtnoegle", "enhedsnavn", "integrationsdata",
+            ],
         },
         "attributter_metadata": {
             'egenskaber': {
@@ -202,7 +209,9 @@ DATABASE_STRUCTURE = {
 
     "organisationfunktion": {
         "attributter": {
-            "egenskaber": ["brugervendtnoegle", "funktionsnavn"],
+            "egenskaber": [
+                "brugervendtnoegle", "funktionsnavn", "integrationsdata",
+            ],
         },
         "attributter_metadata": {
             'egenskaber': {
@@ -216,16 +225,18 @@ DATABASE_STRUCTURE = {
         "relationer_nul_til_mange": [
             "adresser", "opgaver", "tilknyttedebrugere", "tilknyttedeenheder",
             "tilknyttedeorganisationer", "tilknyttedeitsystemer",
-            "tilknyttedeinteressefaellesskaber", "tilknyttedepersoner"
+            "tilknyttedeinteressefaellesskaber", "tilknyttedepersoner",
+            "tilknyttedefunktioner",
         ]
     },
 
     "sag": {
         "attributter": {
-            "egenskaber": ["brugervendtnoegle", "afleveret", "beskrivelse",
-                           "hjemmel", "kassationskode",
-                           "offentlighedundtaget", "principiel", "sagsnummer",
-                           "titel"],
+            "egenskaber": [
+                "brugervendtnoegle", "afleveret", "beskrivelse", "hjemmel",
+                "kassationskode", "offentlighedundtaget", "principiel",
+                "sagsnummer", "titel", "integrationsdata",
+            ],
         },
         "attributter_metadata": {
             'egenskaber': {
@@ -275,9 +286,11 @@ DATABASE_STRUCTURE = {
 
     "dokument": {
         "attributter": {
-            "egenskaber": ["brugervendtnoegle", "beskrivelse", "brevdato",
-                           "kassationskode", "major", "minor",
-                           "offentlighedundtaget", "titel", "dokumenttype"],
+            "egenskaber": [
+                "brugervendtnoegle", "beskrivelse", "brevdato",
+                "kassationskode", "major", "minor", "offentlighedundtaget",
+                "titel", "dokumenttype", "integrationsdata",
+            ],
         },
         "attributter_metadata": {
             'egenskaber': {
@@ -309,7 +322,8 @@ DATABASE_STRUCTURE = {
     "tilstand": {
         "attributter": {
             "egenskaber": [
-                "brugervendtnoegle", "beskrivelse"],
+                "brugervendtnoegle", "beskrivelse", "integrationsdata",
+            ],
         },
         "attributter_metadata": {
             'egenskaber': {
@@ -340,7 +354,8 @@ DATABASE_STRUCTURE = {
         "attributter": {
             "egenskaber": [
                 "brugervendtnoegle", "aktivitetnavn", "beskrivelse",
-                "starttidspunkt", "sluttidspunkt", "tidsforbrug", "formaal"
+                "starttidspunkt", "sluttidspunkt", "tidsforbrug", "formaal",
+                "integrationsdata",
             ],
         },
         "attributter_metadata": {
@@ -377,7 +392,7 @@ DATABASE_STRUCTURE = {
         "attributter": {
             "egenskaber": [
                 "brugervendtnoegle", "beskrivelse", "starttidspunkt",
-                "sluttidspunkt"
+                "sluttidspunkt", "integrationsdata",
             ],
         },
         "attributter_metadata": {
@@ -407,8 +422,10 @@ DATABASE_STRUCTURE = {
 
     "loghaendelse": {
         "attributter": {
-            "egenskaber": ["service", "klasse", "tidspunkt", "operation",
-                           "objekttype", "returkode", "returtekst", "note"],
+            "egenskaber": [
+                "service", "klasse", "tidspunkt", "operation", "objekttype",
+                "returkode", "returtekst", "note", "integrationsdata",
+            ],
         },
         "tilstande": {
             "gyldighed": ["Rettet", "Ikke rettet"]

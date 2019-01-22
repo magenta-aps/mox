@@ -195,6 +195,7 @@ klasseEgenskabA := ROW (
    'titel_A',
    'retskilde_A',
    NULL,--'aendringsnotat_text1',
+   'integrationsdata_A',
    ARRAY[klasseEgenskabA_Soegeord1,klasseEgenskabA_Soegeord2]::KlasseSoegeordType[], 
    virkEgenskaber
 ) :: KlasseEgenskaberAttrType
@@ -270,6 +271,7 @@ klasseEgenskabB := ROW (
    'titel_B',
    'retskilde_B',
    NULL, --aendringsnotat
+   'integrationsdata_B',
     ARRAY[klasseEgenskabB_Soegeord1,klasseEgenskabB_Soegeord2,klasseEgenskabB_Soegeord3,klasseEgenskabB_Soegeord4]::KlasseSoegeordType[], --soegeord
    virkEgenskaberB
 ) :: KlasseEgenskaberAttrType
@@ -340,6 +342,7 @@ klasseEgenskabC := ROW (
    'titel_C',
    'retskilde_C',
    'aendringsnotat_C',
+   'integrationsdata_C',
    ARRAY[]::KlasseSoegeordType[], --soegeord
    virkEgenskaberC
 ) :: KlasseEgenskaberAttrType
@@ -353,6 +356,7 @@ klasseEgenskabD := ROW (
    'titel_D',
    'retskilde_D',
    NULL, --aendringsnotat
+   'integrationsdata_D',
     NULL, --soegeord
    virkEgenskaberD
 ) :: KlasseEgenskaberAttrType
@@ -366,6 +370,7 @@ klasseEgenskabE := ROW (
    'titel_E',
    'retskilde_E',
    NULL, --aendringsnotat
+   'integrationsdata_E',
     ARRAY[klasseEgenskabE_Soegeord1,klasseEgenskabE_Soegeord2,klasseEgenskabE_Soegeord3,klasseEgenskabE_Soegeord4,klasseEgenskabE_Soegeord5]::KlasseSoegeordType[], --soegeord
    virkEgenskaberE
 ) :: KlasseEgenskaberAttrType
@@ -464,6 +469,7 @@ expected_Klasse2 :=
 							klasseEgenskabC.titel,
 							klasseEgenskabC.retskilde,
 							klasseEgenskabC.aendringsnotat,
+							klasseEgenskabC.integrationsdata,
 							null, --array[]::KlasseSoegeordType[], empty array is read as null
  							klasseEgenskabC.virkning 
 							)::KlasseEgenskaberAttrType

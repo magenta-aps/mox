@@ -374,6 +374,7 @@ sagEgenskab := ROW (
 , true --principiel boolean,
 ,'sagsnummer_1' -- text,
 , 'titel_sag_1'-- text,
+, 'integrationsdata_1'-- text,
 ,virkEgenskaber
 ) :: sagEgenskaberAttrType
 ;

@@ -364,6 +364,7 @@ klasseEgenskab_A := ROW (
    'titel_A',
    'retskilde_A',
    NULL,--'aendringsnotat_text1',
+   'integrationsdata_A',
    ARRAY[klasseEgenskabA_Soegeord1,klasseEgenskabA_Soegeord2]::KlasseSoegeordType[], 
    virkEgenskaber_A
 ) :: KlasseEgenskaberAttrType
@@ -536,6 +537,7 @@ klasseEgenskab_B := ROW (
    'titel_B',
    'retskilde_B',
    NULL, --aendringsnotat
+   'integrationsdata_B',
     ARRAY[klasseEgenskabB_Soegeord1,klasseEgenskabB_Soegeord2,klasseEgenskabB_Soegeord3,klasseEgenskabB_Soegeord4]::KlasseSoegeordType[], --soegeord
    virkEgenskaber_B
 ) :: KlasseEgenskaberAttrType
@@ -925,6 +927,7 @@ klasseEgenskab_C := ROW (
    'titel_C',
    'retskilde_C',
    'aendringsnotat_C', --aendringsnotat
+   'integrationsdata_C',
     NULL, --soegeord
    virkEgenskaber_C
 ) :: KlasseEgenskaberAttrType
@@ -976,6 +979,7 @@ ARRAY[
    		NULL, --titel
    		'retskilde_C',
    		NULL, --aendringsnotat
+   		NULL, --integrationsdata
    		NULL, --soegeord
    			ROW(
 				  	'[2015-01-01, 2015-02-01]' :: TSTZRANGE,
@@ -1091,6 +1095,7 @@ ROW(
    		NULL, --titel
    		NULL,
    		NULL, --aendringsnotat
+   		NULL, --integrationsdata
    		ARRAY[ROW(null,null,'faellessogeord2')::KlasseSoegeordType], --soegeord
    			ROW(
 				  	'[2015-05-13, 2015-05-14]' :: TSTZRANGE,
@@ -1146,6 +1151,7 @@ ROW(
    		NULL, --titel
    		NULL,
    		NULL, --aendringsnotat
+   		NULL, --integrationsdata
    		ARRAY[ROW(null,null,'faellessogeord1')::KlasseSoegeordType], --soegeord
    			ROW(
 				  	'[2015-04-13, 2015-04-14]' :: TSTZRANGE,
@@ -1201,6 +1207,7 @@ ROW(
    		NULL, --titel
    		NULL,
    		NULL, --aendringsnotat
+   		NULL, --integrationsdata
    		ARRAY[ROW(null,null,'faellessogeord2')::KlasseSoegeordType], --soegeord
    			ROW(
 				  	'[2015-05-13, 2015-05-14]' :: TSTZRANGE,
@@ -1258,6 +1265,7 @@ ROW(
    		NULL, --titel
    		NULL,
    		NULL, --aendringsnotat
+   		NULL, --integrationsdata
    		NULL, --soegeord
    			ROW(
 				  	'[2015-05-13, 2015-05-20]' :: TSTZRANGE,
@@ -1307,6 +1315,7 @@ ROW(
    		NULL, --titel
    		NULL,
    		NULL, --aendringsnotat
+   		NULL, --integrationsdata
    		NULL, --soegeord
    			null
 		)::KlasseEgenskaberAttrType
@@ -1352,6 +1361,7 @@ ROW(
    		NULL, --titel
    		NULL,
    		NULL, --aendringsnotat
+   		NULL, --integrationsdata
    		NULL, --soegeord
    			null
 		)::KlasseEgenskaberAttrType
@@ -1396,6 +1406,7 @@ ROW(
    		NULL, --titel
    		NULL,
    		NULL, --aendringsnotat
+   		NULL, --integrationsdata
    		NULL, --soegeord
    			ROW(
 				  	'[2014-12-20, 2014-12-23]' :: TSTZRANGE,
@@ -1774,6 +1785,7 @@ ROW(
    		NULL, --titel
    		NULL,
    		NULL, --aendringsnotat
+   		NULL, --integrationsdata
    		NULL, --soegeord
    			null
 		)::KlasseEgenskaberAttrType
@@ -1786,6 +1798,7 @@ ROW(
    		NULL, --titel
    		NULL,
    		NULL, --aendringsnotat
+   		NULL, --integrationsdata
    		NULL, --soegeord
    			null
 		)::KlasseEgenskaberAttrType
@@ -1898,6 +1911,7 @@ search_registrering_25 := ROW (
    		NULL, --titel
    		NULL,
    		NULL, --aendringsnotat
+   		NULL, --integrationsdata
    		NULL, --soegeord
    			null
 		)::KlasseEgenskaberAttrType
@@ -1957,6 +1971,7 @@ search_registrering_26 := ROW (
    		NULL, --titel
    		NULL,
    		NULL, --aendringsnotat
+   		NULL, --integrationsdata
    		NULL, --soegeord
    			null
 		)::KlasseEgenskaberAttrType
@@ -2018,6 +2033,7 @@ search_registrering_27 := ROW (
    		NULL, --titel
    		NULL,
    		NULL, --aendringsnotat
+   		NULL, --integrationsdata
    		NULL, --soegeord
    			null
 		)::KlasseEgenskaberAttrType
@@ -2428,6 +2444,7 @@ ROW(
    		NULL, --titel
    		NULL,
    		NULL, --aendringsnotat
+   		NULL, --integrationsdata
    		NULL, --soegeord
    		NULL
 		)::KlasseEgenskaberAttrType
@@ -2471,6 +2488,7 @@ ROW(
    		NULL, --titel
    		NULL,
    		NULL, --aendringsnotat
+   		NULL, --integrationsdata
    		NULL, --soegeord
    		NULL
 		)::KlasseEgenskaberAttrType
@@ -2705,6 +2723,7 @@ search_registrering_200 := ROW (
    ,null--'titel_C',
    ,null --'retskilde_C'
    ,null--'aendringsnotat_C', --aendringsnotat
+   ,null--'integrationsdata_C',
     ,NULL --soegeord
    ,NULL
 ) :: KlasseEgenskaberAttrType

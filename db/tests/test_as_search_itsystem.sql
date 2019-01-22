@@ -135,6 +135,7 @@ itsystemEgenskabA := ROW (
    'itsystemnavn_text1',
    'itsystemtype_text1',
    ARRAY['konfigurationreference_text1','konfigurationreference_text2','konfigurationreference_text3']::text[],
+   'integrationsdata_text1',
    virkEgenskaberA
 ) :: ItsystemEgenskaberAttrType
 ;
@@ -144,6 +145,7 @@ itsystemEgenskabB := ROW (
    'itsystemnavn_text1',
    'itsystemtype_text1',
    ARRAY['konfigurationreference_text1B','konfigurationreference_text2B','konfigurationreference_text3B']::text[],
+   'integrationsdata_text1',
    virkEgenskaberA
 ) :: ItsystemEgenskaberAttrType
 ;
@@ -153,6 +155,7 @@ itsystemEgenskabC := ROW (
    'itsystemnavn_text1',
    'itsystemtype_text1',
    ARRAY['konfigurationreference_text1C','konfigurationreference_text2C','konfigurationreference_text3C']::text[],
+   'integrationsdata_text1',
    virkEgenskaberA
 ) :: ItsystemEgenskaberAttrType
 ;
@@ -162,6 +165,7 @@ itsystemEgenskabD := ROW (
    'itsystemnavn_text1',
    'itsystemtype_text1',
    ARRAY[]::text[],
+   'integrationsdata_text1',
    virkEgenskaberA
 ) :: ItsystemEgenskaberAttrType
 ;
@@ -240,6 +244,7 @@ search_result1 :=as_search_itsystem(
    			'itsystemnavn_text1',
    			'itsystemtype_text1',
    			ARRAY['konfigurationreference_text1C']::text[],
+   			'integrationsdata_text1',
    			virkEgenskaberA) ::ItsystemEgenskaberAttrType
 		]::ItsystemEgenskaberAttrType[],
 		null
@@ -267,6 +272,7 @@ search_result2 :=as_search_itsystem(
    			'itsystemnavn_text1',
    			'itsystemtype_text1',
    			ARRAY['konfigurationreference_text%']::text[],
+   			'integrationsdata_text1',
    			virkEgenskaberA) ::ItsystemEgenskaberAttrType
 		]::ItsystemEgenskaberAttrType[],
 		null
@@ -292,6 +298,7 @@ search_result3 :=as_search_itsystem(
    			'itsystemnavn_text1',
    			'itsystemtype_text1',
    			ARRAY['konfigurationreference_text%','konfigurationreference_text2B']::text[],
+   			'integrationsdata_text1',
    			virkEgenskaberA) ::ItsystemEgenskaberAttrType
 		]::ItsystemEgenskaberAttrType[],
 		null
@@ -317,6 +324,7 @@ search_result4 :=as_search_itsystem(
    			'itsystemnavn_text1',
    			'itsystemtype_text1',
    			ARRAY[]::text[],
+   			'integrationsdata_text1',
    			virkEgenskaberA) ::ItsystemEgenskaberAttrType
 		]::ItsystemEgenskaberAttrType[],
 		null

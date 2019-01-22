@@ -486,6 +486,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                             'properties': {
                                 'brugervendtnoegle': {'type': 'string'},
                                 'organisationsnavn': {'type': 'string'},
+                                'integrationsdata': {'type': 'string'},
                                 'virkning': {'$ref': '#/definitions/virkning'}
                             },
                             'required': ['brugervendtnoegle', 'virkning'],
@@ -512,6 +513,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                                 'brugervendtnoegle': {'type': 'string'},
                                 'brugernavn': {'type': 'string'},
                                 'brugertype': {'type': 'string'},
+                                'integrationsdata': {'type': 'string'},
                                 'virkning': {'$ref': '#/definitions/virkning'}
                             },
                             'required': ['brugervendtnoegle', 'virkning'],
@@ -542,6 +544,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                                 'titel': {'type': 'string'},
                                 'retskilde': {'type': 'string'},
                                 'aendringsnotat': {'type': 'string'},
+                                'integrationsdata': {'type': 'string'},
                                 'soegeord': {
                                     'type': 'array',
                                     'items': {
@@ -581,6 +584,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                                     'type': 'array',
                                     'items': {'type': 'string'}
                                 },
+                                'integrationsdata': {'type': 'string'},
                                 'virkning': {'$ref': '#/definitions/virkning'}
                             },
                             'required': ['brugervendtnoegle', 'virkning'],
@@ -616,6 +620,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                                 'principiel': {'type': 'boolean'},
                                 'kassationskode': {'type': 'string'},
                                 'afleveret': {'type': 'boolean'},
+                                'integrationsdata': {'type': 'string'},
                                 'virkning': {'$ref': '#/definitions/virkning'}
                             },
                             'required': ['beskrivelse', 'brugervendtnoegle',
@@ -653,6 +658,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                                             'offentlighedundtaget'
                                 },
                                 'titel': {'type': 'string'},
+                                'integrationsdata': {'type': 'string'},
                                 'virkning': {'$ref': '#/definitions/virkning'}
                             },
                             'required': ['beskrivelse', 'brevdato',

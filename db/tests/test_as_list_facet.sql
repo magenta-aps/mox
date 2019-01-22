@@ -163,6 +163,7 @@ facetEgenskabA := ROW (
    'facetophavsret_A',
    'facetsupplement_A',
    NULL,--'retskilde_text1',
+   'facetintegrationsdata_A',
    virkEgenskaber
 ) :: FacetEgenskaberAttrType
 ;
@@ -175,6 +176,7 @@ facetEgenskabB := ROW (
    'facetophavsret_B',
    'facetsupplement_B',
    NULL, --restkilde
+   'facetintegrationsdata_B',
    virkEgenskaberB
 ) :: FacetEgenskaberAttrType
 ;
@@ -291,6 +293,7 @@ ARRAY[
 	   null,
 	   null,
 	   NULL, --restkilde
+	   NULL, --'integrationsdata_B',
    	null --virkEgenskaberB
 ) :: FacetEgenskaberAttrType]::FacetEgenskaberAttrType[]
 	,null --relationer 
@@ -322,6 +325,7 @@ ARRAY[
 	   null,
 	   null,
 	   NULL, --restkilde
+       NULL, --'integrationsdata_B',
    	null --virkEgenskaberB
 ) :: FacetEgenskaberAttrType]::FacetEgenskaberAttrType[]
 	,null --relationer 

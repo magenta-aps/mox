@@ -38,6 +38,7 @@ sluttidspunkt ClearableTimestamptz,
 
 tidsforbrug ClearableInterval,
 formaal text,
+integrationsdata text,
 
  virkning Virkning
 );
@@ -225,6 +226,7 @@ CREATE TABLE aktivitet_attr_egenskaber (
         sluttidspunkt timestamptz  NULL,
         tidsforbrug interval(0)  NULL,
         formaal text  NULL,
+        integrationsdata text  NULL,
     virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
     aktivitet_registrering_id bigint NOT NULL,
     CONSTRAINT aktivitet_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -319,6 +321,17 @@ ALTER TABLE aktivitet_attr_egenskaber
             ON aktivitet_attr_egenskaber
             USING btree
             (formaal); 
+ 
+     
+        CREATE INDEX aktivitet_attr_egenskaber_pat_integrationsdata
+            ON aktivitet_attr_egenskaber
+            USING gin
+            (integrationsdata gin_trgm_ops);
+
+        CREATE INDEX aktivitet_attr_egenskaber_idx_integrationsdata
+            ON aktivitet_attr_egenskaber
+            USING btree
+            (integrationsdata); 
 
 
 
@@ -652,7 +665,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr AktivitetEgenskaberAt
     FOREACH element IN ARRAY inputArr
     LOOP
 
-      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.aktivitetnavn IS NULL AND element.beskrivelse IS NULL AND element.starttidspunkt IS NULL AND element.sluttidspunkt IS NULL AND element.tidsforbrug IS NULL AND element.formaal IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.aktivitetnavn IS NULL AND element.beskrivelse IS NULL AND element.starttidspunkt IS NULL AND element.sluttidspunkt IS NULL AND element.tidsforbrug IS NULL AND element.formaal IS NULL AND element.integrationsdata IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
 
     --  RAISE DEBUG 'Skipping element';
       ELSE
@@ -1160,7 +1173,7 @@ BEGIN
                     unnest(attrEgenskaber) a
                     JOIN unnest(attrEgenskaber) b ON (a.virkning).TimePeriod && (b.virkning).TimePeriod
                 GROUP BY
-                    a.brugervendtnoegle,a.aktivitetnavn,a.beskrivelse,a.starttidspunkt,a.sluttidspunkt,a.tidsforbrug,a.formaal,
+                    a.brugervendtnoegle,a.aktivitetnavn,a.beskrivelse,a.starttidspunkt,a.sluttidspunkt,a.tidsforbrug,a.formaal,a.integrationsdata,
                     a.virkning
                     
                     HAVING COUNT(*) > 1) THEN
@@ -1171,9 +1184,9 @@ BEGIN
         -- To avoid needless fragmentation we'll check for presence of
         -- null values in the fields - and if none are present, we'll skip
         -- the merging operations
-        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).aktivitetnavn IS NULL  OR  (attrEgenskaberObj).beskrivelse IS NULL  OR  (attrEgenskaberObj).starttidspunkt IS NULL  OR  (attrEgenskaberObj).sluttidspunkt IS NULL  OR  (attrEgenskaberObj).tidsforbrug IS NULL  OR  (attrEgenskaberObj).formaal IS NULL  THEN
+        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).aktivitetnavn IS NULL  OR  (attrEgenskaberObj).beskrivelse IS NULL  OR  (attrEgenskaberObj).starttidspunkt IS NULL  OR  (attrEgenskaberObj).sluttidspunkt IS NULL  OR  (attrEgenskaberObj).tidsforbrug IS NULL  OR  (attrEgenskaberObj).formaal IS NULL  OR  (attrEgenskaberObj).integrationsdata IS NULL  THEN
             
-            INSERT INTO aktivitet_attr_egenskaber ( brugervendtnoegle,aktivitetnavn,beskrivelse,starttidspunkt,sluttidspunkt,tidsforbrug,formaal, virkning, aktivitet_registrering_id)
+            INSERT INTO aktivitet_attr_egenskaber ( brugervendtnoegle,aktivitetnavn,beskrivelse,starttidspunkt,sluttidspunkt,tidsforbrug,formaal,integrationsdata, virkning, aktivitet_registrering_id)
                 SELECT
                     
                         
@@ -1219,6 +1232,10 @@ BEGIN
                         
                             coalesce(attrEgenskaberObj.formaal, a.formaal),
                     
+                        
+                        
+                            coalesce(attrEgenskaberObj.integrationsdata, a.integrationsdata),
+                    
                     ROW ((a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
                             (attrEgenskaberObj.virkning).AktoerRef,
                             (attrEgenskaberObj.virkning).AktoerTypeKode,
@@ -1234,7 +1251,7 @@ BEGIN
         -- that is NOT covered by any "merged" rows inserted above, generate
         -- and insert rows.
         
-            INSERT INTO aktivitet_attr_egenskaber ( brugervendtnoegle,aktivitetnavn,beskrivelse,starttidspunkt,sluttidspunkt,tidsforbrug,formaal, virkning, aktivitet_registrering_id)
+            INSERT INTO aktivitet_attr_egenskaber ( brugervendtnoegle,aktivitetnavn,beskrivelse,starttidspunkt,sluttidspunkt,tidsforbrug,formaal,integrationsdata, virkning, aktivitet_registrering_id)
                 SELECT
                     
                      attrEgenskaberObj.brugervendtnoegle,
@@ -1250,6 +1267,8 @@ BEGIN
                      attrEgenskaberObj.tidsforbrug,
                     
                      attrEgenskaberObj.formaal,
+                    
+                     attrEgenskaberObj.integrationsdata,
                     
                     ROW (b.tz_range_leftover,
                         (attrEgenskaberObj.virkning).AktoerRef,
@@ -1270,8 +1289,8 @@ BEGIN
             -- Insert attrEgenskaberObj raw (if there were no null-valued fields)
             
 
-            INSERT INTO aktivitet_attr_egenskaber ( brugervendtnoegle,aktivitetnavn,beskrivelse,starttidspunkt,sluttidspunkt,tidsforbrug,formaal, virkning, aktivitet_registrering_id)
-                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.aktivitetnavn,  attrEgenskaberObj.beskrivelse,  attrEgenskaberObj.starttidspunkt,  attrEgenskaberObj.sluttidspunkt,  attrEgenskaberObj.tidsforbrug,  attrEgenskaberObj.formaal, attrEgenskaberObj.virkning, new_aktivitet_registrering.id );
+            INSERT INTO aktivitet_attr_egenskaber ( brugervendtnoegle,aktivitetnavn,beskrivelse,starttidspunkt,sluttidspunkt,tidsforbrug,formaal,integrationsdata, virkning, aktivitet_registrering_id)
+                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.aktivitetnavn,  attrEgenskaberObj.beskrivelse,  attrEgenskaberObj.starttidspunkt,  attrEgenskaberObj.sluttidspunkt,  attrEgenskaberObj.tidsforbrug,  attrEgenskaberObj.formaal,  attrEgenskaberObj.integrationsdata, attrEgenskaberObj.virkning, new_aktivitet_registrering.id );
         END IF;
 
         END LOOP;
@@ -1287,7 +1306,7 @@ BEGIN
 -- Handle egenskaber of previous registration, taking overlapping
 -- virknings into consideration (using function subtract_tstzrange)
 
-    INSERT INTO aktivitet_attr_egenskaber ( brugervendtnoegle,aktivitetnavn,beskrivelse,starttidspunkt,sluttidspunkt,tidsforbrug,formaal, virkning, aktivitet_registrering_id)
+    INSERT INTO aktivitet_attr_egenskaber ( brugervendtnoegle,aktivitetnavn,beskrivelse,starttidspunkt,sluttidspunkt,tidsforbrug,formaal,integrationsdata, virkning, aktivitet_registrering_id)
     SELECT
         
         
@@ -1304,6 +1323,8 @@ BEGIN
             a.tidsforbrug,
         
             a.formaal,
+        
+            a.integrationsdata,
         
         ROW (c.tz_range_leftover,
             (a.virkning).AktoerRef,
@@ -1504,6 +1525,7 @@ IF aktivitet_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(a
       sluttidspunkt,
       tidsforbrug,
       formaal,
+      integrationsdata,
       virkning,
       aktivitet_registrering_id
     )
@@ -1516,6 +1538,7 @@ IF aktivitet_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(a
       aktivitet_attr_egenskaber_obj.sluttidspunkt,
       aktivitet_attr_egenskaber_obj.tidsforbrug,
       aktivitet_attr_egenskaber_obj.formaal,
+      aktivitet_attr_egenskaber_obj.integrationsdata,
       aktivitet_attr_egenskaber_obj.virkning,
       aktivitet_registrering_id
     ;
@@ -1812,6 +1835,7 @@ FROM
 					 		b.sluttidspunkt,
 					 		b.tidsforbrug,
 					 		b.formaal,
+					 		b.integrationsdata,
 					   		b.virkning
                             
 							)::AktivitetEgenskaberAttrType
@@ -1819,7 +1843,7 @@ FROM
 						NULL
 						END
                         
-						order by b.brugervendtnoegle,b.aktivitetnavn,b.beskrivelse,b.starttidspunkt,b.sluttidspunkt,b.tidsforbrug,b.formaal,b.virkning
+						order by b.brugervendtnoegle,b.aktivitetnavn,b.beskrivelse,b.starttidspunkt,b.sluttidspunkt,b.tidsforbrug,b.formaal,b.integrationsdata,b.virkning
                         
 					)) AktivitetAttrEgenskaberArr
                     
@@ -2163,6 +2187,12 @@ ELSE
                     a.formaal ILIKE attrEgenskaberTypeObj.formaal --case insensitive
                 )
                 AND
+                (
+                    attrEgenskaberTypeObj.integrationsdata IS NULL
+                    OR
+                    a.integrationsdata ILIKE attrEgenskaberTypeObj.integrationsdata --case insensitive
+                )
+                AND
                 
                 		(
 				(registreringObj.registrering) IS NULL 
@@ -2266,7 +2296,8 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
                                     a.starttidspunkt::text ilike anyAttrValue OR
                                     a.sluttidspunkt::text ilike anyAttrValue OR
                                     a.tidsforbrug::text ilike anyAttrValue OR
-                        a.formaal ILIKE anyAttrValue
+                        a.formaal ILIKE anyAttrValue OR
+                        a.integrationsdata ILIKE anyAttrValue
                 
             )
             AND
@@ -3847,6 +3878,12 @@ ELSE
 					OR 
 					a.formaal = attrEgenskaberTypeObj.formaal 
 				)
+				AND
+				(
+					attrEgenskaberTypeObj.integrationsdata IS NULL
+					OR 
+					a.integrationsdata = attrEgenskaberTypeObj.integrationsdata 
+				)
 				AND b.aktivitet_id = ANY (aktivitet_candidates)
 				AND (a.virkning).TimePeriod @> actual_virkning 
 			);
@@ -4033,6 +4070,7 @@ CREATE TYPE BrugerEgenskaberAttrType AS (
 brugervendtnoegle text,
 brugernavn text,
 brugertype text,
+integrationsdata text,
 
  virkning Virkning
 );
@@ -4192,6 +4230,7 @@ CREATE TABLE bruger_attr_egenskaber (
         brugervendtnoegle text NOT NULL,
         brugernavn text  NULL,
         brugertype text  NULL,
+        integrationsdata text  NULL,
     virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
     bruger_registrering_id bigint NOT NULL,
     CONSTRAINT bruger_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -4239,6 +4278,17 @@ ALTER TABLE bruger_attr_egenskaber
             ON bruger_attr_egenskaber
             USING btree
             (brugertype); 
+ 
+     
+        CREATE INDEX bruger_attr_egenskaber_pat_integrationsdata
+            ON bruger_attr_egenskaber
+            USING gin
+            (integrationsdata gin_trgm_ops);
+
+        CREATE INDEX bruger_attr_egenskaber_idx_integrationsdata
+            ON bruger_attr_egenskaber
+            USING btree
+            (integrationsdata); 
 
 
 
@@ -4471,7 +4521,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr BrugerEgenskaberAttrT
     FOREACH element IN ARRAY inputArr
     LOOP
 
-      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.brugernavn IS NULL AND element.brugertype IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.brugernavn IS NULL AND element.brugertype IS NULL AND element.integrationsdata IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
 
     --  RAISE DEBUG 'Skipping element';
       ELSE
@@ -4842,7 +4892,7 @@ BEGIN
                     unnest(attrEgenskaber) a
                     JOIN unnest(attrEgenskaber) b ON (a.virkning).TimePeriod && (b.virkning).TimePeriod
                 GROUP BY
-                    a.brugervendtnoegle,a.brugernavn,a.brugertype,
+                    a.brugervendtnoegle,a.brugernavn,a.brugertype,a.integrationsdata,
                     a.virkning
                     
                     HAVING COUNT(*) > 1) THEN
@@ -4853,9 +4903,9 @@ BEGIN
         -- To avoid needless fragmentation we'll check for presence of
         -- null values in the fields - and if none are present, we'll skip
         -- the merging operations
-        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).brugernavn IS NULL  OR  (attrEgenskaberObj).brugertype IS NULL  THEN
+        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).brugernavn IS NULL  OR  (attrEgenskaberObj).brugertype IS NULL  OR  (attrEgenskaberObj).integrationsdata IS NULL  THEN
             
-            INSERT INTO bruger_attr_egenskaber ( brugervendtnoegle,brugernavn,brugertype, virkning, bruger_registrering_id)
+            INSERT INTO bruger_attr_egenskaber ( brugervendtnoegle,brugernavn,brugertype,integrationsdata, virkning, bruger_registrering_id)
                 SELECT
                     
                         
@@ -4869,6 +4919,10 @@ BEGIN
                         
                         
                             coalesce(attrEgenskaberObj.brugertype, a.brugertype),
+                    
+                        
+                        
+                            coalesce(attrEgenskaberObj.integrationsdata, a.integrationsdata),
                     
                     ROW ((a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
                             (attrEgenskaberObj.virkning).AktoerRef,
@@ -4885,7 +4939,7 @@ BEGIN
         -- that is NOT covered by any "merged" rows inserted above, generate
         -- and insert rows.
         
-            INSERT INTO bruger_attr_egenskaber ( brugervendtnoegle,brugernavn,brugertype, virkning, bruger_registrering_id)
+            INSERT INTO bruger_attr_egenskaber ( brugervendtnoegle,brugernavn,brugertype,integrationsdata, virkning, bruger_registrering_id)
                 SELECT
                     
                      attrEgenskaberObj.brugervendtnoegle,
@@ -4893,6 +4947,8 @@ BEGIN
                      attrEgenskaberObj.brugernavn,
                     
                      attrEgenskaberObj.brugertype,
+                    
+                     attrEgenskaberObj.integrationsdata,
                     
                     ROW (b.tz_range_leftover,
                         (attrEgenskaberObj.virkning).AktoerRef,
@@ -4913,8 +4969,8 @@ BEGIN
             -- Insert attrEgenskaberObj raw (if there were no null-valued fields)
             
 
-            INSERT INTO bruger_attr_egenskaber ( brugervendtnoegle,brugernavn,brugertype, virkning, bruger_registrering_id)
-                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.brugernavn,  attrEgenskaberObj.brugertype, attrEgenskaberObj.virkning, new_bruger_registrering.id );
+            INSERT INTO bruger_attr_egenskaber ( brugervendtnoegle,brugernavn,brugertype,integrationsdata, virkning, bruger_registrering_id)
+                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.brugernavn,  attrEgenskaberObj.brugertype,  attrEgenskaberObj.integrationsdata, attrEgenskaberObj.virkning, new_bruger_registrering.id );
         END IF;
 
         END LOOP;
@@ -4930,7 +4986,7 @@ BEGIN
 -- Handle egenskaber of previous registration, taking overlapping
 -- virknings into consideration (using function subtract_tstzrange)
 
-    INSERT INTO bruger_attr_egenskaber ( brugervendtnoegle,brugernavn,brugertype, virkning, bruger_registrering_id)
+    INSERT INTO bruger_attr_egenskaber ( brugervendtnoegle,brugernavn,brugertype,integrationsdata, virkning, bruger_registrering_id)
     SELECT
         
         
@@ -4939,6 +4995,8 @@ BEGIN
             a.brugernavn,
         
             a.brugertype,
+        
+            a.integrationsdata,
         
         ROW (c.tz_range_leftover,
             (a.virkning).AktoerRef,
@@ -5125,6 +5183,7 @@ IF bruger_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(brug
       brugervendtnoegle,
       brugernavn,
       brugertype,
+      integrationsdata,
       virkning,
       bruger_registrering_id
     )
@@ -5133,6 +5192,7 @@ IF bruger_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(brug
      bruger_attr_egenskaber_obj.brugervendtnoegle,
       bruger_attr_egenskaber_obj.brugernavn,
       bruger_attr_egenskaber_obj.brugertype,
+      bruger_attr_egenskaber_obj.integrationsdata,
       bruger_attr_egenskaber_obj.virkning,
       bruger_registrering_id
     ;
@@ -5318,6 +5378,7 @@ FROM
 					 		b.brugervendtnoegle,
 					 		b.brugernavn,
 					 		b.brugertype,
+					 		b.integrationsdata,
 					   		b.virkning
                             
 							)::BrugerEgenskaberAttrType
@@ -5325,7 +5386,7 @@ FROM
 						NULL
 						END
                         
-						order by b.brugervendtnoegle,b.brugernavn,b.brugertype,b.virkning
+						order by b.brugervendtnoegle,b.brugernavn,b.brugertype,b.integrationsdata,b.virkning
                         
 					)) BrugerAttrEgenskaberArr
                     
@@ -5632,6 +5693,12 @@ ELSE
                     a.brugertype ILIKE attrEgenskaberTypeObj.brugertype --case insensitive
                 )
                 AND
+                (
+                    attrEgenskaberTypeObj.integrationsdata IS NULL
+                    OR
+                    a.integrationsdata ILIKE attrEgenskaberTypeObj.integrationsdata --case insensitive
+                )
+                AND
                 
                 		(
 				(registreringObj.registrering) IS NULL 
@@ -5731,7 +5798,8 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
             (
                         a.brugervendtnoegle ILIKE anyAttrValue OR
                         a.brugernavn ILIKE anyAttrValue OR
-                        a.brugertype ILIKE anyAttrValue
+                        a.brugertype ILIKE anyAttrValue OR
+                        a.integrationsdata ILIKE anyAttrValue
                 
             )
             AND
@@ -6739,6 +6807,12 @@ ELSE
 					OR 
 					a.brugertype = attrEgenskaberTypeObj.brugertype 
 				)
+				AND
+				(
+					attrEgenskaberTypeObj.integrationsdata IS NULL
+					OR 
+					a.integrationsdata = attrEgenskaberTypeObj.integrationsdata 
+				)
 				AND b.bruger_id = ANY (bruger_candidates)
 				AND (a.virkning).TimePeriod @> actual_virkning 
 			);
@@ -6906,6 +6980,7 @@ minor ClearableInt,
 offentlighedundtaget offentlighedundtagettype,
 titel text,
 dokumenttype text,
+integrationsdata text,
 
  virkning Virkning
 );
@@ -7134,6 +7209,7 @@ CREATE TABLE dokument_attr_egenskaber (
         offentlighedundtaget offentlighedundtagettype  NULL,
         titel text NOT NULL,
         dokumenttype text NOT NULL,
+        integrationsdata text  NULL,
     virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
     dokument_registrering_id bigint NOT NULL,
     CONSTRAINT dokument_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -7265,6 +7341,17 @@ ALTER TABLE dokument_attr_egenskaber
             ON dokument_attr_egenskaber
             USING btree
             (dokumenttype); 
+ 
+     
+        CREATE INDEX dokument_attr_egenskaber_pat_integrationsdata
+            ON dokument_attr_egenskaber
+            USING gin
+            (integrationsdata gin_trgm_ops);
+
+        CREATE INDEX dokument_attr_egenskaber_idx_integrationsdata
+            ON dokument_attr_egenskaber
+            USING btree
+            (integrationsdata); 
 
 
 
@@ -7789,7 +7876,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr DokumentEgenskaberAtt
     FOREACH element IN ARRAY inputArr
     LOOP
 
-      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.beskrivelse IS NULL AND element.brevdato IS NULL AND element.kassationskode IS NULL AND element.major IS NULL AND element.minor IS NULL AND element.offentlighedundtaget IS NULL AND element.titel IS NULL AND element.dokumenttype IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.beskrivelse IS NULL AND element.brevdato IS NULL AND element.kassationskode IS NULL AND element.major IS NULL AND element.minor IS NULL AND element.offentlighedundtaget IS NULL AND element.titel IS NULL AND element.dokumenttype IS NULL AND element.integrationsdata IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
 
     --  RAISE DEBUG 'Skipping element';
       ELSE
@@ -8323,7 +8410,7 @@ BEGIN
                     unnest(attrEgenskaber) a
                     JOIN unnest(attrEgenskaber) b ON (a.virkning).TimePeriod && (b.virkning).TimePeriod
                 GROUP BY
-                    a.brugervendtnoegle,a.beskrivelse,a.brevdato,a.kassationskode,a.major,a.minor,a.offentlighedundtaget,a.titel,a.dokumenttype,
+                    a.brugervendtnoegle,a.beskrivelse,a.brevdato,a.kassationskode,a.major,a.minor,a.offentlighedundtaget,a.titel,a.dokumenttype,a.integrationsdata,
                     a.virkning
                     
                     HAVING COUNT(*) > 1) THEN
@@ -8334,9 +8421,9 @@ BEGIN
         -- To avoid needless fragmentation we'll check for presence of
         -- null values in the fields - and if none are present, we'll skip
         -- the merging operations
-        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).beskrivelse IS NULL  OR  (attrEgenskaberObj).brevdato IS NULL  OR  (attrEgenskaberObj).kassationskode IS NULL  OR  (attrEgenskaberObj).major IS NULL  OR  (attrEgenskaberObj).minor IS NULL  OR  (attrEgenskaberObj).offentlighedundtaget IS NULL  OR  (attrEgenskaberObj).titel IS NULL  OR  (attrEgenskaberObj).dokumenttype IS NULL  THEN
+        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).beskrivelse IS NULL  OR  (attrEgenskaberObj).brevdato IS NULL  OR  (attrEgenskaberObj).kassationskode IS NULL  OR  (attrEgenskaberObj).major IS NULL  OR  (attrEgenskaberObj).minor IS NULL  OR  (attrEgenskaberObj).offentlighedundtaget IS NULL  OR  (attrEgenskaberObj).titel IS NULL  OR  (attrEgenskaberObj).dokumenttype IS NULL  OR  (attrEgenskaberObj).integrationsdata IS NULL  THEN
             
-            INSERT INTO dokument_attr_egenskaber ( brugervendtnoegle,beskrivelse,brevdato,kassationskode,major,minor,offentlighedundtaget,titel,dokumenttype, virkning, dokument_registrering_id)
+            INSERT INTO dokument_attr_egenskaber ( brugervendtnoegle,beskrivelse,brevdato,kassationskode,major,minor,offentlighedundtaget,titel,dokumenttype,integrationsdata, virkning, dokument_registrering_id)
                 SELECT
                     
                         
@@ -8390,6 +8477,10 @@ BEGIN
                         
                             coalesce(attrEgenskaberObj.dokumenttype, a.dokumenttype),
                     
+                        
+                        
+                            coalesce(attrEgenskaberObj.integrationsdata, a.integrationsdata),
+                    
                     ROW ((a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
                             (attrEgenskaberObj.virkning).AktoerRef,
                             (attrEgenskaberObj.virkning).AktoerTypeKode,
@@ -8405,7 +8496,7 @@ BEGIN
         -- that is NOT covered by any "merged" rows inserted above, generate
         -- and insert rows.
         
-            INSERT INTO dokument_attr_egenskaber ( brugervendtnoegle,beskrivelse,brevdato,kassationskode,major,minor,offentlighedundtaget,titel,dokumenttype, virkning, dokument_registrering_id)
+            INSERT INTO dokument_attr_egenskaber ( brugervendtnoegle,beskrivelse,brevdato,kassationskode,major,minor,offentlighedundtaget,titel,dokumenttype,integrationsdata, virkning, dokument_registrering_id)
                 SELECT
                     
                      attrEgenskaberObj.brugervendtnoegle,
@@ -8426,6 +8517,8 @@ BEGIN
                     
                      attrEgenskaberObj.dokumenttype,
                     
+                     attrEgenskaberObj.integrationsdata,
+                    
                     ROW (b.tz_range_leftover,
                         (attrEgenskaberObj.virkning).AktoerRef,
                         (attrEgenskaberObj.virkning).AktoerTypeKode,
@@ -8445,8 +8538,8 @@ BEGIN
             -- Insert attrEgenskaberObj raw (if there were no null-valued fields)
             
 
-            INSERT INTO dokument_attr_egenskaber ( brugervendtnoegle,beskrivelse,brevdato,kassationskode,major,minor,offentlighedundtaget,titel,dokumenttype, virkning, dokument_registrering_id)
-                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.beskrivelse,  attrEgenskaberObj.brevdato,  attrEgenskaberObj.kassationskode,  attrEgenskaberObj.major,  attrEgenskaberObj.minor,  attrEgenskaberObj.offentlighedundtaget,  attrEgenskaberObj.titel,  attrEgenskaberObj.dokumenttype, attrEgenskaberObj.virkning, new_dokument_registrering.id );
+            INSERT INTO dokument_attr_egenskaber ( brugervendtnoegle,beskrivelse,brevdato,kassationskode,major,minor,offentlighedundtaget,titel,dokumenttype,integrationsdata, virkning, dokument_registrering_id)
+                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.beskrivelse,  attrEgenskaberObj.brevdato,  attrEgenskaberObj.kassationskode,  attrEgenskaberObj.major,  attrEgenskaberObj.minor,  attrEgenskaberObj.offentlighedundtaget,  attrEgenskaberObj.titel,  attrEgenskaberObj.dokumenttype,  attrEgenskaberObj.integrationsdata, attrEgenskaberObj.virkning, new_dokument_registrering.id );
         END IF;
 
         END LOOP;
@@ -8462,7 +8555,7 @@ BEGIN
 -- Handle egenskaber of previous registration, taking overlapping
 -- virknings into consideration (using function subtract_tstzrange)
 
-    INSERT INTO dokument_attr_egenskaber ( brugervendtnoegle,beskrivelse,brevdato,kassationskode,major,minor,offentlighedundtaget,titel,dokumenttype, virkning, dokument_registrering_id)
+    INSERT INTO dokument_attr_egenskaber ( brugervendtnoegle,beskrivelse,brevdato,kassationskode,major,minor,offentlighedundtaget,titel,dokumenttype,integrationsdata, virkning, dokument_registrering_id)
     SELECT
         
         
@@ -8483,6 +8576,8 @@ BEGIN
             a.titel,
         
             a.dokumenttype,
+        
+            a.integrationsdata,
         
         ROW (c.tz_range_leftover,
             (a.virkning).AktoerRef,
@@ -9232,6 +9327,7 @@ IF dokument_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(do
       offentlighedundtaget,
       titel,
       dokumenttype,
+      integrationsdata,
       virkning,
       dokument_registrering_id
     )
@@ -9246,6 +9342,7 @@ IF dokument_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(do
       dokument_attr_egenskaber_obj.offentlighedundtaget,
       dokument_attr_egenskaber_obj.titel,
       dokument_attr_egenskaber_obj.dokumenttype,
+      dokument_attr_egenskaber_obj.integrationsdata,
       dokument_attr_egenskaber_obj.virkning,
       dokument_registrering_id
     ;
@@ -9573,6 +9670,7 @@ FROM
 					 		b.offentlighedundtaget,
 					 		b.titel,
 					 		b.dokumenttype,
+					 		b.integrationsdata,
 					   		b.virkning
                             
 							)::DokumentEgenskaberAttrType
@@ -9580,7 +9678,7 @@ FROM
 						NULL
 						END
                         
-						order by b.brugervendtnoegle,b.beskrivelse,b.brevdato,b.kassationskode,b.major,b.minor,b.offentlighedundtaget,b.titel,b.dokumenttype,b.virkning
+						order by b.brugervendtnoegle,b.beskrivelse,b.brevdato,b.kassationskode,b.major,b.minor,b.offentlighedundtaget,b.titel,b.dokumenttype,b.integrationsdata,b.virkning
                         
 					)) DokumentAttrEgenskaberArr
                     
@@ -9943,6 +10041,12 @@ ELSE
                     attrEgenskaberTypeObj.dokumenttype IS NULL
                     OR
                     a.dokumenttype ILIKE attrEgenskaberTypeObj.dokumenttype --case insensitive
+                )
+                AND
+                (
+                    attrEgenskaberTypeObj.integrationsdata IS NULL
+                    OR
+                    a.integrationsdata ILIKE attrEgenskaberTypeObj.integrationsdata --case insensitive
                 )
                 AND
                 
@@ -11670,6 +11774,12 @@ ELSE
 					OR 
 					a.dokumenttype = attrEgenskaberTypeObj.dokumenttype 
 				)
+				AND
+				(
+					attrEgenskaberTypeObj.integrationsdata IS NULL
+					OR 
+					a.integrationsdata = attrEgenskaberTypeObj.integrationsdata 
+				)
 				AND b.dokument_id = ANY (dokument_candidates)
 				AND (a.virkning).TimePeriod @> actual_virkning 
 			);
@@ -11832,6 +11942,7 @@ ophavsret text,
 plan text,
 supplement text,
 retskilde text,
+integrationsdata text,
 
  virkning Virkning
 );
@@ -11995,6 +12106,7 @@ CREATE TABLE facet_attr_egenskaber (
         plan text  NULL,
         supplement text  NULL,
         retskilde text  NULL,
+        integrationsdata text  NULL,
     virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
     facet_registrering_id bigint NOT NULL,
     CONSTRAINT facet_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -12086,6 +12198,17 @@ ALTER TABLE facet_attr_egenskaber
             ON facet_attr_egenskaber
             USING btree
             (retskilde); 
+ 
+     
+        CREATE INDEX facet_attr_egenskaber_pat_integrationsdata
+            ON facet_attr_egenskaber
+            USING gin
+            (integrationsdata gin_trgm_ops);
+
+        CREATE INDEX facet_attr_egenskaber_idx_integrationsdata
+            ON facet_attr_egenskaber
+            USING btree
+            (integrationsdata); 
 
 
 
@@ -12318,7 +12441,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr FacetEgenskaberAttrTy
     FOREACH element IN ARRAY inputArr
     LOOP
 
-      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.beskrivelse IS NULL AND element.opbygning IS NULL AND element.ophavsret IS NULL AND element.plan IS NULL AND element.supplement IS NULL AND element.retskilde IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.beskrivelse IS NULL AND element.opbygning IS NULL AND element.ophavsret IS NULL AND element.plan IS NULL AND element.supplement IS NULL AND element.retskilde IS NULL AND element.integrationsdata IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
 
     --  RAISE DEBUG 'Skipping element';
       ELSE
@@ -12689,7 +12812,7 @@ BEGIN
                     unnest(attrEgenskaber) a
                     JOIN unnest(attrEgenskaber) b ON (a.virkning).TimePeriod && (b.virkning).TimePeriod
                 GROUP BY
-                    a.brugervendtnoegle,a.beskrivelse,a.opbygning,a.ophavsret,a.plan,a.supplement,a.retskilde,
+                    a.brugervendtnoegle,a.beskrivelse,a.opbygning,a.ophavsret,a.plan,a.supplement,a.retskilde,a.integrationsdata,
                     a.virkning
                     
                     HAVING COUNT(*) > 1) THEN
@@ -12700,9 +12823,9 @@ BEGIN
         -- To avoid needless fragmentation we'll check for presence of
         -- null values in the fields - and if none are present, we'll skip
         -- the merging operations
-        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).beskrivelse IS NULL  OR  (attrEgenskaberObj).opbygning IS NULL  OR  (attrEgenskaberObj).ophavsret IS NULL  OR  (attrEgenskaberObj).plan IS NULL  OR  (attrEgenskaberObj).supplement IS NULL  OR  (attrEgenskaberObj).retskilde IS NULL  THEN
+        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).beskrivelse IS NULL  OR  (attrEgenskaberObj).opbygning IS NULL  OR  (attrEgenskaberObj).ophavsret IS NULL  OR  (attrEgenskaberObj).plan IS NULL  OR  (attrEgenskaberObj).supplement IS NULL  OR  (attrEgenskaberObj).retskilde IS NULL  OR  (attrEgenskaberObj).integrationsdata IS NULL  THEN
             
-            INSERT INTO facet_attr_egenskaber ( brugervendtnoegle,beskrivelse,opbygning,ophavsret,plan,supplement,retskilde, virkning, facet_registrering_id)
+            INSERT INTO facet_attr_egenskaber ( brugervendtnoegle,beskrivelse,opbygning,ophavsret,plan,supplement,retskilde,integrationsdata, virkning, facet_registrering_id)
                 SELECT
                     
                         
@@ -12733,6 +12856,10 @@ BEGIN
                         
                             coalesce(attrEgenskaberObj.retskilde, a.retskilde),
                     
+                        
+                        
+                            coalesce(attrEgenskaberObj.integrationsdata, a.integrationsdata),
+                    
                     ROW ((a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
                             (attrEgenskaberObj.virkning).AktoerRef,
                             (attrEgenskaberObj.virkning).AktoerTypeKode,
@@ -12748,7 +12875,7 @@ BEGIN
         -- that is NOT covered by any "merged" rows inserted above, generate
         -- and insert rows.
         
-            INSERT INTO facet_attr_egenskaber ( brugervendtnoegle,beskrivelse,opbygning,ophavsret,plan,supplement,retskilde, virkning, facet_registrering_id)
+            INSERT INTO facet_attr_egenskaber ( brugervendtnoegle,beskrivelse,opbygning,ophavsret,plan,supplement,retskilde,integrationsdata, virkning, facet_registrering_id)
                 SELECT
                     
                      attrEgenskaberObj.brugervendtnoegle,
@@ -12764,6 +12891,8 @@ BEGIN
                      attrEgenskaberObj.supplement,
                     
                      attrEgenskaberObj.retskilde,
+                    
+                     attrEgenskaberObj.integrationsdata,
                     
                     ROW (b.tz_range_leftover,
                         (attrEgenskaberObj.virkning).AktoerRef,
@@ -12784,8 +12913,8 @@ BEGIN
             -- Insert attrEgenskaberObj raw (if there were no null-valued fields)
             
 
-            INSERT INTO facet_attr_egenskaber ( brugervendtnoegle,beskrivelse,opbygning,ophavsret,plan,supplement,retskilde, virkning, facet_registrering_id)
-                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.beskrivelse,  attrEgenskaberObj.opbygning,  attrEgenskaberObj.ophavsret,  attrEgenskaberObj.plan,  attrEgenskaberObj.supplement,  attrEgenskaberObj.retskilde, attrEgenskaberObj.virkning, new_facet_registrering.id );
+            INSERT INTO facet_attr_egenskaber ( brugervendtnoegle,beskrivelse,opbygning,ophavsret,plan,supplement,retskilde,integrationsdata, virkning, facet_registrering_id)
+                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.beskrivelse,  attrEgenskaberObj.opbygning,  attrEgenskaberObj.ophavsret,  attrEgenskaberObj.plan,  attrEgenskaberObj.supplement,  attrEgenskaberObj.retskilde,  attrEgenskaberObj.integrationsdata, attrEgenskaberObj.virkning, new_facet_registrering.id );
         END IF;
 
         END LOOP;
@@ -12801,7 +12930,7 @@ BEGIN
 -- Handle egenskaber of previous registration, taking overlapping
 -- virknings into consideration (using function subtract_tstzrange)
 
-    INSERT INTO facet_attr_egenskaber ( brugervendtnoegle,beskrivelse,opbygning,ophavsret,plan,supplement,retskilde, virkning, facet_registrering_id)
+    INSERT INTO facet_attr_egenskaber ( brugervendtnoegle,beskrivelse,opbygning,ophavsret,plan,supplement,retskilde,integrationsdata, virkning, facet_registrering_id)
     SELECT
         
         
@@ -12818,6 +12947,8 @@ BEGIN
             a.supplement,
         
             a.retskilde,
+        
+            a.integrationsdata,
         
         ROW (c.tz_range_leftover,
             (a.virkning).AktoerRef,
@@ -13008,6 +13139,7 @@ IF facet_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(facet
       plan,
       supplement,
       retskilde,
+      integrationsdata,
       virkning,
       facet_registrering_id
     )
@@ -13020,6 +13152,7 @@ IF facet_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(facet
       facet_attr_egenskaber_obj.plan,
       facet_attr_egenskaber_obj.supplement,
       facet_attr_egenskaber_obj.retskilde,
+      facet_attr_egenskaber_obj.integrationsdata,
       facet_attr_egenskaber_obj.virkning,
       facet_registrering_id
     ;
@@ -13209,6 +13342,7 @@ FROM
 					 		b.plan,
 					 		b.supplement,
 					 		b.retskilde,
+					 		b.integrationsdata,
 					   		b.virkning
                             
 							)::FacetEgenskaberAttrType
@@ -13216,7 +13350,7 @@ FROM
 						NULL
 						END
                         
-						order by b.brugervendtnoegle,b.beskrivelse,b.opbygning,b.ophavsret,b.plan,b.supplement,b.retskilde,b.virkning
+						order by b.brugervendtnoegle,b.beskrivelse,b.opbygning,b.ophavsret,b.plan,b.supplement,b.retskilde,b.integrationsdata,b.virkning
                         
 					)) FacetAttrEgenskaberArr
                     
@@ -13547,6 +13681,12 @@ ELSE
                     a.retskilde ILIKE attrEgenskaberTypeObj.retskilde --case insensitive
                 )
                 AND
+                (
+                    attrEgenskaberTypeObj.integrationsdata IS NULL
+                    OR
+                    a.integrationsdata ILIKE attrEgenskaberTypeObj.integrationsdata --case insensitive
+                )
+                AND
                 
                 		(
 				(registreringObj.registrering) IS NULL 
@@ -13650,7 +13790,8 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
                         a.ophavsret ILIKE anyAttrValue OR
                         a.plan ILIKE anyAttrValue OR
                         a.supplement ILIKE anyAttrValue OR
-                        a.retskilde ILIKE anyAttrValue
+                        a.retskilde ILIKE anyAttrValue OR
+                        a.integrationsdata ILIKE anyAttrValue
                 
             )
             AND
@@ -14682,6 +14823,12 @@ ELSE
 					OR 
 					a.retskilde = attrEgenskaberTypeObj.retskilde 
 				)
+				AND
+				(
+					attrEgenskaberTypeObj.integrationsdata IS NULL
+					OR 
+					a.integrationsdata = attrEgenskaberTypeObj.integrationsdata 
+				)
 				AND b.facet_id = ANY (facet_candidates)
 				AND (a.virkning).TimePeriod @> actual_virkning 
 			);
@@ -14850,6 +14997,7 @@ starttidspunkt ClearableTimestamptz,
 
 sluttidspunkt ClearableTimestamptz,
 
+integrationsdata text,
 
  virkning Virkning
 );
@@ -15018,6 +15166,7 @@ CREATE TABLE indsats_attr_egenskaber (
         beskrivelse text  NULL,
         starttidspunkt timestamptz  NULL,
         sluttidspunkt timestamptz  NULL,
+        integrationsdata text  NULL,
     virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
     indsats_registrering_id bigint NOT NULL,
     CONSTRAINT indsats_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -15078,6 +15227,17 @@ ALTER TABLE indsats_attr_egenskaber
             
          
      
+ 
+     
+        CREATE INDEX indsats_attr_egenskaber_pat_integrationsdata
+            ON indsats_attr_egenskaber
+            USING gin
+            (integrationsdata gin_trgm_ops);
+
+        CREATE INDEX indsats_attr_egenskaber_idx_integrationsdata
+            ON indsats_attr_egenskaber
+            USING btree
+            (integrationsdata); 
 
 
 
@@ -15398,7 +15558,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr IndsatsEgenskaberAttr
     FOREACH element IN ARRAY inputArr
     LOOP
 
-      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.beskrivelse IS NULL AND element.starttidspunkt IS NULL AND element.sluttidspunkt IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.beskrivelse IS NULL AND element.starttidspunkt IS NULL AND element.sluttidspunkt IS NULL AND element.integrationsdata IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
 
     --  RAISE DEBUG 'Skipping element';
       ELSE
@@ -15894,7 +16054,7 @@ BEGIN
                     unnest(attrEgenskaber) a
                     JOIN unnest(attrEgenskaber) b ON (a.virkning).TimePeriod && (b.virkning).TimePeriod
                 GROUP BY
-                    a.brugervendtnoegle,a.beskrivelse,a.starttidspunkt,a.sluttidspunkt,
+                    a.brugervendtnoegle,a.beskrivelse,a.starttidspunkt,a.sluttidspunkt,a.integrationsdata,
                     a.virkning
                     
                     HAVING COUNT(*) > 1) THEN
@@ -15905,9 +16065,9 @@ BEGIN
         -- To avoid needless fragmentation we'll check for presence of
         -- null values in the fields - and if none are present, we'll skip
         -- the merging operations
-        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).beskrivelse IS NULL  OR  (attrEgenskaberObj).starttidspunkt IS NULL  OR  (attrEgenskaberObj).sluttidspunkt IS NULL  THEN
+        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).beskrivelse IS NULL  OR  (attrEgenskaberObj).starttidspunkt IS NULL  OR  (attrEgenskaberObj).sluttidspunkt IS NULL  OR  (attrEgenskaberObj).integrationsdata IS NULL  THEN
             
-            INSERT INTO indsats_attr_egenskaber ( brugervendtnoegle,beskrivelse,starttidspunkt,sluttidspunkt, virkning, indsats_registrering_id)
+            INSERT INTO indsats_attr_egenskaber ( brugervendtnoegle,beskrivelse,starttidspunkt,sluttidspunkt,integrationsdata, virkning, indsats_registrering_id)
                 SELECT
                     
                         
@@ -15936,6 +16096,10 @@ BEGIN
                             END,
                         
                     
+                        
+                        
+                            coalesce(attrEgenskaberObj.integrationsdata, a.integrationsdata),
+                    
                     ROW ((a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
                             (attrEgenskaberObj.virkning).AktoerRef,
                             (attrEgenskaberObj.virkning).AktoerTypeKode,
@@ -15951,7 +16115,7 @@ BEGIN
         -- that is NOT covered by any "merged" rows inserted above, generate
         -- and insert rows.
         
-            INSERT INTO indsats_attr_egenskaber ( brugervendtnoegle,beskrivelse,starttidspunkt,sluttidspunkt, virkning, indsats_registrering_id)
+            INSERT INTO indsats_attr_egenskaber ( brugervendtnoegle,beskrivelse,starttidspunkt,sluttidspunkt,integrationsdata, virkning, indsats_registrering_id)
                 SELECT
                     
                      attrEgenskaberObj.brugervendtnoegle,
@@ -15961,6 +16125,8 @@ BEGIN
                      attrEgenskaberObj.starttidspunkt,
                     
                      attrEgenskaberObj.sluttidspunkt,
+                    
+                     attrEgenskaberObj.integrationsdata,
                     
                     ROW (b.tz_range_leftover,
                         (attrEgenskaberObj.virkning).AktoerRef,
@@ -15981,8 +16147,8 @@ BEGIN
             -- Insert attrEgenskaberObj raw (if there were no null-valued fields)
             
 
-            INSERT INTO indsats_attr_egenskaber ( brugervendtnoegle,beskrivelse,starttidspunkt,sluttidspunkt, virkning, indsats_registrering_id)
-                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.beskrivelse,  attrEgenskaberObj.starttidspunkt,  attrEgenskaberObj.sluttidspunkt, attrEgenskaberObj.virkning, new_indsats_registrering.id );
+            INSERT INTO indsats_attr_egenskaber ( brugervendtnoegle,beskrivelse,starttidspunkt,sluttidspunkt,integrationsdata, virkning, indsats_registrering_id)
+                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.beskrivelse,  attrEgenskaberObj.starttidspunkt,  attrEgenskaberObj.sluttidspunkt,  attrEgenskaberObj.integrationsdata, attrEgenskaberObj.virkning, new_indsats_registrering.id );
         END IF;
 
         END LOOP;
@@ -15998,7 +16164,7 @@ BEGIN
 -- Handle egenskaber of previous registration, taking overlapping
 -- virknings into consideration (using function subtract_tstzrange)
 
-    INSERT INTO indsats_attr_egenskaber ( brugervendtnoegle,beskrivelse,starttidspunkt,sluttidspunkt, virkning, indsats_registrering_id)
+    INSERT INTO indsats_attr_egenskaber ( brugervendtnoegle,beskrivelse,starttidspunkt,sluttidspunkt,integrationsdata, virkning, indsats_registrering_id)
     SELECT
         
         
@@ -16009,6 +16175,8 @@ BEGIN
             a.starttidspunkt,
         
             a.sluttidspunkt,
+        
+            a.integrationsdata,
         
         ROW (c.tz_range_leftover,
             (a.virkning).AktoerRef,
@@ -16206,6 +16374,7 @@ IF indsats_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(ind
       beskrivelse,
       starttidspunkt,
       sluttidspunkt,
+      integrationsdata,
       virkning,
       indsats_registrering_id
     )
@@ -16215,6 +16384,7 @@ IF indsats_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(ind
       indsats_attr_egenskaber_obj.beskrivelse,
       indsats_attr_egenskaber_obj.starttidspunkt,
       indsats_attr_egenskaber_obj.sluttidspunkt,
+      indsats_attr_egenskaber_obj.integrationsdata,
       indsats_attr_egenskaber_obj.virkning,
       indsats_registrering_id
     ;
@@ -16487,6 +16657,7 @@ FROM
 					 		b.beskrivelse,
 					 		b.starttidspunkt,
 					 		b.sluttidspunkt,
+					 		b.integrationsdata,
 					   		b.virkning
                             
 							)::IndsatsEgenskaberAttrType
@@ -16494,7 +16665,7 @@ FROM
 						NULL
 						END
                         
-						order by b.brugervendtnoegle,b.beskrivelse,b.starttidspunkt,b.sluttidspunkt,b.virkning
+						order by b.brugervendtnoegle,b.beskrivelse,b.starttidspunkt,b.sluttidspunkt,b.integrationsdata,b.virkning
                         
 					)) IndsatsAttrEgenskaberArr
                     
@@ -16820,6 +16991,12 @@ ELSE
                     a.sluttidspunkt = attrEgenskaberTypeObj.sluttidspunkt
                 )
                 AND
+                (
+                    attrEgenskaberTypeObj.integrationsdata IS NULL
+                    OR
+                    a.integrationsdata ILIKE attrEgenskaberTypeObj.integrationsdata --case insensitive
+                )
+                AND
                 
                 		(
 				(registreringObj.registrering) IS NULL 
@@ -16920,7 +17097,8 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
                         a.brugervendtnoegle ILIKE anyAttrValue OR
                         a.beskrivelse ILIKE anyAttrValue OR
                                     a.starttidspunkt::text ilike anyAttrValue OR
-                                    a.sluttidspunkt::text ilike anyAttrValue
+                                    a.sluttidspunkt::text ilike anyAttrValue OR
+                        a.integrationsdata ILIKE anyAttrValue
                 
             )
             AND
@@ -18404,6 +18582,12 @@ ELSE
 					OR 
 					a.sluttidspunkt = attrEgenskaberTypeObj.sluttidspunkt 
 				)
+				AND
+				(
+					attrEgenskaberTypeObj.integrationsdata IS NULL
+					OR 
+					a.integrationsdata = attrEgenskaberTypeObj.integrationsdata 
+				)
 				AND b.indsats_id = ANY (indsats_candidates)
 				AND (a.virkning).TimePeriod @> actual_virkning 
 			);
@@ -18590,6 +18774,7 @@ CREATE TYPE InteressefaellesskabEgenskaberAttrType AS (
 brugervendtnoegle text,
 interessefaellesskabsnavn text,
 interessefaellesskabstype text,
+integrationsdata text,
 
  virkning Virkning
 );
@@ -18749,6 +18934,7 @@ CREATE TABLE interessefaellesskab_attr_egenskaber (
         brugervendtnoegle text NOT NULL,
         interessefaellesskabsnavn text  NULL,
         interessefaellesskabstype text  NULL,
+        integrationsdata text  NULL,
     virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
     interessefaellesskab_registrering_id bigint NOT NULL,
     CONSTRAINT interessefaellesskab_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -18796,6 +18982,17 @@ ALTER TABLE interessefaellesskab_attr_egenskaber
             ON interessefaellesskab_attr_egenskaber
             USING btree
             (interessefaellesskabstype); 
+ 
+     
+        CREATE INDEX interessefaellesskab_attr_egenskaber_pat_integrationsdata
+            ON interessefaellesskab_attr_egenskaber
+            USING gin
+            (integrationsdata gin_trgm_ops);
+
+        CREATE INDEX interessefaellesskab_attr_egenskaber_idx_integrationsdata
+            ON interessefaellesskab_attr_egenskaber
+            USING btree
+            (integrationsdata); 
 
 
 
@@ -19028,7 +19225,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr InteressefaellesskabE
     FOREACH element IN ARRAY inputArr
     LOOP
 
-      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.interessefaellesskabsnavn IS NULL AND element.interessefaellesskabstype IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.interessefaellesskabsnavn IS NULL AND element.interessefaellesskabstype IS NULL AND element.integrationsdata IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
 
     --  RAISE DEBUG 'Skipping element';
       ELSE
@@ -19399,7 +19596,7 @@ BEGIN
                     unnest(attrEgenskaber) a
                     JOIN unnest(attrEgenskaber) b ON (a.virkning).TimePeriod && (b.virkning).TimePeriod
                 GROUP BY
-                    a.brugervendtnoegle,a.interessefaellesskabsnavn,a.interessefaellesskabstype,
+                    a.brugervendtnoegle,a.interessefaellesskabsnavn,a.interessefaellesskabstype,a.integrationsdata,
                     a.virkning
                     
                     HAVING COUNT(*) > 1) THEN
@@ -19410,9 +19607,9 @@ BEGIN
         -- To avoid needless fragmentation we'll check for presence of
         -- null values in the fields - and if none are present, we'll skip
         -- the merging operations
-        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).interessefaellesskabsnavn IS NULL  OR  (attrEgenskaberObj).interessefaellesskabstype IS NULL  THEN
+        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).interessefaellesskabsnavn IS NULL  OR  (attrEgenskaberObj).interessefaellesskabstype IS NULL  OR  (attrEgenskaberObj).integrationsdata IS NULL  THEN
             
-            INSERT INTO interessefaellesskab_attr_egenskaber ( brugervendtnoegle,interessefaellesskabsnavn,interessefaellesskabstype, virkning, interessefaellesskab_registrering_id)
+            INSERT INTO interessefaellesskab_attr_egenskaber ( brugervendtnoegle,interessefaellesskabsnavn,interessefaellesskabstype,integrationsdata, virkning, interessefaellesskab_registrering_id)
                 SELECT
                     
                         
@@ -19426,6 +19623,10 @@ BEGIN
                         
                         
                             coalesce(attrEgenskaberObj.interessefaellesskabstype, a.interessefaellesskabstype),
+                    
+                        
+                        
+                            coalesce(attrEgenskaberObj.integrationsdata, a.integrationsdata),
                     
                     ROW ((a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
                             (attrEgenskaberObj.virkning).AktoerRef,
@@ -19442,7 +19643,7 @@ BEGIN
         -- that is NOT covered by any "merged" rows inserted above, generate
         -- and insert rows.
         
-            INSERT INTO interessefaellesskab_attr_egenskaber ( brugervendtnoegle,interessefaellesskabsnavn,interessefaellesskabstype, virkning, interessefaellesskab_registrering_id)
+            INSERT INTO interessefaellesskab_attr_egenskaber ( brugervendtnoegle,interessefaellesskabsnavn,interessefaellesskabstype,integrationsdata, virkning, interessefaellesskab_registrering_id)
                 SELECT
                     
                      attrEgenskaberObj.brugervendtnoegle,
@@ -19450,6 +19651,8 @@ BEGIN
                      attrEgenskaberObj.interessefaellesskabsnavn,
                     
                      attrEgenskaberObj.interessefaellesskabstype,
+                    
+                     attrEgenskaberObj.integrationsdata,
                     
                     ROW (b.tz_range_leftover,
                         (attrEgenskaberObj.virkning).AktoerRef,
@@ -19470,8 +19673,8 @@ BEGIN
             -- Insert attrEgenskaberObj raw (if there were no null-valued fields)
             
 
-            INSERT INTO interessefaellesskab_attr_egenskaber ( brugervendtnoegle,interessefaellesskabsnavn,interessefaellesskabstype, virkning, interessefaellesskab_registrering_id)
-                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.interessefaellesskabsnavn,  attrEgenskaberObj.interessefaellesskabstype, attrEgenskaberObj.virkning, new_interessefaellesskab_registrering.id );
+            INSERT INTO interessefaellesskab_attr_egenskaber ( brugervendtnoegle,interessefaellesskabsnavn,interessefaellesskabstype,integrationsdata, virkning, interessefaellesskab_registrering_id)
+                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.interessefaellesskabsnavn,  attrEgenskaberObj.interessefaellesskabstype,  attrEgenskaberObj.integrationsdata, attrEgenskaberObj.virkning, new_interessefaellesskab_registrering.id );
         END IF;
 
         END LOOP;
@@ -19487,7 +19690,7 @@ BEGIN
 -- Handle egenskaber of previous registration, taking overlapping
 -- virknings into consideration (using function subtract_tstzrange)
 
-    INSERT INTO interessefaellesskab_attr_egenskaber ( brugervendtnoegle,interessefaellesskabsnavn,interessefaellesskabstype, virkning, interessefaellesskab_registrering_id)
+    INSERT INTO interessefaellesskab_attr_egenskaber ( brugervendtnoegle,interessefaellesskabsnavn,interessefaellesskabstype,integrationsdata, virkning, interessefaellesskab_registrering_id)
     SELECT
         
         
@@ -19496,6 +19699,8 @@ BEGIN
             a.interessefaellesskabsnavn,
         
             a.interessefaellesskabstype,
+        
+            a.integrationsdata,
         
         ROW (c.tz_range_leftover,
             (a.virkning).AktoerRef,
@@ -19682,6 +19887,7 @@ IF interessefaellesskab_registrering.attrEgenskaber IS NOT NULL and coalesce(arr
       brugervendtnoegle,
       interessefaellesskabsnavn,
       interessefaellesskabstype,
+      integrationsdata,
       virkning,
       interessefaellesskab_registrering_id
     )
@@ -19690,6 +19896,7 @@ IF interessefaellesskab_registrering.attrEgenskaber IS NOT NULL and coalesce(arr
      interessefaellesskab_attr_egenskaber_obj.brugervendtnoegle,
       interessefaellesskab_attr_egenskaber_obj.interessefaellesskabsnavn,
       interessefaellesskab_attr_egenskaber_obj.interessefaellesskabstype,
+      interessefaellesskab_attr_egenskaber_obj.integrationsdata,
       interessefaellesskab_attr_egenskaber_obj.virkning,
       interessefaellesskab_registrering_id
     ;
@@ -19875,6 +20082,7 @@ FROM
 					 		b.brugervendtnoegle,
 					 		b.interessefaellesskabsnavn,
 					 		b.interessefaellesskabstype,
+					 		b.integrationsdata,
 					   		b.virkning
                             
 							)::InteressefaellesskabEgenskaberAttrType
@@ -19882,7 +20090,7 @@ FROM
 						NULL
 						END
                         
-						order by b.brugervendtnoegle,b.interessefaellesskabsnavn,b.interessefaellesskabstype,b.virkning
+						order by b.brugervendtnoegle,b.interessefaellesskabsnavn,b.interessefaellesskabstype,b.integrationsdata,b.virkning
                         
 					)) InteressefaellesskabAttrEgenskaberArr
                     
@@ -20189,6 +20397,12 @@ ELSE
                     a.interessefaellesskabstype ILIKE attrEgenskaberTypeObj.interessefaellesskabstype --case insensitive
                 )
                 AND
+                (
+                    attrEgenskaberTypeObj.integrationsdata IS NULL
+                    OR
+                    a.integrationsdata ILIKE attrEgenskaberTypeObj.integrationsdata --case insensitive
+                )
+                AND
                 
                 		(
 				(registreringObj.registrering) IS NULL 
@@ -20288,7 +20502,8 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
             (
                         a.brugervendtnoegle ILIKE anyAttrValue OR
                         a.interessefaellesskabsnavn ILIKE anyAttrValue OR
-                        a.interessefaellesskabstype ILIKE anyAttrValue
+                        a.interessefaellesskabstype ILIKE anyAttrValue OR
+                        a.integrationsdata ILIKE anyAttrValue
                 
             )
             AND
@@ -21296,6 +21511,12 @@ ELSE
 					OR 
 					a.interessefaellesskabstype = attrEgenskaberTypeObj.interessefaellesskabstype 
 				)
+				AND
+				(
+					attrEgenskaberTypeObj.integrationsdata IS NULL
+					OR 
+					a.integrationsdata = attrEgenskaberTypeObj.integrationsdata 
+				)
 				AND b.interessefaellesskab_id = ANY (interessefaellesskab_candidates)
 				AND (a.virkning).TimePeriod @> actual_virkning 
 			);
@@ -21455,6 +21676,7 @@ brugervendtnoegle text,
 itsystemnavn text,
 itsystemtype text,
 konfigurationreference text[],
+integrationsdata text,
 
  virkning Virkning
 );
@@ -21615,6 +21837,7 @@ CREATE TABLE itsystem_attr_egenskaber (
         itsystemnavn text  NULL,
         itsystemtype text  NULL,
         konfigurationreference text[]  NULL,
+        integrationsdata text  NULL,
     virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
     itsystem_registrering_id bigint NOT NULL,
     CONSTRAINT itsystem_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -21671,6 +21894,17 @@ ALTER TABLE itsystem_attr_egenskaber
             (konfigurationreference _text_ops);
          
      
+ 
+     
+        CREATE INDEX itsystem_attr_egenskaber_pat_integrationsdata
+            ON itsystem_attr_egenskaber
+            USING gin
+            (integrationsdata gin_trgm_ops);
+
+        CREATE INDEX itsystem_attr_egenskaber_idx_integrationsdata
+            ON itsystem_attr_egenskaber
+            USING btree
+            (integrationsdata); 
 
 
 
@@ -21903,7 +22137,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr ItsystemEgenskaberAtt
     FOREACH element IN ARRAY inputArr
     LOOP
 
-      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.itsystemnavn IS NULL AND element.itsystemtype IS NULL AND element.konfigurationreference IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.itsystemnavn IS NULL AND element.itsystemtype IS NULL AND element.konfigurationreference IS NULL AND element.integrationsdata IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
 
     --  RAISE DEBUG 'Skipping element';
       ELSE
@@ -22274,7 +22508,7 @@ BEGIN
                     unnest(attrEgenskaber) a
                     JOIN unnest(attrEgenskaber) b ON (a.virkning).TimePeriod && (b.virkning).TimePeriod
                 GROUP BY
-                    a.brugervendtnoegle,a.itsystemnavn,a.itsystemtype,a.konfigurationreference,
+                    a.brugervendtnoegle,a.itsystemnavn,a.itsystemtype,a.konfigurationreference,a.integrationsdata,
                     a.virkning
                     
                     HAVING COUNT(*) > 1) THEN
@@ -22285,9 +22519,9 @@ BEGIN
         -- To avoid needless fragmentation we'll check for presence of
         -- null values in the fields - and if none are present, we'll skip
         -- the merging operations
-        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).itsystemnavn IS NULL  OR  (attrEgenskaberObj).itsystemtype IS NULL  OR  (attrEgenskaberObj).konfigurationreference IS NULL  THEN
+        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).itsystemnavn IS NULL  OR  (attrEgenskaberObj).itsystemtype IS NULL  OR  (attrEgenskaberObj).konfigurationreference IS NULL  OR  (attrEgenskaberObj).integrationsdata IS NULL  THEN
             
-            INSERT INTO itsystem_attr_egenskaber ( brugervendtnoegle,itsystemnavn,itsystemtype,konfigurationreference, virkning, itsystem_registrering_id)
+            INSERT INTO itsystem_attr_egenskaber ( brugervendtnoegle,itsystemnavn,itsystemtype,konfigurationreference,integrationsdata, virkning, itsystem_registrering_id)
                 SELECT
                     
                         
@@ -22306,6 +22540,10 @@ BEGIN
                         
                             coalesce(attrEgenskaberObj.konfigurationreference, a.konfigurationreference),
                     
+                        
+                        
+                            coalesce(attrEgenskaberObj.integrationsdata, a.integrationsdata),
+                    
                     ROW ((a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
                             (attrEgenskaberObj.virkning).AktoerRef,
                             (attrEgenskaberObj.virkning).AktoerTypeKode,
@@ -22321,7 +22559,7 @@ BEGIN
         -- that is NOT covered by any "merged" rows inserted above, generate
         -- and insert rows.
         
-            INSERT INTO itsystem_attr_egenskaber ( brugervendtnoegle,itsystemnavn,itsystemtype,konfigurationreference, virkning, itsystem_registrering_id)
+            INSERT INTO itsystem_attr_egenskaber ( brugervendtnoegle,itsystemnavn,itsystemtype,konfigurationreference,integrationsdata, virkning, itsystem_registrering_id)
                 SELECT
                     
                      attrEgenskaberObj.brugervendtnoegle,
@@ -22331,6 +22569,8 @@ BEGIN
                      attrEgenskaberObj.itsystemtype,
                     
                      attrEgenskaberObj.konfigurationreference,
+                    
+                     attrEgenskaberObj.integrationsdata,
                     
                     ROW (b.tz_range_leftover,
                         (attrEgenskaberObj.virkning).AktoerRef,
@@ -22351,8 +22591,8 @@ BEGIN
             -- Insert attrEgenskaberObj raw (if there were no null-valued fields)
             
 
-            INSERT INTO itsystem_attr_egenskaber ( brugervendtnoegle,itsystemnavn,itsystemtype,konfigurationreference, virkning, itsystem_registrering_id)
-                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.itsystemnavn,  attrEgenskaberObj.itsystemtype,  attrEgenskaberObj.konfigurationreference, attrEgenskaberObj.virkning, new_itsystem_registrering.id );
+            INSERT INTO itsystem_attr_egenskaber ( brugervendtnoegle,itsystemnavn,itsystemtype,konfigurationreference,integrationsdata, virkning, itsystem_registrering_id)
+                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.itsystemnavn,  attrEgenskaberObj.itsystemtype,  attrEgenskaberObj.konfigurationreference,  attrEgenskaberObj.integrationsdata, attrEgenskaberObj.virkning, new_itsystem_registrering.id );
         END IF;
 
         END LOOP;
@@ -22368,7 +22608,7 @@ BEGIN
 -- Handle egenskaber of previous registration, taking overlapping
 -- virknings into consideration (using function subtract_tstzrange)
 
-    INSERT INTO itsystem_attr_egenskaber ( brugervendtnoegle,itsystemnavn,itsystemtype,konfigurationreference, virkning, itsystem_registrering_id)
+    INSERT INTO itsystem_attr_egenskaber ( brugervendtnoegle,itsystemnavn,itsystemtype,konfigurationreference,integrationsdata, virkning, itsystem_registrering_id)
     SELECT
         
         
@@ -22379,6 +22619,8 @@ BEGIN
             a.itsystemtype,
         
             a.konfigurationreference,
+        
+            a.integrationsdata,
         
         ROW (c.tz_range_leftover,
             (a.virkning).AktoerRef,
@@ -22566,6 +22808,7 @@ IF itsystem_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(it
       itsystemnavn,
       itsystemtype,
       konfigurationreference,
+      integrationsdata,
       virkning,
       itsystem_registrering_id
     )
@@ -22575,6 +22818,7 @@ IF itsystem_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(it
       itsystem_attr_egenskaber_obj.itsystemnavn,
       itsystem_attr_egenskaber_obj.itsystemtype,
       itsystem_attr_egenskaber_obj.konfigurationreference,
+      itsystem_attr_egenskaber_obj.integrationsdata,
       itsystem_attr_egenskaber_obj.virkning,
       itsystem_registrering_id
     ;
@@ -22761,6 +23005,7 @@ FROM
 					 		b.itsystemnavn,
 					 		b.itsystemtype,
 					 		b.konfigurationreference,
+					 		b.integrationsdata,
 					   		b.virkning
                             
 							)::ItsystemEgenskaberAttrType
@@ -22768,7 +23013,7 @@ FROM
 						NULL
 						END
                         
-						order by b.brugervendtnoegle,b.itsystemnavn,b.itsystemtype,b.konfigurationreference,b.virkning
+						order by b.brugervendtnoegle,b.itsystemnavn,b.itsystemtype,b.konfigurationreference,b.integrationsdata,b.virkning
                         
 					)) ItsystemAttrEgenskaberArr
                     
@@ -23081,6 +23326,12 @@ ELSE
                     _as_search_match_array(attrEgenskaberTypeObj.konfigurationreference,a.konfigurationreference)
                 )
                 AND
+                (
+                    attrEgenskaberTypeObj.integrationsdata IS NULL
+                    OR
+                    a.integrationsdata ILIKE attrEgenskaberTypeObj.integrationsdata --case insensitive
+                )
+                AND
                 
                 		(
 				(registreringObj.registrering) IS NULL 
@@ -23181,7 +23432,8 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
                         a.brugervendtnoegle ILIKE anyAttrValue OR
                         a.itsystemnavn ILIKE anyAttrValue OR
                         a.itsystemtype ILIKE anyAttrValue OR
-                              _as_search_ilike_array(anyAttrValue,a.konfigurationreference)
+                              _as_search_ilike_array(anyAttrValue,a.konfigurationreference) OR
+                        a.integrationsdata ILIKE anyAttrValue
                 
             )
             AND
@@ -24195,6 +24447,12 @@ ELSE
 					OR
 						((coalesce(array_length(attrEgenskaberTypeObj.konfigurationreference,1),0)=0 AND coalesce(array_length(a.konfigurationreference,1),0)=0 ) OR (attrEgenskaberTypeObj.konfigurationreference @> a.konfigurationreference AND a.konfigurationreference @>attrEgenskaberTypeObj.konfigurationreference  )) 
 				)
+				AND
+				(
+					attrEgenskaberTypeObj.integrationsdata IS NULL
+					OR 
+					a.integrationsdata = attrEgenskaberTypeObj.integrationsdata 
+				)
 				AND b.itsystem_id = ANY (itsystem_candidates)
 				AND (a.virkning).TimePeriod @> actual_virkning 
 			);
@@ -24364,6 +24622,7 @@ omfang text,
 titel text,
 retskilde text,
 aendringsnotat text,
+integrationsdata text,
 
 soegeord KlasseSoegeordType[],
 
@@ -24529,6 +24788,7 @@ CREATE TABLE klasse_attr_egenskaber (
         titel text NOT NULL,
         retskilde text  NULL,
         aendringsnotat text  NULL,
+        integrationsdata text  NULL,
     virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
     klasse_registrering_id bigint NOT NULL,
     CONSTRAINT klasse_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -24620,6 +24880,17 @@ ALTER TABLE klasse_attr_egenskaber
             ON klasse_attr_egenskaber
             USING btree
             (aendringsnotat); 
+ 
+     
+        CREATE INDEX klasse_attr_egenskaber_pat_integrationsdata
+            ON klasse_attr_egenskaber
+            USING gin
+            (integrationsdata gin_trgm_ops);
+
+        CREATE INDEX klasse_attr_egenskaber_idx_integrationsdata
+            ON klasse_attr_egenskaber
+            USING btree
+            (integrationsdata); 
 
 
 
@@ -25314,7 +25585,7 @@ BEGIN
                     unnest(attrEgenskaber) a
                     JOIN unnest(attrEgenskaber) b ON (a.virkning).TimePeriod && (b.virkning).TimePeriod
                 GROUP BY
-                    a.brugervendtnoegle,a.beskrivelse,a.eksempel,a.omfang,a.titel,a.retskilde,a.aendringsnotat,
+                    a.brugervendtnoegle,a.beskrivelse,a.eksempel,a.omfang,a.titel,a.retskilde,a.aendringsnotat,a.integrationsdata,
                     a.virkning
                     ,
                         a.soegeord
@@ -25327,9 +25598,9 @@ BEGIN
         -- To avoid needless fragmentation we'll check for presence of
         -- null values in the fields - and if none are present, we'll skip
         -- the merging operations
-        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).beskrivelse IS NULL  OR  (attrEgenskaberObj).eksempel IS NULL  OR  (attrEgenskaberObj).omfang IS NULL  OR  (attrEgenskaberObj).titel IS NULL  OR  (attrEgenskaberObj).retskilde IS NULL  OR  (attrEgenskaberObj).aendringsnotat IS NULL  THEN
+        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).beskrivelse IS NULL  OR  (attrEgenskaberObj).eksempel IS NULL  OR  (attrEgenskaberObj).omfang IS NULL  OR  (attrEgenskaberObj).titel IS NULL  OR  (attrEgenskaberObj).retskilde IS NULL  OR  (attrEgenskaberObj).aendringsnotat IS NULL  OR  (attrEgenskaberObj).integrationsdata IS NULL  THEN
              WITH inserted_merged_attr_egenskaber AS (
-            INSERT INTO klasse_attr_egenskaber ( id,  brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat, virkning, klasse_registrering_id)
+            INSERT INTO klasse_attr_egenskaber ( id,  brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat,integrationsdata, virkning, klasse_registrering_id)
                 SELECT
                     
                          nextval('klasse_attr_egenskaber_id_seq'), 
@@ -25359,6 +25630,10 @@ BEGIN
                         
                         
                             coalesce(attrEgenskaberObj.aendringsnotat, a.aendringsnotat),
+                    
+                        
+                        
+                            coalesce(attrEgenskaberObj.integrationsdata, a.integrationsdata),
                     
                     ROW ((a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
                             (attrEgenskaberObj.virkning).AktoerRef,
@@ -25397,7 +25672,7 @@ BEGIN
         
         WITH inserted_attr_egenskaber AS (
         
-            INSERT INTO klasse_attr_egenskaber ( id,  brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat, virkning, klasse_registrering_id)
+            INSERT INTO klasse_attr_egenskaber ( id,  brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat,integrationsdata, virkning, klasse_registrering_id)
                 SELECT
                     
                      nextval('klasse_attr_egenskaber_id_seq'), attrEgenskaberObj.brugervendtnoegle,
@@ -25413,6 +25688,8 @@ BEGIN
                      attrEgenskaberObj.retskilde,
                     
                      attrEgenskaberObj.aendringsnotat,
+                    
+                     attrEgenskaberObj.integrationsdata,
                     
                     ROW (b.tz_range_leftover,
                         (attrEgenskaberObj.virkning).AktoerRef,
@@ -25447,8 +25724,8 @@ BEGIN
             new_id_klasse_attr_egenskaber := nextval('klasse_attr_egenskaber_id_seq');
             
 
-            INSERT INTO klasse_attr_egenskaber ( id,  brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat, virkning, klasse_registrering_id)
-                VALUES ( new_id_klasse_attr_egenskaber,   attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.beskrivelse,  attrEgenskaberObj.eksempel,  attrEgenskaberObj.omfang,  attrEgenskaberObj.titel,  attrEgenskaberObj.retskilde,  attrEgenskaberObj.aendringsnotat, attrEgenskaberObj.virkning, new_klasse_registrering.id );
+            INSERT INTO klasse_attr_egenskaber ( id,  brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat,integrationsdata, virkning, klasse_registrering_id)
+                VALUES ( new_id_klasse_attr_egenskaber,   attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.beskrivelse,  attrEgenskaberObj.eksempel,  attrEgenskaberObj.omfang,  attrEgenskaberObj.titel,  attrEgenskaberObj.retskilde,  attrEgenskaberObj.aendringsnotat,  attrEgenskaberObj.integrationsdata, attrEgenskaberObj.virkning, new_klasse_registrering.id );
         IF attrEgenskaberObj.soegeord IS NOT NULL THEN
             INSERT INTO klasse_attr_egenskaber_soegeord (soegeordidentifikator, beskrivelse, soegeordskategori, klasse_attr_egenskaber_id)
             SELECT
@@ -25478,7 +25755,7 @@ BEGIN
 
 WITH copied_attr_egenskaber AS (
 
-    INSERT INTO klasse_attr_egenskaber ( id,  brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat, virkning, klasse_registrering_id)
+    INSERT INTO klasse_attr_egenskaber ( id,  brugervendtnoegle,beskrivelse,eksempel,omfang,titel,retskilde,aendringsnotat,integrationsdata, virkning, klasse_registrering_id)
     SELECT
          nextval('klasse_attr_egenskaber_id_seq'), 
         
@@ -25495,6 +25772,8 @@ WITH copied_attr_egenskaber AS (
             a.retskilde,
         
             a.aendringsnotat,
+        
+            a.integrationsdata,
         
         ROW (c.tz_range_leftover,
             (a.virkning).AktoerRef,
@@ -25700,6 +25979,7 @@ IF klasse_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(klas
       titel,
       retskilde,
       aendringsnotat,
+      integrationsdata,
       virkning,
       klasse_registrering_id
     )
@@ -25712,6 +25992,7 @@ IF klasse_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(klas
       klasse_attr_egenskaber_obj.titel,
       klasse_attr_egenskaber_obj.retskilde,
       klasse_attr_egenskaber_obj.aendringsnotat,
+      klasse_attr_egenskaber_obj.integrationsdata,
       klasse_attr_egenskaber_obj.virkning,
       klasse_registrering_id
     ;
@@ -25928,6 +26209,7 @@ FROM
                                                        a.titel,
                                                        a.retskilde,
                                                        a.aendringsnotat,
+                                                       a.integrationsdata,
                                                        a.KlasseAttrEgenskaberSoegeordTypeArr,
                                                        a.virkning 
                             
@@ -25954,6 +26236,7 @@ FROM
                                                b.titel,
                                                b.retskilde,
                                                b.aendringsnotat,
+                                               b.integrationsdata,
                                                b.virkning,     
                                                _remove_nulls_in_array(array_agg(
                                                        CASE 
@@ -25994,6 +26277,7 @@ FROM
                                                b.titel,
                                                b.retskilde,
                                                b.aendringsnotat,
+                                               b.integrationsdata,
                                                b.virkning
                                ) as a
                     
@@ -26345,6 +26629,12 @@ END LOOP;
                     a.aendringsnotat ILIKE attrEgenskaberTypeObj.aendringsnotat --case insensitive
                 )
                 AND
+                (
+                    attrEgenskaberTypeObj.integrationsdata IS NULL
+                    OR
+                    a.integrationsdata ILIKE attrEgenskaberTypeObj.integrationsdata --case insensitive
+                )
+                AND
                 
                 (
                         (attrEgenskaberTypeObj.soegeord IS NULL OR array_length(attrEgenskaberTypeObj.soegeord,1)=0)
@@ -26475,7 +26765,8 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
                         a.omfang ILIKE anyAttrValue OR
                         a.titel ILIKE anyAttrValue OR
                         a.retskilde ILIKE anyAttrValue OR
-                        a.aendringsnotat ILIKE anyAttrValue
+                        a.aendringsnotat ILIKE anyAttrValue OR
+                        a.integrationsdata ILIKE anyAttrValue
                 
                 OR
                 c.soegeordidentifikator ILIKE anyAttrValue
@@ -27514,6 +27805,12 @@ ELSE
 					OR 
 					a.aendringsnotat = attrEgenskaberTypeObj.aendringsnotat 
 				)
+				AND
+				(
+					attrEgenskaberTypeObj.integrationsdata IS NULL
+					OR 
+					a.integrationsdata = attrEgenskaberTypeObj.integrationsdata 
+				)
 				AND b.klasse_id = ANY (klasse_candidates)
 				AND (a.virkning).TimePeriod @> actual_virkning 
 			);
@@ -27673,6 +27970,7 @@ brugervendtnoegle text,
 beskrivelse text,
 kaldenavn text,
 ophavsret text,
+integrationsdata text,
 
  virkning Virkning
 );
@@ -27833,6 +28131,7 @@ CREATE TABLE klassifikation_attr_egenskaber (
         beskrivelse text  NULL,
         kaldenavn text  NULL,
         ophavsret text  NULL,
+        integrationsdata text  NULL,
     virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
     klassifikation_registrering_id bigint NOT NULL,
     CONSTRAINT klassifikation_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -27891,6 +28190,17 @@ ALTER TABLE klassifikation_attr_egenskaber
             ON klassifikation_attr_egenskaber
             USING btree
             (ophavsret); 
+ 
+     
+        CREATE INDEX klassifikation_attr_egenskaber_pat_integrationsdata
+            ON klassifikation_attr_egenskaber
+            USING gin
+            (integrationsdata gin_trgm_ops);
+
+        CREATE INDEX klassifikation_attr_egenskaber_idx_integrationsdata
+            ON klassifikation_attr_egenskaber
+            USING btree
+            (integrationsdata); 
 
 
 
@@ -28123,7 +28433,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr KlassifikationEgenska
     FOREACH element IN ARRAY inputArr
     LOOP
 
-      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.beskrivelse IS NULL AND element.kaldenavn IS NULL AND element.ophavsret IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.beskrivelse IS NULL AND element.kaldenavn IS NULL AND element.ophavsret IS NULL AND element.integrationsdata IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
 
     --  RAISE DEBUG 'Skipping element';
       ELSE
@@ -28494,7 +28804,7 @@ BEGIN
                     unnest(attrEgenskaber) a
                     JOIN unnest(attrEgenskaber) b ON (a.virkning).TimePeriod && (b.virkning).TimePeriod
                 GROUP BY
-                    a.brugervendtnoegle,a.beskrivelse,a.kaldenavn,a.ophavsret,
+                    a.brugervendtnoegle,a.beskrivelse,a.kaldenavn,a.ophavsret,a.integrationsdata,
                     a.virkning
                     
                     HAVING COUNT(*) > 1) THEN
@@ -28505,9 +28815,9 @@ BEGIN
         -- To avoid needless fragmentation we'll check for presence of
         -- null values in the fields - and if none are present, we'll skip
         -- the merging operations
-        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).beskrivelse IS NULL  OR  (attrEgenskaberObj).kaldenavn IS NULL  OR  (attrEgenskaberObj).ophavsret IS NULL  THEN
+        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).beskrivelse IS NULL  OR  (attrEgenskaberObj).kaldenavn IS NULL  OR  (attrEgenskaberObj).ophavsret IS NULL  OR  (attrEgenskaberObj).integrationsdata IS NULL  THEN
             
-            INSERT INTO klassifikation_attr_egenskaber ( brugervendtnoegle,beskrivelse,kaldenavn,ophavsret, virkning, klassifikation_registrering_id)
+            INSERT INTO klassifikation_attr_egenskaber ( brugervendtnoegle,beskrivelse,kaldenavn,ophavsret,integrationsdata, virkning, klassifikation_registrering_id)
                 SELECT
                     
                         
@@ -28526,6 +28836,10 @@ BEGIN
                         
                             coalesce(attrEgenskaberObj.ophavsret, a.ophavsret),
                     
+                        
+                        
+                            coalesce(attrEgenskaberObj.integrationsdata, a.integrationsdata),
+                    
                     ROW ((a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
                             (attrEgenskaberObj.virkning).AktoerRef,
                             (attrEgenskaberObj.virkning).AktoerTypeKode,
@@ -28541,7 +28855,7 @@ BEGIN
         -- that is NOT covered by any "merged" rows inserted above, generate
         -- and insert rows.
         
-            INSERT INTO klassifikation_attr_egenskaber ( brugervendtnoegle,beskrivelse,kaldenavn,ophavsret, virkning, klassifikation_registrering_id)
+            INSERT INTO klassifikation_attr_egenskaber ( brugervendtnoegle,beskrivelse,kaldenavn,ophavsret,integrationsdata, virkning, klassifikation_registrering_id)
                 SELECT
                     
                      attrEgenskaberObj.brugervendtnoegle,
@@ -28551,6 +28865,8 @@ BEGIN
                      attrEgenskaberObj.kaldenavn,
                     
                      attrEgenskaberObj.ophavsret,
+                    
+                     attrEgenskaberObj.integrationsdata,
                     
                     ROW (b.tz_range_leftover,
                         (attrEgenskaberObj.virkning).AktoerRef,
@@ -28571,8 +28887,8 @@ BEGIN
             -- Insert attrEgenskaberObj raw (if there were no null-valued fields)
             
 
-            INSERT INTO klassifikation_attr_egenskaber ( brugervendtnoegle,beskrivelse,kaldenavn,ophavsret, virkning, klassifikation_registrering_id)
-                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.beskrivelse,  attrEgenskaberObj.kaldenavn,  attrEgenskaberObj.ophavsret, attrEgenskaberObj.virkning, new_klassifikation_registrering.id );
+            INSERT INTO klassifikation_attr_egenskaber ( brugervendtnoegle,beskrivelse,kaldenavn,ophavsret,integrationsdata, virkning, klassifikation_registrering_id)
+                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.beskrivelse,  attrEgenskaberObj.kaldenavn,  attrEgenskaberObj.ophavsret,  attrEgenskaberObj.integrationsdata, attrEgenskaberObj.virkning, new_klassifikation_registrering.id );
         END IF;
 
         END LOOP;
@@ -28588,7 +28904,7 @@ BEGIN
 -- Handle egenskaber of previous registration, taking overlapping
 -- virknings into consideration (using function subtract_tstzrange)
 
-    INSERT INTO klassifikation_attr_egenskaber ( brugervendtnoegle,beskrivelse,kaldenavn,ophavsret, virkning, klassifikation_registrering_id)
+    INSERT INTO klassifikation_attr_egenskaber ( brugervendtnoegle,beskrivelse,kaldenavn,ophavsret,integrationsdata, virkning, klassifikation_registrering_id)
     SELECT
         
         
@@ -28599,6 +28915,8 @@ BEGIN
             a.kaldenavn,
         
             a.ophavsret,
+        
+            a.integrationsdata,
         
         ROW (c.tz_range_leftover,
             (a.virkning).AktoerRef,
@@ -28786,6 +29104,7 @@ IF klassifikation_registrering.attrEgenskaber IS NOT NULL and coalesce(array_len
       beskrivelse,
       kaldenavn,
       ophavsret,
+      integrationsdata,
       virkning,
       klassifikation_registrering_id
     )
@@ -28795,6 +29114,7 @@ IF klassifikation_registrering.attrEgenskaber IS NOT NULL and coalesce(array_len
       klassifikation_attr_egenskaber_obj.beskrivelse,
       klassifikation_attr_egenskaber_obj.kaldenavn,
       klassifikation_attr_egenskaber_obj.ophavsret,
+      klassifikation_attr_egenskaber_obj.integrationsdata,
       klassifikation_attr_egenskaber_obj.virkning,
       klassifikation_registrering_id
     ;
@@ -28981,6 +29301,7 @@ FROM
 					 		b.beskrivelse,
 					 		b.kaldenavn,
 					 		b.ophavsret,
+					 		b.integrationsdata,
 					   		b.virkning
                             
 							)::KlassifikationEgenskaberAttrType
@@ -28988,7 +29309,7 @@ FROM
 						NULL
 						END
                         
-						order by b.brugervendtnoegle,b.beskrivelse,b.kaldenavn,b.ophavsret,b.virkning
+						order by b.brugervendtnoegle,b.beskrivelse,b.kaldenavn,b.ophavsret,b.integrationsdata,b.virkning
                         
 					)) KlassifikationAttrEgenskaberArr
                     
@@ -29301,6 +29622,12 @@ ELSE
                     a.ophavsret ILIKE attrEgenskaberTypeObj.ophavsret --case insensitive
                 )
                 AND
+                (
+                    attrEgenskaberTypeObj.integrationsdata IS NULL
+                    OR
+                    a.integrationsdata ILIKE attrEgenskaberTypeObj.integrationsdata --case insensitive
+                )
+                AND
                 
                 		(
 				(registreringObj.registrering) IS NULL 
@@ -29401,7 +29728,8 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
                         a.brugervendtnoegle ILIKE anyAttrValue OR
                         a.beskrivelse ILIKE anyAttrValue OR
                         a.kaldenavn ILIKE anyAttrValue OR
-                        a.ophavsret ILIKE anyAttrValue
+                        a.ophavsret ILIKE anyAttrValue OR
+                        a.integrationsdata ILIKE anyAttrValue
                 
             )
             AND
@@ -30415,6 +30743,12 @@ ELSE
 					OR 
 					a.ophavsret = attrEgenskaberTypeObj.ophavsret 
 				)
+				AND
+				(
+					attrEgenskaberTypeObj.integrationsdata IS NULL
+					OR 
+					a.integrationsdata = attrEgenskaberTypeObj.integrationsdata 
+				)
 				AND b.klassifikation_id = ANY (klassifikation_candidates)
 				AND (a.virkning).TimePeriod @> actual_virkning 
 			);
@@ -30578,6 +30912,7 @@ objekttype text,
 returkode text,
 returtekst text,
 note text,
+integrationsdata text,
 
  virkning Virkning
 );
@@ -30742,6 +31077,7 @@ CREATE TABLE loghaendelse_attr_egenskaber (
         returkode text  NULL,
         returtekst text  NULL,
         note text  NULL,
+        integrationsdata text  NULL,
     virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
     loghaendelse_registrering_id bigint NOT NULL,
     CONSTRAINT loghaendelse_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -30844,6 +31180,17 @@ ALTER TABLE loghaendelse_attr_egenskaber
             ON loghaendelse_attr_egenskaber
             USING btree
             (note); 
+ 
+     
+        CREATE INDEX loghaendelse_attr_egenskaber_pat_integrationsdata
+            ON loghaendelse_attr_egenskaber
+            USING gin
+            (integrationsdata gin_trgm_ops);
+
+        CREATE INDEX loghaendelse_attr_egenskaber_idx_integrationsdata
+            ON loghaendelse_attr_egenskaber
+            USING btree
+            (integrationsdata); 
 
 
 
@@ -31076,7 +31423,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr LoghaendelseEgenskabe
     FOREACH element IN ARRAY inputArr
     LOOP
 
-      IF element IS NULL OR (( element.service IS NULL AND element.klasse IS NULL AND element.tidspunkt IS NULL AND element.operation IS NULL AND element.objekttype IS NULL AND element.returkode IS NULL AND element.returtekst IS NULL AND element.note IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+      IF element IS NULL OR (( element.service IS NULL AND element.klasse IS NULL AND element.tidspunkt IS NULL AND element.operation IS NULL AND element.objekttype IS NULL AND element.returkode IS NULL AND element.returtekst IS NULL AND element.note IS NULL AND element.integrationsdata IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
 
     --  RAISE DEBUG 'Skipping element';
       ELSE
@@ -31447,7 +31794,7 @@ BEGIN
                     unnest(attrEgenskaber) a
                     JOIN unnest(attrEgenskaber) b ON (a.virkning).TimePeriod && (b.virkning).TimePeriod
                 GROUP BY
-                    a.service,a.klasse,a.tidspunkt,a.operation,a.objekttype,a.returkode,a.returtekst,a.note,
+                    a.service,a.klasse,a.tidspunkt,a.operation,a.objekttype,a.returkode,a.returtekst,a.note,a.integrationsdata,
                     a.virkning
                     
                     HAVING COUNT(*) > 1) THEN
@@ -31458,9 +31805,9 @@ BEGIN
         -- To avoid needless fragmentation we'll check for presence of
         -- null values in the fields - and if none are present, we'll skip
         -- the merging operations
-        IF  (attrEgenskaberObj).service IS NULL  OR  (attrEgenskaberObj).klasse IS NULL  OR  (attrEgenskaberObj).tidspunkt IS NULL  OR  (attrEgenskaberObj).operation IS NULL  OR  (attrEgenskaberObj).objekttype IS NULL  OR  (attrEgenskaberObj).returkode IS NULL  OR  (attrEgenskaberObj).returtekst IS NULL  OR  (attrEgenskaberObj).note IS NULL  THEN
+        IF  (attrEgenskaberObj).service IS NULL  OR  (attrEgenskaberObj).klasse IS NULL  OR  (attrEgenskaberObj).tidspunkt IS NULL  OR  (attrEgenskaberObj).operation IS NULL  OR  (attrEgenskaberObj).objekttype IS NULL  OR  (attrEgenskaberObj).returkode IS NULL  OR  (attrEgenskaberObj).returtekst IS NULL  OR  (attrEgenskaberObj).note IS NULL  OR  (attrEgenskaberObj).integrationsdata IS NULL  THEN
             
-            INSERT INTO loghaendelse_attr_egenskaber ( service,klasse,tidspunkt,operation,objekttype,returkode,returtekst,note, virkning, loghaendelse_registrering_id)
+            INSERT INTO loghaendelse_attr_egenskaber ( service,klasse,tidspunkt,operation,objekttype,returkode,returtekst,note,integrationsdata, virkning, loghaendelse_registrering_id)
                 SELECT
                     
                         
@@ -31495,6 +31842,10 @@ BEGIN
                         
                             coalesce(attrEgenskaberObj.note, a.note),
                     
+                        
+                        
+                            coalesce(attrEgenskaberObj.integrationsdata, a.integrationsdata),
+                    
                     ROW ((a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
                             (attrEgenskaberObj.virkning).AktoerRef,
                             (attrEgenskaberObj.virkning).AktoerTypeKode,
@@ -31510,7 +31861,7 @@ BEGIN
         -- that is NOT covered by any "merged" rows inserted above, generate
         -- and insert rows.
         
-            INSERT INTO loghaendelse_attr_egenskaber ( service,klasse,tidspunkt,operation,objekttype,returkode,returtekst,note, virkning, loghaendelse_registrering_id)
+            INSERT INTO loghaendelse_attr_egenskaber ( service,klasse,tidspunkt,operation,objekttype,returkode,returtekst,note,integrationsdata, virkning, loghaendelse_registrering_id)
                 SELECT
                     
                      attrEgenskaberObj.service,
@@ -31528,6 +31879,8 @@ BEGIN
                      attrEgenskaberObj.returtekst,
                     
                      attrEgenskaberObj.note,
+                    
+                     attrEgenskaberObj.integrationsdata,
                     
                     ROW (b.tz_range_leftover,
                         (attrEgenskaberObj.virkning).AktoerRef,
@@ -31548,8 +31901,8 @@ BEGIN
             -- Insert attrEgenskaberObj raw (if there were no null-valued fields)
             
 
-            INSERT INTO loghaendelse_attr_egenskaber ( service,klasse,tidspunkt,operation,objekttype,returkode,returtekst,note, virkning, loghaendelse_registrering_id)
-                VALUES (  attrEgenskaberObj.service,  attrEgenskaberObj.klasse,  attrEgenskaberObj.tidspunkt,  attrEgenskaberObj.operation,  attrEgenskaberObj.objekttype,  attrEgenskaberObj.returkode,  attrEgenskaberObj.returtekst,  attrEgenskaberObj.note, attrEgenskaberObj.virkning, new_loghaendelse_registrering.id );
+            INSERT INTO loghaendelse_attr_egenskaber ( service,klasse,tidspunkt,operation,objekttype,returkode,returtekst,note,integrationsdata, virkning, loghaendelse_registrering_id)
+                VALUES (  attrEgenskaberObj.service,  attrEgenskaberObj.klasse,  attrEgenskaberObj.tidspunkt,  attrEgenskaberObj.operation,  attrEgenskaberObj.objekttype,  attrEgenskaberObj.returkode,  attrEgenskaberObj.returtekst,  attrEgenskaberObj.note,  attrEgenskaberObj.integrationsdata, attrEgenskaberObj.virkning, new_loghaendelse_registrering.id );
         END IF;
 
         END LOOP;
@@ -31565,7 +31918,7 @@ BEGIN
 -- Handle egenskaber of previous registration, taking overlapping
 -- virknings into consideration (using function subtract_tstzrange)
 
-    INSERT INTO loghaendelse_attr_egenskaber ( service,klasse,tidspunkt,operation,objekttype,returkode,returtekst,note, virkning, loghaendelse_registrering_id)
+    INSERT INTO loghaendelse_attr_egenskaber ( service,klasse,tidspunkt,operation,objekttype,returkode,returtekst,note,integrationsdata, virkning, loghaendelse_registrering_id)
     SELECT
         
         
@@ -31584,6 +31937,8 @@ BEGIN
             a.returtekst,
         
             a.note,
+        
+            a.integrationsdata,
         
         ROW (c.tz_range_leftover,
             (a.virkning).AktoerRef,
@@ -31775,6 +32130,7 @@ IF loghaendelse_registrering.attrEgenskaber IS NOT NULL and coalesce(array_lengt
       returkode,
       returtekst,
       note,
+      integrationsdata,
       virkning,
       loghaendelse_registrering_id
     )
@@ -31788,6 +32144,7 @@ IF loghaendelse_registrering.attrEgenskaber IS NOT NULL and coalesce(array_lengt
       loghaendelse_attr_egenskaber_obj.returkode,
       loghaendelse_attr_egenskaber_obj.returtekst,
       loghaendelse_attr_egenskaber_obj.note,
+      loghaendelse_attr_egenskaber_obj.integrationsdata,
       loghaendelse_attr_egenskaber_obj.virkning,
       loghaendelse_registrering_id
     ;
@@ -31978,6 +32335,7 @@ FROM
 					 		b.returkode,
 					 		b.returtekst,
 					 		b.note,
+					 		b.integrationsdata,
 					   		b.virkning
                             
 							)::LoghaendelseEgenskaberAttrType
@@ -31985,7 +32343,7 @@ FROM
 						NULL
 						END
                         
-						order by b.service,b.klasse,b.tidspunkt,b.operation,b.objekttype,b.returkode,b.returtekst,b.note,b.virkning
+						order by b.service,b.klasse,b.tidspunkt,b.operation,b.objekttype,b.returkode,b.returtekst,b.note,b.integrationsdata,b.virkning
                         
 					)) LoghaendelseAttrEgenskaberArr
                     
@@ -32322,6 +32680,12 @@ ELSE
                     a.note ILIKE attrEgenskaberTypeObj.note --case insensitive
                 )
                 AND
+                (
+                    attrEgenskaberTypeObj.integrationsdata IS NULL
+                    OR
+                    a.integrationsdata ILIKE attrEgenskaberTypeObj.integrationsdata --case insensitive
+                )
+                AND
                 
                 		(
 				(registreringObj.registrering) IS NULL 
@@ -32426,7 +32790,8 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
                         a.objekttype ILIKE anyAttrValue OR
                         a.returkode ILIKE anyAttrValue OR
                         a.returtekst ILIKE anyAttrValue OR
-                        a.note ILIKE anyAttrValue
+                        a.note ILIKE anyAttrValue OR
+                        a.integrationsdata ILIKE anyAttrValue
                 
             )
             AND
@@ -33464,6 +33829,12 @@ ELSE
 					OR 
 					a.note = attrEgenskaberTypeObj.note 
 				)
+				AND
+				(
+					attrEgenskaberTypeObj.integrationsdata IS NULL
+					OR 
+					a.integrationsdata = attrEgenskaberTypeObj.integrationsdata 
+				)
 				AND b.loghaendelse_id = ANY (loghaendelse_candidates)
 				AND (a.virkning).TimePeriod @> actual_virkning 
 			);
@@ -33621,6 +33992,7 @@ CREATE TYPE OrganisationGyldighedTilsType AS (
 CREATE TYPE OrganisationEgenskaberAttrType AS (
 brugervendtnoegle text,
 organisationsnavn text,
+integrationsdata text,
 
  virkning Virkning
 );
@@ -33779,6 +34151,7 @@ CREATE TABLE organisation_attr_egenskaber (
     id bigint NOT NULL DEFAULT nextval('organisation_attr_egenskaber_id_seq'::regclass),
         brugervendtnoegle text NOT NULL,
         organisationsnavn text  NULL,
+        integrationsdata text  NULL,
     virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
     organisation_registrering_id bigint NOT NULL,
     CONSTRAINT organisation_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -33815,6 +34188,17 @@ ALTER TABLE organisation_attr_egenskaber
             ON organisation_attr_egenskaber
             USING btree
             (organisationsnavn); 
+ 
+     
+        CREATE INDEX organisation_attr_egenskaber_pat_integrationsdata
+            ON organisation_attr_egenskaber
+            USING gin
+            (integrationsdata gin_trgm_ops);
+
+        CREATE INDEX organisation_attr_egenskaber_idx_integrationsdata
+            ON organisation_attr_egenskaber
+            USING btree
+            (integrationsdata); 
 
 
 
@@ -34047,7 +34431,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr OrganisationEgenskabe
     FOREACH element IN ARRAY inputArr
     LOOP
 
-      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.organisationsnavn IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.organisationsnavn IS NULL AND element.integrationsdata IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
 
     --  RAISE DEBUG 'Skipping element';
       ELSE
@@ -34418,7 +34802,7 @@ BEGIN
                     unnest(attrEgenskaber) a
                     JOIN unnest(attrEgenskaber) b ON (a.virkning).TimePeriod && (b.virkning).TimePeriod
                 GROUP BY
-                    a.brugervendtnoegle,a.organisationsnavn,
+                    a.brugervendtnoegle,a.organisationsnavn,a.integrationsdata,
                     a.virkning
                     
                     HAVING COUNT(*) > 1) THEN
@@ -34429,9 +34813,9 @@ BEGIN
         -- To avoid needless fragmentation we'll check for presence of
         -- null values in the fields - and if none are present, we'll skip
         -- the merging operations
-        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).organisationsnavn IS NULL  THEN
+        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).organisationsnavn IS NULL  OR  (attrEgenskaberObj).integrationsdata IS NULL  THEN
             
-            INSERT INTO organisation_attr_egenskaber ( brugervendtnoegle,organisationsnavn, virkning, organisation_registrering_id)
+            INSERT INTO organisation_attr_egenskaber ( brugervendtnoegle,organisationsnavn,integrationsdata, virkning, organisation_registrering_id)
                 SELECT
                     
                         
@@ -34441,6 +34825,10 @@ BEGIN
                         
                         
                             coalesce(attrEgenskaberObj.organisationsnavn, a.organisationsnavn),
+                    
+                        
+                        
+                            coalesce(attrEgenskaberObj.integrationsdata, a.integrationsdata),
                     
                     ROW ((a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
                             (attrEgenskaberObj.virkning).AktoerRef,
@@ -34457,12 +34845,14 @@ BEGIN
         -- that is NOT covered by any "merged" rows inserted above, generate
         -- and insert rows.
         
-            INSERT INTO organisation_attr_egenskaber ( brugervendtnoegle,organisationsnavn, virkning, organisation_registrering_id)
+            INSERT INTO organisation_attr_egenskaber ( brugervendtnoegle,organisationsnavn,integrationsdata, virkning, organisation_registrering_id)
                 SELECT
                     
                      attrEgenskaberObj.brugervendtnoegle,
                     
                      attrEgenskaberObj.organisationsnavn,
+                    
+                     attrEgenskaberObj.integrationsdata,
                     
                     ROW (b.tz_range_leftover,
                         (attrEgenskaberObj.virkning).AktoerRef,
@@ -34483,8 +34873,8 @@ BEGIN
             -- Insert attrEgenskaberObj raw (if there were no null-valued fields)
             
 
-            INSERT INTO organisation_attr_egenskaber ( brugervendtnoegle,organisationsnavn, virkning, organisation_registrering_id)
-                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.organisationsnavn, attrEgenskaberObj.virkning, new_organisation_registrering.id );
+            INSERT INTO organisation_attr_egenskaber ( brugervendtnoegle,organisationsnavn,integrationsdata, virkning, organisation_registrering_id)
+                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.organisationsnavn,  attrEgenskaberObj.integrationsdata, attrEgenskaberObj.virkning, new_organisation_registrering.id );
         END IF;
 
         END LOOP;
@@ -34500,13 +34890,15 @@ BEGIN
 -- Handle egenskaber of previous registration, taking overlapping
 -- virknings into consideration (using function subtract_tstzrange)
 
-    INSERT INTO organisation_attr_egenskaber ( brugervendtnoegle,organisationsnavn, virkning, organisation_registrering_id)
+    INSERT INTO organisation_attr_egenskaber ( brugervendtnoegle,organisationsnavn,integrationsdata, virkning, organisation_registrering_id)
     SELECT
         
         
             a.brugervendtnoegle,
         
             a.organisationsnavn,
+        
+            a.integrationsdata,
         
         ROW (c.tz_range_leftover,
             (a.virkning).AktoerRef,
@@ -34692,6 +35084,7 @@ IF organisation_registrering.attrEgenskaber IS NOT NULL and coalesce(array_lengt
       
       brugervendtnoegle,
       organisationsnavn,
+      integrationsdata,
       virkning,
       organisation_registrering_id
     )
@@ -34699,6 +35092,7 @@ IF organisation_registrering.attrEgenskaber IS NOT NULL and coalesce(array_lengt
      
      organisation_attr_egenskaber_obj.brugervendtnoegle,
       organisation_attr_egenskaber_obj.organisationsnavn,
+      organisation_attr_egenskaber_obj.integrationsdata,
       organisation_attr_egenskaber_obj.virkning,
       organisation_registrering_id
     ;
@@ -34883,6 +35277,7 @@ FROM
                             
 					 		b.brugervendtnoegle,
 					 		b.organisationsnavn,
+					 		b.integrationsdata,
 					   		b.virkning
                             
 							)::OrganisationEgenskaberAttrType
@@ -34890,7 +35285,7 @@ FROM
 						NULL
 						END
                         
-						order by b.brugervendtnoegle,b.organisationsnavn,b.virkning
+						order by b.brugervendtnoegle,b.organisationsnavn,b.integrationsdata,b.virkning
                         
 					)) OrganisationAttrEgenskaberArr
                     
@@ -35191,6 +35586,12 @@ ELSE
                     a.organisationsnavn ILIKE attrEgenskaberTypeObj.organisationsnavn --case insensitive
                 )
                 AND
+                (
+                    attrEgenskaberTypeObj.integrationsdata IS NULL
+                    OR
+                    a.integrationsdata ILIKE attrEgenskaberTypeObj.integrationsdata --case insensitive
+                )
+                AND
                 
                 		(
 				(registreringObj.registrering) IS NULL 
@@ -35289,7 +35690,8 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
             WHERE
             (
                         a.brugervendtnoegle ILIKE anyAttrValue OR
-                        a.organisationsnavn ILIKE anyAttrValue
+                        a.organisationsnavn ILIKE anyAttrValue OR
+                        a.integrationsdata ILIKE anyAttrValue
                 
             )
             AND
@@ -36291,6 +36693,12 @@ ELSE
 					OR 
 					a.organisationsnavn = attrEgenskaberTypeObj.organisationsnavn 
 				)
+				AND
+				(
+					attrEgenskaberTypeObj.integrationsdata IS NULL
+					OR 
+					a.integrationsdata = attrEgenskaberTypeObj.integrationsdata 
+				)
 				AND b.organisation_id = ANY (organisation_candidates)
 				AND (a.virkning).TimePeriod @> actual_virkning 
 			);
@@ -36448,6 +36856,7 @@ CREATE TYPE OrganisationenhedGyldighedTilsType AS (
 CREATE TYPE OrganisationenhedEgenskaberAttrType AS (
 brugervendtnoegle text,
 enhedsnavn text,
+integrationsdata text,
 
  virkning Virkning
 );
@@ -36606,6 +37015,7 @@ CREATE TABLE organisationenhed_attr_egenskaber (
     id bigint NOT NULL DEFAULT nextval('organisationenhed_attr_egenskaber_id_seq'::regclass),
         brugervendtnoegle text NOT NULL,
         enhedsnavn text  NULL,
+        integrationsdata text  NULL,
     virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
     organisationenhed_registrering_id bigint NOT NULL,
     CONSTRAINT organisationenhed_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -36642,6 +37052,17 @@ ALTER TABLE organisationenhed_attr_egenskaber
             ON organisationenhed_attr_egenskaber
             USING btree
             (enhedsnavn); 
+ 
+     
+        CREATE INDEX organisationenhed_attr_egenskaber_pat_integrationsdata
+            ON organisationenhed_attr_egenskaber
+            USING gin
+            (integrationsdata gin_trgm_ops);
+
+        CREATE INDEX organisationenhed_attr_egenskaber_idx_integrationsdata
+            ON organisationenhed_attr_egenskaber
+            USING btree
+            (integrationsdata); 
 
 
 
@@ -36874,7 +37295,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr OrganisationenhedEgen
     FOREACH element IN ARRAY inputArr
     LOOP
 
-      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.enhedsnavn IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.enhedsnavn IS NULL AND element.integrationsdata IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
 
     --  RAISE DEBUG 'Skipping element';
       ELSE
@@ -37245,7 +37666,7 @@ BEGIN
                     unnest(attrEgenskaber) a
                     JOIN unnest(attrEgenskaber) b ON (a.virkning).TimePeriod && (b.virkning).TimePeriod
                 GROUP BY
-                    a.brugervendtnoegle,a.enhedsnavn,
+                    a.brugervendtnoegle,a.enhedsnavn,a.integrationsdata,
                     a.virkning
                     
                     HAVING COUNT(*) > 1) THEN
@@ -37256,9 +37677,9 @@ BEGIN
         -- To avoid needless fragmentation we'll check for presence of
         -- null values in the fields - and if none are present, we'll skip
         -- the merging operations
-        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).enhedsnavn IS NULL  THEN
+        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).enhedsnavn IS NULL  OR  (attrEgenskaberObj).integrationsdata IS NULL  THEN
             
-            INSERT INTO organisationenhed_attr_egenskaber ( brugervendtnoegle,enhedsnavn, virkning, organisationenhed_registrering_id)
+            INSERT INTO organisationenhed_attr_egenskaber ( brugervendtnoegle,enhedsnavn,integrationsdata, virkning, organisationenhed_registrering_id)
                 SELECT
                     
                         
@@ -37268,6 +37689,10 @@ BEGIN
                         
                         
                             coalesce(attrEgenskaberObj.enhedsnavn, a.enhedsnavn),
+                    
+                        
+                        
+                            coalesce(attrEgenskaberObj.integrationsdata, a.integrationsdata),
                     
                     ROW ((a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
                             (attrEgenskaberObj.virkning).AktoerRef,
@@ -37284,12 +37709,14 @@ BEGIN
         -- that is NOT covered by any "merged" rows inserted above, generate
         -- and insert rows.
         
-            INSERT INTO organisationenhed_attr_egenskaber ( brugervendtnoegle,enhedsnavn, virkning, organisationenhed_registrering_id)
+            INSERT INTO organisationenhed_attr_egenskaber ( brugervendtnoegle,enhedsnavn,integrationsdata, virkning, organisationenhed_registrering_id)
                 SELECT
                     
                      attrEgenskaberObj.brugervendtnoegle,
                     
                      attrEgenskaberObj.enhedsnavn,
+                    
+                     attrEgenskaberObj.integrationsdata,
                     
                     ROW (b.tz_range_leftover,
                         (attrEgenskaberObj.virkning).AktoerRef,
@@ -37310,8 +37737,8 @@ BEGIN
             -- Insert attrEgenskaberObj raw (if there were no null-valued fields)
             
 
-            INSERT INTO organisationenhed_attr_egenskaber ( brugervendtnoegle,enhedsnavn, virkning, organisationenhed_registrering_id)
-                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.enhedsnavn, attrEgenskaberObj.virkning, new_organisationenhed_registrering.id );
+            INSERT INTO organisationenhed_attr_egenskaber ( brugervendtnoegle,enhedsnavn,integrationsdata, virkning, organisationenhed_registrering_id)
+                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.enhedsnavn,  attrEgenskaberObj.integrationsdata, attrEgenskaberObj.virkning, new_organisationenhed_registrering.id );
         END IF;
 
         END LOOP;
@@ -37327,13 +37754,15 @@ BEGIN
 -- Handle egenskaber of previous registration, taking overlapping
 -- virknings into consideration (using function subtract_tstzrange)
 
-    INSERT INTO organisationenhed_attr_egenskaber ( brugervendtnoegle,enhedsnavn, virkning, organisationenhed_registrering_id)
+    INSERT INTO organisationenhed_attr_egenskaber ( brugervendtnoegle,enhedsnavn,integrationsdata, virkning, organisationenhed_registrering_id)
     SELECT
         
         
             a.brugervendtnoegle,
         
             a.enhedsnavn,
+        
+            a.integrationsdata,
         
         ROW (c.tz_range_leftover,
             (a.virkning).AktoerRef,
@@ -37519,6 +37948,7 @@ IF organisationenhed_registrering.attrEgenskaber IS NOT NULL and coalesce(array_
       
       brugervendtnoegle,
       enhedsnavn,
+      integrationsdata,
       virkning,
       organisationenhed_registrering_id
     )
@@ -37526,6 +37956,7 @@ IF organisationenhed_registrering.attrEgenskaber IS NOT NULL and coalesce(array_
      
      organisationenhed_attr_egenskaber_obj.brugervendtnoegle,
       organisationenhed_attr_egenskaber_obj.enhedsnavn,
+      organisationenhed_attr_egenskaber_obj.integrationsdata,
       organisationenhed_attr_egenskaber_obj.virkning,
       organisationenhed_registrering_id
     ;
@@ -37710,6 +38141,7 @@ FROM
                             
 					 		b.brugervendtnoegle,
 					 		b.enhedsnavn,
+					 		b.integrationsdata,
 					   		b.virkning
                             
 							)::OrganisationenhedEgenskaberAttrType
@@ -37717,7 +38149,7 @@ FROM
 						NULL
 						END
                         
-						order by b.brugervendtnoegle,b.enhedsnavn,b.virkning
+						order by b.brugervendtnoegle,b.enhedsnavn,b.integrationsdata,b.virkning
                         
 					)) OrganisationenhedAttrEgenskaberArr
                     
@@ -38018,6 +38450,12 @@ ELSE
                     a.enhedsnavn ILIKE attrEgenskaberTypeObj.enhedsnavn --case insensitive
                 )
                 AND
+                (
+                    attrEgenskaberTypeObj.integrationsdata IS NULL
+                    OR
+                    a.integrationsdata ILIKE attrEgenskaberTypeObj.integrationsdata --case insensitive
+                )
+                AND
                 
                 		(
 				(registreringObj.registrering) IS NULL 
@@ -38116,7 +38554,8 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
             WHERE
             (
                         a.brugervendtnoegle ILIKE anyAttrValue OR
-                        a.enhedsnavn ILIKE anyAttrValue
+                        a.enhedsnavn ILIKE anyAttrValue OR
+                        a.integrationsdata ILIKE anyAttrValue
                 
             )
             AND
@@ -39118,6 +39557,12 @@ ELSE
 					OR 
 					a.enhedsnavn = attrEgenskaberTypeObj.enhedsnavn 
 				)
+				AND
+				(
+					attrEgenskaberTypeObj.integrationsdata IS NULL
+					OR 
+					a.integrationsdata = attrEgenskaberTypeObj.integrationsdata 
+				)
 				AND b.organisationenhed_id = ANY (organisationenhed_candidates)
 				AND (a.virkning).TimePeriod @> actual_virkning 
 			);
@@ -39275,6 +39720,7 @@ CREATE TYPE OrganisationfunktionGyldighedTilsType AS (
 CREATE TYPE OrganisationfunktionEgenskaberAttrType AS (
 brugervendtnoegle text,
 funktionsnavn text,
+integrationsdata text,
 
  virkning Virkning
 );
@@ -39282,7 +39728,7 @@ funktionsnavn text,
 
 
 
-CREATE TYPE OrganisationfunktionRelationKode AS ENUM  ('organisatoriskfunktionstype','adresser','opgaver','tilknyttedebrugere','tilknyttedeenheder','tilknyttedeorganisationer','tilknyttedeitsystemer','tilknyttedeinteressefaellesskaber','tilknyttedepersoner');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_organisationfunktion_relation_kode_to_txt is invoked.
+CREATE TYPE OrganisationfunktionRelationKode AS ENUM  ('organisatoriskfunktionstype','adresser','opgaver','tilknyttedebrugere','tilknyttedeenheder','tilknyttedeorganisationer','tilknyttedeitsystemer','tilknyttedeinteressefaellesskaber','tilknyttedepersoner','tilknyttedefunktioner');  --WARNING: Changes to enum names requires MANUALLY rebuilding indexes where _as_convert_organisationfunktion_relation_kode_to_txt is invoked.
 
 
 
@@ -39433,6 +39879,7 @@ CREATE TABLE organisationfunktion_attr_egenskaber (
     id bigint NOT NULL DEFAULT nextval('organisationfunktion_attr_egenskaber_id_seq'::regclass),
         brugervendtnoegle text NOT NULL,
         funktionsnavn text  NULL,
+        integrationsdata text  NULL,
     virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
     organisationfunktion_registrering_id bigint NOT NULL,
     CONSTRAINT organisationfunktion_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -39469,6 +39916,17 @@ ALTER TABLE organisationfunktion_attr_egenskaber
             ON organisationfunktion_attr_egenskaber
             USING btree
             (funktionsnavn); 
+ 
+     
+        CREATE INDEX organisationfunktion_attr_egenskaber_pat_integrationsdata
+            ON organisationfunktion_attr_egenskaber
+            USING gin
+            (integrationsdata gin_trgm_ops);
+
+        CREATE INDEX organisationfunktion_attr_egenskaber_idx_integrationsdata
+            ON organisationfunktion_attr_egenskaber
+            USING btree
+            (integrationsdata); 
 
 
 
@@ -39582,7 +40040,7 @@ CREATE TABLE organisationfunktion_relation (
 
     CONSTRAINT organisationfunktion_relation_forkey_organisationfunktionregistrering FOREIGN KEY (organisationfunktion_registrering_id) REFERENCES organisationfunktion_registrering (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT organisationfunktion_relation_pkey PRIMARY KEY (id),
-    CONSTRAINT organisationfunktion_relation_no_virkning_overlap EXCLUDE USING gist (organisationfunktion_registrering_id WITH =, _as_convert_organisationfunktion_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('adresser'::OrganisationfunktionRelationKode ) AND rel_type<>('opgaver'::OrganisationfunktionRelationKode ) AND rel_type<>('tilknyttedebrugere'::OrganisationfunktionRelationKode ) AND rel_type<>('tilknyttedeenheder'::OrganisationfunktionRelationKode ) AND rel_type<>('tilknyttedeorganisationer'::OrganisationfunktionRelationKode ) AND rel_type<>('tilknyttedeitsystemer'::OrganisationfunktionRelationKode ) AND rel_type<>('tilknyttedeinteressefaellesskaber'::OrganisationfunktionRelationKode ) AND rel_type<>('tilknyttedepersoner'::OrganisationfunktionRelationKode )) ,-- no overlapping virkning except for 0..n --relations
+    CONSTRAINT organisationfunktion_relation_no_virkning_overlap EXCLUDE USING gist (organisationfunktion_registrering_id WITH =, _as_convert_organisationfunktion_relation_kode_to_txt(rel_type) WITH =, _composite_type_to_time_range(virkning) WITH &&)  WHERE ( rel_type<>('adresser'::OrganisationfunktionRelationKode ) AND rel_type<>('opgaver'::OrganisationfunktionRelationKode ) AND rel_type<>('tilknyttedebrugere'::OrganisationfunktionRelationKode ) AND rel_type<>('tilknyttedeenheder'::OrganisationfunktionRelationKode ) AND rel_type<>('tilknyttedeorganisationer'::OrganisationfunktionRelationKode ) AND rel_type<>('tilknyttedeitsystemer'::OrganisationfunktionRelationKode ) AND rel_type<>('tilknyttedeinteressefaellesskaber'::OrganisationfunktionRelationKode ) AND rel_type<>('tilknyttedepersoner'::OrganisationfunktionRelationKode ) AND rel_type<>('tilknyttedefunktioner'::OrganisationfunktionRelationKode )) ,-- no overlapping virkning except for 0..n --relations
     CONSTRAINT organisationfunktion_relation_either_uri_or_urn CHECK (NOT (rel_maal_uuid IS NOT NULL AND (rel_maal_urn IS NOT NULL AND rel_maal_urn<>'')))
 );
 ALTER TABLE organisationfunktion_relation
@@ -39701,7 +40159,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr OrganisationfunktionE
     FOREACH element IN ARRAY inputArr
     LOOP
 
-      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.funktionsnavn IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.funktionsnavn IS NULL AND element.integrationsdata IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
 
     --  RAISE DEBUG 'Skipping element';
       ELSE
@@ -39997,7 +40455,7 @@ BEGIN
     -- from the previous registration.
 
     
-    FOREACH organisationfunktion_relation_navn IN ARRAY ARRAY['adresser'::OrganisationfunktionRelationKode, 'opgaver'::OrganisationfunktionRelationKode, 'tilknyttedebrugere'::OrganisationfunktionRelationKode, 'tilknyttedeenheder'::OrganisationfunktionRelationKode, 'tilknyttedeorganisationer'::OrganisationfunktionRelationKode, 'tilknyttedeitsystemer'::OrganisationfunktionRelationKode, 'tilknyttedeinteressefaellesskaber'::OrganisationfunktionRelationKode, 'tilknyttedepersoner'::OrganisationfunktionRelationKode]::OrganisationfunktionRelationKode[] LOOP
+    FOREACH organisationfunktion_relation_navn IN ARRAY ARRAY['adresser'::OrganisationfunktionRelationKode, 'opgaver'::OrganisationfunktionRelationKode, 'tilknyttedebrugere'::OrganisationfunktionRelationKode, 'tilknyttedeenheder'::OrganisationfunktionRelationKode, 'tilknyttedeorganisationer'::OrganisationfunktionRelationKode, 'tilknyttedeitsystemer'::OrganisationfunktionRelationKode, 'tilknyttedeinteressefaellesskaber'::OrganisationfunktionRelationKode, 'tilknyttedepersoner'::OrganisationfunktionRelationKode, 'tilknyttedefunktioner'::OrganisationfunktionRelationKode]::OrganisationfunktionRelationKode[] LOOP
         IF NOT EXISTS (
                     SELECT 1
                       FROM organisationfunktion_relation
@@ -40072,7 +40530,7 @@ BEGIN
                     unnest(attrEgenskaber) a
                     JOIN unnest(attrEgenskaber) b ON (a.virkning).TimePeriod && (b.virkning).TimePeriod
                 GROUP BY
-                    a.brugervendtnoegle,a.funktionsnavn,
+                    a.brugervendtnoegle,a.funktionsnavn,a.integrationsdata,
                     a.virkning
                     
                     HAVING COUNT(*) > 1) THEN
@@ -40083,9 +40541,9 @@ BEGIN
         -- To avoid needless fragmentation we'll check for presence of
         -- null values in the fields - and if none are present, we'll skip
         -- the merging operations
-        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).funktionsnavn IS NULL  THEN
+        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).funktionsnavn IS NULL  OR  (attrEgenskaberObj).integrationsdata IS NULL  THEN
             
-            INSERT INTO organisationfunktion_attr_egenskaber ( brugervendtnoegle,funktionsnavn, virkning, organisationfunktion_registrering_id)
+            INSERT INTO organisationfunktion_attr_egenskaber ( brugervendtnoegle,funktionsnavn,integrationsdata, virkning, organisationfunktion_registrering_id)
                 SELECT
                     
                         
@@ -40095,6 +40553,10 @@ BEGIN
                         
                         
                             coalesce(attrEgenskaberObj.funktionsnavn, a.funktionsnavn),
+                    
+                        
+                        
+                            coalesce(attrEgenskaberObj.integrationsdata, a.integrationsdata),
                     
                     ROW ((a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
                             (attrEgenskaberObj.virkning).AktoerRef,
@@ -40111,12 +40573,14 @@ BEGIN
         -- that is NOT covered by any "merged" rows inserted above, generate
         -- and insert rows.
         
-            INSERT INTO organisationfunktion_attr_egenskaber ( brugervendtnoegle,funktionsnavn, virkning, organisationfunktion_registrering_id)
+            INSERT INTO organisationfunktion_attr_egenskaber ( brugervendtnoegle,funktionsnavn,integrationsdata, virkning, organisationfunktion_registrering_id)
                 SELECT
                     
                      attrEgenskaberObj.brugervendtnoegle,
                     
                      attrEgenskaberObj.funktionsnavn,
+                    
+                     attrEgenskaberObj.integrationsdata,
                     
                     ROW (b.tz_range_leftover,
                         (attrEgenskaberObj.virkning).AktoerRef,
@@ -40137,8 +40601,8 @@ BEGIN
             -- Insert attrEgenskaberObj raw (if there were no null-valued fields)
             
 
-            INSERT INTO organisationfunktion_attr_egenskaber ( brugervendtnoegle,funktionsnavn, virkning, organisationfunktion_registrering_id)
-                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.funktionsnavn, attrEgenskaberObj.virkning, new_organisationfunktion_registrering.id );
+            INSERT INTO organisationfunktion_attr_egenskaber ( brugervendtnoegle,funktionsnavn,integrationsdata, virkning, organisationfunktion_registrering_id)
+                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.funktionsnavn,  attrEgenskaberObj.integrationsdata, attrEgenskaberObj.virkning, new_organisationfunktion_registrering.id );
         END IF;
 
         END LOOP;
@@ -40154,13 +40618,15 @@ BEGIN
 -- Handle egenskaber of previous registration, taking overlapping
 -- virknings into consideration (using function subtract_tstzrange)
 
-    INSERT INTO organisationfunktion_attr_egenskaber ( brugervendtnoegle,funktionsnavn, virkning, organisationfunktion_registrering_id)
+    INSERT INTO organisationfunktion_attr_egenskaber ( brugervendtnoegle,funktionsnavn,integrationsdata, virkning, organisationfunktion_registrering_id)
     SELECT
         
         
             a.brugervendtnoegle,
         
             a.funktionsnavn,
+        
+            a.integrationsdata,
         
         ROW (c.tz_range_leftover,
             (a.virkning).AktoerRef,
@@ -40346,6 +40812,7 @@ IF organisationfunktion_registrering.attrEgenskaber IS NOT NULL and coalesce(arr
       
       brugervendtnoegle,
       funktionsnavn,
+      integrationsdata,
       virkning,
       organisationfunktion_registrering_id
     )
@@ -40353,6 +40820,7 @@ IF organisationfunktion_registrering.attrEgenskaber IS NOT NULL and coalesce(arr
      
      organisationfunktion_attr_egenskaber_obj.brugervendtnoegle,
       organisationfunktion_attr_egenskaber_obj.funktionsnavn,
+      organisationfunktion_attr_egenskaber_obj.integrationsdata,
       organisationfunktion_attr_egenskaber_obj.virkning,
       organisationfunktion_registrering_id
     ;
@@ -40537,6 +41005,7 @@ FROM
                             
 					 		b.brugervendtnoegle,
 					 		b.funktionsnavn,
+					 		b.integrationsdata,
 					   		b.virkning
                             
 							)::OrganisationfunktionEgenskaberAttrType
@@ -40544,7 +41013,7 @@ FROM
 						NULL
 						END
                         
-						order by b.brugervendtnoegle,b.funktionsnavn,b.virkning
+						order by b.brugervendtnoegle,b.funktionsnavn,b.integrationsdata,b.virkning
                         
 					)) OrganisationfunktionAttrEgenskaberArr
                     
@@ -40845,6 +41314,12 @@ ELSE
                     a.funktionsnavn ILIKE attrEgenskaberTypeObj.funktionsnavn --case insensitive
                 )
                 AND
+                (
+                    attrEgenskaberTypeObj.integrationsdata IS NULL
+                    OR
+                    a.integrationsdata ILIKE attrEgenskaberTypeObj.integrationsdata --case insensitive
+                )
+                AND
                 
                 		(
 				(registreringObj.registrering) IS NULL 
@@ -40943,7 +41418,8 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
             WHERE
             (
                         a.brugervendtnoegle ILIKE anyAttrValue OR
-                        a.funktionsnavn ILIKE anyAttrValue
+                        a.funktionsnavn ILIKE anyAttrValue OR
+                        a.integrationsdata ILIKE anyAttrValue
                 
             )
             AND
@@ -41945,6 +42421,12 @@ ELSE
 					OR 
 					a.funktionsnavn = attrEgenskaberTypeObj.funktionsnavn 
 				)
+				AND
+				(
+					attrEgenskaberTypeObj.integrationsdata IS NULL
+					OR 
+					a.integrationsdata = attrEgenskaberTypeObj.integrationsdata 
+				)
 				AND b.organisationfunktion_id = ANY (organisationfunktion_candidates)
 				AND (a.virkning).TimePeriod @> actual_virkning 
 			);
@@ -42111,6 +42593,7 @@ principiel ClearableBoolean,
 
 sagsnummer text,
 titel text,
+integrationsdata text,
 
  virkning Virkning
 );
@@ -42299,6 +42782,7 @@ CREATE TABLE sag_attr_egenskaber (
         principiel boolean  NULL,
         sagsnummer text NOT NULL,
         titel text NOT NULL,
+        integrationsdata text  NULL,
     virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
     sag_registrering_id bigint NOT NULL,
     CONSTRAINT sag_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -42429,6 +42913,17 @@ ALTER TABLE sag_attr_egenskaber
             ON sag_attr_egenskaber
             USING btree
             (titel); 
+ 
+     
+        CREATE INDEX sag_attr_egenskaber_pat_integrationsdata
+            ON sag_attr_egenskaber
+            USING gin
+            (integrationsdata gin_trgm_ops);
+
+        CREATE INDEX sag_attr_egenskaber_idx_integrationsdata
+            ON sag_attr_egenskaber
+            USING btree
+            (integrationsdata); 
 
 
 
@@ -42674,7 +43169,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr SagEgenskaberAttrType
     FOREACH element IN ARRAY inputArr
     LOOP
 
-      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.afleveret IS NULL AND element.beskrivelse IS NULL AND element.hjemmel IS NULL AND element.kassationskode IS NULL AND element.offentlighedundtaget IS NULL AND element.principiel IS NULL AND element.sagsnummer IS NULL AND element.titel IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.afleveret IS NULL AND element.beskrivelse IS NULL AND element.hjemmel IS NULL AND element.kassationskode IS NULL AND element.offentlighedundtaget IS NULL AND element.principiel IS NULL AND element.sagsnummer IS NULL AND element.titel IS NULL AND element.integrationsdata IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
 
     --  RAISE DEBUG 'Skipping element';
       ELSE
@@ -43154,7 +43649,7 @@ BEGIN
                     unnest(attrEgenskaber) a
                     JOIN unnest(attrEgenskaber) b ON (a.virkning).TimePeriod && (b.virkning).TimePeriod
                 GROUP BY
-                    a.brugervendtnoegle,a.afleveret,a.beskrivelse,a.hjemmel,a.kassationskode,a.offentlighedundtaget,a.principiel,a.sagsnummer,a.titel,
+                    a.brugervendtnoegle,a.afleveret,a.beskrivelse,a.hjemmel,a.kassationskode,a.offentlighedundtaget,a.principiel,a.sagsnummer,a.titel,a.integrationsdata,
                     a.virkning
                     
                     HAVING COUNT(*) > 1) THEN
@@ -43165,9 +43660,9 @@ BEGIN
         -- To avoid needless fragmentation we'll check for presence of
         -- null values in the fields - and if none are present, we'll skip
         -- the merging operations
-        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).afleveret IS NULL  OR  (attrEgenskaberObj).beskrivelse IS NULL  OR  (attrEgenskaberObj).hjemmel IS NULL  OR  (attrEgenskaberObj).kassationskode IS NULL  OR  (attrEgenskaberObj).offentlighedundtaget IS NULL  OR  (attrEgenskaberObj).principiel IS NULL  OR  (attrEgenskaberObj).sagsnummer IS NULL  OR  (attrEgenskaberObj).titel IS NULL  THEN
+        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).afleveret IS NULL  OR  (attrEgenskaberObj).beskrivelse IS NULL  OR  (attrEgenskaberObj).hjemmel IS NULL  OR  (attrEgenskaberObj).kassationskode IS NULL  OR  (attrEgenskaberObj).offentlighedundtaget IS NULL  OR  (attrEgenskaberObj).principiel IS NULL  OR  (attrEgenskaberObj).sagsnummer IS NULL  OR  (attrEgenskaberObj).titel IS NULL  OR  (attrEgenskaberObj).integrationsdata IS NULL  THEN
             
-            INSERT INTO sag_attr_egenskaber ( brugervendtnoegle,afleveret,beskrivelse,hjemmel,kassationskode,offentlighedundtaget,principiel,sagsnummer,titel, virkning, sag_registrering_id)
+            INSERT INTO sag_attr_egenskaber ( brugervendtnoegle,afleveret,beskrivelse,hjemmel,kassationskode,offentlighedundtaget,principiel,sagsnummer,titel,integrationsdata, virkning, sag_registrering_id)
                 SELECT
                     
                         
@@ -43216,6 +43711,10 @@ BEGIN
                         
                             coalesce(attrEgenskaberObj.titel, a.titel),
                     
+                        
+                        
+                            coalesce(attrEgenskaberObj.integrationsdata, a.integrationsdata),
+                    
                     ROW ((a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
                             (attrEgenskaberObj.virkning).AktoerRef,
                             (attrEgenskaberObj.virkning).AktoerTypeKode,
@@ -43231,7 +43730,7 @@ BEGIN
         -- that is NOT covered by any "merged" rows inserted above, generate
         -- and insert rows.
         
-            INSERT INTO sag_attr_egenskaber ( brugervendtnoegle,afleveret,beskrivelse,hjemmel,kassationskode,offentlighedundtaget,principiel,sagsnummer,titel, virkning, sag_registrering_id)
+            INSERT INTO sag_attr_egenskaber ( brugervendtnoegle,afleveret,beskrivelse,hjemmel,kassationskode,offentlighedundtaget,principiel,sagsnummer,titel,integrationsdata, virkning, sag_registrering_id)
                 SELECT
                     
                      attrEgenskaberObj.brugervendtnoegle,
@@ -43252,6 +43751,8 @@ BEGIN
                     
                      attrEgenskaberObj.titel,
                     
+                     attrEgenskaberObj.integrationsdata,
+                    
                     ROW (b.tz_range_leftover,
                         (attrEgenskaberObj.virkning).AktoerRef,
                         (attrEgenskaberObj.virkning).AktoerTypeKode,
@@ -43271,8 +43772,8 @@ BEGIN
             -- Insert attrEgenskaberObj raw (if there were no null-valued fields)
             
 
-            INSERT INTO sag_attr_egenskaber ( brugervendtnoegle,afleveret,beskrivelse,hjemmel,kassationskode,offentlighedundtaget,principiel,sagsnummer,titel, virkning, sag_registrering_id)
-                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.afleveret,  attrEgenskaberObj.beskrivelse,  attrEgenskaberObj.hjemmel,  attrEgenskaberObj.kassationskode,  attrEgenskaberObj.offentlighedundtaget,  attrEgenskaberObj.principiel,  attrEgenskaberObj.sagsnummer,  attrEgenskaberObj.titel, attrEgenskaberObj.virkning, new_sag_registrering.id );
+            INSERT INTO sag_attr_egenskaber ( brugervendtnoegle,afleveret,beskrivelse,hjemmel,kassationskode,offentlighedundtaget,principiel,sagsnummer,titel,integrationsdata, virkning, sag_registrering_id)
+                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.afleveret,  attrEgenskaberObj.beskrivelse,  attrEgenskaberObj.hjemmel,  attrEgenskaberObj.kassationskode,  attrEgenskaberObj.offentlighedundtaget,  attrEgenskaberObj.principiel,  attrEgenskaberObj.sagsnummer,  attrEgenskaberObj.titel,  attrEgenskaberObj.integrationsdata, attrEgenskaberObj.virkning, new_sag_registrering.id );
         END IF;
 
         END LOOP;
@@ -43288,7 +43789,7 @@ BEGIN
 -- Handle egenskaber of previous registration, taking overlapping
 -- virknings into consideration (using function subtract_tstzrange)
 
-    INSERT INTO sag_attr_egenskaber ( brugervendtnoegle,afleveret,beskrivelse,hjemmel,kassationskode,offentlighedundtaget,principiel,sagsnummer,titel, virkning, sag_registrering_id)
+    INSERT INTO sag_attr_egenskaber ( brugervendtnoegle,afleveret,beskrivelse,hjemmel,kassationskode,offentlighedundtaget,principiel,sagsnummer,titel,integrationsdata, virkning, sag_registrering_id)
     SELECT
         
         
@@ -43309,6 +43810,8 @@ BEGIN
             a.sagsnummer,
         
             a.titel,
+        
+            a.integrationsdata,
         
         ROW (c.tz_range_leftover,
             (a.virkning).AktoerRef,
@@ -43508,6 +44011,7 @@ IF sag_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(sag_reg
       principiel,
       sagsnummer,
       titel,
+      integrationsdata,
       virkning,
       sag_registrering_id
     )
@@ -43522,6 +44026,7 @@ IF sag_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(sag_reg
       sag_attr_egenskaber_obj.principiel,
       sag_attr_egenskaber_obj.sagsnummer,
       sag_attr_egenskaber_obj.titel,
+      sag_attr_egenskaber_obj.integrationsdata,
       sag_attr_egenskaber_obj.virkning,
       sag_registrering_id
     ;
@@ -43802,6 +44307,7 @@ FROM
 					 		b.principiel,
 					 		b.sagsnummer,
 					 		b.titel,
+					 		b.integrationsdata,
 					   		b.virkning
                             
 							)::SagEgenskaberAttrType
@@ -43809,7 +44315,7 @@ FROM
 						NULL
 						END
                         
-						order by b.brugervendtnoegle,b.afleveret,b.beskrivelse,b.hjemmel,b.kassationskode,b.offentlighedundtaget,b.principiel,b.sagsnummer,b.titel,b.virkning
+						order by b.brugervendtnoegle,b.afleveret,b.beskrivelse,b.hjemmel,b.kassationskode,b.offentlighedundtaget,b.principiel,b.sagsnummer,b.titel,b.integrationsdata,b.virkning
                         
 					)) SagAttrEgenskaberArr
                     
@@ -44164,6 +44670,12 @@ ELSE
                     a.titel ILIKE attrEgenskaberTypeObj.titel --case insensitive
                 )
                 AND
+                (
+                    attrEgenskaberTypeObj.integrationsdata IS NULL
+                    OR
+                    a.integrationsdata ILIKE attrEgenskaberTypeObj.integrationsdata --case insensitive
+                )
+                AND
                 
                 		(
 				(registreringObj.registrering) IS NULL 
@@ -44269,7 +44781,8 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
                                     (a.offentlighedundtaget).Hjemmel ilike anyAttrValue OR (a.offentlighedundtaget).AlternativTitel ilike anyAttrValue OR
                                 
                         a.sagsnummer ILIKE anyAttrValue OR
-                        a.titel ILIKE anyAttrValue
+                        a.titel ILIKE anyAttrValue OR
+                        a.integrationsdata ILIKE anyAttrValue
                 
             )
             AND
@@ -45392,6 +45905,12 @@ ELSE
 					OR 
 					a.titel = attrEgenskaberTypeObj.titel 
 				)
+				AND
+				(
+					attrEgenskaberTypeObj.integrationsdata IS NULL
+					OR 
+					a.integrationsdata = attrEgenskaberTypeObj.integrationsdata 
+				)
 				AND b.sag_id = ANY (sag_candidates)
 				AND (a.virkning).TimePeriod @> actual_virkning 
 			);
@@ -45556,6 +46075,7 @@ CREATE TYPE TilstandPubliceretTilsType AS (
 CREATE TYPE TilstandEgenskaberAttrType AS (
 brugervendtnoegle text,
 beskrivelse text,
+integrationsdata text,
 
  virkning Virkning
 );
@@ -45729,6 +46249,7 @@ CREATE TABLE tilstand_attr_egenskaber (
     id bigint NOT NULL DEFAULT nextval('tilstand_attr_egenskaber_id_seq'::regclass),
         brugervendtnoegle text NOT NULL,
         beskrivelse text  NULL,
+        integrationsdata text  NULL,
     virkning Virkning NOT NULL CHECK( (virkning).TimePeriod IS NOT NULL AND NOT isempty((virkning).TimePeriod) ),
     tilstand_registrering_id bigint NOT NULL,
     CONSTRAINT tilstand_attr_egenskaber_pkey PRIMARY KEY (id),
@@ -45765,6 +46286,17 @@ ALTER TABLE tilstand_attr_egenskaber
             ON tilstand_attr_egenskaber
             USING btree
             (beskrivelse); 
+ 
+     
+        CREATE INDEX tilstand_attr_egenskaber_pat_integrationsdata
+            ON tilstand_attr_egenskaber
+            USING gin
+            (integrationsdata gin_trgm_ops);
+
+        CREATE INDEX tilstand_attr_egenskaber_idx_integrationsdata
+            ON tilstand_attr_egenskaber
+            USING btree
+            (integrationsdata); 
 
 
 
@@ -46087,7 +46619,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr TilstandEgenskaberAtt
     FOREACH element IN ARRAY inputArr
     LOOP
 
-      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.beskrivelse IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
+      IF element IS NULL OR (( element.brugervendtnoegle IS NULL AND element.beskrivelse IS NULL AND element.integrationsdata IS NULL ) AND element.virkning IS NULL) THEN --CAUTION: foreach on {null} will result in element gets initiated with ROW(null,null....) 
 
     --  RAISE DEBUG 'Skipping element';
       ELSE
@@ -46590,7 +47122,7 @@ BEGIN
                     unnest(attrEgenskaber) a
                     JOIN unnest(attrEgenskaber) b ON (a.virkning).TimePeriod && (b.virkning).TimePeriod
                 GROUP BY
-                    a.brugervendtnoegle,a.beskrivelse,
+                    a.brugervendtnoegle,a.beskrivelse,a.integrationsdata,
                     a.virkning
                     
                     HAVING COUNT(*) > 1) THEN
@@ -46601,9 +47133,9 @@ BEGIN
         -- To avoid needless fragmentation we'll check for presence of
         -- null values in the fields - and if none are present, we'll skip
         -- the merging operations
-        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).beskrivelse IS NULL  THEN
+        IF  (attrEgenskaberObj).brugervendtnoegle IS NULL  OR  (attrEgenskaberObj).beskrivelse IS NULL  OR  (attrEgenskaberObj).integrationsdata IS NULL  THEN
             
-            INSERT INTO tilstand_attr_egenskaber ( brugervendtnoegle,beskrivelse, virkning, tilstand_registrering_id)
+            INSERT INTO tilstand_attr_egenskaber ( brugervendtnoegle,beskrivelse,integrationsdata, virkning, tilstand_registrering_id)
                 SELECT
                     
                         
@@ -46613,6 +47145,10 @@ BEGIN
                         
                         
                             coalesce(attrEgenskaberObj.beskrivelse, a.beskrivelse),
+                    
+                        
+                        
+                            coalesce(attrEgenskaberObj.integrationsdata, a.integrationsdata),
                     
                     ROW ((a.virkning).TimePeriod * (attrEgenskaberObj.virkning).TimePeriod,
                             (attrEgenskaberObj.virkning).AktoerRef,
@@ -46629,12 +47165,14 @@ BEGIN
         -- that is NOT covered by any "merged" rows inserted above, generate
         -- and insert rows.
         
-            INSERT INTO tilstand_attr_egenskaber ( brugervendtnoegle,beskrivelse, virkning, tilstand_registrering_id)
+            INSERT INTO tilstand_attr_egenskaber ( brugervendtnoegle,beskrivelse,integrationsdata, virkning, tilstand_registrering_id)
                 SELECT
                     
                      attrEgenskaberObj.brugervendtnoegle,
                     
                      attrEgenskaberObj.beskrivelse,
+                    
+                     attrEgenskaberObj.integrationsdata,
                     
                     ROW (b.tz_range_leftover,
                         (attrEgenskaberObj.virkning).AktoerRef,
@@ -46655,8 +47193,8 @@ BEGIN
             -- Insert attrEgenskaberObj raw (if there were no null-valued fields)
             
 
-            INSERT INTO tilstand_attr_egenskaber ( brugervendtnoegle,beskrivelse, virkning, tilstand_registrering_id)
-                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.beskrivelse, attrEgenskaberObj.virkning, new_tilstand_registrering.id );
+            INSERT INTO tilstand_attr_egenskaber ( brugervendtnoegle,beskrivelse,integrationsdata, virkning, tilstand_registrering_id)
+                VALUES (  attrEgenskaberObj.brugervendtnoegle,  attrEgenskaberObj.beskrivelse,  attrEgenskaberObj.integrationsdata, attrEgenskaberObj.virkning, new_tilstand_registrering.id );
         END IF;
 
         END LOOP;
@@ -46672,13 +47210,15 @@ BEGIN
 -- Handle egenskaber of previous registration, taking overlapping
 -- virknings into consideration (using function subtract_tstzrange)
 
-    INSERT INTO tilstand_attr_egenskaber ( brugervendtnoegle,beskrivelse, virkning, tilstand_registrering_id)
+    INSERT INTO tilstand_attr_egenskaber ( brugervendtnoegle,beskrivelse,integrationsdata, virkning, tilstand_registrering_id)
     SELECT
         
         
             a.brugervendtnoegle,
         
             a.beskrivelse,
+        
+            a.integrationsdata,
         
         ROW (c.tz_range_leftover,
             (a.virkning).AktoerRef,
@@ -46874,6 +47414,7 @@ IF tilstand_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(ti
       
       brugervendtnoegle,
       beskrivelse,
+      integrationsdata,
       virkning,
       tilstand_registrering_id
     )
@@ -46881,6 +47422,7 @@ IF tilstand_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(ti
      
      tilstand_attr_egenskaber_obj.brugervendtnoegle,
       tilstand_attr_egenskaber_obj.beskrivelse,
+      tilstand_attr_egenskaber_obj.integrationsdata,
       tilstand_attr_egenskaber_obj.virkning,
       tilstand_registrering_id
     ;
@@ -47166,6 +47708,7 @@ FROM
                             
 					 		b.brugervendtnoegle,
 					 		b.beskrivelse,
+					 		b.integrationsdata,
 					   		b.virkning
                             
 							)::TilstandEgenskaberAttrType
@@ -47173,7 +47716,7 @@ FROM
 						NULL
 						END
                         
-						order by b.brugervendtnoegle,b.beskrivelse,b.virkning
+						order by b.brugervendtnoegle,b.beskrivelse,b.integrationsdata,b.virkning
                         
 					)) TilstandAttrEgenskaberArr
                     
@@ -47484,6 +48027,12 @@ ELSE
                     a.beskrivelse ILIKE attrEgenskaberTypeObj.beskrivelse --case insensitive
                 )
                 AND
+                (
+                    attrEgenskaberTypeObj.integrationsdata IS NULL
+                    OR
+                    a.integrationsdata ILIKE attrEgenskaberTypeObj.integrationsdata --case insensitive
+                )
+                AND
                 
                 		(
 				(registreringObj.registrering) IS NULL 
@@ -47582,7 +48131,8 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
             WHERE
             (
                         a.brugervendtnoegle ILIKE anyAttrValue OR
-                        a.beskrivelse ILIKE anyAttrValue
+                        a.beskrivelse ILIKE anyAttrValue OR
+                        a.integrationsdata ILIKE anyAttrValue
                 
             )
             AND
@@ -48750,6 +49300,12 @@ ELSE
 					attrEgenskaberTypeObj.beskrivelse IS NULL
 					OR 
 					a.beskrivelse = attrEgenskaberTypeObj.beskrivelse 
+				)
+				AND
+				(
+					attrEgenskaberTypeObj.integrationsdata IS NULL
+					OR 
+					a.integrationsdata = attrEgenskaberTypeObj.integrationsdata 
 				)
 				AND b.tilstand_id = ANY (tilstand_candidates)
 				AND (a.virkning).TimePeriod @> actual_virkning 

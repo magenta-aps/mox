@@ -191,6 +191,7 @@ indsatsEgenskab := ROW (
 ,'beskrivelse_indsats_1'-- text,
 , '2017-01-20 08:00'::timestamptz  -- starttidspunkt,
 , '2017-01-20 12:00'::timestamptz -- sluttidspunkt,
+,'integrationsdata_1'-- text,
 ,virkEgenskaber
 ) :: indsatsEgenskaberAttrType
 ;

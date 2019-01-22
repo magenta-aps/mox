@@ -215,6 +215,7 @@ doc1_dokumentEgenskab1 := ROW (
 ROW('doc_Offentlighedundtaget_AlternativTitel1','doc_Offentlighedundtaget_Hjemmel1') ::OffentlighedundtagetType, --offentlighedundtagettype,
 'doc_titel1',
 'doc_dokumenttype1',
+'integrationsdata1',
    doc1_virkEgenskaber1
 ) :: dokumentEgenskaberAttrType
 ;
@@ -229,6 +230,7 @@ doc1_dokumentEgenskab2 := ROW (
 ROW('doc_Offentlighedundtaget_AlternativTitel2','doc_Offentlighedundtaget_Hjemmel2') ::OffentlighedundtagetType, --offentlighedundtagettype,
 'doc_titel2',
 'doc_dokumenttype2',
+'integrationsdata2',
    doc1_virkEgenskaber2
 ) :: dokumentEgenskaberAttrType
 ;
@@ -624,6 +626,7 @@ null, --major int
 ROW('doc_Offentlighedundtaget_AlternativTitel2_1','doc_Offentlighedundtaget_Hjemmel2_1') ::OffentlighedundtagetType, --offentlighedundtagettype,
 'doc_titel2_1',
 'doc_dokumenttype2_1',
+'integrationsdata2_1',
    doc2_virkEgenskaber1
 ) :: dokumentEgenskaberAttrType
 ;
@@ -638,6 +641,7 @@ doc2_dokumentEgenskab2 := ROW (
 ROW('doc_Offentlighedundtaget_AlternativTitel2_2','doc_Offentlighedundtaget_Hjemmel2_2') ::OffentlighedundtagetType, --offentlighedundtagettype,
 'doc_titel2_2',
 'doc_dokumenttype2_2',
+'integrationsdata2_2',
    doc2_virkEgenskaber2
 ) :: dokumentEgenskaberAttrType
 ;
@@ -992,6 +996,7 @@ expected_dokument1:=ROW(
 				ROW('doc_Offentlighedundtaget_AlternativTitel1','doc_Offentlighedundtaget_Hjemmel1') ::OffentlighedundtagetType, --offentlighedundtagettype,
 				'doc_titel1',
 				'doc_dokumenttype1',
+				'integrationsdata1',
 				ROW( '[2015-06-30, infinity)' :: TSTZRANGE,
 				          'd71cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
 				          'Bruger',
@@ -1008,6 +1013,7 @@ expected_dokument1:=ROW(
 				ROW('doc_Offentlighedundtaget_AlternativTitel2','doc_Offentlighedundtaget_Hjemmel2') ::OffentlighedundtagetType, --offentlighedundtagettype,
 				'doc_titel2',
 				'doc_dokumenttype2',
+				'integrationsdata2',
 				ROW(
 				   '[2014-05-12, 2014-06-20)' :: TSTZRANGE,
          			'e71cc58a-3149-414a-9392-dcbcbbccddf8'::uuid,
@@ -1025,6 +1031,7 @@ expected_dokument1:=ROW(
 					ROW('doc_Offentlighedundtaget_AlternativTitel2_1','doc_Offentlighedundtaget_Hjemmel2_1') ::OffentlighedundtagetType, --offentlighedundtagettype,
 					'doc_titel2_1',
 					'doc_dokumenttype2_1',
+					'integrationsdata2_1',
 					ROW (
 						'[2015-05-12, 2015-06-30)' :: TSTZRANGE,
 					          'c71cc58a-3149-414a-9392-dcbcbbccddfe'::uuid,
@@ -1042,6 +1049,7 @@ expected_dokument1:=ROW(
 					ROW('doc_Offentlighedundtaget_AlternativTitel2_1','doc_Offentlighedundtaget_Hjemmel2_1') ::OffentlighedundtagetType, --offentlighedundtagettype,
 					'doc_titel2_1',
 					'doc_dokumenttype2_1',
+					'integrationsdata2_1',
 					   ROW (
 							'[2014-06-20, 2015-05-12)' :: TSTZRANGE,
 						    'c71cc58a-3149-414a-9392-dcbcbbccddfe'::uuid,
@@ -1059,6 +1067,7 @@ expected_dokument1:=ROW(
 					ROW('doc_Offentlighedundtaget_AlternativTitel2_2','doc_Offentlighedundtaget_Hjemmel2_2') ::OffentlighedundtagetType, --offentlighedundtagettype,
 					'doc_titel2_2',
 					'doc_dokumenttype2_2',
+					'integrationsdata2_2',
 					   	ROW (
 							'[2013-11-30, 2014-02-20)' :: TSTZRANGE,
 						    'd71cc58a-3149-414a-9392-dcbcbbccddf7'::uuid,

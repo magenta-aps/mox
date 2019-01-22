@@ -216,6 +216,7 @@ virkPubliceret,
 tilstandEgenskab := ROW (
 'brugervendtnoegle_tilstand_1' --text, 
 ,'beskrivelse_tilstand_1'-- text,
+,'integrationsdata_1'-- text,
 ,virkEgenskaber
 ) :: tilstandEgenskaberAttrType
 ;
@@ -259,6 +260,7 @@ virkEgenskaber2 :=	ROW (
 tilstandEgenskab2 := ROW (
 'brugervendtnoegle_tilstand_1A' --text, 
 ,'beskrivelse_tilstand_2'-- text,
+,'integrationsdata_2'-- text,
 ,virkEgenskaber2
 ) :: tilstandEgenskaberAttrType
 ;
@@ -294,6 +296,7 @@ expected_tilstand1:=ROW(
 				 ROW (
 				'brugervendtnoegle_tilstand_1' --text, 
 				,'beskrivelse_tilstand_1'-- text,
+				,'integrationsdata_1'-- text,
 				,ROW (
 					'[2015-05-12, 2016-05-12)' :: TSTZRANGE,
 						uuidVirkEgenskaber,
@@ -304,6 +307,7 @@ expected_tilstand1:=ROW(
 				  ROW (
 					'brugervendtnoegle_tilstand_1A' --text, 
 					,'beskrivelse_tilstand_2'-- text,
+					,'integrationsdata_2'-- text,
 					,virkEgenskaber2
 					) :: tilstandEgenskaberAttrType
 				]::tilstandEgenskaberAttrType[]

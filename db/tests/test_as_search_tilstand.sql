@@ -210,6 +210,7 @@ virkPubliceret,
 tilstandEgenskab := ROW (
 'brugervendtnoegle_tilstand_1' --text, 
 ,'beskrivelse_tilstand_fælles'-- text,
+,'integrationsdata_1'
 ,virkEgenskaber
 ) :: tilstandEgenskaberAttrType
 ;
@@ -252,6 +253,7 @@ ARRAY[
 ROW (
 'brugervendtnoegle_tilstand_2' --text, 
 ,'beskrivelse_tilstand_fælles'-- text,
+,'integrationsdata_2'-- text,
 ,ROW( '[2016-01-01, infinity)' :: TSTZRANGE,
           uuid_generate_v4(),
           'Bruger',
@@ -280,6 +282,7 @@ ARRAY[
 ROW (
 'brugervendtnoegle_tilstand_3' --text, 
 ,'beskrivelse_tilstand_fælles'-- text,
+,'integrationsdata_3'-- text,
 ,ROW( '[2016-06-01, infinity)' :: TSTZRANGE,
           uuid_generate_v4(),
           'Bruger',
@@ -305,6 +308,7 @@ actual_search_res_1:=as_search_tilstand(null,null,
 			ARRAY[ ROW (
 				'brugervendtnoegle_tilstand_2' --text, 
 				,null
+				,null
 				,null) :: tilstandEgenskaberAttrType ]::tilstandEgenskaberAttrType[],
 			null-- TilstandRelationType[]
 			)::tilstandRegistreringType	
@@ -325,6 +329,7 @@ actual_search_res_2:=as_search_tilstand(null,null,
 			ARRAY[ ROW (
 				null --text, 
 				,'beskrivelse_tilstand_fælles'
+				,null --text, 
 				,null) :: tilstandEgenskaberAttrType ]::tilstandEgenskaberAttrType[],
 			null-- TilstandRelationType[]
 			)::tilstandRegistreringType	

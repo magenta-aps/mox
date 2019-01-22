@@ -28,3 +28,14 @@ here.
 
    api/file-operations.rst
    api/deleting-document.rst
+
+
+Integrationdata
+===============
+
+``integrationdata`` is different and its uniqueness is documented here.
+
+.. toctree::
+   :maxdepth: 1
+
+   api/integrationdata.rst

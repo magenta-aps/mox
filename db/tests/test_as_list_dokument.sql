@@ -225,6 +225,7 @@ doc1_dokumentEgenskab1 := ROW (
 ROW('doc_Offentlighedundtaget_AlternativTitel1','doc_Offentlighedundtaget_Hjemmel1') ::OffentlighedundtagetType, --offentlighedundtagettype,
 'doc_titel1',
 'doc_dokumenttype1',
+'integrationsdata1',
    doc1_virkEgenskaber1
 ) :: dokumentEgenskaberAttrType
 ;
@@ -239,6 +240,7 @@ doc1_dokumentEgenskab2 := ROW (
 ROW('doc_Offentlighedundtaget_AlternativTitel2','doc_Offentlighedundtaget_Hjemmel2') ::OffentlighedundtagetType, --offentlighedundtagettype,
 'doc_titel2',
 'doc_dokumenttype2',
+'integrationsdata2',
    doc1_virkEgenskaber2
 ) :: dokumentEgenskaberAttrType
 ;
@@ -592,6 +594,7 @@ doc2_dokumentEgenskab1 := ROW (
 ROW('doc_Offentlighedundtaget_AlternativTitel2_1','doc_Offentlighedundtaget_Hjemmel2_1') ::OffentlighedundtagetType, --offentlighedundtagettype,
 'doc_titel2_1',
 'doc_dokumenttype2_1',
+'integrationsdata2_1',
    doc2_virkEgenskaber1
 ) :: dokumentEgenskaberAttrType
 ;
@@ -606,6 +609,7 @@ doc2_dokumentEgenskab2 := ROW (
 ROW('doc_Offentlighedundtaget_AlternativTitel2_2','doc_Offentlighedundtaget_Hjemmel2_2') ::OffentlighedundtagetType, --offentlighedundtagettype,
 'doc_titel2_2',
 'doc_dokumenttype2_2',
+'integrationsdata2_2',
    doc2_virkEgenskaber2
 ) :: dokumentEgenskaberAttrType
 ;
