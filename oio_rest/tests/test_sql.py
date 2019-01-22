@@ -16,7 +16,7 @@ import tap.parser
 
 from oio_rest.utils import test_support
 from oio_rest import db_templating
-import settings
+from oio_rest import settings
 from tests import util
 
 SQL_FIXTURE = os.path.join(util.FIXTURE_DIR, 'db-dump.sql')

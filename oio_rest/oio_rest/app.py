@@ -30,7 +30,7 @@ from .auth import tokens
 
 import flask_saml_sso
 
-import settings
+from . import settings
 
 app = Flask(__name__)
 

@@ -18,7 +18,7 @@ import importlib
 
 from jinja2 import Environment, FileSystemLoader
 
-import settings
+from . import settings
 
 DB_DIR = Path(__file__).parent / "dbdata"
 TEMPLATE_DIR = DB_DIR / "templates"

@@ -15,10 +15,10 @@ from psycopg2._range import DateTimeTZRange
 from psycopg2.extensions import adapt as psyco_adapt, ISQLQuote
 from psycopg2.extensions import register_adapter as psyco_register_adapter
 
+from . import settings
+
 from .contentstore import content_store
 from .custom_exceptions import BadRequestException
-
-import settings
 
 _attribute_fields = {}
 

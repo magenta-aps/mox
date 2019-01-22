@@ -33,7 +33,7 @@ from .utils.build_registration import restriction_to_registration
 from .custom_exceptions import NotFoundException, NotAllowedException
 from .custom_exceptions import DBException, BadRequestException
 
-import settings
+from . import settings
 
 """
     Jinja2 Environment

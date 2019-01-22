@@ -12,10 +12,9 @@ from mock import MagicMock, call, patch
 from werkzeug.datastructures import ImmutableMultiDict
 
 from oio_rest import db_helpers
+from oio_rest import settings
 from oio_rest.custom_exceptions import BadRequestException
 from oio_rest.utils import test_support
-
-import settings
 
 
 class TestDBHelpers(TestCase):

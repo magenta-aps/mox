@@ -25,7 +25,7 @@ import psycopg2.pool
 from .. import app
 from .. import db_templating
 
-import settings
+from .. import settings
 
 BASE_DIR = os.path.dirname(settings.__file__)
 TOP_DIR = os.path.dirname(BASE_DIR)
@@ -36,12 +36,12 @@ DB_DIR = os.path.join(BASE_DIR, 'build', 'db')
 def patch_db_struct(new: typing.Union[types.ModuleType, dict]):
     if isinstance(new, types.ModuleType):
         with \
-             mock.patch('settings.DB_STRUCTURE', new), \
-             mock.patch('settings.REAL_DB_STRUCTURE', new=new.REAL_DB_STRUCTURE):
+             mock.patch('oio_rest.settings.DB_STRUCTURE', new), \
+             mock.patch('oio_rest.settings.REAL_DB_STRUCTURE', new=new.REAL_DB_STRUCTURE):
             yield
     else:
         with \
-             mock.patch('settings.REAL_DB_STRUCTURE', new=new):
+             mock.patch('oio_rest.settings.REAL_DB_STRUCTURE', new=new):
             yield
 
 
@@ -150,11 +150,11 @@ class TestCaseMixin(object):
         db_port = psql().dsn()['port']
 
         for p in [
-            mock.patch('settings.FILE_UPLOAD_FOLDER', './mox-upload'),
-            mock.patch('settings.LOG_AMQP_SERVER', None),
-            mock.patch('settings.DB_HOST', db_host,
+            mock.patch('oio_rest.settings.FILE_UPLOAD_FOLDER', './mox-upload'),
+            mock.patch('oio_rest.settings.LOG_AMQP_SERVER', None),
+            mock.patch('oio_rest.settings.DB_HOST', db_host,
                        create=True),
-            mock.patch('settings.DB_PORT', db_port,
+            mock.patch('oio_rest.settings.DB_PORT', db_port,
                        create=True),
             mock.patch(
                 'oio_rest.db.pool',

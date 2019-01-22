@@ -19,7 +19,7 @@ from .custom_exceptions import UnauthorizedException
 from .custom_exceptions import AuthorizationFailedException
 from .auth.saml2 import Saml2_Assertion
 
-import settings
+from . import settings
 
 
 # Read the IdP certificate file into memory

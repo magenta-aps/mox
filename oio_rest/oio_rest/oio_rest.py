@@ -27,7 +27,7 @@ from .custom_exceptions import GoneException
 # Just a helper during debug
 from .authentication import requires_auth
 
-import settings
+from . import settings
 
 
 def j(t):
