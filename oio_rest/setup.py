@@ -39,7 +39,7 @@ setup(
     entry_points={
         # -*- Entry points: -*-
         'console_scripts': [
-            'oio_api = oio_rest.app:app.run',
+            'mox = oio_rest.__main__:cli',
         ],
     },
 )

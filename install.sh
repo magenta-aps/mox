@@ -161,7 +161,7 @@ if [ $FULL -eq 0 ]; then
     printf "To activate the oio_rest virtual environment:
         '. $BASE_DIR/python-env/bin/activate'\n"
     printf "When activated, you can start oio_rest:
-        'python -m flask run'\n"
+        'mox run'\n"
     printf "When activated, you can run the test suite:
         'pip install -r $BASE_DIR/oio_rest/requirements-test.txt' once,
         'pytest' from within $BASE_DIR/oio_rest.\n"
