@@ -60,13 +60,12 @@ jinja_env.filters['adapt'] = adapt
 pool = ThreadedConnectionPool(
     settings.DB_MIN_CONNECTIONS,
     settings.DB_MAX_CONNECTIONS,
-    database=settings.DATABASE,
+    dbname=settings.DATABASE,
     user=settings.DB_USER,
     password=settings.DB_PASSWORD,
-    host=getattr(settings, 'DB_HOST', 'localhost'),
-    port=getattr(settings, 'DB_PORT', 5432),
+    host=settings.DB_HOST,
+    port=settings.DB_PORT
 )
-
 
 def get_connection():
     """Handle all intricacies of connecting to Postgres.

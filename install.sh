@@ -71,15 +71,6 @@ printf "## Create audit log directory\n"
 sudo touch /var/log/mox/audit.log
 sudo chown "$USER" /var/log/mox/audit.log
 
-
-printf "# Allow access to postgresql over TCP\n"
-printf "## Update pg_hba.conf\n"
-printf "local all all md5\n" | sudo tee -a /etc/postgresql/9.5/main/pg_hba.conf > /dev/null
-printf "## Apply changes\n"
-sudo service postgresql restart
-sudo service postgresql status  # make sure that postgresql is running
-
-
 printf "# Create virtual environment\n"
 /usr/bin/env python3 -m venv $BASE_DIR/python-env
 

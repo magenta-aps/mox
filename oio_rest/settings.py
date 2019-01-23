@@ -19,9 +19,13 @@ CONFIG_FILE = getenv('OIO_REST_CONFIG_FILE', None)
 BASE_URL = getenv('BASE_URL', '')
 
 # DB (Postgres) settings
-DATABASE = getenv('DB_NAME', 'mox')
-DB_USER = getenv('DB_USER', 'mox')
-DB_PASSWORD = getenv('DB_PASS', 'mox')
+DB_HOST = "localhost"
+DB_PORT = None
+DB_USER = "mox"
+DB_PASSWORD = "mox"
+
+# TODO: Database name parameter should be streamlined with other DB parameters
+DATABASE = "mox"
 
 # Per-process limits on the amount of database connections. Setting
 # the minimum to a non-zero value ensures that the webapp opens this
