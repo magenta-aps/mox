@@ -34,7 +34,7 @@ DB_MIN_CONNECTIONS = int(getenv('DB_MIN_CONNECTIONS', '0'))
 DB_MAX_CONNECTIONS = int(getenv('DB_MAX_CONNECTIONS', '10'))
 
 DB_STRUCTURE = import_module(getenv('DB_STRUCTURE',
-                                    'oio_rest.db_structure'))
+                                    'oio_rest.db.db_structure'))
 REAL_DB_STRUCTURE = DB_STRUCTURE.REAL_DB_STRUCTURE
 
 # This is where file uploads are stored. It must be readable and writable by

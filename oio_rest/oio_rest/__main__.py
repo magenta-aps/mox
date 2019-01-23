@@ -9,7 +9,7 @@ import click
 import flask.cli
 
 from . import app
-from . import db_templating
+from .db import db_templating
 
 
 @click.group(cls=flask.cli.FlaskGroup, create_app=lambda: app.app)
@@ -21,7 +21,6 @@ def cli():
 @click.option('-o', '--output', type=click.File('wt'), default='-')
 def sql(output):
     '''Write database SQL structure to standard output'''
-    from . import db_templating
 
     for line in db_templating.get_sql():
         output.write(line)

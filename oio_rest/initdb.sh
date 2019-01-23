@@ -36,5 +36,5 @@ CREATE DATABASE $MOX_DB WITH OWNER '$MOX_DB_USER';
 EOF
 
 cd $MOXDIR
-exec $PYTHON -m oio_rest.db_templating \
+exec $PYTHON -m oio_rest sql \
     | sudo -u postgres psql -v ON_ERROR_STOP=1 -d $MOX_DB

@@ -23,7 +23,7 @@ import testing.postgresql
 import psycopg2.pool
 
 from .. import app
-from .. import db_templating
+from ..db import db_templating
 
 from .. import settings
 

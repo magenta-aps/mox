@@ -15,7 +15,7 @@ import sys
 import tap.parser
 
 from oio_rest.utils import test_support
-from oio_rest import db_templating
+from oio_rest.db import db_templating
 from oio_rest import settings
 from tests import util
 

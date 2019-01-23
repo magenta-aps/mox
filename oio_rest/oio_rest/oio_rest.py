@@ -19,7 +19,7 @@ from werkzeug.datastructures import ImmutableOrderedMultiDict
 
 from . import db
 from . import validate
-from .db_helpers import get_valid_search_parameters, TEMPORALITY_PARAMS
+from .db.db_helpers import get_valid_search_parameters, TEMPORALITY_PARAMS
 from .utils.build_registration import build_registration, to_lower_param
 from .custom_exceptions import BadRequestException, NotFoundException
 from .custom_exceptions import GoneException

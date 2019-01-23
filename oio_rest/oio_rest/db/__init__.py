@@ -26,14 +26,14 @@ from .db_helpers import (
     VaerdiRelationAttr,
 )
 
-from .authentication import get_authenticated_user
+from ..authentication import get_authenticated_user
 
-from .auth.restrictions import Operation, get_restrictions
-from .utils.build_registration import restriction_to_registration
-from .custom_exceptions import NotFoundException, NotAllowedException
-from .custom_exceptions import DBException, BadRequestException
+from ..auth.restrictions import Operation, get_restrictions
+from ..utils.build_registration import restriction_to_registration
+from ..custom_exceptions import NotFoundException, NotAllowedException
+from ..custom_exceptions import DBException, BadRequestException
 
-from . import settings
+from .. import settings
 
 """
     Jinja2 Environment
@@ -42,7 +42,7 @@ from . import settings
 current_directory = os.path.dirname(os.path.realpath(__file__))
 
 jinja_env = Environment(loader=FileSystemLoader(
-    os.path.join(current_directory, 'templates', 'sql')
+    os.path.join(current_directory, 'templates')
 ))
 
 

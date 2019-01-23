@@ -17,7 +17,7 @@ from mock import MagicMock, patch
 from werkzeug.exceptions import BadRequest
 
 from oio_rest import db
-from oio_rest import db_helpers
+from oio_rest.db import db_helpers
 from oio_rest.custom_exceptions import (BadRequestException, NotFoundException,
                                         GoneException)
 from oio_rest.oio_rest import OIOStandardHierarchy, OIORestObject

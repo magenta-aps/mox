@@ -87,7 +87,7 @@ fi
 
 
 printf "# Initialize database\n"
-$BASE_DIR/db/initdb.sh
+$BASE_DIR/oio_rest/initdb.sh
 
 
 if [ $FULL -eq 1 ]; then
