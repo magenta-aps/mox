@@ -59,10 +59,6 @@ def psql():
     return psql
 
 
-def list_db_sql(dirname):
-    return glob.glob(os.path.join(TOP_DIR, 'db', dirname, '*.sql'))
-
-
 def _initdb():
     with psycopg2.connect(psql().url()) as conn:
         conn.autocommit = True
