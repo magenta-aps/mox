@@ -30,8 +30,11 @@ export MOX_AMQP_USER="guest"
 export MOX_AMQP_PASS="guest"
 export MOX_AMQP_VHOST="/"
 
+# Please note that we require a rather recent pip due to our
+# use of URL dependencies
+$PYTHON -m pip install 'pip>=18.1' 'setuptools>=40'
+$PYTHON -m pip install -e '.[tests]'
+
 # Execute tests
-$PYTHON -m pip install -e .
-$PYTHON -m pip install -r requirements-test.txt
 $PYTHON -m flake8 --exit-zero
 $PYTHON -m pytest

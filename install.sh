@@ -74,10 +74,8 @@ sudo chown "$USER" /var/log/mox/audit.log
 printf "# Create virtual environment\n"
 /usr/bin/env python3 -m venv $BASE_DIR/python-env
 
-
 printf "# Install requirements\n"
-/$BASE_DIR/python-env/bin/pip install -r $BASE_DIR/oio_rest/requirements.txt
-
+$BASE_DIR/python-env/bin/pip install --upgrade pip setuptools wheel
 
 printf "# Install oio_rest package\n"
 /$BASE_DIR/python-env/bin/pip install -e $BASE_DIR/oio_rest

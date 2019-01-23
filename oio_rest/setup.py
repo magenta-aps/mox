@@ -2,13 +2,19 @@
 # encoding: utf-8
 
 import os
+import pathlib
+import re
 
 from setuptools import find_packages, setup
 
-basedir = os.path.dirname(__file__)
+basedir = pathlib.Path(__file__).parent
 
-with open(os.path.join(basedir, 'VERSION')) as fp:
-    version = fp.read().strip()
+version = (basedir / 'VERSION').read_text().strip()
+install_requires = (basedir / 'requirements.txt').read_text().splitlines()
+tests_require = [
+    l for l in (basedir / 'requirements-test.txt').read_text().splitlines()
+    if not l.startswith('-r')
+]
 
 setup(
     name='oio_rest',
@@ -34,8 +40,15 @@ setup(
             "test_auth_data/idp-certificate.pem",
         ],
     },
+    python_requires='>=3.5',
+    install_requires=install_requires,
+    extras_require={
+        'tests': tests_require,
+    },
+    tests_require=tests_require,
     include_package_data=True,
     zip_safe=False,
+
     entry_points={
         # -*- Entry points: -*-
         'console_scripts': [

@@ -10,4 +10,4 @@ pexpect==4.6.0
 python-dateutil==2.7.3
 pika==0.12.0
 jsonschema==2.6.0
--e git+https://github.com/magenta-aps/flask_saml_sso@master#egg=flask_saml_sso
+flask_saml_sso @ git+https://github.com/magenta-aps/flask_saml_sso@master#egg=flask_saml_sso
