@@ -71,11 +71,26 @@ Search operation
    PostgreSQL
    <https://www.postgresql.org/docs/9.5/datatype-datetime.html#DATATYPE-DATETIME-INPUT>`_.
 
-   All *string* parameters match case insensitive. They support the wildcard
-   operators ``_`` (underscore) to match a single character and ``%`` (percent
-   sign) to match zero or more characters. The match is made with `ILIKE from
-   PostgresSQL
-   <https://www.postgresql.org/docs/9.5/functions-matching.html#FUNCTIONS-LIKE>`_.
+
+   All *string* parameters match case insensitive. They support the wildcard ``%``
+   (percent sign) to match zero or more characters.
+
+   If you want to match a litteral percentage-sign ``%`` you have to escape it with
+   backslash. E.g. ``abc\%def`` would match the value ``abc%def``.
+
+   Contrary, to typical SQL ``LIKE`` syntax, the character ``_`` (underscore)
+   matches only the underscore character (and not "any character").
+
+   .. attention::
+
+       The URI should always be percent-encoded as defined in :rfc:`3986
+       <3986#section-2>`. Not doing so can lead to unexpected result when you use
+       the ``%`` wildcard.
+
+       The percent-encoding of ``%`` is ``%25``. E.g. a search query for a ``bvn``
+       with the string ``abc%123`` would look like ``?bvn=abc%25123``.
+
+       See :ref:`dev-wildcards` for an in depth explanation.
 
    In addition to the above general query parameters, each object also has
    specialized parameters based on its field. The endpoints

@@ -28,6 +28,7 @@ Content
    :caption: Developer Documentation
 
    dev/database.rst
+   dev/wildcards.rst
    dev/test.rst
    dev/testing-rest.rst
    dev/building-docs.rst
