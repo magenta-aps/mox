@@ -60,12 +60,10 @@ fi
 
 printf "# Create directories\n"
 printf "## Create upload directory\n"
-sudo mkdir /var/mox
-sudo chown "$USER" /var/mox
+sudo install -d -o "$USER" /var/mox
 
 printf "## Create log directory\n"
-sudo mkdir /var/log/mox
-sudo chown "$USER" /var/log/mox
+sudo install -d -o "$USER" /var/log/mox
 
 printf "## Create audit log directory\n"
 sudo touch /var/log/mox/audit.log
@@ -78,11 +76,11 @@ printf "# Install requirements\n"
 $BASE_DIR/python-env/bin/pip install --upgrade pip setuptools wheel
 
 printf "# Install oio_rest package\n"
-/$BASE_DIR/python-env/bin/pip install -e $BASE_DIR/oio_rest
+$BASE_DIR/python-env/bin/pip install -e $BASE_DIR/oio_rest
 
 if [ $FULL -eq 1 ]; then
     printf "# Install gunicorn\n"
-    /$BASE_DIR/python-env/bin/pip install gunicorn
+    $BASE_DIR/python-env/bin/pip install gunicorn
 fi
 
 
