@@ -49,7 +49,7 @@ sudo apt-get -qq update
 printf "## Install Python with venv\n"
 sudo apt-get -qy install python3 python3-venv python3-pip libxmlsec1-dev
 printf "## Install Postgresql\n"
-sudo apt-get -qy install postgresql pgtap
+sudo apt-get -qy install postgresql postgresql-contrib pgtap
 printf "## Install AMQP\n"
 sudo apt-get -qy install rabbitmq-server
 if [ $FULL -eq 1 ]; then
