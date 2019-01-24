@@ -5,6 +5,716 @@
 -- License, v. 2.0. If a copy of the MPL was not distributed with this
 -- file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+CREATE TYPE AktoerTypeKode AS ENUM (
+    'Organisation',
+    'OrganisationEnhed',
+    'OrganisationFunktion',
+    'Bruger',
+    'ItSystem',
+    'Interessefaellesskab'
+);
+
+
+CREATE TYPE Virkning AS (
+    TimePeriod TSTZRANGE,
+    AktoerRef UUID,
+    AktoerTypeKode AktoerTypeKode,
+    NoteTekst TEXT
+);
+
+
+CREATE TYPE LivscyklusKode AS ENUM (
+    'Opstaaet',
+    'Importeret',
+    'Passiveret',
+    'Slettet',
+    'Rettet'
+);
+
+
+ --should be renamed to Registrering, when the old 'Registrering'-type is replaced
+CREATE TYPE RegistreringBase AS (
+    timeperiod tstzrange,
+    livscykluskode livscykluskode,
+    brugerref uuid,
+    note text
+);
+
+
+CREATE TYPE OffentlighedundtagetType AS (
+    AlternativTitel text,
+    Hjemmel text
+);
+
+
+/****************************************/
+CREATE TYPE ClearableInt AS (
+    value int,
+    cleared boolean
+);
+
+
+CREATE TYPE ClearableDate AS (
+    value date,
+    cleared boolean
+);
+
+
+CREATE TYPE ClearableBoolean AS (
+    value boolean,
+    cleared boolean
+);
+
+
+CREATE TYPE ClearableTimestamptz AS (
+    value timestamptz,
+    cleared boolean
+);
+
+
+CREATE TYPE ClearableInterval AS (
+    value interval(0),
+    cleared boolean
+);
+
+
+/****************************************/
+CREATE OR REPLACE FUNCTION actual_state._cast_ClearableInt_to_int (clearable_int ClearableInt)
+    RETURNS int AS $$
+DECLARE
+BEGIN
+    IF clearable_int IS NULL THEN
+        RETURN NULL;
+    ELSE
+        RETURN clearable_int.value;
+    END IF;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+
+CREATE CAST(ClearableInt AS int)
+WITH FUNCTION actual_state._cast_ClearableInt_to_int (ClearableInt)
+AS implicit;
+
+
+CREATE OR REPLACE FUNCTION actual_state._cast_int_to_ClearableInt (int_value int)
+    RETURNS ClearableInt AS $$
+DECLARE
+BEGIN
+    IF int_value IS NULL THEN
+        RETURN NULL;
+    ELSE
+        RETURN ROW (int_value, NULL)::ClearableInt;
+    END IF;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+
+CREATE CAST(int AS ClearableInt)
+WITH FUNCTION actual_state._cast_int_to_ClearableInt (int)
+AS implicit;
+
+
+CREATE OR REPLACE FUNCTION actual_state._cast_text_to_ClearableInt (text_value text)
+    RETURNS ClearableInt AS $$
+DECLARE
+BEGIN
+    IF text_value IS NULL THEN
+        RETURN NULL;
+    ELSE
+        IF text_value <> '' THEN
+            RAISE
+            EXCEPTION 'Unable to cast text value [%] to ClearableInt. Only empty text is allowed (or null).', text_value
+                USING ERRCODE = 22000;
+        ELSE
+            RETURN ROW (NULL, TRUE)::ClearableInt;
+        END IF;
+    END IF;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+
+CREATE CAST(text AS ClearableInt)
+WITH FUNCTION actual_state._cast_text_to_ClearableInt (text)
+AS implicit;
+
+
+/**************************************************************************/
+CREATE OR REPLACE FUNCTION actual_state._cast_ClearableDate_to_date (clearable_date ClearableDate)
+    RETURNS date AS $$
+DECLARE
+BEGIN
+    IF clearable_date IS NULL THEN
+        RETURN NULL;
+    ELSE
+        RETURN clearable_date.value;
+    END IF;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+
+CREATE CAST(ClearableDate AS date)
+WITH FUNCTION actual_state._cast_ClearableDate_to_date (ClearableDate)
+AS implicit;
+
+
+CREATE OR REPLACE FUNCTION actual_state._cast_date_to_ClearableDate (date_value date)
+    RETURNS ClearableDate AS $$
+DECLARE
+BEGIN
+    IF date_value IS NULL THEN
+        RETURN NULL;
+    ELSE
+        RETURN ROW (date_value, NULL)::ClearableDate;
+    END IF;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+
+CREATE CAST(date AS ClearableDate)
+WITH FUNCTION actual_state._cast_date_to_ClearableDate (date)
+AS implicit;
+
+
+CREATE OR REPLACE FUNCTION actual_state._cast_text_to_ClearableDate (text_value text)
+    RETURNS ClearableDate AS $$
+DECLARE
+BEGIN
+    IF text_value IS NULL THEN
+        RETURN NULL;
+    ELSE
+        IF text_value <> '' THEN
+            RAISE
+            EXCEPTION 'Unable to cast text value [%] to ClearableDate. Only empty text is allowed (or null).', text_value
+                USING ERRCODE = 22000;
+        ELSE
+            RETURN ROW (NULL, TRUE)::ClearableDate;
+        END IF;
+    END IF;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+
+CREATE CAST(text AS ClearableDate)
+WITH FUNCTION actual_state._cast_text_to_ClearableDate (text)
+AS implicit;
+
+
+/**************************************************************************/
+CREATE OR REPLACE FUNCTION actual_state._cast_ClearableBoolean_to_boolean (clearable_boolean ClearableBoolean)
+    RETURNS boolean AS $$
+DECLARE
+BEGIN
+    IF clearable_boolean IS NULL THEN
+        RETURN NULL;
+    ELSE
+        RETURN clearable_boolean.value;
+    END IF;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+
+CREATE CAST(ClearableBoolean AS boolean)
+WITH FUNCTION actual_state._cast_ClearableBoolean_to_boolean (ClearableBoolean)
+AS implicit;
+
+
+CREATE OR REPLACE FUNCTION actual_state._cast_boolean_to_ClearableBoolean (boolean_value boolean)
+    RETURNS ClearableBoolean AS $$
+DECLARE
+BEGIN
+    IF boolean_value IS NULL THEN
+        RETURN NULL;
+    ELSE
+        RETURN ROW (boolean_value, NULL)::ClearableBoolean;
+    END IF;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+
+CREATE CAST(boolean AS ClearableBoolean)
+WITH FUNCTION actual_state._cast_boolean_to_ClearableBoolean (boolean)
+AS implicit;
+
+
+CREATE OR REPLACE FUNCTION actual_state._cast_text_to_ClearableBoolean (text_value text)
+    RETURNS ClearableBoolean AS $$
+DECLARE
+BEGIN
+    IF text_value IS NULL THEN
+        RETURN NULL;
+    ELSE
+        IF text_value <> '' THEN
+            RAISE
+            EXCEPTION 'Unable to cast text value [%] to ClearableBoolean. Only empty text is allowed (or null).', text_value
+                USING ERRCODE = 22000;
+        ELSE
+            RETURN ROW (NULL, TRUE)::ClearableBoolean;
+        END IF;
+    END IF;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+
+CREATE CAST(text AS ClearableBoolean)
+WITH FUNCTION actual_state._cast_text_to_ClearableBoolean (text)
+AS implicit;
+
+
+/**************************************************************************/
+CREATE OR REPLACE FUNCTION actual_state._cast_ClearableTimestamptz_to_timestamptz (clearable_timestamptz ClearableTimestamptz)
+    RETURNS timestamptz AS $$
+DECLARE
+BEGIN
+    IF clearable_timestamptz IS NULL THEN
+        RETURN NULL;
+    ELSE
+        RETURN clearable_timestamptz.value;
+    END IF;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+
+CREATE CAST(ClearableTimestamptz AS timestamptz)
+WITH FUNCTION actual_state._cast_ClearableTimestamptz_to_timestamptz (ClearableTimestamptz)
+AS implicit;
+
+
+CREATE OR REPLACE FUNCTION actual_state._cast_timestamptz_to_ClearableTimestamptz (timestamptz_value timestamptz)
+    RETURNS ClearableTimestamptz AS $$
+DECLARE
+BEGIN
+    IF timestamptz_value IS NULL THEN
+        RETURN NULL;
+    ELSE
+        RETURN ROW (timestamptz_value, NULL)::ClearableTimestamptz;
+    END IF;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+
+CREATE CAST(timestamptz AS ClearableTimestamptz)
+WITH FUNCTION actual_state._cast_timestamptz_to_ClearableTimestamptz (timestamptz)
+AS implicit;
+
+
+CREATE OR REPLACE FUNCTION actual_state._cast_text_to_ClearableTimestamptz (text_value text)
+    RETURNS ClearableTimestamptz AS $$
+DECLARE
+BEGIN
+    IF text_value IS NULL THEN
+        RETURN NULL;
+    ELSE
+        IF text_value <> '' THEN
+            RAISE
+            EXCEPTION 'Unable to cast text value [%] to ClearableTimestamptz. Only empty text is allowed (or null).', text_value
+                USING ERRCODE = 22000;
+        ELSE
+            RETURN ROW (NULL, TRUE)::ClearableTimestamptz;
+        END IF;
+    END IF;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+
+CREATE CAST(text AS ClearableTimestamptz)
+WITH FUNCTION actual_state._cast_text_to_ClearableTimestamptz (text)
+AS implicit;
+
+
+/**************************************************************************/
+CREATE OR REPLACE FUNCTION actual_state._cast_ClearableInterval_to_interval (clearable_interval ClearableInterval)
+    RETURNS interval(0) AS $$
+DECLARE
+BEGIN
+    IF clearable_interval IS NULL THEN
+        RETURN NULL;
+    ELSE
+        RETURN clearable_interval.value;
+    END IF;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+
+CREATE CAST(ClearableInterval AS interval(0))
+WITH FUNCTION actual_state._cast_ClearableInterval_to_interval (ClearableInterval)
+AS implicit;
+
+
+CREATE OR REPLACE FUNCTION actual_state._cast_interval_to_ClearableInterval (interval_value interval(0))
+    RETURNS ClearableInterval AS $$
+DECLARE
+BEGIN
+    IF interval_value IS NULL THEN
+        RETURN NULL;
+    ELSE
+        RETURN ROW (interval_value, NULL)::ClearableInterval;
+    END IF;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+
+CREATE CAST(interval(0) AS ClearableInterval)
+WITH FUNCTION actual_state._cast_interval_to_ClearableInterval (interval)
+AS implicit;
+
+
+CREATE OR REPLACE FUNCTION actual_state._cast_text_to_ClearableInterval (text_value text)
+    RETURNS ClearableInterval AS $$
+DECLARE
+BEGIN
+    IF text_value IS NULL THEN
+        RETURN NULL;
+    ELSE
+        IF text_value <> '' THEN
+            RAISE
+            EXCEPTION 'Unable to cast text value [%] to ClearableInterval. Only empty text is allowed (or null).', text_value
+                USING ERRCODE = 22000;
+        ELSE
+            RETURN ROW (NULL, TRUE)::ClearableInterval;
+        END IF;
+    END IF;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+
+CREATE CAST(text AS ClearableInterval)
+WITH FUNCTION actual_state._cast_text_to_ClearableInterval (text)
+AS implicit;
+
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
+-- Contact: info@magenta.dk.
+--
+-- This Source Code Form is subject to the terms of the Mozilla Public
+-- License, v. 2.0. If a copy of the MPL was not distributed with this
+-- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+CREATE OR REPLACE FUNCTION _as_search_ilike_array (searchFor text, searchInArr text[])
+    RETURNS boolean AS $$
+DECLARE
+BEGIN
+    IF searchFor IS NULL OR coalesce(array_length(searchInArr, 1), 0) = 0 THEN
+        RETURN FALSE;
+    ELSE
+        -- RAISE NOTICE 'SQL part searchForArr[%], searchInArr[%]',to_json(searchForArr),to_json(searchInArr);
+        IF EXISTS (
+                SELECT
+                    a.searchInElement
+                FROM
+                    unnest(searchInArr) a (searchInElement)
+                WHERE
+                    a.searchInElement ILIKE searchFor) THEN
+                RETURN TRUE;
+        ELSE
+            RETURN FALSE;
+        END IF;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
+-- Contact: info@magenta.dk.
+--
+-- This Source Code Form is subject to the terms of the Mozilla Public
+-- License, v. 2.0. If a copy of the MPL was not distributed with this
+-- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+CREATE OR REPLACE FUNCTION _as_search_match_array (searchForArr text[], searchInArr text[])
+    RETURNS boolean AS $$
+DECLARE
+BEGIN
+    IF coalesce(array_length(searchForArr, 1), 0) = 0 AND coalesce(array_length(searchInArr, 1), 0) > 0 THEN
+        RETURN FALSE;
+    ELSE
+        -- RAISE NOTICE 'SQL part searchForArr[%], searchInArr[%]', to_json(searchForArr), to_json(searchInArr);
+        IF EXISTS (
+                SELECT
+                    a.searchForElement,
+                    b.searchTargetElement
+                FROM
+                    unnest(searchForArr) a (searchForElement)
+                    LEFT JOIN unnest(searchInArr) b (searchTargetElement) ON b.searchTargetElement ILIKE a.searchForElement
+                WHERE
+                    b.searchTargetElement IS NULL) THEN
+                RETURN FALSE;
+        ELSE
+            RETURN TRUE;
+        END IF;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
+-- Contact: info@magenta.dk.
+--
+-- This Source Code Form is subject to the terms of the Mozilla Public
+-- License, v. 2.0. If a copy of the MPL was not distributed with this
+-- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+CREATE OR REPLACE FUNCTION _as_valid_registrering_livscyklus_transition (current_reg_livscykluskode Livscykluskode, new_reg_livscykluskode Livscykluskode)
+    RETURNS boolean
+    AS $$
+DECLARE
+    IMPORTERET Livscykluskode := 'Importeret'::Livscykluskode;
+    OPSTAAET Livscykluskode := 'Opstaaet'::Livscykluskode;
+    PASSIVERET Livscykluskode := 'Passiveret'::Livscykluskode;
+    SLETTET Livscykluskode := 'Slettet'::Livscykluskode;
+    RETTET Livscykluskode := 'Rettet'::Livscykluskode;
+BEGIN
+    CASE current_reg_livscykluskode
+    WHEN OPSTAAET THEN
+        CASE new_reg_livscykluskode
+        WHEN IMPORTERET THEN
+            RETURN FALSE;
+    WHEN OPSTAAET THEN
+        RETURN FALSE;
+    WHEN PASSIVERET THEN
+        RETURN TRUE;
+    WHEN SLETTET THEN
+        RETURN TRUE;
+    WHEN RETTET THEN
+        RETURN TRUE;
+    END CASE;
+    WHEN IMPORTERET THEN
+        CASE new_reg_livscykluskode
+        WHEN IMPORTERET THEN
+            RETURN FALSE;
+    WHEN OPSTAAET THEN
+        RETURN FALSE;
+    WHEN PASSIVERET THEN
+        RETURN TRUE;
+    WHEN SLETTET THEN
+        RETURN TRUE;
+    WHEN RETTET THEN
+        RETURN TRUE;
+    END CASE;
+    WHEN PASSIVERET THEN
+        CASE new_reg_livscykluskode
+        WHEN IMPORTERET THEN
+            RETURN TRUE;
+    WHEN OPSTAAET THEN
+        RETURN FALSE;
+    WHEN PASSIVERET THEN
+        RETURN FALSE;
+    WHEN SLETTET THEN
+        RETURN TRUE;
+    WHEN RETTET THEN
+        RETURN FALSE;
+    END CASE;
+    WHEN SLETTET THEN
+        CASE new_reg_livscykluskode
+        WHEN IMPORTERET THEN
+            RETURN TRUE;
+    WHEN OPSTAAET THEN
+        RETURN FALSE;
+    WHEN PASSIVERET THEN
+        RETURN FALSE;
+    WHEN SLETTET THEN
+        RETURN FALSE;
+    WHEN RETTET THEN
+        RETURN FALSE;
+    END CASE;
+    WHEN RETTET THEN
+        CASE new_reg_livscykluskode
+        WHEN IMPORTERET THEN
+            RETURN FALSE;
+    WHEN OPSTAAET THEN
+        RETURN FALSE;
+    WHEN PASSIVERET THEN
+        RETURN TRUE;
+    WHEN SLETTET THEN
+        RETURN TRUE;
+    WHEN RETTET THEN
+        RETURN TRUE;
+    END CASE;
+    END CASE;
+    RAISE
+    EXCEPTION 'Undefined livscykluskode-transition, from [%] to [%] ', current_reg_livscykluskode, new_reg_livscykluskode;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+-- Copyright (C) 2015-2019 Magenta ApS, https://magenta.dk.
+-- Contact: info@magenta.dk.
+--
+-- This Source Code Form is subject to the terms of the Mozilla Public
+-- License, v. 2.0. If a copy of the MPL was not distributed with this
+-- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+CREATE OR REPLACE FUNCTION notify_event ()
+    RETURNS TRIGGER AS $$
+DECLARE
+    data json;
+    notification json;
+BEGIN
+    -- Convert the old or new row to JSON, based on the kind of action.
+    -- Action = DELETE?             -> OLD row
+    -- Action = INSERT or UPDATE?   -> NEW row
+    IF (TG_OP = 'DELETE') THEN
+        data = row_to_json(OLD);
+    ELSE
+        data = row_to_json(NEW);
+    END IF;
+    -- Contruct the notification
+    notification = json_build_object('table', TG_TABLE_NAME, 'action', TG_OP, 'data', data);
+    -- Execute pg_notify(channel, notification)
+    PERFORM
+        pg_notify('mox_notifications', notification::text);
+    -- Result is ignored since this is an AFTER trigger
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
+-- Contact: info@magenta.dk.
+--
+-- This Source Code Form is subject to the terms of the Mozilla Public
+-- License, v. 2.0. If a copy of the MPL was not distributed with this
+-- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+/******************** FUNCTIONS (NEEDED FOR TABLE/INDEX-DEFS) DEFS ***********************************/
+
+-- Just returns the 'TimePeriod' field of the type passed in.
+-- Used to work around limitations of PostgreSQL's exclusion constraints.
+CREATE OR REPLACE FUNCTION _composite_type_to_time_range(ANYELEMENT) RETURNS
+  TSTZRANGE AS 'SELECT $1.TimePeriod' LANGUAGE sql STRICT IMMUTABLE;
+
+
+
+CREATE OR REPLACE FUNCTION _uuid_to_text(UUID) RETURNS TEXT AS 'SELECT $1::TEXT' LANGUAGE sql IMMUTABLE;
+
+
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
+-- Contact: info@magenta.dk.
+--
+-- This Source Code Form is subject to the terms of the Mozilla Public
+-- License, v. 2.0. If a copy of the MPL was not distributed with this
+-- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+CREATE OR REPLACE FUNCTION actual_state._json_object_delete_keys(json json, keys_to_delete TEXT[])
+  RETURNS json
+  LANGUAGE sql
+  IMMUTABLE
+  STRICT
+AS $function$
+SELECT COALESCE(
+  (SELECT ('{' || string_agg(to_json(key) || ':' || value::json::text, ',') || '}')
+   FROM json_each(json)
+   WHERE key not in (select key from unnest(keys_to_delete) as a(key))),
+  '{}'
+)::json
+$function$;
+
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
+-- Contact: info@magenta.dk.
+--
+-- This Source Code Form is subject to the terms of the Mozilla Public
+-- License, v. 2.0. If a copy of the MPL was not distributed with this
+-- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+--Subtract the second tstzrange from the first tstzrange given. 
+CREATE OR REPLACE FUNCTION _subtract_tstzrange (rangeA tstzrange, rangeB tstzrange)
+    RETURNS tstzrange[] AS $$
+DECLARE
+    result tstzrange[];
+    str_tzrange1_inc_excl text;
+    str_tzrange2_inc_excl text;
+    result_non_cont_part_a tstzrange;
+    result_non_cont_part_b tstzrange;
+BEGIN
+    IF rangeA && rangeB THEN
+        --identify the special case the a subtraction of the ranges, would result in a non continuous range.
+        IF rangeA @> lower(rangeB) AND rangeA @> upper(rangeB) AND NOT --make sure that rangeA @> lower(rangeB) actually holds true, considering inc/exc.
+            (lower(rangeA) = lower(rangeB) AND lower_inc(rangeB) AND NOT lower_inc(rangeA)) AND NOT
+            --make sure that rangeA @> upper(rangeB) actually holds true, considering inc/exc.
+            (upper(rangeA) = upper(rangeB) AND upper_inc(rangeB) AND NOT upper_inc(rangeA)) THEN
+            IF lower_inc(rangeA) THEN
+                str_tzrange1_inc_excl := '[';
+            ELSE
+                str_tzrange1_inc_excl := '(';
+            END IF;
+            IF lower_inc(rangeB) THEN
+                str_tzrange1_inc_excl := str_tzrange1_inc_excl || ')';
+            ELSE
+                str_tzrange1_inc_excl := str_tzrange1_inc_excl || ']';
+            END IF;
+            IF upper_inc(rangeB) THEN
+                str_tzrange2_inc_excl := '(';
+            ELSE
+                str_tzrange2_inc_excl := '[';
+            END IF;
+            IF upper_inc(rangeA) THEN
+                str_tzrange2_inc_excl := str_tzrange2_inc_excl || ']';
+            ELSE
+                str_tzrange2_inc_excl := str_tzrange2_inc_excl || ')';
+            END IF;
+            result_non_cont_part_a := tstzrange(lower(rangeA), lower(rangeB), str_tzrange1_inc_excl);
+            result_non_cont_part_b := tstzrange(upper(rangeB), upper(rangeA), str_tzrange2_inc_excl);
+            IF NOT isempty(result_non_cont_part_a) THEN
+                result := array_append(result, result_non_cont_part_a);
+            END IF;
+            IF NOT isempty(result_non_cont_part_b) THEN
+                result := array_append(result, result_non_cont_part_b);
+            END IF;
+        ELSE
+            IF (NOT isempty(rangeA - rangeB)) THEN
+                result[1] := rangeA - rangeB;
+            END IF;
+        END IF;
+    ELSE
+        result[1] := rangeA;
+    END IF;
+    RETURN result;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
+-- Contact: info@magenta.dk.
+--
+-- This Source Code Form is subject to the terms of the Mozilla Public
+-- License, v. 2.0. If a copy of the MPL was not distributed with this
+-- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+--Subtract all of the tstzranges in the array from the first tstzrange given. 
+CREATE OR REPLACE FUNCTION _subtract_tstzrange_arr (rangeA tstzrange, rangeArr tstzrange[])
+    RETURNS tstzrange[] AS $$
+DECLARE
+    result tstzrange[];
+    temp_result tstzrange[];
+    rangeB tstzrange;
+    rangeA_leftover tstzrange;
+BEGIN
+    result[1] := rangeA;
+    IF rangeArr IS NOT NULL THEN
+        FOREACH rangeB IN ARRAY rangeArr LOOP
+            temp_result := result;
+            result := '{}';
+            FOREACH rangeA_leftover IN ARRAY temp_result LOOP
+                result := array_cat(result, _subtract_tstzrange (rangeA_leftover, rangeB));
+            END LOOP;
+        END LOOP;
+    END IF;
+    RETURN result;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
+-- Contact: info@magenta.dk.
+--
+-- This Source Code Form is subject to the terms of the Mozilla Public
+-- License, v. 2.0. If a copy of the MPL was not distributed with this
+-- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 /*
 NOTICE: This file is auto-generated!
 */
@@ -49465,3 +50175,225 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
+-- Contact: info@magenta.dk.
+--
+-- This Source Code Form is subject to the terms of the Mozilla Public
+-- License, v. 2.0. If a copy of the MPL was not distributed with this
+-- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+CREATE OR REPLACE FUNCTION _as_list_dokument_varianter (dokument_uuids uuid[], registrering_tstzrange tstzrange, virkning_tstzrange tstzrange)
+    RETURNS TABLE (dokument_registrering_id bigint, varianter DokumentVariantType[])
+AS $BODY$
+    SELECT
+        a.dokument_registrering_id,
+        _remove_nulls_in_array (array_agg(
+                CASE WHEN (a.DokumentVariantEgenskaberTypeArr IS NOT NULL
+                        AND coalesce(array_length(a.DokumentVariantEgenskaberTypeArr, 1), 0) > 0)
+                    OR (a.variant_dele IS NOT NULL
+                        AND coalesce(array_length(a.variant_dele, 1), 0) > 0) THEN
+                    ROW (a.varianttekst, a.DokumentVariantEgenskaberTypeArr, a.variant_dele)::DokumentVariantType
+                ELSE
+                    NULL
+                END)) varianter
+    FROM (
+        SELECT
+            a.dokument_id,
+            a.dokument_registrering_id,
+            a.variant_id,
+            a.varianttekst,
+            a.DokumentVariantEgenskaberTypeArr,
+            _remove_nulls_in_array (array_agg(
+                    CASE WHEN (a.DokumentDelEgenskaberTypeArr IS NOT NULL
+                            AND coalesce(array_length(a.DokumentDelEgenskaberTypeArr, 1), 0) > 0)
+                        OR (a.DokumentdelRelationTypeArr IS NOT NULL
+                            AND coalesce(array_length(a.DokumentdelRelationTypeArr, 1), 0) > 0) THEN
+                        ROW (a.deltekst, a.DokumentDelEgenskaberTypeArr, a.DokumentdelRelationTypeArr)::DokumentDelType
+                    ELSE
+                        NULL
+                    END
+                ORDER BY
+                    a.deltekst)) variant_dele
+        FROM (
+            SELECT
+                a.dokument_id,
+                a.dokument_registrering_id,
+                a.variant_id,
+                a.varianttekst,
+                a.DokumentVariantEgenskaberTypeArr,
+                a.del_id,
+                a.deltekst,
+                a.DokumentDelEgenskaberTypeArr,
+                _remove_nulls_in_array (array_agg(
+                        CASE WHEN b.id IS NOT NULL THEN
+                            ROW (b.rel_type, b.virkning, b.rel_maal_uuid, b.rel_maal_urn, b.objekt_type)::DokumentdelRelationType
+                        ELSE
+                            NULL
+                        END
+                    ORDER BY
+                        b.rel_maal_uuid, b.rel_maal_urn, b.rel_type, b.objekt_type, b.virkning)) DokumentdelRelationTypeArr
+            FROM (
+                SELECT
+                    a.dokument_id,
+                    a.dokument_registrering_id,
+                    a.variant_id,
+                    a.varianttekst,
+                    a.DokumentVariantEgenskaberTypeArr,
+                    b.id del_id,
+                    b.deltekst,
+                    _remove_nulls_in_array (array_agg(
+                            CASE WHEN c.id IS NOT NULL THEN
+                                ROW (c.indeks, c.indhold, c.lokation, c.mimetype, c.virkning)::DokumentDelEgenskaberType
+                            ELSE
+                                NULL
+                            END
+                        ORDER BY
+                            c.indeks, c.indhold, c.lokation, c.mimetype, c.virkning)) DokumentDelEgenskaberTypeArr
+                FROM (
+                    SELECT
+                        a.id dokument_id,
+                        b.id dokument_registrering_id,
+                        e.id variant_id,
+                        e.varianttekst,
+                        _remove_nulls_in_array (array_agg(
+                                CASE WHEN c.id IS NOT NULL THEN
+                                    ROW (c.arkivering, c.delvisscannet, c.offentliggoerelse, c.produktion, c.virkning)::DokumentVariantEgenskaberType
+                                ELSE
+                                    NULL
+                                END
+                            ORDER BY
+                                c.arkivering, c.delvisscannet, c.offentliggoerelse, c.produktion, c.virkning)) DokumentVariantEgenskaberTypeArr
+                    FROM
+                        dokument a
+                        JOIN dokument_registrering b ON b.dokument_id = a.id
+                        JOIN dokument_variant e ON e.dokument_registrering_id = b.id
+                        LEFT JOIN dokument_variant_egenskaber c ON c.variant_id = e.id
+                            AND (virkning_tstzrange IS NULL
+                                OR (c.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given
+                    WHERE
+                        a.id = ANY (dokument_uuids)
+                        AND ((registrering_tstzrange IS NULL
+                                AND upper((b.registrering).timeperiod) = 'infinity'::TIMESTAMPTZ)
+                            OR registrering_tstzrange && (b.registrering).timeperiod) --filter ON registrering_tstzrange
+                    GROUP BY
+                        a.id,
+                        b.id,
+                        e.id,
+                        e.varianttekst) AS a
+                LEFT JOIN dokument_del b ON a.variant_id = b.variant_id
+                LEFT JOIN dokument_del_egenskaber c ON b.id = c.del_id
+                    AND (virkning_tstzrange IS NULL
+                        OR (c.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given
+                GROUP BY
+                    a.dokument_id,
+                    a.dokument_registrering_id,
+                    a.variant_id,
+                    a.varianttekst,
+                    a.DokumentVariantEgenskaberTypeArr,
+                    b.id,
+                    b.deltekst) AS a
+        LEFT JOIN dokument_del_relation b ON b.del_id = a.del_id
+            AND (virkning_tstzrange IS NULL
+                OR (b.virkning).TimePeriod && virkning_tstzrange) --filter ON virkning_tstzrange if given
+        GROUP BY
+            a.dokument_id,
+            a.dokument_registrering_id,
+            a.variant_id,
+            a.varianttekst,
+            a.DokumentVariantEgenskaberTypeArr,
+            a.del_id,
+            a.deltekst,
+            a.DokumentDelEgenskaberTypeArr) AS a
+    GROUP BY
+        a.dokument_id,
+        a.dokument_registrering_id,
+        a.variant_id,
+        a.varianttekst,
+        a.DokumentVariantEgenskaberTypeArr) AS a
+GROUP BY
+    a.dokument_id,
+    a.dokument_registrering_id
+$BODY$ LANGUAGE sql STABLE;
+
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
+-- Contact: info@magenta.dk.
+--
+-- This Source Code Form is subject to the terms of the Mozilla Public
+-- License, v. 2.0. If a copy of the MPL was not distributed with this
+-- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+CREATE OR REPLACE FUNCTION _ensure_document_del_exists_and_get (reg_id bigint, current_variant_id bigint, current_deltekst text)
+    RETURNS int AS $$
+DECLARE
+    res_del_id bigint;
+BEGIN
+    SELECT
+        b.id INTO res_del_id
+    FROM
+        dokument_variant a
+        JOIN dokument_del b ON b.variant_id = a.id
+    WHERE
+        a.dokument_registrering_id = reg_id
+        AND a.id = current_variant_id
+        AND b.deltekst = current_deltekst;
+    IF res_del_id IS NULL THEN
+        res_del_id := nextval('dokument_del_id_seq'::regclass);
+        INSERT INTO dokument_del (id, deltekst, variant_id)
+            VALUES (res_del_id, current_deltekst, current_variant_id);
+    END IF;
+    RETURN res_del_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
+-- Contact: info@magenta.dk.
+--
+-- This Source Code Form is subject to the terms of the Mozilla Public
+-- License, v. 2.0. If a copy of the MPL was not distributed with this
+-- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+CREATE OR REPLACE FUNCTION _ensure_document_variant_and_del_exists_and_get_del (reg_id bigint, current_variant_text text, current_deltekst text)
+    RETURNS int AS $$
+DECLARE
+    current_del_id bigint;
+    current_variant_id bigint;
+BEGIN
+    current_variant_id := _ensure_document_variant_exists_and_get (reg_id,
+        current_variant_text);
+    current_del_id := _ensure_document_del_exists_and_get (reg_id,
+        current_variant_id,
+        current_deltekst);
+    RETURN current_del_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
+-- Contact: info@magenta.dk.
+--
+-- This Source Code Form is subject to the terms of the Mozilla Public
+-- License, v. 2.0. If a copy of the MPL was not distributed with this
+-- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+CREATE OR REPLACE FUNCTION _ensure_document_variant_exists_and_get (reg_id bigint, current_variant_text text)
+    RETURNS int AS $$
+DECLARE
+    res_variant_id bigint;
+BEGIN
+    SELECT
+        a.id INTO res_variant_id
+    FROM
+        dokument_variant a
+    WHERE
+        a.dokument_registrering_id = reg_id
+        AND a.varianttekst = current_variant_text;
+    IF res_variant_id IS NULL THEN
+        res_variant_id := nextval('dokument_variant_id_seq'::regclass);
+        INSERT INTO dokument_variant (id, varianttekst, dokument_registrering_id)
+            VALUES (res_variant_id, current_variant_text, reg_id);
+    END IF;
+    RETURN res_variant_id;
+END;
+$$ LANGUAGE plpgsql;

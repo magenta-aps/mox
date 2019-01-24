@@ -11,6 +11,7 @@ import pathlib
 import re
 import subprocess
 import sys
+import unittest
 
 import tap.parser
 
@@ -22,7 +23,7 @@ from tests import util
 SQL_FIXTURE = os.path.join(util.FIXTURE_DIR, 'db-dump.sql')
 
 
-class SQLTests(util.TestCase):
+class DBTests(util.TestCase):
     def setUp(self):
         super().setUp()
 
@@ -70,11 +71,12 @@ class SQLTests(util.TestCase):
                         self.fail(result.diagnostics or
                                   result.description)
 
+class TextTests(unittest.TestCase):
     def test_sql_unchanged(self):
         expected_path = pathlib.Path(SQL_FIXTURE)
         actual_path = expected_path.with_name(expected_path.name + '.new')
 
-        actual_path.write_text('\n'.join(db_templating.render_templates()))
+        actual_path.write_text('\n'.join(db_templating.get_sql()))
 
         self.assertEqual(
             expected_path.read_text(),
