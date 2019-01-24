@@ -7,14 +7,25 @@ import re
 
 from setuptools import find_packages, setup
 
+
 basedir = pathlib.Path(__file__).parent
 
 version = (basedir / 'VERSION').read_text().strip()
+
+# extract requirements for pip & setuptools
 install_requires = (basedir / 'requirements.txt').read_text().splitlines()
 tests_require = [
     l for l in (basedir / 'requirements-test.txt').read_text().splitlines()
     if not l.startswith('-r')
 ]
+
+# setuptools doesn't handle external dependencies, yes
+dependency_links = [
+    l.split('@', 1)[1].strip()
+    for l in install_requires + tests_require
+    if '@' in l
+]
+
 
 setup(
     name='oio_rest',
@@ -55,4 +66,5 @@ setup(
             'mox = oio_rest.__main__:cli',
         ],
     },
+    dependency_links=dependency_links,
 )
