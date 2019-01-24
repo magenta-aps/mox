@@ -7,11 +7,10 @@
 
 import flask
 
-from . import db_helpers
-
+from . import db
 from .authentication import requires_auth
 from .contentstore import content_store
-from . import db
+from .db import db_helpers
 
 from .oio_rest import OIORestObject, OIOStandardHierarchy
 

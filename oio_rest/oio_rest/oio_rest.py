@@ -18,7 +18,7 @@ from flask import jsonify, request
 from werkzeug.datastructures import ImmutableOrderedMultiDict
 
 from . import db
-from . import db_helpers
+from .db import db_helpers
 from . import validate
 from .utils.build_registration import build_registration, to_lower_param
 from .utils.build_registration import split_param
@@ -28,7 +28,7 @@ from .custom_exceptions import GoneException
 # Just a helper during debug
 from .authentication import requires_auth
 
-import settings
+from . import settings
 
 
 '''List of parameters allowed for all searches.'''

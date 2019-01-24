@@ -49,7 +49,7 @@ sudo apt-get -qq update
 printf "## Install Python with venv\n"
 sudo apt-get -qy install python3 python3-venv python3-pip libxmlsec1-dev
 printf "## Install Postgresql\n"
-sudo apt-get -qy install postgresql pgtap
+sudo apt-get -qy install postgresql postgresql-contrib pgtap
 printf "## Install AMQP\n"
 sudo apt-get -qy install rabbitmq-server
 if [ $FULL -eq 1 ]; then
@@ -60,12 +60,10 @@ fi
 
 printf "# Create directories\n"
 printf "## Create upload directory\n"
-sudo mkdir /var/mox
-sudo chown "$USER" /var/mox
+sudo install -d -o "$USER" /var/mox
 
 printf "## Create log directory\n"
-sudo mkdir /var/log/mox
-sudo chown "$USER" /var/log/mox
+sudo install -d -o "$USER" /var/log/mox
 
 printf "## Create audit log directory\n"
 sudo touch /var/log/mox/audit.log
@@ -74,22 +72,20 @@ sudo chown "$USER" /var/log/mox/audit.log
 printf "# Create virtual environment\n"
 /usr/bin/env python3 -m venv $BASE_DIR/python-env
 
-
 printf "# Install requirements\n"
-/$BASE_DIR/python-env/bin/pip install -r $BASE_DIR/oio_rest/requirements.txt
-
+$BASE_DIR/python-env/bin/pip install --upgrade pip setuptools wheel
 
 printf "# Install oio_rest package\n"
-/$BASE_DIR/python-env/bin/pip install -e $BASE_DIR/oio_rest
+$BASE_DIR/python-env/bin/pip install -e $BASE_DIR/oio_rest
 
 if [ $FULL -eq 1 ]; then
     printf "# Install gunicorn\n"
-    /$BASE_DIR/python-env/bin/pip install gunicorn
+    $BASE_DIR/python-env/bin/pip install gunicorn
 fi
 
 
 printf "# Initialize database\n"
-$BASE_DIR/db/initdb.sh
+$BASE_DIR/oio_rest/initdb.sh
 
 
 if [ $FULL -eq 1 ]; then
@@ -161,7 +157,7 @@ if [ $FULL -eq 0 ]; then
     printf "To activate the oio_rest virtual environment:
         '. $BASE_DIR/python-env/bin/activate'\n"
     printf "When activated, you can start oio_rest:
-        'python -m flask run'\n"
+        'mox run'\n"
     printf "When activated, you can run the test suite:
         'pip install -r $BASE_DIR/oio_rest/requirements-test.txt' once,
         'pytest' from within $BASE_DIR/oio_rest.\n"

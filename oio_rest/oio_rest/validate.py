@@ -9,7 +9,7 @@
 import copy
 import jsonschema
 
-import settings
+from . import settings
 
 # A very nice reference explaining the JSON schema syntax can be found
 # here: https://spacetelescope.github.io/understanding-json-schema/

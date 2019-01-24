@@ -10,8 +10,8 @@
 from enum import Enum
 from importlib import import_module
 
-from settings import AUTH_RESTRICTION_MODULE, AUTH_RESTRICTION_FUNCTION
-from settings import DO_ENABLE_RESTRICTIONS
+from ..settings import AUTH_RESTRICTION_MODULE, AUTH_RESTRICTION_FUNCTION
+from ..settings import DO_ENABLE_RESTRICTIONS
 
 
 class Operation(Enum):

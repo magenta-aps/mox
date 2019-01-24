@@ -1,1 +1,0 @@
-../doc/dev/database.rst

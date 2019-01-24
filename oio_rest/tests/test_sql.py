@@ -15,8 +15,8 @@ import sys
 import tap.parser
 
 from oio_rest.utils import test_support
-from oio_rest import db_templating
-import settings
+from oio_rest.db import db_templating
+from oio_rest import settings
 from tests import util
 
 SQL_FIXTURE = os.path.join(util.FIXTURE_DIR, 'db-dump.sql')
@@ -35,9 +35,8 @@ class SQLTests(util.TestCase):
                 ),
             )
 
-            for dbfile in test_support.list_db_sql('tests'):
-                with open(dbfile) as fp:
-                    curs.execute(fp.read())
+            for dbfile in pathlib.Path(util.TESTS_DIR).glob("sql/*.sql"):
+                curs.execute(dbfile.read_text())
 
     def tearDown(self):
         super().setUp()

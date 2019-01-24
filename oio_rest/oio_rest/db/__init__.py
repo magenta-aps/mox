@@ -9,6 +9,7 @@
 import datetime
 import enum
 import os
+import pathlib
 
 import psycopg2
 import flask
@@ -26,23 +27,21 @@ from .db_helpers import (
     VaerdiRelationAttr,
 )
 
-from .authentication import get_authenticated_user
+from ..authentication import get_authenticated_user
 
-from .auth.restrictions import Operation, get_restrictions
-from .utils.build_registration import restriction_to_registration
-from .custom_exceptions import NotFoundException, NotAllowedException
-from .custom_exceptions import DBException, BadRequestException
+from ..auth.restrictions import Operation, get_restrictions
+from ..utils.build_registration import restriction_to_registration
+from ..custom_exceptions import NotFoundException, NotAllowedException
+from ..custom_exceptions import DBException, BadRequestException
 
-import settings
+from .. import settings
 
 """
     Jinja2 Environment
 """
 
-current_directory = os.path.dirname(os.path.realpath(__file__))
-
 jinja_env = Environment(loader=FileSystemLoader(
-    os.path.join(current_directory, 'templates', 'sql')
+    str(pathlib.Path(__file__).parent / 'sql' / 'invocations' / 'templates'),
 ))
 
 

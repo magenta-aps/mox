@@ -18,10 +18,12 @@ import importlib
 
 from jinja2 import Environment, FileSystemLoader
 
-import settings
+from .. import settings
 
-DB_DIR = Path(__file__).absolute().parent.parent.parent / "db"
-TEMPLATE_DIR = DB_DIR / "templates"
+
+DB_DIR = Path(__file__).parent / 'sql' / 'declarations'
+
+template_env = Environment(loader=FileSystemLoader(str(DB_DIR / 'templates')))
 
 TEMPLATES = (
     "dbtyper-specific",
@@ -41,8 +43,6 @@ TEMPLATES = (
 
 
 def render_templates():
-    template_env = Environment(loader=FileSystemLoader([str(TEMPLATE_DIR)]))
-
     db_structure = settings.DB_STRUCTURE.DATABASE_STRUCTURE
     extra_options = settings.DB_STRUCTURE.DB_TEMPLATE_EXTRA_OPTIONS
 
@@ -64,7 +64,7 @@ def render_templates():
                     extra_options[oio_type][template_file]["include_mixin"]
                 )
             except KeyError:
-                context["include_mixin"] = "empty.jinja"
+                context["include_mixin"] = "empty.jinja.sql"
 
             yield template.render(context)
 
@@ -81,14 +81,14 @@ def get_sql():
 
     for dirp in (
         DB_DIR / "basis",
-        DB_DIR / "funcs" / "pre",
+        DB_DIR / "pre-funcs",
         None,  # placeholder: put the templates here
-        DB_DIR / "funcs" / "post",
+        DB_DIR / "post-funcs",
     ):
         if dirp is None:
             yield from render_templates()
         else:
-            for p in dirp.glob('*.sql'):
+            for p in sorted(dirp.glob('*.sql')):
                 yield p.read_text()
 
 
