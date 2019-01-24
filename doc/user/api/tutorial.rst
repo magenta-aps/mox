@@ -5,7 +5,8 @@ API tutorial
 ============
 
 The following small exercises can be used as an inspiration to getting to know
-LoRa's REST API. :ref:`api-overview` should contain all the information needed, if not look in :ref:`api-reference`.
+LoRa's REST API. Read or skim the pages about the :ref:`objects` and the
+different :ref:`api-operations` before moving on.
 
 .. warning::
 
