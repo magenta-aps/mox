@@ -138,13 +138,15 @@ class TestCase(test_support.TestCaseMixin, flask_testing.TestCase):
                 return obj
 
         # drop lora-generated timestamps & users
-        expected.pop('fratidspunkt', None)
-        expected.pop('tiltidspunkt', None)
-        expected.pop('brugerref', None)
+        if isinstance(expected, dict):
+            expected.pop('fratidspunkt', None)
+            expected.pop('tiltidspunkt', None)
+            expected.pop('brugerref', None)
 
-        actual.pop('fratidspunkt', None)
-        actual.pop('tiltidspunkt', None)
-        actual.pop('brugerref', None)
+        if isinstance(actual, dict):
+            actual.pop('fratidspunkt', None)
+            actual.pop('tiltidspunkt', None)
+            actual.pop('brugerref', None)
 
         # Sort all inner lists and compare
         self.assertEqual(
@@ -182,7 +184,11 @@ class TestCase(test_support.TestCaseMixin, flask_testing.TestCase):
 
         d = r.json['results'][0]
 
+        if not d or not all(isinstance(v, dict) for v in d):
+            return d
+
         self.assertEqual(len(d), 1)
+
         registrations = d[0]['registreringer']
 
         if set(params.keys()) & {'registreretfra', 'registrerettil',
@@ -224,7 +230,7 @@ class TestCase(test_support.TestCaseMixin, flask_testing.TestCase):
 
         print(json.dumps(actual, indent=2))
 
-        return self.assertRegistrationsEqual(expected, actual)
+        self.assertRegistrationsEqual(expected, actual)
 
     def load_fixture(self, path, fixture_name, uuid=None):
         """Load a fixture, i.e. a JSON file in the 'fixtures' directory,

@@ -75,9 +75,6 @@ def get_attribute_names(class_name):
     return _attribute_names[class_name.lower()]
 
 
-_state_names = {}
-
-
 def get_state_names(class_name):
     "Return the list of all recognized states for this class."
     states = settings.REAL_DB_STRUCTURE[class_name.lower()]['tilstande']
@@ -100,58 +97,6 @@ def get_relation_names(class_name):
                 fs['relationer_nul_til_mange']
             )
     return _relation_names[class_name.lower()]
-
-
-_search_params = {}
-
-GENERAL_SEARCH_PARAMS = {
-    'brugerref',
-    'brugervendtnoegle',
-    'foersteresultat',
-    'livscykluskode',
-    'maximalantalresultater',
-    'notetekst',
-    'uuid',
-    'vilkaarligattr',
-    'vilkaarligrel',
-}
-
-TEMPORALITY_PARAMS = {
-    'registreretfra',
-    'registrerettil',
-    'registreringstid',
-    'virkningfra',
-    'virkningtil',
-    'virkningstid',
-}
-
-
-def get_valid_search_parameters(class_name):
-    """Return set of all searchable parameters specific to this class"""
-    # type: str -> set
-    if len(_search_params) == 0:
-        for c in settings.REAL_DB_STRUCTURE:
-            params = set(
-                a
-                for attr in get_attribute_names(c)
-                for a in get_attribute_fields(attr)
-            )
-
-            params.update(get_relation_names(c))
-            params.update(get_state_names(c))
-            params.update(GENERAL_SEARCH_PARAMS)
-            params.update(TEMPORALITY_PARAMS)
-
-            _search_params[c] = params
-
-        # Add 'Dokument'-specific parameters not present in db_structure
-        if _search_params.get('dokument'):
-            _search_params['dokument'].update(
-                ['varianttekst', 'deltekst'] +
-                get_document_part_relation_names()
-            )
-
-    return _search_params[class_name.lower()]
 
 
 def get_document_part_relation_names():

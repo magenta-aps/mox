@@ -18,9 +18,10 @@ from flask import jsonify, request
 from werkzeug.datastructures import ImmutableOrderedMultiDict
 
 from . import db
+from . import db_helpers
 from . import validate
-from .db_helpers import get_valid_search_parameters, TEMPORALITY_PARAMS
 from .utils.build_registration import build_registration, to_lower_param
+from .utils.build_registration import split_param
 from .custom_exceptions import BadRequestException, NotFoundException
 from .custom_exceptions import GoneException
 
@@ -28,6 +29,42 @@ from .custom_exceptions import GoneException
 from .authentication import requires_auth
 
 import settings
+
+
+'''List of parameters allowed for all searches.'''
+GENERAL_SEARCH_PARAMS = frozenset({
+    'brugerref',
+    'foersteresultat',
+    'livscykluskode',
+    'maximalantalresultater',
+    'notetekst',
+    'uuid',
+    'vilkaarligattr',
+    'vilkaarligrel',
+})
+
+'''List of parameters allowed the apply to temporal operations, i.e.
+search and list.
+
+'''
+TEMPORALITY_PARAMS = frozenset({
+    'registreretfra',
+    'registrerettil',
+    'registreringstid',
+    'virkningfra',
+    'virkningtil',
+    'virkningstid',
+})
+
+'''Some operations take no arguments; this makes it explicit.
+
+'''
+NO_PARAMS = frozenset()
+
+'''Aliases that apply to all operations.'''
+PARAM_ALIASES = {
+    'bvn': 'brugervendtnoegle',
+}
 
 
 def j(t):
@@ -97,16 +134,12 @@ class ArgumentDict(ImmutableOrderedMultiDict):
     arguments.
     '''
 
-    PARAM_ALIASES = {
-        'bvn': 'brugervendtnoegle',
-    }
-
     @classmethod
-    def _process_item(cls, xxx_todo_changeme):
-        (key, value) = xxx_todo_changeme
+    def _process_item(cls, item):
+        (key, value) = item
         key = to_lower_param(key)
 
-        return (cls.PARAM_ALIASES.get(key, key), value)
+        return (PARAM_ALIASES.get(key, key), value)
 
     def __init__(self, mapping):
         # this code assumes that a) we always get a mapping and b)
@@ -195,6 +228,7 @@ class OIORestObject(object):
         """
         CREATE object, generate new UUID.
         """
+
         cls.verify_args()
 
         input = cls.get_json()
@@ -232,7 +266,7 @@ class OIORestObject(object):
         """
         request.parameter_storage_class = ArgumentDict
 
-        cls.verify_args(*get_valid_search_parameters(cls.__name__))
+        cls.verify_args(search=True, temporality=True)
 
         # Convert arguments to lowercase, getting them as lists
         list_args = cls._get_args(True)
@@ -299,7 +333,7 @@ class OIORestObject(object):
         """
         READ an object, return as JSON.
         """
-        cls.verify_args(*TEMPORALITY_PARAMS)
+        cls.verify_args(temporality=True)
 
         args = cls._get_args()
         registreret_fra, registreret_til = get_registreret_dates(args)
@@ -460,6 +494,7 @@ class OIORestObject(object):
 
     @classmethod
     def get_schema(cls):
+        cls.verify_args()
         return jsonify(validate.SCHEMA[cls.__name__.lower()])
 
     @classmethod
@@ -522,10 +557,42 @@ class OIORestObject(object):
     RELATIONS_TEMPLATE = 'relations_array.sql'
 
     @classmethod
-    def verify_args(cls, *allowed):
-        req_args = cls._get_args()
-        difference = set(req_args).difference(allowed)
-        if difference:
-            arg_string = ', '.join(difference)
+    def attribute_names(cls):
+        return {
+            a
+            for attr in db_helpers.get_attribute_names(cls.__name__)
+            for a in db_helpers.get_attribute_fields(attr)
+        }
+
+    @classmethod
+    def relation_names(cls):
+        return set(db_helpers.get_relation_names(cls.__name__))
+
+    @classmethod
+    def state_names(cls):
+        return set(db_helpers.get_state_names(cls.__name__))
+
+    @classmethod
+    def verify_args(cls, temporality=False, search=False):
+        req_args = set(cls._get_args())
+
+        if temporality:
+            req_args -= TEMPORALITY_PARAMS
+
+        if search:
+            req_args -= GENERAL_SEARCH_PARAMS
+            req_args -= TEMPORALITY_PARAMS
+            req_args -= cls.attribute_names()
+            req_args -= cls.state_names()
+
+            # special handling of argument with an object type
+            req_args -= {
+                a
+                for a in req_args
+                if split_param(a)[0] in cls.relation_names()
+            }
+
+        if req_args:
+            arg_string = ', '.join(sorted(req_args))
             raise BadRequestException('Unsupported argument(s): {}'
                                       .format(arg_string))
