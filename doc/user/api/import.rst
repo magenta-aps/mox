@@ -4,55 +4,82 @@
 Import operation
 ----------------
 
-A import operation creates a object similar to a :ref:`CreateOperation`, but you
-specify at which UUID. If the UUID of the object does not exist or the object
-with that UUID have been :ref:`deleted <DeleteOperation>` or :ref:`passivated
-<PassivateOperation>`, a new object is created with the property
-``livscykluskode: "Importeret"``.
+.. http:put:: /(service)/(object)/(regex:uuid)
 
+   An Import operation creates or overwrites a object from the JSON payload and
+   returns the UUID for the object.
 
+   If there a no object with the UUID or the object with that UUID have been
+   :ref:`deleted <DeleteOperation>` or :ref:`passivated <PassivateOperation>`,
+   it creates a new object at the specified UUID. It is similar to a
+   :ref:`CreateOperation`, but you specify at which UUID. It sets
+   ``livscykluskode: "Importeret"``.
 
-If a object the UUID `does` exists the import operation completely overwrites
-the object and set the property ``livscykluskode: "Rettet"``. This is useful
-when you want to change the ``virking``-periods.
+   If a object with the UUID does exist it `completely overwrites` the object.
+   Including all ``virkning``-periods. It sets ``livscykluskode: "Rettet"``.
+   This is useful when you want to change the ``virking``-periods.
 
-The data must contain a complete object in exactly the same format as for the
-:ref:`CreateOperation`, but must be :http:method:`PUT` to the objects URL as
-given by its UUID.
+   The JSON-payload must contain a complete object in exactly the same format as
+   for the :ref:`CreateOperation`.
 
-An example:
+   **Example request** for :http:put:`!PUT /organisation/organisationenhed/(regex:uuid)`:
 
-.. code-block:: http
+   .. code-block:: http
 
-    PUT /organisation/organisation/1b1e2de1-6d95-4200-9b60-f85e70cc37cf HTTP/1.1
-    Content-Type: application/json
+       PUT /organisation/organisationenhed/841190a7-0e70-468a-bd63-eb11ed615337 HTTP/1.1
+       Content-Type: application/json
+       Host: example.com
 
-    {
-        "attributter": {
-            "organisationegenskaber": [
-                {
-                    "brugervendtnoegle": "magenta-aps",
-                    "organisationsnavn": "Magenta ApS",
+       {"attributter": {
+            "organisationenhedegenskaber": [{
+                    "brugervendtnoegle": "copenhagen",
+                    "enhedsnavn": "Copenhagen",
                     "virkning": {
                         "from": "2017-01-01",
                         "to": "2019-03-14"
-                    }
-                }
-            ]
-        },
+                    }}]},
+        "relationer": {
+            "overordnet": [{
+                    "uuid": "6ff6cf06-fa47-4bc8-8a0e-7b21763bc30a",
+                    "virkning": {
+                        "from": "2017-01-01",
+                        "to": "2019-03-14"
+                    }}],
+            "tilhoerer": [{
+                    "uuid": "6135c99b-f0fe-4c46-bb50-585b4559b48a",
+                    "virkning": {
+                        "from": "2017-01-01",
+                        "to": "2019-03-14"
+                    }}]},
         "tilstande": {
-            "organisationgyldighed": [
-                {
+            "organisationenhedgyldighed": [{
                     "gyldighed": "Aktiv",
                     "virkning": {
                         "from": "2017-01-01",
                         "to": "2019-03-14"
-                    }
-                }
-            ]
-        }
-    }
+                    }}]}}
 
 
-Known as a ``Importer`` operation in `the specification <Generelle egenskaber for
-services på sags- og dokumentområdet>`_.
+   **Example response** for :http:put:`!PUT /organisation/organisationenhed/(regex:uuid)`:
+
+   .. code-block:: http
+
+       HTTP/1.0 200 OK
+       Content-Length: 48
+       Content-Type: application/json
+       Date: Mon, 21 Jan 2019 10:17:19 GMT
+       Server: Werkzeug/0.14.1 Python/3.5.2
+
+       {
+           "uuid": "841190a7-0e70-468a-bd63-eb11ed615337"
+       }
+
+
+   :reqheader Content-Type: ``application/json``
+
+   :statuscode 200: Object was created or overwritten.
+   :statuscode 400: Malformed JSON or other bad request.
+
+
+   Known as a ``Importer`` operation in `the specification
+   <https://www.digitaliser.dk/resource/1567464/artefact/Generelleegenskaberforservicesp%c3%a5sags-ogdokumentomr%c3%a5det-OIO-Godkendt%5bvs.1.1%5d.pdf?artefact=true&PID=1763377>`_.
