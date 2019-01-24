@@ -9,6 +9,7 @@
 import datetime
 import enum
 import os
+import pathlib
 
 import psycopg2
 import flask
@@ -39,10 +40,8 @@ from .. import settings
     Jinja2 Environment
 """
 
-current_directory = os.path.dirname(os.path.realpath(__file__))
-
 jinja_env = Environment(loader=FileSystemLoader(
-    os.path.join(current_directory, 'templates')
+    str(pathlib.Path(__file__).parent / 'sql' / 'invocations' / 'templates'),
 ))
 
 

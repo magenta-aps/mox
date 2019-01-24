@@ -20,8 +20,10 @@ from jinja2 import Environment, FileSystemLoader
 
 from .. import settings
 
-DB_DIR = Path(__file__).parent / "sql"
-TEMPLATE_DIR = DB_DIR / "templates"
+
+DB_DIR = Path(__file__).parent / 'sql' / 'declarations'
+
+template_env = Environment(loader=FileSystemLoader(str(DB_DIR / 'templates')))
 
 TEMPLATES = (
     "dbtyper-specific",
@@ -41,8 +43,6 @@ TEMPLATES = (
 
 
 def render_templates():
-    template_env = Environment(loader=FileSystemLoader([str(TEMPLATE_DIR)]))
-
     db_structure = settings.DB_STRUCTURE.DATABASE_STRUCTURE
     extra_options = settings.DB_STRUCTURE.DB_TEMPLATE_EXTRA_OPTIONS
 
