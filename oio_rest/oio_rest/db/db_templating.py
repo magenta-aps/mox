@@ -51,7 +51,7 @@ def _render_template(template_name, template_file):
         except KeyError:
             context["include_mixin"] = "empty.jinja.sql"
 
-        yield '-- ' + template_name + '\n'  + template.render(context)
+        yield template.render(context)
 
 
 def get_sql():
@@ -63,7 +63,7 @@ def get_sql():
             yield from _render_template(m.group('name'),
                                         str(p.relative_to(DB_DIR)))
         else:
-            yield '-- ' + m.group('name') + '\n' + p.read_text()
+            yield p.read_text()
 
 
 if __name__ == '__main__':
