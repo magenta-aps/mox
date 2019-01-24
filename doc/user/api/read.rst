@@ -3,33 +3,86 @@
 --------------
 Read operation
 --------------
+.. http:get:: /(service)/(object)/(regex:uuid)
 
-To get a single object. Call :http:method:`GET` on the object endpoint with the
-UUID of the object appended, e.g.:
+   A Read operation returns a single whole object as a JSON-object.
 
-.. code-block:: http
+   Default is to return the object as it is currently seen, but can optionally
+   be constrained by ``virking*`` :ref:`valid time<Valid time>` and/or
+   ``registrering*`` :ref:`transaction time<transaction time>` to give an older
+   view.
 
-    GET /organisation/organisationenhed/1ab754c7-7126-494e-8a4d-9ee3054709fa HTTP/1.1
+   **Example request** for :http:get:`!GET /organisation/organisation/(regex:uuid)`:
 
-It will only return information which is currently valid. That is the
-information with a :ref:`Valid time` containing the current system time.
+   .. code-block:: http
 
-To get a information which was valid at another time you can add
-``&virkningFra=<datetime>&virkningTil=<datetime>`` Where ``<datetime>`` is a
-date/time value. Date and time input is accepted in almost any reasonable
-format, including ISO 8601. When reading ``virkning``-periods will always
-default to "lower bound included, upper bound not included".
+       GET /organisation/organisation/5729e3f9-2993-4492-a56f-0ef7efc83111 HTTP/1.1
+       Accept: */*
+       Host: example.com
 
-Alternatively ``&virkningstid=<datetime>`` can be used. The results returned
-will be those valid at date/time value ``<datetime>,`` giving a 'snapshot' of
-the object's state at a given point in time.
+   **Example response** for :http:get:`!GET /organisation/organisation/(regex:uuid)`:
 
-To filter on the transaction time,
-``&registreretFra=<datetime>&registreretTil=<datetime>`` and
-``&registreringstid=<datetime>`` is also available.
+   .. code-block:: http
 
-See :http:get:`/organisation/organisationenhed/(regex:uuid)` for the complete
-reference for read operation on ``organisationenhed``.
+       HTTP/1.0 200 OK
+       Content-Length: 744
+       Content-Type: application/json
+       Date: Tue, 15 Jan 2019 12:27:16 GMT
+       Server: Werkzeug/0.14.1 Python/3.5.2
 
-Known as a ``Læs`` operation in `the specification <Generelle egenskaber for
-services på sags- og dokumentområdet>`_.
+       {"5729e3f9-2993-4492-a56f-0ef7efc83111": [{
+                "id": "5729e3f9-2993-4492-a56f-0ef7efc83111",
+                "registreringer": [{
+                        "attributter": {
+                            "organisationegenskaber": [{
+                                    "brugervendtnoegle": "magenta-aps",
+                                    "organisationsnavn": "Magenta ApS",
+                                    "virkning": {
+                                        "from": "2017-01-01 00:00:00+00",
+                                        "from_included": true,
+                                        "to": "2019-03-14 00:00:00+00",
+                                        "to_included": false
+                                    }}]},
+                        "brugerref": "42c432e8-9c4a-11e6-9f62-873cf34a735f",
+                        "fratidspunkt": {
+                            "graenseindikator": true,
+                            "tidsstempeldatotid": "2019-01-15T10:43:58.122764+00:00"
+                        },
+                        "livscykluskode": "Importeret",
+                        "tilstande": {
+                            "organisationgyldighed": [{
+                                    "gyldighed": "Aktiv",
+                                    "virkning": {
+                                        "from": "2017-01-01 00:00:00+00",
+                                        "from_included": true,
+                                        "to": "2019-03-14 00:00:00+00",
+                                        "to_included": false
+                                    }}]},
+                        "tiltidspunkt": {
+                            "tidsstempeldatotid": "infinity"
+                        }}]}]}
+
+
+
+   :query datetime registreretFra: :ref:`Transaction time` 'from' timestamp.
+   :query datetime registreretTil: Transaction time 'to' timestamp.
+   :query datetime registreringstid: Transaction time 'snapshot' timestamp.
+   :query datetime virkningFra: :ref:`Valid time` 'from' timestamp.
+   :query datetime virkningTil: Valid time 'to' timestamp.
+   :query datetime virkningstid: Valid time 'snapshot' timestamp.
+
+   All the ``registeret*`` and ``virkning*`` take a datetime. Input is accepted in
+   almost any reasonable format, including ISO 8601, SQL-compatible, traditional
+   POSTGRES, and others. The accepted values are the `Date/Time Input from
+   PostgreSQL
+   <https://www.postgresql.org/docs/9.5/datatype-datetime.html#DATATYPE-DATETIME-INPUT>`_.
+
+   :resheader Content-Type: ``application/json``
+
+   :statuscode 200: No error.
+   :statuscode 400: Malformed JSON or other bad request.
+   :statuscode 404: No object of a given class with that UUID.
+   :statuscode 410: The object has been :ref:`deleted <DeleteOperation>`.
+
+   Known as a ``Læs`` operation in `the specification
+   <https://www.digitaliser.dk/resource/1567464/artefact/Generelleegenskaberforservicesp%c3%a5sags-ogdokumentomr%c3%a5det-OIO-Godkendt%5bvs.1.1%5d.pdf?artefact=true&PID=1763377>`_.
