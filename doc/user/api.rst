@@ -4,8 +4,9 @@
 REST API
 ========
 
-This page will give you a wide but incomplete overview of the REST API. Refer to
-:ref:`api-reference` for a complete reference.
+This page will give you a overview of the REST API. Each of the operations is
+describe in general first with special consideration for each object-type
+afterwards.
 
 
 Self-documentation

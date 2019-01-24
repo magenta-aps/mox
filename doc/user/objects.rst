@@ -40,7 +40,7 @@ Some ``Organisation`` objects
 ``organisation``
 ----------------
 
-Located at the endpoint :http:get:`/organisation/organisation`. An
+Located at the endpoint :http:get:`!/organisation/organisation`. An
 ``organisation`` is a legal organisation. A good example of this a municipality.
 The database does support multiple ``organisation``, but in the wild there is
 usually only one per MOX instance.
@@ -98,7 +98,7 @@ The fields used in the example ``organisation`` are the following:
 ``organisationenhed``
 ---------------------
 
-Located at the endpoint :http:get:`/organisation/organisationenhed`. A
+Located at the endpoint :http:get:`!/organisation/organisationenhed`. A
 ``organisationenhed`` is a organisational unit. This could be a department,
 section, office, committee, project group, class, team and the like. Usually a
 ``organisation`` contains a single ``organisationenhed`` as a direct decendant
