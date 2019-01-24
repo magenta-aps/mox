@@ -4,22 +4,45 @@
 Delete operation
 ----------------
 
-.. note::
+.. http:delete:: /(service)/(object)/(regex:uuid)
 
-   This describes deletion of whole objects. To delete part of an object see
+   A Delete operation deletes the object and return its UUID.
+
+   After an object is deleted, it cannot be retrieved by :ref:`Read
+   <ReadOperation>`, :ref:`List <ListOperation>` and :ref:`Search Operations
+   <SearchOperation>` unless the ``registreretTil`` and/or ``registreretFra``
+   indicate a period where it did exist.
+
+   This operation deletes the whole object. To delete part of an object see
    :ref:`DeleteAttr`.
 
-An object is deleted by sending a :http:method:`DELETE`-request. This might e.g.
-look like this:
+   **Example request** for :http:delete:`!DELETE /organisation/organisationenhed/(regex:uuid)`:
 
-.. code-block:: http
+   .. code-block:: http
 
-   DELETE /organisation/organisationenhed/862bb783-696d-4345-9f63-cb72ad1736a3 HTTP/1.1
+       DELETE /organisation/organisationenhed/5fc97a7c-70df-4e97-82eb-64dc0a0f5746 HTTP/1.1
+       Host: example.com
 
 
-After an object is deleted, it cannot be retrieved by a :ref:`ReadOperation`,
-:ref:`ListOperation` and :ref:`SearchOperation` unless the ``registreretTil``
-and/or ``registreretFra`` indicate a period where it did exist.
+   **Example response** for :http:delete:`!DELETE /organisation/organisationenhed/(regex:uuid)`:
 
-Known as a ``Slet`` operation in `the specification <Generelle egenskaber for
-services på sags- og dokumentområdet>`_.
+   .. code-block:: http
+
+       HTTP/1.0 202 ACCEPTED
+       Content-Length: 48
+       Content-Type: application/json
+       Date: Mon, 21 Jan 2019 16:47:00 GMT
+       Server: Werkzeug/0.14.1 Python/3.5.2
+
+       {
+           "uuid": "5fc97a7c-70df-4e97-82eb-64dc0a0f5746"
+       }
+
+
+   :statuscode 202: Object was deleted.
+   :statuscode 400: Malformed JSON or other bad request.
+   :statuscode 404: No object of a given class with that UUID.
+
+
+   Known as a ``Slet`` operation in `the specification
+   <https://www.digitaliser.dk/resource/1567464/artefact/Generelleegenskaberforservicesp%c3%a5sags-ogdokumentomr%c3%a5det-OIO-Godkendt%5bvs.1.1%5d.pdf?artefact=true&PID=1763377>`_.

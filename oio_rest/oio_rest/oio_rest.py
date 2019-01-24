@@ -509,32 +509,6 @@ class OIORestObject(object):
 
         .. :quickref: :ref:`DeleteOperation`
 
-        **Example request** for :http:delete:`/organisation/organisationenhed/(regex:uuid)`:
-
-        .. code-block:: http
-
-            DELETE /organisation/organisationenhed/5fc97a7c-70df-4e97-82eb-64dc0a0f5746 HTTP/1.1
-            Host: example.com
-
-
-        **Example response** for :http:delete:`/organisation/organisationenhed/(regex:uuid)`:
-
-        .. code-block:: http
-
-            HTTP/1.0 202 ACCEPTED
-            Content-Length: 48
-            Content-Type: application/json
-            Date: Mon, 21 Jan 2019 16:47:00 GMT
-            Server: Werkzeug/0.14.1 Python/3.5.2
-
-            {
-                "uuid": "5fc97a7c-70df-4e97-82eb-64dc0a0f5746"
-            }
-
-
-        :statuscode 202: Object was deleted.
-        :statuscode 400: Malformed JSON or other bad request.
-        :statuscode 404: No object of a given class with that UUID.
         """
 
         cls.verify_args()
