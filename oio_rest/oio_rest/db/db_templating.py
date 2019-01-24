@@ -46,8 +46,8 @@ def render_templates():
     db_structure = settings.DB_STRUCTURE.DATABASE_STRUCTURE
     extra_options = settings.DB_STRUCTURE.DB_TEMPLATE_EXTRA_OPTIONS
 
-    for oio_type in sorted(db_structure):
-        for template_name in TEMPLATES:
+    for template_name in TEMPLATES:
+        for oio_type in sorted(db_structure):
             template_file = "%s.jinja.sql" % template_name
             template = template_env.get_template(template_file)
 
