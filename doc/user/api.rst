@@ -4,36 +4,20 @@
 REST API
 ========
 
-This page will give you a overview of the REST API. Each of the operations is
-describe in general first with special consideration for each object-type
-afterwards.
+This page will give you a overview of the REST API.
 
+.. toctree::
+   :caption: Sub pages
 
-Self-documentation
-==================
-
-* On a running LoRa system, it will always be possible to acquire, in JSON, a
-  sitemap of valid URLs on ``/site-map/``.
-
-* Similarly, for each service, a JSON representation of the hierarchy's classes
-  and their fields may be found at the URL ``/<service>/classes/``. E.g. at
-  ``/organisation/classes``.
-
-* Finally a schema for a given object is provided under
-  ``/<service>/<object>/schema``. E.g.
-  ``/organisation/organisationenhed/schema``
-
-
-.. caution::
-
-   The structure of each class is not completely analogous to the
-   structure of the input JSON as it uses the concept of *"overrides"*.
-   This should also be fixed.
+   api/self-documentation.rst
 
 .. _API-operations:
 
 Operations
 ==========
+
+Each of the operations is describe in general first with special consideration
+for each object-type afterwards.
 
 .. toctree::
    :maxdepth: 2

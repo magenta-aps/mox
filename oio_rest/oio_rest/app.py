@@ -103,11 +103,7 @@ def get_token():
 def sitemap():
     """Returns a site-map over all valid urls.
 
-    Part of the self-documentation of the API.
-
-    .. :quickref: Give the site-map over all URLs.
-
-    :statuscode 200: No error.
+    .. :quickref: :http:get:`/site-map`
 
     """
     links = []

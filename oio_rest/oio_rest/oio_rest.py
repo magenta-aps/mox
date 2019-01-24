@@ -178,11 +178,7 @@ class OIOStandardHierarchy(object):
         def get_classes():
             """Return the classes including their fields under this service.
 
-            Part of the self-documentation of the API.
-
-            .. :quickref: Lists all classed with fields an service have.
-
-            :statuscode 200: No error.
+             .. :quickref: :http:get:`/(service)/classes`
 
             """
             structure = settings.REAL_DB_STRUCTURE
@@ -528,11 +524,7 @@ class OIORestObject(object):
     def get_fields(cls):
         """Return a list of all fields a given object have.
 
-         Part of the self-documentation of the API.
-
-        .. :quickref: Lists all fields an object have.
-
-        :statuscode 200: No error.
+        .. :quickref: :http:get:`/(service)/(object)/fields`
 
         """
         cls.verify_args()
@@ -548,11 +540,7 @@ class OIORestObject(object):
     def get_schema(cls):
         """Returns the JSON schema of an object.
 
-        Part of the self-documentation of the API.
-
-        .. :quickref: Give the schema of an object.
-
-        :statuscode 200: No error.
+        .. :quickref: :http:get:`/(service)/(object)/schema`
 
         """
         cls.verify_args()

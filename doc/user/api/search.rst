@@ -77,9 +77,9 @@ Search operation
    <https://www.postgresql.org/docs/9.5/functions-matching.html#FUNCTIONS-LIKE>`_.
 
    In addition to the above general query parameters, each object also have
-   specialized parameters based on its field. The endpoints :http:get:`GET
-   /(service)/(object)/fields` lists the fields which can be used for parameters
-   for a :ref:`SearchOperation`.
+   specialized parameters based on its field. The endpoints
+   :http:get:`/(service)/(object)/fields` lists the fields which can be used for
+   parameters for a :ref:`SearchOperation`.
 
    :resheader Content-Type: ``application/json``
 
