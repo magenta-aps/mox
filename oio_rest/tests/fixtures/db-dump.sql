@@ -1,4 +1,4 @@
--- 20_common_types.sql
+-- _common_types.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --

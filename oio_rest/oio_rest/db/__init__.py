@@ -41,7 +41,7 @@ from .. import settings
 """
 
 jinja_env = Environment(loader=FileSystemLoader(
-    str(pathlib.Path(__file__).parent / 'sql' / 'invocations' / 'templates'),
+    str(pathlib.Path(__file__).parent / 'sql' / 'invocations'),
 ))
 
 
