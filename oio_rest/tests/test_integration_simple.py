@@ -114,6 +114,12 @@ class Tests(util.TestCase):
             },
         )
 
+    def test_log_has_no_bvn(self):
+        self.assertRequestFails(
+            '/log/loghaendelse?bvn=%',
+            400,
+        )
+
     def test_finding_nothing(self):
         endpoints = [
             endpoint.rsplit('/', 1)[0]
@@ -142,11 +148,17 @@ class Tests(util.TestCase):
             endpoints)
 
         for endpoint in endpoints:
-            self.assertRequestResponse(
-                endpoint + '?bvn=%',
-                {
-                    'results': [
-                        [],
-                    ],
-                },
-            )
+            if endpoint == '/log/loghaendelse':
+                req = endpoint + '?note=%'
+            else:
+                req = endpoint + '?bvn=%'
+
+            with self.subTest(req):
+                self.assertRequestResponse(
+                    req,
+                    {
+                        'results': [
+                            [],
+                        ],
+                    },
+                )
