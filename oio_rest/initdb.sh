@@ -20,9 +20,9 @@ test -z "$MOX_DB" && MOX_DB=mox
 test -z "$MOX_DB_USER" && MOX_DB_USER=mox
 test -z "$MOX_DB_PASSWORD" && MOX_DB_PASSWORD=mox
 
-MOXDIR=${BASE_DIR}/oio_rest
+MOXDIR="${BASE_DIR}"/oio_rest
 
-cd $DIR
+cd "$DIR"
 
 PYTHON=${PYTHON_EXEC}
 
@@ -35,6 +35,16 @@ CREATE USER $MOX_DB_USER WITH PASSWORD '$MOX_DB_PASSWORD';
 CREATE DATABASE $MOX_DB WITH OWNER '$MOX_DB_USER';
 EOF
 
-cd $MOXDIR
+sudo -u postgres psql -d "$MOX_DB" <<EOF
+CREATE SCHEMA actual_state AUTHORIZATION $MOX_DB_USER;
+ALTER DATABASE $MOX_DB SET search_path TO actual_state, public;
+ALTER DATABASE $MOX_DB SET DATESTYLE to 'ISO, YMD';
+ALTER DATABASE $MOX_DB SET INTERVALSTYLE to 'sql_standard';
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA actual_state;
+CREATE EXTENSION IF NOT EXISTS "btree_gist" WITH SCHEMA actual_state;
+CREATE EXTENSION IF NOT EXISTS "pg_trgm" WITH SCHEMA actual_state;
+EOF
+
+cd "$MOXDIR"
 exec $PYTHON -m oio_rest sql \
-    | sudo -u postgres psql -v ON_ERROR_STOP=1 -d $MOX_DB
+    | psql -U "$MOX_DB_USER" -d "$MOX_DB" -h 127.0.0.1 -b -v ON_ERROR_STOP=1
