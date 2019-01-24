@@ -4,57 +4,93 @@
 Search operation
 ----------------
 
-You can also *search* for an object by specifying values of attributes or
-relations as search parameters. You can, e.g., find all ``organisation`` by
-searching for any value of ``brugervendtnoegle``:
+.. http:get:: /(service)/(object)
 
-.. code-block:: http
+   A Search operation returns a list of UUIDs to the objects that fit the
+   parameters.
 
-    GET /organisation/organisation?brugervendtnoegle=% HTTP/1.1
+   :http:get:`/(service)/(object)` can also be a :ref:`ListOperation` depending
+   on parameters. With only the of ``uuid``, ``virking*`` and ``registeret``
+   parameters, it is a :ref:`ListOperation` and will return one or more whole
+   JSON-objects. Given any other parameters the operation is a
+   :ref:`SearchOperation`.
 
-All search parameters which search on an attribute value of type TEXT use
-case-insensitive matching, with the possibility to use wildcards. Other
-value types use a simple equality operator.
+   Default is to return the object(s) as it is currently seen, but can optionally
+   be constrained by ``virking*`` :ref:`valid time<Valid time>` and/or
+   ``registrering*`` :ref:`transaction time<transaction time>` to give an older
+   view.
 
-The wildcard character ``%`` (percent sign) may be used in these search
-parameter values. This character matches zero or more of any characters.
+   **Search example request** for :http:get:`!GET /organisation/organisationenhed`:
 
-If it is desired to search for attribute values of type TEXT which contain ``%``
-themselves, then the character must be escaped in the search parameters with a
-backslash, like, for example: ``abc\\%def`` would match the value ``abc%def``.
-Contrary, to typical SQL LIKE syntax, the character ``_`` (underscore) matches
-only the underscore character (and not "any character").
+   .. code-block:: http
 
-``bvn`` can be used as shorthand for ``brugervendtnoegle``, which is an
-attribute field that all objects have, but apart from that, the attribute names
-should be spelled out. Search parameter names are case-insensitive.
+       GET /organisation/organisationenhed?overordnet=66e8a55a-8c61-4d33-b244-574c09ef41f7 HTTP/1.1
+       Accept: */*
+       Host: example.com
+
+   **Search example response** for :http:get:`!GET /organisation/organisationenhed`:
+
+   .. code-block:: http
 
 
-Search parameters may be combined and may include the time restrictions as for
-:ref:`ListOperation`, so it is possible to search for a value which must exist
-at a given time or interval.
+       HTTP/1.0 200 OK
+       Content-Length: 94
+       Content-Type: application/json
+       Date: Thu, 17 Jan 2019 15:02:39 GMT
+       Server: Werkzeug/0.14.1 Python/3.5.2
 
-Note that while the result of a :ref:`ListOperation` or :ref:`ReadOperation`
-operation is given as the JSON representation of the object(s) returned, the
-result of a :ref:`SearchOperation` operation is always given as a list of UUIDs
-which may later be retrieved with a list or read operation - e.g:
+       {"results": [[
+                "74054d5b-54fc-4c9e-86ef-790fa6935afb",
+                "ccfd6874-09f5-4dec-8d39-781f614bb8a7"
+            ]]}
 
-.. code-block:: http
+   :query uuid uuid: The UUID of the object to receive. Allowed once in :ref:`SearchOperation`.
 
-    GET /organisation/organisationenhed?brugervendtnoegle=Direktion&tilhoerer=urn:KL&enhedstype=urn:Direktion HTTP/1.1
+   :query string brugervendtnoegle / bvn: Match text in the ``brugervendtnoegle``-field.
+   :query string vilkaarligattr: Match text values of *any* ``attributter``-field.
+   :query uuid vilkaarligrel: Match values of *any* ``relationer``.
+   :query enum livscykluskode: Matches the ``livscykluskode``-field. Can be one of ``Opstaaet``, ``Importeret``, ``Passiveret``, ``Slettet`` or ``Rettet``.
 
-    {
-    "results": [[
-        "7c6e38f8-e5b5-4b87-af52-9693e074f5ee",
-        "9765cdbf-9f42-4e9d-897b-909af549aba8",
-        "3ca64809-acdb-443f-9316-aabb2ee6aff7",
-        "3eaa730c-7800-495a-9c6b-4688cdf7a61f",
-        "7d305acc-2a85-420b-9557-feead3dae339"
-        ]]
-    }
+   :query uuid brugerref: Match the ``brugerref``-field. The (system) user who changed the object.
+   :query string notetekst: Match the ``notetekst``-field in ``virkning``. (Not to be confused with the ``note``-field.)
 
-Known as a ``Søg`` operation in `the specification <Generelle egenskaber for
-services på sags- og dokumentområdet>`_.
+   :query int foersteresultat: The first result in a :ref:`PagedSearchOperation`. Sorts the result by ``brugervendtnoegle``.
+   :query int maximalantalresultater: The maximal number of results in a :ref:`PagedSearchOperation`. Sorts the result by ``brugervendtnoegle``.
+
+   :query datetime registreretFra: :ref:`Transaction time` 'from' timestamp.
+   :query datetime registreretTil: Transaction time 'to' timestamp.
+   :query datetime registreringstid: Transaction time 'snapshot' timestamp.
+   :query datetime virkningFra: :ref:`Valid time` 'from' timestamp.
+   :query datetime virkningTil: Valid time 'to' timestamp.
+   :query datetime virkningstid: Valid time 'snapshot' timestamp.
+
+   All the ``registeret*`` and ``virkning*`` take a datetime. Input is accepted in
+   almost any reasonable format, including ISO 8601, SQL-compatible, traditional
+   POSTGRES, and others. The accepted values are the `Date/Time Input from
+   PostgreSQL
+   <https://www.postgresql.org/docs/9.5/datatype-datetime.html#DATATYPE-DATETIME-INPUT>`_.
+
+   All *string* parameters match case insensitive. They support the wildcard
+   operators ``_`` (underscore) to match a single character and ``%`` (percent
+   sign) to match zero or more characters. The match is made with `ILIKE from
+   PostgresSQL
+   <https://www.postgresql.org/docs/9.5/functions-matching.html#FUNCTIONS-LIKE>`_.
+
+   In addition to the above general query parameters, each object also have
+   specialized parameters based on its field. The endpoints :http:get:`GET
+   /(service)/(object)/fields` lists the fields which can be used for parameters
+   for a :ref:`SearchOperation`.
+
+   :resheader Content-Type: ``application/json``
+
+   :statuscode 200: No error.
+   :statuscode 400: Malformed JSON or other bad request.
+   :statuscode 404: No object of a given class with that UUID.
+   :statuscode 410: The object has been :ref:`deleted <DeleteOperation>`.
+
+   Known as a ``Søg`` operation in `the specification
+   <https://www.digitaliser.dk/resource/1567464/artefact/Generelleegenskaberforservicesp%c3%a5sags-ogdokumentomr%c3%a5det-OIO-Godkendt%5bvs.1.1%5d.pdf?artefact=true&PID=1763377>`_.
+
 
 .. _PagedSearchOperation:
 
@@ -111,10 +147,6 @@ different variant, then they are not included in the results.
 
 Searching on ``Sag``-``JournalPost``-relations
 ----------------------------------------------
-
-.. warning::
-
-   This section should be moved to a API reference in the future.
 
 To search on the sub-fields of the ``JournalPost`` relation in ``Sag``, requires
 a special dot-notation syntax, due to possible ambiguity with other search
