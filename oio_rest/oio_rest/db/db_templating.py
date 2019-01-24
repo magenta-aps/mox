@@ -88,7 +88,7 @@ def get_sql():
         if dirp is None:
             yield from render_templates()
         else:
-            for p in dirp.glob('*.sql'):
+            for p in sorted(dirp.glob('*.sql')):
                 yield p.read_text()
 
 
