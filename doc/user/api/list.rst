@@ -27,7 +27,7 @@ List operation
    2000 characters. Thus, we recommend that you attempt to list a maximum of 45
    objects in each request.
 
-   **List example request** for :http:get:`GET /organisation/organisationenhed </(service)/(object)>`:
+   **List example request** for :http:get:`!GET /organisation/organisationenhed>`:
 
    .. code-block:: http
 
@@ -35,7 +35,7 @@ List operation
        Accept: */*
        Host: example.com
 
-   **List example response** for :http:get:`GET /organisation/organisationenhed </(service)/(object)>`:
+   **List example response** for :http:get:`!GET /organisation/organisationenhed`:
 
    .. code-block:: http
 

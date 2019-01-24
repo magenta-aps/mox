@@ -18,7 +18,7 @@ Create operation
    with the header :http:header:`Content-Type`: ``multipart/form-data``.
 
 
-   **Example request** for :http:post:`POST /organisation/organisationenhed </(service)/(object)>`:
+   **Example request** for :http:post:`!POST /organisation/organisationenhed`:
 
    .. code-block:: http
 
@@ -55,7 +55,7 @@ Create operation
                         "to": "2019-03-14"
                     }}]}}
 
-   **Example response** for :http:post:`POST /organisation/organisationenhed </(service)/(object)>`:
+   **Example response** for :http:post:`!POST /organisation/organisationenhed>`:
 
    .. code-block:: http
 
