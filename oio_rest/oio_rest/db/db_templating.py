@@ -66,7 +66,7 @@ def render_templates():
             except KeyError:
                 context["include_mixin"] = "empty.jinja.sql"
 
-            yield template.render(context)
+            yield '-- ' + template_file + '\n'  + template.render(context)
 
 
 def get_sql():
@@ -80,7 +80,7 @@ def get_sql():
             yield from render_templates()
         else:
             for p in sorted(dirp.glob('*.sql')):
-                yield p.read_text()
+                yield '-- ' + p.name + '\n' + p.read_text()
 
 
 if __name__ == '__main__':

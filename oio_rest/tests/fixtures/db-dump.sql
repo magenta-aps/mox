@@ -1,3 +1,4 @@
+-- 20_common_types.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -383,6 +384,7 @@ CREATE CAST(text AS ClearableInterval)
 WITH FUNCTION actual_state._cast_text_to_ClearableInterval (text)
 AS implicit;
 
+-- _as_search_ilike_array.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -414,6 +416,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- _as_search_match_array.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -447,6 +450,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- _as_valid_registrering_livscyklus_transition.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -536,6 +540,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
+-- _create_notify.sql
 -- Copyright (C) 2015-2019 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -569,6 +574,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+-- _index_helper_funcs.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -589,6 +595,7 @@ CREATE OR REPLACE FUNCTION _composite_type_to_time_range(ANYELEMENT) RETURNS
 CREATE OR REPLACE FUNCTION _uuid_to_text(UUID) RETURNS TEXT AS 'SELECT $1::TEXT' LANGUAGE sql IMMUTABLE;
 
 
+-- _json_object_delete_keys.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -611,6 +618,7 @@ SELECT COALESCE(
 )::json
 $function$;
 
+-- _subtract_tstzrange.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -676,6 +684,7 @@ END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
 
+-- _subtract_tstzrange_arr.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -708,6 +717,7 @@ END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
 
+-- dbtyper-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -813,6 +823,7 @@ CREATE OR REPLACE FUNCTION _aktivitet_aktoer_attr_repr_urn_to_text(AktivitetAkto
 
 
 
+-- tbls-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -1293,6 +1304,7 @@ CREATE INDEX aktivitet_relation_pat_virkning_notetekst
 
 
 
+-- _remove_nulls_in_array.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -1429,6 +1441,7 @@ $$
 
 
 
+-- _as_get_prev_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -1452,6 +1465,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_aktivitet_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
+-- _as_create_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -1521,6 +1535,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
+-- as_update.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -2114,6 +2129,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
+-- as_create_or_import.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -2409,6 +2425,7 @@ RETURN aktivitet_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
+-- as_list.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -2614,6 +2631,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_read.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -2645,6 +2663,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_search.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -4259,6 +4278,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- json-cast-functions.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -4427,6 +4447,7 @@ create cast (AktivitetType as json) with function actual_state._cast_aktivitetTy
 
 
 
+-- _as_sorted.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -4473,6 +4494,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- _as_filter_unauth.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -4753,6 +4775,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- dbtyper-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -4821,6 +4844,7 @@ CREATE TYPE BrugerType AS
 
 
 
+-- tbls-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -5177,6 +5201,7 @@ CREATE INDEX bruger_relation_pat_virkning_notetekst
 
 
 
+-- _remove_nulls_in_array.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -5285,6 +5310,7 @@ $$
 
 
 
+-- _as_get_prev_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -5308,6 +5334,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_bruger_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
+-- _as_create_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -5377,6 +5404,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
+-- as_update.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -5784,6 +5812,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
+-- as_create_or_import.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -5980,6 +6009,7 @@ RETURN bruger_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
+-- as_list.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -6148,6 +6178,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_read.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -6179,6 +6210,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_search.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -7220,6 +7252,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- json-cast-functions.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -7381,6 +7414,7 @@ create cast (BrugerType as json) with function actual_state._cast_brugerType_to_
 
 
 
+-- _as_sorted.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -7427,6 +7461,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- _as_filter_unauth.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -7654,6 +7689,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- dbtyper-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -7794,6 +7830,7 @@ CREATE TYPE _DokumentVariantDelKey AS
 
 
 
+-- tbls-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -8532,6 +8569,7 @@ CREATE INDEX dokument_del_relation_pat_virkning_notetekst
     (((virkning).notetekst) gin_trgm_ops);
 
 
+-- _remove_nulls_in_array.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -8782,6 +8820,7 @@ $$
 
 
 
+-- _as_get_prev_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -8805,6 +8844,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_dokument_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
+-- _as_create_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -8874,6 +8914,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
+-- as_update.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -9914,6 +9955,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
+-- as_create_or_import.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -10265,6 +10307,7 @@ RETURN dokument_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
+-- as_list.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -10442,6 +10485,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_read.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -10473,6 +10517,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_search.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -12139,6 +12184,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- json-cast-functions.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -12300,6 +12346,7 @@ create cast (DokumentType as json) with function actual_state._cast_dokumentType
 
 
 
+-- _as_sorted.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -12346,6 +12393,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- _as_filter_unauth.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -12621,6 +12669,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- dbtyper-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -12693,6 +12742,7 @@ CREATE TYPE FacetType AS
 
 
 
+-- tbls-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -13097,6 +13147,7 @@ CREATE INDEX facet_relation_pat_virkning_notetekst
 
 
 
+-- _remove_nulls_in_array.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -13205,6 +13256,7 @@ $$
 
 
 
+-- _as_get_prev_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -13228,6 +13280,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_facet_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
+-- _as_create_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -13297,6 +13350,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
+-- as_update.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -13736,6 +13790,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
+-- as_create_or_import.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -13940,6 +13995,7 @@ RETURN facet_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
+-- as_list.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -14112,6 +14168,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_read.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -14143,6 +14200,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_search.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -15212,6 +15270,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- json-cast-functions.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -15373,6 +15432,7 @@ create cast (FacetType as json) with function actual_state._cast_facetType_to_js
 
 
 
+-- _as_sorted.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -15419,6 +15479,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- _as_filter_unauth.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -15670,6 +15731,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- dbtyper-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -15756,6 +15818,7 @@ CREATE TYPE IndsatsType AS
 
 
 
+-- tbls-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -16186,6 +16249,7 @@ CREATE INDEX indsats_relation_pat_virkning_notetekst
 
 
 
+-- _remove_nulls_in_array.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -16322,6 +16386,7 @@ $$
 
 
 
+-- _as_get_prev_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -16345,6 +16410,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_indsats_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
+-- _as_create_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -16414,6 +16480,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
+-- as_update.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -16966,6 +17033,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
+-- as_create_or_import.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -17235,6 +17303,7 @@ RETURN indsats_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
+-- as_list.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -17436,6 +17505,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_read.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -17467,6 +17537,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_search.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -18981,6 +19052,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- json-cast-functions.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -19149,6 +19221,7 @@ create cast (IndsatsType as json) with function actual_state._cast_indsatsType_t
 
 
 
+-- _as_sorted.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -19195,6 +19268,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- _as_filter_unauth.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -19457,6 +19531,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- dbtyper-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -19525,6 +19600,7 @@ CREATE TYPE InteressefaellesskabType AS
 
 
 
+-- tbls-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -19881,6 +19957,7 @@ CREATE INDEX interessefaellesskab_relation_pat_virkning_notetekst
 
 
 
+-- _remove_nulls_in_array.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -19989,6 +20066,7 @@ $$
 
 
 
+-- _as_get_prev_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -20012,6 +20090,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_interessefaellesskab_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
+-- _as_create_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -20081,6 +20160,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
+-- as_update.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -20488,6 +20568,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
+-- as_create_or_import.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -20684,6 +20765,7 @@ RETURN interessefaellesskab_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
+-- as_list.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -20852,6 +20934,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_read.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -20883,6 +20966,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_search.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -21924,6 +22008,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- json-cast-functions.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -22085,6 +22170,7 @@ create cast (InteressefaellesskabType as json) with function actual_state._cast_
 
 
 
+-- _as_sorted.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -22131,6 +22217,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- _as_filter_unauth.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -22358,6 +22445,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- dbtyper-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -22427,6 +22515,7 @@ CREATE TYPE ItsystemType AS
 
 
 
+-- tbls-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -22793,6 +22882,7 @@ CREATE INDEX itsystem_relation_pat_virkning_notetekst
 
 
 
+-- _remove_nulls_in_array.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -22901,6 +22991,7 @@ $$
 
 
 
+-- _as_get_prev_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -22924,6 +23015,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_itsystem_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
+-- _as_create_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -22993,6 +23085,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
+-- as_update.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -23408,6 +23501,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
+-- as_create_or_import.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -23606,6 +23700,7 @@ RETURN itsystem_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
+-- as_list.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -23775,6 +23870,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_read.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -23806,6 +23902,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_search.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -24854,6 +24951,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- json-cast-functions.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -25015,6 +25113,7 @@ create cast (ItsystemType as json) with function actual_state._cast_itsystemType
 
 
 
+-- _as_sorted.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -25061,6 +25160,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- _as_filter_unauth.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -25294,6 +25394,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- dbtyper-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -25375,6 +25476,7 @@ CREATE TYPE KlasseType AS
 
 
 
+-- tbls-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -25836,6 +25938,7 @@ CREATE INDEX klasse_relation_pat_virkning_notetekst
 
 
 
+-- _remove_nulls_in_array.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -25975,6 +26078,7 @@ CREATE OR REPLACE FUNCTION _remove_nulls_in_array(inputArr KlasseSoegeordType[])
 
 
 
+-- _as_get_prev_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -25998,6 +26102,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_klasse_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
+-- _as_create_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -26067,6 +26172,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
+-- as_update.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -26571,6 +26677,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
+-- as_create_or_import.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -26807,6 +26914,7 @@ RETURN klasse_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
+-- as_list.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -27027,6 +27135,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_read.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -27058,6 +27167,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_search.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -28194,6 +28304,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- json-cast-functions.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -28355,6 +28466,7 @@ create cast (KlasseType as json) with function actual_state._cast_klasseType_to_
 
 
 
+-- _as_sorted.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -28401,6 +28513,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- _as_filter_unauth.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -28652,6 +28765,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- dbtyper-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -28721,6 +28835,7 @@ CREATE TYPE KlassifikationType AS
 
 
 
+-- tbls-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -29089,6 +29204,7 @@ CREATE INDEX klassifikation_relation_pat_virkning_notetekst
 
 
 
+-- _remove_nulls_in_array.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -29197,6 +29313,7 @@ $$
 
 
 
+-- _as_get_prev_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -29220,6 +29337,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_klassifikation_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
+-- _as_create_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -29289,6 +29407,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
+-- as_update.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -29704,6 +29823,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
+-- as_create_or_import.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -29902,6 +30022,7 @@ RETURN klassifikation_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
+-- as_list.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -30071,6 +30192,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_read.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -30102,6 +30224,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_search.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -31150,6 +31273,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- json-cast-functions.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -31311,6 +31435,7 @@ create cast (KlassifikationType as json) with function actual_state._cast_klassi
 
 
 
+-- _as_sorted.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -31357,6 +31482,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- _as_filter_unauth.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -31590,6 +31716,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- dbtyper-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -31663,6 +31790,7 @@ CREATE TYPE LoghaendelseType AS
 
 
 
+-- tbls-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -32079,6 +32207,7 @@ CREATE INDEX loghaendelse_relation_pat_virkning_notetekst
 
 
 
+-- _remove_nulls_in_array.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -32187,6 +32316,7 @@ $$
 
 
 
+-- _as_get_prev_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -32210,6 +32340,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_loghaendelse_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
+-- _as_create_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -32279,6 +32410,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
+-- as_update.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -32726,6 +32858,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
+-- as_create_or_import.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -32932,6 +33065,7 @@ RETURN loghaendelse_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
+-- as_list.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -33105,6 +33239,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_read.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -33136,6 +33271,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_search.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -34212,6 +34348,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- json-cast-functions.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -34373,6 +34510,7 @@ create cast (LoghaendelseType as json) with function actual_state._cast_loghaend
 
 
 
+-- _as_sorted.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -34419,6 +34557,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- _as_filter_unauth.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -34676,6 +34815,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- dbtyper-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -34743,6 +34883,7 @@ CREATE TYPE OrganisationType AS
 
 
 
+-- tbls-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -35087,6 +35228,7 @@ CREATE INDEX organisation_relation_pat_virkning_notetekst
 
 
 
+-- _remove_nulls_in_array.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -35195,6 +35337,7 @@ $$
 
 
 
+-- _as_get_prev_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -35218,6 +35361,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_organisation_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
+-- _as_create_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -35287,6 +35431,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
+-- as_update.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -35686,6 +35831,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
+-- as_create_or_import.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -35880,6 +36026,7 @@ RETURN organisation_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
+-- as_list.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -36047,6 +36194,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_read.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -36078,6 +36226,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_search.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -37112,6 +37261,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- json-cast-functions.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -37273,6 +37423,7 @@ create cast (OrganisationType as json) with function actual_state._cast_organisa
 
 
 
+-- _as_sorted.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -37319,6 +37470,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- _as_filter_unauth.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -37540,6 +37692,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- dbtyper-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -37607,6 +37760,7 @@ CREATE TYPE OrganisationenhedType AS
 
 
 
+-- tbls-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -37951,6 +38105,7 @@ CREATE INDEX organisationenhed_relation_pat_virkning_notetekst
 
 
 
+-- _remove_nulls_in_array.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -38059,6 +38214,7 @@ $$
 
 
 
+-- _as_get_prev_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -38082,6 +38238,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_organisationenhed_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
+-- _as_create_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -38151,6 +38308,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
+-- as_update.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -38550,6 +38708,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
+-- as_create_or_import.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -38744,6 +38903,7 @@ RETURN organisationenhed_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
+-- as_list.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -38911,6 +39071,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_read.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -38942,6 +39103,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_search.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -39976,6 +40138,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- json-cast-functions.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -40137,6 +40300,7 @@ create cast (OrganisationenhedType as json) with function actual_state._cast_org
 
 
 
+-- _as_sorted.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -40183,6 +40347,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- _as_filter_unauth.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -40404,6 +40569,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- dbtyper-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -40471,6 +40637,7 @@ CREATE TYPE OrganisationfunktionType AS
 
 
 
+-- tbls-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -40815,6 +40982,7 @@ CREATE INDEX organisationfunktion_relation_pat_virkning_notetekst
 
 
 
+-- _remove_nulls_in_array.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -40923,6 +41091,7 @@ $$
 
 
 
+-- _as_get_prev_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -40946,6 +41115,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_organisationfunktion_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
+-- _as_create_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -41015,6 +41185,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
+-- as_update.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -41414,6 +41585,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
+-- as_create_or_import.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -41608,6 +41780,7 @@ RETURN organisationfunktion_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
+-- as_list.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -41775,6 +41948,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_read.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -41806,6 +41980,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_search.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -42840,6 +43015,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- json-cast-functions.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -43001,6 +43177,7 @@ create cast (OrganisationfunktionType as json) with function actual_state._cast_
 
 
 
+-- _as_sorted.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -43047,6 +43224,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- _as_filter_unauth.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -43268,6 +43446,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- dbtyper-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -43367,6 +43546,7 @@ CREATE Type _SagRelationMaxIndex AS
 
 
 
+-- tbls-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -43825,6 +44005,7 @@ CREATE INDEX sag_relation_pat_virkning_notetekst
 
 
 
+-- _remove_nulls_in_array.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -43933,6 +44114,7 @@ $$
 
 
 
+-- _as_get_prev_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -43956,6 +44138,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_sag_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
+-- _as_create_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -44025,6 +44208,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
+-- as_update.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -44599,6 +44783,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
+-- as_create_or_import.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -44899,6 +45084,7 @@ RETURN sag_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
+-- as_list.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -45077,6 +45263,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_read.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -45108,6 +45295,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_search.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -46270,6 +46458,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- json-cast-functions.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -46431,6 +46620,7 @@ create cast (SagType as json) with function actual_state._cast_sagType_to_json(S
 
 
 
+-- _as_sorted.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -46477,6 +46667,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- _as_filter_unauth.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -46752,6 +46943,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- dbtyper-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -46841,6 +47033,7 @@ CREATE TYPE TilstandType AS
 
 
 
+-- tbls-specific.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -47247,6 +47440,7 @@ CREATE INDEX tilstand_relation_pat_virkning_notetekst
 
 
 
+-- _remove_nulls_in_array.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -47383,6 +47577,7 @@ $$
 
 
 
+-- _as_get_prev_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -47406,6 +47601,7 @@ CREATE OR REPLACE FUNCTION _as_get_prev_tilstand_registrering(
 $BODY$ LANGUAGE sql STABLE;
 
 
+-- _as_create_registrering.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -47475,6 +47671,7 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 
+-- as_update.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -48008,6 +48205,7 @@ END; $$ LANGUAGE plpgsql VOLATILE;
 
 
 
+-- as_create_or_import.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -48287,6 +48485,7 @@ RETURN tilstand_uuid;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
+-- as_list.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -48487,6 +48686,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_read.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -48518,6 +48718,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- as_search.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -49712,6 +49913,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- json-cast-functions.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -49880,6 +50082,7 @@ create cast (TilstandType as json) with function actual_state._cast_tilstandType
 
 
 
+-- _as_sorted.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -49926,6 +50129,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
+-- _as_filter_unauth.jinja.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -50176,6 +50380,7 @@ $$ LANGUAGE plpgsql STABLE;
 
 
 
+-- _as_list_dokument_varianter.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -50315,6 +50520,7 @@ GROUP BY
     a.dokument_registrering_id
 $BODY$ LANGUAGE sql STABLE;
 
+-- _ensure_document_del_exists_and_get.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -50346,6 +50552,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- _ensure_document_variant_and_del_exists_and_get_del.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
@@ -50369,6 +50576,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- _ensure_document_variant_exists_and_get.sql
 -- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
 -- Contact: info@magenta.dk.
 --
