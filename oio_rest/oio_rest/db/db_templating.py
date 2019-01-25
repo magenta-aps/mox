@@ -70,15 +70,6 @@ def render_templates():
 
 
 def get_sql():
-    yield 'CREATE SCHEMA actual_state AUTHORIZATION {user};'.format(
-        user=settings.DB_USER,
-    )
-    yield '''
-    ALTER database {db} SET search_path TO actual_state, public;
-    ALTER database {db} SET DATESTYLE to 'ISO, YMD';
-    ALTER database {db} SET INTERVALSTYLE to 'sql_standard';
-    '''.format(db=settings.DATABASE)
-
     for dirp in (
         DB_DIR / "basis",
         DB_DIR / "pre-funcs",
