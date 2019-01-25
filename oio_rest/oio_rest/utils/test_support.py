@@ -60,7 +60,11 @@ def psql():
 
 
 def _initdb():
-    with psycopg2.connect(psql().url()) as conn:
+    with psycopg2.connect(
+        psql().url(),
+        database="postgres",
+        user="postgres",
+    ) as conn:
         conn.autocommit = True
 
         with conn.cursor() as curs:
@@ -79,9 +83,28 @@ def _initdb():
             # because we don't want a hardcoded timezone in production.
             curs.execute("ALTER DATABASE {} SET time zone 'Europe/Copenhagen'".format(settings.DATABASE))
 
-    with psycopg2.connect(psql().url(
+    with psycopg2.connect(
+        psql().url(),
         database=settings.DATABASE,
-    )) as conn:
+        user="postgres",
+    ) as conn:
+        conn.autocommit = True
+
+        with conn.cursor() as curs:
+            curs.execute("CREATE SCHEMA actual_state AUTHORIZATION {}".format(settings.DB_USER))
+            curs.execute("ALTER DATABASE {} SET search_path TO actual_state, public".format(settings.DATABASE))
+            curs.execute("ALTER DATABASE {} SET DATESTYLE to 'ISO, YMD'".format(settings.DATABASE))
+            curs.execute("ALTER DATABASE {} SET INTERVALSTYLE to 'sql_standard'".format(settings.DATABASE))
+            curs.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA actual_state')
+            curs.execute('CREATE EXTENSION IF NOT EXISTS "btree_gist" WITH SCHEMA actual_state')
+            curs.execute('CREATE EXTENSION IF NOT EXISTS "pg_trgm" WITH SCHEMA actual_state')
+
+    with psycopg2.connect(
+        psql().url(),
+        database=settings.DATABASE,
+        user=settings.DB_USER,
+        password=settings.DB_PASSWORD,
+    ) as conn:
         conn.autocommit = True
 
         with conn.cursor() as curs:
