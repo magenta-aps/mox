@@ -1,3 +1,32 @@
+Version 1.0.0, 28 January 2019
+------------------------------
+
+New in this version:
+
+* Fixes to JSON validation.
+* Installation script was refactored to reflect that we currently don't
+  support the AMQP agents.
+* Use the OS2MO test suite as part of the LoRa test suite.
+* Consolidate the REST API into one package, including the database
+  generation.
+* JSON schemas exposed in new end point in the OIO REST API.
+* Fix JSON validation to reflect discrepancy between the Dokument
+  standard and the current implementation.
+* Proper use of SAML for authentication.
+* Fix bug in search results that gave multiple instances of the same hit
+  in some cases.
+* Fix overly-aggressive validation of URL parameters.
+* Security fix: All Python dependancies upgraded.
+* Restructuring, refactoring and removal of old test files.
+* New "integration_data" property added to all objects in LoRa.
+* Change (refactor) overall LoRa configuration.
+* Add MPL license boiler plate to all source files.
+* Restructured and improved Sphinx documentation.
+* Complete overhaul of REST API documentation.
+* Database must use a Unix socket rather than TCP whenever possible.
+* Fix bug that meant database installation code would sometimes be run
+  as superuser rather than designated database user.
+
 Version 0.9.2, 13 December 2018
 --------------------------------
 
