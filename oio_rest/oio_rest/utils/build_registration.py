@@ -1,12 +1,20 @@
+# Copyright (C) 2015-2019 Magenta ApS, https://magenta.dk.
+# Contact: info@magenta.dk.
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
 import itertools
 import uuid
 from werkzeug.datastructures import MultiDict
 
-from oio_rest.db_helpers import get_attribute_names, get_attribute_fields
-from oio_rest.db_helpers import get_state_names, get_relation_names
-from oio_rest.db_helpers import get_document_part_relation_names
-from oio_rest.db_helpers import DokumentVariantEgenskaberType
-from oio_rest.db_helpers import DokumentDelEgenskaberType
+from oio_rest.db.db_helpers import get_attribute_names, get_attribute_fields
+from oio_rest.db.db_helpers import get_state_names, get_relation_names
+from oio_rest.db.db_helpers import get_document_part_relation_names
+from oio_rest.db.db_helpers import DokumentVariantEgenskaberType
+from oio_rest.db.db_helpers import DokumentDelEgenskaberType
 
 
 def is_urn(s):

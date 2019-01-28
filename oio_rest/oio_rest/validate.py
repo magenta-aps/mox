@@ -1,7 +1,15 @@
+# Copyright (C) 2015-2019 Magenta ApS, https://magenta.dk.
+# Contact: info@magenta.dk.
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
 import copy
 import jsonschema
 
-import oio_common.db_structure as db
+from . import settings
 
 # A very nice reference explaining the JSON schema syntax can be found
 # here: https://spacetelescope.github.io/understanding-json-schema/
@@ -10,11 +18,6 @@ import oio_common.db_structure as db
 BOOLEAN = {'type': 'boolean'}
 INTEGER = {'type': 'integer'}
 STRING = {'type': 'string'}
-UUID = {
-    'type': 'string',
-    'pattern': '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-'
-               '[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$'
-}
 
 
 def _generate_schema_array(items, maxItems=None):
@@ -47,7 +50,7 @@ TYPE_MAP = {
         {
             'accepteret': STRING,
             'obligatorisk': STRING,
-            'repraesentation_uuid': UUID,
+            'repraesentation_uuid': {'$ref': '#/definitions/uuid'},
         },
         ['accepteret', 'obligatorisk', 'repraesentation_uuid']
     ),
@@ -94,7 +97,7 @@ def _get_metadata(obj, metadata_type, key):
     :param key: The attribute to get the metadata from, e.g. 'egenskaber'
     :return: Dictionary containing the metadata for the attribute fields
     """
-    metadata = db.REAL_DB_STRUCTURE[obj].get(
+    metadata = settings.REAL_DB_STRUCTURE[obj].get(
         '{}_metadata'.format(metadata_type), [])
     if not metadata:
         return metadata
@@ -144,7 +147,7 @@ def _generate_attributter(obj):
     :return: Dictionary representing the 'attributter' part of the JSON schema.
     """
 
-    db_attributter = db.REAL_DB_STRUCTURE[obj]['attributter']
+    db_attributter = settings.REAL_DB_STRUCTURE[obj]['attributter']
 
     egenskaber_name = '{}egenskaber'.format(obj)
     egenskaber = {
@@ -174,7 +177,7 @@ def _generate_tilstande(obj):
     :return: Dictionary representing the 'tilstande' part of the JSON schema.
     """
 
-    tilstande = dict(db.REAL_DB_STRUCTURE[obj]['tilstande'])
+    tilstande = dict(settings.REAL_DB_STRUCTURE[obj]['tilstande'])
 
     properties = {}
     required = []
@@ -227,8 +230,10 @@ def _handle_relation_metadata_specific(obj, relation_schema):
     :return: Dictionary representing the updated 'relationer' part of
     the JSON schema.
     """
-    metadata_specific = db.REAL_DB_STRUCTURE[obj].get('relationer_metadata',
-                                                      [])
+    metadata_specific = (
+        settings.REAL_DB_STRUCTURE[obj].get('relationer_metadata', [])
+    )
+
     for relation in [key for key in metadata_specific if not key == '*']:
         for i in range(2):
             properties = relation_schema[relation]['items']['oneOf'][i][
@@ -264,8 +269,9 @@ def _generate_relationer(obj):
     :param obj: The type of LoRa object, i.e. 'bruger', 'organisation' etc.
     :return: Dictionary representing the 'relationer' part of the JSON schema.
     """
-    relationer_nul_til_en = db.REAL_DB_STRUCTURE[obj]['relationer_nul_til_en']
-    relationer_nul_til_mange = db.REAL_DB_STRUCTURE[obj][
+    relationer_nul_til_en = \
+        settings.REAL_DB_STRUCTURE[obj]['relationer_nul_til_en']
+    relationer_nul_til_mange = settings.REAL_DB_STRUCTURE[obj][
         'relationer_nul_til_mange']
 
     relation_nul_til_mange = _generate_schema_array(
@@ -273,7 +279,7 @@ def _generate_relationer(obj):
             'oneOf': [
                 _generate_schema_object(
                     {
-                        'uuid': UUID,
+                        'uuid': {'$ref': '#/definitions/uuid'},
                         'virkning': {'$ref': '#/definitions/virkning'},
                         'objekttype': STRING
                     },
@@ -281,7 +287,7 @@ def _generate_relationer(obj):
                 ),
                 _generate_schema_object(
                     {
-                        'urn': STRING,
+                        'urn': {'$ref': '#/definitions/urn'},
                         'virkning': {'$ref': '#/definitions/virkning'},
                         'objekttype': STRING
                     },
@@ -369,7 +375,7 @@ def get_lora_object_type(req):
     if not len(req['attributter']) == 1:
         raise jsonschema.exceptions.ValidationError('ups')
     if not list(req['attributter'].keys())[0] in [key + 'egenskaber' for key in
-                                                  db.REAL_DB_STRUCTURE.keys()]:
+                                                  settings.REAL_DB_STRUCTURE.keys()]:
         raise jsonschema.exceptions.ValidationError('ups2')
 
     return list(req['attributter'].keys())[0].split('egenskaber')[0]
@@ -396,13 +402,22 @@ def generate_json_schema(obj):
     schema['id'] = 'http://github.com/magenta-aps/mox'
 
     schema['definitions'] = {
+        'urn': {
+            'type': 'string',
+            'pattern': '^urn:.'
+        },
+        'uuid': {
+            'type': 'string',
+            'pattern': '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-'
+                       '[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$'
+        },
         'virkning': _generate_schema_object(
             {
                 'from': STRING,
                 'to': STRING,
                 'from_included': BOOLEAN,
                 'to_included': BOOLEAN,
-                'aktoerref': UUID,
+                'aktoerref': {'$ref': '#/definitions/uuid'},
                 'aktoertypekode': STRING,
                 'notetekst': STRING,
             },
@@ -420,10 +435,7 @@ def generate_json_schema(obj):
     return schema
 
 
-SCHEMA = {
-    obj: copy.deepcopy(generate_json_schema(obj))
-    for obj in db.REAL_DB_STRUCTURE.keys()
-}
+SCHEMA = None
 
 
 def validate(input_json):
@@ -433,5 +445,18 @@ def validate(input_json):
     :raise jsonschema.exceptions.ValidationError: If the request JSON is not
     valid according to the JSON schema.
     """
+    global SCHEMA
+
+    if SCHEMA is None:
+        SCHEMA = {
+            obj: copy.deepcopy(generate_json_schema(obj))
+            for obj in settings.REAL_DB_STRUCTURE.keys()
+        }
+
+        # Due to an inconsistency between the way LoRa handles
+        # "DokumentVariantEgenskaber" and the specs' we will have to do this for now,
+        # i.e. we allow any JSON-object for "Dokument"
+        SCHEMA['dokument'] = {'type': 'object'}
+
     obj_type = get_lora_object_type(input_json)
     jsonschema.validate(input_json, SCHEMA[obj_type])

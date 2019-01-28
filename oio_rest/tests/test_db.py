@@ -1,59 +1,27 @@
+# Copyright (C) 2015-2019 Magenta ApS, https://magenta.dk.
+# Contact: info@magenta.dk.
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
 import collections
 import datetime
 import unittest
 
+import flask_testing
 from mock import MagicMock, call, patch
 
 from oio_rest import db
+from oio_rest import app
 from oio_rest.custom_exceptions import (BadRequestException, DBException,
                                         NotFoundException)
 
 
-class TestDB(unittest.TestCase):
-    @patch('oio_rest.db.psycopg2')
-    def test_get_connection(self, mock):
-        # Arrange
-        mock.connect = MagicMock()
-
-        database = "database"
-        user = "user"
-        password = "password"
-
-        expected_args = (
-            (),
-            {
-                'database': database,
-                'user': user,
-                'password': password,
-                'host': 'localhost',
-                'port': 5432,
-            },
-        )
-
-        # Act
-        with patch('settings.DATABASE', new=database), \
-                patch('settings.DB_USER', new=user), \
-                patch('settings.DB_PASSWORD', new=password):
-
-            db.get_connection()
-
-        # Assert
-        self.assertEqual(expected_args, mock.connect.call_args)
-
-    @patch('oio_rest.db.str', new=MagicMock())
-    @patch('oio_rest.db.psyco_adapt', new=MagicMock())
-    @patch('oio_rest.db.get_connection')
-    def test_adapt_only_creates_one_connection(self, mock_get_conn):
-        # type: (MagicMock) -> None
-        # Arrange
-
-        # Act
-        db.adapt('')
-        db.adapt('')
-        db.adapt('')
-
-        # Assert
-        self.assertEqual(1, mock_get_conn.call_count)
+class TestDB(flask_testing.TestCase):
+    def create_app(self):
+        return app.app
 
     @patch('oio_rest.db.get_relation_field_type')
     def test_convert_relation_value_default(self, mock_get_rel):
@@ -67,7 +35,7 @@ class TestDB(unittest.TestCase):
 
     @patch('oio_rest.db.get_relation_field_type')
     def test_convert_relation_value_journalnotat(self, mock_get_rel):
-        from oio_rest.db_helpers import JournalNotat
+        from oio_rest.db.db_helpers import JournalNotat
 
         # Arrange
         mock_get_rel.return_value = "journalnotat"
@@ -87,7 +55,7 @@ class TestDB(unittest.TestCase):
 
     @patch('oio_rest.db.get_relation_field_type')
     def test_convert_relation_value_journaldokument(self, mock_get_rel):
-        from oio_rest.db_helpers import JournalDokument, OffentlighedUndtaget
+        from oio_rest.db.db_helpers import JournalDokument, OffentlighedUndtaget
 
         # Arrange
         mock_get_rel.return_value = "journaldokument"
@@ -116,7 +84,7 @@ class TestDB(unittest.TestCase):
 
     @patch('oio_rest.db.get_relation_field_type')
     def test_convert_relation_value_aktoerattr(self, mock_get_rel):
-        from oio_rest.db_helpers import AktoerAttr
+        from oio_rest.db.db_helpers import AktoerAttr
 
         # Arrange
         mock_get_rel.return_value = "aktoerattr"
@@ -159,7 +127,7 @@ class TestDB(unittest.TestCase):
 
     @patch('oio_rest.db.get_relation_field_type')
     def test_convert_relation_value_vaerdirelationattr(self, mock_get_rel):
-        from oio_rest.db_helpers import VaerdiRelationAttr
+        from oio_rest.db.db_helpers import VaerdiRelationAttr
 
         # Arrange
         mock_get_rel.return_value = "vaerdirelationattr"
@@ -437,7 +405,7 @@ class TestDB(unittest.TestCase):
     def test_convert_attr_value_soegeord(self,
                                          mock_get_field_type):
         # type: (MagicMock) -> None
-        from oio_rest.db_helpers import Soegeord
+        from oio_rest.db.db_helpers import Soegeord
 
         # Arrange
         mock_get_field_type.return_value = "soegeord"
@@ -460,7 +428,7 @@ class TestDB(unittest.TestCase):
     def test_convert_attr_value_offentlighedundtagettype(self,
                                                          mock_get_field_type):
         # type: (MagicMock) -> None
-        from oio_rest.db_helpers import OffentlighedUndtaget
+        from oio_rest.db.db_helpers import OffentlighedUndtaget
 
         # Arrange
         mock_get_field_type.return_value = "offentlighedundtagettype"
@@ -1298,7 +1266,6 @@ class TestPGErrors(unittest.TestCase):
         # Act
         with self.assertRaises(DBException):
             db.create_or_import_object('', '', '', '')
-
 
     @patch("oio_rest.db.psycopg2.Error", new=TestException)
     @patch('oio_rest.db.object_exists', new=lambda *x: False)

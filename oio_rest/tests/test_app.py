@@ -1,3 +1,11 @@
+# Copyright (C) 2015-2019 Magenta ApS, https://magenta.dk.
+# Contact: info@magenta.dk.
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
 from unittest import TestCase
 
 from mock import patch
@@ -9,6 +17,10 @@ class TestApp(TestCase):
     def setUp(self):
         flaskapp.app.testing = True
         self.app = flaskapp.app.test_client()
+
+    def test_route_get_json_schema_returns_404_on_missing_obj(self):
+        result = self.app.get('/get-json-schema')
+        self.assertEqual(404, result.status_code)
 
     def test_route_get_token_post_returns_400_on_missing_user_and_pass(self):
         # Arrange

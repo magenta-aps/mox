@@ -10,21 +10,13 @@
 import json
 import os
 import pprint
-import subprocess
-import sys
-import tempfile
+import unittest.mock
 import uuid
 
-import click
 import flask_testing
-import mock
-import testing.postgresql
-import psycopg2
-import pytest
 
-from oio_rest import app
-from oio_rest import db
-import settings
+from oio_rest.utils import test_support
+from oio_rest import settings
 
 TESTS_DIR = os.path.dirname(__file__)
 BASE_DIR = os.path.dirname(TESTS_DIR)
@@ -43,108 +35,9 @@ def get_fixture(fixture_name, mode='rt'):
             return fp.read()
 
 
-def initdb(psql):
-    dsn = psql.dsn()
-
-    env = os.environ.copy()
-
-    env.update(
-        TESTING='1',
-        PYTHON=sys.executable,
-        MOX_DB=settings.DATABASE,
-        MOX_DB_USER=settings.DB_USER,
-        MOX_DB_PASSWORD=settings.DB_PASSWORD,
-    )
-
-    with psycopg2.connect(**dsn) as conn:
-        conn.autocommit = True
-
-        with conn.cursor() as curs:
-            curs.execute(
-                "CREATE USER {} WITH SUPERUSER PASSWORD %s".format(
-                    settings.DB_USER,
-                ),
-                (
-                    settings.DB_PASSWORD,
-                ),
-            )
-
-            curs.execute(
-                "CREATE DATABASE {} WITH OWNER = %s".format(settings.DATABASE),
-                (
-                    settings.DB_USER,
-                ),
-            )
-
-    dsn = dsn.copy()
-    dsn['database'] = settings.DATABASE
-    dsn['user'] = settings.DB_USER
-    dsn['password'] = settings.DB_PASSWORD
-
-    mkdb_path = os.path.join(BASE_DIR, '..', 'db', 'mkdb.sh')
-
-    with psycopg2.connect(**dsn) as conn, conn.cursor() as curs:
-        curs.execute(subprocess.check_output([mkdb_path], env=env))
-
-
-@pytest.mark.slow
-class TestCaseMixin(object):
-
-    '''Base class for LoRA test cases with database access.
-    '''
-
-    maxDiff = None
-
+class TestCase(test_support.TestCaseMixin, flask_testing.TestCase):
     def create_app(self):
-        app.app.config['DEBUG'] = False
-        app.app.config['TESTING'] = True
-        app.app.config['LIVESERVER_PORT'] = 0
-        app.app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
-
-        return app.app
-
-    @classmethod
-    def setUpClass(cls):
-        super(TestCaseMixin, cls).setUpClass()
-
-        cls.psql_factory = testing.postgresql.PostgresqlFactory(
-            cache_initialized_db=True,
-            on_initialized=initdb
-        )
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.psql_factory.clear_cache()
-
-        super(TestCaseMixin, cls).tearDownClass()
-
-    def setUp(self):
-        super(TestCaseMixin, self).setUp()
-
-        self.psql = self.psql_factory()
-        self.psql.wait_booting()
-
-        dsn = self.psql.dsn()
-
-        self.patches = [
-            mock.patch('settings.LOG_AMQP_SERVER', None),
-            mock.patch('settings.DB_HOST', dsn['host'],
-                       create=True),
-            mock.patch('settings.DB_PORT', dsn['port'],
-                       create=True),
-        ]
-
-        for p in self.patches:
-            p.start()
-            self.addCleanup(p.stop)
-
-        if hasattr(db.adapt, 'connection'):
-            del db.adapt.connection
-
-    def tearDown(self):
-        super(TestCaseMixin, self).tearDown()
-
-        self.psql.stop()
+        return self.get_lora_app()
 
     def assertRequestResponse(self, path, expected, message=None,
                               status_code=None, drop_keys=(), **kwargs):
@@ -175,7 +68,7 @@ class TestCaseMixin(object):
 
         if not message:
             status_message = 'request {!r} failed with status {}'.format(
-                path, r.status_code,
+                path, r.status,
             )
             content_message = 'request {!r} yielded an expected result'.format(
                 path,
@@ -185,15 +78,15 @@ class TestCaseMixin(object):
 
         try:
             if status_code is None:
-                self.assertLess(r.status_code, 300, status_message)
-                self.assertGreaterEqual(r.status_code, 200, status_message)
+                self.assertOK(r, status_message)
             else:
                 self.assertEqual(r.status_code, status_code, status_message)
 
             self.assertEqual(expected, actual, content_message)
+
         except AssertionError:
             print(path)
-            print(r.status_code)
+            print(r.status)
             pprint.pprint(actual)
 
             raise
@@ -245,19 +138,27 @@ class TestCaseMixin(object):
                 return obj
 
         # drop lora-generated timestamps & users
-        expected.pop('fratidspunkt', None)
-        expected.pop('tiltidspunkt', None)
-        expected.pop('brugerref', None)
+        if isinstance(expected, dict):
+            expected.pop('fratidspunkt', None)
+            expected.pop('tiltidspunkt', None)
+            expected.pop('brugerref', None)
 
-        actual.pop('fratidspunkt', None)
-        actual.pop('tiltidspunkt', None)
-        actual.pop('brugerref', None)
+        if isinstance(actual, dict):
+            actual.pop('fratidspunkt', None)
+            actual.pop('tiltidspunkt', None)
+            actual.pop('brugerref', None)
 
         # Sort all inner lists and compare
         self.assertEqual(
             sort_inner_lists(expected),
             sort_inner_lists(actual),
             message,
+        )
+
+    def assertOK(self, response, message=None):
+        self.assertTrue(
+            200 <= response.status_code < 300,
+            message or 'request failed with {}!'.format(response.status)
         )
 
     def assertUUID(self, s):
@@ -272,45 +173,46 @@ class TestCaseMixin(object):
         JSON.
         :param response: Response from LoRa when creating a new object
         """
-        self.assertEquals(201, response.status_code)
-        self.assertEquals(1, len(response.json))
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(1, len(response.json))
         self.assertUUID(response.json['uuid'])
 
     def get(self, path, **params):
         r = self.perform_request(path, query_string=params)
-        self.assertLess(r.status_code, 300)
-        self.assertGreaterEqual(r.status_code, 200)
+
+        self.assertOK(r)
 
         d = r.json['results'][0]
 
-        assert len(d) == 1
+        if not d or not all(isinstance(v, dict) for v in d):
+            return d
+
+        self.assertEqual(len(d), 1)
+
         registrations = d[0]['registreringer']
 
         if set(params.keys()) & {'registreretfra', 'registrerettil',
                                  'registreringstid'}:
             return registrations
         else:
-            assert len(registrations) == 1
+            self.assertEqual(len(registrations), 1)
             return registrations[0]
 
     def put(self, path, json):
         r = self.perform_request(path, json=json, method="PUT")
-        self.assertLess(r.status_code, 300)
-        self.assertGreaterEqual(r.status_code, 200)
+        self.assertOK(r)
 
         return r.json['uuid']
 
     def patch(self, path, json):
         r = self.perform_request(path, json=json, method="PATCH")
-        self.assertLess(r.status_code, 300)
-        self.assertGreaterEqual(r.status_code, 200)
+        self.assertOK(r)
 
         return r.json['uuid']
 
     def post(self, path, json):
         r = self.perform_request(path, json=json, method="POST")
-        self.assertLess(r.status_code, 300)
-        self.assertGreaterEqual(r.status_code, 200)
+        self.assertOK(r)
 
         return r.json['uuid']
 
@@ -328,7 +230,7 @@ class TestCaseMixin(object):
 
         print(json.dumps(actual, indent=2))
 
-        return self.assertRegistrationsEqual(expected, actual)
+        self.assertRegistrationsEqual(expected, actual)
 
     def load_fixture(self, path, fixture_name, uuid=None):
         """Load a fixture, i.e. a JSON file in the 'fixtures' directory,
@@ -344,42 +246,19 @@ class TestCaseMixin(object):
             path, json=get_fixture(fixture_name), method=method,
         )
 
-        assert r, 'write of {!r} to {!r} failed!'.format(fixture_name, path)
+        msg = 'write of {!r} to {!r} failed!'.format(fixture_name, path)
 
-        objid = r.json.get('uuid')
+        try:
+            self.assertOK(r, msg)
 
-        print(r.get_data(as_text=True), path)
-        self.assertTrue(objid)
+            objid = r.json.get('uuid')
+
+            self.assertTrue(objid)
+        except AssertionError:
+            print(path)
+            print(r.status)
+            print(r.get_data(as_text=True))
+
+            raise
 
         return objid
-
-
-class TestCase(TestCaseMixin, flask_testing.TestCase):
-    pass
-
-
-@click.command()
-@click.option('-p', '--port', type=int, default=5000)
-def run_with_db(**kwargs):
-    with testing.postgresql.Postgresql(
-        base_dir=tempfile.mkdtemp(prefix='mox'),
-        postgres_args=(
-            '-h localhost -F '
-            '-c logging_collector=off '
-            '-c synchronous_commit=off '
-            '-c fsync=off'
-        ),
-    ) as psql:
-        # We take over the process, given that this is a CLI command.
-        # Hence, there's no need to restore these variables afterwards
-        settings.LOG_AMQP_SERVER = None
-        settings.DB_HOST = psql.dsn()['host']
-        settings.DB_PORT = psql.dsn()['port']
-
-        initdb(psql)
-
-        app.app.run(**kwargs)
-
-
-if __name__ == '__main__':
-    run_with_db()

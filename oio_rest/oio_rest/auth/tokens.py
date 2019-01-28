@@ -1,3 +1,11 @@
+# Copyright (C) 2015-2019 Magenta ApS, https://magenta.dk.
+# Contact: info@magenta.dk.
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
 import base64
 import io
 import datetime
@@ -11,7 +19,7 @@ from lxml import etree
 import jinja2
 import pytz
 
-import settings
+from .. import settings
 
 curdir = os.path.dirname(os.path.realpath(__file__))
 jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(

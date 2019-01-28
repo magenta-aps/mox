@@ -1,3 +1,11 @@
+# Copyright (C) 2015-2019 Magenta ApS, https://magenta.dk.
+# Contact: info@magenta.dk.
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
 import copy
 import json
 import os.path
@@ -56,12 +64,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                     {
                         'type': 'object',
                         'properties': {
-                            'uuid': {
-                                'type': 'string',
-                                'pattern': '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-'
-                                           '[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-'
-                                           '[a-fA-F0-9]{12}$'
-                            },
+                            'uuid': {'$ref': '#/definitions/uuid'},
                             'virkning': {'$ref': '#/definitions/virkning'},
                             'objekttype': {'type': 'string'}
                         },
@@ -71,9 +74,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                     {
                         'type': 'object',
                         'properties': {
-                            'urn': {
-                                'type': 'string',
-                            },
+                            'urn': {'$ref': '#/definitions/urn'},
                             'virkning': {'$ref': '#/definitions/virkning'},
                             'objekttype': {'type': 'string'}
                         },
@@ -89,13 +90,13 @@ class TestGenerateJSONSchema(unittest.TestCase):
 
     def _json_to_dict(self, filename):
         """
-        Load a JSON file from /interface_test/test_data and return it as JSON
+        Load a JSON file from ``tests/fixtures`` and return it as JSON.
+
         :param filename: The filename e.g. 'facet_opret.json'
         :return: Dictionary representing the JSON file
         """
         json_file = os.path.join(
-            (os.path.dirname(os.path.dirname(os.path.dirname(__file__)))),
-            'interface_test', 'test_data', filename)
+            os.path.dirname(__file__), "fixtures", filename)
         with open(json_file) as fp:
             return json.load(fp)
 
@@ -215,12 +216,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                 'properties': {
                     'accepteret': {'type': 'string'},
                     'obligatorisk': {'type': 'string'},
-                    'repraesentation_uuid': {
-                        'type': 'string',
-                        'pattern': '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-'
-                                   '[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-'
-                                   '[a-fA-F0-9]{12}$'
-                    },
+                    'repraesentation_uuid': {'$ref': '#/definitions/uuid'},
                 },
                 'required': ['accepteret', 'obligatorisk',
                              'repraesentation_uuid'],
@@ -414,14 +410,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                                             'enum': ['journalnotat',
                                                      'vedlagtdokument'],
                                         },
-                                        'uuid': {
-                                            'type': 'string',
-                                            'pattern': '^[a-fA-F0-9]{8}-'
-                                                       '[a-fA-F0-9]{4}'
-                                                       '-[a-fA-F0-9]{4}-'
-                                                       '[a-fA-F0-9]{4}'
-                                                       '-[a-fA-F0-9]{12}$',
-                                        },
+                                        'uuid': {'$ref': '#/definitions/uuid'},
                                         'virkning': {
                                             '$ref': '#/definitions/virkning'},
                                         'objekttype': {'type': 'string'}
@@ -467,9 +456,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                                             'enum': ['journalnotat',
                                                      'vedlagtdokument'],
                                         },
-                                        'urn': {
-                                            'type': 'string',
-                                        },
+                                        'urn': {'$ref': '#/definitions/urn'},
                                         'virkning': {
                                             '$ref': '#/definitions/virkning'},
                                         'objekttype': {'type': 'string'}
@@ -499,6 +486,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                             'properties': {
                                 'brugervendtnoegle': {'type': 'string'},
                                 'organisationsnavn': {'type': 'string'},
+                                'integrationsdata': {'type': 'string'},
                                 'virkning': {'$ref': '#/definitions/virkning'}
                             },
                             'required': ['brugervendtnoegle', 'virkning'],
@@ -525,6 +513,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                                 'brugervendtnoegle': {'type': 'string'},
                                 'brugernavn': {'type': 'string'},
                                 'brugertype': {'type': 'string'},
+                                'integrationsdata': {'type': 'string'},
                                 'virkning': {'$ref': '#/definitions/virkning'}
                             },
                             'required': ['brugervendtnoegle', 'virkning'],
@@ -555,6 +544,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                                 'titel': {'type': 'string'},
                                 'retskilde': {'type': 'string'},
                                 'aendringsnotat': {'type': 'string'},
+                                'integrationsdata': {'type': 'string'},
                                 'soegeord': {
                                     'type': 'array',
                                     'items': {
@@ -594,6 +584,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                                     'type': 'array',
                                     'items': {'type': 'string'}
                                 },
+                                'integrationsdata': {'type': 'string'},
                                 'virkning': {'$ref': '#/definitions/virkning'}
                             },
                             'required': ['brugervendtnoegle', 'virkning'],
@@ -629,6 +620,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                                 'principiel': {'type': 'boolean'},
                                 'kassationskode': {'type': 'string'},
                                 'afleveret': {'type': 'boolean'},
+                                'integrationsdata': {'type': 'string'},
                                 'virkning': {'$ref': '#/definitions/virkning'}
                             },
                             'required': ['beskrivelse', 'brugervendtnoegle',
@@ -666,6 +658,7 @@ class TestGenerateJSONSchema(unittest.TestCase):
                                             'offentlighedundtaget'
                                 },
                                 'titel': {'type': 'string'},
+                                'integrationsdata': {'type': 'string'},
                                 'virkning': {'$ref': '#/definitions/virkning'}
                             },
                             'required': ['beskrivelse', 'brevdato',
@@ -1170,6 +1163,31 @@ class TestFacetSystematically(unittest.TestCase):
         self.reference['uuid'] = 'This is not an UUID'
         self.facet['relationer'] = {
             'ansvarlig': [self.reference],
+        }
+        self.assertValidationError()
+
+    def test_urn_reference_not_valid(self):
+        """
+        Equivalence classes covered: [114]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.reference.pop('uuid')
+        self.reference['urn'] = 'This is not an URN'
+        self.facet['relationer'] = {
+            'ansvarlig': [self.reference]
+        }
+        self.assertValidationError()
+
+    def test_uuid_and_urn_not_allowed_simultaneously_in_reference(self):
+        """
+        Equivalence classes covered: [113]
+        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
+        further details
+        """
+        self.reference['urn'] = 'urn:This is an URN'
+        self.facet['relationer'] = {
+            'ansvarlig': [self.reference]
         }
         self.assertValidationError()
 

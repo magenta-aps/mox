@@ -1,3 +1,11 @@
+# Copyright (C) 2015-2019 Magenta ApS, https://magenta.dk.
+# Contact: info@magenta.dk.
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
 import sys
 from unittest import TestCase
 
@@ -289,8 +297,8 @@ class TestTokens(TestCase):
         mock_urllib3_dw.assert_called()
 
     @requests_mock.mock()
-    @patch('settings.SAML_IDP_URL', 'http://example.com/auth')
-    @patch('settings.SAML_IDP_TYPE', 'wso2')
+    @patch('oio_rest.settings.SAML_IDP_URL', 'http://example.com/auth')
+    @patch('oio_rest.settings.SAML_IDP_TYPE', 'wso2')
     def test_wso2_login(self, m):
         m.post(
             'http://example.com/auth',
@@ -302,8 +310,8 @@ class TestTokens(TestCase):
         self.assertEqual(assertion, tokens.get_token('hest', 'fest'))
 
     @requests_mock.mock()
-    @patch('settings.SAML_IDP_URL', 'http://example.com/auth')
-    @patch('settings.SAML_IDP_TYPE', 'adfs')
+    @patch('oio_rest.settings.SAML_IDP_URL', 'http://example.com/auth')
+    @patch('oio_rest.settings.SAML_IDP_TYPE', 'adfs')
     def test_adfs_login(self, m):
         m.post(
             'http://example.com/auth',
@@ -315,8 +323,8 @@ class TestTokens(TestCase):
         self.assertEqual(assertion, tokens.get_token('hest', 'fest'))
 
     @requests_mock.mock()
-    @patch('settings.SAML_IDP_URL', 'http://example.com/auth')
-    @patch('settings.SAML_IDP_TYPE', 'wso2')
+    @patch('oio_rest.settings.SAML_IDP_URL', 'http://example.com/auth')
+    @patch('oio_rest.settings.SAML_IDP_TYPE', 'wso2')
     def test_wso2_login_failure(self, m):
         m.post(
             'http://example.com/auth',
@@ -331,8 +339,8 @@ class TestTokens(TestCase):
         ))
 
     @requests_mock.mock()
-    @patch('settings.SAML_IDP_URL', 'http://example.com/auth')
-    @patch('settings.SAML_IDP_TYPE', 'adfs')
+    @patch('oio_rest.settings.SAML_IDP_URL', 'http://example.com/auth')
+    @patch('oio_rest.settings.SAML_IDP_TYPE', 'adfs')
     def test_adfs_login_failure(self, m):
         m.post(
             'http://example.com/auth',

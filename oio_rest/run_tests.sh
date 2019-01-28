@@ -1,4 +1,10 @@
 #!/bin/bash
+# Copyright (C) 2015-2019 Magenta ApS, https://magenta.dk.
+# Contact: info@magenta.dk.
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 set -ex
 
@@ -24,8 +30,15 @@ export MOX_AMQP_USER="guest"
 export MOX_AMQP_PASS="guest"
 export MOX_AMQP_VHOST="/"
 
+# Please note that we require a rather recent pip due to our
+# use of URL dependencies
+$PYTHON -m pip install 'pip>=18.1' 'setuptools>=40'
+$PYTHON -m pip install -e '.[tests]'
+
 # Execute tests
-$PYTHON -m pip install -e .
-$PYTHON -m pip install -r requirements-test.txt
 $PYTHON -m flake8 --exit-zero
-$PYTHON -m pytest
+
+$PYTHON -m coverage run -m xmlrunner \
+        --verbose --buffer --output build/reports "$@"
+$PYTHON -m coverage report
+$PYTHON -m coverage xml -o build/coverage/coverage.xml

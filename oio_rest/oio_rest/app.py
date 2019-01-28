@@ -1,3 +1,11 @@
+# Copyright (C) 2015-2019 Magenta ApS, https://magenta.dk.
+# Contact: info@magenta.dk.
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
 # encoding: utf-8
 
 import os
@@ -14,13 +22,15 @@ from . import sag, indsats, dokument, tilstand, aktivitet, organisation
 from . import log, klassifikation
 from .authentication import get_authenticated_user
 from .log_client import log_service_call
+from . import db
 
 from .custom_exceptions import OIOFlaskException, AuthorizationFailedException
 from .custom_exceptions import BadRequestException
 from .auth import tokens
 
-import settings
+import flask_saml_sso
 
+from . import settings
 
 app = Flask(__name__)
 
@@ -43,6 +53,8 @@ class RegexConverter(BaseConverter):
 
 app.url_map.converters['regex'] = RegexConverter
 
+app.teardown_request(db.close_connection)
+
 klassifikation.KlassifikationsHierarki.setup_api(
     base_url=settings.BASE_URL, flask=app,
 )
@@ -54,6 +66,9 @@ dokument.DokumentHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
 aktivitet.AktivitetsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
 indsats.IndsatsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
 tilstand.TilstandsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
+
+app.config.from_object(settings)
+flask_saml_sso.init_app(app)
 
 
 @app.route('/')
@@ -104,7 +119,7 @@ def handle_not_allowed(error):
 
 @app.errorhandler(404)
 def page_not_found(e):
-        return jsonify(error=404, text=str(e)), 404
+    return jsonify(error=404, text=str(e)), 404
 
 
 # After request handle for logging.

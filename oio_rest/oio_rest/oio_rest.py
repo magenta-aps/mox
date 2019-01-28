@@ -1,3 +1,11 @@
+# Copyright (C) 2015-2019 Magenta ApS, https://magenta.dk.
+# Contact: info@magenta.dk.
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
 # encoding: utf-8
 """Superclasses for OIO objects and object hierarchies."""
 import json
@@ -10,16 +18,53 @@ from flask import jsonify, request
 from werkzeug.datastructures import ImmutableOrderedMultiDict
 
 from . import db
+from .db import db_helpers
 from . import validate
-from .db_helpers import get_valid_search_parameters, TEMPORALITY_PARAMS
 from .utils.build_registration import build_registration, to_lower_param
+from .utils.build_registration import split_param
 from .custom_exceptions import BadRequestException, NotFoundException
 from .custom_exceptions import GoneException
 
 # Just a helper during debug
 from .authentication import requires_auth
 
-from oio_common import db_structure
+from . import settings
+
+
+'''List of parameters allowed for all searches.'''
+GENERAL_SEARCH_PARAMS = frozenset({
+    'brugerref',
+    'foersteresultat',
+    'livscykluskode',
+    'maximalantalresultater',
+    'notetekst',
+    'uuid',
+    'vilkaarligattr',
+    'vilkaarligrel',
+})
+
+'''List of parameters allowed the apply to temporal operations, i.e.
+search and list.
+
+'''
+TEMPORALITY_PARAMS = frozenset({
+    'registreretfra',
+    'registrerettil',
+    'registreringstid',
+    'virkningfra',
+    'virkningtil',
+    'virkningstid',
+})
+
+'''Some operations take no arguments; this makes it explicit.
+
+'''
+NO_PARAMS = frozenset()
+
+'''Aliases that apply to all operations.'''
+PARAM_ALIASES = {
+    'bvn': 'brugervendtnoegle',
+}
 
 
 def j(t):
@@ -89,16 +134,12 @@ class ArgumentDict(ImmutableOrderedMultiDict):
     arguments.
     '''
 
-    PARAM_ALIASES = {
-        'bvn': 'brugervendtnoegle',
-    }
-
     @classmethod
-    def _process_item(cls, xxx_todo_changeme):
-        (key, value) = xxx_todo_changeme
+    def _process_item(cls, item):
+        (key, value) = item
         key = to_lower_param(key)
 
-        return (cls.PARAM_ALIASES.get(key, key), value)
+        return (PARAM_ALIASES.get(key, key), value)
 
     def __init__(self, mapping):
         # this code assumes that a) we always get a mapping and b)
@@ -135,7 +176,7 @@ class OIOStandardHierarchy(object):
         classes_url = "{0}/{1}/{2}".format(base_url, hierarchy, "classes")
 
         def get_classes():
-            structure = db_structure.REAL_DB_STRUCTURE
+            structure = settings.REAL_DB_STRUCTURE
             clsnms = [c.__name__.lower() for c in cls._classes]
             hierarchy_dict = {c: structure[c] for c in clsnms}
             return jsonify(hierarchy_dict)
@@ -187,6 +228,7 @@ class OIORestObject(object):
         """
         CREATE object, generate new UUID.
         """
+
         cls.verify_args()
 
         input = cls.get_json()
@@ -224,7 +266,7 @@ class OIORestObject(object):
         """
         request.parameter_storage_class = ArgumentDict
 
-        cls.verify_args(*get_valid_search_parameters(cls.__name__))
+        cls.verify_args(search=True, temporality=True)
 
         # Convert arguments to lowercase, getting them as lists
         list_args = cls._get_args(True)
@@ -291,7 +333,7 @@ class OIORestObject(object):
         """
         READ an object, return as JSON.
         """
-        cls.verify_args(*TEMPORALITY_PARAMS)
+        cls.verify_args(temporality=True)
 
         args = cls._get_args()
         registreret_fra, registreret_til = get_registreret_dates(args)
@@ -324,10 +366,15 @@ class OIORestObject(object):
         """Return a registration dict from the input dict."""
         attributes = typed_get(input, "attributter", {})
         states = typed_get(input, "tilstande", {})
+
         relations = typed_get(input, "relationer", {})
+        filtered_relations = {
+            key: val for key, val in relations.items() if val
+        }
+
         return {"states": states,
                 "attributes": attributes,
-                "relations": relations}
+                "relations": filtered_relations}
 
     @classmethod
     @requires_auth
@@ -340,6 +387,13 @@ class OIORestObject(object):
         input = cls.get_json()
         if not input:
             return jsonify({'uuid': None}), 400
+
+        # Validate JSON input
+        try:
+            validate.validate(input)
+        except jsonschema.exceptions.ValidationError as e:
+            return jsonify({'message': e.message}), 400
+
         # Get most common parameters if available.
         note = typed_get(input, "note", "")
         registration = cls.gather_registration(input)
@@ -432,11 +486,16 @@ class OIORestObject(object):
         cls.verify_args()
 
         """Set up API with correct database access functions."""
-        structure = db_structure.REAL_DB_STRUCTURE
+        structure = settings.REAL_DB_STRUCTURE
         class_key = cls.__name__.lower()
         # TODO: Perform some transformations to improve readability.
         class_dict = structure[class_key]
         return jsonify(class_dict)
+
+    @classmethod
+    def get_schema(cls):
+        cls.verify_args()
+        return jsonify(validate.SCHEMA[cls.__name__.lower()])
 
     @classmethod
     def create_api(cls, hierarchy, flask, base_url):
@@ -456,9 +515,6 @@ class OIORestObject(object):
             class_url,
             uuid_regex
         )
-
-        def get_classes_for_hierarchy():
-            return cls.get_classes(hierarchy)
 
         flask.add_url_rule(class_url, '_'.join([cls.__name__, 'get_objects']),
                            cls.get_objects, methods=['GET'],
@@ -488,16 +544,55 @@ class OIORestObject(object):
             cls.get_fields, methods=['GET']
         )
 
+        # JSON schemas
+        flask.add_url_rule(
+            '{}/{}'.format(class_url, 'schema'),
+            '_'.join([cls.__name__, 'schema']),
+            cls.get_schema, methods=['GET']
+        )
+
     # Templates which may be overridden on subclass.
     # Templates may only be overridden on subclass if they are explicitly
     # listed here.
     RELATIONS_TEMPLATE = 'relations_array.sql'
 
     @classmethod
-    def verify_args(cls, *allowed):
-        req_args = cls._get_args()
-        difference = set(req_args).difference(allowed)
-        if difference:
-            arg_string = ', '.join(difference)
+    def attribute_names(cls):
+        return {
+            a
+            for attr in db_helpers.get_attribute_names(cls.__name__)
+            for a in db_helpers.get_attribute_fields(attr)
+        }
+
+    @classmethod
+    def relation_names(cls):
+        return set(db_helpers.get_relation_names(cls.__name__))
+
+    @classmethod
+    def state_names(cls):
+        return set(db_helpers.get_state_names(cls.__name__))
+
+    @classmethod
+    def verify_args(cls, temporality=False, search=False):
+        req_args = set(cls._get_args())
+
+        if temporality:
+            req_args -= TEMPORALITY_PARAMS
+
+        if search:
+            req_args -= GENERAL_SEARCH_PARAMS
+            req_args -= TEMPORALITY_PARAMS
+            req_args -= cls.attribute_names()
+            req_args -= cls.state_names()
+
+            # special handling of argument with an object type
+            req_args -= {
+                a
+                for a in req_args
+                if split_param(a)[0] in cls.relation_names()
+            }
+
+        if req_args:
+            arg_string = ', '.join(sorted(req_args))
             raise BadRequestException('Unsupported argument(s): {}'
                                       .format(arg_string))

@@ -1,7 +1,15 @@
+# Copyright (C) 2015-2019 Magenta ApS, https://magenta.dk.
+# Contact: info@magenta.dk.
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
 import pika
 import json
 
-import settings
+from . import settings
 
 
 def log_service_call(service_name, class_name, time,
@@ -72,36 +80,39 @@ def log_service_call(service_name, class_name, time,
 
     # TODO: Get auth token if auth enabled
 
+    if settings.AUDIT_LOG_FILE:
+        with open(settings.AUDIT_LOG_FILE, 'at') as fp:
+            json.dump(logevent_dict, fp, indent=2)
+            fp.write('\n')
+            fp.flush()
+
     # Send AMQP message to LOG_SERVICE_URL
 
-    connection = pika.BlockingConnection(pika.ConnectionParameters(
-        host=settings.LOG_AMQP_SERVER
-    ))
-    channel = connection.channel()
-    channel.queue_declare(queue=settings.MOX_LOG_QUEUE)
-    channel.exchange_declare(exchange=settings.MOX_LOG_EXCHANGE,
-                             exchange_type='fanout')
-    channel.queue_bind(settings.MOX_LOG_QUEUE,
-                       exchange=settings.MOX_LOG_EXCHANGE)
-
-    message = json.dumps(logevent_dict)
-    # print "Log exchange", LOG_EXCHANGE
-    with open(settings.AUDIT_LOG_FILE, 'at') as fp:
-        json.dump(logevent_dict, fp, indent=2)
-        fp.write('\n')
-        fp.flush()
-
-    channel.basic_publish(
-        exchange=settings.MOX_LOG_EXCHANGE,
-        routing_key='',
-        body=message,
-        properties=pika.BasicProperties(
-            content_type='application/json',
-            delivery_mode=2,
-            headers={
-                'beskedversion': "1",
-                'beskedID': object_uuid,
-                'objekttype': 'LogHaendelse',
-                'operation': 'create',
-            }
+    if settings.LOG_AMQP_SERVER:
+        connection = pika.BlockingConnection(pika.ConnectionParameters(
+            host=settings.LOG_AMQP_SERVER
         ))
+        channel = connection.channel()
+        channel.queue_declare(queue=settings.MOX_LOG_QUEUE)
+        channel.exchange_declare(exchange=settings.MOX_LOG_EXCHANGE,
+                                 exchange_type='fanout')
+        channel.queue_bind(settings.MOX_LOG_QUEUE,
+                           exchange=settings.MOX_LOG_EXCHANGE)
+
+        message = json.dumps(logevent_dict)
+        # print "Log exchange", LOG_EXCHANGE
+
+        channel.basic_publish(
+            exchange=settings.MOX_LOG_EXCHANGE,
+            routing_key='',
+            body=message,
+            properties=pika.BasicProperties(
+                content_type='application/json',
+                delivery_mode=2,
+                headers={
+                    'beskedversion': "1",
+                    'beskedID': object_uuid,
+                    'objekttype': 'LogHaendelse',
+                    'operation': 'create',
+                }
+            ))

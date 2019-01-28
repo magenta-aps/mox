@@ -3,21 +3,36 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to the LoRa MOX documentation!
-=======================================================
+.. include:: ../README.rst
+
+Content
+=======
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 1
+   :caption: User Documentation
 
-   readme.rst
-   REST_API_getting-started.rst
-   LoRa_HOWTO.rst
-   API-NOTES.rst
-   praesentation.rst
-   log_haendelse.rst
-   database_changes.rst
-   Systematic_testing.rst
+   user/overview.rst
+   Middle-level overview (in danish) <user/praesentation.rst>
+   user/setup-dev-env.rst
+   user/api-overview.rst
+   user/api-advanced.rst
+   user/rest-tutorial.rst
+   user/log-haendelse.rst
+   user/agents.rst
+   user/auth.rst
+   user/deployment.rst
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Developer Documentation
+
+   dev/database.rst
+   dev/test.rst
+   dev/testing-rest.rst
+   dev/building-docs.rst
+   dev/beskedfordeler.rst
+   dev/news.rst
 
 
 Indices and tables

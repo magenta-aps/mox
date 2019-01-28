@@ -1,3 +1,11 @@
+# Copyright (C) 2015-2019 Magenta ApS, https://magenta.dk.
+# Contact: info@magenta.dk.
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
 import os
 import zlib
 import uuid
@@ -5,12 +13,13 @@ from base64 import b64decode
 from functools import wraps
 
 from flask import request
+import flask_saml_sso
 
 from .custom_exceptions import UnauthorizedException
 from .custom_exceptions import AuthorizationFailedException
 from .auth.saml2 import Saml2_Assertion
 
-import settings
+from . import settings
 
 
 # Read the IdP certificate file into memory
@@ -98,6 +107,8 @@ def requires_auth(f):
     def decorated(*args, **kwargs):
         if settings.USE_SAML_AUTHENTICATION:
             check_saml_authentication()
+        elif settings.SAML_AUTH_ENABLE:
+            flask_saml_sso.check_saml_authentication()
         return f(*args, **kwargs)
 
     return decorated

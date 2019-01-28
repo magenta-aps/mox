@@ -1,20 +1,31 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 # encoding: utf-8
 
 import os
+import pathlib
+import re
 
 from setuptools import find_packages, setup
 
-basedir = os.path.dirname(__file__)
 
-with open(os.path.join(basedir, 'VERSION')) as fp:
-    version = fp.read().strip()
+basedir = pathlib.Path(__file__).parent
 
-with open(os.path.join(basedir, 'requirements.txt')) as fp:
-    install_requires = fp.readlines()
+version = (basedir / 'VERSION').read_text().strip()
 
-with open(os.path.join(basedir, 'requirements-test.txt')) as fp:
-    test_requires = [s for s in fp.readlines() if not s.startswith('-')]
+# extract requirements for pip & setuptools
+install_requires = (basedir / 'requirements.txt').read_text().splitlines()
+tests_require = [
+    l for l in (basedir / 'requirements-test.txt').read_text().splitlines()
+    if not l.startswith('-r')
+]
+
+# setuptools doesn't handle external dependencies, yes
+dependency_links = [
+    l.split('@', 1)[1].strip()
+    for l in install_requires + tests_require
+    if '@' in l
+]
+
 
 setup(
     name='oio_rest',
@@ -32,19 +43,29 @@ setup(
     license='Mozilla Public License Version 2.0',
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
     package_data={
-        '': ["*.txt", "*.xml", "*.pem"]
+        'oio_rest.db': [
+            'sql/*/*/*.sql',
+        ],
+        'oio_rest': [
+            "templates/html/*.html",
+            "templates/xml/*.xml",
+            "test_auth_data/idp-certificate.pem",
+        ],
     },
+    python_requires='>=3.5',
+    install_requires=install_requires,
+    extras_require={
+        'tests': tests_require,
+    },
+    tests_require=tests_require,
     include_package_data=True,
     zip_safe=False,
-    install_requires=install_requires,
+
     entry_points={
         # -*- Entry points: -*-
         'console_scripts': [
-            'oio_api = oio_rest.app:app.run',
+            'mox = oio_rest.__main__:cli',
         ],
     },
-    tests_require=test_requires,
-    extras_require={
-        'tests': test_requires,
-    }
+    dependency_links=dependency_links,
 )

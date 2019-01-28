@@ -1,9 +1,17 @@
+# Copyright (C) 2015-2019 Magenta ApS, https://magenta.dk.
+# Contact: info@magenta.dk.
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
 import sys
 
 from .oio_rest.auth.saml2 import Saml2_Assertion
 from .oio_rest.authentication import get_idp_cert
 
-from settings import SAML_MOX_ENTITY_ID, SAML_IDP_ENTITY_ID
+from ..settings import SAML_MOX_ENTITY_ID, SAML_IDP_ENTITY_ID
 
 
 if len(sys.argv) > 1:
