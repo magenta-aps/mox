@@ -24,6 +24,7 @@ New in this version:
 * Restructured and improved Sphinx documentation.
 * Complete overhaul of REST API documentation.
 * Database must use a Unix socket rather than TCP whenever possible.
+* Make tests pass regardless of time zone on server.
 * Fix bug that meant database installation code would sometimes be run
   as superuser rather than designated database user.
 
