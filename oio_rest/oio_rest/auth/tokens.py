@@ -17,7 +17,6 @@ import requests
 
 from lxml import etree
 import jinja2
-import pytz
 
 from .. import settings
 
@@ -54,7 +53,7 @@ def get_token(username, passwd, pretty_print=False, insecure=False):
     idp_url = settings.SAML_IDP_URL
     endpoint = settings.SAML_MOX_ENTITY_ID
 
-    created = datetime.datetime.now(pytz.utc)
+    created = datetime.datetime.now(datetime.timezone.utc)
     expires = created + datetime.timedelta(hours=1)
 
     t = jinja_env.get_template(IDP_TEMPLATES[idp_type])
