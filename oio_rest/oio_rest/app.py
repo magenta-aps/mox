@@ -76,7 +76,7 @@ def root():
     return redirect(url_for('sitemap'), code=308)
 
 
-@app.route('/get-token', methods=['GET', 'POST'])
+@app.route('/get-token/', methods=['GET', 'POST'])
 def get_token():
     if request.method == 'GET':
 
@@ -98,7 +98,7 @@ def get_token():
         return Response(text, mimetype='text/plain')
 
 
-@app.route('/site-map')
+@app.route('/site-map/')
 def sitemap():
     links = []
     for rule in app.url_map.iter_rules():

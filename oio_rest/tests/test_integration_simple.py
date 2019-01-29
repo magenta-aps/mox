@@ -24,7 +24,7 @@ CONTENT_PATH_PATTERN = (
 class Tests(util.TestCase):
     def test_site_map(self):
         self.assertRequestResponse(
-            '/site-map',
+            '/site-map/',
             {
                 "site-map": [
                     "/",
@@ -39,7 +39,7 @@ class Tests(util.TestCase):
                     "/dokument/dokument/" + CONTENT_PATH_PATTERN,
                     "/dokument/dokument/fields",
                     "/dokument/dokument/schema",
-                    "/get-token",
+                    "/get-token/",
                     "/indsats/classes",
                     "/indsats/indsats",
                     "/indsats/indsats/" + UUID_PATTERN,
@@ -93,7 +93,7 @@ class Tests(util.TestCase):
                     "/sag/sag/" + UUID_PATTERN,
                     "/sag/sag/fields",
                     "/sag/sag/schema",
-                    "/site-map",
+                    "/site-map/",
                     "/static/<path:filename>",
                     "/tilstand/classes",
                     "/tilstand/tilstand",
@@ -123,7 +123,7 @@ class Tests(util.TestCase):
     def test_finding_nothing(self):
         endpoints = [
             endpoint.rsplit('/', 1)[0]
-            for endpoint in self.client.get('/site-map').json['site-map']
+            for endpoint in self.client.get('/site-map/').json['site-map']
             if endpoint.endswith(UUID_PATTERN)
         ]
 

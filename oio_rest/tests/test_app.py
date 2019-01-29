@@ -26,7 +26,7 @@ class TestApp(TestCase):
         # Arrange
 
         # Act
-        result = self.app.post('/get-token')
+        result = self.app.post('/get-token/')
 
         # Assert
         self.assertEqual(400, result.status_code)
@@ -38,7 +38,7 @@ class TestApp(TestCase):
         mock_get_token.side_effect = Exception
 
         # Act
-        result = self.app.post('/get-token',
+        result = self.app.post('/get-token/',
                                data={'username': 'user', 'password': 'pass'})
 
         # Assert
@@ -52,7 +52,7 @@ class TestApp(TestCase):
         mock_get_token.return_value = 'testtoken'
 
         # Act
-        result = self.app.post('/get-token',
+        result = self.app.post('/get-token/',
                                data={'username': 'user', 'password': 'pass'})
 
         # Assert
