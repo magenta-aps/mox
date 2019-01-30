@@ -29,6 +29,7 @@ New in this version:
 * Make tests pass regardless of time zone on server.
 * Fix bug that meant database installation code would sometimes be run
   as superuser rather than designated database user.
+* Database generation no longer ignores "mandatory" metadata field.
 
 Version 0.9.2, 13 December 2018
 --------------------------------
