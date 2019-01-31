@@ -51,6 +51,10 @@ def psql():
 
     psql = testing.postgresql.Postgresql(
         base_dir=DB_DIR,
+        postgres_args=(
+            '-h 127.0.0.1 -F -c logging_collector=off '
+            '-c fsync=off -c unix_socket_directories=/tmp'
+        ),
     )
 
     atexit.register(psql.stop)
