@@ -27,7 +27,7 @@ from ..db import db_templating
 
 from .. import settings
 
-BASE_DIR = os.path.dirname(settings.__file__)
+BASE_DIR = os.path.dirname(os.path.dirname(settings.__file__))
 TOP_DIR = os.path.dirname(BASE_DIR)
 DB_DIR = os.path.join(BASE_DIR, 'build', 'db')
 
