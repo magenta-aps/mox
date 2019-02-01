@@ -52,6 +52,7 @@ class RegexConverter(BaseConverter):
 
 
 app.url_map.converters['regex'] = RegexConverter
+app.url_map.strict_slashes = False
 
 app.teardown_request(db.close_connection)
 

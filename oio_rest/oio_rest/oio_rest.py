@@ -516,39 +516,62 @@ class OIORestObject(object):
             uuid_regex
         )
 
-        flask.add_url_rule(class_url, '_'.join([cls.__name__, 'get_objects']),
-                           cls.get_objects, methods=['GET'],
-                           strict_slashes=False)
-
-        flask.add_url_rule(object_url, '_'.join([cls.__name__, 'get_object']),
-                           cls.get_object, methods=['GET'])
-
-        flask.add_url_rule(object_url, '_'.join([cls.__name__, 'put_object']),
-                           cls.put_object, methods=['PUT'])
-        flask.add_url_rule(object_url,
-                           '_'.join([cls.__name__, 'patch_object']),
-                           cls.patch_object, methods=['PATCH'])
         flask.add_url_rule(
-            class_url, '_'.join([cls.__name__, 'create_object']),
-            cls.create_object, methods=['POST']
+            class_url,
+            '_'.join([cls.__name__, 'get_objects']),
+            cls.get_objects,
+            methods=['GET'],
         )
 
         flask.add_url_rule(
-            object_url, '_'.join([cls.__name__, 'delete_object']),
-            cls.delete_object, methods=['DELETE']
+            object_url,
+            '_'.join([cls.__name__, 'get_object']),
+            cls.get_object,
+            methods=['GET'],
+        )
+
+        flask.add_url_rule(
+            object_url,
+            '_'.join([cls.__name__, 'put_object']),
+            cls.put_object,
+            methods=['PUT'],
+        )
+
+        flask.add_url_rule(
+            object_url,
+            '_'.join([cls.__name__, 'patch_object']),
+            cls.patch_object,
+            methods=['PATCH'],
+        )
+
+        flask.add_url_rule(
+            class_url,
+            '_'.join([cls.__name__, 'create_object']),
+            cls.create_object,
+            methods=['POST'],
+        )
+
+        flask.add_url_rule(
+            object_url,
+            '_'.join([cls.__name__, 'delete_object']),
+            cls.delete_object,
+            methods=['DELETE'],
         )
 
         # Structure URLs
         flask.add_url_rule(
-            cls_fields_url, '_'.join([cls.__name__, 'fields']),
-            cls.get_fields, methods=['GET']
+            cls_fields_url,
+            '_'.join([cls.__name__, 'fields']),
+            cls.get_fields,
+            methods=['GET'],
         )
 
         # JSON schemas
         flask.add_url_rule(
             '{}/{}'.format(class_url, 'schema'),
             '_'.join([cls.__name__, 'schema']),
-            cls.get_schema, methods=['GET']
+            cls.get_schema,
+            methods=['GET'],
         )
 
     # Templates which may be overridden on subclass.
