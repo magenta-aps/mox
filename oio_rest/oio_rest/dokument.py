@@ -67,7 +67,6 @@ class Dokument(OIORestObject):
             '_'.join([cls.__name__, 'download_content']),
             cls.download_content,
             methods=['GET'],
-            strict_slashes=False,
         )
 
     @classmethod

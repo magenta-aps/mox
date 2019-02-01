@@ -521,7 +521,6 @@ class OIORestObject(object):
             '_'.join([cls.__name__, 'get_objects']),
             cls.get_objects,
             methods=['GET'],
-            strict_slashes=False,
         )
 
         flask.add_url_rule(
@@ -529,7 +528,6 @@ class OIORestObject(object):
             '_'.join([cls.__name__, 'get_object']),
             cls.get_object,
             methods=['GET'],
-            strict_slashes=False,
         )
 
         flask.add_url_rule(
@@ -537,7 +535,6 @@ class OIORestObject(object):
             '_'.join([cls.__name__, 'put_object']),
             cls.put_object,
             methods=['PUT'],
-            strict_slashes=False,
         )
 
         flask.add_url_rule(
@@ -545,7 +542,6 @@ class OIORestObject(object):
             '_'.join([cls.__name__, 'patch_object']),
             cls.patch_object,
             methods=['PATCH'],
-            strict_slashes=False,
         )
 
         flask.add_url_rule(
@@ -553,7 +549,6 @@ class OIORestObject(object):
             '_'.join([cls.__name__, 'create_object']),
             cls.create_object,
             methods=['POST'],
-            strict_slashes=False,
         )
 
         flask.add_url_rule(
@@ -561,7 +556,6 @@ class OIORestObject(object):
             '_'.join([cls.__name__, 'delete_object']),
             cls.delete_object,
             methods=['DELETE'],
-            strict_slashes=False,
         )
 
         # Structure URLs
@@ -570,7 +564,6 @@ class OIORestObject(object):
             '_'.join([cls.__name__, 'fields']),
             cls.get_fields,
             methods=['GET'],
-            strict_slashes=False,
         )
 
         # JSON schemas
@@ -579,7 +572,6 @@ class OIORestObject(object):
             '_'.join([cls.__name__, 'schema']),
             cls.get_schema,
             methods=['GET'],
-            strict_slashes=False,
         )
 
     # Templates which may be overridden on subclass.
