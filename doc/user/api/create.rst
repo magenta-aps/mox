@@ -75,5 +75,6 @@ Create operation
    :statuscode 201: Object was created.
    :statuscode 400: Malformed JSON or other bad request.
 
-   Known as a ``Opret`` operation in `the specification
+   The Create operation is known as the ``Opret`` operation in `the
+   specification
    <https://www.digitaliser.dk/resource/1567464/artefact/Generelleegenskaberforservicesp%c3%a5sags-ogdokumentomr%c3%a5det-OIO-Godkendt%5bvs.1.1%5d.pdf?artefact=true&PID=1763377>`_.

@@ -53,5 +53,6 @@ Passivate operation
    :statuscode 400: Malformed JSON or other bad request.
    :statuscode 404: No object of a given class with that UUID.
 
-   Known as a ``Passiver`` operation in `the specification
+   The Passivate operation is known as the ``Passiver`` operation in `the
+   specification
    <https://www.digitaliser.dk/resource/1567464/artefact/Generelleegenskaberforservicesp%c3%a5sags-ogdokumentomr%c3%a5det-OIO-Godkendt%5bvs.1.1%5d.pdf?artefact=true&PID=1763377>`_.

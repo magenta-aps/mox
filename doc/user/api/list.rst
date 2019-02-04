@@ -174,5 +174,5 @@ List operation
    :statuscode 404: No object of a given class with that UUID.
    :statuscode 410: The object has been :ref:`deleted <DeleteOperation>`.
 
-   Known as a ``List`` operation in `the specification
+   The List operation is known as the ``List`` operation in `the specification
    <https://www.digitaliser.dk/resource/1567464/artefact/Generelleegenskaberforservicesp%c3%a5sags-ogdokumentomr%c3%a5det-OIO-Godkendt%5bvs.1.1%5d.pdf?artefact=true&PID=1763377>`_.
