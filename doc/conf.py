@@ -17,10 +17,9 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
-import sys
-from unittest.mock import MagicMock
-sys.path.insert(0, os.path.abspath('../oio_rest'))
+# import os
+# import sys
+# sys.path.insert(0, os.path.abspath('../oio_rest'))
 
 
 # -- General configuration ------------------------------------------------
@@ -36,8 +35,6 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
     'sphinxcontrib.httpdomain',
-    'sphinxcontrib.autohttp.flask',
-    'sphinxcontrib.autohttp.flaskqref',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -85,24 +82,6 @@ pygments_style = 'sphinx'
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
-
-# We mock the following modules when building the documentation. They are used in
-# oio_rest. Some of them require C libraries that are not installed on readthedocs.
-MOCK_MODULES = [
-  'dateutil',
-  'jsonschema',
-  'flask_saml_sso',
-  'onelogin',
-  'onelogin.saml2',
-  'onelogin.saml2.utils',
-  'onelogin.saml2.response',
-  'onelogin.saml2.settings',
-  'defusedxml',
-  'defusedxml.lxml',
-  'pika',
-  'lxml',
-]
-sys.modules.update((mod_name, MagicMock()) for mod_name in MOCK_MODULES)
 
 # -- Options for HTML output ----------------------------------------------
 
