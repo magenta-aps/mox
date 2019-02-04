@@ -230,3 +230,13 @@ the the time period during which a given fact is stored in the database. With
 the query parameters to a :ref:`Read <ReadOperation>`, :ref:`List
 <ListOperation>` or :ref:`SearchOperation` it can give you a view of the state
 of the database at give time in the past.
+
+Integrationdata
+===============
+
+The ``integrationdata``-field is different and its uniqueness is documented here.
+
+.. toctree::
+   :maxdepth: 1
+
+   objects/integrationdata.rst
