@@ -202,7 +202,7 @@ world.
 The fields used in the example are the following:
 
 ``from``
-    The time when this facts starts to be true in the real world. Date and time
+    The time when this fact starts to be true in the real world. Date and time
     input is accepted in almost any reasonable format, including ISO 8601.
     Required.
 
@@ -229,7 +229,8 @@ All transactions also have a transaction time as ``registreret``. This records
 the the time period during which a given fact is stored in the database. With
 the query parameters to a :ref:`Read <ReadOperation>`, :ref:`List
 <ListOperation>` or :ref:`SearchOperation` it can give you a view of the state
-of the database at give time in the past.
+of the database at given time in the past or future.
+
 
 Integrationdata
 ===============

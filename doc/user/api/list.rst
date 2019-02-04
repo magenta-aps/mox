@@ -19,10 +19,10 @@ List operation
       parameters the operation is a :ref:`SearchOperation` and will only return
       a list of UUIDs to the objects.
 
-   Default is to return the object(s) as it is currently seen, but can optionally
-   be constrained by ``virking*`` :ref:`valid time<Valid time>` and/or
-   ``registrering*`` :ref:`transaction time<transaction time>` to give an older
-   view.
+   Default is to return the object(s) as it is currently seen, but can
+   optionally be constrained by ``virking*`` :ref:`valid time<Valid time>`
+   and/or ``registrering*`` :ref:`transaction time<transaction time>` to give a
+   past or future view.
 
    There is no built-in limit to how many objects can be listed in this way, but
    both the HTTP-server and gnunicorn may apply limits to the length of URIs.
