@@ -16,7 +16,7 @@ This page will give you a overview of the REST API.
 Operations
 ==========
 
-Each of the operations is describe in general first with special consideration
+Each of the operations is described in general first with special consideration
 for each object-type afterwards.
 
 .. toctree::

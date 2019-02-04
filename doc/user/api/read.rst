@@ -7,7 +7,7 @@ Read operation
 
    A Read operation returns a single whole object as a JSON-object.
 
-   Default is to return the object as it is currently seen, but can optionally
+   Default is to return the object as it is currently seen but can optionally
    be constrained by ``virking*`` :ref:`valid time<Valid time>` and/or
    ``registrering*`` :ref:`transaction time<transaction time>` to give an older
    view.

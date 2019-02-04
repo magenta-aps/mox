@@ -6,12 +6,12 @@ Update operation
 
 .. http:patch:: /(service)/(object)/(regex:uuid)
 
-   An Update operation apply the JSON payload as a change to the object. Return
-   the UUID of the object.
+   An Update operation applies the JSON payload as a change to the object.
+   Returns the UUID of the object.
 
-   How the changes are applied are described on the following pages. For the
-   logic of merging see :ref:`API-merging`. To issue a patch that delete part of
-   an object see :ref:`DeleteAttr`.
+   How the changes are applied are described in the following pages. For the
+   logic of merging see :ref:`API-merging`. To issue a patch that deletes part
+   of an object see :ref:`DeleteAttr`.
 
 
    The data can be supplied directly in the request if the header
@@ -23,8 +23,8 @@ Update operation
    :http:patch:`!PATCH /(service)/(object)/(regex:uuid)` can also be a
    :ref:`PassivateOperation` if ``livscyklus: "Passiv"`` is sent in the payload.
 
-   Alternatively, use a :ref:`ImportOperation` to replace the entire object,
-   including all ``virkning``-periods.
+   Alternatively use a :ref:`ImportOperation` to replace the entire object,
+   including all ``virkning*`` periods.
 
    **Example request** for :http:patch:`!PATCH /organisation/organisationenhed/(regex:uuid)`:
 

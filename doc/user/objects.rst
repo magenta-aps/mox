@@ -76,7 +76,7 @@ usually only one per MOX instance.
 The fields used in the example ``organisation`` are the following:
 
 ``organisationegenskaber→brugervendtnoegle``
-    A id for the user. It is not necessarily unique. It is intended for the user
+    An ID for the user. It is not necessarily unique. It is intended for the user
     to recognise the object. Required.
 
 ``organisationegenskaber→organisationsnavn``
@@ -87,7 +87,7 @@ The fields used in the example ``organisation`` are the following:
     Required.
 
 ``organisationgyldighed→gyldighed``
-    Whether the organisation is active or not. Can takae the values ``Aktiv``
+    Whether the organisation is active or not. Can take the values ``Aktiv``
     and ``Inaktiv``. Required.
 
 ``organisationgyldighed→virkning``
@@ -98,9 +98,9 @@ The fields used in the example ``organisation`` are the following:
 ``organisationenhed``
 ---------------------
 
-Located at the endpoint :http:get:`!/organisation/organisationenhed`. A
+Located at the endpoint :http:get:`!/organisation/organisationenhed`. As
 ``organisationenhed`` is a organisational unit. This could be a department,
-section, office, committee, project group, class, team and the like. Usually a
+section, office, committee, project group, class, team and the like. Usually as
 ``organisation`` contains a single ``organisationenhed`` as a direct decendant
 with similar attributes as the parent ``organisation``. This
 ``organisationenhed`` inturn contains all of the organisational heirarchy.
@@ -155,7 +155,7 @@ The fields used in the example ``organisationenhed`` are the following:
    Similar to ``organisation``.
 
 ``relationer→tilhoerer``
-   This in the root ``organisation`` which the ``organisationenhed`` is part of.
+   This is the root ``organisation`` which the ``organisationenhed`` is part of.
    This is usally set on all ``organisationenhed`` to the single
    ``organisation`` in the mox instance.
 
@@ -234,7 +234,7 @@ of the database at give time in the past.
 Integrationdata
 ===============
 
-The ``integrationdata``-field is different and its uniqueness is documented here.
+The ``integrationdata`` field is different and its uniqueness is documented here.
 
 .. toctree::
    :maxdepth: 1

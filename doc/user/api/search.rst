@@ -15,7 +15,7 @@ Search operation
    JSON-objects. Given any other parameters the operation is a
    :ref:`SearchOperation`.
 
-   Default is to return the object(s) as it is currently seen, but can optionally
+   Default is to return the object(s) as it is currently seen but can optionally
    be constrained by ``virking*`` :ref:`valid time<Valid time>` and/or
    ``registrering*`` :ref:`transaction time<transaction time>` to give an older
    view.
@@ -76,7 +76,7 @@ Search operation
    PostgresSQL
    <https://www.postgresql.org/docs/9.5/functions-matching.html#FUNCTIONS-LIKE>`_.
 
-   In addition to the above general query parameters, each object also have
+   In addition to the above general query parameters, each object also has
    specialized parameters based on its field. The endpoints
    :http:get:`/(service)/(object)/fields` lists the fields which can be used for
    parameters for a :ref:`SearchOperation`.

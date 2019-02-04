@@ -101,7 +101,7 @@ def get_token():
 
 @app.route('/site-map')
 def sitemap():
-    """Returns a site-map over all valid urls.
+    """Returns a site map over all valid urls.
 
     .. :quickref: :http:get:`/site-map`
 

@@ -9,15 +9,15 @@ Import operation
    An Import operation creates or overwrites a object from the JSON payload and
    returns the UUID for the object.
 
-   If there a no object with the UUID or the object with that UUID have been
+   If there is no object with the UUID or the object with that UUID have been
    :ref:`deleted <DeleteOperation>` or :ref:`passivated <PassivateOperation>`,
    it creates a new object at the specified UUID. It is similar to a
    :ref:`CreateOperation`, but you specify at which UUID. It sets
    ``livscykluskode: "Importeret"``.
 
-   If a object with the UUID does exist it `completely overwrites` the object.
-   Including all ``virkning``-periods. It sets ``livscykluskode: "Rettet"``.
-   This is useful when you want to change the ``virking``-periods.
+   If an object with the UUID does exist it `completely overwrites` the object
+   including all ``virkning`` periods. It sets ``livscykluskode: "Rettet"``.
+   This is useful if you want to change the ``virking`` periods.
 
    The JSON-payload must contain a complete object in exactly the same format as
    for the :ref:`CreateOperation`.
@@ -81,5 +81,5 @@ Import operation
    :statuscode 400: Malformed JSON or other bad request.
 
 
-   Known as a ``Importer`` operation in `the specification
+   Known as an ``Importer`` operation in `the specification
    <https://www.digitaliser.dk/resource/1567464/artefact/Generelleegenskaberforservicesp%c3%a5sags-ogdokumentomr%c3%a5det-OIO-Godkendt%5bvs.1.1%5d.pdf?artefact=true&PID=1763377>`_.

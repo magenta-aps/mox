@@ -9,19 +9,19 @@ contains. The following urls are available:
 
 .. http:get:: /site-map
 
-   Returns a site-map over all valid urls.
+   Returns a site map over all valid urls.
 
    :statuscode 200: No error.
 
 .. http:get:: /(service)/classes
 
-   Return a JSON representation of the hierarchy's classes and their fields
+   Returns a JSON representation of the hierarchy's classes and their fields
 
    :statuscode 200: No error.
 
 .. http:get:: /(service)/(object)/fields
 
-   Return a list of all fields a given object have.
+   Returns a list of all fields a given object have.
 
    :statuscode 200: No error.
 
