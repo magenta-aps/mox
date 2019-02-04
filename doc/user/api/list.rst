@@ -146,8 +146,6 @@ List operation
 
    :query uuid uuid: The UUID of the object to receive. Allowed multiple times in :ref:`ListOperation`.
 
-   :query uuid brugerref: Match the ``brugerref``-field. The (system) user who changed the object.
-
    :query datetime registreretFra: :ref:`Transaction time` 'from' timestamp.
    :query datetime registreretTil: Transaction time 'to' timestamp.
    :query datetime registreringstid: Transaction time 'snapshot' timestamp.
