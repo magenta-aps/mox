@@ -7,9 +7,9 @@ List operation
 
    The List operation returns one or more whole objects as JSON.
 
-   It is similar to a :ref:`ReadOperation`, but uses a slightly different
-   syntax. The UUID is given as a parameter. With this syntax is is possible to
-   list more than one UUID.
+   The List operaation is similar to the :ref:`ReadOperation`, but uses a
+   slightly different syntax. The UUID is given as a parameter. With this syntax
+   is is possible to list more than one UUID.
 
    .. note::
 

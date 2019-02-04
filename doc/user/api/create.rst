@@ -8,8 +8,8 @@ Create operation
 
    The Create operation creates a new object from the JSON payload.
    :http:method:`POST` the JSON representation of its attributes, states and
-   relations to the URL of the class. It returns a newly generated UUID for the
-   created object.
+   relations to the URL of the class. The Create operation returns a newly
+   generated UUID for the created object.
 
    The data can be supplied directly in the request if
    :http:header:`Content-Type`: ``application/json`` is set.

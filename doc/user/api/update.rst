@@ -20,8 +20,11 @@ Update operation
    with :http:header:`Content-Type`: ``multipart/form-data``. This allows
    seperate file form-data.
 
-   :http:patch:`!PATCH /(service)/(object)/(regex:uuid)` can also be a
-   :ref:`PassivateOperation` if ``livscyklus: "Passiv"`` is sent in the payload.
+  .. note:
+
+     :http:patch:`!PATCH /(service)/(object)/(regex:uuid)` can also be a
+     :ref:`PassivateOperation` if ``livscyklus: "Passiv"`` is sent in the
+     payload.
 
    Alternatively use a :ref:`ImportOperation` to replace the entire object,
    including all ``virkning*`` periods.

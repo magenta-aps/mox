@@ -12,12 +12,13 @@ Passivate operation
    not show up in searches and listings. The operation returns the UUID of the
    object.
 
+   .. note:
+
+      :http:patch:`!PATCH /(service)/(object)/(regex:uuid)` can also be an
+      :ref:`UpdateOperation` if ``livscyklus: "Passiv"`` is `not` sent in the
+      payload.
+
    The payload may contain an optional ``note``-field.
-
-   :http:patch:`!PATCH /(service)/(object)/(regex:uuid)` can also be an
-   :ref:`UpdateOperation` if ``livscyklus: "Passiv"`` is `not` sent in the
-   payload.
-
 
    **Example request** for :http:patch:`!PATCH /organisation/organisationenhed/(regex:uuid)`:
 

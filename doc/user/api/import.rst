@@ -7,20 +7,25 @@ Import operation
 .. http:put:: /(service)/(object)/(regex:uuid)
 
    The Import operation creates or overwrites an object from the JSON payload
-   and returns the UUID for the object.
+   and returns the UUID for the object. The Import operation is similar to a
+   :ref:`CreateOperation`, but you specify at which UUID.
 
-   If there is no object with the UUID or the object with that UUID have been
-   :ref:`deleted <DeleteOperation>` or :ref:`passivated <PassivateOperation>`,
-   it creates a new object at the specified UUID. It is similar to a
-   :ref:`CreateOperation`, but you specify at which UUID. It sets
-   ``livscykluskode: "Importeret"``.
+   The Import operation creates a new object at the specified UUID if no object
+   with the UUID exists or the object with that UUID have been :ref:`deleted
+   <DeleteOperation>` or :ref:`passivated <PassivateOperation>`.
 
-   If an object with the UUID does exist it `completely overwrites` the object
-   including all ``virkning`` periods. It sets ``livscykluskode: "Rettet"``.
-   This is useful if you want to change the ``virking`` periods.
+   If an object with the UUID does exist the Import operation `completely
+   overwrites` the object including all ``virkning`` periods. This is useful if
+   you want to change the ``virking`` periods.
 
    The JSON-payload must contain a complete object in exactly the same format as
    for the :ref:`CreateOperation`.
+
+   If there are no object with the UUID exist the Import operation sets
+   ``livscykluskode: "Importeret"``.
+
+   If an object is overwritten the Import operation sets ``livscykluskode:
+   "Rettet"``.
 
    **Example request** for :http:put:`!PUT /organisation/organisationenhed/(regex:uuid)`:
 

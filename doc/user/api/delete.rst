@@ -13,8 +13,8 @@ Delete operation
    <SearchOperation>` unless the ``registreretTil`` and/or ``registreretFra``
    indicate a period where it did exist.
 
-   This operation deletes the whole object. To delete part of an object see
-   :ref:`DeleteAttr`.
+   The Delete operation deletes the whole object. To delete part of an object
+   see :ref:`DeleteAttr`.
 
    **Example request** for :http:delete:`!DELETE /organisation/organisationenhed/(regex:uuid)`:
 
