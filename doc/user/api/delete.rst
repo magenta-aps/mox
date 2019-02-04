@@ -4,7 +4,7 @@
 Delete operation
 ----------------
 
-.. http:delete:: /(service)/(object)/(regex:uuid)
+.. http:delete:: /(service)/(object)/(uuid)
 
    The Delete operation deletes the object and return its UUID.
 
@@ -16,7 +16,7 @@ Delete operation
    The Delete operation deletes the whole object. To delete part of an object
    see :ref:`DeleteAttr`.
 
-   **Example request** for :http:delete:`!DELETE /organisation/organisationenhed/(regex:uuid)`:
+   **Example request** for :http:delete:`!DELETE /organisation/organisationenhed/(uuid)`:
 
    .. code-block:: http
 
@@ -24,7 +24,7 @@ Delete operation
        Host: example.com
 
 
-   **Example response** for :http:delete:`!DELETE /organisation/organisationenhed/(regex:uuid)`:
+   **Example response** for :http:delete:`!DELETE /organisation/organisationenhed/(uuid)`:
 
    .. code-block:: http
 

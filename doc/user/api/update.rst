@@ -4,7 +4,7 @@
 Update operation
 ----------------
 
-.. http:patch:: /(service)/(object)/(regex:uuid)
+.. http:patch:: /(service)/(object)/(uuid)
 
    The Update operation applies the JSON payload as a change to the object.
    Returns the UUID of the object.
@@ -22,14 +22,14 @@ Update operation
 
   .. note:
 
-     :http:patch:`!PATCH /(service)/(object)/(regex:uuid)` can also be a
+     :http:patch:`!PATCH /(service)/(object)/(uuid)` can also be a
      :ref:`PassivateOperation` if ``livscyklus: "Passiv"`` is sent in the
      payload.
 
    Alternatively use a :ref:`ImportOperation` to replace the entire object,
    including all ``virkning*`` periods.
 
-   **Example request** for :http:patch:`!PATCH /organisation/organisationenhed/(regex:uuid)`:
+   **Example request** for :http:patch:`!PATCH /organisation/organisationenhed/(uuid)`:
 
    .. code-block:: http
 
@@ -45,7 +45,7 @@ Update operation
                         "to": "2019-09-01"
                     }}]}}
 
-   **Example response** for :http:patch:`!PATCH /organisation/organisationenhed/(regex:uuid)`:
+   **Example response** for :http:patch:`!PATCH /organisation/organisationenhed/(uuid)`:
 
    .. code-block:: http
 

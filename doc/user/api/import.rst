@@ -4,7 +4,7 @@
 Import operation
 ----------------
 
-.. http:put:: /(service)/(object)/(regex:uuid)
+.. http:put:: /(service)/(object)/(uuid)
 
    The Import operation creates or overwrites an object from the JSON payload
    and returns the UUID for the object. The Import operation is similar to a
@@ -27,7 +27,7 @@ Import operation
    If an object is overwritten the Import operation sets ``livscykluskode:
    "Rettet"``.
 
-   **Example request** for :http:put:`!PUT /organisation/organisationenhed/(regex:uuid)`:
+   **Example request** for :http:put:`!PUT /organisation/organisationenhed/(uuid)`:
 
    .. code-block:: http
 
@@ -65,7 +65,7 @@ Import operation
                     }}]}}
 
 
-   **Example response** for :http:put:`!PUT /organisation/organisationenhed/(regex:uuid)`:
+   **Example response** for :http:put:`!PUT /organisation/organisationenhed/(uuid)`:
 
    .. code-block:: http
 

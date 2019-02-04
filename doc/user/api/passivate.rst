@@ -4,7 +4,7 @@
 Passivate operation
 -------------------
 
-.. http:patch:: /(service)/(object)/(regex:uuid)
+.. http:patch:: /(service)/(object)/(uuid)
 
    The Passivate operation is a special :ref:`UpdateOperation` with a
    JSON-payload containing ``livscyklus: "Passiv"``. When an object is passive,
@@ -14,13 +14,13 @@ Passivate operation
 
    .. note:
 
-      :http:patch:`!PATCH /(service)/(object)/(regex:uuid)` can also be an
+      :http:patch:`!PATCH /(service)/(object)/(uuid)` can also be an
       :ref:`UpdateOperation` if ``livscyklus: "Passiv"`` is `not` sent in the
       payload.
 
    The payload may contain an optional ``note``-field.
 
-   **Example request** for :http:patch:`!PATCH /organisation/organisationenhed/(regex:uuid)`:
+   **Example request** for :http:patch:`!PATCH /organisation/organisationenhed/(uuid)`:
 
    .. code-block:: http
 
@@ -33,7 +33,7 @@ Passivate operation
         "livscyklus": "Passiv"
       }
 
-   **Example response** for :http:patch:`!PATCH /organisation/organisationenhed/(regex:uuid)`:
+   **Example response** for :http:patch:`!PATCH /organisation/organisationenhed/(uuid)`:
 
    .. code-block:: http
 

@@ -3,7 +3,7 @@
 --------------
 Read operation
 --------------
-.. http:get:: /(service)/(object)/(regex:uuid)
+.. http:get:: /(service)/(object)/(uuid)
 
    The Read operation obtains an entire object as JSON.
 
@@ -12,7 +12,7 @@ Read operation
    ``registrering*`` :ref:`transaction time<transaction time>` to give an older
    view.
 
-   **Example request** for :http:get:`!GET /organisation/organisation/(regex:uuid)`:
+   **Example request** for :http:get:`!GET /organisation/organisation/(uuid)`:
 
    .. code-block:: http
 
@@ -20,7 +20,7 @@ Read operation
        Accept: */*
        Host: example.com
 
-   **Example response** for :http:get:`!GET /organisation/organisation/(regex:uuid)`:
+   **Example response** for :http:get:`!GET /organisation/organisation/(uuid)`:
 
    .. code-block:: http
 
