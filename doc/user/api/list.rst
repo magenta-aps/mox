@@ -25,9 +25,9 @@ List operation
    view.
 
    There is no built-in limit to how many objects can be listed in this way, but
-   it is often considered a best practice to limit URIs to a length of about
-   2000 characters. Thus, we recommend that you attempt to list a maximum of 45
-   objects in each request.
+   both the HTTP-server and gnunicorn may apply limits to the length of URIs.
+   :rfc:`7230#section-3.1.1` recommends that all HTTP senders and recipients
+   support, at a minimum, request-line lengths of 8000 octets, but some may not.
 
    **List example request** for :http:get:`!GET /organisation/organisationenhed>`:
 
