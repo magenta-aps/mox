@@ -16,9 +16,6 @@ This page will give you a overview of the REST API.
 Operations
 ==========
 
-Each of the operations is described in general first with special consideration
-for each object-type afterwards.
-
 .. toctree::
    :maxdepth: 2
 
@@ -32,11 +29,10 @@ for each object-type afterwards.
    Import <api/import.rst>
 
 
-Document and friends
-====================
+``Document`` etc.
+=================
 
-Document and related objects have some special considerations. They are gathered
-here.
+``Document`` and related objects have some special considerations.
 
 .. toctree::
    :maxdepth: 1

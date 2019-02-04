@@ -5,7 +5,7 @@ Read operation
 --------------
 .. http:get:: /(service)/(object)/(regex:uuid)
 
-   The Read operation returns a single whole object as a JSON-object.
+   The Read operation obtains an entire object as JSON.
 
    Default is to return the object as it is currently seen but can optionally
    be constrained by ``virking*`` :ref:`valid time<Valid time>` and/or
@@ -71,10 +71,10 @@ Read operation
    :query datetime virkningTil: Valid time 'to' timestamp.
    :query datetime virkningstid: Valid time 'snapshot' timestamp.
 
-   All the ``registeret*`` and ``virkning*`` take a datetime. Input is accepted in
-   almost any reasonable format, including ISO 8601, SQL-compatible, traditional
-   POSTGRES, and others. The accepted values are the `Date/Time Input from
-   PostgreSQL
+   All the ``registeret*`` and ``virkning*`` accept a value representing a
+   specific date and time. Input is accepted in almost any reasonable format,
+   including ISO 8601, SQL-compatible, traditional POSTGRES, and others. The
+   accepted values are the `Date/Time Input from PostgreSQL
    <https://www.postgresql.org/docs/9.5/datatype-datetime.html#DATATYPE-DATETIME-INPUT>`_.
 
    :resheader Content-Type: ``application/json``

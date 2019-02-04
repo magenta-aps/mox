@@ -76,8 +76,8 @@ usually only one per MOX instance.
 The fields used in the example ``organisation`` are the following:
 
 ``organisationegenskaber→brugervendtnoegle``
-    An ID for the user. It is not necessarily unique. It is intended for the user
-    to recognise the object. Required.
+    An ID for the user. Semantically, this should be unique, but we don't
+    enforce that. It is intended for the user to recognise the object. Required.
 
 ``organisationegenskaber→organisationsnavn``
     The official name of the organisation.
@@ -98,9 +98,9 @@ The fields used in the example ``organisation`` are the following:
 ``organisationenhed``
 ---------------------
 
-Located at the endpoint :http:get:`!/organisation/organisationenhed`. As
+Located at the endpoint :http:get:`!/organisation/organisationenhed`. An
 ``organisationenhed`` is a organisational unit. This could be a department,
-section, office, committee, project group, class, team and the like. Usually as
+section, office, committee, project group, class, team or similar. Usually as
 ``organisation`` contains a single ``organisationenhed`` as a direct decendant
 with similar attributes as the parent ``organisation``. This
 ``organisationenhed`` inturn contains all of the organisational heirarchy.

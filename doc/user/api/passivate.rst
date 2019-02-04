@@ -6,10 +6,11 @@ Passivate operation
 
 .. http:patch:: /(service)/(object)/(regex:uuid)
 
-   The Passivate operation is a special :ref:`UpdateOperation` with JSON-payload
-   containing ``livscyklus: "Passiv"``. When an object is passive, it is no
-   longer maintained and may not be updated. The object will afterwards not show
-   up in searches and listings. The operation returns the UUID of the object.
+   The Passivate operation is a special :ref:`UpdateOperation` with a
+   JSON-payload containing ``livscyklus: "Passiv"``. When an object is passive,
+   it is no longer maintained and may not be updated. The object will afterwards
+   not show up in searches and listings. The operation returns the UUID of the
+   object.
 
    The payload may contain an optional ``note``-field.
 
