@@ -11,11 +11,13 @@ List operation
    syntax. The UUID is given as a parameter. With this syntax is is possible to
    list more than one UUID.
 
-   :http:get:`/(service)/(object)` can also be a :ref:`SearchOperation`
-   depending on parameters. With any the of ``uuid``, ``virking*`` and
-   ``registeret`` parameters, it is a :ref:`ListOperation`. Given any other
-   parameters the operation is a :ref:`SearchOperation` and will only return a
-   list of UUIDs to the objects.
+   .. note::
+
+      :http:get:`/(service)/(object)` can also be a :ref:`SearchOperation`
+      depending on parameters. With any the of ``uuid``, ``virking*`` and
+      ``registeret`` parameters, it is a :ref:`ListOperation`. Given any other
+      parameters the operation is a :ref:`SearchOperation` and will only return
+      a list of UUIDs to the objects.
 
    Default is to return the object(s) as it is currently seen, but can optionally
    be constrained by ``virking*`` :ref:`valid time<Valid time>` and/or

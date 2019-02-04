@@ -9,11 +9,13 @@ Search operation
    A Search operation returns a list of UUIDs to the objects that fit the
    parameters.
 
-   :http:get:`/(service)/(object)` can also be a :ref:`ListOperation` depending
-   on parameters. With only the of ``uuid``, ``virking*`` and ``registeret``
-   parameters, it is a :ref:`ListOperation` and will return one or more whole
-   JSON-objects. Given any other parameters the operation is a
-   :ref:`SearchOperation`.
+   .. note::
+
+      :http:get:`/(service)/(object)` can also be a :ref:`ListOperation`
+      depending on parameters. With only the of ``uuid``, ``virking*`` and
+      ``registeret`` parameters, it is a :ref:`ListOperation` and will return
+      one or more whole JSON-objects. Given any other parameters the operation
+      is a :ref:`SearchOperation`.
 
    Default is to return the object(s) as it is currently seen but can optionally
    be constrained by ``virking*`` :ref:`valid time<Valid time>` and/or
