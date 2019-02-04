@@ -42,8 +42,6 @@ Some ``Organisation`` objects
 
 Located at the endpoint :http:get:`!/organisation/organisation`. An
 ``organisation`` is a legal organisation. A good example of this a municipality.
-The database does support multiple ``organisation``, but in the wild there is
-usually only one per MOX instance.
 
 
 .. code-block:: json
@@ -100,10 +98,7 @@ The fields used in the example ``organisation`` are the following:
 
 Located at the endpoint :http:get:`!/organisation/organisationenhed`. An
 ``organisationenhed`` is a organisational unit. This could be a department,
-section, office, committee, project group, class, team or similar. Usually as
-``organisation`` contains a single ``organisationenhed`` as a direct decendant
-with similar attributes as the parent ``organisation``. This
-``organisationenhed`` inturn contains all of the organisational heirarchy.
+section, office, committee, project group, class, team or similar.
 
 
 .. code-block:: json
@@ -161,10 +156,6 @@ The fields used in the example ``organisationenhed`` are the following:
 
 ``relationer→overordnet``
   The parent ``organisationenhed``.
-
-  On root ``organisationenhed``, it points to the ``organisation``. (This is a
-  deliberate violation of the standard which only allows it to point to
-  ``organisationenhed``.)
 
 
 
