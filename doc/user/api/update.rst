@@ -6,7 +6,7 @@ Update operation
 
 .. http:patch:: /(service)/(object)/(regex:uuid)
 
-   An Update operation applies the JSON payload as a change to the object.
+   The Update operation applies the JSON payload as a change to the object.
    Returns the UUID of the object.
 
    How the changes are applied are described in the following pages. For the

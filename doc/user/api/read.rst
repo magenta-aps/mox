@@ -5,7 +5,7 @@ Read operation
 --------------
 .. http:get:: /(service)/(object)/(regex:uuid)
 
-   A Read operation returns a single whole object as a JSON-object.
+   The Read operation returns a single whole object as a JSON-object.
 
    Default is to return the object as it is currently seen but can optionally
    be constrained by ``virking*`` :ref:`valid time<Valid time>` and/or

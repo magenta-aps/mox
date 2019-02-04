@@ -6,7 +6,7 @@ Search operation
 
 .. http:get:: /(service)/(object)
 
-   A Search operation returns a list of UUIDs to the objects that fit the
+   The Search operation returns a list of UUIDs to the objects that fit the
    parameters.
 
    .. note::

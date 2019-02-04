@@ -6,7 +6,7 @@ Delete operation
 
 .. http:delete:: /(service)/(object)/(regex:uuid)
 
-   A Delete operation deletes the object and return its UUID.
+   The Delete operation deletes the object and return its UUID.
 
    After an object is deleted, it cannot be retrieved by :ref:`Read
    <ReadOperation>`, :ref:`List <ListOperation>` and :ref:`Search Operations

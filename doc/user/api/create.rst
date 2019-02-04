@@ -6,7 +6,7 @@ Create operation
 
 .. http:post:: /(service)/(object)
 
-   A Create Operation creates a new object from the JSON payload.
+   The Create operation creates a new object from the JSON payload.
    :http:method:`POST` the JSON representation of its attributes, states and
    relations to the URL of the class. It returns a newly generated UUID for the
    created object.

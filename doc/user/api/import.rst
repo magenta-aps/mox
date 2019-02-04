@@ -6,8 +6,8 @@ Import operation
 
 .. http:put:: /(service)/(object)/(regex:uuid)
 
-   An Import operation creates or overwrites a object from the JSON payload and
-   returns the UUID for the object.
+   The Import operation creates or overwrites an object from the JSON payload
+   and returns the UUID for the object.
 
    If there is no object with the UUID or the object with that UUID have been
    :ref:`deleted <DeleteOperation>` or :ref:`passivated <PassivateOperation>`,
