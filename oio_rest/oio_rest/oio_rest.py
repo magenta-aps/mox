@@ -271,8 +271,8 @@ class OIORestObject(object):
     def get_objects(cls):
         """A :ref:`ListOperation` or :ref:`SearchOperation` depending on parameters.
 
-        With any the of ``uuid``, ``virking*`` and ``registeret`` parameters, it is a
-        :ref:`ListOperation` and will return one or more whole JSON-objects. Given any
+        With any the of ``uuid``, ``virking*`` and ``registeret*`` parameters, it is a
+        :ref:`ListOperation` and will return one or more whole JSON objects. Given any
         other parameters the operation is a :ref:`SearchOperation` and will only return
         a list of UUIDs to the objects.
 
@@ -345,7 +345,7 @@ class OIORestObject(object):
     @classmethod
     @requires_auth
     def get_object(cls, uuid):
-        """A :ref:`ReadOperation`. Return a single whole object as a JSON-object.
+        """A :ref:`ReadOperation`. Return a single whole object as a JSON object.
 
         .. :quickref: :ref:`ReadOperation`
 
@@ -396,16 +396,16 @@ class OIORestObject(object):
     @classmethod
     @requires_auth
     def put_object(cls, uuid):
-        """A :ref:`ImportOperation` that creates or overwrites a object from the JSON payload.
+        """A :ref:`ImportOperation` that creates or overwrites an object from the JSON payload.
         It returns the UUID for the object.
 
-        If there a no object with the UUID or the object with that UUID have been
+        If there no object with the UUID or the object with that UUID have been
         :ref:`deleted <DeleteOperation>` or :ref:`passivated <PassivateOperation>`, it
         creates a new object at the specified UUID. It sets ``livscykluskode:
         "Importeret"``.
 
-        If a object with the UUID exist it completely overwrite the object. Including
-        all ``virkning``-periods. It sets ``livscykluskode: "Rettet"``.
+        If an object with the UUID exist it completely overwrite the object. Including
+        all ``virkning`` periods. It sets ``livscykluskode: "Rettet"``.
 
         .. :quickref: :ref:`ImportOperation`
 
@@ -522,7 +522,7 @@ class OIORestObject(object):
 
     @classmethod
     def get_fields(cls):
-        """Return a list of all fields a given object have.
+        """Return a list of all fields a given object has.
 
         .. :quickref: :http:get:`/(service)/(object)/fields`
 

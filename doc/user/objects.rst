@@ -97,7 +97,7 @@ The fields used in the example ``organisation`` are the following:
 ---------------------
 
 Located at the endpoint :http:get:`!/organisation/organisationenhed`. An
-``organisationenhed`` is a organisational unit. This could be a department,
+``organisationenhed`` is an organisational unit. This could be a department,
 section, office, committee, project group, class, team or similar.
 
 
@@ -217,10 +217,10 @@ Transaction time
 ----------------
 
 All transactions also have a transaction time as ``registreret``. This records
-the the time period during which a given fact is stored in the database. With
-the query parameters to a :ref:`Read <ReadOperation>`, :ref:`List
-<ListOperation>` or :ref:`SearchOperation` it can give you a view of the state
-of the database at given time in the past or future.
+the time period during which a given fact is stored in the database. With the
+query parameters to a :ref:`Read <ReadOperation>`, :ref:`List <ListOperation>`
+or :ref:`SearchOperation` it can give you a view of the state of the database at
+given time in the past or future.
 
 
 Integrationdata

@@ -15,17 +15,17 @@ List operation
 
       :http:get:`/(service)/(object)` can also be a :ref:`SearchOperation`
       depending on parameters. With any the of ``uuid``, ``virking*`` and
-      ``registeret`` parameters, it is a :ref:`ListOperation`. Given any other
+      ``registeret*`` parameters, it is a :ref:`ListOperation`. Given any other
       parameters the operation is a :ref:`SearchOperation` and will only return
       a list of UUIDs to the objects.
 
-   Default is to return the object(s) as it is currently seen, but can
-   optionally be constrained by ``virking*`` :ref:`valid time<Valid time>`
-   and/or ``registrering*`` :ref:`transaction time<transaction time>` to give a
-   past or future view.
+   Default is to return the object(s) as currently seen, but can optionally be
+   constrained by ``virking*`` :ref:`valid time<Valid time>` and/or
+   ``registrering*`` :ref:`transaction time<transaction time>` to give a past or
+   future view.
 
    There is no built-in limit to how many objects can be listed in this way, but
-   both the HTTP-server and gnunicorn may apply limits to the length of URIs.
+   both the HTTP-server and gunicorn may apply limits to the length of URIs.
    :rfc:`7230#section-3.1.1` recommends that all HTTP senders and recipients
    support, at a minimum, request-line lengths of 8000 octets, but some may not.
 

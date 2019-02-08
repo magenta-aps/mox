@@ -7,7 +7,7 @@ Passivate operation
 .. http:patch:: /(service)/(object)/(uuid)
 
    The Passivate operation is a special :ref:`UpdateOperation` with a
-   JSON-payload containing ``livscyklus: "Passiv"``. When an object is passive,
+   JSON payload containing ``livscyklus: "Passiv"``. When an object is passive,
    it is no longer maintained and may not be updated. The object will afterwards
    not show up in searches and listings. The operation returns the UUID of the
    object.
@@ -18,7 +18,7 @@ Passivate operation
       :ref:`UpdateOperation` if ``livscyklus: "Passiv"`` is `not` sent in the
       payload.
 
-   The payload may contain an optional ``note``-field.
+   The payload may contain an optional ``note`` field.
 
    **Example request** for :http:patch:`!PATCH /organisation/organisationenhed/(uuid)`:
 

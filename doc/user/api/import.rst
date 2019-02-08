@@ -18,7 +18,7 @@ Import operation
    overwrites` the object including all ``virkning`` periods. This is useful if
    you want to change the ``virking`` periods.
 
-   The JSON-payload must contain a complete object in exactly the same format as
+   The JSON payload must contain a complete object in exactly the same format as
    for the :ref:`CreateOperation`.
 
    If there are no object with the UUID exist the Import operation sets
