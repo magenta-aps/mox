@@ -3,7 +3,7 @@
 --------------
 List operation
 --------------
-.. http:get:: /(service)/(object)
+.. http:get:: /(service)/(object)?uuid=(uuid)
 
    The List operation returns one or more whole objects as JSON.
 
@@ -13,7 +13,7 @@ List operation
 
    .. note::
 
-      :http:get:`/(service)/(object)` can also be a :ref:`SearchOperation`
+      :http:get:`!GET /(service)/(object)` can also be a :ref:`SearchOperation`
       depending on parameters. With any the of ``uuid``, ``virking*`` and
       ``registeret*`` parameters, it is a :ref:`ListOperation`. Given any other
       parameters the operation is a :ref:`SearchOperation` and will only return

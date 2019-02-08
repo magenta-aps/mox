@@ -10,7 +10,7 @@ Search operation
 
    .. note::
 
-      :http:get:`/(service)/(object)` can also be a :ref:`ListOperation`
+      :http:get:`!GET /(service)/(object)` can also be a :ref:`ListOperation`
       depending on parameters. With only the ``uuid``, ``virking*`` and
       ``registeret*`` parameters, it is a :ref:`ListOperation` and will return
       one or more whole JSON objects. Given any other parameters the operation
