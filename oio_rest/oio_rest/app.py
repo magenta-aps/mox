@@ -101,6 +101,11 @@ def get_token():
 
 @app.route('/site-map')
 def sitemap():
+    """Returns a site map over all valid urls.
+
+    .. :quickref: :http:get:`/site-map`
+
+    """
     links = []
     for rule in app.url_map.iter_rules():
         # Filter out rules we can't navigate to in a browser
