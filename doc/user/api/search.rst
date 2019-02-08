@@ -123,6 +123,10 @@ type by specifying a search parameter of the format::
 
     &<relation>:<objecttype>=<uuid|urn>
 
+E.g. if you want to search on an ``opgave`` relation with
+``"objekttype":"lederniveau"`` you make a query like this:
+``?opgave:lederniveau=5cc827ba-6939-4dee-85be-5c4ea7ffd76e``.
+
 Note that the objecttype parameter is case-sensitive.
 
 It is only possible to search on one ``DokumentVariant`` and ``DokumentDel`` at
