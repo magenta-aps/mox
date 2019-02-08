@@ -10,6 +10,7 @@ This page will give you a overview of the REST API.
    :caption: Sub pages
 
    api/self-documentation.rst
+   api/tutorial.rst
 
 .. _API-operations:
 

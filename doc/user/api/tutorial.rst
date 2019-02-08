@@ -1,14 +1,21 @@
-Getting to know LoRa's REST API
-===============================
+.. _api-tutorial:
+
+============
+API tutorial
+============
 
 The following small exercises can be used as an inspiration to getting to know
-LoRa's REST API. Read :ref:`api-overview` before moving on. Also, have a look at
-the LoRa documentation found in Magenta’s Alfresco system.
+LoRa's REST API. Read or skim the pages about the :ref:`objects` and the
+different :ref:`api-operations` before moving on.
 
-.. note::
+.. warning::
 
-   The exact end-date for the dateranges are not important, it is however
-   important that they are in the future when you do this tutorial.
+   The exact end-date for the date ranges are not important, it is however
+   important that they are in the *future* when you do this tutorial. If they
+   are not the :ref:`ReadOperation`, :ref:`ListOperation` and
+   :ref:`SearchOperation` will not return the object unless the
+   ``virkning*``-parameters is set.
+
 
 1. Create an ``organisation`` called e.g. “Magenta” valid from 2017-01-01
    (included) to 2025-12-31 (excluded).
@@ -25,7 +32,7 @@ the LoRa documentation found in Magenta’s Alfresco system.
    the ``organisationenhed`` Magenta) active from 2018-01-01 (included) to
    2025-09-01 (excluded). Consider which attributes and relations to set.
 6. Make a query searching for all ``organisationenhed`` in LoRa - confirm that
-   Copenhagen and Aarhus exist in the system.
+   Magenta, Copenhagen and Aarhus exist in the system.
 7. Add an ``address`` to the ``organisationenhed`` Aarhus (valid within the
    period where the ``organisationenhed`` is active).
 8. Fetch the ``organisationenhed`` Aarhus and verify that the newly added
@@ -41,4 +48,4 @@ the LoRa documentation found in Magenta’s Alfresco system.
     Copenhagen and they should be active in random intervals ranging from
     2017-01-01 (included) to 2025-12-31 (excluded).
 12. Find all active ``organisation`` (if any) in the period from 2017-12-01 to 2025-06-01.
-13. What are the names of the ``organisationenhed`` from 11.?
+13. What are the names of the ``organisationenhed`` from above?

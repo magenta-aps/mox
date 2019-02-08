@@ -17,7 +17,6 @@ Content
    user/setup-dev-env.rst
    user/objects.rst
    user/api.rst
-   user/rest-tutorial.rst
    user/log-haendelse.rst
    user/agents.rst
    user/auth.rst
