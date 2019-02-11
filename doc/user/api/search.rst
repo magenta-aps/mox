@@ -78,7 +78,7 @@ Search operation
    If you want to match a litteral percentage-sign ``%`` you have to escape it with
    backslash. E.g. ``abc\%def`` would match the value ``abc%def``.
 
-   Contrary, to typical SQL ``LIKE`` syntax, the character ``_`` (underscore)
+   Contrary to typical SQL ``LIKE`` syntax, the character ``_`` (underscore)
    matches only the underscore character (and not "any character").
 
    .. attention::

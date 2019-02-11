@@ -15,7 +15,7 @@ escape it with a single backslash as ``\_`` or ``\%``
 
 
 In :file:`/oio_rest/oio_rest/utils/build_registration.py` all incomming
-undercores ``_`` are replaced by an escaped undercore ``\_``. This means it is
+underscores ``_`` are replaced by an escaped undercore ``\_``. This means it is
 not possible for the REST API user to send an underscore wildcard operator to
 SQL. This may change in the future.
 
