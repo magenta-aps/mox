@@ -11,6 +11,7 @@ import pathlib
 import re
 import subprocess
 import sys
+import unittest
 
 import tap.parser
 
@@ -70,6 +71,7 @@ class SQLTests(util.TestCase):
                         self.fail(result.diagnostics or
                                   result.description)
 
+class TextTests(unittest.TestCase):
     def test_sql_unchanged(self):
         expected_path = pathlib.Path(SQL_FIXTURE)
         actual_path = expected_path.with_name(expected_path.name + '.new')
