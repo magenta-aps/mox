@@ -330,7 +330,8 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
                               _as_search_ilike_array(anyAttrValue,a.{{attribut_field}})  {%- if (not loop.last)%} OR {%- endif %}
                         {%-else %}
                             {%-if attributter_metadata[attribut][attribut_field]['type'] == "boolean" %}
-                                {# boolean is skipped intentionally #}
+                                -- boolean is skipped intentionally
+                                {% if (loop.last and loop.first)-%} FALSE {%- endif -%}
                             {%-else %}
                                 {%-if attributter_metadata[attribut][attribut_field]['type'] == "offentlighedundtagettype" %}
                                     (a.{{attribut_field}}).Hjemmel ilike anyAttrValue OR (a.{{attribut_field}}).AlternativTitel ilike anyAttrValue {%- if (not loop.last)%} OR {%- endif %}

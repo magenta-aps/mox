@@ -44774,11 +44774,13 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
             WHERE
             (
                         a.brugervendtnoegle ILIKE anyAttrValue OR
+                                -- boolean is skipped intentionally
                                 
                         a.beskrivelse ILIKE anyAttrValue OR
                         a.hjemmel ILIKE anyAttrValue OR
                         a.kassationskode ILIKE anyAttrValue OR
                                     (a.offentlighedundtaget).Hjemmel ilike anyAttrValue OR (a.offentlighedundtaget).AlternativTitel ilike anyAttrValue OR
+                                -- boolean is skipped intentionally
                                 
                         a.sagsnummer ILIKE anyAttrValue OR
                         a.titel ILIKE anyAttrValue OR
