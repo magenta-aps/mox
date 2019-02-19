@@ -549,7 +549,8 @@ class OIORestObject(object):
 
         """
         cls.verify_args()
-        return jsonify(validate.SCHEMA[cls.__name__.lower()])
+
+        return jsonify(validate.get_schema(cls.__name__.lower()))
 
     @classmethod
     def create_api(cls, hierarchy, flask, base_url):

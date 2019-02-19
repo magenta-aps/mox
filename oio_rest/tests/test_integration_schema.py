@@ -21,11 +21,17 @@ from oio_rest import oio_rest
 from oio_rest import organisation
 from oio_rest import sag
 from oio_rest import tilstand
+from oio_rest import validate
 
 from . import util
 
 
 class TestSchemaEndPoints(flask_testing.TestCase):
+    def setUp(self):
+        super().setUp()
+
+        validate.SCHEMAS.clear()
+
     def create_app(self):
         app.app.config['TESTING'] = True
         return app.app

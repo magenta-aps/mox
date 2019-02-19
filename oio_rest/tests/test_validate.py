@@ -22,7 +22,7 @@ class TestBase(unittest.TestCase):
 
         # once per class will suffice, since none of them touch the db
         # structure
-        validate.SCHEMA = None
+        validate.SCHEMAS = {}
 
     @classmethod
     def tearDownClass(cls):
@@ -30,7 +30,7 @@ class TestBase(unittest.TestCase):
 
         # once per class will suffice, since none of them touch the db
         # structure
-        validate.SCHEMA = None
+        validate.SCHEMAS = {}
 
     def setUp(self):
         super().setUp()
@@ -792,7 +792,7 @@ class TestGenerateJSONSchema(TestBase):
     def test_create_facet_request_valid(self):
         req = self._json_to_dict('facet_opret.json')
         obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.SCHEMA[obj])
+        jsonschema.validate(req, validate.get_schema(obj))
 
     def test_create_facet_request_invalid(self):
         req = self._json_to_dict('facet_opret.json')
@@ -803,59 +803,59 @@ class TestGenerateJSONSchema(TestBase):
 
         with self.assertRaises(jsonschema.exceptions.ValidationError):
             obj = validate.get_lora_object_type(req)
-            jsonschema.validate(req, validate.SCHEMA[obj])
+            jsonschema.validate(req, validate.get_schema(obj))
 
     def test_create_bruger_request_valid(self):
         req = self._json_to_dict('bruger_opret.json')
         obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.SCHEMA[obj])
+        jsonschema.validate(req, validate.get_schema(obj))
 
     def test_create_klassifikation_request_valid(self):
         req = self._json_to_dict('klassifikation_opret.json')
         obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.SCHEMA[obj])
+        jsonschema.validate(req, validate.get_schema(obj))
 
     def test_create_klasse_request_valid(self):
         req = self._json_to_dict('klasse_opret.json')
         obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.SCHEMA[obj])
+        jsonschema.validate(req, validate.get_schema(obj))
 
     def test_create_aktivitet_request_valid(self):
         req = self._json_to_dict('aktivitet_opret.json')
         obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.SCHEMA[obj])
+        jsonschema.validate(req, validate.get_schema(obj))
 
     def test_create_tilstand_request_valid(self):
         req = self._json_to_dict('tilstand_opret.json')
         obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.SCHEMA[obj])
+        jsonschema.validate(req, validate.get_schema(obj))
 
     def test_create_indsats_request_valid(self):
         req = self._json_to_dict('indsats_opret.json')
         obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.SCHEMA[obj])
+        jsonschema.validate(req, validate.get_schema(obj))
 
     def test_create_itsystem_request_valid(self):
         req = self._json_to_dict('itsystem_opret.json')
         obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.SCHEMA[obj])
+        jsonschema.validate(req, validate.get_schema(obj))
 
     def test_create_loghaendelse_request_valid(self):
         req = self._json_to_dict('loghaendelse_opret.json')
         obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.SCHEMA[obj])
+        jsonschema.validate(req, validate.get_schema(obj))
 
     def test_create_sag_request_valid(self):
         req = self._json_to_dict('sag_opret.json')
         obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.SCHEMA[obj])
+        jsonschema.validate(req, validate.get_schema(obj))
 
     @unittest.skip('Due to an inconsistency between the way LoRa handles '
                    '"DokumentVariantEgenskaber" and the specs')
     def test_create_dokument_request_valid(self):
         req = self._json_to_dict('dokument_opret.json')
         obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.SCHEMA[obj])
+        jsonschema.validate(req, validate.get_schema(obj))
 
 
 class TestFacetSystematically(TestBase):
@@ -899,7 +899,7 @@ class TestFacetSystematically(TestBase):
 
     def assertValidationError(self):
         with self.assertRaises(jsonschema.exceptions.ValidationError):
-            jsonschema.validate(self.facet, validate.SCHEMA['facet'])
+            jsonschema.validate(self.facet, validate.get_schema('facet'))
 
     def test_valid_equivalence_classes1(self):
         """
@@ -908,7 +908,7 @@ class TestFacetSystematically(TestBase):
         See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
         further details
         """
-        jsonschema.validate(self.facet, validate.SCHEMA['facet'])
+        jsonschema.validate(self.facet, validate.get_schema('facet'))
 
     def test_valid_equivalence_classes2(self):
         """
@@ -942,7 +942,7 @@ class TestFacetSystematically(TestBase):
 
         self.facet['relationer'] = {}
 
-        jsonschema.validate(self.facet, validate.SCHEMA['facet'])
+        jsonschema.validate(self.facet, validate.get_schema('facet'))
 
     def test_valid_equivalence_classes3(self):
         """
@@ -954,7 +954,7 @@ class TestFacetSystematically(TestBase):
             'ansvarlig': []
         }
 
-        jsonschema.validate(self.facet, validate.SCHEMA['facet'])
+        jsonschema.validate(self.facet, validate.get_schema('facet'))
 
     def test_valid_equivalence_classes4(self):
         """
@@ -973,7 +973,7 @@ class TestFacetSystematically(TestBase):
             'redaktoerer': [self.reference, urn]
         }
 
-        jsonschema.validate(self.facet, validate.SCHEMA['facet'])
+        jsonschema.validate(self.facet, validate.get_schema('facet'))
 
     def test_note_not_string(self):
         """
@@ -1243,7 +1243,7 @@ class TestFacetSystematically(TestBase):
                 'notetekst': 'This is a note'
             }
         )
-        jsonschema.validate(self.facet, validate.SCHEMA['facet'])
+        jsonschema.validate(self.facet, validate.get_schema('facet'))
 
     def test_virkning_from_missing(self):
         """

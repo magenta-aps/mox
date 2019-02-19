@@ -40,7 +40,7 @@ def patch_db_struct(new: typing.Union[types.ModuleType, dict]):
         mock.patch('oio_rest.db.db_helpers._attribute_fields', {}),
         mock.patch('oio_rest.db.db_helpers._attribute_names', {}),
         mock.patch('oio_rest.db.db_helpers._relation_names', {}),
-        mock.patch('oio_rest.validate.SCHEMA', {}),
+        mock.patch('oio_rest.validate.SCHEMAS', {}),
         mock.patch('oio_rest.settings.REAL_DB_STRUCTURE', new=new),
     ]
 
