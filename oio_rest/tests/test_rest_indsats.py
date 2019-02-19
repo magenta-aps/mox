@@ -18,7 +18,7 @@ class TestIndsats(util.TestCase):
         result = self.client.post(
             "indsats/indsats",
             data={
-                "json": open("tests/fixtures/indsats_opret.json", "rt").read(),
+                "json": util.get_fixture("indsats_opret.json", as_text=False),
             },
         )
         self.assertEqual(result.status_code, 201)
@@ -30,7 +30,7 @@ class TestIndsats(util.TestCase):
         result = self.client.put(
             "indsats/indsats/%s" % uuid_,
             data={
-                "json": open("tests/fixtures/indsats_opret.json", "rt").read(),
+                "json": util.get_fixture("indsats_opret.json", as_text=False),
             },
         )
         self.assertEqual(result.status_code, 200)

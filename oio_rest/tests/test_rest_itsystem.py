@@ -17,7 +17,7 @@ class TestItSystem(util.TestCase):
         result = self.client.post(
             "organisation/itsystem",
             data={
-                "json": open("tests/fixtures/itsystem_opret.json", "rt").read(),
+                "json": util.get_fixture("itsystem_opret.json", as_text=False),
             },
         )
         self.assertEqual(result.status_code, 201)
