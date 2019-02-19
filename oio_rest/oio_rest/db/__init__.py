@@ -30,7 +30,7 @@ from .db_helpers import (
 from ..authentication import get_authenticated_user
 
 from ..auth.restrictions import Operation, get_restrictions
-from ..utils.build_registration import restriction_to_registration
+from ..utils import build_registration
 from ..custom_exceptions import NotFoundException, NotAllowedException
 from ..custom_exceptions import DBException, BadRequestException
 
@@ -312,7 +312,7 @@ def sql_get_registration(class_name, time_period, life_cycle_code,
 
 def sql_convert_restrictions(class_name, restrictions):
     """Convert a list of restrictions to SQL."""
-    registrations = [restriction_to_registration(class_name, r)
+    registrations = [build_registration.restriction_to_registration(class_name, r)
                      for r in restrictions]
     sql_restrictions = [sql_get_registration(
         class_name, None, None, None, None,
