@@ -99,7 +99,7 @@ def _get_metadata(obj, metadata_type, key):
     """
     metadata = settings.REAL_DB_STRUCTURE[obj].get(
         '{}_metadata'.format(metadata_type), [])
-    if not metadata:
+    if not metadata or key not in metadata:
         return metadata
     return metadata[key]
 
@@ -133,7 +133,8 @@ def _handle_attribute_metadata(obj, fields, attribute_name):
     fields.update(
         {
             key: TYPE_MAP[attribute[key]['type']]
-            for key in attribute if attribute[key].get('type', False)
+            for key in attribute
+            if not key.startswith('_') and attribute[key].get('type', False)
         }
     )
 
@@ -148,26 +149,28 @@ def _generate_attributter(obj):
     """
 
     db_attributter = settings.REAL_DB_STRUCTURE[obj]['attributter']
-
     egenskaber_name = '{}egenskaber'.format(obj)
-    egenskaber = {
-        key: STRING
-        for key in db_attributter['egenskaber']
-    }
-    egenskaber.update({'virkning': {'$ref': '#/definitions/virkning'}})
 
-    egenskaber = _handle_attribute_metadata(obj, egenskaber, 'egenskaber')
+    attrs = {}
 
-    return _generate_schema_object(
-        {
-            egenskaber_name: _generate_schema_array(
-                _generate_schema_object(
-                    egenskaber,
-                    _get_mandatory(obj, 'egenskaber') + ['virkning'])
-            )
-        },
-        [egenskaber_name]
-    )
+    for attrname, attrval in db_attributter.items():
+        full_name = '{}{}'.format(obj, attrname)
+        schema = {
+            key: STRING
+            for key in attrval
+        }
+        schema.update({'virkning': {'$ref': '#/definitions/virkning'}})
+
+        schema = _handle_attribute_metadata(obj, schema, attrname)
+
+        attrs[full_name] = _generate_schema_array(
+            _generate_schema_object(
+                schema,
+                _get_mandatory(obj, attrname) + ['virkning'],
+            ),
+        )
+
+    return _generate_schema_object(attrs, sorted(attrs))
 
 
 def _generate_tilstande(obj):
@@ -373,8 +376,6 @@ def get_lora_object_type(req):
     # TODO: this can probably be made smarter using the "oneOf" JSON schema
     # keyword in the schema above, but there were problems getting this to work
 
-    if not len(req['attributter']) == 1:
-        raise jsonschema.exceptions.ValidationError('ups')
     if not list(req['attributter'].keys())[0] in [key + 'egenskaber' for key in
                                                   settings.REAL_DB_STRUCTURE.keys()]:
         raise jsonschema.exceptions.ValidationError('ups2')
