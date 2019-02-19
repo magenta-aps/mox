@@ -73,7 +73,7 @@ class TestGetMandatory(TestBase):
         )
 
     def test_loghaendelse(self):
-        self.assertEqual([],
+        self.assertEqual(['tidspunkt'],
                          validate._get_mandatory('loghaendelse', 'egenskaber'))
 
 

@@ -31071,7 +31071,7 @@ CREATE TABLE loghaendelse_attr_egenskaber (
     id bigint NOT NULL DEFAULT nextval('loghaendelse_attr_egenskaber_id_seq'::regclass),
         service text  NULL,
         klasse text  NULL,
-        tidspunkt text  NULL,
+        tidspunkt text NOT NULL,
         operation text  NULL,
         objekttype text  NULL,
         returkode text  NULL,
