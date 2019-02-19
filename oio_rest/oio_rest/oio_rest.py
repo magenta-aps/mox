@@ -66,6 +66,8 @@ PARAM_ALIASES = {
     'bvn': 'brugervendtnoegle',
 }
 
+HIERARCHIES = []
+
 
 def j(t):
     return jsonify(output=t)
@@ -169,6 +171,7 @@ class OIOStandardHierarchy(object):
         """Set up API for the classes included in the hierarchy.
 
         Note that version number etc. may have to be added to the URL."""
+
         for c in cls._classes:
             c.create_api(cls._name, flask, base_url)
 
@@ -190,6 +193,8 @@ class OIOStandardHierarchy(object):
             classes_url, '_'.join([hierarchy, 'classes']),
             get_classes, methods=['GET']
         )
+
+        HIERARCHIES.append(cls)
 
 
 class OIORestObject(object):

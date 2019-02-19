@@ -7,6 +7,8 @@
 #
 
 import json
+import os
+
 import flask_testing
 
 from oio_rest import aktivitet
@@ -15,15 +17,41 @@ from oio_rest import dokument
 from oio_rest import indsats
 from oio_rest import klassifikation
 from oio_rest import log
+from oio_rest import oio_rest
 from oio_rest import organisation
 from oio_rest import sag
 from oio_rest import tilstand
+
+from . import util
 
 
 class TestSchemaEndPoints(flask_testing.TestCase):
     def create_app(self):
         app.app.config['TESTING'] = True
         return app.app
+
+    def test_schemas_unchanged(self):
+        """
+        Check that the schema endpoints for the classes in the given hierarchy
+        respond with HTTP status code 200 and return JSON.
+        :param hierarchy: The hierarchy to check, e.g. SagsHierarki,...
+        """
+        # Careful now - no logic in the test code!
+
+        expected = util.get_fixture('schemas.json')
+
+        actual = {
+            cls.__name__: cls.get_schema().json
+            for hier in oio_rest.HIERARCHIES
+            for cls in hier._classes
+        }
+        actual_path = os.path.join(util.FIXTURE_DIR, 'schemas.json.new')
+
+        with open(actual_path, 'wt') as fp:
+            json.dump(actual, fp, indent=2, sort_keys=True)
+
+        self.assertEqual(expected, actual,
+                         'schemas changed, see {}'.format(actual_path))
 
     def assertSchemaOK(self, hierarchy):
         """

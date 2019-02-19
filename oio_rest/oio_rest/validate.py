@@ -181,7 +181,8 @@ def _generate_tilstande(obj):
 
     properties = {}
     required = []
-    for key in tilstande.keys():
+
+    for key in sorted(tilstande):
         tilstand_name = obj + key
 
         properties[tilstand_name] = _generate_schema_array(
