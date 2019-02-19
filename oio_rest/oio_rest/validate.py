@@ -34,9 +34,13 @@ def _generate_schema_object(properties, required, kwargs=None):
     schema_obj = {
         'type': 'object',
         'properties': properties,
-        'required': required,
         'additionalProperties': False
     }
+
+    # passing an empty array causes the schema to fail validation...
+    if required:
+        schema_obj['required'] = required
+
     if kwargs:
         schema_obj.update(kwargs)
     return schema_obj
@@ -113,10 +117,10 @@ def _get_mandatory(obj, attribute_name):
     :return: Sorted list of mandatory attribute keys
     """
     attribute = _get_metadata(obj, 'attributter', attribute_name)
-    mandatory = [
+
+    mandatory = sorted(
         key for key in attribute if attribute[key].get('mandatory', False)
-    ]
-    mandatory.sort()
+    )
 
     return mandatory
 
@@ -152,6 +156,7 @@ def _generate_attributter(obj):
     egenskaber_name = '{}egenskaber'.format(obj)
 
     attrs = {}
+    required = []
 
     for attrname, attrval in db_attributter.items():
         full_name = '{}{}'.format(obj, attrname)
@@ -163,14 +168,19 @@ def _generate_attributter(obj):
 
         schema = _handle_attribute_metadata(obj, schema, attrname)
 
+        mandatory = _get_mandatory(obj, attrname)
+
         attrs[full_name] = _generate_schema_array(
             _generate_schema_object(
                 schema,
-                _get_mandatory(obj, attrname) + ['virkning'],
+                mandatory + ['virkning'],
             ),
         )
 
-    return _generate_schema_object(attrs, sorted(attrs))
+        if mandatory:
+            required.append(full_name)
+
+    return _generate_schema_object(attrs, required)
 
 
 def _generate_tilstande(obj):

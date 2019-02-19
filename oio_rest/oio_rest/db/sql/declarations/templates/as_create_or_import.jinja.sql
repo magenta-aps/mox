@@ -127,11 +127,11 @@ BEGIN
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
 {% for attribut , attribut_fields in attributter.items() %}
+{%- if attributter_mandatory[attribut] -%}
 IF coalesce(array_length({{oio_type}}_registrering.attr{{attribut|title}},
     1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [{{attribut}}] for
     [{{oio_type}}]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
-
-
+{%- endif %}
 
 IF {{oio_type}}_registrering.attr{{attribut|title}} IS NOT NULL and coalesce(array_length({{oio_type}}_registrering.attr{{attribut|title}},1),0)>0 THEN
   FOREACH {{oio_type}}_attr_{{attribut}}_obj IN ARRAY {{oio_type}}_registrering.attr{{attribut|title}}

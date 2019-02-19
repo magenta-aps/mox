@@ -57,6 +57,17 @@ def render_templates():
             context["tilstande"] = OrderedDict(context["tilstande"])
             context["attributter"] = OrderedDict(context["attributter"])
 
+            context.setdefault("attributter_metadata", {})
+
+            context["attributter_mandatory"] = {
+                attr: [
+                    k
+                    for k, v in vs.items()
+                    if v.get('mandatory')
+                ]
+                for attr, vs in context["attributter_metadata"].items()
+            }
+
             context["oio_type"] = oio_type.lower()
 
             try:

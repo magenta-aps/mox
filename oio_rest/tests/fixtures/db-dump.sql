@@ -1504,12 +1504,9 @@ BEGIN
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
-
 IF coalesce(array_length(aktivitet_registrering.attrEgenskaber,
     1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [aktivitet]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
-
-
 
 IF aktivitet_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(aktivitet_registrering.attrEgenskaber,1),0)>0 THEN
   FOREACH aktivitet_attr_egenskaber_obj IN ARRAY aktivitet_registrering.attrEgenskaber
@@ -5166,12 +5163,9 @@ BEGIN
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
-
 IF coalesce(array_length(bruger_registrering.attrEgenskaber,
     1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [bruger]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
-
-
 
 IF bruger_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(bruger_registrering.attrEgenskaber,1),0)>0 THEN
   FOREACH bruger_attr_egenskaber_obj IN ARRAY bruger_registrering.attrEgenskaber
@@ -9304,12 +9298,9 @@ BEGIN
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
-
 IF coalesce(array_length(dokument_registrering.attrEgenskaber,
     1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [dokument]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
-
-
 
 IF dokument_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(dokument_registrering.attrEgenskaber,1),0)>0 THEN
   FOREACH dokument_attr_egenskaber_obj IN ARRAY dokument_registrering.attrEgenskaber
@@ -13118,12 +13109,9 @@ BEGIN
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
-
 IF coalesce(array_length(facet_registrering.attrEgenskaber,
     1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [facet]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
-
-
 
 IF facet_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(facet_registrering.attrEgenskaber,1),0)>0 THEN
   FOREACH facet_attr_egenskaber_obj IN ARRAY facet_registrering.attrEgenskaber
@@ -16356,12 +16344,9 @@ BEGIN
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
-
 IF coalesce(array_length(indsats_registrering.attrEgenskaber,
     1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [indsats]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
-
-
 
 IF indsats_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(indsats_registrering.attrEgenskaber,1),0)>0 THEN
   FOREACH indsats_attr_egenskaber_obj IN ARRAY indsats_registrering.attrEgenskaber
@@ -19870,12 +19855,9 @@ BEGIN
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
-
 IF coalesce(array_length(interessefaellesskab_registrering.attrEgenskaber,
     1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [interessefaellesskab]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
-
-
 
 IF interessefaellesskab_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(interessefaellesskab_registrering.attrEgenskaber,1),0)>0 THEN
   FOREACH interessefaellesskab_attr_egenskaber_obj IN ARRAY interessefaellesskab_registrering.attrEgenskaber
@@ -22790,12 +22772,9 @@ BEGIN
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
-
 IF coalesce(array_length(itsystem_registrering.attrEgenskaber,
     1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [itsystem]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
-
-
 
 IF itsystem_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(itsystem_registrering.attrEgenskaber,1),0)>0 THEN
   FOREACH itsystem_attr_egenskaber_obj IN ARRAY itsystem_registrering.attrEgenskaber
@@ -25956,12 +25935,9 @@ BEGIN
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
-
 IF coalesce(array_length(klasse_registrering.attrEgenskaber,
     1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [klasse]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
-
-
 
 IF klasse_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(klasse_registrering.attrEgenskaber,1),0)>0 THEN
   FOREACH klasse_attr_egenskaber_obj IN ARRAY klasse_registrering.attrEgenskaber
@@ -29086,12 +29062,9 @@ BEGIN
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
-
 IF coalesce(array_length(klassifikation_registrering.attrEgenskaber,
     1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [klassifikation]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
-
-
 
 IF klassifikation_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(klassifikation_registrering.attrEgenskaber,1),0)>0 THEN
   FOREACH klassifikation_attr_egenskaber_obj IN ARRAY klassifikation_registrering.attrEgenskaber
@@ -32108,12 +32081,9 @@ BEGIN
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
-
 IF coalesce(array_length(loghaendelse_registrering.attrEgenskaber,
     1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [loghaendelse]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
-
-
 
 IF loghaendelse_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(loghaendelse_registrering.attrEgenskaber,1),0)>0 THEN
   FOREACH loghaendelse_attr_egenskaber_obj IN ARRAY loghaendelse_registrering.attrEgenskaber
@@ -35068,12 +35038,9 @@ BEGIN
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
-
 IF coalesce(array_length(organisation_registrering.attrEgenskaber,
     1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [organisation]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
-
-
 
 IF organisation_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(organisation_registrering.attrEgenskaber,1),0)>0 THEN
   FOREACH organisation_attr_egenskaber_obj IN ARRAY organisation_registrering.attrEgenskaber
@@ -37932,12 +37899,9 @@ BEGIN
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
-
 IF coalesce(array_length(organisationenhed_registrering.attrEgenskaber,
     1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [organisationenhed]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
-
-
 
 IF organisationenhed_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(organisationenhed_registrering.attrEgenskaber,1),0)>0 THEN
   FOREACH organisationenhed_attr_egenskaber_obj IN ARRAY organisationenhed_registrering.attrEgenskaber
@@ -40796,12 +40760,9 @@ BEGIN
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
-
 IF coalesce(array_length(organisationfunktion_registrering.attrEgenskaber,
     1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [organisationfunktion]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
-
-
 
 IF organisationfunktion_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(organisationfunktion_registrering.attrEgenskaber,1),0)>0 THEN
   FOREACH organisationfunktion_attr_egenskaber_obj IN ARRAY organisationfunktion_registrering.attrEgenskaber
@@ -43988,12 +43949,9 @@ BEGIN
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
-
 IF coalesce(array_length(sag_registrering.attrEgenskaber,
     1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [sag]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
-
-
 
 IF sag_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(sag_registrering.attrEgenskaber,1),0)>0 THEN
   FOREACH sag_attr_egenskaber_obj IN ARRAY sag_registrering.attrEgenskaber
@@ -47400,12 +47358,9 @@ BEGIN
 --Verification
 --For now all declared attributes are mandatory (the fields are all optional,though)
 
-
 IF coalesce(array_length(tilstand_registrering.attrEgenskaber,
     1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [tilstand]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
-
-
 
 IF tilstand_registrering.attrEgenskaber IS NOT NULL and coalesce(array_length(tilstand_registrering.attrEgenskaber,1),0)>0 THEN
   FOREACH tilstand_attr_egenskaber_obj IN ARRAY tilstand_registrering.attrEgenskaber
