@@ -128,7 +128,7 @@ BEGIN
 
 {% for attribut , attribut_fields in attributter.items() %}
 IF coalesce(array_length({{oio_type}}_registrering.attr{{attribut|title}},
-    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [{{attribut}}] for
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [{{attribut}}] for
     [{{oio_type}}]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 

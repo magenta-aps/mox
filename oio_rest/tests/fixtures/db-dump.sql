@@ -1506,7 +1506,7 @@ BEGIN
 
 
 IF coalesce(array_length(aktivitet_registrering.attrEgenskaber,
-    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [aktivitet]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
@@ -5168,7 +5168,7 @@ BEGIN
 
 
 IF coalesce(array_length(bruger_registrering.attrEgenskaber,
-    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [bruger]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
@@ -9306,7 +9306,7 @@ BEGIN
 
 
 IF coalesce(array_length(dokument_registrering.attrEgenskaber,
-    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [dokument]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
@@ -13120,7 +13120,7 @@ BEGIN
 
 
 IF coalesce(array_length(facet_registrering.attrEgenskaber,
-    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [facet]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
@@ -16358,7 +16358,7 @@ BEGIN
 
 
 IF coalesce(array_length(indsats_registrering.attrEgenskaber,
-    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [indsats]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
@@ -19872,7 +19872,7 @@ BEGIN
 
 
 IF coalesce(array_length(interessefaellesskab_registrering.attrEgenskaber,
-    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [interessefaellesskab]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
@@ -22792,7 +22792,7 @@ BEGIN
 
 
 IF coalesce(array_length(itsystem_registrering.attrEgenskaber,
-    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [itsystem]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
@@ -25958,7 +25958,7 @@ BEGIN
 
 
 IF coalesce(array_length(klasse_registrering.attrEgenskaber,
-    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [klasse]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
@@ -29088,7 +29088,7 @@ BEGIN
 
 
 IF coalesce(array_length(klassifikation_registrering.attrEgenskaber,
-    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [klassifikation]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
@@ -32110,7 +32110,7 @@ BEGIN
 
 
 IF coalesce(array_length(loghaendelse_registrering.attrEgenskaber,
-    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [loghaendelse]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
@@ -35070,7 +35070,7 @@ BEGIN
 
 
 IF coalesce(array_length(organisation_registrering.attrEgenskaber,
-    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [organisation]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
@@ -37934,7 +37934,7 @@ BEGIN
 
 
 IF coalesce(array_length(organisationenhed_registrering.attrEgenskaber,
-    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [organisationenhed]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
@@ -40798,7 +40798,7 @@ BEGIN
 
 
 IF coalesce(array_length(organisationfunktion_registrering.attrEgenskaber,
-    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [organisationfunktion]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
@@ -43990,7 +43990,7 @@ BEGIN
 
 
 IF coalesce(array_length(sag_registrering.attrEgenskaber,
-    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [sag]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
@@ -47402,7 +47402,7 @@ BEGIN
 
 
 IF coalesce(array_length(tilstand_registrering.attrEgenskaber,
-    1),0)<1 THEN RAISE EXCEPTION 'Savner påkraevet attribut [egenskaber] for
+    1),0)<1 THEN RAISE EXCEPTION 'Savner påkrævet attribut [egenskaber] for
     [tilstand]. Oprettelse afbrydes.' USING ERRCODE='MO400'; END IF;
 
 
