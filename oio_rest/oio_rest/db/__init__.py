@@ -346,18 +346,18 @@ def object_exists(class_name, uuid):
     """Check if an object with this class name and UUID exists already."""
     sql = ("select (%s IN (SELECT DISTINCT " + class_name +
            "_id from " + class_name + "_registrering))")
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute(sql, (uuid,))
-    except psycopg2.Error as e:
-        if e.pgcode[:2] == 'MO':
-            status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.pgerror)
-        else:
-            raise
 
-    result = cursor.fetchone()[0]
+    with get_connection() as conn, conn.cursor() as cursor:
+        try:
+            cursor.execute(sql, (uuid,))
+        except psycopg2.Error as e:
+            if e.pgcode[:2] == 'MO':
+                status_code = int(e.pgcode[2:])
+                raise DBException(status_code, e.pgerror)
+            else:
+                raise
+
+        result = cursor.fetchone()[0]
 
     return result
 
@@ -374,18 +374,19 @@ join actual_state.dokument_del d on d.id = de.del_id join
 actual_state.dokument_variant v on v.id = d.variant_id join
 actual_state.dokument_registrering r on r.id = v.dokument_registrering_id
 where de.indhold = %s"""
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute(sql, (content_url,))
-    except psycopg2.Error as e:
-        if e.pgcode[:2] == 'MO':
-            status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.pgerror)
-        else:
-            raise
 
-    result = cursor.fetchone()
+    with get_connection() as conn, conn.cursor() as cursor:
+        try:
+            cursor.execute(sql, (content_url,))
+        except psycopg2.Error as e:
+            if e.pgcode[:2] == 'MO':
+                status_code = int(e.pgcode[2:])
+                raise DBException(status_code, e.pgerror)
+            else:
+                raise
+
+        result = cursor.fetchone()
+
     return result
 
 
@@ -427,18 +428,18 @@ def create_or_import_object(class_name, note, registration,
         restrictions=sql_restrictions)
 
     # Call Postgres! Return OK or not accordingly
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute(sql)
-    except psycopg2.Error as e:
-        if e.pgcode[:2] == 'MO':
-            status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.pgerror)
-        else:
-            raise
+    with get_connection() as conn, conn.cursor() as cursor:
+        try:
+            cursor.execute(sql)
+        except psycopg2.Error as e:
+            if e.pgcode[:2] == 'MO':
+                status_code = int(e.pgcode[2:])
+                raise DBException(status_code, e.pgerror)
+            else:
+                raise
 
-    output = cursor.fetchone()
+        output = cursor.fetchone()
+
     return output[0]
 
 
@@ -479,19 +480,20 @@ def delete_object(class_name, registration, note, uuid):
         variants=registration.get("variants", None),
         restrictions=sql_restrictions
     )
-    # Call Postgres! Return OK or not accordingly
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute(sql)
-    except psycopg2.Error as e:
-        if e.pgcode[:2] == 'MO':
-            status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.pgerror)
-        else:
-            raise
 
-    output = cursor.fetchone()
+    # Call Postgres! Return OK or not accordingly
+    with get_connection() as conn, conn.cursor() as cursor:
+        try:
+            cursor.execute(sql)
+        except psycopg2.Error as e:
+            if e.pgcode[:2] == 'MO':
+                status_code = int(e.pgcode[2:])
+                raise DBException(status_code, e.pgerror)
+            else:
+                raise
+
+        output = cursor.fetchone()
+
     return output[0]
 
 
@@ -519,19 +521,20 @@ def passivate_object(class_name, note, registration, uuid):
         variants=registration.get("variants", None),
         restrictions=sql_restrictions
     )
-    # Call PostgreSQL
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute(sql)
-    except psycopg2.Error as e:
-        if e.pgcode[:2] == 'MO':
-            status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.pgerror)
-        else:
-            raise
 
-    output = cursor.fetchone()
+    # Call PostgreSQL
+    with get_connection() as conn, conn.cursor() as cursor:
+        try:
+            cursor.execute(sql)
+        except psycopg2.Error as e:
+            if e.pgcode[:2] == 'MO':
+                status_code = int(e.pgcode[2:])
+                raise DBException(status_code, e.pgerror)
+            else:
+                raise
+
+        output = cursor.fetchone()
+
     return output[0]
 
 
@@ -560,25 +563,25 @@ def update_object(class_name, note, registration, uuid=None,
         relations=registration["relations"],
         variants=registration.get("variants", None),
         restrictions=sql_restrictions)
-    # Call PostgreSQL
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute(sql)
-        cursor.fetchone()
-    except psycopg2.Error as e:
-        noop_msg = ('Aborted updating {} with id [{}] as the given data, '
-                    'does not give raise to a new registration.'.format(
-                        class_name.lower(), uuid
-                    ))
 
-        if e.pgerror.startswith(noop_msg):
-            return uuid
-        elif e.pgcode[:2] == 'MO':
-            status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.pgerror)
-        else:
-            raise
+    # Call PostgreSQL
+    with get_connection() as conn, conn.cursor() as cursor:
+        try:
+            cursor.execute(sql)
+            cursor.fetchone()
+        except psycopg2.Error as e:
+            noop_msg = ('Aborted updating {} with id [{}] as the given data, '
+                        'does not give raise to a new registration.'.format(
+                            class_name.lower(), uuid
+                        ))
+
+            if e.pgerror.startswith(noop_msg):
+                return uuid
+            elif e.pgcode[:2] == 'MO':
+                status_code = int(e.pgcode[2:])
+                raise DBException(status_code, e.pgerror)
+            else:
+                raise
 
     return uuid
 
@@ -607,22 +610,22 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
     if registreret_fra is not None or registreret_til is not None:
         registration_period = DateTimeTZRange(registreret_fra, registreret_til)
 
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute(sql, {
-            'uuid': uuid,
-            'registrering_tstzrange': registration_period,
-            'virkning_tstzrange': DateTimeTZRange(virkning_fra, virkning_til)
-        })
-    except psycopg2.Error as e:
-        if e.pgcode[:2] == 'MO':
-            status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.pgerror)
-        else:
-            raise
+    with get_connection() as conn, conn.cursor() as cursor:
+        try:
+            cursor.execute(sql, {
+                'uuid': uuid,
+                'registrering_tstzrange': registration_period,
+                'virkning_tstzrange': DateTimeTZRange(virkning_fra, virkning_til)
+            })
+        except psycopg2.Error as e:
+            if e.pgcode[:2] == 'MO':
+                status_code = int(e.pgcode[2:])
+                raise DBException(status_code, e.pgerror)
+            else:
+                raise
 
-    output = cursor.fetchone()
+        output = cursor.fetchone()
+
     if not output:
         # nothing found
         raise NotFoundException("{0} with UUID {1} not found.".format(
@@ -777,18 +780,18 @@ def search_objects(class_name, uuid, registration,
         # TODO: Get this into the SQL function signature!
         restrictions=sql_restrictions
     )
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute(sql)
-    except psycopg2.Error as e:
-        if e.pgcode[:2] == 'MO':
-            status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.pgerror)
-        else:
-            raise
+    with get_connection() as conn, conn.cursor() as cursor:
+        try:
+            cursor.execute(sql)
+        except psycopg2.Error as e:
+            if e.pgcode[:2] == 'MO':
+                status_code = int(e.pgcode[2:])
+                raise DBException(status_code, e.pgerror)
+            else:
+                raise
 
-    output = cursor.fetchone()
+        output = cursor.fetchone()
+
     return output
 
 
