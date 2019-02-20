@@ -56,15 +56,7 @@ def adapt(value):
 
 jinja_env.filters['adapt'] = adapt
 
-pool = ThreadedConnectionPool(
-    settings.DB_MIN_CONNECTIONS,
-    settings.DB_MAX_CONNECTIONS,
-    dbname=settings.DATABASE,
-    user=settings.DB_USER,
-    password=settings.DB_PASSWORD,
-    host=settings.DB_HOST,
-    port=settings.DB_PORT
-)
+
 
 def get_connection():
     """Handle all intricacies of connecting to Postgres.
@@ -80,9 +72,35 @@ def get_connection():
 
     """
 
-    if 'connection' not in flask.g:
-        flask.g.connection = pool.getconn()
-        flask.g.connection.autocommit = True
+    try:
+        return flask.g.connection
+    except AttributeError:
+        try:
+            pool = flask.current_app.pool
+        except AttributeError:
+            def make_connection(dsn):
+                if flask.current_app.debug:
+                    conn = psycopg2.extras.LoggingConnection(dsn)
+                    conn.initialize(flask.current_app.logger)
+                else:
+                    conn = psycopg2.extensions.connection(dsn)
+
+                conn.autocommit = True
+
+                return conn
+
+            pool = flask.current_app.pool = ThreadedConnectionPool(
+                settings.DB_MIN_CONNECTIONS,
+                settings.DB_MAX_CONNECTIONS,
+                dbname=settings.DATABASE,
+                user=settings.DB_USER,
+                password=settings.DB_PASSWORD,
+                host=settings.DB_HOST,
+                port=settings.DB_PORT,
+                connection_factory=make_connection,
+            )
+
+    flask.g.connection = pool.getconn()
 
     return flask.g.connection
 
@@ -91,7 +109,7 @@ def close_connection(exc=None):
     conn = flask.g.pop('connection', None)
 
     if conn:
-        pool.putconn(conn)
+        flask.current_app.pool.putconn(conn)
 
 
 #

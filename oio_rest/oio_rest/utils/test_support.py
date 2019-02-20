@@ -192,19 +192,18 @@ class TestCaseMixin(object):
                        create=True),
             mock.patch('oio_rest.settings.DB_PORT', db_port,
                        create=True),
-            mock.patch(
-                'oio_rest.db.pool',
-                psycopg2.pool.SimpleConnectionPool(
-                    1, 1,
-                    database=settings.DATABASE,
-                    user=settings.DB_USER,
-                    password=settings.DB_PASSWORD,
-                    host=db_host,
-                    port=db_port,
-                ),
-            ),
         ]:
             stack.enter_context(p)
+
+    def tearDown(self):
+        pool = getattr(self.app, 'pool', None)
+
+        if pool:
+            pool.closeall()
+
+            del self.app.pool
+
+        super().tearDown()
 
 
 @click.command()
