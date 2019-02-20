@@ -29,7 +29,7 @@ from .. import settings
 
 BASE_DIR = os.path.dirname(os.path.dirname(settings.__file__))
 TOP_DIR = os.path.dirname(BASE_DIR)
-DB_DIR = os.path.join(BASE_DIR, 'build', 'db')
+DB_DIR = os.path.join(BASE_DIR, 'build', 'db', str(os.getpid()))
 
 
 @contextlib.contextmanager
