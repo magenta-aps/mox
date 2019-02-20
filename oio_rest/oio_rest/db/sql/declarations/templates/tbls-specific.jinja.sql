@@ -115,11 +115,11 @@ ALTER TABLE {{oio_type}}_attr_{{attribut}}_id_seq
 CREATE TABLE {{oio_type}}_attr_{{attribut}} (
     id bigint NOT NULL DEFAULT nextval('{{oio_type}}_attr_{{attribut}}_id_seq'::regclass),
     {%- for field in attribut_fields %}
-        {{ field }} {% if attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][field] is defined and attributter_metadata[attribut][field]['type'] is defined -%}
+        {{ field }} {% if attributter_metadata[attribut][field]['type'] | default(False, True) -%}
             {{ attributter_metadata[attribut][field]['type'] }}
         {%- else -%}
             text
-        {%- endif %} {% if attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][field] is defined and attributter_metadata[attribut][field]['mandatory'] is defined and attributter_metadata[attribut][field]['mandatory'] -%}
+        {%- endif %} {% if attributter_metadata[attribut][field]['mandatory'] -%}
             NOT
         {%- endif %} NULL,
     {%- endfor %}
@@ -138,7 +138,7 @@ ALTER TABLE {{oio_type}}_attr_{{attribut}}
 
 
 {% for field in attribut_fields %} 
-    {% if attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][field] is defined and attributter_metadata[attribut][field]['type'] is defined %}
+    {% if attributter_metadata[attribut][field]['type'] is defined %}
         {% if attributter_metadata[attribut][field]['type'] == "text[]" %}
             CREATE INDEX {{oio_type}}_attr_{{attribut}}_pat_{{field}}
             ON {{oio_type}}_attr_{{attribut}}

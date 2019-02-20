@@ -29,7 +29,7 @@ soegeordskategori text
 {%-for attribut , attribut_fields in attributter.items() %}
 CREATE TYPE {{oio_type|title}}{{attribut|title}}AttrType AS (
 {%- for field in attribut_fields %}
-{%- if attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][field] is defined and attributter_metadata[attribut][field]['type'] is defined %} 
+{%- if attributter_metadata[attribut][field]['type'] is defined %} 
 {%- if attributter_metadata[attribut][field]['type'] =='int' or attributter_metadata[attribut][field]['type'] =='date' or attributter_metadata[attribut][field]['type']=='boolean' or attributter_metadata[attribut][field]['type']=='timestamptz' %}
 {{field}} Clearable{{attributter_metadata[attribut][field]['type']|title}},
 {% elif attributter_metadata[attribut][field]['type'] == 'interval(0)' %}
