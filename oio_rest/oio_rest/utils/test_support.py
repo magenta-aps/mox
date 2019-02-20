@@ -182,6 +182,9 @@ class TestCaseMixin(object):
         db_host = psql().dsn()['host']
         db_port = psql().dsn()['port']
 
+        stack = contextlib.ExitStack()
+        self.addCleanup(stack.close)
+
         for p in [
             mock.patch('oio_rest.settings.FILE_UPLOAD_FOLDER', './mox-upload'),
             mock.patch('oio_rest.settings.LOG_AMQP_SERVER', None),
@@ -201,8 +204,7 @@ class TestCaseMixin(object):
                 ),
             ),
         ]:
-            p.start()
-            self.addCleanup(p.stop)
+            stack.enter_context(p)
 
 
 @click.command()
