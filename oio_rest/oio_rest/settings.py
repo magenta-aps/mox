@@ -27,11 +27,13 @@ BASE_URL = getenv('BASE_URL', '')
 
 
 # Database (PostgreSQL) settings
-DB_HOST = "localhost"
-DB_PORT = None
-DB_USER = "mox"
-DB_PASSWORD = "mox"
-DATABASE = "mox"  # name of database, should be changed to use DB_ convention.
+DB_HOST = getenv('DB_HOST', "localhost")
+DB_PORT = int(getenv('DB_PORT', '0')) or None
+DB_USER = getenv('DB_USER', "mox")
+DB_PASSWORD = getenv('DB_PASSWORD', "mox")
+
+# name of database, should be changed to use DB_ convention.
+DATABASE = getenv('DB_NAME' ,"mox")
 
 # Per-process limits on the amount of database connections. Setting the minimum
 # to a non-zero value ensures that the webapp opens this amount at load,
