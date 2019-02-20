@@ -14,13 +14,14 @@ from tests import util
 
 
 class TestDokument(util.TestCase):
-    @unittest.skip("I don't know what should happen here.")
     def test_create_dokument_empty_dict(self):
-        result = self.client.post(
+        '''Not sure why this happens?'''
+        self.assertRequestResponse(
             "/dokument/dokument",
-            data={"json": "{}"},
-        ).get_json()
-        self.assertIsNotNone(result["uuid"])
+            {'uuid': None},
+            json={},
+            status_code=400,
+        )
 
     def test_create_dokument_missing_files(self):
         result = self.client.post(

@@ -850,9 +850,9 @@ class TestGenerateJSONSchema(TestBase):
         obj = validate.get_lora_object_type(req)
         jsonschema.validate(req, validate.get_schema(obj))
 
-    @unittest.skip('Due to an inconsistency between the way LoRa handles '
-                   '"DokumentVariantEgenskaber" and the specs')
     def test_create_dokument_request_valid(self):
+        '''Due to an inconsistency between the way LoRa handles
+        "DokumentVariantEgenskaber" and the specs'''
         req = self._json_to_dict('dokument_opret.json')
         obj = validate.get_lora_object_type(req)
         jsonschema.validate(req, validate.get_schema(obj))
