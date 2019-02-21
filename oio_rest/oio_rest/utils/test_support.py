@@ -34,15 +34,25 @@ DB_DIR = os.path.join(BASE_DIR, 'build', 'db')
 
 @contextlib.contextmanager
 def patch_db_struct(new: typing.Union[types.ModuleType, dict]):
+    '''Context manager for overriding db_structures'''
+
+    patches = [
+        mock.patch('oio_rest.db.db_helpers._attribute_fields', {}),
+        mock.patch('oio_rest.db.db_helpers._attribute_names', {}),
+        mock.patch('oio_rest.db.db_helpers._relation_names', {}),
+        mock.patch('oio_rest.validate.SCHEMA', {}),
+        mock.patch('oio_rest.settings.REAL_DB_STRUCTURE', new=new),
+    ]
+
     if isinstance(new, types.ModuleType):
-        with \
-             mock.patch('oio_rest.settings.DB_STRUCTURE', new), \
-             mock.patch('oio_rest.settings.REAL_DB_STRUCTURE', new=new.REAL_DB_STRUCTURE):
-            yield
-    else:
-        with \
-             mock.patch('oio_rest.settings.REAL_DB_STRUCTURE', new=new):
-            yield
+        patches.append(mock.patch('oio_rest.settings.REAL_DB_STRUCTURE',
+                                  new=new.REAL_DB_STRUCTURE))
+
+    with contextlib.ExitStack() as stack:
+        for patch in patches:
+            stack.enter_context(patch)
+
+        yield
 
 
 @functools.lru_cache()

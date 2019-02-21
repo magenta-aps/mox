@@ -15,7 +15,31 @@ import jsonschema
 import oio_rest.validate as validate
 
 
-class TestGetMandatory(unittest.TestCase):
+class TestBase(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+        # once per class will suffice, since none of them touch the db
+        # structure
+        validate.SCHEMA = None
+
+    @classmethod
+    def tearDownClass(cls):
+        super().setUpClass()
+
+        # once per class will suffice, since none of them touch the db
+        # structure
+        validate.SCHEMA = None
+
+    def setUp(self):
+        super().setUp()
+
+        with self.assertRaises(jsonschema.exceptions.ValidationError):
+            validate.validate({})
+
+
+class TestGetMandatory(TestBase):
     def test_facet(self):
         self.assertEqual(
             ['brugervendtnoegle'],
@@ -53,10 +77,12 @@ class TestGetMandatory(unittest.TestCase):
                          validate._get_mandatory('loghaendelse', 'egenskaber'))
 
 
-class TestGenerateJSONSchema(unittest.TestCase):
+class TestGenerateJSONSchema(TestBase):
     maxDiff = None
 
     def setUp(self):
+        super().setUp()
+
         self.relation_nul_til_mange = {
             'type': 'array',
             'items': {
@@ -832,8 +858,10 @@ class TestGenerateJSONSchema(unittest.TestCase):
         jsonschema.validate(req, validate.SCHEMA[obj])
 
 
-class TestFacetSystematically(unittest.TestCase):
+class TestFacetSystematically(TestBase):
     def setUp(self):
+        super().setUp()
+
         self.standard_virkning1 = {
             "from": "2000-01-01 12:00:00+01",
             "from_included": True,
