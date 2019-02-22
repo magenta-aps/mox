@@ -205,6 +205,19 @@ class TestCaseMixin(object):
 
         super().tearDown()
 
+    @classmethod
+    def tearDownClass(cls):
+        with psycopg2.connect(psql().url()) as conn:
+            conn.autocommit = True
+
+            with conn.cursor() as curs:
+                curs.execute(
+                    'DROP DATABASE IF EXISTS {}'.format(settings.DATABASE),
+                )
+                curs.execute(
+                    'DROP USER IF EXISTS {}'.format(settings.DB_USER),
+                )
+
 
 @click.command()
 @click.option('--host', '-h', default='::1',
