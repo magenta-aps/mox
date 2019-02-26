@@ -138,7 +138,7 @@ def _handle_attribute_metadata(obj, fields, attribute_name):
         {
             key: TYPE_MAP[attribute[key]['type']]
             for key in attribute
-            if not key.startswith('_') and attribute[key].get('type', False)
+            if attribute[key].get('type', False)
         }
     )
 
