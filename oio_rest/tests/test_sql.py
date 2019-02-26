@@ -8,14 +8,10 @@
 
 import os
 import pathlib
-import re
-import subprocess
-import sys
 import unittest
 
 import tap.parser
 
-from oio_rest.utils import test_support
 from oio_rest.db import db_templating
 from oio_rest import settings
 from tests import util
@@ -68,8 +64,8 @@ class SQLTests(util.TestCase):
                     if result.skip:
                         raise unittest.SkipTest()
                     elif not result.ok:
-                        self.fail(result.diagnostics or
-                                  result.description)
+                        self.fail(result.diagnostics or result.description)
+
 
 class TextTests(unittest.TestCase):
     def test_sql_unchanged(self):

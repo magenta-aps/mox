@@ -10,13 +10,11 @@
 import json
 import os
 import pprint
-import unittest.mock
 import uuid
 
 import flask_testing
 
 from oio_rest.utils import test_support
-from oio_rest import settings
 
 TESTS_DIR = os.path.dirname(__file__)
 BASE_DIR = os.path.dirname(TESTS_DIR)

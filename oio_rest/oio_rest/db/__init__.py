@@ -57,7 +57,6 @@ def adapt(value):
 jinja_env.filters['adapt'] = adapt
 
 
-
 def get_connection():
     """Handle all intricacies of connecting to Postgres.
 

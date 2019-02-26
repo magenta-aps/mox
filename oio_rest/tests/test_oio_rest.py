@@ -24,8 +24,6 @@ from oio_rest.oio_rest import OIOStandardHierarchy, OIORestObject
 from oio_rest import oio_rest
 from oio_rest.utils import test_support
 
-from . import util
-
 
 class TestClassRestObject(OIORestObject):
     pass

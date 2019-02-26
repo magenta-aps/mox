@@ -6,7 +6,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-import unittest
 import uuid
 
 from oio_rest.utils.build_registration import is_uuid
