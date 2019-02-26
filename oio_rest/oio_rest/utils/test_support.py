@@ -21,6 +21,7 @@ import testing.postgresql
 import psycopg2.pool
 
 from .. import app
+from .. import db
 from ..db import db_templating
 
 from .. import settings
@@ -222,21 +223,15 @@ class TestCaseMixin(object):
                        create=True),
             mock.patch('oio_rest.settings.DB_PORT', db_port,
                        create=True),
+            mock.patch('oio_rest.db.pool', None),
         ]:
             stack.enter_context(p)
 
-    def tearDown(self):
-        pool = getattr(self.app, 'pool', None)
-
-        if pool:
-            pool.closeall()
-
-            del self.app.pool
-
-        super().tearDown()
-
     @classmethod
     def tearDownClass(cls):
+        if db.pool:
+            db.pool.closeall()
+
         with psycopg2.connect(psql().url()) as conn:
             conn.autocommit = True
 

@@ -54,8 +54,6 @@ class RegexConverter(BaseConverter):
 app.url_map.converters['regex'] = RegexConverter
 app.url_map.strict_slashes = False
 
-app.teardown_request(db.close_connection)
-
 klassifikation.KlassifikationsHierarki.setup_api(
     base_url=settings.BASE_URL, flask=app,
 )

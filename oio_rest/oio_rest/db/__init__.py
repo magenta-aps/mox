@@ -16,7 +16,7 @@ import flask
 
 from psycopg2.extras import DateTimeTZRange
 from psycopg2.extensions import AsIs, QuotedString, adapt as psyco_adapt
-from psycopg2.pool import ThreadedConnectionPool
+from psycopg2.pool import PersistentConnectionPool
 from jinja2 import Environment, FileSystemLoader
 from dateutil import parser as date_parser
 
@@ -39,6 +39,8 @@ from .. import settings
 """
     Jinja2 Environment
 """
+
+pool = None
 
 jinja_env = Environment(loader=FileSystemLoader(
     str(pathlib.Path(__file__).parent / 'sql' / 'invocations' / 'templates'),
@@ -71,44 +73,20 @@ def get_connection():
 
     """
 
-    try:
-        return flask.g.connection
-    except AttributeError:
-        try:
-            pool = flask.current_app.pool
-        except AttributeError:
-            def make_connection(dsn):
-                if flask.current_app.debug:
-                    conn = psycopg2.extras.LoggingConnection(dsn)
-                    conn.initialize(flask.current_app.logger)
-                else:
-                    conn = psycopg2.extensions.connection(dsn)
+    global pool
 
-                conn.autocommit = True
+    if pool is None:
+        pool = PersistentConnectionPool(
+            settings.DB_MIN_CONNECTIONS,
+            settings.DB_MAX_CONNECTIONS,
+            dbname=settings.DATABASE,
+            user=settings.DB_USER,
+            password=settings.DB_PASSWORD,
+            host=settings.DB_HOST,
+            port=settings.DB_PORT,
+        )
 
-                return conn
-
-            pool = flask.current_app.pool = ThreadedConnectionPool(
-                settings.DB_MIN_CONNECTIONS,
-                settings.DB_MAX_CONNECTIONS,
-                dbname=settings.DATABASE,
-                user=settings.DB_USER,
-                password=settings.DB_PASSWORD,
-                host=settings.DB_HOST,
-                port=settings.DB_PORT,
-                connection_factory=make_connection,
-            )
-
-    flask.g.connection = pool.getconn()
-
-    return flask.g.connection
-
-
-def close_connection(exc=None):
-    conn = flask.g.pop('connection', None)
-
-    if conn:
-        flask.current_app.pool.putconn(conn)
+    return pool.getconn()
 
 
 #
