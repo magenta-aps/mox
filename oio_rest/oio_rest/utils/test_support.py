@@ -8,6 +8,7 @@
 
 import atexit
 import contextlib
+import copy
 import functools
 import glob
 import os
@@ -45,12 +46,44 @@ def patch_db_struct(new: typing.Union[types.ModuleType, dict]):
     ]
 
     if isinstance(new, types.ModuleType):
-        patches.append(mock.patch('oio_rest.settings.REAL_DB_STRUCTURE',
-                                  new=new.REAL_DB_STRUCTURE))
+        patches += [
+            mock.patch('oio_rest.settings.REAL_DB_STRUCTURE',
+                       new=new.REAL_DB_STRUCTURE),
+            mock.patch('oio_rest.settings.DB_STRUCTURE.REAL_DB_STRUCTURE',
+                       new=new.REAL_DB_STRUCTURE),
+        ]
 
     with contextlib.ExitStack() as stack:
         for patch in patches:
             stack.enter_context(patch)
+
+        yield
+
+
+@contextlib.contextmanager
+def extend_db_struct(new: dict):
+    '''Context manager for extending db_structures'''
+
+    dbs = copy.deepcopy(settings.DB_STRUCTURE.DATABASE_STRUCTURE)
+    real_dbs = copy.deepcopy(settings.REAL_DB_STRUCTURE)
+
+    patches = [
+        mock.patch('oio_rest.db.db_helpers._attribute_fields', {}),
+        mock.patch('oio_rest.db.db_helpers._attribute_names', {}),
+        mock.patch('oio_rest.db.db_helpers._relation_names', {}),
+        mock.patch('oio_rest.validate.SCHEMAS', {}),
+        mock.patch('oio_rest.settings.DB_STRUCTURE.DATABASE_STRUCTURE',
+                   new=dbs),
+        mock.patch('oio_rest.settings.REAL_DB_STRUCTURE', new=real_dbs),
+        mock.patch('oio_rest.settings.DB_STRUCTURE.REAL_DB_STRUCTURE',
+                   new=real_dbs),
+    ]
+
+    with contextlib.ExitStack() as stack:
+        for patch in patches:
+            stack.enter_context(patch)
+
+        settings.load_db_extensions(new)
 
         yield
 

@@ -17,8 +17,10 @@
     overwrite the settings once again (file having highest precedens).
 """
 
+import collections
 import contextlib
 import importlib
+import itertools
 import json
 import os
 
@@ -146,3 +148,50 @@ def update_config(mapping, config_path):
 update_config(globals(), CONFIG_FILE)
 DB_STRUCTURE = importlib.import_module(DB_STRUCTURE)
 REAL_DB_STRUCTURE = DB_STRUCTURE.REAL_DB_STRUCTURE
+
+
+def merge_dicts(a, b):
+    if a is None:
+        return b
+    elif b is None:
+        return a
+
+    assert type(a) == type(b) == dict, \
+        'type mismatch!: {} != {}'.format(type(a), type(b))
+
+    # the database code relies on the ordering of elements, so ensure
+    # that a consistent ordering, even on Python 3.5
+    return collections.OrderedDict(
+        (
+            k,
+            b[k] if k not in a
+            else
+            a[k] if k not in b
+            else merge_dicts(a[k], b[k])
+        )
+        for k in itertools.chain(a, b)
+    )
+
+
+def load_db_extensions(exts=None):
+    global DB_STRUCTURE, REAL_DB_STRUCTURE
+
+    if not exts:
+        return
+
+    if isinstance(exts, str):
+        with open(exts) as fp:
+            exts = json.load(fp)
+
+    DB_STRUCTURE.DATABASE_STRUCTURE = merge_dicts(
+        DB_STRUCTURE.DATABASE_STRUCTURE,
+        exts,
+    )
+
+    REAL_DB_STRUCTURE = DB_STRUCTURE.REAL_DB_STRUCTURE = merge_dicts(
+        DB_STRUCTURE.REAL_DB_STRUCTURE,
+        exts,
+    )
+
+
+load_db_extensions(os.getenv('DB_STRUCTURE_EXTENSIONS'))
