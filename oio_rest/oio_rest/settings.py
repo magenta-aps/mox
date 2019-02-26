@@ -156,8 +156,10 @@ def merge_dicts(a, b):
     elif b is None:
         return a
 
-    assert type(a) == type(b) == dict, \
-        'type mismatch!: {} != {}'.format(type(a), type(b))
+    assert type(a) == type(b) == dict, 'type mismatch!: {} != {}'.format(
+        type(a),
+        type(b),
+    )
 
     # the database code relies on the ordering of elements, so ensure
     # that a consistent ordering, even on Python 3.5
