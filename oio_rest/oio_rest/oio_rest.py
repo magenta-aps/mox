@@ -161,6 +161,7 @@ class Registration(object):
 class OIOStandardHierarchy(object):
     """Implement API for entire hierarchy."""
 
+    _name = ''
     _classes = []
 
     @classmethod
@@ -168,6 +169,8 @@ class OIOStandardHierarchy(object):
         """Set up API for the classes included in the hierarchy.
 
         Note that version number etc. may have to be added to the URL."""
+
+        assert cls._name and cls._classes, 'hierarchy not configured?'
 
         for c in cls._classes:
             c.create_api(cls._name, flask, base_url)
