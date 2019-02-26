@@ -1340,6 +1340,15 @@ class TestSchemaEndPoints(flask_testing.TestCase):
 
         validate.SCHEMAS.clear()
 
+        # extract a list of all OIO hierarchies and classes
+        def get_subclasses(cls):
+            for subcls in cls.__subclasses__():
+                if subcls.__module__.startswith('oio_rest.'):
+                    yield subcls
+                    yield from get_subclasses(subcls)
+
+        self.hierarchies = list(get_subclasses(oio_rest.OIOStandardHierarchy))
+
     def create_app(self):
         app.app.config['TESTING'] = True
         return app.app
@@ -1356,7 +1365,7 @@ class TestSchemaEndPoints(flask_testing.TestCase):
 
         actual = {
             cls.__name__: cls.get_schema().json
-            for hier in oio_rest.HIERARCHIES
+            for hier in self.hierarchies
             for cls in hier._classes
         }
         actual_path = os.path.join(util.FIXTURE_DIR, 'schemas.json.new')

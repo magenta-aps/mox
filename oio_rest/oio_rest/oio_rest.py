@@ -66,8 +66,6 @@ PARAM_ALIASES = {
     'bvn': 'brugervendtnoegle',
 }
 
-HIERARCHIES = []
-
 
 def j(t):
     return jsonify(output=t)
@@ -193,8 +191,6 @@ class OIOStandardHierarchy(object):
             classes_url, '_'.join([hierarchy, 'classes']),
             get_classes, methods=['GET']
         )
-
-        HIERARCHIES.append(cls)
 
 
 class OIORestObject(object):
