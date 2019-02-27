@@ -22,10 +22,21 @@ both default values `and environment variables`.
 
 .. py:data:: BASE_URL
 
+   .. todo::
+
+      Fill out this section.
+
    Default: ``""``
 
 
-# Database (PostgreSQL) settings
+Database
+--------
+
+PostgreSQL
+
+.. todo::
+
+      Fill out this section.
 
 .. py:data:: DB_HOST
 
@@ -67,6 +78,12 @@ both default values `and environment variables`.
 
    Default: ``"oio_rest.db.db_structure"``
 
+File upload
+-----------
+
+.. todo::
+
+      Fix this section.
 
 # This is where file uploads are stored. It must be readable and writable by
 # the mox user, running the REST API server. This is used in the Dokument
@@ -76,7 +93,12 @@ both default values `and environment variables`.
 
    Default: ``"/var/mox"``
 
+SAML
+----
 
+.. todo::
+
+      Fix this section.
 
 # The Endpoint specified in the AppliesTo element of the STS request
 # This will be used to verify the Audience of the SAML Assertion
@@ -137,6 +159,43 @@ both default values `and environment variables`.
 
    Default: ``"http://wso2.org/claims/url"``
 
+Second section with SAML
+++++++++++++++++++++++++
+
+.. todo::
+
+      Fix this section. Merge or find better name.
+
+.. py:data:: SAML_IDP_METADATA_URL
+
+   Default: ``"https://172.16.20.100/simplesaml/saml2/idp/metadata.php"``
+
+.. py:data:: SAML_IDP_INSECURE
+
+   Default: ``False``
+
+.. py:data:: SAML_REQUESTS_SIGNED
+
+   Default: ``False``
+
+.. py:data:: SAML_KEY_FILE
+
+   Default: ``None``
+
+.. py:data:: SAML_CERT_FILE
+
+   Default: ``None``
+
+.. py:data:: SAML_AUTH_ENABLE
+
+   Default: ``False``
+
+Authorization
+-------------
+
+.. todo::
+
+      Fix this section. Maby merge with SAML.
 
 # Whether authorization is enabled.
 
@@ -165,7 +224,12 @@ both default values `and environment variables`.
 
 
 
-# Log AMQP settings
+Log AMQP
+--------
+
+.. todo::
+
+      Fix this section.
 
 .. py:data:: LOG_AMQP_SERVER
 
@@ -190,29 +254,13 @@ both default values `and environment variables`.
 
    Default: ``"/var/log/mox/audit.log"``
 
-.. py:data:: SAML_IDP_METADATA_URL
 
-   Default: ``"https://172.16.20.100/simplesaml/saml2/idp/metadata.php"``
+Session
+-------
 
-.. py:data:: SAML_IDP_INSECURE
+.. todo::
 
-   Default: ``False``
-
-.. py:data:: SAML_REQUESTS_SIGNED
-
-   Default: ``False``
-
-.. py:data:: SAML_KEY_FILE
-
-   Default: ``None``
-
-.. py:data:: SAML_CERT_FILE
-
-   Default: ``None``
-
-.. py:data:: SAML_AUTH_ENABLE
-
-   Default: ``False``
+      Fix this section.
 
 .. py:data:: SQLALCHEMY_DATABASE_URI
 
