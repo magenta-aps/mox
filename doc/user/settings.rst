@@ -10,6 +10,8 @@ both default values `and environment variables`.
 
 .. py:data:: CONFIG_FILE
 
+   Default: ``None``
+
    Setting the environment variable :data:`CONFIG_FILE` to a a path to a JSON
    file containing a dict of ``"<setting>": <value>`` pairs will load the
    settings specified in the file.
@@ -17,16 +19,14 @@ both default values `and environment variables`.
    The settings from the file have precedens over any environment variables and
    will overwrite their values.
 
-   Default: ``None``
-
 
 .. py:data:: BASE_URL
+
+   Default: ``""`` (Empty string)
 
    .. todo::
 
       Fill out this section.
-
-   Default: ``""``
 
 
 Database
@@ -245,10 +245,11 @@ Log AMQP
 
 .. py:data:: LOG_IGNORED_SERVICES
 
+   Default: ``['Log', ]``
+
    .. warning::
       No ENV variable
 
-   Default: ``['Log', ]``
 
 .. py:data:: AUDIT_LOG_FILE
 
