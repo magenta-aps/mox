@@ -46,12 +46,6 @@ class TestBase(unittest.TestCase):
         # structure
         validate.SCHEMAS = {}
 
-    def setUp(self):
-        super().setUp()
-
-        with self.assertRaises(jsonschema.exceptions.ValidationError):
-            validate.validate({})
-
 
 class TestGetMandatory(TestBase):
     def test_facet(self):
@@ -767,46 +761,10 @@ class TestGenerateJSONSchema(TestBase):
             'indeks' in relationer['properties']['ansatte']['items'][
                 'oneOf'][1]['properties'])
 
-    def test_object_type_is_organisation(self):
-        quasi_org = {
-            'attributter': {
-                "organisationegenskaber": []
-            }
-        }
-        self.assertEqual('organisation',
-                         validate.get_lora_object_type(quasi_org))
-
-    def test_object_type_is_organisationenhed(self):
-        quasi_org_enhed = {
-            'attributter': {
-                "organisationenhedegenskaber": []
-            }
-        }
-        self.assertEqual('organisationenhed',
-                         validate.get_lora_object_type(quasi_org_enhed))
-
-    def test_raise_exception_if_obj_egenskaber_not_set(self):
-        quasi_org = {
-            'attributter': {
-                "invalid-egenskaber": []
-            }
-        }
-        with self.assertRaises(jsonschema.exceptions.ValidationError):
-            validate.get_lora_object_type(quasi_org)
-
-    def test_raise_exception_if_attributter_not_set(self):
-        quasi_org = {
-            'invalid-attributter': {
-                "organisationegenskaber": []
-            }
-        }
-        with self.assertRaises(jsonschema.exceptions.ValidationError):
-            validate.get_lora_object_type(quasi_org)
-
     def test_create_facet_request_valid(self):
         req = self._json_to_dict('facet_opret.json')
-        obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.get_schema(obj))
+        obj = 'facet'
+        validate.validate(req, obj)
 
     def test_create_facet_request_invalid(self):
         req = self._json_to_dict('facet_opret.json')
@@ -816,60 +774,67 @@ class TestGenerateJSONSchema(TestBase):
             req['attributter']['facetegenskaber'][0].pop('supplement')
 
         with self.assertRaises(jsonschema.exceptions.ValidationError):
-            obj = validate.get_lora_object_type(req)
-            jsonschema.validate(req, validate.get_schema(obj))
+            obj = 'facet'
+            validate.validate(req, obj)
 
     def test_create_bruger_request_valid(self):
         req = self._json_to_dict('bruger_opret.json')
-        obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.get_schema(obj))
+        obj = 'bruger'
+        validate.validate(req, obj)
 
     def test_create_klassifikation_request_valid(self):
         req = self._json_to_dict('klassifikation_opret.json')
-        obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.get_schema(obj))
+        obj = 'klassifikation'
+        validate.validate(req, obj)
 
     def test_create_klasse_request_valid(self):
         req = self._json_to_dict('klasse_opret.json')
-        obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.get_schema(obj))
+        obj = 'klasse'
+        validate.validate(req, obj)
 
     def test_create_aktivitet_request_valid(self):
         req = self._json_to_dict('aktivitet_opret.json')
-        obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.get_schema(obj))
+        obj = 'aktivitet'
+        validate.validate(req, obj)
 
     def test_create_tilstand_request_valid(self):
         req = self._json_to_dict('tilstand_opret.json')
-        obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.get_schema(obj))
+        obj = 'tilstand'
+        validate.validate(req, obj)
 
     def test_create_indsats_request_valid(self):
         req = self._json_to_dict('indsats_opret.json')
-        obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.get_schema(obj))
+        obj = 'indsats'
+        validate.validate(req, obj)
 
     def test_create_itsystem_request_valid(self):
         req = self._json_to_dict('itsystem_opret.json')
-        obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.get_schema(obj))
+        obj = 'itsystem'
+        validate.validate(req, obj)
 
     def test_create_loghaendelse_request_valid(self):
         req = self._json_to_dict('loghaendelse_opret.json')
-        obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.get_schema(obj))
+        obj = 'loghaendelse'
+        validate.validate(req, obj)
 
     def test_create_sag_request_valid(self):
         req = self._json_to_dict('sag_opret.json')
-        obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.get_schema(obj))
+        obj = 'sag'
+        validate.validate(req, obj)
 
     def test_create_dokument_request_valid(self):
         '''Due to an inconsistency between the way LoRa handles
         "DokumentVariantEgenskaber" and the specs'''
         req = self._json_to_dict('dokument_opret.json')
-        obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.get_schema(obj))
+        obj = 'dokument'
+        validate.validate(req, obj)
+
+    def test_create_misdirected_invalid(self):
+        req = self._json_to_dict('facet_opret.json')
+
+        # note: 'klasse' ≠ 'facet'!
+        with self.assertRaises(jsonschema.exceptions.ValidationError):
+            validate.validate(req, 'klasse')
 
 
 class TestFacetSystematically(TestBase):

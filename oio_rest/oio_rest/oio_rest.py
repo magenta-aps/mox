@@ -248,7 +248,7 @@ class OIORestObject(object):
 
         # Validate JSON input
         try:
-            validate.validate(input)
+            validate.validate(input, cls.__name__.lower())
         except jsonschema.exceptions.ValidationError as e:
             return jsonify({'message': e.message}), 400
 
@@ -421,7 +421,7 @@ class OIORestObject(object):
 
         # Validate JSON input
         try:
-            validate.validate(input)
+            validate.validate(input, cls.__name__.lower())
         except jsonschema.exceptions.ValidationError as e:
             return jsonify({'message': e.message}), 400
 
