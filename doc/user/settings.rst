@@ -92,17 +92,15 @@ PostgreSQL
 File upload
 -----------
 
-.. todo::
-
-      Fix this section.
-
-# This is where file uploads are stored. It must be readable and writable by
-# the mox user, running the REST API server. This is used in the Dokument
-# hierarchy.
-
 .. py:data:: FILE_UPLOAD_FOLDER
 
    Default: ``"/var/mox"``
+
+   This path is where file uploads are stored. It must be readable and writable by
+   the system user running the REST API server. This is used in the Dokument
+   hierarchy.
+
+
 
 SAML
 ----
