@@ -24,9 +24,8 @@ both default values `and environment variables`.
 
    Default: ``""`` (Empty string)
 
-   .. todo::
-
-      Fill out this section.
+   Prefix for all relative URLs. A value of ``"/MyOIO"`` will give API endpoints
+   such as ``http://example.com/MyOIO/organisation/organisationenhed``.
 
 
 Database
