@@ -268,16 +268,15 @@ Restrictions
 
 .. todo::
 
-      Fix this section.
-
+       When writing authentication documentation #25911, include a section on
+       restrictions and link to it from here.
 
 .. py:data:: DO_ENABLE_RESTRICTIONS
 
    Default: ``False``
 
-   Whether authorization is enabled. If not, the :data:`AUTH_RESTRICTION_MODULE`
-   is not called.
-
+   Whether authorization is enabled and restrictions can be used. If not, the
+   :data:`AUTH_RESTRICTION_MODULE` is not called.
 
 .. py:data:: AUTH_RESTRICTION_MODULE
 
