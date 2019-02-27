@@ -3,54 +3,74 @@ Settings
 ========
 
 
-.. py:data:: CONFIG_FILE = os.getenv('OIO_REST_CONFIG_FILE', None)
+.. py:data:: CONFIG_FILE
 
-.. py:data:: BASE_URL = os.getenv('BASE_URL', '')
+   Default: ``None``
 
+.. py:data:: BASE_URL
+
+   Default: ``""``
 
 
 # Database (PostgreSQL) settings
 
-.. py:data:: DB_HOST = os.getenv('DB_HOST', "localhost")
+.. py:data:: DB_HOST
 
-.. py:data:: DB_PORT = int(os.getenv('DB_PORT', '0')) or None
+   Default: ``"localhost"``
 
-.. py:data:: DB_USER = os.getenv('DB_USER', "mox")
+.. py:data:: DB_PORT
 
-.. py:data:: DB_PASSWORD = os.getenv('DB_PASSWORD', "mox")
+   Default: ``0``
 
+.. py:data:: DB_USER
+
+   Default: ``"mox"``
+
+.. py:data:: DB_PASSWORD
+
+   Default: ``"mox"``
 
 
 # name of database, should be changed to use `DB_` convention.
 
-.. py:data:: DATABASE = os.getenv('DB_NAME' ,"mox")
+.. py:data:: DATABASE
 
+   Default: ``"mox"``
 
 
 # Per-process limits on the amount of database connections. Setting the minimum
 # to a non-zero value ensures that the webapp opens this amount at load,
 # failing if the database isn't available.
 
-.. py:data:: DB_MIN_CONNECTIONS = int(os.getenv('DB_MIN_CONNECTIONS', '0'))
+.. py:data:: DB_MIN_CONNECTIONS
 
-.. py:data:: DB_MAX_CONNECTIONS = int(os.getenv('DB_MAX_CONNECTIONS', '10'))
+   Default: ``0``
 
-.. py:data:: DB_STRUCTURE = os.getenv('DB_STRUCTURE', 'oio_rest.db.db_structure')
+.. py:data:: DB_MAX_CONNECTIONS
 
+   Default: ``10``
+
+.. py:data:: DB_STRUCTURE
+
+   Default: ``"oio_rest.db.db_structure"``
 
 
 # This is where file uploads are stored. It must be readable and writable by
 # the mox user, running the REST API server. This is used in the Dokument
 # hierarchy.
 
-.. py:data:: FILE_UPLOAD_FOLDER = os.getenv('FILE_UPLOAD_FOLDER', '/var/mox')
+.. py:data:: FILE_UPLOAD_FOLDER
+
+   Default: ``"/var/mox"``
 
 
 
 # The Endpoint specified in the AppliesTo element of the STS request
 # This will be used to verify the Audience of the SAML Assertion
 
-.. py:data:: SAML_MOX_ENTITY_ID = os.getenv('SAML_MOX_ENTITY_ID', 'https://saml.local')
+.. py:data:: SAML_MOX_ENTITY_ID
+
+   Default: ``"https://saml.local'"``
 
 
 
@@ -58,30 +78,40 @@ Settings
 # specified in AD FS as the Federation Service identifier.
 # Example: 'http://fs.contoso.com/adfs/services/trust'
 
-.. py:data:: SAML_IDP_ENTITY_ID = os.getenv('SAML_IDP_ENTITY_ID', 'localhost')
+.. py:data:: SAML_IDP_ENTITY_ID
+
+   Default: ``"localhost"``
 
 
 
 # The URL on which to access the SAML IdP.
 # Example: 'https://fs.contoso.com/adfs/services/trust/13/UsernameMixed'
 
-.. py:data:: SAML_IDP_URL = os.getenv('SAML_IDP_URL', 'https://localhost:9443/services/wso2carbon-sts.wso2carbon-stsHttpsEndpoint')
+.. py:data:: SAML_IDP_URL
 
+   Default: ``"https://localhost:9443/services/wso2carbon-sts.wso2carbon-stsHttpsEndpoint"``
 
 # We currently support authentication against 'wso2' and 'adfs'
 
-.. py:data:: SAML_IDP_TYPE = os.getenv('SAML_IDP_TYPE', 'wso2')
+.. py:data:: SAML_IDP_TYPE
+
+   Default: ``"wso2"``
 
 
 
 # The public certificate file of the IdP, in PEM-format.
 
-.. py:data:: SAML_IDP_CERTIFICATE = os.getenv('SAML_IDP_CERTIFICATE', 'test_auth_data/idp-certificate.pem')
+.. py:data:: SAML_IDP_CERTIFICATE
+
+   Default: ``"test_auth_data/idp-certificate.pem"``
 
 
 
 # Whether to enable SAML authentication
-.. py:data:: USE_SAML_AUTHENTICATION = os.getenv('USE_SAML_AUTHENTICATION', False)
+
+.. py:data:: USE_SAML_AUTHENTICATION
+
+   Default: ``False``
 
 
 
@@ -90,65 +120,95 @@ Settings
 #   http://schemas.xmlsoap.org
 #       /ws/2005/05/identity/claims/privatepersonalidentifier
 
-.. py:data:: SAML_USER_ID_ATTIBUTE = os.getenv('SAML_USER_ID_ATTIBUTE', 'http://wso2.org/claims/url')
+.. py:data:: SAML_USER_ID_ATTIBUTE
 
+   Default: ``"http://wso2.org/claims/url"``
 
 
 # Whether authorization is enabled.
 
 # If not, the restrictions module is not called.
 
-.. py:data:: DO_ENABLE_RESTRICTIONS = os.getenv('DO_ENABLE_RESTRICTIONS', False)
+.. py:data:: DO_ENABLE_RESTRICTIONS
+
+   Default: ``False``
 
 
 # The module which implements the authorization restrictions.
 # Must be present in sys.path.
 
-.. py:data:: AUTH_RESTRICTION_MODULE = os.getenv('AUTH_RESTRICTION_MODULE', 'oio_rest.auth.wso_restrictions',)
+.. py:data:: AUTH_RESTRICTION_MODULE
+
+   Default: ``"oio_rest.auth.wso_restrictions"``
 
 
 
 # The name of the function which retrieves the restrictions.
 # Must be present in AUTH_RESTRICTION_MODULE and have the correct signature.
 
-.. py:data:: AUTH_RESTRICTION_FUNCTION = os.getenv('AUTH_RESTRICTION_FUNCTION','get_auth_restrictions',)
+.. py:data:: AUTH_RESTRICTION_FUNCTION
+
+   Default: ``"get_auth_restrictions"``
 
 
 
 # Log AMQP settings
 
-.. py:data:: LOG_AMQP_SERVER = os.getenv('LOG_AMQP_SERVER', 'localhost')
+.. py:data:: LOG_AMQP_SERVER
 
-.. py:data:: MOX_LOG_EXCHANGE = os.getenv('MOX_LOG_EXCHANGE', 'mox.log')
+   Default: ``"localhost"``
 
-.. py:data:: MOX_LOG_QUEUE = os.getenv('MOX_LOG_QUEUE', 'mox.log_queue')
+.. py:data:: MOX_LOG_EXCHANGE
 
+   Default: ``"mox.log"``
 
+.. py:data:: MOX_LOG_QUEUE
 
-.. py:data:: LOG_IGNORED_SERVICES = ['Log', ]
+   Default: ``"mox.log_queue"``
 
+.. py:data:: LOG_IGNORED_SERVICES
 
+   .. warning::
+      No ENV variable
 
-.. py:data:: AUDIT_LOG_FILE = os.getenv('AUDIT_LOG_FILE', '/var/log/mox/audit.log')
+   Default: ``['Log', ]``
 
+.. py:data:: AUDIT_LOG_FILE
 
+   Default: ``"/var/log/mox/audit.log"``
 
-.. py:data:: SAML_IDP_METADATA_URL = os.getenv('SAML_IDP_METADATA_URL', 'https://172.16.20.100/simplesaml/saml2/idp/metadata.php')
+.. py:data:: SAML_IDP_METADATA_URL
 
-.. py:data:: SAML_IDP_INSECURE = os.getenv('SAML_IDP_INSECURE', False)
+   Default: ``"https://172.16.20.100/simplesaml/saml2/idp/metadata.php"``
 
-.. py:data:: SAML_REQUESTS_SIGNED = os.getenv('SAML_REQUESTS_SIGNED', False)
+.. py:data:: SAML_IDP_INSECURE
 
-.. py:data:: SAML_KEY_FILE = os.getenv('SAML_KEY_FILE', None)
+   Default: ``False``
 
-.. py:data:: SAML_CERT_FILE = os.getenv('SAML_CERT_FILE', None)
+.. py:data:: SAML_REQUESTS_SIGNED
 
-.. py:data:: SAML_AUTH_ENABLE = os.getenv('SAML_AUTH_ENABLE', False)
+   Default: ``False``
 
+.. py:data:: SAML_KEY_FILE
 
+   Default: ``None``
 
-.. py:data:: SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI', "postgresql://sessions:sessions@127.0.0.1/sessions",)
+.. py:data:: SAML_CERT_FILE
 
-.. py:data:: SESSION_PERMANENT = os.getenv('SESSION_PERMANENT', True)
+   Default: ``None``
 
-.. py:data:: PERMANENT_SESSION_LIFETIME = os.getenv('PERMANENT_SESSION_LIFETIME', 3600)
+.. py:data:: SAML_AUTH_ENABLE
+
+   Default: ``False``
+
+.. py:data:: SQLALCHEMY_DATABASE_URI
+
+   Default: ``"postgresql://sessions:sessions@127.0.0.1/sessions"``
+
+.. py:data:: SESSION_PERMANENT
+
+   Default: ``True``
+
+.. py:data:: PERMANENT_SESSION_LIFETIME
+
+   Default: ``3600``
