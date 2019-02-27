@@ -34,49 +34,60 @@ Database
 
 PostgreSQL
 
-.. todo::
-
-      Fill out this section.
 
 .. py:data:: DB_HOST
 
    Default: ``"localhost"``
 
+   Which host to use when connecting to the database.
+
 .. py:data:: DB_PORT
 
-   Default: ``0``
+   Default: ``None``
+
+   The port to use when connecting to the database specified in :data:`DB_HOST`.
 
 .. py:data:: DB_USER
 
    Default: ``"mox"``
 
+   The username to use when connecting to the database.
+
 .. py:data:: DB_PASSWORD
 
    Default: ``"mox"``
 
-
-# name of database, should be changed to use `DB_` convention.
+   The password to use when connecting to the database.
 
 .. py:data:: DATABASE
 
    Default: ``"mox"``
 
+   The name of the database to use.
 
-# Per-process limits on the amount of database connections. Setting the minimum
-# to a non-zero value ensures that the webapp opens this amount at load,
-# failing if the database isn't available.
 
 .. py:data:: DB_MIN_CONNECTIONS
 
    Default: ``0``
 
+   Per-process lower limit on the amount of database connections. Setting it to
+   a non-zero value ensures that the webapp opens this amount at load, failing
+   if the database isn't available.
+
 .. py:data:: DB_MAX_CONNECTIONS
 
    Default: ``10``
 
+   Per-process upper limit on the amount of database connections.
+
 .. py:data:: DB_STRUCTURE
 
    Default: ``"oio_rest.db.db_structure"``
+
+   .. todo::
+
+      Document this setting. Introduced in 539789191cba59ffc721f9db511ef1bcb949c848
+
 
 File upload
 -----------
