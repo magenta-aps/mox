@@ -21,6 +21,7 @@ Content
    user/agents.rst
    user/auth.rst
    user/deployment.rst
+   user/settings.rst
 
 .. toctree::
    :maxdepth: 1
