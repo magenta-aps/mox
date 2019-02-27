@@ -2,10 +2,23 @@
 Settings
 ========
 
+Most configurable parameters of ``oio_rest`` can be injected with environment
+variables, alternatively you may set the parameters in a file.
+
+Environment variables overwrites default values. The settings file overwrites
+both default values `and environment variables`.
 
 .. py:data:: CONFIG_FILE
 
+   Setting the environment variable :data:`CONFIG_FILE` to a a path to a JSON
+   file containing a dict of ``"<setting>": <value>`` pairs will load the
+   settings specified in the file.
+
+   The settings from the file have precedens over any environment variables and
+   will overwrite their values.
+
    Default: ``None``
+
 
 .. py:data:: BASE_URL
 
