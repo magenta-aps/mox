@@ -36,7 +36,7 @@ def escape_underscores(s):
     """Return the string with underscores escaped by backslashes. """
     if s is None:
         return None
-    return s.replace("_", "\_")
+    return s.replace("_", r"\_")
 
 
 def build_relation(value, objekttype=None, virkning=None):

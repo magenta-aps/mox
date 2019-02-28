@@ -5,9 +5,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-# encoding: utf-8
 """Superclasses for OIO objects and object hierarchies."""
+
 import json
 import datetime
 
@@ -162,6 +161,7 @@ class Registration(object):
 class OIOStandardHierarchy(object):
     """Implement API for entire hierarchy."""
 
+    _name = ''
     _classes = []
 
     @classmethod
@@ -169,6 +169,9 @@ class OIOStandardHierarchy(object):
         """Set up API for the classes included in the hierarchy.
 
         Note that version number etc. may have to be added to the URL."""
+
+        assert cls._name and cls._classes, 'hierarchy not configured?'
+
         for c in cls._classes:
             c.create_api(cls._name, flask, base_url)
 
@@ -544,7 +547,8 @@ class OIORestObject(object):
 
         """
         cls.verify_args()
-        return jsonify(validate.SCHEMA[cls.__name__.lower()])
+
+        return jsonify(validate.get_schema(cls.__name__.lower()))
 
     @classmethod
     def create_api(cls, hierarchy, flask, base_url):

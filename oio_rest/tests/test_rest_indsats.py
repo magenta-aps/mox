@@ -6,7 +6,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-import unittest
 import uuid
 
 from oio_rest.utils.build_registration import is_uuid
@@ -18,7 +17,7 @@ class TestIndsats(util.TestCase):
         result = self.client.post(
             "indsats/indsats",
             data={
-                "json": open("tests/fixtures/indsats_opret.json", "rt").read(),
+                "json": util.get_fixture("indsats_opret.json", as_text=False),
             },
         )
         self.assertEqual(result.status_code, 201)
@@ -30,7 +29,7 @@ class TestIndsats(util.TestCase):
         result = self.client.put(
             "indsats/indsats/%s" % uuid_,
             data={
-                "json": open("tests/fixtures/indsats_opret.json", "rt").read(),
+                "json": util.get_fixture("indsats_opret.json", as_text=False),
             },
         )
         self.assertEqual(result.status_code, 200)

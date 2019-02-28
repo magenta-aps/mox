@@ -6,9 +6,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-import unittest
-import uuid
-
 from oio_rest.utils.build_registration import is_uuid
 from tests import util
 
@@ -18,10 +15,11 @@ class TestLogHaendelse(util.TestCase):
         result = self.client.post(
             "log/loghaendelse",
             data={
-                "json": open("tests/fixtures/loghaendelse_opret.json", "rt").read(),
+                "json": util.get_fixture("loghaendelse_opret.json",
+                                         as_text=False),
             },
         )
-        self.assertEqual(result.status_code, 201)
+        self.assertEqual(result.status_code, 201, result.json)
         uuid_ = result.get_json()["uuid"]
         self.assertTrue(is_uuid(uuid_))
 
@@ -29,7 +27,8 @@ class TestLogHaendelse(util.TestCase):
             result_import = self.client.patch(
                 "log/loghaendelse/%s" % uuid_,
                 data={
-                    "json": open("tests/fixtures/loghaendelse_opdater.json", "rt").read(),
+                    "json": util.get_fixture("loghaendelse_opdater.json",
+                                             as_text=False),
                 },
             )
             self.assertEqual(result_import.status_code, 200)
@@ -39,7 +38,8 @@ class TestLogHaendelse(util.TestCase):
             result_delete = self.client.delete(
                 "log/loghaendelse/%s" % uuid_,
                 data={
-                    "json": open("tests/fixtures/loghaendelse_slet.json", "rt").read(),
+                    "json": util.get_fixture("loghaendelse_slet.json",
+                                             as_text=False),
                 },
             )
             self.assertEqual(result_delete.status_code, 202)

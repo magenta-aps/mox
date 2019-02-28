@@ -168,10 +168,10 @@ class TestCreateOrganisation(TestCreateObject):
         }
         self.assertRequestFails(self.URL, 400, json=self.org)
 
-    @unittest.skip('When sending org names that overlap in '
-                   'virkning we do not get status 400')
+    @unittest.expectedFailure
     def test_different_org_names_for_overlapping_virkninger(self):
-        """
+        """Sending org names that overlap in virkning should fail
+
         Equivalence classes covered: [16]
         See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
         further details
@@ -211,10 +211,10 @@ class TestCreateOrganisation(TestCreateObject):
         del self.org['attributter']
         self.assertRequestFails(self.URL, 400, json=self.org)
 
-    @unittest.skip('Setting "attributter" several times in the request '
-                   'JSON does not result in status code 400')
+    @unittest.expectedFailure
     def test_attributter_key_not_allowed_twice(self):
-        """
+        """Setting "attributter" several times in the request JSON should fail
+
         Equivalence classes covered: [40]
         See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
         further details
@@ -266,10 +266,10 @@ class TestCreateOrganisation(TestCreateObject):
         del self.org['tilstande']
         self.assertRequestFails(self.URL, 400, json=self.org)
 
-    @unittest.skip('Setting "tilstande" several times in the request '
-                   'JSON does not result in status code 400')
+    @unittest.expectedFailure
     def test_tilstande_key_not_allowed_twice(self):
-        """
+        """Setting "tilstande" several times in the request should fail
+
         Equivalence classes covered: [41]
         See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
         further details
@@ -335,10 +335,10 @@ class TestCreateOrganisation(TestCreateObject):
         }
         self.assertRequestFails(self.URL, 400, json=self.org)
 
-    @unittest.skip('When sending gyldigheder that overlap in '
-                   'virkning we do not get status 400')
+    @unittest.expectedFailure
     def test_different_gyldigheder_for_overlapping_virkninger(self):
-        """
+        """Sending gyldigheder that overlap in virkning should fail
+
         Equivalence classes covered: [30]
         See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
         further details
@@ -535,10 +535,10 @@ class TestCreateOrganisation(TestCreateObject):
         }
         self.assertRequestFails(self.URL, 400, json=self.org)
 
-    @unittest.skip('Setting "relationer" several times in the request '
-                   'JSON does not result in status code 400')
+    @unittest.expectedFailure
     def test_relationer_key_not_allowed_twice(self):
-        """
+        """Setting "relationer" several times in the request JSON should fail
+
         Equivalence classes covered: [39]
         See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
         further details

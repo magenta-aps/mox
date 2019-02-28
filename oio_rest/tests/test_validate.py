@@ -10,9 +10,23 @@ import copy
 import json
 import os.path
 import unittest
-import jsonschema
 
-import oio_rest.validate as validate
+import jsonschema
+import flask_testing
+
+from oio_rest import aktivitet
+from oio_rest import app
+from oio_rest import dokument
+from oio_rest import indsats
+from oio_rest import klassifikation
+from oio_rest import log
+from oio_rest import oio_rest
+from oio_rest import organisation
+from oio_rest import sag
+from oio_rest import tilstand
+from oio_rest import validate
+
+from . import util
 
 
 class TestBase(unittest.TestCase):
@@ -22,7 +36,7 @@ class TestBase(unittest.TestCase):
 
         # once per class will suffice, since none of them touch the db
         # structure
-        validate.SCHEMA = None
+        validate.SCHEMAS = {}
 
     @classmethod
     def tearDownClass(cls):
@@ -30,7 +44,7 @@ class TestBase(unittest.TestCase):
 
         # once per class will suffice, since none of them touch the db
         # structure
-        validate.SCHEMA = None
+        validate.SCHEMAS = {}
 
     def setUp(self):
         super().setUp()
@@ -73,7 +87,7 @@ class TestGetMandatory(TestBase):
         )
 
     def test_loghaendelse(self):
-        self.assertEqual([],
+        self.assertEqual(['tidspunkt'],
                          validate._get_mandatory('loghaendelse', 'egenskaber'))
 
 
@@ -792,7 +806,7 @@ class TestGenerateJSONSchema(TestBase):
     def test_create_facet_request_valid(self):
         req = self._json_to_dict('facet_opret.json')
         obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.SCHEMA[obj])
+        jsonschema.validate(req, validate.get_schema(obj))
 
     def test_create_facet_request_invalid(self):
         req = self._json_to_dict('facet_opret.json')
@@ -803,59 +817,59 @@ class TestGenerateJSONSchema(TestBase):
 
         with self.assertRaises(jsonschema.exceptions.ValidationError):
             obj = validate.get_lora_object_type(req)
-            jsonschema.validate(req, validate.SCHEMA[obj])
+            jsonschema.validate(req, validate.get_schema(obj))
 
     def test_create_bruger_request_valid(self):
         req = self._json_to_dict('bruger_opret.json')
         obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.SCHEMA[obj])
+        jsonschema.validate(req, validate.get_schema(obj))
 
     def test_create_klassifikation_request_valid(self):
         req = self._json_to_dict('klassifikation_opret.json')
         obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.SCHEMA[obj])
+        jsonschema.validate(req, validate.get_schema(obj))
 
     def test_create_klasse_request_valid(self):
         req = self._json_to_dict('klasse_opret.json')
         obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.SCHEMA[obj])
+        jsonschema.validate(req, validate.get_schema(obj))
 
     def test_create_aktivitet_request_valid(self):
         req = self._json_to_dict('aktivitet_opret.json')
         obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.SCHEMA[obj])
+        jsonschema.validate(req, validate.get_schema(obj))
 
     def test_create_tilstand_request_valid(self):
         req = self._json_to_dict('tilstand_opret.json')
         obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.SCHEMA[obj])
+        jsonschema.validate(req, validate.get_schema(obj))
 
     def test_create_indsats_request_valid(self):
         req = self._json_to_dict('indsats_opret.json')
         obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.SCHEMA[obj])
+        jsonschema.validate(req, validate.get_schema(obj))
 
     def test_create_itsystem_request_valid(self):
         req = self._json_to_dict('itsystem_opret.json')
         obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.SCHEMA[obj])
+        jsonschema.validate(req, validate.get_schema(obj))
 
     def test_create_loghaendelse_request_valid(self):
         req = self._json_to_dict('loghaendelse_opret.json')
         obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.SCHEMA[obj])
+        jsonschema.validate(req, validate.get_schema(obj))
 
     def test_create_sag_request_valid(self):
         req = self._json_to_dict('sag_opret.json')
         obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.SCHEMA[obj])
+        jsonschema.validate(req, validate.get_schema(obj))
 
-    @unittest.skip('Due to an inconsistency between the way LoRa handles '
-                   '"DokumentVariantEgenskaber" and the specs')
     def test_create_dokument_request_valid(self):
+        '''Due to an inconsistency between the way LoRa handles
+        "DokumentVariantEgenskaber" and the specs'''
         req = self._json_to_dict('dokument_opret.json')
         obj = validate.get_lora_object_type(req)
-        jsonschema.validate(req, validate.SCHEMA[obj])
+        jsonschema.validate(req, validate.get_schema(obj))
 
 
 class TestFacetSystematically(TestBase):
@@ -899,7 +913,7 @@ class TestFacetSystematically(TestBase):
 
     def assertValidationError(self):
         with self.assertRaises(jsonschema.exceptions.ValidationError):
-            jsonschema.validate(self.facet, validate.SCHEMA['facet'])
+            jsonschema.validate(self.facet, validate.get_schema('facet'))
 
     def test_valid_equivalence_classes1(self):
         """
@@ -908,7 +922,7 @@ class TestFacetSystematically(TestBase):
         See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
         further details
         """
-        jsonschema.validate(self.facet, validate.SCHEMA['facet'])
+        jsonschema.validate(self.facet, validate.get_schema('facet'))
 
     def test_valid_equivalence_classes2(self):
         """
@@ -942,7 +956,7 @@ class TestFacetSystematically(TestBase):
 
         self.facet['relationer'] = {}
 
-        jsonschema.validate(self.facet, validate.SCHEMA['facet'])
+        jsonschema.validate(self.facet, validate.get_schema('facet'))
 
     def test_valid_equivalence_classes3(self):
         """
@@ -954,7 +968,7 @@ class TestFacetSystematically(TestBase):
             'ansvarlig': []
         }
 
-        jsonschema.validate(self.facet, validate.SCHEMA['facet'])
+        jsonschema.validate(self.facet, validate.get_schema('facet'))
 
     def test_valid_equivalence_classes4(self):
         """
@@ -973,7 +987,7 @@ class TestFacetSystematically(TestBase):
             'redaktoerer': [self.reference, urn]
         }
 
-        jsonschema.validate(self.facet, validate.SCHEMA['facet'])
+        jsonschema.validate(self.facet, validate.get_schema('facet'))
 
     def test_note_not_string(self):
         """
@@ -1243,7 +1257,7 @@ class TestFacetSystematically(TestBase):
                 'notetekst': 'This is a note'
             }
         )
-        jsonschema.validate(self.facet, validate.SCHEMA['facet'])
+        jsonschema.validate(self.facet, validate.get_schema('facet'))
 
     def test_virkning_from_missing(self):
         """
@@ -1318,3 +1332,85 @@ class TestFacetSystematically(TestBase):
             'key': 'This is not a string'
         }
         self.assertValidationError()
+
+
+class TestSchemaEndPoints(flask_testing.TestCase):
+    def setUp(self):
+        super().setUp()
+
+        validate.SCHEMAS.clear()
+
+        # extract a list of all OIO hierarchies and classes
+        def get_subclasses(cls):
+            for subcls in cls.__subclasses__():
+                if subcls.__module__.startswith('oio_rest.'):
+                    yield subcls
+                    yield from get_subclasses(subcls)
+
+        self.hierarchies = list(get_subclasses(oio_rest.OIOStandardHierarchy))
+
+    def create_app(self):
+        app.app.config['TESTING'] = True
+        return app.app
+
+    def test_schemas_unchanged(self):
+        """
+        Check that the schema endpoints for the classes in the given hierarchy
+        respond with HTTP status code 200 and return JSON.
+        :param hierarchy: The hierarchy to check, e.g. SagsHierarki,...
+        """
+        # Careful now - no logic in the test code!
+
+        expected = util.get_fixture('schemas.json')
+
+        actual = {
+            cls.__name__: cls.get_schema().json
+            for hier in self.hierarchies
+            for cls in hier._classes
+        }
+        actual_path = os.path.join(util.FIXTURE_DIR, 'schemas.json.new')
+
+        with open(actual_path, 'wt') as fp:
+            json.dump(actual, fp, indent=2, sort_keys=True)
+
+        self.assertEqual(expected, actual,
+                         'schemas changed, see {}'.format(actual_path))
+
+    def assertSchemaOK(self, hierarchy):
+        """
+        Check that the schema endpoints for the classes in the given hierarchy
+        respond with HTTP status code 200 and return JSON.
+        :param hierarchy: The hierarchy to check, e.g. SagsHierarki,...
+        """
+        # Careful now - no logic in the test code!
+
+        for obj in hierarchy._classes:
+            url = '/{}/{}/schema'.format(hierarchy._name.lower(),
+                                         obj.__name__.lower())
+            r = self.client.get(url)
+            self.assertEqual(200, r.status_code)
+            json.loads(r.data.decode('utf-8'))
+
+    def test_aktivitet_hierarchy(self):
+        self.assertSchemaOK(aktivitet.AktivitetsHierarki)
+
+    def test_dokument_hierarchy(self):
+        self.assertSchemaOK(dokument.DokumentHierarki)
+
+    def test_indsats_hierarchy(self):
+        self.assertSchemaOK(indsats.IndsatsHierarki)
+
+    def test_klassifikation_hierarchy(self):
+        self.assertSchemaOK(klassifikation.KlassifikationsHierarki)
+
+    def test_log_hierarchy(self):
+        self.assertSchemaOK(log.LogHierarki)
+
+    def test_organisation_hierarchy(self):
+        self.assertSchemaOK(organisation.OrganisationsHierarki)
+
+    def test_sag_hierarchy(self):
+        self.assertSchemaOK(sag.SagsHierarki)
+
+    def test_tilstand_hierarchy(self):
+        self.assertSchemaOK(tilstand.TilstandsHierarki)

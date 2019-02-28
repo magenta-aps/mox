@@ -508,7 +508,7 @@ BEGIN
                 SELECT
                     {% for fieldname in attribut_fields %}
                         {% if oio_type == "klasse" and loop.first %} nextval('klasse_attr_egenskaber_id_seq'), {% endif %}
-                        {% if attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][fieldname] is defined and attributter_metadata[attribut][fieldname]['type'] is defined and (attributter_metadata[attribut][fieldname]['type'] in ("int", "date", "timestamptz", "boolean", "interval(0)")) %}
+                        {% if (attributter_metadata[attribut][fieldname]['type'] in ("int", "date", "timestamptz", "boolean", "interval(0)")) %}
                             CASE WHEN ((attr{{attribut|title}}Obj.{{fieldname}}).cleared) THEN
                                 NULL
                             ELSE

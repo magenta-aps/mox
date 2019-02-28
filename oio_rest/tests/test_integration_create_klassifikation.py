@@ -34,7 +34,8 @@ class TestCreateKlassifikation(TestCreateObject):
             }
         }
 
-        r = self.perform_request('/klassifikation/klassifikation', json=klassifikation)
+        r = self.perform_request('/klassifikation/klassifikation',
+                                 json=klassifikation)
 
         # Check response
         self.assert201(r)

@@ -10,13 +10,11 @@
 import json
 import os
 import pprint
-import unittest.mock
 import uuid
 
 import flask_testing
 
 from oio_rest.utils import test_support
-from oio_rest import settings
 
 TESTS_DIR = os.path.dirname(__file__)
 BASE_DIR = os.path.dirname(TESTS_DIR)
@@ -24,12 +22,12 @@ TOP_DIR = os.path.dirname(BASE_DIR)
 FIXTURE_DIR = os.path.join(TESTS_DIR, 'fixtures')
 
 
-def get_fixture(fixture_name, mode='rt'):
+def get_fixture(fixture_name, mode='rt', as_text=True):
     """Reads data from fixture folder. If the file name ends with
     ``.json``, we parse it, otherwise, we just return it as text.
     """
     with open(os.path.join(FIXTURE_DIR, fixture_name), mode) as fp:
-        if os.path.splitext(fixture_name)[1] == '.json':
+        if os.path.splitext(fixture_name)[1] == '.json' and as_text:
             return json.load(fp)
         else:
             return fp.read()

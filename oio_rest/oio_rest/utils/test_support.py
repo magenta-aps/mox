@@ -8,12 +8,10 @@
 
 import atexit
 import contextlib
+import copy
 import functools
-import glob
 import os
 import shutil
-import subprocess
-import sys
 import types
 import typing
 
@@ -23,13 +21,14 @@ import testing.postgresql
 import psycopg2.pool
 
 from .. import app
+from .. import db
 from ..db import db_templating
 
 from .. import settings
 
 BASE_DIR = os.path.dirname(os.path.dirname(settings.__file__))
 TOP_DIR = os.path.dirname(BASE_DIR)
-DB_DIR = os.path.join(BASE_DIR, 'build', 'db')
+DB_DIR = os.path.join(BASE_DIR, 'build', 'db', str(os.getpid()))
 
 
 @contextlib.contextmanager
@@ -40,17 +39,49 @@ def patch_db_struct(new: typing.Union[types.ModuleType, dict]):
         mock.patch('oio_rest.db.db_helpers._attribute_fields', {}),
         mock.patch('oio_rest.db.db_helpers._attribute_names', {}),
         mock.patch('oio_rest.db.db_helpers._relation_names', {}),
-        mock.patch('oio_rest.validate.SCHEMA', {}),
+        mock.patch('oio_rest.validate.SCHEMAS', {}),
         mock.patch('oio_rest.settings.REAL_DB_STRUCTURE', new=new),
     ]
 
     if isinstance(new, types.ModuleType):
-        patches.append(mock.patch('oio_rest.settings.REAL_DB_STRUCTURE',
-                                  new=new.REAL_DB_STRUCTURE))
+        patches += [
+            mock.patch('oio_rest.settings.REAL_DB_STRUCTURE',
+                       new=new.REAL_DB_STRUCTURE),
+            mock.patch('oio_rest.settings.DB_STRUCTURE.REAL_DB_STRUCTURE',
+                       new=new.REAL_DB_STRUCTURE),
+        ]
 
     with contextlib.ExitStack() as stack:
         for patch in patches:
             stack.enter_context(patch)
+
+        yield
+
+
+@contextlib.contextmanager
+def extend_db_struct(new: dict):
+    '''Context manager for extending db_structures'''
+
+    dbs = copy.deepcopy(settings.DB_STRUCTURE.DATABASE_STRUCTURE)
+    real_dbs = copy.deepcopy(settings.REAL_DB_STRUCTURE)
+
+    patches = [
+        mock.patch('oio_rest.db.db_helpers._attribute_fields', {}),
+        mock.patch('oio_rest.db.db_helpers._attribute_names', {}),
+        mock.patch('oio_rest.db.db_helpers._relation_names', {}),
+        mock.patch('oio_rest.validate.SCHEMAS', {}),
+        mock.patch('oio_rest.settings.DB_STRUCTURE.DATABASE_STRUCTURE',
+                   new=dbs),
+        mock.patch('oio_rest.settings.REAL_DB_STRUCTURE', new=real_dbs),
+        mock.patch('oio_rest.settings.DB_STRUCTURE.REAL_DB_STRUCTURE',
+                   new=real_dbs),
+    ]
+
+    with contextlib.ExitStack() as stack:
+        for patch in patches:
+            stack.enter_context(patch)
+
+        settings.load_db_extensions(new)
 
         yield
 
@@ -182,6 +213,9 @@ class TestCaseMixin(object):
         db_host = psql().dsn()['host']
         db_port = psql().dsn()['port']
 
+        stack = contextlib.ExitStack()
+        self.addCleanup(stack.close)
+
         for p in [
             mock.patch('oio_rest.settings.FILE_UPLOAD_FOLDER', './mox-upload'),
             mock.patch('oio_rest.settings.LOG_AMQP_SERVER', None),
@@ -189,20 +223,25 @@ class TestCaseMixin(object):
                        create=True),
             mock.patch('oio_rest.settings.DB_PORT', db_port,
                        create=True),
-            mock.patch(
-                'oio_rest.db.pool',
-                psycopg2.pool.SimpleConnectionPool(
-                    1, 1,
-                    database=settings.DATABASE,
-                    user=settings.DB_USER,
-                    password=settings.DB_PASSWORD,
-                    host=db_host,
-                    port=db_port,
-                ),
-            ),
+            mock.patch('oio_rest.db.pool', None),
         ]:
-            p.start()
-            self.addCleanup(p.stop)
+            stack.enter_context(p)
+
+    @classmethod
+    def tearDownClass(cls):
+        if db.pool:
+            db.pool.closeall()
+
+        with psycopg2.connect(psql().url()) as conn:
+            conn.autocommit = True
+
+            with conn.cursor() as curs:
+                curs.execute(
+                    'DROP DATABASE IF EXISTS {}'.format(settings.DATABASE),
+                )
+                curs.execute(
+                    'DROP USER IF EXISTS {}'.format(settings.DB_USER),
+                )
 
 
 @click.command()

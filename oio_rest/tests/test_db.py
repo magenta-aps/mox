@@ -1020,7 +1020,12 @@ class TestDBObjectFunctions(unittest.TestCase):
                                                mock_get_conn):
         # type: (MagicMock, MagicMock) -> None
         # Arrange
-        mock_get_conn.return_value.cursor.return_value = cursor = MagicMock()
+        (
+            mock_get_conn.return_value
+            .__enter__.return_value
+            .cursor.return_value
+            .__enter__.return_value
+        ) = cursor = MagicMock()
 
         cursor.fetchone.return_value = None
 
@@ -1204,7 +1209,12 @@ class TestPGErrors(unittest.TestCase):
         classname = "classname"
         uuid = "1c3236a1-9384-4730-82ab-5443e95bcead"
 
-        mock_get_conn.return_value.cursor.return_value = cursor = MagicMock()
+        (
+            mock_get_conn.return_value
+            .__enter__.return_value
+            .cursor.return_value
+            .__enter__.return_value
+        ) = cursor = MagicMock()
         cursor.execute.side_effect = TestPGErrors.TestException
 
         # Act
@@ -1219,7 +1229,12 @@ class TestPGErrors(unittest.TestCase):
         classname = "classname"
         uuid = "1c3236a1-9384-4730-82ab-5443e95bcead"
 
-        mock_get_conn.return_value.cursor.return_value = cursor = MagicMock()
+        (
+            mock_get_conn.return_value
+            .__enter__.return_value
+            .cursor.return_value
+            .__enter__.return_value
+        ) = cursor = MagicMock()
         exception = TestPGErrors.TestException('12345')
         cursor.execute.side_effect = exception
 
@@ -1233,7 +1248,12 @@ class TestPGErrors(unittest.TestCase):
         # type: (MagicMock) -> None
 
         # Arrange
-        mock_get_conn.return_value.cursor.return_value = cursor = MagicMock()
+        (
+            mock_get_conn.return_value
+            .__enter__.return_value
+            .cursor.return_value
+            .__enter__.return_value
+        ) = cursor = MagicMock()
         cursor.execute.side_effect = TestPGErrors.TestException
 
         # Act
@@ -1246,7 +1266,12 @@ class TestPGErrors(unittest.TestCase):
         # type: (MagicMock) -> None
 
         # Arrange
-        mock_get_conn.return_value.cursor.return_value = cursor = MagicMock()
+        (
+            mock_get_conn.return_value
+            .__enter__.return_value
+            .cursor.return_value
+            .__enter__.return_value
+        ) = cursor = MagicMock()
         exception = TestPGErrors.TestException()
         exception.pgcode = '12345'
         cursor.execute.side_effect = exception
@@ -1260,7 +1285,12 @@ class TestPGErrors(unittest.TestCase):
         # type: (MagicMock) -> None
 
         # Arrange
-        mock_get_conn.return_value.cursor.return_value = cursor = MagicMock()
+        (
+            mock_get_conn.return_value
+            .__enter__.return_value
+            .cursor.return_value
+            .__enter__.return_value
+        ) = cursor = MagicMock()
         cursor.execute.side_effect = TestPGErrors.TestException
 
         # Act
@@ -1284,7 +1314,12 @@ class TestPGErrors(unittest.TestCase):
         )
         exception.pgcode = '12345'
 
-        mock_get_conn.return_value.cursor.return_value = cursor = MagicMock()
+        (
+            mock_get_conn.return_value
+            .__enter__.return_value
+            .cursor.return_value
+            .__enter__.return_value
+        ) = cursor = MagicMock()
         cursor.execute.side_effect = exception
 
         # Act
@@ -1302,7 +1337,12 @@ class TestPGErrors(unittest.TestCase):
         exception = TestPGErrors.TestException()
         exception.pgcode = '12345'
 
-        mock_get_conn.return_value.cursor.return_value = cursor = MagicMock()
+        (
+            mock_get_conn.return_value
+            .__enter__.return_value
+            .cursor.return_value
+            .__enter__.return_value
+        ) = cursor = MagicMock()
         cursor.execute.side_effect = exception
 
         # Act
@@ -1314,7 +1354,12 @@ class TestPGErrors(unittest.TestCase):
         # type: (MagicMock) -> None
 
         # Arrange
-        mock_get_conn.return_value.cursor.return_value = cursor = MagicMock()
+        (
+            mock_get_conn.return_value
+            .__enter__.return_value
+            .cursor.return_value
+            .__enter__.return_value
+        ) = cursor = MagicMock()
         cursor.execute.side_effect = TestPGErrors.TestException
 
         # Act
@@ -1338,7 +1383,12 @@ class TestPGErrors(unittest.TestCase):
             ).format(class_name.lower(), uuid),
         )
 
-        mock_get_conn.return_value.cursor.return_value = cursor = MagicMock()
+        (
+            mock_get_conn.return_value
+            .__enter__.return_value
+            .cursor.return_value
+            .__enter__.return_value
+        ) = cursor = MagicMock()
         cursor.execute.side_effect = exception
 
         # Act
@@ -1352,7 +1402,12 @@ class TestPGErrors(unittest.TestCase):
         # Arrange
         exception = TestPGErrors.TestException()
         exception.pgcode = '12345'
-        mock_get_conn.return_value.cursor.return_value = cursor = MagicMock()
+        (
+            mock_get_conn.return_value
+            .__enter__.return_value
+            .cursor.return_value
+            .__enter__.return_value
+        ) = cursor = MagicMock()
         cursor.execute.side_effect = exception
 
         # Act
@@ -1365,7 +1420,12 @@ class TestPGErrors(unittest.TestCase):
 
         # Arrange
         exception = TestPGErrors.TestException()
-        mock_get_conn.return_value.cursor.return_value = cursor = MagicMock()
+        (
+            mock_get_conn.return_value
+            .__enter__.return_value
+            .cursor.return_value
+            .__enter__.return_value
+        ) = cursor = MagicMock()
         cursor.execute.side_effect = exception
 
         # Act
@@ -1379,7 +1439,12 @@ class TestPGErrors(unittest.TestCase):
         # Arrange
         exception = TestPGErrors.TestException()
         exception.pgcode = '123456'
-        mock_get_conn.return_value.cursor.return_value = cursor = MagicMock()
+        (
+            mock_get_conn.return_value
+            .__enter__.return_value
+            .cursor.return_value
+            .__enter__.return_value
+        ) = cursor = MagicMock()
         cursor.execute.side_effect = exception
 
         # Act
@@ -1392,7 +1457,12 @@ class TestPGErrors(unittest.TestCase):
 
         # Arrange
         exception = TestPGErrors.TestException()
-        mock_get_conn.return_value.cursor.return_value = cursor = MagicMock()
+        (
+            mock_get_conn.return_value
+            .__enter__.return_value
+            .cursor.return_value
+            .__enter__.return_value
+        ) = cursor = MagicMock()
         cursor.execute.side_effect = exception
 
         # Act
@@ -1413,7 +1483,12 @@ class TestPGErrors(unittest.TestCase):
                 class_name.lower(), uuid
             )
         )
-        mock_get_conn.return_value.cursor.return_value = cursor = MagicMock()
+        (
+            mock_get_conn.return_value
+            .__enter__.return_value
+            .cursor.return_value
+            .__enter__.return_value
+        ) = cursor = MagicMock()
         cursor.execute.side_effect = exception
 
         # Act
@@ -1429,7 +1504,12 @@ class TestPGErrors(unittest.TestCase):
         # Arrange
         exception = TestPGErrors.TestException()
         exception.pgcode = '123456'
-        mock_get_conn.return_value.cursor.return_value = cursor = MagicMock()
+        (
+            mock_get_conn.return_value
+            .__enter__.return_value
+            .cursor.return_value
+            .__enter__.return_value
+        ) = cursor = MagicMock()
         cursor.execute.side_effect = exception
 
         # Act
@@ -1442,7 +1522,12 @@ class TestPGErrors(unittest.TestCase):
 
         # Arrange
         exception = TestPGErrors.TestException()
-        mock_get_conn.return_value.cursor.return_value = cursor = MagicMock()
+        (
+            mock_get_conn.return_value
+            .__enter__.return_value
+            .cursor.return_value
+            .__enter__.return_value
+        ) = cursor = MagicMock()
         cursor.execute.side_effect = exception
 
         # Act
@@ -1456,7 +1541,12 @@ class TestPGErrors(unittest.TestCase):
         # Arrange
         exception = TestPGErrors.TestException()
         exception.pgcode = '123456'
-        mock_get_conn.return_value.cursor.return_value = cursor = MagicMock()
+        (
+            mock_get_conn.return_value
+            .__enter__.return_value
+            .cursor.return_value
+            .__enter__.return_value
+        ) = cursor = MagicMock()
         cursor.execute.side_effect = exception
 
         # Act
@@ -1469,7 +1559,12 @@ class TestPGErrors(unittest.TestCase):
 
         # Arrange
         exception = TestPGErrors.TestException()
-        mock_get_conn.return_value.cursor.return_value = cursor = MagicMock()
+        (
+            mock_get_conn.return_value
+            .__enter__.return_value
+            .cursor.return_value
+            .__enter__.return_value
+        ) = cursor = MagicMock()
         cursor.execute.side_effect = exception
 
         # Act
@@ -1483,7 +1578,12 @@ class TestPGErrors(unittest.TestCase):
         # Arrange
         exception = TestPGErrors.TestException()
         exception.pgcode = '123456'
-        mock_get_conn.return_value.cursor.return_value = cursor = MagicMock()
+        (
+            mock_get_conn.return_value
+            .__enter__.return_value
+            .cursor.return_value
+            .__enter__.return_value
+        ) = cursor = MagicMock()
         cursor.execute.side_effect = exception
 
         # Act

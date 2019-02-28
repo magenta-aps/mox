@@ -165,10 +165,3 @@ class TestAssertionVerification(util.TestCase):
                 },
                 403,
             )
-
-    @patch('oio_rest.settings.SAML_IDP_TYPE', 'wso2')
-    def test_wso2(self):
-        raise unittest.SkipTest('TODO')
-
-    def test_restrictions(self):
-        raise unittest.SkipTest('TODO')
