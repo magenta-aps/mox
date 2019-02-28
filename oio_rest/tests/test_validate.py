@@ -25,6 +25,7 @@ from oio_rest import organisation
 from oio_rest import sag
 from oio_rest import tilstand
 from oio_rest import validate
+from oio_rest import settings
 
 from . import util
 
@@ -761,10 +762,11 @@ class TestGenerateJSONSchema(TestBase):
             'indeks' in relationer['properties']['ansatte']['items'][
                 'oneOf'][1]['properties'])
 
-    def test_create_facet_request_valid(self):
-        req = self._json_to_dict('facet_opret.json')
-        obj = 'facet'
-        validate.validate(req, obj)
+    def test_create_request_valid(self):
+        for obj in settings.REAL_DB_STRUCTURE:
+            with self.subTest(obj):
+                req = self._json_to_dict('{}_opret.json'.format(obj))
+                validate.validate(req, obj)
 
     def test_create_facet_request_invalid(self):
         req = self._json_to_dict('facet_opret.json')
@@ -776,58 +778,6 @@ class TestGenerateJSONSchema(TestBase):
         with self.assertRaises(jsonschema.exceptions.ValidationError):
             obj = 'facet'
             validate.validate(req, obj)
-
-    def test_create_bruger_request_valid(self):
-        req = self._json_to_dict('bruger_opret.json')
-        obj = 'bruger'
-        validate.validate(req, obj)
-
-    def test_create_klassifikation_request_valid(self):
-        req = self._json_to_dict('klassifikation_opret.json')
-        obj = 'klassifikation'
-        validate.validate(req, obj)
-
-    def test_create_klasse_request_valid(self):
-        req = self._json_to_dict('klasse_opret.json')
-        obj = 'klasse'
-        validate.validate(req, obj)
-
-    def test_create_aktivitet_request_valid(self):
-        req = self._json_to_dict('aktivitet_opret.json')
-        obj = 'aktivitet'
-        validate.validate(req, obj)
-
-    def test_create_tilstand_request_valid(self):
-        req = self._json_to_dict('tilstand_opret.json')
-        obj = 'tilstand'
-        validate.validate(req, obj)
-
-    def test_create_indsats_request_valid(self):
-        req = self._json_to_dict('indsats_opret.json')
-        obj = 'indsats'
-        validate.validate(req, obj)
-
-    def test_create_itsystem_request_valid(self):
-        req = self._json_to_dict('itsystem_opret.json')
-        obj = 'itsystem'
-        validate.validate(req, obj)
-
-    def test_create_loghaendelse_request_valid(self):
-        req = self._json_to_dict('loghaendelse_opret.json')
-        obj = 'loghaendelse'
-        validate.validate(req, obj)
-
-    def test_create_sag_request_valid(self):
-        req = self._json_to_dict('sag_opret.json')
-        obj = 'sag'
-        validate.validate(req, obj)
-
-    def test_create_dokument_request_valid(self):
-        '''Due to an inconsistency between the way LoRa handles
-        "DokumentVariantEgenskaber" and the specs'''
-        req = self._json_to_dict('dokument_opret.json')
-        obj = 'dokument'
-        validate.validate(req, obj)
 
     def test_create_misdirected_invalid(self):
         req = self._json_to_dict('facet_opret.json')
