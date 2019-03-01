@@ -163,6 +163,7 @@ class TestCaseMixin(object):
     '''
 
     maxDiff = None
+    db_structure_extensions = None
 
     def get_lora_app(self):
         app.app.config['DEBUG'] = False
@@ -228,9 +229,18 @@ class TestCaseMixin(object):
             stack.enter_context(p)
 
     @classmethod
+    def setUpClass(cls):
+        if cls.db_structure_extensions is not None:
+            cls.__db_extender = extend_db_struct(cls.db_structure_extensions)
+            cls.__db_extender.__enter__()
+
+    @classmethod
     def tearDownClass(cls):
         if db.pool:
             db.pool.closeall()
+
+        if cls.db_structure_extensions is not None:
+            cls.__db_extender.__exit__(None, None, None)
 
         with psycopg2.connect(psql().url()) as conn:
             conn.autocommit = True
