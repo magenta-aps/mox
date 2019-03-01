@@ -21,7 +21,7 @@ from oio_rest.db import db_helpers
 from oio_rest.custom_exceptions import (BadRequestException, NotFoundException,
                                         GoneException)
 from oio_rest.oio_rest import OIOStandardHierarchy, OIORestObject
-from oio_rest import oio_rest
+from oio_rest import oio_rest, organisation
 from oio_rest.utils import test_support
 
 
@@ -279,7 +279,7 @@ class TestOIORestObject(TestCase):
         with self.app.test_request_context(data=json.dumps(data),
                                            content_type='application/json',
                                            method='POST'):
-            result = self.testclass.create_object()
+            result = organisation.Organisation.create_object()
             actual_data = json.loads(result[0].get_data(as_text=True))
             actual_code = result[1]
 
@@ -776,7 +776,7 @@ class TestOIORestObject(TestCase):
         with self.app.test_request_context(data=json.dumps(data),
                                            content_type='application/json',
                                            method='PUT'):
-            result = self.testclass.put_object(uuid)
+            result = organisation.Organisation.put_object(uuid)
             actual_data = json.loads(result[0].get_data(as_text=True))
             actual_code = result[1]
 

@@ -360,39 +360,6 @@ def _generate_varianter():
     ))
 
 
-def get_lora_object_type(req):
-    """
-    Get the LoRa object type from the request.
-    :param req: The JSON body from the LoRa request.
-    :raise jsonschema.exceptions.ValidationError: If the LoRa object type
-    cannot be determined.
-    :return: The LoRa object type, i.e. 'organisation', 'bruger',...
-    """
-
-    jsonschema.validate(
-        req,
-        {
-            'type': 'object',
-            'properties': {
-                'attributter': {
-                    'type': 'object',
-                },
-
-            },
-            'required': ['attributter']
-        }
-    )
-
-    # TODO: this can probably be made smarter using the "oneOf" JSON schema
-    # keyword in the schema above, but there were problems getting this to work
-
-    if not list(req['attributter'].keys())[0] in [key + 'egenskaber' for key in
-                                                  settings.REAL_DB_STRUCTURE.keys()]:
-        raise jsonschema.exceptions.ValidationError('ups2')
-
-    return list(req['attributter'].keys())[0].split('egenskaber')[0]
-
-
 def generate_json_schema(obj):
     """
     Generate the JSON schema corresponding to LoRa object type.
@@ -467,7 +434,7 @@ def get_schema(obj_type):
     return schema
 
 
-def validate(input_json):
+def validate(input_json, obj_type):
     """
     Validate request JSON according to JSON schema.
     :param input_json: The request JSON
@@ -475,5 +442,4 @@ def validate(input_json):
     valid according to the JSON schema.
     """
 
-    obj_type = get_lora_object_type(input_json)
     jsonschema.validate(input_json, get_schema(obj_type))

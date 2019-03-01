@@ -1,0 +1,56 @@
+{
+  "attributter": {
+    "organisationenhedegenskaber": [
+      {
+        "brugervendtnoegle": "root",
+        "enhedsnavn": "Overordnet Enhed",
+        "virkning": {
+          "from": "2016-01-01 00:00:00+01:00",
+          "to": "infinity"
+        }
+      }
+    ]
+  },
+  "tilstande": {
+    "organisationenhedgyldighed": [
+      {
+        "gyldighed": "Aktiv",
+        "virkning": {
+          "from": "2016-01-01 00:00:00+01:00",
+          "to": "infinity",
+          "from_included": true
+        }
+      }
+    ]
+  },
+  "relationer": {
+    "overordnet": [
+      {
+        "uuid": "456362c4-0ee4-4e5e-a72c-751239745e62",
+        "virkning": {
+          "from": "2016-01-01 00:00:00+01:00",
+          "to": "infinity"
+        }
+      }
+    ],
+    "tilhoerer": [
+      {
+        "uuid": "456362c4-0ee4-4e5e-a72c-751239745e62",
+        "virkning": {
+          "from": "2016-01-01 00:00:00+01:00",
+          "to": "infinity"
+        }
+      }
+    ],
+    "enhedstype": [
+      {
+        "uuid": "32547559-cfc1-4d97-94c6-70b192eff825",
+        "virkning": {
+          "from": "2016-01-01 00:00:00+01:00",
+          "to": "infinity"
+        }
+      }
+    ]
+  },
+  "note": "Automatisk indl\u00e6sning"
+}
