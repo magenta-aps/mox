@@ -15,7 +15,9 @@ import psycopg2
 import flask
 
 from psycopg2.extras import DateTimeTZRange
-from psycopg2.extensions import AsIs, QuotedString, adapt as psyco_adapt
+from psycopg2.extensions import (
+    AsIs, QuotedString, Boolean, adapt as psyco_adapt,
+)
 from psycopg2.pool import PersistentConnectionPool
 from jinja2 import Environment, FileSystemLoader
 from dateutil import parser as date_parser
@@ -24,7 +26,7 @@ from .db_helpers import (
     get_attribute_fields, get_attribute_names, get_field_type,
     get_state_names, get_relation_field_type, Soegeord, OffentlighedUndtaget,
     JournalNotat, JournalDokument, DokumentVariantType, AktoerAttr,
-    VaerdiRelationAttr,
+    VaerdiRelationAttr, to_bool,
 )
 
 from ..authentication import get_authenticated_user
@@ -123,6 +125,8 @@ def convert_attr_value(attribute_name, attribute_field_name,
         # bypassing psycopg2 cleverness
         s = QuotedString(attribute_field_value or '0')
         return AsIs('{} :: interval'.format(s))
+    elif field_type == "boolean":
+        return Boolean(to_bool(attribute_field_value))
     else:
         return attribute_field_value
 
