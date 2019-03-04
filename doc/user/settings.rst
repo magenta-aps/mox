@@ -12,11 +12,11 @@ both default values `and environment variables`.
 
    Default: ``None``
 
-   Setting the environment variable :data:`CONFIG_FILE` to a a path to a JSON
-   file containing a dict of ``"<setting>": <value>`` pairs will load the
+   Setting the environment variable :data:`CONFIG_FILE` to a path to a JSON
+   file containing a dictionary of ``"<setting>": <value>`` pairs will load the
    settings specified in the file.
 
-   The settings from the file have precedens over any environment variables and
+   The settings from the file have precedence over any environment variables and
    will overwrite their values.
 
 
@@ -38,7 +38,7 @@ PostgreSQL
 
    Default: ``"localhost"``
 
-   Which host to use when connecting to the database.
+   The host to use when connecting to the database.
 
 .. py:data:: DB_PORT
 
@@ -70,8 +70,8 @@ PostgreSQL
    Default: ``0``
 
    Per-process lower limit on the amount of database connections. Setting it to
-   a non-zero value ensures that the webapp opens this amount at load, failing
-   if the database isn't available.
+   a non-zero value ensures that the web application opens this amount at load,
+   failing if the database isn't available.
 
 .. py:data:: DB_MAX_CONNECTIONS
 
@@ -93,8 +93,8 @@ File upload
 
    Default: ``"/var/mox"``
 
-   This path is where file uploads are stored. It must be readable and writable by
-   the system user running the REST API server. This is used in the Dokument
+   This path is where file uploads are stored. It must be readable and writeable
+   by the system user running the REST API server. This is used in the Dokument
    hierarchy.
 
 
@@ -140,10 +140,10 @@ Authentication
 
       Fix this whole section as part of #25911.
 
-MOX have two independent ways to use SAML. A older one from the file
+MOX have two independent ways to use SAML. An older one from the file
 :file:`mox/oio_rest/oio_rest/auth/saml2.py` and a newer one from the package
 `flask_saml_sso <https://github.com/magenta-aps/flask_saml_sso>`_. Only use one
-of them at a time. They are both disabled by default. For a overview of how
+of them at a time. They are both disabled by default. For an overview of how
 :file:`mox/oio_rest/oio_rest/auth/saml2.py` works, see :ref:`auth`.
 
 SAML from :file:`mox/oio_rest/oio_rest/auth/saml2.py`
@@ -159,8 +159,8 @@ SAML from :file:`mox/oio_rest/oio_rest/auth/saml2.py`
 
    Default: ``"https://saml.local'"``
 
-   The Endpoint specified in the AppliesTo element of the STS request. This will
-   be used to verify the Audience of the SAML Assertion.
+   The Endpoint specified in the ``AppliesTo`` element of the STS request. This
+   will be used to verify the Audience of the SAML Assertion.
 
 
 .. py:data:: SAML_IDP_ENTITY_ID
@@ -218,7 +218,7 @@ Refer to the readme for `flask_saml_sso
 
    Default: ``False``
 
-   Whether to enable SAML authentication from ``flask_saml_sso``.
+   Enables SAML authentication from ``flask_saml_sso``.
 
 .. py:data:: SAML_IDP_METADATA_URL
 
