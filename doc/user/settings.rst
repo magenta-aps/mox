@@ -83,10 +83,8 @@ PostgreSQL
 
    Default: ``"oio_rest.db.db_structure"``
 
-   .. todo::
-
-      Document this setting. Introduced in 539789191cba59ffc721f9db511ef1bcb949c848
-
+   The structure of the whole database. Overwrite this if you want to extend the
+   database with additional fields on the objects.
 
 File upload
 ===========
