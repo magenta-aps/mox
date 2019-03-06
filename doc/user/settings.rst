@@ -3,9 +3,9 @@ Settings
 ========
 
 Most configurable parameters of ``oio_rest`` can be injected with environment
-variables, alternatively you may set the parameters in a file.
+variables. Alternatively you may set the parameters in a file.
 
-Environment variables overwrites default values. The settings file overwrites
+Environment variables overwrites default values. The settings file overwrite
 both default values `and environment variables`.
 
 .. py:data:: CONFIG_FILE
@@ -140,7 +140,7 @@ Authentication
 
       Fix this whole section as part of #25911.
 
-MOX have two independent ways to use SAML. An older one from the file
+LoRa has two independent ways to use SAML. An older one from the file
 :file:`mox/oio_rest/oio_rest/auth/saml2.py` and a newer one from the package
 `flask_saml_sso <https://github.com/magenta-aps/flask_saml_sso>`_. Only use one
 of them at a time. They are both disabled by default. For an overview of how
