@@ -104,6 +104,17 @@ def psql():
     return psql
 
 
+def load_sql_fixture(fixture_path):
+    '''Empty the database and inject the given SQL fixture directly'''
+    with db.get_connection() as conn, conn.cursor() as curs:
+        for table in sorted(settings.DB_STRUCTURE.DATABASE_STRUCTURE):
+            curs.execute("TRUNCATE TABLE actual_state.{} "
+                         "RESTART IDENTITY CASCADE".format(table))
+
+        with open(fixture_path, 'rb') as fp:
+            curs.execute(fp.read())
+
+
 def _initdb():
     with psycopg2.connect(
         psql().url(),
@@ -191,9 +202,6 @@ class TestCaseMixin(object):
                 ', '.join(sorted(settings.DB_STRUCTURE.DATABASE_STRUCTURE)),
             ))
 
-    # for compatibility :-/
-    __reset_db = reset_db
-
     def setUp(self):
         super(TestCaseMixin, self).setUp()
 
@@ -209,7 +217,7 @@ class TestCaseMixin(object):
         except psycopg2.DatabaseError:
             _initdb()
 
-        self.addCleanup(self.__reset_db)
+        self.addCleanup(self.reset_db)
 
         db_host = psql().dsn()['host']
         db_port = psql().dsn()['port']
