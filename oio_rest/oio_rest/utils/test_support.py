@@ -12,6 +12,7 @@ import copy
 import functools
 import os
 import shutil
+import subprocess
 import types
 import typing
 
@@ -105,14 +106,36 @@ def psql():
 
 
 def load_sql_fixture(fixture_path):
-    '''Empty the database and inject the given SQL fixture directly'''
-    with db.get_connection() as conn, conn.cursor() as curs:
-        for table in sorted(settings.DB_STRUCTURE.DATABASE_STRUCTURE):
-            curs.execute("TRUNCATE TABLE actual_state.{} "
-                         "RESTART IDENTITY CASCADE".format(table))
+    '''Empty the database and inject the given SQL fixture directly.
 
-        with open(fixture_path, 'rb') as fp:
-            curs.execute(fp.read())
+    We support optimised dumps thanks to invoking 'psql' rather than
+    using 'psycopg2'.
+
+    '''
+
+    proc = subprocess.Popen(
+        [
+            'psql',
+            '--quiet', '-vON_ERROR_STOP=1',
+            '--single-transaction',
+            '--dbname', settings.DATABASE,
+            '--host', settings.DB_HOST,
+            '--port', str(settings.DB_PORT),
+            '--username', settings.DB_USER,
+        ],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        stdin=subprocess.PIPE,
+    )
+
+    for table in sorted(settings.DB_STRUCTURE.DATABASE_STRUCTURE):
+        proc.stdin.write(
+            "TRUNCATE TABLE actual_state.{} RESTART IDENTITY CASCADE;\n"
+            .format(table).encode('ascii'),
+        )
+
+    with open(fixture_path, 'rb') as fp:
+        proc.communicate(fp.read())
 
 
 def _initdb():
