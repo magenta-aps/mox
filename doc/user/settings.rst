@@ -3,9 +3,9 @@ Settings
 ========
 
 Most configurable parameters of ``oio_rest`` can be injected with environment
-variables. Alternatively you may set the parameters in a file.
+variables. Alternatively, you may set the parameters in a file.
 
-Environment variables overwrites default values. The settings file overwrite
+Environment variables overwrite default values. The settings file overwrites
 both default values `and environment variables`.
 
 .. py:data:: CONFIG_FILE
