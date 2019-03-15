@@ -12,6 +12,7 @@ import copy
 import functools
 import os
 import shutil
+import subprocess
 import types
 import typing
 
@@ -104,6 +105,39 @@ def psql():
     return psql
 
 
+def load_sql_fixture(fixture_path):
+    '''Empty the database and inject the given SQL fixture directly.
+
+    We support optimised dumps thanks to invoking 'psql' rather than
+    using 'psycopg2'.
+
+    '''
+
+    proc = subprocess.Popen(
+        [
+            'psql',
+            '--quiet', '-vON_ERROR_STOP=1',
+            '--single-transaction',
+            '--dbname', settings.DATABASE,
+            '--host', settings.DB_HOST,
+            '--port', str(settings.DB_PORT),
+            '--username', settings.DB_USER,
+        ],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        stdin=subprocess.PIPE,
+    )
+
+    for table in sorted(settings.DB_STRUCTURE.DATABASE_STRUCTURE):
+        proc.stdin.write(
+            "TRUNCATE TABLE actual_state.{} RESTART IDENTITY CASCADE;\n"
+            .format(table).encode('ascii'),
+        )
+
+    with open(fixture_path, 'rb') as fp:
+        proc.communicate(fp.read())
+
+
 def _initdb():
     with psycopg2.connect(
         psql().url(),
@@ -191,9 +225,6 @@ class TestCaseMixin(object):
                 ', '.join(sorted(settings.DB_STRUCTURE.DATABASE_STRUCTURE)),
             ))
 
-    # for compatibility :-/
-    __reset_db = reset_db
-
     def setUp(self):
         super(TestCaseMixin, self).setUp()
 
@@ -209,7 +240,7 @@ class TestCaseMixin(object):
         except psycopg2.DatabaseError:
             _initdb()
 
-        self.addCleanup(self.__reset_db)
+        self.addCleanup(self.reset_db)
 
         db_host = psql().dsn()['host']
         db_port = psql().dsn()['port']
