@@ -42,3 +42,4 @@ $PYTHON -m coverage run -m xmlrunner \
         --verbose --buffer --output build/reports "$@"
 $PYTHON -m coverage report
 $PYTHON -m coverage xml -o build/coverage/coverage.xml
+$PYTHON -m coverage html --skip-covered -d build/html

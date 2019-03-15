@@ -1,0 +1,33 @@
+Tests:
+  stage: test
+
+  script:
+    - apt-get update -qy
+    - apt-get install -qy
+      libxmlsec1-dev python3-dev python3-pip python3-venv
+      postgresql pgtap sudo
+    - useradd -m testrunner
+    - chown -R testrunner .
+    - pip install 'pip>=18.1' 'setuptools>=40'
+    - pip install -e './oio_rest[tests]'
+    - flake8 --exit-zero oio_rest
+    - sudo -u testrunner coverage run -m unittest discover
+      -t oio_rest -s tests --buffer --verbose
+    - sudo -u testrunner coverage report
+    - sudo -u testrunner coverage html --skip-covered -d coverage
+
+  artifacts:
+    paths:
+      - coverage
+
+Docs:
+  stage: test
+
+  script:
+    - pip install -r doc/requirements.txt
+    - make -C doc html SPHINXBUILD=sphinx-build
+    - mv doc/_build/html docs
+
+  artifacts:
+    paths:
+      - docs
