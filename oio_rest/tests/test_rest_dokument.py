@@ -26,9 +26,7 @@ class TestDokument(util.TestCase):
     def test_create_dokument_missing_files(self):
         result = self.client.post(
             "/dokument/dokument",
-            data={
-                "json": open("tests/fixtures/dokument_opret.json", "rb").read(),
-            }
+            json=util.get_fixture("dokument_opret.json"),
         ).get_json()
         self.assertNotIn("uuid", result)
         self.assertTrue(result["message"])
