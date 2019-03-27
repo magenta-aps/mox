@@ -11,7 +11,7 @@ New features:
 * Fix calculation of BASE_DIR in tests.
 * Make API endpoints trailing slash agnostic. 
 * Clear caches in test code when patching DB structures.
-* Validation of objects with additional attributes simplified.
+* Simplified validation of objects with additional attributes.
 * Searching for/filtering on Boolean attributes fixed.
 * Proof-of-concept infrastructure for Gitlab Runners added.
 * New dummy SQL fixtures for integration with the MO test suite.
