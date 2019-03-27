@@ -255,23 +255,23 @@ class TestCaseMixin(object):
                        create=True),
             mock.patch('oio_rest.settings.DB_PORT', db_port,
                        create=True),
-            mock.patch('oio_rest.db.pool', None),
         ]:
             stack.enter_context(p)
 
     @classmethod
     def setUpClass(cls):
-        if cls.db_structure_extensions is not None:
-            cls.__db_extender = extend_db_struct(cls.db_structure_extensions)
-            cls.__db_extender.__enter__()
+        cls.__class_stack = contextlib.ExitStack()
+        cls.__class_stack.enter_context(
+            extend_db_struct(cls.db_structure_extensions),
+        )
 
     @classmethod
     def tearDownClass(cls):
-        if db.pool:
+        if db.pool is not None:
             db.pool.closeall()
+            db.pool = None
 
-        if cls.db_structure_extensions is not None:
-            cls.__db_extender.__exit__(None, None, None)
+        cls.__class_stack.close()
 
         with psycopg2.connect(psql().url()) as conn:
             conn.autocommit = True
