@@ -8,7 +8,7 @@ New features:
   read.
 * Improve speed and configurability of test databases. Disable ``fsync`` for
   speed and allow using long directory names without failing.
-* Fix calculation of BASE_DIR in tests.
+* Fix calculation of ``BASE_DIR`` in tests.
 * Make API endpoints trailing slash agnostic. 
 * Clear caches in test code when patching DB structures.
 * Simplified validation of objects with additional attributes.
