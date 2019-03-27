@@ -21,7 +21,7 @@ Documentation improved:
 * API reference documentation vastly improved.
 * API tutorial updated and made more user friendly.
 * Behaviour of wildcard searches properly documented.
-* Proper documentation of settings.py.
+* Proper documentation of ``settings.py``.
 
 
 Version 1.0.0, 28 January 2019
