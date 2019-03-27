@@ -6,7 +6,7 @@ New features:
 * Python dependencies updated.
 * Delay import of ``DB_STRUCTURE`` file until after configuration file is
   read.
-* Improve speed and configurability of test databases. Disable fsync for
+* Improve speed and configurability of test databases. Disable ``fsync`` for
   speed and allow Jenkins to use long branch names without failing.
 * Fix calculation of BASE_DIR in tests.
 * Make API endpoints trailing slash agnostic. 
