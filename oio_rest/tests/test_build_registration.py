@@ -37,7 +37,7 @@ class TestBuildRegistration(unittest.TestCase):
         # Arrange
         value = 'a_string_with_underscores'
 
-        expected_result = 'a\_string\_with\_underscores'
+        expected_result = r'a\_string\_with\_underscores'
         # Act
         actual_result = br.escape_underscores(value)
         # Assert
@@ -186,7 +186,7 @@ class TestBuildRegistration(unittest.TestCase):
             'journalpost': [
                 {
                     'journaldokument': {
-                        'dokumenttitel': 'value\_with\_underscores'
+                        'dokumenttitel': r'value\_with\_underscores'
                     },
                     'virkning': None,
                 },

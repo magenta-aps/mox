@@ -34,9 +34,13 @@ def _generate_schema_object(properties, required, kwargs=None):
     schema_obj = {
         'type': 'object',
         'properties': properties,
-        'required': required,
         'additionalProperties': False
     }
+
+    # passing an empty array causes the schema to fail validation...
+    if required:
+        schema_obj['required'] = required
+
     if kwargs:
         schema_obj.update(kwargs)
     return schema_obj
@@ -99,7 +103,7 @@ def _get_metadata(obj, metadata_type, key):
     """
     metadata = settings.REAL_DB_STRUCTURE[obj].get(
         '{}_metadata'.format(metadata_type), [])
-    if not metadata:
+    if not metadata or key not in metadata:
         return metadata
     return metadata[key]
 
@@ -113,10 +117,10 @@ def _get_mandatory(obj, attribute_name):
     :return: Sorted list of mandatory attribute keys
     """
     attribute = _get_metadata(obj, 'attributter', attribute_name)
-    mandatory = [
+
+    mandatory = sorted(
         key for key in attribute if attribute[key].get('mandatory', False)
-    ]
-    mandatory.sort()
+    )
 
     return mandatory
 
@@ -133,7 +137,8 @@ def _handle_attribute_metadata(obj, fields, attribute_name):
     fields.update(
         {
             key: TYPE_MAP[attribute[key]['type']]
-            for key in attribute if attribute[key].get('type', False)
+            for key in attribute
+            if attribute[key].get('type', False)
         }
     )
 
@@ -148,26 +153,34 @@ def _generate_attributter(obj):
     """
 
     db_attributter = settings.REAL_DB_STRUCTURE[obj]['attributter']
-
     egenskaber_name = '{}egenskaber'.format(obj)
-    egenskaber = {
-        key: STRING
-        for key in db_attributter['egenskaber']
-    }
-    egenskaber.update({'virkning': {'$ref': '#/definitions/virkning'}})
 
-    egenskaber = _handle_attribute_metadata(obj, egenskaber, 'egenskaber')
+    attrs = {}
+    required = []
 
-    return _generate_schema_object(
-        {
-            egenskaber_name: _generate_schema_array(
-                _generate_schema_object(
-                    egenskaber,
-                    _get_mandatory(obj, 'egenskaber') + ['virkning'])
-            )
-        },
-        [egenskaber_name]
-    )
+    for attrname, attrval in db_attributter.items():
+        full_name = '{}{}'.format(obj, attrname)
+        schema = {
+            key: STRING
+            for key in attrval
+        }
+        schema.update({'virkning': {'$ref': '#/definitions/virkning'}})
+
+        schema = _handle_attribute_metadata(obj, schema, attrname)
+
+        mandatory = _get_mandatory(obj, attrname)
+
+        attrs[full_name] = _generate_schema_array(
+            _generate_schema_object(
+                schema,
+                mandatory + ['virkning'],
+            ),
+        )
+
+        if mandatory:
+            required.append(full_name)
+
+    return _generate_schema_object(attrs, required)
 
 
 def _generate_tilstande(obj):
@@ -181,7 +194,8 @@ def _generate_tilstande(obj):
 
     properties = {}
     required = []
-    for key in tilstande.keys():
+
+    for key in sorted(tilstande):
         tilstand_name = obj + key
 
         properties[tilstand_name] = _generate_schema_array(
@@ -346,47 +360,18 @@ def _generate_varianter():
     ))
 
 
-def get_lora_object_type(req):
-    """
-    Get the LoRa object type from the request.
-    :param req: The JSON body from the LoRa request.
-    :raise jsonschema.exceptions.ValidationError: If the LoRa object type
-    cannot be determined.
-    :return: The LoRa object type, i.e. 'organisation', 'bruger',...
-    """
-
-    jsonschema.validate(
-        req,
-        {
-            'type': 'object',
-            'properties': {
-                'attributter': {
-                    'type': 'object',
-                },
-
-            },
-            'required': ['attributter']
-        }
-    )
-
-    # TODO: this can probably be made smarter using the "oneOf" JSON schema
-    # keyword in the schema above, but there were problems getting this to work
-
-    if not len(req['attributter']) == 1:
-        raise jsonschema.exceptions.ValidationError('ups')
-    if not list(req['attributter'].keys())[0] in [key + 'egenskaber' for key in
-                                                  settings.REAL_DB_STRUCTURE.keys()]:
-        raise jsonschema.exceptions.ValidationError('ups2')
-
-    return list(req['attributter'].keys())[0].split('egenskaber')[0]
-
-
 def generate_json_schema(obj):
     """
     Generate the JSON schema corresponding to LoRa object type.
     :param obj: The LoRa object type, i.e. 'bruger', 'organisation',...
     :return: Dictionary representing the JSON schema.
     """
+
+    if obj == 'dokument':
+        # Due to an inconsistency between the way LoRa handles
+        # "DokumentVariantEgenskaber" and the specs' we will have to do this for now,
+        # i.e. we allow any JSON-object for "Dokument"
+        return {'type': 'object'}
 
     schema = _generate_schema_object(
         {
@@ -435,28 +420,26 @@ def generate_json_schema(obj):
     return schema
 
 
-SCHEMA = None
+SCHEMAS = {}
 
 
-def validate(input_json):
+def get_schema(obj_type):
+    try:
+        return SCHEMAS[obj_type]
+    except KeyError:
+        pass
+
+    schema = SCHEMAS[obj_type] = copy.deepcopy(generate_json_schema(obj_type))
+
+    return schema
+
+
+def validate(input_json, obj_type):
     """
     Validate request JSON according to JSON schema.
     :param input_json: The request JSON
     :raise jsonschema.exceptions.ValidationError: If the request JSON is not
     valid according to the JSON schema.
     """
-    global SCHEMA
 
-    if SCHEMA is None:
-        SCHEMA = {
-            obj: copy.deepcopy(generate_json_schema(obj))
-            for obj in settings.REAL_DB_STRUCTURE.keys()
-        }
-
-        # Due to an inconsistency between the way LoRa handles
-        # "DokumentVariantEgenskaber" and the specs' we will have to do this for now,
-        # i.e. we allow any JSON-object for "Dokument"
-        SCHEMA['dokument'] = {'type': 'object'}
-
-    obj_type = get_lora_object_type(input_json)
-    jsonschema.validate(input_json, SCHEMA[obj_type])
+    jsonschema.validate(input_json, get_schema(obj_type))

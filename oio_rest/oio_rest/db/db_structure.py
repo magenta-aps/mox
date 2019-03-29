@@ -427,6 +427,13 @@ DATABASE_STRUCTURE = {
                 "returkode", "returtekst", "note", "integrationsdata",
             ],
         },
+        'attributter_metadata': {
+            'egenskaber': {
+                "tidspunkt": {
+                    "mandatory": True,
+                },
+            },
+        },
         "tilstande": {
             "gyldighed": ["Rettet", "Ikke rettet"]
         },

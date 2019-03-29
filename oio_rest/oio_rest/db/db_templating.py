@@ -53,9 +53,32 @@ def render_templates():
 
             context = copy.deepcopy(db_structure[oio_type])
 
-            # it is important that the order is stable, as some templates rely on this
-            context["tilstande"] = OrderedDict(context["tilstande"])
-            context["attributter"] = OrderedDict(context["attributter"])
+            for reltype in ('tilstande', 'attributter', 'relationer'):
+                if reltype not in context:
+                    continue
+
+                # it is important that the order is stable, as some templates rely on this
+                context[reltype] = OrderedDict(context[reltype])
+
+                # fill these out to avoid the need to check for membership
+                meta = context.get("{}_metadata".format(reltype), {})
+
+                context["{}_metadata".format(reltype)] = {
+                    a: {
+                        p: meta.get(a, {}).get(p, {})
+                        for p in ps
+                    }
+                    for a, ps in context['attributter'].items()
+                }
+
+                context["{}_mandatory".format(reltype)] = {
+                    attr: [
+                        k
+                        for k, v in vs.items()
+                        if v.get('mandatory')
+                    ]
+                    for attr, vs in meta.items()
+                }
 
             context["oio_type"] = oio_type.lower()
 

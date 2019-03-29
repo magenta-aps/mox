@@ -8,12 +8,11 @@
 
 import atexit
 import contextlib
+import copy
 import functools
-import glob
 import os
 import shutil
 import subprocess
-import sys
 import types
 import typing
 
@@ -23,26 +22,69 @@ import testing.postgresql
 import psycopg2.pool
 
 from .. import app
+from .. import db
 from ..db import db_templating
 
 from .. import settings
 
-BASE_DIR = os.path.dirname(settings.__file__)
+BASE_DIR = os.path.dirname(os.path.dirname(settings.__file__))
 TOP_DIR = os.path.dirname(BASE_DIR)
-DB_DIR = os.path.join(BASE_DIR, 'build', 'db')
+DB_DIR = os.path.join(BASE_DIR, 'build', 'db', str(os.getpid()))
 
 
 @contextlib.contextmanager
 def patch_db_struct(new: typing.Union[types.ModuleType, dict]):
+    '''Context manager for overriding db_structures'''
+
+    patches = [
+        mock.patch('oio_rest.db.db_helpers._attribute_fields', {}),
+        mock.patch('oio_rest.db.db_helpers._attribute_names', {}),
+        mock.patch('oio_rest.db.db_helpers._relation_names', {}),
+        mock.patch('oio_rest.validate.SCHEMAS', {}),
+        mock.patch('oio_rest.settings.REAL_DB_STRUCTURE', new=new),
+    ]
+
     if isinstance(new, types.ModuleType):
-        with \
-             mock.patch('oio_rest.settings.DB_STRUCTURE', new), \
-             mock.patch('oio_rest.settings.REAL_DB_STRUCTURE', new=new.REAL_DB_STRUCTURE):
-            yield
-    else:
-        with \
-             mock.patch('oio_rest.settings.REAL_DB_STRUCTURE', new=new):
-            yield
+        patches += [
+            mock.patch('oio_rest.settings.REAL_DB_STRUCTURE',
+                       new=new.REAL_DB_STRUCTURE),
+            mock.patch('oio_rest.settings.DB_STRUCTURE.REAL_DB_STRUCTURE',
+                       new=new.REAL_DB_STRUCTURE),
+        ]
+
+    with contextlib.ExitStack() as stack:
+        for patch in patches:
+            stack.enter_context(patch)
+
+        yield
+
+
+@contextlib.contextmanager
+def extend_db_struct(new: dict):
+    '''Context manager for extending db_structures'''
+
+    dbs = copy.deepcopy(settings.DB_STRUCTURE.DATABASE_STRUCTURE)
+    real_dbs = copy.deepcopy(settings.REAL_DB_STRUCTURE)
+
+    patches = [
+        mock.patch('oio_rest.db.db_helpers._attribute_fields', {}),
+        mock.patch('oio_rest.db.db_helpers._attribute_names', {}),
+        mock.patch('oio_rest.db.db_helpers._relation_names', {}),
+        mock.patch('oio_rest.validate.SCHEMAS', {}),
+        mock.patch('oio_rest.settings.DB_STRUCTURE.DATABASE_STRUCTURE',
+                   new=dbs),
+        mock.patch('oio_rest.settings.REAL_DB_STRUCTURE', new=real_dbs),
+        mock.patch('oio_rest.settings.DB_STRUCTURE.REAL_DB_STRUCTURE',
+                   new=real_dbs),
+    ]
+
+    with contextlib.ExitStack() as stack:
+        for patch in patches:
+            stack.enter_context(patch)
+
+        settings.load_db_extensions(new)
+
+        yield
 
 
 @functools.lru_cache()
@@ -51,12 +93,49 @@ def psql():
 
     psql = testing.postgresql.Postgresql(
         base_dir=DB_DIR,
+        postgres_args=(
+            '-h 127.0.0.1 -F -c logging_collector=off '
+            '-c fsync=off -c unix_socket_directories=/tmp'
+        ),
     )
 
     atexit.register(psql.stop)
     atexit.register(lambda: shutil.rmtree(DB_DIR))
 
     return psql
+
+
+def load_sql_fixture(fixture_path):
+    '''Empty the database and inject the given SQL fixture directly.
+
+    We support optimised dumps thanks to invoking 'psql' rather than
+    using 'psycopg2'.
+
+    '''
+
+    proc = subprocess.Popen(
+        [
+            'psql',
+            '--quiet', '-vON_ERROR_STOP=1',
+            '--single-transaction',
+            '--dbname', settings.DATABASE,
+            '--host', settings.DB_HOST,
+            '--port', str(settings.DB_PORT),
+            '--username', settings.DB_USER,
+        ],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        stdin=subprocess.PIPE,
+    )
+
+    for table in sorted(settings.DB_STRUCTURE.DATABASE_STRUCTURE):
+        proc.stdin.write(
+            "TRUNCATE TABLE actual_state.{} RESTART IDENTITY CASCADE;\n"
+            .format(table).encode('ascii'),
+        )
+
+    with open(fixture_path, 'rb') as fp:
+        proc.communicate(fp.read())
 
 
 def _initdb():
@@ -118,6 +197,7 @@ class TestCaseMixin(object):
     '''
 
     maxDiff = None
+    db_structure_extensions = None
 
     def get_lora_app(self):
         app.app.config['DEBUG'] = False
@@ -145,9 +225,6 @@ class TestCaseMixin(object):
                 ', '.join(sorted(settings.DB_STRUCTURE.DATABASE_STRUCTURE)),
             ))
 
-    # for compatibility :-/
-    __reset_db = reset_db
-
     def setUp(self):
         super(TestCaseMixin, self).setUp()
 
@@ -163,10 +240,13 @@ class TestCaseMixin(object):
         except psycopg2.DatabaseError:
             _initdb()
 
-        self.addCleanup(self.__reset_db)
+        self.addCleanup(self.reset_db)
 
         db_host = psql().dsn()['host']
         db_port = psql().dsn()['port']
+
+        stack = contextlib.ExitStack()
+        self.addCleanup(stack.close)
 
         for p in [
             mock.patch('oio_rest.settings.FILE_UPLOAD_FOLDER', './mox-upload'),
@@ -175,20 +255,34 @@ class TestCaseMixin(object):
                        create=True),
             mock.patch('oio_rest.settings.DB_PORT', db_port,
                        create=True),
-            mock.patch(
-                'oio_rest.db.pool',
-                psycopg2.pool.SimpleConnectionPool(
-                    1, 1,
-                    database=settings.DATABASE,
-                    user=settings.DB_USER,
-                    password=settings.DB_PASSWORD,
-                    host=db_host,
-                    port=db_port,
-                ),
-            ),
         ]:
-            p.start()
-            self.addCleanup(p.stop)
+            stack.enter_context(p)
+
+    @classmethod
+    def setUpClass(cls):
+        cls.__class_stack = contextlib.ExitStack()
+        cls.__class_stack.enter_context(
+            extend_db_struct(cls.db_structure_extensions),
+        )
+
+    @classmethod
+    def tearDownClass(cls):
+        if db.pool is not None:
+            db.pool.closeall()
+            db.pool = None
+
+        cls.__class_stack.close()
+
+        with psycopg2.connect(psql().url()) as conn:
+            conn.autocommit = True
+
+            with conn.cursor() as curs:
+                curs.execute(
+                    'DROP DATABASE IF EXISTS {}'.format(settings.DATABASE),
+                )
+                curs.execute(
+                    'DROP USER IF EXISTS {}'.format(settings.DB_USER),
+                )
 
 
 @click.command()

@@ -1,3 +1,29 @@
+Version 1.1.0, 26 March 2019
+----------------------------
+
+New features:
+
+* Python dependencies updated.
+* Delay import of ``DB_STRUCTURE`` file until after configuration file is
+  read.
+* Improve speed and configurability of test databases. Disable ``fsync`` for
+  speed and allow using long directory names without failing.
+* Fix calculation of ``BASE_DIR`` in tests.
+* Make API endpoints trailing slash agnostic. 
+* Clear caches in test code when patching DB structures.
+* Simplified validation of objects with additional attributes.
+* Searching for/filtering on Boolean attributes fixed.
+* Proof-of-concept infrastructure for Gitlab Runners added.
+* New dummy SQL fixtures for integration with the MO test suite.
+
+Documentation improved:
+
+* API reference documentation vastly improved.
+* API tutorial updated and made more user friendly.
+* Behaviour of wildcard searches properly documented.
+* Proper documentation of ``settings.py``.
+
+
 Version 1.0.0, 28 January 2019
 ------------------------------
 
@@ -29,6 +55,8 @@ New in this version:
 * Make tests pass regardless of time zone on server.
 * Fix bug that meant database installation code would sometimes be run
   as superuser rather than designated database user.
+* Database generation no longer ignores "mandatory" metadata field.
+
 
 Version 0.9.2, 13 December 2018
 --------------------------------

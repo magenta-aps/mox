@@ -6,7 +6,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-import unittest
 import uuid
 
 from oio_rest.utils.build_registration import is_uuid
@@ -18,7 +17,7 @@ class Test21660PutUpdate(util.TestCase):
         result = self.client.post(
             "klassifikation/facet",
             data={
-                "json": open("tests/fixtures/facet_opret.json", "rt").read(),
+                "json": util.get_fixture("facet_opret.json", as_text=False),
             },
         )
         self.assertEqual(result.status_code, 201)
@@ -28,7 +27,10 @@ class Test21660PutUpdate(util.TestCase):
         result_put = self.client.put(
             "klassifikation/facet/%s" % uuid_,
             data={
-                "json": open("tests/fixtures/facet_reduce_effective_time_21660.json", "rt").read(),
+                "json": util.get_fixture(
+                    "facet_reduce_effective_time_21660.json",
+                    as_text=False,
+                ),
             },
         )
         self.assertEqual(result_put.status_code, 200)
@@ -40,7 +42,7 @@ class TestKlasse(util.TestCase):
         result = self.client.post(
             "klassifikation/klasse",
             data={
-                "json": open("tests/fixtures/klasse_opret.json", "rt").read(),
+                "json": util.get_fixture("klasse_opret.json", as_text=False),
             },
         )
         self.assertEqual(result.status_code, 201)
@@ -50,7 +52,7 @@ class TestKlasse(util.TestCase):
         result_patch = self.client.patch(
             "klassifikation/klasse/%s" % uuid_,
             data={
-                "json": open("tests/fixtures/klasse_opdater.json", "rt").read(),
+                "json": util.get_fixture("klasse_opdater.json", as_text=False),
             },
         )
         self.assertEqual(result_patch.status_code, 200)
@@ -62,7 +64,7 @@ class TestImportDeletedPassivated(util.TestCase):
         result = self.client.post(
             "klassifikation/facet",
             data={
-                "json": open("tests/fixtures/facet_opret.json", "rt").read(),
+                "json": util.get_fixture("facet_opret.json", as_text=False),
             },
         )
         self.assertEqual(result.status_code, 201)
@@ -73,7 +75,8 @@ class TestImportDeletedPassivated(util.TestCase):
             result_patch = self.client.patch(
                 "klassifikation/facet/%s" % uuid_,
                 data={
-                    "json": open("tests/fixtures/facet_passiv.json", "rt").read(),
+                    "json": util.get_fixture("facet_passiv.json",
+                                             as_text=False),
                 },
             )
             self.assertEqual(result_patch.status_code, 200)
@@ -83,7 +86,8 @@ class TestImportDeletedPassivated(util.TestCase):
             result_put = self.client.put(
                 "klassifikation/facet/%s" % uuid_,
                 data={
-                    "json": open("tests/fixtures/facet_opret.json", "rt").read(),
+                    "json": util.get_fixture("facet_opret.json",
+                                             as_text=False),
                 },
             )
             self.assertEqual(result_put.status_code, 200)
@@ -93,7 +97,8 @@ class TestImportDeletedPassivated(util.TestCase):
             result_delete = self.client.delete(
                 "klassifikation/facet/%s" % uuid_,
                 data={
-                    "json": open("tests/fixtures/facet_slet.json", "rt").read(),
+                    "json": util.get_fixture("facet_slet.json",
+                                             as_text=False),
                 },
             )
             self.assertEqual(result_delete.status_code, 202)
@@ -103,7 +108,8 @@ class TestImportDeletedPassivated(util.TestCase):
             result_import = self.client.put(
                 "klassifikation/facet/%s" % uuid_,
                 data={
-                    "json": open("tests/fixtures/facet_opret.json", "rt").read(),
+                    "json": util.get_fixture("facet_opret.json",
+                                             as_text=False),
                 },
             )
             self.assertEqual(result_import.status_code, 200)
@@ -115,7 +121,8 @@ class TestFacet(util.TestCase):
         result = self.client.post(
             "klassifikation/facet",
             data={
-                "json": open("tests/fixtures/facet_opret.json", "rt").read(),
+                "json": util.get_fixture("facet_opret.json",
+                                         as_text=False),
             },
         )
         self.assertEqual(result.status_code, 201)
@@ -127,7 +134,8 @@ class TestFacet(util.TestCase):
             result_import = self.client.put(
                 "klassifikation/facet/%s" % import_uuid,
                 data={
-                    "json": open("tests/fixtures/facet_opret.json", "rt").read(),
+                    "json": util.get_fixture("facet_opret.json",
+                                             as_text=False),
                 },
             )
             self.assertEqual(result_import.status_code, 200)
@@ -137,7 +145,8 @@ class TestFacet(util.TestCase):
             result_patch = self.client.patch(
                 "klassifikation/facet/%s" % uuid_,
                 data={
-                    "json": open("tests/fixtures/facet_opdater.json", "rt").read(),
+                    "json": util.get_fixture("facet_opdater.json",
+                                             as_text=False),
                 },
             )
             self.assertEqual(result_patch.status_code, 200)
@@ -147,7 +156,8 @@ class TestFacet(util.TestCase):
             result_put = self.client.put(
                 "klassifikation/facet/%s" % uuid_,
                 data={
-                    "json": open("tests/fixtures/facet_opret.json", "rt").read(),
+                    "json": util.get_fixture("facet_opret.json",
+                                             as_text=False),
                 },
             )
             self.assertEqual(result_put.status_code, 200)
@@ -157,7 +167,8 @@ class TestFacet(util.TestCase):
             result_patch = self.client.patch(
                 "klassifikation/facet/%s" % uuid_,
                 data={
-                    "json": open("tests/fixtures/facet_passiv.json", "rt").read(),
+                    "json": util.get_fixture("facet_passiv.json",
+                                             as_text=False),
                 },
             )
             self.assertEqual(result_patch.status_code, 200)
@@ -167,7 +178,8 @@ class TestFacet(util.TestCase):
             result_delete = self.client.delete(
                 "klassifikation/facet/%s" % uuid_,
                 data={
-                    "json": open("tests/fixtures/facet_slet.json", "rt").read(),
+                    "json": util.get_fixture("facet_slet.json",
+                                             as_text=False),
                 },
             )
             self.assertEqual(result_delete.status_code, 202)

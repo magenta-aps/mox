@@ -1,9 +1,15 @@
+.. _auth:
+
 Authentication
 ==============
 
 .. warning::
    
     This document is outdated.
+
+.. todo::
+
+   When updating this as part of #25911. Also update :ref:`auth-settings`.
 
 SAML token authentication is enabled by default. This requires that
 you have access to a SAML Identity Provider (IdP) which provides a

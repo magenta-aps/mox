@@ -5,9 +5,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-# encoding: utf-8
-
 import os
 import datetime
 import urllib.parse
@@ -52,8 +49,7 @@ class RegexConverter(BaseConverter):
 
 
 app.url_map.converters['regex'] = RegexConverter
-
-app.teardown_request(db.close_connection)
+app.url_map.strict_slashes = False
 
 klassifikation.KlassifikationsHierarki.setup_api(
     base_url=settings.BASE_URL, flask=app,
@@ -100,6 +96,11 @@ def get_token():
 
 @app.route('/site-map')
 def sitemap():
+    """Returns a site map over all valid urls.
+
+    .. :quickref: :http:get:`/site-map`
+
+    """
     links = []
     for rule in app.url_map.iter_rules():
         # Filter out rules we can't navigate to in a browser

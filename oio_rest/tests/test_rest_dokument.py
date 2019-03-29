@@ -14,20 +14,19 @@ from tests import util
 
 
 class TestDokument(util.TestCase):
-    @unittest.skip("I don't know what should happen here.")
     def test_create_dokument_empty_dict(self):
-        result = self.client.post(
+        '''Not sure why this happens?'''
+        self.assertRequestResponse(
             "/dokument/dokument",
-            data={"json": "{}"},
-        ).get_json()
-        self.assertIsNotNone(result["uuid"])
+            {'uuid': None},
+            json={},
+            status_code=400,
+        )
 
     def test_create_dokument_missing_files(self):
         result = self.client.post(
             "/dokument/dokument",
-            data={
-                "json": open("tests/fixtures/dokument_opret.json", "rb").read(),
-            }
+            json=util.get_fixture("dokument_opret.json"),
         ).get_json()
         self.assertNotIn("uuid", result)
         self.assertTrue(result["message"])
@@ -39,7 +38,7 @@ class TestDokument(util.TestCase):
                 "/dokument/dokument",
                 content_type="multipart/form-data",
                 data={
-                    "json": open("tests/fixtures/dokument_opret.json", "rt").read(),
+                    "json": util.get_fixture("dokument_opret.json", as_text=False),
                     "del_indhold1": ("tests/fixtures/test.txt", "del_indhold1"),
                     "del_indhold2": ("tests/fixtures/test.docx", "del_indhold2"),
                     "del_indhold3": ("tests/fixtures/test.xls", "del_indhold3"),
@@ -55,7 +54,7 @@ class TestDokument(util.TestCase):
                 "/dokument/dokument/%s" % import_uuid,
                 content_type="multipart/form-data",
                 data={
-                    "json": open("tests/fixtures/dokument_opret.json", "rt").read(),
+                    "json": util.get_fixture("dokument_opret.json", as_text=False),
                     "del_indhold1": ("tests/fixtures/test.txt", "del_indhold1"),
                     "del_indhold2": ("tests/fixtures/test.docx", "del_indhold2"),
                     "del_indhold3": ("tests/fixtures/test.xls", "del_indhold3"),
@@ -107,7 +106,7 @@ class TestDokument(util.TestCase):
                 "/dokument/dokument",
                 content_type="multipart/form-data",
                 data={
-                    "json": open("tests/fixtures/dokument_opdater.json", "rt").read(),
+                    "json": util.get_fixture("dokument_opdater.json", as_text=False),
                 },
                 query_string={"uuid": upload_uuid},
             )
@@ -128,7 +127,7 @@ class TestDokument(util.TestCase):
                  "/dokument/dokument",
                 content_type="multipart/form-data",
                 data={
-                    "json": open("tests/fixtures/dokument_opdater2.json", "rt").read(),
+                    "json": util.get_fixture("dokument_opdater2.json", as_text=False),
                     "del_indhold1_opdateret": ("tests/fixtures/test2.txt",
                     "del_indhold1_opdateret"),
                 },
@@ -166,7 +165,7 @@ class TestDokument(util.TestCase):
             self.assertEqual(
                 self.client.patch(
                     "dokument/dokument/%s" % upload_uuid,
-                    data=open("tests/fixtures/facet_passiv.json", "rt").read(),
+                    data=util.get_fixture("facet_passiv.json", as_text=False),
                 ).status_code,
                 200,
             )
@@ -175,7 +174,7 @@ class TestDokument(util.TestCase):
             self.assertEqual(
                 self.client.delete(
                     "dokument/dokument/%s" % upload_uuid,
-                    data=open("tests/fixtures/dokument_slet.json", "rt").read(),
+                    data=util.get_fixture("dokument_slet.json", as_text=False),
                 ).status_code,
                 200,
             )

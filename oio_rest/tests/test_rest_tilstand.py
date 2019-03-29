@@ -5,8 +5,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-import unittest
 import uuid
 
 from oio_rest.utils.build_registration import is_uuid
@@ -18,7 +16,7 @@ class TestTilstand(util.TestCase):
         result = self.client.post(
             "tilstand/tilstand",
             data={
-                "json": open("tests/fixtures/tilstand_opret.json", "rt").read(),
+                "json": util.get_fixture("tilstand_opret.json", as_text=False),
             },
         )
         self.assertEqual(result.status_code, 201)
@@ -30,7 +28,7 @@ class TestTilstand(util.TestCase):
         result = self.client.put(
             "tilstand/tilstand/%s" % uuid_,
             data={
-                "json": open("tests/fixtures/tilstand_opret.json", "rt").read(),
+                "json": util.get_fixture("tilstand_opret.json", as_text=False),
             },
         )
         self.assertEqual(result.status_code, 200)

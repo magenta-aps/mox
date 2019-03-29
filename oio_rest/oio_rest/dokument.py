@@ -63,9 +63,10 @@ class Dokument(OIORestObject):
         )
 
         flask.add_url_rule(
-            download_content_url, '_'.join(
-                [cls.__name__, 'download_content']
-            ), cls.download_content, methods=['GET']
+            download_content_url,
+            '_'.join([cls.__name__, 'download_content']),
+            cls.download_content,
+            methods=['GET'],
         )
 
     @classmethod

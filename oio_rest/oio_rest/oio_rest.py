@@ -5,9 +5,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-# encoding: utf-8
 """Superclasses for OIO objects and object hierarchies."""
+
 import json
 import datetime
 
@@ -162,6 +161,7 @@ class Registration(object):
 class OIOStandardHierarchy(object):
     """Implement API for entire hierarchy."""
 
+    _name = ''
     _classes = []
 
     @classmethod
@@ -169,6 +169,9 @@ class OIOStandardHierarchy(object):
         """Set up API for the classes included in the hierarchy.
 
         Note that version number etc. may have to be added to the URL."""
+
+        assert cls._name and cls._classes, 'hierarchy not configured?'
+
         for c in cls._classes:
             c.create_api(cls._name, flask, base_url)
 
@@ -176,6 +179,11 @@ class OIOStandardHierarchy(object):
         classes_url = "{0}/{1}/{2}".format(base_url, hierarchy, "classes")
 
         def get_classes():
+            """Return the classes including their fields under this service.
+
+             .. :quickref: :http:get:`/(service)/classes`
+
+            """
             structure = settings.REAL_DB_STRUCTURE
             clsnms = [c.__name__.lower() for c in cls._classes]
             hierarchy_dict = {c: structure[c] for c in clsnms}
@@ -225,8 +233,11 @@ class OIORestObject(object):
     @classmethod
     @requires_auth
     def create_object(cls):
-        """
-        CREATE object, generate new UUID.
+        """A :ref:`CreateOperation` that creates a new object from the JSON payload. It returns
+        a newly generated UUID for the created object.
+
+        .. :quickref: :ref:`CreateOperation`
+
         """
 
         cls.verify_args()
@@ -237,7 +248,7 @@ class OIORestObject(object):
 
         # Validate JSON input
         try:
-            validate.validate(input)
+            validate.validate(input, cls.__name__.lower())
         except jsonschema.exceptions.ValidationError as e:
             return jsonify({'message': e.message}), 400
 
@@ -261,8 +272,15 @@ class OIORestObject(object):
     @classmethod
     @requires_auth
     def get_objects(cls):
-        """
-        LIST or SEARCH objects, depending on parameters.
+        """A :ref:`ListOperation` or :ref:`SearchOperation` depending on parameters.
+
+        With any the of ``uuid``, ``virking*`` and ``registeret*`` parameters, it is a
+        :ref:`ListOperation` and will return one or more whole JSON objects. Given any
+        other parameters the operation is a :ref:`SearchOperation` and will only return
+        a list of UUIDs to the objects.
+
+        .. :quickref: :ref:`ListOperation` or :ref:`SearchOperation`
+
         """
         request.parameter_storage_class = ArgumentDict
 
@@ -330,8 +348,10 @@ class OIORestObject(object):
     @classmethod
     @requires_auth
     def get_object(cls, uuid):
-        """
-        READ an object, return as JSON.
+        """A :ref:`ReadOperation`. Return a single whole object as a JSON object.
+
+        .. :quickref: :ref:`ReadOperation`
+
         """
         cls.verify_args(temporality=True)
 
@@ -379,8 +399,19 @@ class OIORestObject(object):
     @classmethod
     @requires_auth
     def put_object(cls, uuid):
-        """
-        IMPORT or UPDATE an  object, replacing its contents entirely.
+        """A :ref:`ImportOperation` that creates or overwrites an object from the JSON payload.
+        It returns the UUID for the object.
+
+        If there no object with the UUID or the object with that UUID have been
+        :ref:`deleted <DeleteOperation>` or :ref:`passivated <PassivateOperation>`, it
+        creates a new object at the specified UUID. It sets ``livscykluskode:
+        "Importeret"``.
+
+        If an object with the UUID exist it completely overwrite the object. Including
+        all ``virkning`` periods. It sets ``livscykluskode: "Rettet"``.
+
+        .. :quickref: :ref:`ImportOperation`
+
         """
         cls.verify_args()
 
@@ -390,7 +421,7 @@ class OIORestObject(object):
 
         # Validate JSON input
         try:
-            validate.validate(input)
+            validate.validate(input, cls.__name__.lower())
         except jsonschema.exceptions.ValidationError as e:
             return jsonify({'message': e.message}), 400
 
@@ -431,7 +462,14 @@ class OIORestObject(object):
     @classmethod
     @requires_auth
     def patch_object(cls, uuid):
-        """UPDATE or PASSIVIZE this object."""
+        """An :ref:`UpdateOperation` or :ref:`PassivateOperation`. Apply the JSON payload as a
+        change to the object. Return the UUID of the object.
+
+        If ``livscyklus: "Passiv"`` is set it is a :ref:`PassivateOperation`.
+
+        .. :quickref: :ref:`UpdateOperation` or :ref:`PassivateOperation`
+
+        """
 
         # If the object doesn't exist, we can't patch it.
         if not db.object_exists(cls.__name__, uuid):
@@ -466,8 +504,12 @@ class OIORestObject(object):
     @classmethod
     @requires_auth
     def delete_object(cls, uuid):
+        """A :ref:`DeleteOperation`. Delete the object and return the UUID.
 
-        """Logically delete this object."""
+        .. :quickref: :ref:`DeleteOperation`
+
+        """
+
         cls.verify_args()
 
         input = cls.get_json() or {}
@@ -483,6 +525,11 @@ class OIORestObject(object):
 
     @classmethod
     def get_fields(cls):
+        """Return a list of all fields a given object has.
+
+        .. :quickref: :http:get:`/(service)/(object)/fields`
+
+        """
         cls.verify_args()
 
         """Set up API with correct database access functions."""
@@ -494,8 +541,14 @@ class OIORestObject(object):
 
     @classmethod
     def get_schema(cls):
+        """Returns the JSON schema of an object.
+
+        .. :quickref: :http:get:`/(service)/(object)/schema`
+
+        """
         cls.verify_args()
-        return jsonify(validate.SCHEMA[cls.__name__.lower()])
+
+        return jsonify(validate.get_schema(cls.__name__.lower()))
 
     @classmethod
     def create_api(cls, hierarchy, flask, base_url):
@@ -516,39 +569,62 @@ class OIORestObject(object):
             uuid_regex
         )
 
-        flask.add_url_rule(class_url, '_'.join([cls.__name__, 'get_objects']),
-                           cls.get_objects, methods=['GET'],
-                           strict_slashes=False)
-
-        flask.add_url_rule(object_url, '_'.join([cls.__name__, 'get_object']),
-                           cls.get_object, methods=['GET'])
-
-        flask.add_url_rule(object_url, '_'.join([cls.__name__, 'put_object']),
-                           cls.put_object, methods=['PUT'])
-        flask.add_url_rule(object_url,
-                           '_'.join([cls.__name__, 'patch_object']),
-                           cls.patch_object, methods=['PATCH'])
         flask.add_url_rule(
-            class_url, '_'.join([cls.__name__, 'create_object']),
-            cls.create_object, methods=['POST']
+            class_url,
+            '_'.join([cls.__name__, 'get_objects']),
+            cls.get_objects,
+            methods=['GET'],
         )
 
         flask.add_url_rule(
-            object_url, '_'.join([cls.__name__, 'delete_object']),
-            cls.delete_object, methods=['DELETE']
+            object_url,
+            '_'.join([cls.__name__, 'get_object']),
+            cls.get_object,
+            methods=['GET'],
+        )
+
+        flask.add_url_rule(
+            object_url,
+            '_'.join([cls.__name__, 'put_object']),
+            cls.put_object,
+            methods=['PUT'],
+        )
+
+        flask.add_url_rule(
+            object_url,
+            '_'.join([cls.__name__, 'patch_object']),
+            cls.patch_object,
+            methods=['PATCH'],
+        )
+
+        flask.add_url_rule(
+            class_url,
+            '_'.join([cls.__name__, 'create_object']),
+            cls.create_object,
+            methods=['POST'],
+        )
+
+        flask.add_url_rule(
+            object_url,
+            '_'.join([cls.__name__, 'delete_object']),
+            cls.delete_object,
+            methods=['DELETE'],
         )
 
         # Structure URLs
         flask.add_url_rule(
-            cls_fields_url, '_'.join([cls.__name__, 'fields']),
-            cls.get_fields, methods=['GET']
+            cls_fields_url,
+            '_'.join([cls.__name__, 'fields']),
+            cls.get_fields,
+            methods=['GET'],
         )
 
         # JSON schemas
         flask.add_url_rule(
             '{}/{}'.format(class_url, 'schema'),
             '_'.join([cls.__name__, 'schema']),
-            cls.get_schema, methods=['GET']
+            cls.get_schema,
+            methods=['GET'],
         )
 
     # Templates which may be overridden on subclass.

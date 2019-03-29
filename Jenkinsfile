@@ -60,7 +60,7 @@ pipeline {
         dir('mora/backend') {
           timeout(15) {
             ansiColor('xterm') {
-              sh '.jenkins/3-tests.sh'
+              sh 'SKIP_TESTCAFE=1 .jenkins/3-tests.sh'
             }
           }
         }

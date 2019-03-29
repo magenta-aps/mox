@@ -15,8 +15,10 @@ import psycopg2
 import flask
 
 from psycopg2.extras import DateTimeTZRange
-from psycopg2.extensions import AsIs, QuotedString, adapt as psyco_adapt
-from psycopg2.pool import ThreadedConnectionPool
+from psycopg2.extensions import (
+    AsIs, QuotedString, Boolean, adapt as psyco_adapt,
+)
+from psycopg2.pool import PersistentConnectionPool
 from jinja2 import Environment, FileSystemLoader
 from dateutil import parser as date_parser
 
@@ -24,13 +26,13 @@ from .db_helpers import (
     get_attribute_fields, get_attribute_names, get_field_type,
     get_state_names, get_relation_field_type, Soegeord, OffentlighedUndtaget,
     JournalNotat, JournalDokument, DokumentVariantType, AktoerAttr,
-    VaerdiRelationAttr,
+    VaerdiRelationAttr, to_bool,
 )
 
 from ..authentication import get_authenticated_user
 
 from ..auth.restrictions import Operation, get_restrictions
-from ..utils.build_registration import restriction_to_registration
+from ..utils import build_registration
 from ..custom_exceptions import NotFoundException, NotAllowedException
 from ..custom_exceptions import DBException, BadRequestException
 
@@ -39,6 +41,8 @@ from .. import settings
 """
     Jinja2 Environment
 """
+
+pool = None
 
 jinja_env = Environment(loader=FileSystemLoader(
     str(pathlib.Path(__file__).parent / 'sql' / 'invocations' / 'templates'),
@@ -56,15 +60,6 @@ def adapt(value):
 
 jinja_env.filters['adapt'] = adapt
 
-pool = ThreadedConnectionPool(
-    settings.DB_MIN_CONNECTIONS,
-    settings.DB_MAX_CONNECTIONS,
-    dbname=settings.DATABASE,
-    user=settings.DB_USER,
-    password=settings.DB_PASSWORD,
-    host=settings.DB_HOST,
-    port=settings.DB_PORT
-)
 
 def get_connection():
     """Handle all intricacies of connecting to Postgres.
@@ -80,18 +75,20 @@ def get_connection():
 
     """
 
-    if 'connection' not in flask.g:
-        flask.g.connection = pool.getconn()
-        flask.g.connection.autocommit = True
+    global pool
 
-    return flask.g.connection
+    if pool is None:
+        pool = PersistentConnectionPool(
+            settings.DB_MIN_CONNECTIONS,
+            settings.DB_MAX_CONNECTIONS,
+            dbname=settings.DATABASE,
+            user=settings.DB_USER,
+            password=settings.DB_PASSWORD,
+            host=settings.DB_HOST,
+            port=settings.DB_PORT,
+        )
 
-
-def close_connection(exc=None):
-    conn = flask.g.pop('connection', None)
-
-    if conn:
-        pool.putconn(conn)
+    return pool.getconn()
 
 
 #
@@ -128,6 +125,8 @@ def convert_attr_value(attribute_name, attribute_field_name,
         # bypassing psycopg2 cleverness
         s = QuotedString(attribute_field_value or '0')
         return AsIs('{} :: interval'.format(s))
+    elif field_type == "boolean":
+        return Boolean(to_bool(attribute_field_value))
     else:
         return attribute_field_value
 
@@ -312,7 +311,7 @@ def sql_get_registration(class_name, time_period, life_cycle_code,
 
 def sql_convert_restrictions(class_name, restrictions):
     """Convert a list of restrictions to SQL."""
-    registrations = [restriction_to_registration(class_name, r)
+    registrations = [build_registration.restriction_to_registration(class_name, r)
                      for r in restrictions]
     sql_restrictions = [sql_get_registration(
         class_name, None, None, None, None,
@@ -346,18 +345,18 @@ def object_exists(class_name, uuid):
     """Check if an object with this class name and UUID exists already."""
     sql = ("select (%s IN (SELECT DISTINCT " + class_name +
            "_id from " + class_name + "_registrering))")
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute(sql, (uuid,))
-    except psycopg2.Error as e:
-        if e.pgcode[:2] == 'MO':
-            status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.pgerror)
-        else:
-            raise
 
-    result = cursor.fetchone()[0]
+    with get_connection() as conn, conn.cursor() as cursor:
+        try:
+            cursor.execute(sql, (uuid,))
+        except psycopg2.Error as e:
+            if e.pgcode[:2] == 'MO':
+                status_code = int(e.pgcode[2:])
+                raise DBException(status_code, e.pgerror)
+            else:
+                raise
+
+        result = cursor.fetchone()[0]
 
     return result
 
@@ -374,18 +373,19 @@ join actual_state.dokument_del d on d.id = de.del_id join
 actual_state.dokument_variant v on v.id = d.variant_id join
 actual_state.dokument_registrering r on r.id = v.dokument_registrering_id
 where de.indhold = %s"""
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute(sql, (content_url,))
-    except psycopg2.Error as e:
-        if e.pgcode[:2] == 'MO':
-            status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.pgerror)
-        else:
-            raise
 
-    result = cursor.fetchone()
+    with get_connection() as conn, conn.cursor() as cursor:
+        try:
+            cursor.execute(sql, (content_url,))
+        except psycopg2.Error as e:
+            if e.pgcode[:2] == 'MO':
+                status_code = int(e.pgcode[2:])
+                raise DBException(status_code, e.pgerror)
+            else:
+                raise
+
+        result = cursor.fetchone()
+
     return result
 
 
@@ -427,18 +427,18 @@ def create_or_import_object(class_name, note, registration,
         restrictions=sql_restrictions)
 
     # Call Postgres! Return OK or not accordingly
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute(sql)
-    except psycopg2.Error as e:
-        if e.pgcode[:2] == 'MO':
-            status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.pgerror)
-        else:
-            raise
+    with get_connection() as conn, conn.cursor() as cursor:
+        try:
+            cursor.execute(sql)
+        except psycopg2.Error as e:
+            if e.pgcode[:2] == 'MO':
+                status_code = int(e.pgcode[2:])
+                raise DBException(status_code, e.pgerror)
+            else:
+                raise
 
-    output = cursor.fetchone()
+        output = cursor.fetchone()
+
     return output[0]
 
 
@@ -479,19 +479,20 @@ def delete_object(class_name, registration, note, uuid):
         variants=registration.get("variants", None),
         restrictions=sql_restrictions
     )
-    # Call Postgres! Return OK or not accordingly
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute(sql)
-    except psycopg2.Error as e:
-        if e.pgcode[:2] == 'MO':
-            status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.pgerror)
-        else:
-            raise
 
-    output = cursor.fetchone()
+    # Call Postgres! Return OK or not accordingly
+    with get_connection() as conn, conn.cursor() as cursor:
+        try:
+            cursor.execute(sql)
+        except psycopg2.Error as e:
+            if e.pgcode[:2] == 'MO':
+                status_code = int(e.pgcode[2:])
+                raise DBException(status_code, e.pgerror)
+            else:
+                raise
+
+        output = cursor.fetchone()
+
     return output[0]
 
 
@@ -519,19 +520,20 @@ def passivate_object(class_name, note, registration, uuid):
         variants=registration.get("variants", None),
         restrictions=sql_restrictions
     )
-    # Call PostgreSQL
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute(sql)
-    except psycopg2.Error as e:
-        if e.pgcode[:2] == 'MO':
-            status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.pgerror)
-        else:
-            raise
 
-    output = cursor.fetchone()
+    # Call PostgreSQL
+    with get_connection() as conn, conn.cursor() as cursor:
+        try:
+            cursor.execute(sql)
+        except psycopg2.Error as e:
+            if e.pgcode[:2] == 'MO':
+                status_code = int(e.pgcode[2:])
+                raise DBException(status_code, e.pgerror)
+            else:
+                raise
+
+        output = cursor.fetchone()
+
     return output[0]
 
 
@@ -560,25 +562,25 @@ def update_object(class_name, note, registration, uuid=None,
         relations=registration["relations"],
         variants=registration.get("variants", None),
         restrictions=sql_restrictions)
-    # Call PostgreSQL
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute(sql)
-        cursor.fetchone()
-    except psycopg2.Error as e:
-        noop_msg = ('Aborted updating {} with id [{}] as the given data, '
-                    'does not give raise to a new registration.'.format(
-                        class_name.lower(), uuid
-                    ))
 
-        if e.pgerror.startswith(noop_msg):
-            return uuid
-        elif e.pgcode[:2] == 'MO':
-            status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.pgerror)
-        else:
-            raise
+    # Call PostgreSQL
+    with get_connection() as conn, conn.cursor() as cursor:
+        try:
+            cursor.execute(sql)
+            cursor.fetchone()
+        except psycopg2.Error as e:
+            noop_msg = ('Aborted updating {} with id [{}] as the given data, '
+                        'does not give raise to a new registration.'.format(
+                            class_name.lower(), uuid
+                        ))
+
+            if e.pgerror.startswith(noop_msg):
+                return uuid
+            elif e.pgcode[:2] == 'MO':
+                status_code = int(e.pgcode[2:])
+                raise DBException(status_code, e.pgerror)
+            else:
+                raise
 
     return uuid
 
@@ -607,29 +609,28 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
     if registreret_fra is not None or registreret_til is not None:
         registration_period = DateTimeTZRange(registreret_fra, registreret_til)
 
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute(sql, {
-            'uuid': uuid,
-            'registrering_tstzrange': registration_period,
-            'virkning_tstzrange': DateTimeTZRange(virkning_fra, virkning_til)
-        })
-    except psycopg2.Error as e:
-        if e.pgcode[:2] == 'MO':
-            status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.pgerror)
-        else:
-            raise
+    with get_connection() as conn, conn.cursor() as cursor:
+        try:
+            cursor.execute(sql, {
+                'uuid': uuid,
+                'registrering_tstzrange': registration_period,
+                'virkning_tstzrange': DateTimeTZRange(virkning_fra, virkning_til)
+            })
+        except psycopg2.Error as e:
+            if e.pgcode[:2] == 'MO':
+                status_code = int(e.pgcode[2:])
+                raise DBException(status_code, e.pgerror)
+            else:
+                raise
 
-    output = cursor.fetchone()
+        output = cursor.fetchone()
+
     if not output:
         # nothing found
         raise NotFoundException("{0} with UUID {1} not found.".format(
             class_name, uuid
         ))
-    # import json
-    # print json.dumps(output, indent=2)
+
     return filter_json_output(output)
 
 
@@ -732,29 +733,6 @@ def transform_relations(o):
         return o
 
 
-'''
-TODO: Remove this function if/when it turns out we don't need it.
-def filter_nulls(o):
-    """Recursively remove keys with None values from dicts in object.
-
-    The dicts could be contained in lists or tuples or other dicts.
-    """
-    if isinstance(o, dict):
-        if "cleared" in o:
-            # Handle clearable wrapper db-types.
-            return o.get("value", None)
-        else:
-            return {k: filter_nulls(v) for k, v in o.items()
-                    if v is not None and filter_nulls(v) is not None}
-    elif isinstance(o, list):
-        return [filter_nulls(v) for v in o]
-    elif isinstance(o, tuple):
-        return tuple(filter_nulls(v) for v in o)
-    else:
-        return o
-'''
-
-
 def search_objects(class_name, uuid, registration,
                    virkning_fra=None, virkning_til=None,
                    registreret_fra=None, registreret_til=None,
@@ -801,18 +779,18 @@ def search_objects(class_name, uuid, registration,
         # TODO: Get this into the SQL function signature!
         restrictions=sql_restrictions
     )
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute(sql)
-    except psycopg2.Error as e:
-        if e.pgcode[:2] == 'MO':
-            status_code = int(e.pgcode[2:])
-            raise DBException(status_code, e.pgerror)
-        else:
-            raise
+    with get_connection() as conn, conn.cursor() as cursor:
+        try:
+            cursor.execute(sql)
+        except psycopg2.Error as e:
+            if e.pgcode[:2] == 'MO':
+                status_code = int(e.pgcode[2:])
+                raise DBException(status_code, e.pgerror)
+            else:
+                raise
 
-    output = cursor.fetchone()
+        output = cursor.fetchone()
+
     return output
 
 

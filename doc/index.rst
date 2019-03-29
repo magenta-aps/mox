@@ -15,19 +15,20 @@ Content
    user/overview.rst
    Middle-level overview (in danish) <user/praesentation.rst>
    user/setup-dev-env.rst
-   user/api-overview.rst
-   user/api-advanced.rst
-   user/rest-tutorial.rst
+   user/objects.rst
+   user/api.rst
    user/log-haendelse.rst
    user/agents.rst
    user/auth.rst
    user/deployment.rst
+   user/settings.rst
 
 .. toctree::
    :maxdepth: 1
    :caption: Developer Documentation
 
    dev/database.rst
+   dev/wildcards.rst
    dev/test.rst
    dev/testing-rest.rst
    dev/building-docs.rst

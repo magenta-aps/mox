@@ -193,7 +193,7 @@ END LOOP;
                 (
                     attr{{attribut|title}}TypeObj.{{attribut_field}} IS NULL
                     OR
-                     {%- if attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][attribut_field] is defined and attributter_metadata[attribut][attribut_field]['type'] %}
+                     {%- if attributter_metadata[attribut][attribut_field]['type'] %}
                         {%-if attributter_metadata[attribut][attribut_field]['type'] == "text[]" %}
                     _as_search_match_array(attr{{attribut|title}}TypeObj.{{attribut_field}},a.{{attribut_field}})  
                         {%- else %}
@@ -325,12 +325,13 @@ IF coalesce(array_length(anyAttrValueArr ,1),0)>0 THEN
             WHERE
             (
                 {%- for attribut_field in attribut_fields %}
-                    {%- if attributter_metadata is defined and attributter_metadata[attribut] is defined and attributter_metadata[attribut][attribut_field] is defined and attributter_metadata[attribut][attribut_field]['type'] %}
+                    {%- if attributter_metadata[attribut][attribut_field]['type'] %}
                         {%-if attributter_metadata[attribut][attribut_field]['type'] == "text[]" %}
                               _as_search_ilike_array(anyAttrValue,a.{{attribut_field}})  {%- if (not loop.last)%} OR {%- endif %}
                         {%-else %}
                             {%-if attributter_metadata[attribut][attribut_field]['type'] == "boolean" %}
-                                {# boolean is skipped intentionally #}
+                                -- boolean is skipped intentionally
+                                {% if (loop.last and loop.first)-%} FALSE {%- endif -%}
                             {%-else %}
                                 {%-if attributter_metadata[attribut][attribut_field]['type'] == "offentlighedundtagettype" %}
                                     (a.{{attribut_field}}).Hjemmel ilike anyAttrValue OR (a.{{attribut_field}}).AlternativTitel ilike anyAttrValue {%- if (not loop.last)%} OR {%- endif %}
