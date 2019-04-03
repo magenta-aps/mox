@@ -61,7 +61,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA actual_state;
 CREATE EXTENSION IF NOT EXISTS "btree_gist" WITH SCHEMA actual_state;
 CREATE EXTENSION IF NOT EXISTS "pg_trgm" WITH SCHEMA actual_state;
 EOF
-    python3 -m oio_rest sql | psql -d $DATABASE -v ON_ERROR_STOP=1
+    mox sql | psql -d $DATABASE -v ON_ERROR_STOP=1
 fi
 
 
