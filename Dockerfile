@@ -50,5 +50,4 @@ EXPOSE 5000
 
 ENTRYPOINT ["/code/docker-entrypoint.sh"]
 
-# Start gnunicorn
-CMD ["mox", "run", "-h", "0.0.0.0"]
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "oio_rest.app:app"]
