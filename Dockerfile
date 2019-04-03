@@ -10,27 +10,32 @@ FROM python:3.5
 ENV PYTHONUNBUFFERED 1
 
 WORKDIR /code/
-COPY oio_rest/requirements.txt /code/oio_rest/requirements.txt
 
 RUN set -ex \
+  # Add a mox group and user. Note: this is a system user/group, but have
+  # UID/GID above the normal SYS_UID_MAX/SYS_GID_MAX of 999.
+  && groupadd -g 1141 -r mox\
+  && useradd -u 1141 --no-log-init -r -g mox mox \
+  # Install dependencies
   && apt-get -y update \
   && apt-get -y install --no-install-recommends \
-  # git is needed for python packages with `… = {git = …}` in requirements.txt.
-  # It pulls a lot of dependencies. Maybe some of them can be ignored.
-  git \
-  # psql is used in docker-entrypoint.sh to check for db availability.
-  postgresql-client \
-  # Python packages dependencies:
-  # for xmlsec.
-  libxmlsec1-dev \
+    # git is needed for python packages with `… = {git = …}` in requirements.txt.
+    # It pulls a lot of dependencies. Maybe some of them can be ignored.
+    git \
+    # psql is used in docker-entrypoint.sh to check for db availability.
+    postgresql-client \
+    # Python packages dependencies:
+    # for xmlsec.
+    libxmlsec1-dev \
   # clean up after apt-get and man-pages
   && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/man/?? /usr/share/man/??_* \
   # oio_rest expects some files to be there. TODO: make it output to docker log
   && install -d /var/mox \
   && install -d /var/log/mox \
-  && touch /var/log/mox/audit.log
-  #&& chown "$USER" /var/log/mox/audit.log
+  && touch /var/log/mox/audit.log \
+  && chown mox:mox /var/log/mox/audit.log
 
+COPY oio_rest/requirements.txt /code/oio_rest/requirements.txt
 
 RUN pip3 install -r oio_rest/requirements.txt
 
@@ -38,6 +43,8 @@ RUN pip3 install -r oio_rest/requirements.txt
 COPY docker-entrypoint.sh .
 COPY oio_rest ./oio_rest
 RUN pip3 install -e oio_rest
+
+USER mox:mox
 
 EXPOSE 5000
 
