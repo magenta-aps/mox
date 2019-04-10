@@ -42,6 +42,11 @@ RUN pip3 install -r oio_rest/requirements.txt
 # Copy application code to the container.
 COPY docker-entrypoint.sh .
 COPY oio_rest ./oio_rest
+COPY README.rst .
+COPY LICENSE .
+
+# Install the application as editable. This makes it possible to mount `/code`
+# to your host and edit the files during development.
 RUN pip3 install -e oio_rest
 
 

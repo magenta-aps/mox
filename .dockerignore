@@ -3,9 +3,7 @@
 .gitignore
 .gitlab-ci.yml
 Jenkinsfile
-LICENSE
 NEWS.rst
-README.rst
 agentbase
 agents
 auth.sh
