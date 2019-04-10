@@ -44,6 +44,17 @@ COPY docker-entrypoint.sh .
 COPY oio_rest ./oio_rest
 RUN pip3 install -e oio_rest
 
+
+# We use the `mox` executable. It is created with setuptools
+# `entry_point={'console_scripts': ['mox' = …]}` in `oio_rest/setup.py`. But it
+# require that `.egg-info` is always updated. An outdated `.egg_info` can give
+# you `DistributionNotFound` exception from `pkg_resources` because
+# `oio_rest.egg_info/requires.txt` and `requirements.txt` is not in sync.
+#
+# We update it here to make sure it is included in the image. If you mount
+# `/code` to your host, you need to update it manually.
+RUN (cd oio_rest && python3 setup.py egg_info)
+
 USER mox:mox
 
 EXPOSE 5000

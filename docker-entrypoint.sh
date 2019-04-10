@@ -28,6 +28,14 @@ export PGPASSWORD=$DB_PASSWORD
 
 
 
+# Check installation
+# ------------------
+# Check if the `mox` command can be run to make sure `oio_rest.egg-info` is up
+# to date.
+mox --version
+
+
+
 # Check if db is ready
 # --------------------
 # We check if postgres is ready to accept connections before optionally
