@@ -28,15 +28,20 @@ RUN set -ex \
     # for xmlsec.
     libxmlsec1-dev \
   # clean up after apt-get and man-pages
-  && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/man/?? /usr/share/man/??_* \
-  # oio_rest expects some files to be there. TODO: make it output to docker log
-  && install -d /var/mox \
-  && install -d /var/log/mox \
-  && touch /var/log/mox/audit.log \
-  && chown mox:mox /var/log/mox/audit.log
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/man/?? /usr/share/man/??_* \
+  # oio_rest expects some files and directories to be there. We create them with
+  # the proper user and group.
+  # /var/mox is default for FILE_UPLOAD_FOLDER
+  && install -g mox -o mox -d /var/mox \
+  # /var/log/mox/audit.log is default for AUDIT_LOG_FILE
+  && install -g mox -o mox -d /var/log/mox
 
+# Create volumes for file upload and logs
+VOLUME /var/mox /var/log/mox
+
+# Install requirements
 COPY oio_rest/requirements.txt /code/oio_rest/requirements.txt
-
 RUN pip3 install -r oio_rest/requirements.txt
 
 # Copy application code to the container.
