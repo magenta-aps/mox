@@ -3,7 +3,7 @@ Installation
 ============
 
 All the active developed source code of mox is a python package located in
-:file:`oio_rest`. You can run it in as you see fit. Two methods are describe
+:file:`oio_rest`. You can run it in as you see fit. Two methods are described
 below. Use the docker image or a python package in a virtual environment.
 
 .. tip::
@@ -29,13 +29,13 @@ install mox both as a developer and in production.
 
 All releases are pushed to Docker Hub at `magentaaps/mox
 <https://hub.docker.com/r/magentaaps/mox>`_ under the ``latest`` tag. The
-``dev-latest`` tag containes the latest build from the ``development`` branch.
+``dev-latest`` tag contains the latest build from the ``development`` branch.
 
 To run mox in docker you need a running docker. To install docker we refer you
 to the `official documentation <https://docs.docker.com/install/>`_.
 
 The container requires a connection to a postgres database. It is configured
-with the envionment variables :py:data:`DB_HOST`, :py:data:`DB_USER` and
+with the environment variables :py:data:`DB_HOST`, :py:data:`DB_USER` and
 :py:data:`DB_PASSWORD`. You can start a the container with:
 
 .. code-block:: bash
@@ -46,11 +46,11 @@ This will pull the image from Docker Hub and starts a container in the
 foreground. The ``-p 5000:5000`` `binds port
 <https://docs.docker.com/engine/reference/commandline/run/#publish-or-expose-port--p---expose>`_
 ``5000`` of the host machine to port ``5000`` on the container. The ``-e`` `sets
-the envionment variables
+the environment variables
 <https://docs.docker.com/engine/reference/commandline/run/#set-environment-variables--e---env---env-file>`_
 in container.
 
-If sucessfull you should see the container initializing database and
+If successful you should see the container initializing database and
 finally
 
 .. code-block::
@@ -77,7 +77,7 @@ Logs
 The gunicorn access log is output on ``STDOUT`` and error log is output on
 ``STDERR``. They can be inspected with ``docker logs``.
 
-In addition the audit log is written to :file:`/var/log/mox/audit.log`. It can
+In addition, the audit log is written to :file:`/var/log/mox/audit.log`. It can
 be mounted as a volume if needed. The location is determined by
 :py:data:`AUDIT_LOG_FILE`.
 
@@ -96,7 +96,7 @@ postgres and rabbitmq.
 
 A :file:`docker-compose.yml` for development is included. It automatically
 starts up `postgres <https://hub.docker.com/_/postgres>`_ and `rabbitmq
-<https://hub.docker.com/_/rabbitmq>`_. It sets the envionment variabels to
+<https://hub.docker.com/_/rabbitmq>`_. It sets the environment variabels to
 connect them.
 
 It also mounts the current directory in the container and automatically restarts
