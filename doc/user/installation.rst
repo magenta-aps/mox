@@ -17,6 +17,10 @@ below. Use the docker image or a python package in a virtual environment.
       cd mox
       docker-compose up -d --build
 
+.. todo::
+
+   Document how to install test dependencies when it is formalized in #28498.
+
 Docker
 ======
 
@@ -118,7 +122,57 @@ data run ``docker-compose down``.
 From source
 ===========
 
+All the relevant code is in a python package located in :file:`oio_rest`.
+
+Prerequisites
+-------------
+
+The :file:`oio_rest` package requires a few system dependencies. It requires:
+
+* ``python`` >=3.5
+* ``pip`` >=10.0.0
+* ``setuptools`` >=39.0.1
+* ``wheel``
+* ``git`` for installing some requirements from :file:`requirements.txt` and
+* ``libxmlsec1-dev`` for the python package ``xmlsec``.
+
+Mox needs to connect to ``postgres9.6``. mox can be configured with
+:py:data:`DB_HOST` to connect to any machine. You can install ``postgres9.6`` on
+the same machine and leave :py:data:`DB_HOST` as the default value of
+``localhost``.
+
+Installation
+------------
+
+When the prerequisites are met, you can install mox from a clone of the git
+repository.
+
+.. code-block:: bash
+
+   git clone https://github.com/magenta-aps/mox.git
+   cd mox/oio_rest
+   pip install .
+
+Configuration
+-------------
+
+Look through the :ref:`settings` and configure the one you need either as
+environment variables or as a config file. The most likely changes are properly
+to :py:data:`DB_HOST`, :py:data:`DB_USER` and :py:data:`DB_PASSWORD`.
+
+Database initialization
+-----------------------
+
 .. todo::
 
-   Write this section. Only focus on the python package, its dependencies and
-   settings.
+   Missing. Describe it when #28276 is done.
+
+Run
+---
+
+When the database is initialized you can access the `flask cli
+<http://flask.pocoo.org/docs/1.0/cli/#cli>`_ with ``python3 -m oio_rest
+<command>``. To run the development server run ``python3 -m oio_rest
+run``.
+
+Alternative use gunicorn to run a server with ``gunicorn oio_rest.app:app``.
