@@ -14,4 +14,3 @@ install.sh
 python_agents
 src
 venv
-oio_rest/oio_rest.egg-info

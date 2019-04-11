@@ -28,14 +28,6 @@ export PGPASSWORD=$DB_PASSWORD
 
 
 
-# Check installation
-# ------------------
-# Check if the `mox` command can be run to make sure `oio_rest.egg-info` is up
-# to date.
-mox --version
-
-
-
 # Check if db is ready
 # --------------------
 # We check if postgres is ready to accept connections before optionally
@@ -52,8 +44,9 @@ done
 # Initialize the database
 # -----------------------
 # TODO This is a modified version of oio_rest/initdb.sh. This should probably be
-# included in some python code and run with `mox initdb` ot similar.
-# postgres-client and PG* env variables can then be removed from the image.
+# included in some python code and run with `python3 -m oio_rest initdb` ot
+# similar. postgres-client and PG* env variables can then be removed from the
+# image.
 
 # We check if the actual_state schema exists, if not then initialize the
 # database. actual_state is not special, it is just the first thing to be
@@ -69,7 +62,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA actual_state;
 CREATE EXTENSION IF NOT EXISTS "btree_gist" WITH SCHEMA actual_state;
 CREATE EXTENSION IF NOT EXISTS "pg_trgm" WITH SCHEMA actual_state;
 EOF
-    mox sql | psql -d $DATABASE -v ON_ERROR_STOP=1
+    python3 -m oio_rest sql | psql -d $DATABASE -v ON_ERROR_STOP=1
 fi
 
 
