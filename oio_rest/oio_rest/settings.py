@@ -112,8 +112,6 @@ MOX_LOG_QUEUE = os.getenv('MOX_LOG_QUEUE', 'mox.log_queue')
 
 LOG_IGNORED_SERVICES = ['Log', ]
 
-AUDIT_LOG_FILE = os.getenv('AUDIT_LOG_FILE', '/var/log/mox/audit.log')
-
 SAML_IDP_METADATA_URL = os.getenv(
     'SAML_IDP_METADATA_URL',
     'https://172.16.20.100/simplesaml/saml2/idp/metadata.php'

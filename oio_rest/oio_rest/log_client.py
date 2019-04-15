@@ -80,12 +80,6 @@ def log_service_call(service_name, class_name, time,
 
     # TODO: Get auth token if auth enabled
 
-    if settings.AUDIT_LOG_FILE:
-        with open(settings.AUDIT_LOG_FILE, 'at') as fp:
-            json.dump(logevent_dict, fp, indent=2)
-            fp.write('\n')
-            fp.flush()
-
     # Send AMQP message to LOG_SERVICE_URL
 
     if settings.LOG_AMQP_SERVER:

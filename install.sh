@@ -65,10 +65,6 @@ sudo install -d -o "$USER" /var/mox
 printf "## Create log directory\n"
 sudo install -d -o "$USER" /var/log/mox
 
-printf "## Create audit log directory\n"
-sudo touch /var/log/mox/audit.log
-sudo chown "$USER" /var/log/mox/audit.log
-
 printf "# Create virtual environment\n"
 /usr/bin/env python3 -m venv $BASE_DIR/python-env
 

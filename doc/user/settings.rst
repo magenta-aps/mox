@@ -102,7 +102,7 @@ File upload
 Audit log
 =========
 
-An audit log is published as AMQP messages and written to a file.
+An audit log is published as AMQP messages and written to a dedicated queue.
 
 .. py:data:: LOG_AMQP_SERVER
 
@@ -124,12 +124,6 @@ An audit log is published as AMQP messages and written to a file.
    Default: ``"mox.log_queue"``
 
    The AMQP queue used for the audit log.
-
-.. py:data:: AUDIT_LOG_FILE
-
-   Default: ``"/var/log/mox/audit.log"``
-
-   The path to a log file where the audit log is written.
 
 
 .. _auth-settings:

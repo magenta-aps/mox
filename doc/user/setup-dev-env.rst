@@ -87,7 +87,6 @@ The default location of the log directory is::
 
 The following log files are created:
 
- - Audit log: /var/log/mox/audit.log
  - OIO REST HTTP access log: /var/log/mox/oio_access.log
  - OIO REST HTTP error log: /var/log/mox/oio_error.log
 
