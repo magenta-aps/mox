@@ -18,8 +18,8 @@ def log_service_call(service_name, class_name, time,
     """Log a call to a LoRa service."""
 
     if (
-        service_name in settings.LOG_IGNORED_SERVICES or
-        not settings.LOG_AMQP_SERVER
+        service_name in
+        settings.LOG_IGNORED_SERVICES or not settings.LOG_AMQP_SERVER
     ):
         "Don't log the log service."
         return

@@ -153,7 +153,6 @@ def _generate_attributter(obj):
     """
 
     db_attributter = settings.REAL_DB_STRUCTURE[obj]['attributter']
-    egenskaber_name = '{}egenskaber'.format(obj)
 
     attrs = {}
     required = []
@@ -369,8 +368,8 @@ def generate_json_schema(obj):
 
     if obj == 'dokument':
         # Due to an inconsistency between the way LoRa handles
-        # "DokumentVariantEgenskaber" and the specs' we will have to do this for now,
-        # i.e. we allow any JSON-object for "Dokument"
+        # "DokumentVariantEgenskaber" and the specs' we will have to do
+        #  this for now, i.e. we allow any JSON-object for "Dokument".
         return {'type': 'object'}
 
     schema = _generate_schema_object(

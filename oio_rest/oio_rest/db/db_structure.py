@@ -90,7 +90,7 @@ DATABASE_STRUCTURE = {
             }
         },
         "tilstande": {
-           "gyldighed": ["Aktiv", "Inaktiv"]
+            "gyldighed": ["Aktiv", "Inaktiv"]
         },
         "relationer_nul_til_en": ["tilhoerer"],
         "relationer_nul_til_mange": [
