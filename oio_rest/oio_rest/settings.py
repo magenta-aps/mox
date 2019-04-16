@@ -106,7 +106,7 @@ AUTH_RESTRICTION_FUNCTION = os.getenv(
 )
 
 # Log AMQP settings
-LOG_AMQP_SERVER = os.getenv('LOG_AMQP_SERVER', 'localhost')
+LOG_AMQP_SERVER = os.getenv('LOG_AMQP_SERVER', '')
 MOX_LOG_EXCHANGE = os.getenv('MOX_LOG_EXCHANGE', 'mox.log')
 MOX_LOG_QUEUE = os.getenv('MOX_LOG_QUEUE', 'mox.log_queue')
 

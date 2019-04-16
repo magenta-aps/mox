@@ -106,9 +106,10 @@ An audit log is published as AMQP messages and written to a dedicated queue.
 
 .. py:data:: LOG_AMQP_SERVER
 
-   Default: ``"localhost"``
+   Default: ``""``
 
-   The AMQP server used to publish the audit log.
+   The AMQP server used to publish the audit log. If empty, audit
+   logging is off.
 
    Not to be confused by the AMQP service used by
    :file:`/python_agents/notification_service/notify_to_amqp_service.py`.
