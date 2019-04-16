@@ -2,9 +2,9 @@
 Installation
 ============
 
-All the active developed source code of mox is a python package located in
+All the actively developed source code of mox is a Python package located in
 :file:`oio_rest`. You can run it in as you see fit. Two methods are described
-below. Use the docker image or a python package in a virtual environment.
+below. Use the docker image or a Python package in a virtual environment.
 
 .. tip::
 
@@ -122,7 +122,7 @@ data run ``docker-compose down``.
 From source
 ===========
 
-All the relevant code is in a python package located in :file:`oio_rest`.
+All the relevant code is in a Python package located in :file:`oio_rest`.
 
 Prerequisites
 -------------
@@ -134,7 +134,7 @@ The :file:`oio_rest` package requires a few system dependencies. It requires:
 * ``setuptools`` >=39.0.1
 * ``wheel``
 * ``git`` for installing some requirements from :file:`requirements.txt` and
-* ``libxmlsec1-dev`` for the python package ``xmlsec``.
+* ``libxmlsec1-dev`` for the Python package ``xmlsec``.
 
 Mox needs to connect to ``postgres9.6``. mox can be configured with
 :py:data:`DB_HOST` to connect to any machine. You can install ``postgres9.6`` on
