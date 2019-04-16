@@ -127,6 +127,9 @@ All the relevant code is in a Python package located in :file:`oio_rest`.
 Prerequisites
 -------------
 
+.. ATTENTION DEVELOPER: When you change these prerequisites, make sure to also
+   update them in Dockerfile.
+
 The :file:`oio_rest` package requires a few system dependencies. It requires:
 
 * ``python`` >=3.5
