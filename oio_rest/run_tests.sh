@@ -36,7 +36,7 @@ $PYTHON -m pip install 'pip>=18.1' 'setuptools>=40'
 $PYTHON -m pip install -e '.[tests]'
 
 # Execute tests
-$PYTHON -m flake8 --exit-zero
+$PYTHON -m flake8
 
 $PYTHON -m coverage run -m xmlrunner \
         --verbose --buffer --output build/reports "$@"
