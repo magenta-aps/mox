@@ -50,4 +50,4 @@ coverage.xml
 .eggs
 .pytest_cache
 python-testenv
-
+*.DS_Store
