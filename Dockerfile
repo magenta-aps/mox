@@ -36,12 +36,10 @@ RUN set -ex \
   # oio_rest expects some files and directories to be there. We create them with
   # the proper user and group.
   # /var/mox is default for FILE_UPLOAD_FOLDER
-  && install -g mox -o mox -d /var/mox \
-  # /var/log/mox/audit.log is default for AUDIT_LOG_FILE
-  && install -g mox -o mox -d /var/log/mox
+  && install -g mox -o mox -d /var/mox
 
-# Create volumes for file upload and logs
-VOLUME /var/mox /var/log/mox
+# Create volume for file upload
+VOLUME /var/mox
 
 # Install requirements
 COPY oio_rest/requirements.txt /code/oio_rest/requirements.txt

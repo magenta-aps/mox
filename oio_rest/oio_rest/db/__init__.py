@@ -8,11 +8,9 @@
 
 import datetime
 import enum
-import os
 import pathlib
 
 import psycopg2
-import flask
 
 from psycopg2.extras import DateTimeTZRange
 from psycopg2.extensions import (
@@ -311,8 +309,10 @@ def sql_get_registration(class_name, time_period, life_cycle_code,
 
 def sql_convert_restrictions(class_name, restrictions):
     """Convert a list of restrictions to SQL."""
-    registrations = [build_registration.restriction_to_registration(class_name, r)
-                     for r in restrictions]
+    registrations = [
+        build_registration.restriction_to_registration(class_name, r)
+        for r in restrictions
+    ]
     sql_restrictions = [sql_get_registration(
         class_name, None, None, None, None,
         sql_convert_registration(r, class_name)
@@ -343,7 +343,7 @@ def get_restrictions_as_sql(user, class_name, operation):
 
 def object_exists(class_name, uuid):
     """Check if an object with this class name and UUID exists already."""
-    sql = ("select (%s IN (SELECT DISTINCT " + class_name +
+    sql = ("select (%s IN (SELECT DISTINCT " + class_name +  # noqa
            "_id from " + class_name + "_registrering))")
 
     with get_connection() as conn, conn.cursor() as cursor:
@@ -614,7 +614,9 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
             cursor.execute(sql, {
                 'uuid': uuid,
                 'registrering_tstzrange': registration_period,
-                'virkning_tstzrange': DateTimeTZRange(virkning_fra, virkning_til)
+                'virkning_tstzrange': DateTimeTZRange(
+                    virkning_fra, virkning_til
+                )
             })
         except psycopg2.Error as e:
             if e.pgcode[:2] == 'MO':
@@ -694,8 +696,8 @@ def filter_empty(d):
     """Recursively filter out empty dictionary keys."""
     if isinstance(d, dict):
         return dict(
-            (k, filter_empty(v)) for k, v in d.items() if v and
-            filter_empty(v)
+            (k, filter_empty(v)) for k, v in d.items() if
+            v and filter_empty(v)
         )
     elif isinstance(d, list):
         return [filter_empty(v) for v in d if v and filter_empty(v)]
@@ -713,8 +715,11 @@ def transform_relations(o):
     functions.
     """
     if isinstance(o, dict):
-        if "relationer" in o and (isinstance(o["relationer"], list) or
-                                  isinstance(o["relationer"], tuple)):
+        if "relationer" in o and (
+            isinstance(
+                o["relationer"], list
+            ) or isinstance(o["relationer"], tuple)
+        ):
             relations = o["relationer"]
             rel_dict = {}
             for rel in relations:

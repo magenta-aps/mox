@@ -104,15 +104,16 @@ File upload
 Audit log
 =========
 
-An audit log is published as AMQP messages and written to a file.
+An audit log is published as AMQP messages and written to a dedicated queue.
 
 .. py:data:: LOG_AMQP_SERVER
 
-   Default: ``"localhost"``
+   Default: ``""``
 
-   The AMQP server used to publish the audit log.
+   The AMQP server used to publish the audit log. If empty, audit
+   logging is off.
 
-   Not to be confused by the AMQP service used by
+   Not to be confused with the AMQP service used by
    :file:`/python_agents/notification_service/notify_to_amqp_service.py`.
 
 .. py:data:: MOX_LOG_EXCHANGE
@@ -126,12 +127,6 @@ An audit log is published as AMQP messages and written to a file.
    Default: ``"mox.log_queue"``
 
    The AMQP queue used for the audit log.
-
-.. py:data:: AUDIT_LOG_FILE
-
-   Default: ``"/var/log/mox/audit.log"``
-
-   The path to a log file where the audit log is written.
 
 
 .. _auth-settings:

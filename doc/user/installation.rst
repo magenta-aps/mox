@@ -77,10 +77,6 @@ Logs
 The gunicorn access log is output on ``STDOUT`` and error log is output on
 ``STDERR``. They can be inspected with ``docker logs``.
 
-In addition, the audit log is written to :file:`/var/log/mox/audit.log`. It can
-be mounted as a volume if needed. The location is determined by
-:py:data:`AUDIT_LOG_FILE`.
-
 
 File upload
 -----------

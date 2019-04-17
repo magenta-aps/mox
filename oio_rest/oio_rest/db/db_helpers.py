@@ -93,7 +93,7 @@ def get_relation_names(class_name):
     if len(_relation_names) == 0:
         for c, fs in settings.REAL_DB_STRUCTURE.items():
             _relation_names[c] = (
-                fs['relationer_nul_til_en'] +
+                fs['relationer_nul_til_en'] +  # noqa
                 fs['relationer_nul_til_mange']
             )
     return _relation_names[class_name.lower()]
@@ -336,7 +336,7 @@ class NamedTupleAdapter(object):
     def getquoted(self):
         values = list(map(self.prepare_and_adapt, self._tuple_obj))
         values = [v.getquoted() for v in values]
-        sql = (b'ROW(' + b','.join(values) + b') :: ' +
+        sql = (b'ROW(' + b','.join(values) + b') :: ' +  # noqa
                self._tuple_obj.__class__.__name__.encode('ascii'))
         return sql
 
@@ -357,7 +357,7 @@ class AktoerAttrAdapter(NamedTupleAdapter):
             qaa.repraesentation_urn
         ]
 
-        sql = (b'ROW(' + b','.join(values) + b') :: ' +
+        sql = (b'ROW(' + b','.join(values) + b') :: ' +  # noqa
                self._tuple_obj.__class__.__name__.encode('ascii'))
         return sql
 

@@ -19,7 +19,6 @@ from . import sag, indsats, dokument, tilstand, aktivitet, organisation
 from . import log, klassifikation
 from .authentication import get_authenticated_user
 from .log_client import log_service_call
-from . import db
 
 from .custom_exceptions import OIOFlaskException, AuthorizationFailedException
 from .custom_exceptions import BadRequestException
