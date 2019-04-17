@@ -57,12 +57,5 @@ setup(
     tests_require=tests_require,
     include_package_data=True,
     zip_safe=False,
-
-    entry_points={
-        # -*- Entry points: -*-
-        'console_scripts': [
-            'mox = oio_rest.__main__:cli',
-        ],
-    },
     dependency_links=dependency_links,
 )
