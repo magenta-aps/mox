@@ -436,7 +436,7 @@ class OIORestObject(object):
         if exists:
             livscyklus = db.get_life_cycle_code(cls.__name__, uuid)
             if (
-                livscyklus == db.Livscyklus.PASSIVERET.value or  # noqa
+                livscyklus == db.Livscyklus.PASSIVERET.value or
                 livscyklus == db.Livscyklus.SLETTET.value
             ):
                 deleted_or_passive = True
@@ -564,7 +564,7 @@ class OIORestObject(object):
                                          class_name)
         cls_fields_url = "{0}/{1}".format(class_url, "fields")
         uuid_regex = (
-            "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}" +  # noqa
+            "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}"
             "-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
         )
         object_url = '{0}/<regex("{1}"):uuid>'.format(

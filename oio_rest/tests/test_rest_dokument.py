@@ -15,18 +15,14 @@ from tests import util
 
 class TestDokument(util.TestCase):
     def test_create_dokument_empty_dict(self):
-        '''Not sure why this happens?'''
+        """Not sure why this happens?"""
         self.assertRequestResponse(
-            "/dokument/dokument",
-            {'uuid': None},
-            json={},
-            status_code=400,
+            "/dokument/dokument", {"uuid": None}, json={}, status_code=400
         )
 
     def test_create_dokument_missing_files(self):
         result = self.client.post(
-            "/dokument/dokument",
-            json=util.get_fixture("dokument_opret.json"),
+            "/dokument/dokument", json=util.get_fixture("dokument_opret.json")
         ).get_json()
         self.assertNotIn("uuid", result)
         self.assertTrue(result["message"])
@@ -38,11 +34,22 @@ class TestDokument(util.TestCase):
                 "/dokument/dokument",
                 content_type="multipart/form-data",
                 data={
-                    "json": util.get_fixture("dokument_opret.json", as_text=False),
-                    "del_indhold1": ("tests/fixtures/test.txt", "del_indhold1"),
-                    "del_indhold2": ("tests/fixtures/test.docx", "del_indhold2"),
-                    "del_indhold3": ("tests/fixtures/test.xls", "del_indhold3"),
-                }
+                    "json": util.get_fixture(
+                        "dokument_opret.json", as_text=False
+                    ),
+                    "del_indhold1": (
+                        "tests/fixtures/test.txt",
+                        "del_indhold1",
+                    ),
+                    "del_indhold2": (
+                        "tests/fixtures/test.docx",
+                        "del_indhold2",
+                    ),
+                    "del_indhold3": (
+                        "tests/fixtures/test.xls",
+                        "del_indhold3",
+                    ),
+                },
             ).get_json()
             self.assertTrue(is_uuid(result["uuid"]))
             upload_uuid = result["uuid"]  # the subtests rely on this variable
@@ -54,11 +61,22 @@ class TestDokument(util.TestCase):
                 "/dokument/dokument/%s" % import_uuid,
                 content_type="multipart/form-data",
                 data={
-                    "json": util.get_fixture("dokument_opret.json", as_text=False),
-                    "del_indhold1": ("tests/fixtures/test.txt", "del_indhold1"),
-                    "del_indhold2": ("tests/fixtures/test.docx", "del_indhold2"),
-                    "del_indhold3": ("tests/fixtures/test.xls", "del_indhold3"),
-                }
+                    "json": util.get_fixture(
+                        "dokument_opret.json", as_text=False
+                    ),
+                    "del_indhold1": (
+                        "tests/fixtures/test.txt",
+                        "del_indhold1",
+                    ),
+                    "del_indhold2": (
+                        "tests/fixtures/test.docx",
+                        "del_indhold2",
+                    ),
+                    "del_indhold3": (
+                        "tests/fixtures/test.xls",
+                        "del_indhold3",
+                    ),
+                },
             ).get_json()
             self.assertTrue(is_uuid(result["uuid"]))
             self.assertEqual(result["uuid"], import_uuid)
@@ -66,9 +84,10 @@ class TestDokument(util.TestCase):
         files = []
         with self.subTest("List files / get content urls"):
             for r in self.client.get(
-                "dokument/dokument",
-                query_string={"uuid": upload_uuid},
-            ).get_json()["results"][0][0]["registreringer"][0]["varianter"][0]["dele"]:
+                "dokument/dokument", query_string={"uuid": upload_uuid}
+            ).get_json()["results"][0][0]["registreringer"][0]["varianter"][0][
+                "dele"
+            ]:
                 path = r["egenskaber"][0]["indhold"]
                 if path.startswith("store:"):
                     files.append(path[6:])
@@ -83,7 +102,9 @@ class TestDokument(util.TestCase):
             with self.subTest("Download dokument", filename=filename):
                 self.assertEqual(
                     b"This is a test",
-                    self.client.get("dokument/dokument/%s" % filename).get_data()
+                    self.client.get(
+                        "dokument/dokument/%s" % filename
+                    ).get_data(),
                 )
 
         with self.subTest("Search on DokumentDel relations"):
@@ -97,8 +118,8 @@ class TestDokument(util.TestCase):
                         "deltekst": "doc_deltekst2B",
                         "underredigeringaf": "urn:cpr8883394",
                         "uuid": upload_uuid,
-                    }
-                ).get_json()
+                    },
+                ).get_json(),
             )
 
         with self.subTest("Update dokument"):
@@ -106,7 +127,9 @@ class TestDokument(util.TestCase):
                 "/dokument/dokument",
                 content_type="multipart/form-data",
                 data={
-                    "json": util.get_fixture("dokument_opdater.json", as_text=False),
+                    "json": util.get_fixture(
+                        "dokument_opdater.json", as_text=False
+                    )
                 },
                 query_string={"uuid": upload_uuid},
             )
@@ -114,8 +137,7 @@ class TestDokument(util.TestCase):
 
         with self.subTest("Download updated dokument"):
             result = self.client.get(
-                "dokument/dokument",
-                query_string={"uuid": upload_uuid},
+                "dokument/dokument", query_string={"uuid": upload_uuid}
             ).get_json()
             self.assertEqual(
                 result["results"][0][0]["registreringer"][0]["note"],
@@ -124,12 +146,16 @@ class TestDokument(util.TestCase):
 
         with self.subTest("Update dokument with file upload"):
             result = self.client.patch(
-                 "/dokument/dokument",
+                "/dokument/dokument",
                 content_type="multipart/form-data",
                 data={
-                    "json": util.get_fixture("dokument_opdater2.json", as_text=False),
-                    "del_indhold1_opdateret": ("tests/fixtures/test2.txt",
-                    "del_indhold1_opdateret"),
+                    "json": util.get_fixture(
+                        "dokument_opdater2.json", as_text=False
+                    ),
+                    "del_indhold1_opdateret": (
+                        "tests/fixtures/test2.txt",
+                        "del_indhold1_opdateret",
+                    ),
                 },
                 query_string={"uuid": upload_uuid},
             )
@@ -137,12 +163,20 @@ class TestDokument(util.TestCase):
 
         with self.subTest("Download updated dokument 2"):
             result = self.client.get(
-                "dokument/dokument", query_string={"uuid": upload_uuid})
+                "dokument/dokument", query_string={"uuid": upload_uuid}
+            )
             self.assertEqual(result.status_code, 200)
-            for r in result.get_json()["results"][0][0]["registreringer"][0]["varianter"][0]["dele"]:
+            for r in result.get_json()["results"][0][0]["registreringer"][0][
+                "varianter"
+            ][0]["dele"]:
                 path = r["egenskaber"][0]["indhold"]
                 if path.startswith("store:"):
-                    if b"This is an updated test" in self.client.get("dokument/dokument/%s" % path[6:]).get_data():
+                    if (
+                        b"This is an updated test"
+                        in self.client.get(
+                            "dokument/dokument/%s" % path[6:]
+                        ).get_data()
+                    ):
                         break
             else:
                 raise NotImplementedError("Uploaded file was not updated")
@@ -236,7 +270,8 @@ class TestDokument(util.TestCase):
             r = self.client.get(
                 "dokument/dokument",
                 query_string={
-                    "ejer": "Organisation=ef2713ee-1a38-4c23-8fcb-3c4331262194",
+                    "ejer":
+                    "Organisation=ef2713ee-1a38-4c23-8fcb-3c4331262194",
                     "uuid": import_uuid,
                 },
             )
