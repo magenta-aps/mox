@@ -15,13 +15,8 @@ services:
       - db.env
     environment:
       - DB_HOST=mox-db
-      - LOG_AMQP_SERVER=amqp
     depends_on:
       - mox-db
-      - amqp
-
-  amqp:
-    image: rabbitmq:3.5
 
   mox-db:
     image: postgres:9.6
