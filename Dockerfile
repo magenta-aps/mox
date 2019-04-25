@@ -16,9 +16,10 @@ WORKDIR /code/
 # update them in doc/user/installation.rst
 RUN set -ex \
   # Add a mox group and user. Note: this is a system user/group, but have
-  # UID/GID above the normal SYS_UID_MAX/SYS_GID_MAX of 999.
-  && groupadd -g 1141 -r mox\
-  && useradd -u 1141 --no-log-init -r -g mox mox \
+  # UID/GID above the normal SYS_UID_MAX/SYS_GID_MAX of 999. The link between
+  # mox and this UID/GID is registered in Magentas internal ansible repo.
+  && groupadd -g 1140 -r mox\
+  && useradd -u 1140 --no-log-init -r -g mox mox \
   # Install dependencies
   && apt-get -y update \
   && apt-get -y install --no-install-recommends \
