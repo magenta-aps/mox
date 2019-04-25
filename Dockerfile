@@ -17,9 +17,8 @@ LABEL org.opencontainers.image.title="MOX - Messaging Service and Actual State D
 # https://docs.python.org/3/using/cmdline.html#cmdoption-u
 ENV PYTHONUNBUFFERED 1
 
+
 WORKDIR /code/
-
-
 # ATTENTION DEVELOPER: When you change these prerequisites, make sure to also
 # update them in doc/user/installation.rst
 RUN set -ex \
@@ -47,27 +46,28 @@ RUN set -ex \
   # /var/mox is default for FILE_UPLOAD_FOLDER
   && install -g mox -o mox -d /var/mox
 
+
 # Create volume for file upload
 VOLUME /var/mox
+
 
 # Install requirements
 COPY oio_rest/requirements.txt /code/oio_rest/requirements.txt
 RUN pip3 install -r oio_rest/requirements.txt
 
-# Copy application code to the container.
+
+# Copy and install application.
 COPY docker-entrypoint.sh .
 COPY oio_rest ./oio_rest
 COPY README.rst .
 COPY LICENSE .
-
 # Install the application as editable. This makes it possible to mount `/code`
 # to your host and edit the files during development.
 RUN pip3 install -e oio_rest
 
+
+# Run the server as the mox user on port 5000
 USER mox:mox
-
 EXPOSE 5000
-
 ENTRYPOINT ["/code/docker-entrypoint.sh"]
-
 CMD ["gunicorn", "-b", "0.0.0.0:5000", "oio_rest.app:app"]
