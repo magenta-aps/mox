@@ -5,6 +5,14 @@
 # https://github.com/docker-library/docs/issues/904
 FROM python:3.5
 
+
+LABEL org.opencontainers.image.title="MOX - Messaging Service and Actual State Database" \
+      org.opencontainers.image.vendor="Magenta ApS" \
+      org.opencontainers.image.licenses="MPL-2.0" \
+      org.opencontainers.image.documentation="https://mox.readthedocs.io" \
+      org.opencontainers.image.source="https://github.com/magenta-aps/mox"
+
+
 # Force the stdout and stderr streams from python to be unbuffered. See
 # https://docs.python.org/3/using/cmdline.html#cmdoption-u
 ENV PYTHONUNBUFFERED 1
