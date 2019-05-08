@@ -19,7 +19,7 @@ below. Use the docker image or a Python package in a virtual environment.
 
 .. todo::
 
-   Document how to install test dependencies when it is formalized in #28498.
+   Document how to install test dependencies when it is formalized in #28489.
 
 Docker
 ======
