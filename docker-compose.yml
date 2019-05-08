@@ -8,20 +8,15 @@ services:
     # reloads on file changes. This is very useful when developing oio_rest.
     volumes:
       - .:/code
-    command: ["gunicorn", "--reload", "-b", "0.0.0.0:5000", "oio_rest.app:app"]
+    command: ["gunicorn", "--reload", "-b", "0.0.0.0:8080", "oio_rest.app:app"]
     ports:
-      - "5000:5000"
+      - "8080:8080"
     env_file:
       - db.env
     environment:
       - DB_HOST=mox-db
-      - LOG_AMQP_SERVER=amqp
     depends_on:
       - mox-db
-      - amqp
-
-  amqp:
-    image: rabbitmq:3.5
 
   mox-db:
     image: postgres:9.6
