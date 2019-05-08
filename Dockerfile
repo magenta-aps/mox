@@ -70,8 +70,8 @@ COPY LICENSE .
 RUN pip3 install -e oio_rest
 
 
-# Run the server as the mox user on port 5000
+# Run the server as the mox user on port 8080
 USER mox:mox
-EXPOSE 5000
+EXPOSE 8080
 ENTRYPOINT ["/code/docker-entrypoint.sh"]
-CMD ["gunicorn", "-b", "0.0.0.0:5000", "oio_rest.app:app"]
+CMD ["gunicorn", "-b", "0.0.0.0:8080", "oio_rest.app:app"]

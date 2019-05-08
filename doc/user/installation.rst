@@ -40,12 +40,12 @@ with the environment variables :py:data:`DB_HOST`, :py:data:`DB_USER` and
 
 .. code-block:: bash
 
-    docker run -p 5000:5000 -e DB_HOST=<IP of DB host> -e DB_USER=mox -e DB_PASSWORD=mox magentaaps/mox:latest
+    docker run -p 8080:8080 -e DB_HOST=<IP of DB host> -e DB_USER=mox -e DB_PASSWORD=mox magentaaps/mox:latest
 
 This will pull the image from Docker Hub and starts a container in the
-foreground. The ``-p 5000:5000`` `binds port
+foreground. The ``-p 8080:8080`` `binds port
 <https://docs.docker.com/engine/reference/commandline/run/#publish-or-expose-port--p---expose>`_
-``5000`` of the host machine to port ``5000`` on the container. The ``-e`` `sets
+``8080`` of the host machine to port ``8080`` on the container. The ``-e`` `sets
 the environment variables
 <https://docs.docker.com/engine/reference/commandline/run/#set-environment-variables--e---env---env-file>`_
 in container.
@@ -55,10 +55,10 @@ finally
 
 .. code-block::
 
-    [2019-04-10 08:22:06 +0000] [1] [INFO] Listening at: http://0.0.0.0:5000 (1)
+    [2019-04-10 08:22:06 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
 
 when the gunicorn server starts up. You should now be able to reach the server
-from the host at ``http://localhost:5000``.
+from the host at ``http://localhost:8080``.
 
 
 If you continue to see ``Postgres is unavailable - sleeping`` your database
