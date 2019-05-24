@@ -40,16 +40,8 @@ done
 >&2 echo "Postgres is up - continuing"
 
 
+python3 -m oio_rest initdb
 
-# Initialize the database
-# -----------------------
-# We check if the actual_state schema exists, if not then initialize the
-# database. actual_state is not special, it is just the first thing to be
-# initialized.
-if ! psql -t -c '\dn actual_state' | grep -q .; then
-    echo "Initializing database"
-    python3 -m oio_rest initdb
-fi
 
 # Exec the docker CMD
 # -------------------
