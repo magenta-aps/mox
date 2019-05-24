@@ -32,9 +32,9 @@ def sql(output):
 
 
 @cli.command()
-@click.option('--force/--no-force', default=False, help="Overwrite tables")
+@click.option("--force/--no-force", default=False, help="Overwrite tables")
 def initdb(force):
-    '''Initialize database.'''
+    """Initialize database."""
     setup_sql = """
     create schema actual_state authorization {db_user};
     alter database {database} set search_path to actual_state, public;
@@ -43,8 +43,14 @@ def initdb(force):
     create extension if not exists "uuid-ossp" with schema actual_state;
     create extension if not exists "btree_gist" with schema actual_state;
     create extension if not exists "pg_trgm" with schema actual_state;
-    """.format(db_user=settings.DB_USER, database=settings.DATABASE)
-    init_check_sql = "select nspname from pg_catalog.pg_namespace where nspname = 'actual_state';"
+    """.format(
+        db_user=settings.DB_USER, database=settings.DATABASE
+    )
+    init_check_sql = (
+        "select nspname"
+        "  from pg_catalog.pg_namespace"
+        " where nspname = 'actual_state';"
+    )
     drop_schema_sql = "drop schema actual_state cascade;"
 
     while "waiting for Postgres availability":
@@ -71,7 +77,10 @@ def initdb(force):
             cursor.execute(drop_schema_sql)
             conn.commit()
         else:
-            click.echo("Database already initialised; nothing happens. Use --force to reinitialise.")
+            click.echo(
+                "Database already initialised; nothing happens. "
+                "Use --force to reinitialise."
+            )
             return
 
     cursor.execute(setup_sql)
@@ -81,7 +90,6 @@ def initdb(force):
         cursor.execute("\n".join(db_templating.get_sql()))
         conn.commit()
     click.echo("Database initialised.")
-
 
 
 if __name__ == '__main__':
