@@ -5,6 +5,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import time
+
 import click
 import flask.cli
 import psycopg2
@@ -45,13 +47,19 @@ def initdb(force):
     init_check_sql = "select nspname from pg_catalog.pg_namespace where nspname = 'actual_state';"
     drop_schema_sql = "drop schema actual_state cascade;"
 
-    conn = psycopg2.connect(
-        dbname=settings.DATABASE,
-        user=settings.DB_USER,
-        password=settings.DB_PASSWORD,
-        host=settings.DB_HOST,
-        port=settings.DB_PORT,
-    )
+    while "waiting for Postgres availability":
+        try:
+            conn = psycopg2.connect(
+                dbname=settings.DATABASE,
+                user=settings.DB_USER,
+                password=settings.DB_PASSWORD,
+                host=settings.DB_HOST,
+                port=settings.DB_PORT,
+            )
+            break
+        except psycopg2.OperationalError:
+            click.echo("Postgres is unavailable - sleeping")
+            time.sleep(1)
     cursor = conn.cursor()
 
     cursor.execute(init_check_sql)

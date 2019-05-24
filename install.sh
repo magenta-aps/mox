@@ -81,7 +81,7 @@ fi
 
 
 printf "# Initialize database\n"
-$BASE_DIR/oio_rest/initdb.sh
+$BASE_DIR/python-env/bin/python -m oio_rest initdb
 
 
 if [ $FULL -eq 1 ]; then
