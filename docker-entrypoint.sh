@@ -43,28 +43,13 @@ done
 
 # Initialize the database
 # -----------------------
-# TODO This is a modified version of oio_rest/initdb.sh. This should probably be
-# included in some python code and run with `python3 -m oio_rest initdb` ot
-# similar. postgres-client and PG* env variables can then be removed from the
-# image.
-
 # We check if the actual_state schema exists, if not then initialize the
 # database. actual_state is not special, it is just the first thing to be
 # initialized.
 if ! psql -t -c '\dn actual_state' | grep -q .; then
     echo "Initializing database"
-    psql -v ON_ERROR_STOP=1 <<EOF
-CREATE SCHEMA actual_state AUTHORIZATION $DB_USER;
-ALTER DATABASE $DATABASE SET search_path TO actual_state, public;
-ALTER DATABASE $DATABASE SET DATESTYLE to 'ISO, YMD';
-ALTER DATABASE $DATABASE SET INTERVALSTYLE to 'sql_standard';
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA actual_state;
-CREATE EXTENSION IF NOT EXISTS "btree_gist" WITH SCHEMA actual_state;
-CREATE EXTENSION IF NOT EXISTS "pg_trgm" WITH SCHEMA actual_state;
-EOF
-    python3 -m oio_rest sql | psql -d $DATABASE -v ON_ERROR_STOP=1
+    python3 -m oio_rest initdb
 fi
-
 
 # Exec the docker CMD
 # -------------------
