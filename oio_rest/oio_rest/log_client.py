@@ -18,8 +18,8 @@ def log_service_call(service_name, class_name, time,
     """Log a call to a LoRa service."""
 
     if (
-        service_name in settings.LOG_IGNORED_SERVICES or
-        not settings.LOG_AMQP_SERVER
+        service_name in
+        settings.LOG_IGNORED_SERVICES or not settings.LOG_AMQP_SERVER
     ):
         "Don't log the log service."
         return
@@ -79,12 +79,6 @@ def log_service_call(service_name, class_name, time,
     }
 
     # TODO: Get auth token if auth enabled
-
-    if settings.AUDIT_LOG_FILE:
-        with open(settings.AUDIT_LOG_FILE, 'at') as fp:
-            json.dump(logevent_dict, fp, indent=2)
-            fp.write('\n')
-            fp.flush()
 
     # Send AMQP message to LOG_SERVICE_URL
 

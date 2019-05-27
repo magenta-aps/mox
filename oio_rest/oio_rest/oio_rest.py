@@ -233,8 +233,8 @@ class OIORestObject(object):
     @classmethod
     @requires_auth
     def create_object(cls):
-        """A :ref:`CreateOperation` that creates a new object from the JSON payload. It returns
-        a newly generated UUID for the created object.
+        """A :ref:`CreateOperation` that creates a new object from the JSON
+        payload. It returns a newly generated UUID for the created object.
 
         .. :quickref: :ref:`CreateOperation`
 
@@ -274,10 +274,12 @@ class OIORestObject(object):
     def get_objects(cls):
         """A :ref:`ListOperation` or :ref:`SearchOperation` depending on parameters.
 
-        With any the of ``uuid``, ``virking*`` and ``registeret*`` parameters, it is a
-        :ref:`ListOperation` and will return one or more whole JSON objects. Given any
-        other parameters the operation is a :ref:`SearchOperation` and will only return
-        a list of UUIDs to the objects.
+        With any the of ``uuid``, ``virking*`` and ``registeret*`` parameters,
+        it is a :ref:`ListOperation` and will return one or more whole JSON
+        objects.
+
+        Given any other parameters, the operation is a :ref:`SearchOperation`
+        and will only return a list of UUIDs to the objects.
 
         .. :quickref: :ref:`ListOperation` or :ref:`SearchOperation`
 
@@ -399,16 +401,17 @@ class OIORestObject(object):
     @classmethod
     @requires_auth
     def put_object(cls, uuid):
-        """A :ref:`ImportOperation` that creates or overwrites an object from the JSON payload.
-        It returns the UUID for the object.
+        """A :ref:`ImportOperation` that creates or overwrites an object from
+        the JSON payload.  It returns the UUID for the object.
 
         If there no object with the UUID or the object with that UUID have been
-        :ref:`deleted <DeleteOperation>` or :ref:`passivated <PassivateOperation>`, it
-        creates a new object at the specified UUID. It sets ``livscykluskode:
-        "Importeret"``.
+        :ref:`deleted <DeleteOperation>` or :ref:`passivated
+        <PassivateOperation>`, it creates a new object at the specified UUID.
+        It sets ``livscykluskode: "Importeret"``.
 
-        If an object with the UUID exist it completely overwrite the object. Including
-        all ``virkning`` periods. It sets ``livscykluskode: "Rettet"``.
+        If an object with the UUID exist it completely overwrite the object.
+        Including all ``virkning`` periods. It sets
+        ``livscykluskode: "Rettet"``.
 
         .. :quickref: :ref:`ImportOperation`
 
@@ -462,8 +465,8 @@ class OIORestObject(object):
     @classmethod
     @requires_auth
     def patch_object(cls, uuid):
-        """An :ref:`UpdateOperation` or :ref:`PassivateOperation`. Apply the JSON payload as a
-        change to the object. Return the UUID of the object.
+        """An :ref:`UpdateOperation` or :ref:`PassivateOperation`. Apply the
+        JSON payload as a change to the object. Return the UUID of the object.
 
         If ``livscyklus: "Passiv"`` is set it is a :ref:`PassivateOperation`.
 
@@ -561,7 +564,7 @@ class OIORestObject(object):
                                          class_name)
         cls_fields_url = "{0}/{1}".format(class_url, "fields")
         uuid_regex = (
-            "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}" +
+            "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}"
             "-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
         )
         object_url = '{0}/<regex("{1}"):uuid>'.format(

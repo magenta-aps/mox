@@ -1,0 +1,16 @@
+*.DS_Store
+.git
+.gitignore
+.gitlab-ci.yml
+Jenkinsfile
+NEWS.rst
+agentbase
+agents
+auth.sh
+compile-java.sh
+custom
+doc
+install.sh
+python_agents
+src
+venv

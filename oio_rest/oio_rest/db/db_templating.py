@@ -14,7 +14,6 @@ Jinja2 templates.
 from collections import OrderedDict
 from pathlib import Path
 import copy
-import importlib
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -57,7 +56,8 @@ def render_templates():
                 if reltype not in context:
                     continue
 
-                # it is important that the order is stable, as some templates rely on this
+                # it is important that the order is stable, as some templates
+                # rely on this
                 context[reltype] = OrderedDict(context[reltype])
 
                 # fill these out to avoid the need to check for membership

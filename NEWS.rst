@@ -1,3 +1,17 @@
+Version 1.2.0, 27 May 2019
+----------------------------
+
+This feature introduces Docker support. A ``Dockerfile`` has been added for 
+creating a Docker-container containing the oio_rest application. 
+
+A ``docker-compose`` file has been added for setting up a full development 
+environment, including database.
+
+New features:
+
+* Docker support, with ``docker-compose`` for development setups.
+* AMQP audit logging is now disabled by default.
+
 Version 1.1.0, 26 March 2019
 ----------------------------
 

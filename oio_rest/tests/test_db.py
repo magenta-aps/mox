@@ -15,8 +15,9 @@ from mock import MagicMock, call, patch
 
 from oio_rest import db
 from oio_rest import app
-from oio_rest.custom_exceptions import (BadRequestException, DBException,
-                                        NotFoundException)
+from oio_rest.custom_exceptions import (
+    BadRequestException, DBException, NotFoundException
+)
 
 
 class TestDB(flask_testing.TestCase):
@@ -55,7 +56,9 @@ class TestDB(flask_testing.TestCase):
 
     @patch('oio_rest.db.get_relation_field_type')
     def test_convert_relation_value_journaldokument(self, mock_get_rel):
-        from oio_rest.db.db_helpers import JournalDokument, OffentlighedUndtaget
+        from oio_rest.db.db_helpers import (
+            JournalDokument, OffentlighedUndtaget
+        )
 
         # Arrange
         mock_get_rel.return_value = "journaldokument"

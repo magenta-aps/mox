@@ -114,21 +114,21 @@ class TestSag(util.TestCase):
 
     @unittest.expectedFailure
     def test_sag_8(self):
-        "Search for journaldokument.offentligtundtaget.alternativtitel relation"
+        "Search journaldokument.offentligtundtaget.alternativtitel relation"
         # unsupported argument:
         # journaldokument.offenligtundtaget.alternativtitel
         search8 = self.client.get(
             "sag/sag",
             query_string={
-                "journaldokument.offentligtundtaget.alternativtitel": "Fortroligt",
-                "uuid": self.uuid,
+                "journaldokument.offentligtundtaget.alternativtitel":
+                "Fortroligt", "uuid": self.uuid,
             },
         )
         self.assertEqual(search8.status_code, 200)
         self.assertEqual(search8.get_json()["results"][0][0], self.uuid)
 
     def test_sag_9(self):
-        "Search for wrong journaldokument.offentligtundtaget.alternativtitel relation"
+        "Wrong journaldokument.offentligtundtaget.alternativtitel relation"
         # unsupported argument:
         # journaldokument.offenligtundtaget.alternativtitel
         search9 = self.client.get(
