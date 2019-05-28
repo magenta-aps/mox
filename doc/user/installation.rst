@@ -61,10 +61,8 @@ when the gunicorn server starts up. You should now be able to reach the server
 from the host at ``http://localhost:8080``.
 
 
-If you continue to see ``Postgres is unavailable - sleeping`` your database
-configuration most likely wrong. Remember if you set ``DB_HOST=localhost`` the
-container will try to connect to a database in the same container, not the host
-machine.
+Remember if you set ``DB_HOST=localhost`` the container will try to connect to
+a database in the same container, not the host machine.
 
 For other setting you can set, see :ref:`settings`.
 
@@ -188,16 +186,16 @@ to :py:data:`DB_HOST`, :py:data:`DB_USER` and :py:data:`DB_PASSWORD`.
 Database initialization
 -----------------------
 
-.. todo::
+To initialize the database, run::
 
-   Missing. Describe it when #28276 is done.
+    python -m oio_rest initdb
+
+For more info run ``python -m oio_rest initdb --help``.
 
 Run
 ---
 
-When the database is initialized you can access the `flask cli
-<http://flask.pocoo.org/docs/1.0/cli/#cli>`_ with ``python3 -m oio_rest
-<command>``. To run the development server run ``python3 -m oio_rest
-run``.
-
-Alternative use gunicorn to run a server with ``gunicorn oio_rest.app:app``.
+When the database is initialized you can access the cli with ``python3 -m
+oio_rest <command>``. To run the development server run ``python3 -m oio_rest
+run``. Alternatively, use gunicorn to run a server with ``gunicorn
+oio_rest.app:app``.
