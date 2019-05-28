@@ -5,6 +5,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import sys
 import time
 
 import click
@@ -33,7 +34,9 @@ def sql(output):
 
 @cli.command()
 @click.option("--force/--no-force", default=False, help="Overwrite tables")
-def initdb(force):
+@click.option("--wait", default=None, type=int,
+              help="Wait n seconds for database.")
+def initdb(force, wait):
     """Initialize database."""
     setup_sql = """
     create schema actual_state authorization {db_user};
@@ -52,8 +55,14 @@ def initdb(force):
         " where nspname = 'actual_state';"
     )
     drop_schema_sql = "drop schema actual_state cascade;"
+    sleeping_time = 0.25
 
-    while "waiting for Postgres availability":
+    if wait is None:
+        attempts = 1
+    else:
+        attempts = int(wait // sleeping_time)
+
+    for i in range(attempts):
         try:
             conn = psycopg2.connect(
                 dbname=settings.DATABASE,
@@ -64,8 +73,12 @@ def initdb(force):
             )
             break
         except psycopg2.OperationalError:
-            click.echo("Postgres is unavailable - sleeping")
-            time.sleep(1)
+            click.echo(
+                "Postgres is unavailable - attempt %s/%s" % (i, attempts))
+            if i == attempts - 1:
+                sys.exit(1)
+            time.sleep(sleeping_time)
+
     cursor = conn.cursor()
 
     cursor.execute(init_check_sql)
@@ -85,10 +98,12 @@ def initdb(force):
 
     cursor.execute(setup_sql)
     conn.commit()
+    conn.close()
 
     with get_connection() as conn, conn.cursor() as cursor:
         cursor.execute("\n".join(db_templating.get_sql()))
         conn.commit()
+
     click.echo("Database initialised.")
 
 
