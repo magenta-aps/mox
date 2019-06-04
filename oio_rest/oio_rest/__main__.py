@@ -14,7 +14,7 @@ import psycopg2
 
 from . import app
 from . import settings
-from .db import db_templating, get_connection
+from .db import db_templating
 
 
 @click.group(cls=flask.cli.FlaskGroup, create_app=lambda: app.app)
@@ -57,20 +57,24 @@ def initdb(force, wait):
     drop_schema_sql = "drop schema actual_state cascade;"
     sleeping_time = 0.25
 
-    if wait is None:
-        attempts = 1
-    else:
-        attempts = int(wait // sleeping_time)
+    def _new_db_connection():
+        # We need two different connections. For some reason, a connection
+        # cannot use the extenstions it just created. This is also why we
+        # cannot use db.get_connection, as it may return the same connection
+        # (it uses a pool).  I do not know whether this is because of postgres
+        # 9.6 or psycopg2.
+        return psycopg2.connect(
+            dbname=settings.DATABASE,
+            user=settings.DB_USER,
+            password=settings.DB_PASSWORD,
+            host=settings.DB_HOST,
+            port=settings.DB_PORT,
+        )
 
+    attempts = 1 if wait is None else int(wait // sleeping_time)
     for i in range(attempts):
         try:
-            conn = psycopg2.connect(
-                dbname=settings.DATABASE,
-                user=settings.DB_USER,
-                password=settings.DB_PASSWORD,
-                host=settings.DB_HOST,
-                port=settings.DB_PORT,
-            )
+            conn = _new_db_connection()
             break
         except psycopg2.OperationalError:
             click.echo(
@@ -100,9 +104,11 @@ def initdb(force, wait):
     conn.commit()
     conn.close()
 
-    with get_connection() as conn, conn.cursor() as cursor:
-        cursor.execute("\n".join(db_templating.get_sql()))
-        conn.commit()
+    conn = _new_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("\n".join(db_templating.get_sql()))
+    conn.commit()
+    conn.close()
 
     click.echo("Database initialised.")
 
