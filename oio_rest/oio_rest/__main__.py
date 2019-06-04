@@ -72,19 +72,18 @@ def initdb(force, wait):
         )
 
     attempts = 1 if wait is None else int(wait // sleeping_time)
-    for i in range(attempts):
+    for i in range(1, attempts + 1):
         try:
             conn = _new_db_connection()
             break
         except psycopg2.OperationalError:
             click.echo(
                 "Postgres is unavailable - attempt %s/%s" % (i, attempts))
-            if i == attempts - 1:
+            if i == attempts:
                 sys.exit(1)
             time.sleep(sleeping_time)
 
     cursor = conn.cursor()
-
     cursor.execute(init_check_sql)
     initialised = bool(cursor.fetchone())
 
