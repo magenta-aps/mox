@@ -37,8 +37,6 @@ RUN set -ex \
     # git is needed for python packages with `… = {git = …}` in requirements.txt.
     # It pulls a lot of dependencies. Maybe some of them can be ignored.
     git \
-    # psql is used in docker-entrypoint.sh to check for db availability.
-    postgresql-client \
     # Python packages dependencies:
     # for xmlsec.
     libxmlsec1-dev \
