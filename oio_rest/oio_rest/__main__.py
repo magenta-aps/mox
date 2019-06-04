@@ -35,7 +35,8 @@ def sql(output):
 @cli.command()
 @click.option("--force/--no-force", default=False, help="Overwrite tables")
 @click.option("--wait", default=None, type=int,
-              help="Wait n seconds for database.")
+              help="Wait up to n seconds for the database connection before"
+                   " exiting.")
 def initdb(force, wait):
     """Initialize database."""
     setup_sql = """
