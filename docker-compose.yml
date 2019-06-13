@@ -12,7 +12,7 @@ services:
     ports:
       - "8080:8080"
     env_file:
-      - db.env
+      - docker/db.env
     environment:
       - DB_HOST=mox-db
     depends_on:
@@ -21,7 +21,7 @@ services:
   mox-db:
     image: postgres:9.6
     env_file:
-      - db.env
+      - docker/db.env
     volumes:
       - ./docker/init-db.sh:/docker-entrypoint-initdb.d/01-init-db.sh
       - ./docker/create-extensions.sql:/docker-entrypoint-initdb.d/02-create-extensions.sql
