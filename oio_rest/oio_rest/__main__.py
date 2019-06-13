@@ -39,17 +39,6 @@ def sql(output):
                    " exiting.")
 def initdb(force, wait):
     """Initialize database."""
-    setup_sql = """
-    create schema actual_state authorization {db_user};
-    alter database {database} set search_path to actual_state, public;
-    alter database {database} set datestyle to 'ISO, YMD';
-    alter database {database} set intervalstyle to 'sql_standard';
-    create extension if not exists "uuid-ossp" with schema actual_state;
-    create extension if not exists "btree_gist" with schema actual_state;
-    create extension if not exists "pg_trgm" with schema actual_state;
-    """.format(
-        db_user=settings.DB_USER, database=settings.DATABASE
-    )
     init_check_sql = (
         "select nspname"
         "  from pg_catalog.pg_namespace"
@@ -100,12 +89,6 @@ def initdb(force, wait):
             )
             return
 
-    cursor.execute(setup_sql)
-    conn.commit()
-    conn.close()
-
-    conn = _new_db_connection()
-    cursor = conn.cursor()
     cursor.execute("\n".join(db_templating.get_sql()))
     conn.commit()
     conn.close()
