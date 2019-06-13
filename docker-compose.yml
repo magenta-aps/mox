@@ -2,7 +2,9 @@ version: '3'
 
 services:
   mox:
-    build: .
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
     # The `volumes` and `command` mounts the current directory in the docker
     # container and overwrites the CMD from Dockerfile. With this gunicorn
     # reloads on file changes. This is very useful when developing oio_rest.
