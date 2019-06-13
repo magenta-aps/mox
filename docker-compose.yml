@@ -26,4 +26,4 @@ services:
       - docker/db.env
     volumes:
       - ./docker/init-db.sh:/docker-entrypoint-initdb.d/01-init-db.sh
-      - ./docker/create-extensions.sql:/docker-entrypoint-initdb.d/02-create-extensions.sql
+      - ./docker/create-extensions.sh:/docker-entrypoint-initdb.d/02-create-extensions.sh
