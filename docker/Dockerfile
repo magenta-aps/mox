@@ -59,7 +59,7 @@ RUN pip3 install -r oio_rest/requirements.txt
 
 
 # Copy and install application.
-COPY docker-entrypoint.sh .
+COPY docker/docker-entrypoint.sh ./docker/docker-entrypoint.sh
 COPY oio_rest ./oio_rest
 COPY README.rst .
 COPY LICENSE .
@@ -71,5 +71,5 @@ RUN pip3 install -e oio_rest
 # Run the server as the mox user on port 8080
 USER mox:mox
 EXPOSE 8080
-ENTRYPOINT ["/code/docker-entrypoint.sh"]
+ENTRYPOINT ["/code/docker/docker-entrypoint.sh"]
 CMD ["gunicorn", "-b", "0.0.0.0:8080", "oio_rest.app:app"]
