@@ -14,7 +14,7 @@ import psycopg2
 
 from . import app
 from . import settings
-from .db import db_templating
+from .db import db_templating, get_connection
 
 
 @click.group(cls=flask.cli.FlaskGroup, create_app=lambda: app.app)
@@ -33,66 +33,46 @@ def sql(output):
 
 
 @cli.command()
-@click.option("--force/--no-force", default=False, help="Overwrite tables")
 @click.option("--wait", default=None, type=int,
               help="Wait up to n seconds for the database connection before"
                    " exiting.")
-def initdb(force, wait):
-    """Initialize database."""
-    init_check_sql = (
-        "select nspname"
-        "  from pg_catalog.pg_namespace"
-        " where nspname = 'actual_state';"
+def initdb(wait):
+    """Initialize database.
+
+    This is supposed to be idempotent, so you can run it without fear
+    on an already initialized database.
+    """
+    INIT_CHECK_SQL = (
+        "select relname"
+        "  from pg_catalog.pg_class"
+        " where relname = 'bruger';"
     )
-    drop_schema_sql = "drop schema actual_state cascade;"
-    sleeping_time = 0.25
+    SLEEPING_TIME = 0.25
 
-    def _new_db_connection():
-        # We need two different connections. For some reason, a connection
-        # cannot use the extenstions it just created. This is also why we
-        # cannot use db.get_connection, as it may return the same connection
-        # (it uses a pool).  I do not know whether this is because of postgres
-        # 9.6 or psycopg2.
-        return psycopg2.connect(
-            dbname=settings.DATABASE,
-            user=settings.DB_USER,
-            password=settings.DB_PASSWORD,
-            host=settings.DB_HOST,
-            port=settings.DB_PORT,
-        )
-
-    attempts = 1 if wait is None else int(wait // sleeping_time)
+    attempts = 1 if wait is None else int(wait // SLEEPING_TIME)
     for i in range(1, attempts + 1):
         try:
-            conn = _new_db_connection()
+            conn = get_connection()
             break
         except psycopg2.OperationalError:
             click.echo(
                 "Postgres is unavailable - attempt %s/%s" % (i, attempts))
             if i == attempts:
                 sys.exit(1)
-            time.sleep(sleeping_time)
+            time.sleep(SLEEPING_TIME)
 
     cursor = conn.cursor()
-    cursor.execute(init_check_sql)
+    cursor.execute(INIT_CHECK_SQL)
     initialised = bool(cursor.fetchone())
 
     if initialised:
-        if force:
-            click.echo("Database already initialised; clearing.")
-            cursor.execute(drop_schema_sql)
-            conn.commit()
-        else:
-            click.echo(
-                "Database already initialised; nothing happens. "
-                "Use --force to reinitialise."
-            )
-            return
+        click.echo("Database already initialised; nothing happens.")
+        return
 
+    click.echo("Initializing database.")
     cursor.execute("\n".join(db_templating.get_sql()))
     conn.commit()
     conn.close()
-
     click.echo("Database initialised.")
 
 
