@@ -81,10 +81,6 @@ fi
 
 
 printf "# Initialize database\n"
-# ENABLE TRUST ON UNIX SOCKETS...
-sudo sed -i 's/local\s\+all\s\+all\s\+peer/local all all trust/' /etc/postgresql/9.5/main/pg_hba.conf
-sudo -u postgres /usr/lib/postgresql/9.5/bin/pg_ctl reload -D /var/lib/postgresql/9.5/main
-
 sudo -u postgres env DB_USER=mox DB_PASSWORD=mox $BASE_DIR/docker/postgres-initdb.d/10-init-db.sh
 sudo -u postgres $BASE_DIR/docker/postgres-initdb.d/20-create-extensions.sh
 $BASE_DIR/python-env/bin/python -m oio_rest initdb
