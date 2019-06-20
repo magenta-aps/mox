@@ -41,7 +41,7 @@ def initdb(wait):
     This is supposed to be idempotent, so you can run it without fear
     on an already initialized database.
     """
-    INIT_CHECK_SQL = (
+    INIT_CHECK_SQL = (  # check that 'bruger' table exists. This is arbitrary.
         "select relname"
         "  from pg_catalog.pg_class"
         " where relname = 'bruger';"
