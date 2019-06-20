@@ -13,7 +13,6 @@ import flask.cli
 import psycopg2
 
 from . import app
-from . import settings
 from .db import db_templating, get_connection
 
 
