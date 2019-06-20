@@ -81,6 +81,8 @@ fi
 
 
 printf "# Initialize database\n"
+sudo -u postgres env DB_USER=mox DB_PASSWORD=mox $BASE_DIR/docker/postgres-initdb.d/10-init-db.sh
+sudo -u postgres $BASE_DIR/docker/postgres-initdb.d/20-create-extensions.sh
 $BASE_DIR/python-env/bin/python -m oio_rest initdb
 
 
