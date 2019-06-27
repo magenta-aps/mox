@@ -29,7 +29,7 @@ services:
       #- postgres-initdb.d:/docker-entrypoint-initdb.d
 
 
-  # The following service is to copy the *.sql file needed to initialize the
+  # The following service is to copy the scripts needed to initialize the
   # database with user and extentions to a volume. It is not needed when the
   # volume `./docker/postgres-initdb.d/:/docker-entrypoint-initdb.d` is bound in
   # mox-db above.
