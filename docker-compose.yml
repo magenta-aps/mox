@@ -26,3 +26,22 @@ services:
       - docker/db.env
     volumes:
       - ./docker/postgres-initdb.d/:/docker-entrypoint-initdb.d
+      #- postgres-initdb.d:/docker-entrypoint-initdb.d
+
+
+  # The following service is to copy the *.sql file needed to initialize the
+  # database with user and extentions to a volume. It is not needed when the
+  # volume `./docker/postgres-initdb.d/:/docker-entrypoint-initdb.d` is bound in
+  # mox-db above.
+  mox-cp:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    user: root
+    entrypoint: []
+    command: ["cp", "-r", "/code/docker/postgres-initdb.d/.", "/postgres-initdb.d"]
+    volumes:
+      - postgres-initdb.d:/postgres-initdb.d
+
+volumes:
+  postgres-initdb.d:

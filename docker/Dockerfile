@@ -59,7 +59,7 @@ RUN pip3 install -r oio_rest/requirements.txt
 
 
 # Copy and install application.
-COPY docker/docker-entrypoint.sh ./docker/docker-entrypoint.sh
+COPY docker ./docker
 COPY oio_rest ./oio_rest
 COPY README.rst .
 COPY LICENSE .
