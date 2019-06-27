@@ -17,7 +17,7 @@ import copy
 
 from jinja2 import Environment, FileSystemLoader
 
-from .. import settings
+from .db_structure import DATABASE_STRUCTURE, DB_TEMPLATE_EXTRA_OPTIONS
 
 
 DB_DIR = Path(__file__).parent / 'sql' / 'declarations'
@@ -42,8 +42,8 @@ TEMPLATES = (
 
 
 def render_templates():
-    db_structure = settings.DB_STRUCTURE.DATABASE_STRUCTURE
-    extra_options = settings.DB_STRUCTURE.DB_TEMPLATE_EXTRA_OPTIONS
+    db_structure = DATABASE_STRUCTURE
+    extra_options = DB_TEMPLATE_EXTRA_OPTIONS
 
     for oio_type in sorted(db_structure):
         for template_name in TEMPLATES:

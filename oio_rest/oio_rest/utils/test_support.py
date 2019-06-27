@@ -41,14 +41,14 @@ def patch_db_struct(new: typing.Union[types.ModuleType, dict]):
         mock.patch('oio_rest.db.db_helpers._attribute_names', {}),
         mock.patch('oio_rest.db.db_helpers._relation_names', {}),
         mock.patch('oio_rest.validate.SCHEMAS', {}),
-        mock.patch('oio_rest.settings.REAL_DB_STRUCTURE', new=new),
+        mock.patch('oio_rest.db.REAL_DB_STRUCTURE', new=new),
     ]
 
     if isinstance(new, types.ModuleType):
         patches += [
-            mock.patch('oio_rest.settings.REAL_DB_STRUCTURE',
+            mock.patch('oio_rest.db.REAL_DB_STRUCTURE',
                        new=new.REAL_DB_STRUCTURE),
-            mock.patch('oio_rest.settings.DB_STRUCTURE.REAL_DB_STRUCTURE',
+            mock.patch('oio_rest.db.REAL_DB_STRUCTURE',
                        new=new.REAL_DB_STRUCTURE),
         ]
 
@@ -63,7 +63,7 @@ def patch_db_struct(new: typing.Union[types.ModuleType, dict]):
 def extend_db_struct(new: dict):
     '''Context manager for extending db_structures'''
 
-    dbs = copy.deepcopy(settings.DB_STRUCTURE.DATABASE_STRUCTURE)
+    dbs = copy.deepcopy(db.db_structure.DATABASE_STRUCTURE)
     real_dbs = copy.deepcopy(settings.REAL_DB_STRUCTURE)
 
     patches = [
@@ -71,10 +71,10 @@ def extend_db_struct(new: dict):
         mock.patch('oio_rest.db.db_helpers._attribute_names', {}),
         mock.patch('oio_rest.db.db_helpers._relation_names', {}),
         mock.patch('oio_rest.validate.SCHEMAS', {}),
-        mock.patch('oio_rest.settings.DB_STRUCTURE.DATABASE_STRUCTURE',
+        mock.patch('oio_rest.db.db_structure.DATABASE_STRUCTURE',
                    new=dbs),
-        mock.patch('oio_rest.settings.REAL_DB_STRUCTURE', new=real_dbs),
-        mock.patch('oio_rest.settings.DB_STRUCTURE.REAL_DB_STRUCTURE',
+        mock.patch('oio_rest.db.REAL_DB_STRUCTURE', new=real_dbs),
+        mock.patch('oio_rest.db.REAL_DB_STRUCTURE',
                    new=real_dbs),
     ]
 
@@ -128,7 +128,7 @@ def load_sql_fixture(fixture_path):
         stdin=subprocess.PIPE,
     )
 
-    for table in sorted(settings.DB_STRUCTURE.DATABASE_STRUCTURE):
+    for table in sorted(db.db_structure.DATABASE_STRUCTURE):
         proc.stdin.write(
             "TRUNCATE TABLE actual_state.{} RESTART IDENTITY CASCADE;\n"
             .format(table).encode('ascii'),
@@ -252,7 +252,7 @@ class TestCaseMixin(object):
     def reset_db(self):
         with self.db_cursor() as curs:
             curs.execute("TRUNCATE TABLE {} RESTART IDENTITY CASCADE".format(
-                ', '.join(sorted(settings.DB_STRUCTURE.DATABASE_STRUCTURE)),
+                ', '.join(sorted(db.db_structure.DATABASE_STRUCTURE)),
             ))
 
     def setUp(self):

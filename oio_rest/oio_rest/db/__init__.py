@@ -28,6 +28,7 @@ from .db_helpers import (
     JournalNotat, JournalDokument, DokumentVariantType, AktoerAttr,
     VaerdiRelationAttr, to_bool,
 )
+from .db_structure import REAL_DB_STRUCTURE  # noqa
 
 from ..authentication import get_authenticated_user
 

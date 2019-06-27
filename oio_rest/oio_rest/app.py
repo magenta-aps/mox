@@ -5,12 +5,17 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+from flask import Flask
+# Create the app object before importing anything else, because other parts
+# (primarily settings.py) of the code depends on it.
+app = Flask(__name__)  # noqa
+
 import os
 import datetime
 import urllib.parse
 import traceback
 
-from flask import Flask, jsonify, redirect, request, url_for, Response
+from flask import jsonify, redirect, request, url_for, Response
 from werkzeug.routing import BaseConverter
 from jinja2 import Environment, FileSystemLoader
 from psycopg2 import DataError
@@ -27,8 +32,6 @@ from .auth import tokens
 import flask_saml_sso
 
 from . import settings
-
-app = Flask(__name__)
 
 """
     Jinja2 Environment
