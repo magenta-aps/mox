@@ -15,6 +15,7 @@ Content
    user/overview.rst
    Middle-level overview (in danish) <user/praesentation.rst>
    user/installation.rst
+   user/database.rst
    user/objects.rst
    user/api.rst
    user/log-haendelse.rst
