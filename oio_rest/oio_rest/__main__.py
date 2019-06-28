@@ -16,7 +16,7 @@ from . import app
 from .db import db_templating, get_connection
 
 
-@click.group(cls=flask.cli.FlaskGroup, create_app=lambda: app.app)
+@click.group(cls=flask.cli.FlaskGroup, create_app=lambda: app)
 def cli():
     """Management script for OIO REST."""
 

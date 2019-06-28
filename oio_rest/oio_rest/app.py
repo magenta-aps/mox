@@ -5,11 +5,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from flask import Flask
-# Create the app object before importing anything else, because other parts
-# (primarily settings.py) of the code depends on it.
-app = Flask(__name__)  # noqa
-
 import os
 import datetime
 import urllib.parse
@@ -20,6 +15,7 @@ from werkzeug.routing import BaseConverter
 from jinja2 import Environment, FileSystemLoader
 from psycopg2 import DataError
 
+from oio_rest import app
 from . import sag, indsats, dokument, tilstand, aktivitet, organisation
 from . import log, klassifikation
 from .authentication import get_authenticated_user

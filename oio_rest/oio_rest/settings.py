@@ -51,7 +51,7 @@ def update_config(configuration, new_settings):
             logging.warning("Invalid key in config: %s", key)
 
 
-with app.app.open_resource("default-settings.toml", "r") as f:
+with app.open_resource("default-settings.toml", "r") as f:
     config = toml.load(f)
 
 env_config_path = os.getenv("MOX_ENV_CONFIG_PATH", False)
