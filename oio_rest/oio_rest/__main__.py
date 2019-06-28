@@ -12,7 +12,7 @@ import click
 import flask.cli
 import psycopg2
 
-from . import app
+from oio_rest import app
 from .db import db_templating, get_connection
 
 

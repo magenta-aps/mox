@@ -29,7 +29,7 @@ import pprint
 
 import toml
 
-from . import app
+from oio_rest import app
 
 
 def read_config(config_path):

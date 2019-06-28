@@ -16,6 +16,7 @@ import flask_testing
 
 from oio_rest import aktivitet
 from oio_rest import app
+from oio_rest import db
 from oio_rest import dokument
 from oio_rest import indsats
 from oio_rest import klassifikation
@@ -25,7 +26,6 @@ from oio_rest import organisation
 from oio_rest import sag
 from oio_rest import tilstand
 from oio_rest import validate
-from oio_rest import settings
 
 from . import util
 
@@ -763,7 +763,7 @@ class TestGenerateJSONSchema(TestBase):
                 'oneOf'][1]['properties'])
 
     def test_create_request_valid(self):
-        for obj in settings.REAL_DB_STRUCTURE:
+        for obj in db.db_structure.REAL_DB_STRUCTURE:
             with self.subTest(obj):
                 req = self._json_to_dict('{}_opret.json'.format(obj))
                 validate.validate(req, obj)

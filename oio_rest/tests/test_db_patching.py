@@ -11,8 +11,8 @@ import tempfile
 
 import flask_testing
 
-from oio_rest import settings
 from oio_rest import app
+from oio_rest.db import db_structure
 from oio_rest.utils import test_support
 
 
@@ -21,7 +21,7 @@ class Tests(flask_testing.TestCase):
         return app.app
 
     def get_fields(self):
-        return settings.REAL_DB_STRUCTURE['organisationfunktion']
+        return db_structure.REAL_DB_STRUCTURE['organisationfunktion']
 
     def test_patching_with_dict(self):
         orig = {

@@ -11,7 +11,7 @@ from copy import deepcopy
 import itertools
 import json
 
-from .. import settings
+from oio_rest import settings
 
 # This specifies the database structure
 DATABASE_STRUCTURE = {
@@ -486,13 +486,22 @@ def merge_dicts(a, b):
     )
 
 
-extensions_path = settings.config["db_extensions"]["path"]
-if extensions_path:
-    with open(extensions_path) as fp:
-        exts = json.load(fp)
+def load_db_extensions(exts):
+    if not exts:
+        return
 
+    if isinstance(exts, str):  # it can be parsed json
+        with open(exts) as fp:
+            exts = json.load(fp)
+
+    global DATABASE_STRUCTURE
+    global REAL_DB_STRUCTURE
     DATABASE_STRUCTURE = merge_dicts(DATABASE_STRUCTURE, exts)
     REAL_DB_STRUCTURE = merge_dicts(REAL_DB_STRUCTURE, exts)
+
+
+extensions_path = settings.config["db_extensions"]["path"]
+load_db_extensions(extensions_path)
 
 
 if __name__ == "__main__":

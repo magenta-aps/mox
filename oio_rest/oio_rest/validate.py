@@ -9,7 +9,7 @@
 import copy
 import jsonschema
 
-from .db import REAL_DB_STRUCTURE
+from oio_rest.db import db_structure
 
 # A very nice reference explaining the JSON schema syntax can be found
 # here: https://spacetelescope.github.io/understanding-json-schema/
@@ -101,7 +101,7 @@ def _get_metadata(obj, metadata_type, key):
     :param key: The attribute to get the metadata from, e.g. 'egenskaber'
     :return: Dictionary containing the metadata for the attribute fields
     """
-    metadata = REAL_DB_STRUCTURE[obj].get(
+    metadata = db_structure.REAL_DB_STRUCTURE[obj].get(
         '{}_metadata'.format(metadata_type), [])
     if not metadata or key not in metadata:
         return metadata
@@ -152,7 +152,7 @@ def _generate_attributter(obj):
     :return: Dictionary representing the 'attributter' part of the JSON schema.
     """
 
-    db_attributter = REAL_DB_STRUCTURE[obj]['attributter']
+    db_attributter = db_structure.REAL_DB_STRUCTURE[obj]['attributter']
 
     attrs = {}
     required = []
@@ -189,7 +189,7 @@ def _generate_tilstande(obj):
     :return: Dictionary representing the 'tilstande' part of the JSON schema.
     """
 
-    tilstande = dict(REAL_DB_STRUCTURE[obj]['tilstande'])
+    tilstande = dict(db_structure.REAL_DB_STRUCTURE[obj]['tilstande'])
 
     properties = {}
     required = []
@@ -244,7 +244,7 @@ def _handle_relation_metadata_specific(obj, relation_schema):
     the JSON schema.
     """
     metadata_specific = (
-        REAL_DB_STRUCTURE[obj].get('relationer_metadata', [])
+        db_structure.REAL_DB_STRUCTURE[obj].get('relationer_metadata', [])
     )
 
     for relation in [key for key in metadata_specific if not key == '*']:
@@ -283,8 +283,8 @@ def _generate_relationer(obj):
     :return: Dictionary representing the 'relationer' part of the JSON schema.
     """
     relationer_nul_til_en = \
-        REAL_DB_STRUCTURE[obj]['relationer_nul_til_en']
-    relationer_nul_til_mange = REAL_DB_STRUCTURE[obj][
+        db_structure.REAL_DB_STRUCTURE[obj]['relationer_nul_til_en']
+    relationer_nul_til_mange = db_structure.REAL_DB_STRUCTURE[obj][
         'relationer_nul_til_mange']
 
     relation_nul_til_mange = _generate_schema_array(

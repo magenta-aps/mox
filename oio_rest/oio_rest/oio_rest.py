@@ -17,7 +17,7 @@ from flask import jsonify, request
 from werkzeug.datastructures import ImmutableOrderedMultiDict
 
 from . import db
-from .db import db_helpers, REAL_DB_STRUCTURE
+from .db import db_helpers, db_structure
 from . import validate
 from .utils.build_registration import build_registration, to_lower_param
 from .utils.build_registration import split_param
@@ -182,7 +182,7 @@ class OIOStandardHierarchy(object):
              .. :quickref: :http:get:`/(service)/classes`
 
             """
-            structure = REAL_DB_STRUCTURE
+            structure = db_structure.REAL_DB_STRUCTURE
             clsnms = [c.__name__.lower() for c in cls._classes]
             hierarchy_dict = {c: structure[c] for c in clsnms}
             return jsonify(hierarchy_dict)
@@ -544,7 +544,7 @@ class OIORestObject(object):
         cls.verify_args()
 
         """Set up API with correct database access functions."""
-        structure = REAL_DB_STRUCTURE
+        structure = db_structure.REAL_DB_STRUCTURE
         class_key = cls.__name__.lower()
         # TODO: Perform some transformations to improve readability.
         class_dict = structure[class_key]

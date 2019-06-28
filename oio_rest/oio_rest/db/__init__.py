@@ -28,7 +28,6 @@ from .db_helpers import (
     JournalNotat, JournalDokument, DokumentVariantType, AktoerAttr,
     VaerdiRelationAttr, to_bool,
 )
-from .db_structure import REAL_DB_STRUCTURE  # noqa
 
 from ..authentication import get_authenticated_user
 
@@ -37,7 +36,7 @@ from ..utils import build_registration
 from ..custom_exceptions import NotFoundException, NotAllowedException
 from ..custom_exceptions import DBException, BadRequestException
 
-from .. import settings
+from oio_rest import settings
 
 """
     Jinja2 Environment
