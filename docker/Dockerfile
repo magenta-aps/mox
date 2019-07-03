@@ -77,4 +77,9 @@ RUN pip3 install -e oio_rest
 USER mox:mox
 EXPOSE 8080
 ENTRYPOINT ["/code/docker/docker-entrypoint.sh"]
-CMD ["gunicorn", "-b", "0.0.0.0:8080", "oio_rest:app"]
+CMD ["gunicorn", \
+  "-b", "0.0.0.0:8080", \
+  "--workers", "2", \
+  "--access-logfile", "/log/access.log", \
+  "--worker-tmp-dir", "/dev/shm", \
+  "oio_rest:app"]
