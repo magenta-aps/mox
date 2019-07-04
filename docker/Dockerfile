@@ -48,7 +48,8 @@ RUN set -ex \
   # oio_rest expects some files and directories to be there. We create them with
   # the proper user and group.
   # /var/mox is default for FILE_UPLOAD_FOLDER
-  && install -g mox -o mox -d /var/mox
+  && install -g mox -o mox -d /var/mox \
+  && install -g mox -o mox -d /log
 
 
 # Create volume for file upload

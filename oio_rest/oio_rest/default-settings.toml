@@ -83,3 +83,8 @@ ignored_services = ["Log"]
 
 [db_extensions]
 path = ""
+
+
+[log]
+activity_log_path = "/var/log/mox/activity.log"
+trace_log_path = "/var/log/mox/trace.log"

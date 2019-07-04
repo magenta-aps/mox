@@ -25,7 +25,6 @@
 
 import logging
 import os
-import pprint
 
 import toml
 
@@ -105,6 +104,3 @@ MOX_LOG_QUEUE = config["audit_log"]["queue"]
 LOG_IGNORED_SERVICES = config["audit_log"]["ignored_services"]
 
 FILE_UPLOAD_FOLDER = config["file_upload"]["folder"]
-
-
-logging.info("Config:\n%s.", pprint.pformat(config))
