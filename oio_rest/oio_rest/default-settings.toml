@@ -6,7 +6,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# prefix for all relative URLs.
+# Prefix for all relative URLs. A value of "/MyOIO" will result in API
+# endpoints such ``http://example.com/MyOIO/organisation/organisationenhed``.
 base_url = ""
 
 
@@ -24,6 +25,8 @@ max_connections = 10
 
 
 [saml_wstrust]
+# LoRa has two independent ways to use SAML. This is the older version. They
+# are both disabled by default, and you should *never* enable both.
 enable = false
 # The Endpoint specified in the AppliesTo element of the STS request
 # This will be used to verify the Audience of the SAML Assertion
@@ -45,7 +48,9 @@ user_id_attibute = "http://wso2.org/claims/url"
 
 
 [saml_sso]
-# These are the settings for the `flask_saml_sso` package
+# These are the settings for the `flask_saml_sso` package. Please refer to the
+# package for the documentation of these settings:
+# https://github.com/magenta-aps/flask_saml_sso.
 enable = false
 idp_metadata_url = "https://172.16.20.100/simplesaml/saml2/idp/metadata.php"
 idp_insecure = false
