@@ -1,3 +1,14 @@
+Version 1.3.0, 27 May 2019
+----------------------------
+
+This release further introduces Docker support. 
+
+* The `initdb` functionality has been reimplemented in python.
+* Outdated sections have been removed from the documentation.
+* Docker support has been further expanded with a copy service
+  responsible for copying Postgres-specific files out of the image,
+  for initializing a Postgres container.
+
 Version 1.2.0, 27 May 2019
 ----------------------------
 
