@@ -1,5 +1,5 @@
-Version 1.3.0, 27 May 2019
-----------------------------
+Version 1.3.0, 11 July 2019
+---------------------------
 
 This release further introduces Docker support. 
 
