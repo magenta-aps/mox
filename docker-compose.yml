@@ -2,7 +2,9 @@ version: '3'
 
 services:
   mox:
-    build: .
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
     # The `volumes` and `command` mounts the current directory in the docker
     # container and overwrites the CMD from Dockerfile. With this gunicorn
     # reloads on file changes. This is very useful when developing oio_rest.
@@ -12,7 +14,7 @@ services:
     ports:
       - "8080:8080"
     env_file:
-      - db.env
+      - docker/db.env
     environment:
       - DB_HOST=mox-db
     depends_on:
@@ -21,4 +23,25 @@ services:
   mox-db:
     image: postgres:9.6
     env_file:
-      - db.env
+      - docker/db.env
+    volumes:
+      - ./docker/postgres-initdb.d/:/docker-entrypoint-initdb.d
+      #- postgres-initdb.d:/docker-entrypoint-initdb.d
+
+
+  # The following service is to copy the scripts needed to initialize the
+  # database with user and extentions to a volume. It is not needed when the
+  # volume `./docker/postgres-initdb.d/:/docker-entrypoint-initdb.d` is bound in
+  # mox-db above.
+  mox-cp:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    user: root
+    entrypoint: []
+    command: ["cp", "-r", "/code/docker/postgres-initdb.d/.", "/postgres-initdb.d"]
+    volumes:
+      - postgres-initdb.d:/postgres-initdb.d
+
+volumes:
+  postgres-initdb.d:

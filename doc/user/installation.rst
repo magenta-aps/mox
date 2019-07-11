@@ -8,18 +8,18 @@ below. Use the docker image or a Python package in a virtual environment.
 
 .. tip::
 
-   TL;DR: To get a running development environment with postgres, rabbitmq and
-   mox, run:
+   TL;DR: To get a running development environment with postgres and mox, run:
 
    .. code-block:: bash
 
       git clone https://github.com/magenta-aps/mox.git
       cd mox
-      docker-compose up -d --build
+      docker-compose up -d --build mox
 
 .. todo::
 
    Document how to install test dependencies when it is formalized in #28489.
+
 
 Docker
 ======
@@ -34,15 +34,78 @@ All releases are pushed to Docker Hub at `magentaaps/mox
 To run mox in docker you need a running docker. To install docker we refer you
 to the `official documentation <https://docs.docker.com/install/>`_.
 
-The container requires a connection to a postgres database. It is configured
-with the environment variables :py:data:`DB_HOST`, :py:data:`DB_USER` and
-:py:data:`DB_PASSWORD`. You can start a the container with:
+
+Database
+--------
+
+The container requires a connection to a postgres database. Read :ref:`Database`
+for a complete description.
+
+Remember if you set :data:`DB_HOST` to ``localhost`` the container will try to
+connect to a database in the same container , not the host machine.
+
+You will need to :ref:`initialize the database, user and
+extensions<db_user_ext_init>`. The docker image contains a few scripts to do
+this easily. They are designed to work with the `official postgres docker image
+<https://hub.docker.com/_/postgres>`_. You can copy the scripts from the docker
+image by running:
 
 .. code-block:: bash
 
-    docker run -p 8080:8080 -e DB_HOST=<IP of DB host> -e DB_USER=mox -e DB_PASSWORD=mox magentaaps/mox:latest
+   # To a docker volume named postgres-initdb.d
+   docker run \
+     --rm \
+     -v postgres-initdb.d:/postgres-initdb.d \
+     --entrypoint="" \
+     --user=root \
+     magentaaps/mox:latest \
+     cp -r /code/docker/postgres-initdb.d/. /postgres-initdb.d
 
-This will pull the image from Docker Hub and starts a container in the
+   # To a directory named postgres-initdb.d
+   docker run \
+     --rm \
+     -v $PWD/postgres-initdb.d:/postgres-initdb.d \
+     --entrypoint="" \
+     --user=root \
+     magentaaps/mox:latest \
+     cp -r /code/docker/postgres-initdb.d/. /postgres-initdb.d
+
+
+These scripts can now easily be mounted into the postgres docker image. They
+require the environment variables ``DB_NAME``, ``DB_USER`` and ``DB_PASSWORD``
+to be set. It is also recommended to set ``POSTGRESS_PASSWORD`` for the
+``SUPERUSER`` in postgres. To start a postgres docker image run:
+
+.. code-block:: bash
+
+   docker run \
+     -v postgres-initdb.d:/docker-entrypoint-initdb.d \
+     -e DB_NAME=mox \
+     -e DB_USER=mox \
+     -e DB_PASSWORD=mox \
+     -e POSTGRES_PASSWORD=mox \
+     postgres:9.6
+
+The mox docker image will automatically :ref:`initialize the database
+objects<db_object_init>` for on the first startup.
+
+
+Run the container
+-----------------
+
+When you have initialized the database with :ref:`database, user and
+extensions<db_user_ext_init>`, you can start a the container with:
+
+.. code-block:: bash
+
+    docker run \
+      -p 8080:8080 \
+      -e DB_HOST=<IP of DB host> \
+      -e DB_USER=mox \
+      -e DB_PASSWORD=mox \
+      magentaaps/mox:latest
+
+This will pull the image from Docker Hub and start a container in the
 foreground. The ``-p 8080:8080`` `binds port
 <https://docs.docker.com/engine/reference/commandline/run/#publish-or-expose-port--p---expose>`_
 ``8080`` of the host machine to port ``8080`` on the container. The ``-e`` `sets
@@ -59,12 +122,6 @@ finally
 
 when the gunicorn server starts up. You should now be able to reach the server
 from the host at ``http://localhost:8080``.
-
-
-If you continue to see ``Postgres is unavailable - sleeping`` your database
-configuration most likely wrong. Remember if you set ``DB_HOST=localhost`` the
-container will try to connect to a database in the same container, not the host
-machine.
 
 For other setting you can set, see :ref:`settings`.
 
@@ -113,13 +170,11 @@ set the same user as owner of the directory you bind.
 Docker-compose
 ==============
 
-You can use ``docker-compose`` to start up mox and related service such as
-postgres and rabbitmq.
+You can use ``docker-compose`` to start up mox and postgres.
 
 A :file:`docker-compose.yml` for development is included. It automatically
-starts up `postgres <https://hub.docker.com/_/postgres>`_ and `rabbitmq
-<https://hub.docker.com/_/rabbitmq>`_. It sets the environment variabels to
-connect them.
+starts up `postgres <https://hub.docker.com/_/postgres>`_. It sets the
+environment variables to connect them.
 
 It also mounts the current directory in the container and automatically restarts
 the server on changes. This enables you to edit the files in :file:`oio_rest`
@@ -129,7 +184,8 @@ To pull the images and start the three service run:
 
 .. code-block:: bash
 
-    docker-compose up -d --build
+
+    docker-compose up -d --build mox
 
 The ``-d`` flag move the services to the background. You can inspect the output
 of them with ``docker-compose logs <name>`` where ``<name>`` is the name of the
@@ -139,6 +195,14 @@ docker image for ``oio_rest`` from the local :file:`Dockerfile`.
 To stop the service again run ``docker-compose stop``. This will stop the
 services, but the data will persist. To completely remove the containers and
 data run ``docker-compose down``.
+
+The :file:`docker-compose.yml` file contains a service named ``mox-cp``. Its
+purpose is to copy the files needed to :ref:`initialize the database, user and
+extensions<db_user_ext_init>` to a volume. This volume can then be mounted to
+the postgres image to automatically initialize the database. This functionality
+is not needed by default because the needed files are mounted directly from the
+host. It is included as an example when you want to use an environment closer to
+production.
 
 
 From source
@@ -190,14 +254,14 @@ Database initialization
 
 .. todo::
 
-   Missing. Describe it when #28276 is done.
+   Refer to relavant section in :ref:`database` when it is written in `#30317
+   <https://redmine.magenta-aps.dk/issues/30317>`_.
+
 
 Run
 ---
 
-When the database is initialized you can access the `flask cli
-<http://flask.pocoo.org/docs/1.0/cli/#cli>`_ with ``python3 -m oio_rest
-<command>``. To run the development server run ``python3 -m oio_rest
-run``.
-
-Alternative use gunicorn to run a server with ``gunicorn oio_rest.app:app``.
+When the database is initialized you can access the cli with ``python3 -m
+oio_rest <command>``. To run the development server run ``python3 -m oio_rest
+run``. Alternatively, use gunicorn to run a server with ``gunicorn
+oio_rest.app:app``.
