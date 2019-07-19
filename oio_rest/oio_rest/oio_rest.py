@@ -346,8 +346,8 @@ class OIORestObject(object):
                         "livscykluskode"
                     ] == db.Livscyklus.SLETTET.value:
                         raise GoneException(
-                            "The object with UUID {}" +
-                            " has been deleted.".format(obj[0]["id"])
+                            "The object with UUID " +
+                            "{} has been deleted.".format(obj[0]["id"])
                         )
         if results is None:
             results = []
