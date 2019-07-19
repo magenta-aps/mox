@@ -590,7 +590,7 @@ class TestOIORestObject(TestCase):
         uuid = "d5995ed0-d527-4841-9e33-112b22aaade1"
         data = [
             {
-                "uuid": uuid,
+                "id": uuid,
                 "registreringer": [
                     {
                         'livscykluskode': db.Livscyklus.SLETTET.value
