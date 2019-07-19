@@ -583,6 +583,33 @@ class TestOIORestObject(TestCase):
                 self.assertRaises(BadRequestException):
             self.testclass.get_objects()
 
+    @test_support.patch_db_struct(db_struct)
+    @patch('oio_rest.db.list_objects')
+    def test_get_objects_raises_on_deleted_object(self, mock_list):
+        # Arrange
+        uuid = "d5995ed0-d527-4841-9e33-112b22aaade1"
+        data = [
+            {
+                "uuid": uuid,
+                "registreringer": [
+                    {
+                        'livscykluskode': db.Livscyklus.SLETTET.value
+                    }
+                ]
+            }
+        ]
+        request_params = {
+            "uuid": "d5995ed0-d527-4841-9e33-112b22aaade1"
+        }
+
+        mock_list.return_value = [data]
+
+        # Act
+        with self.app.test_request_context(method='GET',
+                                           query_string=request_params), \
+                self.assertRaises(GoneException):
+            self.testclass.get_objects()
+
     @patch('oio_rest.db.list_objects')
     @freezegun.freeze_time('2017-01-01', tz_offset=1)
     def test_get_object_uses_default_params(self, mock_list):
