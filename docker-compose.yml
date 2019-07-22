@@ -11,7 +11,7 @@ services:
     volumes:
       - .:/code
       - ./user-settings.toml:/user-settings.toml
-    command: ["gunicorn", "--reload", "-b", "0.0.0.0:8080", "oio_rest.app:app"]
+    command: ["gunicorn", "--reload", "-b", "0.0.0.0:8080", "oio_rest:app"]
     ports:
       - "8080:8080"
     env_file:

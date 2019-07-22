@@ -1265,8 +1265,8 @@ class TestSchemaEndPoints(flask_testing.TestCase):
         self.hierarchies = list(get_subclasses(oio_rest.OIOStandardHierarchy))
 
     def create_app(self):
-        app.app.config['TESTING'] = True
-        return app.app
+        app.config['TESTING'] = True
+        return app
 
     def test_schemas_unchanged(self):
         """

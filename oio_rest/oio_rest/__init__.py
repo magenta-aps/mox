@@ -54,3 +54,7 @@ if app.config["ENV"] == "production":
 
 logging.debug("Config:\n%s.", pprint.pformat(settings.config))
 logging.info("Config: %s.", settings.config)
+
+# now that logging is setup, we can make sure that all routes are added to the
+# app object
+import oio_rest.views  # noqa

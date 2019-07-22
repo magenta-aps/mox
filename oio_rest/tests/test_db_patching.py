@@ -18,7 +18,7 @@ from oio_rest.utils import test_support
 
 class Tests(flask_testing.TestCase):
     def create_app(self):
-        return app.app
+        return app
 
     def get_fields(self):
         return db_structure.REAL_DB_STRUCTURE['organisationfunktion']
