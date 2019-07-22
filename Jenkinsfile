@@ -49,7 +49,7 @@ pipeline {
             sh 'rm -rf backend/venv/src/oio-rest'
 
             // just for debugging
-            sh 'backend/venv/bin/python -c "import oio_rest; print(oio_rest.__file__)"'
+            sh 'FLASK_ENV=testing backend/venv/bin/python -c "import oio_rest; print(oio_rest.__file__)"'
           }
         }
       }
