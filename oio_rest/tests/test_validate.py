@@ -21,7 +21,7 @@ from oio_rest import dokument
 from oio_rest import indsats
 from oio_rest import klassifikation
 from oio_rest import log
-from oio_rest import oio_rest
+from oio_rest import oio_base
 from oio_rest import organisation
 from oio_rest import sag
 from oio_rest import tilstand
@@ -1262,7 +1262,7 @@ class TestSchemaEndPoints(flask_testing.TestCase):
                     yield subcls
                     yield from get_subclasses(subcls)
 
-        self.hierarchies = list(get_subclasses(oio_rest.OIOStandardHierarchy))
+        self.hierarchies = list(get_subclasses(oio_base.OIOStandardHierarchy))
 
     def create_app(self):
         app.config['TESTING'] = True
