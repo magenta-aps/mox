@@ -310,7 +310,7 @@ class OIORestObject(object):
         valid_list_args = TEMPORALITY_PARAMS | {'uuid'}
 
         # Assume the search operation if other params were specified
-        if not valid_list_args.issuperset(args) or args.get('list', False):
+        if not (valid_list_args.issuperset(args) and args.get('list') is None):
             # Only one uuid is supported through the search operation
             if uuid_param is not None and len(uuid_param) > 1:
                 raise BadRequestException("Multiple uuid parameters passed "
@@ -343,7 +343,7 @@ class OIORestObject(object):
                                         any_attr_value_arr,
                                         any_rel_uuid_arr, first_result,
                                         max_results)
-            if args.get('list', False):
+            if args.get('list') is not None:
                 request.api_operation = "List"
                 results = db.list_objects(cls.__name__, results[0],
                                           virkning_fra, virkning_til,
