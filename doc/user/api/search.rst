@@ -7,6 +7,8 @@ Search operation
 .. http:get:: /(service)/(object)
 
    The Search operation returns a list of UUIDs of the objects that fit the parameters.
+   With the ``list`` parameter, you can fetch the objects instead of a list of
+   UUIDs.
 
    .. note::
 
@@ -57,6 +59,8 @@ Search operation
 
    :query int foersteresultat: The first result in a :ref:`PagedSearchOperation`. Sorts the result by ``brugervendtnoegle``.
    :query int maximalantalresultater: The maximal number of results in a :ref:`PagedSearchOperation`. Sorts the result by ``brugervendtnoegle``.
+
+   :query bool list: fetch and return objects instead of just their uuids.
 
    :query datetime registreretFra: :ref:`Transaction time` 'from' timestamp.
    :query datetime registreretTil: Transaction time 'to' timestamp.
