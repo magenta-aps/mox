@@ -9,6 +9,7 @@
 import datetime
 import enum
 import pathlib
+import threading
 
 import psycopg2
 
@@ -16,7 +17,8 @@ from psycopg2.extras import DateTimeTZRange
 from psycopg2.extensions import (
     AsIs, QuotedString, Boolean, adapt as psyco_adapt,
 )
-from psycopg2.pool import PersistentConnectionPool
+
+from psycopg2.pool import ThreadedConnectionPool
 from jinja2 import Environment, FileSystemLoader
 from dateutil import parser as date_parser
 
@@ -76,7 +78,7 @@ def get_connection():
     global pool
 
     if pool is None:
-        pool = PersistentConnectionPool(
+        pool = ThreadedConnectionPool(
             settings.DB_MIN_CONNECTIONS,
             settings.DB_MAX_CONNECTIONS,
             dbname=settings.DATABASE,
@@ -86,7 +88,7 @@ def get_connection():
             port=settings.DB_PORT,
         )
 
-    return pool.getconn()
+    return pool.getconn(key=threading.get_ident())
 
 
 #
