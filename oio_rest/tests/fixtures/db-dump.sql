@@ -276,7 +276,7 @@ ALTER TABLE aktivitet_attr_egenskaber
             (beskrivelse); 
  
     
-         
+        
              
                 CREATE INDEX aktivitet_attr_egenskaber_idx_starttidspunkt
                     ON aktivitet_attr_egenskaber
@@ -288,7 +288,7 @@ ALTER TABLE aktivitet_attr_egenskaber
      
  
     
-         
+        
              
                 CREATE INDEX aktivitet_attr_egenskaber_idx_sluttidspunkt
                     ON aktivitet_attr_egenskaber
@@ -300,7 +300,7 @@ ALTER TABLE aktivitet_attr_egenskaber
      
  
     
-         
+        
              
                 CREATE INDEX aktivitet_attr_egenskaber_idx_tidsforbrug
                     ON aktivitet_attr_egenskaber
@@ -7242,7 +7242,7 @@ ALTER TABLE dokument_attr_egenskaber
             (beskrivelse); 
  
     
-         
+        
              
                 CREATE INDEX dokument_attr_egenskaber_idx_brevdato
                     ON dokument_attr_egenskaber
@@ -7265,7 +7265,7 @@ ALTER TABLE dokument_attr_egenskaber
             (kassationskode); 
  
     
-         
+        
              
                 CREATE INDEX dokument_attr_egenskaber_idx_major
                     ON dokument_attr_egenskaber
@@ -7277,7 +7277,7 @@ ALTER TABLE dokument_attr_egenskaber
      
  
     
-         
+        
              
                 CREATE INDEX dokument_attr_egenskaber_idx_minor
                     ON dokument_attr_egenskaber
@@ -7289,7 +7289,7 @@ ALTER TABLE dokument_attr_egenskaber
      
  
     
-         
+        
              
                 CREATE INDEX dokument_attr_egenskaber_pat_AlternativTitel_offentlighedundtaget
                     ON dokument_attr_egenskaber
@@ -15193,7 +15193,7 @@ ALTER TABLE indsats_attr_egenskaber
             (beskrivelse); 
  
     
-         
+        
              
                 CREATE INDEX indsats_attr_egenskaber_idx_starttidspunkt
                     ON indsats_attr_egenskaber
@@ -15205,7 +15205,7 @@ ALTER TABLE indsats_attr_egenskaber
      
  
     
-         
+        
              
                 CREATE INDEX indsats_attr_egenskaber_idx_sluttidspunkt
                     ON indsats_attr_egenskaber
@@ -21869,11 +21869,6 @@ ALTER TABLE itsystem_attr_egenskaber
             (itsystemtype); 
  
     
-        
-            CREATE INDEX itsystem_attr_egenskaber_pat_konfigurationreference
-            ON itsystem_attr_egenskaber
-            USING gin
-            (konfigurationreference _text_ops);
          
      
  
@@ -42771,7 +42766,7 @@ ALTER TABLE sag_attr_egenskaber
             (brugervendtnoegle); 
  
     
-         
+        
              
                 CREATE INDEX sag_attr_egenskaber_idx_afleveret
                     ON sag_attr_egenskaber
@@ -42816,7 +42811,7 @@ ALTER TABLE sag_attr_egenskaber
             (kassationskode); 
  
     
-         
+        
              
                 CREATE INDEX sag_attr_egenskaber_pat_AlternativTitel_offentlighedundtaget
                     ON sag_attr_egenskaber
@@ -42842,7 +42837,7 @@ ALTER TABLE sag_attr_egenskaber
      
  
     
-         
+        
              
                 CREATE INDEX sag_attr_egenskaber_idx_principiel
                     ON sag_attr_egenskaber
