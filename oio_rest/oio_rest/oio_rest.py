@@ -339,6 +339,16 @@ class OIORestObject(object):
             results = db.list_objects(cls.__name__, uuid_param, virkning_fra,
                                       virkning_til, registreret_fra,
                                       registreret_til)
+            if results is not None:
+                for obj in results:
+                    # Raise 410 Gone if any object is deleted.
+                    if isinstance(obj, list) and obj[0]["registreringer"][0][
+                        "livscykluskode"
+                    ] == db.Livscyklus.SLETTET.value:
+                        raise GoneException(
+                            "The object with UUID " +
+                            "{} has been deleted.".format(obj[0]["id"])
+                        )
         if results is None:
             results = []
         if uuid_param:

@@ -7,19 +7,19 @@ List operation
 
    The List operation returns one or more whole objects as JSON.
 
-   The List operaation is similar to the :ref:`ReadOperation`, but uses a
+   The List operation is similar to the :ref:`ReadOperation`, but uses a
    slightly different syntax. The UUID is given as a parameter. With this syntax
    is is possible to list more than one UUID.
 
    .. note::
 
       :http:get:`!GET /(service)/(object)` can also be a :ref:`SearchOperation`
-      depending on parameters. With any the of ``uuid``, ``virking*`` and
-      ``registeret*`` parameters, it is a :ref:`ListOperation`. Given any other
+      depending on parameters. With the parameters ``uuid``, ``virking*`` and
+      ``registeret*``, it is a :ref:`ListOperation`. Given any other
       parameters the operation is a :ref:`SearchOperation` and will only return
-      a list of UUIDs to the objects.
+      a list of UUIDs of the found objects.
 
-   Default is to return the object(s) as currently seen, but can optionally be
+   The default is to return the object(s) as currently seen, but this can optionally be
    constrained by ``virking*`` :ref:`valid time<Valid time>` and/or
    ``registrering*`` :ref:`transaction time<transaction time>` to give a past or
    future view.
@@ -169,8 +169,8 @@ List operation
 
    :statuscode 200: No error.
    :statuscode 400: Malformed JSON or other bad request.
-   :statuscode 404: No object of a given class with that UUID.
-   :statuscode 410: The object has been :ref:`deleted <DeleteOperation>`.
+   :statuscode 404: One or more of the listed objects (UUIDs) does not exist.
+   :statuscode 410: One or more of the listed objects has been :ref:`deleted <DeleteOperation>`.
 
    The List operation is known as the ``List`` operation in `the specification
    <https://www.digitaliser.dk/resource/1567464/artefact/Generelleegenskaberforservicesp%c3%a5sags-ogdokumentomr%c3%a5det-OIO-Godkendt%5bvs.1.1%5d.pdf?artefact=true&PID=1763377>`_.
