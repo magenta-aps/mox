@@ -38,6 +38,7 @@ GENERAL_SEARCH_PARAMS = frozenset({
     'uuid',
     'vilkaarligattr',
     'vilkaarligrel',
+    'list',
 })
 
 '''List of parameters allowed the apply to temporal operations, i.e.
@@ -123,6 +124,18 @@ def get_registreret_dates(args):
             registreret_fra = dt
             registreret_til = dt + datetime.timedelta(microseconds=1)
     return registreret_fra, registreret_til
+
+
+def _check_not_deleted(objects):
+    """Raise 410 Gone if any object is deleted."""
+    if objects is None:
+        return
+    for obj in objects:
+        if isinstance(obj, list) and obj[0]["registreringer"][0][
+                "livscykluskode"] == db.Livscyklus.SLETTET.value:
+            raise GoneException(
+                "The object with UUID %s has been deleted." % obj[0]["id"]
+            )
 
 
 class ArgumentDict(ImmutableOrderedMultiDict):
@@ -297,7 +310,7 @@ class OIORestObject(object):
         valid_list_args = TEMPORALITY_PARAMS | {'uuid'}
 
         # Assume the search operation if other params were specified
-        if not valid_list_args.issuperset(args):
+        if not valid_list_args.issuperset(args) or args.get('list', False):
             # Only one uuid is supported through the search operation
             if uuid_param is not None and len(uuid_param) > 1:
                 raise BadRequestException("Multiple uuid parameters passed "
@@ -330,23 +343,20 @@ class OIORestObject(object):
                                         any_attr_value_arr,
                                         any_rel_uuid_arr, first_result,
                                         max_results)
-
+            if args.get('list', False):
+                request.api_operation = "List"
+                results = db.list_objects(cls.__name__, results[0],
+                                          virkning_fra, virkning_til,
+                                          registreret_fra, registreret_til)
+                _check_not_deleted(results)
         else:
             uuid_param = list_args.get('uuid', None)
             request.api_operation = "List"
             results = db.list_objects(cls.__name__, uuid_param, virkning_fra,
                                       virkning_til, registreret_fra,
                                       registreret_til)
-            if results is not None:
-                for obj in results:
-                    # Raise 410 Gone if any object is deleted.
-                    if isinstance(obj, list) and obj[0]["registreringer"][0][
-                        "livscykluskode"
-                    ] == db.Livscyklus.SLETTET.value:
-                        raise GoneException(
-                            "The object with UUID " +
-                            "{} has been deleted.".format(obj[0]["id"])
-                        )
+            _check_not_deleted(results)
+
         if results is None:
             results = []
         if uuid_param:
