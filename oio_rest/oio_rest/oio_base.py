@@ -507,6 +507,14 @@ class OIORestObject(object):
         note = typed_get(input, "note", "")
         registration = cls.gather_registration(input)
 
+        # Validate JSON input
+        try:
+            validate.validate(
+                input, cls.__name__.lower(), do_create=False
+            )
+        except jsonschema.exceptions.ValidationError as e:
+            return jsonify({'message': e.message}), 400
+
         if typed_get(input, 'livscyklus', '').lower() == 'passiv':
             # Passivate
             request.api_operation = "Passiver"

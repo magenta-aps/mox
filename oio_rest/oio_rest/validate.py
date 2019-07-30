@@ -145,7 +145,7 @@ def _handle_attribute_metadata(obj, fields, attribute_name):
     return fields
 
 
-def _generate_attributter(obj):
+def _generate_attributter(obj, do_create=True):
     """
     Generate the 'attributter' part of the JSON schema.
     :param obj: The type of LoRa object, i.e. 'bruger', 'organisation' etc.
@@ -168,21 +168,20 @@ def _generate_attributter(obj):
         schema = _handle_attribute_metadata(obj, schema, attrname)
 
         mandatory = _get_mandatory(obj, attrname)
-
         attrs[full_name] = _generate_schema_array(
             _generate_schema_object(
                 schema,
-                mandatory + ['virkning'],
+                (mandatory if do_create else []) + ['virkning']
             ),
         )
 
-        if mandatory:
+        if mandatory and do_create:
             required.append(full_name)
 
     return _generate_schema_object(attrs, required)
 
 
-def _generate_tilstande(obj):
+def _generate_tilstande(obj, do_create=True):
     """
     Generate the 'tilstande' part of the JSON schema.
     :param obj: The type of LoRa object, i.e. 'bruger', 'organisation' etc.
@@ -209,8 +208,8 @@ def _generate_tilstande(obj):
                 [key, 'virkning']
             )
         )
-
-        required.append(tilstand_name)
+        if do_create:
+            required.append(tilstand_name)
 
     return _generate_schema_object(properties, required)
 
@@ -276,7 +275,7 @@ def _handle_relation_metadata_specific(obj, relation_schema):
     return relation_schema
 
 
-def _generate_relationer(obj):
+def _generate_relationer(obj, do_create=True):
     """
     Generate the 'relationer' part of the JSON schema.
     :param obj: The type of LoRa object, i.e. 'bruger', 'organisation' etc.
@@ -359,7 +358,7 @@ def _generate_varianter():
     ))
 
 
-def generate_json_schema(obj):
+def generate_json_schema(obj, do_create=True):
     """
     Generate the JSON schema corresponding to LoRa object type.
     :param obj: The LoRa object type, i.e. 'bruger', 'organisation',...
@@ -371,15 +370,15 @@ def generate_json_schema(obj):
         # "DokumentVariantEgenskaber" and the specs' we will have to do
         #  this for now, i.e. we allow any JSON-object for "Dokument".
         return {'type': 'object'}
-
+    required = ['attributter', 'tilstande'] if do_create else []
     schema = _generate_schema_object(
         {
-            'attributter': _generate_attributter(obj),
-            'tilstande': _generate_tilstande(obj),
-            'relationer': _generate_relationer(obj),
+            'attributter': _generate_attributter(obj, do_create),
+            'tilstande': _generate_tilstande(obj, do_create),
+            'relationer': _generate_relationer(obj, do_create),
             'note': STRING,
         },
-        ['attributter', 'tilstande']
+        required
     )
 
     schema['$schema'] = 'http://json-schema.org/schema#'
@@ -422,23 +421,25 @@ def generate_json_schema(obj):
 SCHEMAS = {}
 
 
-def get_schema(obj_type):
+def get_schema(obj_type, do_create=True):
     try:
         return SCHEMAS[obj_type]
     except KeyError:
         pass
 
-    schema = SCHEMAS[obj_type] = copy.deepcopy(generate_json_schema(obj_type))
+    schema = SCHEMAS[obj_type] = copy.deepcopy(
+        generate_json_schema(obj_type, do_create)
+    )
 
     return schema
 
 
-def validate(input_json, obj_type):
+def validate(input_json, obj_type, do_create=True):
     """
     Validate request JSON according to JSON schema.
     :param input_json: The request JSON
     :raise jsonschema.exceptions.ValidationError: If the request JSON is not
     valid according to the JSON schema.
     """
-
-    jsonschema.validate(input_json, get_schema(obj_type))
+    schema = get_schema(obj_type, do_create)
+    jsonschema.validate(input_json, schema)
