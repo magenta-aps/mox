@@ -159,7 +159,7 @@ class TestGenerateJSONSchema(TestBase):
                 'required': ['organisationgyldighed'],
                 'additionalProperties': False
             },
-            validate._generate_tilstande('organisation')
+            validate._generate_tilstande('organisation', do_create=True)
         )
 
     def test_tilstande_bruger(self):
@@ -186,7 +186,7 @@ class TestGenerateJSONSchema(TestBase):
                 'required': ['brugergyldighed'],
                 'additionalProperties': False
             },
-            validate._generate_tilstande('bruger')
+            validate._generate_tilstande('bruger', do_create=True)
         )
 
     def test_tilstande_klassifikation(self):
@@ -213,7 +213,9 @@ class TestGenerateJSONSchema(TestBase):
                 'required': ['klassifikationpubliceret'],
                 'additionalProperties': False
             },
-            validate._generate_tilstande('klassifikation')
+            validate._generate_tilstande(
+                'klassifikation', do_create=True
+            )
         )
 
     def test_relationer_facet(self):
@@ -228,7 +230,7 @@ class TestGenerateJSONSchema(TestBase):
                 },
                 'additionalProperties': False
             },
-            validate._generate_relationer('facet')
+            validate._generate_relationer('facet', do_create=True)
         )
 
     def test_relationer_klassifikation(self):
@@ -241,7 +243,9 @@ class TestGenerateJSONSchema(TestBase):
                 },
                 'additionalProperties': False
             },
-            validate._generate_relationer('klassifikation')
+            validate._generate_relationer(
+                'klassifikation', do_create=True
+            )
         )
 
     def test_relationer_aktivitet(self):
@@ -298,7 +302,7 @@ class TestGenerateJSONSchema(TestBase):
                 },
                 'additionalProperties': False
             },
-            validate._generate_relationer('aktivitet')
+            validate._generate_relationer('aktivitet', do_create=True)
         )
 
     def test_relationer_indsats(self):
@@ -320,7 +324,7 @@ class TestGenerateJSONSchema(TestBase):
                 },
                 'additionalProperties': False
             },
-            validate._generate_relationer('indsats')
+            validate._generate_relationer('indsats', do_create=True)
         )
 
     def test_relationer_tilstand(self):
@@ -366,7 +370,7 @@ class TestGenerateJSONSchema(TestBase):
                 },
                 'additionalProperties': False
             },
-            validate._generate_relationer('tilstand')
+            validate._generate_relationer('tilstand', do_create=True)
         )
 
     def test_relationer_sag(self):
@@ -506,7 +510,7 @@ class TestGenerateJSONSchema(TestBase):
                 },
                 'additionalProperties': False
             },
-            validate._generate_relationer('sag')
+            validate._generate_relationer('sag', do_create=True)
         )
 
     def test_attributter_organisation(self):
@@ -532,7 +536,9 @@ class TestGenerateJSONSchema(TestBase):
                 'required': ['organisationegenskaber'],
                 'additionalProperties': False
             },
-            validate._generate_attributter('organisation')
+            validate._generate_attributter(
+                'organisation', do_create=True
+            )
         )
 
     def test_attributter_bruger(self):
@@ -559,7 +565,7 @@ class TestGenerateJSONSchema(TestBase):
                 'required': ['brugeregenskaber'],
                 'additionalProperties': False
             },
-            validate._generate_attributter('bruger')
+            validate._generate_attributter('bruger', do_create=True)
         )
 
     def test_attributter_klasse(self):
@@ -599,7 +605,7 @@ class TestGenerateJSONSchema(TestBase):
                 'required': ['klasseegenskaber'],
                 'additionalProperties': False
             },
-            validate._generate_attributter('klasse')
+            validate._generate_attributter('klasse', do_create=True)
         )
 
     def test_attributter_itsystem(self):
@@ -630,7 +636,7 @@ class TestGenerateJSONSchema(TestBase):
                 'required': ['itsystemegenskaber'],
                 'additionalProperties': False
             },
-            validate._generate_attributter('itsystem')
+            validate._generate_attributter('itsystem', do_create=True)
         )
 
     def test_attributter_sag(self):
@@ -668,7 +674,7 @@ class TestGenerateJSONSchema(TestBase):
                 'required': ['sagegenskaber'],
                 'additionalProperties': False
             },
-            validate._generate_attributter('sag')
+            validate._generate_attributter('sag', do_create=True)
         )
 
     def test_attributter_dokument(self):
@@ -706,11 +712,13 @@ class TestGenerateJSONSchema(TestBase):
                 'required': ['dokumentegenskaber'],
                 'additionalProperties': False
             },
-            validate._generate_attributter('dokument')
+            validate._generate_attributter('dokument', do_create=True)
         )
 
     def test_index_allowed_in_relations_for_aktivitet(self):
-        relationer = validate._generate_relationer('aktivitet')
+        relationer = validate._generate_relationer(
+            'aktivitet', do_create=True
+        )
         self.assertEqual(
             {'type': 'integer'},
             relationer['properties']['deltager']['items']['oneOf'][0][
@@ -721,7 +729,7 @@ class TestGenerateJSONSchema(TestBase):
                 'properties']['indeks'])
 
     def test_index_allowed_in_relations_for_sag(self):
-        relationer = validate._generate_relationer('sag')
+        relationer = validate._generate_relationer('sag', do_create=True)
         self.assertEqual(
             {'type': 'integer'},
             relationer['properties']['andrebehandlere']['items']['oneOf'][0][
@@ -732,7 +740,9 @@ class TestGenerateJSONSchema(TestBase):
                 'properties']['indeks'])
 
     def test_index_allowed_in_relations_for_tilstand(self):
-        relationer = validate._generate_relationer('tilstand')
+        relationer = validate._generate_relationer(
+            'tilstand', do_create=True
+        )
         self.assertEqual(
             {'type': 'integer'},
             relationer['properties']['samtykke']['items']['oneOf'][0][
@@ -743,7 +753,9 @@ class TestGenerateJSONSchema(TestBase):
                 'properties']['indeks'])
 
     def test_index_allowed_in_relations_for_indsats(self):
-        relationer = validate._generate_relationer('indsats')
+        relationer = validate._generate_relationer(
+            'indsats', do_create=True
+        )
         self.assertEqual(
             {'type': 'integer'},
             relationer['properties']['samtykke']['items']['oneOf'][0][
@@ -754,7 +766,9 @@ class TestGenerateJSONSchema(TestBase):
                 'properties']['indeks'])
 
     def test_index_not_allowed_for_non_special_nul_til_mange_relations(self):
-        relationer = validate._generate_relationer('organisation')
+        relationer = validate._generate_relationer(
+            'organisation', do_create=True
+        )
         self.assertFalse(
             'indeks' in relationer['properties']['ansatte']['items'][
                 'oneOf'][0]['properties'])
