@@ -5,6 +5,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+# THIS FILE CONTAINS THE DEFAULT CONFIGURATION FOR MOX. DO NOT CHANGE THIS.
+# Instead, read the documentation at ``user/settings.html`` or configure mox in
+# the dev-settings.toml file.
 
 # Prefix for all relative URLs. A value of "/MyOIO" will result in API
 # endpoints such ``http://example.com/MyOIO/organisation/organisationenhed``.

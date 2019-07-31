@@ -1,2 +1,7 @@
+# Change the mox configuration in this file. A reference of valid parameters
+# can be found in ``./oio_rest/oio_rest/default-settings.toml``. Documentation
+# available in ``user/settings.html``. Point to this file with the environment
+# variable $MOX_USER_CONFIG_PATH.
+
 [database]
 host = "mox-db"
