@@ -74,9 +74,9 @@ if user_config_path:
 
 
 # All these variables are kept for backward compatibility / to change the least
-# code. It would be fine to do a ``globals().update(config)`` at this point and
-# go through the code and update the names. Beware that this probably is not
-# trivial for tests.
+# code. From now on, use the ``config`` object in this module. At this point,
+# it would be fine to go through the code and get rid of the old variables,
+# although it might be non-trivial, especially for the test suite.
 
 BASE_URL = config["base_url"]
 
