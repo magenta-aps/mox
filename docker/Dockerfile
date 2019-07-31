@@ -47,13 +47,14 @@ RUN set -ex \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/man/?? /usr/share/man/??_* \
   # oio_rest expects some files and directories to be there. We create them with
   # the proper user and group.
-  # /var/mox is default for FILE_UPLOAD_FOLDER
+  # /var/mox is default for file upload
   && install -g mox -o mox -d /var/mox \
   && install -g mox -o mox -d /log
 
 
-# Create volume for file upload
+# Create volumes for file upload and logs
 VOLUME /var/mox
+VOLUME /log
 
 
 # Install requirements
