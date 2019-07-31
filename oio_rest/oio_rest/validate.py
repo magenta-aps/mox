@@ -358,7 +358,7 @@ def _generate_varianter():
     ))
 
 
-def generate_json_schema(obj, do_create=True):
+def generate_json_schema(obj, do_create):
     """
     Generate the JSON schema corresponding to LoRa object type.
     :param obj: The LoRa object type, i.e. 'bruger', 'organisation',...
@@ -377,6 +377,7 @@ def generate_json_schema(obj, do_create=True):
             'tilstande': _generate_tilstande(obj, do_create),
             'relationer': _generate_relationer(obj, do_create),
             'note': STRING,
+            'livscyklus': STRING,
         },
         required
     )
@@ -418,16 +419,28 @@ def generate_json_schema(obj, do_create=True):
     return schema
 
 
+# Store already calculated schemas to save performance.
+# There are two versions of each schema, one for creation and one for
+# updates.
+
+class StoredSchema:
+    """Partition a dict in two dicts, one for True and one for False."""
+    def __init__(self):
+        self.__my_schemas = {True: {}, False: {}}
+
+    def __getitem__(self, key):
+        return self.__my_schemas[key]
+
+
 SCHEMAS = {}
 
 
 def get_schema(obj_type, do_create=True):
     try:
-        return SCHEMAS[obj_type]
+        return SCHEMAS[do_create, obj_type]
     except KeyError:
         pass
-
-    schema = SCHEMAS[obj_type] = copy.deepcopy(
+    schema = SCHEMAS[do_create, obj_type] = copy.deepcopy(
         generate_json_schema(obj_type, do_create)
     )
 
