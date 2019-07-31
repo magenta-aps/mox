@@ -145,7 +145,7 @@ def _handle_attribute_metadata(obj, fields, attribute_name):
     return fields
 
 
-def _generate_attributter(obj, do_create=True):
+def _generate_attributter(obj, do_create):
     """
     Generate the 'attributter' part of the JSON schema.
     :param obj: The type of LoRa object, i.e. 'bruger', 'organisation' etc.
@@ -181,7 +181,7 @@ def _generate_attributter(obj, do_create=True):
     return _generate_schema_object(attrs, required)
 
 
-def _generate_tilstande(obj, do_create=True):
+def _generate_tilstande(obj, do_create):
     """
     Generate the 'tilstande' part of the JSON schema.
     :param obj: The type of LoRa object, i.e. 'bruger', 'organisation' etc.
@@ -275,7 +275,7 @@ def _handle_relation_metadata_specific(obj, relation_schema):
     return relation_schema
 
 
-def _generate_relationer(obj, do_create=True):
+def _generate_relationer(obj, do_create):
     """
     Generate the 'relationer' part of the JSON schema.
     :param obj: The type of LoRa object, i.e. 'bruger', 'organisation' etc.
