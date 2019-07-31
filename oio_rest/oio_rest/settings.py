@@ -25,6 +25,7 @@
 
 import logging
 import os
+import sys
 
 import toml
 
@@ -32,8 +33,17 @@ from oio_rest import app
 
 
 def read_config(config_path):
-    with open(config_path) as f:
-        return toml.load(f)
+    try:
+        with open(config_path) as f:
+            content = f.read()
+    except FileNotFoundError as err:
+        logging.critical("%s: %r", err.strerror, err.filename)
+        sys.exit(5)
+    try:
+        return toml.loads(content)
+    except toml.TomlDecodeError:
+        log.critical("Failed to parse TOML")
+        sys.exit(4)
 
 
 def update_config(configuration, new_settings):
