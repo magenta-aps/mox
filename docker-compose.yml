@@ -10,19 +10,19 @@ services:
     # reloads on file changes. This is very useful when developing oio_rest.
     volumes:
       - .:/code
-      - ./dev-settings.toml:/user-settings.toml
+      - ./dev-environment/dev-settings.toml:/user-settings.toml
     command: ["gunicorn", "--reload", "-b", "0.0.0.0:8080", "oio_rest:app"]
     ports:
       - "8080:8080"
     env_file:
-      - docker/db.env
+      - ./dev-environment/db.env
     depends_on:
       - mox-db
 
   mox-db:
     image: postgres:9.6
     env_file:
-      - docker/db.env
+      - dev-environment/db.env
     volumes:
       - ./docker/postgres-initdb.d/:/docker-entrypoint-initdb.d
       #- postgres-initdb.d:/docker-entrypoint-initdb.d
