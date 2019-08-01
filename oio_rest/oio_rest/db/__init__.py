@@ -694,19 +694,29 @@ def transform_virkning(o):
         return o
 
 
-def filter_empty(d):
+def filter_empty(structure):
     """Recursively filter out empty dictionary keys."""
-    if isinstance(d, dict):
-        return dict(
-            (k, filter_empty(v)) for k, v in d.items() if
-            v and filter_empty(v)
-        )
-    elif isinstance(d, list):
-        return [filter_empty(v) for v in d if v and filter_empty(v)]
-    elif isinstance(d, tuple):
-        return tuple(filter_empty(v) for v in d if v and filter_empty(v))
-    else:
-        return d
+    if isinstance(structure, dict):
+        out = {}
+        for k, v in structure.items():
+            if v:
+                filtered = filter_empty(v)
+                if filtered:
+                    out[k] = filtered
+        return out
+
+    if isinstance(structure, (list, tuple)):
+        out = []
+        for v in structure:
+            if v:
+                filtered = filter_empty(v)
+                if filtered:
+                    out.append(filtered)
+        if isinstance(structure, tuple):
+            return tuple(out)
+        return out
+
+    return structure
 
 
 def transform_relations(o):
