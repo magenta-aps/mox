@@ -17,7 +17,7 @@ LABEL org.opencontainers.image.title="MOX - Messaging Service and Actual State D
 # https://docs.python.org/3/using/cmdline.html#cmdoption-u
 ENV PYTHONUNBUFFERED=1 \
     MOX_SYSTEM_CONFIG_PATH=/code/docker/docker-settings.toml \
-    MOX_USER_CONFIG_PATH=/local-settings.toml
+    MOX_USER_CONFIG_PATH=/user-settings.toml
 
 
 WORKDIR /code/
