@@ -10,7 +10,7 @@ services:
     # reloads on file changes. This is very useful when developing oio_rest.
     volumes:
       - .:/code
-      - ./dev-settings.toml:/user-settings.toml
+      - ./dev-settings.toml:/local-settings.toml
     command: ["gunicorn", "--reload", "-b", "0.0.0.0:8080", "oio_rest:app"]
     ports:
       - "8080:8080"
