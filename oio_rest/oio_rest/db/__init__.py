@@ -36,7 +36,7 @@ from ..utils import build_registration
 from ..custom_exceptions import NotFoundException, NotAllowedException
 from ..custom_exceptions import DBException, BadRequestException
 
-from .. import settings
+from oio_rest import settings
 
 """
     Jinja2 Environment

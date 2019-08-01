@@ -47,6 +47,7 @@ setup(
             "templates/html/*.html",
             "templates/xml/*.xml",
             "test_auth_data/idp-certificate.pem",
+            "default-settings.toml",
         ],
     },
     python_requires='>=3.5',

@@ -15,7 +15,9 @@ LABEL org.opencontainers.image.title="MOX - Messaging Service and Actual State D
 
 # Force the stdout and stderr streams from python to be unbuffered. See
 # https://docs.python.org/3/using/cmdline.html#cmdoption-u
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONUNBUFFERED=1 \
+    MOX_ENV_CONFIG_PATH=/code/docker/docker-settings.toml \
+    MOX_USER_CONFIG_PATH=/local-settings.toml
 
 
 WORKDIR /code/
@@ -45,12 +47,14 @@ RUN set -ex \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/man/?? /usr/share/man/??_* \
   # oio_rest expects some files and directories to be there. We create them with
   # the proper user and group.
-  # /var/mox is default for FILE_UPLOAD_FOLDER
-  && install -g mox -o mox -d /var/mox
+  # /var/mox is default for file upload
+  && install -g mox -o mox -d /var/mox \
+  && install -g mox -o mox -d /log
 
 
-# Create volume for file upload
+# Create volumes for file upload and logs
 VOLUME /var/mox
+VOLUME /log
 
 
 # Install requirements
@@ -72,4 +76,4 @@ RUN pip3 install -e oio_rest
 USER mox:mox
 EXPOSE 8080
 ENTRYPOINT ["/code/docker/docker-entrypoint.sh"]
-CMD ["gunicorn", "-b", "0.0.0.0:8080", "oio_rest.app:app"]
+CMD ["gunicorn", "-b", "0.0.0.0:8080", "oio_rest:app"]

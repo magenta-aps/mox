@@ -17,7 +17,7 @@ import copy
 
 from jinja2 import Environment, FileSystemLoader
 
-from .. import settings
+from oio_rest.db import db_structure
 
 
 DB_DIR = Path(__file__).parent / 'sql' / 'declarations'
@@ -42,15 +42,12 @@ TEMPLATES = (
 
 
 def render_templates():
-    db_structure = settings.DB_STRUCTURE.DATABASE_STRUCTURE
-    extra_options = settings.DB_STRUCTURE.DB_TEMPLATE_EXTRA_OPTIONS
-
-    for oio_type in sorted(db_structure):
+    for oio_type in sorted(db_structure.DATABASE_STRUCTURE):
         for template_name in TEMPLATES:
             template_file = "%s.jinja.sql" % template_name
             template = template_env.get_template(template_file)
 
-            context = copy.deepcopy(db_structure[oio_type])
+            context = copy.deepcopy(db_structure.DATABASE_STRUCTURE[oio_type])
 
             for reltype in ('tilstande', 'attributter', 'relationer'):
                 if reltype not in context:
@@ -83,6 +80,7 @@ def render_templates():
             context["oio_type"] = oio_type.lower()
 
             try:
+                extra_options = db_structure.DB_TEMPLATE_EXTRA_OPTIONS
                 context["include_mixin"] = (
                     extra_options[oio_type][template_file]["include_mixin"]
                 )

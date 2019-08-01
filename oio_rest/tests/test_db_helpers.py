@@ -11,9 +11,8 @@ from unittest import TestCase
 from mock import MagicMock, call, patch
 from werkzeug.datastructures import ImmutableMultiDict
 
-from oio_rest import settings
 from oio_rest.custom_exceptions import BadRequestException
-from oio_rest.db import db_helpers
+from oio_rest.db import db_helpers, db_structure
 from oio_rest.utils import test_support
 
 
@@ -276,7 +275,7 @@ class TestDBHelpers(TestCase):
         # Act
         actual_result = {
             c: db_helpers.get_attribute_names(c)
-            for c in settings.REAL_DB_STRUCTURE
+            for c in db_structure.REAL_DB_STRUCTURE
         }
 
         # Assert
@@ -588,7 +587,7 @@ class TestDBHelpers(TestCase):
         # Act
         actual_result = {
             c: db_helpers.get_relation_names(c)
-            for c in settings.REAL_DB_STRUCTURE
+            for c in db_structure.REAL_DB_STRUCTURE
         }
 
         # Assert
@@ -659,7 +658,7 @@ class TestDBHelpers(TestCase):
         # Act
         actual_result = {
             c: list(db_helpers.get_state_names(c))
-            for c in settings.REAL_DB_STRUCTURE
+            for c in db_structure.REAL_DB_STRUCTURE
         }
 
         # Assert
@@ -721,7 +720,7 @@ class TestDBHelpers(TestCase):
         # Act
         actual_result = {
             c: db_helpers.get_state_names(c)
-            for c in settings.REAL_DB_STRUCTURE
+            for c in db_structure.REAL_DB_STRUCTURE
         }
 
         # Assert

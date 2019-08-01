@@ -16,16 +16,16 @@ import flask_testing
 
 from oio_rest import aktivitet
 from oio_rest import app
+from oio_rest import db
 from oio_rest import dokument
 from oio_rest import indsats
 from oio_rest import klassifikation
 from oio_rest import log
-from oio_rest import oio_rest
+from oio_rest import oio_base
 from oio_rest import organisation
 from oio_rest import sag
 from oio_rest import tilstand
 from oio_rest import validate
-from oio_rest import settings
 
 from . import util
 
@@ -763,7 +763,7 @@ class TestGenerateJSONSchema(TestBase):
                 'oneOf'][1]['properties'])
 
     def test_create_request_valid(self):
-        for obj in settings.REAL_DB_STRUCTURE:
+        for obj in db.db_structure.REAL_DB_STRUCTURE:
             with self.subTest(obj):
                 req = self._json_to_dict('{}_opret.json'.format(obj))
                 validate.validate(req, obj)
@@ -1262,11 +1262,11 @@ class TestSchemaEndPoints(flask_testing.TestCase):
                     yield subcls
                     yield from get_subclasses(subcls)
 
-        self.hierarchies = list(get_subclasses(oio_rest.OIOStandardHierarchy))
+        self.hierarchies = list(get_subclasses(oio_base.OIOStandardHierarchy))
 
     def create_app(self):
-        app.app.config['TESTING'] = True
-        return app.app
+        app.config['TESTING'] = True
+        return app
 
     def test_schemas_unchanged(self):
         """

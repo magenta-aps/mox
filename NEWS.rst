@@ -1,3 +1,10 @@
+In development
+--------------
+
+New features:
+
+* Completely revamped configuration system.
+
 Version 1.3.0, 11 July 2019
 ---------------------------
 

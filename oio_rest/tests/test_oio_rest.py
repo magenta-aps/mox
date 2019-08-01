@@ -20,8 +20,8 @@ from oio_rest import db
 from oio_rest.db import db_helpers
 from oio_rest.custom_exceptions import (BadRequestException, NotFoundException,
                                         GoneException)
-from oio_rest.oio_rest import OIOStandardHierarchy, OIORestObject
-from oio_rest import oio_rest, organisation
+from oio_rest.oio_base import OIOStandardHierarchy, OIORestObject
+from oio_rest import oio_base, organisation
 from oio_rest.utils import test_support
 
 
@@ -435,7 +435,7 @@ class TestOIORestObject(TestCase):
 
     @freezegun.freeze_time('2017-01-01', tz_offset=1)
     @test_support.patch_db_struct(db_struct)
-    @patch('oio_rest.oio_rest.build_registration')
+    @patch('oio_rest.oio_base.build_registration')
     @patch('oio_rest.db.search_objects')
     def test_get_objects_search_uses_default_params(self, mock_search,
                                                     mock_br):
@@ -476,7 +476,7 @@ class TestOIORestObject(TestCase):
         self.assertDictEqual(expected_result, actual_result)
 
     @test_support.patch_db_struct(db_struct)
-    @patch('oio_rest.oio_rest.build_registration')
+    @patch('oio_rest.oio_base.build_registration')
     @patch('oio_rest.db.search_objects')
     def test_get_objects_search_uses_supplied_params(self, mock_search,
                                                      mock_br):
@@ -1148,7 +1148,7 @@ class TestOIORest(TestCase):
         d = {testkey: expected_result}
 
         # Act
-        actual_result = oio_rest.typed_get(d, testkey, 'default')
+        actual_result = oio_base.typed_get(d, testkey, 'default')
 
         # Assert
         self.assertEqual(expected_result, actual_result)
@@ -1160,7 +1160,7 @@ class TestOIORest(TestCase):
         d = {testkey: None}
 
         # Act
-        actual_result = oio_rest.typed_get(d, testkey, expected_result)
+        actual_result = oio_base.typed_get(d, testkey, expected_result)
 
         # Assert
         self.assertEqual(expected_result, actual_result)
@@ -1174,7 +1174,7 @@ class TestOIORest(TestCase):
 
         # Act & Assert
         with self.assertRaises(BadRequestException):
-            oio_rest.typed_get(d, testkey, default)
+            oio_base.typed_get(d, testkey, default)
 
     def test_get_virkning_dates_virkningstid(self):
         # Arrange
@@ -1186,7 +1186,7 @@ class TestOIORest(TestCase):
         expected_to = expected_from + datetime.timedelta(microseconds=1)
 
         # Act
-        actual_from, actual_to = oio_rest.get_virkning_dates(args)
+        actual_from, actual_to = oio_base.get_virkning_dates(args)
 
         # Assert
         self.assertEqual(expected_from, actual_from)
@@ -1203,7 +1203,7 @@ class TestOIORest(TestCase):
         expected_to = '2020-01-01'
 
         # Act
-        actual_from, actual_to = oio_rest.get_virkning_dates(args)
+        actual_from, actual_to = oio_base.get_virkning_dates(args)
 
         # Assert
         self.assertEqual(expected_from, actual_from)
@@ -1218,7 +1218,7 @@ class TestOIORest(TestCase):
         expected_to = expected_from + datetime.timedelta(microseconds=1)
 
         # Act
-        actual_from, actual_to = oio_rest.get_virkning_dates(args)
+        actual_from, actual_to = oio_base.get_virkning_dates(args)
 
         # Assert
         self.assertEqual(expected_from, actual_from)
@@ -1234,7 +1234,7 @@ class TestOIORest(TestCase):
 
         # Act
         with self.assertRaises(BadRequestException):
-            oio_rest.get_virkning_dates(args)
+            oio_base.get_virkning_dates(args)
 
     def test_get_registreret_dates_registreringstid(self):
         # Arrange
@@ -1246,7 +1246,7 @@ class TestOIORest(TestCase):
         expected_to = expected_from + datetime.timedelta(microseconds=1)
 
         # Act
-        actual_from, actual_to = oio_rest.get_registreret_dates(args)
+        actual_from, actual_to = oio_base.get_registreret_dates(args)
 
         # Assert
         self.assertEqual(expected_from, actual_from)
@@ -1263,7 +1263,7 @@ class TestOIORest(TestCase):
         expected_to = '2020-01-01'
 
         # Act
-        actual_from, actual_to = oio_rest.get_registreret_dates(args)
+        actual_from, actual_to = oio_base.get_registreret_dates(args)
 
         # Assert
         self.assertEqual(expected_from, actual_from)
@@ -1278,7 +1278,7 @@ class TestOIORest(TestCase):
         expected_to = None
 
         # Act
-        actual_from, actual_to = oio_rest.get_registreret_dates(args)
+        actual_from, actual_to = oio_base.get_registreret_dates(args)
 
         # Assert
         self.assertEqual(expected_from, actual_from)
@@ -1294,4 +1294,4 @@ class TestOIORest(TestCase):
 
         # Act
         with self.assertRaises(BadRequestException):
-            oio_rest.get_registreret_dates(args)
+            oio_base.get_registreret_dates(args)

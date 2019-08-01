@@ -11,187 +11,108 @@
 
     This module contains all global ``oio_rest`` settings.
 
-    It contains default values for all options, all of which can be overwritten
-    by environment variables of the same name. Setting the environment variable
-    ``CONFIG_FILE`` to a file containing JSON setting:value pairs, will
-    overwrite the settings once again (file having highest precedens).
+    The variables available and their defaults are defined in
+    ``default-settings.toml``. Furthermore, $MOX_ENV_CONFIG_PATH and
+    $MOX_USER_CONFIG_PATH can be used to point at other config files.
+
+    The config file precedens is
+        default-settings.toml < $MOX_ENV_CONFIG_PATH < $MOX_USER_CONFIG_PATH
+
+    default-settings.toml: reference file and default values.
+    $MOX_ENV_CONFIG_PATH: configuration for special environments e.g. docker.
+    $MOX_USER_CONFIG_PATH: this is the file where you write your configuration.
 """
 
-import collections
-import contextlib
-import importlib
-import itertools
-import json
+import logging
 import os
+import sys
+
+import toml
+
+from oio_rest import app
 
 
-CONFIG_FILE = os.getenv('OIO_REST_CONFIG_FILE', None)
-BASE_URL = os.getenv('BASE_URL', '')
-
-
-# Database (PostgreSQL) settings
-DB_HOST = os.getenv('DB_HOST', "localhost")
-DB_PORT = int(os.getenv('DB_PORT', '0')) or None
-DB_USER = os.getenv('DB_USER', "mox")
-DB_PASSWORD = os.getenv('DB_PASSWORD', "mox")
-
-# name of database, should be changed to use DB_ convention.
-DATABASE = os.getenv('DB_NAME' ,"mox")
-
-# Per-process limits on the amount of database connections. Setting the minimum
-# to a non-zero value ensures that the webapp opens this amount at load,
-# failing if the database isn't available.
-DB_MIN_CONNECTIONS = int(os.getenv('DB_MIN_CONNECTIONS', '0'))
-DB_MAX_CONNECTIONS = int(os.getenv('DB_MAX_CONNECTIONS', '10'))
-DB_STRUCTURE = os.getenv('DB_STRUCTURE', 'oio_rest.db.db_structure')
-
-# This is where file uploads are stored. It must be readable and writable by
-# the mox user, running the REST API server. This is used in the Dokument
-# hierarchy.
-FILE_UPLOAD_FOLDER = os.getenv('FILE_UPLOAD_FOLDER', '/var/mox')
-
-# The Endpoint specified in the AppliesTo element of the STS request
-# This will be used to verify the Audience of the SAML Assertion
-SAML_MOX_ENTITY_ID = os.getenv('SAML_MOX_ENTITY_ID', 'https://saml.local')
-
-# The Entity ID of the IdP. Used to verify the token Issuer --
-# specified in AD FS as the Federation Service identifier.
-# Example: 'http://fs.contoso.com/adfs/services/trust'
-SAML_IDP_ENTITY_ID = os.getenv('SAML_IDP_ENTITY_ID', 'localhost')
-
-# The URL on which to access the SAML IdP.
-# Example: 'https://fs.contoso.com/adfs/services/trust/13/UsernameMixed'
-SAML_IDP_URL = os.getenv(
-    'SAML_IDP_URL',
-    'https://localhost:9443/services/wso2carbon-sts.wso2carbon-stsHttpsEndpoint'
-)
-
-# We currently support authentication against 'wso2' and 'adfs'
-SAML_IDP_TYPE = os.getenv('SAML_IDP_TYPE', 'wso2')
-
-# The public certificate file of the IdP, in PEM-format.
-SAML_IDP_CERTIFICATE = os.getenv(
-    'SAML_IDP_CERTIFICATE',
-    'test_auth_data/idp-certificate.pem'
-)
-
-# Whether to enable SAML authentication
-USE_SAML_AUTHENTICATION = os.getenv('USE_SAML_AUTHENTICATION', False)
-
-# SAML user ID attribute -- default is for WSO2
-# Example:
-#   http://schemas.xmlsoap.org
-#       /ws/2005/05/identity/claims/privatepersonalidentifier
-SAML_USER_ID_ATTIBUTE = os.getenv(
-    'SAML_USER_ID_ATTIBUTE',
-    'http://wso2.org/claims/url'
-)
-
-# Whether authorization is enabled.
-# If not, the restrictions module is not called.
-DO_ENABLE_RESTRICTIONS = os.getenv('DO_ENABLE_RESTRICTIONS', False)
-
-# The module which implements the authorization restrictions.
-# Must be present in sys.path.
-AUTH_RESTRICTION_MODULE = os.getenv(
-    'AUTH_RESTRICTION_MODULE',
-    'oio_rest.auth.wso_restrictions',
-)
-
-# The name of the function which retrieves the restrictions.
-# Must be present in AUTH_RESTRICTION_MODULE and have the correct signature.
-AUTH_RESTRICTION_FUNCTION = os.getenv(
-    'AUTH_RESTRICTION_FUNCTION',
-    'get_auth_restrictions',
-)
-
-# Log AMQP settings
-LOG_AMQP_SERVER = os.getenv('LOG_AMQP_SERVER', '')
-MOX_LOG_EXCHANGE = os.getenv('MOX_LOG_EXCHANGE', 'mox.log')
-MOX_LOG_QUEUE = os.getenv('MOX_LOG_QUEUE', 'mox.log_queue')
-
-LOG_IGNORED_SERVICES = ['Log', ]
-
-SAML_IDP_METADATA_URL = os.getenv(
-    'SAML_IDP_METADATA_URL',
-    'https://172.16.20.100/simplesaml/saml2/idp/metadata.php'
-)
-SAML_IDP_INSECURE = os.getenv('SAML_IDP_INSECURE', False)
-SAML_REQUESTS_SIGNED = os.getenv('SAML_REQUESTS_SIGNED', False)
-SAML_KEY_FILE = os.getenv('SAML_KEY_FILE', None)
-SAML_CERT_FILE = os.getenv('SAML_CERT_FILE', None)
-SAML_AUTH_ENABLE = os.getenv('SAML_AUTH_ENABLE', False)
-
-SQLALCHEMY_DATABASE_URI = os.getenv(
-    'SQLALCHEMY_DATABASE_URI',
-    "postgresql://sessions:sessions@127.0.0.1/sessions",
-)
-SESSION_PERMANENT = os.getenv('SESSION_PERMANENT', True)
-PERMANENT_SESSION_LIFETIME = os.getenv('PERMANENT_SESSION_LIFETIME', 3600)
-
-
-def update_config(mapping, config_path):
-    """load the JSON configuration at the given path """
-    if config_path is None:
-        return
+def read_config(config_path):
     try:
-        with open(config_path) as fp:
-            overrides = json.load(fp)
-    except IOError:
-        print('Unable to read config {}'.format(config_path))
-    else:
-        mapping.update(overrides)
+        with open(config_path) as f:
+            content = f.read()
+    except FileNotFoundError as err:
+        logging.critical("%s: %r", err.strerror, err.filename)
+        sys.exit(5)
+    try:
+        return toml.loads(content)
+    except toml.TomlDecodeError:
+        log.critical("Failed to parse TOML")
+        sys.exit(4)
 
 
-update_config(globals(), CONFIG_FILE)
-DB_STRUCTURE = importlib.import_module(DB_STRUCTURE)
-REAL_DB_STRUCTURE = DB_STRUCTURE.REAL_DB_STRUCTURE
+def update_config(configuration, new_settings):
+    # we cannot just do dict.update, because we do not want to "polute" the
+    # namespace with anything in *new_settings*, just the variables defined in
+    # **configuration**.
+    for key in new_settings:
+        if key in configuration:
+            if isinstance(configuration[key], dict):
+                update_config(configuration[key], new_settings[key])
+            else:
+                configuration[key] = new_settings[key]
+        else:
+            logging.warning("Invalid key in config: %s", key)
 
 
-def merge_dicts(a, b):
-    if a is None:
-        return b
-    elif b is None:
-        return a
+with app.open_resource("default-settings.toml", "r") as f:
+    config = toml.load(f)
 
-    assert type(a) == type(b) == dict, 'type mismatch!: {} != {}'.format(
-        type(a),
-        type(b),
-    )
-
-    # the database code relies on the ordering of elements, so ensure
-    # that a consistent ordering, even on Python 3.5
-    return collections.OrderedDict(
-        (
-            k,
-            b[k] if k not in a
-            else
-            a[k] if k not in b
-            else merge_dicts(a[k], b[k])
-        )
-        for k in itertools.chain(a, b)
-    )
+env_config_path = os.getenv("MOX_ENV_CONFIG_PATH", False)
+user_config_path = os.getenv("MOX_USER_CONFIG_PATH", False)
+if env_config_path:
+    logging.info("Reading env config from %s", env_config_path)
+    update_config(config, read_config(env_config_path))
+if user_config_path:
+    logging.info("Reading user config from %s", user_config_path)
+    update_config(config, read_config(user_config_path))
 
 
-def load_db_extensions(exts=None):
-    global DB_STRUCTURE, REAL_DB_STRUCTURE
+# All these variables are kept for backward compatibility / to change the least
+# code. From now on, use the ``config`` object in this module. At this point,
+# it would be fine to go through the code and get rid of the old variables,
+# although it might be non-trivial, especially for the test suite.
 
-    if not exts:
-        return
+BASE_URL = config["base_url"]
 
-    if isinstance(exts, str):
-        with open(exts) as fp:
-            exts = json.load(fp)
+DB_HOST = config["database"]["host"]
+DB_PORT = config["database"]["port"]
+DB_USER = config["database"]["user"]
+DB_PASSWORD = config["database"]["password"]
+DATABASE = config["database"]["db_name"]
+DB_MIN_CONNECTIONS = config["database"]["min_connections"]
+DB_MAX_CONNECTIONS = config["database"]["max_connections"]
 
-    DB_STRUCTURE.DATABASE_STRUCTURE = merge_dicts(
-        DB_STRUCTURE.DATABASE_STRUCTURE,
-        exts,
-    )
+USE_SAML_AUTHENTICATION = config["saml_wstrust"]["enable"]
+SAML_MOX_ENTITY_ID = config["saml_wstrust"]["entity_id"]
+SAML_IDP_ENTITY_ID = config["saml_wstrust"]["idp_entity_id"]
+SAML_IDP_URL = config["saml_wstrust"]["idp_url"]
+SAML_IDP_TYPE = config["saml_wstrust"]["idp_type"]
+SAML_IDP_CERTIFICATE = config["saml_wstrust"]["idp_certificate"]
+SAML_USER_ID_ATTIBUTE = config["saml_wstrust"]["user_id_attibute"]
 
-    REAL_DB_STRUCTURE = DB_STRUCTURE.REAL_DB_STRUCTURE = merge_dicts(
-        DB_STRUCTURE.REAL_DB_STRUCTURE,
-        exts,
-    )
+SAML_AUTH_ENABLE = config["saml_sso"]["enable"]
+SAML_IDP_METADATA_URL = config["saml_sso"]["idp_metadata_url"]
+SAML_IDP_INSECURE = config["saml_sso"]["idp_insecure"]
+SAML_REQUESTS_SIGNED = config["saml_sso"]["requests_signed"]
+SAML_KEY_FILE = config["saml_sso"]["key_file"]
+SAML_CERT_FILE = config["saml_sso"]["cert_file"]
+SQLALCHEMY_DATABASE_URI = config["saml_sso"]["sqlalchemy_uri"]
+SESSION_PERMANENT = config["saml_sso"]["session_permanent"]
+PERMANENT_SESSION_LIFETIME = config["saml_sso"]["permanent_session_lifetime"]
 
+DO_ENABLE_RESTRICTIONS = config["restrictions"]["enable"]
+AUTH_RESTRICTION_MODULE = config["restrictions"]["module"]
+AUTH_RESTRICTION_FUNCTION = config["restrictions"]["function"]
 
-load_db_extensions(os.getenv('DB_STRUCTURE_EXTENSIONS'))
+LOG_AMQP_SERVER = config["audit_log"]["host"]
+MOX_LOG_EXCHANGE = config["audit_log"]["exchange"]
+MOX_LOG_QUEUE = config["audit_log"]["queue"]
+LOG_IGNORED_SERVICES = config["audit_log"]["ignored_services"]
+
+FILE_UPLOAD_FOLDER = config["file_upload"]["folder"]

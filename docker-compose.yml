@@ -10,13 +10,12 @@ services:
     # reloads on file changes. This is very useful when developing oio_rest.
     volumes:
       - .:/code
-    command: ["gunicorn", "--reload", "-b", "0.0.0.0:8080", "oio_rest.app:app"]
+      - ./dev-settings.toml:/local-settings.toml
+    command: ["gunicorn", "--reload", "-b", "0.0.0.0:8080", "oio_rest:app"]
     ports:
       - "8080:8080"
     env_file:
       - docker/db.env
-    environment:
-      - DB_HOST=mox-db
     depends_on:
       - mox-db
 

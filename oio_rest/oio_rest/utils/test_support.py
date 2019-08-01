@@ -21,11 +21,11 @@ import mock
 import testing.postgresql
 import psycopg2.pool
 
-from .. import app
-from .. import db
-from ..db import db_templating
+from oio_rest import app
+from oio_rest import db
+from oio_rest.db import db_templating, db_structure
 
-from .. import settings
+from oio_rest import settings
 
 BASE_DIR = os.path.dirname(os.path.dirname(settings.__file__))
 TOP_DIR = os.path.dirname(BASE_DIR)
@@ -41,16 +41,14 @@ def patch_db_struct(new: typing.Union[types.ModuleType, dict]):
         mock.patch('oio_rest.db.db_helpers._attribute_names', {}),
         mock.patch('oio_rest.db.db_helpers._relation_names', {}),
         mock.patch('oio_rest.validate.SCHEMAS', {}),
-        mock.patch('oio_rest.settings.REAL_DB_STRUCTURE', new=new),
     ]
 
     if isinstance(new, types.ModuleType):
-        patches += [
-            mock.patch('oio_rest.settings.REAL_DB_STRUCTURE',
-                       new=new.REAL_DB_STRUCTURE),
-            mock.patch('oio_rest.settings.DB_STRUCTURE.REAL_DB_STRUCTURE',
-                       new=new.REAL_DB_STRUCTURE),
-        ]
+        patches.append(mock.patch('oio_rest.db.db_structure.REAL_DB_STRUCTURE',
+                       new=new.REAL_DB_STRUCTURE))
+    else:
+        patches.append(mock.patch('oio_rest.db.db_structure.REAL_DB_STRUCTURE',
+                       new=new))
 
     with contextlib.ExitStack() as stack:
         for patch in patches:
@@ -63,26 +61,23 @@ def patch_db_struct(new: typing.Union[types.ModuleType, dict]):
 def extend_db_struct(new: dict):
     '''Context manager for extending db_structures'''
 
-    dbs = copy.deepcopy(settings.DB_STRUCTURE.DATABASE_STRUCTURE)
-    real_dbs = copy.deepcopy(settings.REAL_DB_STRUCTURE)
+    dbs = copy.deepcopy(db_structure.DATABASE_STRUCTURE)
+    real_dbs = copy.deepcopy(db_structure.REAL_DB_STRUCTURE)
 
     patches = [
         mock.patch('oio_rest.db.db_helpers._attribute_fields', {}),
         mock.patch('oio_rest.db.db_helpers._attribute_names', {}),
         mock.patch('oio_rest.db.db_helpers._relation_names', {}),
         mock.patch('oio_rest.validate.SCHEMAS', {}),
-        mock.patch('oio_rest.settings.DB_STRUCTURE.DATABASE_STRUCTURE',
-                   new=dbs),
-        mock.patch('oio_rest.settings.REAL_DB_STRUCTURE', new=real_dbs),
-        mock.patch('oio_rest.settings.DB_STRUCTURE.REAL_DB_STRUCTURE',
-                   new=real_dbs),
+        mock.patch('oio_rest.db.db_structure.DATABASE_STRUCTURE', new=dbs),
+        mock.patch('oio_rest.db.db_structure.REAL_DB_STRUCTURE', new=real_dbs),
     ]
 
     with contextlib.ExitStack() as stack:
         for patch in patches:
             stack.enter_context(patch)
 
-        settings.load_db_extensions(new)
+        db_structure.load_db_extensions(new)
 
         yield
 
@@ -128,7 +123,7 @@ def load_sql_fixture(fixture_path):
         stdin=subprocess.PIPE,
     )
 
-    for table in sorted(settings.DB_STRUCTURE.DATABASE_STRUCTURE):
+    for table in sorted(db_structure.DATABASE_STRUCTURE):
         proc.stdin.write(
             "TRUNCATE TABLE actual_state.{} RESTART IDENTITY CASCADE;\n"
             .format(table).encode('ascii'),
@@ -230,12 +225,12 @@ class TestCaseMixin(object):
     db_structure_extensions = None
 
     def get_lora_app(self):
-        app.app.config['DEBUG'] = False
-        app.app.config['TESTING'] = True
-        app.app.config['LIVESERVER_PORT'] = 0
-        app.app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
+        app.config['DEBUG'] = False
+        app.config['TESTING'] = True
+        app.config['LIVESERVER_PORT'] = 0
+        app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
 
-        return app.app
+        return app
 
     @contextlib.contextmanager
     def db_cursor(self):
@@ -252,7 +247,7 @@ class TestCaseMixin(object):
     def reset_db(self):
         with self.db_cursor() as curs:
             curs.execute("TRUNCATE TABLE {} RESTART IDENTITY CASCADE".format(
-                ', '.join(sorted(settings.DB_STRUCTURE.DATABASE_STRUCTURE)),
+                ', '.join(sorted(db_structure.DATABASE_STRUCTURE)),
             ))
 
     def setUp(self):
@@ -352,7 +347,7 @@ def run_with_db(**kwargs):
             port=dsn['port'],
         )
 
-        app.app.run(**kwargs)
+        app.run(**kwargs)
 
 
 if __name__ == '__main__':

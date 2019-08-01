@@ -10,11 +10,12 @@ import datetime
 import urllib.parse
 import traceback
 
-from flask import Flask, jsonify, redirect, request, url_for, Response
+from flask import jsonify, redirect, request, url_for, Response
 from werkzeug.routing import BaseConverter
 from jinja2 import Environment, FileSystemLoader
 from psycopg2 import DataError
 
+from oio_rest import app
 from . import sag, indsats, dokument, tilstand, aktivitet, organisation
 from . import log, klassifikation
 from .authentication import get_authenticated_user
@@ -27,8 +28,6 @@ from .auth import tokens
 import flask_saml_sso
 
 from . import settings
-
-app = Flask(__name__)
 
 """
     Jinja2 Environment

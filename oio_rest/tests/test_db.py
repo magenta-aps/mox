@@ -22,7 +22,7 @@ from oio_rest.custom_exceptions import (
 
 class TestDB(flask_testing.TestCase):
     def create_app(self):
-        return app.app
+        return app
 
     @patch('oio_rest.db.get_relation_field_type')
     def test_convert_relation_value_default(self, mock_get_rel):
