@@ -11,7 +11,7 @@ configure the program. There are default settings, as shown in
 two files that you can point to with environment variables:
 
 
-.. py:data:: MOX_ENV_CONFIG_PATH
+.. py:data:: MOX_SYSTEM_CONFIG_PATH
 
     Path to a toml settings file. This overwrites the default settings, but has
     lower precedens than :data:`MOX_USER_CONFIG_PATH`. The purpose of this file

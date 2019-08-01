@@ -12,14 +12,14 @@
     This module contains all global ``oio_rest`` settings.
 
     The variables available and their defaults are defined in
-    ``default-settings.toml``. Furthermore, $MOX_ENV_CONFIG_PATH and
+    ``default-settings.toml``. Furthermore, $MOX_SYSTEM_CONFIG_PATH and
     $MOX_USER_CONFIG_PATH can be used to point at other config files.
 
     The config file precedens is
-        default-settings.toml < $MOX_ENV_CONFIG_PATH < $MOX_USER_CONFIG_PATH
+        default-settings.toml < $MOX_SYSTEM_CONFIG_PATH < $MOX_USER_CONFIG_PATH
 
     default-settings.toml: reference file and default values.
-    $MOX_ENV_CONFIG_PATH: configuration for special environments e.g. docker.
+    $MOX_SYSTEM_CONFIG_PATH: configuration for system environment e.g. docker.
     $MOX_USER_CONFIG_PATH: this is the file where you write your configuration.
 """
 
@@ -63,11 +63,11 @@ def update_config(configuration, new_settings):
 with app.open_resource("default-settings.toml", "r") as f:
     config = toml.load(f)
 
-env_config_path = os.getenv("MOX_ENV_CONFIG_PATH", False)
+system_config_path = os.getenv("MOX_SYSTEM_CONFIG_PATH", False)
 user_config_path = os.getenv("MOX_USER_CONFIG_PATH", False)
-if env_config_path:
-    logging.info("Reading env config from %s", env_config_path)
-    update_config(config, read_config(env_config_path))
+if system_config_path:
+    logging.info("Reading system config from %s", system_config_path)
+    update_config(config, read_config(system_config_path))
 if user_config_path:
     logging.info("Reading user config from %s", user_config_path)
     update_config(config, read_config(user_config_path))
