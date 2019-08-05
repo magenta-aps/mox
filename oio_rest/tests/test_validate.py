@@ -115,9 +115,19 @@ class TestGenerateJSONSchema(TestBase):
                         },
                         'required': ['urn', 'virkning'],
                         'additionalProperties': False
-                    }
+                    },
+                    {
+                        'type': 'object',
+                        'properties': {
+                            'urn': {'$ref': '#/definitions/empty_string'},
+                            'uuid': {'$ref': '#/definitions/empty_string'},
+                            'virkning': {'$ref': '#/definitions/virkning'}
+                        },
+                        'required': ['urn', 'uuid', 'virkning'],
+                        'additionalProperties': False,
+                    },
                 ]
-            },
+            }
         }
 
         self.relation_nul_til_en = copy.deepcopy(self.relation_nul_til_mange)
@@ -503,7 +513,24 @@ class TestGenerateJSONSchema(TestBase):
                                     'required': ['urn', 'virkning',
                                                  'journalpostkode'],
                                     'additionalProperties': False
-                                }
+                                },
+                                {
+                                    'type': 'object',
+                                    'properties': {
+                                        'urn': {
+                                            '$ref':
+                                            '#/definitions/empty_string'
+                                        },
+                                        'uuid': {
+                                            '$ref':
+                                            '#/definitions/empty_string'
+                                        },
+                                        'virkning': {
+                                            '$ref': '#/definitions/virkning'}
+                                    },
+                                    'required': ['urn', 'uuid', 'virkning'],
+                                    'additionalProperties': False,
+                                },
                             ]
                         },
                     }
