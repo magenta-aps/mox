@@ -304,7 +304,17 @@ def _generate_relationer(obj, do_create):
                         'objekttype': STRING
                     },
                     ['urn', 'virkning']
-                )
+                ),
+                _generate_schema_object(
+                    {
+                        'urn': {'$ref': '#/definitions/empty_string'},
+                        'uuid': {'$ref': '#/definitions/empty_string'},
+                        'virkning': {'$ref': '#/definitions/virkning'},
+                        'objekttype': STRING
+                    },
+                    ['urn', 'uuid', 'virkning']
+                ),
+
             ]
         }
     )
@@ -394,6 +404,10 @@ def generate_json_schema(obj, do_create):
             'type': 'string',
             'pattern': '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-'
                        '[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$'
+        },
+        'empty_string': {
+            'type': 'string',
+            'pattern': ''
         },
         'virkning': _generate_schema_object(
             {
