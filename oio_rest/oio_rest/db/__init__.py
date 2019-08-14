@@ -77,7 +77,7 @@ def get_connection():
 
     global pool
 
-    if pool is None:
+    if pool is None or pool.closed:
         pool = ThreadedConnectionPool(
             settings.DB_MIN_CONNECTIONS,
             settings.DB_MAX_CONNECTIONS,
@@ -89,6 +89,11 @@ def get_connection():
         )
 
     return pool.getconn(key=threading.get_ident())
+
+
+def close_pool():
+    if pool is not None and not pool.closed:
+        pool.closeall()
 
 
 #
