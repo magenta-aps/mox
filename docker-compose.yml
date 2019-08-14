@@ -28,6 +28,12 @@ services:
       dockerfile: dev-environment/postgres.Dockerfile
     env_file:
       - dev-environment/db.env
+    # The following will mount the database data directory to RAM. It
+    # significantly speeds up the database at the cost of dataloss on shutdown.
+    # This is useful for running tests, but should never be used if you want to
+    # save the data.
+    # tmpfs:
+    #   - /var/lib/postgresql/data
     volumes:
       - ./docker/postgres-initdb.d/10-init-db.sh:/docker-entrypoint-initdb.d/10-init-db.sh
       - ./docker/postgres-initdb.d/20-create-extensions.sh:/docker-entrypoint-initdb.d/20-create-extensions.sh
