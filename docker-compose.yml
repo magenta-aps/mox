@@ -20,7 +20,12 @@ services:
       - mox-db
 
   mox-db:
-    image: postgres:9.6
+    # During development we use a custom postgres docker image with pgtap. pgtap
+    # is only used for running tests and is not necessary in production. In
+    # production you can specify `image: postgres:9.6` instead.
+    build:
+      context: .
+      dockerfile: dev-environment/postgres.Dockerfile
     env_file:
       - dev-environment/db.env
     volumes:
