@@ -8,6 +8,9 @@ true "${DB_USER:?DB_USER is unset. Error!}"
 true "${DB_PASSWORD:?DB_PASSWORD is unset. Error!}"
 true "${DB_NAME:?DB_NAME is unset. Error!}"
 
+# The three following `alter database … set` commands should be identical the
+# ones in oio_rest/oio_rest/utils/test_support.py used for tests.
+
 psql -v ON_ERROR_STOP=1 <<-EOSQL
     create user $DB_USER with encrypted password '$DB_PASSWORD';
     create database $DB_NAME;
