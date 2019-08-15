@@ -6,26 +6,20 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
-import atexit
 import contextlib
 import copy
-import functools
 import os
-import shutil
-import subprocess
 import types
 import typing
 
 import click
 import mock
-import testing.postgresql
+import psycopg2
+import psycopg2.extensions
 import psycopg2.pool
 
-from oio_rest import app
-from oio_rest import db
-from oio_rest.db import db_templating, db_structure
-
-from oio_rest import settings
+from oio_rest import app, settings
+from oio_rest.db import db_structure, management as db_mgmt
 
 BASE_DIR = os.path.dirname(os.path.dirname(settings.__file__))
 TOP_DIR = os.path.dirname(BASE_DIR)
@@ -82,140 +76,6 @@ def extend_db_struct(new: dict):
         yield
 
 
-@functools.lru_cache()
-def psql():
-    os.makedirs(DB_DIR, exist_ok=True)
-
-    psql = testing.postgresql.Postgresql(
-        base_dir=DB_DIR,
-        postgres_args=(
-            '-h 127.0.0.1 -F -c logging_collector=off '
-            '-c fsync=off -c unix_socket_directories=/tmp'
-        ),
-    )
-
-    atexit.register(psql.stop)
-    atexit.register(lambda: shutil.rmtree(DB_DIR))
-
-    return psql
-
-
-def load_sql_fixture(fixture_path):
-    '''Empty the database and inject the given SQL fixture directly.
-
-    We support optimised dumps thanks to invoking 'psql' rather than
-    using 'psycopg2'.
-
-    '''
-
-    proc = subprocess.Popen(
-        [
-            'psql',
-            '--quiet', '-vON_ERROR_STOP=1',
-            '--single-transaction',
-            '--dbname', settings.DATABASE,
-            '--host', settings.DB_HOST,
-            '--port', str(settings.DB_PORT),
-            '--username', settings.DB_USER,
-        ],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        stdin=subprocess.PIPE,
-    )
-
-    for table in sorted(db_structure.DATABASE_STRUCTURE):
-        proc.stdin.write(
-            "TRUNCATE TABLE actual_state.{} RESTART IDENTITY CASCADE;\n"
-            .format(table).encode('ascii'),
-        )
-
-    with open(fixture_path, 'rb') as fp:
-        proc.communicate(fp.read())
-
-
-def _initdb():
-    with psycopg2.connect(
-        psql().url(),
-        database="postgres",
-        user="postgres",
-    ) as conn:
-        conn.autocommit = True
-
-        with conn.cursor() as curs:
-            curs.execute('CREATE USER {} WITH PASSWORD {!r}'.format(
-                settings.DB_USER, settings.DB_PASSWORD,
-            ))
-
-            curs.execute('CREATE DATABASE {} WITH OWNER = {!r}'.format(
-                settings.DATABASE, settings.DB_PASSWORD,
-            ))
-
-            # The tests are written as if the computer has the local
-            # time zone set to 'Europe/Copenhagen'. This setting
-            # makes postgresql spit out dates in the format the tests
-            # expect. This is not part of the database sql or templates
-            # because we don't want a hardcoded timezone in production.
-            curs.execute(
-                "ALTER DATABASE {} SET time zone 'Europe/Copenhagen'".format(
-                    settings.DATABASE
-                )
-            )
-
-    with psycopg2.connect(
-        psql().url(),
-        database=settings.DATABASE,
-        user="postgres",
-    ) as conn:
-        conn.autocommit = True
-
-        with conn.cursor() as curs:
-            curs.execute(
-                "CREATE SCHEMA actual_state AUTHORIZATION {}".format(
-                    settings.DB_USER
-                )
-            )
-            curs.execute(
-                "ALTER DATABASE"
-                " {} SET search_path TO actual_state, public".format(
-                    settings.DATABASE
-                )
-            )
-            curs.execute(
-                "ALTER DATABASE {} SET DATESTYLE to 'ISO, YMD'".format(
-                    settings.DATABASE
-                )
-            )
-            curs.execute(
-                "ALTER DATABASE {} SET INTERVALSTYLE to 'sql_standard'".format(
-                    settings.DATABASE
-                )
-            )
-            curs.execute(
-                'CREATE EXTENSION IF NOT EXISTS'
-                ' "uuid-ossp" WITH SCHEMA actual_state'
-            )
-            curs.execute(
-                'CREATE EXTENSION IF NOT EXISTS "btree_gist"'
-                ' WITH SCHEMA actual_state'
-            )
-            curs.execute(
-                'CREATE EXTENSION IF NOT EXISTS'
-                ' "pg_trgm" WITH SCHEMA actual_state'
-            )
-
-    with psycopg2.connect(
-        psql().url(),
-        database=settings.DATABASE,
-        user=settings.DB_USER,
-        password=settings.DB_PASSWORD,
-    ) as conn:
-        conn.autocommit = True
-
-        with conn.cursor() as curs:
-            for chunk in db_templating.get_sql():
-                curs.execute(chunk)
-
-
 class TestCaseMixin(object):
 
     '''Base class for LoRA test cases with database access.
@@ -232,54 +92,17 @@ class TestCaseMixin(object):
 
         return app
 
-    @contextlib.contextmanager
-    def db_cursor(self):
-        '''Context manager for querying the database
-
-        :see: `psycopg2.cursor <http://initd.org/psycopg/docs/cursor.html>`_
-        '''
-        with psycopg2.connect(self.db_url) as conn:
-            conn.autocommit = True
-
-            with conn.cursor() as curs:
-                yield curs
-
-    def reset_db(self):
-        with self.db_cursor() as curs:
-            curs.execute("TRUNCATE TABLE {} RESTART IDENTITY CASCADE".format(
-                ', '.join(sorted(db_structure.DATABASE_STRUCTURE)),
-            ))
-
     def setUp(self):
-        super(TestCaseMixin, self).setUp()
+        super().setUp()
 
-        self.db_url = psql().url(
-            database=settings.DATABASE,
-            user=settings.DB_USER,
-            password=settings.DB_PASSWORD,
-        )
-
-        try:
-            with psycopg2.connect(self.db_url):
-                pass
-        except psycopg2.DatabaseError:
-            _initdb()
-
-        self.addCleanup(self.reset_db)
-
-        db_host = psql().dsn()['host']
-        db_port = psql().dsn()['port']
+        self.addCleanup(db_mgmt.testdb_reset)
 
         stack = contextlib.ExitStack()
         self.addCleanup(stack.close)
 
         for p in [
-            mock.patch('oio_rest.settings.FILE_UPLOAD_FOLDER', './mox-upload'),
-            mock.patch('oio_rest.settings.LOG_AMQP_SERVER', None),
-            mock.patch('oio_rest.settings.DB_HOST', db_host,
-                       create=True),
-            mock.patch('oio_rest.settings.DB_PORT', db_port,
-                       create=True),
+            mock.patch("oio_rest.settings.FILE_UPLOAD_FOLDER", "./mox-upload"),
+            mock.patch("oio_rest.settings.LOG_AMQP_SERVER", None),
         ]:
             stack.enter_context(p)
 
@@ -290,24 +113,13 @@ class TestCaseMixin(object):
             extend_db_struct(cls.db_structure_extensions),
         )
 
+        db_mgmt.testdb_setup()
+
     @classmethod
     def tearDownClass(cls):
-        if db.pool is not None:
-            db.pool.closeall()
-            db.pool = None
-
         cls.__class_stack.close()
 
-        with psycopg2.connect(psql().url()) as conn:
-            conn.autocommit = True
-
-            with conn.cursor() as curs:
-                curs.execute(
-                    'DROP DATABASE IF EXISTS {}'.format(settings.DATABASE),
-                )
-                curs.execute(
-                    'DROP USER IF EXISTS {}'.format(settings.DB_USER),
-                )
+        db_mgmt.testdb_teardown()
 
 
 @click.command()

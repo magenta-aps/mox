@@ -1,6 +1,5 @@
 -r requirements.txt
 Flask-Testing
-testing.postgresql
 tap.py
 unittest-xml-reporting<2.3.0
 mock

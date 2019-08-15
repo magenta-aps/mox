@@ -12,7 +12,7 @@ import unittest
 
 import tap.parser
 
-from oio_rest.db import db_templating
+from oio_rest.db import db_templating, get_connection
 from oio_rest import settings
 from tests import util
 
@@ -22,8 +22,7 @@ SQL_FIXTURE = os.path.join(util.FIXTURE_DIR, 'db-dump.sql')
 class SQLTests(util.TestCase):
     def setUp(self):
         super().setUp()
-
-        with self.db_cursor() as curs:
+        with get_connection() as conn, conn.cursor() as curs:
             curs.execute('CREATE EXTENSION "pgtap";')
 
             curs.execute(
@@ -38,12 +37,12 @@ class SQLTests(util.TestCase):
     def tearDown(self):
         super().setUp()
 
-        with self.db_cursor() as curs:
+        with get_connection() as conn, conn.cursor() as curs:
             curs.execute('DROP SCHEMA test CASCADE')
             curs.execute('DROP EXTENSION IF EXISTS "pgtap" CASCADE;')
 
     def test_pgsql(self):
-        with self.db_cursor() as curs:
+        with get_connection() as conn, conn.cursor() as curs:
             curs.execute("SELECT * FROM runtests ('test'::name)")
 
             self.assertGreater(curs.rowcount, 0)
