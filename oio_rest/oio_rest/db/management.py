@@ -75,6 +75,8 @@ def testdb_setup():
     Requires CREATEDB and OWNER or SUPERUSER privileges.
 
     """
+    _check_testing_enabled()
+
     logger.info("Setting up test database")
     _dropdb(dbname_backup)
     _cpdb(dbname, dbname_backup)
@@ -89,9 +91,8 @@ def testdb_reset():
     Requires CREATEDB and OWNER or SUPERUSER privileges.
 
     """
+    _check_testing_enabled()
 
-
-    # TODO Check if the template db is created before dropping.
     logger.info("Resetting test database")
     _dropdb(dbname)
     _cpdb(dbname_template, dbname)
@@ -129,6 +130,18 @@ def _get_connection(dbname=None):
         host=config["database"]["host"],
         port=config["database"]["port"],
     )
+
+
+def _check_testing_enabled():
+    """Check whether the template database have been created."""
+    try:
+        _get_connection(dbname_template.strings[0])
+    except psycopg2.OperationalError:
+        raise RuntimeError(
+            "The database is not initialized with the testing flag enabled. "
+            "Delete the databases, set `[testing] enabled=True` in settings "
+            "and run `python3 -m oio_rest initdb` again."
+        )
 
 
 def _cpdb(dbname_from, dbname_to):
