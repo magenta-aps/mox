@@ -18,7 +18,7 @@ import psycopg2.extensions
 import psycopg2.pool
 from psycopg2.sql import SQL, Identifier
 
-from oio_rest.db import close_pool
+from oio_rest.db import close_pool, db_templating
 from oio_rest.settings import config
 
 logger = logging.getLogger(__name__)
@@ -26,6 +26,33 @@ logger = logging.getLogger(__name__)
 dbname = Identifier(config["database"]["db_name"])
 dbname_backup = Identifier(config["database"]["db_name"] + "_backup")
 dbname_template = Identifier(config["database"]["db_name"] + "_template")
+
+
+def apply_templates():
+    """Initialize the database with templates."""
+    with _get_connection() as conn, conn.cursor() as curs:
+        curs.execute("\n".join(db_templating.get_sql()))
+
+
+def check_templates():
+    """Check whether the database is initialized."""
+
+    # check that 'bruger' table exists. This is arbitrary.
+    INIT_CHECK_SQL = SQL(
+        "select relname from pg_catalog.pg_class where relname = 'bruger';"
+    )
+
+    with _get_connection() as conn, conn.cursor() as curs:
+        curs.execute(INIT_CHECK_SQL)
+        return bool(curs.fetchone())
+
+
+def check_connection():
+    try:
+        _get_connection()
+        return True
+    except psycopg2.OperationalError:
+        return False
 
 
 def testdb_create_template_db():
@@ -40,7 +67,6 @@ def testdb_create_template_db():
 
 
 def testdb_setup():
-
     """Move the database specified in settings to a backup location and reset the
     database specified in the settings. This makes the database ready for
     testing while still preserving potential data written to the database. Use
@@ -56,7 +82,6 @@ def testdb_setup():
     testdb_reset()
 
 
-
 def testdb_reset():
     """Reset the database specified in settings from the template. Requires the
     template database to be created.
@@ -65,6 +90,8 @@ def testdb_reset():
 
     """
 
+
+    # TODO Check if the template db is created before dropping.
     logger.info("Resetting test database")
     _dropdb(dbname)
     _cpdb(dbname_template, dbname)
@@ -83,20 +110,20 @@ def testdb_teardown():
     _dropdb(dbname_backup)
 
 
-def _get_connection():
-    """Connect to the pg database instance with the credentials from settings, but to the
-    database named `template1`.
+def _get_connection(dbname=None):
+    """Return a simple connection to the pg database instance with the credentials
+    from settings. Allows database name to be overwritten.
 
-    We have to DROP DATABASE named `config["database"]["db_name"]`, so we cannot to
-    connect to it here. We use the default template database `template1` instead as it
+    If you use the database named `template1`, you can DROP DATABASE named
+    `config["database"]["db_name"]`. The default template database `template1`
     should always be present.
 
-    It is not possible to CREATE DATABASE without specifying another template while we
-    are connected here.
-
     """
+    if dbname is None:
+        dbname = config["database"]["db_name"]
+
     return psycopg2.connect(
-        dbname="template1",
+        dbname=dbname,
         user=config["database"]["user"],
         password=config["database"]["password"],
         host=config["database"]["host"],
@@ -118,7 +145,7 @@ def _cpdb(dbname_from, dbname_to):
     logger.debug(
         "Copying database from %s to %s", dbname_from.string, dbname_to.string
     )
-    with _get_connection() as conn:
+    with _get_connection(dbname="template1") as conn:
         conn.set_isolation_level(
             psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT
         )
@@ -168,7 +195,7 @@ def _dropdb(dbname):
     """
     close_pool()
     logger.debug("Dropping database %s", dbname.string)
-    with _get_connection() as conn:
+    with _get_connection(dbname="template1") as conn:
         conn.set_isolation_level(
             psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT
         )
