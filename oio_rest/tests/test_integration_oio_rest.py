@@ -7,9 +7,10 @@
 #
 
 from tests import util
+from tests.util import DBTestCase
 
 
-class Tests(util.TestCase):
+class Tests(DBTestCase):
 
     def test_virkningstid(self):
         uuid = "931ee7bf-10d6-4cc3-8938-83aa6389aaba"
