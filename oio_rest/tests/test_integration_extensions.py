@@ -7,9 +7,10 @@
 #
 
 from . import util
+from tests.util import DBextTestCase
 
 
-class TestBooleanAttribute(util.TestCase):
+class TestBooleanAttribute(DBextTestCase):
     db_structure_extensions = {
         "facet": {
             "attributter": {

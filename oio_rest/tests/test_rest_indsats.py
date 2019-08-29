@@ -10,9 +10,10 @@ import uuid
 
 from oio_rest.utils.build_registration import is_uuid
 from tests import util
+from tests.util import DBTestCase
 
 
-class TestIndsats(util.TestCase):
+class TestIndsats(DBTestCase):
     def test_indsats_create(self):
         result = self.client.post(
             "indsats/indsats",

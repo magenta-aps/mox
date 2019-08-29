@@ -33,7 +33,10 @@ def get_fixture(fixture_name, mode='rt', as_text=True):
             return fp.read()
 
 
-class TestCase(test_support.TestCaseMixin, flask_testing.TestCase):
+class _BaseTestCase(flask_testing.TestCase):
+    """Basic testcase without database support, but with various helper functions.
+
+    """
     def create_app(self):
         return self.get_lora_app()
 
@@ -260,3 +263,24 @@ class TestCase(test_support.TestCaseMixin, flask_testing.TestCase):
             raise
 
         return objid
+
+class DBTestCase(test_support.TestCaseMixin, _BaseTestCase):
+    """Testcase with database access. Will create a new database from a template
+    for each test. Requires the setting `[testing] enabled=True` during
+    database initialization to create the template.
+
+    This class does not support extending the database structure. For extension
+    tests use ExtDBtTestCase.
+
+    """
+
+    pass
+
+
+class DBextTestCase(test_support.TestCaseMixin, _BaseTestCase):
+    """Testcase with database and extension support. Will initialize a new database
+    from scratch for every class and is therefore quite slow. For a faster
+    alternative without extension support use DBTestCase.
+
+    """
+    pass

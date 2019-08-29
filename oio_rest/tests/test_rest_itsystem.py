@@ -7,9 +7,10 @@
 
 from oio_rest.utils.build_registration import is_uuid
 from tests import util
+from tests.util import DBTestCase
 
 
-class TestItSystem(util.TestCase):
+class TestItSystem(DBTestCase):
     def test_it_system(self):
         result = self.client.post(
             "organisation/itsystem",

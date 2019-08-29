@@ -15,11 +15,12 @@ import tap.parser
 from oio_rest.db import db_templating, get_connection
 from oio_rest import settings
 from tests import util
+from tests.util import DBTestCase
 
 SQL_FIXTURE = os.path.join(util.FIXTURE_DIR, 'db-dump.sql')
 
 
-class SQLTests(util.TestCase):
+class SQLTests(DBTestCase):
     def setUp(self):
         super().setUp()
         with get_connection() as conn, conn.cursor() as curs:
