@@ -25,7 +25,11 @@ logger = logging.getLogger(__name__)
 
 dbname = Identifier(config["database"]["db_name"])
 dbname_backup = Identifier(config["database"]["db_name"] + "_backup")
-dbname_template = Identifier(config["database"]["db_name"] + "_template")
+dbname_initialized_template = Identifier(
+    config["database"]["db_name"] + "_template"
+)
+# The postgres default (empty) template for CREATE DATABASE.
+dbname_template = Identifier("template1")
 
 
 def apply_templates():
@@ -63,10 +67,10 @@ def testdb_create_template_db():
     Requires CREATEDB or SUPERUSER privileges.
 
     """
-    _cpdb(dbname, dbname_template)
+    _cpdb(dbname, dbname_initialized_template)
 
 
-def testdb_setup():
+def testdb_setup(from_scratch=False):
     """Move the database specified in settings to a backup location and reset the
     database specified in the settings. This makes the database ready for
     testing while still preserving potential data written to the database. Use
@@ -75,27 +79,34 @@ def testdb_setup():
     Requires CREATEDB and OWNER or SUPERUSER privileges.
 
     """
-    _check_testing_enabled()
+    if not from_scratch:
+        _check_testing_enabled()
 
     logger.info("Setting up test database")
     _dropdb(dbname_backup)
     _cpdb(dbname, dbname_backup)
 
-    testdb_reset()
+    testdb_reset(from_scratch)
 
 
-def testdb_reset():
+def testdb_reset(from_scratch=False):
     """Reset the database specified in settings from the template. Requires the
     template database to be created.
 
     Requires CREATEDB and OWNER or SUPERUSER privileges.
 
     """
-    _check_testing_enabled()
+    if not from_scratch:
+        _check_testing_enabled()
 
     logger.info("Resetting test database")
     _dropdb(dbname)
-    _cpdb(dbname_template, dbname)
+    if from_scratch:
+        _cpdb(dbname_template, dbname)
+        _schema_and_extensions()
+        apply_templates()
+    else:
+        _cpdb(dbname_initialized_template, dbname)
 
 
 def testdb_teardown():
@@ -135,7 +146,7 @@ def _get_connection(dbname=None):
 def _check_testing_enabled():
     """Check whether the template database have been created."""
     try:
-        _get_connection(dbname_template.strings[0])
+        _get_connection(dbname_initialized_template.strings[0])
     except psycopg2.OperationalError:
         raise RuntimeError(
             "The database is not initialized with the testing flag enabled. "
@@ -158,7 +169,7 @@ def _cpdb(dbname_from, dbname_to):
     logger.debug(
         "Copying database from %s to %s", dbname_from.string, dbname_to.string
     )
-    with _get_connection(dbname="template1") as conn:
+    with _get_connection(dbname_template.strings[0]) as conn:
         conn.set_isolation_level(
             psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT
         )
@@ -208,9 +219,31 @@ def _dropdb(dbname):
     """
     close_pool()
     logger.debug("Dropping database %s", dbname.string)
-    with _get_connection(dbname="template1") as conn:
+    with _get_connection(dbname_template.strings[0]) as conn:
         conn.set_isolation_level(
             psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT
         )
         with conn.cursor() as curs:
             curs.execute(SQL("DROP DATABASE IF EXISTS {};").format(dbname))
+
+
+def _schema_and_extensions():
+    with _get_connection() as conn, conn.cursor() as curs:
+        # The following `create schema …` command should be identical the one
+        # in docker/postgresql-initdb.d/10-init-db.sh used in production.
+        curs.execute(
+            SQL("create schema actual_state authorization {};").format(
+                Identifier(config["database"]["user"])
+            )
+        )
+        # The three following `create extension … ` commands should be
+        # identical the ones in
+        # docker/postgresql-initdb.d/20-create-extensions.sh used in
+        # production.
+        for ext in ["uuid-ossp", "btree_gist", "pg_trgm"]:
+            curs.execute(
+                SQL(
+                    "create extension if not exists {} with schema "
+                    "actual_state;"
+                ).format(Identifier(ext))
+            )

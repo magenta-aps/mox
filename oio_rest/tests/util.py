@@ -18,6 +18,7 @@ import flask_testing
 
 from oio_rest import app
 from oio_rest.db import management as db_mgmt
+from oio_rest.utils import test_support
 
 TESTS_DIR = os.path.dirname(__file__)
 BASE_DIR = os.path.dirname(TESTS_DIR)
@@ -296,8 +297,6 @@ class DBTestCase(_BaseTestCase):
     tests use ExtDBtTestCase.
 
     """
-    maxDiff = None
-    db_structure_extensions = None
 
     def setUp(self):
         super().setUp()
@@ -318,4 +317,23 @@ class DBextTestCase(_BaseTestCase):
     alternative without extension support use DBTestCase.
 
     """
-    pass
+
+    db_structure_extensions = None
+
+    def setUp(self):
+        super().setUp()
+
+        self.addCleanup(db_mgmt.testdb_reset, from_scratch=True)
+
+    @classmethod
+    def setUpClass(cls):
+        cls.__class_stack = contextlib.ExitStack()
+        cls.__class_stack.enter_context(
+            test_support.extend_db_struct(cls.db_structure_extensions),
+        )
+        db_mgmt.testdb_setup(from_scratch=True)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.__class_stack.close()
+        db_mgmt.testdb_teardown()
