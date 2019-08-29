@@ -7,14 +7,17 @@
 #
 
 
+import contextlib
 import json
+import mock
 import os
 import pprint
 import uuid
 
 import flask_testing
 
-from oio_rest.utils import test_support
+from oio_rest import app
+from oio_rest.db import management as db_mgmt
 
 TESTS_DIR = os.path.dirname(__file__)
 BASE_DIR = os.path.dirname(TESTS_DIR)
@@ -37,6 +40,25 @@ class _BaseTestCase(flask_testing.TestCase):
     """Basic testcase without database support, but with various helper functions.
 
     """
+
+    def setup(self):
+        stack = contextlib.ExitStack()
+        self.addCleanup(stack.close)
+
+        for p in [
+            mock.patch("oio_rest.settings.FILE_UPLOAD_FOLDER", "./mox-upload"),
+            mock.patch("oio_rest.settings.LOG_AMQP_SERVER", None),
+        ]:
+            stack.enter_context(p)
+
+    def get_lora_app(self):
+        app.config['DEBUG'] = False
+        app.config['TESTING'] = True
+        app.config['LIVESERVER_PORT'] = 0
+        app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
+
+        return app
+
     def create_app(self):
         return self.get_lora_app()
 
@@ -264,7 +286,8 @@ class _BaseTestCase(flask_testing.TestCase):
 
         return objid
 
-class DBTestCase(test_support.TestCaseMixin, _BaseTestCase):
+
+class DBTestCase(_BaseTestCase):
     """Testcase with database access. Will create a new database from a template
     for each test. Requires the setting `[testing] enabled=True` during
     database initialization to create the template.
@@ -273,11 +296,23 @@ class DBTestCase(test_support.TestCaseMixin, _BaseTestCase):
     tests use ExtDBtTestCase.
 
     """
+    maxDiff = None
+    db_structure_extensions = None
 
-    pass
+    def setUp(self):
+        super().setUp()
+        self.addCleanup(db_mgmt.testdb_reset)
+
+    @classmethod
+    def setUpClass(cls):
+        db_mgmt.testdb_setup()
+
+    @classmethod
+    def tearDownClass(cls):
+        db_mgmt.testdb_teardown()
 
 
-class DBextTestCase(test_support.TestCaseMixin, _BaseTestCase):
+class DBextTestCase(_BaseTestCase):
     """Testcase with database and extension support. Will initialize a new database
     from scratch for every class and is therefore quite slow. For a faster
     alternative without extension support use DBTestCase.
