@@ -89,8 +89,6 @@ DB_PORT = config["database"]["port"]
 DB_USER = config["database"]["user"]
 DB_PASSWORD = config["database"]["password"]
 DATABASE = config["database"]["db_name"]
-DB_MIN_CONNECTIONS = config["database"]["min_connections"]
-DB_MAX_CONNECTIONS = config["database"]["max_connections"]
 
 USE_SAML_AUTHENTICATION = config["saml_wstrust"]["enable"]
 SAML_MOX_ENTITY_ID = config["saml_wstrust"]["entity_id"]
