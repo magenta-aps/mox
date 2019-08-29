@@ -19,7 +19,7 @@ import psycopg2.extensions
 import psycopg2.pool
 
 from oio_rest import app, settings
-from oio_rest.db import db_structure, management as db_mgmt
+from oio_rest.db import db_structure
 
 BASE_DIR = os.path.dirname(os.path.dirname(settings.__file__))
 TOP_DIR = os.path.dirname(BASE_DIR)
@@ -74,52 +74,6 @@ def extend_db_struct(new: dict):
         db_structure.load_db_extensions(new)
 
         yield
-
-
-class TestCaseMixin(object):
-
-    '''Base class for LoRA test cases with database access.
-    '''
-
-    maxDiff = None
-    db_structure_extensions = None
-
-    def get_lora_app(self):
-        app.config['DEBUG'] = False
-        app.config['TESTING'] = True
-        app.config['LIVESERVER_PORT'] = 0
-        app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
-
-        return app
-
-    def setUp(self):
-        super().setUp()
-
-        self.addCleanup(db_mgmt.testdb_reset)
-
-        stack = contextlib.ExitStack()
-        self.addCleanup(stack.close)
-
-        for p in [
-            mock.patch("oio_rest.settings.FILE_UPLOAD_FOLDER", "./mox-upload"),
-            mock.patch("oio_rest.settings.LOG_AMQP_SERVER", None),
-        ]:
-            stack.enter_context(p)
-
-    @classmethod
-    def setUpClass(cls):
-        cls.__class_stack = contextlib.ExitStack()
-        cls.__class_stack.enter_context(
-            extend_db_struct(cls.db_structure_extensions),
-        )
-
-        db_mgmt.testdb_setup()
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.__class_stack.close()
-
-        db_mgmt.testdb_teardown()
 
 
 @click.command()
