@@ -5,6 +5,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import copy
 import logging
 from logging.handlers import RotatingFileHandler
 import pprint
@@ -52,8 +53,12 @@ if app.config["ENV"] == "production":
     trace_log_handler.setLevel(logging.DEBUG)
     logging.getLogger().addHandler(trace_log_handler)
 
-logging.debug("Config:\n%s.", pprint.pformat(settings.config))
-logging.info("Config: %s.", settings.config)
+logger = logging.getLogger(__name__)
+safe_config = copy.deepcopy(settings.config)
+safe_config["database"]["password"] = "********"
+logger.debug("Config:\n%s.", pprint.pformat(safe_config))
+logger.info("Config: %s.", safe_config)
+del safe_config  # could get out of sync
 
 # now that logging is setup, we can make sure that all routes are added to the
 # app object

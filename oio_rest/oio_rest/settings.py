@@ -32,17 +32,20 @@ import toml
 from oio_rest import app
 
 
+logger = logging.getLogger(__name__)
+
+
 def read_config(config_path):
     try:
         with open(config_path) as f:
             content = f.read()
     except FileNotFoundError as err:
-        logging.critical("%s: %r", err.strerror, err.filename)
+        logger.critical("%s: %r", err.strerror, err.filename)
         sys.exit(5)
     try:
         return toml.loads(content)
     except toml.TomlDecodeError:
-        log.critical("Failed to parse TOML")
+        logger.critical("Failed to parse TOML")
         sys.exit(4)
 
 
@@ -57,19 +60,20 @@ def update_config(configuration, new_settings):
             else:
                 configuration[key] = new_settings[key]
         else:
-            logging.warning("Invalid key in config: %s", key)
+            logger.warning("Invalid key in config: %s", key)
 
 
 with app.open_resource("default-settings.toml", "r") as f:
+    # DO NOT print or log ``config`` as it will EXPOSE the PASSWORD
     config = toml.load(f)
 
 system_config_path = os.getenv("MOX_SYSTEM_CONFIG_PATH", False)
 user_config_path = os.getenv("MOX_USER_CONFIG_PATH", False)
 if system_config_path:
-    logging.info("Reading system config from %s", system_config_path)
+    logger.info("Reading system config from %s", system_config_path)
     update_config(config, read_config(system_config_path))
 if user_config_path:
-    logging.info("Reading user config from %s", user_config_path)
+    logger.info("Reading user config from %s", user_config_path)
     update_config(config, read_config(user_config_path))
 
 
