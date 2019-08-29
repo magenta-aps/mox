@@ -20,11 +20,6 @@ port = 5432
 user = "mox"
 password = "mox"
 db_name = "mox"
-# Per-process limits on the amount of database connections. Setting the minimum
-# to a non-zero value ensures that the webapp opens this amount at load,
-# failing if the database isn't available.
-min_connections = 0
-max_connections = 10
 
 
 [saml_wstrust]

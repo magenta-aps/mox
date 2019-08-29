@@ -15,10 +15,9 @@ import logging
 
 import psycopg2
 import psycopg2.extensions
-import psycopg2.pool
 from psycopg2.sql import SQL, Identifier
 
-from oio_rest.db import close_pool, db_templating
+from oio_rest.db import close_connection, db_templating
 from oio_rest.settings import config
 
 logger = logging.getLogger(__name__)
@@ -141,7 +140,7 @@ def _cpdb(dbname_from, dbname_to):
     Requires CREATEDB or SUPERUSER privileges.
 
     """
-    close_pool()
+    close_connection()
     logger.debug("Copying database from %s to %s", dbname_from, dbname_to)
     with _get_connection(DBNAME_SYS_TEMPLATE) as conn:
         conn.set_isolation_level(
@@ -191,7 +190,7 @@ def _dropdb(dbname):
 
     Requires OWNER or SUPERUSER privileges.
     """
-    close_pool()
+    close_connection()
     logger.debug("Dropping database %s", dbname)
     with _get_connection(DBNAME_SYS_TEMPLATE) as conn:
         conn.set_isolation_level(
