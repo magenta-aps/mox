@@ -6,74 +6,18 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
-import contextlib
-import copy
 import os
-import types
-import typing
 
 import click
-import mock
 import psycopg2
 import psycopg2.extensions
 import psycopg2.pool
 
 from oio_rest import app, settings
-from oio_rest.db import db_structure
 
 BASE_DIR = os.path.dirname(os.path.dirname(settings.__file__))
 TOP_DIR = os.path.dirname(BASE_DIR)
 DB_DIR = os.path.join(BASE_DIR, 'build', 'db', str(os.getpid()))
-
-
-@contextlib.contextmanager
-def patch_db_struct(new: typing.Union[types.ModuleType, dict]):
-    '''Context manager for overriding db_structures'''
-
-    patches = [
-        mock.patch('oio_rest.db.db_helpers._attribute_fields', {}),
-        mock.patch('oio_rest.db.db_helpers._attribute_names', {}),
-        mock.patch('oio_rest.db.db_helpers._relation_names', {}),
-        mock.patch('oio_rest.validate.SCHEMAS', {}),
-    ]
-
-    if isinstance(new, types.ModuleType):
-        patches.append(mock.patch('oio_rest.db.db_structure.REAL_DB_STRUCTURE',
-                       new=new.REAL_DB_STRUCTURE))
-    else:
-        patches.append(mock.patch('oio_rest.db.db_structure.REAL_DB_STRUCTURE',
-                       new=new))
-
-    with contextlib.ExitStack() as stack:
-        for patch in patches:
-            stack.enter_context(patch)
-
-        yield
-
-
-@contextlib.contextmanager
-def extend_db_struct(new: dict):
-    '''Context manager for extending db_structures'''
-
-    dbs = copy.deepcopy(db_structure.DATABASE_STRUCTURE)
-    real_dbs = copy.deepcopy(db_structure.REAL_DB_STRUCTURE)
-
-    patches = [
-        mock.patch('oio_rest.db.db_helpers._attribute_fields', {}),
-        mock.patch('oio_rest.db.db_helpers._attribute_names', {}),
-        mock.patch('oio_rest.db.db_helpers._relation_names', {}),
-        mock.patch('oio_rest.validate.SCHEMAS', {}),
-        mock.patch('oio_rest.db.db_structure.DATABASE_STRUCTURE', new=dbs),
-        mock.patch('oio_rest.db.db_structure.REAL_DB_STRUCTURE', new=real_dbs),
-    ]
-
-    with contextlib.ExitStack() as stack:
-        for patch in patches:
-            stack.enter_context(patch)
-
-        db_structure.load_db_extensions(new)
-
-        yield
 
 
 @click.command()

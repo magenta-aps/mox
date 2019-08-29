@@ -13,12 +13,14 @@ import mock
 import os
 import pprint
 import uuid
+import copy
+import types
+import typing
 
 import flask_testing
 
 from oio_rest import app
-from oio_rest.db import management as db_mgmt
-from oio_rest.utils import test_support
+from oio_rest.db import db_structure, management as db_mgmt
 
 TESTS_DIR = os.path.dirname(__file__)
 BASE_DIR = os.path.dirname(TESTS_DIR)
@@ -288,6 +290,72 @@ class _BaseTestCase(flask_testing.TestCase):
         return objid
 
 
+class ExtTestCase(_BaseTestCase):
+    """Testcase with extension helper functions, but no database access. For an
+    extension test class with database access use ExtDBTestCase.
+
+    """
+
+    @classmethod
+    @contextlib.contextmanager
+    def patch_db_struct(cls, new: typing.Union[types.ModuleType, dict]):
+        """Context manager for overriding db_structures"""
+
+        patches = [
+            mock.patch("oio_rest.db.db_helpers._attribute_fields", {}),
+            mock.patch("oio_rest.db.db_helpers._attribute_names", {}),
+            mock.patch("oio_rest.db.db_helpers._relation_names", {}),
+            mock.patch("oio_rest.validate.SCHEMAS", {}),
+        ]
+
+        if isinstance(new, types.ModuleType):
+            patches.append(
+                mock.patch(
+                    "oio_rest.db.db_structure.REAL_DB_STRUCTURE",
+                    new=new.REAL_DB_STRUCTURE,
+                )
+            )
+        else:
+            patches.append(
+                mock.patch(
+                    "oio_rest.db.db_structure.REAL_DB_STRUCTURE", new=new
+                )
+            )
+
+        with contextlib.ExitStack() as stack:
+            for patch in patches:
+                stack.enter_context(patch)
+
+            yield
+
+    @classmethod
+    @contextlib.contextmanager
+    def extend_db_struct(cls, new: dict):
+        """Context manager for extending db_structures"""
+
+        dbs = copy.deepcopy(db_structure.DATABASE_STRUCTURE)
+        real_dbs = copy.deepcopy(db_structure.REAL_DB_STRUCTURE)
+
+        patches = [
+            mock.patch("oio_rest.db.db_helpers._attribute_fields", {}),
+            mock.patch("oio_rest.db.db_helpers._attribute_names", {}),
+            mock.patch("oio_rest.db.db_helpers._relation_names", {}),
+            mock.patch("oio_rest.validate.SCHEMAS", {}),
+            mock.patch("oio_rest.db.db_structure.DATABASE_STRUCTURE", new=dbs),
+            mock.patch(
+                "oio_rest.db.db_structure.REAL_DB_STRUCTURE", new=real_dbs
+            ),
+        ]
+
+        with contextlib.ExitStack() as stack:
+            for patch in patches:
+                stack.enter_context(patch)
+
+            db_structure.load_db_extensions(new)
+
+            yield
+
+
 class DBTestCase(_BaseTestCase):
     """Testcase with database access. Will create a new database from a template
     for each test. Requires the setting `[testing] enabled=True` during
@@ -311,7 +379,7 @@ class DBTestCase(_BaseTestCase):
         db_mgmt.testdb_teardown()
 
 
-class DBextTestCase(_BaseTestCase):
+class ExtDBTestCase(ExtTestCase):
     """Testcase with database and extension support. Will initialize a new database
     from scratch for every class and is therefore quite slow. For a faster
     alternative without extension support use DBTestCase.
@@ -329,7 +397,7 @@ class DBextTestCase(_BaseTestCase):
     def setUpClass(cls):
         cls.__class_stack = contextlib.ExitStack()
         cls.__class_stack.enter_context(
-            test_support.extend_db_struct(cls.db_structure_extensions),
+            cls.extend_db_struct(cls.db_structure_extensions)
         )
         db_mgmt.testdb_setup(from_scratch=True)
 
