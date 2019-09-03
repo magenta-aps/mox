@@ -12,6 +12,9 @@ psql -v ON_ERROR_STOP=1 <<-EOSQL
     alter database $DB_NAME set search_path to actual_state, public;
     alter database $DB_NAME set datestyle to 'ISO, YMD';
     alter database $DB_NAME set intervalstyle to 'sql_standard';
+    -- These needs to be off. See #21273 and #23145.
+    alter database $DB_NAME set enable_hashagg to off;
+    alter database $DB_NAME set enable_sort to off;
     \connect $DB_NAME
     create schema actual_state authorization $DB_USER;
 EOSQL
