@@ -5,7 +5,3 @@
 
 [database]
 host = "mox-db"
-
-
-[testing]
-enable = true

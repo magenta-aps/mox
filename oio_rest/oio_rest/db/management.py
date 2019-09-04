@@ -23,22 +23,20 @@ from oio_rest.settings import config
 
 logger = logging.getLogger(__name__)
 
-dbname = Identifier(config["database"]["db_name"])
-dbname_backup = Identifier(config["database"]["db_name"] + "_backup")
-dbname_initialized_template = Identifier(
-    config["database"]["db_name"] + "_template"
-)
+DBNAME = config["database"]["db_name"]
+DBNAME_BACKUP = config["database"]["db_name"] + "_backup"
+DBNAME_INITIALIZED_TEMPLATE = config["database"]["db_name"] + "_template"
 # The postgres default (empty) template for CREATE DATABASE.
-dbname_template = Identifier("template1")
+DBNAME_SYS_TEMPLATE = "template1"
 
 
-def apply_templates():
+def apply_templates(dbname=None):
     """Initialize the database with templates."""
-    with _get_connection() as conn, conn.cursor() as curs:
+    with _get_connection(dbname) as conn, conn.cursor() as curs:
         curs.execute("\n".join(db_templating.get_sql()))
 
 
-def check_templates():
+def check_templates(dbname=None):
     """Check whether the database is initialized."""
 
     # check that 'bruger' table exists. This is arbitrary.
@@ -46,28 +44,17 @@ def check_templates():
         "select relname from pg_catalog.pg_class where relname = 'bruger';"
     )
 
-    with _get_connection() as conn, conn.cursor() as curs:
+    with _get_connection(dbname) as conn, conn.cursor() as curs:
         curs.execute(INIT_CHECK_SQL)
         return bool(curs.fetchone())
 
 
 def check_connection():
     try:
-        _get_connection()
+        _get_connection(DBNAME)
         return True
     except psycopg2.OperationalError:
         return False
-
-
-def testdb_create_template_db():
-    """Create a copy of the database to be used as a template in the future. This
-    should only be used right after initdb() have been run and no other data
-    have been added.
-
-    Requires CREATEDB or SUPERUSER privileges.
-
-    """
-    _cpdb(dbname, dbname_initialized_template)
 
 
 def testdb_setup(from_scratch=False):
@@ -79,12 +66,9 @@ def testdb_setup(from_scratch=False):
     Requires CREATEDB and OWNER or SUPERUSER privileges.
 
     """
-    if not from_scratch:
-        _check_testing_enabled()
-
     logger.info("Setting up test database")
-    _dropdb(dbname_backup)
-    _cpdb(dbname, dbname_backup)
+    _dropdb(DBNAME_BACKUP)
+    _cpdb(DBNAME, DBNAME_BACKUP)
 
     testdb_reset(from_scratch)
 
@@ -96,17 +80,24 @@ def testdb_reset(from_scratch=False):
     Requires CREATEDB and OWNER or SUPERUSER privileges.
 
     """
-    if not from_scratch:
-        _check_testing_enabled()
 
     logger.info("Resetting test database")
-    _dropdb(dbname)
+    _dropdb(DBNAME)
     if from_scratch:
-        _cpdb(dbname_template, dbname)
-        _schema_and_extensions()
-        apply_templates()
+        _createdb(DBNAME)
     else:
-        _cpdb(dbname_initialized_template, dbname)
+        def _check_database():
+            with _get_connection(DBNAME_SYS_TEMPLATE) as conn, conn.cursor() as curs:
+                    curs.execute(
+                        "select datname from pg_catalog.pg_database where datname=%s",
+                        [DBNAME_INITIALIZED_TEMPLATE],
+                    )
+                    return bool(curs.fetchone())
+
+        if not _check_database():
+            _createdb(DBNAME_INITIALIZED_TEMPLATE)
+
+        _cpdb(DBNAME_INITIALIZED_TEMPLATE, DBNAME)
 
 
 def testdb_teardown():
@@ -117,12 +108,12 @@ def testdb_teardown():
 
     """
     logger.info("Removing test database")
-    _dropdb(dbname)
-    _cpdb(dbname_backup, dbname)
-    _dropdb(dbname_backup)
+    _dropdb(DBNAME)
+    _cpdb(DBNAME_BACKUP, DBNAME)
+    _dropdb(DBNAME_BACKUP)
 
 
-def _get_connection(dbname=None):
+def _get_connection(dbname):
     """Return a simple connection to the pg database instance with the credentials
     from settings. Allows database name to be overwritten.
 
@@ -131,9 +122,6 @@ def _get_connection(dbname=None):
     should always be present.
 
     """
-    if dbname is None:
-        dbname = config["database"]["db_name"]
-
     return psycopg2.connect(
         dbname=dbname,
         user=config["database"]["user"],
@@ -141,18 +129,6 @@ def _get_connection(dbname=None):
         host=config["database"]["host"],
         port=config["database"]["port"],
     )
-
-
-def _check_testing_enabled():
-    """Check whether the template database have been created."""
-    try:
-        _get_connection(dbname_initialized_template.strings[0])
-    except psycopg2.OperationalError:
-        raise RuntimeError(
-            "The database is not initialized with the testing flag enabled. "
-            "Delete the databases, set `[testing] enabled=True` in settings "
-            "and run `python3 -m oio_rest initdb` again."
-        )
 
 
 def _cpdb(dbname_from, dbname_to):
@@ -166,17 +142,15 @@ def _cpdb(dbname_from, dbname_to):
 
     """
     close_pool()
-    logger.debug(
-        "Copying database from %s to %s", dbname_from.string, dbname_to.string
-    )
-    with _get_connection(dbname_template.strings[0]) as conn:
+    logger.debug("Copying database from %s to %s", dbname_from, dbname_to)
+    with _get_connection(DBNAME_SYS_TEMPLATE) as conn:
         conn.set_isolation_level(
             psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT
         )
         with conn.cursor() as curs:
             curs.execute(
                 SQL("create database {} with template {};").format(
-                    dbname_to, dbname_from
+                    Identifier(dbname_to), Identifier(dbname_from)
                 )
             )
 
@@ -187,17 +161,17 @@ def _cpdb(dbname_from, dbname_to):
                 SQL(
                     "ALTER DATABASE {} SET search_path TO "
                     "actual_state, public;"
-                ).format(dbname_to)
+                ).format(Identifier(dbname_to))
             )
             curs.execute(
                 SQL("ALTER DATABASE {} SET datestyle TO 'ISO, YMD';").format(
-                    dbname_to
+                    Identifier(dbname_to)
                 )
             )
             curs.execute(
                 SQL(
                     "ALTER DATABASE {} SET intervalstyle TO 'sql_standard';"
-                ).format(dbname_to)
+                ).format(Identifier(dbname_to))
             )
 
             # The tests are written as if the computer has the local time zone
@@ -208,7 +182,7 @@ def _cpdb(dbname_from, dbname_to):
             curs.execute(
                 SQL(
                     "ALTER DATABASE {} SET time zone 'Europe/Copenhagen';"
-                ).format(dbname_to)
+                ).format(Identifier(dbname_to))
             )
 
 
@@ -218,17 +192,28 @@ def _dropdb(dbname):
     Requires OWNER or SUPERUSER privileges.
     """
     close_pool()
-    logger.debug("Dropping database %s", dbname.string)
-    with _get_connection(dbname_template.strings[0]) as conn:
+    logger.debug("Dropping database %s", dbname)
+    with _get_connection(DBNAME_SYS_TEMPLATE) as conn:
         conn.set_isolation_level(
             psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT
         )
         with conn.cursor() as curs:
-            curs.execute(SQL("DROP DATABASE IF EXISTS {};").format(dbname))
+            curs.execute(
+                SQL("DROP DATABASE IF EXISTS {};").format(Identifier(dbname))
+            )
 
 
-def _schema_and_extensions():
-    with _get_connection() as conn, conn.cursor() as curs:
+def _createdb(dbname):
+    """Create a new database and initialize it with objects from templates. Drops a
+    potential database with the same name first.
+
+    Requires CREATEDB or SUPERUSER privileges.
+
+    """
+    _dropdb(dbname)
+    _cpdb(DBNAME_SYS_TEMPLATE, dbname)
+
+    with _get_connection(dbname) as conn, conn.cursor() as curs:
         # The following `create schema …` command should be identical the one
         # in docker/postgresql-initdb.d/10-init-db.sh used in production.
         curs.execute(
@@ -247,3 +232,5 @@ def _schema_and_extensions():
                     "actual_state;"
                 ).format(Identifier(ext))
             )
+
+    apply_templates(dbname)

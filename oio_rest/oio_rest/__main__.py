@@ -19,7 +19,6 @@ from oio_rest.db.management import (
     apply_templates,
     check_connection,
     check_templates,
-    testdb_create_template_db,
 )
 
 
@@ -66,20 +65,6 @@ def initdb(wait):
     click.echo("Initializing database.")
     apply_templates()
     click.echo("Database initialised.")
-
-    if config["testing"]["enable"]:
-        click.echo("Testing enabled. Creating database for test.")
-        try:
-            testdb_create_template_db()
-        except psycopg2.errors.InsufficientPrivilege:
-            click.echo(
-                "Insufficient privileges. To create the testing database, "
-                "the database user needs the CREATEDB or SUPERUSER privileges."
-            )
-            sys.exit(1)
-    else:
-        click.echo("Testing not enabled. Skipping creating database for test.")
-
 
 if __name__ == '__main__':
     cli()
