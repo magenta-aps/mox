@@ -1,9 +1,14 @@
-In development
---------------
+Version 1.4.0, 6 September 2019
+-------------------------------
 
 New features:
 
 * Completely revamped configuration system.
+* Attempting to list deleted objects now results in a 410 Gone
+* Support added for PostgreSQL 10
+* Support added for performing a combined search-and-fetch through the 
+  REST interface
+* Various improvements and fixes to Docker support
 
 Version 1.3.0, 11 July 2019
 ---------------------------
