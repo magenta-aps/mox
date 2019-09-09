@@ -146,30 +146,37 @@ class TestGenerateJSONSchema(TestBase):
             return json.load(fp)
 
     def test_tilstande_organisation(self):
-        self.assertEqual(
-            {
-                'type': 'object',
-                'properties': {
-                    'organisationgyldighed': {
-                        'type': 'array',
-                        'items': {
-                            'type': 'object',
-                            'properties': {
-                                'gyldighed': {
-                                    'type': 'string',
-                                    'enum': ['Aktiv', 'Inaktiv']
-                                },
-                                'virkning': {'$ref': '#/definitions/virkning'},
+        expected = {
+            'type': 'object',
+            'properties': {
+                'organisationgyldighed': {
+                    'type': 'array',
+                    'items': {
+                        'type': 'object',
+                        'properties': {
+                            'gyldighed': {
+                                'type': 'string',
+                                'enum': ['Aktiv', 'Inaktiv']
                             },
-                            'required': ['gyldighed', 'virkning'],
-                            'additionalProperties': False
-                        }
+                            'virkning': {'$ref': '#/definitions/virkning'},
+                        },
+                        'required': ['gyldighed', 'virkning'],
+                        'additionalProperties': False
                     }
-                },
-                'required': ['organisationgyldighed'],
-                'additionalProperties': False
+                }
             },
+            'required': ['organisationgyldighed'],
+            'additionalProperties': False
+        }
+        self.assertEqual(
+            expected,
             validate._generate_tilstande('organisation', do_create=True)
+        )
+
+        del expected['required']
+        self.assertEqual(
+            expected,
+            validate._generate_tilstande('organisation', do_create=False)
         )
 
     def test_tilstande_bruger(self):
@@ -312,7 +319,7 @@ class TestGenerateJSONSchema(TestBase):
                 },
                 'additionalProperties': False
             },
-            validate._generate_relationer('aktivitet', do_create=True)
+            validate._generate_relationer('aktivitet', do_create=False)
         )
 
     def test_relationer_indsats(self):
@@ -596,43 +603,51 @@ class TestGenerateJSONSchema(TestBase):
         )
 
     def test_attributter_klasse(self):
-        self.assertEqual(
-            {
-                'type': 'object',
-                'properties': {
-                    'klasseegenskaber': {
-                        'type': 'array',
-                        'items': {
-                            'type': 'object',
-                            'properties': {
-                                'brugervendtnoegle': {'type': 'string'},
-                                'beskrivelse': {'type': 'string'},
-                                'eksempel': {'type': 'string'},
-                                'omfang': {'type': 'string'},
-                                'titel': {'type': 'string'},
-                                'retskilde': {'type': 'string'},
-                                'aendringsnotat': {'type': 'string'},
-                                'integrationsdata': {'type': 'string'},
-                                'soegeord': {
+        expected = {
+            'type': 'object',
+            'properties': {
+                'klasseegenskaber': {
+                    'type': 'array',
+                    'items': {
+                        'type': 'object',
+                        'properties': {
+                            'brugervendtnoegle': {'type': 'string'},
+                            'beskrivelse': {'type': 'string'},
+                            'eksempel': {'type': 'string'},
+                            'omfang': {'type': 'string'},
+                            'titel': {'type': 'string'},
+                            'retskilde': {'type': 'string'},
+                            'aendringsnotat': {'type': 'string'},
+                            'integrationsdata': {'type': 'string'},
+                            'soegeord': {
+                                'type': 'array',
+                                'items': {
                                     'type': 'array',
-                                    'items': {
-                                        'type': 'array',
-                                        'items': {'type': 'string'}
-                                    },
-                                    'maxItems': 2
+                                    'items': {'type': 'string'}
                                 },
-                                'virkning': {'$ref': '#/definitions/virkning'}
+                                'maxItems': 2
                             },
-                            'required': ['brugervendtnoegle', 'titel',
-                                         'virkning'],
-                            'additionalProperties': False
-                        }
+                            'virkning': {'$ref': '#/definitions/virkning'}
+                        },
+                        'required': ['brugervendtnoegle', 'titel', 'virkning'],
+                        'additionalProperties': False
                     }
-                },
-                'required': ['klasseegenskaber'],
-                'additionalProperties': False
+                }
             },
+            'required': ['klasseegenskaber'],
+            'additionalProperties': False
+        }
+        self.assertEqual(
+            expected,
             validate._generate_attributter('klasse', do_create=True)
+        )
+
+        del expected['required']
+        expected['properties']['klasseegenskaber']['items']['required'] = [
+            'virkning']
+        self.assertEqual(
+            expected,
+            validate._generate_attributter('klasse', do_create=False)
         )
 
     def test_attributter_itsystem(self):
