@@ -149,6 +149,7 @@ def _generate_attributter(obj, do_create):
     """
     Generate the 'attributter' part of the JSON schema.
     :param obj: The type of LoRa object, i.e. 'bruger', 'organisation' etc.
+    :param do_create: Whether we are creating a new object or not
     :return: Dictionary representing the 'attributter' part of the JSON schema.
     """
 
@@ -185,6 +186,7 @@ def _generate_tilstande(obj, do_create):
     """
     Generate the 'tilstande' part of the JSON schema.
     :param obj: The type of LoRa object, i.e. 'bruger', 'organisation' etc.
+    :param do_create: Whether we are creating a new object or not
     :return: Dictionary representing the 'tilstande' part of the JSON schema.
     """
 
@@ -279,6 +281,7 @@ def _generate_relationer(obj, do_create):
     """
     Generate the 'relationer' part of the JSON schema.
     :param obj: The type of LoRa object, i.e. 'bruger', 'organisation' etc.
+    :param do_create: Whether we are creating a new object or not
     :return: Dictionary representing the 'relationer' part of the JSON schema.
     """
     relationer_nul_til_en = \
@@ -371,6 +374,7 @@ def generate_json_schema(obj, do_create):
     """
     Generate the JSON schema corresponding to LoRa object type.
     :param obj: The LoRa object type, i.e. 'bruger', 'organisation',...
+    :param do_create: Whether we are creating a new object or not
     :return: Dictionary representing the JSON schema.
     """
 
