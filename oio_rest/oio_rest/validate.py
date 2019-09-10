@@ -436,19 +436,6 @@ def generate_json_schema(obj, do_create):
     return schema
 
 
-# Store already calculated schemas to save performance.
-# There are two versions of each schema, one for creation and one for
-# updates.
-
-class StoredSchema:
-    """Partition a dict in two dicts, one for True and one for False."""
-    def __init__(self):
-        self.__my_schemas = {True: {}, False: {}}
-
-    def __getitem__(self, key):
-        return self.__my_schemas[key]
-
-
 SCHEMAS = {}
 
 
