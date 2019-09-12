@@ -41,7 +41,7 @@ TEMPLATES = (
 )
 
 
-def render_templates():
+def _render_templates():
     for oio_type in sorted(db_structure.DATABASE_STRUCTURE):
         for template_name in TEMPLATES:
             template_file = "%s.jinja.sql" % template_name
@@ -98,7 +98,7 @@ def get_sql():
         DB_DIR / "post-funcs",
     ):
         if dirp is None:
-            yield from render_templates()
+            yield from _render_templates()
         else:
             for p in sorted(dirp.glob('*.sql')):
                 yield p.read_text()
