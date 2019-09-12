@@ -1,11 +1,11 @@
 -r requirements.txt
 Flask-Testing
 tap.py
-unittest-xml-reporting<2.3.0
 mock
 requests_mock
-coverage
 freezegun
 flake8
 flake8-imports
 flake8-module-name
+pytest==5.1.2
+pytest-cov==2.7.1
