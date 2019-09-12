@@ -4,9 +4,9 @@
 
 set -e
 
-true "${DB_USER:?DB_USER is unset. Error!}"
-true "${DB_PASSWORD:?DB_PASSWORD is unset. Error!}"
-true "${DB_NAME:?DB_NAME is unset. Error!}"
+true "${DB_USER:?DB_USER is unset. Error.}"
+true "${DB_PASSWORD:?DB_PASSWORD is unset. Error.}"
+true "${DB_NAME:?DB_NAME is unset. Error.}"
 
 # The three following `alter database … set` and `create schema …` commands
 # should be identical the ones in oio_rest/oio_rest/db/management.py used for
