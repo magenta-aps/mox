@@ -16,7 +16,7 @@ below. Use the docker image or a Python package in a virtual environment.
       cd mox
       docker-compose up -d --build mox
       # run unittests with
-      docker-compose exec mox bash -c "cd oio_rest; python -m coverage run -m xmlrunner"
+      docker-compose exec mox pytest oio_rest
 
 Docker
 ======
@@ -212,7 +212,7 @@ unittest use:
 
 .. code-block:: bash
 
-   docker-compose exec mox bash -c "cd oio_rest; python -m coverage run -m xmlrunner"
+   docker-compose exec mox pytest oio_rest
 
 It contains all the required testing dependencies and permissions described in
 :ref:`Testing`. pgTAP is installed in the database via the
