@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-true "${DB_USER:?DB_USER is unset. Error!}"
+true "${DB_USER:?DB_USER is unset. Error.}"
 
 psql -v ON_ERROR_STOP=1 <<-EOSQL
     ALTER ROLE $DB_USER WITH SUPERUSER;

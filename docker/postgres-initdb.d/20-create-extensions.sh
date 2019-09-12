@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-true "${DB_NAME:?DB_NAME is unset. Error!}"
+true "${DB_NAME:?DB_NAME is unset. Error.}"
 
 
 # The three following `create extension … ` commands should be identical the
