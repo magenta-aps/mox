@@ -17,6 +17,7 @@ from oio_rest.custom_exceptions import (AuthorizationFailedException,
                                         UnauthorizedException)
 
 from tests import util
+from tests.util import DBTestCase
 
 
 class TestAuthentication(unittest.TestCase):
@@ -55,7 +56,7 @@ class TestAuthentication(unittest.TestCase):
 
 
 @patch('oio_rest.settings.USE_SAML_AUTHENTICATION', True)
-class TestAssertionVerification(util.TestCase):
+class TestAssertionVerification(DBTestCase):
     '''The intention of these tests are that they should perform an actual
     validation. Unfortunately, I only had some old assertions
     available which I couldn't get to validate properly, so instead it

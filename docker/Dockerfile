@@ -59,7 +59,8 @@ VOLUME /log
 
 # Install requirements
 COPY oio_rest/requirements.txt /code/oio_rest/requirements.txt
-RUN pip3 install -r oio_rest/requirements.txt
+COPY oio_rest/requirements-test.txt /code/oio_rest/requirements-test.txt
+RUN pip3 install -r oio_rest/requirements.txt -r oio_rest/requirements-test.txt
 
 
 # Copy and install application.
@@ -76,4 +77,9 @@ RUN pip3 install -e oio_rest
 USER mox:mox
 EXPOSE 8080
 ENTRYPOINT ["/code/docker/docker-entrypoint.sh"]
-CMD ["gunicorn", "-b", "0.0.0.0:8080", "oio_rest:app"]
+CMD ["gunicorn", \
+  "-b", "0.0.0.0:8080", \
+  "--workers", "2", \
+  "--access-logfile", "/log/access.log", \
+  "--worker-tmp-dir", "/dev/shm", \
+  "oio_rest:app"]

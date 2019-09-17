@@ -1,8 +1,7 @@
 # -*- conf -*-
 [run]
+data_file = .tmp/.coverage
 branch = True
-source =
-     oio_rest/
 
 [report]
 exclude_lines =
@@ -10,3 +9,6 @@ exclude_lines =
      if flask.current_app.debug:
      if settings.PROD_MODE:
      \bpass\b
+
+[xml]
+output= .tmp/coverage.xml

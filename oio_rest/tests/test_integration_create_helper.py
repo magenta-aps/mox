@@ -6,10 +6,10 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
-from tests import util
+from tests.util import DBTestCase
 
 
-class TestCreateObject(util.TestCase):
+class TestCreateObject(DBTestCase):
     def setUp(self):
         super(TestCreateObject, self).setUp()
         self.standard_virkning1 = {

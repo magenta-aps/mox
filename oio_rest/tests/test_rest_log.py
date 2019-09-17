@@ -8,9 +8,10 @@
 
 from oio_rest.utils.build_registration import is_uuid
 from tests import util
+from tests.util import DBTestCase
 
 
-class TestLogHaendelse(util.TestCase):
+class TestLogHaendelse(DBTestCase):
     def test_log_haendelse(self):
         result = self.client.post(
             "log/loghaendelse",

@@ -13,9 +13,10 @@ import time
 import uuid
 
 from tests import util
+from tests.util import DBTestCase
 
 
-class Tests(util.TestCase):
+class Tests(DBTestCase):
     def test_import(self):
         objid = self.load_fixture('/aktivitet/aktivitet',
                                   'aktivitet_opret.json')

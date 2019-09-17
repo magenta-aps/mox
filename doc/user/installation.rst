@@ -15,11 +15,8 @@ below. Use the docker image or a Python package in a virtual environment.
       git clone https://github.com/magenta-aps/mox.git
       cd mox
       docker-compose up -d --build mox
-
-.. todo::
-
-   Document how to install test dependencies when it is formalized in #28489.
-
+      # run unittests with
+      docker-compose exec mox pytest oio_rest
 
 Docker
 ======
@@ -125,8 +122,11 @@ from the host at ``http://localhost:8080``.
 
 For other setting you can set, see :ref:`settings`.
 
-.. todo::
-   Document testing dependencies.
+Testing
+-------
+
+The dependencies for unittest are included in the docker image. For info on how
+to run test see :ref:`Testing` and :ref:`Docker-compose-testing`.
 
 
 Logs
@@ -184,7 +184,6 @@ To pull the images and start the three service run:
 
 .. code-block:: bash
 
-
     docker-compose up -d --build mox
 
 The ``-d`` flag move the services to the background. You can inspect the output
@@ -194,7 +193,7 @@ docker image for ``oio_rest`` from the local :file:`Dockerfile`.
 
 To stop the service again run ``docker-compose stop``. This will stop the
 services, but the data will persist. To completely remove the containers and
-data run ``docker-compose down``.
+data run ``docker-compose down -v``.
 
 The :file:`docker-compose.yml` file contains a service named ``mox-cp``. Its
 purpose is to copy the files needed to :ref:`initialize the database, user and
@@ -203,6 +202,23 @@ the postgres image to automatically initialize the database. This functionality
 is not needed by default because the needed files are mounted directly from the
 host. It is included as an example when you want to use an environment closer to
 production.
+
+.. _Docker-compose-testing:
+
+Testing in docker-compose
+-------------------------
+The docker-compose development environment is ready run unittests on. To run all
+unittest use:
+
+.. code-block:: bash
+
+   docker-compose exec mox pytest oio_rest
+
+It contains all the required testing dependencies and permissions described in
+:ref:`Testing`. pgTAP is installed in the database via the
+:file:`dev-environment/postgres.Dockerfile` and the required database user
+privilegedes are granted via
+:file:`dev-environment/postgres-initdb.d/30-upgrade-to-superuser.sh`
 
 
 From source
