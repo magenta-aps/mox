@@ -98,3 +98,9 @@ path = ""
 [log]
 activity_log_path = "/var/log/mox/activity.log"
 trace_log_path = "/var/log/mox/trace.log"
+
+
+[testing_api]
+# If enabled, expose /testibng/db-* endpoint for setup, reset and teardown of a
+# test database. Useful for integration tests from other components such as MO.
+enable = false
