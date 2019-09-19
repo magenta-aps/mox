@@ -78,8 +78,5 @@ USER mox:mox
 EXPOSE 8080
 ENTRYPOINT ["/code/docker/docker-entrypoint.sh"]
 CMD ["gunicorn", \
-  "-b", "0.0.0.0:8080", \
-  "--workers", "2", \
-  "--access-logfile", "/log/access.log", \
-  "--worker-tmp-dir", "/dev/shm", \
+  "--config", "/code/docker/gunicorn-settings.py", \
   "oio_rest:app"]
