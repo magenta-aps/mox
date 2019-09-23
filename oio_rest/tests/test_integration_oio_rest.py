@@ -34,7 +34,7 @@ class Tests(util.TestCase):
         expected['livscykluskode'] = 'Rettet'
 
         update = {
-            'egenskaber': {},
+            'attributter': {},
             'tilstande': {},
             'relationer': {}
         }

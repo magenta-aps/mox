@@ -815,7 +815,10 @@ class TestOIORestObject(TestCase):
     @patch("oio_rest.db.get_life_cycle_code")
     @patch("oio_rest.db.object_exists")
     @patch("oio_rest.db.update_object")
-    def test_patch_object_update_if_deleted_or_passive(self, mock_update,
+    @patch("oio_rest.validate.validate")
+    def test_patch_object_update_if_deleted_or_passive(self,
+                                                       mock_validate,
+                                                       mock_update,
                                                        mock_exists,
                                                        mock_life_cycle):
         # type: (MagicMock, MagicMock, MagicMock) -> None
@@ -847,7 +850,9 @@ class TestOIORestObject(TestCase):
     @patch("oio_rest.db.get_life_cycle_code")
     @patch("oio_rest.db.object_exists")
     @patch("oio_rest.db.update_object")
-    def test_patch_object_update_if_not_deleted_or_passive(self, mock_update,
+    @patch("oio_rest.validate.validate")
+    def test_patch_object_update_if_not_deleted_or_passive(self, mock_validate,
+                                                           mock_update,
                                                            mock_exists,
                                                            mock_life_cycle):
         # type: (MagicMock, MagicMock, MagicMock) -> None
@@ -865,7 +870,7 @@ class TestOIORestObject(TestCase):
         # Act
         with self.app.test_request_context(data=json.dumps(data),
                                            content_type='application/json',
-                                           method='PUT'):
+                                           method='PATCH'):
             result = self.testclass.patch_object(uuid)
             actual_data = json.loads(result[0].get_data(as_text=True))
             actual_code = result[1]
@@ -878,7 +883,9 @@ class TestOIORestObject(TestCase):
     @patch("oio_rest.db.get_life_cycle_code")
     @patch("oio_rest.db.object_exists")
     @patch("oio_rest.db.passivate_object")
-    def test_patch_object_passivate_if_livscyklus_passiv(self, mock_passivate,
+    @patch("oio_rest.validate.validate")
+    def test_patch_object_passivate_if_livscyklus_passiv(self, mock_validate,
+                                                         mock_passivate,
                                                          mock_exists,
                                                          mock_life_cycle):
         # type: (MagicMock, MagicMock, MagicMock) -> None

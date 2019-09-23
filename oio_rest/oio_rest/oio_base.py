@@ -422,13 +422,13 @@ class OIORestObject(object):
         """A :ref:`ImportOperation` that creates or overwrites an object from
         the JSON payload.  It returns the UUID for the object.
 
-        If there no object with the UUID or the object with that UUID have been
+        If there is no object with the UUID or the object with that UUID was
         :ref:`deleted <DeleteOperation>` or :ref:`passivated
         <PassivateOperation>`, it creates a new object at the specified UUID.
         It sets ``livscykluskode: "Importeret"``.
 
-        If an object with the UUID exist it completely overwrite the object.
-        Including all ``virkning`` periods. It sets
+        If an object with the UUID exists, it completely overwrites the object
+        including all ``virkning`` periods. It sets
         ``livscykluskode: "Rettet"``.
 
         .. :quickref: :ref:`ImportOperation`
@@ -506,6 +506,14 @@ class OIORestObject(object):
         # Get most common parameters if available.
         note = typed_get(input, "note", "")
         registration = cls.gather_registration(input)
+
+        # Validate JSON input
+        try:
+            validate.validate(
+                input, cls.__name__.lower(), do_create=False
+            )
+        except jsonschema.exceptions.ValidationError as e:
+            return jsonify({'message': e.message}), 400
 
         if typed_get(input, 'livscyklus', '').lower() == 'passiv':
             # Passivate
