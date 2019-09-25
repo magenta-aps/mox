@@ -11,7 +11,12 @@ services:
     volumes:
       - .:/code
       - ./dev-environment/dev-settings.toml:/user-settings.toml
-    command: ["gunicorn", "--reload", "-b", "0.0.0.0:8080", "oio_rest:app"]
+    command: [
+    "gunicorn",
+    "--config", "docker/gunicorn-settings.py",
+    "--reload", # Reload on file changes
+    "--workers", "1", # Single threaded in dev
+    "oio_rest:app"]
     ports:
       - "8080:8080"
     env_file:
