@@ -108,6 +108,22 @@ def sitemap():
     return jsonify({"site-map": sorted(links)})
 
 
+_version = None
+
+
+def _get_version():
+    if _version is None:
+        global _version
+        with open(settings.config["version_file_path"], "r") as f:
+            _version = jsonify({"lora_version": f.read().strip()})
+    return _version
+
+
+@app.route('/version')
+def version():
+    return _get_version()
+
+
 @app.errorhandler(OIOFlaskException)
 def handle_not_allowed(error):
     dct = error.to_dict()

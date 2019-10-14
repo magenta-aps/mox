@@ -100,6 +100,7 @@ class Tests(util.TestCase):
                     "/tilstand/tilstand/" + UUID_PATTERN,
                     "/tilstand/tilstand/fields",
                     "/tilstand/tilstand/schema",
+                    "/version",
                 ]
             }
         )
