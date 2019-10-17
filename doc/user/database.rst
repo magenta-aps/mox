@@ -20,8 +20,14 @@ Database, user and extensions initialization
 Object initialization
 =====================
 
-To initialize the database, run::
+With mox comes a utility called ``initdb`` that populates a Postgres server
+database with all the necessary postgresql objects.
+
+``initdb`` is only intended to run succesfully against a database that has been
+initialized as described in :ref:`db_user_ext_init`.
+
+To invoke ``initdb``, run::
 
     python -m oio_rest initdb
 
-For more info run ``python -m oio_rest initdb --help``.
+Please also read ``python -m oio_rest initdb --help``.
