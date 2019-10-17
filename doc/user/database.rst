@@ -24,6 +24,14 @@ that the user has authorization over. At last, the search path should be set to
 `"actual_state, public"`. Please refer to the reference script
 :file:`docker/postgres-initdb.d/10-init-db.sh`.
 
+There is one more thing ``mox`` needs before it can work with the database:
+**extensions**. The required extensions are *uuid-ossp*, *btree_gist* and
+*pg_trgm* and they should be created with the schema `actual_state`. Note that
+extensions can only be created by a superuser (this is because extensions can
+run arbitrary code). Please refer to the reference script
+:file:`docker/postgres-initdb.d/20-create-extensions.sh`.
+
+
 
 .. _db_object_init:
 
