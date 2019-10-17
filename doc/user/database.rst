@@ -9,10 +9,20 @@ Database
    Document the database in `#30317
    <https://redmine.magenta-aps.dk/issues/30317>`_.
 
+
 .. _db_user_ext_init:
 
 Database, user and extensions initialization
-===========================================
+============================================
+
+``mox`` requires a database and a user in that database. You can configure the
+name of the database and user a running ``mox`` will use in :ref:`settings`
+under the `[database]` heading. The user should have `all privileges
+<https://www.postgresql.org/docs/9.6/sql-grant.html>`_ on the database.
+Furthermore, there should be a schema in the database called `actual_state`
+that the user has authorization over. At last, the search path should be set to
+`"actual_state, public"`. Please refer to the reference script
+:file:`docker/postgres-initdb.d/10-init-db.sh`.
 
 
 .. _db_object_init:

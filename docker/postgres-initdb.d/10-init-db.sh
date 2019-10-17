@@ -1,4 +1,7 @@
 #!/bin/bash
+
+# Please keep this in sync with ``doc/user/database.rst`` :-)
+
 set -e
 
 true "${DB_USER:?DB_USER is unset. Error!}"
