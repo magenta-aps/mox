@@ -4,10 +4,11 @@
 Database
 ========
 
-.. todo::
-
-   Document the database in `#30317
-   <https://redmine.magenta-aps.dk/issues/30317>`_.
+This document describes what you need to do to prepare a database for usage by
+``mox``. Generally, there are 2 steps. The first requires a high level of
+privileges and creates a user. The second is within the database and can be
+done by the created user. The 2 following subchapters reflect these two levels
+of privilege.
 
 
 .. _db_user_ext_init:
