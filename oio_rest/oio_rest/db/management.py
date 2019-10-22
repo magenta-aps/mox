@@ -57,6 +57,32 @@ def check_connection():
         return False
 
 
+def truncate_db(dbname):
+    """Remove all data in a lora database.
+
+    Technically, this truncates all tables in the ``actual_state``
+    schema in *dbname*.
+
+    The db user must have ``TRUNCATE`` privilege on each table.
+    This operation acquires an ``ACCESS EXCLUSIVE`` lock on each table.
+    """
+
+    # find all table names to truncate
+    FIND_ALL_TABLES_SQL = SQL("""
+    select tablename
+      from pg_catalog.pg_tables
+     where schemaname = 'actual_state';
+    """)
+
+    # truncate said tables
+    TRUNCATE_SQL = SQL("truncate table {} cascade;")
+
+    with _get_connection(dbname) as conn, conn.cursor() as curs:
+        curs.execute(FIND_ALL_TABLES_SQL)
+        tables = [Identifier("actual_state", n) for (n,) in curs.fetchall()]
+        curs.execute(TRUNCATE_SQL.format(SQL(", ").join(tables)))
+
+
 def testdb_setup(from_scratch=False):
     """Move the database specified in settings to a backup location and reset the
     database specified in the settings. This makes the database ready for
