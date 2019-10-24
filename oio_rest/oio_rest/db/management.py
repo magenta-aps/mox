@@ -67,7 +67,12 @@ def testdb_setup(from_scratch=False):
 
     """
     logger.info("Setting up test database: %s", _DBNAME)
-    _dropdb(_DBNAME_BACKUP)
+    if _database_exists(_DBNAME_BACKUP):
+        raise ValueError(
+            "The backup location used for the database while running tests is "
+            "not empty. You have to make sure no data is lost and manually "
+            "remove the database: %s" % _DBNAME_BACKUP)
+
     _cpdb(_DBNAME, _DBNAME_BACKUP)
 
     testdb_reset(from_scratch)
@@ -86,15 +91,7 @@ def testdb_reset(from_scratch=False):
     if from_scratch:
         _createdb(_DBNAME)
     else:
-        def _check_database():
-            with _get_connection(_DBNAME_SYS_TEMPLATE) as conn, conn.cursor() as curs:
-                    curs.execute(
-                        "select datname from pg_catalog.pg_database where datname=%s",
-                        [_DBNAME_INITIALIZED_TEMPLATE],
-                    )
-                    return bool(curs.fetchone())
-
-        if not _check_database():
+        if not _database_exists(_DBNAME_INITIALIZED_TEMPLATE):
             _createdb(_DBNAME_INITIALIZED_TEMPLATE)
 
         _cpdb(_DBNAME_INITIALIZED_TEMPLATE, _DBNAME)
@@ -234,3 +231,13 @@ def _createdb(dbname):
             )
 
     apply_templates(dbname)
+
+
+def _database_exists(dbname):
+    """Checks if a pg database object exists."""
+    with _get_connection(_DBNAME_SYS_TEMPLATE) as conn, conn.cursor() as curs:
+            curs.execute(
+                "select datname from pg_catalog.pg_database where datname=%s",
+                [dbname],
+            )
+            return bool(curs.fetchone())
