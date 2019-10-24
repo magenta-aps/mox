@@ -66,7 +66,7 @@ def testdb_setup(from_scratch=False):
     Requires CREATEDB and OWNER or SUPERUSER privileges.
 
     """
-    logger.info("Setting up test database")
+    logger.info("Setting up test database: %s", _DBNAME)
     _dropdb(_DBNAME_BACKUP)
     _cpdb(_DBNAME, _DBNAME_BACKUP)
 
@@ -81,7 +81,7 @@ def testdb_reset(from_scratch=False):
 
     """
 
-    logger.info("Resetting test database")
+    logger.info("Resetting test database: %s", _DBNAME)
     _dropdb(_DBNAME)
     if from_scratch:
         _createdb(_DBNAME)
@@ -107,7 +107,7 @@ def testdb_teardown():
     Requires CREATEDB and OWNER or SUPERUSER privileges.
 
     """
-    logger.info("Removing test database")
+    logger.info("Removing test database: %s", _DBNAME)
     _dropdb(_DBNAME)
     _cpdb(_DBNAME_BACKUP, _DBNAME)
     _dropdb(_DBNAME_BACKUP)
