@@ -1,33 +1,184 @@
-Tests:
-  stage: test
+# For the project at https://git.magenta.dk/rammearkitektur/lora
 
+# For `docker push` to work, the following envionment variables have to set in
+# the Gitlab UI.
+# RELEASE_REGISTRY_USER
+# RELEASE_REGISTRY_PASSWORD
+
+stages:
+  - lint-build
+  - test
+  - release
+  - deploy
+
+image: docker:19.03
+
+services:
+    - name: docker:19.03-dind
+      entrypoint: ["env", "-u", "DOCKER_HOST"]
+      command: ["dockerd-entrypoint.sh"]
+
+variables:
+  # When using dind service we need to instruct docker, to talk with the
+  # daemon started inside of the service. The daemon is available with
+  # a network connection instead of the default /var/run/docker.sock socket.
+  #
+  # The 'docker' hostname is the alias of the service container as described at
+  # https://docs.gitlab.com/ee/ci/docker/using_docker_images.html#accessing-the-services
+  DOCKER_HOST: tcp://docker:2375/
+  # When using dind, it's wise to use the overlayfs driver for
+  # improved performance.
+  DOCKER_DRIVER: overlay2
+
+  # Project variables
+  RELEASE_REGISTRY: docker.io
+  RELEASE_REGISTRY_IMAGE: index.docker.io/magentaaps/lora
+
+  IMAGE_SHA: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}
+  IMAGE_DEV: ${CI_REGISTRY_IMAGE}:dev
+
+  IMAGE: magentaaps/os2mo
+  IMAGE_TAG: ${IMAGE}:${CI_COMMIT_TAG}
+  IMAGE_LATEST: ${IMAGE}:latest
+
+# Lint stage
+#############
+
+# For now we execute the lint and build stage as one stage to speed up the
+# pipeline. When it is possible to use a DAG for describing the relations
+# (https://gitlab.com/gitlab-org/gitlab-ce/issues/47063), the lint jobs can be
+# executed in its own stage where no further jobs depend on them.
+
+.lint-default: &lint-default
+  stage: lint-build
+  image: python:3.7
+  tags:
+    - docker
+  before_script:
+    - pip3 install -r backend/requirements-test.txt
+
+.lint:
+  <<: *lint-default
   script:
-    - apt-get update -qy
-    - apt-get install -qy
-      libxmlsec1-dev python3-dev python3-pip python3-venv
-      postgresql pgtap sudo
-    - useradd -m testrunner
-    - chown -R testrunner .
-    - pip install 'pip>=18.1' 'setuptools>=40'
-    - pip install -e './oio_rest[tests]'
-    - flake8 --exit-zero oio_rest
-    - sudo -u testrunner coverage run -m unittest discover
-      -t oio_rest -s tests --buffer --verbose
-    - sudo -u testrunner coverage report
-    - sudo -u testrunner coverage html --skip-covered -d coverage
+    - cd backend
+    - black --check --diff .
+    - flake8 .
 
+.docs:
+  <<: *lint-default
+  script:
+    - sphinx-build docs/source /doc-build
   artifacts:
     paths:
-      - coverage
+      - doc-build
 
-Docs:
-  stage: test
 
+# Build stage
+#############
+
+build:
+  stage: lint-build
+  tags:
+    - docker
+    - privileged
+  before_script:
+    # Login to GitLab registry
+    - echo ${CI_REGISTRY_PASSWORD} | docker login -u ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY}
+    - docker pull ${IMAGE_DEV} || true
   script:
-    - pip install -r doc/requirements.txt
-    - make -C doc html SPHINXBUILD=sphinx-build
-    - mv doc/_build/html docs
+    - docker build -f docker/Dockerfile --pull --tag ${IMAGE_SHA} --cache-from ${IMAGE_DEV} .
+    - docker push ${IMAGE_SHA}
 
+
+# Test stage
+############
+
+
+unit-test:
+  stage: test
+  image:
+    name: ${IMAGE_SHA}
+  tags:
+    - docker
+  services:
+    - name: magentaaps/postgres-os2mo:9.6.15-2-test
+      alias: mox-db
+  variables:
+    DB_NAME: mox
+    DB_USER: mox
+    DB_PASSWORD: mox
+    DB_UPGRADE_TO_SUPERUSER: "True"
+    MOX_USER_CONFIG_PATH: $CI_PROJECT_DIR/dev-environment/dev-settings.toml
+    COVERAGE_FILE: $CI_PROJECT_DIR/.coverage
+  script:
+    - pytest
+      --cov=oio_rest
+      --junitxml $CI_PROJECT_DIR/junit.xml
+      --cov-report html:$CI_PROJECT_DIR/coverage-html
+      --cov-report term
+      -p no:cacheprovider
+      --color=yes
+      oio_rest
+
+  coverage: '/TOTAL.*\s+(\d+%)$/'
   artifacts:
+    when: always
     paths:
-      - docs
+      - $CI_PROJECT_DIR/coverage-html
+    reports:
+      junit: $CI_PROJECT_DIR/junit.xml
+
+
+# Release stage
+###############
+
+.release-default: &release-default
+  stage: release
+  variables:
+    GIT_STRATEGY: none # We do not need the source code
+  tags:
+    - docker
+    - privileged
+  before_script:
+    # Login to GitLab registry
+    - echo ${CI_REGISTRY_PASSWORD} | docker login -u ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY}
+    - docker pull ${IMAGE_SHA}
+
+
+release-dev:
+  <<: *release-default
+  only:
+    - /development/
+  script:
+    - docker tag ${IMAGE_SHA} ${IMAGE_DEV}
+    - docker push ${IMAGE_DEV}
+
+
+release-rc:
+  <<: *release-default
+  only:
+    variables:
+      # Matches all of SemVer 2.0.0
+      - $CI_COMMIT_TAG =~ /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/
+  script:
+    # Login to Docker Hub registry
+    - docker login -u ${RELEASE_REGISTRY_USER} -p ${RELEASE_REGISTRY_PASSWORD} ${RELEASE_REGISTRY}
+    - echo Tagging with ${IMAGE_TAG}
+    - docker tag ${IMAGE_SHA} ${IMAGE_TAG}
+    - docker push ${IMAGE_TAG}
+
+release-master:
+  <<: *release-default
+  only:
+    variables:
+      # Matches <version core> from SemVer 2.0.0 BNF grammar. Ex. 2.3.4, but not 2.3.4-rc
+      - $CI_COMMIT_TAG =~ /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/
+  script:
+    # Login to Docker Hub registry
+    - docker login -u ${RELEASE_REGISTRY_USER} -p ${RELEASE_REGISTRY_PASSWORD} ${RELEASE_REGISTRY}
+    - echo Tagging with ${IMAGE_TAG}
+    - docker tag ${IMAGE_SHA} ${IMAGE_TAG}
+    - echo Tagging with ${IMAGE_LATEST}
+    - docker tag ${IMAGE_SHA} ${IMAGE_LATEST}
+    - docker push ${IMAGE_TAG}
+    - docker push ${IMAGE_LATEST}
