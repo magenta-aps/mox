@@ -124,14 +124,6 @@ The search function supports paged searches by adding the parameters
 Since pagination only makes sense if the order of the results are predictable
 the search will be sorted by ``brugervendtnoegle`` if pagination is used.
 
-.. note::
-
-    If queries using pagination are becoming a performance bottleneck, you can
-    try to optimise them by setting ``enable_hashagg = False`` and
-    ``enable_sort = False`` in ``postgres.conf``. This may decrease
-    performance for other queries.
-
-
 
 Advanced search
 ---------------
