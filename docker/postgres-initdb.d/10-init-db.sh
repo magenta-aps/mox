@@ -1,4 +1,7 @@
 #!/bin/bash
+
+# Please keep this in sync with ``doc/user/database.rst`` :-)
+
 set -e
 
 true "${DB_USER:?DB_USER is unset. Error!}"
@@ -18,7 +21,3 @@ EOSQL
 
 # we can connect without password because ``trust`` authentication for Unix
 # sockets is enabled inside the container.
-
-# Do not replace this script with a raw .sql script. If an .sql script fails
-# (entrypoint script will exit) and the container is restarted with an already
-# initialized data directory, the rest of the scripts will not be run.
