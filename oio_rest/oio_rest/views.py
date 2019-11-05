@@ -112,8 +112,8 @@ _version = None
 
 
 def _get_version():
+    global _version
     if _version is None:
-        global _version
         with open(settings.config["version_file_path"], "r") as f:
             _version = jsonify({"lora_version": f.read().strip()})
     return _version
