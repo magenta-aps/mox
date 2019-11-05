@@ -23,11 +23,11 @@ from oio_rest.settings import config
 
 logger = logging.getLogger(__name__)
 
-DBNAME = config["database"]["db_name"]
-DBNAME_BACKUP = config["database"]["db_name"] + "_backup"
-DBNAME_INITIALIZED_TEMPLATE = config["database"]["db_name"] + "_template"
+_DBNAME = config["database"]["db_name"]
+_DBNAME_BACKUP = _DBNAME + "_backup"
+_DBNAME_INITIALIZED_TEMPLATE = _DBNAME + "_template"
 # The postgres default (empty) template for CREATE DATABASE.
-DBNAME_SYS_TEMPLATE = "template1"
+_DBNAME_SYS_TEMPLATE = "template1"
 
 
 def apply_templates(dbname=None):
@@ -51,7 +51,7 @@ def check_templates(dbname=None):
 
 def check_connection():
     try:
-        _get_connection(DBNAME)
+        _get_connection(_DBNAME)
         return True
     except psycopg2.OperationalError:
         return False
@@ -66,9 +66,14 @@ def testdb_setup(from_scratch=False):
     Requires CREATEDB and OWNER or SUPERUSER privileges.
 
     """
-    logger.info("Setting up test database")
-    _dropdb(DBNAME_BACKUP)
-    _cpdb(DBNAME, DBNAME_BACKUP)
+    logger.info("Setting up test database: %s", _DBNAME)
+    if _database_exists(_DBNAME_BACKUP):
+        raise ValueError(
+            "The backup location used for the database while running tests is "
+            "not empty. You have to make sure no data is lost and manually "
+            "remove the database: %s" % _DBNAME_BACKUP)
+
+    _cpdb(_DBNAME, _DBNAME_BACKUP)
 
     testdb_reset(from_scratch)
 
@@ -81,23 +86,15 @@ def testdb_reset(from_scratch=False):
 
     """
 
-    logger.info("Resetting test database")
-    _dropdb(DBNAME)
+    logger.info("Resetting test database: %s", _DBNAME)
+    _dropdb(_DBNAME)
     if from_scratch:
-        _createdb(DBNAME)
+        _createdb(_DBNAME)
     else:
-        def _check_database():
-            with _get_connection(DBNAME_SYS_TEMPLATE) as conn, conn.cursor() as curs:
-                    curs.execute(
-                        "select datname from pg_catalog.pg_database where datname=%s",
-                        [DBNAME_INITIALIZED_TEMPLATE],
-                    )
-                    return bool(curs.fetchone())
+        if not _database_exists(_DBNAME_INITIALIZED_TEMPLATE):
+            _createdb(_DBNAME_INITIALIZED_TEMPLATE)
 
-        if not _check_database():
-            _createdb(DBNAME_INITIALIZED_TEMPLATE)
-
-        _cpdb(DBNAME_INITIALIZED_TEMPLATE, DBNAME)
+        _cpdb(_DBNAME_INITIALIZED_TEMPLATE, _DBNAME)
 
 
 def testdb_teardown():
@@ -107,10 +104,10 @@ def testdb_teardown():
     Requires CREATEDB and OWNER or SUPERUSER privileges.
 
     """
-    logger.info("Removing test database")
-    _dropdb(DBNAME)
-    _cpdb(DBNAME_BACKUP, DBNAME)
-    _dropdb(DBNAME_BACKUP)
+    logger.info("Removing test database: %s", _DBNAME)
+    _dropdb(_DBNAME)
+    _cpdb(_DBNAME_BACKUP, _DBNAME)
+    _dropdb(_DBNAME_BACKUP)
 
 
 def _get_connection(dbname):
@@ -143,7 +140,7 @@ def _cpdb(dbname_from, dbname_to):
     """
     close_pool()
     logger.debug("Copying database from %s to %s", dbname_from, dbname_to)
-    with _get_connection(DBNAME_SYS_TEMPLATE) as conn:
+    with _get_connection(_DBNAME_SYS_TEMPLATE) as conn:
         conn.set_isolation_level(
             psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT
         )
@@ -193,7 +190,7 @@ def _dropdb(dbname):
     """
     close_pool()
     logger.debug("Dropping database %s", dbname)
-    with _get_connection(DBNAME_SYS_TEMPLATE) as conn:
+    with _get_connection(_DBNAME_SYS_TEMPLATE) as conn:
         conn.set_isolation_level(
             psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT
         )
@@ -211,7 +208,7 @@ def _createdb(dbname):
 
     """
     _dropdb(dbname)
-    _cpdb(DBNAME_SYS_TEMPLATE, dbname)
+    _cpdb(_DBNAME_SYS_TEMPLATE, dbname)
 
     with _get_connection(dbname) as conn, conn.cursor() as curs:
         # The following `create schema …` command should be identical the one
@@ -234,3 +231,13 @@ def _createdb(dbname):
             )
 
     apply_templates(dbname)
+
+
+def _database_exists(dbname):
+    """Checks if a pg database object exists."""
+    with _get_connection(_DBNAME_SYS_TEMPLATE) as conn, conn.cursor() as curs:
+            curs.execute(
+                "select datname from pg_catalog.pg_database where datname=%s",
+                [dbname],
+            )
+            return bool(curs.fetchone())
