@@ -39,26 +39,3 @@ services:
     # save the data.
     # tmpfs:
     #   - /var/lib/postgresql/data
-    volumes:
-      - ./docker/postgres-initdb.d/10-init-db.sh:/docker-entrypoint-initdb.d/10-init-db.sh
-      - ./docker/postgres-initdb.d/20-create-extensions.sh:/docker-entrypoint-initdb.d/20-create-extensions.sh
-      - ./dev-environment/postgres-initdb.d/30-upgrade-to-superuser.sh:/docker-entrypoint-initdb.d/30-upgrade-to-superuser.sh
-      #- postgres-initdb.d:/docker-entrypoint-initdb.d
-
-
-  # The following service is to copy the scripts needed to initialize the
-  # database with user and extentions to a volume. It is not needed when the
-  # volume `./docker/postgres-initdb.d/:/docker-entrypoint-initdb.d` is bound in
-  # mox-db above.
-  mox-cp:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-    user: root
-    entrypoint: []
-    command: ["cp", "-r", "/code/docker/postgres-initdb.d/.", "/postgres-initdb.d"]
-    volumes:
-      - postgres-initdb.d:/postgres-initdb.d
-
-volumes:
-  postgres-initdb.d:
