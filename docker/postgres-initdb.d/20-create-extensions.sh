@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# If you update this script, please reflect the changes in
+# ``doc/user/database.rst`` :-)
+
 set -e
 
 true "${DB_NAME:?DB_NAME is unset. Error!}"
