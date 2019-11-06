@@ -52,17 +52,17 @@ variables:
 .lint-default: &lint-default
   stage: lint-build
   image: python:3.7
+  services: []
   tags:
     - docker
   before_script:
-    - pip3 install -r backend/requirements-test.txt
+    - pip3 install -r oio_rest/requirements-lint.txt
 
-.lint:
+lint:
   <<: *lint-default
   script:
-    - cd backend
-    - black --check --diff .
-    - flake8 .
+    - cd oio_rest
+    - flake8
 
 .docs:
   <<: *lint-default

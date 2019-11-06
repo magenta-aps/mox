@@ -60,7 +60,11 @@ VOLUME /log
 # Install requirements
 COPY oio_rest/requirements.txt /code/oio_rest/requirements.txt
 COPY oio_rest/requirements-test.txt /code/oio_rest/requirements-test.txt
-RUN pip3 install -r oio_rest/requirements.txt -r oio_rest/requirements-test.txt
+COPY oio_rest/requirements-lint.txt /code/oio_rest/requirements-lint.txt
+RUN pip3 install \
+  -r oio_rest/requirements.txt \
+  -r oio_rest/requirements-test.txt \
+  -r oio_rest/requirements-lint.txt
 
 
 # Copy and install application.
