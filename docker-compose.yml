@@ -25,12 +25,7 @@ services:
       - mox-db
 
   mox-db:
-    # During development we use a custom postgres docker image with pgtap. pgtap
-    # is only used for running tests and is not necessary in production. In
-    # production you can specify `image: postgres:9.6` instead.
-    build:
-      context: .
-      dockerfile: dev-environment/postgres.Dockerfile
+    image: magentaaps/postgres-os2mo:9.6.15-2-test
     env_file:
       - dev-environment/db.env
     # The following will mount the database data directory to RAM. It
