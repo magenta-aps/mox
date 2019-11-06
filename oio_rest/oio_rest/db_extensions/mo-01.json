@@ -1,0 +1,28 @@
+{
+  "bruger": {
+    "attributter": {
+      "udvidelser": [
+        "fornavn",
+        "efternavn"
+      ]
+    }
+  },
+  "organisationfunktion": {
+    "attributter": {
+      "udvidelser": [
+        "primær",
+        "fraktion"
+      ]
+    },
+    "attributter_metadata": {
+      "udvidelser": {
+        "primær": {
+          "type": "boolean"
+        },
+        "fraktion": {
+          "type": "int"
+        }
+      }
+    }
+  }
+}
