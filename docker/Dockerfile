@@ -64,6 +64,7 @@ RUN pip3 install -r oio_rest/requirements.txt -r oio_rest/requirements-test.txt
 
 
 # Copy and install application.
+COPY dev-environment/settings-for-mo-test.toml ./dev-environment/settings-for-mo-test.toml
 COPY docker ./docker
 COPY oio_rest ./oio_rest
 COPY README.rst .
