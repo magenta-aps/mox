@@ -64,6 +64,8 @@ jinja_env.filters['adapt'] = adapt
 # hard to use correctly. An alternative approach is gevent worker class with
 # psycogreen. I am not sure if we would then need a big pool or one green
 # connection :-)
+# Regardless of how you change it, please reflect those changes in the
+# documentation (currently located at doc/user/operating-mox.rst).
 _connection = None
 
 
