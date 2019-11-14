@@ -14,6 +14,7 @@
 import logging
 
 import psycopg2
+import psycopg2.errors
 import psycopg2.extensions
 from psycopg2.sql import SQL, Identifier
 
@@ -124,6 +125,7 @@ def _get_connection(dbname):
         password=config["database"]["password"],
         host=config["database"]["host"],
         port=config["database"]["port"],
+        application_name="mox db/management connection"
     )
 
 
@@ -144,11 +146,16 @@ def _cpdb(dbname_from, dbname_to):
             psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT
         )
         with conn.cursor() as curs:
-            curs.execute(
-                SQL("create database {} with template {};").format(
-                    Identifier(dbname_to), Identifier(dbname_from)
+            try:
+                curs.execute(
+                    SQL("create database {} with template {};").format(
+                        Identifier(dbname_to), Identifier(dbname_from)
+                    )
                 )
-            )
+            except psycopg2.errors.ObjectInUse as e:
+                logger.error("Database %s or %s is in use. CREATE DATABASE failed.", dbname_to, dbname_from)
+                _log_active_sessions(conn)
+                raise e
 
             # The three following `alter database … set` commands should be
             # identical the ones in docker/postgresql-initdb.d/10-init-db.sh
@@ -194,9 +201,15 @@ def _dropdb(dbname):
             psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT
         )
         with conn.cursor() as curs:
-            curs.execute(
-                SQL("DROP DATABASE IF EXISTS {};").format(Identifier(dbname))
-            )
+            try:
+                curs.execute(
+                    SQL("DROP DATABASE IF EXISTS {};").format(Identifier(dbname))
+                )
+            except psycopg2.errors.ObjectInUse as e:
+                logger.error("Database %s is in use. DROP DATABASE failed.", dbname)
+                _log_active_sessions(conn)
+                raise e
+
 
 
 def _createdb(dbname):
@@ -240,3 +253,15 @@ def _database_exists(dbname):
                 [dbname],
             )
             return bool(curs.fetchone())
+
+def _log_active_sessions(conn):
+    """Get and log active database connections."""
+    with conn.cursor() as curs:
+        curs.execute(
+            "SELECT pid, usename, datname, client_addr, application_name, state FROM pg_stat_activity;"
+        )
+        l = curs.fetchall()
+        length = len(l)
+        logger.debug("The following %s database sessions are connected:", length)
+        for idx, s in enumerate(l, start=1):
+            logger.debug("[%s/%s] pid: %s, user: %s, database: %s, client, %s, application: %s, state: %s", idx, length, *s)
