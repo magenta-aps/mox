@@ -80,6 +80,7 @@ def get_connection():
             password=settings.DB_PASSWORD,
             host=settings.DB_HOST,
             port=settings.DB_PORT,
+            application_name="mox init connection"
         )
 
     return _connection
