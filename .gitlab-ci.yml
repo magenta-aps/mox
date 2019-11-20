@@ -150,8 +150,8 @@ unit-test:
 
 release-dev:
   <<: *release-default
-  only:
-    - /development/
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "development"
   script:
     - docker tag ${IMAGE_SHA} ${IMAGE_DEV}
     - docker push ${IMAGE_DEV}
@@ -159,10 +159,8 @@ release-dev:
 
 release-rc:
   <<: *release-default
-  only:
-    variables:
-      # Matches all of SemVer 2.0.0
-      - $CI_COMMIT_TAG =~ /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/
+  rules:
+    - if: $CI_COMMIT_REF_NAME =~ /^release\/.+$/
   script:
     # Login to Docker Hub registry
     - docker login -u ${RELEASE_REGISTRY_USER} -p ${RELEASE_REGISTRY_PASSWORD} ${RELEASE_REGISTRY}
@@ -172,10 +170,9 @@ release-rc:
 
 release-master:
   <<: *release-default
-  only:
-    variables:
+  rules:
       # Matches <version core> from SemVer 2.0.0 BNF grammar. Ex. 2.3.4, but not 2.3.4-rc
-      - $CI_COMMIT_TAG =~ /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/
+      - if: $CI_COMMIT_TAG =~ /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/
   script:
     # Login to Docker Hub registry
     - docker login -u ${RELEASE_REGISTRY_USER} -p ${RELEASE_REGISTRY_PASSWORD} ${RELEASE_REGISTRY}
