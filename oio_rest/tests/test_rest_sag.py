@@ -9,9 +9,10 @@ import unittest
 
 from oio_rest.utils.build_registration import is_uuid
 from tests import util
+from tests.util import DBTestCase
 
 
-class TestSag(util.TestCase):
+class TestSag(DBTestCase):
     def setUp(self):
         super().setUp()
 

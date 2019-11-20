@@ -8,9 +8,10 @@
 
 from oio_rest.utils.build_registration import is_uuid
 from tests import util
+from tests.util import DBTestCase
 
 
-class TestAktivitet(util.TestCase):
+class TestAktivitet(DBTestCase):
     def test_aktivitet(self):
         result = self.client.post(
             "aktivitet/aktivitet",

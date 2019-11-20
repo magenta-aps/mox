@@ -1326,27 +1326,24 @@ class TestSchemaEndPoints(flask_testing.TestCase):
 
     @unittest.expectedFailure
     def test_schemas_unchanged(self):
-        """
-        Check that the schema endpoints for the classes in the given hierarchy
-        respond with HTTP status code 200 and return JSON.
-        :param hierarchy: The hierarchy to check, e.g. SagsHierarki,...
-        """
-        # Careful now - no logic in the test code!
+        """Check that the schema have not changed from last commit. The intention of the test is
+        not to force schema stagenation, but to inform the developers of schmea changes
+        in commits by updating `schemas.json`.
 
-        expected = util.get_fixture('schemas.json')
+        """
+
+        expected = util.get_fixture("schemas.json")
+        expected_path = os.path.join(util.FIXTURE_DIR, "schemas.json")
 
         actual = {
             cls.__name__: cls.get_schema().json
             for hier in self.hierarchies
             for cls in hier._classes
         }
-        actual_path = os.path.join(util.FIXTURE_DIR, 'schemas.json.new')
 
-        with open(actual_path, 'wt') as fp:
-            json.dump(actual, fp, indent=2, sort_keys=True)
-
-        self.assertEqual(expected, actual,
-                         'schemas changed, see {}'.format(actual_path))
+        self.assertEqual(
+            expected, actual, "schemas changed. Please update {}".format(expected_path)
+        )
 
     def assertSchemaOK(self, hierarchy):
         """

@@ -11,7 +11,12 @@ services:
     volumes:
       - .:/code
       - ./dev-environment/dev-settings.toml:/user-settings.toml
-    command: ["gunicorn", "--reload", "-b", "0.0.0.0:8080", "oio_rest:app"]
+    command: [
+    "gunicorn",
+    "--config", "docker/gunicorn-settings.py",
+    "--reload", # Reload on file changes
+    "--workers", "1", # Single threaded in dev
+    "oio_rest:app"]
     ports:
       - "8080:8080"
     env_file:
@@ -20,27 +25,12 @@ services:
       - mox-db
 
   mox-db:
-    image: postgres:9.6
+    image: magentaaps/postgres-os2mo:9.6.15-2-test
     env_file:
       - dev-environment/db.env
-    volumes:
-      - ./docker/postgres-initdb.d/:/docker-entrypoint-initdb.d
-      #- postgres-initdb.d:/docker-entrypoint-initdb.d
-
-
-  # The following service is to copy the scripts needed to initialize the
-  # database with user and extentions to a volume. It is not needed when the
-  # volume `./docker/postgres-initdb.d/:/docker-entrypoint-initdb.d` is bound in
-  # mox-db above.
-  mox-cp:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-    user: root
-    entrypoint: []
-    command: ["cp", "-r", "/code/docker/postgres-initdb.d/.", "/postgres-initdb.d"]
-    volumes:
-      - postgres-initdb.d:/postgres-initdb.d
-
-volumes:
-  postgres-initdb.d:
+    # The following will mount the database data directory to RAM. It
+    # significantly speeds up the database at the cost of dataloss on shutdown.
+    # This is useful for running tests, but should never be used if you want to
+    # save the data.
+    # tmpfs:
+    #   - /var/lib/postgresql/data

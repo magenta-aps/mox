@@ -22,7 +22,7 @@ from oio_rest.custom_exceptions import (BadRequestException, NotFoundException,
                                         GoneException)
 from oio_rest.oio_base import OIOStandardHierarchy, OIORestObject
 from oio_rest import oio_base, organisation
-from oio_rest.utils import test_support
+from tests.util import ExtTestCase
 
 
 class TestClassRestObject(OIORestObject):
@@ -110,7 +110,7 @@ class TestOIORestObjectCreateApi(TestCase):
                              self.flask.add_url_rule.call_args_list)
 
 
-class TestOIORestObject(TestCase):
+class TestOIORestObject(ExtTestCase):
     db_struct = {
         'testclassrestobject': {
             'attributter': {'egenskaber': ['attribut']},
@@ -321,7 +321,7 @@ class TestOIORestObject(TestCase):
                         "garbage": ["garbage"]}
 
         with self.app.test_request_context(method='GET'), \
-                test_support.patch_db_struct(db_structure):
+                self.patch_db_struct(db_structure):
 
             # Act
             actual_fields = json.loads(
@@ -344,7 +344,7 @@ class TestOIORestObject(TestCase):
 
     @freezegun.freeze_time('2017-01-01', tz_offset=1)
     @patch('oio_rest.db.list_objects')
-    @test_support.patch_db_struct(db_struct)
+    @ExtTestCase.patch_db_struct(db_struct)
     def test_get_objects_list_uses_default_params(self,
                                                   mock_list):
         # Arrange
@@ -374,7 +374,7 @@ class TestOIORestObject(TestCase):
         self.assertDictEqual(expected_result, actual_result)
 
     @patch('oio_rest.db.list_objects')
-    @test_support.patch_db_struct(db_struct)
+    @ExtTestCase.patch_db_struct(db_struct)
     def test_get_objects_list_uses_supplied_params(self, mock):
         # Arrange
         data = ["1", "2", "3"]
@@ -417,7 +417,7 @@ class TestOIORestObject(TestCase):
         self.assertDictEqual(expected_result, actual_result)
 
     @patch('oio_rest.db.list_objects')
-    @test_support.patch_db_struct(db_struct)
+    @ExtTestCase.patch_db_struct(db_struct)
     def test_get_objects_returns_empty_list_on_no_results(self, mock):
         # Arrange
 
@@ -434,7 +434,7 @@ class TestOIORestObject(TestCase):
         self.assertDictEqual(expected_result, actual_result)
 
     @freezegun.freeze_time('2017-01-01', tz_offset=1)
-    @test_support.patch_db_struct(db_struct)
+    @ExtTestCase.patch_db_struct(db_struct)
     @patch('oio_rest.oio_base.build_registration')
     @patch('oio_rest.db.search_objects')
     def test_get_objects_search_uses_default_params(self, mock_search,
@@ -475,7 +475,7 @@ class TestOIORestObject(TestCase):
         self.assertEqual(expected_args, actual_args)
         self.assertDictEqual(expected_result, actual_result)
 
-    @test_support.patch_db_struct(db_struct)
+    @ExtTestCase.patch_db_struct(db_struct)
     @patch('oio_rest.oio_base.build_registration')
     @patch('oio_rest.db.search_objects')
     def test_get_objects_search_uses_supplied_params(self, mock_search,
@@ -538,7 +538,7 @@ class TestOIORestObject(TestCase):
         self.assertEqual(expected_args, actual_args)
         self.assertDictEqual(expected_result, actual_result)
 
-    @test_support.patch_db_struct(db_struct)
+    @ExtTestCase.patch_db_struct(db_struct)
     @patch('oio_rest.utils.build_registration')
     @patch('oio_rest.db.search_objects')
     def test_get_objects_search_raises_exception_on_multi_uuid(
@@ -566,7 +566,7 @@ class TestOIORestObject(TestCase):
                 self.assertRaises(BadRequestException):
             self.testclass.get_objects()
 
-    @test_support.patch_db_struct(db_struct)
+    @ExtTestCase.patch_db_struct(db_struct)
     @patch('oio_rest.db.search_objects')
     def test_get_objects_search_raises_exception_on_unknown_args(self,
                                                                  mock_search):
@@ -583,7 +583,7 @@ class TestOIORestObject(TestCase):
                 self.assertRaises(BadRequestException):
             self.testclass.get_objects()
 
-    @test_support.patch_db_struct(db_struct)
+    @ExtTestCase.patch_db_struct(db_struct)
     @patch('oio_rest.db.list_objects')
     def test_get_objects_raises_on_deleted_object(self, mock_list):
         # Arrange
@@ -731,7 +731,7 @@ class TestOIORestObject(TestCase):
                 self.assertRaises(GoneException):
             self.testclass.get_object(uuid)
 
-    @test_support.patch_db_struct(db_struct)
+    @ExtTestCase.patch_db_struct(db_struct)
     @patch('oio_rest.db.list_objects')
     def test_get_object_raises_on_unknown_args(self, mock_list):
         # Arrange
@@ -1074,7 +1074,7 @@ class TestOIORestObject(TestCase):
             self.testclass.gather_registration(input)
 
 
-class TestOIOStandardHierarchy(TestCase):
+class TestOIOStandardHierarchy(ExtTestCase):
     def setUp(self):
         self.testclass = TestClassStandardHierarchy()
         self.resetClassFields()
@@ -1131,7 +1131,7 @@ class TestOIOStandardHierarchy(TestCase):
         db_structure = expected_result.copy()
         db_structure.update({"garbage": "1234"})
 
-        with test_support.patch_db_struct(db_structure):
+        with self.patch_db_struct(db_structure):
             # Act
             self.testclass.setup_api(base_url="URL", flask=flask)
 

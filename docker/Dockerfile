@@ -59,10 +59,16 @@ VOLUME /log
 
 # Install requirements
 COPY oio_rest/requirements.txt /code/oio_rest/requirements.txt
-RUN pip3 install -r oio_rest/requirements.txt
+COPY oio_rest/requirements-test.txt /code/oio_rest/requirements-test.txt
+COPY oio_rest/requirements-lint.txt /code/oio_rest/requirements-lint.txt
+RUN pip3 install \
+  -r oio_rest/requirements.txt \
+  -r oio_rest/requirements-test.txt \
+  -r oio_rest/requirements-lint.txt
 
 
 # Copy and install application.
+COPY dev-environment/settings-for-mo-test.toml ./dev-environment/settings-for-mo-test.toml
 COPY docker ./docker
 COPY oio_rest ./oio_rest
 COPY README.rst .
@@ -76,4 +82,6 @@ RUN pip3 install -e oio_rest
 USER mox:mox
 EXPOSE 8080
 ENTRYPOINT ["/code/docker/docker-entrypoint.sh"]
-CMD ["gunicorn", "-b", "0.0.0.0:8080", "oio_rest:app"]
+CMD ["gunicorn", \
+  "--config", "/code/docker/gunicorn-settings.py", \
+  "oio_rest:app"]

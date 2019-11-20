@@ -9,7 +9,6 @@
 import datetime
 import enum
 import pathlib
-import threading
 
 import psycopg2
 
@@ -17,8 +16,6 @@ from psycopg2.extras import DateTimeTZRange
 from psycopg2.extensions import (
     AsIs, QuotedString, Boolean, adapt as psyco_adapt,
 )
-
-from psycopg2.pool import ThreadedConnectionPool
 from jinja2 import Environment, FileSystemLoader
 from dateutil import parser as date_parser
 
@@ -42,8 +39,6 @@ from oio_rest import settings
     Jinja2 Environment
 """
 
-pool = None
-
 jinja_env = Environment(loader=FileSystemLoader(
     str(pathlib.Path(__file__).parent / 'sql' / 'invocations' / 'templates'),
 ))
@@ -61,34 +56,42 @@ def adapt(value):
 jinja_env.filters['adapt'] = adapt
 
 
+# We only have one connection, so we cannot benefit from the gunicorn gthread
+# worker class, which is intended to reduce memory footprint anyway. This
+# implementation is intended to be used with the sync worker class and can be
+# scaled by tuning the numbers of workers.
+# If you intent to change this, beware that psycopgs pool interface is very
+# hard to use correctly. An alternative approach is gevent worker class with
+# psycogreen. I am not sure if we would then need a big pool or one green
+# connection :-)
+# Regardless of how you change it, please reflect those changes in the
+# documentation (currently located at doc/user/operating-mox.rst).
+_connection = None
+
+
 def get_connection():
-    """Handle all intricacies of connecting to Postgres.
+    """Return a psycopg connection."""
+    global _connection
 
-    We stash the current connection using Flask's `application
-    globals`_, ``g``, to avoid continually re-establishing the
-    connection.
-
-    This is a common pattern, and when combined with a pool, we even
-    avoid re-connecting every request.
-
-    .. _application globals: http://flask.pocoo.org/docs/api/#flask.g
-
-    """
-
-    global pool
-
-    if pool is None:
-        pool = ThreadedConnectionPool(
-            settings.DB_MIN_CONNECTIONS,
-            settings.DB_MAX_CONNECTIONS,
+    if _connection is None:
+        _connection = psycopg2.connect(
             dbname=settings.DATABASE,
             user=settings.DB_USER,
             password=settings.DB_PASSWORD,
             host=settings.DB_HOST,
             port=settings.DB_PORT,
+            application_name="mox init connection"
         )
 
-    return pool.getconn(key=threading.get_ident())
+    return _connection
+
+
+def close_connection():
+    """Close psycopg connection, if open."""
+    global _connection
+    if _connection is not None:
+        _connection.close()
+        _connection = None
 
 
 #

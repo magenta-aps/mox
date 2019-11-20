@@ -11,9 +11,10 @@ import uuid
 
 from oio_rest.utils.build_registration import is_uuid
 from tests import util
+from tests.util import DBTestCase
 
 
-class TestDokument(util.TestCase):
+class TestDokument(DBTestCase):
     def test_create_dokument_empty_dict(self):
         """Not sure why this happens?"""
         self.assertRequestResponse(
