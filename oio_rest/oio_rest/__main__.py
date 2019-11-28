@@ -19,6 +19,7 @@ from oio_rest.db.management import (
     apply_templates,
     check_connection,
     check_templates,
+    truncate_db,
 )
 
 
@@ -65,6 +66,13 @@ def initdb(wait):
     click.echo("Initializing database.")
     apply_templates()
     click.echo("Database initialised.")
+
+
+@cli.command()
+def truncatedb():
+    """Empty all tables in the database."""
+    truncate_db(config["database"]["db_name"])
+
 
 if __name__ == '__main__':
     cli()
