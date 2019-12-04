@@ -1,13 +1,21 @@
 #!/usr/bin/env python
-
+import io
+import os
 import pathlib
+import re
 
 from setuptools import find_packages, setup
 
 
 basedir = pathlib.Path(__file__).parent
 
-version = (basedir / 'VERSION').read_text().strip()
+__init___path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "oio_rest", "__init__.py")
+print(__init___path)
+
+
+# this is the way flask does it
+with io.open(__init___path, "rt", encoding="utf8") as f:
+    version = re.search(r'__version__ = "(.*?)"', f.read()).group(1)
 
 # extract requirements for pip & setuptools
 install_requires = (basedir / 'requirements.txt').read_text().splitlines()

@@ -16,6 +16,7 @@ from werkzeug.routing import BaseConverter
 from jinja2 import Environment, FileSystemLoader
 from psycopg2 import DataError
 
+from oio_rest import __version__
 from oio_rest import app
 from oio_rest.db import management as db_mgmt
 from . import sag, indsats, dokument, tilstand, aktivitet, organisation
@@ -112,20 +113,10 @@ def sitemap():
     return jsonify({"site-map": sorted(links)})
 
 
-_version = None
-
-
-def _get_version():
-    global _version
-    if _version is None:
-        with open(settings.config["version_file_path"], "r") as f:
-            _version = jsonify({"lora_version": f.read().strip()})
-    return _version
-
-
 @app.route('/version')
 def version():
-    return _get_version()
+    version = {'lora_version': __version__}
+    return jsonify(version)
 
 
 def testing_db_setup():
