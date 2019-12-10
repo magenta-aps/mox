@@ -4,6 +4,11 @@ Version 1.4.0, 04 December 2019
 New features:
 
 * Completely revamped configuration system.
+* Move database setup to a new PostgreSQL docker image.
+* Added `db_extensions.json` from OS2mo as `mo-01.json`
+* Added better logging support
+* Added version endpoint
+
 
 Version 1.3.0, 11 July 2019
 ---------------------------
