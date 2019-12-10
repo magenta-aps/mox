@@ -15,10 +15,10 @@ from psycopg2._range import DateTimeTZRange
 from psycopg2.extensions import adapt as psyco_adapt, ISQLQuote
 from psycopg2.extensions import register_adapter as psyco_register_adapter
 
-from .. import settings
-
 from ..contentstore import content_store
 from ..custom_exceptions import BadRequestException
+
+from oio_rest.db import db_structure
 
 _attribute_fields = {}
 
@@ -30,7 +30,7 @@ def get_attribute_fields(attribute_name):
 
     if not _attribute_fields:
         # Initialize attr fields for ease of use.
-        for c, fs in settings.REAL_DB_STRUCTURE.items():
+        for c, fs in db_structure.REAL_DB_STRUCTURE.items():
             for a, v in fs["attributter"].items():
                 _attribute_fields[c + a] = v + ['virkning']
 
@@ -38,7 +38,7 @@ def get_attribute_fields(attribute_name):
 
 
 def get_field_type(attribute_name, field_name):
-    for c, fs in settings.REAL_DB_STRUCTURE.items():
+    for c, fs in db_structure.REAL_DB_STRUCTURE.items():
         if "attributter_metadata" in fs:
             for a, fs in fs["attributter_metadata"].items():
                 if attribute_name == c + a:
@@ -51,7 +51,7 @@ _attribute_names = {}
 
 
 def get_relation_field_type(class_name, field_name):
-    class_info = settings.REAL_DB_STRUCTURE[class_name.lower()]
+    class_info = db_structure.REAL_DB_STRUCTURE[class_name.lower()]
     if 'relationer_metadata' in class_info:
         metadata = class_info['relationer_metadata']
         for relation in metadata:
@@ -64,7 +64,7 @@ def get_relation_field_type(class_name, field_name):
 def get_attribute_names(class_name):
     "Return the list of all recognized attributes for this class."
     if not _attribute_names:
-        for c, fs in settings.REAL_DB_STRUCTURE.items():
+        for c, fs in db_structure.REAL_DB_STRUCTURE.items():
             # unfortunately, the ordering of attribute names is of
             # semantic importance to the database code, and the
             # ordering isn't consistent in Python 3.5
@@ -77,7 +77,7 @@ def get_attribute_names(class_name):
 
 def get_state_names(class_name):
     "Return the list of all recognized states for this class."
-    states = settings.REAL_DB_STRUCTURE[class_name.lower()]['tilstande']
+    states = db_structure.REAL_DB_STRUCTURE[class_name.lower()]['tilstande']
 
     if isinstance(states, list):
         return [state[0] for state in states]
@@ -91,7 +91,7 @@ _relation_names = {}
 def get_relation_names(class_name):
     "Return the list of all recognized relations for this class."
     if len(_relation_names) == 0:
-        for c, fs in settings.REAL_DB_STRUCTURE.items():
+        for c, fs in db_structure.REAL_DB_STRUCTURE.items():
             _relation_names[c] = (
                 fs['relationer_nul_til_en'] +
                 fs['relationer_nul_til_mange']

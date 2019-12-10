@@ -23,6 +23,7 @@ Content
    user/auth.rst
    user/deployment.rst
    user/settings.rst
+   user/operating-mox.rst
 
 .. toctree::
    :maxdepth: 1

@@ -16,7 +16,6 @@ from psycopg2.extras import DateTimeTZRange
 from psycopg2.extensions import (
     AsIs, QuotedString, Boolean, adapt as psyco_adapt,
 )
-from psycopg2.pool import PersistentConnectionPool
 from jinja2 import Environment, FileSystemLoader
 from dateutil import parser as date_parser
 
@@ -34,13 +33,11 @@ from ..utils import build_registration
 from ..custom_exceptions import NotFoundException, NotAllowedException
 from ..custom_exceptions import DBException, BadRequestException
 
-from .. import settings
+from oio_rest import settings
 
 """
     Jinja2 Environment
 """
-
-pool = None
 
 jinja_env = Environment(loader=FileSystemLoader(
     str(pathlib.Path(__file__).parent / 'sql' / 'invocations' / 'templates'),
@@ -59,34 +56,42 @@ def adapt(value):
 jinja_env.filters['adapt'] = adapt
 
 
+# We only have one connection, so we cannot benefit from the gunicorn gthread
+# worker class, which is intended to reduce memory footprint anyway. This
+# implementation is intended to be used with the sync worker class and can be
+# scaled by tuning the numbers of workers.
+# If you intent to change this, beware that psycopgs pool interface is very
+# hard to use correctly. An alternative approach is gevent worker class with
+# psycogreen. I am not sure if we would then need a big pool or one green
+# connection :-)
+# Regardless of how you change it, please reflect those changes in the
+# documentation (currently located at doc/user/operating-mox.rst).
+_connection = None
+
+
 def get_connection():
-    """Handle all intricacies of connecting to Postgres.
+    """Return a psycopg connection."""
+    global _connection
 
-    We stash the current connection using Flask's `application
-    globals`_, ``g``, to avoid continually re-establishing the
-    connection.
-
-    This is a common pattern, and when combined with a pool, we even
-    avoid re-connecting every request.
-
-    .. _application globals: http://flask.pocoo.org/docs/api/#flask.g
-
-    """
-
-    global pool
-
-    if pool is None:
-        pool = PersistentConnectionPool(
-            settings.DB_MIN_CONNECTIONS,
-            settings.DB_MAX_CONNECTIONS,
+    if _connection is None:
+        _connection = psycopg2.connect(
             dbname=settings.DATABASE,
             user=settings.DB_USER,
             password=settings.DB_PASSWORD,
             host=settings.DB_HOST,
             port=settings.DB_PORT,
+            application_name="mox init connection"
         )
 
-    return pool.getconn()
+    return _connection
+
+
+def close_connection():
+    """Close psycopg connection, if open."""
+    global _connection
+    if _connection is not None:
+        _connection.close()
+        _connection = None
 
 
 #
@@ -692,19 +697,29 @@ def transform_virkning(o):
         return o
 
 
-def filter_empty(d):
+def filter_empty(structure):
     """Recursively filter out empty dictionary keys."""
-    if isinstance(d, dict):
-        return dict(
-            (k, filter_empty(v)) for k, v in d.items() if
-            v and filter_empty(v)
-        )
-    elif isinstance(d, list):
-        return [filter_empty(v) for v in d if v and filter_empty(v)]
-    elif isinstance(d, tuple):
-        return tuple(filter_empty(v) for v in d if v and filter_empty(v))
-    else:
-        return d
+    if isinstance(structure, dict):
+        out = {}
+        for k, v in structure.items():
+            if v:
+                filtered = filter_empty(v)
+                if filtered:
+                    out[k] = filtered
+        return out
+
+    if isinstance(structure, (list, tuple)):
+        out = []
+        for v in structure:
+            if v:
+                filtered = filter_empty(v)
+                if filtered:
+                    out.append(filtered)
+        if isinstance(structure, tuple):
+            return tuple(out)
+        return out
+
+    return structure
 
 
 def transform_relations(o):

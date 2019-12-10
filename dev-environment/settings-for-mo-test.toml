@@ -1,0 +1,31 @@
+# This is a copy of `dev-environment/mox-dev-settings.toml` in the OS2mo
+# repository. Please update both files simultaneously.
+#
+# It is not possilbe to supply the settings file to a `services` in gitlab CI.
+# You can not mount volumes [1] or reference files in the cloned git repository
+# before entrypoint is called [2].
+#
+# Placing this file here is a workaround. It can be referenced by
+# `MOX_USER_CONFIG_PATH` and is present when the container starts up when
+# running the OS2mo testsuite.
+#
+# If at some point in the future it becomes possible to use the file in OS2mo,
+# please remove this.
+#
+# [1] https://gitlab.com/gitlab-org/gitlab-runner/issues/1525 or
+# [2] https://gitlab.com/gitlab-org/gitlab-runner/issues/3210
+
+
+[database]
+host = "mox-db"
+user = "mox"
+password = "mox"
+db_name = "mox"
+
+
+[db_extensions]
+path = "oio_rest/oio_rest/db_extensions/mo-01.json"
+
+
+[testing_api]
+enable = true

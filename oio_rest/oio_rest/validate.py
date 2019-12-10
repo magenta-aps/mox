@@ -9,7 +9,7 @@
 import copy
 import jsonschema
 
-from . import settings
+from oio_rest.db import db_structure
 
 # A very nice reference explaining the JSON schema syntax can be found
 # here: https://spacetelescope.github.io/understanding-json-schema/
@@ -101,7 +101,7 @@ def _get_metadata(obj, metadata_type, key):
     :param key: The attribute to get the metadata from, e.g. 'egenskaber'
     :return: Dictionary containing the metadata for the attribute fields
     """
-    metadata = settings.REAL_DB_STRUCTURE[obj].get(
+    metadata = db_structure.REAL_DB_STRUCTURE[obj].get(
         '{}_metadata'.format(metadata_type), [])
     if not metadata or key not in metadata:
         return metadata
@@ -145,14 +145,15 @@ def _handle_attribute_metadata(obj, fields, attribute_name):
     return fields
 
 
-def _generate_attributter(obj):
+def _generate_attributter(obj, do_create):
     """
     Generate the 'attributter' part of the JSON schema.
     :param obj: The type of LoRa object, i.e. 'bruger', 'organisation' etc.
+    :param do_create: Whether we are creating a new object or not
     :return: Dictionary representing the 'attributter' part of the JSON schema.
     """
 
-    db_attributter = settings.REAL_DB_STRUCTURE[obj]['attributter']
+    db_attributter = db_structure.REAL_DB_STRUCTURE[obj]['attributter']
 
     attrs = {}
     required = []
@@ -168,28 +169,28 @@ def _generate_attributter(obj):
         schema = _handle_attribute_metadata(obj, schema, attrname)
 
         mandatory = _get_mandatory(obj, attrname)
-
         attrs[full_name] = _generate_schema_array(
             _generate_schema_object(
                 schema,
-                mandatory + ['virkning'],
+                (mandatory if do_create else []) + ['virkning']
             ),
         )
 
-        if mandatory:
+        if mandatory and do_create:
             required.append(full_name)
 
     return _generate_schema_object(attrs, required)
 
 
-def _generate_tilstande(obj):
+def _generate_tilstande(obj, do_create):
     """
     Generate the 'tilstande' part of the JSON schema.
     :param obj: The type of LoRa object, i.e. 'bruger', 'organisation' etc.
+    :param do_create: Whether we are creating a new object or not
     :return: Dictionary representing the 'tilstande' part of the JSON schema.
     """
 
-    tilstande = dict(settings.REAL_DB_STRUCTURE[obj]['tilstande'])
+    tilstande = dict(db_structure.REAL_DB_STRUCTURE[obj]['tilstande'])
 
     properties = {}
     required = []
@@ -209,8 +210,8 @@ def _generate_tilstande(obj):
                 [key, 'virkning']
             )
         )
-
-        required.append(tilstand_name)
+        if do_create:
+            required.append(tilstand_name)
 
     return _generate_schema_object(properties, required)
 
@@ -244,7 +245,7 @@ def _handle_relation_metadata_specific(obj, relation_schema):
     the JSON schema.
     """
     metadata_specific = (
-        settings.REAL_DB_STRUCTURE[obj].get('relationer_metadata', [])
+        db_structure.REAL_DB_STRUCTURE[obj].get('relationer_metadata', [])
     )
 
     for relation in [key for key in metadata_specific if not key == '*']:
@@ -276,15 +277,16 @@ def _handle_relation_metadata_specific(obj, relation_schema):
     return relation_schema
 
 
-def _generate_relationer(obj):
+def _generate_relationer(obj, do_create):
     """
     Generate the 'relationer' part of the JSON schema.
     :param obj: The type of LoRa object, i.e. 'bruger', 'organisation' etc.
+    :param do_create: Whether we are creating a new object or not
     :return: Dictionary representing the 'relationer' part of the JSON schema.
     """
     relationer_nul_til_en = \
-        settings.REAL_DB_STRUCTURE[obj]['relationer_nul_til_en']
-    relationer_nul_til_mange = settings.REAL_DB_STRUCTURE[obj][
+        db_structure.REAL_DB_STRUCTURE[obj]['relationer_nul_til_en']
+    relationer_nul_til_mange = db_structure.REAL_DB_STRUCTURE[obj][
         'relationer_nul_til_mange']
 
     relation_nul_til_mange = _generate_schema_array(
@@ -305,7 +307,16 @@ def _generate_relationer(obj):
                         'objekttype': STRING
                     },
                     ['urn', 'virkning']
-                )
+                ),
+                _generate_schema_object(
+                    {
+                        'urn': {'$ref': '#/definitions/empty_string'},
+                        'uuid': {'$ref': '#/definitions/empty_string'},
+                        'virkning': {'$ref': '#/definitions/virkning'},
+                    },
+                    ['urn', 'uuid', 'virkning']
+                ),
+
             ]
         }
     )
@@ -359,10 +370,11 @@ def _generate_varianter():
     ))
 
 
-def generate_json_schema(obj):
+def generate_json_schema(obj, do_create):
     """
     Generate the JSON schema corresponding to LoRa object type.
     :param obj: The LoRa object type, i.e. 'bruger', 'organisation',...
+    :param do_create: Whether we are creating a new object or not
     :return: Dictionary representing the JSON schema.
     """
 
@@ -371,15 +383,16 @@ def generate_json_schema(obj):
         # "DokumentVariantEgenskaber" and the specs' we will have to do
         #  this for now, i.e. we allow any JSON-object for "Dokument".
         return {'type': 'object'}
-
+    required = ['attributter', 'tilstande'] if do_create else []
     schema = _generate_schema_object(
         {
-            'attributter': _generate_attributter(obj),
-            'tilstande': _generate_tilstande(obj),
-            'relationer': _generate_relationer(obj),
+            'attributter': _generate_attributter(obj, do_create),
+            'tilstande': _generate_tilstande(obj, do_create),
+            'relationer': _generate_relationer(obj, do_create),
             'note': STRING,
+            'livscyklus': STRING,
         },
-        ['attributter', 'tilstande']
+        required
     )
 
     schema['$schema'] = 'http://json-schema.org/schema#'
@@ -394,6 +407,10 @@ def generate_json_schema(obj):
             'type': 'string',
             'pattern': '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-'
                        '[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$'
+        },
+        'empty_string': {
+            'type': 'string',
+            'pattern': '^$'
         },
         'virkning': _generate_schema_object(
             {
@@ -422,23 +439,24 @@ def generate_json_schema(obj):
 SCHEMAS = {}
 
 
-def get_schema(obj_type):
+def get_schema(obj_type, do_create=True):
     try:
-        return SCHEMAS[obj_type]
+        return SCHEMAS[do_create, obj_type]
     except KeyError:
         pass
-
-    schema = SCHEMAS[obj_type] = copy.deepcopy(generate_json_schema(obj_type))
+    schema = SCHEMAS[do_create, obj_type] = copy.deepcopy(
+        generate_json_schema(obj_type, do_create)
+    )
 
     return schema
 
 
-def validate(input_json, obj_type):
+def validate(input_json, obj_type, do_create=True):
     """
     Validate request JSON according to JSON schema.
     :param input_json: The request JSON
     :raise jsonschema.exceptions.ValidationError: If the request JSON is not
     valid according to the JSON schema.
     """
-
-    jsonschema.validate(input_json, get_schema(obj_type))
+    schema = get_schema(obj_type, do_create)
+    jsonschema.validate(input_json, schema)

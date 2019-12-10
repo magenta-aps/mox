@@ -12,7 +12,7 @@ from .authentication import requires_auth
 from .contentstore import content_store
 from .db import db_helpers
 
-from .oio_rest import OIORestObject, OIOStandardHierarchy
+from .oio_base import OIORestObject, OIOStandardHierarchy
 
 
 class Dokument(OIORestObject):

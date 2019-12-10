@@ -139,12 +139,7 @@ ALTER TABLE {{oio_type}}_attr_{{attribut}}
 
 {% for field in attribut_fields %} 
     {% if attributter_metadata[attribut][field]['type'] is defined %}
-        {% if attributter_metadata[attribut][field]['type'] == "text[]" %}
-            CREATE INDEX {{oio_type}}_attr_{{attribut}}_pat_{{field}}
-            ON {{oio_type}}_attr_{{attribut}}
-            USING gin
-            ({{field}} _text_ops);
-        {% else %} 
+        {% if attributter_metadata[attribut][field]['type'] != "text[]" %}
             {% if attributter_metadata[attribut][field]['type'] == "offentlighedundtagettype" %} 
                 CREATE INDEX {{oio_type}}_attr_{{attribut}}_pat_AlternativTitel_{{field}}
                     ON {{oio_type}}_attr_{{attribut}}

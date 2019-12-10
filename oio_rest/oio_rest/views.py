@@ -7,14 +7,18 @@
 
 import os
 import datetime
+import logging
 import urllib.parse
 import traceback
 
-from flask import Flask, jsonify, redirect, request, url_for, Response
+from flask import jsonify, redirect, request, url_for, Response
 from werkzeug.routing import BaseConverter
 from jinja2 import Environment, FileSystemLoader
 from psycopg2 import DataError
 
+from oio_rest import __version__
+from oio_rest import app
+from oio_rest.db import management as db_mgmt
 from . import sag, indsats, dokument, tilstand, aktivitet, organisation
 from . import log, klassifikation
 from .authentication import get_authenticated_user
@@ -28,7 +32,7 @@ import flask_saml_sso
 
 from . import settings
 
-app = Flask(__name__)
+logger = logging.getLogger(__name__)
 
 """
     Jinja2 Environment
@@ -107,6 +111,36 @@ def sitemap():
         if "GET" in rule.methods:
             links.append(str(rule))
     return jsonify({"site-map": sorted(links)})
+
+
+@app.route('/version')
+def version():
+    version = {'lora_version': __version__}
+    return jsonify(version)
+
+
+def testing_db_setup():
+    logger.debug("Test database setup endpoint called")
+    db_mgmt.testdb_setup()
+    return ("Test database setup", 200)
+
+
+def testing_db_reset():
+    logger.debug("Test database reset endpoint called")
+    db_mgmt.testdb_reset()
+    return ("Test database reset", 200)
+
+
+def testing_db_teardown():
+    logger.debug("Test database teardown endpoint called")
+    db_mgmt.testdb_teardown()
+    return ("Test database teardown", 200)
+
+
+if settings.config["testing_api"]["enable"]:
+    app.add_url_rule("/testing/db-setup", "testing_db_setup", testing_db_setup)
+    app.add_url_rule("/testing/db-reset", "testing_db_reset", testing_db_reset)
+    app.add_url_rule("/testing/db-teardown", "testing_db_teardown", testing_db_teardown)
 
 
 @app.errorhandler(OIOFlaskException)

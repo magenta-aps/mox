@@ -1,0 +1,102 @@
+# Copyright (C) 2015-2019 Magenta ApS, https://magenta.dk.
+# Contact: info@magenta.dk.
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# THIS FILE CONTAINS THE DEFAULT CONFIGURATION FOR MOX. DO NOT CHANGE THIS.
+# Instead, read the documentation at ``user/settings.html`` or configure mox in
+# the dev-settings.toml file.
+
+# Prefix for all relative URLs. A value of "/MyOIO" will result in API
+# endpoints such ``http://example.com/MyOIO/organisation/organisationenhed``.
+base_url = ""
+
+
+[database]
+host = "localhost"
+port = 5432
+user = "mox"
+password = "mox"
+db_name = "mox"
+
+
+[saml_wstrust]
+# LoRa has two independent ways to use SAML. This is the older version. They
+# are both disabled by default, and you should *never* enable both.
+enable = false
+# The Endpoint specified in the AppliesTo element of the STS request
+# This will be used to verify the Audience of the SAML Assertion
+entity_id = "https://saml.local"
+# The Entity ID of the IdP. Used to verify the token Issuer --
+# specified in AD FS as the Federation Service identifier.
+# Example: "http://fs.contoso.com/adfs/services/trust"
+idp_entity_id = "localhost"
+# The URL on which to access the SAML IdP.
+# Example: "https://fs.contoso.com/adfs/services/trust/13/UsernameMixed"
+idp_url = "https://localhost:9443/services/wso2carbon-sts.wso2carbon-stsHttpsEndpoint"
+# We currently support authentication against 'wso2' and 'adfs'
+idp_type = "wso2"
+# The public certificate file of the IdP, in PEM-format.
+idp_certificate = "test_auth_data/idp-certificate.pem"
+# SAML user ID attribute -- default is for WSO2. Example:
+# http://schemas.xmlsoap.org/ws/2005/05/identity/claims/privatepersonalidentifier
+user_id_attibute = "http://wso2.org/claims/url"
+
+
+[saml_sso]
+# These are the settings for the `flask_saml_sso` package. Please refer to the
+# package for the documentation of these settings:
+# https://github.com/magenta-aps/flask_saml_sso.
+enable = false
+idp_metadata_url = "https://172.16.20.100/simplesaml/saml2/idp/metadata.php"
+idp_insecure = false
+requests_signed = false
+key_file = ""
+cert_file = ""
+sqlalchemy_uri = "postgresql://sessions:sessions@127.0.0.1/sessions"
+session_permanent = true
+permanent_session_lifetime = 3600
+
+
+[restrictions]
+# Whether authorization is enabled.
+# If not, the restrictions module is not called.
+enable = false
+# The module which implements the authorization restrictions.
+# Must be present in sys.path.
+module = "oio_rest.auth.wso_restrictions"
+# The name of the function which retrieves the restrictions.
+# Must be present in AUTH_RESTRICTION_MODULE and have the correct signature.
+function = 'get_auth_restrictions'
+
+
+[file_upload]
+# This is where file uploads are stored. It must be readable and writable by
+# the mox user, running the REST API server. This is used in the Dokument
+# hierarchy.
+folder = "/var/mox"
+
+
+[audit_log]
+host = ""
+exchange = "mox.log"
+queue = "mox.log_queue"
+ignored_services = ["Log"]
+
+
+[db_extensions]
+path = ""
+
+
+[log]
+activity_log_path = "/var/log/mox/activity.log"
+trace_log_path = "/var/log/mox/trace.log"
+
+
+[testing_api]
+# If enabled, expose /testibng/db-* endpoint for setup, reset and teardown of a
+# test database. Useful for integration tests from other components such as MO.
+# Does not work when running multi-threaded.
+enable = false

@@ -15,7 +15,9 @@ LABEL org.opencontainers.image.title="MOX - Messaging Service and Actual State D
 
 # Force the stdout and stderr streams from python to be unbuffered. See
 # https://docs.python.org/3/using/cmdline.html#cmdoption-u
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONUNBUFFERED=1 \
+    MOX_SYSTEM_CONFIG_PATH=/code/docker/docker-settings.toml \
+    MOX_USER_CONFIG_PATH=/user-settings.toml
 
 
 WORKDIR /code/
@@ -45,20 +47,28 @@ RUN set -ex \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/man/?? /usr/share/man/??_* \
   # oio_rest expects some files and directories to be there. We create them with
   # the proper user and group.
-  # /var/mox is default for FILE_UPLOAD_FOLDER
-  && install -g mox -o mox -d /var/mox
+  # /var/mox is default for file upload
+  && install -g mox -o mox -d /var/mox \
+  && install -g mox -o mox -d /log
 
 
-# Create volume for file upload
+# Create volumes for file upload and logs
 VOLUME /var/mox
+VOLUME /log
 
 
 # Install requirements
 COPY oio_rest/requirements.txt /code/oio_rest/requirements.txt
-RUN pip3 install -r oio_rest/requirements.txt
+COPY oio_rest/requirements-test.txt /code/oio_rest/requirements-test.txt
+COPY oio_rest/requirements-lint.txt /code/oio_rest/requirements-lint.txt
+RUN pip3 install \
+  -r oio_rest/requirements.txt \
+  -r oio_rest/requirements-test.txt \
+  -r oio_rest/requirements-lint.txt
 
 
 # Copy and install application.
+COPY dev-environment/settings-for-mo-test.toml ./dev-environment/settings-for-mo-test.toml
 COPY docker ./docker
 COPY oio_rest ./oio_rest
 COPY README.rst .
@@ -72,4 +82,6 @@ RUN pip3 install -e oio_rest
 USER mox:mox
 EXPOSE 8080
 ENTRYPOINT ["/code/docker/docker-entrypoint.sh"]
-CMD ["gunicorn", "-b", "0.0.0.0:8080", "oio_rest.app:app"]
+CMD ["gunicorn", \
+  "--config", "/code/docker/gunicorn-settings.py", \
+  "oio_rest:app"]

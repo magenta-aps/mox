@@ -6,7 +6,12 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
+import collections
 from copy import deepcopy
+import itertools
+import json
+
+from oio_rest import settings
 
 # This specifies the database structure
 DATABASE_STRUCTURE = {
@@ -454,6 +459,50 @@ DB_TEMPLATE_EXTRA_OPTIONS = {
         }
     }
 }
+
+
+def merge_dicts(a, b):
+    if a is None:
+        return b
+    elif b is None:
+        return a
+
+    assert type(a) == type(b) == dict, 'type mismatch!: {} != {}'.format(
+        type(a),
+        type(b),
+    )
+
+    # the database code relies on the ordering of elements, so ensure
+    # that a consistent ordering, even on Python 3.5
+    return collections.OrderedDict(
+        (
+            k,
+            b[k] if k not in a
+            else
+            a[k] if k not in b
+            else merge_dicts(a[k], b[k])
+        )
+        for k in itertools.chain(a, b)
+    )
+
+
+def load_db_extensions(exts):
+    if not exts:
+        return
+
+    if isinstance(exts, str):  # it can be parsed json
+        with open(exts) as fp:
+            exts = json.load(fp)
+
+    global DATABASE_STRUCTURE
+    global REAL_DB_STRUCTURE
+    DATABASE_STRUCTURE = merge_dicts(DATABASE_STRUCTURE, exts)
+    REAL_DB_STRUCTURE = merge_dicts(REAL_DB_STRUCTURE, exts)
+
+
+extensions_path = settings.config["db_extensions"]["path"]
+load_db_extensions(extensions_path)
+
 
 if __name__ == "__main__":
     export_structure = "\n".join(sorted(REAL_DB_STRUCTURE))

@@ -6,7 +6,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
-from tests import util
+from tests.util import DBTestCase
 
 
 UUID_PATTERN = (
@@ -21,7 +21,7 @@ CONTENT_PATH_PATTERN = (
 )
 
 
-class Tests(util.TestCase):
+class Tests(DBTestCase):
     def test_site_map(self):
         self.assertRequestResponse(
             '/site-map',
@@ -100,6 +100,7 @@ class Tests(util.TestCase):
                     "/tilstand/tilstand/" + UUID_PATTERN,
                     "/tilstand/tilstand/fields",
                     "/tilstand/tilstand/schema",
+                    "/version",
                 ]
             }
         )

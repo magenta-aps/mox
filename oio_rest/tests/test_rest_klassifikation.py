@@ -10,9 +10,10 @@ import uuid
 
 from oio_rest.utils.build_registration import is_uuid
 from tests import util
+from tests.util import DBTestCase
 
 
-class Test21660PutUpdate(util.TestCase):
+class Test21660PutUpdate(DBTestCase):
     def test_21660(self):
         result = self.client.post(
             "klassifikation/facet",
@@ -37,7 +38,7 @@ class Test21660PutUpdate(util.TestCase):
         self.assertEqual(result_put.get_json()["uuid"], uuid_)
 
 
-class TestKlasse(util.TestCase):
+class TestKlasse(DBTestCase):
     def test_klasse(self):
         result = self.client.post(
             "klassifikation/klasse",
@@ -59,7 +60,7 @@ class TestKlasse(util.TestCase):
         self.assertEqual(result_patch.get_json()["uuid"], uuid_)
 
 
-class TestImportDeletedPassivated(util.TestCase):
+class TestImportDeletedPassivated(DBTestCase):
     def test_import_delete_passivated(self):
         result = self.client.post(
             "klassifikation/facet",
@@ -116,7 +117,7 @@ class TestImportDeletedPassivated(util.TestCase):
             self.assertEqual(result_import.get_json()["uuid"], uuid_)
 
 
-class TestFacet(util.TestCase):
+class TestFacet(DBTestCase):
     def test_facet(self):
         result = self.client.post(
             "klassifikation/facet",

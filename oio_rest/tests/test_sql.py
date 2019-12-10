@@ -12,18 +12,16 @@ import unittest
 
 import tap.parser
 
-from oio_rest.db import db_templating
+from oio_rest.db import db_templating, get_connection
 from oio_rest import settings
 from tests import util
+from tests.util import DBTestCase
 
-SQL_FIXTURE = os.path.join(util.FIXTURE_DIR, 'db-dump.sql')
 
-
-class SQLTests(util.TestCase):
+class SQLTests(DBTestCase):
     def setUp(self):
         super().setUp()
-
-        with self.db_cursor() as curs:
+        with get_connection() as conn, conn.cursor() as curs:
             curs.execute('CREATE EXTENSION "pgtap";')
 
             curs.execute(
@@ -38,12 +36,12 @@ class SQLTests(util.TestCase):
     def tearDown(self):
         super().setUp()
 
-        with self.db_cursor() as curs:
+        with get_connection() as conn, conn.cursor() as curs:
             curs.execute('DROP SCHEMA test CASCADE')
             curs.execute('DROP EXTENSION IF EXISTS "pgtap" CASCADE;')
 
     def test_pgsql(self):
-        with self.db_cursor() as curs:
+        with get_connection() as conn, conn.cursor() as curs:
             curs.execute("SELECT * FROM runtests ('test'::name)")
 
             self.assertGreater(curs.rowcount, 0)
@@ -69,13 +67,23 @@ class SQLTests(util.TestCase):
 
 class TextTests(unittest.TestCase):
     def test_sql_unchanged(self):
-        expected_path = pathlib.Path(SQL_FIXTURE)
-        actual_path = expected_path.with_name(expected_path.name + '.new')
+        """Check that the sql have not changed from last commit. The intention of the test is
+        not to force sql stagenation, but to inform the developers of sql changes in
+        commits by updating `db-dump.sql`.
 
-        actual_path.write_text('\n'.join(db_templating.render_templates()))
+        Update with `python3 -m oio_rest sql > db-dump.sql`
+
+        """
+        SQL_FIXTURE = os.path.join(util.FIXTURE_DIR, "db-dump.sql")
+
+        expected_path = pathlib.Path(SQL_FIXTURE)
+        actual = "\n".join(db_templating.get_sql()) + '\n'
+        expected = expected_path.read_text()
 
         self.assertEqual(
-            expected_path.read_text(),
-            actual_path.read_text(),
-            'contents changed -- new dump is in {}'.format(actual_path),
+            expected,
+            actual,
+            "SQL changed. Update with `python3 -m oio_rest sql > {}`".format(
+                expected_path
+            ),
         )

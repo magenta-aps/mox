@@ -8,13 +8,15 @@
 
 import datetime
 import dateutil
+import json
 import time
 import uuid
 
 from tests import util
+from tests.util import DBTestCase
 
 
-class Tests(util.TestCase):
+class Tests(DBTestCase):
     def test_import(self):
         objid = self.load_fixture('/aktivitet/aktivitet',
                                   'aktivitet_opret.json')
@@ -640,3 +642,22 @@ class Tests(util.TestCase):
                 'results': [[]],
             },
         )
+
+    def test_search_list(self):
+        # test search and retrieve #27508
+        objids = [str(uuid.UUID(int=i)) for i in range(3)]
+
+        for objid in objids:
+            self.load_fixture(
+                '/aktivitet/aktivitet',
+                'aktivitet_opret.json',
+                objid,
+            )
+
+        request = self.perform_request('/aktivitet/aktivitet/?bvn=%&list')
+        results = json.loads(request.get_data(as_text=True))
+
+        for r in results['results']:
+            self.assertIn(r[0]['id'], objids)
+
+        self.assertEqual(len(results['results'][0]), len(objids))

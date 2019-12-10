@@ -6,11 +6,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
-
 from tests import util
+from tests.util import DBTestCase
 
 
-class Tests(util.TestCase):
+class Tests(DBTestCase):
     def test_import(self):
         objid = self.load_fixture('/klassifikation/klasse',
                                   'klasse_opret.json')

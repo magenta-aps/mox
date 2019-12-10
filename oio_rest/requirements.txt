@@ -1,9 +1,10 @@
 requests==2.21.0
 Flask==1.0.2
-psycopg2~=2.7.0
+psycopg2-binary==2.8.3
 pexpect==4.6.0
 python-dateutil==2.7.5
 pika==0.13.0
 jsonschema==2.6.0
 flask_saml_sso @ https://github.com/magenta-aps/flask_saml_sso/releases/download/0.2.1/flask_saml_sso-0.2.1-py3-none-any.whl#egg=flask_saml_sso
 gunicorn>=19.9.0
+toml==0.10.0

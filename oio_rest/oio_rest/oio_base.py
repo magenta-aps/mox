@@ -17,7 +17,7 @@ from flask import jsonify, request
 from werkzeug.datastructures import ImmutableOrderedMultiDict
 
 from . import db
-from .db import db_helpers
+from .db import db_helpers, db_structure
 from . import validate
 from .utils.build_registration import build_registration, to_lower_param
 from .utils.build_registration import split_param
@@ -26,8 +26,6 @@ from .custom_exceptions import GoneException
 
 # Just a helper during debug
 from .authentication import requires_auth
-
-from . import settings
 
 
 '''List of parameters allowed for all searches.'''
@@ -40,6 +38,7 @@ GENERAL_SEARCH_PARAMS = frozenset({
     'uuid',
     'vilkaarligattr',
     'vilkaarligrel',
+    'list',
 })
 
 '''List of parameters allowed the apply to temporal operations, i.e.
@@ -127,6 +126,18 @@ def get_registreret_dates(args):
     return registreret_fra, registreret_til
 
 
+def _check_not_deleted(objects):
+    """Raise 410 Gone if any object is deleted."""
+    if objects is None:
+        return
+    for obj in objects:
+        if isinstance(obj, list) and obj[0]["registreringer"][0][
+                "livscykluskode"] == db.Livscyklus.SLETTET.value:
+            raise GoneException(
+                "The object with UUID %s has been deleted." % obj[0]["id"]
+            )
+
+
 class ArgumentDict(ImmutableOrderedMultiDict):
     '''
     A Werkzeug multi dict that maintains the order, and maps alias
@@ -184,7 +195,7 @@ class OIOStandardHierarchy(object):
              .. :quickref: :http:get:`/(service)/classes`
 
             """
-            structure = settings.REAL_DB_STRUCTURE
+            structure = db_structure.REAL_DB_STRUCTURE
             clsnms = [c.__name__.lower() for c in cls._classes]
             hierarchy_dict = {c: structure[c] for c in clsnms}
             return jsonify(hierarchy_dict)
@@ -299,7 +310,7 @@ class OIORestObject(object):
         valid_list_args = TEMPORALITY_PARAMS | {'uuid'}
 
         # Assume the search operation if other params were specified
-        if not valid_list_args.issuperset(args):
+        if not (valid_list_args.issuperset(args) and args.get('list') is None):
             # Only one uuid is supported through the search operation
             if uuid_param is not None and len(uuid_param) > 1:
                 raise BadRequestException("Multiple uuid parameters passed "
@@ -332,13 +343,20 @@ class OIORestObject(object):
                                         any_attr_value_arr,
                                         any_rel_uuid_arr, first_result,
                                         max_results)
-
+            if args.get('list') is not None:
+                request.api_operation = "List"
+                results = db.list_objects(cls.__name__, results[0],
+                                          virkning_fra, virkning_til,
+                                          registreret_fra, registreret_til)
+                _check_not_deleted(results)
         else:
             uuid_param = list_args.get('uuid', None)
             request.api_operation = "List"
             results = db.list_objects(cls.__name__, uuid_param, virkning_fra,
                                       virkning_til, registreret_fra,
                                       registreret_til)
+            _check_not_deleted(results)
+
         if results is None:
             results = []
         if uuid_param:
@@ -404,13 +422,13 @@ class OIORestObject(object):
         """A :ref:`ImportOperation` that creates or overwrites an object from
         the JSON payload.  It returns the UUID for the object.
 
-        If there no object with the UUID or the object with that UUID have been
+        If there is no object with the UUID or the object with that UUID was
         :ref:`deleted <DeleteOperation>` or :ref:`passivated
         <PassivateOperation>`, it creates a new object at the specified UUID.
         It sets ``livscykluskode: "Importeret"``.
 
-        If an object with the UUID exist it completely overwrite the object.
-        Including all ``virkning`` periods. It sets
+        If an object with the UUID exists, it completely overwrites the object
+        including all ``virkning`` periods. It sets
         ``livscykluskode: "Rettet"``.
 
         .. :quickref: :ref:`ImportOperation`
@@ -489,6 +507,14 @@ class OIORestObject(object):
         note = typed_get(input, "note", "")
         registration = cls.gather_registration(input)
 
+        # Validate JSON input
+        try:
+            validate.validate(
+                input, cls.__name__.lower(), do_create=False
+            )
+        except jsonschema.exceptions.ValidationError as e:
+            return jsonify({'message': e.message}), 400
+
         if typed_get(input, 'livscyklus', '').lower() == 'passiv':
             # Passivate
             request.api_operation = "Passiver"
@@ -536,7 +562,7 @@ class OIORestObject(object):
         cls.verify_args()
 
         """Set up API with correct database access functions."""
-        structure = settings.REAL_DB_STRUCTURE
+        structure = db_structure.REAL_DB_STRUCTURE
         class_key = cls.__name__.lower()
         # TODO: Perform some transformations to improve readability.
         class_dict = structure[class_key]

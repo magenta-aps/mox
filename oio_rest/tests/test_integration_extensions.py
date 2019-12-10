@@ -7,9 +7,10 @@
 #
 
 from . import util
+from tests.util import ExtDBTestCase
 
 
-class TestBooleanAttribute(util.TestCase):
+class TestBooleanAttribute(ExtDBTestCase):
     db_structure_extensions = {
         "facet": {
             "attributter": {

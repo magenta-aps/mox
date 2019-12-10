@@ -9,19 +9,17 @@
 import json
 import tempfile
 
-import flask_testing
-
-from oio_rest import settings
 from oio_rest import app
-from oio_rest.utils import test_support
+from oio_rest.db import db_structure
+from tests.util import ExtTestCase
 
 
-class Tests(flask_testing.TestCase):
+class Tests(ExtTestCase):
     def create_app(self):
-        return app.app
+        return app
 
     def get_fields(self):
-        return settings.REAL_DB_STRUCTURE['organisationfunktion']
+        return db_structure.REAL_DB_STRUCTURE['organisationfunktion']
 
     def test_patching_with_dict(self):
         orig = {
@@ -37,7 +35,7 @@ class Tests(flask_testing.TestCase):
             orig,
         )
 
-        with test_support.extend_db_struct({
+        with self.extend_db_struct({
                 "organisationfunktion": {
                     "attributter": {
                         "fætre": [
@@ -86,7 +84,7 @@ class Tests(flask_testing.TestCase):
             }, fp)
             fp.flush()
 
-            with test_support.extend_db_struct(fp.name):
+            with self.extend_db_struct(fp.name):
                 self.assertEqual(
                     self.get_fields()['attributter'],
                     {
@@ -101,7 +99,7 @@ class Tests(flask_testing.TestCase):
         )
 
     def test_patching_order(self):
-        with test_support.extend_db_struct({
+        with self.extend_db_struct({
                 "organisationfunktion": {
                     "attributter": {
                         "fætre": [
@@ -127,7 +125,7 @@ class Tests(flask_testing.TestCase):
                 ['gyldighed', 'høj'],
             )
 
-        with test_support.extend_db_struct({
+        with self.extend_db_struct({
                 "organisationfunktion": {
                     "attributter": {
                         "xyzzy": [
@@ -153,7 +151,7 @@ class Tests(flask_testing.TestCase):
                 ['gyldighed', 'zzz'],
             )
 
-        with test_support.extend_db_struct({
+        with self.extend_db_struct({
                 "organisationfunktion": {
                     "attributter": {
                         "aardvark": [
