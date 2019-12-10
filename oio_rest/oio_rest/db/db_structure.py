@@ -461,16 +461,50 @@ DB_TEMPLATE_EXTRA_OPTIONS = {
 }
 
 
-def merge_dicts(a, b):
+def merge_objects(a, b):
+    """
+    Merge two objects of the same type. Supports lists and dicts.
+    Recursively merges internal lists and dictionaries.
+    :param a: The first object
+    :param b: The second object
+    :return: A merged object
+    """
+    assert type(a) == type(b), 'type mismatch!: {} != {}'.format(
+        type(a),
+        type(b),
+    )
+
+    if isinstance(a, dict) and isinstance(b, dict):
+        return _merge_dicts(a, b)
+
+    elif isinstance(a, list) and isinstance(b, list):
+        return _merge_lists(a, b)
+
+    else:
+        raise AttributeError('Unsupported parameter type {}'.format(type(a)))
+
+
+def _merge_lists(a: list, b: list):
+    """
+    Merges two lists and removes duplicates
+    :param a: The first list
+    :param b: The second list
+    :return: A merged list with duplicates removed
+    """
+    return list(set(a + b))
+
+
+def _merge_dicts(a: dict, b: dict):
+    """
+    Merges two dicts, retaining ordering.
+    :param a: The first dict
+    :param b: The second dict
+    :return: A merged dict
+    """
     if a is None:
         return b
     elif b is None:
         return a
-
-    assert type(a) == type(b) == dict, 'type mismatch!: {} != {}'.format(
-        type(a),
-        type(b),
-    )
 
     # the database code relies on the ordering of elements, so ensure
     # that a consistent ordering, even on Python 3.5
@@ -480,7 +514,7 @@ def merge_dicts(a, b):
             b[k] if k not in a
             else
             a[k] if k not in b
-            else merge_dicts(a[k], b[k])
+            else merge_objects(a[k], b[k])
         )
         for k in itertools.chain(a, b)
     )
@@ -496,8 +530,8 @@ def load_db_extensions(exts):
 
     global DATABASE_STRUCTURE
     global REAL_DB_STRUCTURE
-    DATABASE_STRUCTURE = merge_dicts(DATABASE_STRUCTURE, exts)
-    REAL_DB_STRUCTURE = merge_dicts(REAL_DB_STRUCTURE, exts)
+    DATABASE_STRUCTURE = merge_objects(DATABASE_STRUCTURE, exts)
+    REAL_DB_STRUCTURE = merge_objects(REAL_DB_STRUCTURE, exts)
 
 
 extensions_path = settings.config["db_extensions"]["path"]
