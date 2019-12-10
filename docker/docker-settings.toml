@@ -1,8 +1,6 @@
 # This file contains the docker-specific configuration. As a rule of thumb, do
 # *not* change this. Refer to the documentation in ``user/settings.html``.
 
-version_file_path = "/code/oio_rest/VERSION"
-
 [log]
 activity_log_path = "/log/mox_activity.log"
 trace_log_path = "/log/mox_trace.log"
