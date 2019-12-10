@@ -1,3 +1,10 @@
+Version 1.5.0, 04 December 2019
+-------------------------------
+
+New features:
+
+* Added new fields to `mo-01.json`
+
 Version 1.4.0, 04 December 2019
 -------------------------------
 
