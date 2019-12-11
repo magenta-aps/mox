@@ -38,8 +38,9 @@ Database
 The container requires a connection to a postgres database. Read :ref:`Database`
 for a complete description.
 
-Remember if you set :data:`DB_HOST` to ``localhost`` the container will try to
-connect to a database in the same container , not the host machine.
+Remember if you set the
+:ref:`setting <settings>` ``[database] host = "localhost"`` the container will
+try to connect to a database in the same container, not the host machine.
 
 You will need to :ref:`initialize the database, user and
 extensions<db_user_ext_init>`. The docker image contains a few scripts to do
@@ -138,8 +139,8 @@ The gunicorn access log is output on ``STDOUT`` and error log is output on
 File upload
 -----------
 
-:file:`/var/mox` is the default :py:data:`FILE_UPLOAD_FOLDER`. It is created as
-an anonymous volume. It can be named if needed.
+:file:`/var/mox` is the default :ref:`[file_upload] folder <settings>` value.
+It is created as an anonymous volume. It can be named if needed.
 
 You can also `bind <https://docs.docker.com/storage/bind-mounts/>`_ it, just
 make sure the folder on the host system have the owner set to the same
@@ -241,10 +242,10 @@ The :file:`oio_rest` package requires a few system dependencies. It requires:
 * ``git`` for installing some requirements from :file:`requirements.txt` and
 * ``libxmlsec1-dev`` for the Python package ``xmlsec``.
 
-Mox needs to connect to ``postgres9.6``. mox can be configured with
-:py:data:`DB_HOST` to connect to any machine. You can install ``postgres9.6`` on
-the same machine and leave :py:data:`DB_HOST` as the default value of
-``localhost``.
+Mox needs to connect to ``postgres9.6``. mox can be configured with the
+:ref:`setting <settings>` ``[database] host = "localhost"`` to connect to any
+machine. The default value of :ref:`[database] host <settings>` is
+``"localhost"``.
 
 Installation
 ------------
@@ -263,7 +264,7 @@ Configuration
 
 Look through the :ref:`settings` and configure the one you need either as
 environment variables or as a config file. The most likely changes are properly
-to :py:data:`DB_HOST`, :py:data:`DB_USER` and :py:data:`DB_PASSWORD`.
+to the database host, user and password.
 
 Database initialization
 -----------------------

@@ -17,9 +17,12 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
+import os
 # import sys
 # sys.path.insert(0, os.path.abspath('../oio_rest'))
+
+import io
+import re
 
 
 # -- General configuration ------------------------------------------------
@@ -60,8 +63,13 @@ author = 'Magenta ApS'
 # built documents.
 #
 # The full version, including alpha/beta/rc tags.
-with open('../VERSION') as fp:
-  release = fp.read().strip()
+# this is the way flask does it
+__init___path = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "..", "oio_rest", "oio_rest", "__init__.py",
+)
+with io.open(__init___path, "rt", encoding="utf8") as f:
+    release = re.search(r'__version__ = "(.*?)"', f.read()).group(1)
 
 # The short X.Y version.
 version = '.'.join(release.split('.')[:2])
@@ -175,4 +183,12 @@ texinfo_documents = [
 ]
 
 
-
+# https://stackoverflow.com/a/30624034
+nitpick_ignore = [
+    ("http:obj", "uuid"),
+    ("http:obj", "datetime"),
+    ("http:obj", "string"),
+    ("http:obj", "enum"),
+    ("http:obj", "int"),
+    ("http:obj", "bool"),
+]

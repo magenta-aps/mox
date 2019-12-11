@@ -67,13 +67,13 @@ class SQLTests(DBTestCase):
 
 class TextTests(unittest.TestCase):
     def test_sql_unchanged(self):
-        """Check that the sql have not changed from last commit. The intention of the test is
-        not to force sql stagenation, but to inform the developers of sql changes in
-        commits by updating `db-dump.sql`.
+        """Check that the sql have not changed from last commit. The intention
+        of the test is not to force sql stagenation, but to inform the
+        developers of sql changes in commits by updating `db-dump.sql`.
 
         Update with `python3 -m oio_rest sql > db-dump.sql`
-
         """
+
         SQL_FIXTURE = os.path.join(util.FIXTURE_DIR, "db-dump.sql")
 
         expected_path = pathlib.Path(SQL_FIXTURE)

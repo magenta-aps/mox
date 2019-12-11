@@ -140,7 +140,9 @@ def testing_db_teardown():
 if settings.config["testing_api"]["enable"]:
     app.add_url_rule("/testing/db-setup", "testing_db_setup", testing_db_setup)
     app.add_url_rule("/testing/db-reset", "testing_db_reset", testing_db_reset)
-    app.add_url_rule("/testing/db-teardown", "testing_db_teardown", testing_db_teardown)
+    app.add_url_rule(
+        "/testing/db-teardown", "testing_db_teardown", testing_db_teardown
+    )
 
 
 @app.errorhandler(OIOFlaskException)
