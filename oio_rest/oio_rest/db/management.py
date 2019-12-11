@@ -280,11 +280,12 @@ def _createdb(dbname):
 def _database_exists(dbname):
     """Checks if a pg database object exists."""
     with _get_connection(_DBNAME_SYS_TEMPLATE) as conn, conn.cursor() as curs:
-            curs.execute(
-                "select datname from pg_catalog.pg_database where datname=%s",
-                [dbname],
-            )
-            return bool(curs.fetchone())
+        curs.execute(
+            "select datname from pg_catalog.pg_database where datname=%s",
+            [dbname],
+        )
+        return bool(curs.fetchone())
+
 
 def _log_active_sessions(conn):
     """Get and log active database connections."""
