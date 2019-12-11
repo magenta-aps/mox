@@ -295,16 +295,17 @@ def _log_active_sessions(conn):
             "       application_name, state             "
             "  FROM pg_stat_activity;                   "
         )
-        l = curs.fetchall()
-        length = len(l)
+        active_conns = curs.fetchall()
+
+    length = len(active_conns)
+    logger.debug(
+        "The following %s database sessions are connected:", length
+    )
+    for idx, s in enumerate(active_conns, start=1):
         logger.debug(
-            "The following %s database sessions are connected:", length
+            "[%s/%s] pid: %s, user: %s, database: %s, client, %s, "
+            "application: %s, state: %s",
+            idx,
+            length,
+            *s,
         )
-        for idx, s in enumerate(l, start=1):
-            logger.debug(
-                "[%s/%s] pid: %s, user: %s, database: %s, client, %s, "
-                "application: %s, state: %s",
-                idx,
-                length,
-                *s,
-            )
