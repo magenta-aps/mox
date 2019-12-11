@@ -55,7 +55,6 @@ variables:
   services: []
   tags:
     - docker
-  allow_failure: true
 
 lint:
   <<: *lint-default
