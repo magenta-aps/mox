@@ -183,4 +183,12 @@ texinfo_documents = [
 ]
 
 
-
+# https://stackoverflow.com/a/30624034
+nitpick_ignore = [
+    ("http:obj", "uuid"),
+    ("http:obj", "datetime"),
+    ("http:obj", "string"),
+    ("http:obj", "enum"),
+    ("http:obj", "int"),
+    ("http:obj", "bool"),
+]
