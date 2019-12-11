@@ -10,7 +10,6 @@ import time
 
 import click
 import flask.cli
-import psycopg2
 
 from oio_rest import app
 from oio_rest.settings import config
