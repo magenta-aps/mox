@@ -5,10 +5,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
+import freezegun
 
 from tests.util import DBTestCase
 
 
+@freezegun.freeze_time("2018-01-01")
 class TestCreateObject(DBTestCase):
     def setUp(self):
         super(TestCreateObject, self).setUp()
