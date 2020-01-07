@@ -1,5 +1,5 @@
 requests==2.22.0
-Flask==1.0.2
+Flask==1.1.1
 psycopg2-binary==2.8.4
 pexpect==4.6.0
 python-dateutil==2.7.5
