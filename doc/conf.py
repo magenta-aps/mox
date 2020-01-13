@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2015-2020 Magenta ApS
+# SPDX-License-Identifier: MPL-2.0
 # -*- coding: utf-8 -*-
 #
 # LoRa MOX documentation build configuration file, created by

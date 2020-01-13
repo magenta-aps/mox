@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2020 Magenta ApS
+# SPDX-License-Identifier: MPL-2.0
+
 # This is a copy of `dev-environment/mox-dev-settings.toml` in the OS2mo
 # repository. Please update both files simultaneously.
 #

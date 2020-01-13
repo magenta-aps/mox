@@ -1,4 +1,7 @@
 # -*- conf -*-
+# SPDX-FileCopyrightText: 2020 Magenta ApS
+# SPDX-License-Identifier: MPL-2.0
+
 [run]
 data_file = .tmp/.coverage
 branch = True
