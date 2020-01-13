@@ -23,6 +23,7 @@ ENV PYTHONUNBUFFERED=1 \
 WORKDIR /code/
 # ATTENTION DEVELOPER: When you change these prerequisites, make sure to also
 # update them in doc/user/installation.rst
+# hadolint ignore=DL3008
 RUN set -ex \
   # Add a mox group and user. Note: this is a system user/group, but have
   # UID/GID above the normal SYS_UID_MAX/SYS_GID_MAX of 999, but also above the
@@ -75,6 +76,7 @@ COPY README.rst .
 COPY LICENSE .
 # Install the application as editable. This makes it possible to mount `/code`
 # to your host and edit the files during development.
+# hadolint ignore=DL3013
 RUN pip3 install -e oio_rest
 
 
