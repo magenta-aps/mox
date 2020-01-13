@@ -11,13 +11,6 @@ stages:
   - release
   - deploy
 
-image: docker:19.03
-
-services:
-    - name: docker:19.03-dind
-      entrypoint: ["env", "-u", "DOCKER_HOST"]
-      command: ["dockerd-entrypoint.sh"]
-
 variables:
   # When using dind service we need to instruct docker, to talk with the
   # daemon started inside of the service. The daemon is available with
@@ -55,7 +48,6 @@ variables:
   services: []
   tags:
     - docker
-  allow_failure: true
 
 lint:
   <<: *lint-default
@@ -81,16 +73,17 @@ docs:
 
 build:
   stage: lint-build
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
   tags:
     - docker
-    - privileged
-  before_script:
-    # Login to GitLab registry
-    - echo ${CI_REGISTRY_PASSWORD} | docker login -u ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY}
-    - docker pull ${IMAGE_DEV} || true
   script:
-    - docker build -f docker/Dockerfile --pull --tag ${IMAGE_SHA} --cache-from ${IMAGE_DEV} .
-    - docker push ${IMAGE_SHA}
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor
+      --context=$CI_PROJECT_DIR
+      --dockerfile=$CI_PROJECT_DIR/docker/Dockerfile
+      --destination=${IMAGE_SHA}
 
 
 # Test stage
@@ -137,15 +130,13 @@ unit-test:
 
 .release-default: &release-default
   stage: release
+  image: alpine
   variables:
     GIT_STRATEGY: none # We do not need the source code
   tags:
     - docker
-    - privileged
   before_script:
-    # Login to GitLab registry
-    - echo ${CI_REGISTRY_PASSWORD} | docker login -u ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY}
-    - docker pull ${IMAGE_SHA}
+    - apk add skopeo
 
 
 release-dev:
@@ -153,8 +144,11 @@ release-dev:
   rules:
     - if: $CI_COMMIT_REF_NAME == "development"
   script:
-    - docker tag ${IMAGE_SHA} ${IMAGE_DEV}
-    - docker push ${IMAGE_DEV}
+    - skopeo copy
+      --src-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
+      --dest-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
+      "docker://${IMAGE_SHA}"
+      "docker://${IMAGE_DEV}"
 
 
 release-rc:
@@ -162,11 +156,11 @@ release-rc:
   rules:
     - if: $CI_COMMIT_REF_NAME =~ /^release\/.+$/
   script:
-    # Login to Docker Hub registry
-    - docker login -u ${RELEASE_REGISTRY_USER} -p ${RELEASE_REGISTRY_PASSWORD} ${RELEASE_REGISTRY}
-    - echo Tagging with ${IMAGE_RC}
-    - docker tag ${IMAGE_SHA} ${IMAGE_RC}
-    - docker push ${IMAGE_RC}
+    - skopeo copy
+      --src-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
+      --dest-creds=${RELEASE_REGISTRY_USER}:${RELEASE_REGISTRY_PASSWORD}
+      "docker://${IMAGE_SHA}"
+      "docker://${IMAGE_RC}"
 
 release-master:
   <<: *release-default
@@ -174,11 +168,13 @@ release-master:
       # Matches <version core> from SemVer 2.0.0 BNF grammar. Ex. 2.3.4, but not 2.3.4-rc
       - if: $CI_COMMIT_TAG =~ /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/
   script:
-    # Login to Docker Hub registry
-    - docker login -u ${RELEASE_REGISTRY_USER} -p ${RELEASE_REGISTRY_PASSWORD} ${RELEASE_REGISTRY}
-    - echo Tagging with ${IMAGE_VERSION}
-    - docker tag ${IMAGE_SHA} ${IMAGE_VERSION}
-    - echo Tagging with ${IMAGE_LATEST}
-    - docker tag ${IMAGE_SHA} ${IMAGE_LATEST}
-    - docker push ${IMAGE_VERSION}
-    - docker push ${IMAGE_LATEST}
+    - skopeo copy
+      --src-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
+      --dest-creds=${RELEASE_REGISTRY_USER}:${RELEASE_REGISTRY_PASSWORD}
+      "docker://${IMAGE_SHA}"
+      "docker://${IMAGE_VERSION}"
+    - skopeo copy
+      --src-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
+      --dest-creds=${RELEASE_REGISTRY_USER}:${RELEASE_REGISTRY_PASSWORD}
+      "docker://${IMAGE_SHA}"
+      "docker://${IMAGE_LATEST}"

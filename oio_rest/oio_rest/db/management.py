@@ -158,9 +158,9 @@ def _get_connection(dbname):
 def _cpdb(dbname_from, dbname_to):
     """Copy a pg database object and add the attributes oio_rest expects.
 
-    This creates a new database and uses `dbname_from` as a template for that database.
-    It copys all structures and data. The database attribrutes (set with `ALTER
-    DATABASE`) are not copyed, so they are set afterwards.
+    This creates a new database and uses `dbname_from` as a template for that
+    database.  It copys all structures and data. The database attribrutes (set
+    with `ALTER DATABASE`) are not copyed, so they are set afterwards.
 
     Requires CREATEDB or SUPERUSER privileges.
 
@@ -179,7 +179,11 @@ def _cpdb(dbname_from, dbname_to):
                     )
                 )
             except psycopg2.errors.ObjectInUse as e:
-                logger.error("Database %s or %s is in use. CREATE DATABASE failed.", dbname_to, dbname_from)
+                logger.error(
+                    "Database %s or %s is in use. CREATE DATABASE failed.",
+                    dbname_to,
+                    dbname_from,
+                )
                 _log_active_sessions(conn)
                 raise e
 
@@ -229,21 +233,23 @@ def _dropdb(dbname):
         with conn.cursor() as curs:
             try:
                 curs.execute(
-                    SQL("DROP DATABASE IF EXISTS {};").format(Identifier(dbname))
+                    SQL("DROP DATABASE IF EXISTS {};").format(
+                        Identifier(dbname)
+                    )
                 )
             except psycopg2.errors.ObjectInUse as e:
-                logger.error("Database %s is in use. DROP DATABASE failed.", dbname)
+                logger.error(
+                    "Database %s is in use. DROP DATABASE failed.", dbname
+                )
                 _log_active_sessions(conn)
                 raise e
 
 
-
 def _createdb(dbname):
-    """Create a new database and initialize it with objects from templates. Drops a
-    potential database with the same name first.
+    """Create a new database and initialize it with objects from templates.
+    Drops a potential database with the same name first.
 
     Requires CREATEDB or SUPERUSER privileges.
-
     """
     _dropdb(dbname)
     _cpdb(_DBNAME_SYS_TEMPLATE, dbname)
@@ -274,20 +280,32 @@ def _createdb(dbname):
 def _database_exists(dbname):
     """Checks if a pg database object exists."""
     with _get_connection(_DBNAME_SYS_TEMPLATE) as conn, conn.cursor() as curs:
-            curs.execute(
-                "select datname from pg_catalog.pg_database where datname=%s",
-                [dbname],
-            )
-            return bool(curs.fetchone())
+        curs.execute(
+            "select datname from pg_catalog.pg_database where datname=%s",
+            [dbname],
+        )
+        return bool(curs.fetchone())
+
 
 def _log_active_sessions(conn):
     """Get and log active database connections."""
     with conn.cursor() as curs:
         curs.execute(
-            "SELECT pid, usename, datname, client_addr, application_name, state FROM pg_stat_activity;"
+            "SELECT pid, usename, datname, client_addr, "
+            "       application_name, state             "
+            "  FROM pg_stat_activity;                   "
         )
-        l = curs.fetchall()
-        length = len(l)
-        logger.debug("The following %s database sessions are connected:", length)
-        for idx, s in enumerate(l, start=1):
-            logger.debug("[%s/%s] pid: %s, user: %s, database: %s, client, %s, application: %s, state: %s", idx, length, *s)
+        active_conns = curs.fetchall()
+
+    length = len(active_conns)
+    logger.debug(
+        "The following %s database sessions are connected:", length
+    )
+    for idx, s in enumerate(active_conns, start=1):
+        logger.debug(
+            "[%s/%s] pid: %s, user: %s, database: %s, client, %s, "
+            "application: %s, state: %s",
+            idx,
+            length,
+            *s,
+        )

@@ -9,7 +9,9 @@ from setuptools import find_packages, setup
 
 basedir = pathlib.Path(__file__).parent
 
-__init___path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "oio_rest", "__init__.py")
+__init___path = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "oio_rest", "__init__.py"
+)
 print(__init___path)
 
 

@@ -22,10 +22,13 @@ from .auth.saml2 import Saml2_Assertion
 from . import settings
 
 
-# Read the IdP certificate file into memory
-with open(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                       settings.SAML_IDP_CERTIFICATE)) as f:
-    __IDP_CERT = f.read()
+if settings.config["saml_wstrust"]["enable"]:
+    # Read the IdP certificate file into memory
+    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                           settings.SAML_IDP_CERTIFICATE)) as f:
+        __IDP_CERT = f.read()
+else:
+    __IDP_CERT = None
 
 
 def get_idp_cert():

@@ -1326,10 +1326,9 @@ class TestSchemaEndPoints(flask_testing.TestCase):
 
     @unittest.expectedFailure
     def test_schemas_unchanged(self):
-        """Check that the schema have not changed from last commit. The intention of the test is
-        not to force schema stagenation, but to inform the developers of schmea changes
-        in commits by updating `schemas.json`.
-
+        """Check that the schema have not changed from last commit. The
+        intention of the test is not to force schema stagenation, but to inform
+        the developers of schmea changes in commits by updating `schemas.json`.
         """
 
         expected = util.get_fixture("schemas.json")
@@ -1342,7 +1341,9 @@ class TestSchemaEndPoints(flask_testing.TestCase):
         }
 
         self.assertEqual(
-            expected, actual, "schemas changed. Please update {}".format(expected_path)
+            expected,
+            actual,
+            "schemas changed. Please update {}".format(expected_path),
         )
 
     def assertSchemaOK(self, hierarchy):
