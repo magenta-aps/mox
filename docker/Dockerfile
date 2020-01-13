@@ -37,9 +37,6 @@ RUN set -ex \
   # Install dependencies
   && apt-get -y update \
   && apt-get -y install --no-install-recommends \
-    # git is needed for python packages with `… = {git = …}` in requirements.txt.
-    # It pulls a lot of dependencies. Maybe some of them can be ignored.
-    git \
     # Python packages dependencies:
     # for xmlsec.
     libxmlsec1-dev \
