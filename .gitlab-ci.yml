@@ -49,7 +49,7 @@ variables:
   tags:
     - docker
 
-lint:
+python-lint:
   <<: *lint-default
   before_script:
     - pip3 install -r oio_rest/requirements-lint.txt
@@ -68,7 +68,7 @@ docs:
       - /doc-build
 
 
-hadolint:
+docker-lint:
   <<: *lint-default
   image: hadolint/hadolint:latest-debian
   before_script:
