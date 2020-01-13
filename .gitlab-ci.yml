@@ -75,9 +75,7 @@ hadolint:
     - apt-get -y update
     - apt-get -y install --no-install-recommends git
   script:
-    - git ls-files --exclude='Dockerfile*' --ignored
-          | xargs --max-lines=1
-            hadolint --ignore DL3008 --ignore DL3013
+    - git ls-files --exclude='Dockerfile*' --ignored | xargs --max-lines=1 hadolint
 
 
 # Build stage
