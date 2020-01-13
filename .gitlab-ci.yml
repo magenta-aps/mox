@@ -69,7 +69,6 @@ docs:
     paths:
       - /doc-build
 
-
 docker-lint:
   <<: *lint-default
   image: hadolint/hadolint:latest-debian
@@ -78,6 +77,12 @@ docker-lint:
     - apt-get -y install --no-install-recommends git
   script:
     - git ls-files --exclude='Dockerfile*' --ignored | xargs --max-lines=1 hadolint
+
+REUSE-compliance:
+  <<: *lint-default
+  image: fsfe/reuse:latest
+  script:
+    - reuse lint
 
 
 # Build stage
