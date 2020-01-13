@@ -21,9 +21,8 @@ ENV PYTHONUNBUFFERED=1 \
 
 
 WORKDIR /code/
-# ATTENTION DEVELOPER: When you change these prerequisites, make sure to also
-# update them in doc/user/installation.rst
-# hadolint ignore=DL3008
+COPY docker/sys-requirements.txt sys-requirements.txt
+# hadolint ignore=DL3008,DL4006
 RUN set -ex \
   # Add a mox group and user. Note: this is a system user/group, but have
   # UID/GID above the normal SYS_UID_MAX/SYS_GID_MAX of 999, but also above the
@@ -36,10 +35,7 @@ RUN set -ex \
   && useradd -u 72010 --no-log-init -r -g mox mox \
   # Install dependencies
   && apt-get -y update \
-  && apt-get -y install --no-install-recommends \
-    # Python packages dependencies:
-    # for xmlsec.
-    libxmlsec1-dev \
+  && apt-get -y install --no-install-recommends "$(grep -Eo '^(\w|-)+' sys-requirements.txt | paste -sd ' ')" \
   # clean up after apt-get and man-pages
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/man/?? /usr/share/man/??_* \
