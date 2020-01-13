@@ -20,3 +20,8 @@ License: MPL-2.0
 Files: oio_rest/oio_rest/templates/*
 Copyright: 2015-2020 Magenta ApS <info@magenta.dk>
 License: MPL-2.0
+
+# Ignore dead files
+Files: python_agents/* agents/* agentbase/* custom/*
+Copyright: 2015-2020 Magenta ApS <info@magenta.dk>
+License: MPL-2.0
