@@ -41,6 +41,8 @@ variables:
 # pipeline. When it is possible to use a DAG for describing the relations
 # (https://gitlab.com/gitlab-org/gitlab-ce/issues/47063), the lint jobs can be
 # executed in its own stage where no further jobs depend on them.
+# Make sure that "needs: []" is supported:
+#     https://docs.gitlab.com/ee/ci/yaml/README.html#needs
 
 .lint-default: &lint-default
   stage: lint-build
@@ -83,6 +85,7 @@ docker-lint:
 
 build:
   stage: lint-build
+  # needs: []
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
@@ -102,6 +105,7 @@ build:
 
 unit-test:
   stage: test
+  needs: ["build"]
   image:
     name: ${IMAGE_SHA}
   tags:
@@ -140,6 +144,7 @@ unit-test:
 
 .release-default: &release-default
   stage: release
+  needs: ["unit-test"]
   image: alpine
   variables:
     GIT_STRATEGY: none # We do not need the source code
