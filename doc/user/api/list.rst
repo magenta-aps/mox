@@ -152,6 +152,7 @@ List operation
    :query datetime virkningFra: :ref:`Valid time` 'from' timestamp.
    :query datetime virkningTil: Valid time 'to' timestamp.
    :query datetime virkningstid: Valid time 'snapshot' timestamp.
+   :query bool konsolider: Return consolidated 'virkning' periods - periods that are represented by the smallest amount of 'virkning' objects.
 
    All the ``registeret*`` and ``virkning*`` take a datetime. Input is accepted in
    almost any reasonable format, including ISO 8601, SQL-compatible, traditional

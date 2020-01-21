@@ -54,6 +54,12 @@ TEMPORALITY_PARAMS = frozenset({
     'virkningstid',
 })
 
+"""Parameter used for consolidating virkninger in output. For list, search
+and get"""
+CONSOLIDATE_PARAM = frozenset({
+    'konsolider',
+})
+
 '''Some operations take no arguments; this makes it explicit.
 
 '''
@@ -297,7 +303,7 @@ class OIORestObject(object):
         """
         request.parameter_storage_class = ArgumentDict
 
-        cls.verify_args(search=True, temporality=True)
+        cls.verify_args(search=True, temporality=True, consolidate=True)
 
         # Convert arguments to lowercase, getting them as lists
         list_args = cls._get_args(True)
@@ -307,9 +313,16 @@ class OIORestObject(object):
 
         uuid_param = list_args.get('uuid', None)
 
-        valid_list_args = TEMPORALITY_PARAMS | {'uuid'}
+        consolidate_param = list_args.get('konsolider') is not None
+        if consolidate_param:
+            list_fn = db.list_and_consolidate_objects
+        else:
+            list_fn = db.list_objects
 
-        # Assume the search operation if other params were specified
+        valid_list_args = TEMPORALITY_PARAMS | CONSOLIDATE_PARAM | {'uuid'}
+
+        # Assume the search operation if other params were specified or the
+        # 'list' parameter is specified
         if not (valid_list_args.issuperset(args) and args.get('list') is None):
             # Only one uuid is supported through the search operation
             if uuid_param is not None and len(uuid_param) > 1:
@@ -345,16 +358,16 @@ class OIORestObject(object):
                                         max_results)
             if args.get('list') is not None:
                 request.api_operation = "List"
-                results = db.list_objects(cls.__name__, results[0],
-                                          virkning_fra, virkning_til,
-                                          registreret_fra, registreret_til)
+                results = list_fn(cls.__name__, results[0],
+                                  virkning_fra, virkning_til,
+                                  registreret_fra, registreret_til)
                 _check_not_deleted(results)
         else:
             uuid_param = list_args.get('uuid', None)
             request.api_operation = "List"
-            results = db.list_objects(cls.__name__, uuid_param, virkning_fra,
-                                      virkning_til, registreret_fra,
-                                      registreret_til)
+            results = list_fn(cls.__name__, uuid_param, virkning_fra,
+                              virkning_til, registreret_fra,
+                              registreret_til)
             _check_not_deleted(results)
 
         if results is None:
@@ -373,18 +386,24 @@ class OIORestObject(object):
         .. :quickref: :ref:`ReadOperation`
 
         """
-        cls.verify_args(temporality=True)
+        cls.verify_args(temporality=True, consolidate=True)
 
         args = cls._get_args()
         registreret_fra, registreret_til = get_registreret_dates(args)
 
         virkning_fra, virkning_til = get_virkning_dates(args)
 
+        consolidate_param = cls._get_args().get('konsolider') is not None
+        if consolidate_param:
+            list_fn = db.list_and_consolidate_objects
+        else:
+            list_fn = db.list_objects
+
         request.api_operation = 'Læs'
         request.uuid = uuid
-        object_list = db.list_objects(cls.__name__, [uuid], virkning_fra,
-                                      virkning_til, registreret_fra,
-                                      registreret_til)
+        object_list = list_fn(cls.__name__, [uuid], virkning_fra,
+                              virkning_til, registreret_fra,
+                              registreret_til)
         try:
             object = object_list[0]
         except IndexError:
@@ -678,11 +697,14 @@ class OIORestObject(object):
         return set(db_helpers.get_state_names(cls.__name__))
 
     @classmethod
-    def verify_args(cls, temporality=False, search=False):
+    def verify_args(cls, temporality=False, search=False, consolidate=False):
         req_args = set(cls._get_args())
 
         if temporality:
             req_args -= TEMPORALITY_PARAMS
+
+        if consolidate:
+            req_args -= CONSOLIDATE_PARAM
 
         if search:
             req_args -= GENERAL_SEARCH_PARAMS

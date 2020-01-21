@@ -70,6 +70,7 @@ Read operation
    :query datetime virkningFra: :ref:`Valid time` 'from' timestamp.
    :query datetime virkningTil: Valid time 'to' timestamp.
    :query datetime virkningstid: Valid time 'snapshot' timestamp.
+   :query bool konsolider: Return consolidated 'virkning' periods - periods that are represented by the smallest amount of 'virkning' objects.
 
    All the ``registeret*`` and ``virkning*`` accept a value representing a
    specific date and time. Input is accepted in almost any reasonable format,

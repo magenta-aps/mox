@@ -60,7 +60,9 @@ Search operation
    :query int foersteresultat: The first result in a :ref:`PagedSearchOperation`. Sorts the result by ``brugervendtnoegle``.
    :query int maximalantalresultater: The maximal number of results in a :ref:`PagedSearchOperation`. Sorts the result by ``brugervendtnoegle``.
 
-   :query bool list: fetch and return objects instead of just their uuids.
+   :query bool list: Fetch and return objects instead of just their uuids.
+
+   :query bool konsolider: Return consolidated 'virkning' periods - periods that are represented by the smallest amount of 'virkning' objects.
 
    :query datetime registreretFra: :ref:`Transaction time` 'from' timestamp.
    :query datetime registreretTil: Transaction time 'to' timestamp.
