@@ -1,3 +1,17 @@
+In development
+--------------
+
+
+
+Version 1.5.0, 04 December 2019
+-------------------------------
+
+New features:
+
+* Added new fields to `mo-01.json`
+* Internal improvements for Gitlab CI setup
+
+
 Version 1.4.0, 04 December 2019
 -------------------------------
 
