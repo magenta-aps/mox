@@ -1,5 +1,5 @@
-In development
---------------
+Version 1.6.0, 22 January 2020
+------------------------------
 
 New features:
 
