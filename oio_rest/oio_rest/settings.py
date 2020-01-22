@@ -29,8 +29,6 @@ import sys
 
 import toml
 
-from oio_rest import app
-
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +61,9 @@ def update_config(configuration, new_settings):
             logger.warning("Invalid key in config: %s", key)
 
 
-with app.open_resource("default-settings.toml", "r") as f:
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+default_settings_path = os.path.join(base_dir, "oio_rest", "default-settings.toml")
+with open(default_settings_path, "r") as f:
     # DO NOT print or log ``config`` as it will EXPOSE the PASSWORD
     config = toml.load(f)
 

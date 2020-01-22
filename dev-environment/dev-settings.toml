@@ -5,3 +5,6 @@
 
 [database]
 host = "mox-db"
+
+[log]
+log_level = "INFO"
