@@ -1149,6 +1149,75 @@ class TestConsolidateVirkninger(unittest.TestCase):
         # Assert
         self.assertEqual(expected, actual)
 
+    def test_consolidate_handles_zero_to_many_many_equal_overlaps(self):
+        """Handle overlapping intervals as found in zero-to-many relations"""
+        # Arrange
+        effects = [
+            {
+                'whatever': 'garbage',
+                'virkning': {
+                    'from': '1900-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': '1950-01-01 00:00:00+01',
+                    'to_included': False
+                }
+            },
+            {
+                'whatever': 'garbage',
+                'virkning': {
+                    'from': '1950-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': '2000-01-01 00:00:00+01',
+                    'to_included': False
+                }
+            },
+            {
+                'whatever': 'garbage',
+                'virkning': {
+                    'from': '1920-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': '1980-01-01 00:00:00+01',
+                    'to_included': False
+                }
+            },
+        ]
+
+        expected = [
+            {
+                'virkning': {
+                    'from': '1900-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': '1950-01-01 00:00:00+01',
+                    'to_included': False
+                },
+                'whatever': 'garbage'
+            },
+            {
+                'virkning': {
+                    'from': '1920-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': '1980-01-01 00:00:00+01',
+                    'to_included': False
+                },
+                'whatever': 'garbage'
+            },
+            {
+                'virkning': {
+                    'from': '1950-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': '2000-01-01 00:00:00+01',
+                    'to_included': False
+                },
+                'whatever': 'garbage'
+            }
+        ]
+
+        # Act
+        actual = db._consolidate_virkninger(effects)
+
+        # Assert
+        self.assertEqual(expected, actual)
+
     def test_consolidate_handles_non_sequential_periods(self):
         # Arrange
         effects = [
