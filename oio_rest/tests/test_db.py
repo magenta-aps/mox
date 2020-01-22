@@ -999,6 +999,549 @@ class TestDB(flask_testing.TestCase):
         self.assertEqual('Importeret', actual_result)
 
 
+class TestConsolidateVirkninger(unittest.TestCase):
+
+    def test_consolidate_effects_works_correctly(self):
+        # Arrange
+        effects = [
+            {
+                'whatever': 'garbage',
+                'virkning': {
+                    'from': '1950-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': 'infinity',
+                    'to_included': False
+                }
+            },
+            {
+                'whatever': 'garbage',
+                'virkning': {
+                    'from': '1900-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': '1950-01-01 00:00:00+01',
+                    'to_included': False
+                }
+            }
+        ]
+
+        expected = [
+            {
+                'whatever': 'garbage',
+                'virkning': {
+                    'from': '1900-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': 'infinity',
+                    'to_included': False
+                }
+            }
+        ]
+
+        # Act
+        actual = db._consolidate_virkninger(effects)
+
+        # Assert
+        self.assertEqual(expected, actual)
+
+    def test_consolidate_handles_differing_attributes(self):
+        # Arrange
+        effects = [
+            {
+                'something': 'garbage',
+                'virkning': {
+                    'from': '1900-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': '1950-01-01 00:00:00+01',
+                    'to_included': False
+                }
+            },
+            {
+                'whatever': 'garbage',
+                'virkning': {
+                    'from': '1950-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': '1980-01-01 00:00:00+01',
+                    'to_included': False
+                }
+            },
+            {
+                'whatever': 'garbage2',
+                'virkning': {
+                    'from': '1980-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': 'infinity',
+                    'to_included': False
+                }
+            },
+        ]
+
+        # Act
+        actual = db._consolidate_virkninger(effects)
+
+        # Assert
+        self.assertEqual(effects, actual)
+
+    def test_consolidate_handles_zero_to_many(self):
+        """Handle overlapping intervals as found in zero-to-many relations"""
+        # Arrange
+        effects = [
+            {
+                'whatever': 'garbage',
+                'virkning': {
+                    'from': '1900-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': '1950-01-01 00:00:00+01',
+                    'to_included': False
+                }
+            },
+            {
+                'whatever': 'garbage',
+                'virkning': {
+                    'from': '1950-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': '2000-01-01 00:00:00+01',
+                    'to_included': False
+                }
+            },
+            {
+                'whatever': 'other garbage',
+                'virkning': {
+                    'from': '1900-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': '1930-01-01 00:00:00+01',
+                    'to_included': False
+                }
+            },
+            {
+                'whatever': 'other garbage',
+                'virkning': {
+                    'from': '1930-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': '2000-01-01 00:00:00+01',
+                    'to_included': False
+                }
+            },
+        ]
+
+        expected = [
+            {
+                'virkning': {
+                    'from': '1900-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': '2000-01-01 00:00:00+01',
+                    'to_included': False
+                },
+                'whatever': 'garbage'
+            },
+            {
+                'virkning': {
+                    'from': '1900-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': '2000-01-01 00:00:00+01',
+                    'to_included': False
+                },
+                'whatever': 'other garbage'
+            }
+        ]
+
+        # Act
+        actual = db._consolidate_virkninger(effects)
+
+        # Assert
+        self.assertEqual(expected, actual)
+
+    def test_consolidate_handles_zero_to_many_many_equal_overlaps(self):
+        """Handle overlapping intervals as found in zero-to-many relations"""
+        # Arrange
+        effects = [
+            {
+                'whatever': 'garbage',
+                'virkning': {
+                    'from': '1900-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': '1950-01-01 00:00:00+01',
+                    'to_included': False
+                }
+            },
+            {
+                'whatever': 'garbage',
+                'virkning': {
+                    'from': '1950-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': '2000-01-01 00:00:00+01',
+                    'to_included': False
+                }
+            },
+            {
+                'whatever': 'garbage',
+                'virkning': {
+                    'from': '1920-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': '1980-01-01 00:00:00+01',
+                    'to_included': False
+                }
+            },
+        ]
+
+        expected = [
+            {
+                'virkning': {
+                    'from': '1900-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': '1950-01-01 00:00:00+01',
+                    'to_included': False
+                },
+                'whatever': 'garbage'
+            },
+            {
+                'virkning': {
+                    'from': '1920-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': '1980-01-01 00:00:00+01',
+                    'to_included': False
+                },
+                'whatever': 'garbage'
+            },
+            {
+                'virkning': {
+                    'from': '1950-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': '2000-01-01 00:00:00+01',
+                    'to_included': False
+                },
+                'whatever': 'garbage'
+            }
+        ]
+
+        # Act
+        actual = db._consolidate_virkninger(effects)
+
+        # Assert
+        self.assertEqual(expected, actual)
+
+    def test_consolidate_handles_non_sequential_periods(self):
+        # Arrange
+        effects = [
+            {
+                'whatever': 'garbage',
+                'virkning': {
+                    'from': '1900-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': '1950-01-01 00:00:00+01',
+                    'to_included': False
+                }
+            },
+            {
+                'whatever': 'garbage',
+                'virkning': {
+                    'from': '1950-01-02 00:00:00+01',
+                    'from_included': True,
+                    'to': 'infinity',
+                    'to_included': False
+                }
+            },
+        ]
+
+        # Act
+        actual = db._consolidate_virkninger(effects)
+
+        # Assert
+        self.assertEqual(effects, actual)
+
+    def test_consolidate_handles_single_element(self):
+        # Arrange
+        effects = [
+            {
+                'whatever': 'garbage',
+                'virkning': {
+                    'from': '1900-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': '1950-01-01 00:00:00+01',
+                    'to_included': False
+                }
+            },
+        ]
+
+        # Act
+        actual = db._consolidate_virkninger(effects)
+
+        # Assert
+        self.assertEqual(effects, actual)
+
+    def test_consolidate_handles_empty_list(self):
+        # Arrange
+        effects = []
+
+        # Act
+        actual = db._consolidate_virkninger(effects)
+
+        # Assert
+        self.assertEqual(effects, actual)
+
+    def test_consolidate_and_trim_removes_empty_keys(self):
+        obj = [[
+            {
+                "id": "6467fbb0-dd62-48ae-90be-abdef7e66aa7",
+                "registreringer": [
+                    {
+                        "attributter": {
+                            "organisationfunktionegenskaber": [
+                                {
+                                    "funktionsnavn": "navn 2",
+                                    "virkning": {
+                                        "from": "1970-04-30 22:00:00+00",
+                                        "from_included": True,
+                                        "to": "infinity",
+                                        "to_included": False
+                                    }
+                                }
+                            ],
+                            "organisationfunktionudvidelser": [
+                                {
+                                    "fraktion": 100,
+                                    "virkning": {
+                                        "from": "1920-04-30 22:00:00+00",
+                                        "from_included": True,
+                                        "to": "1930-04-30 22:00:00+00",
+                                        "to_included": False
+                                    }
+                                }
+                            ]
+                        },
+                        "brugerref": "42c432e8-9c4a-11e6-9f62-873cf34a735f",
+                        "fratidspunkt": {
+                            "graenseindikator": True,
+                            "tidsstempeldatotid": "2019-12-18T09:37:49.811807"
+                                                  "+00:00"
+                        },
+                        "livscykluskode": "Rettet",
+                        "note": "Rediger engagement",
+                    }
+                ]
+            }
+        ]]
+
+        actual = db._consolidate_and_trim_object_virkninger(
+            obj, "1999-01-01 00:00:00+00", "infinity"
+        )
+
+        actual_attributes = actual[0][0]['registreringer'][0]['attributter']
+
+        # 'organisationfunktionudvidelser' should be gone at this point
+        self.assertIn('organisationfunktionegenskaber', actual_attributes)
+        self.assertNotIn('organisationfunktionudvidelser', actual_attributes)
+
+    def test_consolidate_and_trim_removes_empty_categories(self):
+        obj = [[
+            {
+                "id": "6467fbb0-dd62-48ae-90be-abdef7e66aa7",
+                "registreringer": [
+                    {
+                        "attributter": {
+                            "organisationfunktionudvidelser": [
+                                {
+                                    "fraktion": 100,
+                                    "virkning": {
+                                        "from": "1920-04-30 22:00:00+00",
+                                        "from_included": True,
+                                        "to": "1930-04-30 22:00:00+00",
+                                        "to_included": False
+                                    }
+                                }
+                            ]
+                        },
+                        "brugerref": "42c432e8-9c4a-11e6-9f62-873cf34a735f",
+                        "fratidspunkt": {
+                            "graenseindikator": True,
+                            "tidsstempeldatotid": "2019-12-18T09:37:49.811807"
+                                                  "+00:00"
+                        },
+                        "livscykluskode": "Rettet",
+                        "note": "Rediger engagement",
+                    }
+                ]
+            }
+        ]]
+
+        actual = db._consolidate_and_trim_object_virkninger(
+            obj, "1999-01-01 00:00:00+00", "infinity"
+        )
+
+        actual_registration = actual[0][0]['registreringer'][0]
+
+        # 'attributter' should be gone at this point
+        self.assertNotIn('attributter', actual_registration)
+
+    def test_trim_virkninger_lower_bound_not_included(self):
+        effects = [
+            {
+                'whatever': 'garbage',
+                'virkning': {
+                    'from': '-infinity',
+                    'from_included': True,
+                    'to': '1950-01-01 00:00:00+01',
+                    'to_included': False
+                }
+            },
+            {
+                'whatever': 'garbage',
+                'virkning': {
+                    'from': '1950-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': 'infinity',
+                    'to_included': False
+                }
+            },
+        ]
+
+        expected = [{
+            'whatever': 'garbage',
+            'virkning': {
+                'from': '1950-01-01 00:00:00+01',
+                'from_included': True,
+                'to': 'infinity',
+                'to_included': False
+            }
+        }]
+
+        actual = db._trim_virkninger(effects, '1950-01-01 00:00:00+01',
+                                     'infinity')
+
+        self.assertEqual(expected, actual)
+
+    def test_trim_virkninger_lower_bound_included(self):
+        effects = [
+            {
+                'whatever': 'garbage',
+                'virkning': {
+                    'from': '-infinity',
+                    'from_included': True,
+                    'to': '1950-01-01 00:00:00+01',
+                    'to_included': True
+                }
+            },
+            {
+                'whatever': 'garbage',
+                'virkning': {
+                    'from': '1950-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': 'infinity',
+                    'to_included': False
+                }
+            },
+        ]
+
+        expected = [
+            {
+                'whatever': 'garbage',
+                'virkning': {
+                    'from': '-infinity',
+                    'from_included': True,
+                    'to': '1950-01-01 00:00:00+01',
+                    'to_included': True
+                }
+            },
+            {
+                'whatever': 'garbage',
+                'virkning': {
+                    'from': '1950-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': 'infinity',
+                    'to_included': False
+                }
+            },
+        ]
+
+        actual = db._trim_virkninger(effects, '1950-01-01 00:00:00+01',
+                                     'infinity')
+
+        self.assertEqual(expected, actual)
+
+    def test_trim_virkninger_upper_bound_not_included(self):
+        effects = [
+            {
+                'whatever': 'garbage',
+                'virkning': {
+                    'from': '-infinity',
+                    'from_included': True,
+                    'to': '1950-01-01 00:00:00+01',
+                    'to_included': False
+                }
+            },
+            {
+                'whatever': 'garbage',
+                'virkning': {
+                    'from': '1950-01-01 00:00:00+01',
+                    'from_included': False,
+                    'to': 'infinity',
+                    'to_included': False
+                }
+            },
+        ]
+
+        expected = [{
+            'whatever': 'garbage',
+            'virkning': {
+                'from': '-infinity',
+                'from_included': True,
+                'to': '1950-01-01 00:00:00+01',
+                'to_included': False
+            }
+        }]
+
+        actual = db._trim_virkninger(effects, '-infinity',
+                                     '1950-01-01 00:00:00+01')
+
+        self.assertEqual(expected, actual)
+
+    def test_trim_virkninger_upper_bound_included(self):
+        effects = [
+            {
+                'whatever': 'garbage',
+                'virkning': {
+                    'from': '-infinity',
+                    'from_included': True,
+                    'to': '1950-01-01 00:00:00+01',
+                    'to_included': False
+                }
+            },
+            {
+                'whatever': 'garbage',
+                'virkning': {
+                    'from': '1950-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': 'infinity',
+                    'to_included': False
+                }
+            },
+        ]
+
+        expected = [
+            {
+                'whatever': 'garbage',
+                'virkning': {
+                    'from': '-infinity',
+                    'from_included': True,
+                    'to': '1950-01-01 00:00:00+01',
+                    'to_included': False
+                }
+            },
+            {
+                'whatever': 'garbage',
+                'virkning': {
+                    'from': '1950-01-01 00:00:00+01',
+                    'from_included': True,
+                    'to': 'infinity',
+                    'to_included': False
+                }
+            },
+        ]
+
+        actual = db._trim_virkninger(effects, '-infinity',
+                                     '1950-01-01 00:00:00+01')
+
+        self.assertEqual(expected, actual)
+
+
 @patch("oio_rest.db.sql_convert_registration", new=MagicMock())
 class TestDBObjectFunctions(unittest.TestCase):
     @patch("oio_rest.db.get_connection")
