@@ -604,7 +604,7 @@ def list_and_consolidate_objects(class_name, uuid, virkning_fra, virkning_til,
         registreret_til=registreret_til
     )
 
-    return consolidate_and_trim_object_virkninger(
+    return _consolidate_and_trim_object_virkninger(
         output, valid_from=virkning_fra, valid_to=virkning_til)
 
 
@@ -771,9 +771,9 @@ def transform_relations(o):
         return o
 
 
-def consolidate_and_trim_object_virkninger(obj,
-                                           valid_from='-infinity',
-                                           valid_to='infinity'):
+def _consolidate_and_trim_object_virkninger(obj,
+                                            valid_from='-infinity',
+                                            valid_to='infinity'):
     """
     Read a LoRa object and consolidate multiple sequential LoRa virkning
     objects that could have been represented by one object.
@@ -797,9 +797,9 @@ def consolidate_and_trim_object_virkninger(obj,
                 continue
 
             for key in list(category.keys()):
-                virkninger = consolidate_virkninger(category[key])
-                category[key] = trim_virkninger(virkninger, valid_from,
-                                                valid_to)
+                virkninger = _consolidate_virkninger(category[key])
+                category[key] = _trim_virkninger(virkninger, valid_from,
+                                                 valid_to)
 
                 # If no virkninger are left after trimming, delete the key
                 if not category[key]:
@@ -813,7 +813,7 @@ def consolidate_and_trim_object_virkninger(obj,
     return new_obj
 
 
-def consolidate_virkninger(virkninger_list):
+def _consolidate_virkninger(virkninger_list):
     """
     Consolidate a single list of LoRa virkninger.
 
@@ -853,7 +853,7 @@ def consolidate_virkninger(virkninger_list):
     return new_virkninger
 
 
-def trim_virkninger(virkninger_list, valid_from, valid_to):
+def _trim_virkninger(virkninger_list, valid_from, valid_to):
     """
     Trim a list of LoRa virkninger. Removes all virkninger not inside the
     given interval of valid_from/valid_to

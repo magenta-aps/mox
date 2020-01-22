@@ -1037,7 +1037,7 @@ class TestConsolidateVirkninger(unittest.TestCase):
         ]
 
         # Act
-        actual = db.consolidate_virkninger(effects)
+        actual = db._consolidate_virkninger(effects)
 
         # Assert
         self.assertEqual(expected, actual)
@@ -1075,7 +1075,7 @@ class TestConsolidateVirkninger(unittest.TestCase):
         ]
 
         # Act
-        actual = db.consolidate_virkninger(effects)
+        actual = db._consolidate_virkninger(effects)
 
         # Assert
         self.assertEqual(effects, actual)
@@ -1144,7 +1144,7 @@ class TestConsolidateVirkninger(unittest.TestCase):
         ]
 
         # Act
-        actual = db.consolidate_virkninger(effects)
+        actual = db._consolidate_virkninger(effects)
 
         # Assert
         self.assertEqual(expected, actual)
@@ -1173,7 +1173,7 @@ class TestConsolidateVirkninger(unittest.TestCase):
         ]
 
         # Act
-        actual = db.consolidate_virkninger(effects)
+        actual = db._consolidate_virkninger(effects)
 
         # Assert
         self.assertEqual(effects, actual)
@@ -1193,7 +1193,7 @@ class TestConsolidateVirkninger(unittest.TestCase):
         ]
 
         # Act
-        actual = db.consolidate_virkninger(effects)
+        actual = db._consolidate_virkninger(effects)
 
         # Assert
         self.assertEqual(effects, actual)
@@ -1203,7 +1203,7 @@ class TestConsolidateVirkninger(unittest.TestCase):
         effects = []
 
         # Act
-        actual = db.consolidate_virkninger(effects)
+        actual = db._consolidate_virkninger(effects)
 
         # Assert
         self.assertEqual(effects, actual)
@@ -1251,7 +1251,7 @@ class TestConsolidateVirkninger(unittest.TestCase):
             }
         ]]
 
-        actual = db.consolidate_and_trim_object_virkninger(
+        actual = db._consolidate_and_trim_object_virkninger(
             obj, "1999-01-01 00:00:00+00", "infinity"
         )
 
@@ -1293,7 +1293,7 @@ class TestConsolidateVirkninger(unittest.TestCase):
             }
         ]]
 
-        actual = db.consolidate_and_trim_object_virkninger(
+        actual = db._consolidate_and_trim_object_virkninger(
             obj, "1999-01-01 00:00:00+00", "infinity"
         )
 
@@ -1334,8 +1334,8 @@ class TestConsolidateVirkninger(unittest.TestCase):
             }
         }]
 
-        actual = db.trim_virkninger(effects, '1950-01-01 00:00:00+01',
-                                    'infinity')
+        actual = db._trim_virkninger(effects, '1950-01-01 00:00:00+01',
+                                     'infinity')
 
         self.assertEqual(expected, actual)
 
@@ -1382,8 +1382,8 @@ class TestConsolidateVirkninger(unittest.TestCase):
             },
         ]
 
-        actual = db.trim_virkninger(effects, '1950-01-01 00:00:00+01',
-                                    'infinity')
+        actual = db._trim_virkninger(effects, '1950-01-01 00:00:00+01',
+                                     'infinity')
 
         self.assertEqual(expected, actual)
 
@@ -1419,8 +1419,8 @@ class TestConsolidateVirkninger(unittest.TestCase):
             }
         }]
 
-        actual = db.trim_virkninger(effects, '-infinity',
-                                    '1950-01-01 00:00:00+01')
+        actual = db._trim_virkninger(effects, '-infinity',
+                                     '1950-01-01 00:00:00+01')
 
         self.assertEqual(expected, actual)
 
@@ -1467,8 +1467,8 @@ class TestConsolidateVirkninger(unittest.TestCase):
             },
         ]
 
-        actual = db.trim_virkninger(effects, '-infinity',
-                                    '1950-01-01 00:00:00+01')
+        actual = db._trim_virkninger(effects, '-infinity',
+                                     '1950-01-01 00:00:00+01')
 
         self.assertEqual(expected, actual)
 
