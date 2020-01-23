@@ -14,5 +14,5 @@
 # *not* change this. Refer to the documentation in ``user/settings.html``.
 
 [log]
-activity_log_path = "/log/mox_activity.log"
-trace_log_path = "/log/mox_trace.log"
+activity_log_path = "/log/activity.log"
+log_path = "/log/oio_rest.log"
