@@ -3,6 +3,13 @@ In development
 
 New features:
 
+
+
+Version 1.6.0, 22 January 2020
+------------------------------
+
+New features:
+
 * Support for returning a consolidated output from oio_rest which collapses
   'virkning' intervals to the smallest amount
 
