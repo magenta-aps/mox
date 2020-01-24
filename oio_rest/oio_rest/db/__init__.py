@@ -4,8 +4,8 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
-
+import collections
+import copy
 import datetime
 import enum
 import pathlib
@@ -590,6 +590,24 @@ def update_object(class_name, note, registration, uuid=None,
     return uuid
 
 
+def list_and_consolidate_objects(class_name, uuid, virkning_fra, virkning_til,
+                                 registreret_fra, registreret_til):
+    """List objects with the given uuids, consolidating the 'virkninger' and
+    optionally filtering by the given virkning and registrering periods."""
+
+    output = list_objects(
+        class_name=class_name,
+        uuid=uuid,
+        virkning_fra="-infinity",
+        virkning_til="infinity",
+        registreret_fra=registreret_fra,
+        registreret_til=registreret_til
+    )
+
+    return _consolidate_and_trim_object_virkninger(
+        output, valid_from=virkning_fra, valid_to=virkning_til)
+
+
 def list_objects(class_name, uuid, virkning_fra, virkning_til,
                  registreret_fra, registreret_til):
     """List objects with the given uuids, optionally filtering by the given
@@ -751,6 +769,115 @@ def transform_relations(o):
         return tuple(transform_relations(v) for v in o)
     else:
         return o
+
+
+def _consolidate_and_trim_object_virkninger(obj,
+                                            valid_from='-infinity',
+                                            valid_to='infinity'):
+    """
+    Read a LoRa object and consolidate multiple sequential LoRa virkning
+    objects that could have been represented by one object.
+    Optionally trims the resulting object removing virkninger outside the
+    given interval of valid_from/valid_to
+
+    :param obj: An object from a list-operation on the database
+    :return: A result with consolidated virkninger (if applicable)
+    """
+
+    if not obj:
+        return obj
+
+    new_obj = copy.deepcopy(obj)
+
+    for result in new_obj[0]:
+        registration = result['registreringer'][0]
+        for category_key in ['attributter', 'relationer', 'tilstande']:
+            category = registration.get(category_key)
+            if not category:
+                continue
+
+            for key in list(category.keys()):
+                virkninger = _consolidate_virkninger(category[key])
+                category[key] = _trim_virkninger(virkninger, valid_from,
+                                                 valid_to)
+
+                # If no virkninger are left after trimming, delete the key
+                if not category[key]:
+                    del category[key]
+
+            # If the entire category is empty after trimming, delete the
+            # category key
+            if not registration[category_key]:
+                del registration[category_key]
+
+    return new_obj
+
+
+def _consolidate_virkninger(virkninger_list):
+    """
+    Consolidate a single list of LoRa virkninger.
+
+    :param virkninger_list: A list of virkninger
+    :return: A list of consolidated virkninger
+    """
+
+    if not virkninger_list:
+        return virkninger_list
+
+    # Collect virkninger with the same values
+    # use OrderedDict to have some kind of consistent ordering in output
+    virkning_map = collections.OrderedDict()
+    for virkning in virkninger_list:
+        virkning_copy = copy.copy(virkning)
+        del virkning_copy['virkning']
+        virkning_key = tuple(virkning_copy.items())
+        virkning_map.setdefault(virkning_key, []).append(virkning)
+
+    new_virkninger = []
+    for v in virkning_map.values():
+        sorted_virkninger = sorted(v,
+                                   key=lambda x: x.get('virkning').get('from'))
+
+        current_virkning = copy.deepcopy(sorted_virkninger[0])
+
+        for next_virkning in sorted_virkninger[1:]:
+            if current_virkning['virkning']['to'] == next_virkning['virkning'][
+                    'from']:
+                current_virkning['virkning']['to'] = next_virkning['virkning'][
+                    'to']
+            else:
+                new_virkninger.append(current_virkning)
+                current_virkning = next_virkning
+        new_virkninger.append(current_virkning)
+
+    return new_virkninger
+
+
+def _trim_virkninger(virkninger_list, valid_from, valid_to):
+    """
+    Trim a list of LoRa virkninger. Removes all virkninger not inside the
+    given interval of valid_from/valid_to
+    """
+
+    def filter_fn(virkning):
+        virkning_from = virkning['virkning']['from']
+        from_included = virkning['virkning']['from_included']
+        virkning_to = virkning['virkning']['to']
+        to_included = virkning['virkning']['to_included']
+
+        if valid_from != '-infinity' and virkning_to != 'infinity':
+            if to_included and virkning_to < str(valid_from):
+                return False
+            elif not to_included and virkning_to <= str(valid_from):
+                return False
+        if valid_to != 'infinity' or virkning_from != '-infinity':
+            if from_included and str(valid_to) < virkning_from:
+                return False
+            elif not from_included and str(valid_to) <= virkning_from:
+                return False
+        return True
+
+    return list(filter(filter_fn, virkninger_list))
 
 
 def search_objects(class_name, uuid, registration,

@@ -10,11 +10,13 @@
 # Labs as required approval to your MR if you have any changes.                #
 ################################################################################
 
-# Settings for gunicorn in docker.
-import multiprocessing
+# This file contains system package dependencies. It is used for `apt-get` in
+# Dockerfile and .gitlab-ci.yml. It is intended for the python:3.5 docker image
+# which through buildpack-deps is based on Debian Buster.
 
+# ATTENTION DEVELOPER: When you change these prerequisites, make sure to also
+# update them in doc/user/installation.rst
 
-bind = "0.0.0.0:8080"
-workers = multiprocessing.cpu_count() * 2 + 1
-accesslog =  "/log/access.log"
-worker_tmp_dir = "/dev/shm"
+# Python packages dependencies:
+# for xmlsec.
+libxmlsec1-dev \

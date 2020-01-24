@@ -1,3 +1,15 @@
+# Copyright (C) 2020 Magenta ApS, http://magenta.dk.
+# Contact: info@magenta.dk.
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+################################################################################
+# Changes to this file requires approval from Labs. Please add a person from   #
+# Labs as required approval to your MR if you have any changes.                #
+################################################################################
+
 # We do not use alpine. The resulting image is smaller, but there is currently
 # no support for pip installation of wheels (binary) packages. It falls back
 # to installing from source which is very time consuming. See
@@ -21,8 +33,8 @@ ENV PYTHONUNBUFFERED=1 \
 
 
 WORKDIR /code/
-# ATTENTION DEVELOPER: When you change these prerequisites, make sure to also
-# update them in doc/user/installation.rst
+COPY docker/sys-requirements.txt sys-requirements.txt
+# hadolint ignore=DL3008,DL4006
 RUN set -ex \
   # Add a mox group and user. Note: this is a system user/group, but have
   # UID/GID above the normal SYS_UID_MAX/SYS_GID_MAX of 999, but also above the
@@ -35,13 +47,7 @@ RUN set -ex \
   && useradd -u 72010 --no-log-init -r -g mox mox \
   # Install dependencies
   && apt-get -y update \
-  && apt-get -y install --no-install-recommends \
-    # git is needed for python packages with `… = {git = …}` in requirements.txt.
-    # It pulls a lot of dependencies. Maybe some of them can be ignored.
-    git \
-    # Python packages dependencies:
-    # for xmlsec.
-    libxmlsec1-dev \
+  && apt-get -y install --no-install-recommends "$(grep -Eo '^(\w|-)+' sys-requirements.txt | paste -sd ' ')" \
   # clean up after apt-get and man-pages
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/man/?? /usr/share/man/??_* \
@@ -75,6 +81,7 @@ COPY README.rst .
 COPY LICENSE .
 # Install the application as editable. This makes it possible to mount `/code`
 # to your host and edit the files during development.
+# hadolint ignore=DL3013
 RUN pip3 install -e oio_rest
 
 
