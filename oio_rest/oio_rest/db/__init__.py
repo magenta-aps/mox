@@ -25,7 +25,7 @@ from .db_helpers import (
 
 from ..authentication import get_authenticated_user
 
-from ..auth.restrictions import Operation, get_restrictions
+from ..restrictions import Operation, get_restrictions
 from ..utils import build_registration
 from ..custom_exceptions import NotFoundException, NotAllowedException
 from ..custom_exceptions import DBException, BadRequestException

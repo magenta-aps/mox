@@ -3,7 +3,7 @@
 
 import unittest
 
-from oio_rest.utils.build_registration import is_uuid
+from oio_rest.utils import is_uuid
 from tests import util
 from tests.util import DBTestCase
 

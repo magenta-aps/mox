@@ -3,6 +3,7 @@ In development
 
 New features:
 
+* Removed legacy authentication method (wstrust/wso2)
 
 
 Version 1.6.0, 22 January 2020

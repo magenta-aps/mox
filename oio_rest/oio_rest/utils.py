@@ -4,6 +4,7 @@
 
 import itertools
 import uuid
+
 from werkzeug.datastructures import MultiDict
 
 from oio_rest.db.db_helpers import get_attribute_names, get_attribute_fields

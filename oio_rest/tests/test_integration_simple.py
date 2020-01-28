@@ -34,7 +34,6 @@ class Tests(DBTestCase):
                     "/dokument/dokument/" + CONTENT_PATH_PATTERN,
                     "/dokument/dokument/fields",
                     "/dokument/dokument/schema",
-                    "/get-token",
                     "/indsats/classes",
                     "/indsats/indsats",
                     "/indsats/indsats/" + UUID_PATTERN,
