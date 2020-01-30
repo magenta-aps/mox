@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# SPDX-FileCopyrightText: 2018-2020 Magenta ApS
+# SPDX-License-Identifier: MPL-2.0
+
 set -e
 
 DIR="$(cd $(dirname $0); pwd)"

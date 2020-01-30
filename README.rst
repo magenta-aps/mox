@@ -62,7 +62,8 @@ The MOX messaging queue, including the ActualState database, as found
 in this project is free software. You are entitled to use, study,
 modify and share it under the provisions of `Version 2.0 of the
 Mozilla Public License <https://www.mozilla.org/MPL/2.0/>`_ as
-specified in the ``LICENSE`` file.
+specified in the ``LICENSE`` file. The repository is compliant with version 3.0
+of the `REUSE Specification <https://reuse.software/>`_.
 
 This software was developed by `Magenta ApS <http://www.magenta.dk>`_. For
 feedback, feel  free to open an issue in the `GitHub repository

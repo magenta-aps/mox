@@ -1,0 +1,27 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: LoRa
+Upstream-Contact: Magenta ApS <info@magenta.dk>
+Source: https://mox.readthedocs.io/
+
+# Sample paragraph, commented out:
+#
+# Files: src/*
+# Copyright: $YEAR $NAME <$CONTACT>
+# License: ...
+
+Files: oio_rest/tests/fixtures/* oio_rest/oio_rest/test_auth_data/*
+Copyright: 2015-2020 Magenta ApS <info@magenta.dk>
+License: MPL-2.0
+
+Files: *.rst *.png *.json *.xml
+Copyright: 2015-2020 Magenta ApS <info@magenta.dk>
+License: MPL-2.0
+
+Files: oio_rest/oio_rest/templates/*
+Copyright: 2015-2020 Magenta ApS <info@magenta.dk>
+License: MPL-2.0
+
+# Ignore dead files
+Files: python_agents/* agents/* agentbase/* custom/*
+Copyright: 2015-2020 Magenta ApS <info@magenta.dk>
+License: MPL-2.0

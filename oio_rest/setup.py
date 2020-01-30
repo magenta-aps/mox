@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+
+# SPDX-FileCopyrightText: 2015-2020 Magenta ApS
+# SPDX-License-Identifier: MPL-2.0
+
 import io
 import os
 import pathlib

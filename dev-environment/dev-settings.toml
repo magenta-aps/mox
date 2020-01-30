@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2020 Magenta ApS
+# SPDX-License-Identifier: MPL-2.0
+
 # Change the mox configuration in this file. A reference of valid parameters
 # can be found in ``./oio_rest/oio_rest/default-settings.toml``. Documentation
 # available in ``user/settings.html``. Point to this file with the environment
