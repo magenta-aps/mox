@@ -18,29 +18,6 @@ password = "mox"
 db_name = "mox"
 
 
-[saml_wstrust]
-# LoRa has two independent ways to use SAML. This is the older version. They
-# are both disabled by default, and you should *never* enable both.
-enable = false
-# The Endpoint specified in the AppliesTo element of the STS request
-# This will be used to verify the Audience of the SAML Assertion
-entity_id = "https://saml.local"
-# The Entity ID of the IdP. Used to verify the token Issuer --
-# specified in AD FS as the Federation Service identifier.
-# Example: "http://fs.contoso.com/adfs/services/trust"
-idp_entity_id = "localhost"
-# The URL on which to access the SAML IdP.
-# Example: "https://fs.contoso.com/adfs/services/trust/13/UsernameMixed"
-idp_url = "https://localhost:9443/services/wso2carbon-sts.wso2carbon-stsHttpsEndpoint"
-# We currently support authentication against 'wso2' and 'adfs'
-idp_type = "wso2"
-# The public certificate file of the IdP, in PEM-format.
-idp_certificate = "test_auth_data/idp-certificate.pem"
-# SAML user ID attribute -- default is for WSO2. Example:
-# http://schemas.xmlsoap.org/ws/2005/05/identity/claims/privatepersonalidentifier
-user_id_attibute = "http://wso2.org/claims/url"
-
-
 [saml_sso]
 # These are the settings for the `flask_saml_sso` package. Please refer to the
 # package for the documentation of these settings:

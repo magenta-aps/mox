@@ -2,10 +2,8 @@
 # SPDX-License-Identifier: MPL-2.0
 
 from enum import Enum
-from importlib import import_module
 
-from ..settings import AUTH_RESTRICTION_MODULE, AUTH_RESTRICTION_FUNCTION
-from ..settings import DO_ENABLE_RESTRICTIONS
+from .settings import DO_ENABLE_RESTRICTIONS
 
 
 class Operation(Enum):
@@ -85,17 +83,20 @@ def get_restrictions(user, object_type, operation):
         AUTH_RESTRICTION_FUNCTION in settings.py. AUTH_RESTRICTION may be any
         module which is accessible on the Python path.
 
-"""
+    """
     if not DO_ENABLE_RESTRICTIONS:
         return None
+    raise NotImplementedError
 
-    try:
-        auth_module = import_module(AUTH_RESTRICTION_MODULE)
-        auth_function = getattr(auth_module, AUTH_RESTRICTION_FUNCTION)
-        return auth_function(user, object_type, operation)
-    except (AttributeError, ImportError):
-        print("Config error: Unable to load authorization module!")
-        raise
+    # This is the old code. Left for reference, but remove when redesigning.
+    # Also see test_restrictions.py.
+    # try:
+    #     auth_module = import_module(AUTH_RESTRICTION_MODULE)
+    #     auth_function = getattr(auth_module, AUTH_RESTRICTION_FUNCTION)
+    #     return auth_function(user, object_type, operation)
+    # except (AttributeError, ImportError):
+    #     print("Config error: Unable to load authorization module!")
+    #     raise
 
 
 def get_auth_restrictions(user, object_type, operation):

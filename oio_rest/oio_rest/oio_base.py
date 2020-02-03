@@ -15,12 +15,10 @@ from werkzeug.datastructures import ImmutableOrderedMultiDict
 from . import db
 from .db import db_helpers, db_structure
 from . import validate
-from .utils.build_registration import build_registration, to_lower_param
-from .utils.build_registration import split_param
+from .utils import build_registration, to_lower_param, split_param
 from .custom_exceptions import BadRequestException, NotFoundException
 from .custom_exceptions import GoneException
 
-# Just a helper during debug
 from .authentication import requires_auth
 
 
