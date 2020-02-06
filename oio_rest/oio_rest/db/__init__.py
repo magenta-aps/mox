@@ -6,7 +6,9 @@ import copy
 import datetime
 import enum
 import pathlib
+import typing
 
+import dateutil
 import psycopg2
 
 from psycopg2.extras import DateTimeTZRange
@@ -838,6 +840,8 @@ def _consolidate_virkninger(virkninger_list):
         current_virkning = copy.deepcopy(sorted_virkninger[0])
 
         for next_virkning in sorted_virkninger[1:]:
+            # Postgres always returns timestamps in the same format with the
+            # same timezone, so a naive comparison is safe here.
             if current_virkning['virkning']['to'] == next_virkning['virkning'][
                     'from']:
                 current_virkning['virkning']['to'] = next_virkning['virkning'][
@@ -850,28 +854,50 @@ def _consolidate_virkninger(virkninger_list):
     return new_virkninger
 
 
+def _parse_timestamp(
+    timestamp: typing.Union[datetime.datetime, str]
+) -> datetime.datetime:
+    if timestamp == 'infinity':
+        dt = datetime.datetime.max
+    elif timestamp == '-infinity':
+        dt = datetime.datetime.min
+    elif type(timestamp) == str:
+        dt = dateutil.parser.isoparse(timestamp)
+    elif type(timestamp) == datetime:
+        dt = copy.copy(timestamp)
+    else:
+        raise TypeError("Invalid parameter {}".format(timestamp))
+
+    if not dt.tzinfo:
+        dt = dt.replace(tzinfo=datetime.timezone.utc)
+
+    return dt
+
+
 def _trim_virkninger(virkninger_list, valid_from, valid_to):
     """
     Trim a list of LoRa virkninger. Removes all virkninger not inside the
     given interval of valid_from/valid_to
     """
+    valid_from = _parse_timestamp(valid_from)
+    valid_to = _parse_timestamp(valid_to)
 
     def filter_fn(virkning):
-        virkning_from = virkning['virkning']['from']
+        virkning_from = _parse_timestamp(virkning['virkning']['from'])
         from_included = virkning['virkning']['from_included']
-        virkning_to = virkning['virkning']['to']
+        virkning_to = _parse_timestamp(virkning['virkning']['to'])
         to_included = virkning['virkning']['to_included']
 
-        if valid_from != '-infinity' and virkning_to != 'infinity':
-            if to_included and virkning_to < str(valid_from):
-                return False
-            elif not to_included and virkning_to <= str(valid_from):
-                return False
-        if valid_to != 'infinity' or virkning_from != '-infinity':
-            if from_included and str(valid_to) < virkning_from:
-                return False
-            elif not from_included and str(valid_to) <= virkning_from:
-                return False
+        if to_included and virkning_to < valid_from:
+            return False
+        elif not to_included and virkning_to <= valid_from:
+            return False
+
+        if from_included and valid_to < virkning_from:
+            return False
+        elif not from_included and valid_to <= virkning_from:
+            return False
+
         return True
 
     return list(filter(filter_fn, virkninger_list))

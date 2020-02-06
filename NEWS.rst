@@ -6,6 +6,11 @@ New features:
 * Removed legacy authentication method (wstrust/wso2)
 
 
+Version 1.6.1, 06 February 2020
+-------------------------------
+
+This minor release fixes a bug in the consolidated output
+
 Version 1.6.0, 22 January 2020
 ------------------------------
 
