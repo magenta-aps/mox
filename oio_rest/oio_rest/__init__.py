@@ -12,7 +12,7 @@ import pprint
 
 from flask import Flask
 
-__version__ = "1.6.0"
+__version__ = "1.6.1"
 
 # we need to add a log handler here, so we see logs from settings.py.
 # I mean, we /want/ this handler too.
