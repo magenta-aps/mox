@@ -14,6 +14,19 @@ This page will give you a overview of the REST API.
 
 .. _API-operations:
 
+Time zones
+==========
+
+The default timezone for LoRa is UTC. When reading and writing data without a
+timezone -- whether it be in the object payloads or as query parameters to the
+REST API -- we interpret the given timestamps as UTC time.
+
+.. note::
+
+    We recommend that timezones be added explicitly to every timestamp when
+    reading and writing data, to avoid inconsistencies regarding daylight savings
+    time.
+
 Operations
 ==========
 
