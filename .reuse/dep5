@@ -25,3 +25,11 @@ License: MPL-2.0
 Files: python_agents/* agents/* agentbase/* custom/*
 Copyright: 2015-2020 Magenta ApS <info@magenta.dk>
 License: MPL-2.0
+
+Files: oio_rest/requirements.txt oio_rest/requirements-test.txt
+Copyright: 2017-2020 Magenta ApS <info@magenta.dk>
+License: MPL-2.0
+
+Files: oio_rest/requirements-lint.txt doc/requirements.txt
+Copyright: 2017-2020 Magenta ApS <info@magenta.dk>
+License: MPL-2.0
