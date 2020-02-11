@@ -23,18 +23,6 @@ print(__init___path)
 with io.open(__init___path, "rt", encoding="utf8") as f:
     version = re.search(r'__version__ = "(.*?)"', f.read()).group(1)
 
-# extract requirements for pip & setuptools
-install_requires = (basedir / 'requirements.txt').read_text().splitlines()
-tests_require = (basedir / 'requirements-test.txt').read_text().splitlines()
-lint_require = (basedir / 'requirements-lint.txt').read_text().splitlines()
-
-# setuptools doesn't handle external dependencies, yes
-dependency_links = [
-    l.split('@', 1)[1].strip()
-    for l in install_requires + tests_require + lint_require
-    if '@' in l
-]
-
 
 setup(
     name='oio_rest',
@@ -63,13 +51,6 @@ setup(
         ],
     },
     python_requires='>=3.5',
-    install_requires=install_requires,
-    extras_require={
-        'tests': tests_require,
-        'lint': lint_require,
-    },
-    tests_require=tests_require,
     include_package_data=True,
     zip_safe=False,
-    dependency_links=dependency_links,
 )
