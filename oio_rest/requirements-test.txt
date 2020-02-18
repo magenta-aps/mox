@@ -11,7 +11,7 @@ click==7.0                # via flask
 coverage==5.0.3           # via pytest-cov
 flask-testing==0.7.1
 flask==1.1.1              # via flask-testing
-freezegun==0.3.14
+freezegun==0.3.15
 idna==2.8                 # via requests
 itsdangerous==1.1.0       # via flask
 jinja2==2.11.1            # via flask
