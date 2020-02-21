@@ -26,7 +26,7 @@ pytest-cov==2.8.1
 pytest==5.3.5
 python-dateutil==2.8.1    # via freezegun
 requests-mock==1.7.0
-requests==2.22.0          # via requests-mock
+requests==2.23.0          # via requests-mock
 six==1.14.0               # via freezegun, mock, packaging, python-dateutil, requests-mock
 tap.py==3.0
 urllib3==1.25.8           # via requests
