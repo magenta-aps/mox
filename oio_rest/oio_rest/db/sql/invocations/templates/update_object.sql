@@ -1,3 +1,5 @@
+-- SPDX-FileCopyrightText: 2015-2020 Magenta ApS
+-- SPDX-License-Identifier: MPL-2.0
 
 SELECT * from as_update_{{ class_name|lower }}(
     {{ uuid|adapt }} :: uuid,

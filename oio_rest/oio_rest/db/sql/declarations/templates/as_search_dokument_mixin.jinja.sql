@@ -1,3 +1,6 @@
+-- SPDX-FileCopyrightText: 2015-2020 Magenta ApS
+-- SPDX-License-Identifier: MPL-2.0
+
 --/**********************************************************//
 --Filtration on variants and document parts (dele)
 --/**********************************************************//

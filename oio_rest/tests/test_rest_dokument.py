@@ -1,15 +1,11 @@
-# Copyright (C) 2015-2019 Magenta ApS, https://magenta.dk.
-# Contact: info@magenta.dk.
-#
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# SPDX-FileCopyrightText: 2018-2020 Magenta ApS
+# SPDX-License-Identifier: MPL-2.0
 
 
 import unittest
 import uuid
 
-from oio_rest.utils.build_registration import is_uuid
+from oio_rest.utils import is_uuid
 from tests import util
 from tests.util import DBTestCase
 

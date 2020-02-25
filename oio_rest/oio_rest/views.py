@@ -1,36 +1,25 @@
-# Copyright (C) 2015-2019 Magenta ApS, https://magenta.dk.
-# Contact: info@magenta.dk.
-#
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# SPDX-FileCopyrightText: 2015-2020 Magenta ApS
+# SPDX-License-Identifier: MPL-2.0
 
-import os
 import datetime
 import logging
+import os
 import urllib.parse
-import traceback
 
-from flask import jsonify, redirect, request, url_for, Response
-from werkzeug.routing import BaseConverter
+from flask import jsonify, redirect, request, url_for
+import flask_saml_sso
 from jinja2 import Environment, FileSystemLoader
 from psycopg2 import DataError
+from werkzeug.routing import BaseConverter
 
-from oio_rest import __version__
-from oio_rest import app
+from oio_rest import __version__, app, settings
+from oio_rest import log, klassifikation
+from oio_rest import sag, indsats, dokument, tilstand, aktivitet, organisation
+from oio_rest.authentication import get_authenticated_user
+from oio_rest.custom_exceptions import OIOFlaskException
 from oio_rest.db import management as db_mgmt
-from . import sag, indsats, dokument, tilstand, aktivitet, organisation
-from . import log, klassifikation
-from .authentication import get_authenticated_user
-from .log_client import log_service_call
+from oio_rest.log_client import log_service_call
 
-from .custom_exceptions import OIOFlaskException, AuthorizationFailedException
-from .custom_exceptions import BadRequestException
-from .auth import tokens
-
-import flask_saml_sso
-
-from . import settings
 
 logger = logging.getLogger(__name__)
 
@@ -73,28 +62,6 @@ flask_saml_sso.init_app(app)
 @app.route('/')
 def root():
     return redirect(url_for('sitemap'), code=308)
-
-
-@app.route('/get-token', methods=['GET', 'POST'])
-def get_token():
-    if request.method == 'GET':
-
-        t = jinja_env.get_template('get_token.html')
-        html = t.render(settings=settings)
-        return html
-    elif request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        if username is None or password is None:
-            raise BadRequestException("Username and password required")
-
-        try:
-            text = tokens.get_token(username, password)
-        except Exception as e:
-            traceback.print_exc()
-            raise AuthorizationFailedException(*e.args)
-
-        return Response(text, mimetype='text/plain')
 
 
 @app.route('/site-map')

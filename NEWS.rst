@@ -1,3 +1,12 @@
+Version 1.7.0, 25 February 2020
+-------------------------------
+
+New features:
+
+* Removed legacy authentication method (wstrust/wso2)
+* Added organisationsfunktion attribute extensions fields to `mo-01.json`
+
+
 Version 1.6.1, 06 February 2020
 -------------------------------
 

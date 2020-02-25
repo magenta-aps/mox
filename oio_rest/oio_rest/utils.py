@@ -1,13 +1,10 @@
-# Copyright (C) 2015-2019 Magenta ApS, https://magenta.dk.
-# Contact: info@magenta.dk.
-#
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# SPDX-FileCopyrightText: 2015-2020 Magenta ApS
+# SPDX-License-Identifier: MPL-2.0
 
 
 import itertools
 import uuid
+
 from werkzeug.datastructures import MultiDict
 
 from oio_rest.db.db_helpers import get_attribute_names, get_attribute_fields

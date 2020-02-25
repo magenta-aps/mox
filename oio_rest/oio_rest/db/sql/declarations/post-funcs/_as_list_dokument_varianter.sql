@@ -1,9 +1,5 @@
--- Copyright (C) 2015 Magenta ApS, https://magenta.dk.
--- Contact: info@magenta.dk.
---
--- This Source Code Form is subject to the terms of the Mozilla Public
--- License, v. 2.0. If a copy of the MPL was not distributed with this
--- file, You can obtain one at http://mozilla.org/MPL/2.0/.
+-- SPDX-FileCopyrightText: 2018-2020 Magenta ApS
+-- SPDX-License-Identifier: MPL-2.0
 CREATE OR REPLACE FUNCTION _as_list_dokument_varianter (dokument_uuids uuid[], registrering_tstzrange tstzrange, virkning_tstzrange tstzrange)
     RETURNS TABLE (dokument_registrering_id bigint, varianter DokumentVariantType[])
 AS $BODY$

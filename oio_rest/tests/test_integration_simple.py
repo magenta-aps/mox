@@ -1,10 +1,5 @@
-#
-# Copyright (c) 2017-2018, Magenta ApS
-#
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
-#
+# SPDX-FileCopyrightText: 2018-2020 Magenta ApS
+# SPDX-License-Identifier: MPL-2.0
 
 from tests.util import DBTestCase
 
@@ -39,7 +34,6 @@ class Tests(DBTestCase):
                     "/dokument/dokument/" + CONTENT_PATH_PATTERN,
                     "/dokument/dokument/fields",
                     "/dokument/dokument/schema",
-                    "/get-token",
                     "/indsats/classes",
                     "/indsats/indsats",
                     "/indsats/indsats/" + UUID_PATTERN,

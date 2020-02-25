@@ -1,9 +1,5 @@
-# Copyright (C) 2015-2019 Magenta ApS, https://magenta.dk.
-# Contact: info@magenta.dk.
-#
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# SPDX-FileCopyrightText: 2015-2020 Magenta ApS
+# SPDX-License-Identifier: MPL-2.0
 
 """Superclasses for OIO objects and object hierarchies."""
 
@@ -19,12 +15,10 @@ from werkzeug.datastructures import ImmutableOrderedMultiDict
 from . import db
 from .db import db_helpers, db_structure
 from . import validate
-from .utils.build_registration import build_registration, to_lower_param
-from .utils.build_registration import split_param
+from .utils import build_registration, to_lower_param, split_param
 from .custom_exceptions import BadRequestException, NotFoundException
 from .custom_exceptions import GoneException
 
-# Just a helper during debug
 from .authentication import requires_auth
 
 

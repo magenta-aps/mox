@@ -1,9 +1,5 @@
-# Copyright (C) 2015-2019 Magenta ApS, https://magenta.dk.
-# Contact: info@magenta.dk.
-#
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# SPDX-FileCopyrightText: 2015-2020 Magenta ApS
+# SPDX-License-Identifier: MPL-2.0
 
 """
     settings.py
@@ -28,8 +24,6 @@ import os
 import sys
 
 import toml
-
-from oio_rest import app
 
 
 logger = logging.getLogger(__name__)
@@ -63,7 +57,9 @@ def update_config(configuration, new_settings):
             logger.warning("Invalid key in config: %s", key)
 
 
-with app.open_resource("default-settings.toml", "r") as f:
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+default_settings_path = os.path.join(base_dir, "oio_rest", "default-settings.toml")
+with open(default_settings_path, "r") as f:
     # DO NOT print or log ``config`` as it will EXPOSE the PASSWORD
     config = toml.load(f)
 
@@ -89,14 +85,6 @@ DB_PORT = config["database"]["port"]
 DB_USER = config["database"]["user"]
 DB_PASSWORD = config["database"]["password"]
 DATABASE = config["database"]["db_name"]
-
-USE_SAML_AUTHENTICATION = config["saml_wstrust"]["enable"]
-SAML_MOX_ENTITY_ID = config["saml_wstrust"]["entity_id"]
-SAML_IDP_ENTITY_ID = config["saml_wstrust"]["idp_entity_id"]
-SAML_IDP_URL = config["saml_wstrust"]["idp_url"]
-SAML_IDP_TYPE = config["saml_wstrust"]["idp_type"]
-SAML_IDP_CERTIFICATE = config["saml_wstrust"]["idp_certificate"]
-SAML_USER_ID_ATTIBUTE = config["saml_wstrust"]["user_id_attibute"]
 
 SAML_AUTH_ENABLE = config["saml_sso"]["enable"]
 SAML_IDP_METADATA_URL = config["saml_sso"]["idp_metadata_url"]

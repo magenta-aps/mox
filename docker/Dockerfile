@@ -1,9 +1,5 @@
-# Copyright (C) 2020 Magenta ApS, http://magenta.dk.
-# Contact: info@magenta.dk.
-#
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# SPDX-FileCopyrightText: 2019-2020 Magenta ApS
+# SPDX-License-Identifier: MPL-2.0
 
 ################################################################################
 # Changes to this file requires approval from Labs. Please add a person from   #
@@ -66,11 +62,9 @@ VOLUME /log
 # Install requirements
 COPY oio_rest/requirements.txt /code/oio_rest/requirements.txt
 COPY oio_rest/requirements-test.txt /code/oio_rest/requirements-test.txt
-COPY oio_rest/requirements-lint.txt /code/oio_rest/requirements-lint.txt
 RUN pip3 install \
   -r oio_rest/requirements.txt \
-  -r oio_rest/requirements-test.txt \
-  -r oio_rest/requirements-lint.txt
+  -r oio_rest/requirements-test.txt
 
 
 # Copy and install application.

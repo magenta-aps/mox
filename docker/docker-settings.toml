@@ -1,9 +1,5 @@
-# Copyright (C) 2020 Magenta ApS, http://magenta.dk.
-# Contact: info@magenta.dk.
-#
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# SPDX-FileCopyrightText: 2016-2020 Magenta ApS
+# SPDX-License-Identifier: MPL-2.0
 
 ################################################################################
 # Changes to this file requires approval from Labs. Please add a person from   #
@@ -14,5 +10,5 @@
 # *not* change this. Refer to the documentation in ``user/settings.html``.
 
 [log]
-activity_log_path = "/log/mox_activity.log"
-trace_log_path = "/log/mox_trace.log"
+activity_log_path = "/log/activity.log"
+log_path = "/log/oio_rest.log"

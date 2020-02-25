@@ -1,9 +1,6 @@
-# Copyright (C) 2015-2019 Magenta ApS, https://magenta.dk.
-# Contact: info@magenta.dk.
-#
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# SPDX-FileCopyrightText: 2015-2020 Magenta ApS
+# SPDX-License-Identifier: MPL-2.0
+
 import collections
 import copy
 import datetime
@@ -30,7 +27,7 @@ from .db_helpers import (
 
 from ..authentication import get_authenticated_user
 
-from ..auth.restrictions import Operation, get_restrictions
+from ..restrictions import Operation, get_restrictions
 from ..utils import build_registration
 from ..custom_exceptions import NotFoundException, NotAllowedException
 from ..custom_exceptions import DBException, BadRequestException

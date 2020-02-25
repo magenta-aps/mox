@@ -1,9 +1,5 @@
-# Copyright (C) 2015-2019 Magenta ApS, https://magenta.dk.
-# Contact: info@magenta.dk.
-#
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# SPDX-FileCopyrightText: 2019-2020 Magenta ApS
+# SPDX-License-Identifier: MPL-2.0
 
 # THIS FILE CONTAINS THE DEFAULT CONFIGURATION FOR MOX. DO NOT CHANGE THIS.
 # Instead, read the documentation at ``user/settings.html`` or configure mox in
@@ -20,29 +16,6 @@ port = 5432
 user = "mox"
 password = "mox"
 db_name = "mox"
-
-
-[saml_wstrust]
-# LoRa has two independent ways to use SAML. This is the older version. They
-# are both disabled by default, and you should *never* enable both.
-enable = false
-# The Endpoint specified in the AppliesTo element of the STS request
-# This will be used to verify the Audience of the SAML Assertion
-entity_id = "https://saml.local"
-# The Entity ID of the IdP. Used to verify the token Issuer --
-# specified in AD FS as the Federation Service identifier.
-# Example: "http://fs.contoso.com/adfs/services/trust"
-idp_entity_id = "localhost"
-# The URL on which to access the SAML IdP.
-# Example: "https://fs.contoso.com/adfs/services/trust/13/UsernameMixed"
-idp_url = "https://localhost:9443/services/wso2carbon-sts.wso2carbon-stsHttpsEndpoint"
-# We currently support authentication against 'wso2' and 'adfs'
-idp_type = "wso2"
-# The public certificate file of the IdP, in PEM-format.
-idp_certificate = "test_auth_data/idp-certificate.pem"
-# SAML user ID attribute -- default is for WSO2. Example:
-# http://schemas.xmlsoap.org/ws/2005/05/identity/claims/privatepersonalidentifier
-user_id_attibute = "http://wso2.org/claims/url"
 
 
 [saml_sso]
@@ -91,8 +64,9 @@ path = ""
 
 
 [log]
-activity_log_path = "/var/log/mox/activity.log"
-trace_log_path = "/var/log/mox/trace.log"
+activity_log_path = "activity.log"
+log_path = "oio_rest.log"
+log_level = "WARNING"
 
 
 [testing_api]

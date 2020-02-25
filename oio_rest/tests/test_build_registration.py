@@ -1,37 +1,33 @@
-# Copyright (C) 2015-2019 Magenta ApS, https://magenta.dk.
-# Contact: info@magenta.dk.
-#
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# SPDX-FileCopyrightText: 2018-2020 Magenta ApS
+# SPDX-License-Identifier: MPL-2.0
 
 
 import unittest
 
 from mock import MagicMock, patch
 
-import oio_rest.utils.build_registration as br
+from oio_rest import utils
 
 
 class TestBuildRegistration(unittest.TestCase):
     def test_is_urn_returns_true_when_string_begins_with_urn(self):
         urn1 = "urn:thisisaurn"
-        self.assertTrue(br.is_urn(urn1))
+        self.assertTrue(utils.is_urn(urn1))
 
         urn2 = "URN:thisisaurn"
-        self.assertTrue(br.is_urn(urn2))
+        self.assertTrue(utils.is_urn(urn2))
 
     def test_is_urn_returns_false_when_string_does_not_begin_with_urn(self):
         urn = "this is not a urn"
-        self.assertFalse(br.is_urn(urn))
+        self.assertFalse(utils.is_urn(urn))
 
     def test_is_uuid_returns_true_when_string_is_uuid(self):
         uuid = "c97e1dee-1477-4dd4-a2e6-0bfc6b6b04da"
-        self.assertTrue(br.is_uuid(uuid))
+        self.assertTrue(utils.is_uuid(uuid))
 
     def test_is_uuid_returns_false_when_string_is_not_uuid(self):
         uuid = "notuuid"
-        self.assertFalse(br.is_uuid(uuid))
+        self.assertFalse(utils.is_uuid(uuid))
 
     def test_escape_underscores(self):
         # Arrange
@@ -39,7 +35,7 @@ class TestBuildRegistration(unittest.TestCase):
 
         expected_result = r'a\_string\_with\_underscores'
         # Act
-        actual_result = br.escape_underscores(value)
+        actual_result = utils.escape_underscores(value)
         # Assert
         self.assertEqual(expected_result, actual_result)
 
@@ -48,7 +44,7 @@ class TestBuildRegistration(unittest.TestCase):
         value = None
 
         # Act
-        actual_result = br.escape_underscores(value)
+        actual_result = utils.escape_underscores(value)
         # Assert
         self.assertEqual(value, actual_result)
 
@@ -64,8 +60,8 @@ class TestBuildRegistration(unittest.TestCase):
             'uuid': value
         }
 
-        actual_relation = br.build_relation(value=value, virkning=virkning,
-                                            objekttype=objekttype)
+        actual_relation = utils.build_relation(value=value, virkning=virkning,
+                                               objekttype=objekttype)
 
         self.assertEqual(expected_relation, actual_relation)
 
@@ -81,8 +77,8 @@ class TestBuildRegistration(unittest.TestCase):
             'urn': value
         }
 
-        actual_relation = br.build_relation(value=value, virkning=virkning,
-                                            objekttype=objekttype)
+        actual_relation = utils.build_relation(value=value, virkning=virkning,
+                                               objekttype=objekttype)
 
         self.assertEqual(expected_relation, actual_relation)
 
@@ -91,7 +87,7 @@ class TestBuildRegistration(unittest.TestCase):
         value = "not urn or uuid"
 
         with self.assertRaises(ValueError):
-            br.build_relation(value)
+            utils.build_relation(value)
 
     def test_split_param_splits_on_colon(self):
         # Arrange
@@ -99,7 +95,7 @@ class TestBuildRegistration(unittest.TestCase):
         expected_result = ('first', 'second')
 
         # Act
-        actual_result = br.split_param(value)
+        actual_result = utils.split_param(value)
 
         # Assert
         self.assertEqual(expected_result, actual_result)
@@ -110,7 +106,7 @@ class TestBuildRegistration(unittest.TestCase):
         expected_result = ('nosplit', None)
 
         # Act
-        actual_result = br.split_param(value)
+        actual_result = utils.split_param(value)
 
         # Assert
         self.assertEqual(expected_result, actual_result)
@@ -121,7 +117,7 @@ class TestBuildRegistration(unittest.TestCase):
         expected_result = 'first:second'
 
         # Act
-        actual_result = br.to_lower_param(value)
+        actual_result = utils.to_lower_param(value)
 
         # Assert
         self.assertEqual(expected_result, actual_result)
@@ -132,7 +128,7 @@ class TestBuildRegistration(unittest.TestCase):
         expected_result = 'nosplit'
 
         # Act
-        actual_result = br.to_lower_param(value)
+        actual_result = utils.to_lower_param(value)
 
         # Assert
         self.assertEqual(expected_result, actual_result)
@@ -144,7 +140,7 @@ class TestBuildRegistration(unittest.TestCase):
         expected_result = {'a': {'b': {'c': 1}}}
 
         # Act
-        actual_result = br.dict_from_dot_notation(notation, value)
+        actual_result = utils.dict_from_dot_notation(notation, value)
 
         # Assert
         self.assertEqual(expected_result, actual_result)
@@ -170,7 +166,7 @@ class TestBuildRegistration(unittest.TestCase):
         }
 
         # Act
-        br.add_journal_post_relation_fields(param, values, relation)
+        utils.add_journal_post_relation_fields(param, values, relation)
 
         # Assert
         self.assertEqual(expected_result, relation)
@@ -200,7 +196,7 @@ class TestBuildRegistration(unittest.TestCase):
         }
 
         # Act
-        br.add_journal_post_relation_fields(param, values, relation)
+        utils.add_journal_post_relation_fields(param, values, relation)
 
         # Assert
         self.assertEqual(expected_result, relation)
@@ -216,55 +212,17 @@ class TestBuildRegistration(unittest.TestCase):
         }
 
         # Act
-        br.add_journal_post_relation_fields(param, values, relation)
+        utils.add_journal_post_relation_fields(param, values, relation)
 
         # Assert
         self.assertEqual(expected_result, relation)
 
-    @patch('oio_rest.utils.build_registration.build_registration')
-    def test_restriction_to_registration(self, mock_br):
-        # type: (MagicMock) -> None
-        # Arrange
-        classname = 'class'
-        restriction = (
-            {
-                'attribute1': 'val1',
-                'attribute2': 'val2',
-            },
-            {
-                'state1': 'val3',
-                'state2': 'val4',
-            },
-            {
-                'relation1': 'val5',
-                'relation2': 'val6',
-            }
-        )
-
-        expected_list_args = {
-            'attribute1': ['val1'],
-            'attribute2': ['val2'],
-            'state1': ['val3'],
-            'state2': ['val4'],
-            'relation1': ['val5'],
-            'relation2': ['val6'],
-        }
-
-        # Act
-        br.restriction_to_registration(classname, restriction)
-
-        # Assert
-        actual_class_name = mock_br.call_args[0][0]
-        actual_list_args = mock_br.call_args[0][1]
-        self.assertEqual(classname, actual_class_name)
-        self.assertEqual(expected_list_args, actual_list_args)
-
-    @patch('oio_rest.utils.build_registration.get_relation_names',
+    @patch('oio_rest.utils.get_relation_names',
            new=MagicMock())
-    @patch('oio_rest.utils.build_registration.get_state_names',
+    @patch('oio_rest.utils.get_state_names',
            new=MagicMock())
-    @patch('oio_rest.utils.build_registration.get_attribute_fields')
-    @patch('oio_rest.utils.build_registration.get_attribute_names')
+    @patch('oio_rest.utils.get_attribute_fields')
+    @patch('oio_rest.utils.get_attribute_names')
     def test_build_registration_attributes(self,
                                            mock_get_attribute_names,
                                            mock_get_attribute_fields):
@@ -292,17 +250,17 @@ class TestBuildRegistration(unittest.TestCase):
         }
 
         # Act
-        actual_result = br.build_registration(classname, list_args)
+        actual_result = utils.build_registration(classname, list_args)
 
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.utils.build_registration.get_relation_names',
+    @patch('oio_rest.utils.get_relation_names',
            new=MagicMock())
-    @patch('oio_rest.utils.build_registration.get_state_names')
-    @patch('oio_rest.utils.build_registration.get_attribute_fields',
+    @patch('oio_rest.utils.get_state_names')
+    @patch('oio_rest.utils.get_attribute_fields',
            new=MagicMock())
-    @patch('oio_rest.utils.build_registration.get_attribute_names',
+    @patch('oio_rest.utils.get_attribute_names',
            new=MagicMock())
     def test_build_registration_states(self,
                                        mock_get_state_names):
@@ -334,17 +292,17 @@ class TestBuildRegistration(unittest.TestCase):
         }
 
         # Act
-        actual_result = br.build_registration(classname, list_args)
+        actual_result = utils.build_registration(classname, list_args)
 
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.utils.build_registration.get_relation_names')
-    @patch('oio_rest.utils.build_registration.get_state_names',
+    @patch('oio_rest.utils.get_relation_names')
+    @patch('oio_rest.utils.get_state_names',
            new=MagicMock())
-    @patch('oio_rest.utils.build_registration.get_attribute_fields',
+    @patch('oio_rest.utils.get_attribute_fields',
            new=MagicMock())
-    @patch('oio_rest.utils.build_registration.get_attribute_names',
+    @patch('oio_rest.utils.get_attribute_names',
            new=MagicMock())
     def test_build_registration_relations(self, mock_get_relation_names):
         # type: (MagicMock) -> None
@@ -371,17 +329,14 @@ class TestBuildRegistration(unittest.TestCase):
         }
 
         # Act
-        actual_result = br.build_registration(classname, list_args)
+        actual_result = utils.build_registration(classname, list_args)
 
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.utils.build_registration.'
-           'get_document_part_relation_names')
-    @patch('oio_rest.utils.build_registration.'
-           'DokumentDelEgenskaberType.get_fields')
-    @patch('oio_rest.utils.build_registration.'
-           'DokumentVariantEgenskaberType.get_fields')
+    @patch('oio_rest.utils.get_document_part_relation_names')
+    @patch('oio_rest.utils.DokumentDelEgenskaberType.get_fields')
+    @patch('oio_rest.utils.DokumentVariantEgenskaberType.get_fields')
     def test_build_registration_dokument(self, mock_dvet_get_fields,
                                          mock_ddet_get_fields, mock_get_dprn):
         # Arrange
@@ -445,7 +400,7 @@ class TestBuildRegistration(unittest.TestCase):
         }
 
         # Act
-        actual_result = br.build_registration('Dokument', list_args)
+        actual_result = utils.build_registration('Dokument', list_args)
 
         # Assert
         self.assertEqual(expected_result, actual_result)
