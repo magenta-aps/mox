@@ -31,6 +31,19 @@ contains. The following urls are available:
 
    :statuscode 200: No error.
 
+.. http:get:: /version
+
+   Returns the current version of LoRa
+
+   :statuscode 200: No error.
+
+.. http:get:: /db/truncate
+
+   Requires a configuration setting, in order to be enabled.
+   Truncates the database.
+
+   :statuscode 200: No error.
+
 .. caution::
 
    The structure of each class is not completely analogous to the

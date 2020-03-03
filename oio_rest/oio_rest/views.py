@@ -19,6 +19,7 @@ from oio_rest.authentication import get_authenticated_user
 from oio_rest.custom_exceptions import OIOFlaskException
 from oio_rest.db import management as db_mgmt
 from oio_rest.log_client import log_service_call
+from oio_rest.settings import config
 
 
 logger = logging.getLogger(__name__)
@@ -104,12 +105,21 @@ def testing_db_teardown():
     return ("Test database teardown", 200)
 
 
+def truncate_db():
+    logger.debug("Truncate DB endpoint called")
+    db_mgmt.truncate_db(config["database"]["db_name"])
+    return ("Database truncated", 200)
+
+
 if settings.config["testing_api"]["enable"]:
     app.add_url_rule("/testing/db-setup", "testing_db_setup", testing_db_setup)
     app.add_url_rule("/testing/db-reset", "testing_db_reset", testing_db_reset)
     app.add_url_rule(
         "/testing/db-teardown", "testing_db_teardown", testing_db_teardown
     )
+
+if settings.config["truncate_api"]["enable"]:
+    app.add_url_rule("/db/truncate", "truncate_db", truncate_db)
 
 
 @app.errorhandler(OIOFlaskException)
