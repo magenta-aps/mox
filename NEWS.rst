@@ -1,6 +1,10 @@
 In development
 --------------
 
+New features:
+
+* Added endpoint for truncating the database, that can be enabled via
+  configuration.
 
 
 Version 1.7.0, 25 February 2020
