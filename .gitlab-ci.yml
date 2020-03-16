@@ -88,7 +88,7 @@ build:
   stage: lint-build
   # needs: []
   image:
-    name: gcr.io/kaniko-project/executor:debug
+    name: gcr.io/kaniko-project/executor:debug-v0.17.1
     entrypoint: [""]
   tags:
     - docker
