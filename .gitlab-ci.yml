@@ -24,8 +24,8 @@ variables:
   RELEASE_REGISTRY_IMAGE: index.docker.io/magentaaps/lora
 
   IMAGE_SHA: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}
-  IMAGE_DEV: ${CI_REGISTRY_IMAGE}:dev
 
+  IMAGE_DEV: ${RELEASE_REGISTRY_IMAGE}:dev
   IMAGE_RC: ${RELEASE_REGISTRY_IMAGE}:rc
   IMAGE_VERSION: ${RELEASE_REGISTRY_IMAGE}:${CI_COMMIT_TAG}
   IMAGE_LATEST: ${RELEASE_REGISTRY_IMAGE}:latest
@@ -163,7 +163,7 @@ release-dev:
   script:
     - skopeo copy
       --src-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
-      --dest-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
+      --dest-creds=${RELEASE_REGISTRY_USER}:${RELEASE_REGISTRY_PASSWORD}
       "docker://${IMAGE_SHA}"
       "docker://${IMAGE_DEV}"
 
