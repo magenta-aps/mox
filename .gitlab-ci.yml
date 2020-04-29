@@ -63,7 +63,9 @@ Lint Dockerfiles:
 
 REUSE compliance:
   <<: *lint-default
-  image: fsfe/reuse:latest
+  image:
+    name: fsfe/reuse:latest
+    entrypoint: [""]
   script:
     - reuse lint
 
