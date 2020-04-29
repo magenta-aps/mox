@@ -13,7 +13,10 @@
 # RELEASE_REGISTRY_PASSWORD
 
 stages:
-  - lint-build
+  - lint
+  # build stage is not blocked by lint stage, as we have a DAG:
+  # https://docs.gitlab.com/ee/ci/directed_acyclic_graph/index.html
+  - build
   - test
   - release
   - deploy
@@ -33,21 +36,15 @@ variables:
 # Lint stage
 #############
 
-# For now we execute the lint and build stage as one stage to speed up the
-# pipeline. When it is possible to use a DAG for describing the relations
-# (https://gitlab.com/gitlab-org/gitlab-ce/issues/47063), the lint jobs can be
-# executed in its own stage where no further jobs depend on them.
-# Make sure that "needs: []" is supported:
-#     https://docs.gitlab.com/ee/ci/yaml/README.html#needs
-
 .lint-default: &lint-default
-  stage: lint-build
+  stage: lint
+  needs: []
   image: python:3.7
   services: []
   tags:
     - docker
 
-python-lint:
+Lint Python:
   <<: *lint-default
   before_script:
     - pip3 install -r oio_rest/requirements-lint.txt
@@ -55,17 +52,7 @@ python-lint:
     - cd oio_rest
     - flake8 --max-line-length=88
 
-docs:
-  <<: *lint-default
-  before_script:
-    - pip3 install -r doc/requirements.txt
-  script:
-    - sphinx-build -n -W --keep-going doc /doc-build
-  artifacts:
-    paths:
-      - /doc-build
-
-docker-lint:
+Lint Dockerfiles:
   <<: *lint-default
   image: hadolint/hadolint:latest-debian
   before_script:
@@ -74,7 +61,7 @@ docker-lint:
   script:
     - git ls-files --exclude='Dockerfile*' --ignored | xargs --max-lines=1 hadolint
 
-REUSE-compliance:
+REUSE compliance:
   <<: *lint-default
   image: fsfe/reuse:latest
   script:
@@ -84,9 +71,9 @@ REUSE-compliance:
 # Build stage
 #############
 
-build:
-  stage: lint-build
-  # needs: []
+Build oio_rest:
+  stage: build
+  needs: []
   image:
     name: gcr.io/kaniko-project/executor:debug-v0.17.1
     entrypoint: [""]
@@ -100,14 +87,29 @@ build:
       --dockerfile=$CI_PROJECT_DIR/docker/Dockerfile
       --destination=${IMAGE_SHA}
 
+Build docs:
+  stage: build
+  needs: []
+  image: python:3.7
+  services: []
+  tags:
+    - docker
+  before_script:
+    - pip3 install -r doc/requirements.txt
+  script:
+    - sphinx-build -n -W --keep-going doc /doc-build
+  artifacts:
+    paths:
+      - /doc-build
+
 
 # Test stage
 ############
 
 
-unit-test:
+Unittest oio_rest:
   stage: test
-  needs: ["build"]
+  needs: ["Build oio_rest"]
   image:
     name: ${IMAGE_SHA}
   tags:
@@ -146,7 +148,7 @@ unit-test:
 
 .release-default: &release-default
   stage: release
-  needs: ["unit-test"]
+  needs: ["Unittest oio_rest"]
   image: alpine
   variables:
     GIT_STRATEGY: none # We do not need the source code
