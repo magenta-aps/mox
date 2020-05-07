@@ -5,9 +5,9 @@
 #    pip-compile requirements-lint.in
 #
 entrypoints==0.3          # via flake8
-flake8-imports==0.1.1
-flake8-module-name==0.2.0
-flake8==3.7.9
+flake8-imports==0.1.1     # via -r requirements-lint.in
+flake8-module-name==0.2.0  # via -r requirements-lint.in
+flake8==3.7.9             # via -r requirements-lint.in, flake8-imports
 isort==4.3.21             # via flake8-imports
 mccabe==0.6.1             # via flake8
 pycodestyle==2.5.0        # via flake8
