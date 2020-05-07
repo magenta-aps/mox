@@ -31,4 +31,4 @@ six==1.14.0               # via -c requirements.txt, freezegun, mock, packaging,
 tap.py==3.0               # via -r requirements-test.in
 urllib3==1.25.8           # via -c requirements.txt, requests
 wcwidth==0.1.8            # via pytest
-werkzeug==0.16.1          # via -c requirements.txt, flask
+werkzeug==1.0.1           # via -c requirements.txt, flask
