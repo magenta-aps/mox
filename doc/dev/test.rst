@@ -11,10 +11,10 @@ pgTAP.
 
 The tests use the database user credentials defined in :ref:`settings`. It
 requires the `CREATEDB
-<https://www.postgresql.org/docs/9.6/role-attributes.html>`_ privilege and
-`OWNER <https://www.postgresql.org/docs/9.6/sql-alterdatabase.html>`_ of the
+<https://www.postgresql.org/docs/11.7/role-attributes.html>`_ privilege and
+`OWNER <https://www.postgresql.org/docs/11.7/sql-alterdatabase.html>`_ of the
 database or have the `SUPERUSER
-<https://www.postgresql.org/docs/9.6/role-attributes.html>`_ privilege to run
+<https://www.postgresql.org/docs/11.7/role-attributes.html>`_ privilege to run
 the tests.
 
 The first time a test is run, a database with its name from :ref:`settings`

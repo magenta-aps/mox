@@ -158,13 +158,13 @@ List operation
    almost any reasonable format, including ISO 8601, SQL-compatible, traditional
    POSTGRES, and others. The accepted values are the `Date/Time Input from
    PostgreSQL
-   <https://www.postgresql.org/docs/9.5/datatype-datetime.html#DATATYPE-DATETIME-INPUT>`_.
+   <https://www.postgresql.org/docs/11.7/datatype-datetime.html#DATATYPE-DATETIME-INPUT>`_.
 
    All *string* parameters match case insensitive. They support the wildcard
    operators ``_`` (underscore) to match a single character and ``%`` (percent
    sign) to match zero or more characters. The match is made with `ILIKE from
    PostgresSQL
-   <https://www.postgresql.org/docs/9.5/functions-matching.html#FUNCTIONS-LIKE>`_.
+   <https://www.postgresql.org/docs/11.7/functions-matching.html#FUNCTIONS-LIKE>`_.
 
    :resheader Content-Type: ``application/json``
 
