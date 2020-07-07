@@ -26,7 +26,7 @@ pytest-cov==2.8.1         # via -r oio_rest/requirements-test.in
 pytest==5.3.5             # via -r oio_rest/requirements-test.in, pytest-cov
 python-dateutil==2.8.1    # via -c oio_rest/requirements.txt, freezegun
 requests-mock==1.7.0      # via -r oio_rest/requirements-test.in
-requests==2.23.0          # via -c oio_rest/requirements.txt, requests-mock
+requests==2.24.0          # via -c oio_rest/requirements.txt, requests-mock
 six==1.14.0               # via -c oio_rest/requirements.txt, freezegun, mock, packaging, python-dateutil, requests-mock
 tap.py==3.0               # via -r oio_rest/requirements-test.in
 urllib3==1.25.8           # via -c oio_rest/requirements.txt, requests
