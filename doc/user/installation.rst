@@ -82,7 +82,7 @@ to be set. It is also recommended to set ``POSTGRESS_PASSWORD`` for the
      -e DB_USER=mox \
      -e DB_PASSWORD=mox \
      -e POSTGRES_PASSWORD=mox \
-     postgres:9.6
+     postgres:11.7
 
 The mox docker image will automatically :ref:`initialize the database
 objects<db_object_init>` for on the first startup.
@@ -242,7 +242,7 @@ The :file:`oio_rest` package requires a few system dependencies. It requires:
 * ``git`` for installing some requirements from :file:`requirements.txt` and
 * ``libxmlsec1-dev`` for the Python package ``xmlsec``.
 
-Mox needs to connect to ``postgres9.6``. mox can be configured with the
+Mox needs to connect to ``postgres11.7``. mox can be configured with the
 :ref:`setting <settings>` ``[database] host = "localhost"`` to connect to any
 machine. The default value of :ref:`[database] host <settings>` is
 ``"localhost"``.
