@@ -11,7 +11,7 @@
 # to installing from source which is very time consuming. See
 # https://github.com/pypa/manylinux/issues/37 and
 # https://github.com/docker-library/docs/issues/904
-FROM python:3.5
+FROM python:3.8.3
 
 
 LABEL org.opencontainers.image.title="MOX - Messaging Service and Actual State Database" \

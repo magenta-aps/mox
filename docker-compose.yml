@@ -28,9 +28,11 @@ services:
       - mox-db
 
   mox-db:
-    image: magentaaps/postgres-os2mo:9.6.15-2-test
+    image: magentaaps/postgres-os2mo:10-11.7-test
     env_file:
       - dev-environment/db.env
+    volumes:
+            - ./oio_rest/tests/sql:/tests
     # The following will mount the database data directory to RAM. It
     # significantly speeds up the database at the cost of dataloss on shutdown.
     # This is useful for running tests, but should never be used if you want to

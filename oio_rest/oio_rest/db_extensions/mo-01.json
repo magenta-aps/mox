@@ -3,7 +3,9 @@
     "attributter": {
       "udvidelser": [
         "fornavn",
-        "efternavn"
+        "efternavn",
+        "kaldenavn_fornavn",
+        "kaldenavn_efternavn"
       ]
     }
   },

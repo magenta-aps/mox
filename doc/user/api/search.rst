@@ -75,7 +75,7 @@ Search operation
    almost any reasonable format, including ISO 8601, SQL-compatible, traditional
    POSTGRES, and others. The accepted values are the `Date/Time Input from
    PostgreSQL
-   <https://www.postgresql.org/docs/9.5/datatype-datetime.html#DATATYPE-DATETIME-INPUT>`_.
+   <https://www.postgresql.org/docs/11.7/datatype-datetime.html#DATATYPE-DATETIME-INPUT>`_.
 
 
    All *string* parameters match case insensitively. They support the wildcard

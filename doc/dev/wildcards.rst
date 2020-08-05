@@ -7,7 +7,7 @@ When making a :ref:`SearchOperation` with wildcards, a lot happens. Going from
 the *bottom* of the stack the following happens:
 
 In SQL the match between two strings is made with `ILIKE from PostgresSQL
-<https://www.postgresql.org/docs/9.5/functions-matching.html#FUNCTIONS-LIKE>`_.
+<https://www.postgresql.org/docs/11.7/functions-matching.html#FUNCTIONS-LIKE>`_.
 It is a case-insensitive string match that supports the wildcard operators ``_``
 (underscore) to match a single character and ``%`` (percent sign) to match zero
 or more characters. To match a litteral underscore or percentage sign you must

@@ -12,5 +12,8 @@ import multiprocessing
 
 bind = "0.0.0.0:8080"
 workers = multiprocessing.cpu_count() * 2 + 1
-accesslog =  "/log/access.log"
 worker_tmp_dir = "/dev/shm"
+
+# Disable access log
+# This parameters takes a filepath to a log file or a None value.
+accesslog = None

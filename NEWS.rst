@@ -1,3 +1,13 @@
+Version 1.8.0, 05 August 2020
+-----------------------------
+
+New features:
+
+* Added endpoint for truncating the database, that can be enabled via
+  configuration.
+* Upgraded to PostgreSQL 11 and Python 3.8.
+
+
 Version 1.7.0, 25 February 2020
 -------------------------------
 

@@ -9,32 +9,32 @@ certifi==2019.11.28       # via requests
 chardet==3.0.4            # via requests
 click==7.0                # via flask
 defusedxml==0.6.0         # via python3-saml
-flask-session==0.3.1
-flask-sqlalchemy==2.4.1
-flask==1.1.1
-https://github.com/magenta-aps/flask_saml_sso/releases/download/0.2.1/flask_saml_sso-0.2.1-py3-none-any.whl#egg=flask_saml_sso
-gunicorn==20.0.4
+flask-session==0.3.1      # via flask-saml-sso
+flask-sqlalchemy==2.4.1   # via flask-saml-sso
+flask==1.1.2              # via -r oio_rest/requirements.in, flask-saml-sso, flask-session, flask-sqlalchemy
+https://github.com/magenta-aps/flask_saml_sso/releases/download/0.2.1/flask_saml_sso-0.2.1-py3-none-any.whl#egg=flask_saml_sso  # via -r oio_rest/requirements.in
+gunicorn==20.0.4          # via -r oio_rest/requirements.in
 idna==2.8                 # via requests
 isodate==0.6.0            # via python3-saml
-itsdangerous==1.1.0       # via flask
+itsdangerous==1.1.0       # via flask, flask-saml-sso
 jinja2==2.11.1            # via flask
-jsonschema==3.2.0
+jsonschema==3.2.0         # via -r oio_rest/requirements.in
 lxml==4.5.0               # via xmlsec
 markupsafe==1.1.1         # via jinja2
-pexpect==4.8.0
-pika==1.1.0
+pexpect==4.8.0            # via -r oio_rest/requirements.in
+pika==1.1.0               # via -r oio_rest/requirements.in
 pkgconfig==1.5.1          # via xmlsec
-psycopg2-binary==2.8.4
+psycopg2-binary==2.8.4    # via -r oio_rest/requirements.in
 ptyprocess==0.6.0         # via pexpect
 pyrsistent==0.15.7        # via jsonschema
-python-dateutil==2.8.1
-python3-saml==1.9.0
-requests==2.23.0
+python-dateutil==2.8.1    # via -r oio_rest/requirements.in
+python3-saml==1.9.0       # via flask-saml-sso
+requests==2.24.0          # via -r oio_rest/requirements.in, flask-saml-sso
 six==1.14.0               # via isodate, jsonschema, pyrsistent, python-dateutil
 sqlalchemy==1.3.13        # via flask-sqlalchemy
-toml==0.10.0
+toml==0.10.0              # via -r oio_rest/requirements.in
 urllib3==1.25.8           # via requests
-werkzeug==0.16.1
+werkzeug==1.0.1           # via flask
 xmlsec==1.3.3             # via python3-saml
 
 # The following packages are considered to be unsafe in a requirements file:

@@ -1023,7 +1023,7 @@ expected_dokument1:=ROW(
 					'2014-01-10'::date,
 					'doc_kassationskode1', --'doc_kassationskode2_1', 
 					4, --major int
-					ROW(null,null)::ClearableInt, --minor int
+					null, --minor int
 					ROW('doc_Offentlighedundtaget_AlternativTitel2_1','doc_Offentlighedundtaget_Hjemmel2_1') ::OffentlighedundtagetType, --offentlighedundtagettype,
 					'doc_titel2_1',
 					'doc_dokumenttype2_1',
@@ -1041,7 +1041,7 @@ expected_dokument1:=ROW(
 					'2014-01-10'::date,
 					'doc_kassationskode2', --'doc_kassationskode2_1', 
 					5, --major int
-					ROW(null,null)::ClearableInt, --minor int
+					null, --minor int
 					ROW('doc_Offentlighedundtaget_AlternativTitel2_1','doc_Offentlighedundtaget_Hjemmel2_1') ::OffentlighedundtagetType, --offentlighedundtagettype,
 					'doc_titel2_1',
 					'doc_dokumenttype2_1',
@@ -1157,7 +1157,7 @@ expected_dokument1:=ROW(
 							,ROW(
 							true, --arkivering boolean, 
 							false, --delvisscannet boolean, 
-							row(null,null)::ClearableBoolean, --offentliggoerelse boolean, 
+							null, --offentliggoerelse boolean, 
 							true, --produktion boolean,
 							 ROW (
 								'[2015-03-01, infinity)' :: TSTZRANGE,
@@ -1226,7 +1226,7 @@ expected_dokument1:=ROW(
 								          ) :: Virkning 
 									)::DokumentDelEgenskaberType
 					  			,ROW(
-									ROW(null,null)::ClearableInt, --indeks int,
+									null, --indeks int,
 									'del_indhold1', 
 									'del_lokation2_1', 
 									'del_mimetype2_1',
@@ -1244,7 +1244,7 @@ expected_dokument1:=ROW(
 						,ROW(
 					  		'doc_deltekst1B',
 					  		ARRAY[ROW(
-								ROW(null,null)::ClearableInt, --indeks int,
+								null, --indeks int,
 								''::text, 
 								''::text, 
 								''::text,
@@ -1278,8 +1278,8 @@ expected_dokument1:=ROW(
 							,
 							ROW(
 							true, --arkivering boolean, 
-							ROW(null,null)::ClearableBoolean, --delvisscannet boolean, 
-							ROW(null,null)::ClearableBoolean, --offentliggoerelse boolean, 
+							null, --delvisscannet boolean, 
+							null, --offentliggoerelse boolean, 
 							false, --produktion boolean,
 							 	ROW (
 							'[2015-02-01, 2016-12-20]' :: TSTZRANGE,
