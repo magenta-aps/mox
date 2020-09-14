@@ -1,7 +1,9 @@
-In development
---------------
+Version 1.8.1, 14 September 2020
+--------------------------------
 
 New features:
+
+* Add OS2mo extension field for related classes
 
 
 Version 1.8.0, 05 August 2020
