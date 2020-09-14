@@ -38,6 +38,9 @@
     },
     "relationer_nul_til_en": [
       "primær"
+    ],
+    "relationer_nul_til_mange": [
+      "tilknyttedeklasser"
     ]
   },
   "organisationenhed": {
