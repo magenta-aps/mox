@@ -10,29 +10,21 @@ import typing
 
 import dateutil
 import psycopg2
-
-from psycopg2.extras import DateTimeTZRange
-from psycopg2.extensions import (
-    AsIs, QuotedString, Boolean, adapt as psyco_adapt,
-)
-from jinja2 import Environment, FileSystemLoader
 from dateutil import parser as date_parser
-
-from .db_helpers import (
-    get_attribute_fields, get_attribute_names, get_field_type,
-    get_state_names, get_relation_field_type, Soegeord, OffentlighedUndtaget,
-    JournalNotat, JournalDokument, DokumentVariantType, AktoerAttr,
-    VaerdiRelationAttr, to_bool,
-)
-
-from ..authentication import get_authenticated_user
-
-from ..restrictions import Operation, get_restrictions
-from ..utils import build_registration
-from ..custom_exceptions import NotFoundException, NotAllowedException
-from ..custom_exceptions import DBException, BadRequestException
+from jinja2 import Environment, FileSystemLoader
+from psycopg2.extensions import (AsIs, Boolean, QuotedString, adapt as psyco_adapt)
+from psycopg2.extras import DateTimeTZRange
 
 from oio_rest import settings
+from .db_helpers import (AktoerAttr, DokumentVariantType, JournalDokument, JournalNotat,
+                         OffentlighedUndtaget, Soegeord, VaerdiRelationAttr,
+                         get_attribute_fields, get_attribute_names, get_field_type,
+                         get_relation_field_type, get_state_names, to_bool)
+from ..authentication import get_authenticated_user
+from ..custom_exceptions import BadRequestException, DBException
+from ..custom_exceptions import NotAllowedException, NotFoundException
+from ..restrictions import Operation, get_restrictions
+from ..utils import build_registration
 
 """
     Jinja2 Environment
@@ -53,7 +45,6 @@ def adapt(value):
 
 
 jinja_env.filters['adapt'] = adapt
-
 
 # We only have one connection, so we cannot benefit from the gunicorn gthread
 # worker class, which is intended to reduce memory footprint anyway. This
@@ -573,10 +564,11 @@ def update_object(class_name, note, registration, uuid=None,
             cursor.execute(sql)
             cursor.fetchone()
         except psycopg2.Error as e:
-            noop_msg = ('Aborted updating {} with id [{}] as the given data, '
-                        'does not give raise to a new registration.'.format(
-                            class_name.lower(), uuid
-                        ))
+            noop_msg = (
+                'Aborted updating {} with id [{}] as the given data, '
+                'does not give raise to a new registration.'.format(class_name.lower(),
+                                                                    uuid)
+            )
 
             if e.pgerror.startswith(noop_msg):
                 return uuid
@@ -593,7 +585,6 @@ def list_and_consolidate_objects(class_name, uuid, virkning_fra, virkning_til,
                                  registreret_fra, registreret_til):
     """List objects with the given uuids, consolidating the 'virkninger' and
     optionally filtering by the given virkning and registrering periods."""
-
     output = list_objects(
         class_name=class_name,
         uuid=uuid,
@@ -602,7 +593,6 @@ def list_and_consolidate_objects(class_name, uuid, virkning_fra, virkning_til,
         registreret_fra=registreret_fra,
         registreret_til=registreret_til
     )
-
     return _consolidate_and_trim_object_virkninger(
         output, valid_from=virkning_fra, valid_to=virkning_til)
 
@@ -611,7 +601,6 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
                  registreret_fra, registreret_til):
     """List objects with the given uuids, optionally filtering by the given
     virkning and registering periods."""
-
     assert isinstance(uuid, list) or not uuid
 
     sql_template = jinja_env.get_template('list_objects.sql')
@@ -654,8 +643,8 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
         raise NotFoundException("{0} with UUID {1} not found.".format(
             class_name, uuid
         ))
-
-    return filter_json_output(output)
+    ret = filter_json_output(output)
+    return ret
 
 
 def filter_json_output(output):
@@ -747,11 +736,8 @@ def transform_relations(o):
     functions.
     """
     if isinstance(o, dict):
-        if "relationer" in o and (
-            isinstance(
-                o["relationer"], list
-            ) or isinstance(o["relationer"], tuple)
-        ):
+        if "relationer" in o and (isinstance(o["relationer"], list) or
+                                  isinstance(o["relationer"], tuple)):
             relations = o["relationer"]
             rel_dict = {}
             for rel in relations:
@@ -842,10 +828,8 @@ def _consolidate_virkninger(virkninger_list):
         for next_virkning in sorted_virkninger[1:]:
             # Postgres always returns timestamps in the same format with the
             # same timezone, so a naive comparison is safe here.
-            if current_virkning['virkning']['to'] == next_virkning['virkning'][
-                    'from']:
-                current_virkning['virkning']['to'] = next_virkning['virkning'][
-                    'to']
+            if current_virkning['virkning']['to'] == next_virkning['virkning']['from']:
+                current_virkning['virkning']['to'] = next_virkning['virkning']['to']
             else:
                 new_virkninger.append(current_virkning)
                 current_virkning = next_virkning
@@ -854,9 +838,8 @@ def _consolidate_virkninger(virkninger_list):
     return new_virkninger
 
 
-def _parse_timestamp(
-    timestamp: typing.Union[datetime.datetime, str]
-) -> datetime.datetime:
+def _parse_timestamp(timestamp: typing.Union[datetime.datetime, str]
+                     ) -> datetime.datetime:
     if timestamp == 'infinity':
         dt = datetime.datetime.max
     elif timestamp == '-infinity':
