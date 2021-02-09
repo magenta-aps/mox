@@ -4,7 +4,8 @@ from datetime import datetime
 from unittest import TestCase
 
 from oio_rest.db.db_structure import REAL_DB_STRUCTURE
-from oio_rest.db.quick_query.registration_parsing import Attribute, Relation, State
+from oio_rest.db.quick_query.registration_parsing import Attribute, Relation, State, \
+    ValueType
 
 
 class TestParseAttribute(TestCase):
@@ -27,50 +28,53 @@ class TestParseAttribute(TestCase):
         attr_cand = ['brugernavn', 'abc', 'virkning', None]
         with self.assertRaises(ValueError):
             Attribute.from_attr_egenskaber(
-                attr=attr_cand, valid_attr=valid_attr)
+                attr=attr_cand, valid_attr=valid_attr, class_name=class_name)
         # interface - additional information
         attr_cand = {'brugernavn': 'abc', 'virkning': None, 'brugervendtnoegle': '123'}
         with self.assertRaises(ValueError):
             Attribute.from_attr_egenskaber(
-                attr=attr_cand, valid_attr=valid_attr)
+                attr=attr_cand, valid_attr=valid_attr, class_name=class_name)
         # interface - missing information
         attr_cand = {'virkning': None}
         with self.assertRaises(ValueError):
             Attribute.from_attr_egenskaber(
-                attr=attr_cand, valid_attr=valid_attr)
+                attr=attr_cand, valid_attr=valid_attr, class_name=class_name)
         # interface - missing information
         attr_cand = {'brugernavn': 'abc'}
         with self.assertRaises(ValueError):
             Attribute.from_attr_egenskaber(
-                attr=attr_cand, valid_attr=valid_attr)  # key type
+                attr=attr_cand, valid_attr=valid_attr,
+                class_name=class_name)  # key type
         attr_cand = {123: 'abc', 'virkning': None}
         with self.assertRaises(TypeError):
             Attribute.from_attr_egenskaber(
-                attr=attr_cand, valid_attr=valid_attr)
+                attr=attr_cand, valid_attr=valid_attr, class_name=class_name)
         # value type
         attr_cand = {'brugernavn': 123, 'virkning': None}
         with self.assertRaises(TypeError):
             Attribute.from_attr_egenskaber(
-                attr=attr_cand, valid_attr=valid_attr)
+                attr=attr_cand, valid_attr=valid_attr, class_name=class_name)
         # virkning value
         attr_cand = {'brugernavn': 'abc', 'virkning': datetime.now()}
         with self.assertRaises(ValueError):
             Attribute.from_attr_egenskaber(
-                attr=attr_cand, valid_attr=valid_attr)
+                attr=attr_cand, valid_attr=valid_attr, class_name=class_name)
         # virkning value
         attr_cand = {'brugernavn': 'abc', 'virkning': datetime.now().isoformat()}
         with self.assertRaises(ValueError):
             Attribute.from_attr_egenskaber(
-                attr=attr_cand, valid_attr=valid_attr)
+                attr=attr_cand, valid_attr=valid_attr, class_name=class_name)
         # invalid key
         attr_cand = {'enhedsnavn': 'abc', 'virkning': None}
         with self.assertRaises(ValueError):
             Attribute.from_attr_egenskaber(
-                attr=attr_cand, valid_attr=valid_attr)
+                attr=attr_cand, valid_attr=valid_attr, class_name=class_name)
         attr_cand = {'brugernavn': 'abc', 'virkning': None}
-        expected = Attribute(key='brugernavn', value='abc', type='egenskaber')
+        expected = Attribute(key='brugernavn', value='abc', type='egenskaber',
+                             value_type=ValueType.TEXT)
         actual = Attribute.from_attr_egenskaber(attr=attr_cand,
-                                                valid_attr=valid_attr)
+                                                valid_attr=valid_attr,
+                                                class_name=class_name)
         self.assertEqual(first=expected, second=actual)
 
     def test_parse_registration_attributes(self):
@@ -79,13 +83,16 @@ class TestParseAttribute(TestCase):
             {'brugervendtnoegle': '123', 'virkning': None},
             {'funktionsnavn': 'engagement',
              'virkning': None}],
-            # UNABLE TO TEST THIS! Feels important, but no easy way to do so
+            # # covered by integration tests
+            # # (could implement, but don't want double testing)
             # 'organisationfunktionudvidelser': [{'primær': '1', 'virkning': None}],
         }
 
         expected = [
-            Attribute(key='brugervendtnoegle', value='123', type='egenskaber'),
-            Attribute(key='funktionsnavn', value='engagement', type='egenskaber'),
+            Attribute(key='brugervendtnoegle', value='123', type='egenskaber',
+                      value_type=ValueType.TEXT),
+            Attribute(key='funktionsnavn', value='engagement', type='egenskaber',
+                      value_type=ValueType.TEXT),
             # Attribute(key='primær', value='1', type='udvidelser'),
         ]
 

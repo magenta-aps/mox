@@ -1,17 +1,35 @@
 # SPDX-FileCopyrightText: 2021- Magenta ApS
 # SPDX-License-Identifier: MPL-2.0
-
-
 from dataclasses import dataclass
+from enum import Enum, auto, unique
 from typing import Dict, List, Optional
 
 from more_itertools import flatten
 
-from oio_rest.db.db_structure import REAL_DB_STRUCTURE
+from oio_rest.db import db_structure
+from oio_rest.db import get_field_type
 
 VIRKNING = 'virkning'
 OBJECKTTYPE = 'objekttype'
 ATTRIBUTTER = 'attributter'
+
+TEXT_STR = 'text'
+BOOL_STR = 'boolean'
+
+
+@unique
+class ValueType(Enum):
+    TEXT = auto()
+    BOOL = auto()
+
+    @classmethod
+    def from_string(cls, string: str) -> 'ValueType':
+        if string == TEXT_STR:
+            return ValueType.TEXT
+        elif string == BOOL_STR:
+            return ValueType.BOOL
+
+        raise ValueType(f'unexpected value {string}')
 
 
 @dataclass(frozen=True)
@@ -19,6 +37,7 @@ class Attribute:
     key: str  # e.g. "brugervendtnoegle"
     value: str
     type: str  # e.g. "egenskaber" or "udvidelser"
+    value_type: ValueType  # e.g. '0' could mean a bool False or the literal string
 
     @staticmethod
     def get_valid_attr(class_name) -> Dict[str, List[str]]:
@@ -33,10 +52,10 @@ class Attribute:
         :return:
         """
 
-        return REAL_DB_STRUCTURE[class_name][ATTRIBUTTER]
+        return db_structure.REAL_DB_STRUCTURE[class_name][ATTRIBUTTER]
 
     @classmethod
-    def from_attr_egenskaber(cls, attr: Dict[str, Optional[str]],
+    def from_attr_egenskaber(cls, attr: Dict[str, Optional[str]], class_name: str,
                              valid_attr: Dict[str, List[str]]) -> 'Attribute':
         """
         deals with this sort of thing
@@ -57,6 +76,7 @@ class Attribute:
         key, val = list(attr.items())[0]  # MUST be only 1 key left
         if not isinstance(key, str):
             raise TypeError(f'expected str, got type={type(val)} of obj={val}')
+
         for tmp in [key, val]:
             if not isinstance(tmp, str):
                 raise TypeError(
@@ -64,7 +84,9 @@ class Attribute:
 
         for attr_type, valid_attr_names in valid_attr.items():
             if key in valid_attr_names:
-                return cls(key, val, attr_type)
+                return cls(key, val, attr_type,
+                           ValueType.from_string(
+                               get_field_type(class_name + attr_type, key)))
         else:
             # found key not belonging anywhere
             raise ValueError(f'unexpected key={key} in attribute spec: {attr}')
@@ -87,8 +109,8 @@ class Attribute:
             if attr_key not in valid_keys:
                 raise ValueError(f'unexpected value {attr_key} not in {valid_keys}')
 
-        return [cls.from_attr_egenskaber(a, valid_attr) for attr_list in
-                attributes.values() for a in attr_list]
+        return [cls.from_attr_egenskaber(a, class_name, valid_attr) for
+                attr_list in attributes.values() for a in attr_list]
 
 
 @dataclass(frozen=True)
@@ -100,7 +122,7 @@ class State:
     def get_valid_states(class_name: str) -> Dict[str, List[str]]:
         # "tilstande": {
         #     "gyldighed": ["Aktiv", "Inaktiv"]
-        return dict(REAL_DB_STRUCTURE[class_name]['tilstande'])
+        return dict(db_structure.REAL_DB_STRUCTURE[class_name]['tilstande'])
 
     @classmethod
     def parse_registration_states(cls, class_name: str,
@@ -169,9 +191,10 @@ class Relation:  # OVERLY defensive, on purpose
 
     @staticmethod
     def get_valid_relations(class_name: str) -> List[str]:
-        return REAL_DB_STRUCTURE[class_name].get(
+        return db_structure.REAL_DB_STRUCTURE[class_name].get(
             'relationer_nul_til_en', []
-        ) + REAL_DB_STRUCTURE[class_name].get('relationer_nul_til_mange', [])
+        ) + db_structure.REAL_DB_STRUCTURE[class_name].get('relationer_nul_til_mange',
+                                                           [])
 
     @classmethod
     def from_relation_list(cls, relation_type: str,

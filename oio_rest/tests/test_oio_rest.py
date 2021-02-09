@@ -432,7 +432,7 @@ class TestOIORestObject(ExtTestCase):
     @freezegun.freeze_time('2017-01-01', tz_offset=1)
     @ExtTestCase.patch_db_struct(db_struct)
     @patch('oio_rest.oio_base.build_registration')
-    @patch('oio_rest.db.search_objects')
+    @patch('oio_rest.oio_base.configured_db_interface.searcher.search_objects')
     def test_get_objects_search_uses_default_params(self, mock_search,
                                                     mock_br):
         # Arrange
@@ -473,7 +473,7 @@ class TestOIORestObject(ExtTestCase):
 
     @ExtTestCase.patch_db_struct(db_struct)
     @patch('oio_rest.oio_base.build_registration')
-    @patch('oio_rest.db.search_objects')
+    @patch('oio_rest.oio_base.configured_db_interface.searcher.search_objects')
     def test_get_objects_search_uses_supplied_params(self, mock_search,
                                                      mock_br):
         # Arrange

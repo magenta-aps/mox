@@ -8,9 +8,9 @@ from typing import Dict, List, Optional, Tuple, Union
 
 from more_itertools import flatten
 
-from oio_rest.db import get_connection
+from oio_rest.db import get_connection, to_bool
 from oio_rest.db.quick_query.registration_parsing import Attribute, Relation, State, \
-    VIRKNING
+    VIRKNING, ValueType
 
 RELATION = 'relation'
 REG = 'registrering'
@@ -194,6 +194,26 @@ class SearchQueryBuilder:
                 start=reg_start,
                 end=reg_end))
 
+    @staticmethod
+    def __postgres_comparison_from_typed_value(value: str, type_: ValueType) -> str:
+        """
+        determines how to convert from a python string with a postgres type to an actual
+        postgres statement
+        :param value: The value to be compared (as a python string)
+        :param type_: The postgres type
+        :return: valid postgres of the form '[comparison-operator] [value]'
+        """
+        if type_ is ValueType.TEXT:
+            # always uses case insensitive matching
+            return f'ilike \'{value}\''
+        elif type_ is ValueType.BOOL:
+            parsed_bool = to_bool(value)
+            if parsed_bool is None:
+                raise ValueError(f'unexpected value {value}')
+            return '= ' + ('TRUE' if parsed_bool else 'FALSE')
+
+        raise Exception(f'unexpected type_: {type_}, with associated value {value}')
+
     def add_attribute(self, attr: Attribute):
         """
         adds a filter to the query (in WHERE-clause, solely 'AND'-filtering)
@@ -204,7 +224,10 @@ class SearchQueryBuilder:
         table_name = '_'.join([self.__class_name, 'attr', attr.type])
         if table_name not in self.__inner_join_tables:
             self.__inner_join_tables.append(table_name)
-        self.__conditions.append(f'{table_name}.{attr.key} ilike \'{attr.value}\'')
+
+        comparison = self.__postgres_comparison_from_typed_value(value=attr.value,
+                                                                 type_=attr.value_type)
+        self.__conditions.append(f'{table_name}.{attr.key} {comparison}')
 
     def add_state(self, state: State):
         """
@@ -231,11 +254,14 @@ class SearchQueryBuilder:
         if table_name not in self.__inner_join_tables:
             self.__inner_join_tables.append(table_name)
         id_var_name = 'rel_maal_uuid' if relation.id_is_uuid else 'rel_maal_urn'
-        condition = f'{table_name}.rel_type = \'{relation.type}\' ' \
-                    f'AND {table_name}.{id_var_name} = \'{relation.id}\''
+        base_condition = f"""{table_name}.rel_type = '{relation.type}'
+         AND {table_name}.{id_var_name} = '{relation.id}'"""
+
         if relation.object_type is not None:
-            condition += ' AND ' + f'{table_name}.objekt_type = ' \
-                                   f'\'{relation.object_type}\''
+            obj_condition = f"{table_name}.objekt_type = '{relation.object_type}'"
+            condition = f'{base_condition} AND {obj_condition}'
+        else:
+            condition = base_condition
 
         self.__relation_conditions.append('(' + condition + ')')
 
@@ -245,25 +271,25 @@ class SearchQueryBuilder:
 
         :return: a valid postgresql statement (MINUS ";" at the end)
         """
-        query = f'SELECT {self.__main_col} as {self.__id_col_name} ' \
-                f'FROM {self.__reg_table}'
+
+        select_from_stmt = f"""
+        SELECT {self.__main_col} as {self.__id_col_name}
+        FROM {self.__reg_table}"""
 
         if self.__relation_conditions:  # overwrite if needed
-            query: str = f'SELECT {self.__main_col} as {self.__id_col_name}, ' \
-                         f'COUNT(DISTINCT ' \
-                         f'{self.__class_name}_{RELATION}.rel_type) as ' \
-                         f'{self.__count_col_name} ' \
-                         f'FROM {self.__reg_table}'
+            select_from_stmt: str = f"""
+            SELECT {self.__main_col} as {self.__id_col_name},
+                COUNT(DISTINCT {self.__class_name}_{RELATION}.rel_type)
+                as {self.__count_col_name}
+            FROM {self.__reg_table}"""
 
         additional_conditions = []  # just to avoid altering state
-
+        inner_join_stmt = ''
         if self.__inner_join_tables:  # add the tables needed
-            join_statements = ' '.join(
-                [
-                    f'INNER JOIN {table_name} ON '
-                    f'{table_name}.{self.__class_name}_{REG}_id = {self.__reg_table}.id'
-                    for table_name in self.__inner_join_tables])
-            query += ' ' + join_statements
+            inner_join_stmt = ' '.join(
+                [f"""INNER JOIN {table_name} ON
+                 {table_name}.{self.__class_name}_{REG}_id = {self.__reg_table}.id"""
+                 for table_name in self.__inner_join_tables])
 
             # add time-related conditions to EVERY table
             for table_name in self.__inner_join_tables:
@@ -273,6 +299,7 @@ class SearchQueryBuilder:
                                                   f'timeperiod',
                         start=self.__virkning_fra, end=self.__virkning_til))
 
+        where_stmt = ''
         # check if ANY conditions
         if self.__conditions or additional_conditions or self.__relation_conditions:
             # add the actual where statement, as it will be non-empty
@@ -284,20 +311,21 @@ class SearchQueryBuilder:
                 used_conditions += additional_conditions
 
             if self.__relation_conditions:
-                relation_condition_str = ' (' + ' OR '.join(
-                    self.__relation_conditions) + ') '
+                conditions = ' OR '.join(self.__relation_conditions)
+                relation_condition_str = f" ({conditions})"
                 used_conditions.append(relation_condition_str)
 
-            query += ' WHERE ' + ' AND '.join(used_conditions)
+            where_stmt = 'WHERE ' + ' AND '.join(used_conditions)
 
         # add group by (all the ids)
         non_relation_table = [self.__reg_table] + [x for x in self.__inner_join_tables
                                                    if not x.endswith(RELATION)]
-
         groubp_by_cols = ', '.join(
-            [f'{table_name}.id' for table_name in non_relation_table])
-        query += f' GROUP BY {groubp_by_cols}'
-        return query
+            [f'{table_name}.id' for table_name in non_relation_table]
+        )
+        groupby_stmt = f' GROUP BY {groubp_by_cols}'
+
+        return f'{select_from_stmt} {inner_join_stmt} {where_stmt} {groupby_stmt}'
 
     def get_query(self) -> str:
         """
@@ -315,14 +343,15 @@ class SearchQueryBuilder:
         :return: a valid postgresql statement
         """
 
-        query = (f'SELECT DISTINCT sub.{self.__id_col_name} FROM '
-                 f'({self.__build_subquery()}) AS sub')
+        select_from_stmt = f"""SELECT DISTINCT sub.{self.__id_col_name}
+        FROM ({self.__build_subquery()}) AS sub"""
 
+        where_stmt = ''
         if self.__relation_conditions:
-            query += (f' WHERE sub.{self.__count_col_name}='
-                      f'{len(self.__relation_conditions)}')
+            where_stmt = f"""
+            WHERE sub.{self.__count_col_name}={len(self.__relation_conditions)}"""
 
-        return query + ';'
+        return f'{select_from_stmt} {where_stmt};'
 
 
 def quick_search(class_name: str, uuid: Optional[str], registration: Dict,
