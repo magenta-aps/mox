@@ -62,7 +62,7 @@ VOLUME /log
 # Install requirements
 COPY oio_rest/requirements.txt /code/oio_rest/requirements.txt
 COPY oio_rest/requirements-test.txt /code/oio_rest/requirements-test.txt
-RUN pip3 install \
+RUN pip3 install --no-cache-dir \
   -r oio_rest/requirements.txt \
   -r oio_rest/requirements-test.txt
 
@@ -76,7 +76,7 @@ COPY LICENSE .
 # Install the application as editable. This makes it possible to mount `/code`
 # to your host and edit the files during development.
 # hadolint ignore=DL3013
-RUN pip3 install -e oio_rest
+RUN pip3 install --no-cache-dir -e oio_rest
 
 
 # Run the server as the mox user on port 8080

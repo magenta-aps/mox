@@ -3,24 +3,25 @@
 
 """Superclasses for OIO objects and object hierarchies."""
 
-import json
 import datetime
+import json
+from abc import ABCMeta, abstractmethod
+from typing import Dict, List, Optional, Tuple, Union
 
 import dateutil
 import jsonschema
 from flask import jsonify, request
-
 from werkzeug.datastructures import ImmutableOrderedMultiDict
 
 from . import db
-from .db import db_helpers, db_structure
 from . import validate
-from .utils import build_registration, to_lower_param, split_param
+from .authentication import requires_auth
 from .custom_exceptions import BadRequestException, NotFoundException
 from .custom_exceptions import GoneException
-
-from .authentication import requires_auth
-
+from .db import db_helpers, db_structure
+from .db.quick_query.search import quick_search
+from .settings import config
+from .utils import build_registration, split_param, to_lower_param
 
 '''List of parameters allowed for all searches.'''
 GENERAL_SEARCH_PARAMS = frozenset({
@@ -63,6 +64,98 @@ NO_PARAMS = frozenset()
 PARAM_ALIASES = {
     'bvn': 'brugervendtnoegle',
 }
+
+
+class Searcher(metaclass=ABCMeta):
+    @abstractmethod
+    def search_objects(self, class_name: str, uuid: Optional[str], registration: Dict,
+                       virkning_fra: Union[datetime.datetime, str],
+                       virkning_til: Union[datetime.datetime, str],
+                       registreret_fra: Optional[Union[datetime.datetime, str]] = None,
+                       registreret_til: Optional[Union[datetime.datetime, str]] = None,
+                       life_cycle_code=None, user_ref=None, note=None,
+                       any_attr_value_arr=None, any_rel_uuid_arr=None,
+                       first_result=None, max_results=None) -> Tuple[List[str]]:
+        pass
+
+
+class DefaultSearcher(Searcher):
+    @staticmethod
+    def search_objects(class_name: str, uuid: Optional[str], registration: Dict,
+                       virkning_fra: Union[datetime.datetime, str],
+                       virkning_til: Union[datetime.datetime, str],
+                       registreret_fra: Optional[Union[datetime.datetime, str]] = None,
+                       registreret_til: Optional[Union[datetime.datetime, str]] = None,
+                       life_cycle_code=None, user_ref=None, note=None,
+                       any_attr_value_arr=None, any_rel_uuid_arr=None,
+                       first_result=None, max_results=None) -> Tuple[List[str]]:
+        return db.search_objects(class_name=class_name,
+                                 uuid=uuid,
+                                 registration=registration,
+                                 virkning_fra=virkning_fra,
+                                 virkning_til=virkning_til,
+                                 registreret_fra=registreret_fra,
+                                 registreret_til=registreret_til,
+                                 life_cycle_code=life_cycle_code,
+                                 user_ref=user_ref,
+                                 note=note,
+                                 any_attr_value_arr=any_attr_value_arr,
+                                 any_rel_uuid_arr=any_rel_uuid_arr,
+                                 first_result=first_result,
+                                 max_results=max_results)
+
+
+class QuickSearcher(Searcher):
+    @staticmethod
+    def search_objects(class_name: str, uuid: Optional[str], registration: Dict,
+                       virkning_fra: Union[datetime.datetime, str],
+                       virkning_til: Union[datetime.datetime, str],
+                       registreret_fra: Optional[Union[datetime.datetime, str]] = None,
+                       registreret_til: Optional[Union[datetime.datetime, str]] = None,
+                       life_cycle_code=None, user_ref=None, note=None,
+                       any_attr_value_arr=None, any_rel_uuid_arr=None,
+                       first_result=None, max_results=None) -> Tuple[List[str]]:
+        try:
+            return quick_search(class_name=class_name,
+                                uuid=uuid,
+                                registration=registration,
+                                virkning_fra=virkning_fra,
+                                virkning_til=virkning_til,
+                                registreret_fra=registreret_fra,
+                                registreret_til=registreret_til,
+                                life_cycle_code=life_cycle_code,
+                                user_ref=user_ref,
+                                note=note,
+                                any_attr_value_arr=any_attr_value_arr,
+                                any_rel_uuid_arr=any_rel_uuid_arr,
+                                first_result=first_result,
+                                max_results=max_results)
+        except NotImplementedError:
+            return db.search_objects(class_name=class_name,
+                                     uuid=uuid,
+                                     registration=registration,
+                                     virkning_fra=virkning_fra,
+                                     virkning_til=virkning_til,
+                                     registreret_fra=registreret_fra,
+                                     registreret_til=registreret_til,
+                                     life_cycle_code=life_cycle_code,
+                                     user_ref=user_ref,
+                                     note=note,
+                                     any_attr_value_arr=any_attr_value_arr,
+                                     any_rel_uuid_arr=any_rel_uuid_arr,
+                                     first_result=first_result,
+                                     max_results=max_results)
+
+
+class ConfiguredDBInterface:
+    def __init__(self):
+        if config['search']['enable_quick_search']:
+            self.searcher: Searcher = QuickSearcher()
+        else:
+            self.searcher: Searcher = DefaultSearcher()
+
+
+configured_db_interface = ConfiguredDBInterface()
 
 
 def j(t):
@@ -132,7 +225,8 @@ def _check_not_deleted(objects):
         return
     for obj in objects:
         if isinstance(obj, list) and obj[0]["registreringer"][0][
-                "livscykluskode"] == db.Livscyklus.SLETTET.value:
+            "livscykluskode"] == \
+                db.Livscyklus.SLETTET.value:
             raise GoneException(
                 "The object with UUID %s has been deleted." % obj[0]["id"]
             )
@@ -318,6 +412,7 @@ class OIORestObject(object):
         # Assume the search operation if other params were specified or the
         # 'list' parameter is specified
         if not (valid_list_args.issuperset(args) and args.get('list') is None):
+
             # Only one uuid is supported through the search operation
             if uuid_param is not None and len(uuid_param) > 1:
                 raise BadRequestException("Multiple uuid parameters passed "
@@ -340,22 +435,29 @@ class OIORestObject(object):
             # Fill out a registration object based on the query arguments
             registration = build_registration(cls.__name__, list_args)
             request.api_operation = "Søg"
-            results = db.search_objects(cls.__name__,
-                                        uuid_param,
-                                        registration,
-                                        virkning_fra, virkning_til,
-                                        registreret_fra, registreret_til,
-                                        life_cycle_code,
-                                        user_ref, note,
-                                        any_attr_value_arr,
-                                        any_rel_uuid_arr, first_result,
-                                        max_results)
+            results = configured_db_interface.searcher.search_objects(
+                cls.__name__,
+                uuid_param,
+                registration,
+                virkning_fra,
+                virkning_til,
+                registreret_fra,
+                registreret_til,
+                life_cycle_code,
+                user_ref, note,
+                any_attr_value_arr,
+                any_rel_uuid_arr,
+                first_result,
+                max_results
+            )
+
             if args.get('list') is not None:
                 request.api_operation = "List"
                 results = list_fn(cls.__name__, results[0],
                                   virkning_fra, virkning_til,
                                   registreret_fra, registreret_til)
                 _check_not_deleted(results)
+
         else:
             uuid_param = list_args.get('uuid', None)
             request.api_operation = "List"
@@ -467,8 +569,8 @@ class OIORestObject(object):
         if exists:
             livscyklus = db.get_life_cycle_code(cls.__name__, uuid)
             if (
-                livscyklus == db.Livscyklus.PASSIVERET.value or
-                livscyklus == db.Livscyklus.SLETTET.value
+                    livscyklus == db.Livscyklus.PASSIVERET.value or
+                    livscyklus == db.Livscyklus.SLETTET.value
             ):
                 deleted_or_passive = True
 

@@ -2,6 +2,7 @@ In development:
 ---------------
 
 New features:
+* Performance improvements for search queries
 
 
 Version 1.8.1, 14 September 2020
