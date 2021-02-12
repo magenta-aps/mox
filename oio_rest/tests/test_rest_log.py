@@ -12,8 +12,7 @@ class TestLogHaendelse(DBTestCase):
         result = self.client.post(
             "log/loghaendelse",
             data={
-                "json": util.get_fixture("loghaendelse_opret.json",
-                                         as_text=False),
+                "json": util.get_fixture("loghaendelse_opret.json", as_text=False),
             },
         )
         self.assertEqual(result.status_code, 201, result.json)
@@ -24,8 +23,9 @@ class TestLogHaendelse(DBTestCase):
             result_import = self.client.patch(
                 "log/loghaendelse/%s" % uuid_,
                 data={
-                    "json": util.get_fixture("loghaendelse_opdater.json",
-                                             as_text=False),
+                    "json": util.get_fixture(
+                        "loghaendelse_opdater.json", as_text=False
+                    ),
                 },
             )
             self.assertEqual(result_import.status_code, 200)
@@ -35,8 +35,7 @@ class TestLogHaendelse(DBTestCase):
             result_delete = self.client.delete(
                 "log/loghaendelse/%s" % uuid_,
                 data={
-                    "json": util.get_fixture("loghaendelse_slet.json",
-                                             as_text=False),
+                    "json": util.get_fixture("loghaendelse_slet.json", as_text=False),
                 },
             )
             self.assertEqual(result_delete.status_code, 202)

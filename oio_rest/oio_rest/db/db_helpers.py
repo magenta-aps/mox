@@ -20,15 +20,13 @@ _attribute_fields = {}
 
 
 def get_attribute_fields(attribute_name):
-    """Return the field names from the PostgreSQL type in question.
-
-    """
+    """Return the field names from the PostgreSQL type in question."""
 
     if not _attribute_fields:
         # Initialize attr fields for ease of use.
         for c, fs in db_structure.REAL_DB_STRUCTURE.items():
             for a, v in fs["attributter"].items():
-                _attribute_fields[c + a] = v + ['virkning']
+                _attribute_fields[c + a] = v + ["virkning"]
 
     return _attribute_fields[attribute_name.lower()]
 
@@ -38,8 +36,8 @@ def get_field_type(attribute_name, field_name):
         if "attributter_metadata" in fs:
             for a, fs in fs["attributter_metadata"].items():
                 if attribute_name == c + a:
-                    if field_name in fs and 'type' in fs[field_name]:
-                        return fs[field_name]['type']
+                    if field_name in fs and "type" in fs[field_name]:
+                        return fs[field_name]["type"]
     return "text"
 
 
@@ -48,12 +46,12 @@ _attribute_names = {}
 
 def get_relation_field_type(class_name, field_name):
     class_info = db_structure.REAL_DB_STRUCTURE[class_name.lower()]
-    if 'relationer_metadata' in class_info:
-        metadata = class_info['relationer_metadata']
+    if "relationer_metadata" in class_info:
+        metadata = class_info["relationer_metadata"]
         for relation in metadata:
             for key in metadata[relation]:
-                if field_name == key and 'type' in metadata[relation][key]:
-                    return metadata[relation][key]['type']
+                if field_name == key and "type" in metadata[relation][key]:
+                    return metadata[relation][key]["type"]
     return "text"
 
 
@@ -67,13 +65,13 @@ def get_attribute_names(class_name):
             #
             # specifically, the two state types of 'aktivitet' can
             # trigger occasional errors
-            _attribute_names[c] = sorted(c + a for a in fs['attributter'])
+            _attribute_names[c] = sorted(c + a for a in fs["attributter"])
     return _attribute_names[class_name.lower()]
 
 
 def get_state_names(class_name):
     "Return the list of all recognized states for this class."
-    states = db_structure.REAL_DB_STRUCTURE[class_name.lower()]['tilstande']
+    states = db_structure.REAL_DB_STRUCTURE[class_name.lower()]["tilstande"]
 
     if isinstance(states, list):
         return [state[0] for state in states]
@@ -89,8 +87,7 @@ def get_relation_names(class_name):
     if len(_relation_names) == 0:
         for c, fs in db_structure.REAL_DB_STRUCTURE.items():
             _relation_names[c] = (
-                fs['relationer_nul_til_en'] +
-                fs['relationer_nul_til_mange']
+                fs["relationer_nul_til_en"] + fs["relationer_nul_til_mange"]
             )
     return _relation_names[class_name.lower()]
 
@@ -101,21 +98,18 @@ def get_document_part_relation_names():
 
 
 # Helper classers for adapting special types
-Soegeord = namedtuple('KlasseSoegeordType', 'identifier description category')
-OffentlighedUndtaget = namedtuple(
-    'OffentlighedUndtagetType', 'alternativtitel hjemmel'
-)
-JournalNotat = namedtuple('JournalNotatType', 'titel notat format')
+Soegeord = namedtuple("KlasseSoegeordType", "identifier description category")
+OffentlighedUndtaget = namedtuple("OffentlighedUndtagetType", "alternativtitel hjemmel")
+JournalNotat = namedtuple("JournalNotatType", "titel notat format")
 JournalDokument = namedtuple(
-    'JournalPostDokumentAttrType', 'dokumenttitel offentlighedundtaget'
+    "JournalPostDokumentAttrType", "dokumenttitel offentlighedundtaget"
 )
 AktoerAttr = namedtuple(
-    'AktivitetAktoerAttr',
-    'accepteret obligatorisk repraesentation_uuid repraesentation_urn'
+    "AktivitetAktoerAttr",
+    "accepteret obligatorisk repraesentation_uuid repraesentation_urn",
 )
 VaerdiRelationAttr = namedtuple(
-    'TilstandVaerdiRelationAttrType',
-    'forventet nominelvaerdi'
+    "TilstandVaerdiRelationAttrType", "forventet nominelvaerdi"
 )
 
 
@@ -160,19 +154,21 @@ def to_bool(s):
 
 class Searchable(object):
     """Mixin class for searchable namedtuples."""
-    non_searchable_fields = ('virkning',)
+
+    non_searchable_fields = ("virkning",)
 
     @classmethod
     def get_fields(cls):
         """Return tuple of searchable fields."""
-        if 'virkning' in cls._fields:
+        if "virkning" in cls._fields:
             return tuple(set(cls._fields) - set(cls.non_searchable_fields))
         else:
             return cls._fields
 
 
-class DokumentVariantType(namedtuple('DokumentVariantType',
-                                     'varianttekst egenskaber dele')):
+class DokumentVariantType(
+    namedtuple("DokumentVariantType", "varianttekst egenskaber dele")
+):
     @classmethod
     def input(cls, i):
         if i is None:
@@ -180,14 +176,17 @@ class DokumentVariantType(namedtuple('DokumentVariantType',
         return cls(
             i.get("varianttekst", None),
             input_list(DokumentVariantEgenskaberType, i, "egenskaber"),
-            input_list(DokumentDelType, i, "dele")
+            input_list(DokumentDelType, i, "dele"),
         )
 
 
-class DokumentVariantEgenskaberType(Searchable, namedtuple(
-    'DokumentVariantEgenskaberType',
-    'arkivering delvisscannet offentliggoerelse produktion virkning'
-)):
+class DokumentVariantEgenskaberType(
+    Searchable,
+    namedtuple(
+        "DokumentVariantEgenskaberType",
+        "arkivering delvisscannet offentliggoerelse produktion virkning",
+    ),
+):
     @classmethod
     def input(cls, i):
         if i is None:
@@ -197,46 +196,41 @@ class DokumentVariantEgenskaberType(Searchable, namedtuple(
             to_bool(i.get("delvisscannet", None)),
             to_bool(i.get("offentliggoerelse", None)),
             to_bool(i.get("produktion", None)),
-            Virkning.input(i.get("virkning", None))
+            Virkning.input(i.get("virkning", None)),
         )
 
 
-class DokumentDelType(namedtuple(
-    'DokumentDelType',
-    'deltekst egenskaber relationer'
-)):
+class DokumentDelType(namedtuple("DokumentDelType", "deltekst egenskaber relationer")):
     @classmethod
     def input(cls, i):
         if i is None:
             return None
         return cls(
-            i.get('deltekst', None),
+            i.get("deltekst", None),
             input_list(DokumentDelEgenskaberType, i, "egenskaber"),
-            input_dict_list(DokumentDelRelationType, i.get("relationer", None))
+            input_dict_list(DokumentDelRelationType, i.get("relationer", None)),
         )
 
 
-class Virkning(namedtuple('Virkning',
-                          'timeperiod aktoerref aktoertypekode notetekst')):
+class Virkning(namedtuple("Virkning", "timeperiod aktoerref aktoertypekode notetekst")):
     @classmethod
     def input(cls, i):
         if i is None:
             return None
         return cls(
-            DateTimeTZRange(
-                i.get("from", None),
-                i.get("to", None)
-            ),
+            DateTimeTZRange(i.get("from", None), i.get("to", None)),
             i.get("aktoerref", None),
             i.get("aktoertypekode", None),
-            i.get("notetekst", None)
+            i.get("notetekst", None),
         )
 
 
-class DokumentDelEgenskaberType(Searchable, namedtuple(
-    'DokumentDelEgenskaberType',
-    'indeks indhold lokation mimetype virkning'
-)):
+class DokumentDelEgenskaberType(
+    Searchable,
+    namedtuple(
+        "DokumentDelEgenskaberType", "indeks indhold lokation mimetype virkning"
+    ),
+):
     @classmethod
     def _get_file_storage_for_content_url(cls, url):
         """
@@ -248,13 +242,16 @@ class DokumentDelEgenskaberType(Searchable, namedtuple(
         contained in form field 'f1'.
         """
         o = urlparse(url)
-        if o.scheme == 'field':
+        if o.scheme == "field":
             field_name = o.path
             file_obj = request.files.get(field_name, None)
             if file_obj is None:
                 raise BadRequestException(
-                    ('The content URL "%s" referenced the field "%s", but it '
-                     'was not present in the request.') % (url, o.path)
+                    (
+                        'The content URL "%s" referenced the field "%s", but it '
+                        "was not present in the request."
+                    )
+                    % (url, o.path)
                 )
             return file_obj
 
@@ -262,19 +259,20 @@ class DokumentDelEgenskaberType(Searchable, namedtuple(
     def input(cls, i):
         if i is None:
             return None
-        indhold = i.get('indhold', None)
+        indhold = i.get("indhold", None)
 
         # If the content URL is provided, and we are not doing a read
         # operation, save the uploaded file
-        if indhold is not None and indhold != "" and request.method != 'GET':
+        if indhold is not None and indhold != "" and request.method != "GET":
             try:
                 o = urlparse(indhold)
             except ValueError:
                 raise BadRequestException(
-                    "The parameter \"indhold\" contained "
-                    "an invalid URL: \"%s\"" % indhold)
+                    'The parameter "indhold" contained '
+                    'an invalid URL: "%s"' % indhold
+                )
             # If the user is uploading a file, then handle the upload
-            if o.scheme == 'field':
+            if o.scheme == "field":
                 # Get FileStorage object referenced by indhold field
                 f = cls._get_file_storage_for_content_url(indhold)
 
@@ -285,28 +283,29 @@ class DokumentDelEgenskaberType(Searchable, namedtuple(
                 pass
 
         return cls(
-            i.get('indeks', None),
+            i.get("indeks", None),
             indhold,
-            i.get('lokation', None),
-            i.get('mimetype', None),
-            Virkning.input(i.get('virkning', None))
+            i.get("lokation", None),
+            i.get("mimetype", None),
+            Virkning.input(i.get("virkning", None)),
         )
 
 
-class DokumentDelRelationType(namedtuple(
-    'DokumentDelRelationType',
-    'reltype virkning relmaaluuid relmaalurn objekttype'
-)):
+class DokumentDelRelationType(
+    namedtuple(
+        "DokumentDelRelationType", "reltype virkning relmaaluuid relmaalurn objekttype"
+    )
+):
     @classmethod
     def input(cls, key, i):
         if i is None:
             return None
         return cls(
             key,
-            Virkning.input(i.get('virkning', None)),
-            i.get('uuid', None),
-            i.get('urn', None),
-            i.get('objekttype', None),
+            Virkning.input(i.get("virkning", None)),
+            i.get("uuid", None),
+            i.get("urn", None),
+            i.get("objekttype", None),
         )
 
 
@@ -325,15 +324,19 @@ class NamedTupleAdapter(object):
 
     def prepare_and_adapt(self, x):
         x = psyco_adapt(x)
-        if hasattr(x, 'prepare'):
+        if hasattr(x, "prepare"):
             x.prepare(self._conn)
         return x
 
     def getquoted(self):
         values = list(map(self.prepare_and_adapt, self._tuple_obj))
         values = [v.getquoted() for v in values]
-        sql = (b'ROW(' + b','.join(values) + b') :: ' +
-               self._tuple_obj.__class__.__name__.encode('ascii'))
+        sql = (
+            b"ROW("
+            + b",".join(values)
+            + b") :: "
+            + self._tuple_obj.__class__.__name__.encode("ascii")
+        )
         return sql
 
     def __str__(self):
@@ -341,20 +344,23 @@ class NamedTupleAdapter(object):
 
 
 class AktoerAttrAdapter(NamedTupleAdapter):
-
     def getquoted(self):
         values = list(map(self.prepare_and_adapt, self._tuple_obj))
         values = [v.getquoted() for v in values]
         qaa = AktoerAttr(*values)  # quoted_aktoer_attr
         values = [
-            qaa.obligatorisk + b'::AktivitetAktoerAttrObligatoriskKode',
-            qaa.accepteret + b'::AktivitetAktoerAttrAccepteretKode',
-            qaa.repraesentation_uuid + b'::uuid',
-            qaa.repraesentation_urn
+            qaa.obligatorisk + b"::AktivitetAktoerAttrObligatoriskKode",
+            qaa.accepteret + b"::AktivitetAktoerAttrAccepteretKode",
+            qaa.repraesentation_uuid + b"::uuid",
+            qaa.repraesentation_urn,
         ]
 
-        sql = (b'ROW(' + b','.join(values) + b') :: ' +
-               self._tuple_obj.__class__.__name__.encode('ascii'))
+        sql = (
+            b"ROW("
+            + b",".join(values)
+            + b") :: "
+            + self._tuple_obj.__class__.__name__.encode("ascii")
+        )
         return sql
 
 

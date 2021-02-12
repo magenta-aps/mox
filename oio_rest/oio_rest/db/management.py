@@ -63,11 +63,13 @@ def truncate_db(dbname):
     """
 
     # find all table names to truncate
-    FIND_ALL_TABLES_SQL = SQL("""
+    FIND_ALL_TABLES_SQL = SQL(
+        """
     select tablename
       from pg_catalog.pg_tables
      where schemaname = 'actual_state';
-    """)
+    """
+    )
 
     # truncate said tables
     TRUNCATE_SQL = SQL("truncate table {} cascade;")
@@ -92,7 +94,8 @@ def testdb_setup(from_scratch=False):
         raise ValueError(
             "The backup location used for the database while running tests is "
             "not empty. You have to make sure no data is lost and manually "
-            "remove the database: %s" % _DBNAME_BACKUP)
+            "remove the database: %s" % _DBNAME_BACKUP
+        )
 
     _cpdb(_DBNAME, _DBNAME_BACKUP)
 
@@ -146,7 +149,7 @@ def _get_connection(dbname):
         password=config["database"]["password"],
         host=config["database"]["host"],
         port=config["database"]["port"],
-        application_name="mox db/management connection"
+        application_name="mox db/management connection",
     )
 
 
@@ -163,9 +166,7 @@ def _cpdb(dbname_from, dbname_to):
     close_connection()
     logger.debug("Copying database from %s to %s", dbname_from, dbname_to)
     with _get_connection(_DBNAME_SYS_TEMPLATE) as conn:
-        conn.set_isolation_level(
-            psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT
-        )
+        conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
         with conn.cursor() as curs:
             try:
                 curs.execute(
@@ -187,8 +188,7 @@ def _cpdb(dbname_from, dbname_to):
             # used in production.
             curs.execute(
                 SQL(
-                    "ALTER DATABASE {} SET search_path TO "
-                    "actual_state, public;"
+                    "ALTER DATABASE {} SET search_path TO " "actual_state, public;"
                 ).format(Identifier(dbname_to))
             )
             curs.execute(
@@ -197,9 +197,9 @@ def _cpdb(dbname_from, dbname_to):
                 )
             )
             curs.execute(
-                SQL(
-                    "ALTER DATABASE {} SET intervalstyle TO 'sql_standard';"
-                ).format(Identifier(dbname_to))
+                SQL("ALTER DATABASE {} SET intervalstyle TO 'sql_standard';").format(
+                    Identifier(dbname_to)
+                )
             )
 
             # The tests are written as if the computer has the local time zone
@@ -208,9 +208,9 @@ def _cpdb(dbname_from, dbname_to):
             # database sql or templates because we don't want a hardcoded
             # timezone in production.
             curs.execute(
-                SQL(
-                    "ALTER DATABASE {} SET time zone 'Europe/Copenhagen';"
-                ).format(Identifier(dbname_to))
+                SQL("ALTER DATABASE {} SET time zone 'Europe/Copenhagen';").format(
+                    Identifier(dbname_to)
+                )
             )
 
 
@@ -222,20 +222,14 @@ def _dropdb(dbname):
     close_connection()
     logger.debug("Dropping database %s", dbname)
     with _get_connection(_DBNAME_SYS_TEMPLATE) as conn:
-        conn.set_isolation_level(
-            psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT
-        )
+        conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
         with conn.cursor() as curs:
             try:
                 curs.execute(
-                    SQL("DROP DATABASE IF EXISTS {};").format(
-                        Identifier(dbname)
-                    )
+                    SQL("DROP DATABASE IF EXISTS {};").format(Identifier(dbname))
                 )
             except psycopg2.errors.ObjectInUse as e:
-                logger.error(
-                    "Database %s is in use. DROP DATABASE failed.", dbname
-                )
+                logger.error("Database %s is in use. DROP DATABASE failed.", dbname)
                 _log_active_sessions(conn)
                 raise e
 
@@ -264,8 +258,7 @@ def _createdb(dbname):
         for ext in ["uuid-ossp", "btree_gist", "pg_trgm"]:
             curs.execute(
                 SQL(
-                    "create extension if not exists {} with schema "
-                    "actual_state;"
+                    "create extension if not exists {} with schema " "actual_state;"
                 ).format(Identifier(ext))
             )
 
@@ -293,9 +286,7 @@ def _log_active_sessions(conn):
         active_conns = curs.fetchall()
 
     length = len(active_conns)
-    logger.debug(
-        "The following %s database sessions are connected:", length
-    )
+    logger.debug("The following %s database sessions are connected:", length)
     for idx, s in enumerate(active_conns, start=1):
         logger.debug(
             "[%s/%s] pid: %s, user: %s, database: %s, client, %s, "

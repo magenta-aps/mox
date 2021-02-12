@@ -13,9 +13,7 @@ __version__ = "1.9.0"
 
 # we need to add a log handler here, so we see logs from settings.py.
 # I mean, we /want/ this handler too.
-log_format = logging.Formatter(
-    "[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s"
-)
+log_format = logging.Formatter("[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s")
 
 log_level = settings.config["log"]["log_level"]
 logger = logging.getLogger()

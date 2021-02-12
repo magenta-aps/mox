@@ -13,10 +13,10 @@ from oio_rest.contentstore import ContentStore
 
 
 # Override os.path with posix-version, to be OS-agnostic
-@patch('oio_rest.contentstore.os.path', new=posixpath)
+@patch("oio_rest.contentstore.os.path", new=posixpath)
 class TestContentStore(TestCase):
-    @patch('oio_rest.contentstore.os.makedirs')
-    @patch('oio_rest.contentstore.os.stat')
+    @patch("oio_rest.contentstore.os.makedirs")
+    @patch("oio_rest.contentstore.os.stat")
     def test_save_file_object(self, mock_os_stat, mock_os_makedirs):
         # Arrange
         cs = ContentStore()
@@ -26,41 +26,40 @@ class TestContentStore(TestCase):
         mockfile = MagicMock()
 
         # Act
-        with patch.object(cs, '_get_new_file_name',
-                          return_value='testfile.bin'), \
-                patch.object(cs, '_get_file_sub_path',
-                             return_value='sub/path/'), \
-                patch('oio_rest.contentstore.FILE_UPLOAD_FOLDER',
-                      new='/test/'):
+        with patch.object(
+            cs, "_get_new_file_name", return_value="testfile.bin"
+        ), patch.object(cs, "_get_file_sub_path", return_value="sub/path/"), patch(
+            "oio_rest.contentstore.FILE_UPLOAD_FOLDER", new="/test/"
+        ):
             actual_result = cs.save_file_object(mockfile)
 
         # Assert
-        mockfile.save.assert_called_with('/test/sub/path/testfile.bin')
-        self.assertEqual('store:sub/path/testfile.bin', actual_result)
+        mockfile.save.assert_called_with("/test/sub/path/testfile.bin")
+        self.assertEqual("store:sub/path/testfile.bin", actual_result)
 
-    @patch('oio_rest.contentstore.os.removedirs')
-    @patch('oio_rest.contentstore.os.remove')
+    @patch("oio_rest.contentstore.os.removedirs")
+    @patch("oio_rest.contentstore.os.remove")
     def test_remove(self, mock_os_remove, mock_os_removedirs):
         # Arrange
         cs = ContentStore()
 
         # Act
-        with patch.object(cs, 'get_filename_for_url', new=lambda x: x):
-            cs.remove('a/test/url')
+        with patch.object(cs, "get_filename_for_url", new=lambda x: x):
+            cs.remove("a/test/url")
 
         # Assert
-        mock_os_remove.assert_called_with('a/test/url')
-        mock_os_removedirs.assert_called_with('a/test')
+        mock_os_remove.assert_called_with("a/test/url")
+        mock_os_removedirs.assert_called_with("a/test")
 
     def test_get_new_file_name(self):
         # Arrange
         cs = ContentStore()
 
-        uuid = 'e7bc6d44-51fb-4562-9df6-abe8f7f75e00'
-        expected_result = '{}.bin'.format(uuid)
+        uuid = "e7bc6d44-51fb-4562-9df6-abe8f7f75e00"
+        expected_result = "{}.bin".format(uuid)
 
         # Act
-        with patch('oio_rest.contentstore.uuid.uuid4', return_value=uuid):
+        with patch("oio_rest.contentstore.uuid.uuid4", return_value=uuid):
             actual_result = cs._get_new_file_name()
 
         # Assert
@@ -70,7 +69,7 @@ class TestContentStore(TestCase):
     def test_get_file_sub_path(self):
         # Arrange
         cs = ContentStore()
-        expected_result = '2010/01/01/00/00'
+        expected_result = "2010/01/01/00/00"
 
         # Act
         actual_result = cs._get_file_sub_path()
@@ -81,12 +80,12 @@ class TestContentStore(TestCase):
     def test_get_filename_for_url(self):
         # Arrange
         cs = ContentStore()
-        expected_result = '/test/url'
+        expected_result = "/test/url"
 
         # Act
 
-        with patch('oio_rest.contentstore.FILE_UPLOAD_FOLDER', new='/test/'):
-            actual_result = cs.get_filename_for_url('store:url')
+        with patch("oio_rest.contentstore.FILE_UPLOAD_FOLDER", new="/test/"):
+            actual_result = cs.get_filename_for_url("store:url")
 
         # Assert
         self.assertEqual(expected_result, actual_result)
@@ -97,6 +96,7 @@ class TestContentStore(TestCase):
 
         # Act
 
-        with patch('oio_rest.contentstore.FILE_UPLOAD_FOLDER',
-                   new='/test/'), self.assertRaises(Exception):
-            cs.get_filename_for_url('bla:url')
+        with patch(
+            "oio_rest.contentstore.FILE_UPLOAD_FOLDER", new="/test/"
+        ), self.assertRaises(Exception):
+            cs.get_filename_for_url("bla:url")

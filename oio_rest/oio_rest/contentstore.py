@@ -35,7 +35,7 @@ class ContentStore:
 
         The URL should be of the form `store:my/sub/path/to/file.bin"""
         o = urlparse(url)
-        if o.scheme != 'store':
+        if o.scheme != "store":
             raise Exception("Content store supports only URL scheme 'store'")
         return os.path.join(FILE_UPLOAD_FOLDER, o.path)
 

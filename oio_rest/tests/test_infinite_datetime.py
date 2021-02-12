@@ -5,8 +5,8 @@ from unittest import TestCase
 
 from oio_rest.db.quick_query.search import InfiniteDatetime
 
-INFINITY = 'infinity'
-NINFINITY = '-infinity'
+INFINITY = "infinity"
+NINFINITY = "-infinity"
 
 
 class TestInfiniteDatetime(TestCase):

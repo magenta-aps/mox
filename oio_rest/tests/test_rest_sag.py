@@ -117,8 +117,8 @@ class TestSag(DBTestCase):
         search8 = self.client.get(
             "sag/sag",
             query_string={
-                "journaldokument.offentligtundtaget.alternativtitel":
-                "Fortroligt", "uuid": self.uuid,
+                "journaldokument.offentligtundtaget.alternativtitel": "Fortroligt",
+                "uuid": self.uuid,
             },
         )
         self.assertEqual(search8.status_code, 200)

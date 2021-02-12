@@ -15,29 +15,22 @@ class TestCreateFacet(TestCreateObject):
                     {
                         "brugervendtnoegle": "bvn",
                         "integrationsdata": "data fra andet system",
-                        "virkning": self.standard_virkning1
+                        "virkning": self.standard_virkning1,
                     }
                 ]
             },
             "tilstande": {
                 "facetpubliceret": [
-                    {
-                        "publiceret": "Publiceret",
-                        "virkning": self.standard_virkning1
-                    }
+                    {"publiceret": "Publiceret", "virkning": self.standard_virkning1}
                 ]
-            }
+            },
         }
 
-        r = self.perform_request('/klassifikation/facet', json=facet)
+        r = self.perform_request("/klassifikation/facet", json=facet)
 
         # Check response
         self.assert201(r)
 
         # Check persisted data
-        facet['livscykluskode'] = 'Opstaaet'
-        self.assertQueryResponse(
-            '/klassifikation/facet',
-            facet,
-            uuid=r.json['uuid']
-        )
+        facet["livscykluskode"] = "Opstaaet"
+        self.assertQueryResponse("/klassifikation/facet", facet, uuid=r.json["uuid"])

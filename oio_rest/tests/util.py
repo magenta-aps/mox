@@ -19,24 +19,22 @@ from oio_rest.db import db_structure, management as db_mgmt
 TESTS_DIR = os.path.dirname(__file__)
 BASE_DIR = os.path.dirname(TESTS_DIR)
 TOP_DIR = os.path.dirname(BASE_DIR)
-FIXTURE_DIR = os.path.join(TESTS_DIR, 'fixtures')
+FIXTURE_DIR = os.path.join(TESTS_DIR, "fixtures")
 
 
-def get_fixture(fixture_name, mode='rt', as_text=True):
+def get_fixture(fixture_name, mode="rt", as_text=True):
     """Reads data from fixture folder. If the file name ends with
     ``.json``, we parse it, otherwise, we just return it as text.
     """
     with open(os.path.join(FIXTURE_DIR, fixture_name), mode) as fp:
-        if os.path.splitext(fixture_name)[1] == '.json' and as_text:
+        if os.path.splitext(fixture_name)[1] == ".json" and as_text:
             return json.load(fp)
         else:
             return fp.read()
 
 
 class _BaseTestCase(flask_testing.TestCase):
-    """Basic testcase without database support, but with various helper functions.
-
-    """
+    """Basic testcase without database support, but with various helper functions."""
 
     def setup(self):
         stack = contextlib.ExitStack()
@@ -49,19 +47,20 @@ class _BaseTestCase(flask_testing.TestCase):
             stack.enter_context(p)
 
     def get_lora_app(self):
-        app.config['DEBUG'] = False
-        app.config['TESTING'] = True
-        app.config['LIVESERVER_PORT'] = 0
-        app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
+        app.config["DEBUG"] = False
+        app.config["TESTING"] = True
+        app.config["LIVESERVER_PORT"] = 0
+        app.config["PRESERVE_CONTEXT_ON_EXCEPTION"] = False
 
         return app
 
     def create_app(self):
         return self.get_lora_app()
 
-    def assertRequestResponse(self, path, expected, message=None,
-                              status_code=None, drop_keys=(), **kwargs):
-        '''Issue a request and assert that it succeeds (and does not
+    def assertRequestResponse(
+        self, path, expected, message=None, status_code=None, drop_keys=(), **kwargs
+    ):
+        """Issue a request and assert that it succeeds (and does not
         redirect) and yields the expected output.
 
         **kwargs is passed directly to the test client -- see the
@@ -70,13 +69,13 @@ class _BaseTestCase(flask_testing.TestCase):
         One addition is that we support a 'json' argument that
         automatically posts the given JSON data.
 
-        '''
+        """
 
         r = self.perform_request(path, **kwargs)
 
         actual = (
             json.loads(r.get_data(as_text=True))
-            if r.mimetype == 'application/json'
+            if r.mimetype == "application/json"
             else r.get_data(as_text=True)
         )
 
@@ -87,10 +86,11 @@ class _BaseTestCase(flask_testing.TestCase):
                 pass
 
         if not message:
-            status_message = 'request {!r} failed with status {}'.format(
-                path, r.status,
+            status_message = "request {!r} failed with status {}".format(
+                path,
+                r.status,
             )
-            content_message = 'request {!r} yielded an expected result'.format(
+            content_message = "request {!r} yielded an expected result".format(
                 path,
             )
         else:
@@ -112,7 +112,7 @@ class _BaseTestCase(flask_testing.TestCase):
             raise
 
     def assertRequestFails(self, path, code, message=None, **kwargs):
-        '''Issue a request and assert that it succeeds (and does not
+        """Issue a request and assert that it succeeds (and does not
         redirect) and yields the expected output.
 
         **kwargs is passed directly to the test client -- see the
@@ -120,7 +120,7 @@ class _BaseTestCase(flask_testing.TestCase):
 
         One addition is that we support a 'json' argument that
         automatically posts the given JSON data.
-        '''
+        """
         message = message or "request {!r} didn't fail properly".format(path)
 
         r = self.perform_request(path, **kwargs)
@@ -128,10 +128,10 @@ class _BaseTestCase(flask_testing.TestCase):
         self.assertEqual(r.status_code, code, message)
 
     def perform_request(self, path, **kwargs):
-        if 'json' in kwargs:
-            kwargs.setdefault('method', 'POST')
-            kwargs.setdefault('data', json.dumps(kwargs.pop('json'), indent=2))
-            kwargs.setdefault('headers', {'Content-Type': 'application/json'})
+        if "json" in kwargs:
+            kwargs.setdefault("method", "POST")
+            kwargs.setdefault("data", json.dumps(kwargs.pop("json"), indent=2))
+            kwargs.setdefault("headers", {"Content-Type": "application/json"})
 
         return self.client.open(path, **kwargs)
 
@@ -145,10 +145,7 @@ class _BaseTestCase(flask_testing.TestCase):
 
             """
             if isinstance(obj, dict):
-                return {
-                    k: sort_inner_lists(v)
-                    for k, v in obj.items()
-                }
+                return {k: sort_inner_lists(v) for k, v in obj.items()}
             elif isinstance(obj, (list, tuple)):
                 return sorted(
                     map(sort_inner_lists, obj),
@@ -159,14 +156,14 @@ class _BaseTestCase(flask_testing.TestCase):
 
         # drop lora-generated timestamps & users
         if isinstance(expected, dict):
-            expected.pop('fratidspunkt', None)
-            expected.pop('tiltidspunkt', None)
-            expected.pop('brugerref', None)
+            expected.pop("fratidspunkt", None)
+            expected.pop("tiltidspunkt", None)
+            expected.pop("brugerref", None)
 
         if isinstance(actual, dict):
-            actual.pop('fratidspunkt', None)
-            actual.pop('tiltidspunkt', None)
-            actual.pop('brugerref', None)
+            actual.pop("fratidspunkt", None)
+            actual.pop("tiltidspunkt", None)
+            actual.pop("brugerref", None)
 
         # Sort all inner lists and compare
         self.assertEqual(
@@ -178,14 +175,14 @@ class _BaseTestCase(flask_testing.TestCase):
     def assertOK(self, response, message=None):
         self.assertTrue(
             200 <= response.status_code < 300,
-            message or 'request failed with {}!'.format(response.status)
+            message or "request failed with {}!".format(response.status),
         )
 
     def assertUUID(self, s):
         try:
             uuid.UUID(s)
         except (TypeError, ValueError):
-            self.fail('{!r} is not a uuid!'.format(s))
+            self.fail("{!r} is not a uuid!".format(s))
 
     def assert201(self, response):
         """
@@ -195,24 +192,27 @@ class _BaseTestCase(flask_testing.TestCase):
         """
         self.assertEqual(201, response.status_code)
         self.assertEqual(1, len(response.json))
-        self.assertUUID(response.json['uuid'])
+        self.assertUUID(response.json["uuid"])
 
     def get(self, path, **params):
         r = self.perform_request(path, query_string=params)
 
         self.assertOK(r)
 
-        d = r.json['results'][0]
+        d = r.json["results"][0]
 
         if not d or not all(isinstance(v, dict) for v in d):
             return d
 
         self.assertEqual(len(d), 1)
 
-        registrations = d[0]['registreringer']
+        registrations = d[0]["registreringer"]
 
-        if set(params.keys()) & {'registreretfra', 'registrerettil',
-                                 'registreringstid'}:
+        if set(params.keys()) & {
+            "registreretfra",
+            "registrerettil",
+            "registreringstid",
+        }:
             return registrations
         else:
             self.assertEqual(len(registrations), 1)
@@ -222,19 +222,19 @@ class _BaseTestCase(flask_testing.TestCase):
         r = self.perform_request(path, json=json, method="PUT")
         self.assertOK(r)
 
-        return r.json['uuid']
+        return r.json["uuid"]
 
     def patch(self, path, json):
         r = self.perform_request(path, json=json, method="PATCH")
         self.assertOK(r)
 
-        return r.json['uuid']
+        return r.json["uuid"]
 
     def post(self, path, json):
         r = self.perform_request(path, json=json, method="POST")
         self.assertOK(r)
 
-        return r.json['uuid']
+        return r.json["uuid"]
 
     def assertQueryResponse(self, path, expected, **params):
         """Perform a request towards LoRa, and assert that it yields the
@@ -257,21 +257,23 @@ class _BaseTestCase(flask_testing.TestCase):
         into LoRA at the given path & UUID.
         """
         if uuid:
-            method = 'PUT'
-            path = '{}/{}'.format(path, uuid)
+            method = "PUT"
+            path = "{}/{}".format(path, uuid)
         else:
-            method = 'POST'
+            method = "POST"
 
         r = self.perform_request(
-            path, json=get_fixture(fixture_name), method=method,
+            path,
+            json=get_fixture(fixture_name),
+            method=method,
         )
 
-        msg = 'write of {!r} to {!r} failed!'.format(fixture_name, path)
+        msg = "write of {!r} to {!r} failed!".format(fixture_name, path)
 
         try:
             self.assertOK(r, msg)
 
-            objid = r.json.get('uuid')
+            objid = r.json.get("uuid")
 
             self.assertTrue(objid)
         except AssertionError:
@@ -311,9 +313,7 @@ class ExtTestCase(_BaseTestCase):
             )
         else:
             patches.append(
-                mock.patch(
-                    "oio_rest.db.db_structure.REAL_DB_STRUCTURE", new=new
-                )
+                mock.patch("oio_rest.db.db_structure.REAL_DB_STRUCTURE", new=new)
             )
 
         with contextlib.ExitStack() as stack:
@@ -336,9 +336,7 @@ class ExtTestCase(_BaseTestCase):
             mock.patch("oio_rest.db.db_helpers._relation_names", {}),
             mock.patch("oio_rest.validate.SCHEMAS", {}),
             mock.patch("oio_rest.db.db_structure.DATABASE_STRUCTURE", new=dbs),
-            mock.patch(
-                "oio_rest.db.db_structure.REAL_DB_STRUCTURE", new=real_dbs
-            ),
+            mock.patch("oio_rest.db.db_structure.REAL_DB_STRUCTURE", new=real_dbs),
         ]
 
         with contextlib.ExitStack() as stack:

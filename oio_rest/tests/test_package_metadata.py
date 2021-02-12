@@ -14,9 +14,8 @@ class VersionTest(unittest.TestCase):
     def test_versions(self):
         main_version = __version__
 
-        with open(os.path.join(util.TOP_DIR, 'NEWS.rst')) as fp:
-            all_versions = re.findall(r'^Version ([^,]*),', fp.read(),
-                                      re.MULTILINE)
+        with open(os.path.join(util.TOP_DIR, "NEWS.rst")) as fp:
+            all_versions = re.findall(r"^Version ([^,]*),", fp.read(), re.MULTILINE)
 
         readme_version = all_versions[0]
 

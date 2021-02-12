@@ -16,9 +16,9 @@ from jinja2 import Environment, FileSystemLoader
 from oio_rest.db import db_structure
 
 
-DB_DIR = Path(__file__).parent / 'sql' / 'declarations'
+DB_DIR = Path(__file__).parent / "sql" / "declarations"
 
-template_env = Environment(loader=FileSystemLoader(str(DB_DIR / 'templates')))
+template_env = Environment(loader=FileSystemLoader(str(DB_DIR / "templates")))
 
 TEMPLATES = (
     "dbtyper-specific",
@@ -45,7 +45,7 @@ def _render_templates():
 
             context = copy.deepcopy(db_structure.DATABASE_STRUCTURE[oio_type])
 
-            for reltype in ('tilstande', 'attributter', 'relationer'):
+            for reltype in ("tilstande", "attributter", "relationer"):
                 if reltype not in context:
                     continue
 
@@ -57,19 +57,12 @@ def _render_templates():
                 meta = context.get("{}_metadata".format(reltype), {})
 
                 context["{}_metadata".format(reltype)] = {
-                    a: {
-                        p: meta.get(a, {}).get(p, {})
-                        for p in ps
-                    }
-                    for a, ps in context['attributter'].items()
+                    a: {p: meta.get(a, {}).get(p, {}) for p in ps}
+                    for a, ps in context["attributter"].items()
                 }
 
                 context["{}_mandatory".format(reltype)] = {
-                    attr: [
-                        k
-                        for k, v in vs.items()
-                        if v.get('mandatory')
-                    ]
+                    attr: [k for k, v in vs.items() if v.get("mandatory")]
                     for attr, vs in meta.items()
                 }
 
@@ -77,9 +70,9 @@ def _render_templates():
 
             try:
                 extra_options = db_structure.DB_TEMPLATE_EXTRA_OPTIONS
-                context["include_mixin"] = (
-                    extra_options[oio_type][template_file]["include_mixin"]
-                )
+                context["include_mixin"] = extra_options[oio_type][template_file][
+                    "include_mixin"
+                ]
             except KeyError:
                 context["include_mixin"] = "empty.jinja.sql"
 
@@ -96,9 +89,9 @@ def get_sql():
         if dirp is None:
             yield from _render_templates()
         else:
-            for p in sorted(dirp.glob('*.sql')):
+            for p in sorted(dirp.glob("*.sql")):
                 yield p.read_text()
 
 
-if __name__ == '__main__':
-    print('\n'.join(get_sql()))
+if __name__ == "__main__":
+    print("\n".join(get_sql()))

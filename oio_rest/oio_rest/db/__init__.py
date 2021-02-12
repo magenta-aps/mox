@@ -12,14 +12,25 @@ import dateutil
 import psycopg2
 from dateutil import parser as date_parser
 from jinja2 import Environment, FileSystemLoader
-from psycopg2.extensions import (AsIs, Boolean, QuotedString, adapt as psyco_adapt)
+from psycopg2.extensions import AsIs, Boolean, QuotedString, adapt as psyco_adapt
 from psycopg2.extras import DateTimeTZRange
 
 from oio_rest import settings
-from .db_helpers import (AktoerAttr, DokumentVariantType, JournalDokument, JournalNotat,
-                         OffentlighedUndtaget, Soegeord, VaerdiRelationAttr,
-                         get_attribute_fields, get_attribute_names, get_field_type,
-                         get_relation_field_type, get_state_names, to_bool)
+from .db_helpers import (
+    AktoerAttr,
+    DokumentVariantType,
+    JournalDokument,
+    JournalNotat,
+    OffentlighedUndtaget,
+    Soegeord,
+    VaerdiRelationAttr,
+    get_attribute_fields,
+    get_attribute_names,
+    get_field_type,
+    get_relation_field_type,
+    get_state_names,
+    to_bool,
+)
 from ..authentication import get_authenticated_user
 from ..custom_exceptions import BadRequestException, DBException
 from ..custom_exceptions import NotAllowedException, NotFoundException
@@ -30,21 +41,23 @@ from ..utils import build_registration
     Jinja2 Environment
 """
 
-jinja_env = Environment(loader=FileSystemLoader(
-    str(pathlib.Path(__file__).parent / 'sql' / 'invocations' / 'templates'),
-))
+jinja_env = Environment(
+    loader=FileSystemLoader(
+        str(pathlib.Path(__file__).parent / "sql" / "invocations" / "templates"),
+    )
+)
 
 
 def adapt(value):
     connection = get_connection()
 
     adapter = psyco_adapt(value)
-    if hasattr(adapter, 'prepare'):
+    if hasattr(adapter, "prepare"):
         adapter.prepare(connection)
     return str(adapter.getquoted(), connection.encoding)
 
 
-jinja_env.filters['adapt'] = adapt
+jinja_env.filters["adapt"] = adapt
 
 # We only have one connection, so we cannot benefit from the gunicorn gthread
 # worker class, which is intended to reduce memory footprint anyway. This
@@ -70,7 +83,7 @@ def get_connection():
             password=settings.DB_PASSWORD,
             host=settings.DB_HOST,
             port=settings.DB_PORT,
-            application_name="mox init connection"
+            application_name="mox init connection",
         )
 
     return _connection
@@ -89,8 +102,7 @@ def close_connection():
 #
 
 
-def convert_attr_value(attribute_name, attribute_field_name,
-                       attribute_field_value):
+def convert_attr_value(attribute_name, attribute_field_name, attribute_field_value):
     # For simple types that can be adapted by standard psycopg2 adapters, just
     # pass on. For complex types like "Soegeord" with specialized adapters,
     # convert to the class for which the adapter is registered.
@@ -98,26 +110,29 @@ def convert_attr_value(attribute_name, attribute_field_name,
     if field_type == "soegeord":
         return [Soegeord(*ord) for ord in attribute_field_value]
     elif field_type == "offentlighedundtagettype":
-        if not ('alternativtitel' in attribute_field_value) and not (
-                'hjemmel' in attribute_field_value):
+        if not ("alternativtitel" in attribute_field_value) and not (
+            "hjemmel" in attribute_field_value
+        ):
             # Empty object, so provide the DB with a NULL, so that the old
             # value is not overwritten.
             return None
         else:
             return OffentlighedUndtaget(
-                attribute_field_value.get('alternativtitel', None),
-                attribute_field_value.get('hjemmel', None))
+                attribute_field_value.get("alternativtitel", None),
+                attribute_field_value.get("hjemmel", None),
+            )
     elif field_type == "date":
         return datetime.datetime.strptime(
-            attribute_field_value, "%Y-%m-%d",
+            attribute_field_value,
+            "%Y-%m-%d",
         ).date()
     elif field_type == "timestamptz":
         return date_parser.parse(attribute_field_value)
     elif field_type == "interval(0)":
         # delegate actual interval parsing to PostgreSQL in all cases,
         # bypassing psycopg2 cleverness
-        s = QuotedString(attribute_field_value or '0')
-        return AsIs('{} :: interval'.format(s))
+        s = QuotedString(attribute_field_value or "0")
+        return AsIs("{} :: interval".format(s))
     elif field_type == "boolean":
         return Boolean(to_bool(attribute_field_value))
     else:
@@ -127,16 +142,20 @@ def convert_attr_value(attribute_name, attribute_field_name,
 def convert_relation_value(class_name, field_name, value):
     field_type = get_relation_field_type(class_name, field_name)
     if field_type == "journalnotat":
-        return JournalNotat(value.get("titel", None), value.get("notat", None),
-                            value.get("format", None))
+        return JournalNotat(
+            value.get("titel", None),
+            value.get("notat", None),
+            value.get("format", None),
+        )
     elif field_type == "journaldokument":
         ou = value.get("offentlighedundtaget", {})
         return JournalDokument(
             value.get("dokumenttitel", None),
-            OffentlighedUndtaget(ou.get('alternativtitel', None),
-                                 ou.get('hjemmel', None))
+            OffentlighedUndtaget(
+                ou.get("alternativtitel", None), ou.get("hjemmel", None)
+            ),
         )
-    elif field_type == 'aktoerattr':
+    elif field_type == "aktoerattr":
         if value:
             return AktoerAttr(
                 value.get("accepteret", None),
@@ -144,10 +163,9 @@ def convert_relation_value(class_name, field_name, value):
                 value.get("repraesentation_uuid", None),
                 value.get("repraesentation_urn", None),
             )
-    elif field_type == 'vaerdirelationattr':
+    elif field_type == "vaerdirelationattr":
         result = VaerdiRelationAttr(
-            value.get("forventet", None),
-            value.get("nominelvaerdi", None)
+            value.get("forventet", None), value.get("nominelvaerdi", None)
         )
         return result
     # Default: no conversion.
@@ -163,9 +181,9 @@ def convert_attributes(attributes):
             for attr_period in current_attr_periods:
                 field_names = get_attribute_fields(attr_name)
                 attr_value_list = [
-                    convert_attr_value(
-                        attr_name, f, attr_period[f]
-                    ) if f in attr_period else None
+                    convert_attr_value(attr_name, f, attr_period[f])
+                    if f in attr_period
+                    else None
                     for f in field_names
                 ]
                 converted_attr_periods.append(attr_value_list)
@@ -181,13 +199,11 @@ def convert_relations(relations, class_name):
             for period in periods:
                 if not isinstance(period, dict):
                     raise BadRequestException(
-                        'mapping expected for "%s" in "%s" - got %r' %
-                        (period, rel_name, period)
+                        'mapping expected for "%s" in "%s" - got %r'
+                        % (period, rel_name, period)
                     )
                 for field in period:
-                    converted = convert_relation_value(
-                        class_name, field, period[field]
-                    )
+                    converted = convert_relation_value(class_name, field, period[field])
                     period[field] = converted
     return relations
 
@@ -201,11 +217,11 @@ def convert_variants(variants):
 
 
 class Livscyklus(enum.Enum):
-    OPSTAAET = 'Opstaaet'
-    IMPORTERET = 'Importeret'
-    PASSIVERET = 'Passiveret'
-    SLETTET = 'Slettet'
-    RETTET = 'Rettet'
+    OPSTAAET = "Opstaaet"
+    IMPORTERET = "Importeret"
+    PASSIVERET = "Passiveret"
+    SLETTET = "Slettet"
+    RETTET = "Rettet"
 
 
 """
@@ -218,22 +234,21 @@ class Livscyklus(enum.Enum):
 
 def sql_state_array(state, periods, class_name):
     """Return an SQL array of type <state>TilsType."""
-    t = jinja_env.get_template('state_array.sql')
-    sql = t.render(class_name=class_name, state_name=state,
-                   state_periods=periods)
+    t = jinja_env.get_template("state_array.sql")
+    sql = t.render(class_name=class_name, state_name=state, state_periods=periods)
     return sql
 
 
 def sql_attribute_array(attribute, periods):
     """Return an SQL array of type <attribute>AttrType[]."""
-    t = jinja_env.get_template('attribute_array.sql')
+    t = jinja_env.get_template("attribute_array.sql")
     sql = t.render(attribute_name=attribute, attribute_periods=periods)
     return sql
 
 
 def sql_relations_array(class_name, relations):
     """Return an SQL array of type <class_name>RelationType[]."""
-    t = jinja_env.get_template('relations_array.sql')
+    t = jinja_env.get_template("relations_array.sql")
     sql = t.render(class_name=class_name, relations=relations)
     return sql
 
@@ -241,12 +256,9 @@ def sql_relations_array(class_name, relations):
 def sql_convert_registration(registration, class_name):
     """Convert input JSON to the SQL arrays we need."""
     registration["attributes"] = convert_attributes(registration["attributes"])
-    registration["relations"] = convert_relations(registration["relations"],
-                                                  class_name)
+    registration["relations"] = convert_relations(registration["relations"], class_name)
     if "variants" in registration:
-        registration["variants"] = adapt(
-            convert_variants(registration["variants"])
-        )
+        registration["variants"] = adapt(convert_variants(registration["variants"]))
     states = registration["states"]
     sql_states = []
     for sn in get_state_names(class_name):
@@ -258,18 +270,14 @@ def sql_convert_registration(registration, class_name):
         else:
             periods = None
 
-        sql_states.append(
-            sql_state_array(sn, periods, class_name)
-        )
+        sql_states.append(sql_state_array(sn, periods, class_name))
     registration["states"] = sql_states
 
     attributes = registration["attributes"]
     sql_attributes = []
     for a in get_attribute_names(class_name):
         periods = attributes[a] if a in attributes else None
-        sql_attributes.append(
-            sql_attribute_array(a, periods)
-        )
+        sql_attributes.append(sql_attribute_array(a, periods))
     registration["attributes"] = sql_attributes
 
     relations = registration["relations"]
@@ -281,14 +289,15 @@ def sql_convert_registration(registration, class_name):
     return registration
 
 
-def sql_get_registration(class_name, time_period, life_cycle_code,
-                         user_ref, note, registration):
+def sql_get_registration(
+    class_name, time_period, life_cycle_code, user_ref, note, registration
+):
     """
     Return a an SQL registrering object of type
     <class_name>RegistreringType[].
     Expects a Registration object returned from sql_convert_registration.
     """
-    sql_template = jinja_env.get_template('registration.sql')
+    sql_template = jinja_env.get_template("registration.sql")
     sql = sql_template.render(
         class_name=class_name,
         time_period=time_period,
@@ -298,7 +307,8 @@ def sql_get_registration(class_name, time_period, life_cycle_code,
         states=registration["states"],
         attributes=registration["attributes"],
         relations=registration["relations"],
-        variants=registration.get("variants", None))
+        variants=registration.get("variants", None),
+    )
     return sql
 
 
@@ -308,10 +318,12 @@ def sql_convert_restrictions(class_name, restrictions):
         build_registration.restriction_to_registration(class_name, r)
         for r in restrictions
     ]
-    sql_restrictions = [sql_get_registration(
-        class_name, None, None, None, None,
-        sql_convert_registration(r, class_name)
-    ) for r in registrations]
+    sql_restrictions = [
+        sql_get_registration(
+            class_name, None, None, None, None, sql_convert_registration(r, class_name)
+        )
+        for r in registrations
+    ]
     return sql_restrictions
 
 
@@ -326,7 +338,7 @@ def get_restrictions_as_sql(user, class_name, operation):
         return None
 
     sql_restrictions = sql_convert_restrictions(class_name, restrictions)
-    sql_template = jinja_env.get_template('restrictions.sql')
+    sql_template = jinja_env.get_template("restrictions.sql")
     sql = sql_template.render(restrictions=sql_restrictions)
     return sql
 
@@ -338,14 +350,19 @@ def get_restrictions_as_sql(user, class_name, operation):
 
 def object_exists(class_name, uuid):
     """Check if an object with this class name and UUID exists already."""
-    sql = ("select (%s IN (SELECT DISTINCT " + class_name +  # noqa
-           "_id from " + class_name + "_registrering))")
+    sql = (
+        "select (%s IN (SELECT DISTINCT "
+        + class_name
+        + "_id from "  # noqa
+        + class_name
+        + "_registrering))"
+    )
 
     with get_connection() as conn, conn.cursor() as cursor:
         try:
             cursor.execute(sql, (uuid,))
         except psycopg2.Error as e:
-            if e.pgcode[:2] == 'MO':
+            if e.pgcode[:2] == "MO":
                 status_code = int(e.pgcode[2:])
                 raise DBException(status_code, e.pgerror)
             else:
@@ -373,7 +390,7 @@ where de.indhold = %s"""
         try:
             cursor.execute(sql, (content_url,))
         except psycopg2.Error as e:
-            if e.pgcode[:2] == 'MO':
+            if e.pgcode[:2] == "MO":
                 status_code = int(e.pgcode[2:])
                 raise DBException(status_code, e.pgerror)
             else:
@@ -384,8 +401,7 @@ where de.indhold = %s"""
     return result
 
 
-def create_or_import_object(class_name, note, registration,
-                            uuid=None):
+def create_or_import_object(class_name, note, registration, uuid=None):
     """Create a new object by calling the corresponding stored procedure.
 
     Create a new object by calling actual_state_create_or_import_{class_name}.
@@ -402,16 +418,15 @@ def create_or_import_object(class_name, note, registration,
     user_ref = get_authenticated_user()
 
     registration = sql_convert_registration(registration, class_name)
-    sql_registration = sql_get_registration(class_name, None, life_cycle_code,
-                                            user_ref, note, registration)
-
-    sql_restrictions = get_restrictions_as_sql(
-        get_authenticated_user(),
-        class_name,
-        Operation.CREATE
+    sql_registration = sql_get_registration(
+        class_name, None, life_cycle_code, user_ref, note, registration
     )
 
-    sql_template = jinja_env.get_template('create_object.sql')
+    sql_restrictions = get_restrictions_as_sql(
+        get_authenticated_user(), class_name, Operation.CREATE
+    )
+
+    sql_template = jinja_env.get_template("create_object.sql")
     sql = sql_template.render(
         class_name=class_name,
         uuid=uuid,
@@ -419,14 +434,15 @@ def create_or_import_object(class_name, note, registration,
         user_ref=user_ref,
         note=note,
         registration=sql_registration,
-        restrictions=sql_restrictions)
+        restrictions=sql_restrictions,
+    )
 
     # Call Postgres! Return OK or not accordingly
     with get_connection() as conn, conn.cursor() as cursor:
         try:
             cursor.execute(sql)
         except psycopg2.Error as e:
-            if e.pgcode[:2] == 'MO':
+            if e.pgcode[:2] == "MO":
                 status_code = int(e.pgcode[2:])
                 raise DBException(status_code, e.pgerror)
             else:
@@ -444,9 +460,7 @@ def delete_object(class_name, registration, note, uuid):
     """
 
     if not object_exists(class_name, uuid):
-        raise NotFoundException(
-            "No {} with ID {} found.".format(class_name, uuid)
-        )
+        raise NotFoundException("No {} with ID {} found.".format(class_name, uuid))
 
     life_cycle_code = Livscyklus.SLETTET.value
 
@@ -455,12 +469,10 @@ def delete_object(class_name, registration, note, uuid):
         return
 
     user_ref = get_authenticated_user()
-    sql_template = jinja_env.get_template('update_object.sql')
+    sql_template = jinja_env.get_template("update_object.sql")
     registration = sql_convert_registration(registration, class_name)
     sql_restrictions = get_restrictions_as_sql(
-        get_authenticated_user(),
-        class_name,
-        Operation.DELETE
+        get_authenticated_user(), class_name, Operation.DELETE
     )
     sql = sql_template.render(
         class_name=class_name,
@@ -472,7 +484,7 @@ def delete_object(class_name, registration, note, uuid):
         attributes=registration["attributes"],
         relations=registration["relations"],
         variants=registration.get("variants", None),
-        restrictions=sql_restrictions
+        restrictions=sql_restrictions,
     )
 
     # Call Postgres! Return OK or not accordingly
@@ -480,7 +492,7 @@ def delete_object(class_name, registration, note, uuid):
         try:
             cursor.execute(sql)
         except psycopg2.Error as e:
-            if e.pgcode[:2] == 'MO':
+            if e.pgcode[:2] == "MO":
                 status_code = int(e.pgcode[2:])
                 raise DBException(status_code, e.pgerror)
             else:
@@ -496,12 +508,10 @@ def passivate_object(class_name, note, registration, uuid):
 
     user_ref = get_authenticated_user()
     life_cycle_code = Livscyklus.PASSIVERET.value
-    sql_template = jinja_env.get_template('update_object.sql')
+    sql_template = jinja_env.get_template("update_object.sql")
     registration = sql_convert_registration(registration, class_name)
     sql_restrictions = get_restrictions_as_sql(
-        get_authenticated_user(),
-        class_name,
-        Operation.PASSIVATE
+        get_authenticated_user(), class_name, Operation.PASSIVATE
     )
     sql = sql_template.render(
         class_name=class_name,
@@ -513,7 +523,7 @@ def passivate_object(class_name, note, registration, uuid):
         attributes=registration["attributes"],
         relations=registration["relations"],
         variants=registration.get("variants", None),
-        restrictions=sql_restrictions
+        restrictions=sql_restrictions,
     )
 
     # Call PostgreSQL
@@ -521,7 +531,7 @@ def passivate_object(class_name, note, registration, uuid):
         try:
             cursor.execute(sql)
         except psycopg2.Error as e:
-            if e.pgcode[:2] == 'MO':
+            if e.pgcode[:2] == "MO":
                 status_code = int(e.pgcode[2:])
                 raise DBException(status_code, e.pgerror)
             else:
@@ -532,20 +542,19 @@ def passivate_object(class_name, note, registration, uuid):
     return output[0]
 
 
-def update_object(class_name, note, registration, uuid=None,
-                  life_cycle_code=Livscyklus.RETTET.value):
+def update_object(
+    class_name, note, registration, uuid=None, life_cycle_code=Livscyklus.RETTET.value
+):
     """Update object with the partial data supplied."""
     user_ref = get_authenticated_user()
 
     registration = sql_convert_registration(registration, class_name)
 
     sql_restrictions = get_restrictions_as_sql(
-        get_authenticated_user(),
-        class_name,
-        Operation.UPDATE
+        get_authenticated_user(), class_name, Operation.UPDATE
     )
 
-    sql_template = jinja_env.get_template('update_object.sql')
+    sql_template = jinja_env.get_template("update_object.sql")
     sql = sql_template.render(
         class_name=class_name,
         uuid=uuid,
@@ -556,7 +565,8 @@ def update_object(class_name, note, registration, uuid=None,
         attributes=registration["attributes"],
         relations=registration["relations"],
         variants=registration.get("variants", None),
-        restrictions=sql_restrictions)
+        restrictions=sql_restrictions,
+    )
 
     # Call PostgreSQL
     with get_connection() as conn, conn.cursor() as cursor:
@@ -565,14 +575,15 @@ def update_object(class_name, note, registration, uuid=None,
             cursor.fetchone()
         except psycopg2.Error as e:
             noop_msg = (
-                'Aborted updating {} with id [{}] as the given data, '
-                'does not give raise to a new registration.'.format(class_name.lower(),
-                                                                    uuid)
+                "Aborted updating {} with id [{}] as the given data, "
+                "does not give raise to a new registration.".format(
+                    class_name.lower(), uuid
+                )
             )
 
             if e.pgerror.startswith(noop_msg):
                 return uuid
-            elif e.pgcode[:2] == 'MO':
+            elif e.pgcode[:2] == "MO":
                 status_code = int(e.pgcode[2:])
                 raise DBException(status_code, e.pgerror)
             else:
@@ -581,8 +592,9 @@ def update_object(class_name, note, registration, uuid=None,
     return uuid
 
 
-def list_and_consolidate_objects(class_name, uuid, virkning_fra, virkning_til,
-                                 registreret_fra, registreret_til):
+def list_and_consolidate_objects(
+    class_name, uuid, virkning_fra, virkning_til, registreret_fra, registreret_til
+):
     """List objects with the given uuids, consolidating the 'virkninger' and
     optionally filtering by the given virkning and registrering periods."""
     output = list_objects(
@@ -591,30 +603,27 @@ def list_and_consolidate_objects(class_name, uuid, virkning_fra, virkning_til,
         virkning_fra="-infinity",
         virkning_til="infinity",
         registreret_fra=registreret_fra,
-        registreret_til=registreret_til
+        registreret_til=registreret_til,
     )
     return _consolidate_and_trim_object_virkninger(
-        output, valid_from=virkning_fra, valid_to=virkning_til)
+        output, valid_from=virkning_fra, valid_to=virkning_til
+    )
 
 
-def list_objects(class_name, uuid, virkning_fra, virkning_til,
-                 registreret_fra, registreret_til):
+def list_objects(
+    class_name, uuid, virkning_fra, virkning_til, registreret_fra, registreret_til
+):
     """List objects with the given uuids, optionally filtering by the given
     virkning and registering periods."""
     assert isinstance(uuid, list) or not uuid
 
-    sql_template = jinja_env.get_template('list_objects.sql')
+    sql_template = jinja_env.get_template("list_objects.sql")
 
     sql_restrictions = get_restrictions_as_sql(
-        get_authenticated_user(),
-        class_name,
-        Operation.READ
+        get_authenticated_user(), class_name, Operation.READ
     )
 
-    sql = sql_template.render(
-        class_name=class_name,
-        restrictions=sql_restrictions
-    )
+    sql = sql_template.render(class_name=class_name, restrictions=sql_restrictions)
 
     registration_period = None
     if registreret_fra is not None or registreret_til is not None:
@@ -622,15 +631,16 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
 
     with get_connection() as conn, conn.cursor() as cursor:
         try:
-            cursor.execute(sql, {
-                'uuid': uuid,
-                'registrering_tstzrange': registration_period,
-                'virkning_tstzrange': DateTimeTZRange(
-                    virkning_fra, virkning_til
-                )
-            })
+            cursor.execute(
+                sql,
+                {
+                    "uuid": uuid,
+                    "registrering_tstzrange": registration_period,
+                    "virkning_tstzrange": DateTimeTZRange(virkning_fra, virkning_til),
+                },
+            )
         except psycopg2.Error as e:
-            if e.pgcode[:2] == 'MO':
+            if e.pgcode[:2] == "MO":
                 status_code = int(e.pgcode[2:])
                 raise DBException(status_code, e.pgerror)
             else:
@@ -640,17 +650,16 @@ def list_objects(class_name, uuid, virkning_fra, virkning_til,
 
     if not output:
         # nothing found
-        raise NotFoundException("{0} with UUID {1} not found.".format(
-            class_name, uuid
-        ))
+        raise NotFoundException("{0} with UUID {1} not found.".format(class_name, uuid))
     ret = filter_json_output(output)
     return ret
 
 
 def filter_json_output(output):
     """Filter the JSON output returned from the DB-layer."""
-    return transform_relations(transform_virkning(filter_empty(
-        simplify_cleared_wrappers(output))))
+    return transform_relations(
+        transform_virkning(filter_empty(simplify_cleared_wrappers(output)))
+    )
 
 
 def simplify_cleared_wrappers(o):
@@ -679,9 +688,9 @@ def transform_virkning(o):
     if isinstance(o, dict):
         if "timeperiod" in o:
             # Handle clearable wrapper db-types.
-            f, t = o["timeperiod"][1:-1].split(',')
-            from_included = o["timeperiod"][0] == '['
-            to_included = o["timeperiod"][-1] == ']'
+            f, t = o["timeperiod"][1:-1].split(",")
+            from_included = o["timeperiod"][0] == "["
+            to_included = o["timeperiod"][-1] == "]"
 
             # Get rid of quotes
             if f[0] == '"':
@@ -689,8 +698,10 @@ def transform_virkning(o):
             if t[0] == '"':
                 t = t[1:-1]
             items = list(o.items()) + [
-                ('from', f), ('to', t), ("from_included", from_included),
-                ("to_included", to_included)
+                ("from", f),
+                ("to", t),
+                ("from_included", from_included),
+                ("to_included", to_included),
             ]
             return {k: v for k, v in items if k != "timeperiod"}
         else:
@@ -736,8 +747,9 @@ def transform_relations(o):
     functions.
     """
     if isinstance(o, dict):
-        if "relationer" in o and (isinstance(o["relationer"], list) or
-                                  isinstance(o["relationer"], tuple)):
+        if "relationer" in o and (
+            isinstance(o["relationer"], list) or isinstance(o["relationer"], tuple)
+        ):
             relations = o["relationer"]
             rel_dict = {}
             for rel in relations:
@@ -756,9 +768,9 @@ def transform_relations(o):
         return o
 
 
-def _consolidate_and_trim_object_virkninger(obj,
-                                            valid_from='-infinity',
-                                            valid_to='infinity'):
+def _consolidate_and_trim_object_virkninger(
+    obj, valid_from="-infinity", valid_to="infinity"
+):
     """
     Read a LoRa object and consolidate multiple sequential LoRa virkning
     objects that could have been represented by one object.
@@ -775,16 +787,15 @@ def _consolidate_and_trim_object_virkninger(obj,
     new_obj = copy.deepcopy(obj)
 
     for result in new_obj[0]:
-        registration = result['registreringer'][0]
-        for category_key in ['attributter', 'relationer', 'tilstande']:
+        registration = result["registreringer"][0]
+        for category_key in ["attributter", "relationer", "tilstande"]:
             category = registration.get(category_key)
             if not category:
                 continue
 
             for key in list(category.keys()):
                 virkninger = _consolidate_virkninger(category[key])
-                category[key] = _trim_virkninger(virkninger, valid_from,
-                                                 valid_to)
+                category[key] = _trim_virkninger(virkninger, valid_from, valid_to)
 
                 # If no virkninger are left after trimming, delete the key
                 if not category[key]:
@@ -814,22 +825,21 @@ def _consolidate_virkninger(virkninger_list):
     virkning_map = collections.OrderedDict()
     for virkning in virkninger_list:
         virkning_copy = copy.copy(virkning)
-        del virkning_copy['virkning']
+        del virkning_copy["virkning"]
         virkning_key = tuple(virkning_copy.items())
         virkning_map.setdefault(virkning_key, []).append(virkning)
 
     new_virkninger = []
     for v in virkning_map.values():
-        sorted_virkninger = sorted(v,
-                                   key=lambda x: x.get('virkning').get('from'))
+        sorted_virkninger = sorted(v, key=lambda x: x.get("virkning").get("from"))
 
         current_virkning = copy.deepcopy(sorted_virkninger[0])
 
         for next_virkning in sorted_virkninger[1:]:
             # Postgres always returns timestamps in the same format with the
             # same timezone, so a naive comparison is safe here.
-            if current_virkning['virkning']['to'] == next_virkning['virkning']['from']:
-                current_virkning['virkning']['to'] = next_virkning['virkning']['to']
+            if current_virkning["virkning"]["to"] == next_virkning["virkning"]["from"]:
+                current_virkning["virkning"]["to"] = next_virkning["virkning"]["to"]
             else:
                 new_virkninger.append(current_virkning)
                 current_virkning = next_virkning
@@ -838,11 +848,12 @@ def _consolidate_virkninger(virkninger_list):
     return new_virkninger
 
 
-def _parse_timestamp(timestamp: typing.Union[datetime.datetime, str]
-                     ) -> datetime.datetime:
-    if timestamp == 'infinity':
+def _parse_timestamp(
+    timestamp: typing.Union[datetime.datetime, str]
+) -> datetime.datetime:
+    if timestamp == "infinity":
         dt = datetime.datetime.max
-    elif timestamp == '-infinity':
+    elif timestamp == "-infinity":
         dt = datetime.datetime.min
     elif type(timestamp) == str:
         dt = dateutil.parser.isoparse(timestamp)
@@ -866,10 +877,10 @@ def _trim_virkninger(virkninger_list, valid_from, valid_to):
     valid_to = _parse_timestamp(valid_to)
 
     def filter_fn(virkning):
-        virkning_from = _parse_timestamp(virkning['virkning']['from'])
-        from_included = virkning['virkning']['from_included']
-        virkning_to = _parse_timestamp(virkning['virkning']['to'])
-        to_included = virkning['virkning']['to_included']
+        virkning_from = _parse_timestamp(virkning["virkning"]["from"])
+        from_included = virkning["virkning"]["from_included"]
+        virkning_to = _parse_timestamp(virkning["virkning"]["to"])
+        to_included = virkning["virkning"]["to_included"]
 
         if to_included and virkning_to < valid_from:
             return False
@@ -886,12 +897,22 @@ def _trim_virkninger(virkninger_list, valid_from, valid_to):
     return list(filter(filter_fn, virkninger_list))
 
 
-def search_objects(class_name, uuid, registration,
-                   virkning_fra=None, virkning_til=None,
-                   registreret_fra=None, registreret_til=None,
-                   life_cycle_code=None, user_ref=None, note=None,
-                   any_attr_value_arr=None, any_rel_uuid_arr=None,
-                   first_result=0, max_results=2147483647):
+def search_objects(
+    class_name,
+    uuid,
+    registration,
+    virkning_fra=None,
+    virkning_til=None,
+    registreret_fra=None,
+    registreret_til=None,
+    life_cycle_code=None,
+    user_ref=None,
+    note=None,
+    any_attr_value_arr=None,
+    any_rel_uuid_arr=None,
+    first_result=0,
+    max_results=2147483647,
+):
     if not any_attr_value_arr:
         any_attr_value_arr = []
     if not any_rel_uuid_arr:
@@ -904,20 +925,18 @@ def search_objects(class_name, uuid, registration,
         time_period = DateTimeTZRange(registreret_fra, registreret_til)
 
     registration = sql_convert_registration(registration, class_name)
-    sql_registration = sql_get_registration(class_name, time_period,
-                                            life_cycle_code, user_ref, note,
-                                            registration)
+    sql_registration = sql_get_registration(
+        class_name, time_period, life_cycle_code, user_ref, note, registration
+    )
 
-    sql_template = jinja_env.get_template('search_objects.sql')
+    sql_template = jinja_env.get_template("search_objects.sql")
 
     virkning_soeg = None
     if virkning_fra is not None or virkning_til is not None:
         virkning_soeg = DateTimeTZRange(virkning_fra, virkning_til)
 
     sql_restrictions = get_restrictions_as_sql(
-        get_authenticated_user(),
-        class_name,
-        Operation.READ
+        get_authenticated_user(), class_name, Operation.READ
     )
 
     sql = sql_template.render(
@@ -930,13 +949,13 @@ def search_objects(class_name, uuid, registration,
         max_results=max_results,
         virkning_soeg=virkning_soeg,
         # TODO: Get this into the SQL function signature!
-        restrictions=sql_restrictions
+        restrictions=sql_restrictions,
     )
     with get_connection() as conn, conn.cursor() as cursor:
         try:
             cursor.execute(sql)
         except psycopg2.Error as e:
-            if e.pgcode[:2] == 'MO':
+            if e.pgcode[:2] == "MO":
                 status_code = int(e.pgcode[2:])
                 raise DBException(status_code, e.pgerror)
             else:
@@ -952,6 +971,6 @@ def get_life_cycle_code(class_name, uuid):
     n1 = n + datetime.timedelta(seconds=1)
     regs = list_objects(class_name, [uuid], n, n1, None, None)
     reg = regs[0][0]
-    livscykluskode = reg['registreringer'][0]['livscykluskode']
+    livscykluskode = reg["registreringer"][0]["livscykluskode"]
 
     return livscykluskode

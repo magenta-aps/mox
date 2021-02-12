@@ -15,29 +15,22 @@ class TestCreateBruger(TestCreateObject):
                     {
                         "brugervendtnoegle": "bvn",
                         "integrationsdata": "data fra andet system",
-                        "virkning": self.standard_virkning1
+                        "virkning": self.standard_virkning1,
                     }
                 ]
             },
             "tilstande": {
                 "brugergyldighed": [
-                    {
-                        "gyldighed": "Aktiv",
-                        "virkning": self.standard_virkning1
-                    }
+                    {"gyldighed": "Aktiv", "virkning": self.standard_virkning1}
                 ]
-            }
+            },
         }
 
-        r = self.perform_request('/organisation/bruger', json=facet)
+        r = self.perform_request("/organisation/bruger", json=facet)
 
         # Check response
         self.assert201(r)
 
         # Check persisted data
-        facet['livscykluskode'] = 'Opstaaet'
-        self.assertQueryResponse(
-            '/organisation/bruger',
-            facet,
-            uuid=r.json['uuid']
-        )
+        facet["livscykluskode"] = "Opstaaet"
+        self.assertQueryResponse("/organisation/bruger", facet, uuid=r.json["uuid"])

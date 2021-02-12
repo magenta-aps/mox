@@ -17,20 +17,17 @@ class TestCreateOrganisation(TestCreateObject):
                     {
                         "brugervendtnoegle": "bvn1",
                         "organisationsnavn": "orgName1",
-                        "virkning": self.standard_virkning1
+                        "virkning": self.standard_virkning1,
                     }
                 ]
             },
             "tilstande": {
                 "organisationgyldighed": [
-                    {
-                        "gyldighed": "Aktiv",
-                        "virkning": self.standard_virkning1
-                    }
+                    {"gyldighed": "Aktiv", "virkning": self.standard_virkning1}
                 ]
             },
         }
-        self.URL = '/organisation/organisation'
+        self.URL = "/organisation/organisation"
 
     def test_no_note_valid_bvn_no_org_name_no_relations(self):
         """
@@ -40,8 +37,7 @@ class TestCreateOrganisation(TestCreateObject):
         """
 
         # Create organisation
-        del self.org['attributter']['organisationegenskaber'][0][
-            'organisationsnavn']
+        del self.org["attributter"]["organisationegenskaber"][0]["organisationsnavn"]
 
         r = self.perform_request(self.URL, json=self.org)
 
@@ -49,11 +45,9 @@ class TestCreateOrganisation(TestCreateObject):
         self.assert201(r)
 
         # Check persisted data
-        self.org['livscykluskode'] = 'Opstaaet'
+        self.org["livscykluskode"] = "Opstaaet"
         self.assertQueryResponse(
-            '/organisation/organisation',
-            self.org,
-            uuid=r.json['uuid']
+            "/organisation/organisation", self.org, uuid=r.json["uuid"]
         )
 
     def test_valid_note_valid_org_name_two_org_egenskaber(self):
@@ -64,12 +58,12 @@ class TestCreateOrganisation(TestCreateObject):
         """
 
         # Create organisation
-        self.org['note'] = 'This is a note'
-        self.org['attributter']['organisationegenskaber'].append(
+        self.org["note"] = "This is a note"
+        self.org["attributter"]["organisationegenskaber"].append(
             {
                 "brugervendtnoegle": "bvn2",
                 "organisationsnavn": "orgName2",
-                "virkning": self.standard_virkning2
+                "virkning": self.standard_virkning2,
             }
         )
         r = self.perform_request(self.URL, json=self.org)
@@ -78,13 +72,13 @@ class TestCreateOrganisation(TestCreateObject):
         self.assert201(r)
 
         # Check persisted data
-        self.org['livscykluskode'] = 'Opstaaet'
+        self.org["livscykluskode"] = "Opstaaet"
         self.assertQueryResponse(
-            '/organisation/organisation',
+            "/organisation/organisation",
             self.org,
-            uuid=r.json['uuid'],
-            virkningfra='-infinity',
-            virkningtil='infinity'
+            uuid=r.json["uuid"],
+            virkningfra="-infinity",
+            virkningtil="infinity",
         )
 
     def test_invalid_note(self):
@@ -94,7 +88,7 @@ class TestCreateOrganisation(TestCreateObject):
         further details
         """
 
-        self.org['note'] = ['Note cannot be e.g. a list']
+        self.org["note"] = ["Note cannot be e.g. a list"]
         self.assertRequestFails(self.URL, 400, json=self.org)
 
     def test_bvn_missing(self):
@@ -104,8 +98,7 @@ class TestCreateOrganisation(TestCreateObject):
         further details
         """
 
-        del self.org['attributter']['organisationegenskaber'][0][
-            'brugervendtnoegle']
+        del self.org["attributter"]["organisationegenskaber"][0]["brugervendtnoegle"]
         self.assertRequestFails(self.URL, 400, json=self.org)
 
     def test_bvn_not_string(self):
@@ -115,8 +108,9 @@ class TestCreateOrganisation(TestCreateObject):
         further details
         """
 
-        self.org['attributter']['organisationegenskaber'][0][
-            'brugervendtnoegle'] = ['BVN cannot be a list']
+        self.org["attributter"]["organisationegenskaber"][0]["brugervendtnoegle"] = [
+            "BVN cannot be a list"
+        ]
         self.assertRequestFails(self.URL, 400, json=self.org)
 
     def test_org_name_not_string(self):
@@ -126,8 +120,9 @@ class TestCreateOrganisation(TestCreateObject):
         further details
         """
 
-        self.org['attributter']['organisationegenskaber'][0][
-            'organisationnavn'] = ['Organisationnavn cannot be a list']
+        self.org["attributter"]["organisationegenskaber"][0]["organisationnavn"] = [
+            "Organisationnavn cannot be a list"
+        ]
         self.assertRequestFails(self.URL, 400, json=self.org)
 
     def test_virkning_missing_attributter(self):
@@ -137,7 +132,7 @@ class TestCreateOrganisation(TestCreateObject):
         further details
         """
 
-        del self.org['attributter']['organisationegenskaber'][0]['virkning']
+        del self.org["attributter"]["organisationegenskaber"][0]["virkning"]
         self.assertRequestFails(self.URL, 400, json=self.org)
 
     def test_org_egenskaber_missing(self):
@@ -147,7 +142,7 @@ class TestCreateOrganisation(TestCreateObject):
         further details
         """
 
-        self.org['attributter']['organisationegenskaber'].pop()
+        self.org["attributter"]["organisationegenskaber"].pop()
         self.assertRequestFails(self.URL, 400, json=self.org)
 
     def test_virkning_malformed_attributter(self):
@@ -157,7 +152,7 @@ class TestCreateOrganisation(TestCreateObject):
         further details
         """
 
-        self.org['attributter']['organisationegenskaber'][0]['virkning'] = {
+        self.org["attributter"]["organisationegenskaber"][0]["virkning"] = {
             "from": "xyz",
             "to": "xyz",
         }
@@ -172,7 +167,7 @@ class TestCreateOrganisation(TestCreateObject):
         further details
         """
 
-        self.org['attributter']['organisationegenskaber'].append(
+        self.org["attributter"]["organisationegenskaber"].append(
             {
                 "brugervendtnoegle": "bvn1",
                 "organisationsnavn": "orgName2",
@@ -180,8 +175,8 @@ class TestCreateOrganisation(TestCreateObject):
                     "from": "2015-01-01 12:00:00+01",
                     "from_included": True,
                     "to": "2030-01-01 12:00:00+01",
-                    "to_included": False
-                }
+                    "to_included": False,
+                },
             }
         )
         self.assertRequestFails(self.URL, 400, json=self.org)
@@ -203,7 +198,7 @@ class TestCreateOrganisation(TestCreateObject):
         further details
         """
 
-        del self.org['attributter']
+        del self.org["attributter"]
         self.assertRequestFails(self.URL, 400, json=self.org)
 
     @unittest.expectedFailure
@@ -215,8 +210,12 @@ class TestCreateOrganisation(TestCreateObject):
         further details
         """
 
-        org = json.dumps(self.org)[:-1] + ',"attributter":' + json.dumps(
-            self.org['attributter']) + '}'
+        org = (
+            json.dumps(self.org)[:-1]
+            + ',"attributter":'
+            + json.dumps(self.org["attributter"])
+            + "}"
+        )
         self.org = json.loads(org)
 
         self.assertRequestFails(self.URL, 400, json=self.org)
@@ -229,12 +228,9 @@ class TestCreateOrganisation(TestCreateObject):
         """
 
         # Create organisation
-        self.org['note'] = 'This is a note'
-        self.org['tilstande']['organisationgyldighed'].append(
-            {
-                "gyldighed": "Inaktiv",
-                "virkning": self.standard_virkning2
-            }
+        self.org["note"] = "This is a note"
+        self.org["tilstande"]["organisationgyldighed"].append(
+            {"gyldighed": "Inaktiv", "virkning": self.standard_virkning2}
         )
         r = self.perform_request(self.URL, json=self.org)
 
@@ -242,13 +238,13 @@ class TestCreateOrganisation(TestCreateObject):
         self.assert201(r)
 
         # Check persisted data
-        self.org['livscykluskode'] = 'Opstaaet'
+        self.org["livscykluskode"] = "Opstaaet"
         self.assertQueryResponse(
-            '/organisation/organisation',
+            "/organisation/organisation",
             self.org,
-            uuid=r.json['uuid'],
-            virkningfra='-infinity',
-            virkningtil='infinity'
+            uuid=r.json["uuid"],
+            virkningfra="-infinity",
+            virkningtil="infinity",
         )
 
     def test_tilstande_missing(self):
@@ -258,7 +254,7 @@ class TestCreateOrganisation(TestCreateObject):
         further details
         """
 
-        del self.org['tilstande']
+        del self.org["tilstande"]
         self.assertRequestFails(self.URL, 400, json=self.org)
 
     @unittest.expectedFailure
@@ -270,8 +266,12 @@ class TestCreateOrganisation(TestCreateObject):
         further details
         """
 
-        org = json.dumps(self.org)[:-1] + ',"tilstande":' + json.dumps(
-            self.org['tilstande']) + '}'
+        org = (
+            json.dumps(self.org)[:-1]
+            + ',"tilstande":'
+            + json.dumps(self.org["tilstande"])
+            + "}"
+        )
         self.org = json.loads(org)
 
         self.assertRequestFails(self.URL, 400, json=self.org)
@@ -283,7 +283,7 @@ class TestCreateOrganisation(TestCreateObject):
         further details
         """
 
-        self.org['tilstande']['organisationgyldighed'].pop()
+        self.org["tilstande"]["organisationgyldighed"].pop()
         self.assertRequestFails(self.URL, 400, json=self.org)
 
     def test_gyldighed_invalid(self):
@@ -293,8 +293,7 @@ class TestCreateOrganisation(TestCreateObject):
         further details
         """
 
-        self.org['tilstande']['organisationgyldighed'][0][
-            'gyldighed'] = 'invalid'
+        self.org["tilstande"]["organisationgyldighed"][0]["gyldighed"] = "invalid"
         self.assertRequestFails(self.URL, 400, json=self.org)
 
     def test_gyldighed_missing(self):
@@ -304,7 +303,7 @@ class TestCreateOrganisation(TestCreateObject):
         further details
         """
 
-        del self.org['tilstande']['organisationgyldighed'][0]['gyldighed']
+        del self.org["tilstande"]["organisationgyldighed"][0]["gyldighed"]
         self.assertRequestFails(self.URL, 400, json=self.org)
 
     def test_virkning_missing_tilstande(self):
@@ -314,7 +313,7 @@ class TestCreateOrganisation(TestCreateObject):
         further details
         """
 
-        del self.org['tilstande']['organisationgyldighed'][0]['virkning']
+        del self.org["tilstande"]["organisationgyldighed"][0]["virkning"]
         self.assertRequestFails(self.URL, 400, json=self.org)
 
     def test_virkning_malformed_tilstande(self):
@@ -324,7 +323,7 @@ class TestCreateOrganisation(TestCreateObject):
         further details
         """
 
-        self.org['tilstande']['organisationgyldighed'][0]['virkning'] = {
+        self.org["tilstande"]["organisationgyldighed"][0]["virkning"] = {
             "from": "xyz",
             "to": "xyz",
         }
@@ -339,15 +338,15 @@ class TestCreateOrganisation(TestCreateObject):
         further details
         """
 
-        self.org['tilstande']['organisationgyldighed'].append(
+        self.org["tilstande"]["organisationgyldighed"].append(
             {
                 "gyldighed": "Inaktiv",
                 "virkning": {
                     "from": "2015-01-01 12:00:00+01",
                     "from_included": True,
                     "to": "2030-01-01 12:00:00+01",
-                    "to_included": False
-                }
+                    "to_included": False,
+                },
             }
         )
         self.assertRequestFails(self.URL, 400, json=self.org)
@@ -360,19 +359,17 @@ class TestCreateOrganisation(TestCreateObject):
         """
 
         # Create organisation
-        self.org['relationer'] = {}
+        self.org["relationer"] = {}
         r = self.perform_request(self.URL, json=self.org)
 
         # Check response
         self.assert201(r)
 
         # Check persisted data
-        self.org['livscykluskode'] = 'Opstaaet'
-        del self.org['relationer']
+        self.org["livscykluskode"] = "Opstaaet"
+        del self.org["relationer"]
         self.assertQueryResponse(
-            '/organisation/organisation',
-            self.org,
-            uuid=r.json['uuid']
+            "/organisation/organisation", self.org, uuid=r.json["uuid"]
         )
 
     def test_specific_relation_list_empty(self):
@@ -383,21 +380,17 @@ class TestCreateOrganisation(TestCreateObject):
         """
 
         # Create organisation
-        self.org['relationer'] = {
-            'overordnet': []
-        }
+        self.org["relationer"] = {"overordnet": []}
         r = self.perform_request(self.URL, json=self.org)
 
         # Check response
         self.assert201(r)
 
         # Check persisted data
-        self.org['livscykluskode'] = 'Opstaaet'
-        del self.org['relationer']
+        self.org["livscykluskode"] = "Opstaaet"
+        del self.org["relationer"]
         self.assertQueryResponse(
-            '/organisation/organisation',
-            self.org,
-            uuid=r.json['uuid']
+            "/organisation/organisation", self.org, uuid=r.json["uuid"]
         )
 
     def test_one_uuid_per_relation_reference_all_relation_names_tested(self):
@@ -414,46 +407,43 @@ class TestCreateOrganisation(TestCreateObject):
                     {
                         "brugervendtnoegle": "klasse1",
                         "titel": "dummy_klasse",
-                        "virkning": self.standard_virkning1
+                        "virkning": self.standard_virkning1,
                     }
                 ]
             },
             "tilstande": {
                 "klassepubliceret": [
-                    {
-                        "publiceret": "Publiceret",
-                        "virkning": self.standard_virkning1
-                    }
+                    {"publiceret": "Publiceret", "virkning": self.standard_virkning1}
                 ]
-            }
+            },
         }
-        r = self.perform_request('/klassifikation/klasse', json=klasse)
+        r = self.perform_request("/klassifikation/klasse", json=klasse)
         self.assert201(r)
 
         relationtype = copy.copy(self.reference)
-        relationtype['uuid'] = r.json['uuid']
+        relationtype["uuid"] = r.json["uuid"]
 
         # Create organisation
-        self.org['relationer'] = {
-            'adresser': [self.reference],
-            'ansatte': [self.reference],
-            'branche': [self.reference],
-            'myndighed': [self.reference],
-            'myndighedstype': [relationtype],
-            'opgaver': [self.reference],
-            'overordnet': [self.reference],
-            'produktionsenhed': [self.reference],
-            'skatteenhed': [self.reference],
-            'tilhoerer': [self.reference],
-            'tilknyttedebrugere': [self.reference],
-            'tilknyttedeenheder': [self.reference],
-            'tilknyttedefunktioner': [self.reference],
-            'tilknyttedeinteressefaellesskaber': [self.reference],
-            'tilknyttedeorganisationer': [self.reference],
-            'tilknyttedepersoner': [self.reference],
-            'tilknyttedeitsystemer': [self.reference],
-            'virksomhed': [self.reference],
-            'virksomhedstype': [relationtype]
+        self.org["relationer"] = {
+            "adresser": [self.reference],
+            "ansatte": [self.reference],
+            "branche": [self.reference],
+            "myndighed": [self.reference],
+            "myndighedstype": [relationtype],
+            "opgaver": [self.reference],
+            "overordnet": [self.reference],
+            "produktionsenhed": [self.reference],
+            "skatteenhed": [self.reference],
+            "tilhoerer": [self.reference],
+            "tilknyttedebrugere": [self.reference],
+            "tilknyttedeenheder": [self.reference],
+            "tilknyttedefunktioner": [self.reference],
+            "tilknyttedeinteressefaellesskaber": [self.reference],
+            "tilknyttedeorganisationer": [self.reference],
+            "tilknyttedepersoner": [self.reference],
+            "tilknyttedeitsystemer": [self.reference],
+            "virksomhed": [self.reference],
+            "virksomhedstype": [relationtype],
         }
         r = self.perform_request(self.URL, json=self.org)
 
@@ -461,11 +451,9 @@ class TestCreateOrganisation(TestCreateObject):
         self.assert201(r)
 
         # Check persisted data
-        self.org['livscykluskode'] = 'Opstaaet'
+        self.org["livscykluskode"] = "Opstaaet"
         self.assertQueryResponse(
-            '/organisation/organisation',
-            self.org,
-            uuid=r.json['uuid']
+            "/organisation/organisation", self.org, uuid=r.json["uuid"]
         )
 
     def test_adding_two_relations(self):
@@ -479,13 +467,13 @@ class TestCreateOrganisation(TestCreateObject):
         """
 
         # Create organisation
-        self.org['relationer'] = {
-            'adresser': [
+        self.org["relationer"] = {
+            "adresser": [
                 self.reference,
                 {
-                    'uuid': '10000000-0000-0000-0000-000000000000',
-                    'virkning': self.standard_virkning1
-                }
+                    "uuid": "10000000-0000-0000-0000-000000000000",
+                    "virkning": self.standard_virkning1,
+                },
             ]
         }
         r = self.perform_request(self.URL, json=self.org)
@@ -494,11 +482,9 @@ class TestCreateOrganisation(TestCreateObject):
         self.assert201(r)
 
         # Check persisted data
-        self.org['livscykluskode'] = 'Opstaaet'
+        self.org["livscykluskode"] = "Opstaaet"
         self.assertQueryResponse(
-            '/organisation/organisation',
-            self.org,
-            uuid=r.json['uuid']
+            "/organisation/organisation", self.org, uuid=r.json["uuid"]
         )
 
     def test_reference_in_relation_must_be_an_uuid(self):
@@ -508,13 +494,8 @@ class TestCreateOrganisation(TestCreateObject):
         further details
         """
 
-        self.org['relationer'] = {
-            'adresser': [
-                {
-                    'uuid': 'not an UUID',
-                    'virkning': self.standard_virkning1
-                }
-            ]
+        self.org["relationer"] = {
+            "adresser": [{"uuid": "not an UUID", "virkning": self.standard_virkning1}]
         }
         self.assertRequestFails(self.URL, 400, json=self.org)
 
@@ -525,9 +506,7 @@ class TestCreateOrganisation(TestCreateObject):
         further details
         """
 
-        self.org['relationer'] = {
-            'unknown': [self.reference]
-        }
+        self.org["relationer"] = {"unknown": [self.reference]}
         self.assertRequestFails(self.URL, 400, json=self.org)
 
     @unittest.expectedFailure
@@ -539,11 +518,13 @@ class TestCreateOrganisation(TestCreateObject):
         further details
         """
 
-        self.org['relationer'] = {
-            'adresser': [self.reference]
-        }
-        org = json.dumps(self.org)[:-1] + ',"relationer":' + json.dumps(
-            self.org['relationer']) + '}'
+        self.org["relationer"] = {"adresser": [self.reference]}
+        org = (
+            json.dumps(self.org)[:-1]
+            + ',"relationer":'
+            + json.dumps(self.org["relationer"])
+            + "}"
+        )
         self.org = json.loads(org)
 
         self.assertRequestFails(self.URL, 400, json=self.org)

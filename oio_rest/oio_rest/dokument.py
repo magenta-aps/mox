@@ -43,26 +43,21 @@ class Dokument(OIORestObject):
         """Set up API with correct database access functions."""
         super(Dokument, cls).create_api(hierarchy, flask, base_url)
         hierarchy = hierarchy.lower()
-        class_url = "{0}/{1}/{2}".format(base_url,
-                                         hierarchy,
-                                         cls.__name__.lower())
+        class_url = "{0}/{1}/{2}".format(base_url, hierarchy, cls.__name__.lower())
         uuid_regex = (
             "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}"
             "-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
         )
-        date_path_regex = (
-            "\\d{4}/\\d{2}/\\d{2}/\\d{2}/\\d{2}/" + uuid_regex + ".bin"
-        )
+        date_path_regex = "\\d{4}/\\d{2}/\\d{2}/\\d{2}/\\d{2}/" + uuid_regex + ".bin"
         download_content_url = '{0}/<regex("{1}"):content_path>'.format(
-            class_url,
-            date_path_regex
+            class_url, date_path_regex
         )
 
         flask.add_url_rule(
             download_content_url,
-            '_'.join([cls.__name__, 'download_content']),
+            "_".join([cls.__name__, "download_content"]),
             cls.download_content,
-            methods=['GET'],
+            methods=["GET"],
         )
 
     @classmethod
@@ -71,10 +66,12 @@ class Dokument(OIORestObject):
         states = input.get("tilstande", {})
         relations = input.get("relationer", {})
         variants = input.get("varianter", [])
-        return {"states": states,
-                "attributes": attributes,
-                "relations": relations,
-                "variants": variants}
+        return {
+            "states": states,
+            "attributes": attributes,
+            "relations": relations,
+            "variants": variants,
+        }
 
     @classmethod
     def relation_names(cls):
@@ -84,7 +81,7 @@ class Dokument(OIORestObject):
 
     @classmethod
     def attribute_names(cls):
-        return super().attribute_names() | {'varianttekst', 'deltekst'}
+        return super().attribute_names() | {"varianttekst", "deltekst"}
 
 
 class DokumentHierarki(OIOStandardHierarchy):

@@ -12,7 +12,9 @@ from mock import MagicMock, call, patch
 from oio_rest import db
 from oio_rest import app
 from oio_rest.custom_exceptions import (
-    BadRequestException, DBException, NotFoundException
+    BadRequestException,
+    DBException,
+    NotFoundException,
 )
 
 
@@ -20,7 +22,7 @@ class TestDB(flask_testing.TestCase):
     def create_app(self):
         return app
 
-    @patch('oio_rest.db.get_relation_field_type')
+    @patch("oio_rest.db.get_relation_field_type")
     def test_convert_relation_value_default(self, mock_get_rel):
         mock_get_rel.return_value = "not a known field type"
 
@@ -30,7 +32,7 @@ class TestDB(flask_testing.TestCase):
 
         self.assertEqual(value, actual_value)
 
-    @patch('oio_rest.db.get_relation_field_type')
+    @patch("oio_rest.db.get_relation_field_type")
     def test_convert_relation_value_journalnotat(self, mock_get_rel):
         from oio_rest.db.db_helpers import JournalNotat
 
@@ -50,11 +52,9 @@ class TestDB(flask_testing.TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.db.get_relation_field_type')
+    @patch("oio_rest.db.get_relation_field_type")
     def test_convert_relation_value_journaldokument(self, mock_get_rel):
-        from oio_rest.db.db_helpers import (
-            JournalDokument, OffentlighedUndtaget
-        )
+        from oio_rest.db.db_helpers import JournalDokument, OffentlighedUndtaget
 
         # Arrange
         mock_get_rel.return_value = "journaldokument"
@@ -67,8 +67,8 @@ class TestDB(flask_testing.TestCase):
             "dokumenttitel": dokumenttitel,
             "offentlighedundtaget": {
                 "alternativtitel": alternativtitel,
-                "hjemmel": hjemmel
-            }
+                "hjemmel": hjemmel,
+            },
         }
 
         offentlighedundtaget = OffentlighedUndtaget(alternativtitel, hjemmel)
@@ -81,7 +81,7 @@ class TestDB(flask_testing.TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.db.get_relation_field_type')
+    @patch("oio_rest.db.get_relation_field_type")
     def test_convert_relation_value_aktoerattr(self, mock_get_rel):
         from oio_rest.db.db_helpers import AktoerAttr
 
@@ -100,8 +100,9 @@ class TestDB(flask_testing.TestCase):
             "repraesentation_urn": repraesentation_urn,
         }
 
-        expected_result = AktoerAttr(accepteret, obligatorisk,
-                                     repraesentation_uuid, repraesentation_urn)
+        expected_result = AktoerAttr(
+            accepteret, obligatorisk, repraesentation_uuid, repraesentation_urn
+        )
 
         # Act
         actual_result = db.convert_relation_value("test", "field", value)
@@ -109,7 +110,7 @@ class TestDB(flask_testing.TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.db.get_relation_field_type')
+    @patch("oio_rest.db.get_relation_field_type")
     def test_convert_relation_value_aktoerattr_no_value(self, mock_get_rel):
         # Arrange
         mock_get_rel.return_value = "aktoerattr"
@@ -124,7 +125,7 @@ class TestDB(flask_testing.TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.db.get_relation_field_type')
+    @patch("oio_rest.db.get_relation_field_type")
     def test_convert_relation_value_vaerdirelationattr(self, mock_get_rel):
         from oio_rest.db.db_helpers import VaerdiRelationAttr
 
@@ -134,10 +135,7 @@ class TestDB(flask_testing.TestCase):
         forventet = "FORVENTET"
         nominelvaerdi = "NOMINELVAERDI"
 
-        value = {
-            "forventet": forventet,
-            "nominelvaerdi": nominelvaerdi
-        }
+        value = {"forventet": forventet, "nominelvaerdi": nominelvaerdi}
 
         expected_result = VaerdiRelationAttr(forventet, nominelvaerdi)
 
@@ -147,10 +145,10 @@ class TestDB(flask_testing.TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.db.get_attribute_fields')
+    @patch("oio_rest.db.get_attribute_fields")
     def test_convert_attributes_no_value(self, mock_get_attr):
         # Arrange
-        mock_get_attr.return_value = ['field1', 'field2', 'field3', 'field4']
+        mock_get_attr.return_value = ["field1", "field2", "field3", "field4"]
 
         attributes = {}
 
@@ -160,29 +158,31 @@ class TestDB(flask_testing.TestCase):
         # Assert
         self.assertEqual(attributes, actual_result)
 
-    @patch('oio_rest.db.get_attribute_fields')
+    @patch("oio_rest.db.get_attribute_fields")
     def test_convert_attributes_is_correct_order(self, mock_get_attr):
         # Arrange
-        mock_get_attr.return_value = ['field1', 'field2', 'field3', 'field4']
+        mock_get_attr.return_value = ["field1", "field2", "field3", "field4"]
 
         attributes = {
-            'attribute': [
+            "attribute": [
                 {
-                    'field2': 'value2',
-                    'field3': 'value3',
-                    'field1': 'value1',
-                    'field4': 'value4'
+                    "field2": "value2",
+                    "field3": "value3",
+                    "field1": "value1",
+                    "field4": "value4",
                 }
             ]
         }
 
         expected_result = {
-            'attribute': [[
-                'value1',
-                'value2',
-                'value3',
-                'value4',
-            ]]
+            "attribute": [
+                [
+                    "value1",
+                    "value2",
+                    "value3",
+                    "value4",
+                ]
+            ]
         }
         # Act
         actual_result = db.convert_attributes(attributes)
@@ -190,25 +190,22 @@ class TestDB(flask_testing.TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.db.get_attribute_fields')
+    @patch("oio_rest.db.get_attribute_fields")
     def test_convert_attributes_adds_none_values(self, mock_get_attr):
         # Arrange
-        mock_get_attr.return_value = ['field1', 'field2', 'field3', 'field4']
+        mock_get_attr.return_value = ["field1", "field2", "field3", "field4"]
 
-        attributes = {
-            'attribute': [
-                {
-                }
-            ]
-        }
+        attributes = {"attribute": [{}]}
 
         expected_result = {
-            'attribute': [[
-                None,
-                None,
-                None,
-                None,
-            ]]
+            "attribute": [
+                [
+                    None,
+                    None,
+                    None,
+                    None,
+                ]
+            ]
         }
         # Act
         actual_result = db.convert_attributes(attributes)
@@ -216,38 +213,33 @@ class TestDB(flask_testing.TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.db.get_attribute_fields')
-    def test_convert_attributes_handles_multiple_attributes(self,
-                                                            mock_get_attr):
+    @patch("oio_rest.db.get_attribute_fields")
+    def test_convert_attributes_handles_multiple_attributes(self, mock_get_attr):
         # Arrange
-        mock_get_attr.return_value = ['field1', 'field2', 'field3', 'field4']
+        mock_get_attr.return_value = ["field1", "field2", "field3", "field4"]
 
         attributes = {
-            'attribute1': [
-                {
-                    'field2': 'value2'
-                }
-            ],
-            'attribute2': [
-                {
-                    'field3': 'value3'
-                }
-            ]
+            "attribute1": [{"field2": "value2"}],
+            "attribute2": [{"field3": "value3"}],
         }
 
         expected_result = {
-            'attribute1': [[
-                None,
-                'value2',
-                None,
-                None,
-            ]],
-            'attribute2': [[
-                None,
-                None,
-                'value3',
-                None,
-            ]]
+            "attribute1": [
+                [
+                    None,
+                    "value2",
+                    None,
+                    None,
+                ]
+            ],
+            "attribute2": [
+                [
+                    None,
+                    None,
+                    "value3",
+                    None,
+                ]
+            ],
         }
         # Act
         actual_result = db.convert_attributes(attributes)
@@ -255,9 +247,8 @@ class TestDB(flask_testing.TestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.db.convert_relation_value')
-    def test_convert_relations_no_value(self,
-                                        mock_conv_rel):
+    @patch("oio_rest.db.convert_relation_value")
+    def test_convert_relations_no_value(self, mock_conv_rel):
         # type: (MagicMock) -> None
         # Arrange
 
@@ -271,75 +262,48 @@ class TestDB(flask_testing.TestCase):
         # Assert
         self.assertEqual(relations, actual_result)
 
-    @patch('oio_rest.db.convert_relation_value')
-    def test_convert_relations_calls_convert_relation_value(self,
-                                                            mock_conv_rel):
+    @patch("oio_rest.db.convert_relation_value")
+    def test_convert_relations_calls_convert_relation_value(self, mock_conv_rel):
         # type: (MagicMock) -> None
         # Arrange
 
         mock_conv_rel.return_value = "value"
 
         relations = {
-            'relation1': [
-                {
-                    'field1': 'value1',
-                    'field2': 'value2'
-                }
-            ],
-            'relation2': [
-                {
-                    'field3': 'value3',
-                    'field4': 'value4'
-                }
-            ]
+            "relation1": [{"field1": "value1", "field2": "value2"}],
+            "relation2": [{"field3": "value3", "field4": "value4"}],
         }
 
         # Act
         db.convert_relations(relations, "classname")
 
         # Assert
-        self.assertIn(call("classname", "field1", "value1"),
-                      mock_conv_rel.call_args_list)
-        self.assertIn(call("classname", "field2", "value2"),
-                      mock_conv_rel.call_args_list)
-        self.assertIn(call("classname", "field3", "value3"),
-                      mock_conv_rel.call_args_list)
-        self.assertIn(call("classname", "field4", "value4"),
-                      mock_conv_rel.call_args_list)
+        self.assertIn(
+            call("classname", "field1", "value1"), mock_conv_rel.call_args_list
+        )
+        self.assertIn(
+            call("classname", "field2", "value2"), mock_conv_rel.call_args_list
+        )
+        self.assertIn(
+            call("classname", "field3", "value3"), mock_conv_rel.call_args_list
+        )
+        self.assertIn(
+            call("classname", "field4", "value4"), mock_conv_rel.call_args_list
+        )
 
-    @patch('oio_rest.db.convert_relation_value', new=lambda x, y, z: z)
+    @patch("oio_rest.db.convert_relation_value", new=lambda x, y, z: z)
     def test_convert_relations_returns_as_expected(self):
         # type: (MagicMock) -> None
         # Arrange
 
         relations = {
-            'relation1': [
-                {
-                    'field1': 'value1',
-                    'field2': 'value2'
-                }
-            ],
-            'relation2': [
-                {
-                    'field3': 'value3',
-                    'field4': 'value4'
-                }
-            ]
+            "relation1": [{"field1": "value1", "field2": "value2"}],
+            "relation2": [{"field3": "value3", "field4": "value4"}],
         }
 
         expected_result = {
-            'relation1': [
-                {
-                    'field1': 'value1',
-                    'field2': 'value2'
-                }
-            ],
-            'relation2': [
-                {
-                    'field3': 'value3',
-                    'field4': 'value4'
-                }
-            ]
+            "relation1": [{"field1": "value1", "field2": "value2"}],
+            "relation2": [{"field3": "value3", "field4": "value4"}],
         }
 
         # Act
@@ -350,11 +314,7 @@ class TestDB(flask_testing.TestCase):
 
     def test_convert_relations_raises_on_malformed_relation(self):
         # Arrange
-        relations = {
-            'relation': [
-                "This is not a dict"
-            ]
-        }
+        relations = {"relation": ["This is not a dict"]}
 
         # Act & Assert
         with self.assertRaises(BadRequestException):
@@ -370,14 +330,14 @@ class TestDB(flask_testing.TestCase):
         # Assert
         self.assertIsNone(actual_result)
 
-    @patch('oio_rest.db.DokumentVariantType.input')
+    @patch("oio_rest.db.DokumentVariantType.input")
     def test_convert_variants_calls_constructor(self, mock_dvt_input):
         # type: (MagicMock) -> None
         # Arrange
-        expected_result = ['value1', 'value2']
+        expected_result = ["value1", "value2"]
         mock_dvt_input.side_effect = expected_result
 
-        variants = ['variant1', 'variant2']
+        variants = ["variant1", "variant2"]
 
         # Act
         actual_result = db.convert_variants(variants)
@@ -386,7 +346,7 @@ class TestDB(flask_testing.TestCase):
         self.assertEqual(2, mock_dvt_input.call_count)
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.db.get_field_type')
+    @patch("oio_rest.db.get_field_type")
     def test_convert_attr_value_default(self, mock_get_field_type):
         # type: (MagicMock) -> None
         # Arrange
@@ -394,15 +354,14 @@ class TestDB(flask_testing.TestCase):
         mock_get_field_type.return_value = "text"
 
         # Act
-        actual_result = db.convert_attr_value("attribute_name",
-                                              "attribute_field_name",
-                                              value)
+        actual_result = db.convert_attr_value(
+            "attribute_name", "attribute_field_name", value
+        )
         # Assert
         self.assertEqual(value, actual_result)
 
-    @patch('oio_rest.db.get_field_type')
-    def test_convert_attr_value_soegeord(self,
-                                         mock_get_field_type):
+    @patch("oio_rest.db.get_field_type")
+    def test_convert_attr_value_soegeord(self, mock_get_field_type):
         # type: (MagicMock) -> None
         from oio_rest.db.db_helpers import Soegeord
 
@@ -411,48 +370,44 @@ class TestDB(flask_testing.TestCase):
 
         value = [
             ["identifier1", "description1", "category1"],
-            ["identifier2", "description2", "category2"]
+            ["identifier2", "description2", "category2"],
         ]
 
         expected_result = [Soegeord(*value[0]), Soegeord(*value[1])]
 
         # Act
-        actual_result = db.convert_attr_value("attribute_name",
-                                              "attribute_field_name",
-                                              value)
+        actual_result = db.convert_attr_value(
+            "attribute_name", "attribute_field_name", value
+        )
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.db.get_field_type')
-    def test_convert_attr_value_offentlighedundtagettype(self,
-                                                         mock_get_field_type):
+    @patch("oio_rest.db.get_field_type")
+    def test_convert_attr_value_offentlighedundtagettype(self, mock_get_field_type):
         # type: (MagicMock) -> None
         from oio_rest.db.db_helpers import OffentlighedUndtaget
 
         # Arrange
         mock_get_field_type.return_value = "offentlighedundtagettype"
 
-        alternativtitel = 'ALTERNATIVTITEL'
-        hjemmel = 'HJEMMEL'
+        alternativtitel = "ALTERNATIVTITEL"
+        hjemmel = "HJEMMEL"
 
-        value = {
-            'alternativtitel': alternativtitel,
-            'hjemmel': hjemmel
-        }
+        value = {"alternativtitel": alternativtitel, "hjemmel": hjemmel}
 
         expected_result = OffentlighedUndtaget(alternativtitel, hjemmel)
 
         # Act
-        actual_result = db.convert_attr_value("attribute_name",
-                                              "attribute_field_name",
-                                              value)
+        actual_result = db.convert_attr_value(
+            "attribute_name", "attribute_field_name", value
+        )
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.db.get_field_type')
+    @patch("oio_rest.db.get_field_type")
     def test_convert_attr_value_offentlighedundtagettype_none(
-            self,
-            mock_get_field_type):
+        self, mock_get_field_type
+    ):
         # type: (MagicMock) -> None
 
         # Arrange
@@ -463,15 +418,14 @@ class TestDB(flask_testing.TestCase):
         expected_result = None
 
         # Act
-        actual_result = db.convert_attr_value("attribute_name",
-                                              "attribute_field_name",
-                                              value)
+        actual_result = db.convert_attr_value(
+            "attribute_name", "attribute_field_name", value
+        )
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.db.get_field_type')
-    def test_convert_attr_value_date(self,
-                                     mock_get_field_type):
+    @patch("oio_rest.db.get_field_type")
+    def test_convert_attr_value_date(self, mock_get_field_type):
         # type: (MagicMock) -> None
 
         # Arrange
@@ -482,15 +436,14 @@ class TestDB(flask_testing.TestCase):
         expected_result = datetime.date(2017, 1, 1)
 
         # Act
-        actual_result = db.convert_attr_value("attribute_name",
-                                              "attribute_field_name",
-                                              value)
+        actual_result = db.convert_attr_value(
+            "attribute_name", "attribute_field_name", value
+        )
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.db.get_field_type')
-    def test_convert_attr_value_timestamptz(self,
-                                            mock_get_field_type):
+    @patch("oio_rest.db.get_field_type")
+    def test_convert_attr_value_timestamptz(self, mock_get_field_type):
         # type: (MagicMock) -> None
 
         # Arrange
@@ -501,15 +454,14 @@ class TestDB(flask_testing.TestCase):
         expected_result = datetime.datetime(2017, 1, 1, 0, 0)
 
         # Act
-        actual_result = db.convert_attr_value("attribute_name",
-                                              "attribute_field_name",
-                                              value)
+        actual_result = db.convert_attr_value(
+            "attribute_name", "attribute_field_name", value
+        )
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.db.get_field_type')
-    def test_convert_attr_value_interval(self,
-                                         mock_get_field_type):
+    @patch("oio_rest.db.get_field_type")
+    def test_convert_attr_value_interval(self, mock_get_field_type):
         # type: (MagicMock) -> None
 
         # Arrange
@@ -520,24 +472,23 @@ class TestDB(flask_testing.TestCase):
         expected_result = "'1 day' :: interval"
 
         # Act
-        actual_result = db.convert_attr_value("attribute_name",
-                                              "attribute_field_name",
-                                              value)
+        actual_result = db.convert_attr_value(
+            "attribute_name", "attribute_field_name", value
+        )
         # Assert
         self.assertEqual(expected_result, str(actual_result))
 
-    @patch('oio_rest.db.transform_virkning')
-    @patch('oio_rest.db.filter_empty')
-    @patch('oio_rest.db.simplify_cleared_wrappers')
-    def test_filter_json_output(self, mock_transform, mock_filter,
-                                mock_simplify):
+    @patch("oio_rest.db.transform_virkning")
+    @patch("oio_rest.db.filter_empty")
+    @patch("oio_rest.db.simplify_cleared_wrappers")
+    def test_filter_json_output(self, mock_transform, mock_filter, mock_simplify):
         # type: (MagicMock, MagicMock, MagicMock) -> None
         # Arrange
         mock_transform.side_effect = lambda x: x
         mock_filter.side_effect = lambda x: x
         mock_simplify.side_effect = lambda x: x
 
-        expected_output = {'key': 'value'}
+        expected_output = {"key": "value"}
 
         # Act
         actual_output = db.filter_json_output(expected_output)
@@ -550,17 +501,17 @@ class TestDB(flask_testing.TestCase):
 
     def test_simplify_cleared_wrappers_dict_with_cleared(self):
         # Arrange
-        value = {'cleared': '', 'value': 'testvalue', 'bla': 'whatever'}
+        value = {"cleared": "", "value": "testvalue", "bla": "whatever"}
 
         # Act
         actual_result = db.simplify_cleared_wrappers(value)
 
         # Assert
-        self.assertEqual('testvalue', actual_result)
+        self.assertEqual("testvalue", actual_result)
 
     def test_simplify_cleared_wrappers_dict_without_cleared(self):
         # Arrange
-        value = {'key1': 'val1', 'key2': 'val2'}
+        value = {"key1": "val1", "key2": "val2"}
 
         # Act
         actual_result = db.simplify_cleared_wrappers(value)
@@ -570,7 +521,7 @@ class TestDB(flask_testing.TestCase):
 
     def test_simplify_cleared_wrappers_list(self):
         # Arrange
-        value = ['cleared', 'val1', 'val2', 'val3']
+        value = ["cleared", "val1", "val2", "val3"]
 
         # Act
         actual_result = db.simplify_cleared_wrappers(value)
@@ -580,7 +531,7 @@ class TestDB(flask_testing.TestCase):
 
     def test_simplify_cleared_wrappers_tuple(self):
         # Arrange
-        value = ('cleared', 'val1', 'val2', 'val3')
+        value = ("cleared", "val1", "val2", "val3")
 
         # Act
         actual_result = db.simplify_cleared_wrappers(value)
@@ -591,27 +542,18 @@ class TestDB(flask_testing.TestCase):
     def test_simplify_cleared_wrappers_recursive(self):
         # Arrange
         value = (
-            {'cleared': '', 'value': 'val1', 'whatever': '1234'},
+            {"cleared": "", "value": "val1", "whatever": "1234"},
             [
-                {'cleared': '', 'value': 'val2', 'bla': 'whatever'},
-                {'untouched1': '1234', 'untouched2': '5678'}
+                {"cleared": "", "value": "val2", "bla": "whatever"},
+                {"untouched1": "1234", "untouched2": "5678"},
             ],
-            (
-                {'cleared': '', 'value': 'val4'},
-                ['should', 'be', 'untouched']
-            )
+            ({"cleared": "", "value": "val4"}, ["should", "be", "untouched"]),
         )
 
         expected_result = (
-            'val1',
-            [
-                'val2',
-                {'untouched1': '1234', 'untouched2': '5678'}
-            ],
-            (
-                'val4',
-                ['should', 'be', 'untouched']
-            )
+            "val1",
+            ["val2", {"untouched1": "1234", "untouched2": "5678"}],
+            ("val4", ["should", "be", "untouched"]),
         )
 
         # Act
@@ -633,45 +575,37 @@ class TestDB(flask_testing.TestCase):
     def test_transform_virkning_parses_included(self):
         # Arrange
         value = (
-            {
-                'timeperiod': '[12345678,12345678]'
-            },
-            {
-                'timeperiod': '(12345678,12345678)'
-            }
+            {"timeperiod": "[12345678,12345678]"},
+            {"timeperiod": "(12345678,12345678)"},
         )
         # Act
         actual_result = db.transform_virkning(value)
         # Assert
-        self.assertTrue(actual_result[0]['from_included'])
-        self.assertTrue(actual_result[0]['to_included'])
-        self.assertFalse(actual_result[1]['from_included'])
-        self.assertFalse(actual_result[1]['to_included'])
+        self.assertTrue(actual_result[0]["from_included"])
+        self.assertTrue(actual_result[0]["to_included"])
+        self.assertFalse(actual_result[1]["from_included"])
+        self.assertFalse(actual_result[1]["to_included"])
 
     def test_transform_virkning_removes_quotes(self):
         # Arrange
-        value = {
-            'timeperiod': '("12345678","12345678")'
-        }
+        value = {"timeperiod": '("12345678","12345678")'}
 
         # Act
         actual_result = db.transform_virkning(value)
 
         # Assert
-        self.assertEqual('12345678', actual_result['from'])
-        self.assertEqual('12345678', actual_result['to'])
+        self.assertEqual("12345678", actual_result["from"])
+        self.assertEqual("12345678", actual_result["to"])
 
     def test_transform_virkning_dict_with_timeperiod(self):
         # Arrange
-        value = {
-            'timeperiod': '(12345678,"12345678"]'
-        }
+        value = {"timeperiod": '(12345678,"12345678"]'}
 
         expected_result = {
-            'from': '12345678',
-            'from_included': False,
-            'to': '12345678',
-            'to_included': True
+            "from": "12345678",
+            "from_included": False,
+            "to": "12345678",
+            "to_included": True,
         }
 
         # Act
@@ -682,9 +616,7 @@ class TestDB(flask_testing.TestCase):
 
     def test_transform_virkning_dict_without_timeperiod(self):
         # Arrange
-        value = {
-            'nottimeperiod': 'asdasdasd test'
-        }
+        value = {"nottimeperiod": "asdasdasd test"}
 
         # Act
         actual_result = db.transform_virkning(value)
@@ -694,9 +626,7 @@ class TestDB(flask_testing.TestCase):
 
     def test_transform_virkning_list(self):
         # Arrange
-        value = [
-            'nottimeperiod', 'asdasdasd test'
-        ]
+        value = ["nottimeperiod", "asdasdasd test"]
 
         # Act
         actual_result = db.transform_virkning(value)
@@ -706,9 +636,7 @@ class TestDB(flask_testing.TestCase):
 
     def test_transform_virkning_tuple(self):
         # Arrange
-        value = (
-            'nottimeperiod', 'asdasdasd test'
-        )
+        value = ("nottimeperiod", "asdasdasd test")
 
         # Act
         actual_result = db.transform_virkning(value)
@@ -719,47 +647,41 @@ class TestDB(flask_testing.TestCase):
     def test_transform_virkning_recursive(self):
         # Arrange
         value = (
-            {
-                'timeperiod': '(12345678,"12345678"]',
-                'untouched': '1234'
-            },
+            {"timeperiod": '(12345678,"12345678"]', "untouched": "1234"},
             [
-                {'timeperiod': '(12345678,"12345678"]', 'bla': '1234'},
-                {'untouched1': '1234', 'untouched2': '5678'}
+                {"timeperiod": '(12345678,"12345678"]', "bla": "1234"},
+                {"untouched1": "1234", "untouched2": "5678"},
             ],
-            (
-                {'timeperiod': '(12345678,"12345678"]'},
-                ['should', 'be', 'untouched']
-            )
+            ({"timeperiod": '(12345678,"12345678"]'}, ["should", "be", "untouched"]),
         )
 
         expected_result = (
             {
-                'from': '12345678',
-                'from_included': False,
-                'to': '12345678',
-                'to_included': True,
-                'untouched': '1234'
+                "from": "12345678",
+                "from_included": False,
+                "to": "12345678",
+                "to_included": True,
+                "untouched": "1234",
             },
             [
                 {
-                    'from': '12345678',
-                    'from_included': False,
-                    'to': '12345678',
-                    'to_included': True,
-                    'bla': '1234'
+                    "from": "12345678",
+                    "from_included": False,
+                    "to": "12345678",
+                    "to_included": True,
+                    "bla": "1234",
                 },
-                {'untouched1': '1234', 'untouched2': '5678'}
+                {"untouched1": "1234", "untouched2": "5678"},
             ],
             (
                 {
-                    'from': '12345678',
-                    'from_included': False,
-                    'to': '12345678',
-                    'to_included': True,
+                    "from": "12345678",
+                    "from_included": False,
+                    "to": "12345678",
+                    "to_included": True,
                 },
-                ['should', 'be', 'untouched']
-            )
+                ["should", "be", "untouched"],
+            ),
         )
 
         # Act
@@ -780,9 +702,9 @@ class TestDB(flask_testing.TestCase):
 
     def test_filter_empty_with_dict(self):
         # Arrange
-        value = {'emptykey1': '', 'emptykey2': None, 'nonempty': '12345'}
+        value = {"emptykey1": "", "emptykey2": None, "nonempty": "12345"}
 
-        expected_result = {'nonempty': '12345'}
+        expected_result = {"nonempty": "12345"}
 
         # Act
         actual_result = db.filter_empty(value)
@@ -793,31 +715,18 @@ class TestDB(flask_testing.TestCase):
     def test_filter_empty_recursive(self):
         # Arrange
         value = (
-            {
-                'emptykey': '',
-                'untouched': '1234'
-            },
+            {"emptykey": "", "untouched": "1234"},
             [
-                {'emptykey': None, 'bla': '1234'},
-                {'untouched1': '1234', 'untouched2': '5678'}
+                {"emptykey": None, "bla": "1234"},
+                {"untouched1": "1234", "untouched2": "5678"},
             ],
-            (
-                {'emptykey': ''},
-                ['should', 'be', 'untouched']
-            )
+            ({"emptykey": ""}, ["should", "be", "untouched"]),
         )
 
         expected_result = (
-            {
-                'untouched': '1234'
-            },
-            [
-                {'bla': '1234'},
-                {'untouched1': '1234', 'untouched2': '5678'}
-            ],
-            (
-                ['should', 'be', 'untouched'],
-            )
+            {"untouched": "1234"},
+            [{"bla": "1234"}, {"untouched1": "1234", "untouched2": "5678"}],
+            (["should", "be", "untouched"],),
         )
 
         # Act
@@ -829,34 +738,16 @@ class TestDB(flask_testing.TestCase):
     def test_transform_relations_with_list_dict(self):
         # Arrange
         value = {
-            'relationer': [
-                {
-                    'reltype': 'test1',
-                    'key1': 'val1',
-                    'key2': 'val2'
-                },
-                {
-                    'reltype': 'test2',
-                    'key1': 'val3',
-                    'key2': 'val4'
-                }
+            "relationer": [
+                {"reltype": "test1", "key1": "val1", "key2": "val2"},
+                {"reltype": "test2", "key1": "val3", "key2": "val4"},
             ]
         }
 
         expected_result = {
-            'relationer': {
-                'test1': [
-                    {
-                        'key1': 'val1',
-                        'key2': 'val2'
-                    }
-                ],
-                'test2': [
-                    {
-                        'key1': 'val3',
-                        'key2': 'val4'
-                    }
-                ]
+            "relationer": {
+                "test1": [{"key1": "val1", "key2": "val2"}],
+                "test2": [{"key1": "val3", "key2": "val4"}],
             }
         }
 
@@ -869,34 +760,16 @@ class TestDB(flask_testing.TestCase):
     def test_transform_relations_with_tuple_dict(self):
         # Arrange
         value = {
-            'relationer': (
-                {
-                    'reltype': 'test1',
-                    'key1': 'val1',
-                    'key2': 'val2'
-                },
-                {
-                    'reltype': 'test2',
-                    'key1': 'val3',
-                    'key2': 'val4'
-                },
+            "relationer": (
+                {"reltype": "test1", "key1": "val1", "key2": "val2"},
+                {"reltype": "test2", "key1": "val3", "key2": "val4"},
             )
         }
 
         expected_result = {
-            'relationer': {
-                'test1': [
-                    {
-                        'key1': 'val1',
-                        'key2': 'val2'
-                    }
-                ],
-                'test2': [
-                    {
-                        'key1': 'val3',
-                        'key2': 'val4'
-                    }
-                ]
+            "relationer": {
+                "test1": [{"key1": "val1", "key2": "val2"}],
+                "test2": [{"key1": "val3", "key2": "val4"}],
             }
         }
 
@@ -911,57 +784,43 @@ class TestDB(flask_testing.TestCase):
         value = (
             [
                 {
-                    'relationer': (
-                        {
-                            'reltype': 'test1',
-                            'key1': 'val1',
-                            'key2': 'val2'
-                        },
+                    "relationer": (
+                        {"reltype": "test1", "key1": "val1", "key2": "val2"},
                     ),
-                    "whatever": '1234'
+                    "whatever": "1234",
                 }
             ],
             (
                 {
-                    'relationer': (
-                        {
-                            'reltype': 'test2',
-                            'key1': 'val1',
-                            'key2': 'val2'
-                        },
+                    "relationer": (
+                        {"reltype": "test2", "key1": "val1", "key2": "val2"},
                     ),
-                    "whatever": '5678'
+                    "whatever": "5678",
                 }
-            )
+            ),
         )
 
         expected_result = (
             [
                 {
-                    'relationer': {
-                        'test1': [
-                            {
-                                'key1': 'val1',
-                                'key2': 'val2'
-                            },
+                    "relationer": {
+                        "test1": [
+                            {"key1": "val1", "key2": "val2"},
                         ]
                     },
-                    "whatever": '1234'
+                    "whatever": "1234",
                 }
             ],
             (
                 {
-                    'relationer': {
-                        'test2': [
-                            {
-                                'key1': 'val1',
-                                'key2': 'val2'
-                            },
+                    "relationer": {
+                        "test2": [
+                            {"key1": "val1", "key2": "val2"},
                         ]
                     },
-                    "whatever": '5678'
+                    "whatever": "5678",
                 }
-            )
+            ),
         )
 
         # Act
@@ -970,21 +829,27 @@ class TestDB(flask_testing.TestCase):
         # Assert
         self.assertEqual(expected_result, actual_value)
 
-    @patch('oio_rest.db.list_objects')
+    @patch("oio_rest.db.list_objects")
     def test_get_life_cycle_code(self, mock_list_objs):
         # type: (MagicMock) -> None
         # Arrange
-        class_name = ''
-        uuid = 'e9eea92f-d404-48c4-85e1-222b56013e3e'
-        results = [[{
-            "id": "8c949998-f01b-4e7c-953b-8ae4fec475a2",
-            "registreringer": [{
-                "attributter": {},
-                "relationer": {},
-                "tilstande": {},
-                "livscykluskode": "Importeret"
-            }]
-        }]]
+        class_name = ""
+        uuid = "e9eea92f-d404-48c4-85e1-222b56013e3e"
+        results = [
+            [
+                {
+                    "id": "8c949998-f01b-4e7c-953b-8ae4fec475a2",
+                    "registreringer": [
+                        {
+                            "attributter": {},
+                            "relationer": {},
+                            "tilstande": {},
+                            "livscykluskode": "Importeret",
+                        }
+                    ],
+                }
+            ]
+        ]
 
         mock_list_objs.return_value = results
 
@@ -992,43 +857,42 @@ class TestDB(flask_testing.TestCase):
         actual_result = db.get_life_cycle_code(class_name, uuid)
 
         # Assert
-        self.assertEqual('Importeret', actual_result)
+        self.assertEqual("Importeret", actual_result)
 
 
 class TestConsolidateVirkninger(unittest.TestCase):
-
     def test_consolidate_effects_works_correctly(self):
         # Arrange
         effects = [
             {
-                'whatever': 'garbage',
-                'virkning': {
-                    'from': '1950-01-01 00:00:00+01',
-                    'from_included': True,
-                    'to': 'infinity',
-                    'to_included': False
-                }
+                "whatever": "garbage",
+                "virkning": {
+                    "from": "1950-01-01 00:00:00+01",
+                    "from_included": True,
+                    "to": "infinity",
+                    "to_included": False,
+                },
             },
             {
-                'whatever': 'garbage',
-                'virkning': {
-                    'from': '1900-01-01 00:00:00+01',
-                    'from_included': True,
-                    'to': '1950-01-01 00:00:00+01',
-                    'to_included': False
-                }
-            }
+                "whatever": "garbage",
+                "virkning": {
+                    "from": "1900-01-01 00:00:00+01",
+                    "from_included": True,
+                    "to": "1950-01-01 00:00:00+01",
+                    "to_included": False,
+                },
+            },
         ]
 
         expected = [
             {
-                'whatever': 'garbage',
-                'virkning': {
-                    'from': '1900-01-01 00:00:00+01',
-                    'from_included': True,
-                    'to': 'infinity',
-                    'to_included': False
-                }
+                "whatever": "garbage",
+                "virkning": {
+                    "from": "1900-01-01 00:00:00+01",
+                    "from_included": True,
+                    "to": "infinity",
+                    "to_included": False,
+                },
             }
         ]
 
@@ -1042,31 +906,31 @@ class TestConsolidateVirkninger(unittest.TestCase):
         # Arrange
         effects = [
             {
-                'something': 'garbage',
-                'virkning': {
-                    'from': '1900-01-01 00:00:00+01',
-                    'from_included': True,
-                    'to': '1950-01-01 00:00:00+01',
-                    'to_included': False
-                }
+                "something": "garbage",
+                "virkning": {
+                    "from": "1900-01-01 00:00:00+01",
+                    "from_included": True,
+                    "to": "1950-01-01 00:00:00+01",
+                    "to_included": False,
+                },
             },
             {
-                'whatever': 'garbage',
-                'virkning': {
-                    'from': '1950-01-01 00:00:00+01',
-                    'from_included': True,
-                    'to': '1980-01-01 00:00:00+01',
-                    'to_included': False
-                }
+                "whatever": "garbage",
+                "virkning": {
+                    "from": "1950-01-01 00:00:00+01",
+                    "from_included": True,
+                    "to": "1980-01-01 00:00:00+01",
+                    "to_included": False,
+                },
             },
             {
-                'whatever': 'garbage2',
-                'virkning': {
-                    'from': '1980-01-01 00:00:00+01',
-                    'from_included': True,
-                    'to': 'infinity',
-                    'to_included': False
-                }
+                "whatever": "garbage2",
+                "virkning": {
+                    "from": "1980-01-01 00:00:00+01",
+                    "from_included": True,
+                    "to": "infinity",
+                    "to_included": False,
+                },
             },
         ]
 
@@ -1081,62 +945,62 @@ class TestConsolidateVirkninger(unittest.TestCase):
         # Arrange
         effects = [
             {
-                'whatever': 'garbage',
-                'virkning': {
-                    'from': '1900-01-01 00:00:00+01',
-                    'from_included': True,
-                    'to': '1950-01-01 00:00:00+01',
-                    'to_included': False
-                }
+                "whatever": "garbage",
+                "virkning": {
+                    "from": "1900-01-01 00:00:00+01",
+                    "from_included": True,
+                    "to": "1950-01-01 00:00:00+01",
+                    "to_included": False,
+                },
             },
             {
-                'whatever': 'garbage',
-                'virkning': {
-                    'from': '1950-01-01 00:00:00+01',
-                    'from_included': True,
-                    'to': '2000-01-01 00:00:00+01',
-                    'to_included': False
-                }
+                "whatever": "garbage",
+                "virkning": {
+                    "from": "1950-01-01 00:00:00+01",
+                    "from_included": True,
+                    "to": "2000-01-01 00:00:00+01",
+                    "to_included": False,
+                },
             },
             {
-                'whatever': 'other garbage',
-                'virkning': {
-                    'from': '1900-01-01 00:00:00+01',
-                    'from_included': True,
-                    'to': '1930-01-01 00:00:00+01',
-                    'to_included': False
-                }
+                "whatever": "other garbage",
+                "virkning": {
+                    "from": "1900-01-01 00:00:00+01",
+                    "from_included": True,
+                    "to": "1930-01-01 00:00:00+01",
+                    "to_included": False,
+                },
             },
             {
-                'whatever': 'other garbage',
-                'virkning': {
-                    'from': '1930-01-01 00:00:00+01',
-                    'from_included': True,
-                    'to': '2000-01-01 00:00:00+01',
-                    'to_included': False
-                }
+                "whatever": "other garbage",
+                "virkning": {
+                    "from": "1930-01-01 00:00:00+01",
+                    "from_included": True,
+                    "to": "2000-01-01 00:00:00+01",
+                    "to_included": False,
+                },
             },
         ]
 
         expected = [
             {
-                'virkning': {
-                    'from': '1900-01-01 00:00:00+01',
-                    'from_included': True,
-                    'to': '2000-01-01 00:00:00+01',
-                    'to_included': False
+                "virkning": {
+                    "from": "1900-01-01 00:00:00+01",
+                    "from_included": True,
+                    "to": "2000-01-01 00:00:00+01",
+                    "to_included": False,
                 },
-                'whatever': 'garbage'
+                "whatever": "garbage",
             },
             {
-                'virkning': {
-                    'from': '1900-01-01 00:00:00+01',
-                    'from_included': True,
-                    'to': '2000-01-01 00:00:00+01',
-                    'to_included': False
+                "virkning": {
+                    "from": "1900-01-01 00:00:00+01",
+                    "from_included": True,
+                    "to": "2000-01-01 00:00:00+01",
+                    "to_included": False,
                 },
-                'whatever': 'other garbage'
-            }
+                "whatever": "other garbage",
+            },
         ]
 
         # Act
@@ -1150,62 +1014,62 @@ class TestConsolidateVirkninger(unittest.TestCase):
         # Arrange
         effects = [
             {
-                'whatever': 'garbage',
-                'virkning': {
-                    'from': '1900-01-01 00:00:00+01',
-                    'from_included': True,
-                    'to': '1950-01-01 00:00:00+01',
-                    'to_included': False
-                }
+                "whatever": "garbage",
+                "virkning": {
+                    "from": "1900-01-01 00:00:00+01",
+                    "from_included": True,
+                    "to": "1950-01-01 00:00:00+01",
+                    "to_included": False,
+                },
             },
             {
-                'whatever': 'garbage',
-                'virkning': {
-                    'from': '1950-01-01 00:00:00+01',
-                    'from_included': True,
-                    'to': '2000-01-01 00:00:00+01',
-                    'to_included': False
-                }
+                "whatever": "garbage",
+                "virkning": {
+                    "from": "1950-01-01 00:00:00+01",
+                    "from_included": True,
+                    "to": "2000-01-01 00:00:00+01",
+                    "to_included": False,
+                },
             },
             {
-                'whatever': 'garbage',
-                'virkning': {
-                    'from': '1920-01-01 00:00:00+01',
-                    'from_included': True,
-                    'to': '1980-01-01 00:00:00+01',
-                    'to_included': False
-                }
+                "whatever": "garbage",
+                "virkning": {
+                    "from": "1920-01-01 00:00:00+01",
+                    "from_included": True,
+                    "to": "1980-01-01 00:00:00+01",
+                    "to_included": False,
+                },
             },
         ]
 
         expected = [
             {
-                'virkning': {
-                    'from': '1900-01-01 00:00:00+01',
-                    'from_included': True,
-                    'to': '1950-01-01 00:00:00+01',
-                    'to_included': False
+                "virkning": {
+                    "from": "1900-01-01 00:00:00+01",
+                    "from_included": True,
+                    "to": "1950-01-01 00:00:00+01",
+                    "to_included": False,
                 },
-                'whatever': 'garbage'
+                "whatever": "garbage",
             },
             {
-                'virkning': {
-                    'from': '1920-01-01 00:00:00+01',
-                    'from_included': True,
-                    'to': '1980-01-01 00:00:00+01',
-                    'to_included': False
+                "virkning": {
+                    "from": "1920-01-01 00:00:00+01",
+                    "from_included": True,
+                    "to": "1980-01-01 00:00:00+01",
+                    "to_included": False,
                 },
-                'whatever': 'garbage'
+                "whatever": "garbage",
             },
             {
-                'virkning': {
-                    'from': '1950-01-01 00:00:00+01',
-                    'from_included': True,
-                    'to': '2000-01-01 00:00:00+01',
-                    'to_included': False
+                "virkning": {
+                    "from": "1950-01-01 00:00:00+01",
+                    "from_included": True,
+                    "to": "2000-01-01 00:00:00+01",
+                    "to_included": False,
                 },
-                'whatever': 'garbage'
-            }
+                "whatever": "garbage",
+            },
         ]
 
         # Act
@@ -1218,22 +1082,22 @@ class TestConsolidateVirkninger(unittest.TestCase):
         # Arrange
         effects = [
             {
-                'whatever': 'garbage',
-                'virkning': {
-                    'from': '1900-01-01 00:00:00+01',
-                    'from_included': True,
-                    'to': '1950-01-01 00:00:00+01',
-                    'to_included': False
-                }
+                "whatever": "garbage",
+                "virkning": {
+                    "from": "1900-01-01 00:00:00+01",
+                    "from_included": True,
+                    "to": "1950-01-01 00:00:00+01",
+                    "to_included": False,
+                },
             },
             {
-                'whatever': 'garbage',
-                'virkning': {
-                    'from': '1950-01-02 00:00:00+01',
-                    'from_included': True,
-                    'to': 'infinity',
-                    'to_included': False
-                }
+                "whatever": "garbage",
+                "virkning": {
+                    "from": "1950-01-02 00:00:00+01",
+                    "from_included": True,
+                    "to": "infinity",
+                    "to_included": False,
+                },
             },
         ]
 
@@ -1247,13 +1111,13 @@ class TestConsolidateVirkninger(unittest.TestCase):
         # Arrange
         effects = [
             {
-                'whatever': 'garbage',
-                'virkning': {
-                    'from': '1900-01-01 00:00:00+01',
-                    'from_included': True,
-                    'to': '1950-01-01 00:00:00+01',
-                    'to_included': False
-                }
+                "whatever": "garbage",
+                "virkning": {
+                    "from": "1900-01-01 00:00:00+01",
+                    "from_included": True,
+                    "to": "1950-01-01 00:00:00+01",
+                    "to_included": False,
+                },
             },
         ]
 
@@ -1274,266 +1138,270 @@ class TestConsolidateVirkninger(unittest.TestCase):
         self.assertEqual(effects, actual)
 
     def test_consolidate_and_trim_removes_empty_keys(self):
-        obj = [[
-            {
-                "id": "6467fbb0-dd62-48ae-90be-abdef7e66aa7",
-                "registreringer": [
-                    {
-                        "attributter": {
-                            "organisationfunktionegenskaber": [
-                                {
-                                    "funktionsnavn": "navn 2",
-                                    "virkning": {
-                                        "from": "1970-04-30 22:00:00+00",
-                                        "from_included": True,
-                                        "to": "infinity",
-                                        "to_included": False
+        obj = [
+            [
+                {
+                    "id": "6467fbb0-dd62-48ae-90be-abdef7e66aa7",
+                    "registreringer": [
+                        {
+                            "attributter": {
+                                "organisationfunktionegenskaber": [
+                                    {
+                                        "funktionsnavn": "navn 2",
+                                        "virkning": {
+                                            "from": "1970-04-30 22:00:00+00",
+                                            "from_included": True,
+                                            "to": "infinity",
+                                            "to_included": False,
+                                        },
                                     }
-                                }
-                            ],
-                            "organisationfunktionudvidelser": [
-                                {
-                                    "fraktion": 100,
-                                    "virkning": {
-                                        "from": "1920-04-30 22:00:00+00",
-                                        "from_included": True,
-                                        "to": "1930-04-30 22:00:00+00",
-                                        "to_included": False
+                                ],
+                                "organisationfunktionudvidelser": [
+                                    {
+                                        "fraktion": 100,
+                                        "virkning": {
+                                            "from": "1920-04-30 22:00:00+00",
+                                            "from_included": True,
+                                            "to": "1930-04-30 22:00:00+00",
+                                            "to_included": False,
+                                        },
                                     }
-                                }
-                            ]
-                        },
-                        "brugerref": "42c432e8-9c4a-11e6-9f62-873cf34a735f",
-                        "fratidspunkt": {
-                            "graenseindikator": True,
-                            "tidsstempeldatotid": "2019-12-18T09:37:49.811807"
-                                                  "+00:00"
-                        },
-                        "livscykluskode": "Rettet",
-                        "note": "Rediger engagement",
-                    }
-                ]
-            }
-        ]]
+                                ],
+                            },
+                            "brugerref": "42c432e8-9c4a-11e6-9f62-873cf34a735f",
+                            "fratidspunkt": {
+                                "graenseindikator": True,
+                                "tidsstempeldatotid": "2019-12-18T09:37:49.811807"
+                                "+00:00",
+                            },
+                            "livscykluskode": "Rettet",
+                            "note": "Rediger engagement",
+                        }
+                    ],
+                }
+            ]
+        ]
 
         actual = db._consolidate_and_trim_object_virkninger(
             obj, "1999-01-01 00:00:00+00", "infinity"
         )
 
-        actual_attributes = actual[0][0]['registreringer'][0]['attributter']
+        actual_attributes = actual[0][0]["registreringer"][0]["attributter"]
 
         # 'organisationfunktionudvidelser' should be gone at this point
-        self.assertIn('organisationfunktionegenskaber', actual_attributes)
-        self.assertNotIn('organisationfunktionudvidelser', actual_attributes)
+        self.assertIn("organisationfunktionegenskaber", actual_attributes)
+        self.assertNotIn("organisationfunktionudvidelser", actual_attributes)
 
     def test_consolidate_and_trim_removes_empty_categories(self):
-        obj = [[
-            {
-                "id": "6467fbb0-dd62-48ae-90be-abdef7e66aa7",
-                "registreringer": [
-                    {
-                        "attributter": {
-                            "organisationfunktionudvidelser": [
-                                {
-                                    "fraktion": 100,
-                                    "virkning": {
-                                        "from": "1920-04-30 22:00:00+00",
-                                        "from_included": True,
-                                        "to": "1930-04-30 22:00:00+00",
-                                        "to_included": False
+        obj = [
+            [
+                {
+                    "id": "6467fbb0-dd62-48ae-90be-abdef7e66aa7",
+                    "registreringer": [
+                        {
+                            "attributter": {
+                                "organisationfunktionudvidelser": [
+                                    {
+                                        "fraktion": 100,
+                                        "virkning": {
+                                            "from": "1920-04-30 22:00:00+00",
+                                            "from_included": True,
+                                            "to": "1930-04-30 22:00:00+00",
+                                            "to_included": False,
+                                        },
                                     }
-                                }
-                            ]
-                        },
-                        "brugerref": "42c432e8-9c4a-11e6-9f62-873cf34a735f",
-                        "fratidspunkt": {
-                            "graenseindikator": True,
-                            "tidsstempeldatotid": "2019-12-18T09:37:49.811807"
-                                                  "+00:00"
-                        },
-                        "livscykluskode": "Rettet",
-                        "note": "Rediger engagement",
-                    }
-                ]
-            }
-        ]]
+                                ]
+                            },
+                            "brugerref": "42c432e8-9c4a-11e6-9f62-873cf34a735f",
+                            "fratidspunkt": {
+                                "graenseindikator": True,
+                                "tidsstempeldatotid": "2019-12-18T09:37:49.811807"
+                                "+00:00",
+                            },
+                            "livscykluskode": "Rettet",
+                            "note": "Rediger engagement",
+                        }
+                    ],
+                }
+            ]
+        ]
 
         actual = db._consolidate_and_trim_object_virkninger(
             obj, "1999-01-01 00:00:00+00", "infinity"
         )
 
-        actual_registration = actual[0][0]['registreringer'][0]
+        actual_registration = actual[0][0]["registreringer"][0]
 
         # 'attributter' should be gone at this point
-        self.assertNotIn('attributter', actual_registration)
+        self.assertNotIn("attributter", actual_registration)
 
     def test_trim_virkninger_lower_bound_not_included(self):
         effects = [
             {
-                'whatever': 'garbage',
-                'virkning': {
-                    'from': '-infinity',
-                    'from_included': True,
-                    'to': '1950-01-01 00:00:00+01',
-                    'to_included': False
-                }
+                "whatever": "garbage",
+                "virkning": {
+                    "from": "-infinity",
+                    "from_included": True,
+                    "to": "1950-01-01 00:00:00+01",
+                    "to_included": False,
+                },
             },
             {
-                'whatever': 'garbage',
-                'virkning': {
-                    'from': '1950-01-01 00:00:00+01',
-                    'from_included': True,
-                    'to': 'infinity',
-                    'to_included': False
-                }
+                "whatever": "garbage",
+                "virkning": {
+                    "from": "1950-01-01 00:00:00+01",
+                    "from_included": True,
+                    "to": "infinity",
+                    "to_included": False,
+                },
             },
         ]
 
-        expected = [{
-            'whatever': 'garbage',
-            'virkning': {
-                'from': '1950-01-01 00:00:00+01',
-                'from_included': True,
-                'to': 'infinity',
-                'to_included': False
+        expected = [
+            {
+                "whatever": "garbage",
+                "virkning": {
+                    "from": "1950-01-01 00:00:00+01",
+                    "from_included": True,
+                    "to": "infinity",
+                    "to_included": False,
+                },
             }
-        }]
+        ]
 
-        actual = db._trim_virkninger(effects, '1950-01-01 00:00:00+01',
-                                     'infinity')
+        actual = db._trim_virkninger(effects, "1950-01-01 00:00:00+01", "infinity")
 
         self.assertEqual(expected, actual)
 
     def test_trim_virkninger_lower_bound_included(self):
         effects = [
             {
-                'whatever': 'garbage',
-                'virkning': {
-                    'from': '-infinity',
-                    'from_included': True,
-                    'to': '1950-01-01 00:00:00+01',
-                    'to_included': True
-                }
+                "whatever": "garbage",
+                "virkning": {
+                    "from": "-infinity",
+                    "from_included": True,
+                    "to": "1950-01-01 00:00:00+01",
+                    "to_included": True,
+                },
             },
             {
-                'whatever': 'garbage',
-                'virkning': {
-                    'from': '1950-01-01 00:00:00+01',
-                    'from_included': True,
-                    'to': 'infinity',
-                    'to_included': False
-                }
+                "whatever": "garbage",
+                "virkning": {
+                    "from": "1950-01-01 00:00:00+01",
+                    "from_included": True,
+                    "to": "infinity",
+                    "to_included": False,
+                },
             },
         ]
 
         expected = [
             {
-                'whatever': 'garbage',
-                'virkning': {
-                    'from': '-infinity',
-                    'from_included': True,
-                    'to': '1950-01-01 00:00:00+01',
-                    'to_included': True
-                }
+                "whatever": "garbage",
+                "virkning": {
+                    "from": "-infinity",
+                    "from_included": True,
+                    "to": "1950-01-01 00:00:00+01",
+                    "to_included": True,
+                },
             },
             {
-                'whatever': 'garbage',
-                'virkning': {
-                    'from': '1950-01-01 00:00:00+01',
-                    'from_included': True,
-                    'to': 'infinity',
-                    'to_included': False
-                }
+                "whatever": "garbage",
+                "virkning": {
+                    "from": "1950-01-01 00:00:00+01",
+                    "from_included": True,
+                    "to": "infinity",
+                    "to_included": False,
+                },
             },
         ]
 
-        actual = db._trim_virkninger(effects, '1950-01-01 00:00:00+01',
-                                     'infinity')
+        actual = db._trim_virkninger(effects, "1950-01-01 00:00:00+01", "infinity")
 
         self.assertEqual(expected, actual)
 
     def test_trim_virkninger_upper_bound_not_included(self):
         effects = [
             {
-                'whatever': 'garbage',
-                'virkning': {
-                    'from': '-infinity',
-                    'from_included': True,
-                    'to': '1950-01-01 00:00:00+01',
-                    'to_included': False
-                }
+                "whatever": "garbage",
+                "virkning": {
+                    "from": "-infinity",
+                    "from_included": True,
+                    "to": "1950-01-01 00:00:00+01",
+                    "to_included": False,
+                },
             },
             {
-                'whatever': 'garbage',
-                'virkning': {
-                    'from': '1950-01-01 00:00:00+01',
-                    'from_included': False,
-                    'to': 'infinity',
-                    'to_included': False
-                }
+                "whatever": "garbage",
+                "virkning": {
+                    "from": "1950-01-01 00:00:00+01",
+                    "from_included": False,
+                    "to": "infinity",
+                    "to_included": False,
+                },
             },
         ]
 
-        expected = [{
-            'whatever': 'garbage',
-            'virkning': {
-                'from': '-infinity',
-                'from_included': True,
-                'to': '1950-01-01 00:00:00+01',
-                'to_included': False
+        expected = [
+            {
+                "whatever": "garbage",
+                "virkning": {
+                    "from": "-infinity",
+                    "from_included": True,
+                    "to": "1950-01-01 00:00:00+01",
+                    "to_included": False,
+                },
             }
-        }]
+        ]
 
-        actual = db._trim_virkninger(effects, '-infinity',
-                                     '1950-01-01 00:00:00+01')
+        actual = db._trim_virkninger(effects, "-infinity", "1950-01-01 00:00:00+01")
 
         self.assertEqual(expected, actual)
 
     def test_trim_virkninger_upper_bound_included(self):
         effects = [
             {
-                'whatever': 'garbage',
-                'virkning': {
-                    'from': '-infinity',
-                    'from_included': True,
-                    'to': '1950-01-01 00:00:00+01',
-                    'to_included': False
-                }
+                "whatever": "garbage",
+                "virkning": {
+                    "from": "-infinity",
+                    "from_included": True,
+                    "to": "1950-01-01 00:00:00+01",
+                    "to_included": False,
+                },
             },
             {
-                'whatever': 'garbage',
-                'virkning': {
-                    'from': '1950-01-01 00:00:00+01',
-                    'from_included': True,
-                    'to': 'infinity',
-                    'to_included': False
-                }
+                "whatever": "garbage",
+                "virkning": {
+                    "from": "1950-01-01 00:00:00+01",
+                    "from_included": True,
+                    "to": "infinity",
+                    "to_included": False,
+                },
             },
         ]
 
         expected = [
             {
-                'whatever': 'garbage',
-                'virkning': {
-                    'from': '-infinity',
-                    'from_included': True,
-                    'to': '1950-01-01 00:00:00+01',
-                    'to_included': False
-                }
+                "whatever": "garbage",
+                "virkning": {
+                    "from": "-infinity",
+                    "from_included": True,
+                    "to": "1950-01-01 00:00:00+01",
+                    "to_included": False,
+                },
             },
             {
-                'whatever': 'garbage',
-                'virkning': {
-                    'from': '1950-01-01 00:00:00+01',
-                    'from_included': True,
-                    'to': 'infinity',
-                    'to_included': False
-                }
+                "whatever": "garbage",
+                "virkning": {
+                    "from": "1950-01-01 00:00:00+01",
+                    "from_included": True,
+                    "to": "infinity",
+                    "to_included": False,
+                },
             },
         ]
 
-        actual = db._trim_virkninger(effects, '-infinity',
-                                     '1950-01-01 00:00:00+01')
+        actual = db._trim_virkninger(effects, "-infinity", "1950-01-01 00:00:00+01")
 
         self.assertEqual(expected, actual)
 
@@ -1542,9 +1410,7 @@ class TestConsolidateVirkninger(unittest.TestCase):
 class TestDBObjectFunctions(unittest.TestCase):
     @patch("oio_rest.db.get_connection")
     @patch("oio_rest.db.jinja_env")
-    def test_update_object_returns_uuid(self,
-                                        mock_jinja_env,
-                                        mock_get_conn):
+    def test_update_object_returns_uuid(self, mock_jinja_env, mock_get_conn):
         # type: (MagicMock, MagicMock) -> None
         # Arrange
         uuid = "uuid"
@@ -1557,61 +1423,61 @@ class TestDBObjectFunctions(unittest.TestCase):
 
     @patch("oio_rest.db.get_connection")
     @patch("oio_rest.db.jinja_env")
-    def test_list_objects_raises_on_no_results(self,
-                                               mock_jinja_env,
-                                               mock_get_conn):
+    def test_list_objects_raises_on_no_results(self, mock_jinja_env, mock_get_conn):
         # type: (MagicMock, MagicMock) -> None
         # Arrange
         (
-            mock_get_conn.return_value
-            .__enter__.return_value
-            .cursor.return_value
-            .__enter__.return_value
+            mock_get_conn.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
         ) = cursor = MagicMock()
 
         cursor.fetchone.return_value = None
 
         # Act
         with self.assertRaises(NotFoundException):
-            db.list_objects("classname", ["uuid"],
-                            "virkning_fra", "virkning_til",
-                            "registrering_fra",
-                            "registrering_til")
+            db.list_objects(
+                "classname",
+                ["uuid"],
+                "virkning_fra",
+                "virkning_til",
+                "registrering_fra",
+                "registrering_til",
+            )
 
 
 class TestDBGeneralSQL(unittest.TestCase):
-    @patch('oio_rest.db.sql_attribute_array')
-    @patch('oio_rest.db.sql_relations_array')
-    @patch('oio_rest.db.get_attribute_names')
-    @patch('oio_rest.db.convert_attributes', new=lambda x: x)
-    @patch('oio_rest.db.get_state_names', new=MagicMock())
-    def test_sql_convert_registration_attributes(self,
-                                                 mock_get_attribute_names,
-                                                 mock_sql_relations_array,
-                                                 mock_sql_attribute_array):
+    @patch("oio_rest.db.sql_attribute_array")
+    @patch("oio_rest.db.sql_relations_array")
+    @patch("oio_rest.db.get_attribute_names")
+    @patch("oio_rest.db.convert_attributes", new=lambda x: x)
+    @patch("oio_rest.db.get_state_names", new=MagicMock())
+    def test_sql_convert_registration_attributes(
+        self,
+        mock_get_attribute_names,
+        mock_sql_relations_array,
+        mock_sql_attribute_array,
+    ):
         # type: (MagicMock, MagicMock, MagicMock) -> None
-        mock_get_attribute_names.return_value = ['attribute1', 'attribute2']
+        mock_get_attribute_names.return_value = ["attribute1", "attribute2"]
         mock_sql_relations_array.return_value = []
         mock_sql_attribute_array.side_effect = lambda *x: x
 
         # Arrange
         registration = {
-            'states': {},
-            'attributes': {'attribute1': ['val1'],
-                           'attribute3': ['val3'],
-                           'whatever': 'whatever'},
-            'relations': {}
+            "states": {},
+            "attributes": {
+                "attribute1": ["val1"],
+                "attribute3": ["val3"],
+                "whatever": "whatever",
+            },
+            "relations": {},
         }
 
-        class_name = 'classname'
+        class_name = "classname"
 
         expected_result = {
-            'states': [],
-            'attributes': [
-                ('attribute1', ['val1']),
-                ('attribute2', None)
-            ],
-            'relations': []
+            "states": [],
+            "attributes": [("attribute1", ["val1"]), ("attribute2", None)],
+            "relations": [],
         }
 
         # Act
@@ -1619,42 +1485,41 @@ class TestDBGeneralSQL(unittest.TestCase):
 
         # Assert
         sql_state_array_args = mock_sql_attribute_array.call_args_list
-        self.assertIn(call('attribute1', ['val1']), sql_state_array_args)
-        self.assertIn(call('attribute2', None), sql_state_array_args)
+        self.assertIn(call("attribute1", ["val1"]), sql_state_array_args)
+        self.assertIn(call("attribute2", None), sql_state_array_args)
         self.assertEqual(2, len(sql_state_array_args))
 
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.db.sql_state_array')
-    @patch('oio_rest.db.sql_relations_array')
-    @patch('oio_rest.db.get_attribute_names', new=MagicMock())
-    @patch('oio_rest.db.get_state_names')
-    def test_sql_convert_registration_states(self, mock_get_state_names,
-                                             mock_sql_relations_array,
-                                             mock_sql_state_array):
+    @patch("oio_rest.db.sql_state_array")
+    @patch("oio_rest.db.sql_relations_array")
+    @patch("oio_rest.db.get_attribute_names", new=MagicMock())
+    @patch("oio_rest.db.get_state_names")
+    def test_sql_convert_registration_states(
+        self, mock_get_state_names, mock_sql_relations_array, mock_sql_state_array
+    ):
         # type: (MagicMock, MagicMock, MagicMock) -> None
-        mock_get_state_names.return_value = ['state1', 'state2']
+        mock_get_state_names.return_value = ["state1", "state2"]
         mock_sql_relations_array.return_value = []
         mock_sql_state_array.side_effect = lambda *x: x
 
         # Arrange
         registration = {
-            'states': {'classnamestate1': 'val1',
-                       'classnamestate3': 'val3',
-                       'whatever': 'whatever'},
-            'attributes': {},
-            'relations': {}
+            "states": {
+                "classnamestate1": "val1",
+                "classnamestate3": "val3",
+                "whatever": "whatever",
+            },
+            "attributes": {},
+            "relations": {},
         }
 
-        class_name = 'classname'
+        class_name = "classname"
 
         expected_result = {
-            'states': [
-                ('state1', 'val1', 'classname'),
-                ('state2', None, 'classname')
-            ],
-            'attributes': [],
-            'relations': []
+            "states": [("state1", "val1", "classname"), ("state2", None, "classname")],
+            "attributes": [],
+            "relations": [],
         }
 
         # Act
@@ -1662,64 +1527,58 @@ class TestDBGeneralSQL(unittest.TestCase):
 
         # Assert
         sql_state_array_args = mock_sql_state_array.call_args_list
-        self.assertIn(call('state1', 'val1', 'classname'),
-                      sql_state_array_args)
-        self.assertIn(call('state2', None, 'classname'), sql_state_array_args)
+        self.assertIn(call("state1", "val1", "classname"), sql_state_array_args)
+        self.assertIn(call("state2", None, "classname"), sql_state_array_args)
         self.assertEqual(2, len(sql_state_array_args))
 
         self.assertEqual(expected_result, actual_result)
 
-    @patch('oio_rest.db.sql_relations_array')
-    @patch('oio_rest.db.convert_relations', new=lambda x, y: x)
-    @patch('oio_rest.db.get_attribute_names', new=MagicMock())
-    @patch('oio_rest.db.get_state_names', new=MagicMock())
-    def test_sql_convert_registration_relations(self,
-                                                mock_sql_relations_array):
+    @patch("oio_rest.db.sql_relations_array")
+    @patch("oio_rest.db.convert_relations", new=lambda x, y: x)
+    @patch("oio_rest.db.get_attribute_names", new=MagicMock())
+    @patch("oio_rest.db.get_state_names", new=MagicMock())
+    def test_sql_convert_registration_relations(self, mock_sql_relations_array):
         # type: (MagicMock) -> None
         mock_sql_relations_array.side_effect = lambda *x: x
 
         # Arrange
         registration = {
-            'states': {},
-            'attributes': {},
-            'relations': {
-                'relation1': [],
-                'relation2': []
-            },
+            "states": {},
+            "attributes": {},
+            "relations": {"relation1": [], "relation2": []},
         }
 
-        class_name = 'classname'
+        class_name = "classname"
 
         # Act
         db.sql_convert_registration(registration, class_name)
 
         # Assert
         sql_state_array_args = mock_sql_relations_array.call_args_list
-        self.assertIn(call('classname', {'relation1': [], 'relation2': []}),
-                      sql_state_array_args)
+        self.assertIn(
+            call("classname", {"relation1": [], "relation2": []}), sql_state_array_args
+        )
 
-    @patch('oio_rest.db.convert_variants')
-    @patch('oio_rest.db.adapt')
-    @patch('oio_rest.db.convert_relations', new=lambda x, y: x)
-    @patch('oio_rest.db.get_attribute_names', new=MagicMock())
-    @patch('oio_rest.db.get_state_names', new=MagicMock())
-    def test_sql_convert_registration_variants(self,
-                                               mock_adapt,
-                                               mock_convert_variants):
+    @patch("oio_rest.db.convert_variants")
+    @patch("oio_rest.db.adapt")
+    @patch("oio_rest.db.convert_relations", new=lambda x, y: x)
+    @patch("oio_rest.db.get_attribute_names", new=MagicMock())
+    @patch("oio_rest.db.get_state_names", new=MagicMock())
+    def test_sql_convert_registration_variants(self, mock_adapt, mock_convert_variants):
         # type: (MagicMock) -> None
         mock_adapt.side_effect = lambda x: x
         mock_convert_variants.side_effect = lambda x: x
 
         # Arrange
-        variants = ['variant1', 'variant2']
+        variants = ["variant1", "variant2"]
         registration = {
-            'variants': variants,
-            'states': {},
-            'attributes': {},
-            'relations': {},
+            "variants": variants,
+            "states": {},
+            "attributes": {},
+            "relations": {},
         }
 
-        class_name = 'classname'
+        class_name = "classname"
 
         # Act
         db.sql_convert_registration(registration, class_name)
@@ -1729,7 +1588,7 @@ class TestDBGeneralSQL(unittest.TestCase):
         mock_convert_variants.assert_called_with(variants)
 
 
-Diagnostics = collections.namedtuple('Diagnostics', ['message_primary'])
+Diagnostics = collections.namedtuple("Diagnostics", ["message_primary"])
 
 
 @patch("oio_rest.db.get_connection")
@@ -1738,7 +1597,7 @@ Diagnostics = collections.namedtuple('Diagnostics', ['message_primary'])
 @patch("oio_rest.db.jinja_env.get_template", new=MagicMock())
 class TestPGErrors(unittest.TestCase):
     class TestException(Exception):
-        def __init__(self, code='MO123', message='1 2 3 testing...'):
+        def __init__(self, code="MO123", message="1 2 3 testing..."):
             self.pgcode = code
             self.pgerror = message
             self.diag = Diagnostics(message)
@@ -1752,10 +1611,7 @@ class TestPGErrors(unittest.TestCase):
         uuid = "1c3236a1-9384-4730-82ab-5443e95bcead"
 
         (
-            mock_get_conn.return_value
-            .__enter__.return_value
-            .cursor.return_value
-            .__enter__.return_value
+            mock_get_conn.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
         ) = cursor = MagicMock()
         cursor.execute.side_effect = TestPGErrors.TestException
 
@@ -1772,12 +1628,9 @@ class TestPGErrors(unittest.TestCase):
         uuid = "1c3236a1-9384-4730-82ab-5443e95bcead"
 
         (
-            mock_get_conn.return_value
-            .__enter__.return_value
-            .cursor.return_value
-            .__enter__.return_value
+            mock_get_conn.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
         ) = cursor = MagicMock()
-        exception = TestPGErrors.TestException('12345')
+        exception = TestPGErrors.TestException("12345")
         cursor.execute.side_effect = exception
 
         # Act
@@ -1785,42 +1638,36 @@ class TestPGErrors(unittest.TestCase):
             db.object_exists(classname, uuid)
 
     @patch("oio_rest.db.psycopg2.Error", new=TestException)
-    def test_get_document_from_content_url_raises_on_pgerror(self,
-                                                             mock_get_conn):
+    def test_get_document_from_content_url_raises_on_pgerror(self, mock_get_conn):
         # type: (MagicMock) -> None
 
         # Arrange
         (
-            mock_get_conn.return_value
-            .__enter__.return_value
-            .cursor.return_value
-            .__enter__.return_value
+            mock_get_conn.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
         ) = cursor = MagicMock()
         cursor.execute.side_effect = TestPGErrors.TestException
 
         # Act
         with self.assertRaises(DBException):
-            db.get_document_from_content_url('')
+            db.get_document_from_content_url("")
 
     @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_get_document_from_content_url_raises_on_unknown_pgerror(
-            self, mock_get_conn):
+        self, mock_get_conn
+    ):
         # type: (MagicMock) -> None
 
         # Arrange
         (
-            mock_get_conn.return_value
-            .__enter__.return_value
-            .cursor.return_value
-            .__enter__.return_value
+            mock_get_conn.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
         ) = cursor = MagicMock()
         exception = TestPGErrors.TestException()
-        exception.pgcode = '12345'
+        exception.pgcode = "12345"
         cursor.execute.side_effect = exception
 
         # Act
         with self.assertRaises(TestPGErrors.TestException):
-            db.get_document_from_content_url('')
+            db.get_document_from_content_url("")
 
     @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_create_or_import_object_raises_on_pgerror(self, mock_get_conn):
@@ -1828,68 +1675,57 @@ class TestPGErrors(unittest.TestCase):
 
         # Arrange
         (
-            mock_get_conn.return_value
-            .__enter__.return_value
-            .cursor.return_value
-            .__enter__.return_value
+            mock_get_conn.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
         ) = cursor = MagicMock()
         cursor.execute.side_effect = TestPGErrors.TestException
 
         # Act
         with self.assertRaises(DBException):
-            db.create_or_import_object('', '', '', '')
+            db.create_or_import_object("", "", "", "")
 
     @patch("oio_rest.db.psycopg2.Error", new=TestException)
-    @patch('oio_rest.db.object_exists', new=lambda *x: False)
-    def test_create_or_import_object_raises_on_noop_pgerror(self,
-                                                            mock_get_conn):
+    @patch("oio_rest.db.object_exists", new=lambda *x: False)
+    def test_create_or_import_object_raises_on_noop_pgerror(self, mock_get_conn):
         # type: (MagicMock) -> None
 
         # Arrange
-        class_name = 'class'
-        uuid = '61ae604b-e7fb-4892-a09a-55e5f6822435'
+        class_name = "class"
+        uuid = "61ae604b-e7fb-4892-a09a-55e5f6822435"
         exception = TestPGErrors.TestException()
-        exception.message = ('Aborted updating {} with id [{}] as the given '
-                             'data, does not give raise to a new '
-                             'registration.').format(
-            class_name, uuid
-        )
-        exception.pgcode = '12345'
+        exception.message = (
+            "Aborted updating {} with id [{}] as the given "
+            "data, does not give raise to a new "
+            "registration."
+        ).format(class_name, uuid)
+        exception.pgcode = "12345"
 
         (
-            mock_get_conn.return_value
-            .__enter__.return_value
-            .cursor.return_value
-            .__enter__.return_value
+            mock_get_conn.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
         ) = cursor = MagicMock()
         cursor.execute.side_effect = exception
 
         # Act
         with self.assertRaises(TestPGErrors.TestException):
-            db.create_or_import_object(class_name, '', '', uuid)
+            db.create_or_import_object(class_name, "", "", uuid)
 
     @patch("oio_rest.db.psycopg2.Error", new=TestException)
-    def test_create_or_import_object_raises_on_unknown_pgerror(self,
-                                                               mock_get_conn):
+    def test_create_or_import_object_raises_on_unknown_pgerror(self, mock_get_conn):
         # type: (MagicMock) -> None
 
         # Arrange
-        class_name = 'class'
-        uuid = '61ae604b-e7fb-4892-a09a-55e5f6822435'
+        class_name = "class"
+        uuid = "61ae604b-e7fb-4892-a09a-55e5f6822435"
         exception = TestPGErrors.TestException()
-        exception.pgcode = '12345'
+        exception.pgcode = "12345"
 
         (
-            mock_get_conn.return_value
-            .__enter__.return_value
-            .cursor.return_value
-            .__enter__.return_value
+            mock_get_conn.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
         ) = cursor = MagicMock()
         cursor.execute.side_effect = exception
 
         # Act
         with self.assertRaises(TestPGErrors.TestException):
-            db.create_or_import_object(class_name, '', '', uuid)
+            db.create_or_import_object(class_name, "", "", uuid)
 
     @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_delete_object_raises_on_pgerror(self, mock_get_conn):
@@ -1897,45 +1733,39 @@ class TestPGErrors(unittest.TestCase):
 
         # Arrange
         (
-            mock_get_conn.return_value
-            .__enter__.return_value
-            .cursor.return_value
-            .__enter__.return_value
+            mock_get_conn.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
         ) = cursor = MagicMock()
         cursor.execute.side_effect = TestPGErrors.TestException
 
         # Act
         with self.assertRaises(DBException):
-            db.delete_object('', '', '', '')
+            db.delete_object("", "", "", "")
 
     @patch("oio_rest.db.psycopg2.Error", new=TestException)
-    @patch('oio_rest.db.object_exists', new=lambda *x: False)
+    @patch("oio_rest.db.object_exists", new=lambda *x: False)
     def test_delete_object_raises_on_notfound_pgerror(self, mock_get_conn):
         # type: (MagicMock) -> None
 
         # Arrange
-        class_name = 'classname'
-        uuid = '40910e35-feeb-47ca-8020-a88fffe6d6f3'
+        class_name = "classname"
+        uuid = "40910e35-feeb-47ca-8020-a88fffe6d6f3"
 
         exception = TestPGErrors.TestException(
-            '12345',
+            "12345",
             (
-                'Unable to update {} with uuid [{}], '
-                'being unable to find any previous registrations.'
+                "Unable to update {} with uuid [{}], "
+                "being unable to find any previous registrations."
             ).format(class_name.lower(), uuid),
         )
 
         (
-            mock_get_conn.return_value
-            .__enter__.return_value
-            .cursor.return_value
-            .__enter__.return_value
+            mock_get_conn.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
         ) = cursor = MagicMock()
         cursor.execute.side_effect = exception
 
         # Act
         with self.assertRaises(NotFoundException):
-            db.delete_object(class_name, '', '', uuid)
+            db.delete_object(class_name, "", "", uuid)
 
     @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_delete_object_raises_on_unknown_pgerror(self, mock_get_conn):
@@ -1943,18 +1773,15 @@ class TestPGErrors(unittest.TestCase):
 
         # Arrange
         exception = TestPGErrors.TestException()
-        exception.pgcode = '12345'
+        exception.pgcode = "12345"
         (
-            mock_get_conn.return_value
-            .__enter__.return_value
-            .cursor.return_value
-            .__enter__.return_value
+            mock_get_conn.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
         ) = cursor = MagicMock()
         cursor.execute.side_effect = exception
 
         # Act
         with self.assertRaises(TestPGErrors.TestException):
-            db.delete_object('', '', '', '')
+            db.delete_object("", "", "", "")
 
     @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_passivate_object_raises_on_pgerror(self, mock_get_conn):
@@ -1963,16 +1790,13 @@ class TestPGErrors(unittest.TestCase):
         # Arrange
         exception = TestPGErrors.TestException()
         (
-            mock_get_conn.return_value
-            .__enter__.return_value
-            .cursor.return_value
-            .__enter__.return_value
+            mock_get_conn.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
         ) = cursor = MagicMock()
         cursor.execute.side_effect = exception
 
         # Act
         with self.assertRaises(DBException):
-            db.passivate_object('', '', '', '')
+            db.passivate_object("", "", "", "")
 
     @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_passivate_object_raises_on_unknown_pgerror(self, mock_get_conn):
@@ -1980,18 +1804,15 @@ class TestPGErrors(unittest.TestCase):
 
         # Arrange
         exception = TestPGErrors.TestException()
-        exception.pgcode = '123456'
+        exception.pgcode = "123456"
         (
-            mock_get_conn.return_value
-            .__enter__.return_value
-            .cursor.return_value
-            .__enter__.return_value
+            mock_get_conn.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
         ) = cursor = MagicMock()
         cursor.execute.side_effect = exception
 
         # Act
         with self.assertRaises(TestPGErrors.TestException):
-            db.passivate_object('', '', '', '')
+            db.passivate_object("", "", "", "")
 
     @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_update_object_raises_on_pgerror(self, mock_get_conn):
@@ -2000,41 +1821,35 @@ class TestPGErrors(unittest.TestCase):
         # Arrange
         exception = TestPGErrors.TestException()
         (
-            mock_get_conn.return_value
-            .__enter__.return_value
-            .cursor.return_value
-            .__enter__.return_value
+            mock_get_conn.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
         ) = cursor = MagicMock()
         cursor.execute.side_effect = exception
 
         # Act
         with self.assertRaises(DBException):
-            db.update_object('', '', '', '')
+            db.update_object("", "", "", "")
 
     @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_update_object_returns_uuid_on_noop_pgerror(self, mock_get_conn):
         # type: (MagicMock) -> None
 
         # Arrange
-        class_name = 'classname'
-        uuid = '8abdb359-ce8a-47d9-a5d0-c9a1c6d36c44'
+        class_name = "classname"
+        uuid = "8abdb359-ce8a-47d9-a5d0-c9a1c6d36c44"
 
         exception = TestPGErrors.TestException(
-            message='Aborted updating {} with id [{}] as the given data, '
-            'does not give raise to a new registration.'.format(
+            message="Aborted updating {} with id [{}] as the given data, "
+            "does not give raise to a new registration.".format(
                 class_name.lower(), uuid
             )
         )
         (
-            mock_get_conn.return_value
-            .__enter__.return_value
-            .cursor.return_value
-            .__enter__.return_value
+            mock_get_conn.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
         ) = cursor = MagicMock()
         cursor.execute.side_effect = exception
 
         # Act
-        actual_result = db.update_object(class_name, '', '', uuid)
+        actual_result = db.update_object(class_name, "", "", uuid)
 
         # Assert
         self.assertEqual(uuid, actual_result)
@@ -2045,18 +1860,15 @@ class TestPGErrors(unittest.TestCase):
 
         # Arrange
         exception = TestPGErrors.TestException()
-        exception.pgcode = '123456'
+        exception.pgcode = "123456"
         (
-            mock_get_conn.return_value
-            .__enter__.return_value
-            .cursor.return_value
-            .__enter__.return_value
+            mock_get_conn.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
         ) = cursor = MagicMock()
         cursor.execute.side_effect = exception
 
         # Act
         with self.assertRaises(TestPGErrors.TestException):
-            db.update_object('', '', '', '')
+            db.update_object("", "", "", "")
 
     @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_list_objects_raises_on_pgerror(self, mock_get_conn):
@@ -2065,16 +1877,13 @@ class TestPGErrors(unittest.TestCase):
         # Arrange
         exception = TestPGErrors.TestException()
         (
-            mock_get_conn.return_value
-            .__enter__.return_value
-            .cursor.return_value
-            .__enter__.return_value
+            mock_get_conn.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
         ) = cursor = MagicMock()
         cursor.execute.side_effect = exception
 
         # Act
         with self.assertRaises(DBException):
-            db.list_objects('', '', '', '', '', '')
+            db.list_objects("", "", "", "", "", "")
 
     @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_list_objects_raises_on_unknown_pgerror(self, mock_get_conn):
@@ -2082,18 +1891,15 @@ class TestPGErrors(unittest.TestCase):
 
         # Arrange
         exception = TestPGErrors.TestException()
-        exception.pgcode = '123456'
+        exception.pgcode = "123456"
         (
-            mock_get_conn.return_value
-            .__enter__.return_value
-            .cursor.return_value
-            .__enter__.return_value
+            mock_get_conn.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
         ) = cursor = MagicMock()
         cursor.execute.side_effect = exception
 
         # Act
         with self.assertRaises(TestPGErrors.TestException):
-            db.list_objects('', '', '', '', '', '')
+            db.list_objects("", "", "", "", "", "")
 
     @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_search_objects_raises_on_pgerror(self, mock_get_conn):
@@ -2102,16 +1908,13 @@ class TestPGErrors(unittest.TestCase):
         # Arrange
         exception = TestPGErrors.TestException()
         (
-            mock_get_conn.return_value
-            .__enter__.return_value
-            .cursor.return_value
-            .__enter__.return_value
+            mock_get_conn.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
         ) = cursor = MagicMock()
         cursor.execute.side_effect = exception
 
         # Act
         with self.assertRaises(DBException):
-            db.search_objects('', '', '')
+            db.search_objects("", "", "")
 
     @patch("oio_rest.db.psycopg2.Error", new=TestException)
     def test_search_objects_raises_on_unknown_pgerror(self, mock_get_conn):
@@ -2119,15 +1922,12 @@ class TestPGErrors(unittest.TestCase):
 
         # Arrange
         exception = TestPGErrors.TestException()
-        exception.pgcode = '123456'
+        exception.pgcode = "123456"
         (
-            mock_get_conn.return_value
-            .__enter__.return_value
-            .cursor.return_value
-            .__enter__.return_value
+            mock_get_conn.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
         ) = cursor = MagicMock()
         cursor.execute.side_effect = exception
 
         # Act
         with self.assertRaises(TestPGErrors.TestException):
-            db.search_objects('', '', '')
+            db.search_objects("", "", "")
