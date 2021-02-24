@@ -72,8 +72,7 @@ class TestImportDeletedPassivated(DBTestCase):
             result_patch = self.client.patch(
                 "klassifikation/facet/%s" % uuid_,
                 data={
-                    "json": util.get_fixture("facet_passiv.json",
-                                             as_text=False),
+                    "json": util.get_fixture("facet_passiv.json", as_text=False),
                 },
             )
             self.assertEqual(result_patch.status_code, 200)
@@ -83,8 +82,7 @@ class TestImportDeletedPassivated(DBTestCase):
             result_put = self.client.put(
                 "klassifikation/facet/%s" % uuid_,
                 data={
-                    "json": util.get_fixture("facet_opret.json",
-                                             as_text=False),
+                    "json": util.get_fixture("facet_opret.json", as_text=False),
                 },
             )
             self.assertEqual(result_put.status_code, 200)
@@ -94,8 +92,7 @@ class TestImportDeletedPassivated(DBTestCase):
             result_delete = self.client.delete(
                 "klassifikation/facet/%s" % uuid_,
                 data={
-                    "json": util.get_fixture("facet_slet.json",
-                                             as_text=False),
+                    "json": util.get_fixture("facet_slet.json", as_text=False),
                 },
             )
             self.assertEqual(result_delete.status_code, 202)
@@ -105,8 +102,7 @@ class TestImportDeletedPassivated(DBTestCase):
             result_import = self.client.put(
                 "klassifikation/facet/%s" % uuid_,
                 data={
-                    "json": util.get_fixture("facet_opret.json",
-                                             as_text=False),
+                    "json": util.get_fixture("facet_opret.json", as_text=False),
                 },
             )
             self.assertEqual(result_import.status_code, 200)
@@ -118,8 +114,7 @@ class TestFacet(DBTestCase):
         result = self.client.post(
             "klassifikation/facet",
             data={
-                "json": util.get_fixture("facet_opret.json",
-                                         as_text=False),
+                "json": util.get_fixture("facet_opret.json", as_text=False),
             },
         )
         self.assertEqual(result.status_code, 201)
@@ -131,8 +126,7 @@ class TestFacet(DBTestCase):
             result_import = self.client.put(
                 "klassifikation/facet/%s" % import_uuid,
                 data={
-                    "json": util.get_fixture("facet_opret.json",
-                                             as_text=False),
+                    "json": util.get_fixture("facet_opret.json", as_text=False),
                 },
             )
             self.assertEqual(result_import.status_code, 200)
@@ -142,8 +136,7 @@ class TestFacet(DBTestCase):
             result_patch = self.client.patch(
                 "klassifikation/facet/%s" % uuid_,
                 data={
-                    "json": util.get_fixture("facet_opdater.json",
-                                             as_text=False),
+                    "json": util.get_fixture("facet_opdater.json", as_text=False),
                 },
             )
             self.assertEqual(result_patch.status_code, 200)
@@ -153,8 +146,7 @@ class TestFacet(DBTestCase):
             result_put = self.client.put(
                 "klassifikation/facet/%s" % uuid_,
                 data={
-                    "json": util.get_fixture("facet_opret.json",
-                                             as_text=False),
+                    "json": util.get_fixture("facet_opret.json", as_text=False),
                 },
             )
             self.assertEqual(result_put.status_code, 200)
@@ -164,8 +156,7 @@ class TestFacet(DBTestCase):
             result_patch = self.client.patch(
                 "klassifikation/facet/%s" % uuid_,
                 data={
-                    "json": util.get_fixture("facet_passiv.json",
-                                             as_text=False),
+                    "json": util.get_fixture("facet_passiv.json", as_text=False),
                 },
             )
             self.assertEqual(result_patch.status_code, 200)
@@ -175,8 +166,7 @@ class TestFacet(DBTestCase):
             result_delete = self.client.delete(
                 "klassifikation/facet/%s" % uuid_,
                 data={
-                    "json": util.get_fixture("facet_slet.json",
-                                             as_text=False),
+                    "json": util.get_fixture("facet_slet.json", as_text=False),
                 },
             )
             self.assertEqual(result_delete.status_code, 202)

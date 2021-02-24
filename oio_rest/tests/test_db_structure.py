@@ -10,7 +10,6 @@ from oio_rest.db import db_structure
 
 
 class TestDBStructure(TestCase):
-
     def test_merge_lists(self):
         a = [1, 2, 3, 4]
         b = [4, 5, 6, 7]
@@ -42,25 +41,14 @@ class TestDBStructure(TestCase):
         self.assertEqual(expected, actual)
 
     def test_merge_dicts(self):
-        a = {
-            "outer1": 123,
-            "outer2": {"inner1": ["hest"]},
-            "outer3": [4, 5, 6]
-        }
-        b = {
-            "outer2": {"inner2": 1234},
-            "outer3": [1, 2, 3],
-            "outer4": 456
-        }
+        a = {"outer1": 123, "outer2": {"inner1": ["hest"]}, "outer3": [4, 5, 6]}
+        b = {"outer2": {"inner2": 1234}, "outer3": [1, 2, 3], "outer4": 456}
 
         expected = {
             "outer1": 123,
-            "outer2": {
-                "inner1": ["hest"],
-                "inner2": 1234
-            },
+            "outer2": {"inner1": ["hest"], "inner2": 1234},
             "outer3": [1, 2, 3, 4, 5, 6],
-            "outer4": 456
+            "outer4": 456,
         }
 
         actual = db_structure._merge_dicts(a, b)
@@ -87,7 +75,7 @@ class TestDBStructure(TestCase):
 
         self.assertEqual(expected, actual)
 
-    @patch('oio_rest.db.db_structure._merge_dicts')
+    @patch("oio_rest.db.db_structure._merge_dicts")
     def test_merge_objects_dicts(self, mock):
         a = {"test": 123}
         b = {"hest": 456}
@@ -96,7 +84,7 @@ class TestDBStructure(TestCase):
 
         mock.assert_called_with(a, b)
 
-    @patch('oio_rest.db.db_structure._merge_lists')
+    @patch("oio_rest.db.db_structure._merge_lists")
     def test_merge_objects_lists(self, mock):
         a = [1, 2, 3]
         b = [4, 5, 6]

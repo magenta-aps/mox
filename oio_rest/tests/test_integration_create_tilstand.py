@@ -17,23 +17,17 @@ class TestCreateTilstand(TestCreateObject):
                     {
                         "brugervendtnoegle": "bvn",
                         "beskrivelse": "description",
-                        "virkning": self.standard_virkning1
+                        "virkning": self.standard_virkning1,
                     }
                 ]
             },
             "tilstande": {
                 "tilstandstatus": [
-                    {
-                        "status": "Aktiv",
-                        "virkning": self.standard_virkning1
-                    }
+                    {"status": "Aktiv", "virkning": self.standard_virkning1}
                 ],
                 "tilstandpubliceret": [
-                    {
-                        "publiceret": "Normal",
-                        "virkning": self.standard_virkning1
-                    }
-                ]
+                    {"publiceret": "Normal", "virkning": self.standard_virkning1}
+                ],
             },
             "relationer": {
                 "tilstandskvalitet": [
@@ -41,7 +35,7 @@ class TestCreateTilstand(TestCreateObject):
                         "indeks": 1,
                         "objekttype": "Klasse",
                         "uuid": "f7109356-e87e-4b10-ad5d-36de6e3ee09d",
-                        "virkning": self.standard_virkning1
+                        "virkning": self.standard_virkning1,
                     }
                 ],
                 "tilstandsvaerdi": [
@@ -49,24 +43,19 @@ class TestCreateTilstand(TestCreateObject):
                         "indeks": 1,
                         "tilstandsvaerdiattr": {
                             "forventet": True,
-                            "nominelvaerdi": "82"
+                            "nominelvaerdi": "82",
                         },
-                        "virkning": self.standard_virkning1
+                        "virkning": self.standard_virkning1,
                     }
-                ]
-            }
-
+                ],
+            },
         }
 
-        r = self.perform_request('/tilstand/tilstand', json=tilstand)
+        r = self.perform_request("/tilstand/tilstand", json=tilstand)
 
         # Check response
         self.assert201(r)
 
         # Check persisted data
-        tilstand['livscykluskode'] = 'Opstaaet'
-        self.assertQueryResponse(
-            '/tilstand/tilstand',
-            tilstand,
-            uuid=r.json['uuid']
-        )
+        tilstand["livscykluskode"] = "Opstaaet"
+        self.assertQueryResponse("/tilstand/tilstand", tilstand, uuid=r.json["uuid"])

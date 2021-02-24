@@ -8,6 +8,7 @@ class LogHaendelse(OIORestObject):
     """
     Implement a log entry  - manage access to database layer from the API.
     """
+
     pass
 
 

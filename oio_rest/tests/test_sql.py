@@ -33,7 +33,7 @@ class SQLTests(DBTestCase):
         super().setUp()
 
         with get_connection() as conn, conn.cursor() as curs:
-            curs.execute('DROP SCHEMA test CASCADE')
+            curs.execute("DROP SCHEMA test CASCADE")
             curs.execute('DROP EXTENSION IF EXISTS "pgtap" CASCADE;')
 
     def test_pgsql(self):
@@ -48,10 +48,10 @@ class SQLTests(DBTestCase):
             # please note that the tuple unpacking below is
             # deliberate; we're iterating over over a cursor
             # containing single-item rows
-            taptext = '\n'.join(line.strip() for (line,) in curs)
+            taptext = "\n".join(line.strip() for (line,) in curs)
 
         for result in tap.parser.Parser().parse_text(taptext):
-            if result.category == 'test':
+            if result.category == "test":
                 print(result)
 
                 with self.subTest(result.description):
@@ -73,7 +73,7 @@ class TextTests(unittest.TestCase):
         SQL_FIXTURE = os.path.join(util.FIXTURE_DIR, "db-dump.sql")
 
         expected_path = pathlib.Path(SQL_FIXTURE)
-        actual = "\n".join(db_templating.get_sql()) + '\n'
+        actual = "\n".join(db_templating.get_sql()) + "\n"
         expected = expected_path.read_text()
 
         self.assertEqual(

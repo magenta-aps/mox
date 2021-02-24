@@ -8,15 +8,21 @@ import json
 from . import settings
 
 
-def log_service_call(service_name, class_name, time,
-                     operation, return_code, msg, note, user_uuid, role,
-                     object_uuid):
+def log_service_call(
+    service_name,
+    class_name,
+    time,
+    operation,
+    return_code,
+    msg,
+    note,
+    user_uuid,
+    role,
+    object_uuid,
+):
     """Log a call to a LoRa service."""
 
-    if (
-        service_name in
-        settings.LOG_IGNORED_SERVICES or not settings.LOG_AMQP_SERVER
-    ):
+    if service_name in settings.LOG_IGNORED_SERVICES or not settings.LOG_AMQP_SERVER:
         "Don't log the log service."
         return
 
@@ -26,7 +32,7 @@ def log_service_call(service_name, class_name, time,
         "to": "infinity",
         "aktoerref": user_uuid,
         "aktoertypekode": "Bruger",
-        "notetekst": ""
+        "notetekst": "",
     }
     logevent_dict = {
         "note": settings.BASE_URL,
@@ -40,38 +46,20 @@ def log_service_call(service_name, class_name, time,
                     "returkode": return_code,
                     "returtekst": msg,
                     "note": note,
-                    "virkning": virkning
+                    "virkning": virkning,
                 }
             ]
         },
         "tilstande": {
             "loghaendelsegyldighed": [
-                {
-                    "gyldighed": "Ikke rettet",
-                    "virkning": virkning
-                }
+                {"gyldighed": "Ikke rettet", "virkning": virkning}
             ]
         },
         "relationer": {
-            "objekt": [
-                {
-                    "uuid": object_uuid,
-                    "virkning": virkning
-                }
-            ],
-            "bruger": [
-                {
-                    "uuid": user_uuid,
-                    "virkning": virkning
-                }
-            ],
-            "brugerrolle": [
-                {
-                    "urn": role,
-                    "virkning": virkning
-                }
-            ]
-        }
+            "objekt": [{"uuid": object_uuid, "virkning": virkning}],
+            "bruger": [{"uuid": user_uuid, "virkning": virkning}],
+            "brugerrolle": [{"urn": role, "virkning": virkning}],
+        },
     }
 
     # TODO: Get auth token if auth enabled
@@ -79,30 +67,31 @@ def log_service_call(service_name, class_name, time,
     # Send AMQP message to LOG_SERVICE_URL
 
     if settings.LOG_AMQP_SERVER:
-        connection = pika.BlockingConnection(pika.ConnectionParameters(
-            host=settings.LOG_AMQP_SERVER
-        ))
+        connection = pika.BlockingConnection(
+            pika.ConnectionParameters(host=settings.LOG_AMQP_SERVER)
+        )
         channel = connection.channel()
         channel.queue_declare(queue=settings.MOX_LOG_QUEUE)
-        channel.exchange_declare(exchange=settings.MOX_LOG_EXCHANGE,
-                                 exchange_type='fanout')
-        channel.queue_bind(settings.MOX_LOG_QUEUE,
-                           exchange=settings.MOX_LOG_EXCHANGE)
+        channel.exchange_declare(
+            exchange=settings.MOX_LOG_EXCHANGE, exchange_type="fanout"
+        )
+        channel.queue_bind(settings.MOX_LOG_QUEUE, exchange=settings.MOX_LOG_EXCHANGE)
 
         message = json.dumps(logevent_dict)
         # print "Log exchange", LOG_EXCHANGE
 
         channel.basic_publish(
             exchange=settings.MOX_LOG_EXCHANGE,
-            routing_key='',
+            routing_key="",
             body=message,
             properties=pika.BasicProperties(
-                content_type='application/json',
+                content_type="application/json",
                 delivery_mode=2,
                 headers={
-                    'beskedversion': "1",
-                    'beskedID': object_uuid,
-                    'objekttype': 'LogHaendelse',
-                    'operation': 'create',
-                }
-            ))
+                    "beskedversion": "1",
+                    "beskedID": object_uuid,
+                    "objekttype": "LogHaendelse",
+                    "operation": "create",
+                },
+            ),
+        )

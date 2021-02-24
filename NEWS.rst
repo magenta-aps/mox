@@ -1,5 +1,5 @@
-In development:
----------------
+Version 1.9.0, 11 February 2021
+-------------------------------
 
 New features:
 * Performance improvements for search queries

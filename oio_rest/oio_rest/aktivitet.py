@@ -8,6 +8,7 @@ class Aktivitet(OIORestObject):
     """
     Implement an Aktivitet  - manage access to database layer from the API.
     """
+
     pass
 
 

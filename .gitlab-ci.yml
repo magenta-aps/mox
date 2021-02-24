@@ -49,8 +49,9 @@ Lint Python:
   before_script:
     - pip3 install -r oio_rest/requirements-lint.txt
   script:
-    - cd oio_rest
-    - flake8 --max-line-length=88
+    - black --check --diff oio_rest
+    - flake8 oio_rest
+
 
 Lint Dockerfiles:
   <<: *lint-default
