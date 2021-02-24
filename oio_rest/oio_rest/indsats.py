@@ -8,6 +8,7 @@ class Indsats(OIORestObject):
     """
     Implement an Indsats  - manage access to database layer from the API.
     """
+
     pass
 
 

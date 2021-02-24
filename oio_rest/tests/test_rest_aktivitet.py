@@ -12,8 +12,7 @@ class TestAktivitet(DBTestCase):
         result = self.client.post(
             "aktivitet/aktivitet",
             data={
-                "json": util.get_fixture("aktivitet_opret.json",
-                                         as_text=False),
+                "json": util.get_fixture("aktivitet_opret.json", as_text=False),
             },
         )
         self.assertEqual(result.status_code, 201)
@@ -24,8 +23,7 @@ class TestAktivitet(DBTestCase):
             result_patch = self.client.patch(
                 "aktivitet/aktivitet/%s" % uuid_,
                 data={
-                    "json": util.get_fixture("aktivitet_opdater.json",
-                                             as_text=False),
+                    "json": util.get_fixture("aktivitet_opdater.json", as_text=False),
                 },
             )
             self.assertEqual(result_patch.status_code, 200)

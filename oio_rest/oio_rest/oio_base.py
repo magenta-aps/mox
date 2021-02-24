@@ -3,66 +3,196 @@
 
 """Superclasses for OIO objects and object hierarchies."""
 
-import json
 import datetime
+import json
+from abc import ABCMeta, abstractmethod
+from typing import Dict, List, Optional, Tuple, Union
 
 import dateutil
 import jsonschema
 from flask import jsonify, request
-
 from werkzeug.datastructures import ImmutableOrderedMultiDict
 
 from . import db
-from .db import db_helpers, db_structure
 from . import validate
-from .utils import build_registration, to_lower_param, split_param
+from .authentication import requires_auth
 from .custom_exceptions import BadRequestException, NotFoundException
 from .custom_exceptions import GoneException
+from .db import db_helpers, db_structure
+from .db.quick_query.search import quick_search
+from .settings import config
+from .utils import build_registration, split_param, to_lower_param
 
-from .authentication import requires_auth
+"""List of parameters allowed for all searches."""
+GENERAL_SEARCH_PARAMS = frozenset(
+    {
+        "brugerref",
+        "foersteresultat",
+        "livscykluskode",
+        "maximalantalresultater",
+        "notetekst",
+        "uuid",
+        "vilkaarligattr",
+        "vilkaarligrel",
+        "list",
+    }
+)
 
-
-'''List of parameters allowed for all searches.'''
-GENERAL_SEARCH_PARAMS = frozenset({
-    'brugerref',
-    'foersteresultat',
-    'livscykluskode',
-    'maximalantalresultater',
-    'notetekst',
-    'uuid',
-    'vilkaarligattr',
-    'vilkaarligrel',
-    'list',
-})
-
-'''List of parameters allowed the apply to temporal operations, i.e.
+"""List of parameters allowed the apply to temporal operations, i.e.
 search and list.
 
-'''
-TEMPORALITY_PARAMS = frozenset({
-    'registreretfra',
-    'registrerettil',
-    'registreringstid',
-    'virkningfra',
-    'virkningtil',
-    'virkningstid',
-})
+"""
+TEMPORALITY_PARAMS = frozenset(
+    {
+        "registreretfra",
+        "registrerettil",
+        "registreringstid",
+        "virkningfra",
+        "virkningtil",
+        "virkningstid",
+    }
+)
 
 """Parameter used for consolidating virkninger in output. For list, search
 and get"""
-CONSOLIDATE_PARAM = frozenset({
-    'konsolider',
-})
+CONSOLIDATE_PARAM = frozenset(
+    {
+        "konsolider",
+    }
+)
 
-'''Some operations take no arguments; this makes it explicit.
+"""Some operations take no arguments; this makes it explicit.
 
-'''
+"""
 NO_PARAMS = frozenset()
 
-'''Aliases that apply to all operations.'''
+"""Aliases that apply to all operations."""
 PARAM_ALIASES = {
-    'bvn': 'brugervendtnoegle',
+    "bvn": "brugervendtnoegle",
 }
+
+
+class Searcher(metaclass=ABCMeta):
+    @abstractmethod
+    def search_objects(
+        self,
+        class_name: str,
+        uuid: Optional[str],
+        registration: Dict,
+        virkning_fra: Union[datetime.datetime, str],
+        virkning_til: Union[datetime.datetime, str],
+        registreret_fra: Optional[Union[datetime.datetime, str]] = None,
+        registreret_til: Optional[Union[datetime.datetime, str]] = None,
+        life_cycle_code=None,
+        user_ref=None,
+        note=None,
+        any_attr_value_arr=None,
+        any_rel_uuid_arr=None,
+        first_result=None,
+        max_results=None,
+    ) -> Tuple[List[str]]:
+        pass
+
+
+class DefaultSearcher(Searcher):
+    @staticmethod
+    def search_objects(
+        class_name: str,
+        uuid: Optional[str],
+        registration: Dict,
+        virkning_fra: Union[datetime.datetime, str],
+        virkning_til: Union[datetime.datetime, str],
+        registreret_fra: Optional[Union[datetime.datetime, str]] = None,
+        registreret_til: Optional[Union[datetime.datetime, str]] = None,
+        life_cycle_code=None,
+        user_ref=None,
+        note=None,
+        any_attr_value_arr=None,
+        any_rel_uuid_arr=None,
+        first_result=None,
+        max_results=None,
+    ) -> Tuple[List[str]]:
+        return db.search_objects(
+            class_name=class_name,
+            uuid=uuid,
+            registration=registration,
+            virkning_fra=virkning_fra,
+            virkning_til=virkning_til,
+            registreret_fra=registreret_fra,
+            registreret_til=registreret_til,
+            life_cycle_code=life_cycle_code,
+            user_ref=user_ref,
+            note=note,
+            any_attr_value_arr=any_attr_value_arr,
+            any_rel_uuid_arr=any_rel_uuid_arr,
+            first_result=first_result,
+            max_results=max_results,
+        )
+
+
+class QuickSearcher(Searcher):
+    @staticmethod
+    def search_objects(
+        class_name: str,
+        uuid: Optional[str],
+        registration: Dict,
+        virkning_fra: Union[datetime.datetime, str],
+        virkning_til: Union[datetime.datetime, str],
+        registreret_fra: Optional[Union[datetime.datetime, str]] = None,
+        registreret_til: Optional[Union[datetime.datetime, str]] = None,
+        life_cycle_code=None,
+        user_ref=None,
+        note=None,
+        any_attr_value_arr=None,
+        any_rel_uuid_arr=None,
+        first_result=None,
+        max_results=None,
+    ) -> Tuple[List[str]]:
+        try:
+            return quick_search(
+                class_name=class_name,
+                uuid=uuid,
+                registration=registration,
+                virkning_fra=virkning_fra,
+                virkning_til=virkning_til,
+                registreret_fra=registreret_fra,
+                registreret_til=registreret_til,
+                life_cycle_code=life_cycle_code,
+                user_ref=user_ref,
+                note=note,
+                any_attr_value_arr=any_attr_value_arr,
+                any_rel_uuid_arr=any_rel_uuid_arr,
+                first_result=first_result,
+                max_results=max_results,
+            )
+        except NotImplementedError:
+            return db.search_objects(
+                class_name=class_name,
+                uuid=uuid,
+                registration=registration,
+                virkning_fra=virkning_fra,
+                virkning_til=virkning_til,
+                registreret_fra=registreret_fra,
+                registreret_til=registreret_til,
+                life_cycle_code=life_cycle_code,
+                user_ref=user_ref,
+                note=note,
+                any_attr_value_arr=any_attr_value_arr,
+                any_rel_uuid_arr=any_rel_uuid_arr,
+                first_result=first_result,
+                max_results=max_results,
+            )
+
+
+class ConfiguredDBInterface:
+    def __init__(self):
+        if config["search"]["enable_quick_search"]:
+            self.searcher: Searcher = QuickSearcher()
+        else:
+            self.searcher: Searcher = DefaultSearcher()
+
+
+configured_db_interface = ConfiguredDBInterface()
 
 
 def j(t):
@@ -77,22 +207,24 @@ def typed_get(d, field, default):
         return default
 
     if not isinstance(v, t):
-        raise BadRequestException('expected %s for %r, found %s: %s' %
-                                  (t.__name__, field, type(v).__name__,
-                                   json.dumps(v)))
+        raise BadRequestException(
+            "expected %s for %r, found %s: %s"
+            % (t.__name__, field, type(v).__name__, json.dumps(v))
+        )
 
     return v
 
 
 def get_virkning_dates(args):
-    virkning_fra = args.get('virkningfra')
-    virkning_til = args.get('virkningtil')
-    virkningstid = args.get('virkningstid')
+    virkning_fra = args.get("virkningfra")
+    virkning_til = args.get("virkningtil")
+    virkningstid = args.get("virkningstid")
 
     if virkningstid:
         if virkning_fra or virkning_til:
-            raise BadRequestException("'virkningfra'/'virkningtil' conflict "
-                                      "with 'virkningstid'")
+            raise BadRequestException(
+                "'virkningfra'/'virkningtil' conflict " "with 'virkningstid'"
+            )
         # Timespan has to be non-zero length of time, so we add one
         # microsecond
         dt = dateutil.parser.isoparse(virkningstid)
@@ -103,20 +235,20 @@ def get_virkning_dates(args):
             # TODO: Use the equivalent of TSTZRANGE(current_timestamp,
             # current_timestamp,'[]') if possible
             virkning_fra = datetime.datetime.now()
-            virkning_til = virkning_fra + datetime.timedelta(
-                microseconds=1)
+            virkning_til = virkning_fra + datetime.timedelta(microseconds=1)
     return virkning_fra, virkning_til
 
 
 def get_registreret_dates(args):
-    registreret_fra = args.get('registreretfra')
-    registreret_til = args.get('registrerettil')
-    registreringstid = args.get('registreringstid')
+    registreret_fra = args.get("registreretfra")
+    registreret_til = args.get("registrerettil")
+    registreringstid = args.get("registreringstid")
 
     if registreringstid:
         if registreret_fra or registreret_til:
-            raise BadRequestException("'registreretfra'/'registrerettil' "
-                                      "conflict with 'registreringstid'")
+            raise BadRequestException(
+                "'registreretfra'/'registrerettil' " "conflict with 'registreringstid'"
+            )
         else:
             # Timespan has to be non-zero length of time, so we add one
             # microsecond
@@ -131,18 +263,21 @@ def _check_not_deleted(objects):
     if objects is None:
         return
     for obj in objects:
-        if isinstance(obj, list) and obj[0]["registreringer"][0][
-                "livscykluskode"] == db.Livscyklus.SLETTET.value:
+        if (
+            isinstance(obj, list)
+            and obj[0]["registreringer"][0]["livscykluskode"]
+            == db.Livscyklus.SLETTET.value
+        ):
             raise GoneException(
                 "The object with UUID %s has been deleted." % obj[0]["id"]
             )
 
 
 class ArgumentDict(ImmutableOrderedMultiDict):
-    '''
+    """
     A Werkzeug multi dict that maintains the order, and maps alias
     arguments.
-    '''
+    """
 
     @classmethod
     def _process_item(cls, item):
@@ -156,9 +291,7 @@ class ArgumentDict(ImmutableOrderedMultiDict):
         # that mapping is specified as list of two-tuples -- which
         # happens to be the case when contructing the dictionary from
         # query arguments
-        super(ArgumentDict, self).__init__(
-            list(map(self._process_item, mapping))
-        )
+        super(ArgumentDict, self).__init__(list(map(self._process_item, mapping)))
 
 
 class Registration(object):
@@ -172,7 +305,7 @@ class Registration(object):
 class OIOStandardHierarchy(object):
     """Implement API for entire hierarchy."""
 
-    _name = ''
+    _name = ""
     _classes = []
 
     @classmethod
@@ -181,7 +314,7 @@ class OIOStandardHierarchy(object):
 
         Note that version number etc. may have to be added to the URL."""
 
-        assert cls._name and cls._classes, 'hierarchy not configured?'
+        assert cls._name and cls._classes, "hierarchy not configured?"
 
         for c in cls._classes:
             c.create_api(cls._name, flask, base_url)
@@ -192,7 +325,7 @@ class OIOStandardHierarchy(object):
         def get_classes():
             """Return the classes including their fields under this service.
 
-             .. :quickref: :http:get:`/(service)/classes`
+            .. :quickref: :http:get:`/(service)/classes`
 
             """
             structure = db_structure.REAL_DB_STRUCTURE
@@ -201,8 +334,7 @@ class OIOStandardHierarchy(object):
             return jsonify(hierarchy_dict)
 
         flask.add_url_rule(
-            classes_url, '_'.join([hierarchy, 'classes']),
-            get_classes, methods=['GET']
+            classes_url, "_".join([hierarchy, "classes"]), get_classes, methods=["GET"]
         )
 
 
@@ -229,7 +361,7 @@ class OIORestObject(object):
         if request.json:
             return request.json
         else:
-            data = request.form.get('json', None)
+            data = request.form.get("json", None)
             if data is not None:
                 try:
                     if request.charset is not None:
@@ -255,13 +387,13 @@ class OIORestObject(object):
 
         input = cls.get_json()
         if not input:
-            return jsonify({'uuid': None}), 400
+            return jsonify({"uuid": None}), 400
 
         # Validate JSON input
         try:
             validate.validate(input, cls.__name__.lower())
         except jsonschema.exceptions.ValidationError as e:
-            return jsonify({'message': e.message}), 400
+            return jsonify({"message": e.message}), 400
 
         note = typed_get(input, "note", "")
         registration = cls.gather_registration(input)
@@ -269,16 +401,19 @@ class OIORestObject(object):
         # Pass log info on request object.
         request.api_operation = "Opret"
         request.uuid = uuid
-        return jsonify({'uuid': uuid}), 201
+        return jsonify({"uuid": uuid}), 201
 
     @classmethod
     def _get_args(cls, as_lists=False):
         """
         Convert arguments to lowercase, optionally getting them as lists.
         """
-        return {to_lower_param(k): (request.args.get(k) if not as_lists else
-                                    request.args.getlist(k))
-                for k in request.args}
+        return {
+            to_lower_param(k): (
+                request.args.get(k) if not as_lists else request.args.getlist(k)
+            )
+            for k in request.args
+        }
 
     @classmethod
     @requires_auth
@@ -305,63 +440,84 @@ class OIORestObject(object):
         registreret_fra, registreret_til = get_registreret_dates(args)
         virkning_fra, virkning_til = get_virkning_dates(args)
 
-        uuid_param = list_args.get('uuid', None)
+        uuid_param = list_args.get("uuid", None)
 
-        consolidate_param = list_args.get('konsolider') is not None
+        consolidate_param = list_args.get("konsolider") is not None
         if consolidate_param:
             list_fn = db.list_and_consolidate_objects
         else:
             list_fn = db.list_objects
 
-        valid_list_args = TEMPORALITY_PARAMS | CONSOLIDATE_PARAM | {'uuid'}
+        valid_list_args = TEMPORALITY_PARAMS | CONSOLIDATE_PARAM | {"uuid"}
 
         # Assume the search operation if other params were specified or the
         # 'list' parameter is specified
-        if not (valid_list_args.issuperset(args) and args.get('list') is None):
+        if not (valid_list_args.issuperset(args) and args.get("list") is None):
+
             # Only one uuid is supported through the search operation
             if uuid_param is not None and len(uuid_param) > 1:
-                raise BadRequestException("Multiple uuid parameters passed "
-                                          "to search operation. Only one "
-                                          "uuid parameter is supported.")
-            uuid_param = args.get('uuid', None)
-            first_result = args.get('foersteresultat', None)
+                raise BadRequestException(
+                    "Multiple uuid parameters passed "
+                    "to search operation. Only one "
+                    "uuid parameter is supported."
+                )
+            uuid_param = args.get("uuid", None)
+            first_result = args.get("foersteresultat", None)
             if first_result is not None:
                 first_result = int(first_result)
-            max_results = args.get('maximalantalresultater', None)
+            max_results = args.get("maximalantalresultater", None)
             if max_results is not None:
                 max_results = int(max_results)
 
-            any_attr_value_arr = list_args.get('vilkaarligattr', None)
-            any_rel_uuid_arr = list_args.get('vilkaarligrel', None)
-            life_cycle_code = args.get('livscykluskode', None)
-            user_ref = args.get('brugerref', None)
-            note = args.get('notetekst', None)
+            any_attr_value_arr = list_args.get("vilkaarligattr", None)
+            any_rel_uuid_arr = list_args.get("vilkaarligrel", None)
+            life_cycle_code = args.get("livscykluskode", None)
+            user_ref = args.get("brugerref", None)
+            note = args.get("notetekst", None)
 
             # Fill out a registration object based on the query arguments
             registration = build_registration(cls.__name__, list_args)
             request.api_operation = "Søg"
-            results = db.search_objects(cls.__name__,
-                                        uuid_param,
-                                        registration,
-                                        virkning_fra, virkning_til,
-                                        registreret_fra, registreret_til,
-                                        life_cycle_code,
-                                        user_ref, note,
-                                        any_attr_value_arr,
-                                        any_rel_uuid_arr, first_result,
-                                        max_results)
-            if args.get('list') is not None:
+            results = configured_db_interface.searcher.search_objects(
+                cls.__name__,
+                uuid_param,
+                registration,
+                virkning_fra,
+                virkning_til,
+                registreret_fra,
+                registreret_til,
+                life_cycle_code,
+                user_ref,
+                note,
+                any_attr_value_arr,
+                any_rel_uuid_arr,
+                first_result,
+                max_results,
+            )
+
+            if args.get("list") is not None:
                 request.api_operation = "List"
-                results = list_fn(cls.__name__, results[0],
-                                  virkning_fra, virkning_til,
-                                  registreret_fra, registreret_til)
+                results = list_fn(
+                    cls.__name__,
+                    results[0],
+                    virkning_fra,
+                    virkning_til,
+                    registreret_fra,
+                    registreret_til,
+                )
                 _check_not_deleted(results)
+
         else:
-            uuid_param = list_args.get('uuid', None)
+            uuid_param = list_args.get("uuid", None)
             request.api_operation = "List"
-            results = list_fn(cls.__name__, uuid_param, virkning_fra,
-                              virkning_til, registreret_fra,
-                              registreret_til)
+            results = list_fn(
+                cls.__name__,
+                uuid_param,
+                virkning_fra,
+                virkning_til,
+                registreret_fra,
+                registreret_til,
+            )
             _check_not_deleted(results)
 
         if results is None:
@@ -369,8 +525,8 @@ class OIORestObject(object):
         if uuid_param:
             request.uuid = uuid_param
         else:
-            request.uuid = ''
-        return jsonify({'results': results})
+            request.uuid = ""
+        return jsonify({"results": results})
 
     @classmethod
     @requires_auth
@@ -387,17 +543,22 @@ class OIORestObject(object):
 
         virkning_fra, virkning_til = get_virkning_dates(args)
 
-        consolidate_param = cls._get_args().get('konsolider') is not None
+        consolidate_param = cls._get_args().get("konsolider") is not None
         if consolidate_param:
             list_fn = db.list_and_consolidate_objects
         else:
             list_fn = db.list_objects
 
-        request.api_operation = 'Læs'
+        request.api_operation = "Læs"
         request.uuid = uuid
-        object_list = list_fn(cls.__name__, [uuid], virkning_fra,
-                              virkning_til, registreret_fra,
-                              registreret_til)
+        object_list = list_fn(
+            cls.__name__,
+            [uuid],
+            virkning_fra,
+            virkning_til,
+            registreret_fra,
+            registreret_til,
+        )
         try:
             object = object_list[0]
         except IndexError:
@@ -408,9 +569,10 @@ class OIORestObject(object):
                 )
             )
         # Raise 410 Gone if object is deleted.
-        if object[0]["registreringer"][0][
-            "livscykluskode"
-        ] == db.Livscyklus.SLETTET.value:
+        if (
+            object[0]["registreringer"][0]["livscykluskode"]
+            == db.Livscyklus.SLETTET.value
+        ):
             raise GoneException("This object has been deleted.")
         return jsonify({uuid: object})
 
@@ -421,13 +583,13 @@ class OIORestObject(object):
         states = typed_get(input, "tilstande", {})
 
         relations = typed_get(input, "relationer", {})
-        filtered_relations = {
-            key: val for key, val in relations.items() if val
-        }
+        filtered_relations = {key: val for key, val in relations.items() if val}
 
-        return {"states": states,
-                "attributes": attributes,
-                "relations": filtered_relations}
+        return {
+            "states": states,
+            "attributes": attributes,
+            "relations": filtered_relations,
+        }
 
     @classmethod
     @requires_auth
@@ -451,13 +613,13 @@ class OIORestObject(object):
 
         input = cls.get_json()
         if not input:
-            return jsonify({'uuid': None}), 400
+            return jsonify({"uuid": None}), 400
 
         # Validate JSON input
         try:
             validate.validate(input, cls.__name__.lower())
         except jsonschema.exceptions.ValidationError as e:
-            return jsonify({'message': e.message}), 400
+            return jsonify({"message": e.message}), 400
 
         # Get most common parameters if available.
         note = typed_get(input, "note", "")
@@ -467,8 +629,8 @@ class OIORestObject(object):
         if exists:
             livscyklus = db.get_life_cycle_code(cls.__name__, uuid)
             if (
-                livscyklus == db.Livscyklus.PASSIVERET.value or
-                livscyklus == db.Livscyklus.SLETTET.value
+                livscyklus == db.Livscyklus.PASSIVERET.value
+                or livscyklus == db.Livscyklus.SLETTET.value
             ):
                 deleted_or_passive = True
 
@@ -478,20 +640,24 @@ class OIORestObject(object):
             # Do import.
             request.api_operation = "Import"
             db.create_or_import_object(cls.__name__, note, registration, uuid)
-            return jsonify({'uuid': uuid}), 200
+            return jsonify({"uuid": uuid}), 200
         elif deleted_or_passive:
             # Import.
             request.api_operation = "Import"
-            db.update_object(cls.__name__, note, registration,
-                             uuid=uuid,
-                             life_cycle_code=db.Livscyklus.IMPORTERET.value)
-            return jsonify({'uuid': uuid}), 200
+            db.update_object(
+                cls.__name__,
+                note,
+                registration,
+                uuid=uuid,
+                life_cycle_code=db.Livscyklus.IMPORTERET.value,
+            )
+            return jsonify({"uuid": uuid}), 200
         else:
             # Edit.
             request.api_operation = "Ret"
             db.create_or_import_object(cls.__name__, note, registration, uuid)
 
-            return jsonify({'uuid': uuid}), 200
+            return jsonify({"uuid": uuid}), 200
 
     @classmethod
     @requires_auth
@@ -515,33 +681,28 @@ class OIORestObject(object):
 
         input = cls.get_json()
         if not input:
-            return jsonify({'uuid': None}), 400
+            return jsonify({"uuid": None}), 400
         # Get most common parameters if available.
         note = typed_get(input, "note", "")
         registration = cls.gather_registration(input)
 
         # Validate JSON input
         try:
-            validate.validate(
-                input, cls.__name__.lower(), do_create=False
-            )
+            validate.validate(input, cls.__name__.lower(), do_create=False)
         except jsonschema.exceptions.ValidationError as e:
-            return jsonify({'message': e.message}), 400
+            return jsonify({"message": e.message}), 400
 
-        if typed_get(input, 'livscyklus', '').lower() == 'passiv':
+        if typed_get(input, "livscyklus", "").lower() == "passiv":
             # Passivate
             request.api_operation = "Passiver"
             registration = cls.gather_registration({})
-            db.passivate_object(
-                cls.__name__, note, registration, uuid
-            )
-            return jsonify({'uuid': uuid}), 200
+            db.passivate_object(cls.__name__, note, registration, uuid)
+            return jsonify({"uuid": uuid}), 200
         else:
             # Edit/change
             request.api_operation = "Ret"
-            db.update_object(cls.__name__, note, registration,
-                             uuid)
-            return jsonify({'uuid': uuid}), 200
+            db.update_object(cls.__name__, note, registration, uuid)
+            return jsonify({"uuid": uuid}), 200
 
     @classmethod
     @requires_auth
@@ -563,7 +724,7 @@ class OIORestObject(object):
         request.uuid = uuid
         db.delete_object(class_name, registration, note, uuid)
 
-        return jsonify({'uuid': uuid}), 202
+        return jsonify({"uuid": uuid}), 202
 
     @classmethod
     def get_fields(cls):
@@ -598,81 +759,76 @@ class OIORestObject(object):
         cls.service_name = hierarchy
         hierarchy = hierarchy.lower()
         class_name = cls.__name__.lower()
-        class_url = "{0}/{1}/{2}".format(base_url,
-                                         hierarchy,
-                                         class_name)
+        class_url = "{0}/{1}/{2}".format(base_url, hierarchy, class_name)
         cls_fields_url = "{0}/{1}".format(class_url, "fields")
         uuid_regex = (
             "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}"
             "-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
         )
-        object_url = '{0}/<regex("{1}"):uuid>'.format(
-            class_url,
-            uuid_regex
-        )
+        object_url = '{0}/<regex("{1}"):uuid>'.format(class_url, uuid_regex)
 
         flask.add_url_rule(
             class_url,
-            '_'.join([cls.__name__, 'get_objects']),
+            "_".join([cls.__name__, "get_objects"]),
             cls.get_objects,
-            methods=['GET'],
+            methods=["GET"],
         )
 
         flask.add_url_rule(
             object_url,
-            '_'.join([cls.__name__, 'get_object']),
+            "_".join([cls.__name__, "get_object"]),
             cls.get_object,
-            methods=['GET'],
+            methods=["GET"],
         )
 
         flask.add_url_rule(
             object_url,
-            '_'.join([cls.__name__, 'put_object']),
+            "_".join([cls.__name__, "put_object"]),
             cls.put_object,
-            methods=['PUT'],
+            methods=["PUT"],
         )
 
         flask.add_url_rule(
             object_url,
-            '_'.join([cls.__name__, 'patch_object']),
+            "_".join([cls.__name__, "patch_object"]),
             cls.patch_object,
-            methods=['PATCH'],
+            methods=["PATCH"],
         )
 
         flask.add_url_rule(
             class_url,
-            '_'.join([cls.__name__, 'create_object']),
+            "_".join([cls.__name__, "create_object"]),
             cls.create_object,
-            methods=['POST'],
+            methods=["POST"],
         )
 
         flask.add_url_rule(
             object_url,
-            '_'.join([cls.__name__, 'delete_object']),
+            "_".join([cls.__name__, "delete_object"]),
             cls.delete_object,
-            methods=['DELETE'],
+            methods=["DELETE"],
         )
 
         # Structure URLs
         flask.add_url_rule(
             cls_fields_url,
-            '_'.join([cls.__name__, 'fields']),
+            "_".join([cls.__name__, "fields"]),
             cls.get_fields,
-            methods=['GET'],
+            methods=["GET"],
         )
 
         # JSON schemas
         flask.add_url_rule(
-            '{}/{}'.format(class_url, 'schema'),
-            '_'.join([cls.__name__, 'schema']),
+            "{}/{}".format(class_url, "schema"),
+            "_".join([cls.__name__, "schema"]),
             cls.get_schema,
-            methods=['GET'],
+            methods=["GET"],
         )
 
     # Templates which may be overridden on subclass.
     # Templates may only be overridden on subclass if they are explicitly
     # listed here.
-    RELATIONS_TEMPLATE = 'relations_array.sql'
+    RELATIONS_TEMPLATE = "relations_array.sql"
 
     @classmethod
     def attribute_names(cls):
@@ -708,12 +864,9 @@ class OIORestObject(object):
 
             # special handling of argument with an object type
             req_args -= {
-                a
-                for a in req_args
-                if split_param(a)[0] in cls.relation_names()
+                a for a in req_args if split_param(a)[0] in cls.relation_names()
             }
 
         if req_args:
-            arg_string = ', '.join(sorted(req_args))
-            raise BadRequestException('Unsupported argument(s): {}'
-                                      .format(arg_string))
+            arg_string = ", ".join(sorted(req_args))
+            raise BadRequestException("Unsupported argument(s): {}".format(arg_string))

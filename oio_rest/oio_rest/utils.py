@@ -37,17 +37,15 @@ def escape_underscores(s):
 
 
 def build_relation(value, objekttype=None, virkning=None):
-    relation = {
-        'virkning': virkning,
-        'objekttype': objekttype
-    }
+    relation = {"virkning": virkning, "objekttype": objekttype}
     if is_uuid(value):
-        relation['uuid'] = value
+        relation["uuid"] = value
     elif is_urn(value):
-        relation['urn'] = value
+        relation["urn"] = value
     else:
         raise ValueError(
-            "Relation has an invalid value (not a UUID or URN) '%s'" % value)
+            "Relation has an invalid value (not a UUID or URN) '%s'" % value
+        )
     return relation
 
 
@@ -75,13 +73,15 @@ def to_lower_param(s):
         return s.lower()
 
 
-ACCEPTED_JOURNAL_POST_PARAMS = set("""journalpostkode
+ACCEPTED_JOURNAL_POST_PARAMS = set(
+    """journalpostkode
 journalnotat.titel
 journalnotat.notat
 journalnotat.format
 journaldokument.dokumenttitel
 journaldokument.offentlighedundtaget.alternativtitel
-journaldokument.offentlighedundtaget.hjemmel""".split())
+journaldokument.offentlighedundtaget.hjemmel""".split()
+)
 
 
 def dict_from_dot_notation(notation, value):
@@ -111,34 +111,28 @@ def add_journal_post_relation_fields(param, values, relation):
             if param != "journalpostkode":
                 value = escape_underscores(value)
             relation_dict = dict_from_dot_notation(param, value)
-            relation_dict['virkning'] = None
+            relation_dict["virkning"] = None
             relation["journalpost"].append(relation_dict)
 
 
 def build_registration(class_name, list_args):
     registration = {}
     for f in list_args:
-        attr = registration.setdefault('attributes', {})
+        attr = registration.setdefault("attributes", {})
         for attr_name in get_attribute_names(class_name):
             if f in get_attribute_fields(attr_name):
                 for attr_value in list_args[f]:
-                    attr_period = {
-                        f: escape_underscores(attr_value),
-                        'virkning': None
-                    }
+                    attr_period = {f: escape_underscores(attr_value), "virkning": None}
                     attr.setdefault(attr_name, []).append(attr_period)
 
-        state = registration.setdefault('states', {})
+        state = registration.setdefault("states", {})
         for state_name in get_state_names(class_name):
             state_periods = state.setdefault(state_name, [])
             if f == state_name:
                 for state_value in list_args[f]:
-                    state_periods.append({
-                        state_name: state_value,
-                        'virkning': None
-                    })
+                    state_periods.append({state_name: state_value, "virkning": None})
 
-        relation = registration.setdefault('relations', {})
+        relation = registration.setdefault("relations", {})
         rel_name, objekttype = split_param(f)
         if rel_name in get_relation_names(class_name):
             relation.setdefault(rel_name, [])
@@ -147,17 +141,13 @@ def build_registration(class_name, list_args):
             for rel in list_args[f]:
                 relation[rel_name].append(build_relation(rel, objekttype))
 
-        add_journal_post_relation_fields(f,
-                                         list_args[f],
-                                         relation)
+        add_journal_post_relation_fields(f, list_args[f], relation)
 
     if class_name == "Dokument":
         variants = registration.setdefault("variants", [])
         variant = {
             # Search on only one varianttekst is supported through REST API
-            "varianttekst": escape_underscores(
-                list_args.get("varianttekst", [None])[0]
-            )
+            "varianttekst": escape_underscores(list_args.get("varianttekst", [None])[0])
         }
         variants.append(variant)
 
@@ -167,18 +157,13 @@ def build_registration(class_name, list_args):
         for f in list_args:
             if f in DokumentVariantEgenskaberType.get_fields():
                 for val in list_args[f]:
-                    props.append({
-                        f: escape_underscores(val),
-                        'virkning': None
-                    })
+                    props.append({f: escape_underscores(val), "virkning": None})
 
         parts = []
         variant["dele"] = parts
         part = {
             # Search on only one varianttekst is supported through REST API
-            "deltekst": escape_underscores(
-                list_args.get("deltekst", [None])[0]
-            )
+            "deltekst": escape_underscores(list_args.get("deltekst", [None])[0])
         }
         parts.append(part)
 
@@ -188,12 +173,7 @@ def build_registration(class_name, list_args):
         for f in list_args:
             if f in DokumentDelEgenskaberType.get_fields():
                 for val in list_args[f]:
-                    part_props.append(
-                        {
-                            f: escape_underscores(val),
-                            'virkning': None
-                        }
-                    )
+                    part_props.append({f: escape_underscores(val), "virkning": None})
 
         # Look for del relationer
         part_relations = part.setdefault("relationer", {})
@@ -202,8 +182,7 @@ def build_registration(class_name, list_args):
             if rel_name in get_document_part_relation_names():
                 part_relations[rel_name] = []
                 for rel in list_args[f]:
-                    part_relations[rel_name].append(
-                        build_relation(rel, objekttype))
+                    part_relations[rel_name].append(build_relation(rel, objekttype))
 
     return registration
 
@@ -211,11 +190,13 @@ def build_registration(class_name, list_args):
 def restriction_to_registration(class_name, restriction):
     states, attributes, relations = restriction
 
-    all_fields = MultiDict(itertools.chain(
-        states.items(),
-        attributes.items(),
-        relations.items(),
-    ))
+    all_fields = MultiDict(
+        itertools.chain(
+            states.items(),
+            attributes.items(),
+            relations.items(),
+        )
+    )
     list_args = {k.lower(): all_fields.getlist(k) for k in all_fields}
 
     return build_registration(class_name, list_args)

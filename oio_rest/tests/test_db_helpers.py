@@ -20,48 +20,23 @@ class TestDBHelpers(ExtTestCase):
         db_helpers._attribute_names = {}
         db_helpers._relation_names = {}
 
-    @ExtTestCase.patch_db_struct({
-        'testclass1': {
-            'attributter': {
-                'testattribut': [
-                    'value1',
-                    'value2'
-                ]
-            }
-        },
-        'testclass2': {
-            'attributter': {
-                'testattribut': [
-                    'value3',
-                    'value4'
-                ]
-            }
+    @ExtTestCase.patch_db_struct(
+        {
+            "testclass1": {"attributter": {"testattribut": ["value1", "value2"]}},
+            "testclass2": {"attributter": {"testattribut": ["value3", "value4"]}},
         }
-    })
+    )
     def test_get_attribute_reads_db_struct(self):
         # Arrange
         expected_fields = {
-            'testclass1testattribut': [
-                'value1',
-                'value2',
-                'virkning'
-            ],
-            'testclass2testattribut': [
-                'value3',
-                'value4',
-                'virkning'
-            ]
+            "testclass1testattribut": ["value1", "value2", "virkning"],
+            "testclass2testattribut": ["value3", "value4", "virkning"],
         }
 
-        expected_result = [
-            'value1',
-            'value2',
-            'virkning'
-        ]
+        expected_result = ["value1", "value2", "virkning"]
 
         # Act
-        actual_result = db_helpers.get_attribute_fields(
-            'testclass1testattribut')
+        actual_result = db_helpers.get_attribute_fields("testclass1testattribut")
         actual_fields = db_helpers._attribute_fields
 
         # Assert
@@ -70,61 +45,61 @@ class TestDBHelpers(ExtTestCase):
 
     def test_get_attribute_fields_uses_cache(self):
         # Arrange
-        expected_result = ['value1', 'value2']
-        db_helpers._attribute_fields = {'test': expected_result}
+        expected_result = ["value1", "value2"]
+        db_helpers._attribute_fields = {"test": expected_result}
 
         # Act
-        actual_result = db_helpers.get_attribute_fields('test')
+        actual_result = db_helpers.get_attribute_fields("test")
 
         # Assert
         self.assertEqual(expected_result, actual_result)
 
     def test_get_field_type_default(self):
         # Arrange
-        expected_result = 'text'
+        expected_result = "text"
 
         # Act
-        actual_result = db_helpers.get_field_type('attributename', 'fieldname')
+        actual_result = db_helpers.get_field_type("attributename", "fieldname")
 
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @ExtTestCase.patch_db_struct({
-        'testclass1': {
-            'attributter_metadata': {
-                'testattribut': {
-                    'value': {'type': 'value_override'}
+    @ExtTestCase.patch_db_struct(
+        {
+            "testclass1": {
+                "attributter_metadata": {
+                    "testattribut": {"value": {"type": "value_override"}}
                 }
             }
         }
-    })
+    )
     def test_get_field_type_override(self):
         # Arrange
-        expected_result = 'value_override'
+        expected_result = "value_override"
 
         # Act
-        actual_result = db_helpers.get_field_type('testclass1testattribut',
-                                                  'value')
+        actual_result = db_helpers.get_field_type("testclass1testattribut", "value")
 
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @ExtTestCase.patch_db_struct({
-        'testclass1': {
-            'attributter_metadata': {
-                'testattribut': {
-                    'value': {'type': 'value_override'}
+    @ExtTestCase.patch_db_struct(
+        {
+            "testclass1": {
+                "attributter_metadata": {
+                    "testattribut": {"value": {"type": "value_override"}}
                 }
             }
         }
-    })
+    )
     def test_get_field_type_override_field_not_found(self):
         # Arrange
-        expected_result = 'text'
+        expected_result = "text"
 
         # Act
-        actual_result = db_helpers.get_field_type('testclass1testattribut',
-                                                  'unknown_override')
+        actual_result = db_helpers.get_field_type(
+            "testclass1testattribut", "unknown_override"
+        )
 
         # Assert
         self.assertEqual(expected_result, actual_result)
@@ -132,88 +107,85 @@ class TestDBHelpers(ExtTestCase):
     @ExtTestCase.patch_db_struct(MagicMock())
     def test_get_relation_field_type_default(self):
         # Arrange
-        expected_result = 'text'
+        expected_result = "text"
 
         # Act
-        actual_result = db_helpers.get_relation_field_type('attributename',
-                                                           'fieldname')
+        actual_result = db_helpers.get_relation_field_type("attributename", "fieldname")
 
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @ExtTestCase.patch_db_struct({
-        'testclass1': {
-            'relationer_metadata': {
-                '*': {
-                    'indeks': {'type': 'int'},
-                    'key1': {'type': 'value_override1'},
-                },
-                'specific': {
-                    'key2': {'type': 'value_override2'},
+    @ExtTestCase.patch_db_struct(
+        {
+            "testclass1": {
+                "relationer_metadata": {
+                    "*": {
+                        "indeks": {"type": "int"},
+                        "key1": {"type": "value_override1"},
+                    },
+                    "specific": {
+                        "key2": {"type": "value_override2"},
+                    },
                 }
             }
         }
-    })
+    )
     def test_get_relation_field_type_override(self):
         # Arrange
-        expected_result1 = 'value_override1'
-        expected_result2 = 'value_override2'
+        expected_result1 = "value_override1"
+        expected_result2 = "value_override2"
 
         # Act
-        actual_result1 = db_helpers.get_relation_field_type('testclass1',
-                                                            'key1')
-        actual_result2 = db_helpers.get_relation_field_type('testclass1',
-                                                            'key2')
+        actual_result1 = db_helpers.get_relation_field_type("testclass1", "key1")
+        actual_result2 = db_helpers.get_relation_field_type("testclass1", "key2")
 
         # Assert
         self.assertEqual(expected_result1, actual_result1)
         self.assertEqual(expected_result2, actual_result2)
 
-    @ExtTestCase.patch_db_struct({
-        'testclass1': {
-            'relationer_metadata': {
-                '*': {
-                    'indeks': {'type': 'int'},
-                    'key1': {'type': 'value_override1'},
-                },
-                'specific': {
-                    'key2': {'type': 'value_override2'},
+    @ExtTestCase.patch_db_struct(
+        {
+            "testclass1": {
+                "relationer_metadata": {
+                    "*": {
+                        "indeks": {"type": "int"},
+                        "key1": {"type": "value_override1"},
+                    },
+                    "specific": {
+                        "key2": {"type": "value_override2"},
+                    },
                 }
             }
         }
-    })
+    )
     def test_get_relation_field_type_override_field_not_found(self):
         # Arrange
-        expected_result = 'text'
+        expected_result = "text"
 
         # Act
-        actual_result = db_helpers.get_relation_field_type('testclass1',
-                                                           'unknown_override')
+        actual_result = db_helpers.get_relation_field_type(
+            "testclass1", "unknown_override"
+        )
 
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    @ExtTestCase.patch_db_struct({
-        'testclass1': {
-            'attributter': {
-                'testattribut1': [
-                    'value1',
-                    'value2'
-                ],
-                'testattribut2': [
-                    'value3',
-                    'value4'
-                ]
+    @ExtTestCase.patch_db_struct(
+        {
+            "testclass1": {
+                "attributter": {
+                    "testattribut1": ["value1", "value2"],
+                    "testattribut2": ["value3", "value4"],
+                }
             }
         }
-    })
+    )
     def test_get_attribute_names_reads_db_struct(self):
         # Arrange
-        expected_result = ['testclass1testattribut1',
-                           'testclass1testattribut2']
+        expected_result = ["testclass1testattribut1", "testclass1testattribut2"]
 
         # Act
-        actual_result = db_helpers.get_attribute_names('testclass1')
+        actual_result = db_helpers.get_attribute_names("testclass1")
 
         # Assert
         self.assertEqual(expected_result, actual_result)
@@ -221,57 +193,26 @@ class TestDBHelpers(ExtTestCase):
     def test_get_attribute_names_default(self):
         # Arrange
         expected_result = {
-            "itsystem": [
-                "itsystemegenskaber"
-            ],
-            "bruger": [
-                "brugeregenskaber"
-            ],
-            "organisation": [
-                "organisationegenskaber"
-            ],
-            "sag": [
-                "sagegenskaber"
-            ],
-            "organisationfunktion": [
-                "organisationfunktionegenskaber"
-            ],
-            "organisationenhed": [
-                "organisationenhedegenskaber"
-            ],
-            "facet": [
-                "facetegenskaber"
-            ],
-            "interessefaellesskab": [
-                "interessefaellesskabegenskaber"
-            ],
-            "loghaendelse": [
-                "loghaendelseegenskaber"
-            ],
-            "dokument": [
-                "dokumentegenskaber"
-            ],
-            "tilstand": [
-                "tilstandegenskaber"
-            ],
-            "klassifikation": [
-                "klassifikationegenskaber"
-            ],
-            "indsats": [
-                "indsatsegenskaber"
-            ],
-            "aktivitet": [
-                "aktivitetegenskaber"
-            ],
-            "klasse": [
-                "klasseegenskaber"
-            ]
+            "itsystem": ["itsystemegenskaber"],
+            "bruger": ["brugeregenskaber"],
+            "organisation": ["organisationegenskaber"],
+            "sag": ["sagegenskaber"],
+            "organisationfunktion": ["organisationfunktionegenskaber"],
+            "organisationenhed": ["organisationenhedegenskaber"],
+            "facet": ["facetegenskaber"],
+            "interessefaellesskab": ["interessefaellesskabegenskaber"],
+            "loghaendelse": ["loghaendelseegenskaber"],
+            "dokument": ["dokumentegenskaber"],
+            "tilstand": ["tilstandegenskaber"],
+            "klassifikation": ["klassifikationegenskaber"],
+            "indsats": ["indsatsegenskaber"],
+            "aktivitet": ["aktivitetegenskaber"],
+            "klasse": ["klasseegenskaber"],
         }
 
         # Act
         actual_result = {
-            c: db_helpers.get_attribute_names(c)
-            for c in db_structure.REAL_DB_STRUCTURE
+            c: db_helpers.get_attribute_names(c) for c in db_structure.REAL_DB_STRUCTURE
         }
 
         # Assert
@@ -279,86 +220,74 @@ class TestDBHelpers(ExtTestCase):
 
     def test_get_attribute_names_uses_cache(self):
         # Arrange
-        expected_result = ['value1', 'value2']
-        db_helpers._attribute_names = {'testclass1': expected_result}
+        expected_result = ["value1", "value2"]
+        db_helpers._attribute_names = {"testclass1": expected_result}
 
         # Act
-        actual_result = db_helpers.get_attribute_names('testclass1')
+        actual_result = db_helpers.get_attribute_names("testclass1")
 
         # Assert
         self.assertEqual(expected_result, actual_result)
 
     def test_get_state_names(self):
-        with self.patch_db_struct({
-            'testclass1': {
-                'tilstande': {
-                    'testtilstand1': [
-                        'value1',
-                        'value2'
-                    ],
-                    'testtilstand2': [
-                        'value3',
-                        'value4'
-                    ]
+        with self.patch_db_struct(
+            {
+                "testclass1": {
+                    "tilstande": {
+                        "testtilstand1": ["value1", "value2"],
+                        "testtilstand2": ["value3", "value4"],
+                    }
                 }
             }
-        }):
+        ):
             # Arrange
             expected_result = [
-                'testtilstand1',
-                'testtilstand2',
+                "testtilstand1",
+                "testtilstand2",
             ]
 
             # Act
-            actual_result = db_helpers.get_state_names('testclass1')
+            actual_result = db_helpers.get_state_names("testclass1")
 
             # Assert
             self.assertEqual(expected_result, sorted(actual_result))
 
-        with self.patch_db_struct({
-            'testclass1': {
-                'tilstande': [
-                    ('testtilstand1', [
-                        'value1',
-                        'value2'
-                    ]),
-                    ('testtilstand2', [
-                        'value3',
-                        'value4'
-                    ]),
-                ],
-            },
-        }):
+        with self.patch_db_struct(
+            {
+                "testclass1": {
+                    "tilstande": [
+                        ("testtilstand1", ["value1", "value2"]),
+                        ("testtilstand2", ["value3", "value4"]),
+                    ],
+                },
+            }
+        ):
             # Arrange
             expected_result = [
-                'testtilstand1',
-                'testtilstand2',
+                "testtilstand1",
+                "testtilstand2",
             ]
 
             # Act
-            actual_result = db_helpers.get_state_names('testclass1')
+            actual_result = db_helpers.get_state_names("testclass1")
 
             # Assert
             self.assertEqual(expected_result, actual_result)
 
-    @ExtTestCase.patch_db_struct({
-        'testclass1': {
-            'relationer_nul_til_en': [
-                'value1',
-                'value2'
-            ],
-            'relationer_nul_til_mange': [
-                'value3',
-                'value4'
-            ]
+    @ExtTestCase.patch_db_struct(
+        {
+            "testclass1": {
+                "relationer_nul_til_en": ["value1", "value2"],
+                "relationer_nul_til_mange": ["value3", "value4"],
+            }
         }
-    })
+    )
     def test_get_relation_names(self):
         # Arrange
-        expected_result = ['value1', 'value2', 'value3', 'value4']
+        expected_result = ["value1", "value2", "value3", "value4"]
 
         # Act
-        actual_result = db_helpers.get_relation_names('testclass1')
+        actual_result = db_helpers.get_relation_names("testclass1")
 
         # Assert
         self.assertEqual(expected_result, actual_result)
@@ -377,7 +306,7 @@ class TestDBHelpers(ExtTestCase):
                 "tilknyttedepersoner",
                 "systemtyper",
                 "opgaver",
-                "adresser"
+                "adresser",
             ],
             "bruger": [
                 "tilhoerer",
@@ -389,7 +318,7 @@ class TestDBHelpers(ExtTestCase):
                 "tilknyttedeinteressefaellesskaber",
                 "tilknyttedeorganisationer",
                 "tilknyttedepersoner",
-                "tilknyttedeitsystemer"
+                "tilknyttedeitsystemer",
             ],
             "organisation": [
                 "branche",
@@ -410,7 +339,7 @@ class TestDBHelpers(ExtTestCase):
                 "tilknyttedeinteressefaellesskaber",
                 "tilknyttedeorganisationer",
                 "tilknyttedepersoner",
-                "tilknyttedeitsystemer"
+                "tilknyttedeitsystemer",
             ],
             "sag": [
                 "behandlingarkiv",
@@ -439,7 +368,7 @@ class TestDBHelpers(ExtTestCase):
                 "andresager",
                 "byggeri",
                 "fredning",
-                "journalpost"
+                "journalpost",
             ],
             "organisationfunktion": [
                 "organisatoriskfunktionstype",
@@ -451,7 +380,7 @@ class TestDBHelpers(ExtTestCase):
                 "tilknyttedeitsystemer",
                 "tilknyttedeinteressefaellesskaber",
                 "tilknyttedepersoner",
-                "tilknyttedefunktioner"
+                "tilknyttedefunktioner",
             ],
             "organisationenhed": [
                 "branche",
@@ -469,14 +398,9 @@ class TestDBHelpers(ExtTestCase):
                 "tilknyttedeinteressefaellesskaber",
                 "tilknyttedeorganisationer",
                 "tilknyttedepersoner",
-                "tilknyttedeitsystemer"
+                "tilknyttedeitsystemer",
             ],
-            "facet": [
-                "ansvarlig",
-                "ejer",
-                "facettilhoerer",
-                "redaktoerer"
-            ],
+            "facet": ["ansvarlig", "ejer", "facettilhoerer", "redaktoerer"],
             "interessefaellesskab": [
                 "branche",
                 "interessefaellesskabstype",
@@ -490,13 +414,9 @@ class TestDBHelpers(ExtTestCase):
                 "tilknyttedeinteressefaellesskaber",
                 "tilknyttedeorganisationer",
                 "tilknyttedepersoner",
-                "tilknyttedeitsystemer"
+                "tilknyttedeitsystemer",
             ],
-            "loghaendelse": [
-                "objekt",
-                "bruger",
-                "brugerrolle"
-            ],
+            "loghaendelse": ["objekt", "bruger", "brugerrolle"],
             "dokument": [
                 "nyrevision",
                 "primaerklasse",
@@ -514,7 +434,7 @@ class TestDBHelpers(ExtTestCase):
                 "andrebehandlere",
                 "parter",
                 "kopiparter",
-                "tilknyttedesager"
+                "tilknyttedesager",
             ],
             "tilstand": [
                 "tilstandsobjekt",
@@ -526,12 +446,9 @@ class TestDBHelpers(ExtTestCase):
                 "tilstandsaktoer",
                 "tilstandsudstyr",
                 "samtykke",
-                "tilstandsdokument"
+                "tilstandsdokument",
             ],
-            "klassifikation": [
-                "ansvarlig",
-                "ejer"
-            ],
+            "klassifikation": ["ansvarlig", "ejer"],
             "indsats": [
                 "indsatsmodtager",
                 "indsatstype",
@@ -539,7 +456,7 @@ class TestDBHelpers(ExtTestCase):
                 "indsatsaktoer",
                 "samtykke",
                 "indsatssag",
-                "indsatsdokument"
+                "indsatsdokument",
             ],
             "aktivitet": [
                 "aktivitetstype",
@@ -564,7 +481,7 @@ class TestDBHelpers(ExtTestCase):
                 "aktivitetgrundlag",
                 "aktivitetresultat",
                 "udfoerer",
-                "deltager"
+                "deltager",
             ],
             "klasse": [
                 "ejer",
@@ -576,14 +493,13 @@ class TestDBHelpers(ExtTestCase):
                 "mapninger",
                 "tilfoejelser",
                 "erstatter",
-                "lovligekombinationer"
-            ]
+                "lovligekombinationer",
+            ],
         }
 
         # Act
         actual_result = {
-            c: db_helpers.get_relation_names(c)
-            for c in db_structure.REAL_DB_STRUCTURE
+            c: db_helpers.get_relation_names(c) for c in db_structure.REAL_DB_STRUCTURE
         }
 
         # Assert
@@ -592,11 +508,11 @@ class TestDBHelpers(ExtTestCase):
     def test_get_relation_names_uses_cache(self):
         # Arrange
 
-        expected_result = ['value1', 'value2', 'value3', 'value4']
-        db_helpers._relation_names = {'testclass1': expected_result}
+        expected_result = ["value1", "value2", "value3", "value4"]
+        db_helpers._relation_names = {"testclass1": expected_result}
 
         # Act
-        actual_result = db_helpers.get_relation_names('testclass1')
+        actual_result = db_helpers.get_relation_names("testclass1")
 
         # Assert
         self.assertEqual(expected_result, actual_result)
@@ -604,50 +520,53 @@ class TestDBHelpers(ExtTestCase):
     def test_get_state_names_order(self):
         # Arrange
         expected_result = {
-            'itsystem': [
-                'gyldighed',
+            "itsystem": [
+                "gyldighed",
             ],
-            'bruger': [
-                'gyldighed',
+            "bruger": [
+                "gyldighed",
             ],
-            'organisation': [
-                'gyldighed',
+            "organisation": [
+                "gyldighed",
             ],
-            'sag': [
-                'fremdrift',
+            "sag": [
+                "fremdrift",
             ],
-            'organisationfunktion': [
-                'gyldighed',
+            "organisationfunktion": [
+                "gyldighed",
             ],
-            'organisationenhed': [
-                'gyldighed',
+            "organisationenhed": [
+                "gyldighed",
             ],
-            'facet': [
-                'publiceret',
+            "facet": [
+                "publiceret",
             ],
-            'interessefaellesskab': [
-                'gyldighed',
+            "interessefaellesskab": [
+                "gyldighed",
             ],
-            'loghaendelse': [
-                'gyldighed',
+            "loghaendelse": [
+                "gyldighed",
             ],
-            'dokument': [
-                'fremdrift',
+            "dokument": [
+                "fremdrift",
             ],
-            'tilstand': [
-                'status', 'publiceret',
+            "tilstand": [
+                "status",
+                "publiceret",
             ],
-            'klassifikation': [
-                'publiceret',
+            "klassifikation": [
+                "publiceret",
             ],
-            'indsats': [
-                'publiceret', 'fremdrift',
+            "indsats": [
+                "publiceret",
+                "fremdrift",
             ],
-            'aktivitet': [
-                'status', 'publiceret',
+            "aktivitet": [
+                "status",
+                "publiceret",
             ],
-            'klasse': [
-                'publiceret',
+            "klasse": [
+                "publiceret",
             ],
         }
 
@@ -666,57 +585,25 @@ class TestDBHelpers(ExtTestCase):
             "itsystem": [
                 "gyldighed",
             ],
-            "bruger": [
-                "gyldighed"
-            ],
-            "organisation": [
-                "gyldighed"
-            ],
-            "sag": [
-                "fremdrift"
-            ],
-            "organisationfunktion": [
-                "gyldighed"
-            ],
-            "organisationenhed": [
-                "gyldighed"
-            ],
-            "facet": [
-                "publiceret"
-            ],
-            "interessefaellesskab": [
-                "gyldighed"
-            ],
-            "loghaendelse": [
-                "gyldighed"
-            ],
-            "dokument": [
-                "fremdrift"
-            ],
-            "tilstand": [
-                "status",
-                "publiceret"
-            ],
-            "klassifikation": [
-                "publiceret"
-            ],
-            "indsats": [
-                "publiceret",
-                "fremdrift"
-            ],
-            "aktivitet": [
-                "status",
-                "publiceret"
-            ],
-            "klasse": [
-                "publiceret"
-            ]
+            "bruger": ["gyldighed"],
+            "organisation": ["gyldighed"],
+            "sag": ["fremdrift"],
+            "organisationfunktion": ["gyldighed"],
+            "organisationenhed": ["gyldighed"],
+            "facet": ["publiceret"],
+            "interessefaellesskab": ["gyldighed"],
+            "loghaendelse": ["gyldighed"],
+            "dokument": ["fremdrift"],
+            "tilstand": ["status", "publiceret"],
+            "klassifikation": ["publiceret"],
+            "indsats": ["publiceret", "fremdrift"],
+            "aktivitet": ["status", "publiceret"],
+            "klasse": ["publiceret"],
         }
 
         # Act
         actual_result = {
-            c: db_helpers.get_state_names(c)
-            for c in db_structure.REAL_DB_STRUCTURE
+            c: db_helpers.get_state_names(c) for c in db_structure.REAL_DB_STRUCTURE
         }
 
         # Assert
@@ -725,16 +612,16 @@ class TestDBHelpers(ExtTestCase):
     def test_input_list(self):
         # Arrange
         _type = MagicMock()
-        _type.input.return_value = 'listvalue'
+        _type.input.return_value = "listvalue"
 
-        input = {'testkey': ['item1', 'item2']}
+        input = {"testkey": ["item1", "item2"]}
 
-        expected_result = ['listvalue', 'listvalue']
+        expected_result = ["listvalue", "listvalue"]
 
-        expected_args = [call('item1'), call('item2')]
+        expected_args = [call("item1"), call("item2")]
 
         # Act
-        actual_result = db_helpers.input_list(_type, input, 'testkey')
+        actual_result = db_helpers.input_list(_type, input, "testkey")
 
         # Assert
         self.assertEqual(expected_result, actual_result)
@@ -744,24 +631,24 @@ class TestDBHelpers(ExtTestCase):
     def test_input_list_none_value(self):
         # Arrange
         _type = MagicMock()
-        _type.input.return_value = 'generatorvalue'
+        _type.input.return_value = "generatorvalue"
 
-        input = {'testkey': None}
+        input = {"testkey": None}
         # Act
-        actual_result = db_helpers.input_list('', input, 'testkey')
+        actual_result = db_helpers.input_list("", input, "testkey")
         # Assert
         self.assertIsNone(actual_result)
 
     def test_input_dict_list(self):
         # Arrange
         _type = MagicMock()
-        _type.input.return_value = 'generatorvalue'
+        _type.input.return_value = "generatorvalue"
 
-        input = {'testkey': ['value1', 'value2']}
+        input = {"testkey": ["value1", "value2"]}
 
-        expected_result = ['generatorvalue', 'generatorvalue']
+        expected_result = ["generatorvalue", "generatorvalue"]
 
-        expected_args = [call('testkey', 'value1'), call('testkey', 'value2')]
+        expected_args = [call("testkey", "value1"), call("testkey", "value2")]
 
         # Act
         actual_result = db_helpers.input_dict_list(_type, input)
@@ -774,7 +661,7 @@ class TestDBHelpers(ExtTestCase):
     def test_input_dict_list_none_value(self):
         # Arrange
         _type = MagicMock()
-        _type.input.return_value = 'generatorvalue'
+        _type.input.return_value = "generatorvalue"
 
         input = None
 
@@ -890,10 +777,12 @@ class TestDBHelpers(ExtTestCase):
         app = flask.Flask(__name__)
 
         # Act
-        with app.test_request_context(query_string={}, method='POST'), \
-                self.assertRaises(BadRequestException):
+        with app.test_request_context(
+            query_string={}, method="POST"
+        ), self.assertRaises(BadRequestException):
             DokumentDelEgenskaberType._get_file_storage_for_content_url(
-                'field:not_in_request')
+                "field:not_in_request"
+            )
 
     def test_dokumentdelegenskabertype_get_file_storage(self):
         from oio_rest.db.db_helpers import DokumentDelEgenskaberType
@@ -905,11 +794,12 @@ class TestDBHelpers(ExtTestCase):
         app = flask.Flask(__name__)
 
         # Act
-        with app.test_request_context(data={}, method='POST'):
-            request.files = ImmutableMultiDict({'testfile': mockfile})
+        with app.test_request_context(data={}, method="POST"):
+            request.files = ImmutableMultiDict({"testfile": mockfile})
 
-            actual_result = DokumentDelEgenskaberType \
-                ._get_file_storage_for_content_url('field:testfile')
+            actual_result = DokumentDelEgenskaberType._get_file_storage_for_content_url(
+                "field:testfile"
+            )
 
         # Assert
         self.assertEqual(mockfile, actual_result)
@@ -920,17 +810,21 @@ class TestDBHelpers(ExtTestCase):
         # Arrange
 
         # Act
-        actual_result = DokumentDelEgenskaberType \
-            ._get_file_storage_for_content_url('notfield:testfile')
+        actual_result = DokumentDelEgenskaberType._get_file_storage_for_content_url(
+            "notfield:testfile"
+        )
 
         # Assert
         self.assertIsNone(actual_result)
 
-    @patch('oio_rest.db.db_helpers.DokumentDelEgenskaberType'
-           '._get_file_storage_for_content_url')
-    @patch('oio_rest.db.db_helpers.content_store.save_file_object')
-    def test_dokumentdelegenskabertype_input_update_file(self, mock_save_file,
-                                                         mock_get_file):
+    @patch(
+        "oio_rest.db.db_helpers.DokumentDelEgenskaberType"
+        "._get_file_storage_for_content_url"
+    )
+    @patch("oio_rest.db.db_helpers.content_store.save_file_object")
+    def test_dokumentdelegenskabertype_input_update_file(
+        self, mock_save_file, mock_get_file
+    ):
         # type: (MagicMock, MagicMock) -> None
         from oio_rest.db.db_helpers import DokumentDelEgenskaberType
         import flask
@@ -938,18 +832,16 @@ class TestDBHelpers(ExtTestCase):
         # Arrange
         app = flask.Flask(__name__)
 
-        inputdata = {
-            'indhold': 'field:testdata'
-        }
+        inputdata = {"indhold": "field:testdata"}
 
         mock_get_file.return_value = mockfile = MagicMock()
 
         # Act
-        with app.test_request_context(method='POST'):
+        with app.test_request_context(method="POST"):
             DokumentDelEgenskaberType.input(inputdata)
 
         # Assert
-        mock_get_file.assert_called_with('field:testdata')
+        mock_get_file.assert_called_with("field:testdata")
         mock_save_file.assert_called_with(mockfile)
 
     def test_dokumentdelegenskabertype_input_when_none(self):
@@ -971,7 +863,7 @@ class TestDBHelpers(ExtTestCase):
         expected_result = None
 
         # Act
-        actual_result = DokumentDelRelationType.input('key', None)
+        actual_result = DokumentDelRelationType.input("key", None)
 
         # Assert
         self.assertEqual(expected_result, actual_result)
@@ -983,7 +875,7 @@ class TestNamedTupleAdapter(TestCase):
     class TestClass(NamedTupleAdapter):
         pass
 
-    @patch('oio_rest.db.db_helpers.psyco_adapt')
+    @patch("oio_rest.db.db_helpers.psyco_adapt")
     def test_prepare_and_adapt(self, mock_psyco_adapt):
         # type: (MagicMock) -> None
         # Arrange
@@ -992,7 +884,7 @@ class TestNamedTupleAdapter(TestCase):
 
         nta = TestNamedTupleAdapter.TestClass(())
         nta._conn = ""
-        x = ''
+        x = ""
 
         # Act
         actual_result = nta.prepare_and_adapt(x)
@@ -1005,14 +897,14 @@ class TestNamedTupleAdapter(TestCase):
     def test_get_quoted(self):
         # Arrange
         a = MagicMock()
-        a.getquoted.return_value = b'first value'
+        a.getquoted.return_value = b"first value"
         b = MagicMock()
-        b.getquoted.return_value = b'second value'
+        b.getquoted.return_value = b"second value"
 
         nta = TestNamedTupleAdapter.TestClass((a, b))
         nta.prepare_and_adapt = MagicMock(side_effect=lambda x: x)
 
-        expected_result = b'ROW(first value,second value) :: tuple'
+        expected_result = b"ROW(first value,second value) :: tuple"
 
         # Act
         actual_result = nta.getquoted()
@@ -1030,21 +922,22 @@ class TestAktoerAttrAdapter(TestCase):
     def test_get_quoted(self):
         # Arrange
         accepteret = MagicMock()
-        accepteret.getquoted.return_value = b'accepteret'
+        accepteret.getquoted.return_value = b"accepteret"
         obligatorisk = MagicMock()
-        obligatorisk.getquoted.return_value = b'obligatorisk'
+        obligatorisk.getquoted.return_value = b"obligatorisk"
         uuid = MagicMock()
-        uuid.getquoted.return_value = b'uuid'
+        uuid.getquoted.return_value = b"uuid"
         urn = MagicMock()
-        urn.getquoted.return_value = b'urn'
+        urn.getquoted.return_value = b"urn"
 
-        aaa = TestAktoerAttrAdapter.TestClass(
-            (accepteret, obligatorisk, uuid, urn))
+        aaa = TestAktoerAttrAdapter.TestClass((accepteret, obligatorisk, uuid, urn))
         aaa.prepare_and_adapt = MagicMock(side_effect=lambda x: x)
 
-        expected_result = (b'ROW(obligatorisk::AktivitetAktoerAttr'
-                           b'ObligatoriskKode,accepteret::AktivitetAktoerAttr'
-                           b'AccepteretKode,uuid::uuid,urn) :: tuple')
+        expected_result = (
+            b"ROW(obligatorisk::AktivitetAktoerAttr"
+            b"ObligatoriskKode,accepteret::AktivitetAktoerAttr"
+            b"AccepteretKode,uuid::uuid,urn) :: tuple"
+        )
 
         # Act
         actual_result = aaa.getquoted()
@@ -1064,8 +957,8 @@ class TestSearchable(TestCase):
 
     def test_searchable_get_fields(self):
         # Arrange
-        self.TestSearchableClass._fields = ('field1', 'field2')
-        expected_result = ('field1', 'field2')
+        self.TestSearchableClass._fields = ("field1", "field2")
+        expected_result = ("field1", "field2")
 
         # Act
         actual_result = self.TestSearchableClass.get_fields()
@@ -1075,8 +968,8 @@ class TestSearchable(TestCase):
 
     def test_searchable_get_fields_with_virkning(self):
         # Arrange
-        self.TestSearchableClass._fields = ('field1', 'field2', 'virkning')
-        expected_result = ('field1', 'field2')
+        self.TestSearchableClass._fields = ("field1", "field2", "virkning")
+        expected_result = ("field1", "field2")
 
         # Act
         actual_result = self.TestSearchableClass.get_fields()

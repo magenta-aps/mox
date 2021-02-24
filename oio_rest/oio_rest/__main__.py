@@ -24,19 +24,22 @@ def cli():
 
 
 @cli.command()
-@click.option('-o', '--output', type=click.File('wt'), default='-')
+@click.option("-o", "--output", type=click.File("wt"), default="-")
 def sql(output):
-    '''Write database SQL structure to standard output'''
+    """Write database SQL structure to standard output"""
 
     for line in db_templating.get_sql():
         output.write(line)
-        output.write('\n')
+        output.write("\n")
 
 
 @cli.command()
-@click.option("--wait", default=None, type=int,
-              help="Wait up to n seconds for the database connection before"
-                   " exiting.")
+@click.option(
+    "--wait",
+    default=None,
+    type=int,
+    help="Wait up to n seconds for the database connection before" " exiting.",
+)
 def initdb(wait):
     """Initialize database.
 
@@ -69,5 +72,5 @@ def truncatedb():
     truncate_db(config["database"]["db_name"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     cli()

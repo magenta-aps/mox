@@ -16,29 +16,22 @@ class TestCreateKlasse(TestCreateObject):
                         "brugervendtnoegle": "bvn",
                         "titel": "stor titel",
                         "integrationsdata": "data fra andet system",
-                        "virkning": self.standard_virkning1
+                        "virkning": self.standard_virkning1,
                     }
                 ]
             },
             "tilstande": {
                 "klassepubliceret": [
-                    {
-                        "publiceret": "Publiceret",
-                        "virkning": self.standard_virkning1
-                    }
+                    {"publiceret": "Publiceret", "virkning": self.standard_virkning1}
                 ]
-            }
+            },
         }
 
-        r = self.perform_request('/klassifikation/klasse', json=klasse)
+        r = self.perform_request("/klassifikation/klasse", json=klasse)
 
         # Check response
         self.assert201(r)
 
         # Check persisted data
-        klasse['livscykluskode'] = 'Opstaaet'
-        self.assertQueryResponse(
-            '/klassifikation/klasse',
-            klasse,
-            uuid=r.json['uuid']
-        )
+        klasse["livscykluskode"] = "Opstaaet"
+        self.assertQueryResponse("/klassifikation/klasse", klasse, uuid=r.json["uuid"])

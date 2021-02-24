@@ -80,3 +80,7 @@ enable = false
 # If enabled, exposes /db/truncate endpoint, for truncating the current
 # database.
 enable = false
+
+[search]
+# If enabled, uses alternative search implementation
+enable_quick_search = true

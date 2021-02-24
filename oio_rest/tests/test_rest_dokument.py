@@ -31,9 +31,7 @@ class TestDokument(DBTestCase):
                 "/dokument/dokument",
                 content_type="multipart/form-data",
                 data={
-                    "json": util.get_fixture(
-                        "dokument_opret.json", as_text=False
-                    ),
+                    "json": util.get_fixture("dokument_opret.json", as_text=False),
                     "del_indhold1": (
                         "tests/fixtures/test.txt",
                         "del_indhold1",
@@ -58,9 +56,7 @@ class TestDokument(DBTestCase):
                 "/dokument/dokument/%s" % import_uuid,
                 content_type="multipart/form-data",
                 data={
-                    "json": util.get_fixture(
-                        "dokument_opret.json", as_text=False
-                    ),
+                    "json": util.get_fixture("dokument_opret.json", as_text=False),
                     "del_indhold1": (
                         "tests/fixtures/test.txt",
                         "del_indhold1",
@@ -82,9 +78,7 @@ class TestDokument(DBTestCase):
         with self.subTest("List files / get content urls"):
             for r in self.client.get(
                 "dokument/dokument", query_string={"uuid": upload_uuid}
-            ).get_json()["results"][0][0]["registreringer"][0]["varianter"][0][
-                "dele"
-            ]:
+            ).get_json()["results"][0][0]["registreringer"][0]["varianter"][0]["dele"]:
                 path = r["egenskaber"][0]["indhold"]
                 if path.startswith("store:"):
                     files.append(path[6:])
@@ -99,9 +93,7 @@ class TestDokument(DBTestCase):
             with self.subTest("Download dokument", filename=filename):
                 self.assertEqual(
                     b"This is a test",
-                    self.client.get(
-                        "dokument/dokument/%s" % filename
-                    ).get_data(),
+                    self.client.get("dokument/dokument/%s" % filename).get_data(),
                 )
 
         with self.subTest("Search on DokumentDel relations"):
@@ -123,11 +115,7 @@ class TestDokument(DBTestCase):
             result = self.client.patch(
                 "/dokument/dokument",
                 content_type="multipart/form-data",
-                data={
-                    "json": util.get_fixture(
-                        "dokument_opdater.json", as_text=False
-                    )
-                },
+                data={"json": util.get_fixture("dokument_opdater.json", as_text=False)},
                 query_string={"uuid": upload_uuid},
             )
             self.assertEqual(result.status_code, 200)
@@ -146,9 +134,7 @@ class TestDokument(DBTestCase):
                 "/dokument/dokument",
                 content_type="multipart/form-data",
                 data={
-                    "json": util.get_fixture(
-                        "dokument_opdater2.json", as_text=False
-                    ),
+                    "json": util.get_fixture("dokument_opdater2.json", as_text=False),
                     "del_indhold1_opdateret": (
                         "tests/fixtures/test2.txt",
                         "del_indhold1_opdateret",
@@ -170,9 +156,7 @@ class TestDokument(DBTestCase):
                 if path.startswith("store:"):
                     if (
                         b"This is an updated test"
-                        in self.client.get(
-                            "dokument/dokument/%s" % path[6:]
-                        ).get_data()
+                        in self.client.get("dokument/dokument/%s" % path[6:]).get_data()
                     ):
                         break
             else:
@@ -267,8 +251,7 @@ class TestDokument(DBTestCase):
             r = self.client.get(
                 "dokument/dokument",
                 query_string={
-                    "ejer":
-                    "Organisation=ef2713ee-1a38-4c23-8fcb-3c4331262194",
+                    "ejer": "Organisation=ef2713ee-1a38-4c23-8fcb-3c4331262194",
                     "uuid": import_uuid,
                 },
             )

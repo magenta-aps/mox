@@ -1,3 +1,10 @@
+Version 1.9.0, 11 February 2021
+-------------------------------
+
+New features:
+* Performance improvements for search queries
+
+
 Version 1.8.1, 14 September 2020
 --------------------------------
 

@@ -5,21 +5,21 @@ from tests.util import DBTestCase
 
 
 UUID_PATTERN = (
-    "<regex(\"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-"
-    "[a-fA-F0-9]{4}-[a-fA-F0-9]{12}\"):uuid>"
+    '<regex("[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-'
+    '[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"):uuid>'
 )
 
 CONTENT_PATH_PATTERN = (
-    "<regex(\"\\d{4}/\\d{2}/\\d{2}/\\d{2}/\\d{2}/"
+    '<regex("\\d{4}/\\d{2}/\\d{2}/\\d{2}/\\d{2}/'
     "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-"
-    "[a-fA-F0-9]{12}.bin\"):content_path>"
+    '[a-fA-F0-9]{12}.bin"):content_path>'
 )
 
 
 class Tests(DBTestCase):
     def test_site_map(self):
         self.assertRequestResponse(
-            '/site-map',
+            "/site-map",
             {
                 "site-map": [
                     "/",
@@ -96,14 +96,14 @@ class Tests(DBTestCase):
                     "/tilstand/tilstand/schema",
                     "/version",
                 ]
-            }
+            },
         )
 
     def test_organisation(self):
         self.assertRequestResponse(
-            '/organisation/organisation?bvn=%',
+            "/organisation/organisation?bvn=%",
             {
-                'results': [
+                "results": [
                     [],
                 ],
             },
@@ -111,48 +111,49 @@ class Tests(DBTestCase):
 
     def test_log_has_no_bvn(self):
         self.assertRequestFails(
-            '/log/loghaendelse?bvn=%',
+            "/log/loghaendelse?bvn=%",
             400,
         )
 
     def test_finding_nothing(self):
         endpoints = [
-            endpoint.rsplit('/', 1)[0]
-            for endpoint in self.client.get('/site-map').json['site-map']
+            endpoint.rsplit("/", 1)[0]
+            for endpoint in self.client.get("/site-map").json["site-map"]
             if endpoint.endswith(UUID_PATTERN)
         ]
 
         self.assertEqual(
             [
-                '/aktivitet/aktivitet',
-                '/dokument/dokument',
-                '/indsats/indsats',
-                '/klassifikation/facet',
-                '/klassifikation/klasse',
-                '/klassifikation/klassifikation',
-                '/log/loghaendelse',
-                '/organisation/bruger',
-                '/organisation/interessefaellesskab',
-                '/organisation/itsystem',
-                '/organisation/organisation',
-                '/organisation/organisationenhed',
-                '/organisation/organisationfunktion',
-                '/sag/sag',
-                '/tilstand/tilstand',
+                "/aktivitet/aktivitet",
+                "/dokument/dokument",
+                "/indsats/indsats",
+                "/klassifikation/facet",
+                "/klassifikation/klasse",
+                "/klassifikation/klassifikation",
+                "/log/loghaendelse",
+                "/organisation/bruger",
+                "/organisation/interessefaellesskab",
+                "/organisation/itsystem",
+                "/organisation/organisation",
+                "/organisation/organisationenhed",
+                "/organisation/organisationfunktion",
+                "/sag/sag",
+                "/tilstand/tilstand",
             ],
-            endpoints)
+            endpoints,
+        )
 
         for endpoint in endpoints:
-            if endpoint == '/log/loghaendelse':
-                req = endpoint + '?note=%'
+            if endpoint == "/log/loghaendelse":
+                req = endpoint + "?note=%"
             else:
-                req = endpoint + '?bvn=%'
+                req = endpoint + "?bvn=%"
 
             with self.subTest(req):
                 self.assertRequestResponse(
                     req,
                     {
-                        'results': [
+                        "results": [
                             [],
                         ],
                     },

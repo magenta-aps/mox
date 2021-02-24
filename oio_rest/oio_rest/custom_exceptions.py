@@ -12,10 +12,10 @@ class OIOFlaskException(Exception):
     def to_dict(self):
         rv = dict(self.payload or ())
         if self.args:
-            rv['message'] = self.args[0]
+            rv["message"] = self.args[0]
 
             if len(self.args) > 1:
-                rv['context'] = self.args[1:]
+                rv["context"] = self.args[1:]
 
         return rv
 
@@ -45,7 +45,6 @@ class GoneException(OIOFlaskException):
 
 
 class DBException(OIOFlaskException):
-
     def __init__(self, status_code, *args, payload=None):
         OIOFlaskException.__init__(self, *args, payload)
         self.status_code = status_code

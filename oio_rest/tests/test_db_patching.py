@@ -15,23 +15,20 @@ class Tests(ExtTestCase):
         return app
 
     def get_fields(self):
-        return db_structure.REAL_DB_STRUCTURE['organisationfunktion']
+        return db_structure.REAL_DB_STRUCTURE["organisationfunktion"]
 
     def test_patching_with_dict(self):
         orig = {
-            "egenskaber": [
-                "brugervendtnoegle",
-                "funktionsnavn",
-                "integrationsdata"
-            ]
+            "egenskaber": ["brugervendtnoegle", "funktionsnavn", "integrationsdata"]
         }
 
         self.assertEqual(
-            self.get_fields()['attributter'],
+            self.get_fields()["attributter"],
             orig,
         )
 
-        with self.extend_db_struct({
+        with self.extend_db_struct(
+            {
                 "organisationfunktion": {
                     "attributter": {
                         "fætre": [
@@ -40,62 +37,64 @@ class Tests(ExtTestCase):
                         ],
                     },
                 },
-        }):
+            }
+        ):
             self.assertEqual(
-                self.get_fields()['attributter'],
+                self.get_fields()["attributter"],
                 {
                     **orig,
-                    'fætre': ['hest', 'høg'],
-                })
+                    "fætre": ["hest", "høg"],
+                },
+            )
 
         self.assertEqual(
-            self.get_fields()['attributter'],
+            self.get_fields()["attributter"],
             orig,
         )
 
     def test_patching_with_file(self):
         orig = {
-            "egenskaber": [
-                "brugervendtnoegle",
-                "funktionsnavn",
-                "integrationsdata"
-            ]
+            "egenskaber": ["brugervendtnoegle", "funktionsnavn", "integrationsdata"]
         }
 
         self.assertEqual(
-            self.get_fields()['attributter'],
+            self.get_fields()["attributter"],
             orig,
         )
 
-        with tempfile.NamedTemporaryFile('w+t') as fp:
-            json.dump({
-                "organisationfunktion": {
-                    "attributter": {
-                        "fætre": [
-                            "hest",
-                            "høg",
-                        ],
+        with tempfile.NamedTemporaryFile("w+t") as fp:
+            json.dump(
+                {
+                    "organisationfunktion": {
+                        "attributter": {
+                            "fætre": [
+                                "hest",
+                                "høg",
+                            ],
+                        },
                     },
                 },
-            }, fp)
+                fp,
+            )
             fp.flush()
 
             with self.extend_db_struct(fp.name):
                 self.assertEqual(
-                    self.get_fields()['attributter'],
+                    self.get_fields()["attributter"],
                     {
                         **orig,
-                        'fætre': ['hest', 'høg'],
+                        "fætre": ["hest", "høg"],
                     },
                 )
 
         self.assertEqual(
-            self.get_fields()['attributter'],
+            self.get_fields()["attributter"],
             orig,
         )
 
     def test_patching_order(self):
-        with self.extend_db_struct({
+        with self.extend_db_struct(
+            {
                 "organisationfunktion": {
                     "attributter": {
                         "fætre": [
@@ -110,18 +109,20 @@ class Tests(ExtTestCase):
                         ],
                     },
                 },
-        }):
+            }
+        ):
             self.assertEqual(
-                list(self.get_fields()['attributter']),
-                ['egenskaber', 'fætre'],
+                list(self.get_fields()["attributter"]),
+                ["egenskaber", "fætre"],
             )
 
             self.assertEqual(
-                list(self.get_fields()['tilstande']),
-                ['gyldighed', 'høj'],
+                list(self.get_fields()["tilstande"]),
+                ["gyldighed", "høj"],
             )
 
-        with self.extend_db_struct({
+        with self.extend_db_struct(
+            {
                 "organisationfunktion": {
                     "attributter": {
                         "xyzzy": [
@@ -136,18 +137,20 @@ class Tests(ExtTestCase):
                         ],
                     },
                 },
-        }):
+            }
+        ):
             self.assertEqual(
-                list(self.get_fields()['attributter']),
-                ['egenskaber', 'xyzzy'],
+                list(self.get_fields()["attributter"]),
+                ["egenskaber", "xyzzy"],
             )
 
             self.assertEqual(
-                list(self.get_fields()['tilstande']),
-                ['gyldighed', 'zzz'],
+                list(self.get_fields()["tilstande"]),
+                ["gyldighed", "zzz"],
             )
 
-        with self.extend_db_struct({
+        with self.extend_db_struct(
+            {
                 "organisationfunktion": {
                     "attributter": {
                         "aardvark": [
@@ -162,13 +165,14 @@ class Tests(ExtTestCase):
                         ],
                     },
                 },
-        }):
+            }
+        ):
             self.assertEqual(
-                list(self.get_fields()['attributter']),
-                ['egenskaber', 'aardvark'],
+                list(self.get_fields()["attributter"]),
+                ["egenskaber", "aardvark"],
             )
 
             self.assertEqual(
-                list(self.get_fields()['tilstande']),
-                ['gyldighed', 'aabenraa'],
+                list(self.get_fields()["tilstande"]),
+                ["gyldighed", "aabenraa"],
             )

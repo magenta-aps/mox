@@ -30,9 +30,9 @@ logger = logging.getLogger(__name__)
 
 current_directory = os.path.dirname(os.path.realpath(__file__))
 
-jinja_env = Environment(loader=FileSystemLoader(
-    os.path.join(current_directory, 'templates', 'html')
-))
+jinja_env = Environment(
+    loader=FileSystemLoader(os.path.join(current_directory, "templates", "html"))
+)
 
 
 class RegexConverter(BaseConverter):
@@ -41,16 +41,16 @@ class RegexConverter(BaseConverter):
         self.regex = items[0]
 
 
-app.url_map.converters['regex'] = RegexConverter
+app.url_map.converters["regex"] = RegexConverter
 app.url_map.strict_slashes = False
 
 klassifikation.KlassifikationsHierarki.setup_api(
-    base_url=settings.BASE_URL, flask=app,
+    base_url=settings.BASE_URL,
+    flask=app,
 )
 log.LogHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
 sag.SagsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
-organisation.OrganisationsHierarki.setup_api(base_url=settings.BASE_URL,
-                                             flask=app)
+organisation.OrganisationsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
 dokument.DokumentHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
 aktivitet.AktivitetsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
 indsats.IndsatsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
@@ -60,12 +60,12 @@ app.config.from_object(settings)
 flask_saml_sso.init_app(app)
 
 
-@app.route('/')
+@app.route("/")
 def root():
-    return redirect(url_for('sitemap'), code=308)
+    return redirect(url_for("sitemap"), code=308)
 
 
-@app.route('/site-map')
+@app.route("/site-map")
 def sitemap():
     """Returns a site map over all valid urls.
 
@@ -81,9 +81,9 @@ def sitemap():
     return jsonify({"site-map": sorted(links)})
 
 
-@app.route('/version')
+@app.route("/version")
 def version():
-    version = {'lora_version': __version__}
+    version = {"lora_version": __version__}
     return jsonify(version)
 
 
@@ -114,9 +114,7 @@ def truncate_db():
 if settings.config["testing_api"]["enable"]:
     app.add_url_rule("/testing/db-setup", "testing_db_setup", testing_db_setup)
     app.add_url_rule("/testing/db-reset", "testing_db_reset", testing_db_reset)
-    app.add_url_rule(
-        "/testing/db-teardown", "testing_db_teardown", testing_db_teardown
-    )
+    app.add_url_rule("/testing/db-teardown", "testing_db_teardown", testing_db_teardown)
 
 if settings.config["truncate_api"]["enable"]:
     app.add_url_rule("/db/truncate", "truncate_db", truncate_db)
@@ -138,25 +136,26 @@ def page_not_found(e):
 # After request handle for logging.
 # Auxiliary functions to get data to be logged.
 
+
 def get_service_name():
-    'Get the hierarchy of the present method call from the request URL'
+    "Get the hierarchy of the present method call from the request URL"
     u = urllib.parse.urlparse(request.url)
     urlpath = u.path
-    service_name = urlpath.split('/')[1].capitalize()
+    service_name = urlpath.split("/")[1].capitalize()
 
     return service_name
 
 
 def get_class_name():
-    'Get the hierarchy of the present method call from the request URL'
+    "Get the hierarchy of the present method call from the request URL"
     url = urllib.parse.urlparse(request.url)
-    class_name = url.path.split('/')[2].capitalize()
+    class_name = url.path.split("/")[2].capitalize()
     return class_name
 
 
 @app.after_request
 def log_api_call(response):
-    if hasattr(request, 'api_operation'):
+    if hasattr(request, "api_operation"):
         service_name = get_service_name()
         class_name = get_class_name()
         time = datetime.datetime.now()
@@ -165,18 +164,28 @@ def log_api_call(response):
         msg = response.status
         note = "Is there a note too?"
         user_uuid = get_authenticated_user()
-        object_uuid = getattr(request, 'uuid', None)
-        log_service_call(service_name, class_name, time, operation,
-                         return_code, msg, note, user_uuid, "N/A", object_uuid)
+        object_uuid = getattr(request, "uuid", None)
+        log_service_call(
+            service_name,
+            class_name,
+            time,
+            operation,
+            return_code,
+            msg,
+            note,
+            user_uuid,
+            "N/A",
+            object_uuid,
+        )
     return response
 
 
 @app.errorhandler(DataError)
 def handle_db_error(error):
     message = error.diag.message_primary
-    context = error.diag.context or error.pgerror.split('\n', 1)[-1]
+    context = error.diag.context or error.pgerror.split("\n", 1)[-1]
     return jsonify(message=message, context=context), 400
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)

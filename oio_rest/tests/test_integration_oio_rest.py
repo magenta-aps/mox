@@ -6,34 +6,29 @@ from tests.util import DBTestCase
 
 
 class Tests(DBTestCase):
-
     def test_virkningstid(self):
         uuid = "931ee7bf-10d6-4cc3-8938-83aa6389aaba"
 
-        self.load_fixture('/organisation/bruger', 'test_bruger.json', uuid)
+        self.load_fixture("/organisation/bruger", "test_bruger.json", uuid)
 
-        expected = util.get_fixture(
-            'output/test_bruger_virkningstid.json')
+        expected = util.get_fixture("output/test_bruger_virkningstid.json")
 
-        self.assertQueryResponse('/organisation/bruger', expected,
-                                 uuid=uuid, virkningstid='2004-01-01')
+        self.assertQueryResponse(
+            "/organisation/bruger", expected, uuid=uuid, virkningstid="2004-01-01"
+        )
 
     def test_empty_update(self):
         # Ensure that nothing is deleted when an empty update is made
         # Arrange
         uuid = "931ee7bf-10d6-4cc3-8938-83aa6389aaba"
-        path = '/organisation/bruger'
+        path = "/organisation/bruger"
 
-        self.load_fixture(path, 'test_bruger.json', uuid)
+        self.load_fixture(path, "test_bruger.json", uuid)
 
         expected = self.get(path, uuid=uuid)
-        expected['livscykluskode'] = 'Rettet'
+        expected["livscykluskode"] = "Rettet"
 
-        update = {
-            'attributter': {},
-            'tilstande': {},
-            'relationer': {}
-        }
+        update = {"attributter": {}, "tilstande": {}, "relationer": {}}
 
         # Act
         self.patch("{}/{}".format(path, uuid), json=update)

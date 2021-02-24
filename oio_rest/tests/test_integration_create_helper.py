@@ -14,15 +14,15 @@ class TestCreateObject(DBTestCase):
             "from": "2000-01-01 12:00:00+01",
             "from_included": True,
             "to": "2020-01-01 12:00:00+01",
-            "to_included": False
+            "to_included": False,
         }
         self.standard_virkning2 = {
             "from": "2020-01-01 12:00:00+01",
             "from_included": True,
             "to": "2030-01-01 12:00:00+01",
-            "to_included": False
+            "to_included": False,
         }
         self.reference = {
-            'uuid': '00000000-0000-0000-0000-000000000000',
-            'virkning': self.standard_virkning1
+            "uuid": "00000000-0000-0000-0000-000000000000",
+            "virkning": self.standard_virkning1,
         }

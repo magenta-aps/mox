@@ -25,32 +25,32 @@ with io.open(__init___path, "rt", encoding="utf8") as f:
 
 
 setup(
-    name='oio_rest',
+    name="oio_rest",
     version=version,
     description="Python and PostgreSQL implementation "
-                "of the OIO service interfaces.",
+    "of the OIO service interfaces.",
     long_description="""\
     Implementation of various object hierarchies from the Danish Government's
     OIOXML standard for the exchange of public administration documents.""",
     classifiers=[],
-    keywords='',
-    author='Magenta ApS',
-    author_email='info@magenta.dk',
-    url='https://github.com/magenta-aps/mox',
-    license='Mozilla Public License Version 2.0',
-    packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
+    keywords="",
+    author="Magenta ApS",
+    author_email="info@magenta.dk",
+    url="https://github.com/magenta-aps/mox",
+    license="Mozilla Public License Version 2.0",
+    packages=find_packages(exclude=["ez_setup", "examples", "tests"]),
     package_data={
-        'oio_rest.db': [
-            'sql/*/*/*.sql',
+        "oio_rest.db": [
+            "sql/*/*/*.sql",
         ],
-        'oio_rest': [
+        "oio_rest": [
             "templates/html/*.html",
             "templates/xml/*.xml",
             "test_auth_data/idp-certificate.pem",
             "default-settings.toml",
         ],
     },
-    python_requires='>=3.5',
+    python_requires=">=3.5",
     include_package_data=True,
     zip_safe=False,
 )
