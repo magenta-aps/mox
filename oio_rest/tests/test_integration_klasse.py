@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2018-2020 Magenta ApS
 # SPDX-License-Identifier: MPL-2.0
 
-from tests.test_integration_create_helper import TestCreateObject
+from tests.test_integration_helper import TestCreateObject
 
 
 class TestCreateKlasse(TestCreateObject):
@@ -27,11 +27,8 @@ class TestCreateKlasse(TestCreateObject):
             },
         }
 
-        r = self.perform_request("/klassifikation/klasse", json=klasse)
-
-        # Check response
-        self.assert201(r)
-
-        # Check persisted data
-        klasse["livscykluskode"] = "Opstaaet"
-        self.assertQueryResponse("/klassifikation/klasse", klasse, uuid=r.json["uuid"])
+        path = "/klassifikation/klasse"
+        search_params = dict(brugervendtnoegle="bvn")
+        self.parametrized_basic_integration(
+            path=path, lora_object=klasse, search_params=search_params
+        )

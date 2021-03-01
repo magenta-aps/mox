@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2018-2020 Magenta ApS
 # SPDX-License-Identifier: MPL-2.0
 
-from tests.test_integration_create_helper import TestCreateObject
+from tests.test_integration_helper import TestCreateObject
 
 
 class TestCreateItsystem(TestCreateObject):
@@ -31,13 +31,10 @@ class TestCreateItsystem(TestCreateObject):
             },
         }
 
-        r = self.perform_request("/organisation/itsystem", json=itsystem)
-
-        # Check response
-        self.assert201(r)
-
-        # Check persisted data
-        itsystem["livscykluskode"] = "Opstaaet"
-        self.assertQueryResponse(
-            "/organisation/itsystem", itsystem, uuid=r.json["uuid"]
+        path = "/organisation/itsystem"
+        search_params = dict(
+            brugervendtnoegle="OIO_REST", itsystemnavn="OIOXML REST API"
+        )
+        self.parametrized_basic_integration(
+            path=path, lora_object=itsystem, search_params=search_params
         )
