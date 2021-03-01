@@ -1,14 +1,15 @@
 # SPDX-FileCopyrightText: 2018-2020 Magenta ApS
 # SPDX-License-Identifier: MPL-2.0
-
-from tests.test_integration_create_helper import TestCreateObject
+from tests.test_integration_helper import TestCreateObject
 
 
 class TestCreateBruger(TestCreateObject):
     def setUp(self):
         super(TestCreateBruger, self).setUp()
 
-    def test_create_bruger(self):
+    def test_bruger(self):
+
+        # test create
         facet = {
             "attributter": {
                 "brugeregenskaber": [
@@ -26,11 +27,9 @@ class TestCreateBruger(TestCreateObject):
             },
         }
 
-        r = self.perform_request("/organisation/bruger", json=facet)
+        path = "/organisation/bruger"
+        search_params = dict(brugervendtnoegle="bvn")
 
-        # Check response
-        self.assert201(r)
-
-        # Check persisted data
-        facet["livscykluskode"] = "Opstaaet"
-        self.assertQueryResponse("/organisation/bruger", facet, uuid=r.json["uuid"])
+        self.parametrized_basic_integration(
+            path=path, lora_object=facet, search_params=search_params
+        )

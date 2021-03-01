@@ -236,6 +236,12 @@ class _BaseTestCase(flask_testing.TestCase):
 
         return r.json["uuid"]
 
+    def delete(self, path, json):
+        r = self.perform_request(path, json=json, method="DELETE")
+        self.assertOK(r)
+
+        return r.json["uuid"]
+
     def assertQueryResponse(self, path, expected, **params):
         """Perform a request towards LoRa, and assert that it yields the
         expected output.

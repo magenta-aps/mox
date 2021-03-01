@@ -2,6 +2,7 @@ In development
 --------------
 
 New features:
+* Bugfix: Performant searches wrongfully included deleted items (now properly excluded)
 
 
 Version 1.9.0, 11 February 2021
@@ -76,7 +77,7 @@ New features:
 Version 1.3.0, 11 July 2019
 ---------------------------
 
-This release further introduces Docker support. 
+This release further introduces Docker support.
 
 * The `initdb` functionality has been reimplemented in python.
 * Outdated sections have been removed from the documentation.
@@ -87,10 +88,10 @@ This release further introduces Docker support.
 Version 1.2.0, 27 May 2019
 ----------------------------
 
-This feature introduces Docker support. A ``Dockerfile`` has been added for 
-creating a Docker-container containing the oio_rest application. 
+This feature introduces Docker support. A ``Dockerfile`` has been added for
+creating a Docker-container containing the oio_rest application.
 
-A ``docker-compose`` file has been added for setting up a full development 
+A ``docker-compose`` file has been added for setting up a full development
 environment, including database.
 
 New features:
@@ -109,7 +110,7 @@ New features:
 * Improve speed and configurability of test databases. Disable ``fsync`` for
   speed and allow using long directory names without failing.
 * Fix calculation of ``BASE_DIR`` in tests.
-* Make API endpoints trailing slash agnostic. 
+* Make API endpoints trailing slash agnostic.
 * Clear caches in test code when patching DB structures.
 * Simplified validation of objects with additional attributes.
 * Searching for/filtering on Boolean attributes fixed.
@@ -447,9 +448,9 @@ Version 0.2.8, 7 October 2015
 
 New in this version:
 
-* AMQP listener now accepts mixed-case values for headers objectType and 
+* AMQP listener now accepts mixed-case values for headers objectType and
   operation
-* AMQP listener throws more error messages back through the defined response 
+* AMQP listener throws more error messages back through the defined response
   channel, rather than staying silent.
 
 
@@ -482,7 +483,7 @@ Version 0.2.5, 21 September 2015
 New in this version:
 
 * Added support for RabbitMQ credentials 'queueUsername' and 'queuePassword'
-  When specifying a user, please make sure that he is created in the 
+  When specifying a user, please make sure that he is created in the
   RabbitMQ server, and that he has access to /
 
 
@@ -502,7 +503,7 @@ New in this version:
   agent.properties file.
 * Fix security vulnerability: /get-token callback did not escape
   command arguments to agent.sh script.
- 
+
 
 
 Version 0.2.3, 18 September 2015
