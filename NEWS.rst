@@ -1,7 +1,10 @@
-In development
+<<<<<<< HEAD
 --------------
 
 New features:
+=======
+
+* Bugfix: Performant searches wrongfully included deleted items (now properly excluded)
 
 
 Version 1.9.0, 11 February 2021
