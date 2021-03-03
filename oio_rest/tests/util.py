@@ -10,8 +10,9 @@ import uuid
 import copy
 import types
 import typing
+from unittest import TestCase
 
-import flask_testing
+from fastapi.testclient import TestClient
 
 from oio_rest import app
 from oio_rest.db import db_structure, management as db_mgmt
@@ -33,8 +34,12 @@ def get_fixture(fixture_name, mode="rt", as_text=True):
             return fp.read()
 
 
-class _BaseTestCase(flask_testing.TestCase):
+class _BaseTestCase(TestCase):
     """Basic testcase without database support, but with various helper functions."""
+
+    def setUp(self):
+        app = self.create_app()
+        self.client = TestClient(app)
 
     def setup(self):
         stack = contextlib.ExitStack()
@@ -48,10 +53,10 @@ class _BaseTestCase(flask_testing.TestCase):
 
     def get_lora_app(self):
         # TODO: Handle without app.config
-        app.config["DEBUG"] = False
-        app.config["TESTING"] = True
-        app.config["LIVESERVER_PORT"] = 0
-        app.config["PRESERVE_CONTEXT_ON_EXCEPTION"] = False
+        # app.config["DEBUG"] = False
+        # app.config["TESTING"] = True
+        # app.config["LIVESERVER_PORT"] = 0
+        # app.config["PRESERVE_CONTEXT_ON_EXCEPTION"] = False
 
         return app
 
@@ -134,7 +139,7 @@ class _BaseTestCase(flask_testing.TestCase):
             kwargs.setdefault("data", json.dumps(kwargs.pop("json"), indent=2))
             kwargs.setdefault("headers", {"Content-Type": "application/json"})
 
-        return self.client.open(path, **kwargs)
+        return self.client.request(path, **kwargs)
 
     def assertRegistrationsEqual(self, expected, actual, message=None):
         def sort_inner_lists(obj):

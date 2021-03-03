@@ -8,7 +8,7 @@ import os.path
 import unittest
 
 import jsonschema
-import flask_testing
+from fastapi.testclient import TestClient
 
 from oio_rest import aktivitet
 from oio_rest import app
@@ -1276,7 +1276,7 @@ class TestFacetSystematically(TestBase):
         self.assertValidationError()
 
 
-class TestSchemaEndPoints(flask_testing.TestCase):
+class TestSchemaEndPoints(unittest.TestCase):
     def setUp(self):
         super().setUp()
 
@@ -1291,9 +1291,12 @@ class TestSchemaEndPoints(flask_testing.TestCase):
 
         self.hierarchies = list(get_subclasses(oio_base.OIOStandardHierarchy))
 
+        app = self.create_app()
+        self.client = TestClient(app)
+
     def create_app(self):
         # TODO: Handle without app.config
-        app.config["TESTING"] = True
+        # app.config["TESTING"] = True
         return app
 
     @unittest.expectedFailure
