@@ -4,7 +4,6 @@
 """Superclasses for OIO objects and object hierarchies."""
 
 import datetime
-import json
 from abc import ABCMeta, abstractmethod
 from typing import Dict, List, Optional, Tuple, Union
 from uuid import UUID
@@ -14,7 +13,6 @@ import jsonschema
 from fastapi import APIRouter, Request
 
 from . import db, validate
-from .authentication import requires_auth
 from .custom_exceptions import BadRequestException, GoneException, NotFoundException
 from .db import db_helpers, db_structure
 from .db.quick_query.search import quick_search
@@ -59,9 +57,7 @@ CONSOLIDATE_PARAM = frozenset(
     }
 )
 
-"""Some operations take no arguments; this makes it explicit.
-
-"""
+"""Some operations take no arguments; this makes it explicit."""
 NO_PARAMS = frozenset()
 
 """Aliases that apply to all operations."""
@@ -336,7 +332,6 @@ class OIORestObject:
         return await request.json()
 
     @classmethod
-    @requires_auth
     async def create_object(cls, request: Request):
         """A :ref:`CreateOperation` that creates a new object from the JSON
         payload. It returns a newly generated UUID for the created object.
@@ -394,7 +389,6 @@ class OIORestObject:
         }
 
     @classmethod
-    @requires_auth
     def get_objects(cls, request: Request):
         """A :ref:`ListOperation` or :ref:`SearchOperation` depending on parameters.
 
@@ -505,7 +499,6 @@ class OIORestObject:
         return {"results": results}
 
     @classmethod
-    @requires_auth
     def get_object(cls, uuid: UUID, request: Request):
         """A :ref:`ReadOperation`. Return a single whole object as a JSON object.
 
@@ -569,7 +562,6 @@ class OIORestObject:
         }
 
     @classmethod
-    @requires_auth
     async def put_object(cls, uuid: UUID, request: Request):
         """A :ref:`ImportOperation` that creates or overwrites an object from
         the JSON payload.  It returns the UUID for the object.
@@ -641,7 +633,6 @@ class OIORestObject:
         return {"uuid": uuid}
 
     @classmethod
-    @requires_auth
     async def patch_object(cls, uuid: UUID, request: Request):
         """An :ref:`UpdateOperation` or :ref:`PassivateOperation`. Apply the
         JSON payload as a change to the object. Return the UUID of the object.
@@ -694,7 +685,6 @@ class OIORestObject:
         return {"uuid": uuid}
 
     @classmethod
-    @requires_auth
     async def delete_object(cls, uuid: UUID, request: Request):
         """A :ref:`DeleteOperation`. Delete the object and return the UUID.
 

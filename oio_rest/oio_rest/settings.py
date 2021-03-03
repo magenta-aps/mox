@@ -72,7 +72,6 @@ if user_config_path:
     logger.info("Reading user config from %s", user_config_path)
     update_config(config, read_config(user_config_path))
 
-
 # All these variables are kept for backward compatibility / to change the least
 # code. From now on, use the ``config`` object in this module. At this point,
 # it would be fine to go through the code and get rid of the old variables,
