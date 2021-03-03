@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MPL-2.0
 
 """Superclasses for OIO objects and object hierarchies."""
-
+import json
 import datetime
 from abc import ABCMeta, abstractmethod
 from typing import Dict, List, Optional, Tuple, Union
@@ -10,7 +10,7 @@ from uuid import UUID
 
 import dateutil
 import jsonschema
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, HTTPException
 
 from . import db, validate
 from .custom_exceptions import BadRequestException, GoneException, NotFoundException
@@ -344,19 +344,13 @@ class OIORestObject:
 
         input = await cls.get_json(request)
         if not input:
-            raise HTTPException(
-                status_code=400,
-                detail={"uuid": None}
-            )
+            raise HTTPException(status_code=400, detail={"uuid": None})
 
         # Validate JSON input
         try:
             validate.validate(input, cls.__name__.lower())
         except jsonschema.exceptions.ValidationError as e:
-            raise HTTPException(
-                status_code=400,
-                detail={"message": e.message}
-            )
+            raise HTTPException(status_code=400, detail={"message": e.message})
 
         note = typed_get(input, "note", "")
         registration = cls.gather_registration(input)
@@ -371,6 +365,7 @@ class OIORestObject:
         """
         Convert arguments to lowercase, optionally getting them as lists.
         """
+
         def _process_item(item):
             (key, value) = item
             key = to_lower_param(key)
@@ -383,7 +378,9 @@ class OIORestObject:
 
         return {
             to_lower_param(k): (
-                request.query_params.get(k) if not as_lists else request.query_params.getlist(k)
+                request.query_params.get(k)
+                if not as_lists
+                else request.query_params.getlist(k)
             )
             for k, v in items
         }
@@ -402,7 +399,9 @@ class OIORestObject:
         .. :quickref: :ref:`ListOperation` or :ref:`SearchOperation`
 
         """
-        cls.verify_args(request, search=True, temporality=True, consolidate=True, preprocess=True)
+        cls.verify_args(
+            request, search=True, temporality=True, consolidate=True, preprocess=True
+        )
 
         # Convert arguments to lowercase, getting them as lists
         list_args = cls._get_args(request, True, preprocess=True)
@@ -492,9 +491,9 @@ class OIORestObject:
 
         if results is None:
             results = []
-        #if uuid_param:
+        # if uuid_param:
         #    request.uuid = uuid_param
-        #else:
+        # else:
         #    request.uuid = ""
         return {"results": results}
 
@@ -519,8 +518,8 @@ class OIORestObject:
         else:
             list_fn = db.list_objects
 
-        #request.api_operation = "Læs"
-        #request.uuid = uuid
+        # request.api_operation = "Læs"
+        # request.uuid = uuid
         object_list = list_fn(
             cls.__name__,
             [uuid],
@@ -583,19 +582,13 @@ class OIORestObject:
 
         input = await cls.get_json(request)
         if not input:
-            raise HTTPException(
-                status_code=400,
-                detail={"uuid": None}
-            )
+            raise HTTPException(status_code=400, detail={"uuid": None})
 
         # Validate JSON input
         try:
             validate.validate(input, cls.__name__.lower())
         except jsonschema.exceptions.ValidationError as e:
-            raise HTTPException(
-                status_code=400,
-                detail={"message": e.message}
-            )
+            raise HTTPException(status_code=400, detail={"message": e.message})
 
         # Get most common parameters if available.
         note = typed_get(input, "note", "")
@@ -655,10 +648,7 @@ class OIORestObject:
 
         input = await cls.get_json(request)
         if not input:
-            raise HTTPException(
-                status_code=400,
-                detail={"uuid": None}
-            )
+            raise HTTPException(status_code=400, detail={"uuid": None})
 
         # Get most common parameters if available.
         note = typed_get(input, "note", "")
@@ -668,10 +658,7 @@ class OIORestObject:
         try:
             validate.validate(input, cls.__name__.lower(), do_create=False)
         except jsonschema.exceptions.ValidationError as e:
-            raise HTTPException(
-                status_code=400,
-                detail={"message": e.message}
-            )
+            raise HTTPException(status_code=400, detail={"message": e.message})
 
         if typed_get(input, "livscyklus", "").lower() == "passiv":
             # Passivate
@@ -699,8 +686,8 @@ class OIORestObject:
         class_name = cls.__name__
         # Gather a blank registration
         registration = cls.gather_registration({})
-        #request.api_operation = "Slet"
-        #request.uuid = uuid
+        # request.api_operation = "Slet"
+        # request.uuid = uuid
         db.delete_object(class_name, registration, note, uuid)
 
         return {"uuid": uuid}
@@ -747,9 +734,9 @@ class OIORestObject:
         rest_router.get(class_url, name="_".join([cls.__name__, "get_objects"]))(
             cls.get_objects
         )
-        rest_router.post(class_url, name="_".join([cls.__name__, "create_object"]), status_code=201)(
-            cls.create_object
-        )
+        rest_router.post(
+            class_url, name="_".join([cls.__name__, "create_object"]), status_code=201
+        )(cls.create_object)
 
         rest_router.get(object_url, name="_".join([cls.__name__, "get_object"]))(
             cls.get_object
@@ -798,7 +785,15 @@ class OIORestObject:
         return set(db_helpers.get_state_names(cls.__name__))
 
     @classmethod
-    def verify_args(cls, request: Request, temporality=False, search=False, consolidate=False, *args, **kwargs):
+    def verify_args(
+        cls,
+        request: Request,
+        temporality=False,
+        search=False,
+        consolidate=False,
+        *args,
+        **kwargs
+    ):
         req_args = set(cls._get_args(request, *args, **kwargs))
 
         if temporality:

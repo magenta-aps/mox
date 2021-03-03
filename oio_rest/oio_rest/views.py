@@ -1,10 +1,8 @@
 # SPDX-FileCopyrightText: 2015-2020 Magenta ApS
 # SPDX-License-Identifier: MPL-2.0
 
-import datetime
 import logging
 import os
-import urllib.parse
 from operator import attrgetter
 
 from fastapi import APIRouter, HTTPException, Request
@@ -25,10 +23,8 @@ from oio_rest import (
     settings,
     tilstand,
 )
-from oio_rest.authentication import get_authenticated_user
 from oio_rest.custom_exceptions import OIOFlaskException
 from oio_rest.db import management as db_mgmt
-from oio_rest.log_client import log_service_call
 from oio_rest.settings import config
 
 logger = logging.getLogger(__name__)
@@ -176,7 +172,7 @@ def http_exception(request: Request, exc: HTTPException):
 # Auxiliary functions to get data to be logged.
 
 
-#def get_service_name():
+# def get_service_name():
 #    "Get the hierarchy of the present method call from the request URL"
 #    u = urllib.parse.urlparse(request.url)
 #    urlpath = u.path
@@ -185,7 +181,7 @@ def http_exception(request: Request, exc: HTTPException):
 #    return service_name
 #
 #
-#def get_class_name():
+# def get_class_name():
 #    "Get the hierarchy of the present method call from the request URL"
 #    url = urllib.parse.urlparse(request.url)
 #    class_name = url.path.split("/")[2].capitalize()

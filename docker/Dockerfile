@@ -67,7 +67,7 @@ ENV MODULE_NAME oio_rest
 # Copy and install application.
 COPY dev-environment/settings-for-mo-test.toml ./dev-environment/settings-for-mo-test.toml
 COPY docker ./docker
-COPY docker/prestart.sh prestart.sh
+COPY prestart.sh .
 COPY oio_rest ./oio_rest
 COPY README.rst .
 COPY LICENSE .
