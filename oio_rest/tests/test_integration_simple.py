@@ -4,7 +4,7 @@
 from tests.util import DBTestCase
 
 
-UUID_PATTERN = '{uuid}'
+UUID_PATTERN = "{uuid}"
 
 CONTENT_PATH_PATTERN = (
     '<regex("\\d{4}/\\d{2}/\\d{2}/\\d{2}/\\d{2}/'

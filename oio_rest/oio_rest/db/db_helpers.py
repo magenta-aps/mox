@@ -6,7 +6,6 @@
 from collections import namedtuple
 from urllib.parse import urlparse
 
-from flask import request
 from psycopg2._range import DateTimeTZRange
 from psycopg2.extensions import adapt as psyco_adapt, ISQLQuote
 from psycopg2.extensions import register_adapter as psyco_register_adapter
@@ -244,6 +243,7 @@ class DokumentDelEgenskaberType(
         o = urlparse(url)
         if o.scheme == "field":
             field_name = o.path
+            # TODO: This was flask request
             file_obj = request.files.get(field_name, None)
             if file_obj is None:
                 raise BadRequestException(
