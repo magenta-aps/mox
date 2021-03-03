@@ -5,6 +5,7 @@ import datetime
 import logging
 import os
 import urllib.parse
+from operator import attrgetter
 
 from fastapi import APIRouter
 from fastapi.responses import RedirectResponse
@@ -107,12 +108,9 @@ def sitemap():
     .. :quickref: :http:get:`/site-map`
 
     """
-    links = []
-#    for rule in app.url_map.iter_rules():
-#        # Filter out rules we can't navigate to in a browser
-#        # and rules that require parameters
-#        if "GET" in rule.methods:
-#            links.append(str(rule))
+    links = app.routes
+    links = filter(lambda route: "GET" in route.methods, links)
+    links = map(attrgetter('path'), links)
     return {"site-map": sorted(links)}
 
 
