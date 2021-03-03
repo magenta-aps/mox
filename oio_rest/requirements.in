@@ -3,6 +3,7 @@
 
 requests
 psycopg2-binary
+python-multipart
 pexpect
 python-dateutil
 pika
