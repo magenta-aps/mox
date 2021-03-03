@@ -4,16 +4,12 @@
 
 from functools import wraps
 
-import flask_saml_sso
-
 from . import settings
 
 
 def requires_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        if settings.SAML_AUTH_ENABLE:
-            flask_saml_sso.check_saml_authentication()
         return f(*args, **kwargs)
 
     return decorated

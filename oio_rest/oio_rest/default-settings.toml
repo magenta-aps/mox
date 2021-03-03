@@ -18,21 +18,6 @@ password = "mox"
 db_name = "mox"
 
 
-[saml_sso]
-# These are the settings for the `flask_saml_sso` package. Please refer to the
-# package for the documentation of these settings:
-# https://github.com/magenta-aps/flask_saml_sso.
-enable = false
-idp_metadata_url = "https://172.16.20.100/simplesaml/saml2/idp/metadata.php"
-idp_insecure = false
-requests_signed = false
-key_file = ""
-cert_file = ""
-sqlalchemy_uri = "postgresql://sessions:sessions@127.0.0.1/sessions"
-session_permanent = true
-permanent_session_lifetime = 3600
-
-
 [restrictions]
 # Whether authorization is enabled.
 # If not, the restrictions module is not called.
