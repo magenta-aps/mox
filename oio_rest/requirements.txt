@@ -12,8 +12,12 @@ chardet==3.0.4
     # via requests
 idna==2.10
     # via requests
+jinja2==2.11.3
+    # via -r requirements.in
 jsonschema==3.2.0
     # via -r requirements.in
+markupsafe==1.1.1
+    # via jinja2
 pexpect==4.8.0
     # via -r requirements.in
 pika==1.1.0
