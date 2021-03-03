@@ -7,20 +7,29 @@ import os
 import urllib.parse
 from operator import attrgetter
 
-from fastapi import APIRouter
-from fastapi.responses import RedirectResponse
+from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import JSONResponse, RedirectResponse
 from jinja2 import Environment, FileSystemLoader
 from psycopg2 import DataError
 
-from oio_rest import __version__, app, settings
-from oio_rest import log, klassifikation
-from oio_rest import sag, indsats, dokument, tilstand, aktivitet, organisation
+from oio_rest import (
+    __version__,
+    aktivitet,
+    app,
+    dokument,
+    indsats,
+    klassifikation,
+    log,
+    organisation,
+    sag,
+    settings,
+    tilstand,
+)
 from oio_rest.authentication import get_authenticated_user
 from oio_rest.custom_exceptions import OIOFlaskException
 from oio_rest.db import management as db_mgmt
 from oio_rest.log_client import log_service_call
 from oio_rest.settings import config
-
 
 logger = logging.getLogger(__name__)
 
@@ -34,15 +43,6 @@ jinja_env = Environment(
     loader=FileSystemLoader(os.path.join(current_directory, "templates", "html"))
 )
 
-
-#class RegexConverter(BaseConverter):
-#    def __init__(self, url_map, *items):
-#        super(RegexConverter, self).__init__(url_map)
-#        self.regex = items[0]
-#
-
-#app.url_map.converters["regex"] = RegexConverter
-#app.url_map.strict_slashes = False
 
 app.include_router(
     klassifikation.KlassifikationsHierarki.setup_api(),
@@ -92,9 +92,6 @@ app.include_router(
     prefix=settings.BASE_URL,
 )
 
-#app.config.from_object(settings)
-#flask_saml_sso.init_app(app)
-
 
 @app.get("/")
 def root():
@@ -110,7 +107,7 @@ def sitemap():
     """
     links = app.routes
     links = filter(lambda route: "GET" in route.methods, links)
-    links = map(attrgetter('path'), links)
+    links = map(attrgetter("path"), links)
     return {"site-map": sorted(links)}
 
 
@@ -121,6 +118,7 @@ def version():
 
 
 testing_router = APIRouter()
+
 
 @testing_router.get("/db-setup")
 def testing_db_setup():
@@ -145,6 +143,7 @@ def testing_db_teardown():
 
 db_router = APIRouter()
 
+
 @db_router.get("/truncate")
 def truncate_db():
     logger.debug("Truncate DB endpoint called")
@@ -159,17 +158,18 @@ if settings.config["truncate_api"]["enable"]:
     app.include_router(db_router, tags=["Database Management"], prefix="/db")
 
 
-#@app.errorhandler(OIOFlaskException)
-#def handle_not_allowed(error):
-#    dct = error.to_dict()
-#    response = jsonify(dct)
-#    response.status_code = error.status_code
-#    return response
-#
-#
-#@app.errorhandler(404)
-#def page_not_found(e):
-#    return jsonify(error=404, text=str(e)), 404
+@app.exception_handler(OIOFlaskException)
+def handle_not_allowed(request: Request, exc: OIOFlaskException):
+    dct = exc.to_dict()
+    return JSONResponse(status_code=exc.status_code, content=dct)
+
+
+@app.exception_handler(HTTPException)
+def http_exception(request: Request, exc: HTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"error": exc.status_code, "text": str(exc)},
+    )
 
 
 # After request handle for logging.
@@ -192,8 +192,9 @@ def get_class_name():
     return class_name
 
 
-#@app.after_request
-#def log_api_call(response):
+# TODO: Implement this
+# @app.after_request
+# def log_api_call(response):
 #    if hasattr(request, "api_operation"):
 #        service_name = get_service_name()
 #        class_name = get_class_name()
@@ -217,13 +218,16 @@ def get_class_name():
 #            object_uuid,
 #        )
 #    return response
-#
-#
-#@app.errorhandler(DataError)
-#def handle_db_error(error):
-#    message = error.diag.message_primary
-#    context = error.diag.context or error.pgerror.split("\n", 1)[-1]
-#    return jsonify(message=message, context=context), 400
+
+
+@app.exception_handler(DataError)
+def handle_db_error(request: Request, exc: DataError):
+    message = exc.diag.message_primary
+    context = exc.diag.context or exc.pgerror.split("\n", 1)[-1]
+
+    return JSONResponse(
+        status_code=400, content={"message": message, "context": context}
+    )
 
 
 if __name__ == "__main__":

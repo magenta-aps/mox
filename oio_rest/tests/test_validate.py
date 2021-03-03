@@ -1292,6 +1292,7 @@ class TestSchemaEndPoints(flask_testing.TestCase):
         self.hierarchies = list(get_subclasses(oio_base.OIOStandardHierarchy))
 
     def create_app(self):
+        # TODO: Handle without app.config
         app.config["TESTING"] = True
         return app
 

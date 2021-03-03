@@ -3,23 +3,21 @@
 
 """Superclasses for OIO objects and object hierarchies."""
 
-from uuid import UUID
 import datetime
 import json
 from abc import ABCMeta, abstractmethod
 from typing import Dict, List, Optional, Tuple, Union
+from uuid import UUID
 
 import dateutil
 import jsonschema
-from flask import request
 from fastapi import APIRouter
+from flask import request
 from werkzeug.datastructures import ImmutableOrderedMultiDict
 
-from . import db
-from . import validate
+from . import db, validate
 from .authentication import requires_auth
-from .custom_exceptions import BadRequestException, NotFoundException
-from .custom_exceptions import GoneException
+from .custom_exceptions import BadRequestException, GoneException, NotFoundException
 from .db import db_helpers, db_structure
 from .db.quick_query.search import quick_search
 from .settings import config
@@ -338,7 +336,7 @@ class OIOStandardHierarchy:
             clsnms = [c.__name__.lower() for c in cls._classes]
             hierarchy_dict = {c: structure[c] for c in clsnms}
             return hierarchy_dict
-        
+
         return oio_router
 
 
@@ -391,13 +389,13 @@ class OIORestObject:
 
         input = cls.get_json()
         if not input:
-            return {"uuid": None} #400
+            return {"uuid": None}  # 400
 
         # Validate JSON input
         try:
             validate.validate(input, cls.__name__.lower())
         except jsonschema.exceptions.ValidationError as e:
-            return {"message": e.message} #400
+            return {"message": e.message}  # 400
 
         note = typed_get(input, "note", "")
         registration = cls.gather_registration(input)
@@ -405,7 +403,7 @@ class OIORestObject:
         # Pass log info on request object.
         request.api_operation = "Opret"
         request.uuid = uuid
-        return {"uuid": uuid} #201
+        return {"uuid": uuid}  # 201
 
     @classmethod
     def _get_args(cls, as_lists=False):
@@ -617,13 +615,13 @@ class OIORestObject:
 
         input = cls.get_json()
         if not input:
-            return {"uuid": None} #400
+            return {"uuid": None}  # 400
 
         # Validate JSON input
         try:
             validate.validate(input, cls.__name__.lower())
         except jsonschema.exceptions.ValidationError as e:
-            return {"message": e.message} #400
+            return {"message": e.message}  # 400
 
         # Get most common parameters if available.
         note = typed_get(input, "note", "")
@@ -644,7 +642,7 @@ class OIORestObject:
             # Do import.
             request.api_operation = "Import"
             db.create_or_import_object(cls.__name__, note, registration, uuid)
-            return {"uuid": uuid} #200
+            return {"uuid": uuid}  # 200
         elif deleted_or_passive:
             # Import.
             request.api_operation = "Import"
@@ -655,13 +653,13 @@ class OIORestObject:
                 uuid=uuid,
                 life_cycle_code=db.Livscyklus.IMPORTERET.value,
             )
-            return {"uuid": uuid} #200
+            return {"uuid": uuid}  # 200
         else:
             # Edit.
             request.api_operation = "Ret"
             db.create_or_import_object(cls.__name__, note, registration, uuid)
 
-            return {"uuid": uuid} #200
+            return {"uuid": uuid}  # 200
 
     @classmethod
     @requires_auth
@@ -685,7 +683,7 @@ class OIORestObject:
 
         input = cls.get_json()
         if not input:
-            return {"uuid": None} #400
+            return {"uuid": None}  # 400
         # Get most common parameters if available.
         note = typed_get(input, "note", "")
         registration = cls.gather_registration(input)
@@ -694,19 +692,19 @@ class OIORestObject:
         try:
             validate.validate(input, cls.__name__.lower(), do_create=False)
         except jsonschema.exceptions.ValidationError as e:
-            return {"message": e.message} #400
+            return {"message": e.message}  # 400
 
         if typed_get(input, "livscyklus", "").lower() == "passiv":
             # Passivate
             request.api_operation = "Passiver"
             registration = cls.gather_registration({})
             db.passivate_object(cls.__name__, note, registration, uuid)
-            return {"uuid": uuid} #200
+            return {"uuid": uuid}  # 200
         else:
             # Edit/change
             request.api_operation = "Ret"
             db.update_object(cls.__name__, note, registration, uuid)
-            return {"uuid": uuid} #200
+            return {"uuid": uuid}  # 200
 
     @classmethod
     @requires_auth
@@ -728,7 +726,7 @@ class OIORestObject:
         request.uuid = uuid
         db.delete_object(class_name, registration, note, uuid)
 
-        return {"uuid": uuid}#, 202
+        return {"uuid": uuid}
 
     @classmethod
     def get_fields(cls):
@@ -765,25 +763,38 @@ class OIORestObject:
         class_name = cls.__name__.lower()
         class_url = "/{0}/{1}".format(hierarchy, class_name)
         cls_fields_url = "{0}/{1}".format(class_url, "fields")
-        object_url = class_url + '/{uuid}'
+        object_url = class_url + "/{uuid}"
 
         rest_router = APIRouter()
 
-        rest_router.get(class_url, name="_".join([cls.__name__, "get_objects"]))(cls.get_objects)
-        rest_router.post(class_url, name="_".join([cls.__name__, "create_object"]))(cls.create_object)
+        rest_router.get(class_url, name="_".join([cls.__name__, "get_objects"]))(
+            cls.get_objects
+        )
+        rest_router.post(class_url, name="_".join([cls.__name__, "create_object"]))(
+            cls.create_object
+        )
 
-        rest_router.get(object_url, name="_".join([cls.__name__, "get_object"]))(cls.get_object)
-        rest_router.put(object_url, name="_".join([cls.__name__, "put_object"]))(cls.put_object)
-        rest_router.patch(object_url, name="_".join([cls.__name__, "patch_object"]))(cls.patch_object)
-        rest_router.delete(object_url, name="_".join([cls.__name__, "delete_object"]))(cls.delete_object)
+        rest_router.get(object_url, name="_".join([cls.__name__, "get_object"]))(
+            cls.get_object
+        )
+        rest_router.put(object_url, name="_".join([cls.__name__, "put_object"]))(
+            cls.put_object
+        )
+        rest_router.patch(object_url, name="_".join([cls.__name__, "patch_object"]))(
+            cls.patch_object
+        )
+        rest_router.delete(
+            object_url, name="_".join([cls.__name__, "delete_object"]), status_code=202
+        )(cls.delete_object)
 
         # Structure URLs
-        rest_router.get(cls_fields_url, name="_".join([cls.__name__, "fields"]))(cls.get_fields)
+        rest_router.get(cls_fields_url, name="_".join([cls.__name__, "fields"]))(
+            cls.get_fields
+        )
 
         # JSON schemas
         rest_router.get(
-            "{}/{}".format(class_url, "schema"),
-            name="_".join([cls.__name__, "schema"])
+            "{}/{}".format(class_url, "schema"), name="_".join([cls.__name__, "schema"])
         )(cls.get_schema)
 
         return rest_router

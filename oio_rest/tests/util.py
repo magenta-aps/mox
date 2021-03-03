@@ -47,6 +47,7 @@ class _BaseTestCase(flask_testing.TestCase):
             stack.enter_context(p)
 
     def get_lora_app(self):
+        # TODO: Handle without app.config
         app.config["DEBUG"] = False
         app.config["TESTING"] = True
         app.config["LIVESERVER_PORT"] = 0
