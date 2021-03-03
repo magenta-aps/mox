@@ -176,22 +176,22 @@ def http_exception(request: Request, exc: HTTPException):
 # Auxiliary functions to get data to be logged.
 
 
-def get_service_name():
-    "Get the hierarchy of the present method call from the request URL"
-    u = urllib.parse.urlparse(request.url)
-    urlpath = u.path
-    service_name = urlpath.split("/")[1].capitalize()
-
-    return service_name
-
-
-def get_class_name():
-    "Get the hierarchy of the present method call from the request URL"
-    url = urllib.parse.urlparse(request.url)
-    class_name = url.path.split("/")[2].capitalize()
-    return class_name
-
-
+#def get_service_name():
+#    "Get the hierarchy of the present method call from the request URL"
+#    u = urllib.parse.urlparse(request.url)
+#    urlpath = u.path
+#    service_name = urlpath.split("/")[1].capitalize()
+#
+#    return service_name
+#
+#
+#def get_class_name():
+#    "Get the hierarchy of the present method call from the request URL"
+#    url = urllib.parse.urlparse(request.url)
+#    class_name = url.path.split("/")[2].capitalize()
+#    return class_name
+#
+#
 # TODO: Implement this
 # @app.after_request
 # def log_api_call(response):
