@@ -329,7 +329,18 @@ class OIORestObject:
         contained in a form field called 'json'. This method handles this in a
         consistent way.
         """
-        return await request.json()
+        try:
+            return await request.json()
+        except json.decoder.JSONDecodeError:
+            formset = await request.form()
+            data = formset.get("json", None)
+            if data is not None:
+                try:
+                    return json.loads(data, encoding=request.charset)
+                except ValueError as e:
+                    request.on_json_loading_failed(e)
+            else:
+                return None
 
     @classmethod
     async def create_object(cls, request: Request):
