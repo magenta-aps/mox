@@ -7,6 +7,8 @@ import os
 import urllib.parse
 
 from flask import jsonify, redirect, request, url_for
+from fastapi import APIRouter
+from fastapi.responses import RedirectResponse
 import flask_saml_sso
 from jinja2 import Environment, FileSystemLoader
 from psycopg2 import DataError
@@ -41,31 +43,31 @@ class RegexConverter(BaseConverter):
         self.regex = items[0]
 
 
-app.url_map.converters["regex"] = RegexConverter
-app.url_map.strict_slashes = False
+#app.url_map.converters["regex"] = RegexConverter
+#app.url_map.strict_slashes = False
 
-klassifikation.KlassifikationsHierarki.setup_api(
-    base_url=settings.BASE_URL,
-    flask=app,
-)
-log.LogHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
-sag.SagsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
-organisation.OrganisationsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
-dokument.DokumentHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
-aktivitet.AktivitetsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
-indsats.IndsatsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
-tilstand.TilstandsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
+#klassifikation.KlassifikationsHierarki.setup_api(
+#    base_url=settings.BASE_URL,
+#    flask=app,
+#)
+#log.LogHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
+#sag.SagsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
+#organisation.OrganisationsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
+#dokument.DokumentHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
+#aktivitet.AktivitetsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
+#indsats.IndsatsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
+#tilstand.TilstandsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
 
-app.config.from_object(settings)
-flask_saml_sso.init_app(app)
+#app.config.from_object(settings)
+#flask_saml_sso.init_app(app)
 
 
-@app.route("/")
+@app.get("/")
 def root():
-    return redirect(url_for("sitemap"), code=308)
+    return RedirectResponse(app.url_path_for("sitemap"))
 
 
-@app.route("/site-map")
+@app.get("/site-map")
 def sitemap():
     """Returns a site map over all valid urls.
 
@@ -73,38 +75,46 @@ def sitemap():
 
     """
     links = []
-    for rule in app.url_map.iter_rules():
-        # Filter out rules we can't navigate to in a browser
-        # and rules that require parameters
-        if "GET" in rule.methods:
-            links.append(str(rule))
-    return jsonify({"site-map": sorted(links)})
+#    for rule in app.url_map.iter_rules():
+#        # Filter out rules we can't navigate to in a browser
+#        # and rules that require parameters
+#        if "GET" in rule.methods:
+#            links.append(str(rule))
+    return {"site-map": sorted(links)}
 
 
-@app.route("/version")
+@app.get("/version")
 def version():
     version = {"lora_version": __version__}
-    return jsonify(version)
+    return version
 
 
+testing_router = APIRouter()
+
+@testing_router.get("/db-setup")
 def testing_db_setup():
     logger.debug("Test database setup endpoint called")
     db_mgmt.testdb_setup()
     return ("Test database setup", 200)
 
 
+@testing_router.get("/db-reset")
 def testing_db_reset():
     logger.debug("Test database reset endpoint called")
     db_mgmt.testdb_reset()
     return ("Test database reset", 200)
 
 
+@testing_router.get("/db-teardown")
 def testing_db_teardown():
     logger.debug("Test database teardown endpoint called")
     db_mgmt.testdb_teardown()
     return ("Test database teardown", 200)
 
 
+db_router = APIRouter()
+
+@db_router.get("/truncate")
 def truncate_db():
     logger.debug("Truncate DB endpoint called")
     db_mgmt.truncate_db(config["database"]["db_name"])
@@ -112,25 +122,23 @@ def truncate_db():
 
 
 if settings.config["testing_api"]["enable"]:
-    app.add_url_rule("/testing/db-setup", "testing_db_setup", testing_db_setup)
-    app.add_url_rule("/testing/db-reset", "testing_db_reset", testing_db_reset)
-    app.add_url_rule("/testing/db-teardown", "testing_db_teardown", testing_db_teardown)
+    app.include_router(testing_router, tags=["Testing"], prefix="/testing")
 
 if settings.config["truncate_api"]["enable"]:
-    app.add_url_rule("/db/truncate", "truncate_db", truncate_db)
+    app.include_router(db_router, tags=["Database Management"], prefix="/db")
 
 
-@app.errorhandler(OIOFlaskException)
-def handle_not_allowed(error):
-    dct = error.to_dict()
-    response = jsonify(dct)
-    response.status_code = error.status_code
-    return response
-
-
-@app.errorhandler(404)
-def page_not_found(e):
-    return jsonify(error=404, text=str(e)), 404
+#@app.errorhandler(OIOFlaskException)
+#def handle_not_allowed(error):
+#    dct = error.to_dict()
+#    response = jsonify(dct)
+#    response.status_code = error.status_code
+#    return response
+#
+#
+#@app.errorhandler(404)
+#def page_not_found(e):
+#    return jsonify(error=404, text=str(e)), 404
 
 
 # After request handle for logging.
@@ -153,38 +161,38 @@ def get_class_name():
     return class_name
 
 
-@app.after_request
-def log_api_call(response):
-    if hasattr(request, "api_operation"):
-        service_name = get_service_name()
-        class_name = get_class_name()
-        time = datetime.datetime.now()
-        operation = request.api_operation
-        return_code = response.status_code
-        msg = response.status
-        note = "Is there a note too?"
-        user_uuid = get_authenticated_user()
-        object_uuid = getattr(request, "uuid", None)
-        log_service_call(
-            service_name,
-            class_name,
-            time,
-            operation,
-            return_code,
-            msg,
-            note,
-            user_uuid,
-            "N/A",
-            object_uuid,
-        )
-    return response
-
-
-@app.errorhandler(DataError)
-def handle_db_error(error):
-    message = error.diag.message_primary
-    context = error.diag.context or error.pgerror.split("\n", 1)[-1]
-    return jsonify(message=message, context=context), 400
+#@app.after_request
+#def log_api_call(response):
+#    if hasattr(request, "api_operation"):
+#        service_name = get_service_name()
+#        class_name = get_class_name()
+#        time = datetime.datetime.now()
+#        operation = request.api_operation
+#        return_code = response.status_code
+#        msg = response.status
+#        note = "Is there a note too?"
+#        user_uuid = get_authenticated_user()
+#        object_uuid = getattr(request, "uuid", None)
+#        log_service_call(
+#            service_name,
+#            class_name,
+#            time,
+#            operation,
+#            return_code,
+#            msg,
+#            note,
+#            user_uuid,
+#            "N/A",
+#            object_uuid,
+#        )
+#    return response
+#
+#
+#@app.errorhandler(DataError)
+#def handle_db_error(error):
+#    message = error.diag.message_primary
+#    context = error.diag.context or error.pgerror.split("\n", 1)[-1]
+#    return jsonify(message=message, context=context), 400
 
 
 if __name__ == "__main__":
