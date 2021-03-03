@@ -39,11 +39,12 @@ class Dokument(OIORestObject):
         return flask.send_file(filename, mimetype=mimetype)
 
     @classmethod
-    def create_api(cls, hierarchy, flask, base_url):
+    def create_api(cls, hierarchy):
         """Set up API with correct database access functions."""
-        super(Dokument, cls).create_api(hierarchy, flask, base_url)
+        rest_router = super(Dokument, cls).create_api(hierarchy)
         hierarchy = hierarchy.lower()
-        class_url = "{0}/{1}/{2}".format(base_url, hierarchy, cls.__name__.lower())
+        class_url = "/{0}/{1}".format(hierarchy, cls.__name__.lower())
+        # TODO: Fix url to FASTAPI
         uuid_regex = (
             "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}"
             "-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
@@ -53,12 +54,9 @@ class Dokument(OIORestObject):
             class_url, date_path_regex
         )
 
-        flask.add_url_rule(
-            download_content_url,
-            "_".join([cls.__name__, "download_content"]),
-            cls.download_content,
-            methods=["GET"],
-        )
+        rest_router.get(download_content_url)(cls.download_content)
+
+        return rest_router
 
     @classmethod
     def gather_registration(cls, input):

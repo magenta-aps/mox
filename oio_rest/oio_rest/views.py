@@ -6,13 +6,10 @@ import logging
 import os
 import urllib.parse
 
-from flask import jsonify, redirect, request, url_for
 from fastapi import APIRouter
 from fastapi.responses import RedirectResponse
-import flask_saml_sso
 from jinja2 import Environment, FileSystemLoader
 from psycopg2 import DataError
-from werkzeug.routing import BaseConverter
 
 from oio_rest import __version__, app, settings
 from oio_rest import log, klassifikation
@@ -37,26 +34,62 @@ jinja_env = Environment(
 )
 
 
-class RegexConverter(BaseConverter):
-    def __init__(self, url_map, *items):
-        super(RegexConverter, self).__init__(url_map)
-        self.regex = items[0]
-
+#class RegexConverter(BaseConverter):
+#    def __init__(self, url_map, *items):
+#        super(RegexConverter, self).__init__(url_map)
+#        self.regex = items[0]
+#
 
 #app.url_map.converters["regex"] = RegexConverter
 #app.url_map.strict_slashes = False
 
-#klassifikation.KlassifikationsHierarki.setup_api(
-#    base_url=settings.BASE_URL,
-#    flask=app,
-#)
-#log.LogHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
-#sag.SagsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
-#organisation.OrganisationsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
-#dokument.DokumentHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
-#aktivitet.AktivitetsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
-#indsats.IndsatsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
-#tilstand.TilstandsHierarki.setup_api(base_url=settings.BASE_URL, flask=app)
+app.include_router(
+    klassifikation.KlassifikationsHierarki.setup_api(),
+    tags=["Klassifikation"],
+    prefix=settings.BASE_URL,
+)
+
+app.include_router(
+    log.LogHierarki.setup_api(),
+    tags=["Log"],
+    prefix=settings.BASE_URL,
+)
+
+app.include_router(
+    sag.SagsHierarki.setup_api(),
+    tags=["Sag"],
+    prefix=settings.BASE_URL,
+)
+
+app.include_router(
+    organisation.OrganisationsHierarki.setup_api(),
+    tags=["Organisation"],
+    prefix=settings.BASE_URL,
+)
+
+app.include_router(
+    dokument.DokumentHierarki.setup_api(),
+    tags=["Dokument"],
+    prefix=settings.BASE_URL,
+)
+
+app.include_router(
+    aktivitet.AktivitetsHierarki.setup_api(),
+    tags=["Aktivitet"],
+    prefix=settings.BASE_URL,
+)
+
+app.include_router(
+    indsats.IndsatsHierarki.setup_api(),
+    tags=["Indsats"],
+    prefix=settings.BASE_URL,
+)
+
+app.include_router(
+    tilstand.TilstandsHierarki.setup_api(),
+    tags=["Tilstand"],
+    prefix=settings.BASE_URL,
+)
 
 #app.config.from_object(settings)
 #flask_saml_sso.init_app(app)
