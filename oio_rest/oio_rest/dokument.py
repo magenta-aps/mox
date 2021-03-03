@@ -54,7 +54,7 @@ class Dokument(OIORestObject):
             class_url, date_path_regex
         )
 
-        rest_router.get(download_content_url)(cls.download_content)
+        rest_router.get(download_content_url, name="_".join([cls.__name__, "download_content"]))(cls.download_content)
 
         return rest_router
 

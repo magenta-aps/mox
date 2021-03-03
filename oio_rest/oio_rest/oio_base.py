@@ -769,20 +769,21 @@ class OIORestObject:
 
         rest_router = APIRouter()
 
-        rest_router.get(class_url)(cls.get_objects)
-        rest_router.post(class_url)(cls.create_object)
+        rest_router.get(class_url, name="_".join([cls.__name__, "get_objects"]))(cls.get_objects)
+        rest_router.post(class_url, name="_".join([cls.__name__, "create_object"]))(cls.create_object)
 
-        rest_router.get(object_url)(cls.get_object)
-        rest_router.put(object_url)(cls.put_object)
-        rest_router.patch(object_url)(cls.patch_object)
-        rest_router.delete(object_url)(cls.delete_object)
+        rest_router.get(object_url, name="_".join([cls.__name__, "get_object"]))(cls.get_object)
+        rest_router.put(object_url, name="_".join([cls.__name__, "put_object"]))(cls.put_object)
+        rest_router.patch(object_url, name="_".join([cls.__name__, "patch_object"]))(cls.patch_object)
+        rest_router.delete(object_url, name="_".join([cls.__name__, "delete_object"]))(cls.delete_object)
 
         # Structure URLs
-        rest_router.get(cls_fields_url)(cls.get_fields)
+        rest_router.get(cls_fields_url, name="_".join([cls.__name__, "fields"]))(cls.get_fields)
 
         # JSON schemas
         rest_router.get(
-            "{}/{}".format(class_url, "schema")
+            "{}/{}".format(class_url, "schema"),
+            name="_".join([cls.__name__, "schema"])
         )(cls.get_schema)
 
         return rest_router
