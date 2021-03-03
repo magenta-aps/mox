@@ -2,12 +2,9 @@
 # SPDX-License-Identifier: MPL-2.0
 
 requests
-Flask
 psycopg2-binary
 pexpect
 python-dateutil
 pika
 jsonschema
-flask_saml_sso @ https://github.com/magenta-aps/flask_saml_sso/releases/download/0.2.1/flask_saml_sso-0.2.1-py3-none-any.whl#egg=flask_saml_sso
-gunicorn
 toml

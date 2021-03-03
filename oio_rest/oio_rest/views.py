@@ -6,7 +6,7 @@ import os
 from operator import attrgetter
 
 from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse, PlainTextResponse
 from jinja2 import Environment, FileSystemLoader
 from psycopg2 import DataError
 
@@ -120,21 +120,21 @@ testing_router = APIRouter()
 def testing_db_setup():
     logger.debug("Test database setup endpoint called")
     db_mgmt.testdb_setup()
-    return ("Test database setup", 200)
+    return PlainTextResponse("Test database setup")
 
 
 @testing_router.get("/db-reset")
 def testing_db_reset():
     logger.debug("Test database reset endpoint called")
     db_mgmt.testdb_reset()
-    return ("Test database reset", 200)
+    return PlainTextResponse("Test database reset")
 
 
 @testing_router.get("/db-teardown")
 def testing_db_teardown():
     logger.debug("Test database teardown endpoint called")
     db_mgmt.testdb_teardown()
-    return ("Test database teardown", 200)
+    return PlainTextResponse("Test database teardown")
 
 
 db_router = APIRouter()
@@ -144,7 +144,7 @@ db_router = APIRouter()
 def truncate_db():
     logger.debug("Truncate DB endpoint called")
     db_mgmt.truncate_db(config["database"]["db_name"])
-    return ("Database truncated", 200)
+    return PlainTextResponse("Database truncated")
 
 
 if settings.config["testing_api"]["enable"]:
