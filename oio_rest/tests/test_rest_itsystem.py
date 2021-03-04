@@ -15,5 +15,5 @@ class TestItSystem(DBTestCase):
             },
         )
         self.assertEqual(result.status_code, 201)
-        uuid_ = result.get_json()["uuid"]
+        uuid_ = result.json()["uuid"]
         self.assertTrue(is_uuid(uuid_))

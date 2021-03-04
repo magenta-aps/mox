@@ -779,7 +779,7 @@ class TestDBHelpers(ExtTestCase):
 
         # Act
         with app.test_request_context(
-            query_string={}, method="POST"
+            params={}, method="POST"
         ), self.assertRaises(BadRequestException):
             DokumentDelEgenskaberType._get_file_storage_for_content_url(
                 "field:not_in_request"

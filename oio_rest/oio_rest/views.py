@@ -40,6 +40,30 @@ jinja_env = Environment(
 )
 
 
+@app.get("/", tags=["Meta"])
+def root():
+    return RedirectResponse(app.url_path_for("sitemap"))
+
+
+@app.get("/site-map", tags=["Meta"])
+def sitemap():
+    """Returns a site map over all valid urls.
+
+    .. :quickref: :http:get:`/site-map`
+
+    """
+    links = app.routes
+    links = filter(lambda route: "GET" in route.methods, links)
+    links = map(attrgetter("path"), links)
+    return {"site-map": sorted(links)}
+
+
+@app.get("/version", tags=["Meta"])
+def version():
+    version = {"lora_version": __version__}
+    return version
+
+
 app.include_router(
     klassifikation.KlassifikationsHierarki.setup_api(),
     tags=["Klassifikation"],
@@ -87,30 +111,6 @@ app.include_router(
     tags=["Tilstand"],
     prefix=settings.BASE_URL,
 )
-
-
-@app.get("/")
-def root():
-    return RedirectResponse(app.url_path_for("sitemap"))
-
-
-@app.get("/site-map")
-def sitemap():
-    """Returns a site map over all valid urls.
-
-    .. :quickref: :http:get:`/site-map`
-
-    """
-    links = app.routes
-    links = filter(lambda route: "GET" in route.methods, links)
-    links = map(attrgetter("path"), links)
-    return {"site-map": sorted(links)}
-
-
-@app.get("/version")
-def version():
-    version = {"lora_version": __version__}
-    return version
 
 
 testing_router = APIRouter()
@@ -164,7 +164,7 @@ def handle_not_allowed(request: Request, exc: OIOFlaskException):
 def http_exception(request: Request, exc: HTTPException):
     return JSONResponse(
         status_code=exc.status_code,
-        content={"error": exc.status_code, "text": str(exc)},
+        content={"error": exc.status_code, "text": str(exc.detail)},
     )
 
 

@@ -18,7 +18,7 @@ class Test21660PutUpdate(DBTestCase):
             },
         )
         self.assertEqual(result.status_code, 201)
-        uuid_ = result.get_json()["uuid"]
+        uuid_ = result.json()["uuid"]
         self.assertTrue(is_uuid(uuid_))
 
         result_put = self.client.put(
@@ -31,7 +31,7 @@ class Test21660PutUpdate(DBTestCase):
             },
         )
         self.assertEqual(result_put.status_code, 200)
-        self.assertEqual(result_put.get_json()["uuid"], uuid_)
+        self.assertEqual(result_put.json()["uuid"], uuid_)
 
 
 class TestKlasse(DBTestCase):
@@ -43,7 +43,7 @@ class TestKlasse(DBTestCase):
             },
         )
         self.assertEqual(result.status_code, 201)
-        uuid_ = result.get_json()["uuid"]
+        uuid_ = result.json()["uuid"]
         self.assertTrue(is_uuid(uuid_))
 
         result_patch = self.client.patch(
@@ -53,7 +53,7 @@ class TestKlasse(DBTestCase):
             },
         )
         self.assertEqual(result_patch.status_code, 200)
-        self.assertEqual(result_patch.get_json()["uuid"], uuid_)
+        self.assertEqual(result_patch.json()["uuid"], uuid_)
 
 
 class TestImportDeletedPassivated(DBTestCase):
@@ -65,7 +65,7 @@ class TestImportDeletedPassivated(DBTestCase):
             },
         )
         self.assertEqual(result.status_code, 201)
-        uuid_ = result.get_json()["uuid"]
+        uuid_ = result.json()["uuid"]
         self.assertTrue(is_uuid(uuid_))
 
         with self.subTest("Passivate object"):
@@ -76,7 +76,7 @@ class TestImportDeletedPassivated(DBTestCase):
                 },
             )
             self.assertEqual(result_patch.status_code, 200)
-            self.assertEqual(result_patch.get_json()["uuid"], uuid_)
+            self.assertEqual(result_patch.json()["uuid"], uuid_)
 
         with self.subTest("Import object"):
             result_put = self.client.put(
@@ -86,7 +86,7 @@ class TestImportDeletedPassivated(DBTestCase):
                 },
             )
             self.assertEqual(result_put.status_code, 200)
-            self.assertEqual(result_put.get_json()["uuid"], uuid_)
+            self.assertEqual(result_put.json()["uuid"], uuid_)
 
         with self.subTest("Delete object"):
             result_delete = self.client.delete(
@@ -96,7 +96,7 @@ class TestImportDeletedPassivated(DBTestCase):
                 },
             )
             self.assertEqual(result_delete.status_code, 202)
-            self.assertEqual(result_delete.get_json()["uuid"], uuid_)
+            self.assertEqual(result_delete.json()["uuid"], uuid_)
 
         with self.subTest("Import object"):
             result_import = self.client.put(
@@ -106,7 +106,7 @@ class TestImportDeletedPassivated(DBTestCase):
                 },
             )
             self.assertEqual(result_import.status_code, 200)
-            self.assertEqual(result_import.get_json()["uuid"], uuid_)
+            self.assertEqual(result_import.json()["uuid"], uuid_)
 
 
 class TestFacet(DBTestCase):
@@ -118,7 +118,7 @@ class TestFacet(DBTestCase):
             },
         )
         self.assertEqual(result.status_code, 201)
-        uuid_ = result.get_json()["uuid"]
+        uuid_ = result.json()["uuid"]
         self.assertTrue(is_uuid(uuid_))
 
         import_uuid = str(uuid.uuid4())
@@ -130,7 +130,7 @@ class TestFacet(DBTestCase):
                 },
             )
             self.assertEqual(result_import.status_code, 200)
-            self.assertEqual(result_import.get_json()["uuid"], import_uuid)
+            self.assertEqual(result_import.json()["uuid"], import_uuid)
 
         with self.subTest("Update facet"):
             result_patch = self.client.patch(
@@ -140,7 +140,7 @@ class TestFacet(DBTestCase):
                 },
             )
             self.assertEqual(result_patch.status_code, 200)
-            self.assertEqual(result_patch.get_json()["uuid"], uuid_)
+            self.assertEqual(result_patch.json()["uuid"], uuid_)
 
         with self.subTest("Replace the facet content with old ones"):
             result_put = self.client.put(
@@ -150,7 +150,7 @@ class TestFacet(DBTestCase):
                 },
             )
             self.assertEqual(result_put.status_code, 200)
-            self.assertEqual(result_put.get_json()["uuid"], uuid_)
+            self.assertEqual(result_put.json()["uuid"], uuid_)
 
         with self.subTest("Passivate facet"):
             result_patch = self.client.patch(
@@ -160,7 +160,7 @@ class TestFacet(DBTestCase):
                 },
             )
             self.assertEqual(result_patch.status_code, 200)
-            self.assertEqual(result_patch.get_json()["uuid"], uuid_)
+            self.assertEqual(result_patch.json()["uuid"], uuid_)
 
         with self.subTest("Delete facet"):
             result_delete = self.client.delete(
@@ -170,4 +170,4 @@ class TestFacet(DBTestCase):
                 },
             )
             self.assertEqual(result_delete.status_code, 202)
-            self.assertEqual(result_delete.get_json()["uuid"], uuid_)
+            self.assertEqual(result_delete.json()["uuid"], uuid_)

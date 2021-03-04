@@ -16,7 +16,7 @@ class TestLogHaendelse(DBTestCase):
             },
         )
         self.assertEqual(result.status_code, 201, result.json)
-        uuid_ = result.get_json()["uuid"]
+        uuid_ = result.json()["uuid"]
         self.assertTrue(is_uuid(uuid_))
 
         with self.subTest("Import loghaendelse"):
@@ -29,7 +29,7 @@ class TestLogHaendelse(DBTestCase):
                 },
             )
             self.assertEqual(result_import.status_code, 200)
-            self.assertEqual(result_import.get_json()["uuid"], uuid_)
+            self.assertEqual(result_import.json()["uuid"], uuid_)
 
         with self.subTest("Delete loghaendelse"):
             result_delete = self.client.delete(
@@ -39,4 +39,4 @@ class TestLogHaendelse(DBTestCase):
                 },
             )
             self.assertEqual(result_delete.status_code, 202)
-            self.assertEqual(result_delete.get_json()["uuid"], uuid_)
+            self.assertEqual(result_delete.json()["uuid"], uuid_)

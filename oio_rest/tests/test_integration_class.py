@@ -357,8 +357,7 @@ class Tests(DBTestCase):
         )
 
         self.assertEqual(r.status_code, 202)
-        self.assertEqual(r.status, "202 ACCEPTED")
-        self.assertEqual(r.json, {"uuid": objid})
+        self.assertEqual(r.json(), {"uuid": objid})
 
         # once more for prince canut!
         self.assertRequestResponse(

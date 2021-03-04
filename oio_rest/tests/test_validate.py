@@ -1310,7 +1310,7 @@ class TestSchemaEndPoints(unittest.TestCase):
         expected_path = os.path.join(util.FIXTURE_DIR, "schemas.json")
 
         actual = {
-            cls.__name__: cls.get_schema().json
+            cls.__name__: cls.get_schema().json()
             for hier in self.hierarchies
             for cls in hier._classes
         }
@@ -1333,7 +1333,7 @@ class TestSchemaEndPoints(unittest.TestCase):
             url = "/{}/{}/schema".format(hierarchy._name.lower(), obj.__name__.lower())
             r = self.client.get(url)
             self.assertEqual(200, r.status_code)
-            json.loads(r.data.decode("utf-8"))
+            json.loads(r.text)
 
     def test_aktivitet_hierarchy(self):
         self.assertSchemaOK(aktivitet.AktivitetsHierarki)

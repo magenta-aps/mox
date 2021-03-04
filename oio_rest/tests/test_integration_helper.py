@@ -47,7 +47,7 @@ class TestCreateObject(DBTestCase):
 
         # Check persisted data
         lora_object["livscykluskode"] = "Opstaaet"
-        uuid = r.json["uuid"]
+        uuid = r.json()["uuid"]
         self.assertQueryResponse(path, lora_object, uuid=uuid)
 
         with self.subTest("search"):

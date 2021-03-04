@@ -76,14 +76,10 @@ class _BaseTestCase(TestCase):
         automatically posts the given JSON data.
 
         """
-
         r = self.perform_request(path, **kwargs)
-
-        actual = (
-            json.loads(r.get_data(as_text=True))
-            if r.mimetype == "application/json"
-            else r.get_data(as_text=True)
-        )
+        actual = r.text
+        if r.headers.get('content-type', "") == "application/json":
+            actual = json.loads(actual)
 
         for k in drop_keys:
             try:
@@ -94,9 +90,9 @@ class _BaseTestCase(TestCase):
         if not message:
             status_message = "request {!r} failed with status {}".format(
                 path,
-                r.status,
+                r.status_code,
             )
-            content_message = "request {!r} yielded an expected result".format(
+            content_message = "request {!r} yielded an unexpected result".format(
                 path,
             )
         else:
@@ -112,7 +108,7 @@ class _BaseTestCase(TestCase):
 
         except AssertionError:
             print(path)
-            print(r.status)
+            print(r.status_code)
             pprint.pprint(actual)
 
             raise
@@ -131,15 +127,15 @@ class _BaseTestCase(TestCase):
 
         r = self.perform_request(path, **kwargs)
 
-        self.assertEqual(r.status_code, code, message)
+        self.assertEqual(r.status_code, code, message + ": " + r.text)
 
     def perform_request(self, path, **kwargs):
         if "json" in kwargs:
             kwargs.setdefault("method", "POST")
             kwargs.setdefault("data", json.dumps(kwargs.pop("json"), indent=2))
             kwargs.setdefault("headers", {"Content-Type": "application/json"})
-
-        return self.client.request(path, **kwargs)
+        kwargs.setdefault("method", "GET")
+        return self.client.request(url=path, **kwargs)
 
     def assertRegistrationsEqual(self, expected, actual, message=None):
         def sort_inner_lists(obj):
@@ -181,7 +177,7 @@ class _BaseTestCase(TestCase):
     def assertOK(self, response, message=None):
         self.assertTrue(
             200 <= response.status_code < 300,
-            message or "request failed with {}!".format(response.status),
+            message or "request failed with {}!".format(response.status_code),
         )
 
     def assertUUID(self, s):
@@ -197,15 +193,15 @@ class _BaseTestCase(TestCase):
         :param response: Response from LoRa when creating a new object
         """
         self.assertEqual(201, response.status_code)
-        self.assertEqual(1, len(response.json))
-        self.assertUUID(response.json["uuid"])
+        self.assertEqual(1, len(response.json()))
+        self.assertUUID(response.json()["uuid"])
 
     def get(self, path, **params):
-        r = self.perform_request(path, query_string=params)
+        r = self.perform_request(path, params=params, method="GET")
 
         self.assertOK(r)
 
-        d = r.json["results"][0]
+        d = r.json()["results"][0]
 
         if not d or not all(isinstance(v, dict) for v in d):
             return d
@@ -228,25 +224,25 @@ class _BaseTestCase(TestCase):
         r = self.perform_request(path, json=json, method="PUT")
         self.assertOK(r)
 
-        return r.json["uuid"]
+        return r.json()["uuid"]
 
     def patch(self, path, json):
         r = self.perform_request(path, json=json, method="PATCH")
         self.assertOK(r)
 
-        return r.json["uuid"]
+        return r.json()["uuid"]
 
     def post(self, path, json):
         r = self.perform_request(path, json=json, method="POST")
         self.assertOK(r)
 
-        return r.json["uuid"]
+        return r.json()["uuid"]
 
     def delete(self, path, json):
         r = self.perform_request(path, json=json, method="DELETE")
         self.assertOK(r)
 
-        return r.json["uuid"]
+        return r.json()["uuid"]
 
     def assertQueryResponse(self, path, expected, **params):
         """Perform a request towards LoRa, and assert that it yields the
@@ -285,7 +281,7 @@ class _BaseTestCase(TestCase):
         try:
             self.assertOK(r, msg)
 
-            objid = r.json.get("uuid")
+            objid = r.json().get("uuid")
 
             self.assertTrue(objid)
         except AssertionError:

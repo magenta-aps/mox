@@ -6,8 +6,9 @@ import datetime
 import json
 import types
 from unittest import TestCase
+from urllib.parse import urlencode
 
-from fastapi import FastAPI, APIRouter
+from fastapi import APIRouter, Request, HTTPException
 import freezegun
 from mock import MagicMock, patch
 from werkzeug.exceptions import BadRequest
@@ -24,6 +25,41 @@ from oio_rest import oio_base, organisation
 from tests.util import ExtTestCase
 
 
+import asyncio
+from functools import wraps
+from typing import Awaitable, Callable, TypeVar
+
+CallableReturnType = TypeVar("CallableReturnType")
+
+
+def async_to_sync(
+    func: Callable[..., Awaitable[CallableReturnType]]
+) -> Callable[..., CallableReturnType]:
+    """Decorator to run an async function to completion.
+
+    Example:
+
+        @async_to_sync
+        async def sleepy(seconds):
+            await asyncio.sleep(seconds)
+            return seconds
+
+        print(sleepy(5))  # --> 5
+
+    Args:
+        func (async function): The asynchronous function to wrap.
+
+    Returns:
+        :obj:`sync function`: The synchronous function wrapping the async one.
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs) -> CallableReturnType:
+        return asyncio.run(func(*args, **kwargs))
+
+    return wrapper
+
+
 class TestClassRestObject(OIORestObject):
     pass
 
@@ -36,22 +72,16 @@ class TestClassStandardHierarchy(OIOStandardHierarchy):
 class TestOIORestObjectCreateApi(TestCase):
     def setUp(self):
         self.testclass = TestClassRestObject
-        self.app = MagicMock()
-        self.app.add_url_rule = MagicMock()
 
-    def assert_api_rule(self, endpoint, method, function, call_args_list):
+    def assert_api_rule(self, router, name, method, function):
         # Check for existence of rule in args list
-        rule = next(
-            (
-                rule
-                for rule in call_args_list
-                if method in rule[1]["methods"]
-                and endpoint in rule[0]
-                and function in rule[0]
-            ),
-            None,
-        )
-        self.assertIsNotNone(rule, "Expected {} {}".format(method, endpoint))
+        endpoints = router.routes
+        endpoints = filter(lambda route: method in route.methods, endpoints)
+        endpoints = filter(lambda route: function == route.endpoint, endpoints)
+        endpoints = filter(lambda route: name == route.name, endpoints)
+
+        rule = next(endpoints, None)
+        self.assertIsNotNone(rule, "Expected {} {}".format(method, name))
 
     def test_create_api_calls_flask_add_url_rule(self):
         router = self.testclass.create_api(hierarchy="Hierarchy")
@@ -61,70 +91,70 @@ class TestOIORestObjectCreateApi(TestCase):
         router = self.testclass.create_api(hierarchy="Hierarchy")
         self.assertIsInstance(router, APIRouter)
         self.assert_api_rule(
+            router,
             "TestClassRestObject_get_objects",
             "GET",
             self.testclass.get_objects,
-            self.flask.add_url_rule.call_args_list,
         )
 
     def test_create_api_adds_get_object_rule(self):
         router = self.testclass.create_api(hierarchy="Hierarchy")
         self.assertIsInstance(router, APIRouter)
         self.assert_api_rule(
+            router,
             "TestClassRestObject_get_object",
             "GET",
             self.testclass.get_object,
-            self.flask.add_url_rule.call_args_list,
         )
 
     def test_create_api_adds_put_object_rule(self):
         router = self.testclass.create_api(hierarchy="Hierarchy")
         self.assertIsInstance(router, APIRouter)
         self.assert_api_rule(
+            router,
             "TestClassRestObject_put_object",
             "PUT",
             self.testclass.put_object,
-            self.flask.add_url_rule.call_args_list,
         )
 
     def test_create_api_adds_patch_object_rule(self):
         router = self.testclass.create_api(hierarchy="Hierarchy")
         self.assertIsInstance(router, APIRouter)
         self.assert_api_rule(
+            router,
             "TestClassRestObject_patch_object",
             "PATCH",
             self.testclass.patch_object,
-            self.flask.add_url_rule.call_args_list,
         )
 
     def test_create_api_adds_create_object_rule(self):
         router = self.testclass.create_api(hierarchy="Hierarchy")
         self.assertIsInstance(router, APIRouter)
         self.assert_api_rule(
+            router,
             "TestClassRestObject_create_object",
             "POST",
             self.testclass.create_object,
-            self.flask.add_url_rule.call_args_list,
         )
 
     def test_create_api_adds_delete_object_rule(self):
         router = self.testclass.create_api(hierarchy="Hierarchy")
         self.assertIsInstance(router, APIRouter)
         self.assert_api_rule(
+            router,
             "TestClassRestObject_delete_object",
             "DELETE",
             self.testclass.delete_object,
-            self.flask.add_url_rule.call_args_list,
         )
 
     def test_create_api_adds_fields_rule(self):
         router = self.testclass.create_api(hierarchy="Hierarchy")
         self.assertIsInstance(router, APIRouter)
         self.assert_api_rule(
+            router,
             "TestClassRestObject_fields",
             "GET",
             self.testclass.get_fields,
-            self.flask.add_url_rule.call_args_list,
         )
 
 
@@ -140,12 +170,54 @@ class TestOIORestObject(ExtTestCase):
 
     def setUp(self):
         self.testclass = TestClassRestObject()
-        self.app = FastAPI()
         db_helpers._search_params = {}
         db_helpers._attribute_fields = {}
         db_helpers._attribute_names = {}
         db_helpers._relation_names = {}
         db_helpers._state_names = {}
+
+    def create_request(self, method=None, params=None, headers=None, data=None):
+        params = params or {}
+        method = method or "GET"
+        data = data or ""
+        headers = headers or []
+
+        responses = [
+            {
+                "type": "http.request",
+                "http_version": "1.1",
+                "method": method,
+                "scheme": "http",
+                "path": "/",
+                "query_string": urlencode(params, True),
+                "root_path": "",
+                "headers": headers,
+                "body": data.encode('utf-8'),
+                "client": ("127.0.0.1", 1),
+                "server": ("127.0.0.1", 2),
+            }
+        ]
+
+        async def receive():
+            if responses:
+                return responses.pop(0)
+            return None
+
+        request = Request(
+            {
+                'type': 'http',
+                'http_version': '1.1',
+                'method': method,
+                'scheme': 'http',
+                'path': '/',
+                'query_string': urlencode(params, True),
+                'headers': headers,
+                'client': ('127.0.0.1', 1),
+                'server': ('127.0.0.1', 2),
+            },
+            receive
+        )
+        return request
 
     def test_get_args_lowercases_arg_keys(self):
         # Arrange
@@ -157,8 +229,8 @@ class TestOIORestObject(ExtTestCase):
         }
 
         # Act
-        with self.app.test_request_context(query_string=params, method="POST"):
-            actual_result = self.testclass._get_args()
+        request = self.create_request(method="POST", params=params)
+        actual_result = self.testclass._get_args(request)
 
         # Assert
         self.assertEqual(expected_result, actual_result)
@@ -170,8 +242,8 @@ class TestOIORestObject(ExtTestCase):
         expected_result = {"key1": "value1", "key2": "value2"}
 
         # Act
-        with self.app.test_request_context(query_string=params, method="POST"):
-            actual_result = self.testclass._get_args()
+        request = self.create_request(method="POST", params=params)
+        actual_result = self.testclass._get_args(request)
 
         # Assert
         self.assertEqual(expected_result, actual_result)
@@ -183,65 +255,73 @@ class TestOIORestObject(ExtTestCase):
         expected_result = {"key1": ["value1"], "key2": ["value2", "value3"]}
 
         # Act
-        with self.app.test_request_context(query_string=params, method="POST"):
-            actual_result = self.testclass._get_args(True)
+        request = self.create_request(method="POST", params=params)
+        actual_result = self.testclass._get_args(request, True)
 
         # Assert
         self.assertEqual(expected_result, actual_result)
 
-    def test_get_json_returns_json_if_request_json(self):
+    @async_to_sync
+    async def test_get_json_returns_json_if_request_json(self):
         # Arrange
         expected_json = {"testkey": "testvalue"}
 
         # Act
-        with self.app.test_request_context(
+        request = self.create_request(
+            method="POST",
+            headers=[["accept", "application/json"]],
             data=json.dumps(expected_json),
-            content_type="application/json",
-            method="POST",
-        ):
-            actual_json = self.testclass.get_json()
+        )
+        actual_json = await self.testclass.get_json(request)
 
         # Assert
         self.assertEqual(expected_json, actual_json)
 
-    def test_get_json_returns_json_if_form_json(self):
+    @async_to_sync
+    async def test_get_json_returns_json_if_form_json(self):
         # Arrange
         expected_json = {"testkey": "testvalue"}
 
-        # Act
-        with self.app.test_request_context(
-            data="json={}".format(json.dumps(expected_json)),
-            content_type="application/x-www-form-urlencoded",
+        request = self.create_request(
             method="POST",
-        ):
-            actual_json = self.testclass.get_json()
+            headers=[[b"content-type", b"application/x-www-form-urlencoded"]],
+            data=urlencode({"json": json.dumps(expected_json)}),
+        )
+        actual_json = await self.testclass.get_json(request)
 
         # Assert
         self.assertEqual(expected_json, actual_json)
 
-    def test_get_json_returns_badrequest_if_malformed_form_json(self):
+    @async_to_sync
+    async def test_get_json_returns_badrequest_if_malformed_form_json(self):
         # Arrange
         # Act
-        with self.app.test_request_context(
-            data="json={123123123}",
-            content_type="application/x-www-form-urlencoded",
+        request = self.create_request(
             method="POST",
-        ), self.assertRaises(BadRequest):
-            self.testclass.get_json()
+            headers=[[b"content-type", b"application/x-www-form-urlencoded"]],
+            data=urlencode({"json": "{123123123}"}),
+        )
 
-    def test_get_json_returns_none_if_request_json_is_none(self):
+        with self.assertRaises(BadRequest):
+            await self.testclass.get_json(request)
+
+    @async_to_sync
+    async def test_get_json_returns_none_if_request_json_is_none(self):
         # Arrange
         expected_json = None
 
-        # Act
-        with self.app.test_request_context(method="POST"):
-            actual_json = self.testclass.get_json()
+        request = self.create_request(
+            method="POST",
+            data=json.dumps(expected_json),
+        )
+        actual_json = await self.testclass.get_json(request)
 
         # Assert
         self.assertEqual(expected_json, actual_json)
 
     @patch("oio_rest.db.create_or_import_object")
-    def test_create_object_with_input_returns_uuid_and_code_201(self, mock):
+    @async_to_sync
+    async def test_create_object_with_input_returns_uuid_and_code_201(self, mock):
         # Arrange
         uuid = "c98d1e8b-0655-40a0-8e86-bb0cc07b0d59"
 
@@ -271,54 +351,53 @@ class TestOIORestObject(ExtTestCase):
         }
 
         # Act
-        with self.app.test_request_context(
-            data=json.dumps(data), content_type="application/json", method="POST"
-        ):
-            result = organisation.Organisation.create_object()
-            actual_data = json.loads(result[0].get_data(as_text=True))
-            actual_code = result[1]
+        request = self.create_request(
+            method="POST",
+            headers=[["accept", "application/json"]],
+            data=json.dumps(data),
+        )
+        actual_data = await organisation.Organisation.create_object(request)
 
         # Assert
         self.assertDictEqual(expected_data, actual_data)
-        self.assertEqual(201, actual_code)
 
-    def test_create_object_with_no_input_returns_uuid_none_and_code_400(self):
+    @async_to_sync
+    async def test_create_object_with_no_input_returns_uuid_none_and_code_400(self):
         # Arrange
         expected_data = {"uuid": None}
 
         # Act
-        with self.app.test_request_context(method="POST"):
-            result = self.testclass.create_object()
-            actual_data = json.loads(result[0].get_data(as_text=True))
-            actual_code = result[1]
+        request = self.create_request(
+            method="POST",
+        )
+        with self.assertRaises(HTTPException) as exp:
+            result = await self.testclass.create_object(request)
+            # Assert
+            self.assertDictEqual(exp.detail, expected_data)
+            self.assertEqual(exp.status_code, 400)
 
-        # Assert
-        self.assertDictEqual(expected_data, actual_data)
-        self.assertEqual(400, actual_code)
-
-    def test_create_object_raises_on_unknown_args(self):
+    @async_to_sync
+    async def test_create_object_raises_on_unknown_args(self):
         # Arrange
         params = {"a": "b"}
 
         # Act
-        with self.app.test_request_context(
-            method="POST", query_string=params
-        ), self.assertRaises(BadRequestException):
-            self.testclass.create_object()
+        request = self.create_request(
+            method="POST",
+            params=params,
+        )
+        with self.assertRaises(BadRequestException):
+            await self.testclass.create_object(request)
 
     def test_get_fields(self):
         # Arrange
         expected_fields = ["field1", "field2"]
         db_structure = {"testclassrestobject": expected_fields, "garbage": ["garbage"]}
 
-        with self.app.test_request_context(method="GET"), self.patch_db_struct(
-            db_structure
-        ):
-
+        request = self.create_request()
+        with self.patch_db_struct(db_structure):
             # Act
-            actual_fields = json.loads(
-                self.testclass.get_fields().get_data(as_text=True)
-            )
+            actual_fields = self.testclass.get_fields(request)
 
             # Assert
             self.assertEqual(expected_fields, actual_fields)
@@ -328,15 +407,15 @@ class TestOIORestObject(ExtTestCase):
         params = {"a": "b"}
 
         # Act
-        with self.app.test_request_context(
-            method="GET", query_string=params
-        ), self.assertRaises(BadRequestException):
-            self.testclass.get_fields()
+        request = self.create_request(params=params)
+        with self.assertRaises(BadRequestException):
+            self.testclass.get_fields(request)
 
     @freezegun.freeze_time("2017-01-01", tz_offset=1)
     @patch("oio_rest.db.list_objects")
     @ExtTestCase.patch_db_struct(db_struct)
-    def test_get_objects_list_uses_default_params(self, mock_list):
+    @async_to_sync
+    async def test_get_objects_list_uses_default_params(self, mock_list):
         # Arrange
         data = ["1", "2", "3"]
 
@@ -357,9 +436,8 @@ class TestOIORestObject(ExtTestCase):
         expected_result = {"results": data}
 
         # Act
-        with self.app.test_request_context(method="GET"):
-            actual_result_json = self.testclass.get_objects().get_data(as_text=True)
-            actual_result = json.loads(actual_result_json)
+        request = self.create_request()
+        actual_result = await self.testclass.get_objects(request)
 
         # Assert
         actual_args = mock_list.call_args[0]
@@ -369,7 +447,8 @@ class TestOIORestObject(ExtTestCase):
 
     @patch("oio_rest.db.list_objects")
     @ExtTestCase.patch_db_struct(db_struct)
-    def test_get_objects_list_uses_supplied_params(self, mock):
+    @async_to_sync
+    async def test_get_objects_list_uses_supplied_params(self, mock):
         # Arrange
         data = ["1", "2", "3"]
 
@@ -404,9 +483,8 @@ class TestOIORestObject(ExtTestCase):
         }
 
         # Act
-        with self.app.test_request_context(method="GET", query_string=request_params):
-            actual_result_json = self.testclass.get_objects().get_data(as_text=True)
-            actual_result = json.loads(actual_result_json)
+        request = self.create_request(params=request_params)
+        actual_result = await self.testclass.get_objects(request)
 
         # Assert
         actual_args = mock.call_args[0]
@@ -416,15 +494,15 @@ class TestOIORestObject(ExtTestCase):
 
     @patch("oio_rest.db.list_objects")
     @ExtTestCase.patch_db_struct(db_struct)
-    def test_get_objects_returns_empty_list_on_no_results(self, mock):
+    @async_to_sync
+    async def test_get_objects_returns_empty_list_on_no_results(self, mock):
         # Arrange
 
         mock.return_value = None
 
         # Act
-        with self.app.test_request_context(method="GET"):
-            actual_result_json = self.testclass.get_objects().get_data(as_text=True)
-            actual_result = json.loads(actual_result_json)
+        request = self.create_request()
+        actual_result = await self.testclass.get_objects(request)
 
         expected_result = {"results": []}
 
@@ -434,7 +512,8 @@ class TestOIORestObject(ExtTestCase):
     @ExtTestCase.patch_db_struct(db_struct)
     @patch("oio_rest.oio_base.build_registration")
     @patch("oio_rest.oio_base.configured_db_interface.searcher.search_objects")
-    def test_get_objects_search_uses_default_params(self, mock_search, mock_br):
+    @async_to_sync
+    async def test_get_objects_search_uses_default_params(self, mock_search, mock_br):
         # Arrange
         data = ["1", "2", "3"]
 
@@ -470,9 +549,8 @@ class TestOIORestObject(ExtTestCase):
         }
 
         # Act
-        with self.app.test_request_context(method="GET", query_string=request_params):
-            actual_result_json = self.testclass.get_objects().get_data(as_text=True)
-            actual_result = json.loads(actual_result_json)
+        request = self.create_request(params=request_params)
+        actual_result = await self.testclass.get_objects(request)
 
         # Assert
         actual_args = mock_search.call_args[0]
@@ -483,7 +561,8 @@ class TestOIORestObject(ExtTestCase):
     @ExtTestCase.patch_db_struct(db_struct)
     @patch("oio_rest.oio_base.build_registration")
     @patch("oio_rest.oio_base.configured_db_interface.searcher.search_objects")
-    def test_get_objects_search_uses_supplied_params(self, mock_search, mock_br):
+    @async_to_sync
+    async def test_get_objects_search_uses_supplied_params(self, mock_search, mock_br):
         # Arrange
         data = ["1", "2", "3"]
 
@@ -540,9 +619,8 @@ class TestOIORestObject(ExtTestCase):
         }
 
         # Act
-        with self.app.test_request_context(method="GET", query_string=request_params):
-            actual_result_json = self.testclass.get_objects().get_data(as_text=True)
-            actual_result = json.loads(actual_result_json)
+        request = self.create_request(params=request_params)
+        actual_result = await self.testclass.get_objects(request)
 
         # Assert
         actual_args = mock_search.call_args[0]
@@ -553,7 +631,8 @@ class TestOIORestObject(ExtTestCase):
     @ExtTestCase.patch_db_struct(db_struct)
     @patch("oio_rest.utils.build_registration")
     @patch("oio_rest.db.search_objects")
-    def test_get_objects_search_raises_exception_on_multi_uuid(
+    @async_to_sync
+    async def test_get_objects_search_raises_exception_on_multi_uuid(
         self, mock_search, mock_br
     ):
         # Arrange
@@ -574,28 +653,28 @@ class TestOIORestObject(ExtTestCase):
         }
 
         # Act
-        with self.app.test_request_context(
-            method="GET", query_string=request_params
-        ), self.assertRaises(BadRequestException):
-            self.testclass.get_objects()
+        request = self.create_request(params=request_params)
+        with self.assertRaises(BadRequestException):
+            await self.testclass.get_objects(request)
 
     @ExtTestCase.patch_db_struct(db_struct)
     @patch("oio_rest.db.search_objects")
-    def test_get_objects_search_raises_exception_on_unknown_args(self, mock_search):
+    @async_to_sync
+    async def test_get_objects_search_raises_exception_on_unknown_args(self, mock_search):
         # Arrange
         mock_search.return_value = {}
 
         request_params = {"a": "b"}
 
         # Act
-        with self.app.test_request_context(
-            method="GET", query_string=request_params
-        ), self.assertRaises(BadRequestException):
-            self.testclass.get_objects()
+        request = self.create_request(params=request_params)
+        with self.assertRaises(BadRequestException):
+            await self.testclass.get_objects(request)
 
     @ExtTestCase.patch_db_struct(db_struct)
     @patch("oio_rest.db.list_objects")
-    def test_get_objects_raises_on_deleted_object(self, mock_list):
+    @async_to_sync
+    async def test_get_objects_raises_on_deleted_object(self, mock_list):
         # Arrange
         uuid = "d5995ed0-d527-4841-9e33-112b22aaade1"
         data = [
@@ -609,14 +688,14 @@ class TestOIORestObject(ExtTestCase):
         mock_list.return_value = [data]
 
         # Act
-        with self.app.test_request_context(
-            method="GET", query_string=request_params
-        ), self.assertRaises(GoneException):
-            self.testclass.get_objects()
+        request = self.create_request(params=request_params)
+        with self.assertRaises(GoneException):
+            await self.testclass.get_objects(request)
 
     @patch("oio_rest.db.list_objects")
     @freezegun.freeze_time("2017-01-01", tz_offset=1)
-    def test_get_object_uses_default_params(self, mock_list):
+    @async_to_sync
+    async def test_get_object_uses_default_params(self, mock_list):
         # Arrange
         data = [{"registreringer": [{"livscykluskode": "whatever"}]}]
         uuid = "d5995ed0-d527-4841-9e33-112b22aaade1"
@@ -638,9 +717,8 @@ class TestOIORestObject(ExtTestCase):
         expected_result = {uuid: data}
 
         # Act
-        with self.app.test_request_context(method="GET"):
-            actual_result_json = self.testclass.get_object(uuid).get_data(as_text=True)
-            actual_result = json.loads(actual_result_json)
+        request = self.create_request()
+        actual_result = await self.testclass.get_object(uuid, request)
 
         # Assert
         actual_args = mock_list.call_args[0]
@@ -649,7 +727,8 @@ class TestOIORestObject(ExtTestCase):
         self.assertEqual(expected_result, actual_result)
 
     @patch("oio_rest.db.list_objects")
-    def test_get_object_uses_supplied_params(self, mock):
+    @async_to_sync
+    async def test_get_object_uses_supplied_params(self, mock):
         # Arrange
         data = [{"registreringer": [{"livscykluskode": "whatever"}]}]
         uuid = "9a543ba1-c36b-4e47-9f0f-3463ce0e297c"
@@ -679,9 +758,8 @@ class TestOIORestObject(ExtTestCase):
         }
 
         # Act
-        with self.app.test_request_context(method="GET", query_string=request_params):
-            actual_result_json = self.testclass.get_object(uuid).get_data(as_text=True)
-            actual_result = json.loads(actual_result_json)
+        request = self.create_request(params=request_params)
+        actual_result = await self.testclass.get_object(uuid, request)
 
         # Assert
         actual_args = mock.call_args[0]
@@ -690,7 +768,8 @@ class TestOIORestObject(ExtTestCase):
         self.assertEqual(expected_result, actual_result)
 
     @patch("oio_rest.db.list_objects")
-    def test_get_object_raises_on_no_results(self, mock):
+    @async_to_sync
+    async def test_get_object_raises_on_no_results(self, mock):
         # Arrange
         data = []
         uuid = "4efbbbde-e197-47be-9d40-e08f1cd00259"
@@ -698,13 +777,13 @@ class TestOIORestObject(ExtTestCase):
         mock.return_value = data
 
         # Act
-        with self.app.test_request_context(method="GET"), self.assertRaises(
-            NotFoundException
-        ):
-            self.testclass.get_object(uuid)
+        request = self.create_request()
+        with self.assertRaises(NotFoundException):
+            await self.testclass.get_object(uuid, request)
 
     @patch("oio_rest.db.list_objects")
-    def test_get_object_raises_on_deleted_object(self, mock_list):
+    @async_to_sync
+    async def test_get_object_raises_on_deleted_object(self, mock_list):
         # Arrange
         data = [{"registreringer": [{"livscykluskode": db.Livscyklus.SLETTET.value}]}]
         uuid = "d5995ed0-d527-4841-9e33-112b22aaade1"
@@ -712,14 +791,14 @@ class TestOIORestObject(ExtTestCase):
         mock_list.return_value = [data]
 
         # Act
-        with self.app.test_request_context(method="GET"), self.assertRaises(
-            GoneException
-        ):
-            self.testclass.get_object(uuid)
+        request = self.create_request()
+        with self.assertRaises(GoneException):
+            await self.testclass.get_object(uuid, request)
 
     @ExtTestCase.patch_db_struct(db_struct)
     @patch("oio_rest.db.list_objects")
-    def test_get_object_raises_on_unknown_args(self, mock_list):
+    @async_to_sync
+    async def test_get_object_raises_on_unknown_args(self, mock_list):
         # Arrange
         uuid = "4efbbbde-e197-47be-9d40-e08f1cd00259"
         mock_list.return_value = []
@@ -727,30 +806,29 @@ class TestOIORestObject(ExtTestCase):
         params = {"a": "b"}
 
         # Act
-        with self.app.test_request_context(
-            method="GET", query_string=params
-        ), self.assertRaises(BadRequestException):
-            self.testclass.get_object(uuid)
+        request = self.create_request(params=params)
+        with self.assertRaises(BadRequestException):
+            await self.testclass.get_object(uuid, request)
 
-    def test_put_object_with_no_input_returns_uuid_none_and_code_400(self):
+    @async_to_sync
+    async def test_put_object_with_no_input_returns_uuid_none_and_code_400(self):
         # Arrange
         expected_data = {"uuid": None}
 
         uuid = "092285a1-6dbd-4a22-be47-5dddbbec80e3"
 
         # Act
-        with self.app.test_request_context(method="PUT"):
-            result = self.testclass.put_object(uuid)
-            actual_data = json.loads(result[0].get_data(as_text=True))
-            actual_code = result[1]
-
-        # Assert
-        self.assertDictEqual(expected_data, actual_data)
-        self.assertEqual(400, actual_code)
+        request = self.create_request(method="PUT")
+        with self.assertRaises(HTTPException) as exp:
+            result = await self.testclass.put_object(uuid, request)
+            # Assert
+            self.assertDictEqual(exp.detail, expected_data)
+            self.assertEqual(exp.status_code, 400)
 
     @patch("oio_rest.db.object_exists")
     @patch("oio_rest.db.create_or_import_object")
-    def test_put_object_create_if_not_exists(self, mock_create, mock_exists):
+    @async_to_sync
+    async def test_put_object_create_if_not_exists(self, mock_create, mock_exists):
         # type: (MagicMock, MagicMock) -> None
         # Arrange
         uuid = "d321b784-2bbc-40b7-aa1b-c74d931cd535"
@@ -781,23 +859,23 @@ class TestOIORestObject(ExtTestCase):
         }
 
         # Act
-        with self.app.test_request_context(
-            data=json.dumps(data), content_type="application/json", method="PUT"
-        ):
-            result = organisation.Organisation.put_object(uuid)
-            actual_data = json.loads(result[0].get_data(as_text=True))
-            actual_code = result[1]
+        request = self.create_request(
+            method="POST",
+            headers=[["accept", "application/json"]],
+            data=json.dumps(data),
+        )
+        actual_data = await organisation.Organisation.put_object(uuid, request)
 
         # Assert
         mock_create.assert_called()
         self.assertDictEqual(expected_data, actual_data)
-        self.assertEqual(200, actual_code)
 
     @patch("oio_rest.db.get_life_cycle_code")
     @patch("oio_rest.db.object_exists")
     @patch("oio_rest.db.update_object")
     @patch("oio_rest.validate.validate")
-    def test_patch_object_update_if_deleted_or_passive(
+    @async_to_sync
+    async def test_patch_object_update_if_deleted_or_passive(
         self, mock_validate, mock_update, mock_exists, mock_life_cycle
     ):
         # type: (MagicMock, MagicMock, MagicMock) -> None
@@ -814,23 +892,23 @@ class TestOIORestObject(ExtTestCase):
         data = {"note": "NOTE"}
 
         # Act
-        with self.app.test_request_context(
-            data=json.dumps(data), content_type="application/json", method="PUT"
-        ):
-            result = self.testclass.patch_object(uuid)
-            actual_data = json.loads(result[0].get_data(as_text=True))
-            actual_code = result[1]
+        request = self.create_request(
+            method="PUT",
+            headers=[["accept", "application/json"]],
+            data=json.dumps(data),
+        )
+        actual_data = await self.testclass.patch_object(uuid, request)
 
         # Assert
         mock_update.assert_called()
         self.assertDictEqual(expected_data, actual_data)
-        self.assertEqual(200, actual_code)
 
     @patch("oio_rest.db.get_life_cycle_code")
     @patch("oio_rest.db.object_exists")
     @patch("oio_rest.db.update_object")
     @patch("oio_rest.validate.validate")
-    def test_patch_object_update_if_not_deleted_or_passive(
+    @async_to_sync
+    async def test_patch_object_update_if_not_deleted_or_passive(
         self, mock_validate, mock_update, mock_exists, mock_life_cycle
     ):
         # type: (MagicMock, MagicMock, MagicMock) -> None
@@ -846,23 +924,23 @@ class TestOIORestObject(ExtTestCase):
         data = {"note": "NOTE"}
 
         # Act
-        with self.app.test_request_context(
-            data=json.dumps(data), content_type="application/json", method="PATCH"
-        ):
-            result = self.testclass.patch_object(uuid)
-            actual_data = json.loads(result[0].get_data(as_text=True))
-            actual_code = result[1]
+        request = self.create_request(
+            method="PATCH",
+            headers=[["accept", "application/json"]],
+            data=json.dumps(data),
+        )
+        actual_data = await self.testclass.patch_object(uuid, request)
 
         # Assert
         mock_update.assert_called()
         self.assertDictEqual(expected_data, actual_data)
-        self.assertEqual(200, actual_code)
 
     @patch("oio_rest.db.get_life_cycle_code")
     @patch("oio_rest.db.object_exists")
     @patch("oio_rest.db.passivate_object")
     @patch("oio_rest.validate.validate")
-    def test_patch_object_passivate_if_livscyklus_passiv(
+    @async_to_sync
+    async def test_patch_object_passivate_if_livscyklus_passiv(
         self, mock_validate, mock_passivate, mock_exists, mock_life_cycle
     ):
         # type: (MagicMock, MagicMock, MagicMock) -> None
@@ -878,32 +956,32 @@ class TestOIORestObject(ExtTestCase):
         data = {"livscyklus": "passiv"}
 
         # Act
-        with self.app.test_request_context(
-            data=json.dumps(data), content_type="application/json", method="PUT"
-        ):
-            result = self.testclass.patch_object(uuid)
-            actual_data = json.loads(result[0].get_data(as_text=True))
-            actual_code = result[1]
+        request = self.create_request(
+            method="PUT",
+            headers=[["accept", "application/json"]],
+            data=json.dumps(data),
+        )
+        actual_data = await self.testclass.patch_object(uuid, request)
 
         # Assert
         mock_passivate.assert_called()
         self.assertDictEqual(expected_data, actual_data)
-        self.assertEqual(200, actual_code)
 
-    def test_put_object_raises_on_unknown_args(self):
+    @async_to_sync
+    async def test_put_object_raises_on_unknown_args(self):
         # Arrange
         params = {"a": "b"}
 
         uuid = "2b9bfc6a-f1c1-459e-a16a-79f464c075a8"
 
         # Act
-        with self.app.test_request_context(
-            method="PUT", query_string=params
-        ), self.assertRaises(BadRequestException):
-            self.testclass.put_object(uuid)
+        request = self.create_request(method="PUT", params=params)
+        with self.assertRaises(BadRequestException):
+            await self.testclass.put_object(uuid, request)
 
     @patch("oio_rest.db.delete_object")
-    def test_delete_object_returns_expected_result_and_202(self, mock_delete):
+    @async_to_sync
+    async def test_delete_object_returns_expected_result_and_202(self, mock_delete):
         # type: (MagicMock) -> None
         # Arrange
         uuid = "cb94b2ec-33a5-4730-b87e-520e2b82fa9a"
@@ -912,18 +990,18 @@ class TestOIORestObject(ExtTestCase):
         data = {"note": "NOTE"}
 
         # Act
-        with self.app.test_request_context(
-            data=json.dumps(data), content_type="application/json", method="PUT"
-        ):
-            result = self.testclass.delete_object(uuid)
-            actual_data = json.loads(result[0].get_data(as_text=True))
-            actual_code = result[1]
+        request = self.create_request(
+            method="PUT",
+            headers=[["accept", "application/json"]],
+            data=json.dumps(data),
+        )
+        actual_data = await self.testclass.delete_object(uuid, request)
         # Assert
         self.assertDictEqual(expected_data, actual_data)
-        self.assertEqual(202, actual_code)
 
     @patch("oio_rest.db.delete_object")
-    def test_delete_object_called_with_empty_reg_and_uuid(self, mock_delete):
+    @async_to_sync
+    async def test_delete_object_called_with_empty_reg_and_uuid(self, mock_delete):
         # type: (MagicMock) -> None
         # Arrange
         uuid = "cb94b2ec-33a5-4730-b87e-520e2b82fa9a"
@@ -932,10 +1010,12 @@ class TestOIORestObject(ExtTestCase):
         data = {"note": "NOTE"}
 
         # Act
-        with self.app.test_request_context(
-            data=json.dumps(data), content_type="application/json", method="PUT"
-        ):
-            self.testclass.delete_object(uuid)
+        request = self.create_request(
+            method="PUT",
+            headers=[["accept", "application/json"]],
+            data=json.dumps(data),
+        )
+        await self.testclass.delete_object(uuid, request)
 
         # Assert
         mock_delete.assert_called()
@@ -944,17 +1024,17 @@ class TestOIORestObject(ExtTestCase):
         self.assertEqual(expected_reg, actual_reg)
         self.assertEqual(uuid, actual_uuid)
 
-    def test_delete_object_raises_on_unknown_args(self):
+    @async_to_sync
+    async def test_delete_object_raises_on_unknown_args(self):
         # Arrange
         params = {"a": "b"}
 
         uuid = "2b9bfc6a-f1c1-459e-a16a-79f464c075a8"
 
         # Act
-        with self.app.test_request_context(
-            method="PUT", query_string=params
-        ), self.assertRaises(BadRequestException):
-            self.testclass.delete_object(uuid)
+        request = self.create_request(method="PUT", params=params)
+        with self.assertRaises(BadRequestException):
+            await self.testclass.delete_object(uuid, request)
 
     def test_gather_registration(self):
         # Arrange
@@ -1031,7 +1111,6 @@ class TestOIOStandardHierarchy(ExtTestCase):
     def setUp(self):
         self.testclass = TestClassStandardHierarchy()
         self.resetClassFields()
-        self.app = flask.Flask(__name__)
 
     def resetClassFields(self):
         TestClassStandardHierarchy._classes = []
@@ -1043,7 +1122,7 @@ class TestOIOStandardHierarchy(ExtTestCase):
         TestClassStandardHierarchy._classes = [cls1, cls2]
 
         # Act
-        self.testclass.setup_api(base_url="URL", flask=MagicMock())
+        router = self.testclass.setup_api()
 
         # Assert
         cls1.create_api.assert_called_once()
@@ -1055,24 +1134,19 @@ class TestOIOStandardHierarchy(ExtTestCase):
         TestClassStandardHierarchy._classes = [MagicMock()]
 
         # Act
-        self.testclass.setup_api(base_url="URL", flask=flask)
+        router = self.testclass.setup_api()
+        routes = router.routes
+        routes = filter(lambda route: route.path == "/testclass/classes", routes)
+        route = next(routes)
 
         # Assert
-        flask.add_url_rule.assert_called_once()
-
-        ordered_args = flask.add_url_rule.call_args[0]
-        keyword_args = flask.add_url_rule.call_args[1]
-
-        self.assertIn("GET", keyword_args["methods"])
-        self.assertEqual("URL/testclass/classes", ordered_args[0])
-        self.assertEqual("testclass_classes", ordered_args[1])
-        self.assertIsInstance(ordered_args[2], types.FunctionType)
+        self.assertIn("GET", route.methods)
+        self.assertEqual("/testclass/classes", route.path)
+        self.assertEqual("testclass_classes", route.name)
+        self.assertIsInstance(route.endpoint, types.FunctionType)
 
     def test_setup_api_get_classes_returns_correct_result(self):
         # Arrange
-        flask = MagicMock()
-        flask.add_url_rule = MagicMock()
-
         cls1 = MagicMock()
         cls1.__name__ = "name1"
         cls2 = MagicMock()
@@ -1086,16 +1160,13 @@ class TestOIOStandardHierarchy(ExtTestCase):
 
         with self.patch_db_struct(db_structure):
             # Act
-            self.testclass.setup_api(base_url="URL", flask=flask)
+            router = self.testclass.setup_api()
+            routes = router.routes
+            routes = filter(lambda route: route.path == "/testclass/classes", routes)
+            route = next(routes)
+            get_classes = route.endpoint
 
-            # Assert
-            flask.add_url_rule.assert_called_once()
-
-            get_classes = flask.add_url_rule.call_args[0][2]
-
-            with self.app.test_request_context():
-                actual_result = json.loads(get_classes().get_data(as_text=True))
-
+            actual_result = get_classes()
             self.assertDictEqual(actual_result, expected_result)
 
 

@@ -192,7 +192,7 @@ class Tests(DBTestCase):
         self.assertRequestFails(
             "/aktivitet/aktivitet",
             400,
-            query_string={
+            params={
                 "xxx:xxx": "00000000-0000-0000-0000-000000000000",
             },
         )
@@ -200,7 +200,7 @@ class Tests(DBTestCase):
         self.assertRequestFails(
             "/aktivitet/aktivitet",
             400,
-            query_string={
+            params={
                 "brugerref:xxx": "00000000-0000-0000-0000-000000000000",
             },
         )
@@ -358,8 +358,7 @@ class Tests(DBTestCase):
         )
 
         self.assertEqual(r.status_code, 202)
-        self.assertEqual(r.status, "202 ACCEPTED")
-        self.assertEqual(r.json, {"uuid": objid})
+        self.assertEqual(r.json(), {"uuid": objid})
 
         # once more for prince canut!
         self.assertRequestResponse(
@@ -398,37 +397,37 @@ class Tests(DBTestCase):
         }
 
         self.assertRequestResponse(
-            "aktivitet/aktivitet?bvn=JOGGING",
+            "/aktivitet/aktivitet?bvn=JOGGING",
             expected_found,
         )
 
         self.assertRequestResponse(
-            "aktivitet/aktivitet?bvn=JOGGING&status=Aktiv",
+            "/aktivitet/aktivitet?bvn=JOGGING&status=Aktiv",
             expected_found,
         )
 
         self.assertRequestFails(
-            "aktivitet/aktivitet?bvn=JOGGING&gyldighed=Aktiv",
+            "/aktivitet/aktivitet?bvn=JOGGING&gyldighed=Aktiv",
             400,
         )
 
         self.assertRequestResponse(
-            "aktivitet/aktivitet?bvn=JOGGING&status=Aktiv&foersteresultat=0",
+            "/aktivitet/aktivitet?bvn=JOGGING&status=Aktiv&foersteresultat=0",
             expected_found,
         )
 
         self.assertRequestResponse(
-            "aktivitet/aktivitet?bvn=JOGGING&status=Inaktiv",
+            "/aktivitet/aktivitet?bvn=JOGGING&status=Inaktiv",
             expected_nothing,
         )
 
         self.assertRequestResponse(
-            "aktivitet/aktivitet?bvn=JOGGING&status=Inaktiv",
+            "/aktivitet/aktivitet?bvn=JOGGING&status=Inaktiv",
             expected_nothing,
         )
 
         self.assertRequestResponse(
-            "aktivitet/aktivitet?bvn=JOGGING&maximalantalresultater=0",
+            "/aktivitet/aktivitet?bvn=JOGGING&maximalantalresultater=0",
             expected_nothing,
         )
 
@@ -445,7 +444,7 @@ class Tests(DBTestCase):
         )
 
         self.assertRequestResponse(
-            "aktivitet/aktivitet?bvn=JOGGING&maximalantalresultater=2000",
+            "/aktivitet/aktivitet?bvn=JOGGING&maximalantalresultater=2000",
             {
                 "results": [
                     [
@@ -456,7 +455,7 @@ class Tests(DBTestCase):
         )
 
         self.assertRequestResponse(
-            "aktivitet/aktivitet?bvn=JOGGING&status=Aktiv&foersteresultat=1",
+            "/aktivitet/aktivitet?bvn=JOGGING&status=Aktiv&foersteresultat=1",
             {
                 "results": [
                     [],
@@ -499,7 +498,7 @@ class Tests(DBTestCase):
         )
 
         self.assertRequestResponse(
-            "aktivitet/aktivitet?bvn=JOG%&maximalantalresultater=2000",
+            "/aktivitet/aktivitet?bvn=JOG%&maximalantalresultater=2000",
             {
                 "results": [
                     [
@@ -510,7 +509,7 @@ class Tests(DBTestCase):
         )
 
         self.assertRequestResponse(
-            "aktivitet/aktivitet?bvn=JOG%&status=Aktiv&foersteresultat=1",
+            "/aktivitet/aktivitet?bvn=JOG%&status=Aktiv&foersteresultat=1",
             {
                 "results": [
                     [],
@@ -531,7 +530,7 @@ class Tests(DBTestCase):
 
         # the two are the same so we expect them to be ordered by UUID
         self.assertRequestResponse(
-            "/aktivitet/aktivitet/?bvn=%&maximalantalresultater=10",
+            "/aktivitet/aktivitet?bvn=%&maximalantalresultater=10",
             {
                 "results": [objids],
             },
@@ -575,7 +574,7 @@ class Tests(DBTestCase):
         time.sleep(0.01)
 
         self.assertRequestResponse(
-            "/aktivitet/aktivitet/?bvn=%&maximalantalresultater=10",
+            "/aktivitet/aktivitet?bvn=%&maximalantalresultater=10",
             {
                 "results": [
                     [
@@ -588,7 +587,7 @@ class Tests(DBTestCase):
         )
 
         self.assertRequestResponse(
-            "/aktivitet/aktivitet/?bvn=%&maximalantalresultater=10"
+            "/aktivitet/aktivitet?bvn=%&maximalantalresultater=10"
             "&virkningstid=2016-01-01",
             {
                 "results": [
@@ -602,7 +601,7 @@ class Tests(DBTestCase):
         )
 
         self.assertRequestResponse(
-            "/aktivitet/aktivitet/?bvn=%&maximalantalresultater=10"
+            "/aktivitet/aktivitet?bvn=%&maximalantalresultater=10"
             "&registreringstid=" + exists_time.isoformat(),
             {
                 "results": [objids],
@@ -610,7 +609,7 @@ class Tests(DBTestCase):
         )
 
         self.assertRequestResponse(
-            "/aktivitet/aktivitet/?bvn=%&maximalantalresultater=10"
+            "/aktivitet/aktivitet?bvn=%&maximalantalresultater=10"
             "&registreringstid=" + no_time.isoformat(),
             {
                 "results": [[]],
@@ -628,8 +627,8 @@ class Tests(DBTestCase):
                 objid,
             )
 
-        request = self.perform_request("/aktivitet/aktivitet/?bvn=%&list")
-        results = json.loads(request.get_data(as_text=True))
+        request = self.perform_request("/aktivitet/aktivitet?bvn=%&list")
+        results = json.loads(request.text)
 
         for r in results["results"]:
             self.assertIn(r[0]["id"], objids)

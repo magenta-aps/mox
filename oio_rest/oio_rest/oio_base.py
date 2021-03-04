@@ -11,6 +11,8 @@ from uuid import UUID
 import dateutil
 import jsonschema
 from fastapi import APIRouter, Request, HTTPException
+from werkzeug.datastructures import ImmutableOrderedMultiDict
+from werkzeug.exceptions import BadRequest
 
 from . import db, validate
 from .custom_exceptions import BadRequestException, GoneException, NotFoundException
@@ -263,6 +265,27 @@ def _check_not_deleted(objects):
             )
 
 
+class ArgumentDict(ImmutableOrderedMultiDict):
+    """
+    A Werkzeug multi dict that maintains the order, and maps alias
+    arguments.
+    """
+
+    @classmethod
+    def _process_item(cls, item):
+        (key, value) = item
+        key = to_lower_param(key)
+
+        return (PARAM_ALIASES.get(key, key), value)
+
+    def __init__(self, mapping):
+        # this code assumes that a) we always get a mapping and b)
+        # that mapping is specified as list of two-tuples -- which
+        # happens to be the case when contructing the dictionary from
+        # query arguments
+        super(ArgumentDict, self).__init__(list(map(self._process_item, mapping)))
+
+
 class Registration:
     def __init__(self, oio_class, states, attributes, relations):
         self.oio_class = oio_class
@@ -294,7 +317,7 @@ class OIOStandardHierarchy:
         hierarchy = cls._name.lower()
         classes_url = "/{0}/{1}".format(hierarchy, "classes")
 
-        @oio_router.get(classes_url)
+        @oio_router.get(classes_url, name="_".join([hierarchy, "classes"]))
         def get_classes():
             """Return the classes including their fields under this service.
 
@@ -338,7 +361,7 @@ class OIORestObject:
                 try:
                     return json.loads(data)
                 except ValueError as e:
-                    request.on_json_loading_failed(e)
+                    raise BadRequest()
             else:
                 return None
 
@@ -376,28 +399,16 @@ class OIORestObject:
         """
         Convert arguments to lowercase, optionally getting them as lists.
         """
-
-        def _process_item(item):
-            (key, value) = item
-            key = to_lower_param(key)
-
-            return (PARAM_ALIASES.get(key, key), value)
-
-        items = request.query_params.items()
-        if preprocess:
-            items = list(map(_process_item, items))
+        query_params = request.query_params
+        items = ArgumentDict(query_params.multi_items())
 
         return {
-            to_lower_param(k): (
-                request.query_params.get(k)
-                if not as_lists
-                else request.query_params.getlist(k)
-            )
-            for k, v in items
+            to_lower_param(k): items.getlist(k) if as_lists else items.get(k)
+            for k in items
         }
 
     @classmethod
-    def get_objects(cls, request: Request):
+    async def get_objects(cls, request: Request):
         """A :ref:`ListOperation` or :ref:`SearchOperation` depending on parameters.
 
         With any the of ``uuid``, ``virking*`` and ``registeret*`` parameters,
@@ -509,7 +520,7 @@ class OIORestObject:
         return {"results": results}
 
     @classmethod
-    def get_object(cls, uuid: UUID, request: Request):
+    async def get_object(cls, uuid: UUID, request: Request):
         """A :ref:`ReadOperation`. Return a single whole object as a JSON object.
 
         .. :quickref: :ref:`ReadOperation`
@@ -689,6 +700,7 @@ class OIORestObject:
         .. :quickref: :ref:`DeleteOperation`
 
         """
+        uuid = str(uuid)
 
         cls.verify_args(request)
 
@@ -749,6 +761,18 @@ class OIORestObject:
             class_url, name="_".join([cls.__name__, "create_object"]), status_code=201
         )(cls.create_object)
 
+        def dummy():
+            return "Hello World"
+
+        # Structure URLs
+        rest_router.get(cls_fields_url, name="_".join([cls.__name__, "fields"]))(
+            cls.get_fields
+        )
+        # JSON schemas
+        rest_router.get(
+            "{0}/{1}".format(class_url, "schema"), name="_".join([cls.__name__, "schema"])
+        )(cls.get_schema)
+
         rest_router.get(object_url, name="_".join([cls.__name__, "get_object"]))(
             cls.get_object
         )
@@ -761,16 +785,6 @@ class OIORestObject:
         rest_router.delete(
             object_url, name="_".join([cls.__name__, "delete_object"]), status_code=202
         )(cls.delete_object)
-
-        # Structure URLs
-        rest_router.get(cls_fields_url, name="_".join([cls.__name__, "fields"]))(
-            cls.get_fields
-        )
-
-        # JSON schemas
-        rest_router.get(
-            "{}/{}".format(class_url, "schema"), name="_".join([cls.__name__, "schema"])
-        )(cls.get_schema)
 
         return rest_router
 

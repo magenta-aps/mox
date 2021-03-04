@@ -18,7 +18,7 @@ class TestIndsats(DBTestCase):
             },
         )
         self.assertEqual(result.status_code, 201)
-        uuid_ = result.get_json()["uuid"]
+        uuid_ = result.json()["uuid"]
         self.assertTrue(is_uuid(uuid_))
 
     def test_indsats_put(self):
@@ -30,4 +30,4 @@ class TestIndsats(DBTestCase):
             },
         )
         self.assertEqual(result.status_code, 200)
-        self.assertEqual(result.get_json()["uuid"], uuid_)
+        self.assertEqual(result.json()["uuid"], uuid_)

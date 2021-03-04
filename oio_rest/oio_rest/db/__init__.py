@@ -362,7 +362,7 @@ def object_exists(class_name, uuid):
         try:
             cursor.execute(sql, (uuid,))
         except psycopg2.Error as e:
-            if e.pgcode[:2] == "MO":
+            if e.pgcode is not None and e.pgcode[:2] == "MO":
                 status_code = int(e.pgcode[2:])
                 raise DBException(status_code, e.pgerror)
             else:
@@ -390,7 +390,7 @@ where de.indhold = %s"""
         try:
             cursor.execute(sql, (content_url,))
         except psycopg2.Error as e:
-            if e.pgcode[:2] == "MO":
+            if e.pgcode is not None and e.pgcode[:2] == "MO":
                 status_code = int(e.pgcode[2:])
                 raise DBException(status_code, e.pgerror)
             else:
@@ -442,7 +442,7 @@ def create_or_import_object(class_name, note, registration, uuid=None):
         try:
             cursor.execute(sql)
         except psycopg2.Error as e:
-            if e.pgcode[:2] == "MO":
+            if e.pgcode is not None and e.pgcode[:2] == "MO":
                 status_code = int(e.pgcode[2:])
                 raise DBException(status_code, e.pgerror)
             else:
@@ -492,7 +492,7 @@ def delete_object(class_name, registration, note, uuid):
         try:
             cursor.execute(sql)
         except psycopg2.Error as e:
-            if e.pgcode[:2] == "MO":
+            if e.pgcode is not None and e.pgcode[:2] == "MO":
                 status_code = int(e.pgcode[2:])
                 raise DBException(status_code, e.pgerror)
             else:
@@ -531,7 +531,7 @@ def passivate_object(class_name, note, registration, uuid):
         try:
             cursor.execute(sql)
         except psycopg2.Error as e:
-            if e.pgcode[:2] == "MO":
+            if e.pgcode is not None and e.pgcode[:2] == "MO":
                 status_code = int(e.pgcode[2:])
                 raise DBException(status_code, e.pgerror)
             else:
@@ -583,7 +583,7 @@ def update_object(
 
             if e.pgerror.startswith(noop_msg):
                 return uuid
-            elif e.pgcode[:2] == "MO":
+            elif e.pgcode is not None and e.pgcode[:2] == "MO":
                 status_code = int(e.pgcode[2:])
                 raise DBException(status_code, e.pgerror)
             else:
@@ -640,7 +640,7 @@ def list_objects(
                 },
             )
         except psycopg2.Error as e:
-            if e.pgcode[:2] == "MO":
+            if e.pgcode is not None and e.pgcode[:2] == "MO":
                 status_code = int(e.pgcode[2:])
                 raise DBException(status_code, e.pgerror)
             else:
@@ -955,7 +955,7 @@ def search_objects(
         try:
             cursor.execute(sql)
         except psycopg2.Error as e:
-            if e.pgcode[:2] == "MO":
+            if e.pgcode is not None and e.pgcode[:2] == "MO":
                 status_code = int(e.pgcode[2:])
                 raise DBException(status_code, e.pgerror)
             else:
