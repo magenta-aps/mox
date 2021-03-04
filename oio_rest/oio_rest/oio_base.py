@@ -336,7 +336,7 @@ class OIORestObject:
             data = formset.get("json", None)
             if data is not None:
                 try:
-                    return json.loads(data, encoding=request.charset)
+                    return json.loads(data)
                 except ValueError as e:
                     request.on_json_loading_failed(e)
             else:
