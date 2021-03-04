@@ -7,7 +7,7 @@ import json
 import types
 from unittest import TestCase
 
-import flask
+from fastapi import FastAPI, APIRouter
 import freezegun
 from mock import MagicMock, patch
 from werkzeug.exceptions import BadRequest
@@ -36,8 +36,8 @@ class TestClassStandardHierarchy(OIOStandardHierarchy):
 class TestOIORestObjectCreateApi(TestCase):
     def setUp(self):
         self.testclass = TestClassRestObject
-        self.flask = MagicMock()
-        self.flask.add_url_rule = MagicMock()
+        self.app = MagicMock()
+        self.app.add_url_rule = MagicMock()
 
     def assert_api_rule(self, endpoint, method, function, call_args_list):
         # Check for existence of rule in args list
@@ -54,14 +54,12 @@ class TestOIORestObjectCreateApi(TestCase):
         self.assertIsNotNone(rule, "Expected {} {}".format(method, endpoint))
 
     def test_create_api_calls_flask_add_url_rule(self):
-        self.testclass.create_api(hierarchy="", flask=self.flask, base_url="URL")
-        self.flask.add_url_rule.assert_called()
+        router = self.testclass.create_api(hierarchy="Hierarchy")
+        self.assertIsInstance(router, APIRouter)
 
     def test_create_api_adds_get_objects_rule(self):
-        self.testclass.create_api(
-            hierarchy="Hierarchy", flask=self.flask, base_url="URL"
-        )
-        self.flask.add_url_rule.assert_called()
+        router = self.testclass.create_api(hierarchy="Hierarchy")
+        self.assertIsInstance(router, APIRouter)
         self.assert_api_rule(
             "TestClassRestObject_get_objects",
             "GET",
@@ -70,10 +68,8 @@ class TestOIORestObjectCreateApi(TestCase):
         )
 
     def test_create_api_adds_get_object_rule(self):
-        self.testclass.create_api(
-            hierarchy="Hierarchy", flask=self.flask, base_url="URL"
-        )
-        self.flask.add_url_rule.assert_called()
+        router = self.testclass.create_api(hierarchy="Hierarchy")
+        self.assertIsInstance(router, APIRouter)
         self.assert_api_rule(
             "TestClassRestObject_get_object",
             "GET",
@@ -82,10 +78,8 @@ class TestOIORestObjectCreateApi(TestCase):
         )
 
     def test_create_api_adds_put_object_rule(self):
-        self.testclass.create_api(
-            hierarchy="Hierarchy", flask=self.flask, base_url="URL"
-        )
-        self.flask.add_url_rule.assert_called()
+        router = self.testclass.create_api(hierarchy="Hierarchy")
+        self.assertIsInstance(router, APIRouter)
         self.assert_api_rule(
             "TestClassRestObject_put_object",
             "PUT",
@@ -94,10 +88,8 @@ class TestOIORestObjectCreateApi(TestCase):
         )
 
     def test_create_api_adds_patch_object_rule(self):
-        self.testclass.create_api(
-            hierarchy="Hierarchy", flask=self.flask, base_url="URL"
-        )
-        self.flask.add_url_rule.assert_called()
+        router = self.testclass.create_api(hierarchy="Hierarchy")
+        self.assertIsInstance(router, APIRouter)
         self.assert_api_rule(
             "TestClassRestObject_patch_object",
             "PATCH",
@@ -106,10 +98,8 @@ class TestOIORestObjectCreateApi(TestCase):
         )
 
     def test_create_api_adds_create_object_rule(self):
-        self.testclass.create_api(
-            hierarchy="Hierarchy", flask=self.flask, base_url="URL"
-        )
-        self.flask.add_url_rule.assert_called()
+        router = self.testclass.create_api(hierarchy="Hierarchy")
+        self.assertIsInstance(router, APIRouter)
         self.assert_api_rule(
             "TestClassRestObject_create_object",
             "POST",
@@ -118,10 +108,8 @@ class TestOIORestObjectCreateApi(TestCase):
         )
 
     def test_create_api_adds_delete_object_rule(self):
-        self.testclass.create_api(
-            hierarchy="Hierarchy", flask=self.flask, base_url="URL"
-        )
-        self.flask.add_url_rule.assert_called()
+        router = self.testclass.create_api(hierarchy="Hierarchy")
+        self.assertIsInstance(router, APIRouter)
         self.assert_api_rule(
             "TestClassRestObject_delete_object",
             "DELETE",
@@ -130,10 +118,8 @@ class TestOIORestObjectCreateApi(TestCase):
         )
 
     def test_create_api_adds_fields_rule(self):
-        self.testclass.create_api(
-            hierarchy="Hierarchy", flask=self.flask, base_url="URL"
-        )
-        self.flask.add_url_rule.assert_called()
+        router = self.testclass.create_api(hierarchy="Hierarchy")
+        self.assertIsInstance(router, APIRouter)
         self.assert_api_rule(
             "TestClassRestObject_fields",
             "GET",
@@ -154,7 +140,7 @@ class TestOIORestObject(ExtTestCase):
 
     def setUp(self):
         self.testclass = TestClassRestObject()
-        self.app = flask.Flask(__name__)
+        self.app = FastAPI()
         db_helpers._search_params = {}
         db_helpers._attribute_fields = {}
         db_helpers._attribute_names = {}

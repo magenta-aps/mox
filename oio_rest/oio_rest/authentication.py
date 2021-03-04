@@ -4,8 +4,6 @@
 
 from functools import wraps
 
-from . import settings
-
 
 def requires_auth(f):
     @wraps(f)

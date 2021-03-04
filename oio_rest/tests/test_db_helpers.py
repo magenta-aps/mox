@@ -6,6 +6,8 @@ from unittest import TestCase
 
 from mock import MagicMock, call, patch
 
+from werkzeug.datastructures import ImmutableMultiDict
+
 from oio_rest.custom_exceptions import BadRequestException
 from oio_rest.db import db_helpers, db_structure
 from tests.util import ExtTestCase
@@ -794,7 +796,6 @@ class TestDBHelpers(ExtTestCase):
 
         # Act
         with app.test_request_context(data={}, method="POST"):
-            # TODO: Fixup
             request.files = ImmutableMultiDict({"testfile": mockfile})
 
             actual_result = DokumentDelEgenskaberType._get_file_storage_for_content_url(

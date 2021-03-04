@@ -13,8 +13,7 @@ from .db import db_helpers
 from .oio_base import OIORestObject, OIOStandardHierarchy
 
 uuid_regex = (
-    "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}"
-    "-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+    "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}" "-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
 )
 date_path_regex = "^\\d{4}/\\d{2}/\\d{2}/\\d{2}/\\d{2}/" + uuid_regex + ".bin$"
 
@@ -55,7 +54,7 @@ class Dokument(OIORestObject):
         rest_router = super(Dokument, cls).create_api(hierarchy)
         hierarchy = hierarchy.lower()
         class_url = "/{0}/{1}".format(hierarchy, cls.__name__.lower())
-        download_content_url = class_url + '/{content_path}'
+        download_content_url = class_url + "/{content_path}"
         rest_router.get(
             download_content_url, name="_".join([cls.__name__, "download_content"])
         )(cls.download_content)

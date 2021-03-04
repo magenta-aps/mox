@@ -43,6 +43,8 @@ toml==0.10.1
     # via -r requirements.in
 urllib3==1.25.10
     # via requests
+werkzeug==1.0.1
+    # via -r requirements.in
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
