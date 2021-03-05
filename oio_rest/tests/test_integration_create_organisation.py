@@ -5,7 +5,7 @@ import copy
 import json
 import unittest
 
-from tests.test_integration_create_helper import TestCreateObject
+from tests.test_integration_helper import TestCreateObject
 
 
 class TestCreateOrganisation(TestCreateObject):

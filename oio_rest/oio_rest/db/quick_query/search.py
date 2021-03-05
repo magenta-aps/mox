@@ -8,7 +8,7 @@ from typing import Dict, List, Optional, Tuple, Union
 
 from more_itertools import flatten
 
-from oio_rest.db import get_connection, to_bool
+from oio_rest.db import Livscyklus, get_connection, to_bool
 from oio_rest.db.quick_query.registration_parsing import (
     Attribute,
     Relation,
@@ -328,23 +328,24 @@ class SearchQueryBuilder:
                     )
                 )
 
-        where_stmt = ""
-        # check if ANY conditions
-        if self.__conditions or additional_conditions or self.__relation_conditions:
-            # add the actual where statement, as it will be non-empty
-            used_conditions = []
-            if self.__conditions:
-                used_conditions += self.__conditions
+        # build the WHERE statement, as it will be non-empty
+        deleted_cycle_code = f"'{Livscyklus.SLETTET.value}'::livscykluskode"
+        used_conditions = [  # don't include deleted in search
+            f"({self.__reg_table}.{REG}).livscykluskode != {deleted_cycle_code}"
+        ]
 
-            if additional_conditions:
-                used_conditions += additional_conditions
+        if self.__conditions:
+            used_conditions += self.__conditions
 
-            if self.__relation_conditions:
-                conditions = " OR ".join(self.__relation_conditions)
-                relation_condition_str = f" ({conditions})"
-                used_conditions.append(relation_condition_str)
+        if additional_conditions:
+            used_conditions += additional_conditions
 
-            where_stmt = "WHERE " + " AND ".join(used_conditions)
+        if self.__relation_conditions:
+            conditions = " OR ".join(self.__relation_conditions)
+            relation_condition_str = f" ({conditions})"
+            used_conditions.append(relation_condition_str)
+
+        where_stmt = "WHERE " + " AND ".join(used_conditions)
 
         # add group by (all the ids)
         non_relation_table = [self.__reg_table] + [
@@ -495,4 +496,4 @@ def quick_search(
         cursor.execute(sql)
         output = cursor.fetchall()
 
-    return (list(flatten(output)),)
+    return (list(flatten(output)),)  # explicit tuple

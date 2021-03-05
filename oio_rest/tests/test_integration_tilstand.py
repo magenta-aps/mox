@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2018-2020 Magenta ApS
 # SPDX-License-Identifier: MPL-2.0
 
-from tests.test_integration_create_helper import TestCreateObject
+from tests.test_integration_helper import TestCreateObject
 
 
 class TestCreateTilstand(TestCreateObject):
@@ -51,11 +51,8 @@ class TestCreateTilstand(TestCreateObject):
             },
         }
 
-        r = self.perform_request("/tilstand/tilstand", json=tilstand)
-
-        # Check response
-        self.assert201(r)
-
-        # Check persisted data
-        tilstand["livscykluskode"] = "Opstaaet"
-        self.assertQueryResponse("/tilstand/tilstand", tilstand, uuid=r.json["uuid"])
+        path = "/tilstand/tilstand"
+        search_params = dict(brugervendtnoegle="bvn")
+        self.parametrized_basic_integration(
+            path=path, lora_object=tilstand, search_params=search_params
+        )
