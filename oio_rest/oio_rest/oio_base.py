@@ -761,9 +761,6 @@ class OIORestObject:
             class_url, name="_".join([cls.__name__, "create_object"]), status_code=201
         )(cls.create_object)
 
-        def dummy():
-            return "Hello World"
-
         # Structure URLs
         rest_router.get(cls_fields_url, name="_".join([cls.__name__, "fields"]))(
             cls.get_fields
