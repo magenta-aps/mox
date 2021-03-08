@@ -778,9 +778,9 @@ class TestDBHelpers(ExtTestCase):
         app = MagicMock()
 
         # Act
-        with app.test_request_context(
-            params={}, method="POST"
-        ), self.assertRaises(BadRequestException):
+        with app.test_request_context(params={}, method="POST"), self.assertRaises(
+            BadRequestException
+        ):
             DokumentDelEgenskaberType._get_file_storage_for_content_url(
                 "field:not_in_request"
             )

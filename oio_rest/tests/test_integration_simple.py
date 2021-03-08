@@ -92,7 +92,7 @@ class Tests(DBTestCase):
                     "/version",
                 ]
             },
-            method="GET"
+            method="GET",
         )
 
     def test_organisation(self):

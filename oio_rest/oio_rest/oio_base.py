@@ -767,7 +767,8 @@ class OIORestObject:
         )
         # JSON schemas
         rest_router.get(
-            "{0}/{1}".format(class_url, "schema"), name="_".join([cls.__name__, "schema"])
+            "{0}/{1}".format(class_url, "schema"),
+            name="_".join([cls.__name__, "schema"]),
         )(cls.get_schema)
 
         rest_router.get(object_url, name="_".join([cls.__name__, "get_object"]))(

@@ -147,13 +147,11 @@ class TestDokument(DBTestCase):
             self.assertEqual(result.status_code, 200)
 
         with self.subTest("Download updated dokument 2"):
-            result = self.client.get(
-                "dokument/dokument", params={"uuid": upload_uuid}
-            )
+            result = self.client.get("dokument/dokument", params={"uuid": upload_uuid})
             self.assertEqual(result.status_code, 200)
-            for r in result.json()["results"][0][0]["registreringer"][0][
-                "varianter"
-            ][0]["dele"]:
+            for r in result.json()["results"][0][0]["registreringer"][0]["varianter"][
+                0
+            ]["dele"]:
                 path = r["egenskaber"][0]["indhold"]
                 if path.startswith("store:"):
                     if (

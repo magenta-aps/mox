@@ -78,7 +78,7 @@ class _BaseTestCase(TestCase):
         """
         r = self.perform_request(path, **kwargs)
         actual = r.text
-        if r.headers.get('content-type', "") == "application/json":
+        if r.headers.get("content-type", "") == "application/json":
             actual = json.loads(actual)
 
         for k in drop_keys:

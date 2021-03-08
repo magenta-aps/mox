@@ -192,7 +192,7 @@ class TestOIORestObject(ExtTestCase):
                 "query_string": urlencode(params, True),
                 "root_path": "",
                 "headers": headers,
-                "body": data.encode('utf-8'),
+                "body": data.encode("utf-8"),
                 "client": ("127.0.0.1", 1),
                 "server": ("127.0.0.1", 2),
             }
@@ -205,17 +205,17 @@ class TestOIORestObject(ExtTestCase):
 
         request = Request(
             {
-                'type': 'http',
-                'http_version': '1.1',
-                'method': method,
-                'scheme': 'http',
-                'path': '/',
-                'query_string': urlencode(params, True),
-                'headers': headers,
-                'client': ('127.0.0.1', 1),
-                'server': ('127.0.0.1', 2),
+                "type": "http",
+                "http_version": "1.1",
+                "method": method,
+                "scheme": "http",
+                "path": "/",
+                "query_string": urlencode(params, True),
+                "headers": headers,
+                "client": ("127.0.0.1", 1),
+                "server": ("127.0.0.1", 2),
             },
-            receive
+            receive,
         )
         return request
 
@@ -660,7 +660,9 @@ class TestOIORestObject(ExtTestCase):
     @ExtTestCase.patch_db_struct(db_struct)
     @patch("oio_rest.db.search_objects")
     @async_to_sync
-    async def test_get_objects_search_raises_exception_on_unknown_args(self, mock_search):
+    async def test_get_objects_search_raises_exception_on_unknown_args(
+        self, mock_search
+    ):
         # Arrange
         mock_search.return_value = {}
 
