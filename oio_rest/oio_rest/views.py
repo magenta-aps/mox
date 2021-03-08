@@ -168,54 +168,6 @@ def http_exception(request: Request, exc: HTTPException):
     )
 
 
-# After request handle for logging.
-# Auxiliary functions to get data to be logged.
-
-
-# def get_service_name():
-#    "Get the hierarchy of the present method call from the request URL"
-#    u = urllib.parse.urlparse(request.url)
-#    urlpath = u.path
-#    service_name = urlpath.split("/")[1].capitalize()
-#
-#    return service_name
-#
-#
-# def get_class_name():
-#    "Get the hierarchy of the present method call from the request URL"
-#    url = urllib.parse.urlparse(request.url)
-#    class_name = url.path.split("/")[2].capitalize()
-#    return class_name
-#
-#
-# TODO: Implement this
-# @app.after_request
-# def log_api_call(response):
-#    if hasattr(request, "api_operation"):
-#        service_name = get_service_name()
-#        class_name = get_class_name()
-#        time = datetime.datetime.now()
-#        operation = request.api_operation
-#        return_code = response.status_code
-#        msg = response.status
-#        note = "Is there a note too?"
-#        user_uuid = get_authenticated_user()
-#        object_uuid = getattr(request, "uuid", None)
-#        log_service_call(
-#            service_name,
-#            class_name,
-#            time,
-#            operation,
-#            return_code,
-#            msg,
-#            note,
-#            user_uuid,
-#            "N/A",
-#            object_uuid,
-#        )
-#    return response
-
-
 @app.exception_handler(DataError)
 def handle_db_error(request: Request, exc: DataError):
     message = exc.diag.message_primary
