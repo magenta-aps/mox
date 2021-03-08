@@ -4,6 +4,7 @@
 
 import unittest
 import uuid
+from unittest import skip
 
 from oio_rest.utils import is_uuid
 from tests import util

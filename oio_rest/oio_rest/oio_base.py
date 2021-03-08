@@ -360,7 +360,7 @@ class OIORestObject:
             if data is not None:
                 try:
                     return json.loads(data)
-                except ValueError as e:
+                except ValueError:
                     raise BadRequest()
             else:
                 return None

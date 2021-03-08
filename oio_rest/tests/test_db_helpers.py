@@ -792,6 +792,7 @@ class TestDBHelpers(ExtTestCase):
         # Arrange
         mockfile = MagicMock()
         app = MagicMock()
+        request = MagicMock()
 
         # Act
         with app.test_request_context(data={}, method="POST"):

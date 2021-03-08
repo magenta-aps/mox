@@ -10,9 +10,6 @@ from psycopg2._range import DateTimeTZRange
 from psycopg2.extensions import adapt as psyco_adapt, ISQLQuote
 from psycopg2.extensions import register_adapter as psyco_register_adapter
 
-from ..contentstore import content_store
-from ..custom_exceptions import BadRequestException
-
 from oio_rest.db import db_structure
 
 _attribute_fields = {}
@@ -242,18 +239,20 @@ class DokumentDelEgenskaberType(
         """
         o = urlparse(url)
         if o.scheme == "field":
-            field_name = o.path
-            # TODO: This was flask request
-            file_obj = request.files.get(field_name, None)
-            if file_obj is None:
-                raise BadRequestException(
-                    (
-                        'The content URL "%s" referenced the field "%s", but it '
-                        "was not present in the request."
-                    )
-                    % (url, o.path)
-                )
-            return file_obj
+            raise NotImplementedError("Document support dropped!")
+
+    #            field_name = o.path
+    #            # TODO: This was flask request
+    #            file_obj = request.files.get(field_name, None)
+    #            if file_obj is None:
+    #                raise BadRequestException(
+    #                    (
+    #                        'The content URL "%s" referenced the field "%s", but it '
+    #                        "was not present in the request."
+    #                    )
+    #                    % (url, o.path)
+    #                )
+    #            return file_obj
 
     @classmethod
     def input(cls, i):
@@ -263,24 +262,26 @@ class DokumentDelEgenskaberType(
 
         # If the content URL is provided, and we are not doing a read
         # operation, save the uploaded file
-        if indhold is not None and indhold != "" and request.method != "GET":
-            try:
-                o = urlparse(indhold)
-            except ValueError:
-                raise BadRequestException(
-                    'The parameter "indhold" contained '
-                    'an invalid URL: "%s"' % indhold
-                )
-            # If the user is uploading a file, then handle the upload
-            if o.scheme == "field":
-                # Get FileStorage object referenced by indhold field
-                f = cls._get_file_storage_for_content_url(indhold)
-
-                # Save the file and get the URL for the saved file
-                indhold = content_store.save_file_object(f)
-            else:
-                # Otherwise, just accept whatever URL they pass.
-                pass
+        if indhold is not None and indhold != "":
+            # and request.method != "GET":
+            raise NotImplementedError("Document support dropped!")
+        #            try:
+        #                o = urlparse(indhold)
+        #            except ValueError:
+        #                raise BadRequestException(
+        #                    'The parameter "indhold" contained '
+        #                    'an invalid URL: "%s"' % indhold
+        #                )
+        #            # If the user is uploading a file, then handle the upload
+        #            if o.scheme == "field":
+        #                # Get FileStorage object referenced by indhold field
+        #                f = cls._get_file_storage_for_content_url(indhold)
+        #
+        #                # Save the file and get the URL for the saved file
+        #                indhold = content_store.save_file_object(f)
+        #            else:
+        #                # Otherwise, just accept whatever URL they pass.
+        #                pass
 
         return cls(
             i.get("indeks", None),

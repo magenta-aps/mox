@@ -371,7 +371,7 @@ class TestOIORestObject(ExtTestCase):
             method="POST",
         )
         with self.assertRaises(HTTPException) as exp:
-            result = await self.testclass.create_object(request)
+            await self.testclass.create_object(request)
             # Assert
             self.assertDictEqual(exp.detail, expected_data)
             self.assertEqual(exp.status_code, 400)
@@ -822,7 +822,7 @@ class TestOIORestObject(ExtTestCase):
         # Act
         request = self.create_request(method="PUT")
         with self.assertRaises(HTTPException) as exp:
-            result = await self.testclass.put_object(uuid, request)
+            await self.testclass.put_object(uuid, request)
             # Assert
             self.assertDictEqual(exp.detail, expected_data)
             self.assertEqual(exp.status_code, 400)
@@ -1124,7 +1124,7 @@ class TestOIOStandardHierarchy(ExtTestCase):
         TestClassStandardHierarchy._classes = [cls1, cls2]
 
         # Act
-        router = self.testclass.setup_api()
+        self.testclass.setup_api()
 
         # Assert
         cls1.create_api.assert_called_once()
