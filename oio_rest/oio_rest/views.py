@@ -23,7 +23,7 @@ from oio_rest import (
     settings,
     tilstand,
 )
-from oio_rest.custom_exceptions import OIOFlaskException
+from oio_rest.custom_exceptions import OIOException
 from oio_rest.db import management as db_mgmt
 from oio_rest.settings import config
 
@@ -154,8 +154,8 @@ if settings.config["truncate_api"]["enable"]:
     app.include_router(db_router, tags=["Database Management"], prefix="/db")
 
 
-@app.exception_handler(OIOFlaskException)
-def handle_not_allowed(request: Request, exc: OIOFlaskException):
+@app.exception_handler(OIOException)
+def handle_not_allowed(request: Request, exc: OIOException):
     dct = exc.to_dict()
     return JSONResponse(status_code=exc.status_code, content=dct)
 
