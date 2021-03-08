@@ -83,11 +83,11 @@ class TestOIORestObjectCreateApi(TestCase):
         rule = next(endpoints, None)
         self.assertIsNotNone(rule, "Expected {} {}".format(method, name))
 
-    def test_create_api_calls_flask_add_url_rule(self):
+    def test_create_api_call_returns_router(self):
         router = self.testclass.create_api(hierarchy="Hierarchy")
         self.assertIsInstance(router, APIRouter)
 
-    def test_create_api_adds_get_objects_rule(self):
+    def test_create_api_has_get_objects_rule(self):
         router = self.testclass.create_api(hierarchy="Hierarchy")
         self.assertIsInstance(router, APIRouter)
         self.assert_api_rule(
@@ -1128,9 +1128,8 @@ class TestOIOStandardHierarchy(ExtTestCase):
         cls1.create_api.assert_called_once()
         cls2.create_api.assert_called_once()
 
-    def test_setup_api_calls_flask_add_url_rule_with_correct_params(self):
+    def test_setup_api_call_router_has_expected_endpoint(self):
         # Arrange
-        flask = MagicMock()
         TestClassStandardHierarchy._classes = [MagicMock()]
 
         # Act

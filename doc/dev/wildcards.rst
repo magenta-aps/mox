@@ -20,7 +20,7 @@ not possible for the REST API user to send an underscore wildcard operator to
 SQL. This may change in the future.
 
 
-Flask et. al. take care of decoding :rfc:`RFC 3986 <3986#section-2>`
+FastAPI et. al. take care of decoding :rfc:`RFC 3986 <3986#section-2>`
 percentage-encoded URIs. This means a percentage sign followed by two case
 insensitive hexidecimal signs (``0-F``) is decoded into the corresponding ASCII
 symbol. E.g. a ``%45`` in an URI is decoded to ``E`` in SQL and ``%25`` is

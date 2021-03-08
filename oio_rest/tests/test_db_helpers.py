@@ -773,10 +773,9 @@ class TestDBHelpers(ExtTestCase):
     @skip("Document support destroyed when introducint FastAPI")
     def test_dokumentdelegenskabertype_get_file_storage_raises_bre(self):
         from oio_rest.db.db_helpers import DokumentDelEgenskaberType
-        import flask
 
         # Arrange
-        app = flask.Flask(__name__)
+        app = MagicMock()
 
         # Act
         with app.test_request_context(
@@ -789,12 +788,10 @@ class TestDBHelpers(ExtTestCase):
     @skip("Document support destroyed when introducint FastAPI")
     def test_dokumentdelegenskabertype_get_file_storage(self):
         from oio_rest.db.db_helpers import DokumentDelEgenskaberType
-        import flask
-        from flask import request
 
         # Arrange
         mockfile = MagicMock()
-        app = flask.Flask(__name__)
+        app = MagicMock()
 
         # Act
         with app.test_request_context(data={}, method="POST"):
@@ -831,10 +828,9 @@ class TestDBHelpers(ExtTestCase):
     ):
         # type: (MagicMock, MagicMock) -> None
         from oio_rest.db.db_helpers import DokumentDelEgenskaberType
-        import flask
 
         # Arrange
-        app = flask.Flask(__name__)
+        app = MagicMock()
 
         inputdata = {"indhold": "field:testdata"}
 
