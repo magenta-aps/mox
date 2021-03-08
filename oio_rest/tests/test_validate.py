@@ -8,7 +8,7 @@ import os.path
 import unittest
 
 import jsonschema
-import flask_testing
+from fastapi.testclient import TestClient
 
 from oio_rest import aktivitet
 from oio_rest import app
@@ -1276,7 +1276,7 @@ class TestFacetSystematically(TestBase):
         self.assertValidationError()
 
 
-class TestSchemaEndPoints(flask_testing.TestCase):
+class TestSchemaEndPoints(unittest.TestCase):
     def setUp(self):
         super().setUp()
 
@@ -1291,8 +1291,12 @@ class TestSchemaEndPoints(flask_testing.TestCase):
 
         self.hierarchies = list(get_subclasses(oio_base.OIOStandardHierarchy))
 
+        app = self.create_app()
+        self.client = TestClient(app)
+
     def create_app(self):
-        app.config["TESTING"] = True
+        # TODO: Handle without app.config
+        # app.config["TESTING"] = True
         return app
 
     @unittest.expectedFailure
@@ -1306,7 +1310,7 @@ class TestSchemaEndPoints(flask_testing.TestCase):
         expected_path = os.path.join(util.FIXTURE_DIR, "schemas.json")
 
         actual = {
-            cls.__name__: cls.get_schema().json
+            cls.__name__: cls.get_schema().json()
             for hier in self.hierarchies
             for cls in hier._classes
         }
@@ -1329,7 +1333,7 @@ class TestSchemaEndPoints(flask_testing.TestCase):
             url = "/{}/{}/schema".format(hierarchy._name.lower(), obj.__name__.lower())
             r = self.client.get(url)
             self.assertEqual(200, r.status_code)
-            json.loads(r.data.decode("utf-8"))
+            json.loads(r.text)
 
     def test_aktivitet_hierarchy(self):
         self.assertSchemaOK(aktivitet.AktivitetsHierarki)

@@ -5,9 +5,7 @@ import sys
 import time
 
 import click
-import flask.cli
 
-from oio_rest import app
 from oio_rest.settings import config
 from oio_rest.db import db_templating
 from oio_rest.db.management import (
@@ -18,7 +16,7 @@ from oio_rest.db.management import (
 )
 
 
-@click.group(cls=flask.cli.FlaskGroup, create_app=lambda: app)
+@click.group()
 def cli():
     """Management script for OIO REST."""
 

@@ -2,9 +2,10 @@
 # SPDX-License-Identifier: MPL-2.0
 
 
-from unittest import TestCase
+from unittest import TestCase, skip
 
 from mock import MagicMock, call, patch
+
 from werkzeug.datastructures import ImmutableMultiDict
 
 from oio_rest.custom_exceptions import BadRequestException
@@ -769,29 +770,29 @@ class TestDBHelpers(ExtTestCase):
         # Assert
         self.assertEqual(expected_result, actual_result)
 
+    @skip("Document support destroyed when introducint FastAPI")
     def test_dokumentdelegenskabertype_get_file_storage_raises_bre(self):
         from oio_rest.db.db_helpers import DokumentDelEgenskaberType
-        import flask
 
         # Arrange
-        app = flask.Flask(__name__)
+        app = MagicMock()
 
         # Act
-        with app.test_request_context(
-            query_string={}, method="POST"
-        ), self.assertRaises(BadRequestException):
+        with app.test_request_context(params={}, method="POST"), self.assertRaises(
+            BadRequestException
+        ):
             DokumentDelEgenskaberType._get_file_storage_for_content_url(
                 "field:not_in_request"
             )
 
+    @skip("Document support destroyed when introducint FastAPI")
     def test_dokumentdelegenskabertype_get_file_storage(self):
         from oio_rest.db.db_helpers import DokumentDelEgenskaberType
-        import flask
-        from flask import request
 
         # Arrange
         mockfile = MagicMock()
-        app = flask.Flask(__name__)
+        app = MagicMock()
+        request = MagicMock()
 
         # Act
         with app.test_request_context(data={}, method="POST"):
@@ -817,6 +818,7 @@ class TestDBHelpers(ExtTestCase):
         # Assert
         self.assertIsNone(actual_result)
 
+    @skip("Document support destroyed when introducint FastAPI")
     @patch(
         "oio_rest.db.db_helpers.DokumentDelEgenskaberType"
         "._get_file_storage_for_content_url"
@@ -827,10 +829,9 @@ class TestDBHelpers(ExtTestCase):
     ):
         # type: (MagicMock, MagicMock) -> None
         from oio_rest.db.db_helpers import DokumentDelEgenskaberType
-        import flask
 
         # Arrange
-        app = flask.Flask(__name__)
+        app = MagicMock()
 
         inputdata = {"indhold": "field:testdata"}
 

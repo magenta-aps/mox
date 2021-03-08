@@ -5,8 +5,10 @@
 import collections
 import datetime
 import unittest
+from unittest import TestCase
 
-import flask_testing
+from fastapi.testclient import TestClient
+
 from mock import MagicMock, call, patch
 
 from oio_rest import db
@@ -24,7 +26,11 @@ def get_mocked_cursor(mock):
     return cursor
 
 
-class TestDB(flask_testing.TestCase):
+class TestDB(TestCase):
+    def setUp(self):
+        app = self.create_app()
+        self.client = TestClient(app)
+
     def create_app(self):
         return app
 

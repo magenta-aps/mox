@@ -3,7 +3,6 @@
 
 -c requirements.txt
 
-Flask-Testing
 tap.py
 mock
 requests_mock

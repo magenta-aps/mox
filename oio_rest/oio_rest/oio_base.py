@@ -2,22 +2,20 @@
 # SPDX-License-Identifier: MPL-2.0
 
 """Superclasses for OIO objects and object hierarchies."""
-
-import datetime
 import json
+import datetime
 from abc import ABCMeta, abstractmethod
 from typing import Dict, List, Optional, Tuple, Union
+from uuid import UUID
 
 import dateutil
 import jsonschema
-from flask import jsonify, request
+from fastapi import APIRouter, Request, HTTPException
 from werkzeug.datastructures import ImmutableOrderedMultiDict
+from werkzeug.exceptions import BadRequest
 
-from . import db
-from . import validate
-from .authentication import requires_auth
-from .custom_exceptions import BadRequestException, NotFoundException
-from .custom_exceptions import GoneException
+from . import db, validate
+from .custom_exceptions import BadRequestException, GoneException, NotFoundException
 from .db import db_helpers, db_structure
 from .db.quick_query.search import quick_search
 from .settings import config
@@ -61,9 +59,7 @@ CONSOLIDATE_PARAM = frozenset(
     }
 )
 
-"""Some operations take no arguments; this makes it explicit.
-
-"""
+"""Some operations take no arguments; this makes it explicit."""
 NO_PARAMS = frozenset()
 
 """Aliases that apply to all operations."""
@@ -195,10 +191,6 @@ class ConfiguredDBInterface:
 configured_db_interface = ConfiguredDBInterface()
 
 
-def j(t):
-    return jsonify(output=t)
-
-
 def typed_get(d, field, default):
     v = d.get(field, default)
     t = type(default)
@@ -294,7 +286,7 @@ class ArgumentDict(ImmutableOrderedMultiDict):
         super(ArgumentDict, self).__init__(list(map(self._process_item, mapping)))
 
 
-class Registration(object):
+class Registration:
     def __init__(self, oio_class, states, attributes, relations):
         self.oio_class = oio_class
         self.states = states
@@ -302,26 +294,30 @@ class Registration(object):
         self.relations = relations
 
 
-class OIOStandardHierarchy(object):
+class OIOStandardHierarchy:
     """Implement API for entire hierarchy."""
 
     _name = ""
     _classes = []
 
     @classmethod
-    def setup_api(cls, flask, base_url):
+    def setup_api(cls):
         """Set up API for the classes included in the hierarchy.
 
         Note that version number etc. may have to be added to the URL."""
 
         assert cls._name and cls._classes, "hierarchy not configured?"
 
+        oio_router = APIRouter()
+
         for c in cls._classes:
-            c.create_api(cls._name, flask, base_url)
+            router = c.create_api(cls._name)
+            oio_router.include_router(router)
 
         hierarchy = cls._name.lower()
-        classes_url = "{0}/{1}/{2}".format(base_url, hierarchy, "classes")
+        classes_url = "/{0}/{1}".format(hierarchy, "classes")
 
+        @oio_router.get(classes_url, name="_".join([hierarchy, "classes"]))
         def get_classes():
             """Return the classes including their fields under this service.
 
@@ -331,14 +327,12 @@ class OIOStandardHierarchy(object):
             structure = db_structure.REAL_DB_STRUCTURE
             clsnms = [c.__name__.lower() for c in cls._classes]
             hierarchy_dict = {c: structure[c] for c in clsnms}
-            return jsonify(hierarchy_dict)
+            return hierarchy_dict
 
-        flask.add_url_rule(
-            classes_url, "_".join([hierarchy, "classes"]), get_classes, methods=["GET"]
-        )
+        return oio_router
 
 
-class OIORestObject(object):
+class OIORestObject:
     """
     Implement an OIO object - manage access to database layer for this object.
 
@@ -349,7 +343,7 @@ class OIORestObject(object):
     service_name = None
 
     @classmethod
-    def get_json(cls):
+    async def get_json(cls, request: Request):
         """
         Return the JSON input from the request.
         The JSON input typically comes from the body of the request with
@@ -358,24 +352,21 @@ class OIORestObject(object):
         contained in a form field called 'json'. This method handles this in a
         consistent way.
         """
-        if request.json:
-            return request.json
-        else:
-            data = request.form.get("json", None)
+        try:
+            return await request.json()
+        except json.decoder.JSONDecodeError:
+            formset = await request.form()
+            data = formset.get("json", None)
             if data is not None:
                 try:
-                    if request.charset is not None:
-                        return json.loads(data, encoding=request.charset)
-                    else:
-                        return json.loads(data)
-                except ValueError as e:
-                    request.on_json_loading_failed(e)
+                    return json.loads(data)
+                except ValueError:
+                    raise BadRequest()
             else:
                 return None
 
     @classmethod
-    @requires_auth
-    def create_object(cls):
+    async def create_object(cls, request: Request):
         """A :ref:`CreateOperation` that creates a new object from the JSON
         payload. It returns a newly generated UUID for the created object.
 
@@ -383,41 +374,41 @@ class OIORestObject(object):
 
         """
 
-        cls.verify_args()
+        cls.verify_args(request)
 
-        input = cls.get_json()
+        input = await cls.get_json(request)
         if not input:
-            return jsonify({"uuid": None}), 400
+            raise HTTPException(status_code=400, detail={"uuid": None})
 
         # Validate JSON input
         try:
             validate.validate(input, cls.__name__.lower())
         except jsonschema.exceptions.ValidationError as e:
-            return jsonify({"message": e.message}), 400
+            raise HTTPException(status_code=400, detail={"message": e.message})
 
         note = typed_get(input, "note", "")
         registration = cls.gather_registration(input)
         uuid = db.create_or_import_object(cls.__name__, note, registration)
         # Pass log info on request object.
-        request.api_operation = "Opret"
-        request.uuid = uuid
-        return jsonify({"uuid": uuid}), 201
+        # request.api_operation = "Opret"
+        # request.uuid = uuid
+        return {"uuid": uuid}
 
     @classmethod
-    def _get_args(cls, as_lists=False):
+    def _get_args(cls, request: Request, as_lists=False, preprocess=False):
         """
         Convert arguments to lowercase, optionally getting them as lists.
         """
+        query_params = request.query_params
+        items = ArgumentDict(query_params.multi_items())
+
         return {
-            to_lower_param(k): (
-                request.args.get(k) if not as_lists else request.args.getlist(k)
-            )
-            for k in request.args
+            to_lower_param(k): items.getlist(k) if as_lists else items.get(k)
+            for k in items
         }
 
     @classmethod
-    @requires_auth
-    def get_objects(cls):
+    async def get_objects(cls, request: Request):
         """A :ref:`ListOperation` or :ref:`SearchOperation` depending on parameters.
 
         With any the of ``uuid``, ``virking*`` and ``registeret*`` parameters,
@@ -430,13 +421,13 @@ class OIORestObject(object):
         .. :quickref: :ref:`ListOperation` or :ref:`SearchOperation`
 
         """
-        request.parameter_storage_class = ArgumentDict
-
-        cls.verify_args(search=True, temporality=True, consolidate=True)
+        cls.verify_args(
+            request, search=True, temporality=True, consolidate=True, preprocess=True
+        )
 
         # Convert arguments to lowercase, getting them as lists
-        list_args = cls._get_args(True)
-        args = cls._get_args()
+        list_args = cls._get_args(request, True, preprocess=True)
+        args = cls._get_args(request, preprocess=True)
         registreret_fra, registreret_til = get_registreret_dates(args)
         virkning_fra, virkning_til = get_virkning_dates(args)
 
@@ -477,7 +468,7 @@ class OIORestObject(object):
 
             # Fill out a registration object based on the query arguments
             registration = build_registration(cls.__name__, list_args)
-            request.api_operation = "Søg"
+            # request.api_operation = "Søg"
             results = configured_db_interface.searcher.search_objects(
                 cls.__name__,
                 uuid_param,
@@ -496,7 +487,7 @@ class OIORestObject(object):
             )
 
             if args.get("list") is not None:
-                request.api_operation = "List"
+                # request.api_operation = "List"
                 results = list_fn(
                     cls.__name__,
                     results[0],
@@ -509,7 +500,7 @@ class OIORestObject(object):
 
         else:
             uuid_param = list_args.get("uuid", None)
-            request.api_operation = "List"
+            # request.api_operation = "List"
             results = list_fn(
                 cls.__name__,
                 uuid_param,
@@ -522,35 +513,35 @@ class OIORestObject(object):
 
         if results is None:
             results = []
-        if uuid_param:
-            request.uuid = uuid_param
-        else:
-            request.uuid = ""
-        return jsonify({"results": results})
+        # if uuid_param:
+        #    request.uuid = uuid_param
+        # else:
+        #    request.uuid = ""
+        return {"results": results}
 
     @classmethod
-    @requires_auth
-    def get_object(cls, uuid):
+    async def get_object(cls, uuid: UUID, request: Request):
         """A :ref:`ReadOperation`. Return a single whole object as a JSON object.
 
         .. :quickref: :ref:`ReadOperation`
 
         """
-        cls.verify_args(temporality=True, consolidate=True)
+        uuid = str(uuid)
+        cls.verify_args(request, temporality=True, consolidate=True)
 
-        args = cls._get_args()
+        args = cls._get_args(request)
         registreret_fra, registreret_til = get_registreret_dates(args)
 
         virkning_fra, virkning_til = get_virkning_dates(args)
 
-        consolidate_param = cls._get_args().get("konsolider") is not None
+        consolidate_param = cls._get_args(request).get("konsolider") is not None
         if consolidate_param:
             list_fn = db.list_and_consolidate_objects
         else:
             list_fn = db.list_objects
 
-        request.api_operation = "Læs"
-        request.uuid = uuid
+        # request.api_operation = "Læs"
+        # request.uuid = uuid
         object_list = list_fn(
             cls.__name__,
             [uuid],
@@ -574,7 +565,7 @@ class OIORestObject(object):
             == db.Livscyklus.SLETTET.value
         ):
             raise GoneException("This object has been deleted.")
-        return jsonify({uuid: object})
+        return {uuid: object}
 
     @classmethod
     def gather_registration(cls, input):
@@ -592,8 +583,7 @@ class OIORestObject(object):
         }
 
     @classmethod
-    @requires_auth
-    def put_object(cls, uuid):
+    async def put_object(cls, uuid: UUID, request: Request):
         """A :ref:`ImportOperation` that creates or overwrites an object from
         the JSON payload.  It returns the UUID for the object.
 
@@ -609,17 +599,18 @@ class OIORestObject(object):
         .. :quickref: :ref:`ImportOperation`
 
         """
-        cls.verify_args()
+        uuid = str(uuid)
+        cls.verify_args(request)
 
-        input = cls.get_json()
+        input = await cls.get_json(request)
         if not input:
-            return jsonify({"uuid": None}), 400
+            raise HTTPException(status_code=400, detail={"uuid": None})
 
         # Validate JSON input
         try:
             validate.validate(input, cls.__name__.lower())
         except jsonschema.exceptions.ValidationError as e:
-            return jsonify({"message": e.message}), 400
+            raise HTTPException(status_code=400, detail={"message": e.message})
 
         # Get most common parameters if available.
         note = typed_get(input, "note", "")
@@ -634,16 +625,15 @@ class OIORestObject(object):
             ):
                 deleted_or_passive = True
 
-        request.uuid = uuid
+        # request.uuid = uuid
 
         if not exists:
             # Do import.
-            request.api_operation = "Import"
+            # request.api_operation = "Import"
             db.create_or_import_object(cls.__name__, note, registration, uuid)
-            return jsonify({"uuid": uuid}), 200
         elif deleted_or_passive:
             # Import.
-            request.api_operation = "Import"
+            # request.api_operation = "Import"
             db.update_object(
                 cls.__name__,
                 note,
@@ -651,17 +641,14 @@ class OIORestObject(object):
                 uuid=uuid,
                 life_cycle_code=db.Livscyklus.IMPORTERET.value,
             )
-            return jsonify({"uuid": uuid}), 200
         else:
             # Edit.
-            request.api_operation = "Ret"
+            # request.api_operation = "Ret"
             db.create_or_import_object(cls.__name__, note, registration, uuid)
-
-            return jsonify({"uuid": uuid}), 200
+        return {"uuid": uuid}
 
     @classmethod
-    @requires_auth
-    def patch_object(cls, uuid):
+    async def patch_object(cls, uuid: UUID, request: Request):
         """An :ref:`UpdateOperation` or :ref:`PassivateOperation`. Apply the
         JSON payload as a change to the object. Return the UUID of the object.
 
@@ -670,6 +657,8 @@ class OIORestObject(object):
         .. :quickref: :ref:`UpdateOperation` or :ref:`PassivateOperation`
 
         """
+        # TODO: Why no cls.verify_args here
+        uuid = str(uuid)
 
         # If the object doesn't exist, we can't patch it.
         if not db.object_exists(cls.__name__, uuid):
@@ -679,9 +668,10 @@ class OIORestObject(object):
                 )
             )
 
-        input = cls.get_json()
+        input = await cls.get_json(request)
         if not input:
-            return jsonify({"uuid": None}), 400
+            raise HTTPException(status_code=400, detail={"uuid": None})
+
         # Get most common parameters if available.
         note = typed_get(input, "note", "")
         registration = cls.gather_registration(input)
@@ -690,140 +680,111 @@ class OIORestObject(object):
         try:
             validate.validate(input, cls.__name__.lower(), do_create=False)
         except jsonschema.exceptions.ValidationError as e:
-            return jsonify({"message": e.message}), 400
+            raise HTTPException(status_code=400, detail={"message": e.message})
 
         if typed_get(input, "livscyklus", "").lower() == "passiv":
             # Passivate
-            request.api_operation = "Passiver"
+            # request.api_operation = "Passiver"
             registration = cls.gather_registration({})
             db.passivate_object(cls.__name__, note, registration, uuid)
-            return jsonify({"uuid": uuid}), 200
         else:
             # Edit/change
-            request.api_operation = "Ret"
+            # request.api_operation = "Ret"
             db.update_object(cls.__name__, note, registration, uuid)
-            return jsonify({"uuid": uuid}), 200
+        return {"uuid": uuid}
 
     @classmethod
-    @requires_auth
-    def delete_object(cls, uuid):
+    async def delete_object(cls, uuid: UUID, request: Request):
         """A :ref:`DeleteOperation`. Delete the object and return the UUID.
 
         .. :quickref: :ref:`DeleteOperation`
 
         """
+        uuid = str(uuid)
 
-        cls.verify_args()
+        cls.verify_args(request)
 
-        input = cls.get_json() or {}
+        input = await cls.get_json(request) or {}
         note = typed_get(input, "note", "")
         class_name = cls.__name__
         # Gather a blank registration
         registration = cls.gather_registration({})
-        request.api_operation = "Slet"
-        request.uuid = uuid
+        # request.api_operation = "Slet"
+        # request.uuid = uuid
         db.delete_object(class_name, registration, note, uuid)
 
-        return jsonify({"uuid": uuid}), 202
+        return {"uuid": uuid}
 
     @classmethod
-    def get_fields(cls):
+    def get_fields(cls, request: Request):
         """Return a list of all fields a given object has.
 
         .. :quickref: :http:get:`/(service)/(object)/fields`
 
         """
-        cls.verify_args()
+        cls.verify_args(request)
 
         """Set up API with correct database access functions."""
         structure = db_structure.REAL_DB_STRUCTURE
         class_key = cls.__name__.lower()
         # TODO: Perform some transformations to improve readability.
         class_dict = structure[class_key]
-        return jsonify(class_dict)
+        return class_dict
 
     @classmethod
-    def get_schema(cls):
+    def get_schema(cls, request: Request):
         """Returns the JSON schema of an object.
 
         .. :quickref: :http:get:`/(service)/(object)/schema`
 
         """
-        cls.verify_args()
+        cls.verify_args(request)
 
-        return jsonify(validate.get_schema(cls.__name__.lower()))
+        return validate.get_schema(cls.__name__.lower())
 
     @classmethod
-    def create_api(cls, hierarchy, flask, base_url):
+    def create_api(cls, hierarchy):
         """Set up API with correct database access functions."""
         cls.service_name = hierarchy
         hierarchy = hierarchy.lower()
         class_name = cls.__name__.lower()
-        class_url = "{0}/{1}/{2}".format(base_url, hierarchy, class_name)
+        class_url = "/{0}/{1}".format(hierarchy, class_name)
         cls_fields_url = "{0}/{1}".format(class_url, "fields")
-        uuid_regex = (
-            "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}"
-            "-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
-        )
-        object_url = '{0}/<regex("{1}"):uuid>'.format(class_url, uuid_regex)
+        object_url = class_url + "/{uuid}"
 
-        flask.add_url_rule(
-            class_url,
-            "_".join([cls.__name__, "get_objects"]),
-            cls.get_objects,
-            methods=["GET"],
-        )
+        rest_router = APIRouter()
 
-        flask.add_url_rule(
-            object_url,
-            "_".join([cls.__name__, "get_object"]),
-            cls.get_object,
-            methods=["GET"],
+        rest_router.get(class_url, name="_".join([cls.__name__, "get_objects"]))(
+            cls.get_objects
         )
-
-        flask.add_url_rule(
-            object_url,
-            "_".join([cls.__name__, "put_object"]),
-            cls.put_object,
-            methods=["PUT"],
-        )
-
-        flask.add_url_rule(
-            object_url,
-            "_".join([cls.__name__, "patch_object"]),
-            cls.patch_object,
-            methods=["PATCH"],
-        )
-
-        flask.add_url_rule(
-            class_url,
-            "_".join([cls.__name__, "create_object"]),
-            cls.create_object,
-            methods=["POST"],
-        )
-
-        flask.add_url_rule(
-            object_url,
-            "_".join([cls.__name__, "delete_object"]),
-            cls.delete_object,
-            methods=["DELETE"],
-        )
+        rest_router.post(
+            class_url, name="_".join([cls.__name__, "create_object"]), status_code=201
+        )(cls.create_object)
 
         # Structure URLs
-        flask.add_url_rule(
-            cls_fields_url,
-            "_".join([cls.__name__, "fields"]),
-            cls.get_fields,
-            methods=["GET"],
+        rest_router.get(cls_fields_url, name="_".join([cls.__name__, "fields"]))(
+            cls.get_fields
         )
-
         # JSON schemas
-        flask.add_url_rule(
-            "{}/{}".format(class_url, "schema"),
-            "_".join([cls.__name__, "schema"]),
-            cls.get_schema,
-            methods=["GET"],
+        rest_router.get(
+            "{0}/{1}".format(class_url, "schema"),
+            name="_".join([cls.__name__, "schema"]),
+        )(cls.get_schema)
+
+        rest_router.get(object_url, name="_".join([cls.__name__, "get_object"]))(
+            cls.get_object
         )
+        rest_router.put(object_url, name="_".join([cls.__name__, "put_object"]))(
+            cls.put_object
+        )
+        rest_router.patch(object_url, name="_".join([cls.__name__, "patch_object"]))(
+            cls.patch_object
+        )
+        rest_router.delete(
+            object_url, name="_".join([cls.__name__, "delete_object"]), status_code=202
+        )(cls.delete_object)
+
+        return rest_router
 
     # Templates which may be overridden on subclass.
     # Templates may only be overridden on subclass if they are explicitly
@@ -847,8 +808,16 @@ class OIORestObject(object):
         return set(db_helpers.get_state_names(cls.__name__))
 
     @classmethod
-    def verify_args(cls, temporality=False, search=False, consolidate=False):
-        req_args = set(cls._get_args())
+    def verify_args(
+        cls,
+        request: Request,
+        temporality=False,
+        search=False,
+        consolidate=False,
+        *args,
+        **kwargs
+    ):
+        req_args = set(cls._get_args(request, *args, **kwargs))
 
         if temporality:
             req_args -= TEMPORALITY_PARAMS
