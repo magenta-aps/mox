@@ -46,6 +46,9 @@
   "organisationenhed": {
     "relationer_nul_til_en": [
       "niveau"
+    ],
+    "relationer_nul_til_mange": [
+      "opmærkning"
     ]
   }
 }
