@@ -1,3 +1,9 @@
+Version 1.10.1,
+----------------------------
+
+New features:
+* Add OS2mo extension field for seniority
+
 Version 1.10.0, 1 March 2021
 ----------------------------
 
