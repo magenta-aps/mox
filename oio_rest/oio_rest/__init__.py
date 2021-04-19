@@ -7,9 +7,9 @@ from logging.handlers import RotatingFileHandler
 import pprint
 from oio_rest import settings
 
-from flask import Flask
+from fastapi import FastAPI
 
-__version__ = "1.10.0"
+__version__ = "1.11.0"
 
 # we need to add a log handler here, so we see logs from settings.py.
 # I mean, we /want/ this handler too.
@@ -28,7 +28,7 @@ logger.addHandler(stdout_log_handler)
 
 # settings requires the app object to exist so it can locate the
 # default-settings.toml file.
-app = Flask(__name__)
+app = FastAPI()
 
 # The trace log contains debug statements (in context with everything
 # higher precedens!) and is intended to be read by humans (tm) when

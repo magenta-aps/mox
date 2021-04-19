@@ -16,7 +16,7 @@ class TestAktivitet(DBTestCase):
             },
         )
         self.assertEqual(result.status_code, 201)
-        uuid_ = result.get_json()["uuid"]
+        uuid_ = result.json()["uuid"]
         self.assertTrue(is_uuid(uuid_))
 
         with self.subTest("Update aktivitet"):
@@ -27,4 +27,4 @@ class TestAktivitet(DBTestCase):
                 },
             )
             self.assertEqual(result_patch.status_code, 200)
-            self.assertEqual(result_patch.get_json()["uuid"], uuid_)
+            self.assertEqual(result_patch.json()["uuid"], uuid_)

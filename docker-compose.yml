@@ -12,16 +12,11 @@ services:
     # container and overwrites the CMD from Dockerfile. With this gunicorn
     # reloads on file changes. This is very useful when developing oio_rest.
     volumes:
-      - .:/code
+      - .:/app
       - ./dev-environment/dev-settings.toml:/user-settings.toml
-    command: [
-    "gunicorn",
-    "--config", "docker/gunicorn-settings.py",
-    "--reload", # Reload on file changes
-    "--workers", "1", # Single threaded in dev
-    "oio_rest:app"]
+    command: '/start-reload.sh'
     ports:
-      - "8080:8080"
+      - "8080:80"
     env_file:
       - ./dev-environment/db.env
     depends_on:
@@ -32,7 +27,7 @@ services:
     env_file:
       - dev-environment/db.env
     volumes:
-            - ./oio_rest/tests/sql:/tests
+      - ./oio_rest/tests/sql:/tests
     # The following will mount the database data directory to RAM. It
     # significantly speeds up the database at the cost of dataloss on shutdown.
     # This is useful for running tests, but should never be used if you want to

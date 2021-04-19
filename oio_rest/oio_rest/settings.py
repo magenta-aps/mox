@@ -72,7 +72,6 @@ if user_config_path:
     logger.info("Reading user config from %s", user_config_path)
     update_config(config, read_config(user_config_path))
 
-
 # All these variables are kept for backward compatibility / to change the least
 # code. From now on, use the ``config`` object in this module. At this point,
 # it would be fine to go through the code and get rid of the old variables,
@@ -85,16 +84,6 @@ DB_PORT = config["database"]["port"]
 DB_USER = config["database"]["user"]
 DB_PASSWORD = config["database"]["password"]
 DATABASE = config["database"]["db_name"]
-
-SAML_AUTH_ENABLE = config["saml_sso"]["enable"]
-SAML_IDP_METADATA_URL = config["saml_sso"]["idp_metadata_url"]
-SAML_IDP_INSECURE = config["saml_sso"]["idp_insecure"]
-SAML_REQUESTS_SIGNED = config["saml_sso"]["requests_signed"]
-SAML_KEY_FILE = config["saml_sso"]["key_file"]
-SAML_CERT_FILE = config["saml_sso"]["cert_file"]
-SQLALCHEMY_DATABASE_URI = config["saml_sso"]["sqlalchemy_uri"]
-SESSION_PERMANENT = config["saml_sso"]["session_permanent"]
-PERMANENT_SESSION_LIFETIME = config["saml_sso"]["permanent_session_lifetime"]
 
 DO_ENABLE_RESTRICTIONS = config["restrictions"]["enable"]
 AUTH_RESTRICTION_MODULE = config["restrictions"]["module"]

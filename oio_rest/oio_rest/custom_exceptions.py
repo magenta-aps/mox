@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MPL-2.0
 
 
-class OIOFlaskException(Exception):
+class OIOException(Exception):
     status_code = None  # Please supply in subclass!
 
     def __init__(self, *args, payload=None):
@@ -20,31 +20,31 @@ class OIOFlaskException(Exception):
         return rv
 
 
-class NotAllowedException(OIOFlaskException):
+class NotAllowedException(OIOException):
     status_code = 403
 
 
-class NotFoundException(OIOFlaskException):
+class NotFoundException(OIOException):
     status_code = 404
 
 
-class UnauthorizedException(OIOFlaskException):
+class UnauthorizedException(OIOException):
     status_code = 401
 
 
-class AuthorizationFailedException(OIOFlaskException):
+class AuthorizationFailedException(OIOException):
     status_code = 403
 
 
-class BadRequestException(OIOFlaskException):
+class BadRequestException(OIOException):
     status_code = 400
 
 
-class GoneException(OIOFlaskException):
+class GoneException(OIOException):
     status_code = 410
 
 
-class DBException(OIOFlaskException):
+class DBException(OIOException):
     def __init__(self, status_code, *args, payload=None):
-        OIOFlaskException.__init__(self, *args, payload)
+        OIOException.__init__(self, *args, payload)
         self.status_code = status_code

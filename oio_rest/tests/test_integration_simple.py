@@ -4,16 +4,8 @@
 from tests.util import DBTestCase
 
 
-UUID_PATTERN = (
-    '<regex("[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-'
-    '[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"):uuid>'
-)
-
-CONTENT_PATH_PATTERN = (
-    '<regex("\\d{4}/\\d{2}/\\d{2}/\\d{2}/\\d{2}/'
-    "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-"
-    '[a-fA-F0-9]{12}.bin"):content_path>'
-)
+UUID_PATTERN = "{uuid}"
+CONTENT_PATH_PATTERN = "{content_path}"
 
 
 class Tests(DBTestCase):
@@ -24,79 +16,83 @@ class Tests(DBTestCase):
                 "site-map": [
                     "/",
                     "/aktivitet/aktivitet",
-                    "/aktivitet/aktivitet/" + UUID_PATTERN,
                     "/aktivitet/aktivitet/fields",
                     "/aktivitet/aktivitet/schema",
+                    "/aktivitet/aktivitet/" + UUID_PATTERN,
                     "/aktivitet/classes",
+                    "/docs",
+                    "/docs/oauth2-redirect",
                     "/dokument/classes",
                     "/dokument/dokument",
-                    "/dokument/dokument/" + UUID_PATTERN,
-                    "/dokument/dokument/" + CONTENT_PATH_PATTERN,
                     "/dokument/dokument/fields",
                     "/dokument/dokument/schema",
+                    "/dokument/dokument/" + CONTENT_PATH_PATTERN,
+                    "/dokument/dokument/" + UUID_PATTERN,
                     "/indsats/classes",
                     "/indsats/indsats",
-                    "/indsats/indsats/" + UUID_PATTERN,
                     "/indsats/indsats/fields",
                     "/indsats/indsats/schema",
+                    "/indsats/indsats/" + UUID_PATTERN,
                     "/klassifikation/classes",
                     "/klassifikation/facet",
-                    "/klassifikation/facet/" + UUID_PATTERN,
                     "/klassifikation/facet/fields",
                     "/klassifikation/facet/schema",
+                    "/klassifikation/facet/" + UUID_PATTERN,
                     "/klassifikation/klasse",
-                    "/klassifikation/klasse/" + UUID_PATTERN,
                     "/klassifikation/klasse/fields",
                     "/klassifikation/klasse/schema",
+                    "/klassifikation/klasse/" + UUID_PATTERN,
                     "/klassifikation/klassifikation",
-                    "/klassifikation/klassifikation/" + UUID_PATTERN,
                     "/klassifikation/klassifikation/fields",
                     "/klassifikation/klassifikation/schema",
+                    "/klassifikation/klassifikation/" + UUID_PATTERN,
                     "/log/classes",
                     "/log/loghaendelse",
-                    "/log/loghaendelse/" + UUID_PATTERN,
                     "/log/loghaendelse/fields",
                     "/log/loghaendelse/schema",
+                    "/log/loghaendelse/" + UUID_PATTERN,
+                    "/openapi.json",
                     "/organisation/bruger",
-                    "/organisation/bruger/" + UUID_PATTERN,
                     "/organisation/bruger/fields",
                     "/organisation/bruger/schema",
+                    "/organisation/bruger/" + UUID_PATTERN,
                     "/organisation/classes",
                     "/organisation/interessefaellesskab",
-                    "/organisation/interessefaellesskab/" + UUID_PATTERN,
                     "/organisation/interessefaellesskab/fields",
                     "/organisation/interessefaellesskab/schema",
+                    "/organisation/interessefaellesskab/" + UUID_PATTERN,
                     "/organisation/itsystem",
-                    "/organisation/itsystem/" + UUID_PATTERN,
                     "/organisation/itsystem/fields",
                     "/organisation/itsystem/schema",
+                    "/organisation/itsystem/" + UUID_PATTERN,
                     "/organisation/organisation",
-                    "/organisation/organisation/" + UUID_PATTERN,
                     "/organisation/organisation/fields",
                     "/organisation/organisation/schema",
+                    "/organisation/organisation/" + UUID_PATTERN,
                     "/organisation/organisationenhed",
-                    "/organisation/organisationenhed/" + UUID_PATTERN,
                     "/organisation/organisationenhed/fields",
                     "/organisation/organisationenhed/schema",
+                    "/organisation/organisationenhed/" + UUID_PATTERN,
                     "/organisation/organisationfunktion",
-                    "/organisation/organisationfunktion/" + UUID_PATTERN,
                     "/organisation/organisationfunktion/fields",
                     "/organisation/organisationfunktion/schema",
+                    "/organisation/organisationfunktion/" + UUID_PATTERN,
+                    "/redoc",
                     "/sag/classes",
                     "/sag/sag",
-                    "/sag/sag/" + UUID_PATTERN,
                     "/sag/sag/fields",
                     "/sag/sag/schema",
+                    "/sag/sag/" + UUID_PATTERN,
                     "/site-map",
-                    "/static/<path:filename>",
                     "/tilstand/classes",
                     "/tilstand/tilstand",
-                    "/tilstand/tilstand/" + UUID_PATTERN,
                     "/tilstand/tilstand/fields",
                     "/tilstand/tilstand/schema",
+                    "/tilstand/tilstand/" + UUID_PATTERN,
                     "/version",
                 ]
             },
+            method="GET",
         )
 
     def test_organisation(self):
@@ -118,7 +114,7 @@ class Tests(DBTestCase):
     def test_finding_nothing(self):
         endpoints = [
             endpoint.rsplit("/", 1)[0]
-            for endpoint in self.client.get("/site-map").json["site-map"]
+            for endpoint in self.client.get("/site-map").json()["site-map"]
             if endpoint.endswith(UUID_PATTERN)
         ]
 

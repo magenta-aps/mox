@@ -15,7 +15,7 @@ class TestSag(DBTestCase):
         result = self.client.post(
             "/sag/sag",
             json=util.get_fixture("sag_opret.json"),
-        ).get_json()
+        ).json()
         self.assertTrue(is_uuid(result["uuid"]))
         self.uuid = result["uuid"]
 
@@ -23,13 +23,13 @@ class TestSag(DBTestCase):
         "Search for andrebehandlere relation"
         search1 = self.client.get(
             "sag/sag",
-            query_string={
+            params={
                 "andrebehandlere": "ef2713ee-1a38-4c23-8fcb-3c4331262194",
                 "uuid": self.uuid,
             },
         )
         self.assertEqual(search1.status_code, 200)
-        self.assertEqual(search1.get_json()["results"][0][0], self.uuid)
+        self.assertEqual(search1.json()["results"][0][0], self.uuid)
 
     @unittest.expectedFailure
     def test_sag_2(self):
@@ -37,20 +37,20 @@ class TestSag(DBTestCase):
         # unsupported argument: journalpostkode
         search2 = self.client.get(
             "sag/sag",
-            query_string={
+            params={
                 "journalpostkode": "journalnotat",
                 "uuid": self.uuid,
             },
         )
         self.assertEqual(search2.status_code, 200)
-        self.assertEqual(search2.get_json()["results"][0][0], self.uuid)
+        self.assertEqual(search2.json()["results"][0][0], self.uuid)
 
     def test_sag_3(self):
         "Search for wrong journalpostkode relation"
         # unsupported argument: journalpostkode
         search3 = self.client.get(
             "sag/sag",
-            query_string={
+            params={
                 "journalpostkode": "tilakteretdokument",
                 "uuid": self.uuid,
             },
@@ -63,20 +63,20 @@ class TestSag(DBTestCase):
         # unsupported argument: journalnotat.titel
         search4 = self.client.get(
             "sag/sag",
-            query_string={
+            params={
                 "journalnotat.titel": "Kommentarer",
                 "uuid": self.uuid,
             },
         )
         self.assertEqual(search4.status_code, 200)
-        self.assertEqual(search4.get_json()["results"][0][0], self.uuid)
+        self.assertEqual(search4.json()["results"][0][0], self.uuid)
 
     def test_sag_5(self):
         "Search for wrong journalnotat.titel relation"
         # unsupported argument: journalnotat.titel
         search5 = self.client.get(
             "sag/sag",
-            query_string={
+            params={
                 "journalnotat.titel": "Wrong",
                 "uuid": self.uuid,
             },
@@ -89,20 +89,20 @@ class TestSag(DBTestCase):
         # unsupported argument: journaldokument.dokumenttitel
         search6 = self.client.get(
             "sag/sag",
-            query_string={
+            params={
                 "journaldokument.dokumenttitel": "Rapport",
                 "uuid": self.uuid,
             },
         )
         self.assertEqual(search6.status_code, 200)
-        self.assertEqual(search6.get_json()["results"][0][0], self.uuid)
+        self.assertEqual(search6.json()["results"][0][0], self.uuid)
 
     def test_sag_7(self):
         "Search for wrong journaldokument.dokumenttitel relation"
         # unsupported argument: journaldokument.dokumenttitel
         search7 = self.client.get(
             "sag/sag",
-            query_string={
+            params={
                 "journaldokument.dokumenttitel": "Wrong",
                 "uuid": self.uuid,
             },
@@ -116,13 +116,13 @@ class TestSag(DBTestCase):
         # journaldokument.offenligtundtaget.alternativtitel
         search8 = self.client.get(
             "sag/sag",
-            query_string={
+            params={
                 "journaldokument.offentligtundtaget.alternativtitel": "Fortroligt",
                 "uuid": self.uuid,
             },
         )
         self.assertEqual(search8.status_code, 200)
-        self.assertEqual(search8.get_json()["results"][0][0], self.uuid)
+        self.assertEqual(search8.json()["results"][0][0], self.uuid)
 
     def test_sag_9(self):
         "Wrong journaldokument.offentligtundtaget.alternativtitel relation"
@@ -130,7 +130,7 @@ class TestSag(DBTestCase):
         # journaldokument.offenligtundtaget.alternativtitel
         search9 = self.client.get(
             "sag/sag",
-            query_string={
+            params={
                 "journaldokument.offentligtundtaget.alternativtitel": "Wrong",
                 "uuid": self.uuid,
             },

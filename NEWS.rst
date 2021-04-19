@@ -1,3 +1,10 @@
+Version 1.11.0, 7 April 2021
+----------------------------
+
+New features:
+* Exchanged Flask to FastAPI
+
+
 Version 1.10.0, 1 March 2021
 ----------------------------
 

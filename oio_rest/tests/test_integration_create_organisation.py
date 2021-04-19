@@ -47,7 +47,7 @@ class TestCreateOrganisation(TestCreateObject):
         # Check persisted data
         self.org["livscykluskode"] = "Opstaaet"
         self.assertQueryResponse(
-            "/organisation/organisation", self.org, uuid=r.json["uuid"]
+            "/organisation/organisation", self.org, uuid=r.json()["uuid"]
         )
 
     def test_valid_note_valid_org_name_two_org_egenskaber(self):
@@ -76,7 +76,7 @@ class TestCreateOrganisation(TestCreateObject):
         self.assertQueryResponse(
             "/organisation/organisation",
             self.org,
-            uuid=r.json["uuid"],
+            uuid=r.json()["uuid"],
             virkningfra="-infinity",
             virkningtil="infinity",
         )
@@ -242,7 +242,7 @@ class TestCreateOrganisation(TestCreateObject):
         self.assertQueryResponse(
             "/organisation/organisation",
             self.org,
-            uuid=r.json["uuid"],
+            uuid=r.json()["uuid"],
             virkningfra="-infinity",
             virkningtil="infinity",
         )
@@ -369,7 +369,7 @@ class TestCreateOrganisation(TestCreateObject):
         self.org["livscykluskode"] = "Opstaaet"
         del self.org["relationer"]
         self.assertQueryResponse(
-            "/organisation/organisation", self.org, uuid=r.json["uuid"]
+            "/organisation/organisation", self.org, uuid=r.json()["uuid"]
         )
 
     def test_specific_relation_list_empty(self):
@@ -390,7 +390,7 @@ class TestCreateOrganisation(TestCreateObject):
         self.org["livscykluskode"] = "Opstaaet"
         del self.org["relationer"]
         self.assertQueryResponse(
-            "/organisation/organisation", self.org, uuid=r.json["uuid"]
+            "/organisation/organisation", self.org, uuid=r.json()["uuid"]
         )
 
     def test_one_uuid_per_relation_reference_all_relation_names_tested(self):
@@ -421,7 +421,7 @@ class TestCreateOrganisation(TestCreateObject):
         self.assert201(r)
 
         relationtype = copy.copy(self.reference)
-        relationtype["uuid"] = r.json["uuid"]
+        relationtype["uuid"] = r.json()["uuid"]
 
         # Create organisation
         self.org["relationer"] = {
@@ -453,7 +453,7 @@ class TestCreateOrganisation(TestCreateObject):
         # Check persisted data
         self.org["livscykluskode"] = "Opstaaet"
         self.assertQueryResponse(
-            "/organisation/organisation", self.org, uuid=r.json["uuid"]
+            "/organisation/organisation", self.org, uuid=r.json()["uuid"]
         )
 
     def test_adding_two_relations(self):
@@ -484,7 +484,7 @@ class TestCreateOrganisation(TestCreateObject):
         # Check persisted data
         self.org["livscykluskode"] = "Opstaaet"
         self.assertQueryResponse(
-            "/organisation/organisation", self.org, uuid=r.json["uuid"]
+            "/organisation/organisation", self.org, uuid=r.json()["uuid"]
         )
 
     def test_reference_in_relation_must_be_an_uuid(self):
