@@ -130,7 +130,6 @@ class TestGenerateJSONSchema(TestBase):
         }
 
         self.relation_nul_til_en = copy.deepcopy(self.relation_nul_til_mange)
-        self.relation_nul_til_en["maxItems"] = 1
 
     def _json_to_dict(self, filename):
         """
@@ -1130,17 +1129,6 @@ class TestFacetSystematically(TestBase):
         further details
         """
         self.facet["tilstande"]["facetpubliceret"][0]["unknown"] = "xyz"
-        self.assertValidationError()
-
-    def test_two_references_in_nul_til_en_relation(self):
-        """
-        Equivalence classes covered: [96]
-        See https://github.com/magenta-aps/mox/doc/Systematic_testing.rst for
-        further details
-        """
-        self.facet["relationer"] = {
-            "ansvarlig": [self.reference, self.reference],
-        }
         self.assertValidationError()
 
     def test_reference_not_an_uuid(self):

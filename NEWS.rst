@@ -1,8 +1,14 @@
 In development
 --------------
 
-New features:
 * Add OS2mo extension field for seniority
+
+
+Version 1.11.1, 23 April 2021
+----------------------------
+
+New features:
+* Fix validation to allow inserting historic data
 
 Version 1.11.0, 7 April 2021
 ----------------------------

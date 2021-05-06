@@ -310,7 +310,6 @@ def _generate_relationer(obj, do_create):
     relation_nul_til_en = copy.deepcopy(relation_nul_til_mange)
     relation_nul_til_en["items"]["oneOf"][0]["properties"].pop("indeks", None)
     relation_nul_til_en["items"]["oneOf"][1]["properties"].pop("indeks", None)
-    relation_nul_til_en["maxItems"] = 1
 
     for relation in relationer_nul_til_en:
         relation_schema[relation] = relation_nul_til_en
