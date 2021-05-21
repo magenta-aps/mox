@@ -1,5 +1,5 @@
-In development
---------------
+Version 1.12.0, 21 May 2021
+---------------------------
 
 * Add OS2mo extension field for seniority
 
