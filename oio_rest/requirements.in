@@ -11,3 +11,4 @@ python-dateutil
 pika
 jsonschema
 toml
+click
