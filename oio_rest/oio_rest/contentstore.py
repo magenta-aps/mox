@@ -1,14 +1,6 @@
 # SPDX-FileCopyrightText: 2015-2020 Magenta ApS
 # SPDX-License-Identifier: MPL-2.0
 
-import os
-from urllib.parse import urlparse
-import uuid
-import errno
-import time
-
-from oio_rest import config
-
 
 class ContentStore:
     def get_filename_for_url(self, url):
@@ -27,5 +19,6 @@ class ContentStore:
     def remove(self, url):
         """Remove the file specified by the given content URL."""
         raise NotImplementedError
+
 
 content_store = ContentStore()

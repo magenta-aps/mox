@@ -1,10 +1,7 @@
 # SPDX-FileCopyrightText: 2015-2020 Magenta ApS
 # SPDX-License-Identifier: MPL-2.0
 
-import copy
 import logging
-from logging.handlers import RotatingFileHandler
-import pprint
 
 from os2mo_fastapi_utils.tracing import setup_instrumentation
 

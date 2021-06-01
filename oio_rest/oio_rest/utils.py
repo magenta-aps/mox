@@ -30,7 +30,7 @@ def is_uuid(s):
 
 
 def escape_underscores(s):
-    """Return the string with underscores escaped by backslashes. """
+    """Return the string with underscores escaped by backslashes."""
     if s is None:
         return None
     return s.replace("_", r"\_")
