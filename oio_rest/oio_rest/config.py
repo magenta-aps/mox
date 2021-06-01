@@ -39,11 +39,6 @@ class Settings(BaseSettings):
     # The log level for the Python application
     lora_log_level: str = "WARNING"
 
-    # This is where file uploads are stored. It must be readable and writable by
-    # the mox user, running the REST API server. This is used in the Dokument
-    # hierarchy.
-    file_upload_folder: Optional[str]
-
     # If enabled, uses alternative search implementation
     quick_search: bool = True
 
