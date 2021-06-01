@@ -8,8 +8,8 @@ import unittest
 
 import tap.parser
 
+from oio_rest import config
 from oio_rest.db import db_templating, get_connection
-from oio_rest import settings
 from tests import util
 from tests.util import DBTestCase
 
@@ -22,7 +22,7 @@ class SQLTests(DBTestCase):
 
             curs.execute(
                 'CREATE SCHEMA test AUTHORIZATION "{}";'.format(
-                    settings.DB_USER,
+                    config.get_settings().db_user,
                 ),
             )
 
