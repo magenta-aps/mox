@@ -1,16 +1,20 @@
+Version 1.12.0, 21 May 2021
+---------------------------
+
+* Add OS2mo extension field for seniority
+
+
 Version 1.11.1, 23 April 2021
-----------------------------
+-----------------------------
 
 New features:
 * Fix validation to allow inserting historic data
-
 
 Version 1.11.0, 7 April 2021
 ----------------------------
 
 New features:
 * Exchanged Flask to FastAPI
-
 
 Version 1.10.0, 1 March 2021
 ----------------------------
