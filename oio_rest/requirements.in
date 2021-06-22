@@ -12,3 +12,5 @@ pika
 jsonschema
 toml
 click
+aiohttp
+os2mo_fastapi_utils
