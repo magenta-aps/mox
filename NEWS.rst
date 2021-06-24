@@ -1,6 +1,7 @@
 In development
 --------------
 
+* Add Opentelemetry instrumentation
 
 Version 1.12.0, 21 May 2021
 ---------------------------

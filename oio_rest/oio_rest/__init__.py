@@ -7,6 +7,8 @@ from logging.handlers import RotatingFileHandler
 import pprint
 from oio_rest import settings
 
+from os2mo_fastapi_utils.tracing import setup_instrumentation
+
 from fastapi import FastAPI
 
 __version__ = "1.12.0"
@@ -29,6 +31,8 @@ logger.addHandler(stdout_log_handler)
 # settings requires the app object to exist so it can locate the
 # default-settings.toml file.
 app = FastAPI()
+
+app = setup_instrumentation(app)
 
 # The trace log contains debug statements (in context with everything
 # higher precedens!) and is intended to be read by humans (tm) when
