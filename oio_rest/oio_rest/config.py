@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     db_password: str
     db_host: str = "mox-db"
     db_port: str = "5432"
+    sslmode: Optional[str]
 
     # Prefix for all relative URLs. A value of "/MyOIO" will result in API
     # endpoints such ``http://example.com/MyOIO/organisation/organisationenhed``.

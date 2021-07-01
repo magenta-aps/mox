@@ -86,6 +86,7 @@ def get_connection():
             host=settings.db_host,
             port=settings.db_port,
             application_name="mox init connection",
+            ssl_mode=settings.sslmode,
         )
 
     return _connection
