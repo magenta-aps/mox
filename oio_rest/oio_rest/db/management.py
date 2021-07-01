@@ -152,7 +152,7 @@ def _get_connection(dbname):
         host=settings.db_host,
         port=settings.db_port,
         application_name="mox db/management connection",
-        ssl_mode=settings.sslmode,
+        sslmode=settings.db_sslmode,
     )
 
 
