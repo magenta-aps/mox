@@ -6,7 +6,7 @@
 # Labs as required approval to your MR if you have any changes.                #
 ################################################################################
 
-FROM bynect/hypercorn-fastapi:python3.8 AS dist
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.8 AS dist
 
 
 LABEL org.opencontainers.image.title="MOX - Messaging Service and Actual State Database"
