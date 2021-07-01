@@ -48,7 +48,8 @@ def check_connection():
     try:
         _get_connection(_DBNAME)
         return True
-    except psycopg2.OperationalError:
+    except psycopg2.OperationalError as exp:
+        print(exp)
         return False
 
 
@@ -146,7 +147,7 @@ def _get_connection(dbname):
     settings = config.get_settings()
 
     return psycopg2.connect(
-        dbname=dbname,
+        dbname=dbname or settings.db_name,
         user=settings.db_user,
         password=settings.db_password,
         host=settings.db_host,

@@ -72,4 +72,4 @@ COPY LICENSE .
 RUN pip3 install --no-cache-dir -e oio_rest
 
 # Run the server as the mox user
-USER mox:mox
+# USER mox:mox
