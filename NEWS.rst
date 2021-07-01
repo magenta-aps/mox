@@ -3,6 +3,11 @@ In development
 
 * Add Opentelemetry instrumentation
 
+Version 1.12.1, 21 May 2021
+---------------------------
+
+* Use Gunicorn/Uvicorn
+
 Version 1.12.0, 21 May 2021
 ---------------------------
 

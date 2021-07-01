@@ -11,7 +11,7 @@ from os2mo_fastapi_utils.tracing import setup_instrumentation
 
 from fastapi import FastAPI
 
-__version__ = "1.12.0"
+__version__ = "1.12.1"
 
 # we need to add a log handler here, so we see logs from settings.py.
 # I mean, we /want/ this handler too.
