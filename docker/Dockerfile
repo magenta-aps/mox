@@ -19,9 +19,6 @@ LABEL org.opencontainers.image.source="https://github.com/magenta-aps/mox"
 # Force the stdout and stderr streams from python to be unbuffered. See
 # https://docs.python.org/3/using/cmdline.html#cmdoption-u
 ENV PYTHONUNBUFFERED=1
-ENV MOX_SYSTEM_CONFIG_PATH=/app/docker/docker-settings.toml
-ENV MOX_USER_CONFIG_PATH=/user-settings.toml
-
 
 WORKDIR /app
 COPY docker/sys-requirements.txt sys-requirements.txt
@@ -51,7 +48,6 @@ RUN set -ex \
 
 # Create volumes for file upload and logs
 VOLUME /var/mox
-VOLUME /log
 
 
 # Install requirements
@@ -65,7 +61,6 @@ ENV MODULE_NAME oio_rest
 
 
 # Copy and install application.
-COPY dev-environment/settings-for-mo-test.toml ./dev-environment/settings-for-mo-test.toml
 COPY docker ./docker
 COPY prestart.sh .
 COPY oio_rest ./oio_rest
@@ -76,5 +71,5 @@ COPY LICENSE .
 # hadolint ignore=DL3013
 RUN pip3 install --no-cache-dir -e oio_rest
 
-# Run the server as the mox user on port 8080
-USER mox:mox
+# Run the server as the mox user
+# USER mox:mox

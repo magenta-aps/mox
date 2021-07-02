@@ -125,7 +125,6 @@ Unittest oio_rest:
     DB_USER: mox
     DB_PASSWORD: mox
     DB_UPGRADE_TO_SUPERUSER: "True"
-    MOX_USER_CONFIG_PATH: $CI_PROJECT_DIR/dev-environment/dev-settings.toml
     COVERAGE_FILE: $CI_PROJECT_DIR/.coverage
   script:
     - pytest

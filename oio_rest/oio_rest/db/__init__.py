@@ -15,7 +15,7 @@ from jinja2 import Environment, FileSystemLoader
 from psycopg2.extensions import AsIs, Boolean, QuotedString, adapt as psyco_adapt
 from psycopg2.extras import DateTimeTZRange
 
-from oio_rest import settings
+from oio_rest import config
 from .db_helpers import (
     AktoerAttr,
     DokumentVariantType,
@@ -76,14 +76,17 @@ def get_connection():
     """Return a psycopg connection."""
     global _connection
 
+    settings = config.get_settings()
+
     if _connection is None:
         _connection = psycopg2.connect(
-            dbname=settings.DATABASE,
-            user=settings.DB_USER,
-            password=settings.DB_PASSWORD,
-            host=settings.DB_HOST,
-            port=settings.DB_PORT,
+            dbname=settings.db_name,
+            user=settings.db_user,
+            password=settings.db_password,
+            host=settings.db_host,
+            port=settings.db_port,
             application_name="mox init connection",
+            sslmode=settings.db_sslmode,
         )
 
     return _connection
@@ -329,7 +332,7 @@ def sql_convert_restrictions(class_name, restrictions):
 
 def get_restrictions_as_sql(user, class_name, operation):
     """Get restrictions for user and operation, return as array of SQL."""
-    if not settings.DO_ENABLE_RESTRICTIONS:
+    if not config.get_settings().enable_restrictions:
         return None
     restrictions = get_restrictions(user, class_name, operation)
     if restrictions == []:

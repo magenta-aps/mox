@@ -13,12 +13,12 @@ import psycopg2.errors
 import psycopg2.extensions
 from psycopg2.sql import SQL, Identifier
 
+from oio_rest import config
 from oio_rest.db import close_connection, db_templating
-from oio_rest.settings import config
 
 logger = logging.getLogger(__name__)
 
-_DBNAME = config["database"]["db_name"]
+_DBNAME = config.get_settings().db_name
 _DBNAME_BACKUP = _DBNAME + "_backup"
 _DBNAME_INITIALIZED_TEMPLATE = _DBNAME + "_template"
 # The postgres default (empty) template for CREATE DATABASE.
@@ -48,7 +48,8 @@ def check_connection():
     try:
         _get_connection(_DBNAME)
         return True
-    except psycopg2.OperationalError:
+    except psycopg2.OperationalError as exp:
+        print(exp)
         return False
 
 
@@ -143,13 +144,16 @@ def _get_connection(dbname):
     should always be present.
 
     """
+    settings = config.get_settings()
+
     return psycopg2.connect(
-        dbname=dbname,
-        user=config["database"]["user"],
-        password=config["database"]["password"],
-        host=config["database"]["host"],
-        port=config["database"]["port"],
+        dbname=dbname or settings.db_name,
+        user=settings.db_user,
+        password=settings.db_password,
+        host=settings.db_host,
+        port=settings.db_port,
         application_name="mox db/management connection",
+        sslmode=settings.db_sslmode,
     )
 
 
@@ -248,7 +252,7 @@ def _createdb(dbname):
         # in docker/postgresql-initdb.d/10-init-db.sh used in production.
         curs.execute(
             SQL("create schema actual_state authorization {};").format(
-                Identifier(config["database"]["user"])
+                Identifier(config.get_settings().db_user)
             )
         )
         # The three following `create extension … ` commands should be

@@ -14,11 +14,10 @@ from fastapi import APIRouter, Request, HTTPException
 from werkzeug.datastructures import ImmutableOrderedMultiDict
 from werkzeug.exceptions import BadRequest
 
-from . import db, validate
+from . import db, validate, config
 from .custom_exceptions import BadRequestException, GoneException, NotFoundException
 from .db import db_helpers, db_structure
 from .db.quick_query.search import quick_search
-from .settings import config
 from .utils import build_registration, split_param, to_lower_param
 
 """List of parameters allowed for all searches."""
@@ -182,7 +181,7 @@ class QuickSearcher(Searcher):
 
 class ConfiguredDBInterface:
     def __init__(self):
-        if config["search"]["enable_quick_search"]:
+        if config.get_settings().quick_search:
             self.searcher: Searcher = QuickSearcher()
         else:
             self.searcher: Searcher = DefaultSearcher()
