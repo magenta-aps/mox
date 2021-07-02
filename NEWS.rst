@@ -1,7 +1,8 @@
-In development
+Version 1.13.0
 --------------
 
 * Add Opentelemetry instrumentation
+* Add configuration using environment variables
 
 Version 1.12.1, 21 May 2021
 ---------------------------
