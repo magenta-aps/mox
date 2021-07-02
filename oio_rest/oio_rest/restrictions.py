@@ -3,7 +3,7 @@
 
 from enum import Enum
 
-from .settings import DO_ENABLE_RESTRICTIONS
+from oio_rest import config
 
 
 class Operation(Enum):
@@ -84,7 +84,7 @@ def get_restrictions(user, object_type, operation):
         module which is accessible on the Python path.
 
     """
-    if not DO_ENABLE_RESTRICTIONS:
+    if not config.get_settings().enable_restrictions:
         return None
     raise NotImplementedError
 

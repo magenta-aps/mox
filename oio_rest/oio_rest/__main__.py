@@ -6,7 +6,7 @@ import time
 
 import click
 
-from oio_rest.settings import config
+from oio_rest import config
 from oio_rest.db import db_templating
 from oio_rest.db.management import (
     apply_templates,
@@ -67,7 +67,7 @@ def initdb(wait):
 @cli.command()
 def truncatedb():
     """Empty all tables in the database."""
-    truncate_db(config["database"]["db_name"])
+    truncate_db(config.get_settings().db_name)
 
 
 if __name__ == "__main__":

@@ -20,12 +20,11 @@ from oio_rest import (
     log,
     organisation,
     sag,
-    settings,
     tilstand,
+    config,
 )
 from oio_rest.custom_exceptions import OIOException
 from oio_rest.db import management as db_mgmt
-from oio_rest.settings import config
 
 logger = logging.getLogger(__name__)
 
@@ -67,49 +66,49 @@ def version():
 app.include_router(
     klassifikation.KlassifikationsHierarki.setup_api(),
     tags=["Klassifikation"],
-    prefix=settings.BASE_URL,
+    prefix=config.get_settings().base_url,
 )
 
 app.include_router(
     log.LogHierarki.setup_api(),
     tags=["Log"],
-    prefix=settings.BASE_URL,
+    prefix=config.get_settings().base_url,
 )
 
 app.include_router(
     sag.SagsHierarki.setup_api(),
     tags=["Sag"],
-    prefix=settings.BASE_URL,
+    prefix=config.get_settings().base_url,
 )
 
 app.include_router(
     organisation.OrganisationsHierarki.setup_api(),
     tags=["Organisation"],
-    prefix=settings.BASE_URL,
+    prefix=config.get_settings().base_url,
 )
 
 app.include_router(
     dokument.DokumentHierarki.setup_api(),
     tags=["Dokument"],
-    prefix=settings.BASE_URL,
+    prefix=config.get_settings().base_url,
 )
 
 app.include_router(
     aktivitet.AktivitetsHierarki.setup_api(),
     tags=["Aktivitet"],
-    prefix=settings.BASE_URL,
+    prefix=config.get_settings().base_url,
 )
 
 app.include_router(
     indsats.IndsatsHierarki.setup_api(),
     tags=["Indsats"],
-    prefix=settings.BASE_URL,
+    prefix=config.get_settings().base_url,
 )
 
 app.include_router(
     tilstand.TilstandsHierarki.setup_api(),
     tags=["Tilstand"],
-    prefix=settings.BASE_URL,
+    prefix=config.get_settings().base_url,
 )
 
 
@@ -143,14 +142,14 @@ db_router = APIRouter()
 @db_router.get("/truncate")
 def truncate_db():
     logger.debug("Truncate DB endpoint called")
-    db_mgmt.truncate_db(config["database"]["db_name"])
+    db_mgmt.truncate_db(config.get_settings().db_name)
     return PlainTextResponse("Database truncated")
 
 
-if settings.config["testing_api"]["enable"]:
+if config.get_settings().testing_api:
     app.include_router(testing_router, tags=["Testing"], prefix="/testing")
 
-if settings.config["truncate_api"]["enable"]:
+if config.get_settings().truncate_api:
     app.include_router(db_router, tags=["Database Management"], prefix="/db")
 
 

@@ -13,19 +13,18 @@ services:
     # reloads on file changes. This is very useful when developing oio_rest.
     volumes:
       - .:/app
-      - ./dev-environment/dev-settings.toml:/user-settings.toml
-    command: '/start-reload.sh'
     ports:
       - "8080:80"
     env_file:
-      - ./dev-environment/db.env
+      - dev-environment/dev.env
     depends_on:
       - mox-db
+    read_only: true
 
   mox-db:
     image: magentaaps/postgres-os2mo:10-11.7-test
     env_file:
-      - dev-environment/db.env
+      - dev-environment/dev.env
     volumes:
       - ./oio_rest/tests/sql:/tests
     # The following will mount the database data directory to RAM. It

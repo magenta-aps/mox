@@ -7,7 +7,7 @@ from copy import deepcopy
 import itertools
 import json
 
-from oio_rest import settings
+from oio_rest import config
 
 # This specifies the database structure
 DATABASE_STRUCTURE = {
@@ -635,7 +635,7 @@ def load_db_extensions(exts):
     REAL_DB_STRUCTURE = merge_objects(REAL_DB_STRUCTURE, exts)
 
 
-extensions_path = settings.config["db_extensions"]["path"]
+extensions_path = config.get_settings().db_extensions_path
 load_db_extensions(extensions_path)
 
 
