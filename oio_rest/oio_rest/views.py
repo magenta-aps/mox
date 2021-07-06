@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2015-2020 Magenta ApS
 # SPDX-License-Identifier: MPL-2.0
 
-import logging
+from structlog import get_logger
 import os
 from operator import attrgetter
 
@@ -26,7 +26,7 @@ from oio_rest import (
 from oio_rest.custom_exceptions import OIOException
 from oio_rest.db import management as db_mgmt
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 """
     Jinja2 Environment
