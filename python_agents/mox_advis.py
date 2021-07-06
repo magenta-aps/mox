@@ -8,9 +8,6 @@
 
 #!/usr/bin/env python
 import smtplib
-import logging
-
-
 import requests
 
 from email.mime.text import MIMEText
@@ -21,6 +18,7 @@ from settings import ADVIS_SUBJECT_PREFIX
 from settings import MOX_ADVIS_LOG_FILE
 from settings import SAML_MOX_ENTITY_ID
 from settings import SAML_IDP_ENTITY_ID
+from structlog import get_logger
 
 # TODO:
 # In order to refactor the SAML related import(s)
@@ -30,6 +28,7 @@ from oio_rest.auth.saml2 import Saml2_Assertion
 
 from mox_agent import MOXAgent, unpack_saml_token, get_idp_cert
 
+logger = get_logger()
 
 def get_destination_emails(uuids, headers):
     """Get email addresses from Organisation using a list of UUIDs."""
@@ -41,18 +40,18 @@ def get_destination_emails(uuids, headers):
         response = requests.get(request_url, headers=headers)
         result = response.json()
         if response.status_code != 200:
-            logging.error("Failed to connect to API: {0}".format(result))
+            logger.error("Failed to connect to API: %s", result=result)
             continue
 
         if len(result['results']) == 0:
-            logging.error("Bruger for UUID {0} not found.".format(uuid))
+            logger.error("Bruger for UUID %s not found.", uuid=uuid)
             continue
         try:
             addresses = result[
                 'results'][0][0]['registreringer'][0]['relationer']['adresser']
             mail_urn = None
         except (KeyError, IndexError):
-            logging.error("No addresses found for Bruger {0}.".format(uuid))
+            logger.error("No addresses found for Bruger %s.", uuid=uuid)
             continue
 
         for a in addresses:
@@ -65,13 +64,11 @@ def get_destination_emails(uuids, headers):
             try:
                 destination_email = mail_urn[mail_urn.rfind(':')+1:]
             except:
-                logging.error("Error in URN format: {0}".format(mail_urn))
+                logger.error("Error in URN format: %s", mail_urn=mail_urn)
                 raise
             destination_emails.append(destination_email)
         else:
-            logging.warning(
-                "No email address configured for Bruger {0}".format(uuid)
-            )
+            logger.warning("No email address configured for Bruger %s", uuid=uuid)
             # Do nothing
             pass
     return destination_emails
@@ -83,12 +80,6 @@ class MOXAdvis(MOXAgent):
     def __init__(self):
         # Get rid of certain warnings
         requests.packages.urllib3.disable_warnings()
-        # Set up logging
-        logging.basicConfig(
-            filename=MOX_ADVIS_LOG_FILE,
-            level=logging.DEBUG,
-            format='%(asctime)s %(levelname)s %(message)s'
-        )
 
     queue = MOX_ADVIS_QUEUE
     do_persist = True
@@ -102,7 +93,7 @@ class MOXAdvis(MOXAgent):
         # TODO: If no SAML token, we can't proceed!
         # Please log properly.
         if not saml_token:
-            logging.error("ERROR: No authentication present!")
+            logger.error("ERROR: No authentication present!")
             return
         # Validate SAML token
         assertion = Saml2_Assertion(saml_token, SAML_MOX_ENTITY_ID,
@@ -110,9 +101,7 @@ class MOXAdvis(MOXAgent):
         try:
             assertion.check_validity()
         except Exception as e:
-            logging.error(
-                "No valid authentication, can't proceed: {0}".format(e.message)
-            )
+            logger.error("No valid authentication, can't proceed: %s", message=e.message)
             return
 
         attributes = assertion.get_attributes()
@@ -143,9 +132,7 @@ class MOXAdvis(MOXAgent):
         try:
             smtp = smtplib.SMTP('localhost')
         except Exception as e:
-            logging.critical(
-                'Unable to connect to mail server: {0}'.format(e.message)
-            )
+            logger.critical('Unable to connect to mail server: %s', message=e.message)
             return
 
         for email in destination_emails:

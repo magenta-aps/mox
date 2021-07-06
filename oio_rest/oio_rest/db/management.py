@@ -6,8 +6,7 @@
 # databases for both the normal operation and for testing.
 
 
-import logging
-
+from structlog import get_logger
 import psycopg2
 import psycopg2.errors
 import psycopg2.extensions
@@ -16,7 +15,7 @@ from psycopg2.sql import SQL, Identifier
 from oio_rest import config
 from oio_rest.db import close_connection, db_templating
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 _DBNAME = config.get_settings().db_name
 _DBNAME_BACKUP = _DBNAME + "_backup"
@@ -90,7 +89,7 @@ def testdb_setup(from_scratch=False):
     Requires CREATEDB and OWNER or SUPERUSER privileges.
 
     """
-    logger.info("Setting up test database: %s", _DBNAME)
+    logger.info("Setting up test database", dbname=_DBNAME)
     if _database_exists(_DBNAME_BACKUP):
         raise ValueError(
             "The backup location used for the database while running tests is "
@@ -111,7 +110,7 @@ def testdb_reset(from_scratch=False):
 
     """
 
-    logger.info("Resetting test database: %s", _DBNAME)
+    logger.info("Resetting test database", dbname=_DBNAME)
     _dropdb(_DBNAME)
     if from_scratch:
         _createdb(_DBNAME)
@@ -129,7 +128,7 @@ def testdb_teardown():
     Requires CREATEDB and OWNER or SUPERUSER privileges.
 
     """
-    logger.info("Removing test database: %s", _DBNAME)
+    logger.info("Removing test database", dbname=_DBNAME)
     _dropdb(_DBNAME)
     _cpdb(_DBNAME_BACKUP, _DBNAME)
     _dropdb(_DBNAME_BACKUP)
@@ -168,7 +167,7 @@ def _cpdb(dbname_from, dbname_to):
 
     """
     close_connection()
-    logger.debug("Copying database from %s to %s", dbname_from, dbname_to)
+    logger.debug("Copying database", dbname_from=dbname_from, dbname_to=dbname_to)
     with _get_connection(_DBNAME_SYS_TEMPLATE) as conn:
         conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
         with conn.cursor() as curs:
@@ -180,9 +179,9 @@ def _cpdb(dbname_from, dbname_to):
                 )
             except psycopg2.errors.ObjectInUse as e:
                 logger.error(
-                    "Database %s or %s is in use. CREATE DATABASE failed.",
-                    dbname_to,
-                    dbname_from,
+                    "Database is in use. CREATE DATABASE failed.",
+                    dbname_to=dbname_to,
+                    dbname_from=dbname_from,
                 )
                 _log_active_sessions(conn)
                 raise e
@@ -224,7 +223,7 @@ def _dropdb(dbname):
     Requires OWNER or SUPERUSER privileges.
     """
     close_connection()
-    logger.debug("Dropping database %s", dbname)
+    logger.debug("Dropping database", dbname=dbname)
     with _get_connection(_DBNAME_SYS_TEMPLATE) as conn:
         conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
         with conn.cursor() as curs:
@@ -290,12 +289,12 @@ def _log_active_sessions(conn):
         active_conns = curs.fetchall()
 
     length = len(active_conns)
-    logger.debug("The following %s database sessions are connected:", length)
+    logger.debug("The following database sessions are connected", length=length)
     for idx, s in enumerate(active_conns, start=1):
         logger.debug(
             "[%s/%s] pid: %s, user: %s, database: %s, client, %s, "
             "application: %s, state: %s",
-            idx,
-            length,
-            *s,
+            idx=idx,
+            length=length,
+            active_conns=[*s],
         )

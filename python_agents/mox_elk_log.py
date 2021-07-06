@@ -7,7 +7,6 @@
 
 
 #!%PYTHON%
-import logging
 import json
 import pika
 
@@ -29,8 +28,11 @@ from settings import MOX_LOGSTASH_URI
 from settings import MOX_LOGSTASH_USER
 from settings import MOX_LOGSTASH_PASS
 
+from structlog import get_logger
+
 from mox_agent import MOXAgent, unpack_saml_token, get_idp_cert
 
+logger = get_logger()
 
 class MOXELKLog(MOXAgent):
     """Support for the MOX Advis use case."""
@@ -38,12 +40,6 @@ class MOXELKLog(MOXAgent):
     def __init__(self):
         # Get rid of certain warnings
         requests.packages.urllib3.disable_warnings()
-        # Set up logging
-        logging.basicConfig(
-            filename=MOX_ELK_LOG_FILE,
-            level=logging.DEBUG,
-            format='%(asctime)s %(levelname)s %(message)s'
-        )
 
     queue = ''
     exchange = MOX_LOG_EXCHANGE
@@ -60,7 +56,7 @@ class MOXELKLog(MOXAgent):
             # TODO: If no SAML token, we can't proceed!
             # Please log properly.
             if not saml_token:
-                logging.error("ERROR: No authentication present!")
+                logger.error("ERROR: No authentication present!")
                 return
             # Validate SAML token
             assertion = Saml2_Assertion(saml_token, SAML_MOX_ENTITY_ID,
@@ -68,10 +64,8 @@ class MOXELKLog(MOXAgent):
             try:
                 assertion.check_validity()
             except Exception as e:
-                logging.error(
-                    "No valid authentication, can't proceed: {0}".format(
-                        e.message
-                    )
+                logger.error(
+                    "No valid authentication, can't proceed: %s", message=e.message
                 )
                 return
         if DO_LOG_TO_AMQP:
@@ -84,11 +78,11 @@ class MOXELKLog(MOXAgent):
                                   properties=properties,
                                   body=body)
         else:
-            print "Posting to logstash ..."
+            logger.info("Posting to logstash ...")
             data = json.loads(body)  # noqa
             r = requests.post(MOX_LOGSTASH_URI, body, auth=(MOX_LOGSTASH_USER,
                                                             MOX_LOGSTASH_PASS))
-            print "Done: ", r
+            logger.info("Done: %s", request=r)
 
 
 if __name__ == '__main__':
