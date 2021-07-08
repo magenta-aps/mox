@@ -21,10 +21,6 @@ class Settings(BaseSettings):
     db_port: str = "5432"
     db_sslmode: Optional[str]
 
-    # Prefix for all relative URLs. A value of "/MyOIO" will result in API
-    # endpoints such ``http://example.com/MyOIO/organisation/organisationenhed``.
-    base_url: str = ""
-
     # Path to DB_STRUCTURE extensions
     db_extensions_path: Optional[str]
 

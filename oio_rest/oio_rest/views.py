@@ -66,49 +66,41 @@ def version():
 app.include_router(
     klassifikation.KlassifikationsHierarki.setup_api(),
     tags=["Klassifikation"],
-    prefix=config.get_settings().base_url,
 )
 
 app.include_router(
     log.LogHierarki.setup_api(),
     tags=["Log"],
-    prefix=config.get_settings().base_url,
 )
 
 app.include_router(
     sag.SagsHierarki.setup_api(),
     tags=["Sag"],
-    prefix=config.get_settings().base_url,
 )
 
 app.include_router(
     organisation.OrganisationsHierarki.setup_api(),
     tags=["Organisation"],
-    prefix=config.get_settings().base_url,
 )
 
 app.include_router(
     dokument.DokumentHierarki.setup_api(),
     tags=["Dokument"],
-    prefix=config.get_settings().base_url,
 )
 
 app.include_router(
     aktivitet.AktivitetsHierarki.setup_api(),
     tags=["Aktivitet"],
-    prefix=config.get_settings().base_url,
 )
 
 app.include_router(
     indsats.IndsatsHierarki.setup_api(),
     tags=["Indsats"],
-    prefix=config.get_settings().base_url,
 )
 
 app.include_router(
     tilstand.TilstandsHierarki.setup_api(),
     tags=["Tilstand"],
-    prefix=config.get_settings().base_url,
 )
 
 
