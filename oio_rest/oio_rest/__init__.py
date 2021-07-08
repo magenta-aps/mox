@@ -11,7 +11,7 @@ from structlog.contextvars import merge_contextvars
 
 from fastapi import FastAPI
 
-__version__ = "1.13.0"
+__version__ = "1.13.1"
 
 app = FastAPI()
 app = setup_instrumentation(app)

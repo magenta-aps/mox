@@ -1,6 +1,12 @@
 In development
 --------------
 
+
+Version 1.13.1
+--------------
+
+* Remove BASE_URL config parameter
+
 Version 1.13.0, 2 July 2021
 ===========================
 
