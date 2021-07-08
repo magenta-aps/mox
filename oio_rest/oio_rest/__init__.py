@@ -7,7 +7,7 @@ from os2mo_fastapi_utils.tracing import setup_instrumentation
 
 from fastapi import FastAPI
 
-__version__ = "1.13.0"
+__version__ = "1.13.1"
 
 from oio_rest import config
 
